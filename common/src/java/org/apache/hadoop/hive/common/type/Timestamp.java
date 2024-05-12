@@ -31,6 +31,7 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.ResolverStyle;
 import java.time.format.SignStyle;
 import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
 
 import static java.time.temporal.ChronoField.DAY_OF_MONTH;
 import static java.time.temporal.ChronoField.HOUR_OF_DAY;
@@ -182,6 +183,16 @@ public class Timestamp implements Comparable<Timestamp> {
   }
 
   public static Timestamp valueOf(String s) {
+    LocalDateTime localDateTime = parseLocalDateTime(s);
+    return new Timestamp(localDateTime);
+  }
+
+  public static Timestamp valueOfLegacyLeapYear(String s) {
+    LocalDateTime localDateTime = parseLocalDateTime(s);
+    return new Timestamp(localDateTime.minus(1, ChronoUnit.DAYS));
+  }
+
+  private static LocalDateTime parseLocalDateTime(String s) {
     s = s.trim();
     LocalDateTime localDateTime;
     try {
@@ -194,7 +205,7 @@ public class Timestamp implements Comparable<Timestamp> {
         throw new IllegalArgumentException("Cannot create timestamp, parsing error " + s);
       }
     }
-    return new Timestamp(localDateTime);
+    return localDateTime;
   }
 
   public static Timestamp getTimestampFromTime(String s) {

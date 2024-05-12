@@ -111,8 +111,8 @@ public class NanoTimeUtils {
       localDateTime = jDateTime.toLocalDateTime();
     } catch (DateTimeException e) {
       if (e.getMessage().contains(ErrorMsg.NOT_LEAP_YEAR.getMsg()) && legacyConversion) {
-        localDateTime = LocalDateTime.ofEpochSecond(jDateTime.toMilliseconds() / 1000,
-            (int) jDateTime.toMilliseconds() % 1000 * 1000000, ZoneOffset.UTC);
+        jDateTime = JulianDate.of((double) julianDay + 1);
+        localDateTime = jDateTime.toLocalDateTime();
         notLeapYear = true;
       } else {
         throw e;

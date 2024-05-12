@@ -31,7 +31,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
-import java.time.format.ResolverStyle;
 import java.time.format.SignStyle;
 import java.time.format.TextStyle;
 import java.time.temporal.ChronoField;
@@ -202,17 +201,14 @@ public class TimestampTZUtil {
         localDateTimeAtToZone.getNano());
   }
 
-  public static double convertTimestampTZToDouble(TimestampTZ timestampTZ) {
-    return timestampTZ.getEpochSecond() + timestampTZ.getNanos() / DateUtils.NANOS_PER_SEC;
-  }
-
   public static Timestamp legacyLeapYearConversions(Timestamp ts, ZoneId fromZone, ZoneId toZone) {
-    DateTimeFormatter dtf = FORMATTER;
-    Timestamp result = Timestamp.valueOf(
-        dtf.format(dtf.withResolverStyle(ResolverStyle.LENIENT)
-            .parse(formatLegacyDate(ts, fromZone, toZone))));
+    Timestamp result = Timestamp.valueOfLegacyLeapYear(formatLegacyDate(ts, fromZone, toZone));
     result.setNanos(ts.getNanos());
     return result;
+  }
+
+  public static double convertTimestampTZToDouble(TimestampTZ timestampTZ) {
+    return timestampTZ.getEpochSecond() + timestampTZ.getNanos() / DateUtils.NANOS_PER_SEC;
   }
 
   private static String formatLegacyDate(Timestamp ts, ZoneId fromZone, ZoneId toZone) {
