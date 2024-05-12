@@ -1062,6 +1062,33 @@ public class TestHplSqlViaBeeLine {
     testScriptFile(SCRIPT_TEXT, args(), "^(.(?!(ClassCastException)))*$", OutStream.ERR);
   }
 
+  @Test
+  public void testSetHplsqlOnErrorStop() throws Throwable {
+    String SCRIPT_TEXT =
+        "SET hplsql.onerror='stop';\n" +
+            "insert into abc values('Tbl Not Exists');\n" +
+            "SELECT CURRENT_USER;";
+    testScriptFile(SCRIPT_TEXT, args(), "^(.(?!(" + System.getProperty("user.name") + ")))*$");
+  }
+
+  @Test
+  public void testSetHplsqlOnErrorSetError() throws Throwable {
+    String SCRIPT_TEXT =
+        "SET hplsql.onerror='seterror';\n" +
+            "insert into abc values('Tbl Not Exists');\n" +
+            "if SQLCODE < 0\n" + " PRINT 'SQL Error...';";
+    testScriptFile(SCRIPT_TEXT, args(), "SessionState: SQL Error...", OutStream.ERR);
+  }
+
+  @Test
+  public void testSetHplsqlOnErrorException() throws Throwable {
+    String SCRIPT_TEXT =
+        "SET hplsql.onerror='exception';\n" +
+            "insert into abc values('Tbl Not Exists');\n" +
+            "SELECT CURRENT_USER;";
+    testScriptFile(SCRIPT_TEXT, args(), "^(.(?!(" + System.getProperty("user.name") + ")))*$");
+  }
+
   private static List<String> args() {
     return Arrays.asList("-d", BeeLine.BEELINE_DEFAULT_JDBC_DRIVER,
             "-u", miniHS2.getBaseJdbcURL() + ";mode=hplsql", "-n", userName);
