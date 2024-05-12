@@ -318,7 +318,6 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       throw new LockException(null, ErrorMsg.OP_NOT_ALLOWED_IN_TXN, queryPlan.getOperationName(),
         JavaUtils.txnIdToString(getCurrentTxnId()), queryPlan.getQueryId());
     }
-
   }
   /**
    * Ensures that the current SQL statement is appropriate for the current state of the
@@ -344,9 +343,6 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
         break;
       case COMMIT:
       case ROLLBACK:
-        if(!isTxnOpen()) {
-          throw new LockException(null, ErrorMsg.OP_NOT_ALLOWED_WITHOUT_TXN, queryPlan.getOperationName());
-        }
         if(!isExplicitTransaction) {
           throw new LockException(null, ErrorMsg.OP_NOT_ALLOWED_IN_IMPLICIT_TXN, queryPlan.getOperationName());
         }

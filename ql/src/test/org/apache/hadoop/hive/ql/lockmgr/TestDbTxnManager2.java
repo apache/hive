@@ -1035,9 +1035,11 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
   }
 
   private void dropTable(String[] tabs) throws Exception {
-    for(String tab : tabs) {
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
+    for (String tab : tabs) {
       driver.run("drop table if exists " + tab);
     }
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
   }
 
   /**

@@ -201,10 +201,13 @@ public class Compiler {
 
     // SemanticAnalyzerFactory also sets the hive operation in query state
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(driverContext.getQueryState(), tree);
-    sem.injectTxnHook(this::openTxnAndGetValidTxnList);
-
-    if (!driverContext.isRetrial() && driverContext.getCompactorTxnId() == 0) {
-      if (HiveOperation.REPLDUMP == driverContext.getQueryState().getHiveOperation()) {
+    
+    HiveOperation hiveOperation = driverContext.getQueryState().getHiveOperation();
+    boolean isExplainPlan = context.isExplainPlan();
+    sem.injectTxnHook(() -> openTxnAndGetValidTxnList(isExplainPlan));
+    
+    if (!driverContext.isRetrial() && driverContext.getCompactorTxnId() <= 0) {
+      if (HiveOperation.REPLDUMP == hiveOperation) {
         setLastReplIdForDump(driverContext.getQueryState().getConf());
       }
       driverContext.setValidTxnListsGenerated(false);
@@ -233,9 +236,12 @@ public class Compiler {
     // validate the plan
     sem.validate();
 
-    if (sem.hasTransactionalInQuery() || sem.getAcidDdlDesc() != null) {
-      openTxnAndGetValidTxnList();
+    if (sem.hasAcidResourcesInQuery() || sem.getAcidDdlDesc() != null
+        || HiveOperation.START_TRANSACTION == hiveOperation) {
+      openTxnAndGetValidTxnList(isExplainPlan);
     }
+    verifyTxnState(hiveOperation);
+    
     perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.ANALYZE);
     return sem;
   }
@@ -256,18 +262,17 @@ public class Compiler {
     LOG.debug("Setting " + ReplUtils.LAST_REPL_ID_KEY + " = " + lastReplId);
   }
 
-  private Void openTxnAndGetValidTxnList() throws Exception {
-    if (!driverContext.isRetrial() && driverContext.getCompactorTxnId() == 0) {
-      openTransaction();
+  private Void openTxnAndGetValidTxnList(boolean isExplainPlan) throws Exception {
+    if (!driverContext.isRetrial() && driverContext.getCompactorTxnId() <= 0
+        && !isExplainPlan) {
+      openTransaction(driverContext.getTxnManager());
       generateValidTxnList();
     }
     return null;
   }
 
-  private void openTransaction() throws Exception {
-    HiveTxnManager txnManager = driverContext.getTxnManager();
-    if (!DriverUtils.checkConcurrency(driverContext) || !startImplicitTxn(txnManager) 
-        || txnManager.isTxnOpen()) {
+  private void openTransaction(HiveTxnManager txnManager) throws Exception {
+    if (txnManager.isTxnOpen() || !DriverUtils.checkConcurrency(driverContext)) {
       return;
     }
     TxnType txnType = AcidUtils.getTxnType(driverContext.getConf(), tree);
@@ -283,40 +288,10 @@ public class Compiler {
     txnManager.openTxn(context, userFromUGI, txnType);
   }
 
-  private boolean startImplicitTxn(HiveTxnManager txnManager) throws LockException {
-    //this is dumb. HiveOperation is not always set. see HIVE-16447/HIVE-16443
-    HiveOperation hiveOperation = driverContext.getQueryState().getHiveOperation();
-    switch (hiveOperation == null ? HiveOperation.QUERY : hiveOperation) {
-    case COMMIT:
-    case ROLLBACK:
-      if (!txnManager.isTxnOpen()) {
-        throw new LockException(null, ErrorMsg.OP_NOT_ALLOWED_WITHOUT_TXN, hiveOperation.getOperationName());
-      }
-    case SWITCHDATABASE:
-    case SET_AUTOCOMMIT:
-      /*
-       * autocommit is here for completeness.  TM doesn't use it.  If we want to support JDBC
-       * semantics (or any other definition of autocommit) it should be done at session level.
-       */
-    case SHOWDATABASES:
-    case SHOWTABLES:
-    case SHOW_TABLESTATUS:
-    case SHOW_TBLPROPERTIES:
-    case SHOWCOLUMNS:
-    case SHOWFUNCTIONS:
-    case SHOWPARTITIONS:
-    case SHOWLOCKS:
-    case SHOWVIEWS:
-    case SHOW_ROLES:
-    case SHOW_ROLE_PRINCIPALS:
-    case SHOW_COMPACTIONS:
-    case SHOW_TRANSACTIONS:
-    case ABORT_TRANSACTIONS:
-    case KILL_QUERY:
-      return false;
-      //this implies that no locks are needed for such a command
-    default:
-      return true; //!context.isExplainPlan();
+  private void verifyTxnState(HiveOperation operation) throws LockException {
+    if (operation != null && operation.isRequiresOpenTransaction()
+        && !driverContext.getTxnManager().isTxnOpen()) {
+      throw new LockException(null, ErrorMsg.OP_NOT_ALLOWED_WITHOUT_TXN, operation.getOperationName());
     }
   }
 

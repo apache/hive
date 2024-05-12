@@ -518,7 +518,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @Override
-  public boolean hasTransactionalInQuery() {
+  public boolean hasAcidResourcesInQuery() {
     // check DB tags once supported (i.e. ICEBERG_ONLY, ACID_ONLY, EXTERNAL_ONLY)
     return true;
   }

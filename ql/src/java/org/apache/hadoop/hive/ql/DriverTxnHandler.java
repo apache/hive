@@ -214,7 +214,7 @@ class DriverTxnHandler {
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
 
     if (!driverContext.getTxnManager().isTxnOpen() && driverContext.getTxnManager().supportsAcid() 
-        && driverContext.getCompactorTxnId() == 0) {
+        && driverContext.getCompactorTxnId() <= 0) {
       /* non acid txn managers don't support txns but fwd lock requests to lock managers
          acid txn manager requires all locks to be associated with a txn so if we end up here w/o an open txn
          it's because we are processing something like "use <database> which by definition needs no locks */
@@ -228,7 +228,7 @@ class DriverTxnHandler {
       allocateWriteIdForAcidAnalyzeTable();
       boolean hasAcidDdl = setWriteIdForAcidDdl();
       
-      if (driverContext.getCompactorTxnId() == 0) {
+      if (driverContext.getCompactorTxnId() <= 0) {
         acquireLocksInternal();
       }
       if (driverContext.getPlan().hasAcidResourcesInQuery() || hasAcidDdl) {
