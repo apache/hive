@@ -201,14 +201,14 @@ public class TimestampTZUtil {
         localDateTimeAtToZone.getNano());
   }
 
+  public static double convertTimestampTZToDouble(TimestampTZ timestampTZ) {
+    return timestampTZ.getEpochSecond() + timestampTZ.getNanos() / DateUtils.NANOS_PER_SEC;
+  }
+
   public static Timestamp legacyLeapYearConversions(Timestamp ts, ZoneId fromZone, ZoneId toZone) {
     Timestamp result = Timestamp.valueOfLegacyLeapYear(formatLegacyDate(ts, fromZone, toZone));
     result.setNanos(ts.getNanos());
     return result;
-  }
-
-  public static double convertTimestampTZToDouble(TimestampTZ timestampTZ) {
-    return timestampTZ.getEpochSecond() + timestampTZ.getNanos() / DateUtils.NANOS_PER_SEC;
   }
 
   private static String formatLegacyDate(Timestamp ts, ZoneId fromZone, ZoneId toZone) {
