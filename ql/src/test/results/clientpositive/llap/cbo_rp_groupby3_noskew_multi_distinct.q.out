@@ -259,7 +259,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: sum(DISTINCT KEY._col0:0._col0), count(DISTINCT KEY._col0:1._col0), sum(KEY._col0:1._col0), max(DISTINCT KEY._col0:2._col0), sum(DISTINCT KEY._col0:3._col0), min(DISTINCT KEY._col0:4._col0)
+                aggregations: sum(DISTINCT KEY._col0:0._col0), count(DISTINCT KEY._col0:1._col0), sum(KEY._col0:3._col0), max(DISTINCT KEY._col0:2._col0), sum(DISTINCT KEY._col0:3._col0), min(DISTINCT KEY._col0:4._col0)
                 mode: complete
                 outputColumnNames: $f0, $f1, $f2, $f3, $f4, $f5
                 Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
@@ -299,4 +299,4 @@ FROM test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test
 #### A masked pattern was here ####
-6	3	8	3	600	1
+6	3	800	3	600	1
