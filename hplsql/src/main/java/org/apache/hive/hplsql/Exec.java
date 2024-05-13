@@ -1635,7 +1635,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
    */
   @Override 
   public Integer visitAssignment_stmt_single_item(HplsqlParser.Assignment_stmt_single_itemContext ctx) { 
-    String name = ctx.ident().getText();
+    String name = ctx.qident().getText();
     visit(ctx.expr());    
     Var var = setVariable(name);
     StringBuilder assignments = new StringBuilder();
