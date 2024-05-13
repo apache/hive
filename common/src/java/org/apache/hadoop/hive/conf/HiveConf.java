@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.Validator.PatternSet;
 import org.apache.hadoop.hive.conf.Validator.RangeValidator;
@@ -2763,6 +2764,9 @@ public class HiveConf extends Configuration {
             + " provides an optimization if it is accurate."),
 
     // CTE
+    @InterfaceStability.Unstable
+    HIVE_CTE_SUGGESTER_CLASS("hive.optimize.cte.suggester.class", "",
+        "Class for finding and suggesting common table expressions (CTEs) based on a given query. The class must implement the CommonTableExpressionSuggester interface."),
     HIVE_CTE_MATERIALIZE_THRESHOLD("hive.optimize.cte.materialize.threshold", 3,
         "If the number of references to a CTE clause exceeds this threshold, Hive will materialize it\n" +
         "before executing the main query block. -1 will disable this feature."),
