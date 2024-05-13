@@ -41,6 +41,22 @@ import org.apache.hadoop.hive.ql.txn.compactor.QueryCompactor;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hive.iceberg.org.apache.orc.storage.common.TableName;
+import org.apache.iceberg.FileScanTask;
+import org.apache.iceberg.MetadataTableType;
+import org.apache.iceberg.MetadataTableUtils;
+import org.apache.iceberg.PartitionData;
+import org.apache.iceberg.Partitioning;
+import org.apache.iceberg.PartitionsTable;
+import org.apache.iceberg.Table;
+import org.apache.iceberg.expressions.Expression;
+import org.apache.iceberg.expressions.Expressions;
+import org.apache.iceberg.expressions.ResidualEvaluator;
+import org.apache.iceberg.io.CloseableIterable;
+import org.apache.iceberg.mr.hive.IcebergTableUtil;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.relocated.com.google.common.collect.Sets;
+import org.apache.iceberg.util.Pair;
+import org.apache.iceberg.util.StructProjection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,7 +84,38 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
       Map<String, String> partSpecMap = new LinkedHashMap<>();
       Warehouse.makeSpecFromName(partSpecMap, new Path(partSpec), null);
 
-      List<FieldSchema> partitionKeys = table.getStorageHandler().getPartitionKeys(table);
+      Table icebergTable = IcebergTableUtil.getTable(conf, table.getTTable());
+      Expression expression = IcebergTableUtil.generateExpressionFromPartitionSpec(icebergTable, partSpecMap);
+      PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
+          .createMetadataTableInstance(icebergTable, MetadataTableType.PARTITIONS);
+      List<Pair<PartitionData, Integer>> partitionList = Lists.newArrayList();
+      try (CloseableIterable<FileScanTask> fileScanTasks = partitionsTable.newScan().planFiles()) {
+        fileScanTasks.forEach(task ->
+            partitionList.addAll(Sets.newHashSet(CloseableIterable.transform(task.asDataTask().rows(), row -> {
+              StructProjection data = row.get(IcebergTableUtil.PART_IDX, StructProjection.class);
+              Integer specId = row.get(IcebergTableUtil.SPEC_IDX, Integer.class);
+              return Pair.of(IcebergTableUtil
+                  .toPartitionData(data, Partitioning.partitionType(icebergTable),
+                      icebergTable.specs().get(specId).partitionType()), specId);
+            })).stream()
+                .filter(pair -> {
+                  ResidualEvaluator resEval = ResidualEvaluator.of(icebergTable.specs().get(pair.second()),
+                      expression, false);
+                  return resEval.residualFor(pair.first()).isEquivalentTo(Expressions.alwaysTrue()) &&
+                      pair.first().size() == partSpecMap.size();
+                })
+                .collect(Collectors.toSet())));
+      }
+
+      if (partitionList.isEmpty()) {
+        throw new HiveException("Invalid partition spec, no corresponding spec_id found");
+      }
+
+      int specId = partitionList.get(0).second();
+      conf.set(CompactorContext.COMPACTION_PART_SPEC_ID, String.valueOf(specId));
+      conf.set(CompactorContext.COMPACTION_PARTITION_PATH, new Path(partSpec).toString());
+
+      List<FieldSchema> partitionKeys = IcebergTableUtil.getPartitionKeys(icebergTable, specId);
       List<String> partValues = partitionKeys.stream().map(
           fs -> String.join("=", HiveUtils.unparseIdentifier(fs.getName()),
               TypeInfoUtils.convertStringToLiteralForSQL(partSpecMap.get(fs.getName()),
@@ -81,11 +128,12 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
           .filter(col -> !partSpecMap.containsKey(col))
           .collect(Collectors.joining(","));
 
-      compactionQuery = String.format("insert overwrite table %1$s partition(%2$s) select %4$s from %1$s where %3$s",
+      compactionQuery = String.format("insert overwrite table %1$s partition(%2$s) " +
+              "select %4$s from %1$s where %3$s and partition__spec__id = %5$d",
           compactTableName,
           StringUtils.join(partValues, ","),
           StringUtils.join(partValues, " and "),
-          queryFields);
+          queryFields, specId);
     }
 
     SessionState sessionState = setupQueryCompactionSession(conf, context.getCompactionInfo(), tblProperties);

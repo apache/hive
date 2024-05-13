@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorContext;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.JobContextImpl;
@@ -65,6 +66,7 @@ import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.DeleteFiles;
 import org.apache.iceberg.OverwriteFiles;
 import org.apache.iceberg.ReplacePartitions;
+import org.apache.iceberg.RewriteFiles;
 import org.apache.iceberg.RowDelta;
 import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotRef;
@@ -88,6 +90,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.relocated.com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.Tasks;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -498,7 +501,23 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           .map(x -> x.getJobConf().get(ConfVars.REWRITE_POLICY.varname))
           .orElse(RewritePolicy.DEFAULT.name()));
 
-      commitOverwrite(table, branchName, startTime, filesForCommit, rewritePolicy);
+      Integer compactionPartSpecId = outputTable.jobContexts.stream()
+          .findAny()
+          .map(x -> x.getJobConf().get(CompactorContext.COMPACTION_PART_SPEC_ID))
+          .map(Integer::valueOf)
+          .orElse(null);
+
+      String compactionPartitionPath = outputTable.jobContexts.stream()
+          .findAny()
+          .map(x -> x.getJobConf().get(CompactorContext.COMPACTION_PARTITION_PATH))
+          .orElse(null);
+
+      if (rewritePolicy != RewritePolicy.DEFAULT || compactionPartSpecId != null) {
+        commitCompaction(table, startTime, filesForCommit, rewritePolicy, compactionPartSpecId,
+            compactionPartitionPath);
+      } else {
+        commitOverwrite(table, branchName, startTime, filesForCommit);
+      }
     }
   }
 
@@ -575,33 +594,71 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
   }
 
   /**
+   * Creates and commits an Iceberg compaction change with the provided data files.
+   * Either full table or a selected partition contents is replaced with compacted files.
+   *
+   * @param table                   The table we are changing
+   * @param startTime               The start time of the commit - used only for logging
+   * @param results                 The object containing the new files
+   * @param rewritePolicy           The rewrite policy to use for the insert overwrite commit
+   * @param compactionPartSpecId        The table spec_id for partition compaction operation
+   * @param compactionPartitionPath The path of the compacted partition
+   */
+  private void commitCompaction(Table table, long startTime, FilesForCommit results,
+      RewritePolicy rewritePolicy, Integer compactionPartSpecId, String compactionPartitionPath) {
+    Preconditions.checkArgument(results.deleteFiles().isEmpty(), "Can not handle deletes with overwrite");
+    if (!results.dataFiles().isEmpty()) {
+      if (rewritePolicy == RewritePolicy.ALL_PARTITIONS) {
+        Transaction transaction = table.newTransaction();
+        DeleteFiles delete = transaction.newDelete();
+        delete.deleteFromRowFilter(Expressions.alwaysTrue());
+        delete.commit();
+        ReplacePartitions overwrite = transaction.newReplacePartitions();
+        results.dataFiles().forEach(overwrite::addFile);
+        overwrite.commit();
+        transaction.commitTransaction();
+      } else {
+        Pair<List<DataFile>, List<DeleteFile>> existingFiles = IcebergTableUtil.getDataAndDeleteFiles(table,
+            compactionPartSpecId, compactionPartitionPath);
+
+        RewriteFiles rewriteFiles = table.newRewrite();
+        rewriteFiles.validateFromSnapshot(table.currentSnapshot().snapshotId());
+
+        existingFiles.first().forEach(rewriteFiles::deleteFile);
+        existingFiles.second().forEach(rewriteFiles::deleteFile);
+        results.dataFiles().forEach(rewriteFiles::addFile);
+
+        rewriteFiles.commit();
+      }
+      LOG.info("Compaction commit took {} ms for table: {} with {} file(s)", System.currentTimeMillis() - startTime,
+          table, results.dataFiles().size());
+    } else {
+      LOG.info("Empty compaction commit, took {} ms for table: {}", System.currentTimeMillis() - startTime, table);
+    }
+
+    LOG.debug("Compacted partitions with files {}", results);
+  }
+
+  /**
    * Creates and commits an Iceberg insert overwrite change with the provided data files.
    * For unpartitioned tables the table content is replaced with the new data files. If not data files are provided
    * then the unpartitioned table is truncated.
    * For partitioned tables the relevant partitions are replaced with the new data files. If no data files are provided
    * then the unpartitioned table remains unchanged.
-   * @param table The table we are changing
-   * @param startTime The start time of the commit - used only for logging
-   * @param results The object containing the new files
-   * @param rewritePolicy The rewrite policy to use for the insert overwrite commit
+   *
+   * @param table                   The table we are changing
+   * @param startTime               The start time of the commit - used only for logging
+   * @param results                 The object containing the new files
    */
-  private void commitOverwrite(Table table, String branchName, long startTime, FilesForCommit results,
-      RewritePolicy rewritePolicy) {
+  private void commitOverwrite(Table table, String branchName, long startTime, FilesForCommit results) {
     Preconditions.checkArgument(results.deleteFiles().isEmpty(), "Can not handle deletes with overwrite");
     if (!results.dataFiles().isEmpty()) {
-      Transaction transaction = table.newTransaction();
-      if (rewritePolicy == RewritePolicy.ALL_PARTITIONS) {
-        DeleteFiles delete = transaction.newDelete();
-        delete.deleteFromRowFilter(Expressions.alwaysTrue());
-        delete.commit();
-      }
-      ReplacePartitions overwrite = transaction.newReplacePartitions();
+      ReplacePartitions overwrite = table.newReplacePartitions();
       results.dataFiles().forEach(overwrite::addFile);
       if (StringUtils.isNotEmpty(branchName)) {
         overwrite.toBranch(HiveUtils.getTableSnapshotRef(branchName));
       }
       overwrite.commit();
-      transaction.commitTransaction();
       LOG.info("Overwrite commit took {} ms for table: {} with {} file(s)", System.currentTimeMillis() - startTime,
           table, results.dataFiles().size());
     } else if (table.spec().isUnpartitioned()) {

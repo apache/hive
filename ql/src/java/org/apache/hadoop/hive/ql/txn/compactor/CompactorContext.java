@@ -30,6 +30,9 @@ import org.apache.hadoop.hive.ql.io.AcidDirectory;
  */
 public class CompactorContext {
 
+  public static final String COMPACTION_PART_SPEC_ID = "compaction_part_spec_id";
+  public static final String COMPACTION_PARTITION_PATH = "compaction_partition_path";
+
   private final HiveConf conf;
   private final Table table;
   private final Partition partition;
