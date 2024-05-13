@@ -45,6 +45,7 @@ import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.core.TableFunctionScan;
 import org.apache.calcite.rel.core.TableScan;
+import org.apache.calcite.rel.core.TableSpool;
 import org.apache.calcite.rel.core.Union;
 import org.apache.calcite.rel.core.Values;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
@@ -114,6 +115,7 @@ public class ASTConverter {
   private Filter           having;
   private RelNode          select;
   private RelNode          orderLimit;
+  private List<ASTNode> ctes;
 
   private Schema           schema;
 
@@ -121,18 +123,23 @@ public class ASTConverter {
 
   private PlanMapper planMapper;
 
-  ASTConverter(RelNode root, long dtCounterInitVal, PlanMapper planMapper) {
+  ASTConverter(RelNode root, long dtCounterInitVal, PlanMapper planMapper, List<ASTNode> ctes) {
     this.root = root;
     hiveAST = new HiveAST();
     this.derivedTableCount = dtCounterInitVal;
     this.planMapper = planMapper;
+    this.ctes = ctes;
   }
 
   public static ASTNode convert(final RelNode relNode, List<FieldSchema> resultSchema, boolean alignColumns, PlanMapper planMapper)
       throws CalciteSemanticException {
     RelNode root = PlanModifierForASTConv.convertOpTree(relNode, resultSchema, alignColumns);
-    ASTConverter c = new ASTConverter(root, 0, planMapper);
-    return c.convert();
+    ASTConverter c = new ASTConverter(root, 0, planMapper, new ArrayList<>());
+    ASTNode r = c.convert();
+    for (ASTNode cte : c.ctes) {
+      r.insertChild(0, cte);
+    }
+    return r;
   }
 
   /**
@@ -571,10 +578,10 @@ public class ASTConverter {
       }
     } else if (r instanceof Union) {
       Union u = ((Union) r);
-      ASTNode left = new ASTConverter(((Union) r).getInput(0), this.derivedTableCount, planMapper).convert();
+      ASTNode left = new ASTConverter(((Union) r).getInput(0), this.derivedTableCount, planMapper, this.ctes).convert();
       for (int ind = 1; ind < u.getInputs().size(); ind++) {
         left = getUnionAllAST(left, new ASTConverter(((Union) r).getInput(ind),
-            this.derivedTableCount, planMapper).convert());
+            this.derivedTableCount, planMapper, this.ctes).convert());
         String sqAlias = nextAlias();
         ast = ASTBuilder.subQuery(left, sqAlias);
         s = new Schema((Union) r, sqAlias);
@@ -590,8 +597,19 @@ public class ASTConverter {
 
       ast = createASTLateralView(tfs, s, tableFunctionSource, sqAlias);
 
+    } else if (r instanceof TableSpool) {
+      TableSpool spool = (TableSpool) r;
+      ASTConverter cteConverter =
+          new ASTConverter(spool.getInput(), this.derivedTableCount, planMapper, Collections.emptyList());
+      String tableName = Iterables.getLast(spool.getTable().getQualifiedName());
+      ASTNode cte = ASTBuilder.createAST(HiveParser.TOK_CTE, "TOK_CTE");
+      cte.addChild(ASTBuilder.subQuery(cteConverter.convert(), tableName));
+      ctes.add(cte);
+      ASTBuilder tabref = ASTBuilder.construct(HiveParser.TOK_TABREF, "TOK_TABREF")
+          .add(ASTBuilder.construct(HiveParser.TOK_TABNAME, "TOK_TABNAME").add(HiveParser.Identifier, tableName));
+      return new QueryBlockInfo(cteConverter.getRowSchema(tableName), tabref.node());
     } else {
-      ASTConverter src = new ASTConverter(r, this.derivedTableCount, planMapper);
+      ASTConverter src = new ASTConverter(r, this.derivedTableCount, planMapper, this.ctes);
       ASTNode srcAST = src.convert();
       String sqAlias = nextAlias();
       s = src.getRowSchema(sqAlias);
@@ -756,6 +774,8 @@ public class ASTConverter {
       } else if (node instanceof Join) {
         ASTConverter.this.from = node;
       } else if (node instanceof Union) {
+        ASTConverter.this.from = node;
+      } else if (node instanceof TableSpool) {
         ASTConverter.this.from = node;
       } else if (node instanceof Aggregate) {
         ASTConverter.this.groupBy = (Aggregate) node;
