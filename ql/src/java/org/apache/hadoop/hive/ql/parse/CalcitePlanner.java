@@ -83,6 +83,7 @@ import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.JoinRelType;
+import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.SetOp;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.metadata.CachingRelMetadataProvider;
@@ -171,6 +172,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.RuleEventLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSortLimitRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveEmptySingleRules;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSearchExpandRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializationRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
@@ -1849,6 +1851,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         rules.add(HiveReduceExpressionsWithStatsRule.INSTANCE);
       }
       rules.add(HiveProjectFilterPullUpConstantsRule.INSTANCE);
+      rules.add(HiveSearchExpandRule.FILTER_SEARCH_EXPAND);
+      rules.add(HiveSearchExpandRule.PROJECT_SEARCH_EXPAND);
       rules.add(HiveReduceExpressionsRule.PROJECT_INSTANCE);
       rules.add(HiveReduceExpressionsRule.FILTER_INSTANCE);
       rules.add(HiveReduceExpressionsRule.JOIN_INSTANCE);
@@ -1962,7 +1966,28 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // Trigger program
       basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
 
+      basePlan = applySearchExpandAndPointLookupOptimization(basePlan, mdProvider, executorProvider, minNumORClauses);
+
       return basePlan;
+    }
+
+    private RelNode applySearchExpandAndPointLookupOptimization(RelNode basePlan, RelMetadataProvider mdProvider,
+                                                                RexExecutor executorProvider, int minNumORClauses) {
+      List<RelOptRule> rules = Lists.newArrayList();
+      rules.add(HiveSearchExpandRule.FILTER_SEARCH_EXPAND);
+      rules.add(HiveSearchExpandRule.PROJECT_SEARCH_EXPAND);
+
+      if (conf.getBoolVar(ConfVars.HIVE_POINT_LOOKUP_OPTIMIZER)) {
+        rules.add(new HivePointLookupOptimizerRule.FilterCondition(minNumORClauses));
+        rules.add(new HivePointLookupOptimizerRule.JoinCondition(minNumORClauses));
+        rules.add(new HivePointLookupOptimizerRule.ProjectionExpressions(minNumORClauses));
+      }
+
+      HepProgramBuilder searchExpandProgram = new HepProgramBuilder();
+      generatePartialProgram(searchExpandProgram, true, HepMatchOrder.BOTTOM_UP,
+          rules.toArray(new RelOptRule[0]));
+
+      return executeProgram(basePlan, searchExpandProgram.build(), mdProvider, executorProvider);
     }
 
     /**
@@ -2329,6 +2354,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             HiveInBetweenExpandRule.PROJECT_INSTANCE);
       }
 
+      generatePartialProgramWithSearchExpand(program);
       // Trigger program
       basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
 
@@ -2404,6 +2430,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
           programBuilder.addRuleInstance(r);
         }
       }
+    }
+
+    protected void generatePartialProgramWithSearchExpand(HepProgramBuilder programBuilder) {
+      generatePartialProgram(programBuilder, false, HepMatchOrder.DEPTH_FIRST,
+          HiveSearchExpandRule.FILTER_SEARCH_EXPAND,
+          HiveSearchExpandRule.PROJECT_SEARCH_EXPAND);
     }
 
     protected RelNode executeProgram(RelNode basePlan, HepProgram program,

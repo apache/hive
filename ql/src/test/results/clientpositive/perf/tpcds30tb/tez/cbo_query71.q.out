@@ -35,6 +35,6 @@ HiveProject(brand_id=[$0], brand=[$1], t_hour=[$2], t_minute=[$3], ext_price=[$4
               HiveFilter(condition=[=($20, 1)])
                 HiveTableScan(table=[[default, item]], table:alias=[item])
           HiveProject(t_time_sk=[$0], t_hour=[$3], t_minute=[$4])
-            HiveFilter(condition=[IN($9, _UTF-16LE'breakfast           ', _UTF-16LE'dinner              ')])
+            HiveFilter(condition=[IN($9, _UTF-16LE'breakfast', _UTF-16LE'dinner')])
               HiveTableScan(table=[[default, time_dim]], table:alias=[time_dim])
 

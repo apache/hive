@@ -31,12 +31,14 @@ import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexTableInputRef;
+import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeFamily;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.BaseMutableHiveConfig;
 
 import java.util.Objects;
 import java.util.Set;
@@ -60,15 +62,15 @@ import java.util.Set;
 public class HivePushdownSnapshotFilterRule extends RelRule<HivePushdownSnapshotFilterRule.Config> {
 
   public static final RelOptRule INSTANCE =
-          RelRule.Config.EMPTY.as(HivePushdownSnapshotFilterRule.Config.class)
+          new Config().as(HivePushdownSnapshotFilterRule.Config.class)
             .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
             .withOperandSupplier(operandBuilder -> operandBuilder.operand(HiveFilter.class).anyInputs())
             .withDescription("HivePushdownSnapshotFilterRule")
             .toRule();
 
-  public interface Config extends RelRule.Config {
+  public static class Config extends BaseMutableHiveConfig {
     @Override
-    default HivePushdownSnapshotFilterRule toRule() {
+    public HivePushdownSnapshotFilterRule toRule() {
       return new HivePushdownSnapshotFilterRule(this);
     }
   }
@@ -80,7 +82,12 @@ public class HivePushdownSnapshotFilterRule extends RelRule<HivePushdownSnapshot
   @Override
   public void onMatch(RelOptRuleCall call) {
     HiveFilter filter = call.rel(0);
-    RexNode newCondition = filter.getCondition().accept(new SnapshotIdShuttle(call.builder().getRexBuilder(), call.getMetadataQuery(), filter));
+    RexNode expandedCondition = RexUtil.expandSearch(
+        filter.getCluster().getRexBuilder(), null, filter.getCondition()
+    );
+    RexNode newCondition = expandedCondition.accept(
+        new SnapshotIdShuttle(call.builder().getRexBuilder(), call.getMetadataQuery(), filter)
+    );
     call.transformTo(call.builder().push(filter.getInput()).filter(newCondition).build());
   }
 

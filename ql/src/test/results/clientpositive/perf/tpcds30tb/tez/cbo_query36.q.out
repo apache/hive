@@ -15,7 +15,7 @@ HiveProject(gross_margin=[$0], i_category=[$1], i_class=[$2], lochierarchy=[$3],
                     HiveFilter(condition=[=($6, 1999)])
                       HiveTableScan(table=[[default, date_dim]], table:alias=[d1])
                 HiveProject(s_store_sk=[$0])
-                  HiveFilter(condition=[IN($24, _UTF-16LE'SD', _UTF-16LE'FL', _UTF-16LE'MI', _UTF-16LE'LA', _UTF-16LE'MO', _UTF-16LE'SC', _UTF-16LE'AL', _UTF-16LE'GA')])
+                  HiveFilter(condition=[IN($24, _UTF-16LE'AL', _UTF-16LE'FL', _UTF-16LE'GA', _UTF-16LE'LA', _UTF-16LE'MI', _UTF-16LE'MO', _UTF-16LE'SC', _UTF-16LE'SD')])
                     HiveTableScan(table=[[default, store]], table:alias=[store])
               HiveProject(i_item_sk=[$0], i_class=[$10], i_category=[$12])
                 HiveTableScan(table=[[default, item]], table:alias=[item])
