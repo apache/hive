@@ -19,8 +19,10 @@
 
 package org.apache.iceberg.rest;
 
+import com.google.gson.Gson;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -35,9 +37,6 @@ import org.apache.iceberg.exceptions.NoSuchNamespaceException;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hadoop.HadoopTables;
 import org.apache.iceberg.hive.HiveCatalog;
-import org.apache.iceberg.hive.HiveTableOperations;
-import org.apache.iceberg.hive.HiveUtil;
-import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
@@ -70,6 +69,9 @@ import static org.apache.iceberg.TableProperties.DEFAULT_PARTITION_SPEC;
 import static org.apache.iceberg.TableProperties.DEFAULT_SORT_ORDER;
 import static org.apache.iceberg.TableProperties.SNAPSHOT_COUNT;
 import static org.apache.iceberg.expressions.Expressions.bucket;
+import org.apache.iceberg.hive.HiveTableOperations;
+import org.apache.iceberg.hive.HiveUtil;
+import org.apache.iceberg.io.FileIO;
 import static org.apache.iceberg.types.Types.NestedField.required;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
@@ -78,9 +80,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class TestHiveCatalog extends HMSTestBase {
+  HiveMetaStoreClient metastoreClient;
+
   public TestHiveCatalog() {
     super();
   }
+
   protected void setCatalogClass(Configuration conf) {
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_CATALOG_ACTOR_CLASS, "org.apache.iceberg.hive.HiveCatalogActor");
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_AUTH, "jwt");
@@ -163,12 +168,12 @@ public class TestHiveCatalog extends HMSTestBase {
     return ops.current().metadataFileLocation();
   }
 
-  private static ImmutableMap<String, String> meta =
+  protected static ImmutableMap meta =
       ImmutableMap.of(
           "owner", "apache",
           "group", "iceberg",
           "comment", "iceberg  hiveCatalog test");
-  
+
   private String tempResolve(String name) {
     try {
       return temp.newFolder(name).toString();
@@ -186,6 +191,7 @@ public class TestHiveCatalog extends HMSTestBase {
   @Before
   public void setUp() throws Exception {
     super.setUp();
+    metastoreClient = createClient(conf, port);
   }
 
   @Test
@@ -253,7 +259,7 @@ public class TestHiveCatalog extends HMSTestBase {
         .isThrownBy(
             () -> {
               HiveCatalog catalog = new HiveCatalog();
-              catalog.initialize("org/apache/iceberg", Maps.newHashMap());
+              catalog.initialize("hive", Maps.newHashMap());
             });
   }
 
@@ -273,7 +279,7 @@ public class TestHiveCatalog extends HMSTestBase {
     properties.put("uri", "thrift://examplehost:9083");
     properties.put("warehouse", "/user/hive/testwarehouse");
     HiveCatalog catalog = new HiveCatalog();
-    catalog.initialize("org/apache/iceberg", properties);
+    catalog.initialize("hive", properties);
 
     assertThat(catalog.getConf().get("hive.metastore.uris")).isEqualTo("thrift://examplehost:9083");
     assertThat(catalog.getConf().get("hive.metastore.warehouse.dir"))
@@ -319,12 +325,11 @@ public class TestHiveCatalog extends HMSTestBase {
       // succeed
       response = clientCall(jwt, url, "GET", null);
       Assert.assertNotNull(response);
+      String str = new Gson().toJson(response);
 
       // quick check on metrics
       Map<String, Long> counters = reportMetricCounters("list_namespaces", "list_tables", "load_table");
-      counters.entrySet().forEach(m->{
-        Assert.assertTrue(m.getKey(), m.getValue() > 0);
-      });
+      counters.forEach((key, value) -> Assert.assertTrue(key, value > 0));
     } finally {
       catalog.dropTable(tableIdent);
     }
@@ -334,12 +339,12 @@ public class TestHiveCatalog extends HMSTestBase {
   public void testReplaceTxnBuilder1() {
     replaceTxnBuilder(1);
   }
-  
+
   @Test
   public void testReplaceTxnBuilder2() {
     replaceTxnBuilder(2);
   }
-  
+
   private void replaceTxnBuilder(int formatVersion) {
     Schema schema = getTestSchema();
     PartitionSpec spec = PartitionSpec.builderFor(schema).bucket("data", 16).build();
@@ -493,7 +498,7 @@ public class TestHiveCatalog extends HMSTestBase {
     assertThatThrownBy(() -> nsCatalog.createNamespace(namespace1))
         .isInstanceOf(AlreadyExistsException.class)
         .hasMessage("Namespace '" + namespace1 + "' already exists!");
-    
+
     String hiveLocalDir = temp.newFolder().toURI().toString();
     // remove the trailing slash of the URI
     hiveLocalDir = hiveLocalDir.substring(0, hiveLocalDir.length() - 1);
@@ -593,12 +598,12 @@ public class TestHiveCatalog extends HMSTestBase {
         PrincipalType.GROUP);
 
     assertThatThrownBy(
-            () ->
-                createNamespaceAndVerifyOwnership(
-                    "create_with_owner_type_alone",
-                    ImmutableMap.of(HiveCatalog.HMS_DB_OWNER_TYPE, PrincipalType.USER.name()),
-                    "no_post_create_expectation_due_to_exception_thrown",
-                    null))
+        () ->
+            createNamespaceAndVerifyOwnership(
+                "create_with_owner_type_alone",
+                ImmutableMap.of(HiveCatalog.HMS_DB_OWNER_TYPE, PrincipalType.USER.name()),
+                "no_post_create_expectation_due_to_exception_thrown",
+                null))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             String.format(
@@ -606,14 +611,14 @@ public class TestHiveCatalog extends HMSTestBase {
                 HiveCatalog.HMS_DB_OWNER_TYPE, HiveCatalog.HMS_DB_OWNER));
 
     assertThatThrownBy(
-            () ->
-                createNamespaceAndVerifyOwnership(
-                    "create_with_invalid_owner_type",
-                    ImmutableMap.of(
-                        HiveCatalog.HMS_DB_OWNER, "iceberg",
-                        HiveCatalog.HMS_DB_OWNER_TYPE, "invalidOwnerType"),
-                    "no_post_create_expectation_due_to_exception_thrown",
-                    null))
+        () ->
+            createNamespaceAndVerifyOwnership(
+                "create_with_invalid_owner_type",
+                ImmutableMap.of(
+                    HiveCatalog.HMS_DB_OWNER, "iceberg",
+                    HiveCatalog.HMS_DB_OWNER_TYPE, "invalidOwnerType"),
+                "no_post_create_expectation_due_to_exception_thrown",
+                null))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageStartingWith("No enum constant " + PrincipalType.class.getCanonicalName());
   }
@@ -690,7 +695,7 @@ public class TestHiveCatalog extends HMSTestBase {
     assertThat(database.getParameters()).containsEntry("group", "iceberg");
 
     assertThatThrownBy(
-            () -> nsCatalog.setProperties(Namespace.of("db2", "db2", "ns2"), ImmutableMap.of()))
+        () -> nsCatalog.setProperties(Namespace.of("db2", "db2", "ns2"), ImmutableMap.of()))
         .isInstanceOf(NoSuchNamespaceException.class)
         .hasMessage("Namespace does not exist: db2.db2.ns2");
   }
@@ -754,15 +759,15 @@ public class TestHiveCatalog extends HMSTestBase {
         PrincipalType.USER);
 
     assertThatThrownBy(
-            () ->
-                setNamespaceOwnershipAndVerify(
-                    "set_owner_without_setting_owner_type",
-                    ImmutableMap.of(),
-                    ImmutableMap.of(HiveCatalog.HMS_DB_OWNER, "some_individual_owner"),
-                    System.getProperty("user.name"),
-                    PrincipalType.USER,
-                    "no_post_setting_expectation_due_to_exception_thrown",
-                    null))
+        () ->
+            setNamespaceOwnershipAndVerify(
+                "set_owner_without_setting_owner_type",
+                ImmutableMap.of(),
+                ImmutableMap.of(HiveCatalog.HMS_DB_OWNER, "some_individual_owner"),
+                System.getProperty("user.name"),
+                PrincipalType.USER,
+                "no_post_setting_expectation_due_to_exception_thrown",
+                null))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             String.format(
@@ -770,15 +775,15 @@ public class TestHiveCatalog extends HMSTestBase {
                 HiveCatalog.HMS_DB_OWNER_TYPE, HiveCatalog.HMS_DB_OWNER));
 
     assertThatThrownBy(
-            () ->
-                setNamespaceOwnershipAndVerify(
-                    "set_owner_type_without_setting_owner",
-                    ImmutableMap.of(HiveCatalog.HMS_DB_OWNER, "some_owner"),
-                    ImmutableMap.of(HiveCatalog.HMS_DB_OWNER_TYPE, PrincipalType.GROUP.name()),
-                    "some_owner",
-                    PrincipalType.USER,
-                    "no_post_setting_expectation_due_to_exception_thrown",
-                    null))
+        () ->
+            setNamespaceOwnershipAndVerify(
+                "set_owner_type_without_setting_owner",
+                ImmutableMap.of(HiveCatalog.HMS_DB_OWNER, "some_owner"),
+                ImmutableMap.of(HiveCatalog.HMS_DB_OWNER_TYPE, PrincipalType.GROUP.name()),
+                "some_owner",
+                PrincipalType.USER,
+                "no_post_setting_expectation_due_to_exception_thrown",
+                null))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             String.format(
@@ -786,17 +791,17 @@ public class TestHiveCatalog extends HMSTestBase {
                 HiveCatalog.HMS_DB_OWNER_TYPE, HiveCatalog.HMS_DB_OWNER));
 
     assertThatThrownBy(
-            () ->
-                setNamespaceOwnershipAndVerify(
-                    "set_invalid_owner_type",
-                    ImmutableMap.of(),
-                    ImmutableMap.of(
-                        HiveCatalog.HMS_DB_OWNER, "iceberg",
-                        HiveCatalog.HMS_DB_OWNER_TYPE, "invalidOwnerType"),
-                    System.getProperty("user.name"),
-                    PrincipalType.USER,
-                    "no_post_setting_expectation_due_to_exception_thrown",
-                    null))
+        () ->
+            setNamespaceOwnershipAndVerify(
+                "set_invalid_owner_type",
+                ImmutableMap.of(),
+                ImmutableMap.of(
+                    HiveCatalog.HMS_DB_OWNER, "iceberg",
+                    HiveCatalog.HMS_DB_OWNER_TYPE, "invalidOwnerType"),
+                System.getProperty("user.name"),
+                PrincipalType.USER,
+                "no_post_setting_expectation_due_to_exception_thrown",
+                null))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             "No enum constant org.apache.hadoop.hive.metastore.api.PrincipalType.invalidOwnerType");
@@ -890,9 +895,9 @@ public class TestHiveCatalog extends HMSTestBase {
     assertThat(database.getParameters()).containsEntry("group", "iceberg");
 
     assertThatThrownBy(
-            () ->
-                nsCatalog.removeProperties(
-                    Namespace.of("db2", "db2", "ns2"), ImmutableSet.of("comment", "owner")))
+        () ->
+            nsCatalog.removeProperties(
+                Namespace.of("db2", "db2", "ns2"), ImmutableSet.of("comment", "owner")))
         .isInstanceOf(NoSuchNamespaceException.class)
         .hasMessage("Namespace does not exist: db2.db2.ns2");
   }
@@ -962,19 +967,19 @@ public class TestHiveCatalog extends HMSTestBase {
         PrincipalType.GROUP);
 
     assertThatThrownBy(
-            () ->
-                removeNamespaceOwnershipAndVerify(
-                    "remove_owner_without_removing_owner_type",
-                    ImmutableMap.of(
-                        HiveCatalog.HMS_DB_OWNER,
-                        "some_individual_owner",
-                        HiveCatalog.HMS_DB_OWNER_TYPE,
-                        PrincipalType.USER.name()),
-                    ImmutableSet.of(HiveCatalog.HMS_DB_OWNER),
+        () ->
+            removeNamespaceOwnershipAndVerify(
+                "remove_owner_without_removing_owner_type",
+                ImmutableMap.of(
+                    HiveCatalog.HMS_DB_OWNER,
                     "some_individual_owner",
-                    PrincipalType.USER,
-                    "no_post_remove_expectation_due_to_exception_thrown",
-                    null))
+                    HiveCatalog.HMS_DB_OWNER_TYPE,
+                    PrincipalType.USER.name()),
+                ImmutableSet.of(HiveCatalog.HMS_DB_OWNER),
+                "some_individual_owner",
+                PrincipalType.USER,
+                "no_post_remove_expectation_due_to_exception_thrown",
+                null))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             String.format(
@@ -982,19 +987,19 @@ public class TestHiveCatalog extends HMSTestBase {
                 HiveCatalog.HMS_DB_OWNER_TYPE, HiveCatalog.HMS_DB_OWNER));
 
     assertThatThrownBy(
-            () ->
-                removeNamespaceOwnershipAndVerify(
-                    "remove_owner_type_without_removing_owner",
-                    ImmutableMap.of(
-                        HiveCatalog.HMS_DB_OWNER,
-                        "some_group_owner",
-                        HiveCatalog.HMS_DB_OWNER_TYPE,
-                        PrincipalType.GROUP.name()),
-                    ImmutableSet.of(HiveCatalog.HMS_DB_OWNER_TYPE),
+        () ->
+            removeNamespaceOwnershipAndVerify(
+                "remove_owner_type_without_removing_owner",
+                ImmutableMap.of(
+                    HiveCatalog.HMS_DB_OWNER,
                     "some_group_owner",
-                    PrincipalType.GROUP,
-                    "no_post_remove_expectation_due_to_exception_thrown",
-                    null))
+                    HiveCatalog.HMS_DB_OWNER_TYPE,
+                    PrincipalType.GROUP.name()),
+                ImmutableSet.of(HiveCatalog.HMS_DB_OWNER_TYPE),
+                "some_group_owner",
+                PrincipalType.GROUP,
+                "no_post_remove_expectation_due_to_exception_thrown",
+                null))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             String.format(
@@ -1084,6 +1089,7 @@ public class TestHiveCatalog extends HMSTestBase {
       catalog.dropTable(tableIdent);
     }
   }
+
   private static String stripTrailingSlash(String path) {
     Preconditions.checkArgument(path != null && !path.isEmpty(), "path must not be null or empty");
     // walk backwards while encountering '/'
@@ -1211,7 +1217,7 @@ public class TestHiveCatalog extends HMSTestBase {
     parameters.put(DEFAULT_PARTITION_SPEC, "partitionSpec");
     parameters.put(DEFAULT_SORT_ORDER, "sortOrder");
 
-   setSnapshotStats(ops, metadata, parameters);
+    setSnapshotStats(ops, metadata, parameters);
     assertThat(parameters)
         .doesNotContainKey(CURRENT_SNAPSHOT_SUMMARY)
         .doesNotContainKey(CURRENT_SNAPSHOT_ID)
@@ -1360,8 +1366,10 @@ public class TestHiveCatalog extends HMSTestBase {
   @Test
   public void testRegisterTable() {
     TableIdentifier identifier = TableIdentifier.of(DB_NAME, "t1");
-    catalog.createTable(identifier, getTestSchema());
+    Table t0 = catalog.createTable(identifier, getTestSchema());
+    assertThat(t0).isNotNull();
     Table registeringTable = catalog.loadTable(identifier);
+    assertThat(registeringTable).isNotNull();
     catalog.dropTable(identifier, false);
     TableOperations ops = ((HasTableOperations) registeringTable).operations();
     String metadataLocation = currentMetadataLocation(ops);
@@ -1404,8 +1412,10 @@ public class TestHiveCatalog extends HMSTestBase {
   @Test
   public void testRegisterExistingTable() {
     TableIdentifier identifier = TableIdentifier.of(DB_NAME, "t1");
-    catalog.createTable(identifier, getTestSchema());
+    Table t0 = catalog.createTable(identifier, getTestSchema());
+    assertThat(t0).isNotNull();
     Table registeringTable = catalog.loadTable(identifier);
+    assertThat(registeringTable).isNotNull();
     TableOperations ops = ((HasTableOperations) registeringTable).operations();
     String metadataLocation = currentMetadataLocation(ops);
     assertThatThrownBy(() -> catalog.registerTable(identifier, metadataLocation))

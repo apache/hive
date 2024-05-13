@@ -29,6 +29,7 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -43,7 +44,6 @@ import org.apache.hadoop.hive.metastore.properties.HMSPropertyManager;
 import org.apache.hadoop.hive.metastore.properties.PropertyManager;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.SupportsNamespaces;
 import org.apache.iceberg.hive.HiveCatalog;
@@ -83,7 +83,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
-import org.apache.hadoop.hive.conf.HiveConf;
 
 public abstract class HMSTestBase {
   protected static final Logger LOG = LoggerFactory.getLogger(HMSTestBase.class.getName());
@@ -129,7 +128,6 @@ public abstract class HMSTestBase {
   // for direct calls
   protected Catalog catalog;
   protected SupportsNamespaces nsCatalog;
-  protected HiveMetaStoreClient metastoreClient;
 
   protected int createMetastoreServer(Configuration conf) throws Exception {
     return MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
@@ -146,8 +144,10 @@ public abstract class HMSTestBase {
     NS = "hms" + RND.nextInt(100);
     conf = MetastoreConf.newMetastoreConf();
     MetaStoreTestUtils.setConfForStandloneMode(conf);
-    conf.setBoolean(MetastoreConf.ConfVars.METRICS_ENABLED.getVarname(), true);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.CAPABILITY_CHECK, false);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
 
+    conf.setBoolean(MetastoreConf.ConfVars.METRICS_ENABLED.getVarname(), true);
     // "hive.metastore.warehouse.dir"
     String whpath = new File(baseDir,"target/tmp/warehouse/managed").toURI()/*.getAbsolutePath()*/.toString();
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.WAREHOUSE, whpath);
@@ -155,10 +155,9 @@ public abstract class HMSTestBase {
     // "hive.metastore.warehouse.external.dir"
     String extwhpath = new File(baseDir,"target/tmp/warehouse/external").toURI()/*.getAbsolutePath()*/.toString();
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL, extwhpath);
-    HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL, extwhpath);
-    
+    conf.set(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname, extwhpath);
+
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SCHEMA_INFO_CLASS, "org.apache.iceberg.rest.HMSTestBase$TestSchemaInfo");
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
     // Events that get cleaned happen in batches of 1 to exercise batching code
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.EVENT_CLEAN_MAX_EVENTS, 1L);
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_PORT, 0);
@@ -169,8 +168,6 @@ public abstract class HMSTestBase {
     MOCK_JWKS_SERVER.stubFor(get("/jwks")
         .willReturn(ok()
             .withBody(Files.readAllBytes(jwtVerificationJWKSFile.toPath()))));
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
-
     Metrics.initialize(conf);
     // The server
     port = createMetastoreServer(conf);
@@ -178,7 +175,7 @@ public abstract class HMSTestBase {
     // The manager decl
     PropertyManager.declare(NS, HMSPropertyManager.class);
     // The client
-    metastoreClient = createClient(conf, port);
+    HiveMetaStoreClient metastoreClient = createClient(conf, port);
     Assert.assertNotNull("Unable to connect to the MetaStore server", metastoreClient);
 
     // create a managed root

@@ -36,7 +36,14 @@ public interface SecureServletCaller {
    * Any http method executor.
    */
   @FunctionalInterface
-  public interface MethodExecutor {
+  interface MethodExecutor {
+    /**
+     * The method to call to secure the execution of a (http) method.
+     * @param request the request
+     * @param response the response
+     * @throws ServletException if the method executor fails
+     * @throws IOException if the Json in/out fail
+     */
     void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException;
   }
 
@@ -45,10 +52,8 @@ public interface SecureServletCaller {
    * @param request the request
    * @param response the response
    * @param executor the method executor
-   * @throws ServletException if the method executor fails
-   * @throws IOException if the Json in/out fail
    */
-  public void execute(HttpServletRequest request, HttpServletResponse response, MethodExecutor executor)
+   void execute(HttpServletRequest request, HttpServletResponse response, MethodExecutor executor)
       throws IOException;
 
 

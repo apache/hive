@@ -22,14 +22,25 @@ package org.apache.iceberg.rest;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.junit.Before;
+import org.junit.Test;
 
 public class TestHMSCatalog extends TestHiveCatalog {
   public TestHMSCatalog() {
     super();
   }
-
   protected void setCatalogClass(Configuration conf) {
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_CATALOG_ACTOR_CLASS, "org.apache.iceberg.rest.HMSCatalogActor");
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_AUTH, "jwt");
+  }
+
+  @Before
+  public void setUp() throws Exception {
+    super.setUp();
+  }
+
+  @Test
+  public void testCreateNamespaceHttp() throws Exception {
+    super.testCreateNamespaceHttp();
   }
 }
