@@ -1,3 +1,11 @@
+CTE Suggestion 0:HiveProject(ca_address_sk=[$0], ca_state=[$8])
+  HiveFilter(condition=[IS NOT NULL($8)])
+    HiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
+
+CTE Suggestion 1:HiveProject(d_date_sk=[$0])
+  HiveFilter(condition=[=($6, 1998)])
+    HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
