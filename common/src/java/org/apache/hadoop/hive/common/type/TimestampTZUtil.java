@@ -187,9 +187,18 @@ public class TimestampTZUtil {
   public static Timestamp convertTimestampToZone(Timestamp ts, ZoneId fromZone, ZoneId toZone,
       boolean legacyConversion) {
     if (legacyConversion) {
-      Timestamp result = Timestamp.valueOf(formatLegacyDate(ts, fromZone, toZone));
-      result.setNanos(ts.getNanos());
-      return result;
+      try {
+        DateFormat formatter = getLegacyDateFormatter();
+        formatter.setTimeZone(TimeZone.getTimeZone(fromZone));
+        java.util.Date date = formatter.parse(ts.format(TIMESTAMP_FORMATTER));
+        // Set the formatter to use a different timezone
+        formatter.setTimeZone(TimeZone.getTimeZone(toZone));
+        Timestamp result = Timestamp.valueOf(formatter.format(date));
+        result.setNanos(ts.getNanos());
+        return result;
+      } catch (ParseException e) {
+        throw new RuntimeException(e);
+      }
     }
 
     // get nanos since [epoch at fromZone]
@@ -203,25 +212,5 @@ public class TimestampTZUtil {
 
   public static double convertTimestampTZToDouble(TimestampTZ timestampTZ) {
     return timestampTZ.getEpochSecond() + timestampTZ.getNanos() / DateUtils.NANOS_PER_SEC;
-  }
-
-  public static Timestamp legacyLeapYearConversions(Timestamp ts, ZoneId fromZone, ZoneId toZone) {
-    Timestamp result = Timestamp.valueOfLegacyLeapYear(formatLegacyDate(ts, fromZone, toZone));
-    result.setNanos(ts.getNanos());
-    return result;
-  }
-
-  private static String formatLegacyDate(Timestamp ts, ZoneId fromZone, ZoneId toZone) {
-    DateFormat formatter = getLegacyDateFormatter();
-    formatter.setTimeZone(TimeZone.getTimeZone(fromZone));
-    java.util.Date date;
-    try {
-      date = formatter.parse(ts.format(TIMESTAMP_FORMATTER));
-    } catch (ParseException e) {
-      throw new RuntimeException(e);
-    }
-    // Set the formatter to use a different timezone
-    formatter.setTimeZone(TimeZone.getTimeZone(toZone));
-    return formatter.format(date);
   }
 }

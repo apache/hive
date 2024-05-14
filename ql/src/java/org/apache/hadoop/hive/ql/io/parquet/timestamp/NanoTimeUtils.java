@@ -104,16 +104,16 @@ public class NanoTimeUtils {
       julianDay--;
     }
 
-    JulianDate jDateTime;
-    jDateTime = JulianDate.of((double) julianDay);
+    JulianDate jDateTime = JulianDate.of((double) julianDay);
     LocalDateTime localDateTime;
+    int leapYearDateAdjustment = 0;
+
     try {
       localDateTime = jDateTime.toLocalDateTime();
     } catch (DateTimeException e) {
       if (e.getMessage().contains(ErrorMsg.NOT_LEAP_YEAR.getMsg()) && legacyConversion) {
-        jDateTime = JulianDate.of((double) julianDay + 1);
-        localDateTime = jDateTime.toLocalDateTime();
-        notLeapYear = true;
+        leapYearDateAdjustment = 1;
+        localDateTime = jDateTime.add(leapYearDateAdjustment).toLocalDateTime();
       } else {
         throw e;
       }
@@ -135,11 +135,9 @@ public class NanoTimeUtils {
     calendar.set(Calendar.SECOND, seconds);
 
     Timestamp ts = Timestamp.ofEpochMilli(calendar.getTimeInMillis(), (int) nanos);
-    if (notLeapYear) {
-      ts = TimestampTZUtil.legacyLeapYearConversions(ts, ZoneOffset.UTC, targetZone);
-    } else {
-      ts = TimestampTZUtil.convertTimestampToZone(ts, ZoneOffset.UTC, targetZone, legacyConversion);
-    }
+    ts = TimestampTZUtil.convertTimestampToZone(ts, ZoneOffset.UTC, targetZone, legacyConversion)
+        .minusDays(leapYearDateAdjustment);
+
     return ts;
   }
 }
