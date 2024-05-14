@@ -114,12 +114,8 @@ public class Expression {
       if (value.type == Type.NULL && sql.toString().length() == 0) {
         exec.stackPush(new Var());
         return;
-      } else if (exec.buildSql && value.type == Type.DATE) {
-        sql.append(String.format("DATE '%s'", value.toString()));
-      } else if (exec.buildSql && value.type == Type.TIMESTAMP) {
-        sql.append(String.format("TIMESTAMP '%s'", value.toString()));
       } else {
-        sql.append(value.toString());
+        sql.append(value.toSqlString(exec.buildSql));
       }
     }
     exec.stackPush(sql);
@@ -576,7 +572,7 @@ public class Expression {
     int cnt = ctx.expr_concat_item().size();
     for (int i = 0; i < cnt; i++) {
       String concatStr = evalPop(ctx.expr_concat_item(i)).toString();
-      if (!concatStr.startsWith("'")) {
+      if (!concatStr.startsWith("'") || !concatStr.endsWith("'")) {
         concatStr = Utils.quoteString(concatStr);
       }
       sql.append(concatStr);

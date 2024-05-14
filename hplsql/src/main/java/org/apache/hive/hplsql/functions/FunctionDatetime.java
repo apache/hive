@@ -19,9 +19,10 @@
 package org.apache.hive.hplsql.functions;
 
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.ResolverStyle;
 import java.util.TimeZone;
 
 import org.apache.commons.lang3.StringUtils;
@@ -54,6 +55,11 @@ public class FunctionDatetime extends BuiltinFunctions {
     f.specSqlMap.put("CURRENT_TIMESTAMP", (FuncSpecCommand) this::currentTimestampSql);
  }
 
+  private static DateTimeFormatter createDateTimeFormatter(String format) {
+    return DateTimeFormatter.ofPattern(format).withZone(TimeZone.getTimeZone("UTC").toZoneId())
+        .withResolverStyle(ResolverStyle.STRICT);
+  }
+
   /**
    * CURRENT_DATE
    */
@@ -65,9 +71,9 @@ public class FunctionDatetime extends BuiltinFunctions {
    * CURRENT_DATE
    */
   public static Var currentDate() {
-    SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-    String s = f.format(Calendar.getInstance().getTime());
-    return new Var(Var.Type.DATE, Utils.toDate(s)); 
+    DateTimeFormatter formatter = createDateTimeFormatter("yyyy-MM-dd");
+    String date = formatter.format(new java.sql.Date(System.currentTimeMillis()).toLocalDate());
+    return new Var(Var.Type.DATE, Utils.toDate(date));
   }
   
   /**
@@ -95,9 +101,9 @@ public class FunctionDatetime extends BuiltinFunctions {
     if (precision > 0 && precision <= 3) {
       format += "." + StringUtils.repeat("S", precision);
     }
-    SimpleDateFormat f = new SimpleDateFormat(format);
-    String s = f.format(Calendar.getInstance(TimeZone.getDefault()).getTime());
-    return new Var(Utils.toTimestamp(s), precision); 
+    DateTimeFormatter formatter = createDateTimeFormatter(format);
+    String timestamp = formatter.format(new java.sql.Timestamp(System.currentTimeMillis()).toLocalDateTime());
+    return new Var(Utils.toTimestamp(timestamp), precision);
   }
   
   /**
@@ -165,8 +171,14 @@ public class FunctionDatetime extends BuiltinFunctions {
     String sqlFormat = Utils.unquoteString(evalPop(ctx.func_param(1).expr()).toString());
     String format = Utils.convertSqlDatetimeFormat(sqlFormat);
     try {
-      long timeInMs = new SimpleDateFormat(format).parse(value).getTime();
-      evalVar(new Var(Var.Type.TIMESTAMP, new Timestamp(timeInMs)));
+      DateTimeFormatter formatter = createDateTimeFormatter(format);
+      LocalDateTime val = null;
+      if (format.length() > 10) {
+        val = LocalDateTime.parse(value, formatter);
+      } else {
+        val = LocalDate.parse(value, formatter).atStartOfDay();
+      }
+      evalVar(new Var(Var.Type.TIMESTAMP, Timestamp.valueOf(val)));
     }
     catch (Exception e) {
       exec.signal(e);
@@ -193,7 +205,8 @@ public class FunctionDatetime extends BuiltinFunctions {
     if (cnt > 1) {
       format = Utils.unquoteString(evalPop(ctx.func_param(1).expr()).toString());
     }
-    evalString(Utils.quoteString(new SimpleDateFormat(format).format(new Date(epoch * 1000))));
+    DateTimeFormatter formatter = createDateTimeFormatter(format);
+    evalString(Utils.quoteString(formatter.format(new java.sql.Date(epoch * 1000).toLocalDate())));
   }
 
   /**
