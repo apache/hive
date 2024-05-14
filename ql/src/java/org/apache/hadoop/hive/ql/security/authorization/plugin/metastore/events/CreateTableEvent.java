@@ -82,7 +82,7 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
     ret.add(getHivePrivilegeObject(database));
     ret.add(getHivePrivilegeObject(table));
 
-    if (StringUtils.isNotEmpty(uri) && table.getTableType() != TableType.EXTERNAL_TABLE.toString()) {
+    if (StringUtils.isNotEmpty(uri) && !TableType.EXTERNAL_TABLE.toString().equalsIgnoreCase(table.getTableType())) {
       ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DFS_URI, null, uri));
     }
 
