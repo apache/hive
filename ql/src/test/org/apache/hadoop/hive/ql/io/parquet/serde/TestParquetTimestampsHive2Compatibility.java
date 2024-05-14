@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -97,8 +98,12 @@ class TestParquetTimestampsHive2Compatibility {
     }
   }
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("generateJulianLeapYearTimestamps")
+  /**
+   * Tests that timestamps written using Hive2 APIs on julian leap years are read correctly by Hive4 APIs when legacy
+   * conversion is on.
+   */
+  @ParameterizedTest(name = "{0} - Zone: {1}")
+  @MethodSource("generateTimestampsAndZoneIds")
   void testWriteHive2ReadHive4UsingLegacyConversionWithJulianLeapYears(String timestampString) {
     TimeZone original = TimeZone.getDefault();
     try {
@@ -191,6 +196,15 @@ class TestParquetTimestampsHive2Compatibility {
     // gracefully. It is expected that these do not work well when legacy APIs are in use. 
     .filter(s -> !s.startsWith("1582-10"))
     .limit(3000), Stream.of("9999-12-31 23:59:59.999"));
+  }
+
+  /** Generates timestamps for different timezone. Here we are testing UTC+14 : Pacific/Kiritimati ,
+   *  UTC-12 : Etc/GMT+12 along with few other zones
+   */
+  private static Stream<Arguments> generateTimestampsAndZoneIds() {
+    return generateJulianLeapYearTimestamps()
+        .flatMap(timestampString -> Stream.of("Asia/Singapore", "Pacific/Kiritimati", "Etc/GMT+12", "Pacific/Niue")
+            .map(zoneId -> Arguments.of(timestampString, zoneId)));
   }
 
   private static Stream<String> generateJulianLeapYearTimestamps() {

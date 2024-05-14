@@ -94,7 +94,6 @@ public class NanoTimeUtils {
   public static Timestamp getTimestamp(NanoTime nt, ZoneId targetZone, boolean legacyConversion) {
     int julianDay = nt.getJulianDay();
     long nanosOfDay = nt.getTimeOfDayNanos();
-    boolean notLeapYear = false;
 
     long remainder = nanosOfDay;
     julianDay += remainder / NANOS_PER_DAY;
