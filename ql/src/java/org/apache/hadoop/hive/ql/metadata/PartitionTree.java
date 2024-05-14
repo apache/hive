@@ -122,8 +122,8 @@ final class PartitionTree {
    * {@link MetaStoreUtils#getPvals(List, Map)}
    */
   List<Partition> getPartitionsByPartitionVals(List<String> partialPartVals) throws MetaException {
-    if (MetaStoreUtils.arePartValsEmpty(partialPartVals)) {
-      return new ArrayList<>(parts.values());
+    if (partialPartVals == null || partialPartVals.isEmpty()) {
+      throw new MetaException("Partition partial vals cannot be null or empty");
     }
     String partNameMatcher = makePartNameMatcher(tTable, partialPartVals, ".*");
     List<Partition> matchedPartitions = new ArrayList<>();

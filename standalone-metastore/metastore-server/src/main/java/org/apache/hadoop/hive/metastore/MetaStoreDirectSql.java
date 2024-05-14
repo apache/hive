@@ -1294,7 +1294,9 @@ class MetaStoreDirectSql {
       params[i + 3] = filter.params.get(i);
     }
 
-    return MetastoreDirectSqlUtils.getCountOfQuery(pm, queryText, params);
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+      return MetastoreDirectSqlUtils.getCountOfQuery(query.getInnerQuery(), params);
+    }
   }
 
   public int getNumPartitionsViaSqlPs(Table table, List<String> partVals) throws MetaException {
@@ -1314,7 +1316,9 @@ class MetaStoreDirectSql {
     params[2] = table.getCatName();
     params[3] = partialName;
 
-    return MetastoreDirectSqlUtils.getCountOfQuery(pm, queryText, params);
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+      return MetastoreDirectSqlUtils.getCountOfQuery(query.getInnerQuery(), params);
+    }
   }
 
   private static String trimCommaList(StringBuilder sb) {

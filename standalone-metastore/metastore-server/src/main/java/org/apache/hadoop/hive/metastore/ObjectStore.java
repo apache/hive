@@ -3863,7 +3863,17 @@ public class ObjectStore implements RawStore, Configurable {
       @Override
       protected Integer getJdoResult(GetHelper<Integer> ctx)
           throws MetaException, NoSuchObjectException, InvalidObjectException {
-        return getNumPartitionsViaOrmPs(ctx.getTable(), partVals);
+        // size is known since it contains dbName, catName, tblName and partialRegex pattern
+        Map<String, String> params = new HashMap<>(4);
+        String filter = getJDOFilterStrForPartitionVals(ctx.getTable(), partVals, params);
+        try (QueryWrapper query = new QueryWrapper(pm.newQuery(
+            "select count(partitionName) from org.apache.hadoop.hive.metastore.model.MPartition"))) {
+          query.setFilter(filter);
+          query.declareParameters(makeParameterDeclarationString(params));
+          Long result = (Long) query.executeWithMap(params);
+
+          return result.intValue();
+        }
       }
     }.run(true);
   }
@@ -3965,20 +3975,6 @@ public class ObjectStore implements RawStore, Configurable {
     return partitions;
   }
 
-  private Integer getNumPartitionsViaOrmPs(Table table, List<String> partVals) throws MetaException {
-    // size is known since it contains dbName, catName, tblName and partialRegex pattern
-    Map<String, String> params = new HashMap<>(4);
-    String filter = getJDOFilterStrForPartitionVals(table, partVals, params);
-    try (QueryWrapper query = new QueryWrapper(pm.newQuery(
-        "select count(partitionName) from org.apache.hadoop.hive.metastore.model.MPartition"))) {
-      query.setFilter(filter);
-      query.declareParameters(makeParameterDeclarationString(params));
-      Long result = (Long) query.executeWithMap(params);
-
-      return result.intValue();
-    }
-  }
-
   private List<Partition> getPartitionsByPs(String catName, String dbName,
                                             String tblName, GetPartitionsArgs args)
       throws MetaException, NoSuchObjectException {
@@ -4012,10 +4008,6 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public List<String> listPartitionNamesPs(String catName, String dbName, String tableName,
       List<String> part_vals, short max_parts) throws MetaException, NoSuchObjectException {
-    if (MetaStoreUtils.arePartValsEmpty(part_vals)) {
-      return listPartitionNames(catName, dbName, tableName, max_parts);
-    }
-
     List<String> partitionNames = new ArrayList<>();
     boolean success = false;
 
