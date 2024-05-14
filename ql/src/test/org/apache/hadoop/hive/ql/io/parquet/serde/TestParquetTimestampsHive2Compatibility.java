@@ -97,6 +97,21 @@ class TestParquetTimestampsHive2Compatibility {
     }
   }
 
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("generateJulianLeapYearTimestamps")
+  void testWriteHive2ReadHive4UsingLegacyConversionWithJulianLeapYears(String timestampString) {
+    TimeZone original = TimeZone.getDefault();
+    try {
+      String zoneId = "Asia/Singapore";
+      TimeZone.setDefault(TimeZone.getTimeZone(zoneId));
+      NanoTime nt = writeHive2(timestampString);
+      Timestamp ts = readHive4(nt, zoneId, true);
+      assertEquals(timestampString, ts.toString());
+    } finally {
+      TimeZone.setDefault(original);
+    }
+  }
+
   /**
    * Tests that timestamps written using Hive4 APIs are read correctly by Hive4 APIs when legacy conversion is on. 
    */
@@ -177,6 +192,52 @@ class TestParquetTimestampsHive2Compatibility {
     .filter(s -> !s.startsWith("1582-10"))
     .limit(3000), Stream.of("9999-12-31 23:59:59.999"));
   }
+
+  private static Stream<String> generateJulianLeapYearTimestamps() {
+    return Stream.concat(Stream.generate(new Supplier<String>() {
+          int i = 0;
+
+          @Override
+          public String get() {
+            StringBuilder sb = new StringBuilder(29);
+            int year = (i % 9999) + 1;
+            sb.append(zeros(4 - digits(year)));
+            sb.append(year);
+            sb.append('-');
+            int month = 3;
+            sb.append(zeros(2 - digits(month)));
+            sb.append(month);
+            sb.append('-');
+            int day = 1;
+            sb.append(zeros(2 - digits(day)));
+            sb.append(day);
+            sb.append(' ');
+            int hour = i % 24;
+            sb.append(zeros(2 - digits(hour)));
+            sb.append(hour);
+            sb.append(':');
+            int minute = i % 60;
+            sb.append(zeros(2 - digits(minute)));
+            sb.append(minute);
+            sb.append(':');
+            int second = i % 60;
+            sb.append(zeros(2 - digits(second)));
+            sb.append(second);
+            sb.append('.');
+            // Bitwise OR with one to avoid times with trailing zeros
+            int nano = (i % 1000000000) | 1;
+            sb.append(zeros(9 - digits(nano)));
+            sb.append(nano);
+            i++;
+            return sb.toString();
+          }
+        })
+        // Exclude dates falling in the default Gregorian change date since legacy code does not handle that interval
+        // gracefully. It is expected that these do not work well when legacy APIs are in use.
+        .filter(s -> !s.startsWith("1582-10"))
+        .limit(3000), Stream.of("9999-12-31 23:59:59.999"));
+  }
+
 
   private static int digits(int number) {
     int digits = 0;
