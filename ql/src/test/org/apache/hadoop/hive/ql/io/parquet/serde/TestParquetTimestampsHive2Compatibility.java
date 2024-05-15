@@ -147,16 +147,16 @@ class TestParquetTimestampsHive2Compatibility {
   }
 
   private static Stream<Arguments> julianLeapYearEdgeCases() {
-    return Stream.of(Arguments.of("Etc/GMT+12", "Pacific/Kiritimati", "0200-02-27 22:00:00.000000001",
+    return Stream.of(Arguments.of("GMT-12:00", "GMT+14:00", "0200-02-27 22:00:00.000000001",
             "0200-03-01 00:00:00.000000001"),
-        Arguments.of("Pacific/Kiritimati", "Etc/GMT+12", "0200-03-01 00:00:00.000000001",
+        Arguments.of("GMT+14:00", "GMT-12:00", "0200-03-01 00:00:00.000000001",
             "0200-02-27 22:00:00.000000001"),
-        Arguments.of("Pacific/Kiritimati", "Etc/GMT+12", "0200-03-02 00:00:00.000000001",
+        Arguments.of("GMT+14:00", "GMT-12:00", "0200-03-02 00:00:00.000000001",
             "0200-02-28 22:00:00.000000001"),
-        Arguments.of("Etc/GMT+12", "Pacific/Kiritimati", "0200-03-02 00:00:00.000000001",
+        Arguments.of("GMT-12:00", "GMT+14:00", "0200-03-02 00:00:00.000000001",
             "0200-03-03 02:00:00.000000001"),
-        Arguments.of("Etc/GMT+12", "Etc/GMT-12", "0200-02-28 00:00:00.000000001", "0200-03-01 00:00:00.000000001"),
-        Arguments.of("Etc/GMT-12", "Etc/GMT+12", "0200-03-01 00:00:00.000000001", "0200-02-28 00:00:00.000000001"),
+        Arguments.of("GMT-12:00", "GMT+12:00", "0200-02-28 00:00:00.000000001", "0200-03-01 00:00:00.000000001"),
+        Arguments.of("GMT+12:00", "GMT-12:00", "0200-03-01 00:00:00.000000001", "0200-02-28 00:00:00.000000001"),
         Arguments.of("Asia/Singapore", "Asia/Singapore", "0200-03-01 00:00:00.000000001",
             "0200-03-01 00:00:00.000000001"));
   }

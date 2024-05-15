@@ -191,7 +191,7 @@ public class Timestamp implements Comparable<Timestamp> {
       try {
         localDateTime = LocalDateTime.parse(s);
       } catch (DateTimeException e2) {
-        throw new IllegalArgumentException("Cannot create timestamp, parsing error " + s);
+        throw new IllegalArgumentException("Cannot create timestamp, parsing error " + s, e);
       }
     }
     return new Timestamp(localDateTime);

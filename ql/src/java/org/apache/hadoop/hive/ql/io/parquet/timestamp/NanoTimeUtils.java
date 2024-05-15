@@ -15,14 +15,11 @@ package org.apache.hadoop.hive.ql.io.parquet.timestamp;
 
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
-
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
@@ -30,8 +27,6 @@ import jodd.time.JulianDate;
 
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
-import org.apache.hadoop.hive.ql.ErrorMsg;
-
 
 /**
  * Utilities for converting from java.sql.Timestamp to parquet timestamp.
@@ -109,8 +104,17 @@ public class NanoTimeUtils {
 
     JulianDate jDateTime = JulianDate.of((double) julianDay);
     LocalDateTime localDateTime;
-    int leapYearDateAdjustment = legacyConversion ?  julianLeapYearAdjustment(jDateTime) : 0;
-    localDateTime = jDateTime.add(leapYearDateAdjustment).toLocalDateTime();
+    int leapYearDateAdjustment = 0;
+    try {
+      localDateTime = jDateTime.toLocalDateTime();
+    } catch (DateTimeException e) {
+      if (e.getMessage().contains(TimestampTZUtil.NOT_LEAP_YEAR) && legacyConversion) {
+        leapYearDateAdjustment = 2;
+        localDateTime = jDateTime.add(leapYearDateAdjustment).toLocalDateTime();
+      } else {
+        throw e;
+      }
+    }
     Calendar calendar = getGMTCalendar();
     calendar.set(Calendar.YEAR, localDateTime.getYear());
     calendar.set(Calendar.MONTH, localDateTime.getMonth().getValue() - 1); //java calendar index starting at 1.
@@ -132,40 +136,5 @@ public class NanoTimeUtils {
         .minusDays(leapYearDateAdjustment);
 
     return ts;
-  }
-
-  private static int julianLeapYearAdjustment(JulianDate jDateTime) {
-    Set<Integer> validDaysOfMonth = new HashSet<>();
-    validDaysOfMonth.add(1);
-    validDaysOfMonth.add(2);
-    validDaysOfMonth.add(27);
-    validDaysOfMonth.add(28);
-    validDaysOfMonth.add(29);
-    LocalDateTime localDateTime;
-    try {
-      localDateTime = jDateTime.toLocalDateTime();
-    } catch (DateTimeException e) {
-      if (e.getMessage().contains(ErrorMsg.NOT_LEAP_YEAR.getMsg())) {
-        return 2;
-      } else {
-        throw e;
-      }
-    }
-
-    int year = localDateTime.getYear();
-    int dayOfMonth = localDateTime.getDayOfMonth();
-    boolean isJulianLeapYear = (year % 4 == 0 && year % 400 != 0 && year % 100 == 0);
-
-    if (year < 1582 && isJulianLeapYear && validDaysOfMonth.contains(dayOfMonth)) {
-      switch (localDateTime.getMonth()) {
-      case FEBRUARY:
-        return -2;
-      case MARCH:
-        return 2;
-      default:
-        return 0;
-      }
-    }
-    return 0;
   }
 }
