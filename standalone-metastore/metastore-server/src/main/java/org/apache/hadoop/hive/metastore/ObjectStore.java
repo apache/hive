@@ -4008,6 +4008,10 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public List<String> listPartitionNamesPs(String catName, String dbName, String tableName,
       List<String> part_vals, short max_parts) throws MetaException, NoSuchObjectException {
+    if (MetaStoreUtils.arePartValsEmpty(part_vals)) {
+      return listPartitionNames(catName, dbName, tableName, max_parts);
+    }
+
     List<String> partitionNames = new ArrayList<>();
     boolean success = false;
 

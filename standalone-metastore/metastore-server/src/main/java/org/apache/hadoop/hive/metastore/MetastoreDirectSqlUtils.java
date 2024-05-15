@@ -609,10 +609,4 @@ class MetastoreDirectSqlUtils {
       throw new RuntimeException(e);
     }
   }
-
-  static int getCountOfQuery(Query query, Object[] params) {
-    query.setUnique(true);
-    int sqlResult = MetastoreDirectSqlUtils.extractSqlInt(query.executeWithArray(params));
-    return sqlResult;
-  }
 }

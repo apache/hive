@@ -1436,10 +1436,13 @@ public class TestListPartitions extends MetaStoreClientTest {
         Lists.newArrayList("yyyy", "mm", "dd"));
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   public void testListPartitionNamesByValuesNoPartVals() throws Exception {
-    createTable4PartColsParts(client);
-    client.listPartitionNames(DB_NAME, TABLE_NAME, Lists.newArrayList(), (short)-1);
+    List<List<String>> testValues = createTable4PartColsParts(client).testValues;
+    List<String> partitionNames = client.listPartitionNames(DB_NAME, TABLE_NAME,
+        Lists.newArrayList(), (short)-1);
+    assertTrue(partitionNames.size() == 4);
+    assertCorrectPartitionNames(partitionNames, testValues, Lists.newArrayList("yyyy", "mm", "dd"));
   }
 
   @Test(expected = MetaException.class)

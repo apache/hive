@@ -1295,7 +1295,8 @@ class MetaStoreDirectSql {
     }
 
     try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
-      return MetastoreDirectSqlUtils.getCountOfQuery(query.getInnerQuery(), params);
+      query.setUnique(true);
+      return MetastoreDirectSqlUtils.extractSqlInt(executeWithArray(query.getInnerQuery(), params, queryText));
     }
   }
 
@@ -1317,7 +1318,8 @@ class MetaStoreDirectSql {
     params[3] = partialName;
 
     try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
-      return MetastoreDirectSqlUtils.getCountOfQuery(query.getInnerQuery(), params);
+      query.setUnique(true);
+      return MetastoreDirectSqlUtils.extractSqlInt(executeWithArray(query.getInnerQuery(), params, queryText));
     }
   }
 

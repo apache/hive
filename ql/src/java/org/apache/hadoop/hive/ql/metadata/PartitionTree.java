@@ -36,7 +36,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.hadoop.hive.metastore.Warehouse.LOG;
 import static org.apache.hadoop.hive.metastore.Warehouse.makePartName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.makePartNameMatcher;
 
@@ -122,8 +121,8 @@ final class PartitionTree {
    * {@link MetaStoreUtils#getPvals(List, Map)}
    */
   List<Partition> getPartitionsByPartitionVals(List<String> partialPartVals) throws MetaException {
-    if (partialPartVals == null || partialPartVals.isEmpty()) {
-      throw new MetaException("Partition partial vals cannot be null or empty");
+    if (MetaStoreUtils.arePartValsEmpty(partialPartVals)) {
+      return new ArrayList<>(parts.values());
     }
     String partNameMatcher = makePartNameMatcher(tTable, partialPartVals, ".*");
     List<Partition> matchedPartitions = new ArrayList<>();

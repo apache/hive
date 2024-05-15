@@ -3100,6 +3100,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   protected List<String> listPartitionNamesInternal(String catName, String db_name, String tbl_name,
       List<String> part_vals, int max_parts) throws TException {
+    if (db_name == null || tbl_name == null || part_vals == null) {
+      throw new MetaException("Database name/Table name/partition values should not be null");
+    }
     return client.get_partition_names_ps(prependCatalogToDbName(catName, db_name, conf), tbl_name,
         part_vals, shrinkMaxtoShort(max_parts));
   }
