@@ -24,12 +24,9 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.junit.Assert;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
-import static org.junit.Assert.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-public class TestCompactionQueryBuilderForRebalanceCompaction extends CompactionQueryBuilderTest {
+public class TestCompactionQueryBuilderForRebalanceCompaction extends CompactionQueryBuilderTestBase {
 
   @Test
   public void testCreate() {
@@ -119,6 +116,7 @@ public class TestCompactionQueryBuilderForRebalanceCompaction extends Compaction
     Assert.assertEquals(expectedQuery, query);
   }
 
+  @Test
   public void testAlter() {
     CompactionQueryBuilder queryBuilder = getRebalanceCompactionQueryBuilderForAlter();
     AcidDirectory dir = createAcidDirectory();
@@ -143,12 +141,12 @@ public class TestCompactionQueryBuilderForRebalanceCompaction extends Compaction
   @Test
   public void testRebalanceCompactionWithBuckets() {
     CompactionQueryBuilder queryBuilder = getRebalanceCompactionQueryBuilderForInsert();
-    Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+    Exception exception = Assert.assertThrows(IllegalArgumentException.class, () -> {
       queryBuilder.setBucketed(true);
     });
     String expectedMessage = "Rebalance compaction is supported only on implicitly-bucketed tables!";
     String actualMessage = exception.getMessage();
-    assertTrue(actualMessage.contains(expectedMessage));
+    Assert.assertTrue(actualMessage.contains(expectedMessage));
   }
 
   private CompactionQueryBuilder getRebalanceCompactionQueryBuilderForCreate() {

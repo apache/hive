@@ -73,7 +73,7 @@ final class RebalanceQueryCompactor extends QueryCompactor {
   }
 
   private List<String> getCreateQueries(String fullName, Table t, String tmpTableLocation) {
-    return Lists.newArrayList(compactionQueryBuilderFactory.getCompactionQueryBuilder(
+    return Lists.newArrayList(new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
         CompactionType.REBALANCE, false)
         .setOperation(CompactionQueryBuilder.Operation.CREATE)
         .setResultTableName(fullName)
@@ -84,7 +84,7 @@ final class RebalanceQueryCompactor extends QueryCompactor {
 
   private List<String> getCompactionQueries(Table t, Partition p, String tmpName, int numberOfBuckets, String orderByClause) {
     return Lists.newArrayList(
-        compactionQueryBuilderFactory.getCompactionQueryBuilder(
+        new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
             CompactionType.REBALANCE, false)
             .setOperation(CompactionQueryBuilder.Operation.INSERT)
             .setResultTableName(tmpName)
@@ -97,7 +97,7 @@ final class RebalanceQueryCompactor extends QueryCompactor {
 
   private List<String> getDropQueries(String tmpTableName) {
     return Lists.newArrayList(
-        compactionQueryBuilderFactory.getCompactionQueryBuilder(
+        new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
             CompactionType.REBALANCE, false)
             .setOperation(CompactionQueryBuilder.Operation.DROP)
             .setResultTableName(tmpTableName)

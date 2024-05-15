@@ -20,8 +20,7 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 
 class CompactionQueryBuilderFactory {
-  public CompactionQueryBuilder getCompactionQueryBuilder(CompactionType compactionType,
-      boolean insertOnly){
+  public CompactionQueryBuilder getCompactionQueryBuilder(CompactionType compactionType, boolean insertOnly) {
 
     if (compactionType == null) {
       throw new IllegalArgumentException("CompactionQueryBuilder.CompactionType cannot be null");

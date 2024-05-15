@@ -28,7 +28,7 @@ import java.util.*;
 
 import static org.mockito.Mockito.when;
 
-public class CompactionQueryBuilderTest {
+public class CompactionQueryBuilderTestBase {
 
   public static final String DB_NAME = "comp_test_db";
   public static final String SOURCE_TABLE_NAME = "comp_test_source_table";
@@ -138,9 +138,6 @@ public class CompactionQueryBuilderTest {
 
   protected ValidCompactorWriteIdList createWriteId(long minWriteId) {
     long[] abortedWriteIdList = { 1111L };
-    ValidCompactorWriteIdList writeIds =
-        new ValidCompactorWriteIdList("comp_test_source_table", abortedWriteIdList, null, 15L, minWriteId);
-    return writeIds;
+    return new ValidCompactorWriteIdList("comp_test_source_table", abortedWriteIdList, null, 15L, minWriteId);
   }
-
 }

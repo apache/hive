@@ -54,8 +54,6 @@ public abstract class QueryCompactor implements Compactor {
   private static final Logger LOG = LoggerFactory.getLogger(QueryCompactor.class.getName());
   private static final String COMPACTOR_PREFIX = "compactor.";
 
-  protected CompactionQueryBuilderFactory compactionQueryBuilderFactory = new CompactionQueryBuilderFactory();
-
   /**
    * This is the final step of the compaction, which can vary based on compaction type. Usually this involves some file
    * operation.

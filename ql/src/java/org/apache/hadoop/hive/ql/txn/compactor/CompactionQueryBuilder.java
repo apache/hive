@@ -20,16 +20,22 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.ColumnType;
-import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.exec.DDLPlanUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hive.common.util.HiveStringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 abstract class CompactionQueryBuilder {
@@ -286,28 +292,27 @@ abstract class CompactionQueryBuilder {
       tblProperties.put("bucketing_version", String.valueOf(bucketingVersion));
     }
     if (sourceTab != null) { // to avoid NPEs, skip this part if sourceTab is null
-      for (Map.Entry<String, String> e : sourceTab.getParameters().entrySet()) {
-        if (e.getKey().startsWith("orc.")) {
-          tblProperties.put(e.getKey(), HiveStringUtils.escapeHiveCommand(e.getValue()));
-        }
-      }
+      sourceTab.getParameters().entrySet().stream().filter(e -> e.getKey().startsWith("orc."))
+          .forEach(e -> tblProperties.put(e.getKey(), HiveStringUtils.escapeHiveCommand(e.getValue())));
     }
     addTblProperties(query, tblProperties);
   }
 
   protected void addTblProperties(StringBuilder query, Map<String, String> tblProperties) {
-    // add TBLPROPERTIES clause to query
-    boolean isFirst;
-    query.append(" TBLPROPERTIES (");
-    isFirst = true;
-    for (Map.Entry<String, String> property : tblProperties.entrySet()) {
-      if (!isFirst) {
-        query.append(", ");
+    if (tblProperties != null && !tblProperties.isEmpty()) {
+      // add TBLPROPERTIES clause to query
+      boolean isFirst;
+      query.append(" TBLPROPERTIES (");
+      isFirst = true;
+      for (Map.Entry<String, String> property : tblProperties.entrySet()) {
+        if (!isFirst) {
+          query.append(", ");
+        }
+        query.append("'").append(property.getKey()).append("'='").append(property.getValue()).append("'");
+        isFirst = false;
       }
-      query.append("'").append(property.getKey()).append("'='").append(property.getValue()).append("'");
-      isFirst = false;
+      query.append(")");
     }
-    query.append(")");
   }
 
   private void buildAddClauseForAlter(StringBuilder query) {
@@ -326,7 +331,7 @@ abstract class CompactionQueryBuilder {
     }
     query.append(" add ");
     deltas.forEach(
-        delta -> query.append("partition (file_name='").append(delta.getPath().getName()).append("')" + " location '")
+        delta -> query.append("partition (file_name='").append(delta.getPath().getName()).append("') location '")
             .append(delta.getPath()).append("' "));
   }
 
@@ -383,12 +388,11 @@ abstract class CompactionQueryBuilder {
    */
   protected void defineColumns(StringBuilder query) {
     if (sourceTab != null) {
-      query.append("(");
-      query.append(
-          "`operation` int, `originalTransaction` bigint, `bucket` int, `rowId` bigint, " + "`currentTransaction` bigint, `row` struct<");
-      List<String> columnDescs = getColumnDescs();
-      query.append(StringUtils.join(columnDescs, ','));
-      query.append(">) ");
+      query.append("(")
+          .append("`operation` int, `originalTransaction` bigint, `bucket` int, `rowId` bigint, `currentTransaction` bigint, ")
+          .append("`row` struct<")
+          .append(StringUtils.join(getColumnDescs(), ','))
+          .append(">) ");
     }
   }
 

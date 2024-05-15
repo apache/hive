@@ -24,16 +24,14 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.junit.Assert;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.util.Collections;
 
-import static org.junit.Assert.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
-public class TestCompactionQueryBuilderForMajorCompaction extends CompactionQueryBuilderTest {
+public class TestCompactionQueryBuilderForMajorCompaction extends CompactionQueryBuilderTestBase {
 
   @Test
   public void testCreateNoSourceTable() {
@@ -127,13 +125,11 @@ public class TestCompactionQueryBuilderForMajorCompaction extends CompactionQuer
     queryBuilder.setSourceTab(sourceTable);
     queryBuilder.setSourcePartition(sourcePartition);
 
-    Exception exception = assertThrows(IllegalStateException.class, () -> {
-      queryBuilder.build();
-    });
+    Exception exception = Assert.assertThrows(IllegalStateException.class, queryBuilder::build);
     String expectedMessage =
         "source partition values ([source_part_1, true, 4444]) do not match source table values ([FieldSchema(name:source_part_1, type:string, comment:comment 1), FieldSchema(name:source_part_2, type:boolean, comment:comment 2)]). Failing compaction.";
     String actualMessage = exception.getMessage();
-    assertTrue(actualMessage.contains(expectedMessage));
+    Assert.assertTrue(actualMessage.contains(expectedMessage));
   }
 
   @Test

@@ -99,8 +99,7 @@ class CompactionQueryBuilderForMinor extends CompactionQueryBuilder {
   }
 
   protected org.apache.hadoop.hive.ql.metadata.Table getTable() throws HiveException {
-    org.apache.hadoop.hive.ql.metadata.Table t = Hive.get().getTable(sourceTab.getDbName(), sourceTab.getTableName());
-    return t;
+    return Hive.get().getTable(sourceTab.getDbName(), sourceTab.getTableName());
   }
 
 }

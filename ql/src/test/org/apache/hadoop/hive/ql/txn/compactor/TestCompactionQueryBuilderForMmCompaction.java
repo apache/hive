@@ -18,21 +18,24 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
-import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.SkewedInfo;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.junit.Assert;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-public class TestCompactionQueryBuilderForMmCompaction extends CompactionQueryBuilderTest {
+public class TestCompactionQueryBuilderForMmCompaction extends CompactionQueryBuilderTestBase {
 
   @Test
   public void testMajorCompactionCreateWithoutSourceTable() {
@@ -135,13 +138,11 @@ public class TestCompactionQueryBuilderForMmCompaction extends CompactionQueryBu
     queryBuilder.setSourceTab(sourceTable);
     StorageDescriptor storageDescriptor = createStorageDescriptor();
     queryBuilder.setStorageDescriptor(storageDescriptor);
-    Exception exception = assertThrows(RuntimeException.class, () -> {
-      queryBuilder.build();
-    });
+    Exception exception = Assert.assertThrows(RuntimeException.class, queryBuilder::build);
     String expectedMessage =
         "Table comp_test_source_tablehas a storage handler (test_storage_handler). Failing compaction for this non-native table.";
     String actualMessage = exception.getMessage();
-    assertTrue(actualMessage.contains(expectedMessage));
+    Assert.assertTrue(actualMessage.contains(expectedMessage));
   }
 
   @Test
@@ -245,13 +246,11 @@ public class TestCompactionQueryBuilderForMmCompaction extends CompactionQueryBu
     queryBuilder.setSourceTab(sourceTable);
     StorageDescriptor storageDescriptor = createStorageDescriptor();
     queryBuilder.setStorageDescriptor(storageDescriptor);
-    Exception exception = assertThrows(RuntimeException.class, () -> {
-      queryBuilder.build();
-    });
+    Exception exception = Assert.assertThrows(RuntimeException.class, queryBuilder::build);
     String expectedMessage =
         "Table comp_test_source_tablehas a storage handler (test_storage_handler). Failing compaction for this non-native table.";
     String actualMessage = exception.getMessage();
-    assertTrue(actualMessage.contains(expectedMessage));
+    Assert.assertTrue(actualMessage.contains(expectedMessage));
   }
 
   @Test
@@ -292,13 +291,11 @@ public class TestCompactionQueryBuilderForMmCompaction extends CompactionQueryBu
     queryBuilder.setSourceTab(sourceTable);
     queryBuilder.setSourcePartition(sourcePartition);
 
-    Exception exception = assertThrows(IllegalStateException.class, () -> {
-      queryBuilder.build();
-    });
+    Exception exception = Assert.assertThrows(IllegalStateException.class, queryBuilder::build);
     String expectedMessage =
         "source partition values ([source_part_1, true, 4444]) do not match source table values ([FieldSchema(name:source_part_1, type:string, comment:comment 1), FieldSchema(name:source_part_2, type:boolean, comment:comment 2)]). Failing compaction.";
     String actualMessage = exception.getMessage();
-    assertTrue(actualMessage.contains(expectedMessage));
+    Assert.assertTrue(actualMessage.contains(expectedMessage));
   }
 
   @Test

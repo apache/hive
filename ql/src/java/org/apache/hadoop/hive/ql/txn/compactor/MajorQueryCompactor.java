@@ -72,7 +72,7 @@ final class MajorQueryCompactor extends QueryCompactor {
    * See {@link org.apache.hadoop.hive.conf.HiveConf.ConfVars#SPLIT_GROUPING_MODE} for the config description.
    */
   private List<String> getCreateQueries(String fullName, Table t, String tmpTableLocation) {
-    return Lists.newArrayList(compactionQueryBuilderFactory.getCompactionQueryBuilder(
+    return Lists.newArrayList(new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
         CompactionType.MAJOR, false)
         .setOperation(CompactionQueryBuilder.Operation.CREATE)
         .setResultTableName(fullName)
@@ -84,7 +84,7 @@ final class MajorQueryCompactor extends QueryCompactor {
   private List<String> getCompactionQueries(Table t, Partition p, String tmpName) {
 
     return Lists.newArrayList(
-        compactionQueryBuilderFactory.getCompactionQueryBuilder(
+        new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
             CompactionType.MAJOR, false)
             .setOperation(CompactionQueryBuilder.Operation.INSERT)
             .setResultTableName(tmpName)
@@ -95,7 +95,7 @@ final class MajorQueryCompactor extends QueryCompactor {
 
   private List<String> getDropQueries(String tmpTableName) {
     return Lists.newArrayList(
-        compactionQueryBuilderFactory.getCompactionQueryBuilder(
+        new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
             CompactionType.MAJOR, false)
             .setOperation(CompactionQueryBuilder.Operation.DROP)
             .setResultTableName(tmpTableName)

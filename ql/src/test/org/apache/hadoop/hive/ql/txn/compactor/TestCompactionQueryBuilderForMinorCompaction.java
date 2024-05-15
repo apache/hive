@@ -23,14 +23,14 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.junit.Assert;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.mockito.Mockito;
 
 import static org.mockito.Mockito.when;
 
-public class TestCompactionQueryBuilderForMinorCompaction extends CompactionQueryBuilderTest {
+public class TestCompactionQueryBuilderForMinorCompaction extends CompactionQueryBuilderTestBase {
 
-  class CompactionQueryBuilderForMinorMock extends CompactionQueryBuilderForMinor {
+  static class CompactionQueryBuilderForMinorMock extends CompactionQueryBuilderForMinor {
     private boolean throwException = false;
 
     public void setThrowException(boolean throwException) {

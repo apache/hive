@@ -150,7 +150,7 @@ final class MinorQueryCompactor extends QueryCompactor {
    */
   private String buildCreateTableQuery(Table table, String newTableName, boolean isPartitioned,
       boolean isBucketed, String location) {
-    return compactionQueryBuilderFactory.getCompactionQueryBuilder(
+    return new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
         CompactionType.MINOR, false)
         .setOperation(CompactionQueryBuilder.Operation.CREATE)
         .setResultTableName(newTableName)
@@ -172,7 +172,7 @@ final class MinorQueryCompactor extends QueryCompactor {
    */
   private String buildAlterTableQuery(String tableName, AcidDirectory dir,
       ValidWriteIdList validWriteIdList, boolean isDeleteDelta) {
-    return compactionQueryBuilderFactory.getCompactionQueryBuilder(
+    return new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
         CompactionType.MINOR, false)
         .setOperation(CompactionQueryBuilder.Operation.ALTER)
         .setResultTableName(tableName)
@@ -212,7 +212,7 @@ final class MinorQueryCompactor extends QueryCompactor {
    */
   private String buildCompactionQuery(String sourceTableName, String resultTableName, Table table,
       ValidWriteIdList validWriteIdList) {
-    return compactionQueryBuilderFactory.getCompactionQueryBuilder(
+    return new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
         CompactionType.MINOR, false)
         .setOperation(CompactionQueryBuilder.Operation.INSERT)
         .setResultTableName(resultTableName)
@@ -236,7 +236,7 @@ final class MinorQueryCompactor extends QueryCompactor {
   }
 
   private String getDropQuery(String tableToDrop) {
-    return compactionQueryBuilderFactory.getCompactionQueryBuilder(
+    return new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
         CompactionType.MINOR, false)
         .setOperation(CompactionQueryBuilder.Operation.DROP)
         .setResultTableName(tableToDrop)
