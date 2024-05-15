@@ -115,7 +115,7 @@ public class Expression {
         exec.stackPush(new Var());
         return;
       } else {
-        sql.append(value.toSqlString(exec.buildSql));
+        sql.append(value.toSqlString(exec.buildSql, false));
       }
     }
     exec.stackPush(sql);

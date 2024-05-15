@@ -631,8 +631,10 @@ public class Var {
     return toString();
   }
 
-  public String toSqlString(boolean isBuildSql) {
-    if (value == null) {
+  public String toSqlString(boolean isBuildSql, boolean handleStringType) {
+    if (type == Type.IDENT) {
+      return name;
+    } else if (handleStringType && value == null) {
       return "NULL";
     } else if (type == Type.TIMESTAMP && isBuildSql) {
       int len = 19;
@@ -646,8 +648,8 @@ public class Var {
       return String.format("TIMESTAMP '%s'", t);
     } else if (type == Type.DATE && isBuildSql) {
       return String.format("DATE '%s'", ((Date) value).toString());
-    } else if (isBuildSql && type == Type.STRING && (!((String) value).startsWith("'") || !((String) value).endsWith(
-        "'"))) {
+    } else if (handleStringType && isBuildSql && type == Type.STRING && (!((String) value).startsWith(
+        "'") || !((String) value).endsWith("'"))) {
       return Utils.quoteString(((String) value));
     } else {
       return toString();
