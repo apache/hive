@@ -23,8 +23,40 @@ Run Apache Hive inside docker container in pseudo-distributed mode, provide the 
 - Quick-start/Debugging/Prepare a test env for Hive
 
 
-### Quickstart
+## Quickstart
+### STEP 1: Pull the image
+- Pull the image from DockerHub: https://hub.docker.com/r/apache/hive/tags. 
 
+Here are the latest images:
+- 4.0.0
+- 4.0.0-beta-1
+- 3.1.3
+
+```shell
+docker pull apache/hive:4.0.0
+```
+### STEP 2: Export the Hive version
+```shell
+export HIVE_VERSION=4.0.0
+```
+
+### STEP 3: Launch the HiveServer2 with an embedded Metastore.
+This is lightweight and for a quick setup, it uses Derby as metastore db.
+```shell
+docker run -d -p 10000:10000 -p 10002:10002 --env SERVICE_NAME=hiveserver2 --name hive4 apache/hive:${HIVE_VERSION}
+```
+
+### STEP 4: Connect to beeline
+```shell
+docker exec -it hiveserver2 beeline -u 'jdbc:hive2://hiveserver2:10000/'
+```
+
+#### Note: Launch Standalone Metastore To use standalone Metastore with Derby,
+```shell
+docker run -d -p 9083:9083 --env SERVICE_NAME=metastore --name metastore-standalone apache/hive:${HIVE_VERSION}
+```
+
+### Detailed Setup
 ---
 #### Build image
 Apache Hive relies on Hadoop, Tez and some others to facilitate reading, writing, and managing large datasets. 
@@ -44,9 +76,9 @@ There are some arguments to specify the component version:
 If the version is not provided, it will read the version from current `pom.xml`:
 `project.version`, `hadoop.version` and `tez.version` for Hive, Hadoop and Tez respectively. 
 
-For example, the following command uses Hive 3.1.3, Hadoop `hadoop.version` and Tez `tez.version` to build the image,
+For example, the following command uses Hive 4.0.0, Hadoop `hadoop.version` and Tez `tez.version` to build the image,
 ```shell
-./build.sh -hive 3.1.3
+./build.sh -hive 4.0.0
 ```
 If the command does not specify the Hive version, it will use the local `apache-hive-${project.version}-bin.tar.gz`(will trigger a build if it doesn't exist),
 together with Hadoop 3.1.0 and Tez 0.10.1 to build the image,
@@ -58,9 +90,9 @@ After building successfully,  we can get a Docker image named `apache/hive` by d
 #### Run services
 
 Before going further, we should define the environment variable `HIVE_VERSION` first.
-For example, if `-hive 3.1.3` is specified to build the image,
+For example, if `-hive 4.0.0` is specified to build the image,
 ```shell
-export HIVE_VERSION=3.1.3
+export HIVE_VERSION=4.0.0
 ```
 or assuming that you're relying on current `project.version` from pom.xml,
 ```shell
