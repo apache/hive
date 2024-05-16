@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -281,8 +282,11 @@ public class Driver implements IDriver {
           driverContext.setRetrial(true);
           driverContext.getConf().set(ValidTxnList.VALID_TXNS_KEY,
               driverContext.getTxnManager().getValidTxns().toString());
-
-          if (driverContext.getPlan().hasAcidResourcesInQuery()) {
+          
+          DDLDesc.DDLDescWithWriteId acidDdlDesc = driverContext.getPlan().getAcidDdlDesc();
+          boolean hasAcidDdl = acidDdlDesc != null && acidDdlDesc.mayNeedWriteId();
+          
+          if (driverContext.getPlan().hasReadWriteAcidInQuery() || hasAcidDdl) {
             compileInternal(context.getCmd(), true);
             driverTxnHandler.recordValidWriteIds();
             driverTxnHandler.setWriteIdForAcidFileSinks();

@@ -329,7 +329,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
    * @throws LockException
    */
   private void verifyState(QueryPlan queryPlan) throws LockException {
-    if(!isTxnOpen()) {
+    if(!isTxnOpen() && queryPlan.hasAcidResourcesInQuery()) {
       throw new LockException("No transaction context for operation: " + queryPlan.getOperationName() +
         " for " + getQueryIdWaterMark(queryPlan));
     }
@@ -869,7 +869,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     }
     else if(!isExplicitTransaction) {
       assert numStatements == 1 : "numStatements=" + numStatements + " in implicit txn";
-      if (queryPlan.hasAcidResourcesInQuery()) {
+      if (queryPlan.hasReadWriteAcidInQuery()) {
         //1st and only stmt in implicit txn and uses acid resource
         return true;
       }

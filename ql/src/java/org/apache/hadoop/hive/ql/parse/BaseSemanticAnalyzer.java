@@ -1584,24 +1584,24 @@ public abstract class BaseSemanticAnalyzer {
     return acidFileSinks;
   }
 
-  public boolean hasTransactionalInQuery() {
+  public boolean hasReadWriteAcidInQuery() {
     return transactionalInQuery;
   }
 
   public boolean hasAcidResourcesInQuery() {
-    return hasTransactionalInQuery() || Stream.of(getInputs(), getOutputs())
-      .flatMap(Collection::stream)
-      .filter(entity -> entity.getType() == Entity.Type.TABLE
-        || entity.getType() == Entity.Type.PARTITION)
-      .map(entity -> {
-        Table tbl = entity.getTable();
-        Partition p = entity.getPartition();
-        if (p != null) {
-          tbl = p.getTable();
-        }
-        return tbl;
-      })
-      .anyMatch(AcidUtils::isTransactionalTable);
+    return hasReadWriteAcidInQuery() || getAcidDdlDesc() != null ||
+      Stream.of(getInputs(), getOutputs()).flatMap(Collection::stream)
+        .filter(entity -> entity.getType() == Entity.Type.TABLE
+          || entity.getType() == Entity.Type.PARTITION)
+        .map(entity -> {
+          Table tbl = entity.getTable();
+          Partition p = entity.getPartition();
+          if (p != null) {
+            tbl = p.getTable();
+          }
+          return tbl;
+        })
+        .anyMatch(AcidUtils::isTransactionalTable);
   }
 
   protected ListBucketingCtx constructListBucketingCtx(List<String> skewedColNames,

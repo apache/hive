@@ -3428,13 +3428,15 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     driver.run("insert into tab_acid PARTITION (ds, hr) select * from tab_not_acid");
     driver.run("analyze table tab_acid PARTITION (ds, hr) compute statistics");
 
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED, true);
+
     driver.compileAndRespond("analyze table tab_not_acid PARTITION(ds, hr) compute statistics", true);
     txnMgr.acquireLocks(driver.getPlan(), ctx, "dummy");
 
     List<ShowLocksResponseElement> locks = getLocks();
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
     TestTxnDbUtil.checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "ds=2008-04-08/hr=11", locks);
-    txnMgr.commitTxn();
+    txnMgr.releaseLocks(ctx.getHiveLocks());
 
     driver.compileAndRespond("analyze table tab_acid PARTITION(ds, hr) compute statistics");
     txnMgr.acquireLocks(driver.getPlan(), ctx, "dummy");

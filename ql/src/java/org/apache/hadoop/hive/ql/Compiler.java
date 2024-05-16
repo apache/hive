@@ -236,8 +236,7 @@ public class Compiler {
     // validate the plan
     sem.validate();
 
-    if (sem.hasAcidResourcesInQuery() || sem.getAcidDdlDesc() != null
-        || HiveOperation.START_TRANSACTION == hiveOperation) {
+    if (sem.hasAcidResourcesInQuery() || HiveOperation.START_TRANSACTION == hiveOperation) {
       openTxnAndGetValidTxnList(isExplainPlan);
     }
     verifyTxnState(hiveOperation);

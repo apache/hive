@@ -118,6 +118,7 @@ public class QueryPlan implements Serializable {
 
   private transient Long queryStartTime;
   private final HiveOperation operation;
+  private final boolean readWriteAcidInQuery;
   private final boolean acidResourcesInQuery;
   private final Set<FileSinkDesc> acidSinks; // Note: both full-ACID and insert-only sinks.
   private final WriteEntity acidAnalyzeTable;
@@ -133,6 +134,7 @@ public class QueryPlan implements Serializable {
   protected QueryPlan(HiveOperation command) {
     this.reducerTimeStatsPerJobList = new ArrayList<>();
     this.operation = command;
+    this.readWriteAcidInQuery = false;
     this.acidResourcesInQuery = false;
     this.acidSinks = Collections.emptySet();
     this.acidDdlDesc = null;
@@ -165,7 +167,8 @@ public class QueryPlan implements Serializable {
     this.autoCommitValue = sem.getAutoCommitValue();
     this.resultSchema = resultSchema;
     // TODO: all this ACID stuff should be in some sub-object
-    this.acidResourcesInQuery = sem.hasTransactionalInQuery();
+    this.readWriteAcidInQuery = sem.hasReadWriteAcidInQuery();
+    this.acidResourcesInQuery = sem.hasAcidResourcesInQuery();
     this.acidSinks = sem.getAcidFileSinks();
     this.acidDdlDesc = sem.getAcidDdlDesc();
     this.acidAnalyzeTable = sem.getAcidAnalyzeTable();
@@ -176,10 +179,14 @@ public class QueryPlan implements Serializable {
   /**
    * @return true if any acid resources are read/written
    */
+  public boolean hasReadWriteAcidInQuery() {
+    return readWriteAcidInQuery;
+  }
+
   public boolean hasAcidResourcesInQuery() {
     return acidResourcesInQuery;
   }
-
+  
   public WriteEntity getAcidAnalyzeTable() {
     return acidAnalyzeTable;
   }
@@ -272,7 +279,7 @@ public class QueryPlan implements Serializable {
     }
   }
 
-  DDLDescWithWriteId getAcidDdlDesc() {
+  public DDLDescWithWriteId getAcidDdlDesc() {
     return acidDdlDesc;
   }
 
