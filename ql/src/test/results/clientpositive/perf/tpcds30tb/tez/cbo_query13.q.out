@@ -12,7 +12,7 @@ HiveProject(_o__c0=[/(CAST($0):DOUBLE, $1)], _o__c1=[CAST(/($2, $3)):DECIMAL(11,
               HiveFilter(condition=[=($6, 2001)])
                 HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
           HiveProject(ca_address_sk=[$0], EXPR$0=[SEARCH($8, Sarg[_UTF-16LE'GA', _UTF-16LE'KY', _UTF-16LE'NM']:CHAR(2) CHARACTER SET "UTF-16LE")], EXPR$1=[SEARCH($8, Sarg[_UTF-16LE'IN', _UTF-16LE'MT', _UTF-16LE'OR']:CHAR(2) CHARACTER SET "UTF-16LE")], EXPR$2=[SEARCH($8, Sarg[_UTF-16LE'MO', _UTF-16LE'WI', _UTF-16LE'WV']:CHAR(2) CHARACTER SET "UTF-16LE")])
-            HiveFilter(condition=[AND(SEARCH($8, Sarg[_UTF-16LE'GA', _UTF-16LE'IN', _UTF-16LE'KY', _UTF-16LE'MO', _UTF-16LE'MT', _UTF-16LE'NM', _UTF-16LE'OR', _UTF-16LE'WI', _UTF-16LE'WV']:CHAR(2) CHARACTER SET "UTF-16LE"), =(CAST($10):VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'United States'))])
+            HiveFilter(condition=[AND(SEARCH($8, Sarg[_UTF-16LE'GA', _UTF-16LE'IN', _UTF-16LE'KY', _UTF-16LE'MO', _UTF-16LE'MT', _UTF-16LE'NM', _UTF-16LE'OR', _UTF-16LE'WI', _UTF-16LE'WV']:CHAR(2) CHARACTER SET "UTF-16LE"), =($10, _UTF-16LE'United States'))])
               HiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
         HiveProject(cd_demo_sk=[$0], EXPR$3=[=($2, _UTF-16LE'M')], EXPR$4=[=($3, _UTF-16LE'4 yr Degree')], EXPR$6=[=($2, _UTF-16LE'D')], EXPR$7=[=($3, _UTF-16LE'Primary')], EXPR$9=[=($2, _UTF-16LE'U')], EXPR$10=[=($3, _UTF-16LE'Advanced Degree')])
           HiveFilter(condition=[AND(SEARCH($2, Sarg[_UTF-16LE'D', _UTF-16LE'M', _UTF-16LE'U']:CHAR(1) CHARACTER SET "UTF-16LE"), SEARCH($3, Sarg[_UTF-16LE'4 yr Degree         ', _UTF-16LE'Advanced Degree     ', _UTF-16LE'Primary             ']:CHAR(20) CHARACTER SET "UTF-16LE"))])
