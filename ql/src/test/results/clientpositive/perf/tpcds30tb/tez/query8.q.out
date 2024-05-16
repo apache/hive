@@ -7,14 +7,14 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Map 4 (BROADCAST_EDGE), Reducer 8 (BROADCAST_EDGE)
-        Reducer 10 <- Map 5 (CUSTOM_SIMPLE_EDGE), Map 9 (CUSTOM_SIMPLE_EDGE)
-        Reducer 11 <- Reducer 10 (SIMPLE_EDGE)
-        Reducer 12 <- Reducer 11 (SIMPLE_EDGE), Union 7 (CONTAINS)
+        Map 1 <- Map 4 (BROADCAST_EDGE), Reducer 9 (BROADCAST_EDGE)
+        Reducer 11 <- Map 10 (CUSTOM_SIMPLE_EDGE), Map 6 (CUSTOM_SIMPLE_EDGE)
+        Reducer 12 <- Reducer 11 (SIMPLE_EDGE)
+        Reducer 13 <- Reducer 12 (SIMPLE_EDGE), Union 8 (CONTAINS)
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 6 <- Map 5 (SIMPLE_EDGE), Union 7 (CONTAINS)
-        Reducer 8 <- Map 13 (BROADCAST_EDGE), Union 7 (SIMPLE_EDGE)
+        Reducer 7 <- Map 6 (SIMPLE_EDGE), Union 8 (CONTAINS)
+        Reducer 9 <- Map 5 (BROADCAST_EDGE), Union 8 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -45,20 +45,20 @@ STAGE PLANS:
                                Inner Join 0 to 1
                           keys:
                             0 _col0 (type: bigint)
-                            1 _col1 (type: bigint)
-                          outputColumnNames: _col1, _col6
+                            1 _col0 (type: bigint)
+                          outputColumnNames: _col1, _col5
                           input vertices:
-                            1 Reducer 8
+                            1 Reducer 9
                           Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
                           Top N Key Operator
                             sort order: +
-                            keys: _col6 (type: varchar(50))
+                            keys: _col5 (type: varchar(50))
                             null sort order: z
                             Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
                             top n: 100
                             Group By Operator
                               aggregations: sum(_col1)
-                              keys: _col6 (type: varchar(50))
+                              keys: _col5 (type: varchar(50))
                               minReductionHashAggr: 0.4
                               mode: hash
                               outputColumnNames: _col0, _col1
@@ -72,26 +72,25 @@ STAGE PLANS:
                                 value expressions: _col1 (type: decimal(17,2))
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
-        Map 13 
+        Map 10 
             Map Operator Tree:
                 TableScan
-                  alias: store
-                  filterExpr: substr(s_zip, 1, 2) is not null (type: boolean)
-                  Statistics: Num rows: 1704 Data size: 315240 Basic stats: COMPLETE Column stats: COMPLETE
+                  alias: customer
+                  filterExpr: ((c_preferred_cust_flag = 'Y') and c_current_addr_sk is not null) (type: boolean)
+                  Statistics: Num rows: 80000000 Data size: 7440000000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: substr(s_zip, 1, 2) is not null (type: boolean)
-                    Statistics: Num rows: 1704 Data size: 315240 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: ((c_preferred_cust_flag = 'Y') and c_current_addr_sk is not null) (type: boolean)
+                    Statistics: Num rows: 26666667 Data size: 2480000031 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: s_store_sk (type: bigint), s_store_name (type: varchar(50)), substr(s_zip, 1, 2) (type: string)
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 1704 Data size: 310128 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: c_current_addr_sk (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 26666667 Data size: 213333336 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col2 (type: string)
+                        key expressions: _col0 (type: bigint)
                         null sort order: z
                         sort order: +
-                        Map-reduce partition columns: _col2 (type: string)
-                        Statistics: Num rows: 1704 Data size: 310128 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: bigint), _col1 (type: varchar(50))
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Statistics: Num rows: 26666667 Data size: 213333336 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 4 
@@ -134,11 +133,47 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: customer_address
-                  filterExpr: (((substr(ca_zip, 1, 5)) IN ('89436', '30868', '65085', '22977', '83927', '77557', '58429', '40697', '80614', '10502', '32779', '91137', '61265', '98294', '17921', '18427', '21203', '59362', '87291', '84093', '21505', '17184', '10866', '67898', '25797', '28055', '18377', '80332', '74535', '21757', '29742', '90885', '29898', '17819', '40811', '25990', '47513', '89531', '91068', '10391', '18846', '99223', '82637', '41368', '83658', '86199', '81625', '26696', '89338', '88425', '32200', '81427', '19053', '77471', '36610', '99823', '43276', '41249', '48584', '83550', '82276', '18842', '78890', '14090', '38123', '40936', '34425', '19850', '43286', '80072', '79188', '54191', '11395', '50497', '84861', '90733', '21068', '57666', '37119', '25004', '57835', '70067', '62878', '95806', '19303', '18840', '19124', '29785', '16737', '16022', '49613', '89977', '68310', '60069', '98360', '48649', '39050', '41793', '25002', '27413', '39736', '47208', '16515', '94808', '57648', '15009', '80015', '42961', '63982', '21744', '71853', '81087', '67468', '34175', '64008', '20261', '11201', '51799', '48043', '45645', '61163', '48375', '36447', '57042', '21218', '41100', '89951', '22745', '35851', '83326', '61125', '78298', '80752', '49858', '52940', '96976', '63792', '11376', '53582', '18717', '90226', '50530', '94203', '99447', '27670', '96577', '57856', '56372', '16165', '23427', '54561', '28806', '44439', '22926', '30123', '61451', '92397', '56979', '92309', '70873', '13355', '21801', '46346', '37562', '56458', '28286', '47306', '99555', '69399', '26234', '47546', '49661', '88601', '35943', '39936', '25632', '24611', '44166', '56648', '30379', '59785', '11110', '14329', '93815', '52226', '71381', '13842', '25612', '63294', '14664', '21077', '82626', '18799', '60915', '81020', '56447', '76619', '11433', '13414', '42548', '92713', '70467', '30884', '47484', '16072', '38936', '13036', '88376', '45539', '35901', '19506', '65690', '73957', '71850', '49231', '14276', '20005', '18384', '76615', '11635', '38177', '55607', '41369', '95447', '58581', '58149', '91946', '33790', '76232', '75692', '95464', '22246', '51061', '56692', '53121', '77209', '15482', '10688', '14868', '45907', '73520', '72666', '25734', '17959', '24677', '66446', '94627', '53535', '15560', '41967', '69297', '11929', '59403', '33283', '52232', '57350', '43933', '40921', '36635', '10827', '71286', '19736', '80619', '25251', '95042', '15526', '36496', '55854', '49124', '81980', '35375', '49157', '63512', '28944', '14946', '36503', '54010', '18767', '23969', '43905', '66979', '33113', '21286', '58471', '59080', '13395', '79144', '70373', '67031', '38360', '26705', '50906', '52406', '26066', '73146', '15884', '31897', '30045', '61068', '45550', '92454', '13376', '14354', '19770', '22928', '97790', '50723', '46081', '30202', '14410', '20223', '88500', '67298', '13261', '14172', '81410', '93578', '83583', '46047', '94167', '82564', '21156', '15799', '86709', '37931', '74703', '83103', '23054', '70470', '72008', '49247', '91911', '69998', '20961', '70070', '63197', '54853', '88191', '91830', '49521', '19454', '81450', '89091', '62378', '25683', '61869', '51744', '36580', '85778', '36871', '48121', '28810', '83712', '45486', '67393', '26935', '42393', '20132', '55349', '86057', '21309', '80218', '10094', '11357', '48819', '39734', '40758', '30432', '21204', '29467', '30214', '61024', '55307', '74621', '11622', '68908', '33032', '52868', '99194', '99900', '84936', '69036', '99149', '45013', '32895', '59004', '32322', '14933', '32936', '33562', '72550', '27385', '58049', '58200', '16808', '21360', '32961', '18586', '79307', '15492') and substr(substr(ca_zip, 1, 5), 1, 2) is not null) or substr(substr(ca_zip, 1, 5), 1, 2) is not null) (type: boolean)
-                  Statistics: Num rows: 40000000 Data size: 3560000000 Basic stats: COMPLETE Column stats: COMPLETE
+                  alias: store
+                  filterExpr: substr(s_zip, 1, 2) is not null (type: boolean)
+                  Statistics: Num rows: 1704 Data size: 315240 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((substr(ca_zip, 1, 5)) IN ('89436', '30868', '65085', '22977', '83927', '77557', '58429', '40697', '80614', '10502', '32779', '91137', '61265', '98294', '17921', '18427', '21203', '59362', '87291', '84093', '21505', '17184', '10866', '67898', '25797', '28055', '18377', '80332', '74535', '21757', '29742', '90885', '29898', '17819', '40811', '25990', '47513', '89531', '91068', '10391', '18846', '99223', '82637', '41368', '83658', '86199', '81625', '26696', '89338', '88425', '32200', '81427', '19053', '77471', '36610', '99823', '43276', '41249', '48584', '83550', '82276', '18842', '78890', '14090', '38123', '40936', '34425', '19850', '43286', '80072', '79188', '54191', '11395', '50497', '84861', '90733', '21068', '57666', '37119', '25004', '57835', '70067', '62878', '95806', '19303', '18840', '19124', '29785', '16737', '16022', '49613', '89977', '68310', '60069', '98360', '48649', '39050', '41793', '25002', '27413', '39736', '47208', '16515', '94808', '57648', '15009', '80015', '42961', '63982', '21744', '71853', '81087', '67468', '34175', '64008', '20261', '11201', '51799', '48043', '45645', '61163', '48375', '36447', '57042', '21218', '41100', '89951', '22745', '35851', '83326', '61125', '78298', '80752', '49858', '52940', '96976', '63792', '11376', '53582', '18717', '90226', '50530', '94203', '99447', '27670', '96577', '57856', '56372', '16165', '23427', '54561', '28806', '44439', '22926', '30123', '61451', '92397', '56979', '92309', '70873', '13355', '21801', '46346', '37562', '56458', '28286', '47306', '99555', '69399', '26234', '47546', '49661', '88601', '35943', '39936', '25632', '24611', '44166', '56648', '30379', '59785', '11110', '14329', '93815', '52226', '71381', '13842', '25612', '63294', '14664', '21077', '82626', '18799', '60915', '81020', '56447', '76619', '11433', '13414', '42548', '92713', '70467', '30884', '47484', '16072', '38936', '13036', '88376', '45539', '35901', '19506', '65690', '73957', '71850', '49231', '14276', '20005', '18384', '76615', '11635', '38177', '55607', '41369', '95447', '58581', '58149', '91946', '33790', '76232', '75692', '95464', '22246', '51061', '56692', '53121', '77209', '15482', '10688', '14868', '45907', '73520', '72666', '25734', '17959', '24677', '66446', '94627', '53535', '15560', '41967', '69297', '11929', '59403', '33283', '52232', '57350', '43933', '40921', '36635', '10827', '71286', '19736', '80619', '25251', '95042', '15526', '36496', '55854', '49124', '81980', '35375', '49157', '63512', '28944', '14946', '36503', '54010', '18767', '23969', '43905', '66979', '33113', '21286', '58471', '59080', '13395', '79144', '70373', '67031', '38360', '26705', '50906', '52406', '26066', '73146', '15884', '31897', '30045', '61068', '45550', '92454', '13376', '14354', '19770', '22928', '97790', '50723', '46081', '30202', '14410', '20223', '88500', '67298', '13261', '14172', '81410', '93578', '83583', '46047', '94167', '82564', '21156', '15799', '86709', '37931', '74703', '83103', '23054', '70470', '72008', '49247', '91911', '69998', '20961', '70070', '63197', '54853', '88191', '91830', '49521', '19454', '81450', '89091', '62378', '25683', '61869', '51744', '36580', '85778', '36871', '48121', '28810', '83712', '45486', '67393', '26935', '42393', '20132', '55349', '86057', '21309', '80218', '10094', '11357', '48819', '39734', '40758', '30432', '21204', '29467', '30214', '61024', '55307', '74621', '11622', '68908', '33032', '52868', '99194', '99900', '84936', '69036', '99149', '45013', '32895', '59004', '32322', '14933', '32936', '33562', '72550', '27385', '58049', '58200', '16808', '21360', '32961', '18586', '79307', '15492') and substr(substr(ca_zip, 1, 5), 1, 2) is not null) (type: boolean)
+                    predicate: substr(s_zip, 1, 2) is not null (type: boolean)
+                    Statistics: Num rows: 1704 Data size: 315240 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: s_store_sk (type: bigint), s_store_name (type: varchar(50)), substr(s_zip, 1, 2) (type: string)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1704 Data size: 310128 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col2 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col2 (type: string)
+                        Statistics: Num rows: 1704 Data size: 310128 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint), _col1 (type: varchar(50))
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: customer_address
+                  filterExpr: (substr(substr(ca_zip, 1, 5), 1, 2) is not null or ((substr(ca_zip, 1, 5)) IN ('10094', '10391', '10502', '10688', '10827', '10866', '11110', '11201', '11357', '11376', '11395', '11433', '11622', '11635', '11929', '13036', '13261', '13355', '13376', '13395', '13414', '13842', '14090', '14172', '14276', '14329', '14354', '14410', '14664', '14868', '14933', '14946', '15009', '15482', '15492', '15526', '15560', '15799', '15884', '16022', '16072', '16165', '16515', '16737', '16808', '17184', '17819', '17921', '17959', '18377', '18384', '18427', '18586', '18717', '18767', '18799', '18840', '18842', '18846', '19053', '19124', '19303', '19454', '19506', '19736', '19770', '19850', '20005', '20132', '20223', '20261', '20961', '21068', '21077', '21156', '21203', '21204', '21218', '21286', '21309', '21360', '21505', '21744', '21757', '21801', '22246', '22745', '22926', '22928', '22977', '23054', '23427', '23969', '24611', '24677', '25002', '25004', '25251', '25612', '25632', '25683', '25734', '25797', '25990', '26066', '26234', '26696', '26705', '26935', '27385', '27413', '27670', '28055', '28286', '28806', '28810', '28944', '29467', '29742', '29785', '29898', '30045', '30123', '30202', '30214', '30379', '30432', '30868', '30884', '31897', '32200', '32322', '32779', '32895', '32936', '32961', '33032', '33113', '33283', '33562', '33790', '34175', '34425', '35375', '35851', '35901', '35943', '36447', '36496', '36503', '36580', '36610', '36635', '36871', '37119', '37562', '37931', '38123', '38177', '38360', '38936', '39050', '39734', '39736', '39936', '40697', '40758', '40811', '40921', '40936', '41100', '41249', '41368', '41369', '41793', '41967', '42393', '42548', '42961', '43276', '43286', '43905', '43933', '44166', '44439', '45013', '45486', '45539', '45550', '45645', '45907', '46047', '46081', '46346', '47208', '47306', '47484', '47513', '47546', '48043', '48121', '48375', '48584', '48649', '48819', '49124', '49157', '49231', '49247', '49521', '49613', '49661', '49858', '50497', '50530', '50723', '50906', '51061', '51744', '51799', '52226', '52232', '52406', '52868', '52940', '53121', '53535', '53582', '54010', '54191', '54561', '54853', '55307', '55349', '55607', '55854', '56372', '56447', '56458', '56648', '56692', '56979', '57042', '57350', '57648', '57666', '57835', '57856', '58049', '58149', '58200', '58429', '58471', '58581', '59004', '59080', '59362', '59403', '59785', '60069', '60915', '61024', '61068', '61125', '61163', '61265', '61451', '61869', '62378', '62878', '63197', '63294', '63512', '63792', '63982', '64008', '65085', '65690', '66446', '66979', '67031', '67298', '67393', '67468', '67898', '68310', '68908', '69036', '69297', '69399', '69998', '70067', '70070', '70373', '70467', '70470', '70873', '71286', '71381', '71850', '71853', '72008', '72550', '72666', '73146', '73520', '73957', '74535', '74621', '74703', '75692', '76232', '76615', '76619', '77209', '77471', '77557', '78298', '78890', '79144', '79188', '79307', '80015', '80072', '80218', '80332', '80614', '80619', '80752', '81020', '81087', '81410', '81427', '81450', '81625', '81980', '82276', '82564', '82626', '82637', '83103', '83326', '83550', '83583', '83658', '83712', '83927', '84093', '84861', '84936', '85778', '86057', '86199', '86709', '87291', '88191', '88376', '88425', '88500', '88601', '89091', '89338', '89436', '89531', '89951', '89977', '90226', '90733', '90885', '91068', '91137', '91830', '91911', '91946', '92309', '92397', '92454', '92713', '93578', '93815', '94167', '94203', '94627', '94808', '95042', '95447', '95464', '95806', '96577', '96976', '97790', '98294', '98360', '99149', '99194', '99223', '99447', '99555', '99823', '99900') and substr(substr(ca_zip, 1, 5), 1, 2) is not null)) (type: boolean)
+                  Statistics: Num rows: 40000000 Data size: 3880000000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: substr(substr(ca_zip, 1, 5), 1, 2) is not null (type: boolean)
+                    Statistics: Num rows: 40000000 Data size: 3880000000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: ca_address_sk (type: bigint), ca_zip (type: char(10))
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 40000000 Data size: 3880000000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Statistics: Num rows: 40000000 Data size: 3880000000 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: char(10))
+                  Filter Operator
+                    predicate: ((substr(ca_zip, 1, 5)) IN ('10094', '10391', '10502', '10688', '10827', '10866', '11110', '11201', '11357', '11376', '11395', '11433', '11622', '11635', '11929', '13036', '13261', '13355', '13376', '13395', '13414', '13842', '14090', '14172', '14276', '14329', '14354', '14410', '14664', '14868', '14933', '14946', '15009', '15482', '15492', '15526', '15560', '15799', '15884', '16022', '16072', '16165', '16515', '16737', '16808', '17184', '17819', '17921', '17959', '18377', '18384', '18427', '18586', '18717', '18767', '18799', '18840', '18842', '18846', '19053', '19124', '19303', '19454', '19506', '19736', '19770', '19850', '20005', '20132', '20223', '20261', '20961', '21068', '21077', '21156', '21203', '21204', '21218', '21286', '21309', '21360', '21505', '21744', '21757', '21801', '22246', '22745', '22926', '22928', '22977', '23054', '23427', '23969', '24611', '24677', '25002', '25004', '25251', '25612', '25632', '25683', '25734', '25797', '25990', '26066', '26234', '26696', '26705', '26935', '27385', '27413', '27670', '28055', '28286', '28806', '28810', '28944', '29467', '29742', '29785', '29898', '30045', '30123', '30202', '30214', '30379', '30432', '30868', '30884', '31897', '32200', '32322', '32779', '32895', '32936', '32961', '33032', '33113', '33283', '33562', '33790', '34175', '34425', '35375', '35851', '35901', '35943', '36447', '36496', '36503', '36580', '36610', '36635', '36871', '37119', '37562', '37931', '38123', '38177', '38360', '38936', '39050', '39734', '39736', '39936', '40697', '40758', '40811', '40921', '40936', '41100', '41249', '41368', '41369', '41793', '41967', '42393', '42548', '42961', '43276', '43286', '43905', '43933', '44166', '44439', '45013', '45486', '45539', '45550', '45645', '45907', '46047', '46081', '46346', '47208', '47306', '47484', '47513', '47546', '48043', '48121', '48375', '48584', '48649', '48819', '49124', '49157', '49231', '49247', '49521', '49613', '49661', '49858', '50497', '50530', '50723', '50906', '51061', '51744', '51799', '52226', '52232', '52406', '52868', '52940', '53121', '53535', '53582', '54010', '54191', '54561', '54853', '55307', '55349', '55607', '55854', '56372', '56447', '56458', '56648', '56692', '56979', '57042', '57350', '57648', '57666', '57835', '57856', '58049', '58149', '58200', '58429', '58471', '58581', '59004', '59080', '59362', '59403', '59785', '60069', '60915', '61024', '61068', '61125', '61163', '61265', '61451', '61869', '62378', '62878', '63197', '63294', '63512', '63792', '63982', '64008', '65085', '65690', '66446', '66979', '67031', '67298', '67393', '67468', '67898', '68310', '68908', '69036', '69297', '69399', '69998', '70067', '70070', '70373', '70467', '70470', '70873', '71286', '71381', '71850', '71853', '72008', '72550', '72666', '73146', '73520', '73957', '74535', '74621', '74703', '75692', '76232', '76615', '76619', '77209', '77471', '77557', '78298', '78890', '79144', '79188', '79307', '80015', '80072', '80218', '80332', '80614', '80619', '80752', '81020', '81087', '81410', '81427', '81450', '81625', '81980', '82276', '82564', '82626', '82637', '83103', '83326', '83550', '83583', '83658', '83712', '83927', '84093', '84861', '84936', '85778', '86057', '86199', '86709', '87291', '88191', '88376', '88425', '88500', '88601', '89091', '89338', '89436', '89531', '89951', '89977', '90226', '90733', '90885', '91068', '91137', '91830', '91911', '91946', '92309', '92397', '92454', '92713', '93578', '93815', '94167', '94203', '94627', '94808', '95042', '95447', '95464', '95806', '96577', '96976', '97790', '98294', '98360', '99149', '99194', '99223', '99447', '99555', '99823', '99900') and substr(substr(ca_zip, 1, 5), 1, 2) is not null) (type: boolean)
                     Statistics: Num rows: 20000000 Data size: 1780000000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: substr(ca_zip, 1, 5) (type: string)
@@ -158,44 +193,9 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: string)
                           Statistics: Num rows: 133532 Data size: 12819072 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: bigint)
-                  Filter Operator
-                    predicate: substr(substr(ca_zip, 1, 5), 1, 2) is not null (type: boolean)
-                    Statistics: Num rows: 40000000 Data size: 3880000000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: ca_address_sk (type: bigint), ca_zip (type: char(10))
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 40000000 Data size: 3880000000 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: bigint)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: bigint)
-                        Statistics: Num rows: 40000000 Data size: 3880000000 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: char(10))
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
-        Map 9 
-            Map Operator Tree:
-                TableScan
-                  alias: customer
-                  filterExpr: ((c_preferred_cust_flag = 'Y') and c_current_addr_sk is not null) (type: boolean)
-                  Statistics: Num rows: 80000000 Data size: 7440000000 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: ((c_preferred_cust_flag = 'Y') and c_current_addr_sk is not null) (type: boolean)
-                    Statistics: Num rows: 26666667 Data size: 2480000031 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: c_current_addr_sk (type: bigint)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 26666667 Data size: 213333336 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: bigint)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: bigint)
-                        Statistics: Num rows: 26666667 Data size: 213333336 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: vectorized, llap
-            LLAP IO: may be used (ACID table)
-        Reducer 10 
+        Reducer 11 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Map Join Operator
@@ -206,7 +206,7 @@ STAGE PLANS:
                   1 KEY.reducesinkkey0 (type: bigint)
                 outputColumnNames: _col1
                 input vertices:
-                  0 Map 5
+                  0 Map 6
                 Statistics: Num rows: 26666667 Data size: 2373333363 Basic stats: COMPLETE Column stats: COMPLETE
                 DynamicPartitionHashJoin: true
                 Group By Operator
@@ -223,7 +223,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: char(10))
                     Statistics: Num rows: 63590 Data size: 6168230 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: bigint)
-        Reducer 11 
+        Reducer 12 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -253,7 +253,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 2119 Data size: 203424 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: bigint)
-        Reducer 12 
+        Reducer 13 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -308,7 +308,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 6 
+        Reducer 7 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -331,7 +331,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 9538 Data size: 915648 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: bigint)
-        Reducer 8 
+        Reducer 9 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -351,21 +351,21 @@ STAGE PLANS:
                       condition map:
                            Inner Join 0 to 1
                       keys:
-                        0 _col0 (type: string)
-                        1 _col2 (type: string)
-                      outputColumnNames: _col1, _col2
+                        0 _col2 (type: string)
+                        1 _col0 (type: string)
+                      outputColumnNames: _col0, _col1
                       input vertices:
-                        1 Map 13
+                        0 Map 5
                       Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col1 (type: bigint)
+                        key expressions: _col0 (type: bigint)
                         null sort order: z
                         sort order: +
-                        Map-reduce partition columns: _col1 (type: bigint)
+                        Map-reduce partition columns: _col0 (type: bigint)
                         Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col2 (type: varchar(50))
-        Union 7 
-            Vertex: Union 7
+                        value expressions: _col1 (type: varchar(50))
+        Union 8 
+            Vertex: Union 8
 
   Stage: Stage-0
     Fetch Operator
