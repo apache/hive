@@ -1982,8 +1982,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
           !conf.get(HiveConf.ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_IMPL.varname).equals("DUMMY");
       final String ruleExclusionRegex = conf.get(ConfVars.HIVE_CBO_RULE_EXCLUSION_REGEX.varname, "");
       final RelNode calcitePreMVRewritingPlan = basePlan;
+      
       final Set<TableName> tablesUsedQuery = getTablesUsed(basePlan);
-
+      if (tablesUsedQuery.isEmpty()) {
+        return basePlan;
+      }
       // Add views to planner
       List<HiveRelOptMaterialization> materializations = new ArrayList<>();
       try {
@@ -2121,7 +2124,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 queryToRewriteAST.getTokenStopIndex());
 
         ASTNode expandedAST = ParseUtils.parse(expandedQueryText, new Context(conf));
+        
         Set<TableName> tablesUsedByOriginalPlan = getTablesUsed(removeSubqueries(originalPlan, metadataProvider));
+        if (tablesUsedByOriginalPlan.isEmpty()) {
+          return originalPlan;
+        }
         openTxnAndGetValidTxnList();
         
         RelNode mvScan = getMaterializedViewByAST(
@@ -2345,8 +2352,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
         public void visit(RelNode node, int ordinal, RelNode parent) {
           if (node instanceof TableScan) {
             TableScan ts = (TableScan) node;
-            Table hiveTableMD = ((RelOptHiveTable) ts.getTable()).getHiveTableMD();
-            tablesUsed.add(hiveTableMD.getFullTableName());
+            Table table = ((RelOptHiveTable) ts.getTable()).getHiveTableMD();
+            if (AcidUtils.isTransactionalTable(table) || 
+                  table.isNonNative() && table.getStorageHandler().areSnapshotsSupported()) {
+              tablesUsed.add(table.getFullTableName());
+            }
           }
           super.visit(node, ordinal, parent);
         }

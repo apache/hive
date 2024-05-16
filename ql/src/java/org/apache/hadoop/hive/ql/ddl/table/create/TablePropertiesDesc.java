@@ -23,11 +23,11 @@ import java.util.Map;
 /**
  * Marker interface for table/mview properties accessor.
  */
-public interface TblPropsDesc {
+public interface TablePropertiesDesc {
+  
+  void setLocation(String location);
+  
+  void setInitialWriteId(Long writeId);
   
   Map<String, String> getTblProps();
-
-  void setLocation(String location);
-
-  void setInitialWriteId(Long writeId);
 }
