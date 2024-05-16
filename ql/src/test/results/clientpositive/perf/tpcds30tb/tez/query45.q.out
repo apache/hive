@@ -249,7 +249,7 @@ STAGE PLANS:
                     outputColumnNames: _col2, _col7, _col8, _col15
                     Statistics: Num rows: 1087859571 Data size: 329317176033 Basic stats: COMPLETE Column stats: COMPLETE
                     Filter Operator
-                      predicate: (_col15 is not null or (substr(_col8, 1, 5)) IN ('85669', '86197', '88274', '83405', '86475', '85392', '85460', '80348', '81792')) (type: boolean)
+                      predicate: (_col15 is not null or (substr(_col8, 1, 5)) IN ('80348', '81792', '83405', '85392', '85460', '85669', '86197', '86475', '88274')) (type: boolean)
                       Statistics: Num rows: 1087859571 Data size: 329317176033 Basic stats: COMPLETE Column stats: COMPLETE
                       Top N Key Operator
                         sort order: ++
