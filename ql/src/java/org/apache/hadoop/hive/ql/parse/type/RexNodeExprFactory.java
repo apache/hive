@@ -32,6 +32,7 @@ import org.apache.calcite.avatica.util.TimeUnit;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeFamily;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
@@ -48,6 +49,7 @@ import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlQuantifyOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.parser.SqlParserPos;
+import org.apache.calcite.sql.type.SqlTypeFamily;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.ArraySqlType;
 import org.apache.calcite.util.ConversionUtil;
@@ -615,8 +617,9 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
           SqlStdOperatorTable.ROW,
           operands);
     }
-    return rexBuilder.makeLiteral(constantValue,
-        TypeConverter.convert(typeInfo, rexBuilder.getTypeFactory()), false);
+    RelDataType finalType = TypeConverter.convert(typeInfo, rexBuilder.getTypeFactory());
+    boolean allowCast = finalType.getFamily() == SqlTypeFamily.CHARACTER;
+    return rexBuilder.makeLiteral(constantValue, finalType, allowCast);
   }
 
   /**
