@@ -570,7 +570,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public boolean canComputeQueryUsingStats(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    if (getStatsSource().equals(HiveMetaHook.ICEBERG)) {
+    if (getStatsSource().equals(HiveMetaHook.ICEBERG) && hmsTable.getMetaTable() == null) {
       Table table = getTable(hmsTable);
       if (table.currentSnapshot() != null) {
         Map<String, String> summary = table.currentSnapshot().summary();
@@ -1032,7 +1032,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public boolean isValidMetadataTable(String metaTableName) {
-    return IcebergMetadataTables.isValidMetaTable(metaTableName);
+    return metaTableName != null && IcebergMetadataTables.isValidMetaTable(metaTableName);
   }
 
   @Override
@@ -1512,7 +1512,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   private void fallbackToNonVectorizedModeBasedOnProperties(Properties tableProps) {
     Schema tableSchema = SchemaParser.fromJson(tableProps.getProperty(InputFormatConfig.TABLE_SCHEMA));
     if (FileFormat.AVRO.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT)) ||
-        (tableProps.containsKey("metaTable") && isValidMetadataTable(tableProps.getProperty("metaTable"))) ||
+        isValidMetadataTable(tableProps.getProperty(IcebergAcidUtil.META_TABLE_PROPERTY)) ||
         hasOrcTimeInSchema(tableProps, tableSchema) ||
         !hasParquetNestedTypeWithinListOrMap(tableProps, tableSchema)) {
       conf.setBoolean(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.varname, false);
