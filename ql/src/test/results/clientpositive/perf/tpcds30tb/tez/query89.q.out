@@ -59,16 +59,16 @@ STAGE PLANS:
                             Statistics: Num rows: 229436556 Data size: 106687998652 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: sum(_col2)
-                              keys: _col5 (type: char(50)), _col6 (type: char(50)), _col7 (type: char(50)), _col9 (type: int), _col11 (type: varchar(50)), _col12 (type: varchar(50))
+                              keys: _col11 (type: varchar(50)), _col12 (type: varchar(50)), _col5 (type: char(50)), _col6 (type: char(50)), _col7 (type: char(50)), _col9 (type: int)
                               minReductionHashAggr: 0.99
                               mode: hash
                               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
                               Statistics: Num rows: 16513200 Data size: 9528116400 Basic stats: COMPLETE Column stats: COMPLETE
                               Reduce Output Operator
-                                key expressions: _col0 (type: char(50)), _col1 (type: char(50)), _col2 (type: char(50)), _col3 (type: int), _col4 (type: varchar(50)), _col5 (type: varchar(50))
+                                key expressions: _col0 (type: varchar(50)), _col1 (type: varchar(50)), _col2 (type: char(50)), _col3 (type: char(50)), _col4 (type: char(50)), _col5 (type: int)
                                 null sort order: zzzzzz
                                 sort order: ++++++
-                                Map-reduce partition columns: _col0 (type: char(50)), _col1 (type: char(50)), _col2 (type: char(50)), _col3 (type: int), _col4 (type: varchar(50)), _col5 (type: varchar(50))
+                                Map-reduce partition columns: _col0 (type: varchar(50)), _col1 (type: varchar(50)), _col2 (type: char(50)), _col3 (type: char(50)), _col4 (type: char(50)), _col5 (type: int)
                                 Statistics: Num rows: 16513200 Data size: 9528116400 Basic stats: COMPLETE Column stats: COMPLETE
                                 value expressions: _col6 (type: decimal(17,2))
             Execution mode: vectorized, llap
@@ -77,10 +77,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: item
-                  filterExpr: ((i_class) IN ('wallpaper                                         ', 'parenting                                         ', 'musical                                           ', 'womens                                            ', 'birdal                                            ', 'pants                                             ') and (i_category) IN ('Home                                              ', 'Books                                             ', 'Electronics                                       ', 'Shoes                                             ', 'Jewelry                                           ', 'Men                                               ') and (((i_category) IN ('Home                                              ', 'Books                                             ', 'Electronics                                       ') and (i_class) IN ('wallpaper                                         ', 'parenting                                         ', 'musical                                           ')) or ((i_category) IN ('Shoes                                             ', 'Jewelry                                           ', 'Men                                               ') and (i_class) IN ('womens                                            ', 'birdal                                            ', 'pants                                             ')))) (type: boolean)
+                  filterExpr: ((i_class) IN ('birdal                                            ', 'musical                                           ', 'pants                                             ', 'parenting                                         ', 'wallpaper                                         ', 'womens                                            ') and (i_category) IN ('Books                                             ', 'Electronics                                       ', 'Home                                              ', 'Jewelry                                           ', 'Men                                               ', 'Shoes                                             ') and (((i_category) IN ('Books                                             ', 'Electronics                                       ', 'Home                                              ') and (i_class) IN ('musical                                           ', 'parenting                                         ', 'wallpaper                                         ')) or ((i_category) IN ('Jewelry                                           ', 'Men                                               ', 'Shoes                                             ') and (i_class) IN ('birdal                                            ', 'pants                                             ', 'womens                                            ')))) (type: boolean)
                   Statistics: Num rows: 462000 Data size: 133980000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((i_class) IN ('wallpaper                                         ', 'parenting                                         ', 'musical                                           ', 'womens                                            ', 'birdal                                            ', 'pants                                             ') and (i_category) IN ('Home                                              ', 'Books                                             ', 'Electronics                                       ', 'Shoes                                             ', 'Jewelry                                           ', 'Men                                               ') and (((i_category) IN ('Home                                              ', 'Books                                             ', 'Electronics                                       ') and (i_class) IN ('wallpaper                                         ', 'parenting                                         ', 'musical                                           ')) or ((i_category) IN ('Shoes                                             ', 'Jewelry                                           ', 'Men                                               ') and (i_class) IN ('womens                                            ', 'birdal                                            ', 'pants                                             ')))) (type: boolean)
+                    predicate: ((i_class) IN ('birdal                                            ', 'musical                                           ', 'pants                                             ', 'parenting                                         ', 'wallpaper                                         ', 'womens                                            ') and (i_category) IN ('Books                                             ', 'Electronics                                       ', 'Home                                              ', 'Jewelry                                           ', 'Men                                               ', 'Shoes                                             ') and (((i_category) IN ('Books                                             ', 'Electronics                                       ', 'Home                                              ') and (i_class) IN ('musical                                           ', 'parenting                                         ', 'wallpaper                                         ')) or ((i_category) IN ('Jewelry                                           ', 'Men                                               ', 'Shoes                                             ') and (i_class) IN ('birdal                                            ', 'pants                                             ', 'womens                                            ')))) (type: boolean)
                     Statistics: Num rows: 6546 Data size: 1898340 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: i_item_sk (type: bigint), i_brand (type: char(50)), i_class (type: char(50)), i_category (type: char(50))
@@ -156,35 +156,35 @@ STAGE PLANS:
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
-                keys: KEY._col0 (type: char(50)), KEY._col1 (type: char(50)), KEY._col2 (type: char(50)), KEY._col3 (type: int), KEY._col4 (type: varchar(50)), KEY._col5 (type: varchar(50))
+                keys: KEY._col0 (type: varchar(50)), KEY._col1 (type: varchar(50)), KEY._col2 (type: char(50)), KEY._col3 (type: char(50)), KEY._col4 (type: char(50)), KEY._col5 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
                 Statistics: Num rows: 39600 Data size: 22849200 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
-                  key expressions: _col2 (type: char(50)), _col0 (type: char(50)), _col4 (type: varchar(50)), _col5 (type: varchar(50))
+                  key expressions: _col4 (type: char(50)), _col2 (type: char(50)), _col0 (type: varchar(50)), _col1 (type: varchar(50))
                   null sort order: aaaa
                   sort order: ++++
-                  Map-reduce partition columns: _col2 (type: char(50)), _col0 (type: char(50)), _col4 (type: varchar(50)), _col5 (type: varchar(50))
+                  Map-reduce partition columns: _col4 (type: char(50)), _col2 (type: char(50)), _col0 (type: varchar(50)), _col1 (type: varchar(50))
                   Statistics: Num rows: 39600 Data size: 22849200 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col1 (type: char(50)), _col3 (type: int), _col6 (type: decimal(17,2))
+                  value expressions: _col3 (type: char(50)), _col5 (type: int), _col6 (type: decimal(17,2))
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey1 (type: char(50)), VALUE._col0 (type: char(50)), KEY.reducesinkkey0 (type: char(50)), VALUE._col1 (type: int), KEY.reducesinkkey2 (type: varchar(50)), KEY.reducesinkkey3 (type: varchar(50)), VALUE._col2 (type: decimal(17,2))
+                expressions: KEY.reducesinkkey2 (type: varchar(50)), KEY.reducesinkkey3 (type: varchar(50)), KEY.reducesinkkey1 (type: char(50)), VALUE._col0 (type: char(50)), KEY.reducesinkkey0 (type: char(50)), VALUE._col1 (type: int), VALUE._col2 (type: decimal(17,2))
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
                 Statistics: Num rows: 39600 Data size: 22849200 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
                         input alias: ptf_0
-                        output shape: _col0: char(50), _col1: char(50), _col2: char(50), _col3: int, _col4: varchar(50), _col5: varchar(50), _col6: decimal(17,2)
+                        output shape: _col0: varchar(50), _col1: varchar(50), _col2: char(50), _col3: char(50), _col4: char(50), _col5: int, _col6: decimal(17,2)
                         type: WINDOWING
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col2 ASC NULLS FIRST, _col0 ASC NULLS FIRST, _col4 ASC NULLS FIRST, _col5 ASC NULLS FIRST
-                        partition by: _col2, _col0, _col4, _col5
+                        order by: _col4 ASC NULLS FIRST, _col2 ASC NULLS FIRST, _col0 ASC NULLS FIRST, _col1 ASC NULLS FIRST
+                        partition by: _col4, _col2, _col0, _col1
                         raw input shape:
                         window functions:
                             window function definition
@@ -195,7 +195,7 @@ STAGE PLANS:
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 39600 Data size: 22849200 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: avg_window_0 (type: decimal(21,6)), _col0 (type: char(50)), _col1 (type: char(50)), _col2 (type: char(50)), _col3 (type: int), _col4 (type: varchar(50)), _col5 (type: varchar(50)), _col6 (type: decimal(17,2))
+                    expressions: avg_window_0 (type: decimal(21,6)), _col0 (type: varchar(50)), _col1 (type: varchar(50)), _col2 (type: char(50)), _col3 (type: char(50)), _col4 (type: char(50)), _col5 (type: int), _col6 (type: decimal(17,2))
                     outputColumnNames: avg_window_0, _col0, _col1, _col2, _col3, _col4, _col5, _col6
                     Statistics: Num rows: 39600 Data size: 22849200 Basic stats: COMPLETE Column stats: COMPLETE
                     Filter Operator
@@ -203,12 +203,12 @@ STAGE PLANS:
                       Statistics: Num rows: 19800 Data size: 13642200 Basic stats: COMPLETE Column stats: COMPLETE
                       Top N Key Operator
                         sort order: ++
-                        keys: (_col6 - avg_window_0) (type: decimal(22,6)), _col4 (type: varchar(50))
+                        keys: (_col6 - avg_window_0) (type: decimal(22,6)), _col0 (type: varchar(50))
                         null sort order: zz
                         Statistics: Num rows: 19800 Data size: 13642200 Basic stats: COMPLETE Column stats: COMPLETE
                         top n: 100
                         Select Operator
-                          expressions: _col2 (type: char(50)), _col1 (type: char(50)), _col0 (type: char(50)), _col4 (type: varchar(50)), _col5 (type: varchar(50)), _col3 (type: int), _col6 (type: decimal(17,2)), avg_window_0 (type: decimal(21,6)), (_col6 - avg_window_0) (type: decimal(22,6))
+                          expressions: _col4 (type: char(50)), _col3 (type: char(50)), _col2 (type: char(50)), _col0 (type: varchar(50)), _col1 (type: varchar(50)), _col5 (type: int), _col6 (type: decimal(17,2)), avg_window_0 (type: decimal(21,6)), (_col6 - avg_window_0) (type: decimal(22,6))
                           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                           Statistics: Num rows: 19800 Data size: 15859800 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
