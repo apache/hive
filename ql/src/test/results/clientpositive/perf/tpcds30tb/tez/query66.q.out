@@ -181,10 +181,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ship_mode
-                  filterExpr: (sm_carrier) IN ('DIAMOND             ', 'AIRBORNE            ') (type: boolean)
+                  filterExpr: (sm_carrier) IN ('AIRBORNE            ', 'DIAMOND             ') (type: boolean)
                   Statistics: Num rows: 20 Data size: 1980 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (sm_carrier) IN ('DIAMOND             ', 'AIRBORNE            ') (type: boolean)
+                    predicate: (sm_carrier) IN ('AIRBORNE            ', 'DIAMOND             ') (type: boolean)
                     Statistics: Num rows: 2 Data size: 198 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: sm_ship_mode_sk (type: bigint)
