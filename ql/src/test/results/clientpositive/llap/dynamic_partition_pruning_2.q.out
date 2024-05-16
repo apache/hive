@@ -213,10 +213,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d1
-                  filterExpr: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
+                  filterExpr: ((label) IN ('bar', 'foo') and id is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
+                    predicate: ((label) IN ('bar', 'foo') and id is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: id (type: int), label (type: string)
@@ -399,10 +399,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d1
-                  filterExpr: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
+                  filterExpr: ((label) IN ('bar', 'foo') and id is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
+                    predicate: ((label) IN ('bar', 'foo') and id is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: id (type: int), label (type: string)
@@ -812,10 +812,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d1
-                  filterExpr: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
+                  filterExpr: ((label) IN ('bar', 'foo') and id is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
+                    predicate: ((label) IN ('bar', 'foo') and id is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: id (type: int), label (type: string)

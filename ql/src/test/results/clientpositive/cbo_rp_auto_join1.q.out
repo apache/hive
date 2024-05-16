@@ -507,7 +507,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: src2:subq2:a
+            alias: src1:subq1:a
             filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
@@ -586,7 +586,7 @@ STAGE PLANS:
           outputColumnNames: key, $f1, $f10, $f11, $f100
           Statistics: Num rows: 6 Data size: 216 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: key (type: int), ($f11 * $f100) (type: bigint), ($f1 * $f10) (type: bigint)
+            expressions: key (type: int), ($f1 * $f10) (type: bigint), ($f11 * $f100) (type: bigint)
             outputColumnNames: key, cnt1, cnt11
             Statistics: Num rows: 6 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
@@ -601,7 +601,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: src2:subq2:b
+            alias: src1:subq1:b
             filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
@@ -645,7 +645,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: src1:subq1:a
+            alias: src2:subq2:a
             filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
@@ -724,7 +724,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: src1:subq1:b
+            alias: src2:subq2:b
             filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator

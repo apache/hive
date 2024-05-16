@@ -809,7 +809,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1_n8
 POSTHOOK: Input: default@test2_n5
 #### A masked pattern was here ####
-Warning: Shuffle Join JOIN[12][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[12][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
 FROM test2_n5
@@ -901,7 +901,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[12][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[12][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT *
 FROM test2_n5
 JOIN test1_n8 a ON (a.key+test2_n5.key >= 100)
