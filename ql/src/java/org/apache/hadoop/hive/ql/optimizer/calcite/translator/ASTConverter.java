@@ -1101,6 +1101,12 @@ public class ASTConverter {
 
         // convert Sarg to IN when they are points.
         if (sarg.isPoints()) {
+          // just expand SEARCH to ORs when point count is less than HIVE_POINT_LOOKUP_OPTIMIZER_MIN
+          if (sarg.pointCount < minOrClauses) {
+            return visitCall((RexCall) call.accept(RexUtil.searchShuttle(rexBuilder, null, -1)));
+          }
+
+          // else convert to IN
           for (Range<?> range : sarg.rangeSet.asRanges()) {
             astNodeLst.add(visitLiteral((RexLiteral) rexBuilder.makeLiteral(
                     range.lowerEndpoint(), literal.getType(), true, true)));
