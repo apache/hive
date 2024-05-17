@@ -78,6 +78,8 @@ import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileBlockMergeInputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMRUnionCtx;
@@ -117,6 +119,7 @@ import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -1264,14 +1267,35 @@ public final class GenMapRedUtils {
     FileSinkDesc fsOutputDesc = null;
     TableScanOperator tsMerge = null;
     if (!isBlockMerge) {
+      TableDesc ts = (TableDesc) fsInputDesc.getTableInfo().clone();
+      String storageHandlerClass = ts.getProperties().getProperty(
+              org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE);
+      HiveStorageHandler storageHandler = null;
+      try {
+        storageHandler = HiveUtils.getStorageHandler(conf, storageHandlerClass);
+      } catch (HiveException e) {
+        throw new SemanticException(e);
+      }
+      boolean isCustomDelete = false;
+      if (Context.Operation.DELETE.equals(fsInputDesc.getWriteOperation()) && storageHandler != null && storageHandler.supportsMergeFiles()) {
+        storageHandler.setMergeTaskDeleteProperties(ts);
+        isCustomDelete = true;
+      }
+      if (ts.getTableName() != null) {
+        ts.getProperties().put(HiveCustomStorageHandlerUtils.MERGE_TASK_ENABLED +
+            ts.getTableName(), Boolean.toString(Boolean.TRUE));
+      }
+
       // Create a TableScan operator
       tsMerge = GenMapRedUtils.createTemporaryTableScanOperator(
           fsInput.getCompilationOpContext(), inputRS);
 
       // Create a FileSink operator
-      TableDesc ts = (TableDesc) fsInputDesc.getTableInfo().clone();
       Path mergeDest = srcMmWriteId == null ? finalName : finalName.getParent();
       fsOutputDesc = new FileSinkDesc(mergeDest, ts, conf.getBoolVar(ConfVars.COMPRESS_RESULT));
+      if (isCustomDelete) {
+        fsOutputDesc.setWriteOperation(Context.Operation.DELETE);
+      }
       fsOutputDesc.setIsMerge(true);
       // Create and attach the filesink for the merge.
       OperatorFactory.getAndMakeChild(fsOutputDesc, inputRS, tsMerge);
