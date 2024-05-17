@@ -250,7 +250,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	26                  
 	rawDataSize         	199                 
-	totalSize           	225                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -292,7 +292,7 @@ Table Parameters:
 	numFiles            	3                   
 	numRows             	26                  
 	rawDataSize         	199                 
-	totalSize           	1583                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

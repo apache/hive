@@ -38,8 +38,6 @@ import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.HeartbeatRequest;
-import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeRequest;
-import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockLevel;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
@@ -1178,48 +1176,6 @@ public class TestTxnHandler {
   }
 
   @Test
-  public void heartbeatTxnRange() throws Exception {
-    long txnid = openTxn();
-    assertEquals(1, txnid);
-    txnid = openTxn();
-    txnid = openTxn();
-    HeartbeatTxnRangeResponse rsp =
-        txnHandler.heartbeatTxnRange(new HeartbeatTxnRangeRequest(1, 3));
-    assertEquals(0, rsp.getAborted().size());
-    assertEquals(0, rsp.getNosuch().size());
-  }
-
-  @Test
-  public void heartbeatTxnRangeOneCommitted() throws Exception {
-    long txnid = openTxn();
-    assertEquals(1, txnid);
-    txnHandler.commitTxn(new CommitTxnRequest(1));
-    txnid = openTxn();
-    txnid = openTxn();
-    HeartbeatTxnRangeResponse rsp =
-      txnHandler.heartbeatTxnRange(new HeartbeatTxnRangeRequest(1, 3));
-    assertEquals(1, rsp.getNosuchSize());
-    Long txn = rsp.getNosuch().iterator().next();
-    assertEquals(1L, (long)txn);
-    assertEquals(0, rsp.getAborted().size());
-  }
-
-  @Test
-  public void heartbeatTxnRangeOneAborted() throws Exception {
-    long txnid = openTxn();
-    assertEquals(1, txnid);
-    txnid = openTxn();
-    txnid = openTxn();
-    txnHandler.abortTxn(new AbortTxnRequest(3));
-    HeartbeatTxnRangeResponse rsp =
-      txnHandler.heartbeatTxnRange(new HeartbeatTxnRangeRequest(1, 3));
-    assertEquals(1, rsp.getAbortedSize());
-    Long txn = rsp.getAborted().iterator().next();
-    assertEquals(3L, (long)txn);
-    assertEquals(0, rsp.getNosuch().size());
-  }
-
-  @Test
   public void testLockTimeout() throws Exception {
     long timeout = txnHandler.setTimeout(1);
     try {
@@ -1826,6 +1782,15 @@ public class TestTxnHandler {
             new ValidReadTxnList(new long[0], new BitSet(), 10L, 12L),
             new ValidReaderWriteIdList(TableName.getDbTable("default", "t1"), new long[] { 2 }, new BitSet(), 1)
     );
+  }
+
+  @Test
+  public void testHeartbeatLockMaterializationRebuild() throws MetaException {
+    txnHandler.lockMaterializationRebuild("default", "table1", 1L);
+
+    boolean result = txnHandler.heartbeatLockMaterializationRebuild("default", "table1", 1L);
+
+    assertTrue(result);
   }
 
   private void testGetMaterializationInvalidationInfoWithValidReaderWriteIdList(

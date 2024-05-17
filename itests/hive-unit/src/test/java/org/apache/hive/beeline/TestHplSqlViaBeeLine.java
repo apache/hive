@@ -986,6 +986,109 @@ public class TestHplSqlViaBeeLine {
     testScriptFile(SCRIPT_TEXT, args(), "wrong number of arguments in call to 'p1'. Expected 0 got 1.", OutStream.ERR);
   }
 
+  @Test
+  public void testHiveVariableInHplsql() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "CREATE PROCEDURE p1()\n" +
+            "DECLARE hivedb_tbl string;\n" +
+            "BEGIN\n" +
+            "SELECT hivedb || '.' || hivetbl into hivedb_tbl;\n" +
+            "INSERT INTO result VALUES(hivedb_tbl);\n" +
+            "END;\n" +
+            "p1();\n" +
+            "SELECT * FROM result;" ;
+    List<String> args = new ArrayList<>(args());
+    args.add("--hivevar");
+    args.add("hivedb=sys");
+    args.add("--hivevar");
+    args.add("hivetbl=tbls");
+    testScriptFile(SCRIPT_TEXT, args, "sys.tbls");
+  }
+
+  @Test
+  public void testHplSqlContinueConditionHandler() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "CREATE PROCEDURE p1()\n" +
+            "BEGIN\n" +
+            " INSERT INTO result VALUES('Continue CONDITION Handler invoked.');\n" +
+            "END;\n" +
+            "DECLARE cnt_condition CONDITION;\n" +
+            "DECLARE CONTINUE HANDLER FOR cnt_condition\n" +
+            " p1();\n" +
+            "IF 1 <> 2 THEN\n" +
+            " SIGNAL cnt_condition;\n" +
+            "END IF;\n" +
+            "SELECT * FROM result;";
+    testScriptFile(SCRIPT_TEXT, args(), "Continue CONDITION Handler invoked.");
+  }
+
+  @Test
+  public void testHplSqlExitConditionHandler() throws Throwable {
+    String SCRIPT_TEXT =
+        "CREATE PROCEDURE p1()\n" +
+            "BEGIN\n" +
+            " PRINT('Exit CONDITION Handler invoked.');\n" +
+            "END;\n" +
+            "DECLARE cnt_condition CONDITION;\n" +
+            "DECLARE EXIT HANDLER FOR cnt_condition\n" +
+            " p1();\n" +
+            "IF 1 <> 2 THEN\n" +
+            " SIGNAL cnt_condition;\n" +
+            "END IF;";
+    testScriptFile(SCRIPT_TEXT, args(), "Exit CONDITION Handler invoked.", OutStream.ERR);
+  }
+
+  @Test
+  public void testExecuteImmediateSelectCountStatement() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "execute immediate 'SELECT count(*) from result';";
+    // Inverted match, output should not have NPE
+    testScriptFile(SCRIPT_TEXT, args(), "^(.(?!(ClassCastException)))*$", OutStream.ERR);
+  }
+
+  @Test
+  public void testExecuteSelectCountStatement() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "execute 'SELECT count(*) from result';";
+    // Inverted match, output should not have NPE
+    testScriptFile(SCRIPT_TEXT, args(), "^(.(?!(ClassCastException)))*$", OutStream.ERR);
+  }
+
+  @Test
+  public void testSetHplsqlOnErrorStop() throws Throwable {
+    String SCRIPT_TEXT =
+        "SET hplsql.onerror='stop';\n" +
+            "insert into abc values('Tbl Not Exists');\n" +
+            "SELECT CURRENT_USER;";
+    testScriptFile(SCRIPT_TEXT, args(), "^(.(?!(" + System.getProperty("user.name") + ")))*$");
+  }
+
+  @Test
+  public void testSetHplsqlOnErrorSetError() throws Throwable {
+    String SCRIPT_TEXT =
+        "SET hplsql.onerror='seterror';\n" +
+            "insert into abc values('Tbl Not Exists');\n" +
+            "if SQLCODE < 0\n" + " PRINT 'SQL Error...';";
+    testScriptFile(SCRIPT_TEXT, args(), "SessionState: SQL Error...", OutStream.ERR);
+  }
+
+  @Test
+  public void testSetHplsqlOnErrorException() throws Throwable {
+    String SCRIPT_TEXT =
+        "SET hplsql.onerror='exception';\n" +
+            "insert into abc values('Tbl Not Exists');\n" +
+            "SELECT CURRENT_USER;";
+    testScriptFile(SCRIPT_TEXT, args(), "^(.(?!(" + System.getProperty("user.name") + ")))*$");
+  }
+
   private static List<String> args() {
     return Arrays.asList("-d", BeeLine.BEELINE_DEFAULT_JDBC_DRIVER,
             "-u", miniHS2.getBaseJdbcURL() + ";mode=hplsql", "-n", userName);

@@ -25,6 +25,10 @@
         <value>false</value>
     </property>
     <property>
+        <name>hive.tez.exec.print.summary</name>
+        <value>true</value>
+    </property>
+    <property>
         <name>hive.exec.scratchdir</name>
         <value>/opt/hive/scratch_dir</value>
     </property>

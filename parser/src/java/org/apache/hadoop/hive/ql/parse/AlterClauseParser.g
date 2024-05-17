@@ -81,6 +81,8 @@ alterTableStatementSuffix
     | alterStatementSuffixDropTag
     | alterStatementSuffixConvert
     | alterStatementSuffixRenameBranch
+    | alterStatementSuffixReplaceBranch
+    | alterStatementSuffixReplaceTag
     ;
 
 alterTblPartitionStatementSuffix[boolean partition]
@@ -101,13 +103,13 @@ alterTblPartitionStatementSuffix[boolean partition]
   | alterStatementSuffixAddCol
   | alterStatementSuffixUpdateColumns
   ;
-    
+
 optimizeTableStatementSuffix
 @init { gParent.pushMsg("optimize table statement suffix", state); }
 @after { gParent.popMsg(state); }
     : optimizeTblRewriteDataSuffix
     ;
-    
+
 optimizeTblRewriteDataSuffix
 @init { gParent.msgs.push("compaction request"); }
 @after { gParent.msgs.pop(); }
@@ -511,6 +513,20 @@ alterStatementSuffixRenameBranch
 @after { gParent.popMsg(state); }
     : KW_RENAME KW_BRANCH sourceBranch=identifier KW_TO targetBranch=identifier
     -> ^(TOK_ALTERTABLE_RENAME_BRANCH $sourceBranch $targetBranch)
+    ;
+
+alterStatementSuffixReplaceBranch
+@init { gParent.pushMsg("alter table replace branch", state); }
+@after { gParent.popMsg(state); }
+    : KW_REPLACE KW_BRANCH sourceBranch=Identifier KW_AS KW_OF ((KW_SYSTEM_VERSION snapshotId=Number) | (KW_BRANCH branch=identifier)) refRetain? retentionOfSnapshots?
+    -> ^(TOK_ALTERTABLE_REPLACE_SNAPSHOTREF KW_BRANCH $sourceBranch KW_SYSTEM_VERSION?  $snapshotId? $branch? refRetain? retentionOfSnapshots?)
+    ;
+
+alterStatementSuffixReplaceTag
+@init { gParent.pushMsg("alter table replace tag", state); }
+@after { gParent.popMsg(state); }
+    : KW_REPLACE KW_TAG sourceBranch=Identifier KW_AS KW_OF KW_SYSTEM_VERSION snapshotId=Number refRetain?
+    -> ^(TOK_ALTERTABLE_REPLACE_SNAPSHOTREF KW_TAG $sourceBranch $snapshotId refRetain?)
     ;
 
 alterStatementSuffixDropBranch

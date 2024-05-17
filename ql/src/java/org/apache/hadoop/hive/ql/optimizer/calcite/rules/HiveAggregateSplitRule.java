@@ -86,7 +86,9 @@ public class HiveAggregateSplitRule extends RelOptRule {
               aggregateCall.name));
     }
 
-    if (aggregate.getCluster().getMetadataQuery().areColumnsUnique(aggregate.getInput(), bottomAggregateGroupSet)) {
+    final Boolean isUnique =
+        aggregate.getCluster().getMetadataQuery().areColumnsUnique(aggregate.getInput(), bottomAggregateGroupSet);
+    if (isUnique != null && isUnique) {
       // Nothing to do, probably already pushed
       return;
     }

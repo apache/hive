@@ -95,7 +95,7 @@ public final class PartitionUtils {
       throws SemanticException {
     Partition partition;
     try {
-      partition = db.getPartition(table, partitionSpec, false);
+      partition = db.getPartition(table, partitionSpec);
     } catch (Exception e) {
       throw new SemanticException(toMessage(ErrorMsg.INVALID_PARTITION, partitionSpec), e);
     }

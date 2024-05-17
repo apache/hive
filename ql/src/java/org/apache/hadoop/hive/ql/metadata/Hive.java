@@ -3660,6 +3660,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throw new HiveException(e);
     }
   }
+
+  public Partition getPartition(Table tbl, Map<String, String> partSpec) throws HiveException {
+    if (tbl.getStorageHandler() != null && tbl.getStorageHandler().alwaysUnpartitioned()) {
+      return tbl.getStorageHandler().getPartition(tbl, partSpec);
+    } else {
+      return getPartition(tbl, partSpec, false);
+    }
+  }
+  
   public Partition getPartition(Table tbl, Map<String, String> partSpec,
       boolean forceCreate) throws HiveException {
     return getPartition(tbl, partSpec, forceCreate, null, true);
@@ -4121,10 +4130,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS);
     try {
-      int batchSize= MetastoreConf.getIntVar(Hive.get().getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
-      return new ArrayList<>(getAllPartitionsInBatches(tbl, batchSize, DEFAULT_BATCH_DECAYING_FACTOR, MetastoreConf
-                      .getIntVar(Hive.get().getConf(), MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES),
-              null, true, getUserName(), getGroupNames()));
+      if (tbl.getStorageHandler() != null && tbl.getStorageHandler().alwaysUnpartitioned()) {
+        return tbl.getStorageHandler().getPartitions(tbl, Collections.EMPTY_MAP);
+      } else {
+        int batchSize= MetastoreConf.getIntVar(Hive.get().getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+        return new ArrayList<>(getAllPartitionsInBatches(tbl, batchSize, DEFAULT_BATCH_DECAYING_FACTOR, MetastoreConf
+                .getIntVar(Hive.get().getConf(), MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES),
+            null, true, getUserName(), getGroupNames())); 
+      }
     } finally {
       perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS, "HS2-cache");
     }
@@ -4282,7 +4295,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
    */
   public List<Partition> getPartitions(Table tbl, Map<String, String> partialPartSpec)
   throws HiveException {
-    return getPartitions(tbl, partialPartSpec, (short)-1);
+    if (tbl.getStorageHandler() != null && tbl.getStorageHandler().alwaysUnpartitioned()) {
+      return tbl.getStorageHandler().getPartitions(tbl, partialPartSpec);
+    } else {
+      return getPartitions(tbl, partialPartSpec, (short)-1); 
+    }
   }
 
   /**

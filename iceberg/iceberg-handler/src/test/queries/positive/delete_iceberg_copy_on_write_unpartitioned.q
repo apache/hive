@@ -48,3 +48,8 @@ insert into tbl_ice_with_nulls values
 
 delete from tbl_ice_with_nulls where id in (select id from tbl_ice_with_nulls where id > 9) or name in (select name from tbl_ice_with_nulls where name = 'sdf');
 select * from tbl_ice_with_nulls order by id;
+
+-- delete without where clause and disabled conversion to truncate
+set hive.optimize.delete.all=false;
+delete from tbl_ice_with_nulls;
+select * from tbl_ice_with_nulls;

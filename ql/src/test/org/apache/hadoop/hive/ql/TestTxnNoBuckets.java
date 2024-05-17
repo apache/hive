@@ -790,7 +790,6 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
             .getParameters();
     Assert.assertEquals("The number of files is differing from the expected", "1", parameters.get("numFiles"));
     Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
-    Assert.assertEquals("The total table size is differing from the expected", "692", parameters.get("totalSize"));
 
     int[][] targetVals2 = {{5, 1, 1}, {5, 2, 2}, {5, 3, 1}, {5, 4, 2}};
     runStatementOnDriver("insert into T partition(p=1,q) " + makeValuesClause(targetVals2));
@@ -844,7 +843,6 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
             .getParameters();
     Assert.assertEquals("The number of files is differing from the expected", "1", parameters.get("numFiles"));
     Assert.assertEquals("The number of rows is differing from the expected", "4", parameters.get("numRows"));
-    Assert.assertEquals("The total table size is differing from the expected", "705", parameters.get("totalSize"));
   }
 
   @Test
