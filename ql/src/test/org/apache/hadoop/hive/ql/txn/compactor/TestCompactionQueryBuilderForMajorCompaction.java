@@ -125,11 +125,9 @@ public class TestCompactionQueryBuilderForMajorCompaction extends CompactionQuer
     queryBuilder.setSourceTab(sourceTable);
     queryBuilder.setSourcePartition(sourcePartition);
 
-    Exception exception = Assert.assertThrows(IllegalStateException.class, queryBuilder::build);
     String expectedMessage =
         "source partition values ([source_part_1, true, 4444]) do not match source table values ([FieldSchema(name:source_part_1, type:string, comment:comment 1), FieldSchema(name:source_part_2, type:boolean, comment:comment 2)]). Failing compaction.";
-    String actualMessage = exception.getMessage();
-    Assert.assertTrue(actualMessage.contains(expectedMessage));
+    Assert.assertThrows(expectedMessage, IllegalStateException.class, queryBuilder::build);
   }
 
   @Test

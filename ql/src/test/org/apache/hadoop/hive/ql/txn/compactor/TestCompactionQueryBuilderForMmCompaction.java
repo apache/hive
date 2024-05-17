@@ -138,11 +138,9 @@ public class TestCompactionQueryBuilderForMmCompaction extends CompactionQueryBu
     queryBuilder.setSourceTab(sourceTable);
     StorageDescriptor storageDescriptor = createStorageDescriptor();
     queryBuilder.setStorageDescriptor(storageDescriptor);
-    Exception exception = Assert.assertThrows(RuntimeException.class, queryBuilder::build);
     String expectedMessage =
-        "Table comp_test_source_tablehas a storage handler (test_storage_handler). Failing compaction for this non-native table.";
-    String actualMessage = exception.getMessage();
-    Assert.assertTrue(actualMessage.contains(expectedMessage));
+        "Table comp_test_source_table has a storage handler (test_storage_handler). Failing compaction for this non-native table.";
+    Assert.assertThrows(expectedMessage, RuntimeException.class, queryBuilder::build);
   }
 
   @Test
@@ -246,11 +244,9 @@ public class TestCompactionQueryBuilderForMmCompaction extends CompactionQueryBu
     queryBuilder.setSourceTab(sourceTable);
     StorageDescriptor storageDescriptor = createStorageDescriptor();
     queryBuilder.setStorageDescriptor(storageDescriptor);
-    Exception exception = Assert.assertThrows(RuntimeException.class, queryBuilder::build);
     String expectedMessage =
         "Table comp_test_source_tablehas a storage handler (test_storage_handler). Failing compaction for this non-native table.";
-    String actualMessage = exception.getMessage();
-    Assert.assertTrue(actualMessage.contains(expectedMessage));
+    Assert.assertThrows(expectedMessage, RuntimeException.class, queryBuilder::build);
   }
 
   @Test
@@ -291,11 +287,9 @@ public class TestCompactionQueryBuilderForMmCompaction extends CompactionQueryBu
     queryBuilder.setSourceTab(sourceTable);
     queryBuilder.setSourcePartition(sourcePartition);
 
-    Exception exception = Assert.assertThrows(IllegalStateException.class, queryBuilder::build);
     String expectedMessage =
         "source partition values ([source_part_1, true, 4444]) do not match source table values ([FieldSchema(name:source_part_1, type:string, comment:comment 1), FieldSchema(name:source_part_2, type:boolean, comment:comment 2)]). Failing compaction.";
-    String actualMessage = exception.getMessage();
-    Assert.assertTrue(actualMessage.contains(expectedMessage));
+    Assert.assertThrows(expectedMessage, IllegalStateException.class, queryBuilder::build);
   }
 
   @Test

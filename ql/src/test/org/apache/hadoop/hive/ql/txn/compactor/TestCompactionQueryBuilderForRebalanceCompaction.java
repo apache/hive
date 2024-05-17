@@ -141,12 +141,10 @@ public class TestCompactionQueryBuilderForRebalanceCompaction extends Compaction
   @Test
   public void testRebalanceCompactionWithBuckets() {
     CompactionQueryBuilder queryBuilder = getRebalanceCompactionQueryBuilderForInsert();
-    Exception exception = Assert.assertThrows(IllegalArgumentException.class, () -> {
+    String expectedMessage = "Rebalance compaction is supported only on implicitly-bucketed tables!";
+    Assert.assertThrows(expectedMessage, IllegalArgumentException.class, () -> {
       queryBuilder.setBucketed(true);
     });
-    String expectedMessage = "Rebalance compaction is supported only on implicitly-bucketed tables!";
-    String actualMessage = exception.getMessage();
-    Assert.assertTrue(actualMessage.contains(expectedMessage));
   }
 
   private CompactionQueryBuilder getRebalanceCompactionQueryBuilderForCreate() {

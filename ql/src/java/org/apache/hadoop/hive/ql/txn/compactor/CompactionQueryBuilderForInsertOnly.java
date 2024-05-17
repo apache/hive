@@ -264,7 +264,7 @@ class CompactionQueryBuilderForInsertOnly extends CompactionQueryBuilder {
       String storageHandler = sourceTab.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE);
       if (storageHandler != null) {
         String message =
-            "Table " + sourceTab.getTableName() + "has a storage handler (" + storageHandler + "). Failing compaction for this non-native table.";
+            "Table " + sourceTab.getTableName() + " has a storage handler (" + storageHandler + "). Failing compaction for this non-native table.";
         LOG.error(message);
         throw new RuntimeException(message);
       }
