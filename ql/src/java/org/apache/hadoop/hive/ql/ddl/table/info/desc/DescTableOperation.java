@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.StatObjectConverter;
@@ -295,10 +296,11 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
   private void handleMaterializedView(Table table) throws HiveException {
     if (table.isMaterializedView()) {
       table.setOutdatedForRewriting(context.getDb().isOutdatedMaterializedView(
-              table,
-              table.getMVMetadata().getSourceTableNames(),
-              false,
-              SessionState.get().getTxnMgr()));
+          table,
+          table.getMVMetadata().getSourceTableNames(),
+          false,
+          () -> context.getConf().get(ValidTxnList.VALID_TXNS_KEY),
+          SessionState.get().getTxnMgr()));
     }
   }
 }

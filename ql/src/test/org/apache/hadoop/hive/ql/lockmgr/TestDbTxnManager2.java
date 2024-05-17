@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.lockmgr;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
@@ -215,7 +214,11 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     TestTxnDbUtil.checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T2", null, locks);
     TestTxnDbUtil.checkLock((isTransactional && sharedWrite) ? LockType.EXCL_WRITE : LockType.EXCLUSIVE,
         LockState.ACQUIRED, "default", "T3", null, locks);
-    txnMgr.commitTxn();
+    if (isTransactional) {
+      txnMgr.commitTxn();
+    } else {
+      txnMgr.releaseLocks(ctx.getHiveLocks());
+    }
     Assert.assertEquals("Lock remained", 0, getLocks().size());
     driver.run("drop table if exists T1");
     driver.run("drop table if exists T2");
@@ -247,7 +250,11 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     TestTxnDbUtil.checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T5", null, locks);
     TestTxnDbUtil.checkLock((isTransactional && sharedWrite) ? LockType.EXCL_WRITE : LockType.EXCLUSIVE,
         LockState.ACQUIRED, "default", "T4", null, locks);
-    txnMgr.commitTxn();
+    if (isTransactional) {
+      txnMgr.commitTxn();
+    } else {
+      txnMgr.releaseLocks(ctx.getHiveLocks());
+    }
     Assert.assertEquals("Lock remained", 0, getLocks().size());
     driver.run("drop table if exists T5");
     driver.run("drop table if exists T4");
@@ -3093,8 +3100,9 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
 
   private void testFairness(boolean zeroWaitRead) throws Exception {
     dropTable(new String[]{"T6"});
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID, zeroWaitRead);
     conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, !zeroWaitRead);
-    driver.run("create table if not exists T6(a int)");
+    driver.run("create table if not exists T6 (a int) stored as ORC");
     driver.compileAndRespond("select a from T6", true);
     txnMgr.acquireLocks(driver.getPlan(), ctx, "Fifer"); //gets S lock on T6
     HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);

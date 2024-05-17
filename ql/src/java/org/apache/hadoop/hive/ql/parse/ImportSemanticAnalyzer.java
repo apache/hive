@@ -225,7 +225,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
                                       MetaData rv
   ) throws IOException, MetaException, HiveException, URISyntaxException {
     if (!isExternalSet) {
-      openTxnAndGetValidTxnList();
+      validTxnsList.get();
     }
     return prepareImport(isImportCmd, isLocationSet, isExternalSet, isPartSpecSet, waitOnPrecursor,
                          parsedLocation, parsedTableName, overrideDBName, parsedPartSpec, fromLocn,

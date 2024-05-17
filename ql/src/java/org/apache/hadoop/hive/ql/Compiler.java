@@ -204,7 +204,7 @@ public class Compiler {
     
     HiveOperation hiveOperation = driverContext.getQueryState().getHiveOperation();
     boolean isExplainPlan = context.isExplainPlan();
-    sem.injectTxnHook(() -> openTxnAndGetValidTxnList(isExplainPlan));
+    sem.setValidTxnList(() -> openTxnAndGetValidTxnList(isExplainPlan));
     
     if (!driverContext.isRetrial() && driverContext.getCompactorTxnId() <= 0) {
       if (HiveOperation.REPLDUMP == hiveOperation) {
@@ -260,17 +260,21 @@ public class Compiler {
     conf.setLong(ReplUtils.LAST_REPL_ID_KEY, lastReplId);
     LOG.debug("Setting " + ReplUtils.LAST_REPL_ID_KEY + " = " + lastReplId);
   }
-
-  private Void openTxnAndGetValidTxnList(boolean isExplainPlan) throws Exception {
+  
+  private String openTxnAndGetValidTxnList(boolean isExplainPlan) {
     if (!driverContext.isRetrial() && driverContext.getCompactorTxnId() <= 0
         && !isExplainPlan) {
-      openTransaction(driverContext.getTxnManager());
-      generateValidTxnList();
+      try {
+        openTransaction(driverContext.getTxnManager());
+        generateValidTxnList();
+      } catch (Exception e) {
+        throw new RuntimeException("Failed to open a new transaction", e);
+      }
     }
-    return null;
+    return driverContext.getConf().get(ValidTxnList.VALID_TXNS_KEY);
   }
 
-  private void openTransaction(HiveTxnManager txnManager) throws Exception {
+  private void openTransaction(HiveTxnManager txnManager) throws LockException, CommandProcessorException {
     if (txnManager.isTxnOpen() || !DriverUtils.checkConcurrency(driverContext)) {
       return;
     }

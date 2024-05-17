@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.calcite.adapter.druid.DruidQuery;
@@ -108,8 +109,8 @@ public class HiveMaterializedViewUtils {
    * materialized view definition uses external tables.
    */
   public static Boolean isOutdatedMaterializedView(
-          String validTxnsList, HiveTxnManager txnMgr, Hive db,
-          Set<TableName> tablesUsed, Table materializedViewTable) throws HiveException {
+      Supplier<String> validTxnsList, HiveTxnManager txnMgr, Hive db,
+      Set<TableName> tablesUsed, Table materializedViewTable) throws HiveException {
 
     MaterializedViewMetadata mvMetadata = materializedViewTable.getMVMetadata();
     MaterializationSnapshot snapshot = mvMetadata.getSnapshot();
@@ -124,12 +125,13 @@ public class HiveMaterializedViewUtils {
   }
 
   private static Boolean isOutdatedMaterializedView(
-      String materializationTxnList, String validTxnsList, HiveTxnManager txnMgr,
-      Set<TableName> tablesUsed, Table materializedViewTable) throws LockException {
+    String materializationTxnList, Supplier<String> validTxnsList, HiveTxnManager txnMgr,
+    Set<TableName> tablesUsed, Table materializedViewTable) throws LockException {
     List<String> tablesUsedNames = tablesUsed.stream()
         .map(tableName -> TableName.getDbTable(tableName.getDb(), tableName.getTable()))
         .collect(Collectors.toList());
-    ValidTxnWriteIdList currentTxnWriteIds = txnMgr.getValidWriteIds(tablesUsedNames, validTxnsList);
+    ValidTxnWriteIdList currentTxnWriteIds = txnMgr.getValidWriteIds(tablesUsedNames,
+        validTxnsList.get());
     if (currentTxnWriteIds == null) {
       LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
               " ignored for rewriting as we could not obtain current txn ids");
@@ -235,7 +237,7 @@ public class HiveMaterializedViewUtils {
    * its invalidation.
    */
   public static HiveRelOptMaterialization augmentMaterializationWithTimeInformation(
-      HiveRelOptMaterialization materialization, String validTxnsList,
+      HiveRelOptMaterialization materialization, Supplier<String> validTxnsList,
       MaterializationSnapshot snapshot) throws LockException {
 
     RelNode modifiedQueryRel;
@@ -258,7 +260,7 @@ public class HiveMaterializedViewUtils {
    * its invalidation when materialization has native acid source tables.
    */
   private static RelNode augmentMaterializationWithTimeInformation(
-      HiveRelOptMaterialization materialization, String validTxnsList,
+      HiveRelOptMaterialization materialization, Supplier<String>  validTxnsList,
       ValidTxnWriteIdList materializationTxnList) throws LockException {
     // Extract tables used by the query which will in turn be used to generate
     // the corresponding txn write ids
@@ -274,7 +276,7 @@ public class HiveMaterializedViewUtils {
       }
     }.go(materialization.queryRel);
     ValidTxnWriteIdList currentTxnList =
-        SessionState.get().getTxnMgr().getValidWriteIds(tablesUsed, validTxnsList);
+        SessionState.get().getTxnMgr().getValidWriteIds(tablesUsed, validTxnsList.get());
     // Augment
     final RexBuilder rexBuilder = materialization.queryRel.getCluster().getRexBuilder();
     return applyRule(

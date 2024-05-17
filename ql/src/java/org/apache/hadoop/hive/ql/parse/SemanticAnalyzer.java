@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.DYNAMIC_PARTITION_CONVERT;
@@ -7817,7 +7818,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           acidOperation = getAcidType(dest);
           isDirectInsert = isDirectInsert(destTableIsFullAcid, acidOperation);
           
-          openTxnAndGetValidTxnList();
+          validTxnsList.get();
           // Set the location in context for possible rollback.
           ctx.setLocation(getCtasOrCMVLocation(tblDesc, viewDesc, createTableUseSuffix));
           
@@ -7825,19 +7826,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             destinationPath = ctx.getLocation();
             
             if (createTableUseSuffix) {
-              ObjectUtils.defaultIfNull(tblDesc, viewDesc).getTblProps().put(
-                  SOFT_DELETE_TABLE, Boolean.TRUE.toString());
+              defaultIfNull(tblDesc, viewDesc).getTblProps().put(SOFT_DELETE_TABLE, Boolean.TRUE.toString());
             }
             // Setting the location so that metadata transformers
             // does not change the location later while creating the table.
-            ObjectUtils.defaultIfNull(tblDesc, viewDesc).setLocation(
-                destinationPath.toString());
+            defaultIfNull(tblDesc, viewDesc).setLocation(destinationPath.toString());
           }
         }
         writeId = allocateTableWriteId(tableName, true);
         
         if (isMmTable || isDirectInsert) {
-          ObjectUtils.defaultIfNull(tblDesc, viewDesc).setInitialWriteId(writeId);
+          defaultIfNull(tblDesc, viewDesc).setInitialWriteId(writeId);
         }
       }
 
@@ -8213,7 +8212,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (ctx.getExplainConfig() != null || !isAcid) {
       return null; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
     }
-    openTxnAndGetValidTxnList();
+    validTxnsList.get();
     try {
       return getTxnMgr().getTableWriteId(tableName.getDb(), tableName.getTable());
     } catch (LockException ex) {
@@ -15752,7 +15751,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       .collect(Collectors.toList());
     
     if (transactionalTables.size() > 0) {
-      openTxnAndGetValidTxnList();
+      validTxnsList.get();
       
       String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
       try {

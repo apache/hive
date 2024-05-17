@@ -1990,15 +1990,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // Add views to planner
       List<HiveRelOptMaterialization> materializations = new ArrayList<>();
       try {
-        openTxnAndGetValidTxnList();
         // This is not a rebuild, we retrieve all the materializations.
         // In turn, we do not need to force the materialization contents to be up-to-date,
         // as this is not a rebuild, and we apply the user parameters
         // (HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW) instead.
         if (useMaterializedViewsRegistry) {
-          materializations.addAll(db.getPreprocessedMaterializedViewsFromRegistry(tablesUsedQuery, getTxnMgr()));
+          materializations.addAll(db.getPreprocessedMaterializedViewsFromRegistry(tablesUsedQuery,
+              validTxnsList, getTxnMgr()));
         } else {
-          materializations.addAll(db.getPreprocessedMaterializedViews(tablesUsedQuery, getTxnMgr()));
+          materializations.addAll(db.getPreprocessedMaterializedViews(tablesUsedQuery,
+              validTxnsList, getTxnMgr()));
         }
         // We need to use the current cluster for the scan operator on views,
         // otherwise the planner will throw an Exception (different planners)
@@ -2084,7 +2085,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // Before proceeding we need to check whether materialized views used are up-to-date
         // wrt information in metastore
         try {
-          if (!db.validateMaterializedViewsFromRegistry(materializedViewsUsedAfterRewrite, tablesUsedQuery, getTxnMgr())) {
+          if (!db.validateMaterializedViewsFromRegistry(materializedViewsUsedAfterRewrite, tablesUsedQuery,
+                validTxnsList, getTxnMgr())) {
             return calcitePreMVRewritingPlan;
           }
         } catch (HiveException e) {
@@ -2129,10 +2131,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         if (tablesUsedByOriginalPlan.isEmpty()) {
           return originalPlan;
         }
-        openTxnAndGetValidTxnList();
-        
         RelNode mvScan = getMaterializedViewByAST(
-                expandedAST, optCluster, ANY, db, tablesUsedByOriginalPlan, getTxnMgr());
+            expandedAST, optCluster, ANY, db, tablesUsedByOriginalPlan, validTxnsList, getTxnMgr());
         if (mvScan != null) {
           return mvScan;
         }
@@ -2142,8 +2142,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
 
         return new HiveMaterializedViewASTSubQueryRewriteShuttle(subQueryMap, queryToRewriteAST, expandedAST,
-                HiveRelFactories.HIVE_BUILDER.create(optCluster, null),
-                db, tablesUsedByOriginalPlan, getTxnMgr()).rewrite(originalPlan);
+            HiveRelFactories.HIVE_BUILDER.create(optCluster, null),
+            db, tablesUsedByOriginalPlan, validTxnsList, getTxnMgr()).rewrite(originalPlan);
       } catch (Exception e) {
         LOG.warn("Automatic materialized view query rewrite failed. expanded query text: {} AST string {} ",
                 expandedQueryText, queryToRewriteAST.toStringTree(), e);
@@ -2353,7 +2353,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           if (node instanceof TableScan) {
             TableScan ts = (TableScan) node;
             Table table = ((RelOptHiveTable) ts.getTable()).getHiveTableMD();
-            if (AcidUtils.isTransactionalTable(table) || 
+            if (AcidUtils.isTransactionalTable(table) ||
                   table.isNonNative() && table.getStorageHandler().areSnapshotsSupported()) {
               tablesUsed.add(table.getFullTableName());
             }

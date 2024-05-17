@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.antlr.runtime.TokenRewriteStream;
@@ -147,7 +147,7 @@ public abstract class BaseSemanticAnalyzer {
   protected Map<String, String> idToTableNameMap;
   protected QueryProperties queryProperties;
   ParseContext pCtx = null;
-  protected Callable<Void> openTxnHook;
+  protected Supplier<String> validTxnsList;
 
   //user defined functions in query
   protected Set<String> userSuppliedFunctions;
@@ -230,16 +230,8 @@ public abstract class BaseSemanticAnalyzer {
     return prepareQuery;
   }
 
-  public void injectTxnHook(Callable<Void> txnHook) {
-    this.openTxnHook = txnHook;
-  }
-  
-  protected void openTxnAndGetValidTxnList() throws SemanticException {
-    try {
-      openTxnHook.call();
-    } catch (Exception ex) {
-      throw new SemanticException("Failed to open a new transaction", ex);
-    }
+  public void setValidTxnList(Supplier<String> validTxnsList) {
+    this.validTxnsList = validTxnsList;
   }
 
   static final class RowFormatParams {

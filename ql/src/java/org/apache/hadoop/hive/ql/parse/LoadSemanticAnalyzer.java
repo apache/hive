@@ -386,7 +386,7 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     int stmtId = -1;
     boolean isTxnTable = AcidUtils.isTransactionalTable(ts.tableHandle);
     if (isTxnTable) {
-      openTxnAndGetValidTxnList();
+      validTxnsList.get();
       try {
         writeId = getTxnMgr().getTableWriteId(ts.tableHandle.getDbName(),
                 ts.tableHandle.getTableName());
