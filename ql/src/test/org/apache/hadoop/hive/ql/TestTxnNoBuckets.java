@@ -347,8 +347,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     hiveConf.setVar(HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
     d.close();
     d = new Driver(hiveConf);
-    int[][] values = {{1, 2}, {3, 4}, {5, 6}, {7, 8}, {9, 10}};
-    runStatementOnDriver("drop table if exists T");
+    dropTables("T");
     runStatementOnDriver("create table T (a int, b int) stored as ORC  TBLPROPERTIES ('transactional'='true')");
 
     CommandProcessorException e = runStatementOnDriverNegative(
@@ -473,23 +472,23 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     /*Compaction preserves location of rows wrt buckets/tranches (for now)*/
     String expected4[][] = {
         {"{\"writeid\":0,\"bucketid\":537001984,\"rowid\":0}\t1\t2",
-            "warehouse/t/base_10000002_v0000017/bucket_00002"},
+            "warehouse/t/base_10000002_v0000014/bucket_00002"},
         {"{\"writeid\":0,\"bucketid\":537001984,\"rowid\":1}\t2\t4",
-            "warehouse/t/base_10000002_v0000017/bucket_00002"},
+            "warehouse/t/base_10000002_v0000014/bucket_00002"},
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":0}\t5\t6",
-            "warehouse/t/base_10000002_v0000017/bucket_00000"},
+            "warehouse/t/base_10000002_v0000014/bucket_00000"},
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":1}\t9\t10",
-            "warehouse/t/base_10000002_v0000017/bucket_00000"},
+            "warehouse/t/base_10000002_v0000014/bucket_00000"},
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":3}\t10\t20",
-            "warehouse/t/base_10000002_v0000017/bucket_00000"},
+            "warehouse/t/base_10000002_v0000014/bucket_00000"},
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":2}\t12\t12",
-            "warehouse/t/base_10000002_v0000017/bucket_00000"},
+            "warehouse/t/base_10000002_v0000014/bucket_00000"},
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":4}\t20\t40",
-            "warehouse/t/base_10000002_v0000017/bucket_00000"},
+            "warehouse/t/base_10000002_v0000014/bucket_00000"},
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":5}\t50\t60",
-            "warehouse/t/base_10000002_v0000017/bucket_00000"},
+            "warehouse/t/base_10000002_v0000014/bucket_00000"},
         {"{\"writeid\":10000001,\"bucketid\":536870913,\"rowid\":0}\t60\t88",
-            "warehouse/t/base_10000002_v0000017/bucket_00000"},
+            "warehouse/t/base_10000002_v0000014/bucket_00000"},
     };
     checkExpected(rs, expected4,"after major compact");
   }
@@ -745,15 +744,15 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     rs = runStatementOnDriver(query);
     String[][] expected5 = {//the row__ids are the same after compaction
         {"{\"writeid\":10000001,\"bucketid\":536870913,\"rowid\":0}\t1\t17",
-            "warehouse/t/base_10000001_v0000017/bucket_00000"},
+            "warehouse/t/base_10000001_v0000013/bucket_00000"},
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":1}\t2\t4",
-            "warehouse/t/base_10000001_v0000017/bucket_00000"},
+            "warehouse/t/base_10000001_v0000013/bucket_00000"},
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":2}\t5\t6",
-            "warehouse/t/base_10000001_v0000017/bucket_00000"},
+            "warehouse/t/base_10000001_v0000013/bucket_00000"},
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":3}\t6\t8",
-            "warehouse/t/base_10000001_v0000017/bucket_00000"},
+            "warehouse/t/base_10000001_v0000013/bucket_00000"},
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":4}\t9\t10",
-            "warehouse/t/base_10000001_v0000017/bucket_00000"}
+            "warehouse/t/base_10000001_v0000013/bucket_00000"}
     };
     checkExpected(rs, expected5, "After major compaction");
     //vectorized because there is INPUT__FILE__NAME
@@ -818,10 +817,10 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t1\t1\t4\t3", "t/p=1/q=1/delta_0000001_0000001_0000/bucket_00000_0"},
         {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t1\t1\t5\t1", "t/p=1/q=1/delta_0000003_0000003_0000/bucket_00000_0"},
         {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":1}\t1\t1\t5\t3", "t/p=1/q=1/delta_0000003_0000003_0000/bucket_00000_0"},
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2\t4\t2", "t/p=1/q=2/base_0000003_v0000010/bucket_00000"},
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t1\t2\t4\t4", "t/p=1/q=2/base_0000003_v0000010/bucket_00000"},
-        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t1\t2\t5\t2", "t/p=1/q=2/base_0000003_v0000010/bucket_00000"},
-        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":1}\t1\t2\t5\t4", "t/p=1/q=2/base_0000003_v0000010/bucket_00000"}
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2\t4\t2", "t/p=1/q=2/base_0000003_v0000011/bucket_00000"},
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t1\t2\t4\t4", "t/p=1/q=2/base_0000003_v0000011/bucket_00000"},
+        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t1\t2\t5\t2", "t/p=1/q=2/base_0000003_v0000011/bucket_00000"},
+        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":1}\t1\t2\t5\t4", "t/p=1/q=2/base_0000003_v0000011/bucket_00000"}
     };
     checkExpected(rs, expected2, "after major compaction");
 

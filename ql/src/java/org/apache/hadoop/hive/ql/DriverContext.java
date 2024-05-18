@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql;
 
 import java.io.DataInput;
 
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Schema;
@@ -182,6 +183,11 @@ public class DriverContext {
 
   public void setValidTxnListsGenerated(boolean validTxnListsGenerated) {
     this.validTxnListsGenerated = validTxnListsGenerated;
+  }
+
+  public void setValidTxnList(String txnList) {
+    conf.set(ValidTxnList.VALID_TXNS_KEY, txnList);
+    this.validTxnListsGenerated = true;
   }
 
   public CacheUsage getCacheUsage() {

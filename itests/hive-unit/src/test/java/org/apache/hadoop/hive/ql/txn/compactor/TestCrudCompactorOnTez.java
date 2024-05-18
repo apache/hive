@@ -2861,7 +2861,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     fileStatuses = fs.listStatus(new Path(table.getSd().getLocation() + "/" + partitionName1 + "/" + partitionName2));
     Assert.assertEquals(1, fileStatuses.length);
     String baseName = fileStatuses[0].getPath().getName();
-    Assert.assertEquals("base_10000000_v0000004", baseName);
+    Assert.assertEquals("base_10000000_v0000002", baseName);
   }
 
   @Test

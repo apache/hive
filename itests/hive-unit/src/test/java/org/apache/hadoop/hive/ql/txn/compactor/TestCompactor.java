@@ -1586,7 +1586,7 @@ public class TestCompactor extends TestCompactorBase {
 
       runMajorCompaction(dbName, tblName);
       verifyFooBarResult(tblName, 3);
-      verifyHasBase(table.getSd(), fs, "base_0000001_v0000005");
+      verifyHasBase(table.getSd(), fs, "base_0000001_v0000003");
     } else {
       verifyDeltaCount(table.getSd(), fs, 1);
       // 1 delta dir won't be compacted. Skip testing major compaction.
@@ -1629,7 +1629,7 @@ public class TestCompactor extends TestCompactorBase {
 
     runMajorCompaction(dbName, tblName);
     verifyFooBarResult(tblName, 9);
-    verifyHasBase(table.getSd(), fs, "base_0000002_v0000006");
+    verifyHasBase(table.getSd(), fs, "base_0000002_v0000004");
   }
 
   @Test public void mmMajorOriginalsBaseOrc() throws Exception {

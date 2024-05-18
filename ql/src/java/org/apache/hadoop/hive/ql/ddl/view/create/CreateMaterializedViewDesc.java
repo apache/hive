@@ -31,17 +31,14 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithTableProperties;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
-import org.apache.hadoop.hive.ql.ddl.table.create.TablePropertiesDesc;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
-import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,15 +49,13 @@ import static org.apache.hadoop.hive.ql.ddl.DDLUtils.setColumnsAndStorePartition
  * DDL task description for CREATE VIEW commands.
  */
 @Explain(displayName = "Create Materialized View", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class CreateMaterializedViewDesc implements DDLDesc, TablePropertiesDesc, Serializable {
+public class CreateMaterializedViewDesc extends DDLDescWithTableProperties implements Serializable {
   private static final long serialVersionUID = 1L;
   private static final Logger LOG = LoggerFactory.getLogger(CreateMaterializedViewDesc.class);
 
   private String viewName;
   private List<FieldSchema> schema;
   private String comment;
-  private Map<String, String> tblProps;
-  private List<String> partColNames;
   private boolean ifNotExists;
 
   private String originalText;
@@ -69,7 +64,6 @@ public class CreateMaterializedViewDesc implements DDLDesc, TablePropertiesDesc,
   private List<FieldSchema> partCols;
   private String inputFormat;
   private String outputFormat;
-  private String location;
   private String serde;
   private String storageHandler;
   private Map<String, String> serdeProps;
@@ -78,11 +72,6 @@ public class CreateMaterializedViewDesc implements DDLDesc, TablePropertiesDesc,
   private List<FieldSchema> sortCols;
   private List<String> distributeColNames;
   private List<FieldSchema> distributeCols;
-  private Long initialWriteId; // Initial write ID for CMV and import.
-  // The FSOP configuration for the FSOP that is going to write initial data during cmv.
-  // This is not needed beyond compilation, so it is transient.
-  private transient FileSinkDesc writer;
-  private String ownerName = null;
 
   /**
    * Used to create a materialized view descriptor.
@@ -92,11 +81,11 @@ public class CreateMaterializedViewDesc implements DDLDesc, TablePropertiesDesc,
       List<String> distributeColNames, boolean ifNotExists, boolean rewriteEnabled,
       String inputFormat, String outputFormat, String location,
       String serde, String storageHandler, Map<String, String> serdeProps) {
+    super(partColNames, tblProps, location);
+    
     this.viewName = viewName;
     this.schema = schema;
     this.comment = comment;
-    this.tblProps = tblProps;
-    this.partColNames = partColNames;
     this.sortColNames = sortColNames;
     this.distributeColNames = distributeColNames;
     this.ifNotExists = ifNotExists;
@@ -104,7 +93,6 @@ public class CreateMaterializedViewDesc implements DDLDesc, TablePropertiesDesc,
     this.rewriteEnabled = rewriteEnabled;
     this.inputFormat = inputFormat;
     this.outputFormat = outputFormat;
-    this.location = location;
     this.serde = serde;
     this.storageHandler = storageHandler;
     this.serdeProps = serdeProps;
@@ -113,6 +101,10 @@ public class CreateMaterializedViewDesc implements DDLDesc, TablePropertiesDesc,
   @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getViewName() {
     return viewName;
+  }
+  
+  public TableName getFullTableName() {
+    return TableName.fromString(viewName, null, null);
   }
 
   public void setViewName(String viewName) {
@@ -172,14 +164,6 @@ public class CreateMaterializedViewDesc implements DDLDesc, TablePropertiesDesc,
     this.partCols = partCols;
   }
 
-  public List<String> getPartColNames() {
-    return partColNames;
-  }
-
-  public void setPartColNames(List<String> partColNames) {
-    this.partColNames = partColNames;
-  }
-
   public boolean isOrganized() {
     return (sortColNames != null && !sortColNames.isEmpty()) ||
         (distributeColNames != null && !distributeColNames.isEmpty());
@@ -236,21 +220,6 @@ public class CreateMaterializedViewDesc implements DDLDesc, TablePropertiesDesc,
     this.comment = comment;
   }
 
-  public void setTblProps(Map<String, String> tblProps) {
-    this.tblProps = tblProps;
-  }
-
-  public Map<String, String> getTblProps() {
-    return tblProps;
-  }
-
-  @Explain(displayName = "table properties")
-  public Map<String, String> getTblPropsExplain() { // only for displaying plan
-    return PlanUtils.getPropertiesForExplain(tblProps,
-            hive_metastoreConstants.TABLE_IS_CTAS,
-            hive_metastoreConstants.TABLE_BUCKETING_VERSION);
-  }
-
   @Explain(displayName = "if not exists", displayOnlyOnTrue = true)
   public boolean getIfNotExists() {
     return ifNotExists;
@@ -282,13 +251,6 @@ public class CreateMaterializedViewDesc implements DDLDesc, TablePropertiesDesc,
 
   public void setOutputFormat(String outputFormat) {
     this.outputFormat = outputFormat;
-  }
-
-  public void setLocation(String location) {
-    this.location = location;
-  }
-  public String getLocation() {
-    return location;
   }
 
   public String getSerde() {
@@ -401,31 +363,4 @@ public class CreateMaterializedViewDesc implements DDLDesc, TablePropertiesDesc,
 
     return tbl;
   }
-
-  public void setInitialWriteId(Long writeId) {
-    this.initialWriteId = writeId;
-  }
-
-  public Long getInitialWriteId() {
-    return initialWriteId;
-  }
-
-  public FileSinkDesc getAndUnsetWriter() {
-    FileSinkDesc fsd = writer;
-    writer = null;
-    return fsd;
-  }
-
-  public void setWriter(FileSinkDesc writer) {
-    this.writer = writer;
-  }
-
-  public void setOwnerName(String ownerName) {
-    this.ownerName = ownerName;
-  }
-
-  public String getOwnerName() {
-    return this.ownerName;
-  }
-
 }

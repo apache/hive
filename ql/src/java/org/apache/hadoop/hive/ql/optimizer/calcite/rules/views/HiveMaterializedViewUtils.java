@@ -118,20 +118,24 @@ public class HiveMaterializedViewUtils {
     if (snapshot != null && snapshot.getTableSnapshots() != null && !snapshot.getTableSnapshots().isEmpty()) {
       return isOutdatedMaterializedView(snapshot, db, tablesUsed, materializedViewTable);
     }
-
+    String txnString = validTxnsList.get();
+    if (txnString == null) {
+      return null;
+    }
     String materializationTxnList = snapshot != null ? snapshot.getValidTxnList() : null;
+    
     return isOutdatedMaterializedView(
-        materializationTxnList, validTxnsList, txnMgr, tablesUsed, materializedViewTable);
+        materializationTxnList, txnString, txnMgr, tablesUsed, materializedViewTable);
   }
 
   private static Boolean isOutdatedMaterializedView(
-    String materializationTxnList, Supplier<String> validTxnsList, HiveTxnManager txnMgr,
+    String materializationTxnList, String validTxnsList, HiveTxnManager txnMgr,
     Set<TableName> tablesUsed, Table materializedViewTable) throws LockException {
     List<String> tablesUsedNames = tablesUsed.stream()
         .map(tableName -> TableName.getDbTable(tableName.getDb(), tableName.getTable()))
         .collect(Collectors.toList());
     ValidTxnWriteIdList currentTxnWriteIds = txnMgr.getValidWriteIds(tablesUsedNames,
-        validTxnsList.get());
+        validTxnsList);
     if (currentTxnWriteIds == null) {
       LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
               " ignored for rewriting as we could not obtain current txn ids");

@@ -154,6 +154,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       unparseTranslator.addTableNameTranslation(tableTree, SessionState.get().getCurrentDatabase());
       return;
     }
+    ctx.setMaterializedViewRewriting(true);
 
     try {
       mvTable = db.getTable(tableName.getDb(), tableName.getTable());

@@ -48,7 +48,7 @@ public abstract class AbstractBaseAlterTableAnalyzer extends BaseSemanticAnalyze
   }
 
   protected void setAcidDdlDesc(DDLDescWithWriteId descWithWriteId) {
-    if(this.ddlDescWithWriteId != null) {
+    if (this.ddlDescWithWriteId != null) {
       throw new IllegalStateException("ddlDescWithWriteId is already set: " + this.ddlDescWithWriteId);
     }
     this.ddlDescWithWriteId = descWithWriteId;

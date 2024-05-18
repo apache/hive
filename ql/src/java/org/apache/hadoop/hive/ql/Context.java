@@ -176,6 +176,7 @@ public class Context {
   private WmContext wmContext;
 
   private boolean isExplainPlan = false;
+  private boolean isMaterializedViewRewriting = false;
   private PlanMapper planMapper = new PlanMapper();
   private StatsSource statsSource;
   private int executionIndex;
@@ -457,6 +458,7 @@ public class Context {
     this.splitUpdate = ctx.splitUpdate;
     this.wmContext = ctx.wmContext;
     this.isExplainPlan = ctx.isExplainPlan;
+    this.isMaterializedViewRewriting = ctx.isMaterializedViewRewriting;
     this.statsSource = ctx.statsSource;
     this.executionIndex = ctx.executionIndex;
     this.viewsTokenRewriteStreams = new HashMap<>();
@@ -1276,15 +1278,25 @@ public class Context {
     return explainConfig;
   }
 
+  public void setExplainConfig(ExplainConfiguration explainConfig) {
+    this.explainConfig = explainConfig;
+  }
+
   public boolean isExplainPlan() {
     return isExplainPlan;
   }
-  public void setExplainPlan(boolean t) {
-    this.isExplainPlan = t;
+  
+  public void setExplainPlan(boolean value) {
+    this.isExplainPlan = value;
   }
 
-  public void setExplainConfig(ExplainConfiguration explainConfig) {
-    this.explainConfig = explainConfig;
+  public boolean isMaterializedViewRewriting() {
+    return isMaterializedViewRewriting || subContexts.stream().anyMatch(
+        Context::isMaterializedViewRewriting);
+  }
+  
+  public void setMaterializedViewRewriting(boolean value) {
+    this.isMaterializedViewRewriting = value;
   }
 
   public void resetOpContext() {

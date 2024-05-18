@@ -564,7 +564,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
   }
 
   @Test public void testMmMajorCompactionDb() throws Exception {
-    testMmCompactionDb(CompactionType.MAJOR, "base_0000003_v0000006");
+    testMmCompactionDb(CompactionType.MAJOR, "base_0000003_v0000007");
   }
 
   @Test public void testMmMinorCompactionDb() throws Exception {
