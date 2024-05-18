@@ -3686,11 +3686,11 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col1, _col2, _col4
-                residual filter predicates: {(_col0 <> _col4)}
+                outputColumnNames: _col0, _col1, _col3, _col4
+                residual filter predicates: {(_col1 <> _col4)}
                 Statistics: Num rows: 14 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col1 (type: int), _col2 (type: int)
+                  expressions: _col0 (type: int), _col3 (type: int)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 14 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -3721,15 +3721,15 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col1 (type: int)
-                  1 _col0 (type: int)
-                outputColumnNames: _col0, _col1, _col2
+                  0 _col0 (type: int)
+                  1 _col1 (type: int)
+                outputColumnNames: _col0, _col1, _col3
                 Statistics: Num rows: 14 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   null sort order: 
                   sort order: 
                   Statistics: Num rows: 14 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
+                  value expressions: _col0 (type: int), _col1 (type: int), _col3 (type: int)
 
   Stage: Stage-0
     Fetch Operator
@@ -3892,11 +3892,11 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col1, _col2, _col4
-                residual filter predicates: {(_col0 <> _col4)}
+                outputColumnNames: _col0, _col1, _col3, _col4
+                residual filter predicates: {(_col1 <> _col4)}
                 Statistics: Num rows: 14 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col1 (type: int), _col2 (type: int)
+                  expressions: _col0 (type: int), _col3 (type: int)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 14 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -3927,15 +3927,15 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col1 (type: int)
-                  1 _col0 (type: int)
-                outputColumnNames: _col0, _col1, _col2
+                  0 _col0 (type: int)
+                  1 _col1 (type: int)
+                outputColumnNames: _col0, _col1, _col3
                 Statistics: Num rows: 14 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   null sort order: 
                   sort order: 
                   Statistics: Num rows: 14 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
+                  value expressions: _col0 (type: int), _col1 (type: int), _col3 (type: int)
 
   Stage: Stage-0
     Fetch Operator
@@ -7232,7 +7232,7 @@ HiveProject(ss_sold_date_sk=[$0], ss_quantity=[$1], ss_list_price=[$2])
                   HiveFilter(condition=[IS NOT NULL($0)])
                     HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
                 HiveProject(d_date_sk=[$0])
-                  HiveFilter(condition=[AND(BETWEEN(false, $1, 1999, 2001), IS NOT NULL($0))])
+                  HiveFilter(condition=[AND(SEARCH($1, Sarg[[1999..2001]]), IS NOT NULL($0))])
                     HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
 
 Warning: Shuffle Join MERGEJOIN[77][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
@@ -7278,7 +7278,7 @@ HiveProject(ss_sold_date_sk=[$0], ss_quantity=[$1], ss_list_price=[$2])
                 HiveFilter(condition=[IS NOT NULL($0)])
                   HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
               HiveProject(d_date_sk=[$0])
-                HiveFilter(condition=[AND(BETWEEN(false, $1, 1999, 2001), IS NOT NULL($0))])
+                HiveFilter(condition=[AND(SEARCH($1, Sarg[[1999..2001]]), IS NOT NULL($0))])
                   HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
     HiveProject(cnt=[$0])
       HiveFilter(condition=[sq_count_check($0)])
@@ -7289,7 +7289,7 @@ HiveProject(ss_sold_date_sk=[$0], ss_quantity=[$1], ss_list_price=[$2])
                 HiveFilter(condition=[IS NOT NULL($0)])
                   HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
               HiveProject(d_date_sk=[$0])
-                HiveFilter(condition=[AND(BETWEEN(false, $1, 1999, 2001), IS NOT NULL($0))])
+                HiveFilter(condition=[AND(SEARCH($1, Sarg[[1999..2001]]), IS NOT NULL($0))])
                   HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
 
 PREHOOK: query: DROP TABLE store_sales

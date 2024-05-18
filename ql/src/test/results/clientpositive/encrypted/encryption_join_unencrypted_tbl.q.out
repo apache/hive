@@ -545,12 +545,12 @@ POSTHOOK: Input: default@encrypted_table
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`
-FROM (SELECT `key`, `value`, CAST(`key` AS DOUBLE) AS `CAST`
+FROM (SELECT `key`, `value`, CAST(`key` AS DOUBLE) AS `EXPR$0`
 FROM `default`.`src`
 WHERE CAST(`key` AS DOUBLE) IS NOT NULL) AS `t0`
-INNER JOIN (SELECT `key`, `value`, CAST(`key` AS DOUBLE) AS `CAST`
+INNER JOIN (SELECT `key`, `value`, CAST(`key` AS DOUBLE) AS `EXPR$0`
 FROM `default`.`encrypted_table`
-WHERE CAST(`key` AS DOUBLE) IS NOT NULL) AS `t2` ON `t0`.`CAST` = `t2`.`CAST`
+WHERE CAST(`key` AS DOUBLE) IS NOT NULL) AS `t2` ON `t0`.`EXPR$0` = `t2`.`EXPR$0`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
