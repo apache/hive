@@ -317,7 +317,7 @@ public class Compiler {
         return false;
       //this implies that no locks are needed for such a command
       default:
-        return !context.isExplainPlan() || context.isMaterializedViewRewriting();
+        return true;
     }
   }
   
@@ -333,8 +333,8 @@ public class Compiler {
     // compilation and processing. We only do this if 1) a transaction
     // was already opened and 2) the list has not been recorded yet,
     // e.g., by an explicit open transaction command.
-    String txnStr = driverContext.getConf().get(ValidTxnList.VALID_TXNS_KEY);
-    if (txnMgr.isTxnOpen() && Strings.isEmpty(txnStr)) {
+    String txnString = driverContext.getConf().get(ValidTxnList.VALID_TXNS_KEY);
+    if (txnMgr.isTxnOpen() && Strings.isEmpty(txnString)) {
       try {
         ValidTxnList txnList = txnMgr.getValidTxns();
         // Write the current set of valid transactions into the conf file

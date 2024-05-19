@@ -66,6 +66,7 @@ public abstract class AbstractAlterTableAnalyzer extends AbstractBaseAlterTableA
       throws SemanticException;
 
   protected void setAcidDdlDesc(Table table, DDLDescWithWriteId desc) {
+
     if (AcidUtils.isTransactionalTable(table)) {
       setAcidDdlDesc(desc);
     }

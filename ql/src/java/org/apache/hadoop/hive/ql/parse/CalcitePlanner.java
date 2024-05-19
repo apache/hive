@@ -1987,8 +1987,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (tablesUsedQuery.isEmpty()) {
         return basePlan;
       }
-      ctx.setMaterializedViewRewriting(true);
-      
       // Add views to planner
       List<HiveRelOptMaterialization> materializations = new ArrayList<>();
       try {
@@ -2133,7 +2131,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
         if (tablesUsedByOriginalPlan.isEmpty()) {
           return originalPlan;
         }
-        ctx.setMaterializedViewRewriting(true);
         
         RelNode mvScan = getMaterializedViewByAST(
             expandedAST, optCluster, ANY, db, tablesUsedByOriginalPlan, validTxnsList, getTxnMgr());

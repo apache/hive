@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.ddl.table.info.desc;
 
 import java.util.Map;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
@@ -30,7 +30,9 @@ import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
@@ -84,7 +86,7 @@ public class DescTableAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // process the third child node,if exists, to get partition spec(s)
-    String columnPath = getColumnPath(db, tableTypeExpr, tableName, partitionSpec);
+    String columnPath = getColumnPath(tableTypeExpr, tableName, partitionSpec);
 
     boolean showColStats = false;
     boolean isFormatted = false;
@@ -118,14 +120,11 @@ public class DescTableAnalyzer extends BaseSemanticAnalyzer {
    * Example: lintString.$elem$.myint.
    * Return table name for column name if no column has been specified.
    */
-  private String getColumnPath(Hive db, ASTNode node, TableName tableName, Map<String, String> partitionSpec)
-      throws SemanticException {
-
+  private String getColumnPath(ASTNode node, TableName tableName, Map<String, String> partitionSpec) {
     // if this ast has only one child, then no column name specified.
     if (node.getChildCount() == 1) {
       return null;
     }
-
     // Second child node could be partitionSpec or column
     if (node.getChildCount() > 1) {
       ASTNode columnNode = (partitionSpec == null) ? (ASTNode) node.getChild(1) : (ASTNode) node.getChild(2);
@@ -133,7 +132,6 @@ public class DescTableAnalyzer extends BaseSemanticAnalyzer {
         return String.join(".", tableName.getNotEmptyDbTable(), DDLUtils.getFQName(columnNode));
       }
     }
-
     return null;
   }
 
@@ -145,11 +143,11 @@ public class DescTableAnalyzer extends BaseSemanticAnalyzer {
 
     // if ast has two children the 2nd child could be partition spec or columnName
     // if the ast has 3 children, the second *has to* be partition spec
-    if (node.getChildCount() > 2 && (((ASTNode) node.getChild(1)).getType() != HiveParser.TOK_PARTSPEC)) {
-      throw new SemanticException(((ASTNode) node.getChild(1)).getType() + " is not a partition specification");
+    if (node.getChildCount() > 2 && (node.getChild(1).getType() != HiveParser.TOK_PARTSPEC)) {
+      throw new SemanticException(node.getChild(1).getType() + " is not a partition specification");
     }
 
-    if (((ASTNode) node.getChild(1)).getType() == HiveParser.TOK_PARTSPEC) {
+    if (node.getChild(1).getType() == HiveParser.TOK_PARTSPEC) {
       ASTNode partNode = (ASTNode) node.getChild(1);
 
       Table tab = null;
@@ -189,7 +187,16 @@ public class DescTableAnalyzer extends BaseSemanticAnalyzer {
         return partitionSpec;
       }
     }
-
     return null;
+  }
+  
+  @Override
+  public boolean hasAcidResourcesInQuery() {
+    return inputs.stream().filter(entity -> entity.getType() == Entity.Type.TABLE)
+      .map(Entity::getTable)
+      .filter(Table::isMaterializedView)
+      .flatMap(t -> t.getMVMetadata().getSourceTables().stream())
+      .map(SourceTable::getTable)
+      .anyMatch(AcidUtils::isTransactionalTable);
   }
 }
