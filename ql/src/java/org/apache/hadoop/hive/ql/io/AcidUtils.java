@@ -2445,15 +2445,12 @@ public class AcidUtils {
     if (sessionTxnMgr == null) {
       return null;
     }
-    ValidWriteIdList validWriteIdList = null;
-    ValidTxnWriteIdList validTxnWriteIdList = null;
-
     String validTxnList = conf.get(ValidTxnList.VALID_TXNS_KEY);
     List<String> tablesInput = new ArrayList<>();
     String fullTableName = getFullTableName(dbName, tableName);
     tablesInput.add(fullTableName);
 
-    validTxnWriteIdList = sessionTxnMgr.getValidWriteIds(tablesInput, validTxnList);
+    ValidTxnWriteIdList validTxnWriteIdList = sessionTxnMgr.getValidWriteIds(tablesInput, validTxnList);
     return validTxnWriteIdList != null ?
         validTxnWriteIdList.getTableValidWriteIdList(fullTableName) : null;
   }

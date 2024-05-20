@@ -362,7 +362,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
         FileUtils.HIDDEN_FILES_PATH_FILTER);
 
     String[] expectedList = new String[] {
-        "/t/delta_0000001_0000002_v0000009",
+        "/t/delta_0000001_0000002_v0000010",
         "/t/delta_0000001_0000001_0000",
         "/t/delta_0000002_0000002_0000",
     };
@@ -396,7 +396,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     runCleaner(hiveConf);
 
     expectedList = new String[] {
-        "/t/delta_0000001_0000003_v0000012"
+        "/t/delta_0000001_0000003_v0000014"
     };
     actualList = fs.listStatus(new Path(warehousePath + "/t"),
         FileUtils.HIDDEN_FILES_PATH_FILTER);
