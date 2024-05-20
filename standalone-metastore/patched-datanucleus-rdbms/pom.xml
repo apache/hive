@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>org.apache.hive</groupId>
+    <artifactId>hive-standalone-metastore</artifactId>
+    <version>4.1.0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.apache.hive</groupId>
+  <artifactId>patched-datanucleus-rdbms</artifactId>
+  <version>${datanucleus-rdbms.version}</version>
+  <name>Patched DataNucleus RDBMS</name>
+  <!-- Temporary package until we need unreleased Iceberg changes for development purposes. -->
+  <!-- We should periodically clean this package during rebasing to newer Iceberg releases. -->
+  <!-- We should remove the package for good when Iceberg integration has been stabilized. -->
+  <properties>
+    <hive.path.to.root>../..</hive.path.to.root>
+    <path.to.standalone.metastore.root>..</path.to.standalone.metastore.root>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>org.datanucleus</groupId>
+      <artifactId>datanucleus-rdbms</artifactId>
+      <version>${datanucleus-rdbms.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.datanucleus</groupId>
+      <artifactId>datanucleus-core</artifactId>
+      <version>${datanucleus-core.version}</version>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>unpack</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.datanucleus</groupId>
+                  <artifactId>datanucleus-rdbms</artifactId>
+                  <version>${datanucleus-rdbms.version}</version>
+                  <type>jar</type>
+                  <overWrite>true</overWrite>
+                  <outputDirectory>${project.build.directory}/classes</outputDirectory>
+                  <excludes>
+                      **/ElementContainerTable.class
+                  </excludes>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>bundle-packaged-jar</id>
+            <phase>package</phase>
+            <goals>
+              <goal>bundle</goal>
+            </goals>
+            <configuration>
+              <instructions>
+                <Automatic-Module-Name>org.datanucleus.store.rdbms</Automatic-Module-Name>
+                <Bundle-Vendor>DataNucleus</Bundle-Vendor>
+                <Bundle-SymbolicName>org.datanucleus.store.rdbms;singleton:=true</Bundle-SymbolicName>
+                <Bundle-Version>${datanucleus-rdbms.version}</Bundle-Version>
+                <Import-Package>
+                  org.datanucleus*;version=6.0.0-release,
+                  com.google.cloud.spanner.jdbc;resolution:=optional,
+                  com.ibm.db2.jcc;resolution:=optional,
+                  com.informix.jdbc;resolution:=optional,
+                  com.jolbox.bonecp;resolution:=optional,
+                  com.mchange.v2.c3p0;resolution:=optional,
+                  com.microsoft.sqlserver.jdbc;resolution:=optional,
+                  com.mysql.jdbc;resolution:=optional,
+                  com.sap.dbtech.jdbc;resolution:=optional,
+                  com.sybase.jdbc2.jdbc;resolution:=optional,
+                  com.sybase.jdbc4.jdbc;resolution:=optional,
+                  sybase.jdbc4.sqlanywhere;resolution:=optional,
+                  sap.jdbc4.sqlanywhere;resolution:=optional,
+                  org.sqlite;resolution:=optional,
+                  net.sourceforge.jtds.jdbc;resolution:=optional,
+                  org.apache.derby.jdbc;resolution:=optional,
+                  org.firebirdsql.jdbc;resolution:=optional,
+                  org.h2;resolution:=optional,
+                  org.hsqldb;resolution:=optional,
+                  org.hsqldb.jdbc;resolution:=optional,
+                  org.postgresql;resolution:=optional,
+                  org.apache.tomcat.jdbc.pool;version="7.0.0";resolution:=optional,
+                  *
+                </Import-Package>
+              </instructions>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <!-- Suppress source assembly -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>assemble</id>
+            <phase>none</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
