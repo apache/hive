@@ -33,6 +33,10 @@
     <!-- intra-project -->
     <!-- used for vector code-gen -->
     <dependency>
+      <groupId>org.openjdk.nashorn</groupId>
+      <artifactId>nashorn-core</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.atlas</groupId>
       <artifactId>atlas-client-v2</artifactId>
       <version>${atlas.version}</version>
