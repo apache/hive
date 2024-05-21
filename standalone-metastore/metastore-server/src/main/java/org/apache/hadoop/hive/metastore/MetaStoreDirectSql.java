@@ -548,6 +548,16 @@ class MetaStoreDirectSql {
    */
   public List<Partition> alterPartitions(MTable table, List<String> partNames,
                                          List<Partition> newParts, String queryWriteIdList) throws MetaException {
+
+    for (Partition tmpPart : newParts) {
+      if (!tmpPart.getDbName().equalsIgnoreCase(table.getDatabase().getName())) {
+        throw new MetaException("Invalid DB name : " + tmpPart.getDbName());
+      }
+
+      if (!tmpPart.getTableName().equalsIgnoreCase(table.getTableName())) {
+        throw new MetaException("Invalid table name : " + tmpPart.getDbName());
+      }
+    }
     List<Object[]> rows = Batchable.runBatched(batchSize, partNames, new Batchable<String, Object[]>() {
       @Override
       public List<Object[]> run(List<String> input) throws Exception {
