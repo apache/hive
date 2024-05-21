@@ -671,7 +671,7 @@
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <reuseForks>false</reuseForks>
           <forkCount>${test.forkcount}</forkCount>
-          <argLine>-Xmx2048m</argLine>
+          <argLine>-Xmx2048m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</argLine>
           <systemPropertyVariables>
             <build.dir>${project.build.directory}</build.dir>
             <datanucleus.schema.autoCreateAll>true</datanucleus.schema.autoCreateAll>
