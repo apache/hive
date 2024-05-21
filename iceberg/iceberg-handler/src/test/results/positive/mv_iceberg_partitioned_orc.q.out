@@ -94,7 +94,7 @@ Sort Columns:       	[]
 Original Query:     	select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52	 
 Expanded Query:     	SELECT `c`, `b` FROM (select `tbl_ice`.`b`, `tbl_ice`.`c` from `default`.`tbl_ice` where `tbl_ice`.`c` > 52) `mat1`	 
 Rewrite Enabled:    	Yes                 	 
-Outdated for Rewriting:	Unknown             	 
+Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
 Table name          	Snapshot            	 
@@ -182,7 +182,7 @@ Sort Columns:       	[]
 Original Query:     	select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52	 
 Expanded Query:     	SELECT `c`, `b` FROM (select `tbl_ice`.`b`, `tbl_ice`.`c` from `default`.`tbl_ice` where `tbl_ice`.`c` > 52) `mat2`	 
 Rewrite Enabled:    	Yes                 	 
-Outdated for Rewriting:	Unknown             	 
+Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
 Table name          	Snapshot            	 

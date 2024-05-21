@@ -51,6 +51,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-4
     Create Materialized View
+      location: hdfs://### HDFS PATH ###
       columns: b string, c int
       table properties:
         format-version 1
