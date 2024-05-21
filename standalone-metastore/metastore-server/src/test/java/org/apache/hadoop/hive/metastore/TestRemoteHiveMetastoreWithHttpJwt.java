@@ -28,6 +28,8 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 
 import java.io.File;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
@@ -97,9 +99,10 @@ public class TestRemoteHiveMetastoreWithHttpJwt {
 
   private static void removeStaticFinalAndSetValue(Field field, Object value) throws Exception {
     field.setAccessible(true);
-    Field modifiersField = Field.class.getDeclaredField("modifiers");
-    modifiersField.setAccessible(true);
-    modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+    VarHandle modifiersHandle = MethodHandles.privateLookupIn(Field.class, MethodHandles.lookup())
+            .findVarHandle(Field.class, "modifiers", int.class);
+    int modifiers = field.getModifiers();
+    modifiersHandle.set(field, modifiers & ~Modifier.FINAL);
     field.set(null, value);
   }
   private static int port;
