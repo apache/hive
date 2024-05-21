@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.antlr.runtime.TokenRewriteStream;
@@ -57,6 +56,7 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -147,7 +147,6 @@ public abstract class BaseSemanticAnalyzer {
   protected Map<String, String> idToTableNameMap;
   protected QueryProperties queryProperties;
   ParseContext pCtx = null;
-  protected Supplier<String> validTxnsList;
 
   //user defined functions in query
   protected Set<String> userSuppliedFunctions;
@@ -228,10 +227,6 @@ public abstract class BaseSemanticAnalyzer {
 
   public boolean isPrepareQuery() {
     return prepareQuery;
-  }
-
-  public void setValidTxnList(Supplier<String> validTxnsList) {
-    this.validTxnsList = validTxnsList;
   }
 
   static final class RowFormatParams {
@@ -1583,15 +1578,17 @@ public abstract class BaseSemanticAnalyzer {
   public boolean hasAcidResourcesInQuery() {
     return hasReadWriteAcidInQuery() || getAcidDdlDesc() != null ||
       Stream.of(getInputs(), getOutputs()).flatMap(Collection::stream)
-        .filter(entity -> entity.getType() == Entity.Type.TABLE
-          || entity.getType() == Entity.Type.PARTITION)
-        .map(entity -> {
+        .filter(entity -> entity.getType() == Entity.Type.TABLE || entity.getType() == Entity.Type.PARTITION)
+        .flatMap(entity -> {
           Table tbl = entity.getTable();
+          if (tbl.isMaterializedView() && tbl.getMVMetadata() != null) {
+            return tbl.getMVMetadata().getSourceTables().stream().map(SourceTable::getTable);
+          }
           Partition p = entity.getPartition();
           if (p != null) {
             tbl = p.getTable();
           }
-          return tbl;
+          return Stream.of(tbl.getTTable());
         })
         .anyMatch(AcidUtils::isTransactionalTable);
   }

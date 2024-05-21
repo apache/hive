@@ -2288,8 +2288,7 @@ public class AcidUtils {
    */
   public static ValidTxnWriteIdList getValidTxnWriteIdList(Configuration conf) {
     String txnString = conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
-    ValidTxnWriteIdList validTxnList = new ValidTxnWriteIdList(txnString);
-    return validTxnList;
+    return new ValidTxnWriteIdList(txnString);
   }
 
   /**

@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
-import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -105,17 +104,6 @@ public class Driver implements IDriver {
 
   public Driver(QueryState queryState, QueryInfo queryInfo) {
     this(queryState, queryInfo, null);
-  }
-
-  public Driver(QueryState queryState, ValidWriteIdList compactionWriteIds, long compactorTxnId) {
-    this(queryState);
-    driverContext.setCompactionWriteIds(compactionWriteIds);
-    driverContext.setCompactorTxnId(compactorTxnId);
-  }
-
-  public Driver(QueryState queryState, long analyzeTableWriteId) {
-    this(queryState);
-    driverContext.setAnalyzeTableWriteId(analyzeTableWriteId);
   }
 
   public Driver(QueryState queryState, QueryInfo queryInfo, HiveTxnManager txnManager) {
@@ -279,14 +267,10 @@ public class Driver implements IDriver {
             // data add ends up being > than the data delete.
             driverContext.getTxnManager().clearCaches();
           }
+          driverContext.getConf().unset(ValidTxnList.VALID_TXNS_KEY);
           driverContext.setRetrial(true);
-          driverContext.getConf().set(ValidTxnList.VALID_TXNS_KEY,
-              driverContext.getTxnManager().getValidTxns().toString());
-          
-          DDLDesc.DDLDescWithWriteId acidDdlDesc = driverContext.getPlan().getAcidDdlDesc();
-          boolean hasAcidDdl = acidDdlDesc != null && acidDdlDesc.mayNeedWriteId();
-          
-          if (driverContext.getPlan().hasReadWriteAcidInQuery() || hasAcidDdl) {
+
+          if (driverContext.getPlan().hasReadWriteAcidInQuery()) {
             compileInternal(context.getCmd(), true);
             driverTxnHandler.recordValidWriteIds();
             driverTxnHandler.setWriteIdForAcidFileSinks();

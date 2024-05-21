@@ -48,7 +48,7 @@ final class RebalanceQueryCompactor extends QueryCompactor {
     ValidWriteIdList writeIds = context.getValidWriteIdList();
 
     // Set up the session for driver.
-    HiveConf conf = new HiveConf(hiveConf);
+    HiveConf conf = setUpDriverSession(hiveConf);
 
     String tmpTableName = getTempTableName(table);
     Path tmpTablePath = QueryCompactor.Util.getCompactionResultDir(storageDescriptor, writeIds,
@@ -66,9 +66,8 @@ final class RebalanceQueryCompactor extends QueryCompactor {
     List<String> compactionQueries = getCompactionQueries(table, context.getPartition(), tmpTableName, numBuckets,
         context.getCompactionInfo().orderByClause);
     List<String> dropQueries = getDropQueries(tmpTableName);
-    runCompactionQueries(conf, tmpTableName, storageDescriptor, writeIds, context.getCompactionInfo(),
-        Lists.newArrayList(tmpTablePath), createQueries, compactionQueries, dropQueries,
-        table.getParameters());
+    runCompactionQueries(conf, tmpTableName, context.getCompactionInfo(), Lists.newArrayList(tmpTablePath), 
+        createQueries, compactionQueries, dropQueries, table.getParameters());
     return true;
   }
 

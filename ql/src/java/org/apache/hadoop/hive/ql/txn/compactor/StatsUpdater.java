@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -48,11 +49,11 @@ public final class StatsUpdater {
      * field so need to figure out the msg format and how to surface it in SHOW COMPACTIONS, etc
      *
      * @param ci Information about the compaction being run
-     * @param conf The hive configuration object
+     * @param hiveConf The hive configuration object
      * @param userName The user to run the statistic collection with
      * @param compactionQueueName The name of the compaction queue
      */
-    public void gatherStats(CompactionInfo ci, HiveConf conf,
+    public void gatherStats(CompactionInfo ci, HiveConf hiveConf,
                             String userName, String compactionQueueName,
                             IMetaStoreClient msc) {
         try {
@@ -60,8 +61,9 @@ public final class StatsUpdater {
                 throw new IllegalArgumentException("Metastore client is missing");
             }
 
-            HiveConf statusUpdaterConf = new HiveConf(conf);
-            statusUpdaterConf.unset(ValidTxnList.VALID_TXNS_KEY);
+            HiveConf conf = new HiveConf(hiveConf);
+            //so that Driver doesn't think it's already in a transaction
+            conf.unset(ValidTxnList.VALID_TXNS_KEY);
 
             //e.g. analyze table page_view partition(dt='10/15/2014',country=’US’)
             // compute statistics for columns viewtime
@@ -87,10 +89,10 @@ public final class StatsUpdater {
             }
             LOG.info(ci + ": running '" + sb + "'");
             if (compactionQueueName != null && compactionQueueName.length() > 0) {
-                statusUpdaterConf.set(TezConfiguration.TEZ_QUEUE_NAME, compactionQueueName);
+                conf.set(TezConfiguration.TEZ_QUEUE_NAME, compactionQueueName);
             }
-            SessionState sessionState = DriverUtils.setUpSessionState(statusUpdaterConf, userName, true);
-            DriverUtils.runOnDriver(statusUpdaterConf, sessionState, sb.toString(), ci.highestWriteId);
+            SessionState sessionState = DriverUtils.setUpSessionState(conf, userName, true);
+            DriverUtils.runOnDriver(conf, sessionState, sb.toString());
         } catch (Throwable t) {
             LOG.error(ci + ": gatherStats(" + ci.dbname + "," + ci.tableName + "," + ci.partName +
                     ") failed due to: " + t.getMessage(), t);

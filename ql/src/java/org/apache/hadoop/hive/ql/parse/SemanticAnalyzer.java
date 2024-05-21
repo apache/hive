@@ -8201,7 +8201,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (ctx.getExplainConfig() != null) {
       return defaultValue; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
     }
-    validTxnsList.get();
+    queryState.getValidTxnList();
     try {
       return getTxnMgr().getTableWriteId(tableName.getDb(), tableName.getTable());
     } catch (LockException ex) {
@@ -13083,6 +13083,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (!genResolvedParseTree(ast, plannerCtx)) {
       return;
     }
+    if (tablesFromReadEntities(inputs).stream().anyMatch(AcidUtils::isTransactionalTable)) {
+      queryState.getValidTxnList();
+    }
 
     if (HiveConf.getBoolVar(conf, ConfVars.HIVE_REMOVE_ORDERBY_IN_SUBQUERY)) {
       for (String alias : qb.getSubqAliases()) {
@@ -15732,7 +15735,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       .collect(Collectors.toList());
     
     if (transactionalTables.size() > 0) {
-      String txnString = validTxnsList.get();
+      String txnString = queryState.getValidTxnList();
       if (txnString == null) {
         return null;
       }

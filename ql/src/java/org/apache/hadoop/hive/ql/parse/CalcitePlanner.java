@@ -1996,10 +1996,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // (HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW) instead.
         if (useMaterializedViewsRegistry) {
           materializations.addAll(db.getPreprocessedMaterializedViewsFromRegistry(tablesUsedQuery,
-              validTxnsList, getTxnMgr()));
+              queryState::getValidTxnList, getTxnMgr()));
         } else {
           materializations.addAll(db.getPreprocessedMaterializedViews(tablesUsedQuery,
-              validTxnsList, getTxnMgr()));
+              queryState::getValidTxnList, getTxnMgr()));
         }
         // We need to use the current cluster for the scan operator on views,
         // otherwise the planner will throw an Exception (different planners)
@@ -2086,7 +2086,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // wrt information in metastore
         try {
           if (!db.validateMaterializedViewsFromRegistry(materializedViewsUsedAfterRewrite, tablesUsedQuery,
-                validTxnsList, getTxnMgr())) {
+                queryState::getValidTxnList, getTxnMgr())) {
             return calcitePreMVRewritingPlan;
           }
         } catch (HiveException e) {
@@ -2133,7 +2133,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
         
         RelNode mvScan = getMaterializedViewByAST(
-            expandedAST, optCluster, ANY, db, tablesUsedByOriginalPlan, validTxnsList, getTxnMgr());
+            expandedAST, optCluster, ANY, db, tablesUsedByOriginalPlan, queryState::getValidTxnList, getTxnMgr());
         if (mvScan != null) {
           return mvScan;
         }
@@ -2143,8 +2143,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
 
         return new HiveMaterializedViewASTSubQueryRewriteShuttle(subQueryMap, queryToRewriteAST, expandedAST,
-            HiveRelFactories.HIVE_BUILDER.create(optCluster, null),
-            db, tablesUsedByOriginalPlan, validTxnsList, getTxnMgr()).rewrite(originalPlan);
+              HiveRelFactories.HIVE_BUILDER.create(optCluster, null),
+              db, tablesUsedByOriginalPlan, queryState::getValidTxnList, getTxnMgr())
+          .rewrite(originalPlan);
       } catch (Exception e) {
         LOG.warn("Automatic materialized view query rewrite failed. expanded query text: {} AST string {} ",
                 expandedQueryText, queryToRewriteAST.toStringTree(), e);

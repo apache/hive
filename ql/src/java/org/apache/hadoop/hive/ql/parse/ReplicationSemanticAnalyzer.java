@@ -67,13 +67,13 @@ import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_TABLES;
 
 public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   // Replication Scope
-  private final ReplScope replScope = new ReplScope();
+  private ReplScope replScope = new ReplScope();
 
   // Source DB Name for REPL LOAD
   private String sourceDbNameOrPattern;
   // Added conf member to set the REPL command specific config entries without affecting the configs
   // of any other queries running in the session
-  private final HiveConf conf;
+  private HiveConf conf;
 
   // By default, this will be same as that of super class BaseSemanticAnalyzer. But need to obtain again
   // if the Hive configs are received from WITH clause in REPL LOAD or REPL STATUS commands.
@@ -131,7 +131,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void setTxnConfigs() {
-    String validTxnList = queryState.getConf().get(ValidTxnList.VALID_TXNS_KEY);
+    String validTxnList = queryState.getValidTxnList();
     if (validTxnList != null) {
       conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList);
     }
@@ -383,7 +383,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
                                                                         DumpMetaData dmd) throws SemanticException {
     ReplicationMetricCollector collector;
     if (dmd.isPreOptimizedBootstrapDump() || dmd.isOptimizedBootstrapDump()) {
-      Database dbToLoad;
+      Database dbToLoad = null;
       try {
         dbToLoad = db.getDatabase(dbNameToLoadIn);
       } catch (HiveException e) {
@@ -393,7 +393,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS, dbNameToLoadIn);
       }
       // db property ReplConst.FAILOVER_ENDPOINT is only set during planned failover.
-      String failoverType;
+      String failoverType = "";
       try {
         // check whether ReplConst.FAILOVER_ENDPOINT is set
         failoverType = MetaStoreUtils.isDbBeingPlannedFailedOver(db.getDatabase(dbNameToLoadIn)) ? ReplConst.FailoverType.PLANNED.toString() : ReplConst.FailoverType.UNPLANNED.toString();
@@ -515,11 +515,5 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     ctx.setResFile(ctx.getLocalTmpPath());
     Utils.writeOutput(Collections.singletonList(values), ctx.getResFile(), conf);
-  }
-
-  @Override
-  public boolean hasAcidResourcesInQuery() {
-    // check DB tags once supported (i.e. ICEBERG_ONLY, ACID_ONLY, EXTERNAL_ONLY)
-    return true;
   }
 }

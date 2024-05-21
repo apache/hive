@@ -93,5 +93,6 @@ public class AlterTableCompactAnalyzer extends AbstractAlterTableAnalyzer {
   
   @Override
   protected void setAcidDdlDesc(DDLDescWithWriteId desc) {
+    // doesn't need an open txn
   }
 }

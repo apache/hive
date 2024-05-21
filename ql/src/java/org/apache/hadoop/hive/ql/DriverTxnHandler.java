@@ -110,12 +110,15 @@ class DriverTxnHandler {
       // In case when user Ctrl-C twice to kill Hive CLI JVM, we want to release locks
       // if compile is being called multiple times, clear the old shutdownhook
       ShutdownHookManager.removeShutdownHook(txnRollbackRunner);
-      txnRollbackRunner = () -> {
-        try {
-          endTransactionAndCleanup(false, driverContext.getTxnManager());
-        } catch (LockException e) {
-          LOG.warn("Exception when releasing locks in ShutdownHook for Driver: " + 
-              e.getMessage());
+      txnRollbackRunner = new Runnable() {
+        @Override
+        public void run() {
+          try {
+            endTransactionAndCleanup(false, driverContext.getTxnManager());
+          } catch (LockException e) {
+            LOG.warn("Exception when releasing locks in ShutdownHook for Driver: " +
+                e.getMessage());
+          }
         }
       };
       ShutdownHookManager.addShutdownHook(txnRollbackRunner, SHUTDOWN_HOOK_PRIORITY);
@@ -167,7 +170,8 @@ class DriverTxnHandler {
       return true;
     }
 
-    Queue<Task<?>> tasks = new LinkedList<>(driverContext.getPlan().getRootTasks());
+    Queue<Task<?>> tasks = new LinkedList<Task<?>>();
+    tasks.addAll(driverContext.getPlan().getRootTasks());
     while (tasks.peek() != null) {
       Task<?> task = tasks.remove();
       if (task.requireLock()) {
@@ -214,7 +218,7 @@ class DriverTxnHandler {
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
 
     if (!driverContext.getTxnManager().isTxnOpen() && driverContext.getTxnManager().supportsAcid() 
-        && driverContext.getCompactorTxnId() <= 0) {
+        && !SessionState.get().isCompaction()) {
       /* non acid txn managers don't support txns but fwd lock requests to lock managers
          acid txn manager requires all locks to be associated with a txn so if we end up here w/o an open txn
          it's because we are processing something like "use <database> which by definition needs no locks */
@@ -228,7 +232,7 @@ class DriverTxnHandler {
       allocateWriteIdForAcidAnalyzeTable();
       boolean hasAcidDdl = setWriteIdForAcidDdl();
       
-      if (driverContext.getCompactorTxnId() <= 0) {
+      if (!SessionState.get().isCompaction()) {
         acquireLocksInternal();
       }
       if (driverContext.getPlan().hasReadWriteAcidInQuery() || hasAcidDdl) {
@@ -278,7 +282,7 @@ class DriverTxnHandler {
         long writeId = driverContext.getTxnManager().getTableWriteId(tableName.getDb(), tableName.getTable());
         acidSink.setTableWriteId(writeId);
 
-        /*
+        /**
          * it's possible to have > 1 FileSink writing to the same table/partition
          * e.g. Merge stmt, multi-insert stmt when mixing DP and SP writes
          * Insert ... Select ... Union All Select ... using
@@ -304,8 +308,10 @@ class DriverTxnHandler {
   private void allocateWriteIdForAcidAnalyzeTable() throws LockException {
     if (driverContext.getPlan().getAcidAnalyzeTable() != null) {
       Table table = driverContext.getPlan().getAcidAnalyzeTable().getTable();
-      driverContext.getTxnManager().setTableWriteId(
-          table.getDbName(), table.getTableName(), driverContext.getAnalyzeTableWriteId());
+      ValidWriteIdList writeIdList = AcidUtils.getTableValidWriteIdList(driverContext.getConf(),
+          TableName.getDbTable(table.getDbName(), table.getTableName()));
+      long writeId = (writeIdList != null) ? writeIdList.getHighWatermark() : -1;
+      driverContext.getTxnManager().setTableWriteId(table.getDbName(), table.getTableName(), writeId);
     }
   }
 
@@ -348,28 +354,30 @@ class DriverTxnHandler {
       throw new IllegalStateException("calling recordValidWriteIds() without initializing ValidTxnList " +
           JavaUtils.txnIdToString(driverContext.getTxnManager().getCurrentTxnId()));
     }
-
     ValidTxnWriteIdList txnWriteIds = getTxnWriteIds(txnString);
     setValidWriteIds(txnWriteIds);
-    driverContext.getTxnManager().addWriteIdsToMinHistory(driverContext.getPlan(), txnWriteIds);
     
-    LOG.debug("Encoding valid txn write ids info {} txnid: {}", txnWriteIds.toString(),
+    if ((!driverContext.isRetrial() || driverContext.isOutdatedTxn()) 
+          && !SessionState.get().isCompaction()) {
+      driverContext.getTxnManager().addWriteIdsToMinHistory(driverContext.getPlan(), txnWriteIds);
+    }
+    LOG.debug("Encoding valid txn write ids info {}, txnid: {}", txnWriteIds.toString(),
         driverContext.getTxnManager().getCurrentTxnId());
   }
 
   private ValidTxnWriteIdList getTxnWriteIds(String txnString) throws LockException {
     List<String> txnTables = getTransactionalTables();
-    ValidTxnWriteIdList txnWriteIds;
-    if (driverContext.getCompactionWriteIds() != null) {
-      // This is kludgy: here we need to read with Compactor's snapshot/txn rather than the snapshot of the current
+    final ValidTxnWriteIdList txnWriteIds;
+
+    if (SessionState.get().isCompaction()) {
+      // Here we are reading with Compactor's snapshot/txn rather than the snapshot of the current
       // {@code txnMgr}, in effect simulating a "flashback query" but can't actually share compactor's txn since it
-      // would run multiple statements.  See more comments in {@link org.apache.hadoop.hive.ql.txn.compactor.Worker}
+      // would run multiple statements. See more comments in {@link org.apache.hadoop.hive.ql.txn.compactor.Worker}
       // where it start the compactor txn*/
       if (txnTables.size() != 1) {
         throw new LockException("Unexpected tables in compaction: " + txnTables);
       }
-      txnWriteIds = new ValidTxnWriteIdList(driverContext.getCompactorTxnId());
-      txnWriteIds.addTableValidWriteIdList(driverContext.getCompactionWriteIds());
+      txnWriteIds = AcidUtils.getValidTxnWriteIdList(driverContext.getConf());
     } else {
       txnWriteIds = driverContext.getTxnManager().getValidWriteIds(txnTables, txnString);
     }

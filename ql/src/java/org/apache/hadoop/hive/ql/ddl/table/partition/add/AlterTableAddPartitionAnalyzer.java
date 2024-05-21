@@ -86,7 +86,7 @@ public class AlterTableAddPartitionAnalyzer extends AbstractAddPartitionAnalyzer
 
         if (writeId == null) {
           // so that we only allocate a writeId if actually adding data (vs. adding a partition w/o data)
-          validTxnsList.get();
+          queryState.getValidTxnList();
           try {
             writeId = getTxnMgr().getTableWriteId(table.getDbName(), table.getTableName());
           } catch (LockException ex) {

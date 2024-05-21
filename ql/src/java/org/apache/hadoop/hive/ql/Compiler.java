@@ -63,6 +63,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TXN_READONLY_ENABLED;
+
 /**
  * The compiler compiles the command, by creating a QueryPlan from a String command.
  * Also opens a transaction if necessary.
@@ -186,6 +188,7 @@ public class Compiler {
     Hive.get().getMSC().flushCache();
 
     boolean executeHooks = driverContext.getHookRunner().hasPreAnalyzeHooks();
+    QueryState queryState = driverContext.getQueryState();
 
     HiveSemanticAnalyzerHookContext hookCtx = new HiveSemanticAnalyzerHookContextImpl();
     if (executeHooks) {
@@ -193,24 +196,22 @@ public class Compiler {
       hookCtx.setUserName(SessionState.get().getUserName());
       hookCtx.setIpAddress(SessionState.get().getUserIpAddress());
       hookCtx.setCommand(context.getCmd());
-      hookCtx.setHiveOperation(driverContext.getQueryState().getHiveOperation());
+      hookCtx.setHiveOperation(queryState.getHiveOperation());
 
       tree = driverContext.getHookRunner().runPreAnalyzeHooks(hookCtx, tree);
     }
+    
+    queryState.setValidTxnList(this::openTxnAndGetValidTxnList);
+    driverContext.setValidTxnListsGenerated(false);
 
     // SemanticAnalyzerFactory also sets the hive operation in query state
-    BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(driverContext.getQueryState(), tree);
-    
-    HiveOperation hiveOperation = driverContext.getQueryState().getHiveOperation();
-    sem.setValidTxnList(this::openTxnAndGetValidTxnList);
-    
-    if (!driverContext.isRetrial() && driverContext.getCompactorTxnId() <= 0) {
-      if (HiveOperation.REPLDUMP == hiveOperation) {
-        setLastReplIdForDump(driverContext.getQueryState().getConf());
+    BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, tree);
+
+    if (!driverContext.isRetrial()) {
+      if (HiveOperation.REPLDUMP == queryState.getHiveOperation()) {
+        setLastReplIdForDump(queryState.getConf());
       }
-      driverContext.setValidTxnListsGenerated(false);
     }
-    
     // Do semantic analysis and plan generation
     try {
       sem.startAnalysis();
@@ -234,10 +235,11 @@ public class Compiler {
     // validate the plan
     sem.validate();
 
-    if (sem.hasAcidResourcesInQuery() || HiveOperation.START_TRANSACTION == hiveOperation) {
+    if (HiveOperation.START_TRANSACTION == queryState.getHiveOperation() 
+        || sem.hasAcidResourcesInQuery()) {
       openTxnAndGetValidTxnList();
     }
-    verifyTxnState(hiveOperation);
+    verifyTxnState(queryState.getHiveOperation());
     
     perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.ANALYZE);
     return sem;
@@ -258,17 +260,22 @@ public class Compiler {
     conf.setLong(ReplUtils.LAST_REPL_ID_KEY, lastReplId);
     LOG.debug("Setting " + ReplUtils.LAST_REPL_ID_KEY + " = " + lastReplId);
   }
-  
+
   private String openTxnAndGetValidTxnList() {
-    if (!driverContext.isRetrial() && driverContext.getCompactorTxnId() <= 0) {
-      try {
-        openTransaction(getTxnMgr());
-        generateValidTxnList(getTxnMgr());
-      } catch (Exception e) {
-        throw new RuntimeException("Failed to open a new transaction", e);
-      }
+    String txnString = driverContext.getConf().get(ValidTxnList.VALID_TXNS_KEY);
+    if (SessionState.get().isCompaction()) {
+      return txnString;
     }
-    return driverContext.getConf().get(ValidTxnList.VALID_TXNS_KEY);
+    HiveTxnManager txnMgr = driverContext.getTxnManager();
+    try {
+      openTransaction(txnMgr);
+      if (txnMgr.isTxnOpen() && Strings.isEmpty(txnString)) {
+        txnString = generateValidTxnList(txnMgr);
+      }
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to open a new transaction", e);
+    }
+    return txnString;
   }
 
   private void openTransaction(HiveTxnManager txnMgr) throws LockException, CommandProcessorException {
@@ -278,15 +285,17 @@ public class Compiler {
     }
     TxnType txnType = AcidUtils.getTxnType(driverContext.getConf(), tree);
     driverContext.setTxnType(txnType);
-
-    HiveOperation operation = driverContext.getQueryState().getHiveOperation();
-    if (HiveOperation.REPLDUMP == operation || HiveOperation.REPLLOAD == operation) {
-      context.setReplPolicy(PlanUtils.stripQuotes(tree.getChild(0).getText()));
+    
+    if (!context.isExplainPlan()) {
+      HiveOperation operation = driverContext.getQueryState().getHiveOperation();
+      if ((HiveOperation.REPLDUMP == operation || HiveOperation.REPLLOAD == operation)) {
+        context.setReplPolicy(PlanUtils.stripQuotes(tree.getChild(0).getText()));
+      }
     }
     String userFromUGI = DriverUtils.getUserFromUGI(driverContext);
     txnMgr.openTxn(context, userFromUGI, txnType);
   }
-
+  
   private boolean startImplicitTxn() {
     //this is dumb. HiveOperation is not always set. see HIVE-16447/HIVE-16443
     HiveOperation hiveOperation = driverContext.getQueryState().getHiveOperation();
@@ -317,38 +326,33 @@ public class Compiler {
         return false;
       //this implies that no locks are needed for such a command
       default:
-        return true;
+        return true; // TODO: check if we could optimize !context.isExplainPlan()
     }
   }
   
   private void verifyTxnState(HiveOperation operation) throws LockException {
     if (operation != null && operation.isRequiresOpenTransaction()
-          && !getTxnMgr().isTxnOpen()) {
+          && !driverContext.getTxnManager().isTxnOpen()) {
       throw new LockException(null, ErrorMsg.OP_NOT_ALLOWED_WITHOUT_TXN, operation.getOperationName());
     }
   }
 
-  private void generateValidTxnList(HiveTxnManager txnMgr) throws LockException {
+  private String generateValidTxnList(HiveTxnManager txnMgr) throws LockException {
     // Record current valid txn list that will be used throughout the query
     // compilation and processing. We only do this if 1) a transaction
     // was already opened and 2) the list has not been recorded yet,
     // e.g., by an explicit open transaction command.
-    String txnString = driverContext.getConf().get(ValidTxnList.VALID_TXNS_KEY);
-    if (txnMgr.isTxnOpen() && Strings.isEmpty(txnString)) {
-      try {
-        ValidTxnList txnList = txnMgr.getValidTxns();
-        // Write the current set of valid transactions into the conf file
-        LOG.debug("Encoding valid txns info " + txnList.toString() + " txnid:" + txnMgr.getCurrentTxnId());
-        driverContext.setValidTxnList(txnList.toString());
-      } catch (LockException e) {
-        LOG.error("Exception while acquiring valid txn list", e);
-        throw e;
-      }
+    try {
+      String txnString = txnMgr.getValidTxns().toString();
+      driverContext.getConf().set(ValidTxnList.VALID_TXNS_KEY, txnString);
+      LOG.debug("Encoding valid txns info {}, txnid: {}", txnString, txnMgr.getCurrentTxnId());
+      
+      driverContext.setValidTxnListsGenerated(true);
+      return txnString;
+    } catch (LockException e) {
+      LOG.error("Exception while acquiring valid txn list", e);
+      throw e;
     }
-  }
-  
-  private HiveTxnManager getTxnMgr(){
-    return driverContext.getTxnManager();
   }
 
   private QueryPlan createPlan(BaseSemanticAnalyzer sem) {

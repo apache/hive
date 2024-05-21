@@ -186,7 +186,7 @@ public class QueryPlan implements Serializable {
   public boolean hasAcidResourcesInQuery() {
     return acidResourcesInQuery;
   }
-  
+
   public WriteEntity getAcidAnalyzeTable() {
     return acidAnalyzeTable;
   }
@@ -279,7 +279,7 @@ public class QueryPlan implements Serializable {
     }
   }
 
-  public DDLDescWithWriteId getAcidDdlDesc() {
+  DDLDescWithWriteId getAcidDdlDesc() {
     return acidDdlDesc;
   }
 

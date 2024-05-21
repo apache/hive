@@ -58,7 +58,7 @@ public abstract class CompactionService {
   public abstract Boolean compact(Table table, CompactionInfo ci) throws Exception;
   abstract public void cleanupResultDirs(CompactionInfo ci);
 
-  public boolean isComputeStats() {
+  public boolean computeStats() {
     return computeStats;
   }
 

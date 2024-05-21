@@ -69,9 +69,6 @@ public class DriverContext {
 
   private CacheUsage cacheUsage;
   private CacheEntry usedCacheEntry;
-  private ValidWriteIdList compactionWriteIds = null;
-  private long compactorTxnId = 0;
-  private long analyzeTableWriteId = 0;
 
   private boolean retrial = false;
 
@@ -185,11 +182,6 @@ public class DriverContext {
     this.validTxnListsGenerated = validTxnListsGenerated;
   }
 
-  public void setValidTxnList(String txnList) {
-    conf.set(ValidTxnList.VALID_TXNS_KEY, txnList);
-    this.validTxnListsGenerated = true;
-  }
-
   public CacheUsage getCacheUsage() {
     return cacheUsage;
   }
@@ -204,30 +196,6 @@ public class DriverContext {
 
   public void setUsedCacheEntry(CacheEntry usedCacheEntry) {
     this.usedCacheEntry = usedCacheEntry;
-  }
-
-  public ValidWriteIdList getCompactionWriteIds() {
-    return compactionWriteIds;
-  }
-
-  public void setCompactionWriteIds(ValidWriteIdList compactionWriteIds) {
-    this.compactionWriteIds = compactionWriteIds;
-  }
-
-  public long getCompactorTxnId() {
-    return compactorTxnId;
-  }
-
-  public void setCompactorTxnId(long compactorTxnId) {
-    this.compactorTxnId = compactorTxnId;
-  }
-
-  public long getAnalyzeTableWriteId() {
-    return analyzeTableWriteId;
-  }
-
-  public void setAnalyzeTableWriteId(long analyzeTableWriteId) {
-    this.analyzeTableWriteId = analyzeTableWriteId;
   }
 
   public boolean isRetrial() {

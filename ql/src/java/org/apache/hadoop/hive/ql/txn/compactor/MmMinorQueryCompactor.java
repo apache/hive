@@ -52,7 +52,7 @@ final class MmMinorQueryCompactor extends QueryCompactor {
     ValidWriteIdList writeIds = context.getValidWriteIdList();
 
     // Set up the session for driver.
-    HiveConf driverConf = new HiveConf(hiveConf);
+    HiveConf driverConf = setUpDriverSession(hiveConf);
 
     String tmpTableName = getTempTableName(table);
     String resultTmpTableName = tmpTableName + "_result";
@@ -63,16 +63,23 @@ final class MmMinorQueryCompactor extends QueryCompactor {
         writeIds, resultDeltaDir);
     List<String> compactionQueries = getCompactionQueries(tmpTableName, resultTmpTableName, table);
     List<String> dropQueries = getDropQueries(tmpTableName);
-    runCompactionQueries(driverConf, tmpTableName, storageDescriptor, writeIds, context.getCompactionInfo(),
-        Lists.newArrayList(resultDeltaDir), createTableQueries, compactionQueries, dropQueries, table.getParameters());
+    runCompactionQueries(driverConf, tmpTableName, context.getCompactionInfo(), Lists.newArrayList(resultDeltaDir), 
+        createTableQueries, compactionQueries, dropQueries, table.getParameters());
     return true;
+  }
+
+  @Override
+  protected HiveConf setUpDriverSession(HiveConf hiveConf) {
+    HiveConf conf = super.setUpDriverSession(hiveConf);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_FETCH_COLUMN_STATS, false);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_ESTIMATE_STATS, false);
+    return conf;
   }
 
   /**
    * Clean up the empty table dir of 'tmpTableName'.
    */
-  @Override protected void commitCompaction(String dest, String tmpTableName, HiveConf conf,
-      ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException, HiveException {
+  @Override protected void commitCompaction(String tmpTableName, HiveConf conf) throws IOException, HiveException {
     Util.cleanupEmptyTableDir(conf, tmpTableName);
   }
 

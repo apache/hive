@@ -211,10 +211,10 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
 
   @Override
   void setHiveConf(HiveConf conf) {
-    super.setHiveConf(conf);
     if (!conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY)) {
       throw new RuntimeException(ErrorMsg.DBTXNMGR_REQUIRES_CONCURRENCY.getMsg());
     }
+    super.setHiveConf(conf);
   }
 
   @Override
@@ -404,7 +404,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       .filter(input -> !input.isDummy() && AcidUtils.isTransactionalTable(input.getTable()))
       .map(input -> input.getTable().getFullyQualifiedName())
       .distinct()
-      .collect(Collectors.toMap(Function.identity(), table -> getMinOpenWriteId(txnWriteIds, table)));
+      .collect(Collectors.toMap(Function.identity(), txnWriteIds::getMinOpenWriteId));
 
     if (!writeIds.isEmpty()) {
       try {
@@ -413,12 +413,6 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
         throw new RuntimeException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
       }
     }
-  }
-
-  private Long getMinOpenWriteId(ValidTxnWriteIdList txnWriteIds, String table) {
-    ValidWriteIdList tableValidWriteIdList = txnWriteIds.getTableValidWriteIdList(table);
-    Long minOpenWriteId = tableValidWriteIdList.getMinOpenWriteId();
-    return minOpenWriteId != null ? minOpenWriteId : tableValidWriteIdList.getHighWatermark() + 1;
   }
 
   /**

@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.ddl.table.info.desc;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
@@ -30,9 +29,7 @@ import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
@@ -125,6 +122,7 @@ public class DescTableAnalyzer extends BaseSemanticAnalyzer {
     if (node.getChildCount() == 1) {
       return null;
     }
+
     // Second child node could be partitionSpec or column
     if (node.getChildCount() > 1) {
       ASTNode columnNode = (partitionSpec == null) ? (ASTNode) node.getChild(1) : (ASTNode) node.getChild(2);
@@ -132,6 +130,7 @@ public class DescTableAnalyzer extends BaseSemanticAnalyzer {
         return String.join(".", tableName.getNotEmptyDbTable(), DDLUtils.getFQName(columnNode));
       }
     }
+
     return null;
   }
 
@@ -188,15 +187,5 @@ public class DescTableAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     return null;
-  }
-  
-  @Override
-  public boolean hasAcidResourcesInQuery() {
-    return inputs.stream().filter(entity -> entity.getType() == Entity.Type.TABLE)
-      .map(Entity::getTable)
-      .filter(Table::isMaterializedView)
-      .flatMap(t -> t.getMVMetadata().getSourceTables().stream())
-      .map(SourceTable::getTable)
-      .anyMatch(AcidUtils::isTransactionalTable);
   }
 }
