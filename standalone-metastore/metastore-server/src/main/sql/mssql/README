@@ -4,8 +4,8 @@ Hive MetaStore Upgrade HowTo
 This document describes how to upgrade the schema of a SQL Server backed
 Hive MetaStore instance from one release version of Hive to another
 release version of Hive. For example, by following the steps listed
-below it is possible to upgrade a Hive 0.12.0 MetaStore schema to a
-Hive 0.14.0 MetaStore schema. Before attempting this project we
+below it is possible to upgrade a Hive 1.2.0 MetaStore schema to a
+Hive 4.0.0 MetaStore schema. Before attempting this project we
 strongly recommend that you read through all of the steps in this
 document and familiarize yourself with the required tools.
 
@@ -17,11 +17,10 @@ MetaStore Upgrade Steps
    (Metastore service in particular) and backing up your database using
    tools specific to your database type.
 
-2) Upgrade starting with version 0.12.0 follows the usual sequence of
+2) Upgrade follows the usual sequence of
    upgrading from installed version to next released version, to next
    released version until the desired version is reached as specified
-   in upgrade.order.mssql. Upgrading from 0.11.0 to 0.13.0 works
-   differently - please see later in this document. 
+   in upgrade.order.mssql.
 
 3) The schema upgrade scripts assume that the schema you are upgrading
    closely matches the official schema for your particular version of
@@ -63,24 +62,15 @@ MetaStore Upgrade Steps
     "UNIQUE_<tab_name>" before running the upgrade scripts. For more
     background on this issue please refer to HIVE-1435.
 
-4) Now run upgrade-x.y.z-to-a.b.c.mssql.sql script.
+4) Now run the schema upgrade script, make sure the db driver is included in the CLASSPATH,
+
+   bin/schematool -initOrUpgradeSchema -dbType mssql \
+   -driver com.microsoft.sqlserver.jdbc.SQLServerDriver  -userName connect_username \
+   -url 'jdbc:sqlserver://mssql_host:1433;DatabaseName=hive' -passWord connect_password
 
 5) Validate the results. Use DB specific tool to generate a set
    of DDL statements from your schema and compare it to
    hive-schema-a.b.c.mssql.sql. 
-   
 
-Upgrading from 0.11.0 to 0.13.0
-===============================
-1) Manually execute hive-txn-schema-0.13.0.mssql.sql script to create
-   tables needed for ACID support.
-   
-2) Make sure you have
-   <property>
-     <name>datanucleus.schema.autoCreateAll</name>
-     <value>true</value>
-   </property>
-   in your hive-site.xml.  This will cause DataNucleus to create
-   tables which are missing from your database once metastore starts.
    
 

@@ -4,8 +4,8 @@ Hive MetaStore Upgrade HowTo
 This document describes how to upgrade the schema of a Derby backed
 Hive MetaStore instance from one release version of Hive to another
 release version of Hive. For example, by following the steps listed
-below it is possible to upgrade a Hive 0.5.0 MetaStore schema to a
-Hive 0.7.0 MetaStore schema. Before attempting this project we
+below it is possible to upgrade a Hive 1.2.0 MetaStore schema to a
+Hive 4.0.0 MetaStore schema. Before attempting this project we
 strongly recommend that you read through all of the steps in this
 document and familiarize yourself with the required tools.
 
@@ -78,24 +78,13 @@ MetaStore Upgrade Steps
     "UNIQUE_<tab_name>" before running the upgrade scripts. For more
     background on this issue please refer to HIVE-1435.
 
-5) You are now ready to run the schema upgrade scripts. If you are
-   upgrading from Hive 0.5.0 to Hive 0.6.0 you need to run the
-   upgrade-0.5.0-to-0.6.0.derby.sql script, but if you are upgrading
-   from 0.5.0 to 0.7.0 you will need to run the 0.5.0 to 0.6.0 upgrade
-   script followed by the 0.6.0 to 0.7.0 upgrade script.
+5) You are now ready to run the schema upgrade script,
 
-NOTE: You may need to install the Derby 'ij' utility.
-      Look here for installation instructions:
-      http://db.apache.org/derby/docs/10.4/getstart/
+   bin/schematool -initOrUpgradeSchema -dbType derby \
+   -driver org.apache.derby.jdbc.EmbeddedDriver \
+   -url 'jdbc:derby:;databaseName=hive;create=true'
 
-   % ij
-   ij version 10.4
-   ij> CONNECT 'jdbc:derby:/Users/bob/hive/metastore_db';
-   ij> RUN 'upgrade-0.5.0-to-0.6.0.derby.sql';
-   ij> RUN 'upgrade-0.6.0-to-0.7.0.derby.sql';
-   ij> quit;
-
-   These scripts should run to completion without any errors. If you
+   The command should run to completion without any errors. If you
    do encounter errors you need to analyze the cause and attempt to
    trace it back to one of the preceding steps.
 
@@ -103,6 +92,6 @@ NOTE: You may need to install the Derby 'ij' utility.
    upgraded schema against the official schema for your particular
    version of Hive. This is accomplished by repeating steps (3) and
    (4), but this time comparing against the official version of the
-   upgraded schema, e.g. if you upgraded the schema to Hive 0.7.0 then
+   upgraded schema, e.g. if you upgraded the schema to Hive 4.0.0 then
    you will want to compare your schema dump against the contents of
-   hive-schema-0.7.0.derby.sql
+   hive-schema-4.0.0.derby.sql
