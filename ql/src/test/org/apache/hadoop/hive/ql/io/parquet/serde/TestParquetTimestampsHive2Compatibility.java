@@ -26,12 +26,15 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import com.google.common.base.Strings;
+
 import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
@@ -258,45 +261,16 @@ class TestParquetTimestampsHive2Compatibility {
   }
 
   private static Stream<String> generateJulianLeapYearTimestamps() {
-    return Stream.concat(Stream.generate(new Supplier<String>() {
-          int i = 0;
-
-          @Override
-          public String get() {
-            StringBuilder sb = new StringBuilder(29);
-            int year = ((i % 9999) + 1) * 100;
-            sb.append(zeros(4 - digits(year)));
-            sb.append(year);
-            sb.append("-03-01 00:00:00.000000001");
-            i++;
-            return sb.toString();
-          }
-        })
-        // Exclude dates falling in the default Gregorian change date since legacy code does not handle that interval
-        // gracefully. It is expected that these do not work well when legacy APIs are in use. 0200-03-01 01:01:01.000000001
-        .filter(s -> !s.startsWith("1582-10")).limit(3000), Stream.of("9999-12-31 23:59:59.999"));
+    return IntStream.range(1, 100)
+    .mapToObj(value -> Strings.padStart(String.valueOf(value * 100), 4, '0'))
+    .map(value -> value + "-03-01 00:00:00.000000001");
   }
 
   private static Stream<String> generateJulianLeapYearTimestamps28thFeb() {
-    return Stream.concat(Stream.generate(new Supplier<String>() {
-          int i = 0;
-
-          @Override
-          public String get() {
-            StringBuilder sb = new StringBuilder(29);
-            int year = ((i % 9999) + 1) * 100;
-            sb.append(zeros(4 - digits(year)));
-            sb.append(year);
-            sb.append("-02-28 00:00:00.000000001");
-            i++;
-            return sb.toString();
-          }
-        })
-        // Exclude dates falling in the default Gregorian change date since legacy code does not handle that interval
-        // gracefully. It is expected that these do not work well when legacy APIs are in use. 0200-03-01 01:01:01.000000001
-        .filter(s -> !s.startsWith("1582-10")).limit(3000), Stream.of("9999-12-31 23:59:59.999"));
+    return IntStream.range(1, 100)
+    .mapToObj(value -> Strings.padStart(String.valueOf(value * 100), 4, '0'))
+    .map(value -> value + "-02-28 00:00:00.000000001");
   }
-
 
   private static int digits(int number) {
     int digits = 0;
