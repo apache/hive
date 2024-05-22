@@ -88,11 +88,14 @@ public class FunctionMisc extends BuiltinFunctions {
       Var newValue = new Var(value.name, value.type, Utils.unquoteString(value.toString()));
       value = newValue;
     }
-    if (value.type != Var.Type.NULL && value.toString().toUpperCase().startsWith("TIMESTAMP ")) {
-      boolean old = exec.buildSql;
-      exec.buildSql = false;
-      value = evalPop(ctx.expr(0));
-      exec.buildSql = old;
+    if (value.type != Var.Type.NULL) {
+      String valueUpper = value.toString().toUpperCase();
+      if (valueUpper.startsWith("TIMESTAMP ") || valueUpper.startsWith("DATE ")) {
+        boolean old = exec.buildSql;
+        exec.buildSql = false;
+        value = evalPop(ctx.expr(0));
+        exec.buildSql = old;
+      }
     }
     var.cast(value);
     if (exec.buildSql && var.type == Var.Type.STRING) {
@@ -114,7 +117,7 @@ public class FunctionMisc extends BuiltinFunctions {
       evalVar(FunctionDatetime.currentTimestamp(precision)); 
     }
     else if (ctx.T_USER() != null) {
-      evalVar(FunctionMisc.currentUser());
+      evalVar(currentUser());
     }
     else {
       evalNull();
@@ -154,9 +157,11 @@ public class FunctionMisc extends BuiltinFunctions {
     evalVar(currentUser());
   }
   
-  public static Var currentUser() {
+  public Var currentUser() {
     String currentUser = System.getProperty("user.name");
-    currentUser = Utils.quoteString(currentUser);
+    if (exec.buildSql) {
+      currentUser = Utils.quoteString(currentUser);
+    }
     return new Var(currentUser);
   }
   
@@ -207,7 +212,7 @@ public class FunctionMisc extends BuiltinFunctions {
   void nvl2(HplsqlParser.Expr_func_paramsContext ctx) {
     if (ctx.func_param().size() == 3) {
       Var firstParam = evalPop(ctx.func_param(0).expr());
-      if (!(firstParam.isNull() || "null".equalsIgnoreCase((String)firstParam.value))) {
+      if (!(firstParam.isNull() || "null".equals((String)firstParam.value))) {
         eval(ctx.func_param(1).expr());
       }
       else {

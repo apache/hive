@@ -648,8 +648,7 @@ public class Var {
       return String.format("TIMESTAMP '%s'", t);
     } else if (type == Type.DATE && isBuildSql) {
       return String.format("DATE '%s'", ((Date) value).toString());
-    } else if (handleStringType && isBuildSql && type == Type.STRING && (!((String) value).startsWith(
-        "'") || !((String) value).endsWith("'"))) {
+    } else if (handleStringType && isBuildSql && type == Type.STRING) {
       return Utils.quoteString(((String) value));
     } else {
       return toString();

@@ -613,7 +613,7 @@ public class TestHplSqlViaBeeLine {
   }
 
   @Test
-  public void testACTIVITY_COUNTHplSqlFunction() throws Throwable {
+  public void testACTIVITY_COUNTHplSqlFunction1() throws Throwable {
     String SCRIPT_TEXT =
         "DROP TABLE IF EXISTS result;\n" +
         "CREATE TABLE result (col1 string);\n" +
@@ -622,6 +622,21 @@ public class TestHplSqlViaBeeLine {
         "SELECT * FROM result;\n" +
         "SELECT ACTIVITY_COUNT;";
     testScriptFile(SCRIPT_TEXT, args(), "2");
+  }
+
+  @Test
+  public void testACTIVITY_COUNTHplSqlFunction2() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (col1 string);\n" +
+            "INSERT INTO result VALUES('Alice');\n" +
+            "INSERT INTO result VALUES('Bob');\n" +
+            "DECLARE var INT;\n" +
+            "SELECT count(*) INTO var FROM result;\n" +
+            "IF ACTIVITY_COUNT = 1 THEN\n" +
+            " PRINT 'id = ' || var;\n" +
+            "END IF;";
+    testScriptFile(SCRIPT_TEXT, args(), "id = 2", OutStream.ERR);
   }
 
   @Test
@@ -634,6 +649,12 @@ public class TestHplSqlViaBeeLine {
   public void testCASTHplSqlFunction2() throws Throwable {
     String SCRIPT_TEXT = "SELECT CAST(TIMESTAMP '2015-03-12 10:58:34.111' AS CHAR(10));";
     testScriptFile(SCRIPT_TEXT, args(), "2015-03-12");
+  }
+
+  @Test
+  public void testCASTHplSqlFunction3() throws Throwable {
+    String SCRIPT_TEXT = "SELECT CAST(DATE '2023-05-29' AS CHAR(4));";
+    testScriptFile(SCRIPT_TEXT, args(), "2023");
   }
 
   @Test
@@ -1146,6 +1167,36 @@ public class TestHplSqlViaBeeLine {
   }
 
   @Test
+  public void testHplSqlProcedureWithCONCATUdf() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (id int, s string);\n" +
+            "CREATE PROCEDURE p1(s1 int, s2 string)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(s1, CONCAT('M', 'y ', NULL, s2));\n" +
+            "END;\n" +
+            "p1(786, 'Cloud');\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "786.*My Cloud");
+  }
+
+  @Test
+  public void testHplSqlProcedureWithSYSDATEUdf() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (name String, join_date timestamp);\n" +
+            "CREATE PROCEDURE p1(s1 string)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(s1, SYSDATE);\n" +
+            "END;\n" +
+            "p1('Bob');\n" +
+            "SELECT * FROM result;" ;
+    Timestamp today = new Timestamp(System.currentTimeMillis());
+    String timestamp = today.toString();
+    testScriptFile(SCRIPT_TEXT, args(), "Bob.*" + timestamp.substring(0, timestamp.length() - 9));
+  }
+
+  @Test
   public void testHplSqlProcedureWithCurrent_DateUdf() throws Throwable {
     String SCRIPT_TEXT =
         "DROP TABLE IF EXISTS result;\n" +
@@ -1314,6 +1365,13 @@ public class TestHplSqlViaBeeLine {
             "p1('abcd');\n" +
             "SELECT * FROM result;" ;
     testScriptFile(SCRIPT_TEXT, args(), "ABCD");
+  }
+
+  @Test
+  public void testCastHplSqlFunction() throws Throwable {
+    String SCRIPT_TEXT =
+            "SELECT CAST('1' AS int);" ;
+    testScriptFile(SCRIPT_TEXT, args(), "1");
   }
 
   private static List<String> args() {

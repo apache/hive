@@ -57,8 +57,10 @@ public class FunctionString extends BuiltinFunctions {
     boolean nulls = true;
     for (int i = 0; i < cnt; i++) {
       Var c = evalPop(ctx.func_param(i).expr());
-      if (!c.isNull() && !"null".equalsIgnoreCase((String)c.value)) {
-        val.append(Utils.unquoteString(c.toString()));
+      if (!c.isNull() && !"null".equals((String)c.value)) {
+        String value = c.toString();
+        value = unquoteString(value);
+        val.append(value);
         nulls = false;
       }
     }
@@ -70,7 +72,14 @@ public class FunctionString extends BuiltinFunctions {
       evalString(val);
     }
   }
-  
+
+  private String unquoteString(String value) {
+    if (exec.buildSql) {
+      value = Utils.unquoteString(value);
+    }
+    return value;
+  }
+
   /**
    * CHAR function
    */
@@ -93,7 +102,8 @@ public class FunctionString extends BuiltinFunctions {
       evalNull();
       return;
     }
-    String str = Utils.unquoteString(evalPop(ctx.func_param(0).expr()).toString());
+    String str = evalPop(ctx.func_param(0).expr()).toString();
+    str = unquoteString(str);
     if (str == null) {
       evalNull();
       return;
@@ -102,7 +112,8 @@ public class FunctionString extends BuiltinFunctions {
       evalInt(0);
       return;
     }
-    String substr = Utils.unquoteString(evalPop(ctx.func_param(1).expr()).toString());
+    String substr = evalPop(ctx.func_param(1).expr()).toString();
+    substr = unquoteString(substr);
     int pos = 1;
     int occur = 1;
     int idx = 0;
@@ -153,7 +164,9 @@ public class FunctionString extends BuiltinFunctions {
       evalNull();
       return;
     }
-    int len = Utils.unquoteString(evalPop(ctx.func_param(0).expr()).toString()).trim().length();
+    String value = evalPop(ctx.func_param(0).expr()).toString();
+    value = unquoteString(value);
+    int len = value.trim().length();
     evalInt(len);
   }
 
@@ -165,7 +178,9 @@ public class FunctionString extends BuiltinFunctions {
       evalNull();
       return;
     }
-    int len = Utils.unquoteString(evalPop(ctx.func_param(0).expr()).toString()).length();
+    String value = evalPop(ctx.func_param(0).expr()).toString();
+    value = unquoteString(value);
+    int len = value.length();
     evalInt(len);
   }
 
@@ -191,8 +206,10 @@ public class FunctionString extends BuiltinFunctions {
       return;
     }
     String str = evalPop(ctx.func_param(0).expr()).toString();
-    String what = Utils.unquoteString(evalPop(ctx.func_param(1).expr()).toString());
-    String with = Utils.unquoteString(evalPop(ctx.func_param(2).expr()).toString());
+    String what = evalPop(ctx.func_param(1).expr()).toString();
+    what = unquoteString(what);
+    String with = evalPop(ctx.func_param(2).expr()).toString();
+    with = unquoteString(with);
     evalString(str.replaceAll(what, with));
   }
 
@@ -205,7 +222,8 @@ public class FunctionString extends BuiltinFunctions {
       evalNull();
       return;
     }
-    String str = Utils.unquoteString(evalPop(ctx.func_param(0).expr()).toString());
+    String str = evalPop(ctx.func_param(0).expr()).toString();
+    str = unquoteString(str);
     int start = evalPop(ctx.func_param(1).expr()).intValue();
     int len = -1;
     if (start == 0) {
@@ -280,7 +298,7 @@ public class FunctionString extends BuiltinFunctions {
       return;
     }
     String str = evalPop(ctx.expr(0)).toString();
-    str = Utils.unquoteString(str);
+    str = unquoteString(str);
     evalString(str.trim());
   }
   
