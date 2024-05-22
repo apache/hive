@@ -26,7 +26,7 @@ import org.apache.calcite.sql.type.SqlOperandTypeChecker;
 import org.apache.calcite.sql.type.SqlOperandTypeInference;
 import org.apache.calcite.sql.type.SqlReturnTypeInference;
 
-public class HiveSqlMinMaxAggFunction extends SqlAggFunction {
+public class HiveSqlMinMaxAggFunction extends HiveSqlAggFunction {
 
   public HiveSqlMinMaxAggFunction(SqlReturnTypeInference returnTypeInference,
       SqlOperandTypeInference operandTypeInference, SqlOperandTypeChecker operandTypeChecker, boolean isMin) {
