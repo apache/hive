@@ -41,7 +41,7 @@ import org.apache.calcite.util.ImmutableIntList;
 
 import com.google.common.collect.ImmutableList;
 
-public class HiveSqlCountAggFunction extends SqlAggFunction implements CanAggregateDistinct {
+public class HiveSqlCountAggFunction extends HiveSqlAggFunction implements CanAggregateDistinct {
 
   final boolean                isDistinct;
   final SqlReturnTypeInference returnTypeInference;

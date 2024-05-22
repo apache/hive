@@ -27,7 +27,7 @@ import org.apache.calcite.sql.type.SqlOperandTypeInference;
 import org.apache.calcite.sql.type.SqlReturnTypeInference;
 import org.apache.calcite.util.Optionality;
 
-public class HiveSqlAverageAggFunction extends SqlAggFunction implements CanAggregateDistinct {
+public class HiveSqlAverageAggFunction extends HiveSqlAggFunction implements CanAggregateDistinct {
   private final boolean isDistinct;
 
   public HiveSqlAverageAggFunction(boolean isDistinct, SqlReturnTypeInference returnTypeInference,
