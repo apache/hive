@@ -1677,8 +1677,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             }
             // For each partition in each table, drop the partitions and get a list of
             // partitions' locations which might need to be deleted
-            partitionPaths = dropPartitionsAndGetLocations(ms, req.getCatalogName(), req.getName(), table.getTableName(),
-                tablePath, tableDataShouldBeDeleted);
+            partitionPaths.addAll(dropPartitionsAndGetLocations(ms, req.getCatalogName(), req.getName(), table.getTableName(),
+                tablePath, tableDataShouldBeDeleted));
             
             EnvironmentContext context = null;
             if (isSoftDelete) {
