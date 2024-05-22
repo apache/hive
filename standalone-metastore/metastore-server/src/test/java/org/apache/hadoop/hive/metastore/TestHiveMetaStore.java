@@ -148,7 +148,7 @@ public abstract class TestHiveMetaStore {
     MetastoreConf.setVar(conf, ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS, " ");
 
     MetaStoreTestUtils.setConfForStandloneMode(conf);
-    MetastoreConf.setLongVar(conf, ConfVars.BATCH_RETRIEVE_MAX, 1);
+    MetastoreConf.setLongVar(conf, ConfVars.BATCH_RETRIEVE_MAX, 2);
     MetastoreConf.setLongVar(conf, ConfVars.LIMIT_PARTITION_REQUEST, DEFAULT_LIMIT_PARTITION_REQUEST);
     MetastoreConf.setVar(conf, ConfVars.STORAGE_SCHEMA_READER_IMPL, "no.such.class");
     MetastoreConf.setBoolVar(conf, ConfVars.INTEGER_JDO_PUSHDOWN, true);
@@ -3269,14 +3269,15 @@ public abstract class TestHiveMetaStore {
   }
 
   @Test
-  public void testDropDatabase() throws Exception {
+  public void testDropDatabaseWithCustomPartitionPath() throws Exception {
     String dbName = "dropdb";
     String tblName1 = "droptbl1";
     String tblName2 = "droptbl2";
+    String tblName3 = "droptbl3";
 
-    // A new client to support drop these 2 tables in one batch
+    // A new client to support drop these 3 tables in one batch
     Configuration newConf = MetastoreConf.newMetastoreConf(new Configuration(conf));
-    MetastoreConf.setLongVar(newConf, ConfVars.BATCH_RETRIEVE_MAX, 2);
+    MetastoreConf.setLongVar(newConf, ConfVars.BATCH_RETRIEVE_MAX, 3);
     IMetaStoreClient client = RetryingMetaStoreClient.getProxy(newConf, getHookLoader(), HiveMetaStoreClient.class.getName());
 
     // Setup
@@ -3299,10 +3300,17 @@ public abstract class TestHiveMetaStore {
         .addPartCol("p1", ColumnType.STRING_TYPE_NAME)
         .create(client, conf);
 
+    new TableBuilder()
+        .setDbName(dbName)
+        .setTableName(tblName3)
+        .addCol("c1", ColumnType.STRING_TYPE_NAME)
+        .create(client, conf);
+
     Path rootPath = warehouse.getWhRoot();
     Path path1 = new Path(rootPath, tblName1);
     Table tbl1 = client.getTable(dbName, tblName1);
     Table tbl2 = client.getTable(dbName, tblName2);
+    Table tbl3 = client.getTable(dbName, tblName3);
     List<String> vals = Lists.newArrayList("p1");
 
     // partition1 whose path does not belong to table1
@@ -3317,6 +3325,7 @@ public abstract class TestHiveMetaStore {
     FileSystem fs = FileSystem.get(path1.toUri(), conf);
     assertFalse(fs.exists(new Path(tbl1.getSd().getLocation())));
     assertFalse(fs.exists(new Path(tbl2.getSd().getLocation())));
+    assertFalse(fs.exists(new Path(tbl3.getSd().getLocation())));
     assertFalse(fs.exists(path1));
 
     client.close();
