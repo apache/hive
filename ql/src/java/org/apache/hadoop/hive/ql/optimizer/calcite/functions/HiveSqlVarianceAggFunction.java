@@ -22,16 +22,17 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlOperandTypeChecker;
 import org.apache.calcite.sql.type.SqlOperandTypeInference;
 import org.apache.calcite.sql.type.SqlReturnTypeInference;
+import org.apache.calcite.util.Optionality;
 
 /**
  * Aggregation function to represent: stddev_pop, stddev_samp, var_pop, var_samp.
  */
-public class HiveSqlVarianceAggFunction extends SqlAggFunction {
+public class HiveSqlVarianceAggFunction extends HiveSqlAggFunction {
 
   public HiveSqlVarianceAggFunction(String name, SqlKind kind, SqlReturnTypeInference returnTypeInference,
       SqlOperandTypeInference operandTypeInference, SqlOperandTypeChecker operandTypeChecker) {
     super(name, null, kind, returnTypeInference, operandTypeInference,
-        operandTypeChecker, SqlFunctionCategory.NUMERIC, false, false);
+        operandTypeChecker, SqlFunctionCategory.NUMERIC, false, false, Optionality.FORBIDDEN);
     assert kind == SqlKind.STDDEV_POP || kind == SqlKind.STDDEV_SAMP ||
         kind == SqlKind.VAR_POP || kind == SqlKind.VAR_SAMP;
   }
