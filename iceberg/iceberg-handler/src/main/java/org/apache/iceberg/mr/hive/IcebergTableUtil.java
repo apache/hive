@@ -99,7 +99,7 @@ public class IcebergTableUtil {
    * @return an Iceberg table
    */
   static Table getTable(Configuration configuration, Properties properties, boolean skipCache) {
-    String metaTable = properties.getProperty("metaTable");
+    String metaTable = properties.getProperty(IcebergAcidUtil.META_TABLE_PROPERTY);
     String tableName = properties.getProperty(Catalogs.NAME);
     String location = properties.getProperty(Catalogs.LOCATION);
     if (metaTable != null) {
