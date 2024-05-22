@@ -72,6 +72,7 @@ import java.util.stream.Collectors;
 import static org.apache.hadoop.hive.common.StatsSetupConst.COLUMN_STATS_ACCURATE;
 import static org.apache.hadoop.hive.metastore.HMSHandler.getPartValsFromName;
 import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.executeWithArray;
+import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.extractSqlClob;
 import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.extractSqlInt;
 import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.extractSqlLong;
 
@@ -760,8 +761,8 @@ class DirectSqlUpdatePart {
           List<Object[]> sqlResult = executeWithArray(query.getInnerQuery(), null, queryText);
           for (Object[] row : sqlResult) {
             Long id = extractSqlLong(row[0]);
-            String paramKey = (String) row[1];
-            String paramVal = (String) row[2];
+            String paramKey = extractSqlClob(row[1]);
+            String paramVal = extractSqlClob(row[2]);
             idToParams.computeIfAbsent(id, key -> new HashMap<>()).put(paramKey, paramVal);
           }
         }
@@ -935,8 +936,8 @@ class DirectSqlUpdatePart {
               StorageDescriptor sd = idToSd.get(sdId);
               statement.setLong(1, idToCdId.get(sdId));
               statement.setString(2, sd.getInputFormat());
-              statement.setBoolean(3, sd.isCompressed());
-              statement.setBoolean(4, sd.isStoredAsSubDirectories());
+              statement.setObject(3, dbType.getBoolean(sd.isCompressed()));
+              statement.setObject(4, dbType.getBoolean(sd.isStoredAsSubDirectories()));
               statement.setString(5, sd.getLocation());
               statement.setInt(6, sd.getNumBuckets());
               statement.setString(7, sd.getOutputFormat());
@@ -1239,9 +1240,9 @@ class DirectSqlUpdatePart {
           List<Object[]> sqlResult = executeWithArray(query.getInnerQuery(), null, queryText);
           for (Object[] row : sqlResult) {
             Long id = extractSqlLong(row[0]);
-            String comment = (String) row[1];
-            String name = (String) row[2];
-            String type = (String) row[3];
+            String comment = extractSqlClob(row[1]);
+            String name = extractSqlClob(row[2]);
+            String type = extractSqlClob(row[3]);
             int index = extractSqlInt(row[4]);
             FieldSchema field = new FieldSchema(name, type, comment);
             cdIdToColIdxPair.computeIfAbsent(id, k -> new ArrayList<>()).add(Pair.of(index, field));

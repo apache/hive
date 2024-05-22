@@ -5316,6 +5316,16 @@ public class ObjectStore implements RawStore, Configurable {
         partNames.add(Warehouse.makePartName(partCols, partVal));
       }
 
+      for (Partition tmpPart : newParts) {
+        if (!tmpPart.getDbName().equalsIgnoreCase(table.getDatabase().getName())) {
+          throw new MetaException("Invalid DB name : " + tmpPart.getDbName());
+        }
+
+        if (!tmpPart.getTableName().equalsIgnoreCase(table.getTableName())) {
+          throw new MetaException("Invalid table name : " + tmpPart.getDbName());
+        }
+      }
+
       results = new GetListHelper<Partition>(catName, dbName, tblName, true, true) {
         @Override
         protected List<Partition> getSqlResult(GetHelper<List<Partition>> ctx)
@@ -5372,14 +5382,6 @@ public class ObjectStore implements RawStore, Configurable {
       Set<MColumnDescriptor> oldCds = new HashSet<>();
       Ref<MColumnDescriptor> oldCdRef = new Ref<>();
       for (Partition tmpPart : newParts) {
-        if (!tmpPart.getDbName().equalsIgnoreCase(dbName)) {
-          throw new MetaException("Invalid DB name : " + tmpPart.getDbName());
-        }
-
-        if (!tmpPart.getTableName().equalsIgnoreCase(tblName)) {
-          throw new MetaException("Invalid table   name : " + tmpPart.getDbName());
-        }
-
         oldCdRef.t = null;
         Partition result = alterPartitionNoTxn(catName, dbName, tblName,
             mPartsMap.get(tmpPart.getValues()), tmpPart, queryWriteIdList, oldCdRef, table);
