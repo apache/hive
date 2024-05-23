@@ -35,6 +35,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -46,7 +47,6 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -142,6 +142,8 @@ import org.apache.iceberg.ExpireSnapshots;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.FindFiles;
+import org.apache.iceberg.GenericBlobMetadata;
+import org.apache.iceberg.GenericStatisticsFile;
 import org.apache.iceberg.ManifestFile;
 import org.apache.iceberg.MetadataTableType;
 import org.apache.iceberg.MetadataTableUtils;
@@ -159,9 +161,11 @@ import org.apache.iceberg.SnapshotSummary;
 import org.apache.iceberg.SortDirection;
 import org.apache.iceberg.SortField;
 import org.apache.iceberg.SortOrder;
+import org.apache.iceberg.StatisticsFile;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.TableScan;
+import org.apache.iceberg.Transaction;
 import org.apache.iceberg.actions.DeleteOrphanFiles;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.expressions.Evaluator;
@@ -193,12 +197,10 @@ import org.apache.iceberg.relocated.com.google.common.collect.Iterables;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
-import org.apache.iceberg.relocated.com.google.common.collect.Streams;
 import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.ByteBuffers;
-import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.SerializationUtil;
 import org.apache.iceberg.util.SnapshotUtil;
 import org.apache.iceberg.util.StructProjection;
@@ -498,30 +500,58 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public boolean setColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable, List<ColumnStatistics> colStats) {
     Table tbl = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    String snapshotId = String.format("%s-STATS-%d", tbl.name(), tbl.currentSnapshot().snapshotId());
-    return writeColStats(colStats.get(0), tbl, snapshotId);
+    return writeColStats(colStats.get(0), tbl);
   }
 
-  private boolean writeColStats(ColumnStatistics tableColStats, Table tbl, String snapshotId) {
+  private boolean writeColStats(ColumnStatistics tableColStats, Table tbl) {
     try {
-      boolean rewriteStats = removeColStatsIfExists(tbl);
-      if (!rewriteStats) {
+      if (!shouldRewriteColStats(tbl)) {
         checkAndMergeColStats(tableColStats, tbl);
       }
       // Currently, we are only serializing table level stats.
       byte[] serializeColStats = SerializationUtils.serialize(tableColStats);
-      try (PuffinWriter writer = Puffin.write(tbl.io().newOutputFile(getColStatsPath(tbl).toString()))
+      StatisticsFile statisticsFile;
+      String statsPath = tbl.location() + STATS + UUID.randomUUID();
+
+      try (PuffinWriter puffinWriter = Puffin.write(tbl.io().newOutputFile(statsPath))
           .createdBy(Constants.HIVE_ENGINE).build()) {
-        writer.add(new Blob(tbl.name() + "-" + snapshotId, ImmutableList.of(1), tbl.currentSnapshot().snapshotId(),
-            tbl.currentSnapshot().sequenceNumber(), ByteBuffer.wrap(serializeColStats), PuffinCompressionCodec.NONE,
-            ImmutableMap.of()));
-        writer.finish();
-        return true;
+        long snapshotId = tbl.currentSnapshot().snapshotId();
+        long snapshotSequenceNumber = tbl.currentSnapshot().sequenceNumber();
+        puffinWriter.add(
+            new Blob(
+              ColumnStatisticsObj.class.getSimpleName(),
+              ImmutableList.of(1),
+              snapshotId,
+              snapshotSequenceNumber,
+              ByteBuffer.wrap(serializeColStats),
+              PuffinCompressionCodec.ZSTD,
+              ImmutableMap.of()
+          ));
+        puffinWriter.finish();
+
+        statisticsFile =
+          new GenericStatisticsFile(
+            snapshotId,
+            statsPath,
+            puffinWriter.fileSize(),
+            puffinWriter.footerSize(),
+            puffinWriter.writtenBlobsMetadata().stream()
+              .map(GenericBlobMetadata::from)
+              .collect(ImmutableList.toImmutableList())
+          );
       } catch (IOException e) {
         LOG.warn("Unable to write stats to puffin file {}", e.getMessage());
         return false;
       }
-    } catch (InvalidObjectException | IOException e) {
+      Transaction transaction = tbl.newTransaction();
+      transaction
+          .updateStatistics()
+          .setStatistics(statisticsFile.snapshotId(), statisticsFile)
+          .commit();
+      transaction.commitTransaction();
+      return true;
+
+    } catch (Exception e) {
       LOG.warn("Unable to invalidate or merge stats: {}", e.getMessage());
       return false;
     }
@@ -534,34 +564,24 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   private boolean canProvideColStats(Table table, long snapshotId) {
-    Path statsPath = getColStatsPath(table, snapshotId);
-    try {
-      FileSystem fs = statsPath.getFileSystem(conf);
-      return  fs.exists(statsPath);
-    } catch (Exception e) {
-      LOG.warn("Exception when trying to find Iceberg column stats for table:{} , snapshot:{} , " +
-          "statsPath: {} , stack trace: {}", table.name(), table.currentSnapshot(), statsPath, e);
-    }
-    return false;
+    return IcebergTableUtil.getColStatsPath(table, snapshotId).isPresent();
   }
 
   @Override
   public List<ColumnStatisticsObj> getColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    Path statsPath = getColStatsPath(table);
-    LOG.info("Using stats from puffin file at: {}", statsPath);
-    return readColStats(table, statsPath).getStatsObj();
+    return IcebergTableUtil.getColStatsPath(table).map(statsPath -> readColStats(table, statsPath))
+      .orElse(new ColumnStatistics()).getStatsObj();
   }
 
   private ColumnStatistics readColStats(Table table, Path statsPath) {
     try (PuffinReader reader = Puffin.read(table.io().newInputFile(statsPath.toString())).build()) {
       List<BlobMetadata> blobMetadata = reader.fileMetadata().blobs();
-      Map<BlobMetadata, ColumnStatistics> collect = Streams.stream(reader.readAll(blobMetadata)).collect(
-          Collectors.toMap(Pair::first, blobMetadataByteBufferPair -> SerializationUtils.deserialize(
-              ByteBuffers.toByteArray(blobMetadataByteBufferPair.second()))));
-      return collect.get(blobMetadata.get(0));
-    } catch (IOException | IndexOutOfBoundsException e) {
-      LOG.warn(" Unable to read iceberg col stats from puffin files: ", e);
+      byte[] byteBuffer = ByteBuffers.toByteArray(reader.readAll(blobMetadata).iterator().next().second());
+      LOG.info("Using col stats from : {}", statsPath);
+      return SerializationUtils.deserialize(byteBuffer);
+    } catch (Exception e) {
+      LOG.warn(" Unable to read col stats: ", e);
       return new ColumnStatistics();
     }
   }
@@ -589,30 +609,18 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         .toUpperCase();
   }
 
-  private Path getColStatsPath(Table table) {
-    return getColStatsPath(table, table.currentSnapshot().snapshotId());
-  }
-
-  private Path getColStatsPath(Table table, long snapshotId) {
-    return new Path(table.location() + STATS + snapshotId);
-  }
-
-  private boolean removeColStatsIfExists(Table tbl) throws IOException {
-    Path statsPath = getColStatsPath(tbl);
-    FileSystem fs = statsPath.getFileSystem(conf);
-    if (fs.exists(statsPath)) {
-      // Analyze table and stats updater thread
-      return fs.delete(statsPath, true);
-    }
+  private boolean shouldRewriteColStats(Table tbl) {
     return SessionStateUtil.getQueryState(conf).map(QueryState::getHiveOperation)
-      .filter(opType -> HiveOperation.ANALYZE_TABLE == opType)
-      .isPresent();
+              .filter(opType -> HiveOperation.ANALYZE_TABLE == opType).isPresent() ||
+          IcebergTableUtil.getColStatsPath(tbl).isPresent();
   }
 
   private void checkAndMergeColStats(ColumnStatistics statsObjNew, Table tbl) throws InvalidObjectException {
     Long previousSnapshotId = tbl.currentSnapshot().parentId();
     if (previousSnapshotId != null && canProvideColStats(tbl, previousSnapshotId)) {
-      ColumnStatistics statsObjOld = readColStats(tbl, getColStatsPath(tbl, previousSnapshotId));
+      ColumnStatistics statsObjOld = IcebergTableUtil.getColStatsPath(tbl, previousSnapshotId)
+          .map(statsPath -> readColStats(tbl, statsPath))
+          .orElse(null);
       if (statsObjOld != null && statsObjOld.getStatsObjSize() != 0 && !statsObjNew.getStatsObj().isEmpty()) {
         MetaStoreServerUtils.mergeColStats(statsObjNew, statsObjOld);
       }
