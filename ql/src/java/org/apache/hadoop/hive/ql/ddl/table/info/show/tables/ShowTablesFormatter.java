@@ -70,6 +70,7 @@ public abstract class ShowTablesFormatter {
       List<Map<String, Object>> tableDataList = new ArrayList<>();
       for (Table table : tables) {
         Map<String, Object> tableData = ImmutableMap.of(
+            "Database Name", table.getDbName(),
             "Table Name", table.getTableName(),
             "Table Type", table.getTableType().toString());
         tableDataList.add(tableData);
@@ -104,10 +105,10 @@ public abstract class ShowTablesFormatter {
       try {
         TextMetaDataTable mdt = new TextMetaDataTable();
         if (!SessionState.get().isHiveServerQuery()) {
-          mdt.addRow("# Table Name", "Table Type");
+          mdt.addRow("# Database Name", "Table Name", "Table Type");
         }
         for (Table table : tables) {
-          mdt.addRow(table.getTableName(), table.getTableType().toString());
+          mdt.addRow(table.getDbName(), table.getTableName(), table.getTableType().toString());
         }
         // In case the query is served by HiveServer2, don't pad it with spaces,
         // as HiveServer2 output is consumed by JDBC/ODBC clients.

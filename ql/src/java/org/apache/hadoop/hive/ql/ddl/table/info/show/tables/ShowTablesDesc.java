@@ -34,7 +34,7 @@ public class ShowTablesDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
   private static final String TABLES_VIEWS_SCHEMA = "tab_name#string";
-  private static final String EXTENDED_TABLES_SCHEMA = "tab_name,table_type#string,string";
+  private static final String EXTENDED_TABLES_SCHEMA = "db_name,tab_name,table_type#string,string,string";
 
   private final String resFile;
   private final String dbName;

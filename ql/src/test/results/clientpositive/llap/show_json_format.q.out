@@ -31,7 +31,7 @@ PREHOOK: Input: database:default
 POSTHOOK: query: SHOW EXTENDED TABLES
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
-{"tables":[{"Table Name":"t","Table Type":"MANAGED_TABLE"}]}
+{"tables":[{"Database Name":"default","Table Name":"t","Table Type":"MANAGED_TABLE"}]}
 PREHOOK: query: SHOW TABLE EXTENDED LIKE 't'
 PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: SHOW TABLE EXTENDED LIKE 't'
