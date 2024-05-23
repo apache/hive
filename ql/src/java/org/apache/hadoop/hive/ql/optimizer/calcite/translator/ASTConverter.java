@@ -1069,11 +1069,14 @@ public class ASTConverter {
           Collections.singletonList(SqlFunctionConverter.buildAST(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, astNodeLst, call.getType())), call.getType());
       case CAST:
         assert(call.getOperands().size() == 1);
-        if (call.getType().equals(call.getOperands().get(0).getType())) {
-          return call.getOperands().get(0).accept(this);
+        RexNode castOperand = call.getOperands().get(0);
+        
+        // Extract RexNode out of CAST when it's not a literal and the types are equal
+        if (!(castOperand instanceof RexLiteral) && call.getType().equals(castOperand.getType())) {
+          return castOperand.accept(this);
         }
         astNodeLst.add(convertType(call.getType()));
-        astNodeLst.add(call.getOperands().get(0).accept(this));
+        astNodeLst.add(castOperand.accept(this));
         break;
       case EXTRACT:
         // Extract on date: special handling since function in Hive does
