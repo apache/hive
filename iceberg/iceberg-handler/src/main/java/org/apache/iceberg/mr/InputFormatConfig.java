@@ -87,6 +87,8 @@ public class InputFormatConfig {
   public static final String CATALOG_DEFAULT_CONFIG_PREFIX = "iceberg.catalog-default.";
   public static final String QUERY_FILTERS = "iceberg.query.filters";
 
+  public static final String TABLE_PLAN_WORKER_POOL_SIZE = "iceberg.worker.num-threads";
+
   public enum InMemoryDataModel {
     PIG,
     HIVE,

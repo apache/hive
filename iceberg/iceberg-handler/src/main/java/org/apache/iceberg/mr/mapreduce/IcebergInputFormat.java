@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -97,6 +98,7 @@ import org.apache.iceberg.types.TypeUtil;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.PartitionUtil;
 import org.apache.iceberg.util.SerializationUtil;
+import org.apache.iceberg.util.ThreadPools;
 
 /**
  * Generic Mrv2 InputFormat API for Iceberg.
@@ -215,10 +217,13 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
 
     long fromVersion = conf.getLong(InputFormatConfig.SNAPSHOT_ID_INTERVAL_FROM, -1);
     Scan<?, FileScanTask, CombinedScanTask> scan;
+    final ExecutorService workerPool =
+            ThreadPools.newWorkerPool("iceberg-plan-worker-pool",
+                    conf.getInt(InputFormatConfig.TABLE_PLAN_WORKER_POOL_SIZE, ThreadPools.WORKER_THREAD_POOL_SIZE));
     if (fromVersion != -1) {
-      scan = applyConfig(conf, createIncrementalAppendScan(table, conf));
+      scan = applyConfig(conf, createIncrementalAppendScan(table, conf)).planWith(workerPool);
     } else {
-      scan = applyConfig(conf, createTableScan(table, conf));
+      scan = applyConfig(conf, createTableScan(table, conf)).planWith(workerPool);
     }
 
     boolean allowDataFilesWithinTableLocationOnly =
