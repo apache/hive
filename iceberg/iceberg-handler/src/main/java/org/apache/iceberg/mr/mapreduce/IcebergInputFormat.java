@@ -209,7 +209,18 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
           conf.set(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tbl.name(), SerializationUtil.serializeToBase64(tbl));
           return tbl;
         });
+    final ExecutorService workerPool =
+        ThreadPools.newWorkerPool("iceberg-plan-worker-pool",
+            conf.getInt(InputFormatConfig.TABLE_PLAN_WORKER_POOL_SIZE, ThreadPools.WORKER_THREAD_POOL_SIZE));
+    try {
+      return planInputSplits(table, conf, workerPool);
+    } finally {
+      workerPool.shutdown();
+    }
 
+  }
+
+  private List<InputSplit> planInputSplits(Table table, Configuration conf, ExecutorService workerPool) {
     List<InputSplit> splits = Lists.newArrayList();
     boolean applyResidual = !conf.getBoolean(InputFormatConfig.SKIP_RESIDUAL_FILTERING, false);
     InputFormatConfig.InMemoryDataModel model = conf.getEnum(InputFormatConfig.IN_MEMORY_DATA_MODEL,
@@ -217,9 +228,6 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
 
     long fromVersion = conf.getLong(InputFormatConfig.SNAPSHOT_ID_INTERVAL_FROM, -1);
     Scan<?, FileScanTask, CombinedScanTask> scan;
-    final ExecutorService workerPool =
-            ThreadPools.newWorkerPool("iceberg-plan-worker-pool",
-                    conf.getInt(InputFormatConfig.TABLE_PLAN_WORKER_POOL_SIZE, ThreadPools.WORKER_THREAD_POOL_SIZE));
     if (fromVersion != -1) {
       scan = applyConfig(conf, createIncrementalAppendScan(table, conf)).planWith(workerPool);
     } else {
