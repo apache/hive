@@ -1069,6 +1069,9 @@ public class ASTConverter {
           Collections.singletonList(SqlFunctionConverter.buildAST(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, astNodeLst, call.getType())), call.getType());
       case CAST:
         assert(call.getOperands().size() == 1);
+        if (call.getType().equals(call.getOperands().get(0).getType())) {
+          return call.getOperands().get(0).accept(this);
+        }
         astNodeLst.add(convertType(call.getType()));
         astNodeLst.add(call.getOperands().get(0).accept(this));
         break;
