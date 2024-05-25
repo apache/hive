@@ -103,7 +103,7 @@ public class IcebergSnapshotRefExec {
     }
   }
 
-  public static boolean refExistsAsBranch(Table table, String branchName) {
+  private static boolean refExistsAsBranch(Table table, String branchName) {
     SnapshotRef branchRef = table.refs().get(branchName);
     if (branchRef != null) {
       if (branchRef.isBranch()) {
