@@ -27,7 +27,7 @@ STAGE PLANS:
   Stage: Stage-0
     SnapshotRef Operation
       table name: default.iceTbl
-      spec: AlterTableSnapshotRefSpec{operationType=CREATE_TAG, operationParams=CreateSnapshotRefSpec{refName=test_tag_1}}
+      spec: AlterTableSnapshotRefSpec{operationType=CREATE_TAG, operationParams=CreateSnapshotRefSpec{refName=test_tag_1, isReplace=false, ifNotExists=false}}
 
 PREHOOK: query: alter table iceTbl create tag test_tag_1
 PREHOOK: type: ALTERTABLE_CREATETAG
@@ -65,7 +65,7 @@ STAGE PLANS:
   Stage: Stage-0
     SnapshotRef Operation
       table name: default.iceTbl
-      spec: AlterTableSnapshotRefSpec{operationType=CREATE_TAG, operationParams=CreateSnapshotRefSpec{refName=test_tag_2, maxRefAgeMs=432000000}}
+      spec: AlterTableSnapshotRefSpec{operationType=CREATE_TAG, operationParams=CreateSnapshotRefSpec{refName=test_tag_2, maxRefAgeMs=432000000, isReplace=false, ifNotExists=false}}
 
 PREHOOK: query: alter table iceTbl create tag test_tag_2 retain 5 days
 PREHOOK: type: ALTERTABLE_CREATETAG
