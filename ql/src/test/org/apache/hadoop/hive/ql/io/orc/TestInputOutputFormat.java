@@ -122,6 +122,7 @@ import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Progressable;
+import org.apache.hive.common.util.HiveTestUtils;
 import org.apache.orc.FileFormatException;
 import org.apache.orc.OrcConf;
 import org.apache.orc.OrcProto;
@@ -1785,7 +1786,7 @@ public class TestInputOutputFormat {
     OrcInputFormat.SplitGenerator splitter =
         new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
             fs.getFileStatus(new Path("/a/file")), null, null, true,
-            new ArrayList<AcidInputFormat.DeltaMetaData>(), true, null, null), null, true, true);
+            new ArrayList<>(), true, null, null), null, true, true);
     List<OrcSplit> results = splitter.call();
     OrcSplit result = results.get(0);
     assertEquals(3, results.size());
@@ -1807,8 +1808,7 @@ public class TestInputOutputFormat {
     context = new OrcInputFormat.Context(conf);
     splitter = new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
         fs.getFileStatus(new Path("/a/file")), null, null, true,
-        new ArrayList<AcidInputFormat.DeltaMetaData>(),
-        true, null, null), null, true, true);
+        new ArrayList<>(), true, null, null), null, true, true);
     results = splitter.call();
     assertEquals(5, results.size());
     for (int i = 0; i < stripeSizes.length; ++i) {
@@ -1827,8 +1827,7 @@ public class TestInputOutputFormat {
     context = new OrcInputFormat.Context(conf);
     splitter = new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
         fs.getFileStatus(new Path("/a/file")), null, null, true,
-        new ArrayList<AcidInputFormat.DeltaMetaData>(),
-        true, null, null), null, true, true);
+        new ArrayList<>(), true, null, null), null, true, true);
     results = splitter.call();
     assertEquals(1, results.size());
     result = results.get(0);
@@ -1837,6 +1836,28 @@ public class TestInputOutputFormat {
     assertEquals(376804, result.getProjectedColumnsUncompressedSize());
   }
 
+  @Test
+  public void testAcidProjectedColumnSize() throws Exception {
+    Path file = new Path(HiveTestUtils.getFileFromClasspath("bucket_00952_0"));
+    FileSystem fs = FileSystem.getLocal(conf).getRaw();
+
+    conf.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, true);
+    OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
+    
+    OrcInputFormat.SplitInfo splitInfo = new OrcInputFormat.SplitInfo(
+        context, fs, fs.getFileStatus(file), null, null, false, new ArrayList<>(), true, null, null);
+    OrcInputFormat.SplitGenerator splitter = new OrcInputFormat.SplitGenerator(splitInfo, null, true, true);
+    
+    List<OrcSplit> results = splitter.call();
+    assertEquals(1246255309, results.get(0).getProjectedColumnsUncompressedSize());
+
+    conf.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
+    conf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "2,4,6,8");
+    
+    results = splitter.call();
+    assertEquals(10509573, results.get(0).getProjectedColumnsUncompressedSize());
+  }
+  
   @Test
   public void testInOutFormat() throws Exception {
     Properties properties = new Properties();

@@ -1725,20 +1725,16 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
 
     private long computeProjectionSize(List<OrcProto.Type> fileTypes,
-        List<OrcProto.ColumnStatistics> stats, boolean[] fileIncluded) throws FileFormatException {
-      List<Integer> internalColIds = Lists.newArrayList();
-      int rootColumn = 0;
+          List<OrcProto.ColumnStatistics> stats, boolean[] fileIncluded) throws FileFormatException {
+      // Exclude ORC <root> and ACID <row> struct elements to avoid full schema size estimation  
+      final List<Integer> internalColIds;
       if (fileIncluded == null) {
-        // Add all.
-        for (int i = rootColumn + 1; i < fileTypes.size(); i++) {
-          internalColIds.add(i);
-        }
+        internalColIds = IntStream.range(1, fileTypes.size())
+            .boxed().collect(Collectors.toList());
       } else {
-        for (int i = rootColumn + 1; i < fileIncluded.length; i++) {
-          if (fileIncluded[i] && (isOriginal || i != OrcRecordUpdater.ROW + 1)) {
-            internalColIds.add(i);
-          }
-        }
+        internalColIds = IntStream.range(1, fileTypes.size()).filter(i -> fileIncluded[i])
+            .filter(i -> i != OrcRecordUpdater.ROW + 1 || isOriginal) 
+            .boxed().collect(Collectors.toList());
       }
       return ReaderImpl.getRawDataSizeFromColIndices(internalColIds, fileTypes, stats);
     }
