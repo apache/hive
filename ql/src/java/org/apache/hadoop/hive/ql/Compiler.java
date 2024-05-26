@@ -63,8 +63,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
 
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TXN_READONLY_ENABLED;
-
 /**
  * The compiler compiles the command, by creating a QueryPlan from a String command.
  * Also opens a transaction if necessary.
@@ -76,6 +74,7 @@ public class Compiler {
 
   private final Context context;
   private final DriverContext driverContext;
+  private final QueryState queryState;
   private final DriverState driverState;
   private final PerfLogger perfLogger = SessionState.getPerfLogger();
 
@@ -84,6 +83,10 @@ public class Compiler {
   public Compiler(Context context, DriverContext driverContext, DriverState driverState) {
     this.context = context;
     this.driverContext = driverContext;
+
+    this.queryState = driverContext.getQueryState();
+    queryState.setValidTxnList(this::openTxnAndGetValidTxnList);
+
     this.driverState = driverState;
   }
 
@@ -108,6 +111,13 @@ public class Compiler {
       DriverUtils.checkInterrupted(driverState, driverContext, "after analyzing query.", null, null);
 
       plan = createPlan(sem);
+      
+      if (HiveOperation.START_TRANSACTION == queryState.getHiveOperation()
+          || plan.hasAcidResourcesInQuery()) {
+        openTxnAndGetValidTxnList();
+      }
+      verifyTxnState();
+      
       initializeFetchTask(plan);
       authorize(sem);
       explainOutput(sem, plan);
@@ -188,7 +198,6 @@ public class Compiler {
     Hive.get().getMSC().flushCache();
 
     boolean executeHooks = driverContext.getHookRunner().hasPreAnalyzeHooks();
-    QueryState queryState = driverContext.getQueryState();
 
     HiveSemanticAnalyzerHookContext hookCtx = new HiveSemanticAnalyzerHookContextImpl();
     if (executeHooks) {
@@ -201,17 +210,14 @@ public class Compiler {
       tree = driverContext.getHookRunner().runPreAnalyzeHooks(hookCtx, tree);
     }
     
-    queryState.setValidTxnList(this::openTxnAndGetValidTxnList);
-    driverContext.setValidTxnListsGenerated(false);
-
     // SemanticAnalyzerFactory also sets the hive operation in query state
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, tree);
 
-    if (!driverContext.isRetrial()) {
-      if (HiveOperation.REPLDUMP == queryState.getHiveOperation()) {
-        setLastReplIdForDump(queryState.getConf());
-      }
+    if (HiveOperation.REPLDUMP == queryState.getHiveOperation() && !driverContext.isRetrial()) {
+      setLastReplIdForDump(queryState.getConf());
     }
+    driverContext.setValidTxnListsGenerated(false);
+
     // Do semantic analysis and plan generation
     try {
       sem.startAnalysis();
@@ -235,12 +241,6 @@ public class Compiler {
     // validate the plan
     sem.validate();
 
-    if (HiveOperation.START_TRANSACTION == queryState.getHiveOperation() 
-        || sem.hasAcidResourcesInQuery()) {
-      openTxnAndGetValidTxnList();
-    }
-    verifyTxnState(queryState.getHiveOperation());
-    
     perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.ANALYZE);
     return sem;
   }
@@ -286,11 +286,10 @@ public class Compiler {
     TxnType txnType = AcidUtils.getTxnType(driverContext.getConf(), tree);
     driverContext.setTxnType(txnType);
     
-    if (!context.isExplainPlan()) {
-      HiveOperation operation = driverContext.getQueryState().getHiveOperation();
-      if ((HiveOperation.REPLDUMP == operation || HiveOperation.REPLLOAD == operation)) {
-        context.setReplPolicy(PlanUtils.stripQuotes(tree.getChild(0).getText()));
-      }
+    HiveOperation hiveOperation = queryState.getHiveOperation();
+    if ((HiveOperation.REPLDUMP == hiveOperation || HiveOperation.REPLLOAD == hiveOperation) 
+          && !context.isExplainPlan()) {
+      context.setReplPolicy(PlanUtils.stripQuotes(tree.getChild(0).getText()));
     }
     String userFromUGI = DriverUtils.getUserFromUGI(driverContext);
     txnMgr.openTxn(context, userFromUGI, txnType);
@@ -298,7 +297,7 @@ public class Compiler {
   
   private boolean startImplicitTxn() {
     //this is dumb. HiveOperation is not always set. see HIVE-16447/HIVE-16443
-    HiveOperation hiveOperation = driverContext.getQueryState().getHiveOperation();
+    HiveOperation hiveOperation = queryState.getHiveOperation();
     switch (hiveOperation == null ? HiveOperation.QUERY : hiveOperation) {
       case COMMIT:
       case ROLLBACK:
@@ -330,10 +329,11 @@ public class Compiler {
     }
   }
   
-  private void verifyTxnState(HiveOperation operation) throws LockException {
-    if (operation != null && operation.isRequiresOpenTransaction()
+  private void verifyTxnState() throws LockException {
+    HiveOperation hiveOperation = queryState.getHiveOperation();
+    if (hiveOperation != null && hiveOperation.isRequiresOpenTransaction()
           && !driverContext.getTxnManager().isTxnOpen()) {
-      throw new LockException(null, ErrorMsg.OP_NOT_ALLOWED_WITHOUT_TXN, operation.getOperationName());
+      throw new LockException(null, ErrorMsg.OP_NOT_ALLOWED_WITHOUT_TXN, hiveOperation.getOperationName());
     }
   }
 
@@ -360,7 +360,7 @@ public class Compiler {
     setSchema(sem);
     QueryPlan plan = new QueryPlan(driverContext.getQueryString(), sem,
         driverContext.getQueryDisplay().getQueryStartTime(), driverContext.getQueryId(),
-        driverContext.getQueryState().getHiveOperation(), driverContext.getSchema());
+        queryState.getHiveOperation(), driverContext.getSchema());
     // save the optimized plan and sql for the explain
     plan.setOptimizedCBOPlan(context.getCalcitePlan());
     plan.setOptimizedQueryString(context.getOptimizedSql());
@@ -379,7 +379,7 @@ public class Compiler {
     }
     // initialize FetchTask right here
     if (plan.getFetchTask() != null) {
-      plan.getFetchTask().initialize(driverContext.getQueryState(), plan, null, context);
+      plan.getFetchTask().initialize(queryState, plan, null, context);
     }
   }
 
@@ -436,8 +436,8 @@ public class Compiler {
         // Authorization check for kill query will be in KillQueryImpl
         // As both admin or operation owner can perform the operation.
         // Which is not directly supported in authorizer
-        if (driverContext.getQueryState().getHiveOperation() != HiveOperation.KILL_QUERY) {
-          CommandAuthorizer.doAuthorization(driverContext.getQueryState().getHiveOperation(), sem, context.getCmd());
+        if (queryState.getHiveOperation() != HiveOperation.KILL_QUERY) {
+          CommandAuthorizer.doAuthorization(queryState.getHiveOperation(), sem, context.getCmd());
         }
       } catch (AuthorizationException authExp) {
         CONSOLE.printError("Authorization failed:" + authExp.getMessage() + ". Use SHOW GRANT to get more details.");
@@ -451,7 +451,7 @@ public class Compiler {
   private void explainOutput(BaseSemanticAnalyzer sem, QueryPlan plan) throws IOException {
     if (driverContext.getConf().getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT) ||
         driverContext.getConf().getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT)) {
-      String explainOutput = ExplainTask.getExplainOutput(sem, plan, tree, driverContext.getQueryState(),
+      String explainOutput = ExplainTask.getExplainOutput(sem, plan, tree, queryState,
           context, driverContext.getConf());
       if (explainOutput != null) {
         if (driverContext.getConf().getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT)) {

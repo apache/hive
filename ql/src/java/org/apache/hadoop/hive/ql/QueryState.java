@@ -363,7 +363,9 @@ public class QueryState {
       if (lineageState != null) {
         queryState.setLineageState(lineageState);
       }
-      queryState.setValidTxnList(validTxnList);
+      if (validTxnList != null) {
+        queryState.setValidTxnList(validTxnList);
+      }
       return queryState;
     }
   }
