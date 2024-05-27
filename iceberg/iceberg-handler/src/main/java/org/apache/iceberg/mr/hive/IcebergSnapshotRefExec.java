@@ -22,6 +22,7 @@ package org.apache.iceberg.mr.hive;
 import java.util.Optional;
 import org.apache.hadoop.hive.ql.parse.AlterTableSnapshotRefSpec;
 import org.apache.iceberg.ManageSnapshots;
+import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.util.SnapshotUtil;
@@ -42,6 +43,11 @@ public class IcebergSnapshotRefExec {
    */
   public static void createBranch(Table table, AlterTableSnapshotRefSpec.CreateSnapshotRefSpec createBranchSpec) {
     String branchName = createBranchSpec.getRefName();
+    boolean refExistsAsBranch = refExistsAsBranch(table, branchName);
+    if (createBranchSpec.isIfNotExists() && refExistsAsBranch) {
+      return;
+    }
+    boolean isReplace = createBranchSpec.isReplace() && refExistsAsBranch;
     Long snapshotId = null;
     if (createBranchSpec.getSnapshotId() != null) {
       snapshotId = createBranchSpec.getSnapshotId();
@@ -56,16 +62,25 @@ public class IcebergSnapshotRefExec {
         throw new IllegalArgumentException(String.format("Tag %s does not exist", tagName));
       }
     } else {
-      snapshotId = Optional.ofNullable(table.currentSnapshot()).map(snapshot -> snapshot.snapshotId()).orElse(null);
+      snapshotId = Optional.ofNullable(table.currentSnapshot()).map(Snapshot::snapshotId).orElse(null);
     }
     ManageSnapshots manageSnapshots = table.manageSnapshots();
     if (snapshotId != null) {
-      LOG.info("Creating a branch {} on an iceberg table {} with snapshotId {}", branchName, table.name(), snapshotId);
-      manageSnapshots.createBranch(branchName, snapshotId);
+      createOrReplaceBranch(manageSnapshots, table, isReplace, branchName, snapshotId);
+    } else if (isReplace) {
+      throw new IllegalArgumentException(
+          "Cannot complete replace branch operation on " + branchName + ", main has no snapshot");
     } else {
       LOG.info("Creating a branch {} on an empty iceberg table {}", branchName, table.name());
       manageSnapshots.createBranch(branchName);
     }
+
+    setCreateBranchOptionalParams(createBranchSpec, manageSnapshots, branchName);
+    manageSnapshots.commit();
+  }
+
+  private static void setCreateBranchOptionalParams(AlterTableSnapshotRefSpec.CreateSnapshotRefSpec createBranchSpec,
+      ManageSnapshots manageSnapshots, String branchName) {
     if (createBranchSpec.getMaxRefAgeMs() != null) {
       manageSnapshots.setMaxRefAgeMs(branchName, createBranchSpec.getMaxRefAgeMs());
     }
@@ -75,8 +90,30 @@ public class IcebergSnapshotRefExec {
     if (createBranchSpec.getMaxSnapshotAgeMs() != null) {
       manageSnapshots.setMaxSnapshotAgeMs(branchName, createBranchSpec.getMaxSnapshotAgeMs());
     }
+  }
 
-    manageSnapshots.commit();
+  private static void createOrReplaceBranch(ManageSnapshots manageSnapshots, Table table, boolean isReplace,
+      String branchName, Long snapshotId) {
+    if (isReplace) {
+      LOG.info("Replacing branch {} on an iceberg table {} with snapshotId {}", branchName, table.name(), snapshotId);
+      manageSnapshots.replaceBranch(branchName, snapshotId);
+    } else {
+      LOG.info("Creating a branch {} on an iceberg table {} with snapshotId {}", branchName, table.name(), snapshotId);
+      manageSnapshots.createBranch(branchName, snapshotId);
+    }
+  }
+
+  private static boolean refExistsAsBranch(Table table, String branchName) {
+    SnapshotRef branchRef = table.refs().get(branchName);
+    if (branchRef != null) {
+      if (branchRef.isBranch()) {
+        return true;
+      } else {
+        throw new IllegalArgumentException(
+            "Cannot complete replace branch operation on " + branchName + ", as it exists as Tag");
+      }
+    }
+    return false;
   }
 
   public static void dropBranch(Table table, AlterTableSnapshotRefSpec.DropSnapshotRefSpec dropBranchSpec) {

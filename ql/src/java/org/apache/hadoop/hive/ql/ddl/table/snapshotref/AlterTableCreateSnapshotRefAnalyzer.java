@@ -62,6 +62,8 @@ public abstract class AlterTableCreateSnapshotRefAnalyzer extends AbstractAlterT
     Long maxRefAgeMs = null;
     Integer minSnapshotsToKeep = null;
     Long maxSnapshotAgeMs = null;
+    boolean isReplace = false;
+    boolean ifNotExists = false;
     String asOfTag = null;
     for (int i = 1; i < command.getChildCount(); i++) {
       ASTNode childNode = (ASTNode) command.getChild(i);
@@ -93,6 +95,12 @@ public abstract class AlterTableCreateSnapshotRefAnalyzer extends AbstractAlterT
               .toMillis(Long.parseLong(maxSnapshotAge));
         }
         break;
+      case HiveParser.KW_REPLACE:
+        isReplace = true;
+        break;
+      case HiveParser.TOK_IFNOTEXISTS:
+        ifNotExists = true;
+        break;
       default:
         throw new SemanticException("Unrecognized token in ALTER " + alterTableType.getName() + " statement");
       }
@@ -100,7 +108,7 @@ public abstract class AlterTableCreateSnapshotRefAnalyzer extends AbstractAlterT
 
     AlterTableSnapshotRefSpec.CreateSnapshotRefSpec createSnapshotRefSpec =
         new AlterTableSnapshotRefSpec.CreateSnapshotRefSpec(refName, snapshotId, asOfTime,
-            maxRefAgeMs, minSnapshotsToKeep, maxSnapshotAgeMs, asOfTag);
+            maxRefAgeMs, minSnapshotsToKeep, maxSnapshotAgeMs, asOfTag, isReplace, ifNotExists);
     AlterTableSnapshotRefSpec<AlterTableSnapshotRefSpec.CreateSnapshotRefSpec> alterTableSnapshotRefSpec
         = new AlterTableSnapshotRefSpec(alterTableType, createSnapshotRefSpec);
     AbstractAlterTableDesc alterTableDesc =

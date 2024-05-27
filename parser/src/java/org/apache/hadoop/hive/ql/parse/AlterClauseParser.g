@@ -539,8 +539,10 @@ alterStatementSuffixDropBranch
 alterStatementSuffixCreateBranch
 @init { gParent.pushMsg("alter table create branch", state); }
 @after { gParent.popMsg(state); }
-    : KW_CREATE KW_BRANCH branchName=identifier snapshotIdOfRef? refRetain? retentionOfSnapshots?
-    -> ^(TOK_ALTERTABLE_CREATE_BRANCH $branchName snapshotIdOfRef? refRetain? retentionOfSnapshots?)
+    : KW_CREATE KW_BRANCH ifNotExists? branchName=identifier snapshotIdOfRef? refRetain? retentionOfSnapshots?
+    -> ^(TOK_ALTERTABLE_CREATE_BRANCH $branchName ifNotExists? snapshotIdOfRef? refRetain? retentionOfSnapshots?)
+    | KW_CREATE KW_OR KW_REPLACE KW_BRANCH branchName=identifier snapshotIdOfRef? refRetain? retentionOfSnapshots?
+    -> ^(TOK_ALTERTABLE_CREATE_BRANCH $branchName KW_REPLACE snapshotIdOfRef? refRetain? retentionOfSnapshots?)
     ;
 
 snapshotIdOfRef
