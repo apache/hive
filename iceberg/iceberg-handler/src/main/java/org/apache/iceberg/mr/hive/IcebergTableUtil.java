@@ -27,6 +27,8 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -131,6 +133,20 @@ public class IcebergTableUtil {
 
   static Table getTable(Configuration configuration, Properties properties) {
     return getTable(configuration, properties, false);
+  }
+
+  static Optional<Path> getColStatsPath(Table table) {
+    return getColStatsPath(table, table.currentSnapshot().snapshotId());
+  }
+
+  static Optional<Path> getColStatsPath(Table table, long snapshotId) {
+    return table.statisticsFiles().stream()
+      .filter(stats -> stats.snapshotId() == snapshotId)
+      .filter(stats -> stats.blobMetadata().stream()
+        .anyMatch(metadata -> ColumnStatisticsObj.class.getSimpleName().equals(metadata.type()))
+      )
+      .map(stats -> new Path(stats.path()))
+      .findAny();
   }
 
   /**
