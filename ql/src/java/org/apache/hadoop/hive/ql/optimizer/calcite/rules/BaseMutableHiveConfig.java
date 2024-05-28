@@ -45,7 +45,7 @@ public abstract class BaseMutableHiveConfig implements RelRule.Config {
 
   @Override
   public RelRule.Config withDescription(String description) {
-    if (description == null || description.equals("")) {
+    if (description == null || description.isEmpty()) {
       throw new IllegalArgumentException("Description can not be null/empty");
     }
     this.description = description;

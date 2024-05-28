@@ -1068,7 +1068,9 @@ public class ASTConverter {
         return SqlFunctionConverter.buildAST(SqlStdOperatorTable.NOT,
           Collections.singletonList(SqlFunctionConverter.buildAST(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, astNodeLst, call.getType())), call.getType());
       case CAST:
-        assert(call.getOperands().size() == 1);
+        if (call.getOperands().size() != 1) {
+          throw new IllegalArgumentException("CASTs should have only 1 operand");
+        }
         RexNode castOperand = call.getOperands().get(0);
         
         // Extract RexNode out of CAST when it's not a literal and the types are equal
