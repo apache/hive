@@ -52,6 +52,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
@@ -75,6 +76,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFFromUtcTimestamp;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.MRJobConfig;
+
+import com.google.common.io.Files;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -813,6 +816,23 @@ public class TestUtilities {
     List<Path> foundManifestFiles = Utilities.selectManifestFiles(manifestFiles);
     Set<String> resultPathes = getResultPathes(foundManifestFiles);
     assertEquals(expectedPathes, resultPathes);
+  }
+
+  @Test
+  public void testSetPermissionsOnExistingDir() throws IOException {
+    File tmpDir = Files.createTempDir();
+    Path path = new Path(tmpDir.getPath());
+    HiveConf conf = new HiveConf(this.getClass());
+    FileSystem fs = path.getFileSystem(conf);
+    fs.setPermission(path, new FsPermission((short) 00700));
+    Utilities.ensurePathIsWritable(path, conf);
+    Assert.assertEquals((short) 0733, fs.getFileStatus(path).getPermission().toShort());
+
+    // Test with more open permissions than required, but still not writable,
+    // it should just make the directory writable without restricting the existing permissions
+    fs.setPermission(path, new FsPermission((short) 00755));
+    Utilities.ensurePathIsWritable(path, conf);
+    Assert.assertEquals((short) 0777, fs.getFileStatus(path).getPermission().toShort());
   }
 
   private FileStatus[] generateTestNotEmptyFileStatuses(String... fileNames) {
