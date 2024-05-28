@@ -63,6 +63,7 @@ import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.StructLike;
+import org.apache.iceberg.SystemConfigs;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.TableScan;
@@ -211,7 +212,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
         });
     final ExecutorService workerPool =
         ThreadPools.newWorkerPool("iceberg-plan-worker-pool",
-            conf.getInt(InputFormatConfig.TABLE_PLAN_WORKER_POOL_SIZE, ThreadPools.WORKER_THREAD_POOL_SIZE));
+            conf.getInt(SystemConfigs.WORKER_THREAD_POOL_SIZE.propertyKey(), ThreadPools.WORKER_THREAD_POOL_SIZE));
     try {
       return planInputSplits(table, conf, workerPool);
     } finally {
