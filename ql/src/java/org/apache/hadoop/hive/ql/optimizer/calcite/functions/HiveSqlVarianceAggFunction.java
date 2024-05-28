@@ -16,7 +16,6 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.functions;
 
-import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlFunctionCategory;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlOperandTypeChecker;

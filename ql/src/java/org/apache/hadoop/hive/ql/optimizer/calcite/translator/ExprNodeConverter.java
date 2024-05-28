@@ -238,8 +238,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
                 );
           }
         } catch (UDFArgumentException e) {
-          LOG.error("Failed to instantiate udf: ", e);
-          throw new RuntimeException(e);
+          throw new RuntimeException("Failed to instantiate udf: ", e);
         }
       } else {
         return visitCall((RexCall) HivePointLookupOptimizerRule
