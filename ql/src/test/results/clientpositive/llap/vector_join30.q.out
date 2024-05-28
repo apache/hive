@@ -1237,7 +1237,8 @@ STAGE PLANS:
                 TableScan
                   alias: orcsrc_n0
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_43_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.632
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
@@ -1247,67 +1248,67 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 0:string)
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0]
-                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                          projectedOutputColumnNums: [0, 1]
+                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
-                             Left Outer Join 0 to 1
+                             Inner Join 0 to 1
                         keys:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
                         Map Join Vectorization:
                             bigTableKeyColumns: 0:string
-                            bigTableRetainColumnNums: [0]
-                            bigTableValueColumns: 0:string
-                            className: VectorMapJoinOuterStringOperator
+                            bigTableRetainColumnNums: [0, 1]
+                            bigTableValueColumns: 0:string, 1:string
+                            className: VectorMapJoinInnerBigOnlyStringOperator
                             native: true
-                            nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
-                            projectedOutput: 0:string
+                            nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                            nonOuterSmallTableKeyMapping: []
+                            projectedOutput: 0:string, 1:string, 0:string
                             hashTableImplementationType: OPTIMIZED
-                        outputColumnNames: _col0
+                        outputColumnNames: _col0, _col1, _col2
                         input vertices:
                           1 Reducer 4
-                        Statistics: Num rows: 791 Data size: 68817 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 791 Data size: 209615 Basic stats: COMPLETE Column stats: COMPLETE
                         Map Join Operator
                           condition map:
-                               Inner Join 0 to 1
+                               Left Outer Join 0 to 1
                           keys:
-                            0 _col0 (type: string)
+                            0 _col2 (type: string)
                             1 _col0 (type: string)
                           Map Join Vectorization:
                               bigTableKeyColumns: 0:string
-                              bigTableRetainColumnNums: []
-                              className: VectorMapJoinInnerStringOperator
+                              bigTableRetainColumnNums: [0, 1]
+                              bigTableValueColumns: 0:string, 1:string
+                              className: VectorMapJoinOuterStringOperator
                               native: true
-                              nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
-                              nonOuterSmallTableKeyMapping: [0]
-                              projectedOutput: 0:string, 4:string
-                              smallTableValueMapping: 4:string
+                              nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
+                              projectedOutput: 0:string, 1:string
                               hashTableImplementationType: OPTIMIZED
-                          outputColumnNames: _col2, _col3
+                          outputColumnNames: _col0, _col1
                           input vertices:
                             1 Map 3
                           Statistics: Num rows: 1251 Data size: 222678 Basic stats: COMPLETE Column stats: COMPLETE
                           Select Operator
-                            expressions: hash(_col2,_col3) (type: int)
+                            expressions: hash(_col0,_col1) (type: int)
                             outputColumnNames: _col0
                             Select Vectorization:
                                 className: VectorSelectOperator
                                 native: true
-                                projectedOutputColumnNums: [5]
-                                selectExpressions: VectorUDFAdaptor(hash(_col2,_col3)) -> 5:int
+                                projectedOutputColumnNums: [4]
+                                selectExpressions: VectorUDFAdaptor(hash(_col0,_col1)) -> 4:int
                             Statistics: Num rows: 1251 Data size: 222678 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: sum(_col0)
                               Group By Vectorization:
-                                  aggregators: VectorUDAFSumLong(col 5:int) -> bigint
+                                  aggregators: VectorUDAFSumLong(col 4:int) -> bigint
                                   className: VectorGroupByOperator
                                   groupByMode: HASH
                                   native: false
@@ -1340,16 +1341,16 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
-                    includeColumns: [0]
+                    includeColumns: [0, 1]
                     dataColumns: key:string, value:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [string, bigint]
+                    scratchColumnTypeNames: [bigint]
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: orcsrc_n0
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
@@ -1359,15 +1360,15 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 0:string)
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: key (type: string), value (type: string)
-                      outputColumnNames: _col0, _col1
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0, 1]
-                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                          projectedOutputColumnNums: [0]
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         null sort order: z
@@ -1378,17 +1379,7 @@ STAGE PLANS:
                             keyColumns: 0:string
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumns: 1:string
-                        Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: string)
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Select Vectorization:
-                          className: VectorSelectOperator
-                          native: true
-                          projectedOutputColumnNums: [0]
-                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         null sort order: z
@@ -1413,7 +1404,7 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
-                    includeColumns: [0, 1]
+                    includeColumns: [0]
                     dataColumns: key:string, value:string
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []

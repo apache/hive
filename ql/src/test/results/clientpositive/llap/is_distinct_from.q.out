@@ -247,7 +247,7 @@ STAGE PLANS:
           Filter Operator
             predicate: (y IS NOT DISTINCT FROM null) (type: boolean)
             Select Operator
-              expressions: x (type: string), null (type: void)
+              expressions: x (type: string), null (type: string)
               outputColumnNames: _col0, _col1
               ListSink
 
