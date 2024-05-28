@@ -1086,7 +1086,14 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
       exprs.add(dpe);
     }
     rps.setExprs(exprs);
-    DropPartitionsRequest req = new DropPartitionsRequest(dbName, tblName, rps);
+    return dropPartitions(dbName, tblName, rps, options);
+  }
+
+  @Override
+  public List<Partition> dropPartitions(String dbName, String tblName,
+                                        RequestPartsSpec partsSpec, PartitionDropOptions options)
+      throws TException {
+    DropPartitionsRequest req = new DropPartitionsRequest(dbName, tblName, partsSpec);
     req.setDeleteData(options.deleteData);
     req.setNeedResult(options.returnResults);
     req.setIfExists(options.ifExists);
@@ -3629,6 +3636,13 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
                                         List<Pair<Integer, byte[]>> partExprs,
                                         PartitionDropOptions options) throws NoSuchObjectException,
       MetaException, TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public List<Partition> dropPartitions(String catName, String dbName, String tblName,
+                                        RequestPartsSpec partsSpec, PartitionDropOptions options)
+      throws NoSuchObjectException, MetaException, TException {
     throw new UnsupportedOperationException();
   }
 

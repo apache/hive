@@ -44,9 +44,11 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
+import org.apache.hadoop.hive.metastore.api.DropPartitionsExpr;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -1125,6 +1127,24 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       throw new MetaException(String.format("Error while fetching the partitions due to: %s", e));
     }
     context.putToProperties(HiveMetaStoreClient.SKIP_DROP_PARTITION, "true");
+  }
+
+  @Override
+  public void preDropPartitions(org.apache.hadoop.hive.metastore.api.Table hmsTable,
+                                EnvironmentContext context,
+                                RequestPartsSpec partsSpec) throws MetaException {
+    if (partsSpec.isSetExprs()) {
+      List<DropPartitionsExpr> exprs = partsSpec.getExprs();
+      List<org.apache.commons.lang3.tuple.Pair<Integer, byte[]>> partExprs = Lists.newArrayList();
+      for (DropPartitionsExpr expr : exprs) {
+        partExprs.add(
+            org.apache.commons.lang3.tuple.Pair.of(expr.getPartArchiveLevel(), expr.getExpr()));
+      }
+      preDropPartitions(hmsTable, context, partExprs);
+    } else if (partsSpec.isSetNames()) {
+      preTruncateTable(hmsTable, context, partsSpec.getNames());
+      context.putToProperties(HiveMetaStoreClient.SKIP_DROP_PARTITION, "true");
+    }
   }
 
   private class PreAlterTableProperties {
