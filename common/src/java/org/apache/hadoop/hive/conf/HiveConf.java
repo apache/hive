@@ -6830,6 +6830,7 @@ public class HiveConf extends Configuration {
     "oozie\\..*",
     "tez\\.am\\..*",
     "tez\\.task\\..*",
+    "tez\\.task\\-.*",
     "tez\\.runtime\\..*",
     "tez\\.queue\\.name",
     "iceberg\\.mr\\..*"
