@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataI
 import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.TimestampColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.model.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MPartition;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MTable;
@@ -339,116 +340,6 @@ public class StatObjectConverter {
     return colIdx;
   }
 
-  public static ColumnStatisticsObj getTableColumnStatisticsObj(
-      MTableColumnStatistics mStatsObj, boolean enableBitVector, boolean enableKll) {
-    ColumnStatisticsObj statsObj = new ColumnStatisticsObj();
-    statsObj.setColType(mStatsObj.getColType());
-    statsObj.setColName(mStatsObj.getColName());
-    String colType = mStatsObj.getColType().toLowerCase();
-    ColumnStatisticsData colStatsData = new ColumnStatisticsData();
-
-    if (colType.equals("boolean")) {
-      BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
-      boolStats.setNumFalses(mStatsObj.getNumFalses());
-      boolStats.setNumTrues(mStatsObj.getNumTrues());
-      boolStats.setNumNulls(mStatsObj.getNumNulls());
-      colStatsData.setBooleanStats(boolStats);
-    } else if (colType.equals("string") ||
-        colType.startsWith("varchar") || colType.startsWith("char")) {
-      StringColumnStatsDataInspector stringStats = new StringColumnStatsDataInspector();
-      stringStats.setNumNulls(mStatsObj.getNumNulls());
-      stringStats.setAvgColLen(mStatsObj.getAvgColLen());
-      stringStats.setMaxColLen(mStatsObj.getMaxColLen());
-      stringStats.setNumDVs(mStatsObj.getNumDVs());
-      stringStats.setBitVectors((mStatsObj.getBitVector()==null||!enableBitVector)? null : mStatsObj.getBitVector());
-      colStatsData.setStringStats(stringStats);
-    } else if (colType.equals("binary")) {
-      BinaryColumnStatsData binaryStats = new BinaryColumnStatsData();
-      binaryStats.setNumNulls(mStatsObj.getNumNulls());
-      binaryStats.setAvgColLen(mStatsObj.getAvgColLen());
-      binaryStats.setMaxColLen(mStatsObj.getMaxColLen());
-      colStatsData.setBinaryStats(binaryStats);
-    } else if (colType.equals("bigint") || colType.equals("int") ||
-        colType.equals("smallint") || colType.equals("tinyint")) {
-      LongColumnStatsDataInspector longStats = new LongColumnStatsDataInspector();
-      longStats.setNumNulls(mStatsObj.getNumNulls());
-      Long longHighValue = mStatsObj.getLongHighValue();
-      if (longHighValue != null) {
-        longStats.setHighValue(longHighValue);
-      }
-      Long longLowValue = mStatsObj.getLongLowValue();
-      if (longLowValue != null) {
-        longStats.setLowValue(longLowValue);
-      }
-      longStats.setNumDVs(mStatsObj.getNumDVs());
-      longStats.setBitVectors((mStatsObj.getBitVector()==null||!enableBitVector)? null : mStatsObj.getBitVector());
-      longStats.setHistogram((mStatsObj.getHistogram()==null||!enableKll)? null : mStatsObj.getHistogram());
-      colStatsData.setLongStats(longStats);
-    } else if (colType.equals("double") || colType.equals("float")) {
-      DoubleColumnStatsDataInspector doubleStats = new DoubleColumnStatsDataInspector();
-      doubleStats.setNumNulls(mStatsObj.getNumNulls());
-      Double doubleHighValue = mStatsObj.getDoubleHighValue();
-      if (doubleHighValue != null) {
-        doubleStats.setHighValue(doubleHighValue);
-      }
-      Double doubleLowValue = mStatsObj.getDoubleLowValue();
-      if (doubleLowValue != null) {
-        doubleStats.setLowValue(doubleLowValue);
-      }
-      doubleStats.setNumDVs(mStatsObj.getNumDVs());
-      doubleStats.setBitVectors((mStatsObj.getBitVector()==null||!enableBitVector)? null : mStatsObj.getBitVector());
-      doubleStats.setHistogram((mStatsObj.getHistogram()==null||!enableKll)? null : mStatsObj.getHistogram());
-      colStatsData.setDoubleStats(doubleStats);
-    } else if (colType.startsWith("decimal")) {
-      DecimalColumnStatsDataInspector decimalStats = new DecimalColumnStatsDataInspector();
-      decimalStats.setNumNulls(mStatsObj.getNumNulls());
-      String decimalHighValue = mStatsObj.getDecimalHighValue();
-      if (decimalHighValue != null) {
-        decimalStats.setHighValue(DecimalUtils.createThriftDecimal(decimalHighValue));
-      }
-      String decimalLowValue = mStatsObj.getDecimalLowValue();
-      if (decimalLowValue != null) {
-        decimalStats.setLowValue(DecimalUtils.createThriftDecimal(decimalLowValue));
-      }
-      decimalStats.setNumDVs(mStatsObj.getNumDVs());
-      decimalStats.setBitVectors((mStatsObj.getBitVector()==null||!enableBitVector)? null : mStatsObj.getBitVector());
-      decimalStats.setHistogram((mStatsObj.getHistogram()==null||!enableKll)? null : mStatsObj.getHistogram());
-      colStatsData.setDecimalStats(decimalStats);
-    } else if (colType.equals("date")) {
-      DateColumnStatsDataInspector dateStats = new DateColumnStatsDataInspector();
-      dateStats.setNumNulls(mStatsObj.getNumNulls());
-      Long highValue = mStatsObj.getLongHighValue();
-      if (highValue != null) {
-        dateStats.setHighValue(new Date(highValue));
-      }
-      Long lowValue = mStatsObj.getLongLowValue();
-      if (lowValue != null) {
-        dateStats.setLowValue(new Date(lowValue));
-      }
-      dateStats.setNumDVs(mStatsObj.getNumDVs());
-      dateStats.setBitVectors((mStatsObj.getBitVector()==null||!enableBitVector)? null : mStatsObj.getBitVector());
-      dateStats.setHistogram((mStatsObj.getHistogram()==null||!enableKll)? null : mStatsObj.getHistogram());
-      colStatsData.setDateStats(dateStats);
-    } else if (colType.equals("timestamp")) {
-      TimestampColumnStatsDataInspector timestampStats = new TimestampColumnStatsDataInspector();
-      timestampStats.setNumNulls(mStatsObj.getNumNulls());
-      Long highValue = mStatsObj.getLongHighValue();
-      if (highValue != null) {
-        timestampStats.setHighValue(new Timestamp(highValue));
-      }
-      Long lowValue = mStatsObj.getLongLowValue();
-      if (lowValue != null) {
-        timestampStats.setLowValue(new Timestamp(lowValue));
-      }
-      timestampStats.setNumDVs(mStatsObj.getNumDVs());
-      timestampStats.setBitVectors((mStatsObj.getBitVector()==null||!enableBitVector)? null : mStatsObj.getBitVector());
-      timestampStats.setHistogram((mStatsObj.getHistogram()==null||!enableKll)? null : mStatsObj.getHistogram());
-      colStatsData.setTimestampStats(timestampStats);
-    }
-    statsObj.setStatsData(colStatsData);
-    return statsObj;
-  }
-
   public static ColumnStatisticsDesc getTableColumnStatisticsDesc(
       MTableColumnStatistics mStatsObj) {
     ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc();
@@ -544,8 +435,8 @@ public class StatObjectConverter {
     return mColStats;
   }
 
-  public static ColumnStatisticsObj getPartitionColumnStatisticsObj(
-      MPartitionColumnStatistics mStatsObj, boolean enableBitVector, boolean enableKll) {
+  public static ColumnStatisticsObj getColumnStatisticsObj(
+      ColumnStatistics mStatsObj, boolean enableBitVector, boolean enableKll) {
     ColumnStatisticsObj statsObj = new ColumnStatisticsObj();
     statsObj.setColType(mStatsObj.getColType());
     statsObj.setColName(mStatsObj.getColName());
