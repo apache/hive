@@ -218,7 +218,6 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     } finally {
       workerPool.shutdown();
     }
-
   }
 
   private List<InputSplit> planInputSplits(Table table, Configuration conf, ExecutorService workerPool) {
@@ -230,10 +229,11 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     long fromVersion = conf.getLong(InputFormatConfig.SNAPSHOT_ID_INTERVAL_FROM, -1);
     Scan<?, FileScanTask, CombinedScanTask> scan;
     if (fromVersion != -1) {
-      scan = applyConfig(conf, createIncrementalAppendScan(table, conf)).planWith(workerPool);
+      scan = applyConfig(conf, createIncrementalAppendScan(table, conf));
     } else {
-      scan = applyConfig(conf, createTableScan(table, conf)).planWith(workerPool);
+      scan = applyConfig(conf, createTableScan(table, conf));
     }
+    scan = (Scan<?, FileScanTask, CombinedScanTask>) scan.planWith(workerPool);
 
     boolean allowDataFilesWithinTableLocationOnly =
         conf.getBoolean(HiveConf.ConfVars.HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY.varname,
