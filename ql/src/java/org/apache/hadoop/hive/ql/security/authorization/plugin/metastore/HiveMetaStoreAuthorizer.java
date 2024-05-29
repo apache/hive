@@ -67,6 +67,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * HiveMetaStoreAuthorizer :  Do authorization checks on MetaStore Events in MetaStorePreEventListener
@@ -213,15 +214,46 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
 
   @Override
   @Deprecated
-  public List<TableMeta> filterTableMetas(String catName, String dbName,List<TableMeta> tableMetas)
+  public List<TableMeta> filterTableMetas(String catName, String dbName, List<TableMeta> tableMetas)
       throws MetaException {
-    return filterTableMetas(tableMetas);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("==> HiveMetaStoreAuthorizer.filterTableMetas()");
+    }
+    List<String> tableNames = new ArrayList<>();
+    List<TableMeta> filteredTableMetas = new ArrayList<>();
+    if (tableMetas != null) {
+      for (TableMeta tableMeta : tableMetas) {
+        tableNames.add(tableMeta.getTableName());
+      }
+      TableFilterContext     tableFilterContext     = new TableFilterContext(dbName, tableNames);
+      HiveMetaStoreAuthzInfo hiveMetaStoreAuthzInfo = tableFilterContext.getAuthzContext();
+      final List<String>  filteredTableNames = filterTableNames(hiveMetaStoreAuthzInfo, dbName, tableNames);
+      if (CollectionUtils.isEmpty(filteredTableNames)) {
+        filteredTableMetas = Collections.emptyList();
+        if (LOG.isInfoEnabled()) {
+          LOG.info("<== HiveMetaStoreAuthorizer.filterTableMetas() : returning empty set");
+        }
+      } else {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("<== HiveMetaStoreAuthorizer.filterTableMetas() : " + filteredTableNames);
+        }
+        filteredTableMetas = tableMetas.stream().filter(tblMeta -> filteredTableNames.stream()
+            .anyMatch(tblName -> tblName.equals(tblMeta.getTableName()))).collect(Collectors.toList());
+      }
+    }
+    return filteredTableMetas;
   }
 
   @Override
   public final List<TableMeta> filterTableMetas(List<TableMeta> tableMetas)
       throws MetaException {
-    return tableMetas;
+    String catName = null;
+    String dbName = null;
+    if (tableMetas != null) {
+      catName = tableMetas.get(0).getCatName();
+      dbName = tableMetas.get(0).getDbName();
+    }
+    return filterTableMetas(catName, dbName, tableMetas);
   }
 
   @Override
