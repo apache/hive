@@ -30,7 +30,7 @@ package org.apache.hadoop.hive.metastore.model;
  * In case of partition, part_id is persisted in its place.
  *
  */
-public class MPartitionColumnStatistics extends ColumnStatistics{
+public class MPartitionColumnStatistics extends MColumnStatistics{
 
   private MPartition partition;
 

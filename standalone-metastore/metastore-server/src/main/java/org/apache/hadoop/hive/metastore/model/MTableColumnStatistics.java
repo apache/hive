@@ -30,7 +30,7 @@ package org.apache.hadoop.hive.metastore.model;
  * persisted in its place.
  *
  */
-public class MTableColumnStatistics extends ColumnStatistics{
+public class MTableColumnStatistics extends MColumnStatistics{
 
   private MTable table;
 

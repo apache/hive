@@ -18,7 +18,18 @@
 
 package org.apache.hadoop.hive.metastore.model;
 
-public class ColumnStatistics {
+import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.InheritanceStrategy;
+import javax.jdo.annotations.PersistenceCapable;
+
+/**
+ *
+ * root class for MPartitionColumnStatistics & MTableColumnStatistics
+ *
+ */
+@PersistenceCapable
+@Inheritance(strategy= InheritanceStrategy.SUBCLASS_TABLE)
+public abstract class MColumnStatistics {
 
   protected String colName;
   protected String colType;

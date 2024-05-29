@@ -942,60 +942,6 @@
       <field name="table">
         <column name="TBL_ID"/>
       </field>
-      <field name="colName">
-        <column name="COLUMN_NAME" length="767" jdbc-type="VARCHAR" allows-null="false"/>
-      </field>
-      <field name="colType">
-        <column name="COLUMN_TYPE" length="128" jdbc-type="VARCHAR" allows-null="false"/>
-      </field>
-      <field name="longLowValue">
-        <column name="LONG_LOW_VALUE"  jdbc-type="BIGINT" allows-null="true"/>
-      </field>
-      <field name="longHighValue">
-        <column name="LONG_HIGH_VALUE" jdbc-type="BIGINT" allows-null="true"/>
-      </field>
-       <field name="doubleLowValue">
-        <column name="DOUBLE_LOW_VALUE"  jdbc-type="DOUBLE" allows-null="true"/>
-      </field>
-      <field name="doubleHighValue">
-        <column name="DOUBLE_HIGH_VALUE" jdbc-type="DOUBLE" allows-null="true"/>
-      </field>
-      <field name="decimalLowValue">
-        <column name="BIG_DECIMAL_LOW_VALUE"  jdbc-type="VARCHAR" allows-null="true"/>
-      </field>
-      <field name="decimalHighValue">
-        <column name="BIG_DECIMAL_HIGH_VALUE" jdbc-type="VARCHAR" allows-null="true"/>
-      </field>
-      <field name="numNulls">
-        <column name="NUM_NULLS" jdbc-type="BIGINT" allows-null="false"/>
-      </field>
-      <field name="numDVs">
-        <column name="NUM_DISTINCTS" jdbc-type="BIGINT" allows-null="true"/>
-      </field>
-      <field name="bitVector">
-        <column name="BIT_VECTOR" jdbc-type="BLOB" allows-null="true"/>
-      </field>
-      <field name="histogram">
-        <column name="HISTOGRAM" jdbc-type="BLOB" allows-null="true"/>
-      </field>
-      <field name="avgColLen">
-        <column name="AVG_COL_LEN" jdbc-type="DOUBLE" allows-null="true"/>
-      </field>
-      <field name="maxColLen">
-        <column name="MAX_COL_LEN" jdbc-type="BIGINT" allows-null="true"/>
-      </field>
-      <field name="numTrues">
-        <column name="NUM_TRUES" jdbc-type="BIGINT" allows-null="true"/>
-      </field>
-      <field name="numFalses">
-        <column name="NUM_FALSES" jdbc-type="BIGINT" allows-null="true"/>
-      </field>
-      <field name="lastAnalyzed">
-        <column name="LAST_ANALYZED" jdbc-type="BIGINT" allows-null="false"/>
-      </field>
-      <field name="engine">
-        <column name="ENGINE" length="128" jdbc-type="VARCHAR" allows-null="false"/>
-      </field>
     </class>
 
     <class name="MPartitionColumnStatistics" table="PART_COL_STATS" identity-type="datastore" detachable="true">
@@ -1007,6 +953,9 @@
       <field name="partition">
         <column name="PART_ID"/>
       </field>
+    </class>
+
+    <class name="MColumnStatistics">
       <field name="colName">
         <column name="COLUMN_NAME" length="767" jdbc-type="VARCHAR" allows-null="false"/>
       </field>

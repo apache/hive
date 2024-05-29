@@ -48,7 +48,7 @@ import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataI
 import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.TimestampColumnStatsDataInspector;
-import org.apache.hadoop.hive.metastore.model.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.model.MColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MPartition;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MTable;
@@ -436,7 +436,7 @@ public class StatObjectConverter {
   }
 
   public static ColumnStatisticsObj getColumnStatisticsObj(
-      ColumnStatistics mStatsObj, boolean enableBitVector, boolean enableKll) {
+      MColumnStatistics mStatsObj, boolean enableBitVector, boolean enableKll) {
     ColumnStatisticsObj statsObj = new ColumnStatisticsObj();
     statsObj.setColType(mStatsObj.getColType());
     statsObj.setColName(mStatsObj.getColName());
