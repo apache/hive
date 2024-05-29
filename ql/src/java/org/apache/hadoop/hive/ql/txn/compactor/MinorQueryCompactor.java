@@ -150,11 +150,10 @@ final class MinorQueryCompactor extends QueryCompactor {
    */
   private String buildCreateTableQuery(Table table, String newTableName, boolean isPartitioned,
       boolean isBucketed, String location) {
-    return new CompactionQueryBuilder(
-        CompactionType.MINOR,
-        CompactionQueryBuilder.Operation.CREATE,
-        false,
-        newTableName)
+    return new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
+        CompactionType.MINOR, false)
+        .setOperation(CompactionQueryBuilder.Operation.CREATE)
+        .setResultTableName(newTableName)
         .setSourceTab(table)
         .setBucketed(isBucketed)
         .setPartitioned(isPartitioned)
@@ -173,11 +172,10 @@ final class MinorQueryCompactor extends QueryCompactor {
    */
   private String buildAlterTableQuery(String tableName, AcidDirectory dir,
       ValidWriteIdList validWriteIdList, boolean isDeleteDelta) {
-    return new CompactionQueryBuilder(
-        CompactionType.MINOR,
-        CompactionQueryBuilder.Operation.ALTER,
-        false,
-        tableName)
+    return new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
+        CompactionType.MINOR, false)
+        .setOperation(CompactionQueryBuilder.Operation.ALTER)
+        .setResultTableName(tableName)
         .setDir(dir)
         .setValidWriteIdList(validWriteIdList)
         .setIsDeleteDelta(isDeleteDelta)
@@ -214,11 +212,10 @@ final class MinorQueryCompactor extends QueryCompactor {
    */
   private String buildCompactionQuery(String sourceTableName, String resultTableName, Table table,
       ValidWriteIdList validWriteIdList) {
-    return new CompactionQueryBuilder(
-        CompactionType.MINOR,
-        CompactionQueryBuilder.Operation.INSERT,
-        false,
-        resultTableName)
+    return new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
+        CompactionType.MINOR, false)
+        .setOperation(CompactionQueryBuilder.Operation.INSERT)
+        .setResultTableName(resultTableName)
         .setSourceTabForInsert(sourceTableName)
         .setSourceTab(table)
         .setValidWriteIdList(validWriteIdList)
@@ -239,10 +236,10 @@ final class MinorQueryCompactor extends QueryCompactor {
   }
 
   private String getDropQuery(String tableToDrop) {
-    return new CompactionQueryBuilder(
-        CompactionType.MINOR,
-        CompactionQueryBuilder.Operation.DROP,
-        false,
-        tableToDrop).build();
+    return new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
+        CompactionType.MINOR, false)
+        .setOperation(CompactionQueryBuilder.Operation.DROP)
+        .setResultTableName(tableToDrop)
+        .build();
   }
 }

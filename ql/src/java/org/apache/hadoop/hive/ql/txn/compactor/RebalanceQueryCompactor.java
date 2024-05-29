@@ -73,11 +73,10 @@ final class RebalanceQueryCompactor extends QueryCompactor {
   }
 
   private List<String> getCreateQueries(String fullName, Table t, String tmpTableLocation) {
-    return Lists.newArrayList(new CompactionQueryBuilder(
-        CompactionType.REBALANCE,
-        CompactionQueryBuilder.Operation.CREATE,
-        false,
-        fullName)
+    return Lists.newArrayList(new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
+        CompactionType.REBALANCE, false)
+        .setOperation(CompactionQueryBuilder.Operation.CREATE)
+        .setResultTableName(fullName)
         .setSourceTab(t)
         .setLocation(tmpTableLocation)
         .build());
@@ -85,24 +84,23 @@ final class RebalanceQueryCompactor extends QueryCompactor {
 
   private List<String> getCompactionQueries(Table t, Partition p, String tmpName, int numberOfBuckets, String orderByClause) {
     return Lists.newArrayList(
-        new CompactionQueryBuilder(
-            CompactionType.REBALANCE,
-            CompactionQueryBuilder.Operation.INSERT,
-            false,
-            tmpName)
-            .setSourceTab(t)
-            .setSourcePartition(p)
+        new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
+            CompactionType.REBALANCE, false)
+            .setOperation(CompactionQueryBuilder.Operation.INSERT)
+            .setResultTableName(tmpName)
             .setNumberOfBuckets(numberOfBuckets)
             .setOrderByClause(orderByClause)
+            .setSourceTab(t)
+            .setSourcePartition(p)
             .build());
   }
 
   private List<String> getDropQueries(String tmpTableName) {
     return Lists.newArrayList(
-        new CompactionQueryBuilder(
-            CompactionType.REBALANCE,
-            CompactionQueryBuilder.Operation.DROP,
-            false,
-            tmpTableName).build());
+        new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
+            CompactionType.REBALANCE, false)
+            .setOperation(CompactionQueryBuilder.Operation.DROP)
+            .setResultTableName(tmpTableName)
+            .build());
   }
 }

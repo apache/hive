@@ -1,0 +1,142 @@
+PREHOOK: query: CREATE TABLE x (name VARCHAR(50), age TINYINT, num_clicks BIGINT) 
+stored by iceberg stored as orc 
+TBLPROPERTIES ('external.table.purge'='true','format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@x
+POSTHOOK: query: CREATE TABLE x (name VARCHAR(50), age TINYINT, num_clicks BIGINT) 
+stored by iceberg stored as orc 
+TBLPROPERTIES ('external.table.purge'='true','format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@x
+PREHOOK: query: insert into x values 
+('amy', 35, 123412344),
+('adxfvy', 36, 123412534),
+('amsdfyy', 37, 123417234),
+('asafmy', 38, 123412534)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@x
+POSTHOOK: query: insert into x values 
+('amy', 35, 123412344),
+('adxfvy', 36, 123412534),
+('amsdfyy', 37, 123417234),
+('asafmy', 38, 123412534)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@x
+PREHOOK: query: insert into x values 
+('amerqwy', 39, 123441234),
+('amyxzcv', 40, 123341234),
+('erweramy', 45, 122341234)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@x
+POSTHOOK: query: insert into x values 
+('amerqwy', 39, 123441234),
+('amyxzcv', 40, 123341234),
+('erweramy', 45, 122341234)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@x
+PREHOOK: query: select * from default.x.data_files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@x
+#### A masked pattern was here ####
+POSTHOOK: query: select * from default.x.data_files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@x
+#### A masked pattern was here ####
+PREHOOK: query: select count(*) from default.x.data_files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@x
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from default.x.data_files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@x
+#### A masked pattern was here ####
+2
+PREHOOK: query: alter table x compact 'major' and wait
+PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@x
+PREHOOK: Output: default@x
+POSTHOOK: query: alter table x compact 'major' and wait
+POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@x
+POSTHOOK: Output: default@x
+PREHOOK: query: show compactions
+PREHOOK: type: SHOW COMPACTIONS
+POSTHOOK: query: show compactions
+POSTHOOK: type: SHOW COMPACTIONS
+CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
+1	default	x	 --- 	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
+PREHOOK: query: desc formatted x
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@x
+POSTHOOK: query: desc formatted x
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@x
+# col_name            	data_type           	comment             
+name                	string              	                    
+age                 	int                 	                    
+num_clicks          	bigint              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"age\":\"true\",\"name\":\"true\",\"num_clicks\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"age\",\"required\":false,\"type\":\"int\"},{\"id\":3,\"name\":\"num_clicks\",\"required\":false,\"type\":\"long\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"replace-partitions\":\"true\",\"added-data-files\":\"1\",\"added-records\":\"7\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"7\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"1\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	external.table.purge	true                
+	format-version      	2                   
+	iceberg.orc.files.only	true                
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	7                   
+	parquet.compression 	zstd                
+#### A masked pattern was here ####
+	rawDataSize         	0                   
+	serialization.format	1                   
+	snapshot-count      	4                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	orc                 
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: select * from default.x.data_files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@x
+#### A masked pattern was here ####
+POSTHOOK: query: select * from default.x.data_files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@x
+#### A masked pattern was here ####
+PREHOOK: query: select count(*) from default.x.data_files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@x
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from default.x.data_files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@x
+#### A masked pattern was here ####
+1

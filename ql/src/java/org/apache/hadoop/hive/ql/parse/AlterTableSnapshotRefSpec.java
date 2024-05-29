@@ -56,6 +56,8 @@ public class AlterTableSnapshotRefSpec<T> {
     private Integer minSnapshotsToKeep;
     private Long maxSnapshotAgeMs;
     private String asOfTag;
+    private boolean isReplace;
+    private boolean ifNotExists;
 
     public String getRefName() {
       return refName;
@@ -85,8 +87,16 @@ public class AlterTableSnapshotRefSpec<T> {
       return asOfTag;
     }
 
+    public boolean isReplace() {
+      return isReplace;
+    }
+
+    public boolean isIfNotExists() {
+      return ifNotExists;
+    }
+
     public CreateSnapshotRefSpec(String refName, Long snapShotId, Long asOfTime, Long maxRefAgeMs,
-                             Integer minSnapshotsToKeep, Long maxSnapshotAgeMs, String asOfTag) {
+        Integer minSnapshotsToKeep, Long maxSnapshotAgeMs, String asOfTag, boolean isReplace, boolean ifNotExists) {
       this.refName = refName;
       this.snapshotId = snapShotId;
       this.asOfTime = asOfTime;
@@ -94,12 +104,15 @@ public class AlterTableSnapshotRefSpec<T> {
       this.minSnapshotsToKeep = minSnapshotsToKeep;
       this.maxSnapshotAgeMs = maxSnapshotAgeMs;
       this.asOfTag = asOfTag;
+      this.isReplace = isReplace;
+      this.ifNotExists = ifNotExists;
     }
 
     public String toString() {
       return MoreObjects.toStringHelper(this).add("refName", refName).add("snapshotId", snapshotId)
           .add("asOfTime", asOfTime).add("maxRefAgeMs", maxRefAgeMs).add("minSnapshotsToKeep", minSnapshotsToKeep)
-          .add("maxSnapshotAgeMs", maxSnapshotAgeMs).omitNullValues().toString();
+          .add("maxSnapshotAgeMs", maxSnapshotAgeMs).add("isReplace", isReplace).add("ifNotExists", ifNotExists)
+          .omitNullValues().toString();
     }
   }
   public static class DropSnapshotRefSpec {
