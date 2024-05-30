@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
@@ -118,11 +120,16 @@ public class Partition implements Serializable {
    *           Thrown if we could not create the partition.
    */
   public Partition(Table tbl, Map<String, String> partSpec, Path location) throws HiveException {
-    initialize(tbl, createMetaPartitionObject(tbl, partSpec, location));
+    initialize(tbl, createMetaPartitionObject(tbl, partSpec, location, null));
   }
 
   public static org.apache.hadoop.hive.metastore.api.Partition createMetaPartitionObject(
-      Table tbl, Map<String, String> partSpec, Path location) throws HiveException {
+          Table tbl, Map<String, String> partSpec, Path location) throws HiveException {
+    return createMetaPartitionObject(tbl, partSpec, location, null);
+  }
+
+  public static org.apache.hadoop.hive.metastore.api.Partition createMetaPartitionObject(
+      Table tbl, Map<String, String> partSpec, Path location, String customPattern) throws HiveException {
     List<String> pvals = new ArrayList<String>();
     for (FieldSchema field : tbl.getPartCols()) {
       String val = partSpec.get(field.getName());
@@ -141,6 +148,16 @@ public class Partition implements Serializable {
 
     if (!tbl.isView()) {
       tpart.setSd(tbl.getSd().deepCopy());
+      if (location == null && customPattern != null) { //should only happen for msck repair table with custom pattern
+        Pattern p = Pattern.compile("(\\$\\{)([^\\s/\\{\\}\\\\]+)(\\})");
+        Matcher m = p.matcher(customPattern);
+        StringBuffer sb = new StringBuffer();
+        while (m.find()) {
+          m.appendReplacement(sb, partSpec.get(m.group(2)));
+        }
+        m.appendTail(sb);
+        location = new Path(tbl.getDataLocation(), sb.toString());
+      }
       tpart.getSd().setLocation((location != null) ? location.toString() : null);
     }
     return tpart;

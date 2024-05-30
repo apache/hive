@@ -70,7 +70,7 @@ abstract class AbstractAddPartitionAnalyzer extends AbstractAlterTableAnalyzer {
     }
 
     AlterTableAddPartitionDesc desc = new AlterTableAddPartitionDesc(table.getDbName(), table.getTableName(),
-        ifNotExists, partitions);
+        ifNotExists, partitions, conf.get("hcat.dynamic.partitioning.custom.pattern", null));
     Task<DDLWork> ddlTask = TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc));
     rootTasks.add(ddlTask);
 

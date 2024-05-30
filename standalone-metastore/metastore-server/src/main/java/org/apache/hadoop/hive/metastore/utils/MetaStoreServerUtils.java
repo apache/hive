@@ -49,6 +49,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -1598,39 +1599,62 @@ public class MetaStoreServerUtils {
    * @return Partition name, for example partitiondate=2008-01-01
    */
   public static String getPartitionName(Path tablePath, Path partitionPath, Set<String> partCols,
-                                        Map<String, String> partitionColToTypeMap) {
+                                        Map<String, String> partitionColToTypeMap, String customPattern) throws MetastoreException {
     String result = null;
     Path currPath = partitionPath;
     LOG.debug("tablePath:" + tablePath + ", partCols: " + partCols);
-
-    while (currPath != null && !tablePath.equals(currPath)) {
-      // format: partition=p_val
-      // Add only when table partition colName matches
-      String[] parts = currPath.getName().split("=");
-      if (parts.length > 0) {
-        if (parts.length != 2) {
-          LOG.warn(currPath.getName() + " is not a valid partition name");
-          return result;
+    if (customPattern != null) {
+      DynamicPartitioningCustomPattern compiledCustomPattern = new DynamicPartitioningCustomPattern.Builder()
+              .setCustomPattern(customPattern)
+              .build();
+      Pattern customPathPattern = compiledCustomPattern.getPartitionCapturePattern();
+      List<String> patternPartCols = compiledCustomPattern.getPartitionColumns(); //partition columns in order that they appear in the pattern
+      String relPath = partitionPath.toString().substring(tablePath.toString().length() + 1); //start after tablepath and the / afterwards
+      Matcher pathMatcher = customPathPattern.matcher(relPath);
+      boolean didMatch = pathMatcher.matches();
+      if (!didMatch) { //partition path doesn't match the pattern, should have been detected at an earlier step
+        throw new MetastoreException("Path " + relPath + "doesn't match custom partition pattern " + customPathPattern + "partitionPathFull: " + partitionPath);
+      }
+      for (int i = 0; i < patternPartCols.size(); i++) {
+        if (result == null) {
+          result = patternPartCols.get(i) + "=" + pathMatcher.group(i + 1);
         }
-
-        // Since hive stores partitions keys in lower case, if the hdfs path contains mixed case,
-        // it should be converted to lower case
-        String partitionName = parts[0].toLowerCase();
-        // Do not convert the partitionValue to lowercase
-        String partitionValue = parts[1];
-        if (partCols.contains(partitionName)) {
-          if (result == null) {
-            result = partitionName + "="
-                    + getNormalisedPartitionValue(partitionValue, partitionColToTypeMap.get(partitionName));
-          } else {
-            result = partitionName + "="
-                    + getNormalisedPartitionValue(partitionValue, partitionColToTypeMap.get(partitionName))
-                    + Path.SEPARATOR + result;
-          }
+        else {
+          result = result + Path.SEPARATOR + patternPartCols.get(i) + "=" + pathMatcher.group(i+1);
         }
       }
-      currPath = currPath.getParent();
-      LOG.debug("currPath=" + currPath);
+    }
+    else {
+
+      while (currPath != null && !tablePath.equals(currPath)) {
+        // format: partition=p_val
+        // Add only when table partition colName matches
+        String[] parts = currPath.getName().split("=");
+        if (parts.length > 0) {
+          if (parts.length != 2) {
+            LOG.warn(currPath.getName() + " is not a valid partition name");
+            return result;
+          }
+
+          // Since hive stores partitions keys in lower case, if the hdfs path contains mixed case,
+          // it should be converted to lower case
+          String partitionName = parts[0].toLowerCase();
+          // Do not convert the partitionValue to lowercase
+          String partitionValue = parts[1];
+          if (partCols.contains(partitionName)) {
+            if (result == null) {
+              result = partitionName + "="
+                      + getNormalisedPartitionValue(partitionValue, partitionColToTypeMap.get(partitionName));
+            } else {
+              result = partitionName + "="
+                      + getNormalisedPartitionValue(partitionValue, partitionColToTypeMap.get(partitionName))
+                      + Path.SEPARATOR + result;
+            }
+          }
+        }
+        currPath = currPath.getParent();
+        LOG.debug("currPath=" + currPath);
+      }
     }
     return result;
   }
@@ -1729,4 +1753,68 @@ public class MetaStoreServerUtils {
   public static boolean isCompactionTxn(TxnType txnType) {
     return TxnType.COMPACTION.equals(txnType) || TxnType.REBALANCE_COMPACTION.equals(txnType);
   }
+
+  /**
+   * When using msck repair table with custom partitioning patterns, we need to capture
+   * the partition keys from the pattern, and use those to construct a regex which will
+   * match the paths and extract the partition key values.*/
+  public static class DynamicPartitioningCustomPattern {
+
+    private final String customPattern;
+    private final Pattern partitionCapturePattern;
+    private final List<String> partitionColumns;
+
+    private DynamicPartitioningCustomPattern(String customPattern, Pattern partitionCapturePattern, List<String> partitionColumns) {
+      this.customPattern = customPattern;
+      this.partitionCapturePattern = partitionCapturePattern;
+      this.partitionColumns = partitionColumns;
+    }
+
+    /**
+     * @returns stored custom pattern string
+    * */
+    public String getCustomPattern() {
+      return customPattern;
+    }
+
+    /**
+     * @returns stored custom pattern regex matcher
+     * */
+    public Pattern getPartitionCapturePattern() {
+      return partitionCapturePattern;
+    }
+
+    /**
+     * @returns list of partition key columns
+     * */
+    public List<String> getPartitionColumns() {
+      return partitionColumns;
+    }
+
+    public static class Builder {
+      private String customPattern;
+
+      public Builder setCustomPattern(String customPattern) {
+        this.customPattern = customPattern;
+        return this;
+      }
+
+      /**
+       * Constructs the regex to match the partition values in a path based on the custom pattern.
+       *
+       * @returns custom partition pattern matcher */
+      public DynamicPartitioningCustomPattern build() {
+        Pattern stringPattern = Pattern.compile("(\\$\\{)([^\\s/\\{\\}\\\\]+)(\\})");
+        StringBuffer sb = new StringBuffer();
+        Matcher m = stringPattern.matcher(customPattern);
+        ArrayList<String> partColumns = new ArrayList<String>();
+        while (m.find()) {
+          m.appendReplacement(sb, "(.*)");
+          partColumns.add(m.group(2));
+        }
+        m.appendTail(sb);
+        return new DynamicPartitioningCustomPattern(customPattern, Pattern.compile(sb.toString()), partColumns);
+      }
+    };
+  };
 }
