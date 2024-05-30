@@ -32,6 +32,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -82,8 +83,9 @@ public class TestMetaStoreUtils {
 
   @Test
   public void testTimestampToString() {
-    assertEquals(timestamp, MetaStoreUtils.convertTimestampToString(Timestamp.valueOf(timestamp)));
-  }
+    String expectedTimestampString = ZonedDateTime.parse(timestamp, FORMATTER.withZone(ZoneId.systemDefault())).format(FORMATTER);
+    assertEquals(expectedTimestampString, MetaStoreUtils.convertTimestampToString(Timestamp.valueOf(timestamp)));                         // In jdk17, Timestamp makes use of daylight savings which
+  }                                                                                                                                       // needs to be incorporated in expectedString too
 
   @Test
   public void testStringToDate() {
