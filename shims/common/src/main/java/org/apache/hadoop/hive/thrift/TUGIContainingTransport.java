@@ -22,6 +22,7 @@ import java.net.Socket;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.util.SuppressFBWarnings;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportFactory;
@@ -40,10 +41,12 @@ public class TUGIContainingTransport extends TFilterTransport {
     super(wrapped);
   }
 
+  @SuppressFBWarnings(value="EI_EXPOSE_REP", justification = "intended_to_do")
   public UserGroupInformation getClientUGI(){
     return ugi;
   }
 
+  @SuppressFBWarnings(value="EI_EXPOSE_REP2", justification = "intended_to_do")
   public void setClientUGI(UserGroupInformation ugi){
     this.ugi = ugi;
   }

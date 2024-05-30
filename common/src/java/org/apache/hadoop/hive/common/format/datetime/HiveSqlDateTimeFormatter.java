@@ -28,6 +28,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hive.common.util.SuppressFBWarnings;
 
 import java.io.Serializable;
 import java.time.DateTimeException;
@@ -520,6 +521,7 @@ public class HiveSqlDateTimeFormatter implements Serializable {
       this(tokenType, null, null, string, string.length(), false);
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
     public Token(TokenType tokenType, TemporalField temporalField, TemporalUnit temporalUnit,
         String string, int length, boolean fillMode) {
       this.type = tokenType;

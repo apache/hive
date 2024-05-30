@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore.partition.spec;
 
+import org.apache.hadoop.hive.common.util.SuppressFBWarnings;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionListComposingSpec;
@@ -139,6 +140,7 @@ public class PartitionListComposingSpecProxy extends PartitionSpecProxy {
     List<Partition> partitionList;
     int index;
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
     public Iterator(PartitionListComposingSpecProxy partitionSpecProxy) {
       this.partitionSpecProxy = partitionSpecProxy;
       this.partitionList = partitionSpecProxy.partitionSpec.getPartitionList().getPartitions();

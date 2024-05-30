@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore.partition.spec;
 
+import org.apache.hadoop.hive.common.util.SuppressFBWarnings;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
@@ -202,8 +203,10 @@ public abstract class PartitionSpecProxy {
    */
   public static class SimplePartitionWrapperIterator implements PartitionIterator {
     private Partition partition;
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
     public SimplePartitionWrapperIterator(Partition partition) {this.partition = partition;}
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
     @Override public Partition getCurrent() { return partition; }
     @Override public String getCatName() { return partition.getCatName(); }
     @Override public String getDbName() { return partition.getDbName(); }

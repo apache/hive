@@ -127,6 +127,7 @@ public class ReflectionUtil {
    * @param value new value
    * @throws RuntimeException in case the field is not found or cannot be set.
    */
+  @SuppressFBWarnings(value = "REFLF_REFLECTION_MAY_INCREASE_ACCESSIBILITY_OF_FIELD", justification = "intended_to_do")
   public static void setField(Object object, String field, Object value) {
     try {
       Field fieldToChange = object.getClass().getDeclaredField(field);
@@ -137,6 +138,7 @@ public class ReflectionUtil {
     }
   }
 
+  @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE", justification = "intended_to_do")
   public static void setField(Object object, Field fld, Object value) {
     try {
       fld.setAccessible(true);

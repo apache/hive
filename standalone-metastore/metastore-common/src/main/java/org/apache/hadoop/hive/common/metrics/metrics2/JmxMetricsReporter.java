@@ -22,6 +22,7 @@ import com.codahale.metrics.MetricRegistry;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.util.SuppressFBWarnings;
 
 /**
  * A wrapper around Codahale JmxReporter to make it a pluggable/configurable Hive Metrics reporter.
@@ -32,6 +33,7 @@ public class JmxMetricsReporter implements CodahaleReporter {
   private final Configuration conf;
   private final JmxReporter jmxReporter;
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
   public JmxMetricsReporter(MetricRegistry registry, Configuration conf) {
     this.registry = registry;
     this.conf = conf;

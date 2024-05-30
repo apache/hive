@@ -361,6 +361,7 @@ public class CopyOnFirstWriteProperties extends Properties {
   public CopyOnFirstWriteProperties() {
   }
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
   public Properties getInterned() {
     return interned;
   }
