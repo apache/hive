@@ -24,6 +24,7 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 import org.apache.hive.common.util.Decimal128FastBuffer;
+import org.apache.hive.common.util.SuppressFBWarnings;
 
 /**
  * This code was based on code from Microsoft's PolyBase.
@@ -1476,6 +1477,7 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
    *
    * @return the unscaled value of this {@code Decimal128}.
    */
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
   public UnsignedInt128 getUnscaledValue() {
     return unscaledValue;
   }
@@ -1965,6 +1967,7 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
   /**
    * This setter is only for de-serialization, should not be used otherwise.
    */
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
   public void setUnscaledValue(UnsignedInt128 unscaledValue) {
     this.unscaledValue = unscaledValue;
   }

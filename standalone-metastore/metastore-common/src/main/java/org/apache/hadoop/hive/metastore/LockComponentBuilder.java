@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.common.util.SuppressFBWarnings;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockLevel;
@@ -66,6 +67,7 @@ public class LockComponentBuilder {
    * Set the lock to be shared_read.
    * @return reference to this builder
    */
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
   public LockComponentBuilder setSharedRead() {
     component.setType(LockType.SHARED_READ);
     return this;
@@ -120,6 +122,7 @@ public class LockComponentBuilder {
    * Get the constructed lock component.
    * @return lock component.
    */
+ @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
   public LockComponent build() {
     LockLevel level = LockLevel.DB;
     if (tableNameSet) level = LockLevel.TABLE;

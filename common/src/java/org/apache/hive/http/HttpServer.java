@@ -66,6 +66,7 @@ import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
 import org.apache.hadoop.security.authorize.AccessControlList;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.security.http.CrossOriginFilter;
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.apache.hive.http.security.PamAuthenticator;
 import org.apache.hive.http.security.PamConstraint;
 import org.apache.hive.http.security.PamConstraintMapping;
@@ -254,6 +255,7 @@ public class HttpServer {
       return this;
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
     public Builder setPAMAuthenticator(PamAuthenticator pamAuthenticator){
       this.pamAuthenticator = pamAuthenticator;
       return this;

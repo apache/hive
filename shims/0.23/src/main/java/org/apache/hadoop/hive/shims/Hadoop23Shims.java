@@ -293,11 +293,13 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     private final MiniMRCluster mr;
     private final Configuration conf;
 
+    @SuppressFBWarnings(value="EI_EXPOSE_REP2", justification = "intended_to_do")
     public MiniMrShim() {
       mr = null;
       conf = null;
     }
 
+    @SuppressFBWarnings(value="EI_EXPOSE_REP2", justification = "intended_to_do")
     public MiniMrShim(Configuration conf, int numberOfTaskTrackers,
                       String nameNode, int numDir) throws IOException {
       this.conf = conf;
@@ -353,6 +355,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     private final Configuration conf;
     private final boolean isLlap;
 
+    @SuppressFBWarnings(value="EI_EXPOSE_REP2", justification = "intended_to_do")
     public MiniTezLocalShim(Configuration conf, boolean usingLlap) {
       this.conf = conf;
       this.isLlap = usingLlap;
@@ -407,6 +410,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     private final Configuration conf;
     private final boolean isLlap;
 
+    @SuppressFBWarnings(value="EI_EXPOSE_REP2", justification = "intended_to_do")
     public MiniTezShim(Configuration conf, int numberOfTaskTrackers, String nameNode,
                        boolean usingLlap) throws IOException {
       mr = new MiniTezCluster("hive", numberOfTaskTrackers);
@@ -553,6 +557,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   public static class MiniDFSShim implements HadoopShims.MiniDFSShim {
     private final MiniDFSCluster cluster;
 
+    @SuppressFBWarnings(value="EI_EXPOSE_REP2", justification = "intended_to_do")
     public MiniDFSShim(MiniDFSCluster cluster) {
       this.cluster = cluster;
     }
@@ -1005,6 +1010,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
     private final DistributedFileSystem dfs;
 
+    @SuppressFBWarnings(value="EI_EXPOSE_REP2", justification = "intended_to_do")
     public StoragePolicyShim(DistributedFileSystem fs) {
       this.dfs = fs;
     }
@@ -1334,6 +1340,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
     private final Configuration conf;
 
+    @SuppressFBWarnings(value="EI_EXPOSE_REP2", justification = "intended_to_do")
     public HdfsEncryptionShim(URI uri, Configuration conf) throws IOException {
       this.conf = conf;
       this.hdfsAdmin = new HdfsAdmin(uri, conf);

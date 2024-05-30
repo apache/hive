@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.common.io;
 
+import org.apache.hive.common.util.SuppressFBWarnings;
+
 import java.io.FileNotFoundException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -52,6 +54,7 @@ public class CachingPrintStream extends SessionStream {
     super.flush();
   }
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
   public List<String> getOutput() {
     return output;
   }

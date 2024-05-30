@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.common.log;
 
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 
 import java.io.BufferedReader;
@@ -50,6 +51,7 @@ public class LogRedirector implements Runnable {
     this.logger = logger;
   }
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
   public LogRedirector(InputStream in, Logger logger, List<String> errLogs,
                        LogSourceCallback callback) {
     this.in = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));

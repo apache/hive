@@ -16,6 +16,7 @@
  */
 package org.apache.hive.http.security;
 
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.eclipse.jetty.security.DefaultIdentityService;
 import org.eclipse.jetty.security.IdentityService;
 import org.eclipse.jetty.security.LoginService;
@@ -59,11 +60,13 @@ public class PamLoginService extends AbstractLifeCycle implements LoginService {
   }
 
   @Override
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
   public IdentityService getIdentityService() {
     return identityService;
   }
 
   @Override
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
   public void setIdentityService(IdentityService identityService) {
     if (isRunning())
       throw new IllegalStateException("Running");

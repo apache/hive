@@ -25,6 +25,7 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.util.SuppressFBWarnings;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +70,7 @@ public abstract class FileMetadataHandler {
    * @param expressionProxy Expression proxy to access ql stuff.
    * @param store Storage interface to manipulate the metadata.
    */
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
   public void configure(
       Configuration conf, PartitionExpressionProxy expressionProxy, MetadataStore store) {
     this.conf = conf;

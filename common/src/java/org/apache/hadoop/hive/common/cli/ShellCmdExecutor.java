@@ -22,12 +22,14 @@ import java.io.IOException;
 import java.io.PrintStream;
 
 import org.apache.hive.common.util.StreamPrinter;
+import org.apache.hive.common.util.SuppressFBWarnings;
 
 public class ShellCmdExecutor {
   private String cmd;
   private PrintStream out;
   private PrintStream err;
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
   public ShellCmdExecutor(String cmd, PrintStream out, PrintStream err) {
     this.cmd = cmd;
     this.out = out;

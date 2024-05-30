@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.common.io;
 
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -246,6 +247,7 @@ public class DiskRangeList extends DiskRange {
   public static class CreateHelper {
     private DiskRangeList tail = null, head;
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
     public DiskRangeList getTail() {
       return tail;
     }
@@ -264,6 +266,7 @@ public class DiskRangeList extends DiskRange {
       }
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
     public DiskRangeList get() {
       return head;
     }

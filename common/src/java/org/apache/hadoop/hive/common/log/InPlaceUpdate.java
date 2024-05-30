@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.common.log;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.fusesource.jansi.Ansi;
 
 import java.io.PrintStream;
@@ -51,6 +52,7 @@ public class InPlaceUpdate {
   private int lines = 0;
   private PrintStream out;
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
   public InPlaceUpdate(PrintStream out) {
     this.out = out;
   }

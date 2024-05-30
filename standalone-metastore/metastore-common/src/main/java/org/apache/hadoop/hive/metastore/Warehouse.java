@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.util.SuppressFBWarnings;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -86,6 +87,7 @@ public class Warehouse {
   private boolean storageAuthCheck = false;
   private ReplChangeManager cm = null;
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
   public Warehouse(Configuration conf) throws MetaException {
     this.conf = conf;
     whRootString = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE);

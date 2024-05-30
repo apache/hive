@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.mapred;
 
+import org.apache.hadoop.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -51,6 +52,7 @@ public class WebHCatJTShim23 implements WebHCatJTShim {
   /**
    * Create a connection to the Job Tracker.
    */
+  @SuppressFBWarnings(value="EI_EXPOSE_REP2", justification = "intended_to_do")
   public WebHCatJTShim23(final Configuration conf, final UserGroupInformation ugi)
           throws IOException {
     try {
