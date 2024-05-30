@@ -179,7 +179,9 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
     public void appendWhenNotMatchedInsertClause(MergeStatement.InsertClause insertClause) {
       sqlGenerator.append("INSERT INTO ").append(mergeStatement.getTargetName());
       if (insertClause.getColumnList() != null) {
-        sqlGenerator.append(' ').append(String.join(",",insertClause.getColumnList()));
+        sqlGenerator.append(" (");
+        sqlGenerator.append(String.join(",",insertClause.getColumnList()));
+        sqlGenerator.append(')');
       }
 
       sqlGenerator.append("    -- insert clause\n  SELECT ");
