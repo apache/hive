@@ -4961,11 +4961,27 @@ public final class Utilities {
         "HDFS dir: " + rootHDFSDirPath + ", permission: " + currentHDFSDirPermission);
     }
     // If the root HDFS scratch dir already exists, make sure it is writeable.
-    if (!((currentHDFSDirPermission.toShort() & writableHDFSDirPermission
-        .toShort()) == writableHDFSDirPermission.toShort())) {
-      throw new RuntimeException("The dir: " + rootHDFSDirPath
-          + " on HDFS should be writable. Current permissions are: " + currentHDFSDirPermission);
+    if (!isWritable(currentHDFSDirPermission, writableHDFSDirPermission) &&
+        !attemptMakePathWritable(fs, rootHDFSDirPath,
+            FsPermission.createImmutable((short) (currentHDFSDirPermission.toShort() | writableHDFSDirPermission.toShort())))) {
+      throw new RuntimeException(
+          "The dir: " + rootHDFSDirPath + " should be writable. Current permissions are: " + currentHDFSDirPermission);
     }
+  }
+
+  private static boolean attemptMakePathWritable(FileSystem fs, Path path, FsPermission perm) {
+    try {
+      LOG.info("Attempting to set {} permissions on path {}", perm, path);
+      fs.setPermission(path, perm);
+      return isWritable(fs.getFileStatus(path).getPermission(), perm);
+    } catch (IOException e) {
+      return false;
+    }
+  }
+
+  private static boolean isWritable(FsPermission currentHDFSDirPermission, FsPermission writableHDFSDirPermission) {
+    return (currentHDFSDirPermission.toShort() & writableHDFSDirPermission.toShort())
+        == writableHDFSDirPermission.toShort();
   }
 
   // Get the bucketing version stored in the string format
