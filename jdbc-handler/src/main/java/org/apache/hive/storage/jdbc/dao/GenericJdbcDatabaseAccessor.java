@@ -170,10 +170,6 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
     return getColumnMetadata(rs, ResultSetMetaData::getColumnName);
   }
 
-  protected List<TypeInfo> getColTypesFromRS(ResultSet rs) throws Exception {
-    return getColumnMetadata(rs, typeInfoTranslator);
-  }
-
   protected String getMetaDataQuery(String sql) {
     return addLimitToQuery(sql, 1);
   }
