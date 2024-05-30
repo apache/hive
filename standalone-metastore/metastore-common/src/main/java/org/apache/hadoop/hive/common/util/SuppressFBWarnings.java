@@ -16,25 +16,22 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.common;
+package org.apache.hadoop.hive.common.util;
 
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
-import org.apache.hadoop.hive.common.util.SuppressFBWarnings;
-/**
- * The watcher class which sets the de-register flag when the given znode is deleted.
- */
-public class ZKDeRegisterWatcher implements Watcher {
-  private ZooKeeperHiveHelper zooKeeperHiveHelper;
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP2",justification = "intended_to_do")
-  public ZKDeRegisterWatcher(ZooKeeperHiveHelper zooKeeperHiveHelper) {
-    this.zooKeeperHiveHelper = zooKeeperHiveHelper;
-  }
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
-  @Override
-  public void process(WatchedEvent event) {
-    if (event.getType().equals(Watcher.Event.EventType.NodeDeleted)) {
-      zooKeeperHiveHelper.deregisterZnode();
-    }
-  }
+@Retention(RetentionPolicy.CLASS)
+public @interface SuppressFBWarnings {
+    /**
+     * The set of FindBugs warnings that are to be suppressed in
+     * annotated element. The value can be a bug category, kind or pattern.
+     *
+     */
+    String[] value() default {};
+
+    /**
+     * Optional documentation of the reason why the warning is suppressed
+     */
+    String justification() default "";
 }

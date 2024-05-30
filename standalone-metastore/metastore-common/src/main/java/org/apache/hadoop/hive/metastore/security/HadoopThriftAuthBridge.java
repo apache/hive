@@ -41,6 +41,7 @@ import javax.security.sasl.RealmChoiceCallback;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
 
+import org.apache.hadoop.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -374,6 +375,7 @@ public abstract class HadoopThriftAuthBridge {
       }
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
     public void setSecretManager(DelegationTokenSecretManager secretManager) {
       this.secretManager = secretManager;
     }

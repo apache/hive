@@ -105,7 +105,7 @@
     <curator.version>5.2.0</curator.version>
     <zookeeper.version>3.8.4</zookeeper.version>
     <cron-utils.version>9.2.1</cron-utils.version>
-    <spotbugs.version>4.0.3</spotbugs.version>
+    <spotbugs.version>4.5.0</spotbugs.version>
     <caffeine.version>2.8.4</caffeine.version>
     <slf4j.version>1.7.30</slf4j.version>
     <httpcomponents.core.version>4.4.13</httpcomponents.core.version>
@@ -624,11 +624,11 @@
       <id>spotbugs</id>
       <build>
         <plugins>
-          <!-- Execute as: com.github.spotbugs:spotbugs-maven-plugin:4.0.0:spotbugs -->
+          <!-- Execute as: com.github.spotbugs:spotbugs-maven-plugin:4.5.0.0:spotbugs -->
           <plugin>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-maven-plugin</artifactId>
-            <version>4.0.0</version>
+            <version>4.5.0.0</version>
             <dependencies>
               <!-- Specify the version of spotbugs -->
               <dependency>
@@ -642,6 +642,7 @@
               <maxHeap>2048</maxHeap>
               <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
               <excludeFilterFile>${basedir}/${standalone.metastore.path.to.root}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
+              <timeout>60000000</timeout>
             </configuration>
           </plugin>
         </plugins>
@@ -651,12 +652,13 @@
           <plugin>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-maven-plugin</artifactId>
-            <version>4.0.0</version>
+            <version>4.5.0.0</version>
             <configuration>
               <fork>true</fork>
               <maxHeap>2048</maxHeap>
               <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
               <excludeFilterFile>${basedir}/${standalone.metastore.path.to.root}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
+              <timeout>60000000</timeout>
             </configuration>
           </plugin>
         </plugins>

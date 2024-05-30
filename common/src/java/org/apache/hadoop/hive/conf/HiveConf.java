@@ -458,6 +458,7 @@ public class HiveConf extends Configuration {
    * Get a set containing configuration parameter names used by LLAP Server instances
    * @return an unmodifiable set containing llap ConfVars
    */
+  @SuppressFBWarnings(value="MS_EXPOSE_REP", justification = "intended_to_do")
   public static final Set<String> getLlapDaemonConfVars() {
     return llapDaemonVarsSet;
   }
@@ -7163,6 +7164,7 @@ public class HiveConf extends Configuration {
   private static final Object reverseMapLock = new Object();
   private static HashMap<String, ConfVars> reverseMap = null;
 
+  @SuppressFBWarnings(value = "MS_EXPOSE_REP", justification = "intended_to_do")
   public static HashMap<String, ConfVars> getOrCreateReverseMap() {
     // This should be called rarely enough; for now it's ok to just lock every time.
     synchronized (reverseMapLock) {

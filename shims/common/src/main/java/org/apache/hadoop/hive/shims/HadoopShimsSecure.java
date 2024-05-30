@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.hadoop.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -185,6 +186,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
      * A generic RecordReader that can hand out different recordReaders
      * for each chunk in the CombineFileSplit.
      */
+    @SuppressFBWarnings(value="EI_EXPOSE_REP2", justification = "intended_to_do")
     public CombineFileRecordReader(JobConf job, CombineFileSplit split,
         Reporter reporter,
         Class<RecordReader<K, V>> rrClass)

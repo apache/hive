@@ -21,7 +21,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 
 import java.lang.reflect.Constructor;
-
+import org.apache.hadoop.hive.common.util.SuppressFBWarnings;
 /**
  * Class that manages a static Metric instance for this process.
  */
@@ -46,6 +46,7 @@ public class MetricsFactory {
   /**
    * Returns static Metrics instance, null if not initialized or closed.
    */
+  @SuppressFBWarnings(value = "MS_EXPOSE_REP", justification="intended_to_do")
   public static Metrics getInstance() {
     return metrics;
   }

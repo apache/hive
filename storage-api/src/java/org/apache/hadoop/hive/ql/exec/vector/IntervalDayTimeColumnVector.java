@@ -21,6 +21,7 @@ import java.util.Arrays;
 
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.io.Writable;
+import org.apache.hive.common.util.SuppressFBWarnings;
 
 /**
  * This class represents a nullable interval day time column vector capable of handing a
@@ -134,6 +135,7 @@ public class IntervalDayTimeColumnVector extends ColumnVector {
    * @param elementNum
    * @return
    */
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
   public HiveIntervalDayTime asScratchIntervalDayTime(int elementNum) {
     scratchIntervalDayTime.set(totalSeconds[elementNum], nanos[elementNum]);
     return scratchIntervalDayTime;
@@ -143,6 +145,7 @@ public class IntervalDayTimeColumnVector extends ColumnVector {
    * Return the scratch HiveIntervalDayTime (contents undefined).
    * @return
    */
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
   public HiveIntervalDayTime getScratchIntervalDayTime() {
     return scratchIntervalDayTime;
   }
@@ -413,6 +416,7 @@ public class IntervalDayTimeColumnVector extends ColumnVector {
    * Supports keeping a TimestampWritable object without having to import that definition...
    * @return
    */
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
   public Writable getScratchWritable() {
     return scratchWritable;
   }
@@ -421,6 +425,7 @@ public class IntervalDayTimeColumnVector extends ColumnVector {
    * Set the convenience writable object stored by this column vector
    * @param scratchWritable
    */
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
   public void setScratchWritable(Writable scratchWritable) {
     this.scratchWritable = scratchWritable;
   }
