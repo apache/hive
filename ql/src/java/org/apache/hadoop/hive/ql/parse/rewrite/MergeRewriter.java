@@ -180,7 +180,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
       sqlGenerator.append("INSERT INTO ").append(mergeStatement.getTargetName());
       if (insertClause.getColumnList() != null) {
         sqlGenerator.append(" (");
-        sqlGenerator.append(String.join(",",insertClause.getColumnList()));
+        sqlGenerator.append(String.join(",", insertClause.getColumnList()));
         sqlGenerator.append(')');
       }
 

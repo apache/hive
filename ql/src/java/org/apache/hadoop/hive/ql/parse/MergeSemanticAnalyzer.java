@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.antlr.runtime.TokenRewriteStream;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -348,13 +349,13 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer<MergeStatemen
 
     // if column list is specified, then it has to have the same number of elements as the values
     // valuesNode has a child for struct, the rest are the columns
-    if (columnListNode != null && columnListNode.getChildCount() != (valuesNode.getChildCount() - 1)) {
-      throw new SemanticException(String.format("Column schema must have the same length as values (%d vs %d)",
-          columnListNode.getChildCount(), valuesNode.getChildCount() - 1));
-    }
-
     List<String> columnNames;
     if (columnListNode != null) {
+      if (columnListNode.getChildCount() != (valuesNode.getChildCount() - 1)) {
+        throw new SemanticException(String.format("Column schema must have the same length as values (%d vs %d)",
+            columnListNode.getChildCount(), valuesNode.getChildCount() - 1));
+      }
+
       columnNames = new ArrayList<>(valuesNode.getChildCount());
       for (int i = 0; i < columnListNode.getChildCount(); ++i) {
         ASTNode columnNameNode = (ASTNode) columnListNode.getChild(i);
@@ -371,7 +372,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer<MergeStatemen
     unparseTranslator.applyTranslations(ctx.getTokenRewriteStream(), MERGE_INSERT_VALUES_PROGRAM);
     List<String> targetSchema = processTableColumnNames(columnListNode, targetTable.getFullyQualifiedName());
     List<String> defaultConstraints = getDefaultConstraints(targetTable, targetSchema);
-    // First child is 'struct' the rest are the value expressions
+    // First child is 'struct', the rest are the value expressions
     // TOK_FUNCTION
     //    struct
     //    .
@@ -384,10 +385,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer<MergeStatemen
       String value;
       if (valueNode.getType() == HiveParser.TOK_TABLE_OR_COL
           && valueNode.getChild(0).getType() == HiveParser.TOK_DEFAULT_VALUE) {
-        value = defaultConstraints.get(i - 1);
-        if (value == null) {
-          value = "NULL";
-        }
+        value = ObjectUtils.defaultIfNull(defaultConstraints.get(i - 1), "NULL");
       } else {
         value = ctx.getTokenRewriteStream().toString(MERGE_INSERT_VALUES_PROGRAM,
             valueNode.getTokenStartIndex(), valueNode.getTokenStopIndex()).trim();
