@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore.security;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 
+import org.apache.hadoop.hive.common.util.SuppressFBWarnings;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
@@ -37,6 +38,7 @@ import org.apache.thrift.transport.TTransportException;
  public class TUGIAssumingTransport extends TFilterTransport {
    protected UserGroupInformation ugi;
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
    public TUGIAssumingTransport(TTransport wrapped, UserGroupInformation ugi) {
      super(wrapped);
      this.ugi = ugi;

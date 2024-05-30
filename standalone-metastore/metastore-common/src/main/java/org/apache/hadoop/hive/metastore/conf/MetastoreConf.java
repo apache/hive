@@ -2377,6 +2377,7 @@ public class MetastoreConf {
    * @param var variable to retrieve
    * @return value, or default value if value not in config file
    */
+  @SuppressFBWarnings(value = "DM_BOXED_PRIMITIVE_FOR_PARSING", justification = "intended_to_do")
   public static double getDoubleVar(Configuration conf, ConfVars var) {
     assert var.defaultVal.getClass() == Double.class;
     String val = conf.get(var.varname);
