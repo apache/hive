@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorContext;
 import org.apache.hadoop.hive.ql.txn.compactor.QueryCompactor;
@@ -112,8 +113,9 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
       }
 
       int specId = partitionList.get(0).second();
-      conf.set(CompactorContext.COMPACTION_PART_SPEC_ID, String.valueOf(specId));
-      conf.set(CompactorContext.COMPACTION_PARTITION_PATH, new Path(partSpec).toString());
+      HiveConf.setVar(conf, ConfVars.REWRITE_POLICY, RewritePolicy.PARTITION.name());
+      conf.set(IcebergCompactionContext.COMPACTION_PART_SPEC_ID, String.valueOf(specId));
+      conf.set(IcebergCompactionContext.COMPACTION_PARTITION_PATH, new Path(partSpec).toString());
 
       List<FieldSchema> partitionKeys = IcebergTableUtil.getPartitionKeys(icebergTable, specId);
       List<String> partValues = partitionKeys.stream().map(
@@ -129,11 +131,11 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
           .collect(Collectors.joining(","));
 
       compactionQuery = String.format("insert overwrite table %1$s partition(%2$s) " +
-              "select %4$s from %1$s where %3$s and partition__spec__id = %5$d",
+              "select %4$s from %1$s where %3$s and %6$s = %5$d",
           compactTableName,
           StringUtils.join(partValues, ","),
           StringUtils.join(partValues, " and "),
-          queryFields, specId);
+          queryFields, specId, VirtualColumn.PARTITION_SPEC_ID.getName());
     }
 
     SessionState sessionState = setupQueryCompactionSession(conf, context.getCompactionInfo(), tblProperties);

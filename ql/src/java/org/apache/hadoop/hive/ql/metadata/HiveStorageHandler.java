@@ -746,6 +746,11 @@ public interface HiveStorageHandler extends Configurable {
     throw new UnsupportedOperationException("Storage handler does not support validation of partition values");
   }
 
+  default void validatePartAnySpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Map<String, String> partitionSpec)
+      throws SemanticException {
+    throw new UnsupportedOperationException("Storage handler does not support validation of partition values");
+  }
+
   default boolean canUseTruncate(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Map<String, String> partitionSpec)
       throws SemanticException {
     return true;
@@ -798,6 +803,11 @@ public interface HiveStorageHandler extends Configurable {
    */
   default Partition getPartition(org.apache.hadoop.hive.ql.metadata.Table table, Map<String, String> partitionSpec)
       throws SemanticException {
+    throw new UnsupportedOperationException("Storage handler does not support getting partition for a table.");
+  }
+
+  default Partition getPartitionAnySpec(org.apache.hadoop.hive.ql.metadata.Table table, 
+      Map<String, String> partitionSpec) throws SemanticException {
     throw new UnsupportedOperationException("Storage handler does not support getting partition for a table.");
   }
 

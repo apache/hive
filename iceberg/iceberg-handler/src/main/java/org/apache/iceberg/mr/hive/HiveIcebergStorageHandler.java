@@ -118,7 +118,6 @@ import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvide
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.ql.stats.Partish;
-import org.apache.hadoop.hive.ql.txn.compactor.CompactorContext;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.DefaultFetchFormatter;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -1148,8 +1147,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         // If the table is empty we don't have any danger that some data can get lost.
         return;
       }
-      if (RewritePolicy.fromString(conf.get(ConfVars.REWRITE_POLICY.varname, RewritePolicy.DEFAULT.name())) ==
-          RewritePolicy.ALL_PARTITIONS || conf.get(CompactorContext.COMPACTION_PART_SPEC_ID) != null) {
+      if (RewritePolicy.fromString(conf.get(ConfVars.REWRITE_POLICY.varname, RewritePolicy.DEFAULT.name())) !=
+          RewritePolicy.DEFAULT) {
         // Table rewriting has special logic as part of IOW that handles the case when table had a partition evolution
         return;
       }
@@ -1826,6 +1825,19 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public void validatePartSpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Map<String, String> partitionSpec)
       throws SemanticException {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    validatePartSpecImpl(hmsTable, partitionSpec, table.spec().fields());
+  }
+
+  @Override
+  public void validatePartAnySpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      Map<String, String> partitionSpec) throws SemanticException {
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    validatePartSpecImpl(hmsTable, partitionSpec, IcebergTableUtil.getAllPartitionFields(table));
+  }
+
+  private void validatePartSpecImpl(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      Map<String, String> partitionSpec, List<PartitionField> allPartFields) throws SemanticException {
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     if (hmsTable.getSnapshotRef() != null && hasUndergonePartitionEvolution(table)) {
       // for this case we rewrite the query as delete query, so validations would be done as part of delete.
       return;
@@ -1836,7 +1848,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
 
     Map<String, Types.NestedField> mapOfPartColNamesWithTypes = Maps.newHashMap();
-    List<PartitionField> allPartFields = IcebergTableUtil.getAllPartitionFields(table);
     for (PartitionField partField : allPartFields) {
       Types.NestedField field = table.schema().findField(partField.sourceId());
       mapOfPartColNamesWithTypes.put(field.name(), field);
@@ -1935,6 +1946,18 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public Partition getPartition(org.apache.hadoop.hive.ql.metadata.Table table,
       Map<String, String> partitionSpec) throws SemanticException {
     validatePartSpec(table, partitionSpec);
+    return getPartitionImpl(table, partitionSpec);
+  }
+
+  @Override
+  public Partition getPartitionAnySpec(org.apache.hadoop.hive.ql.metadata.Table table,
+      Map<String, String> partitionSpec) throws SemanticException {
+    validatePartAnySpec(table, partitionSpec);
+    return getPartitionImpl(table, partitionSpec);
+  }
+
+  private Partition getPartitionImpl(org.apache.hadoop.hive.ql.metadata.Table table,
+      Map<String, String> partitionSpec) throws SemanticException {
     try {
       String partName = Warehouse.makePartName(partitionSpec, false);
       return new DummyPartition(table, partName, partitionSpec);

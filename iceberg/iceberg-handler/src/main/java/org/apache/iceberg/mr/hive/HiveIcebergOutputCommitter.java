@@ -50,7 +50,6 @@ import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
-import org.apache.hadoop.hive.ql.txn.compactor.CompactorContext;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.JobContextImpl;
@@ -80,6 +79,7 @@ import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.OutputFile;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.mr.hive.compaction.IcebergCompactionContext;
 import org.apache.iceberg.mr.hive.writer.HiveIcebergWriter;
 import org.apache.iceberg.mr.hive.writer.WriterRegistry;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
@@ -503,13 +503,13 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
 
       Integer compactionPartSpecId = outputTable.jobContexts.stream()
           .findAny()
-          .map(x -> x.getJobConf().get(CompactorContext.COMPACTION_PART_SPEC_ID))
+          .map(x -> x.getJobConf().get(IcebergCompactionContext.COMPACTION_PART_SPEC_ID))
           .map(Integer::valueOf)
           .orElse(null);
 
       String compactionPartitionPath = outputTable.jobContexts.stream()
           .findAny()
-          .map(x -> x.getJobConf().get(CompactorContext.COMPACTION_PARTITION_PATH))
+          .map(x -> x.getJobConf().get(IcebergCompactionContext.COMPACTION_PARTITION_PATH))
           .orElse(null);
 
       if (rewritePolicy != RewritePolicy.DEFAULT || compactionPartSpecId != null) {

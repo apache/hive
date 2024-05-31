@@ -256,7 +256,8 @@ public class Context {
   public enum RewritePolicy {
 
     DEFAULT,
-    ALL_PARTITIONS;
+    ALL_PARTITIONS,
+    PARTITION;
 
     public static RewritePolicy fromString(String rewritePolicy) {
       Preconditions.checkArgument(null != rewritePolicy, "Invalid rewrite policy: null");

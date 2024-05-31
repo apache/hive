@@ -1707,7 +1707,12 @@ public abstract class BaseSemanticAnalyzer {
   public static void validatePartSpec(Table tbl, Map<String, String> partSpec,
       ASTNode astNode, HiveConf conf, boolean shouldBeFull) throws SemanticException {
     if (tbl.getStorageHandler() != null && tbl.getStorageHandler().alwaysUnpartitioned()) {
-      tbl.getStorageHandler().validatePartSpec(tbl, partSpec);
+      if (Context.RewritePolicy.fromString(conf.get(HiveConf.ConfVars.REWRITE_POLICY.varname, 
+          Context.RewritePolicy.DEFAULT.name())) == Context.RewritePolicy.PARTITION) {
+        tbl.getStorageHandler().validatePartAnySpec(tbl, partSpec);
+      } else {
+        tbl.getStorageHandler().validatePartSpec(tbl, partSpec);
+      }
     } else {
       tbl.validatePartColumnNames(partSpec, shouldBeFull);
       validatePartColumnType(tbl, partSpec, astNode, conf);

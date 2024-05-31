@@ -123,6 +123,7 @@ import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
@@ -3664,7 +3665,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public Partition getPartition(Table tbl, Map<String, String> partSpec) throws HiveException {
     if (tbl.getStorageHandler() != null && tbl.getStorageHandler().alwaysUnpartitioned()) {
-      return tbl.getStorageHandler().getPartition(tbl, partSpec);
+      if (Context.RewritePolicy.fromString(conf.get(ConfVars.REWRITE_POLICY.varname, 
+          Context.RewritePolicy.DEFAULT.name())) == Context.RewritePolicy.PARTITION) {
+        return tbl.getStorageHandler().getPartitionAnySpec(tbl, partSpec);
+      } else {
+        return tbl.getStorageHandler().getPartition(tbl, partSpec);
+      }
     } else {
       return getPartition(tbl, partSpec, false);
     }
