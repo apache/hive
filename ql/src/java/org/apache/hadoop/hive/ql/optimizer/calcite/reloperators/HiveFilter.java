@@ -17,15 +17,21 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 
+import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelShuttle;
+import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
+import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexUtil;
+import org.apache.calcite.sql.SqlExplainLevel;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.correlation.CorrelationInfoVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.correlation.HiveCorrelationInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
@@ -71,6 +77,22 @@ public class HiveFilter extends Filter implements HiveRelNode {
   public HiveFilter(RelOptCluster cluster, RelTraitSet traits, RelNode child, RexNode condition) {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), child, condition);
     this.correlationInfos = new CorrelationInfoSupplier(getCondition());
+  }
+  
+  @Override 
+  public RelWriter explainTerms(RelWriter pw) {
+    // Remove this method after upgrading Calcite to 1.35+
+    if (pw.getDetailLevel() == SqlExplainLevel.ALL_ATTRIBUTES && getDigest().contains("SEARCH")) {
+      return ((HiveFilter) this.accept(
+          RexUtil.searchShuttle(
+              new RexBuilder(new JavaTypeFactoryImpl(new HiveTypeSystemImpl())),
+              null,
+              -1
+          )
+      )).explainTerms(pw);
+    }
+    
+    return super.explainTerms(pw);
   }
 
   @Override
