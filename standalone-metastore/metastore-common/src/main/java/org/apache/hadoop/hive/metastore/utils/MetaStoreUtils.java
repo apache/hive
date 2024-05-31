@@ -1335,4 +1335,31 @@ public class MetaStoreUtils {
     }
     return httpPath;
   }
+
+  public static String convertSqlPatternToRegExp(String likePattern) {
+    if (likePattern == null) {
+      return null;
+    }
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < likePattern.length(); i++) {
+      // Make a special case for "\\_" and "\\%"
+      char n = likePattern.charAt(i);
+      if (n == '\\'
+          && i + 1 < likePattern.length()
+          && (likePattern.charAt(i + 1) == '_' || likePattern.charAt(i + 1) == '%')) {
+        sb.append(likePattern.charAt(i + 1));
+        i++;
+        continue;
+      }
+
+      if (n == '_') {
+        sb.append(".");
+      } else if (n == '%') {
+        sb.append(".*");
+      } else {
+        sb.append(n);
+      }
+    }
+    return sb.toString();
+  }
 }
