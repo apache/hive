@@ -2898,8 +2898,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (tablePattern == null) {
       tablePattern = ".*";
     }
-    String filter = hive_metastoreConstants.HIVE_FILTER_FIELD_TABLE_NAME + " like \"" + tablePattern + "\"";
-    List<String> tables = listTableNamesByFilter(catName, dbName, filter, (short) -1);
+    List<String> tables = new ArrayList<>();
+    String[] patterns = tablePattern.split("\\|");
+    for (String pattern : patterns) {
+      pattern = "(?i)" + pattern.replaceAll("\\*", ".*");
+      String filter = hive_metastoreConstants.HIVE_FILTER_FIELD_TABLE_NAME + " like \"" + pattern + "\"";
+      tables.addAll(listTableNamesByFilter(catName, dbName, filter, (short) -1));
+    }
     return FilterUtils.filterTableNamesIfEnabled(isClientFilterEnabled, filterHook, catName, dbName, tables);
   }
 
