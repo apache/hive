@@ -786,6 +786,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   List<Table> getTables(String catName, String dbName, List<String> tableNames, GetProjectionsSpec projectionsSpec)
           throws MetaException, InvalidOperationException, UnknownDBException, TException;
 
+  List<Table> getTables(String dbName, String tablePattern, boolean isSkipClientFiltering) throws TException;
   /**
    * Get tables as objects (rather than just fetching their names).  This is more expensive and
    * should only be used if you actually need all the information about the tables.

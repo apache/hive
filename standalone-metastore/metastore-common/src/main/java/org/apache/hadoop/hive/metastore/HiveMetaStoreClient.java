@@ -2947,6 +2947,34 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public List<Table> getTables(String dbName, String tablePattern, boolean isSkipClientFiltering) throws TException {
+    String catName = getDefaultCatalog(conf);
+    GetProjectionsSpec projectionsSpec = new GetProjectionsSpec();
+    projectionsSpec.setFieldList(Arrays.asList("dbName", "tableName", "owner", "ownerType", "parameters"));
+    GetTablesRequest req = new GetTablesRequest(dbName);
+    req.setCatName(catName);
+    req.setCapabilities(version);
+    req.setTblNames(null);
+    if(tablePattern == null){
+      tablePattern = ".*";
+    }
+    req.setTablesPattern(tablePattern);
+    if (processorCapabilities != null)
+      req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
+    if (processorIdentifier != null)
+      req.setProcessorIdentifier(processorIdentifier);
+    req.setProjectionSpec(projectionsSpec);
+    List<Table> tableObjects = client.get_table_objects_by_name_req(req).getTables();
+    for (Table tbl : tableObjects) {
+      executePostGetTableHook(tbl);
+    }
+    if (!isSkipClientFiltering) {
+      tableObjects = deepCopyTables(FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, tableObjects));
+    }
+    return tableObjects;
+  }
+
+  @Override
   public Materialization getMaterializationInvalidationInfo(CreationMetadata cm, String validTxnList)
           throws TException {
     return client.get_materialization_invalidation_info(cm, validTxnList);
