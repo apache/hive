@@ -227,13 +227,13 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
         InputFormatConfig.InMemoryDataModel.GENERIC);
 
     long fromVersion = conf.getLong(InputFormatConfig.SNAPSHOT_ID_INTERVAL_FROM, -1);
-    Scan<?, FileScanTask, CombinedScanTask> scan;
+    Scan<? extends Scan, FileScanTask, CombinedScanTask> scan;
     if (fromVersion != -1) {
       scan = applyConfig(conf, createIncrementalAppendScan(table, conf));
     } else {
       scan = applyConfig(conf, createTableScan(table, conf));
     }
-    scan = (Scan<?, FileScanTask, CombinedScanTask>) scan.planWith(workerPool);
+    scan = scan.planWith(workerPool);
 
     boolean allowDataFilesWithinTableLocationOnly =
         conf.getBoolean(HiveConf.ConfVars.HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY.varname,
