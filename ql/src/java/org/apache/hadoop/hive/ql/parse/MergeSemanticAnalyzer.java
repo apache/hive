@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.antlr.runtime.TokenRewriteStream;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -42,6 +43,8 @@ import java.util.Set;
  * they are actually inserts) and then doing some patch up to make them work as merges instead.
  */
 public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer<MergeStatement> {
+
+  private static final String MERGE_INSERT_VALUES_PROGRAM = "MERGE_INSERT_VALUES_PROGRAM";
 
   private int numWhenMatchedUpdateClauses;
   private int numWhenMatchedDeleteClauses;
@@ -346,30 +349,52 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer<MergeStatemen
 
     // if column list is specified, then it has to have the same number of elements as the values
     // valuesNode has a child for struct, the rest are the columns
-    if (columnListNode != null && columnListNode.getChildCount() != (valuesNode.getChildCount() - 1)) {
-      throw new SemanticException(String.format("Column schema must have the same length as values (%d vs %d)",
-          columnListNode.getChildCount(), valuesNode.getChildCount() - 1));
+    List<String> columnNames;
+    if (columnListNode != null) {
+      if (columnListNode.getChildCount() != (valuesNode.getChildCount() - 1)) {
+        throw new SemanticException(String.format("Column schema must have the same length as values (%d vs %d)",
+            columnListNode.getChildCount(), valuesNode.getChildCount() - 1));
+      }
+
+      columnNames = new ArrayList<>(valuesNode.getChildCount());
+      for (int i = 0; i < columnListNode.getChildCount(); ++i) {
+        ASTNode columnNameNode = (ASTNode) columnListNode.getChild(i);
+        String columnName = ctx.getTokenRewriteStream().toString(columnNameNode.getTokenStartIndex(),
+            columnNameNode.getTokenStopIndex()).trim();
+        columnNames.add(columnName);
+      }
+    } else {
+      columnNames = null;
     }
-    UnparseTranslator defaultValuesTranslator = new UnparseTranslator(conf);
-    defaultValuesTranslator.enable();
+
+    List<String> values = new ArrayList<>(valuesNode.getChildCount());
+    UnparseTranslator unparseTranslator = HiveUtils.collectUnescapeIdentifierTranslations(valuesNode);
+    unparseTranslator.applyTranslations(ctx.getTokenRewriteStream(), MERGE_INSERT_VALUES_PROGRAM);
     List<String> targetSchema = processTableColumnNames(columnListNode, targetTable.getFullyQualifiedName());
-    collectDefaultValues(valuesNode, targetTable, targetSchema, defaultValuesTranslator);
-    defaultValuesTranslator.applyTranslations(ctx.getTokenRewriteStream());
-    String valuesClause = getMatchedText(valuesNode);
-    valuesClause = valuesClause.substring(1, valuesClause.length() - 1); //strip '(' and ')'
+    List<String> defaultConstraints = getDefaultConstraints(targetTable, targetSchema);
+    // First child is 'struct', the rest are the value expressions
+    // TOK_FUNCTION
+    //    struct
+    //    .
+    //       TOK_TABLE_OR_COL
+    //          any_alias
+    //       any_column_name
+    //    3
+    for (int i = 1; i < valuesNode.getChildCount(); ++i) {
+      ASTNode valueNode = (ASTNode) valuesNode.getChild(i);
+      String value;
+      if (valueNode.getType() == HiveParser.TOK_TABLE_OR_COL
+          && valueNode.getChild(0).getType() == HiveParser.TOK_DEFAULT_VALUE) {
+        value = ObjectUtils.defaultIfNull(defaultConstraints.get(i - 1), "NULL");
+      } else {
+        value = ctx.getTokenRewriteStream().toString(MERGE_INSERT_VALUES_PROGRAM,
+            valueNode.getTokenStartIndex(), valueNode.getTokenStopIndex()).trim();
+      }
+      values.add(value);
+    }
 
     String extraPredicate = getWhenClausePredicate(whenNotMatchedClause);
-    return new MergeStatement.InsertClause(
-        getMatchedText(columnListNode), valuesClause, onClausePredicate, extraPredicate);
-  }
-
-  private void collectDefaultValues(
-          ASTNode valueClause, Table targetTable, List<String> targetSchema, UnparseTranslator unparseTranslator)
-          throws SemanticException {
-    List<String> defaultConstraints = getDefaultConstraints(targetTable, targetSchema);
-    for (int j = 0; j < defaultConstraints.size(); j++) {
-      unparseTranslator.addDefaultValueTranslation((ASTNode) valueClause.getChild(j + 1), defaultConstraints.get(j));
-    }
+    return new MergeStatement.InsertClause(columnNames, values, onClausePredicate, extraPredicate);
   }
 
   /**

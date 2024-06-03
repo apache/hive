@@ -1716,7 +1716,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         isGuaranteed ? guaranteedTasks : speculativeTasks;
     writeLock.lock();
     try {
-      WM_LOG.info("Registering " + taskInfo.attemptId + "; " + taskInfo.isGuaranteed);
+      WM_LOG.info("Registering {}, guaranteed: {}", taskInfo.attemptId, taskInfo.isGuaranteed);
       addToRunningTasksMap(runningTasks, taskInfo);
       if (metrics != null) {
         metrics.decrPendingTasksCount();

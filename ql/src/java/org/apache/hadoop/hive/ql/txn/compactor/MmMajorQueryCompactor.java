@@ -82,13 +82,12 @@ final class MmMajorQueryCompactor extends QueryCompactor {
   private List<String> getCreateQueries(String tmpTableName, Table table,
       StorageDescriptor storageDescriptor, String baseLocation) {
     return Lists.newArrayList(
-        new CompactionQueryBuilder(
-            CompactionType.MAJOR,
-            CompactionQueryBuilder.Operation.CREATE,
-            true,
-            tmpTableName)
-            .setSourceTab(table)
+        new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
+            CompactionType.MAJOR, true)
+            .setOperation(CompactionQueryBuilder.Operation.CREATE)
+            .setResultTableName(tmpTableName)
             .setStorageDescriptor(storageDescriptor)
+            .setSourceTab(table)
             .setLocation(baseLocation)
             .build()
     );
@@ -96,11 +95,10 @@ final class MmMajorQueryCompactor extends QueryCompactor {
 
   private List<String> getCompactionQueries(Table t, Partition p, String tmpName) {
     return Lists.newArrayList(
-        new CompactionQueryBuilder(
-            CompactionType.MAJOR,
-            CompactionQueryBuilder.Operation.INSERT,
-            true,
-            tmpName)
+        new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
+            CompactionType.MAJOR, true)
+            .setOperation(CompactionQueryBuilder.Operation.INSERT)
+            .setResultTableName(tmpName)
             .setSourceTab(t)
             .setSourcePartition(p)
             .build()
@@ -109,10 +107,10 @@ final class MmMajorQueryCompactor extends QueryCompactor {
 
   private List<String> getDropQueries(String tmpTableName) {
     return Lists.newArrayList(
-        new CompactionQueryBuilder(
-            CompactionType.MAJOR,
-            CompactionQueryBuilder.Operation.DROP,
-            true,
-            tmpTableName).build());
+        new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
+            CompactionType.MAJOR, true)
+            .setOperation(CompactionQueryBuilder.Operation.DROP)
+            .setResultTableName(tmpTableName)
+            .build());
   }
 }

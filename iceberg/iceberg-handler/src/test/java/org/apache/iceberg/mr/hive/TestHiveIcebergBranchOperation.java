@@ -252,4 +252,32 @@ public class TestHiveIcebergBranchOperation extends HiveIcebergStorageHandlerWit
     // Select with non-lower case branch name shouldn't throw exception.
     shell.executeStatement(String.format("SELECT * FROM default.customers.branch_%s", branchName));
   }
+
+  @Test
+  public void testCreateOrReplaceBranchWithTag() throws InterruptedException, IOException {
+    Table table =
+        testTables.createTableWithVersions(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+            fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
+
+    Long snapshotId = table.history().get(0).snapshotId();
+    shell.executeStatement(
+        String.format("ALTER TABLE customers CREATE TAG %s FOR SYSTEM_VERSION AS OF %d", "test1", snapshotId));
+
+    Assertions.assertThatThrownBy(() -> shell.executeStatement("ALTER TABLE customers CREATE OR REPLACE BRANCH test1"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Cannot complete replace branch operation on test1, as it exists as Tag");
+  }
+
+  @Test
+  public void testCreateOrReplaceBranchWithEmptyTable() throws IOException {
+    Table table =
+        testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, fileFormat, null,
+            2);
+
+    Assert.assertEquals(0, table.history().size());
+    shell.executeStatement("ALTER TABLE customers CREATE BRANCH test1");
+    Assertions.assertThatThrownBy(() -> shell.executeStatement("ALTER TABLE customers CREATE OR REPLACE BRANCH test1"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining(" Cannot complete replace branch operation on test1, main has no snapshot");
+  }
 }
