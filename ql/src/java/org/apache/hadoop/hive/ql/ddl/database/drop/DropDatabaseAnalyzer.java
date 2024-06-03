@@ -61,7 +61,7 @@ public class DropDatabaseAnalyzer extends BaseSemanticAnalyzer {
     boolean isDbLevelLock = true;
     if (cascade) {
       try {
-        List<Table> tables = db.getAllTableObjects(databaseName);
+        List<Table> tables = db.getAllTableObjects(databaseName, true);
         isDbLevelLock = !isSoftDelete || tables.stream().allMatch(
           table -> AcidUtils.isTableSoftDeleteEnabled(table, conf));
         for (Table table : tables) {
