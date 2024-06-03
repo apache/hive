@@ -2054,8 +2054,7 @@ public class Hive {
       if (forceMVContentsUpToDate || timeWindow == 0L ||
               mvMetadata.getMaterializationTime() < System.currentTimeMillis() - timeWindow) {
         return HiveMaterializedViewUtils.isOutdatedMaterializedView(
-            validTxnsList, txnMgr, this, 
-            tablesUsed, materializedViewTable);
+            validTxnsList, txnMgr, this, tablesUsed, materializedViewTable);
       }
     }
     return outdated;

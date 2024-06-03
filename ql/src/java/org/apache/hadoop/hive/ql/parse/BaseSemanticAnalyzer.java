@@ -1571,12 +1571,12 @@ public abstract class BaseSemanticAnalyzer {
     return acidFileSinks;
   }
 
-  public boolean hasReadWriteAcidInQuery() {
+  public boolean hasAcidReadWrite() {
     return transactionalInQuery;
   }
 
-  public boolean hasAcidResourcesInQuery() {
-    return hasReadWriteAcidInQuery() || getAcidDdlDesc() != null ||
+  public boolean hasAcidResources() {
+    return hasAcidReadWrite() || getAcidDdlDesc() != null ||
       Stream.of(getInputs(), getOutputs()).flatMap(Collection::stream)
         .filter(entity -> entity.getType() == Entity.Type.TABLE || entity.getType() == Entity.Type.PARTITION)
         .flatMap(entity -> {
@@ -1665,9 +1665,8 @@ public abstract class BaseSemanticAnalyzer {
   public List<Map<String, String>> getPartitionSpecs(Table tbl, CommonTree ast)
       throws SemanticException {
     List<Map<String, String>> partSpecs = new ArrayList<>();
-    int childIndex;
     // get partition metadata if partition specified
-    for (childIndex = 0; childIndex < ast.getChildCount(); childIndex++) {
+    for (int childIndex = 0; childIndex < ast.getChildCount(); childIndex++) {
       ASTNode partSpecNode = (ASTNode)ast.getChild(childIndex);
       // sanity check
       if (partSpecNode.getType() == HiveParser.TOK_PARTSPEC) {

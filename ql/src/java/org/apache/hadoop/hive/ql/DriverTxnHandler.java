@@ -235,7 +235,7 @@ class DriverTxnHandler {
       if (!SessionState.get().isCompaction()) {
         acquireLocksInternal();
       }
-      if (driverContext.getPlan().hasReadWriteAcidInQuery() || hasAcidDdl) {
+      if (driverContext.getPlan().hasAcidReadWrite() || hasAcidDdl) {
         recordValidWriteIds();
       }
     } catch (Exception e) {

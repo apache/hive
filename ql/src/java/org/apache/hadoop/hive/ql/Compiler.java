@@ -113,7 +113,7 @@ public class Compiler {
       plan = createPlan(sem);
       
       if (HiveOperation.START_TRANSACTION == queryState.getHiveOperation()
-          || plan.hasAcidResourcesInQuery()) {
+          || plan.hasAcidResources()) {
         openTxnAndGetValidTxnList();
       }
       verifyTxnState();
