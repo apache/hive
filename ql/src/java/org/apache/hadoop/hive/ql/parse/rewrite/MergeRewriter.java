@@ -178,8 +178,10 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
     @Override
     public void appendWhenNotMatchedInsertClause(MergeStatement.InsertClause insertClause) {
       sqlGenerator.append("INSERT INTO ").append(mergeStatement.getTargetName());
-      if (insertClause.getColumnListText() != null) {
-        sqlGenerator.append(' ').append(insertClause.getColumnListText());
+      if (insertClause.getColumnList() != null) {
+        sqlGenerator.append(" (");
+        sqlGenerator.append(String.join(",", insertClause.getColumnList()));
+        sqlGenerator.append(')');
       }
 
       sqlGenerator.append("    -- insert clause\n  SELECT ");
@@ -188,7 +190,8 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
         hintStr = null;
       }
 
-      sqlGenerator.append(insertClause.getValuesClause()).append("\n   WHERE ").append(insertClause.getPredicate());
+      sqlGenerator.append(String.join(", ", insertClause.getValuesClause()));
+      sqlGenerator.append("\n   WHERE ").append(insertClause.getPredicate());
 
       if (insertClause.getExtraPredicate() != null) {
         //we have WHEN NOT MATCHED AND <boolean expr> THEN INSERT
