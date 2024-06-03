@@ -1077,7 +1077,7 @@ final class HiveGBOpConvUtil {
         final String rsUDAFParamName;
         if (distinctColumnNameTable.get(i).get(j) != null) {
           rsUDAFParamName = distinctColumnNameTable.get(i).get(j);
-        } else if (distinctColumnMapping.get(rsUDAFParamColInfo) != null) {
+        } else if (distinctColumnMapping.containsKey(rsUDAFParamColInfo)) {
           // This UDAF is not labeled with DISTINCT, but it refers to a DISTINCT key.
           // The original internal name could be already obsolete as any DISTINCT keys are renamed.
           rsUDAFParamName = distinctColumnMapping.get(rsUDAFParamColInfo);
