@@ -26,9 +26,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.TreeMap;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -75,22 +74,20 @@ public class ShowTablesOperation extends DDLOperation<ShowTablesDesc> {
   }
 
   private void showTablesExtended() throws HiveException {
-    List<Pair<String, String>> tableTypePairs = new ArrayList<>();
+    TreeMap<String, String> tableNameToType = new TreeMap<>();
     String pattern = MetaStoreUtils.convertSqlPatternToRegExp(desc.getPattern());
     TableType typeFilter = desc.getTypeFilter();
     TableType[] tableTypes = typeFilter == null ? TableType.values() : new TableType[]{typeFilter};
     for (TableType tableType : tableTypes) {
       String typeString = tableType.toString();
       List<String> tables = context.getDb().getTablesByType(desc.getDbName(), pattern, tableType);
-      tableTypePairs.addAll(tables.stream()
-          .map(table -> Pair.of(table, typeString)).collect(Collectors.toList()));
+      tables.forEach(name -> tableNameToType.put(name, typeString));
     }
-    Collections.sort(tableTypePairs, Comparator.comparing(Pair::getLeft));
-    LOG.debug("Found {} table(s) matching the SHOW EXTENDED TABLES statement.", tableTypePairs.size());
+    LOG.debug("Found {} table(s) matching the SHOW EXTENDED TABLES statement.", tableNameToType.size());
 
     try (DataOutputStream os = ShowUtils.getOutputStream(new Path(desc.getResFile()), context)) {
       ShowTablesFormatter formatter = ShowTablesFormatter.getFormatter(context.getConf());
-      formatter.showTablesExtended(os, tableTypePairs);
+      formatter.showTablesExtended(os, tableNameToType);
     } catch (Exception e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "in database " + desc.getDbName());
     }
