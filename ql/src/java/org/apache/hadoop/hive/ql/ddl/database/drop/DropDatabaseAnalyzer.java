@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.ddl.database.drop;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
@@ -72,6 +73,11 @@ public class DropDatabaseAnalyzer extends BaseSemanticAnalyzer {
               WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE;
           }
           outputs.add(new WriteEntity(table, lockType));
+        }
+        // fetch all the functions in the database
+        List<Function> functions = db.getFunctionsInDb(databaseName, ".*");
+        for (Function func: functions) {
+          outputs.add(new WriteEntity(func, WriteEntity.WriteType.DDL_NO_LOCK));
         }
       } catch (HiveException e) {
         throw new SemanticException(e);
