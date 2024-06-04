@@ -37,6 +37,7 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.InferTypes;
 import org.apache.calcite.sql.type.ReturnTypes;
+import org.apache.calcite.sql.type.SqlTypeFamily;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.tools.RelBuilder;
@@ -596,39 +597,20 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
   }
 
   private RexNode getAvgInput(RexNode input, RexBuilder rexBuilder, RelDataTypeFactory typeFactory) {
-    switch (input.getType().getSqlTypeName()) {
-      case TINYINT:
-      case SMALLINT:
-      case INTEGER:
-      case BIGINT:
-        // These integer types are summed up as long. So, any value is valid as long
-        return input;
-      case TIMESTAMP:
-      case FLOAT:
-      case DOUBLE:
-        // These float types are summed up as double. FLOAT is compatible with DOUBLE. Any non-null TIMESTAMP value can
-        // be converted to a non-null DOUBLE value
-        return input;
-      case DECIMAL:
-        // DECIMAL values are evaluated as it is
-        return input;
-      case VARCHAR:
-      case CHAR:
-        // GenericUDAFSum implicitly casts texts into DOUBLE. That conversion could generate NULL when the text is not a
-        // valid numeric expression.
-        // We have to explicitly cast those types. Otherwise, The COUNT UDF can evaluate values with inconsistent
-        // semantics.
-        // For example, if a set of values are `"10"`, `"invalid"` and `"20"`, the average should be (10 + 20) / 2 = 15.
-        // Without excluding invalid numeric texts, the result becomes (10 + 20) / 3 = 10.
-        // Additionally, SUM and COUNT should refer to the same cast expression so that they can reuse the same column
-        // as their input. Otherwise, we may need double columns of `x` for SUM and `CAST(x AS DOUBLE)` for COUNT.
-        final RelDataType targetType = typeFactory.createSqlType(SqlTypeName.DOUBLE);
-        final RelDataType nullableTargetType = typeFactory.createTypeWithNullability(targetType, true);
-        return rexBuilder.makeCast(nullableTargetType, input);
-      default:
-        // Unsupported types will be validated later. We keep the original expression here
-        return input;
+    if (input.getType().getSqlTypeName().getFamily() == SqlTypeFamily.CHARACTER) {
+      // GenericUDAFSum implicitly casts texts into DOUBLE. That conversion could generate NULL when the text is not a
+      // valid numeric expression.
+      // So, we have to explicitly cast those types here. Otherwise, The COUNT UDF can evaluate values with inconsistent
+      // semantics with SUM.
+      // For example, if a set of values are `"10"`, `"invalid"` and `"20"`, the average should be (10 + 20) / 2 = 15.
+      // Without excluding invalid numeric texts, the result becomes (10 + 20) / 3 = 10.
+      // Additionally, SUM and COUNT should refer to the same cast expression so that they can reuse the same column
+      // as their input. Otherwise, we may need double columns of `x` for SUM and `CAST(x AS DOUBLE)` for COUNT.
+      final RelDataType targetType = typeFactory.createSqlType(SqlTypeName.DOUBLE);
+      final RelDataType nullableTargetType = typeFactory.createTypeWithNullability(targetType, true);
+      return rexBuilder.makeCast(nullableTargetType, input);
     }
+    return input;
   }
 
   private RelDataType getSumReturnType(RelDataTypeFactory typeFactory,
@@ -648,7 +630,7 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
       case DECIMAL:
         return typeFactory.getTypeSystem().deriveSumType(typeFactory, inputType);
       default:
-        // Unsupported types will be validated later. We keep the original expression here
+        // Unsupported types will be validated when GenericUDAFSum is initialized. We keep the original expression here
         return inputType;
     }
   }

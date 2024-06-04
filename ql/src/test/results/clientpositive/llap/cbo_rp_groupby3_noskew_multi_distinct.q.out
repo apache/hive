@@ -75,7 +75,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: sum(KEY._col0:1._col0), sum(KEY._col0:0._col0), count(KEY._col0:0._col0), sum(DISTINCT KEY._col0:0._col0), count(DISTINCT KEY._col0:1._col0), max(KEY._col0:1._col0), min(KEY._col0:1._col0), sum(VALUE._col0), sum(DISTINCT KEY._col0:2._col0), count(DISTINCT KEY._col0:3._col0)
+                aggregations: sum(KEY._col0:2._col0), sum(KEY._col0:0._col0), count(KEY._col0:0._col0), sum(DISTINCT KEY._col0:0._col0), count(DISTINCT KEY._col0:1._col0), max(KEY._col0:2._col0), min(KEY._col0:2._col0), sum(VALUE._col0), sum(DISTINCT KEY._col0:2._col0), count(DISTINCT KEY._col0:3._col0)
                 mode: complete
                 outputColumnNames: $f0, $f1, $f2, $f3, $f4, $f5, $f6, $f7, $f8, $f9
                 Statistics: Num rows: 1 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
@@ -165,13 +165,13 @@ INSERT OVERWRITE TABLE dest1_n123 SELECT
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1_n123
-POSTHOOK: Lineage: dest1_n123.c1 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n123.c1 EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: dest1_n123.c10 EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: dest1_n123.c11 EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: dest1_n123.c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1_n123.c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1_n123.c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1_n123.c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n123.c4 EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest1_n123.c5 EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: dest1_n123.c6 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1_n123.c7 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1_n123.c8 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
