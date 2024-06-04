@@ -185,3 +185,118 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1_n123
 #### A masked pattern was here ####
 130091.0	260.182	256.10355987055016	98.0	0.0	142.9268095075238	143.06995106518906	20428.072876000002	20469.010897795593	79136.0	309.0
+PREHOOK: query: CREATE TABLE test (col1 INT, col2 INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test
+POSTHOOK: query: CREATE TABLE test (col1 INT, col2 INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test
+PREHOOK: query: INSERT INTO test VALUES (1, 100), (2, 200), (2, 200), (3, 300)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test
+POSTHOOK: query: INSERT INTO test VALUES (1, 100), (2, 200), (2, 200), (3, 300)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test
+POSTHOOK: Lineage: test.col1 SCRIPT []
+POSTHOOK: Lineage: test.col2 SCRIPT []
+PREHOOK: query: EXPLAIN
+SELECT
+  SUM(DISTINCT col1),
+  COUNT(DISTINCT col1),
+  SUM(col2), -- This has to refer to the key for `SUM(DISTINCT col2)`
+  MAX(DISTINCT col1),
+  SUM(DISTINCT col2),
+  MIN(DISTINCT col1)
+FROM test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT
+  SUM(DISTINCT col1),
+  COUNT(DISTINCT col1),
+  SUM(col2), -- This has to refer to the key for `SUM(DISTINCT col2)`
+  MAX(DISTINCT col1),
+  SUM(DISTINCT col2),
+  MIN(DISTINCT col1)
+FROM test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: col1 (type: int), col2 (type: int)
+                    outputColumnNames: col1, col2
+                    Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: col1 (type: int), col2 (type: int)
+                      null sort order: zz
+                      sort order: ++
+                      Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(DISTINCT KEY._col0:0._col0), count(DISTINCT KEY._col0:1._col0), sum(KEY._col0:3._col0), max(DISTINCT KEY._col0:2._col0), sum(DISTINCT KEY._col0:3._col0), min(DISTINCT KEY._col0:4._col0)
+                mode: complete
+                outputColumnNames: $f0, $f1, $f2, $f3, $f4, $f5
+                Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT
+  SUM(DISTINCT col1),
+  COUNT(DISTINCT col1),
+  SUM(col2), -- This has to refer to the key for `SUM(DISTINCT col2)`
+  MAX(DISTINCT col1),
+  SUM(DISTINCT col2),
+  MIN(DISTINCT col1)
+FROM test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  SUM(DISTINCT col1),
+  COUNT(DISTINCT col1),
+  SUM(col2), -- This has to refer to the key for `SUM(DISTINCT col2)`
+  MAX(DISTINCT col1),
+  SUM(DISTINCT col2),
+  MIN(DISTINCT col1)
+FROM test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+6	3	800	3	600	1
