@@ -811,7 +811,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: count(DISTINCT KEY._col1:0._col0), count(DISTINCT KEY._col1:1._col0), sum(VALUE._col0), sum(VALUE._col1), sum(VALUE._col2), sum(KEY._col1:0._col0), sum(KEY._col1:1._col0), sum(KEY._col0), sum(DISTINCT KEY._col1:2._col0), sum(DISTINCT KEY._col1:3._col0)
+                aggregations: count(DISTINCT KEY._col1:0._col0), count(DISTINCT KEY._col1:1._col0), sum(VALUE._col0), sum(VALUE._col1), sum(VALUE._col2), sum(KEY._col1:0._col0), sum(KEY._col1:1._col0), sum(KEY._col1:2._col0), sum(DISTINCT KEY._col1:2._col0), sum(DISTINCT KEY._col1:3._col0)
                 keys: KEY._col0 (type: int)
                 mode: complete
                 outputColumnNames: $f0, $f1, $f2, $f3, $f4, $f5, $f6, $f7, $f8, $f9, $f10
