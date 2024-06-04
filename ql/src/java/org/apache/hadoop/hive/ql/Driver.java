@@ -26,7 +26,6 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
@@ -104,17 +103,6 @@ public class Driver implements IDriver {
 
   public Driver(QueryState queryState, QueryInfo queryInfo) {
     this(queryState, queryInfo, null);
-  }
-
-  public Driver(QueryState queryState, ValidWriteIdList compactionWriteIds, long compactorTxnId) {
-    this(queryState);
-    driverContext.setCompactionWriteIds(compactionWriteIds);
-    driverContext.setCompactorTxnId(compactorTxnId);
-  }
-
-  public Driver(QueryState queryState, long analyzeTableWriteId) {
-    this(queryState);
-    driverContext.setAnalyzeTableWriteId(analyzeTableWriteId);
   }
 
   public Driver(QueryState queryState, QueryInfo queryInfo, HiveTxnManager txnManager) {
@@ -278,11 +266,10 @@ public class Driver implements IDriver {
             // data add ends up being > than the data delete.
             driverContext.getTxnManager().clearCaches();
           }
+          driverContext.getConf().unset(ValidTxnList.VALID_TXNS_KEY);
           driverContext.setRetrial(true);
-          driverContext.getConf().set(ValidTxnList.VALID_TXNS_KEY,
-              driverContext.getTxnManager().getValidTxns().toString());
 
-          if (driverContext.getPlan().hasAcidResourcesInQuery()) {
+          if (driverContext.getPlan().hasAcidReadWrite()) {
             compileInternal(context.getCmd(), true);
             driverTxnHandler.recordValidWriteIds();
             driverTxnHandler.setWriteIdForAcidFileSinks();

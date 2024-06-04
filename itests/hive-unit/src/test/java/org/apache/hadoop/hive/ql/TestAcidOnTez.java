@@ -545,7 +545,7 @@ public class TestAcidOnTez {
     //check we have right delete delta files after minor compaction
     status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
       (Table.ACIDNOBUCKET).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
-    String[] expectedDelDelta2 = { "delete_delta_0000002_0000002_0000", "delete_delta_0000003_0000003_0000", "delete_delta_0000001_0000003_v0000023"};
+    String[] expectedDelDelta2 = { "delete_delta_0000002_0000002_0000", "delete_delta_0000003_0000003_0000", "delete_delta_0000001_0000003_v0000015"};
     for(FileStatus stat : status) {
       for(int i = 0; i < expectedDelDelta2.length; i++) {
         if(expectedDelDelta2[i] != null && stat.getPath().toString().endsWith(expectedDelDelta2[i])) {
@@ -570,7 +570,7 @@ public class TestAcidOnTez {
     for(int i = 0; i < expected2.length; i++) {
       Assert.assertTrue("Actual line " + i + " bc: " + rs.get(i), rs.get(i).startsWith(expected2[i][0]));
       //everything is now in base/
-      Assert.assertTrue("Actual line(file) " + i + " bc: " + rs.get(i), rs.get(i).endsWith("base_0000003_v0000026/bucket_00000"));
+      Assert.assertTrue("Actual line(file) " + i + " bc: " + rs.get(i), rs.get(i).endsWith("base_0000003_v0000019/bucket_00000"));
     }
   }
   /**
@@ -633,15 +633,15 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
     }
     String[][] expected2 = {
        {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
-           "warehouse/t/base_-9223372036854775808_v0000023/bucket_00000"},
+           "warehouse/t/base_-9223372036854775808_v0000013/bucket_00000"},
       {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":1}\t3\t4",
-          "warehouse/t/base_-9223372036854775808_v0000023/bucket_00000"},
+          "warehouse/t/base_-9223372036854775808_v0000013/bucket_00000"},
       {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":2}\t5\t6",
-          "warehouse/t/base_-9223372036854775808_v0000023/bucket_00000"},
+          "warehouse/t/base_-9223372036854775808_v0000013/bucket_00000"},
       {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":3}\t7\t8",
-          "warehouse/t/base_-9223372036854775808_v0000023/bucket_00000"},
+          "warehouse/t/base_-9223372036854775808_v0000013/bucket_00000"},
       {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":4}\t9\t10",
-          "warehouse/t/base_-9223372036854775808_v0000023/bucket_00000"}
+          "warehouse/t/base_-9223372036854775808_v0000013/bucket_00000"}
     };
     Assert.assertEquals("Unexpected row count after major compact", expected2.length, rs.size());
     for(int i = 0; i < expected2.length; i++) {

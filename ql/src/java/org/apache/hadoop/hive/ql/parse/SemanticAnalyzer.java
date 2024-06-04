@@ -119,6 +119,7 @@ import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
+import org.apache.hadoop.hive.ql.ddl.DDLDescWithTableProperties;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.misc.hooks.InsertCommitHookDesc;
 import org.apache.hadoop.hive.ql.ddl.table.constraint.ConstraintsUtils;
@@ -2599,7 +2600,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             // If the CTAS query does specify a location, use the table location, else use the db location
             if (qb.isMaterializedView() && qb.getViewDesc() != null && qb.getViewDesc().getLocation() != null) {
               location = new Path(qb.getViewDesc().getLocation());
-            } else if (qb.isCTAS() && qb.getTableDesc() != null && qb.getTableDesc().getLocation() != null) {
+            } else if (qb.isCTAS() && qb.getTableDesc().getLocation() != null) {
               location = new Path(qb.getTableDesc().getLocation());
             } else {
               // allocate a temporary output dir on the location of the table
@@ -7549,20 +7550,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               destinationTable.getSkewedColValues(), destinationTable.getSkewedColValueLocationMaps(),
               destinationTable.isStoredAsSubDirectories());
         }
-        try {
-          if (ctx.getExplainConfig() != null) {
-            writeId = null; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
-          } else {
-            if (isMmTable) {
-              writeId = txnMgr.getTableWriteId(destinationTable.getDbName(), destinationTable.getTableName());
-            } else {
-              writeId = acidOp == Operation.NOT_ACID ? null :
-                      txnMgr.getTableWriteId(destinationTable.getDbName(), destinationTable.getTableName());
-            }
-          }
-        } catch (LockException ex) {
-          throw new SemanticException("Failed to allocate write Id", ex);
-        }
+        writeId = allocateTableWriteId(destinationTable.getFullTableName(), isMmTable || acidOp != Operation.NOT_ACID);
+        
         boolean isReplace = !qb.getParseInfo().isInsertIntoTable(
             destinationTable.getDbName(), destinationTable.getTableName(), destinationTable.getSnapshotRef());
         ltd = new LoadTableDesc(queryTmpdir, tableDescriptor, dpCtx, acidOp, isReplace, writeId);
@@ -7709,20 +7698,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             destinationPartition.getSkewedColValues(), destinationPartition.getSkewedColValueLocationMaps(),
             destinationPartition.isStoredAsSubDirectories());
       }
-      try {
-        if (ctx.getExplainConfig() != null) {
-          writeId = null; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
-        } else {
-          if (isMmTable) {
-            writeId = txnMgr.getTableWriteId(destinationTable.getDbName(), destinationTable.getTableName());
-          } else {
-            writeId = (acidOp == Operation.NOT_ACID) ? null :
-                    txnMgr.getTableWriteId(destinationTable.getDbName(), destinationTable.getTableName());
-          }
-        }
-      } catch (LockException ex) {
-        throw new SemanticException("Failed to allocate write Id", ex);
-      }
+      writeId = allocateTableWriteId(destinationTable.getFullTableName(), isMmTable || acidOp != Operation.NOT_ACID);
+      
       ltd = new LoadTableDesc(queryTmpdir, tableDescriptor, destinationPartition.getSpec(), acidOp, writeId);
       if (writeId != null) {
         ltd.setStmtId(txnMgr.getCurrentStmtId());
@@ -7788,95 +7765,63 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       List<ColumnInfo> fileSinkColInfos = null;
       List<ColumnInfo> sortColInfos = null;
       List<ColumnInfo> distributeColInfos = null;
-      TableName tableName = null;
       Map<String, String> tblProps = null;
       CreateTableDesc tblDesc = qb.getTableDesc();
       CreateMaterializedViewDesc viewDesc = qb.getViewDesc();
       boolean createTableUseSuffix = false;
-      if (tblDesc != null) {
+      
+      DDLDescWithTableProperties ddlDesc = (tblDesc != null) ? tblDesc : viewDesc;
+      if (ddlDesc != null) {
         fieldSchemas = new ArrayList<>();
         partitionColumns = new ArrayList<>();
-        partitionColumnNames = tblDesc.getPartColNames();
+        partitionColumnNames = ddlDesc.getPartColNames();
         fileSinkColInfos = new ArrayList<>();
-        destTableIsTemporary = tblDesc.isTemporary();
-        destTableIsMaterialization = tblDesc.isMaterialization();
-        tableName = TableName.fromString(tblDesc.getDbTableName(), null, tblDesc.getDatabaseName());
-        tblProps = tblDesc.getTblProps();
+        destTableIsTemporary = ddlDesc.isTemporary();
+        destTableIsMaterialization = ddlDesc.isMaterialization();
+        tblProps = ddlDesc.getTblProps();
+
         // Add suffix only when required confs are present
         // and user has not specified a location to the table.
         createTableUseSuffix = (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
-                || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))
-                && tblDesc.getLocation() == null;
-      } else if (viewDesc != null) {
-        fieldSchemas = new ArrayList<>();
-        partitionColumns = new ArrayList<>();
-        partitionColumnNames = viewDesc.getPartColNames();
+            || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))
+          && ddlDesc.getLocation() == null;
+      }
+      if (viewDesc != null) {
         sortColumns = new ArrayList<>();
         sortColumnNames = viewDesc.getSortColNames();
         distributeColumns = new ArrayList<>();
         distributeColumnNames = viewDesc.getDistributeColNames();
-        fileSinkColInfos = new ArrayList<>();
         sortColInfos = new ArrayList<>();
         distributeColInfos = new ArrayList<>();
-        destTableIsTemporary = false;
-        destTableIsMaterialization = false;
-        tableName = HiveTableName.ofNullableWithNoDefault(viewDesc.getViewName());
-        tblProps = viewDesc.getTblProps();
-        // Add suffix only when required confs are present
-        // and user has not specified a location to the table.
-        createTableUseSuffix = (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
-                || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))
-                && viewDesc.getLocation() == null;
       }
 
       destTableIsTransactional = tblProps != null && AcidUtils.isTablePropertyTransactional(tblProps);
       if (destTableIsTransactional) {
         isNonNativeTable = MetaStoreUtils.isNonNativeTable(tblProps);
-        boolean isCtas = tblDesc != null && tblDesc.isCTAS();
-        boolean isCMV = viewDesc != null && qb.isMaterializedView();
         isMmTable = isMmCreate = AcidUtils.isInsertOnlyTable(tblProps);
-        if (!isNonNativeTable && !destTableIsTemporary && (isCtas || isCMV)) {
+        
+        writeId = allocateTableWriteId(ddlDesc.getFullTableName(), 0L);
+        
+        if (!isNonNativeTable && !destTableIsTemporary && (qb.isCTAS() || qb.isMaterializedView())) {
           destTableIsFullAcid = AcidUtils.isFullAcidTable(tblProps);
           acidOperation = getAcidType(dest);
           isDirectInsert = isDirectInsert(destTableIsFullAcid, acidOperation);
+          
+          // Set the location in context for possible rollback.
+          ctx.setLocation(getCtasOrCMVLocation(tblDesc, viewDesc, createTableUseSuffix));
+          
           if (isDirectInsert || isMmTable) {
-            destinationPath = getCtasOrCMVLocation(tblDesc, viewDesc, createTableUseSuffix);
+            destinationPath = ctx.getLocation();
             if (createTableUseSuffix) {
-              if (tblDesc != null) {
-                tblDesc.getTblProps().put(SOFT_DELETE_TABLE, Boolean.TRUE.toString());
-              } else {
-                viewDesc.getTblProps().put(SOFT_DELETE_TABLE, Boolean.TRUE.toString());
-              }
+              ddlDesc.getTblProps().put(SOFT_DELETE_TABLE, Boolean.TRUE.toString());
             }
-            // Set the location in context for possible rollback.
-            ctx.setLocation(destinationPath);
             // Setting the location so that metadata transformers
             // does not change the location later while creating the table.
-            if (tblDesc != null) {
-              tblDesc.setLocation(destinationPath.toString());
-            } else {
-              viewDesc.setLocation(destinationPath.toString());
-            }
-          } else {
-            // Set the location in context for possible rollback.
-            ctx.setLocation(getCtasOrCMVLocation(tblDesc, viewDesc, createTableUseSuffix));
+            ddlDesc.setLocation(destinationPath.toString());
           }
-        }
-        try {
-          if (ctx.getExplainConfig() != null) {
-            writeId = 0L; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
-          } else {
-            writeId = txnMgr.getTableWriteId(tableName.getDb(), tableName.getTable());
-          }
-        } catch (LockException ex) {
-          throw new SemanticException("Failed to allocate write Id", ex);
         }
         if (isMmTable || isDirectInsert) {
-          if (tblDesc != null) {
-            tblDesc.setInitialWriteId(writeId);
-          } else {
-            viewDesc.setInitialWriteId(writeId);
-          }
+          ddlDesc.setInitialWriteId(writeId);
         }
       }
 
@@ -7949,8 +7894,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       boolean isDestTempFile = true;
-      if (ctx.isMRTmpFileURI(destinationPath.toUri().toString()) == false
-          && ctx.isResultCacheDir(destinationPath) == false) {
+      if (!ctx.isMRTmpFileURI(destinationPath.toUri().toString())
+          && !ctx.isResultCacheDir(destinationPath)) {
         // not a temp dir and not a result cache dir
         idToTableNameMap.put(String.valueOf(destTableId), destinationPath.toUri().toString());
         currentTableId = destTableId;
@@ -8182,7 +8127,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     FileSinkDesc fileSinkDesc = createFileSinkDesc(dest, tableDescriptor, destinationPartition,
         destinationPath, currentTableId, destTableIsFullAcid, destTableIsTemporary,//this was 1/4 acid
         destTableIsMaterialization, queryTmpdir, rsCtx, dpCtx, lbCtx, fsRS,
-        canBeMerged, destinationTable, writeId, isMmCreate, destType, qb, isDirectInsert, acidOperation, moveTaskId);
+        canBeMerged, destinationTable, isMmCreate, destType, qb, isDirectInsert, acidOperation, moveTaskId);
     if (isMmCreate || (qb.isCTAS() || qb.isMaterializedView()) && isDirectInsert) {
       // Add FSD so that the LoadTask compilation could fix up its path to avoid the move.
       if (tableDesc != null) {
@@ -8248,20 +8193,34 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return output;
   }
 
+  private Long allocateTableWriteId(TableName tableName, boolean isAcid) throws SemanticException {
+    return isAcid ? allocateTableWriteId(tableName, null) : null;
+  }
+
+  private Long allocateTableWriteId(TableName tableName, Long defaultValue) throws SemanticException {
+    if (ctx.getExplainConfig() != null) {
+      return defaultValue; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
+    }
+    queryState.getValidTxnList();
+    try {
+      return getTxnMgr().getTableWriteId(tableName.getDb(), tableName.getTable());
+    } catch (LockException ex) {
+      throw new SemanticException("Failed to allocate write Id", ex);
+    }
+  }
+
   protected boolean enableColumnStatsCollecting() {
     return true;
   }
 
-  private Path getCtasOrCMVLocation(CreateTableDesc tblDesc, CreateMaterializedViewDesc viewDesc,
-                               boolean createTableWithSuffix) throws SemanticException {
+  private Path getCtasOrCMVLocation(CreateTableDesc tblDesc, CreateMaterializedViewDesc viewDesc, 
+        boolean createTableWithSuffix) throws SemanticException {
     Path location;
-    String[] names;
-    String protoName = null;
+    String protoName;
     Table tbl;
     try {
       if (tblDesc != null) {
         protoName = tblDesc.getDbTableName();
-
         // Handle table translation initially and if not present
         // use default table path.
         // Property modifications of the table is handled later.
@@ -8273,22 +8232,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         protoName = viewDesc.getViewName();
         tbl = viewDesc.toTable(conf);
       }
-      names = Utilities.getDbTableName(protoName);
-
+      
+      String[] names = Utilities.getDbTableName(protoName);
       Warehouse wh = new Warehouse(conf);
-      if (tbl.getSd() == null
-              || tbl.getSd().getLocation() == null) {
+      if (tbl.getSd() == null || tbl.getSd().getLocation() == null) {
         location = wh.getDefaultTablePath(db.getDatabase(names[0]), names[1], false);
       } else {
         location = wh.getDnsPath(new Path(tbl.getSd().getLocation()));
       }
-
-      if (createTableWithSuffix) {
-        location = new Path(location.toString() +
-                Utilities.getTableOrMVSuffix(ctx, createTableWithSuffix));
-      }
-
-      return location;
+      return location.suffix(
+          Utilities.getTableOrMVSuffix(ctx, createTableWithSuffix));
     } catch (HiveException | MetaException e) {
       throw new SemanticException(e);
     }
@@ -8486,7 +8439,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                           boolean destTableIsAcid, boolean destTableIsTemporary,
                                           boolean destTableIsMaterialization, Path queryTmpdir,
                                           SortBucketRSCtx rsCtx, DynamicPartitionCtx dpCtx, ListBucketingCtx lbCtx,
-                                          RowSchema fsRS, boolean canBeMerged, Table dest_tab, Long mmWriteId, boolean isMmCtas,
+                                          RowSchema fsRS, boolean canBeMerged, Table dest_tab, boolean isMmCtas,
                                           Integer dest_type, QB qb, boolean isDirectInsert, AcidUtils.Operation acidOperation, String moveTaskId) throws SemanticException {
     boolean isInsertOverwrite = false;
     Context.Operation writeOperation = getWriteOperation(dest);
@@ -8522,7 +8475,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     FileSinkDesc fileSinkDesc = new FileSinkDesc(queryTmpdir, table_desc,
         conf.getBoolVar(HiveConf.ConfVars.COMPRESS_RESULT), currentTableId, rsCtx.isMultiFileSpray(),
         canBeMerged, rsCtx.getNumFiles(), rsCtx.getTotalFiles(), rsCtx.getPartnCols(), dpCtx,
-        dest_path, mmWriteId, isMmCtas, isInsertOverwrite, qb.getIsQuery(),
+        dest_path, isMmCtas, isInsertOverwrite, qb.getIsQuery(),
         qb.isCTAS() || qb.isMaterializedView(), isDirectInsert, acidOperation,
             ctx.isDeleteBranchOfUpdate(dest));
 
@@ -13130,6 +13083,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (!genResolvedParseTree(ast, plannerCtx)) {
       return;
     }
+    if (tablesFromReadEntities(inputs).stream().anyMatch(AcidUtils::isTransactionalTable)) {
+      queryState.getValidTxnList();
+    }
 
     if (HiveConf.getBoolVar(conf, ConfVars.HIVE_REMOVE_ORDERBY_IN_SUBQUERY)) {
       for (String alias : qb.getSubqAliases()) {
@@ -15773,13 +15729,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     //cachedWriteIdList = AcidUtils.getValidTxnWriteIdList(conf);
     //
     List<String> transactionalTables = tablesFromReadEntities(inputs)
-            .stream()
-            .filter(AcidUtils::isTransactionalTable)
-            .map(Table::getFullyQualifiedName)
-            .collect(Collectors.toList());
+      .stream()
+      .filter(AcidUtils::isTransactionalTable)
+      .map(Table::getFullyQualifiedName)
+      .collect(Collectors.toList());
+    
     if (transactionalTables.size() > 0) {
+      String txnString = queryState.getValidTxnList();
+      if (txnString == null) {
+        return null;
+      }
       try {
-        String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
         return getTxnMgr().getValidWriteIds(transactionalTables, txnString);
       } catch (Exception err) {
         String msg = "Error while getting the txnWriteIdList for tables " + transactionalTables
@@ -15853,21 +15813,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Disable caching for these.
       return false;
     }
-
     if (queryState.getHiveOperation() != HiveOperation.QUERY) {
       return false;
     }
-    if (qb.getParseInfo().isAnalyzeCommand()) {
+    if (Optional.of(qb.getParseInfo()).filter(pi ->
+            pi.isAnalyzeCommand() || pi.hasInsertTables() || pi.isInsertOverwriteDirectory())
+        .isPresent()) {
       return false;
     }
-    if (qb.getParseInfo().hasInsertTables()) {
-      return false;
-    }
-    if (qb.getParseInfo().isInsertOverwriteDirectory()) {
-      return false;
-    }
-
-    // HIVE-19096 - disable for explain analyze
+    // HIVE-19096 - disable for explain and explain analyze
     return ctx.getExplainAnalyze() == null;
   }
 

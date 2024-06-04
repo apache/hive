@@ -729,7 +729,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
       if (status[i].getPath().getName().matches("base_.*")) {
         //should be base_-9223372036854775808_v0000023 but 23 is a txn id not write id so it makes
         //the tests fragile
-        Assert.assertTrue(status[i].getPath().getName().startsWith("base_-9223372036854775808_v0000023"));
+        Assert.assertTrue(status[i].getPath().getName().startsWith("base_-9223372036854775808_v0000009"));
         sawNewBase = true;
         FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
         Assert.assertEquals(BUCKET_COUNT - 1, buckets.length);
@@ -781,7 +781,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
           Assert.assertEquals("bucket_00001_0", buckets[0].getPath().getName());
         }
       } else if (status[i].getPath().getName().matches("base_.*")) {
-        Assert.assertTrue("base_-9223372036854775808", status[i].getPath().getName().startsWith("base_-9223372036854775808_v0000023"));//_v0000023
+        Assert.assertTrue("base_-9223372036854775808", status[i].getPath().getName().startsWith("base_-9223372036854775808_v0000009"));//_v0000009
         sawNewBase = true;
         FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
         Assert.assertEquals(BUCKET_COUNT - 1, buckets.length);
@@ -818,12 +818,12 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
         FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
         Arrays.sort(buckets);
         if (numBase == 1) {
-          Assert.assertEquals("base_-9223372036854775808_v0000023", status[i].getPath().getName());
+          Assert.assertEquals("base_-9223372036854775808_v0000009", status[i].getPath().getName());
           Assert.assertEquals(BUCKET_COUNT - 1, buckets.length);
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         } else if (numBase == 2) {
           // The new base dir now has two bucket files, since the delta dir has two bucket files
-          Assert.assertEquals("base_10000002_v0000031", status[i].getPath().getName());
+          Assert.assertEquals("base_10000002_v0000018", status[i].getPath().getName());
           Assert.assertEquals(2, buckets.length);
           Assert.assertEquals("bucket_00000", buckets[0].getPath().getName());
         }
@@ -850,7 +850,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     status = fs.listStatus(new Path(getWarehouseDir() + "/" +
       (Table.NONACIDORCTBL).toString().toLowerCase()), FileUtils.HIDDEN_FILES_PATH_FILTER);
     Assert.assertEquals(1, status.length);
-    Assert.assertEquals("base_10000002_v0000031", status[0].getPath().getName());
+    Assert.assertEquals("base_10000002_v0000018", status[0].getPath().getName());
     FileStatus[] buckets = fs.listStatus(status[0].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
     Arrays.sort(buckets);
     Assert.assertEquals(2, buckets.length);
@@ -919,9 +919,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     for (int i = 0; i < status.length; i++) {
       Path parent = status[i].getPath().getParent();
       if (parent.getName().matches("base_.*")) {
-        //should be base_-9223372036854775808_v0000023 but 23 is a txn id not write id so it makes
-        //the tests fragile
-        Assert.assertTrue(parent.getName().startsWith("base_-9223372036854775808_v0000023"));
+        Assert.assertTrue(parent.getName().startsWith("base_-9223372036854775808_v0000009"));
         sawNewBase = true;
         FileStatus[] buckets = fs.listStatus(parent, FileUtils.HIDDEN_FILES_PATH_FILTER);
         Assert.assertEquals(BUCKET_COUNT - 1, buckets.length);
@@ -972,7 +970,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
           Assert.assertEquals("bucket_00001_0", buckets[0].getPath().getName());
         }
       } else if (parent.getName().matches("base_.*")) {
-        Assert.assertTrue("base_-9223372036854775808", parent.getName().startsWith("base_-9223372036854775808_v0000023"));//_v0000023
+        Assert.assertTrue("base_-9223372036854775808", parent.getName().startsWith("base_-9223372036854775808_v0000009"));//_v0000009
         sawNewBase = true;
         FileStatus[] buckets = fs.listStatus(parent, FileUtils.HIDDEN_FILES_PATH_FILTER);
         Assert.assertEquals(BUCKET_COUNT - 1, buckets.length);
@@ -1009,12 +1007,12 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
         FileStatus[] buckets = fs.listStatus(parent, FileUtils.HIDDEN_FILES_PATH_FILTER);
         Arrays.sort(buckets);
         if (numBase == 1) {
-          Assert.assertEquals("base_-9223372036854775808_v0000023", parent.getName());
+          Assert.assertEquals("base_-9223372036854775808_v0000009", parent.getName());
           Assert.assertEquals(BUCKET_COUNT - 1, buckets.length);
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         } else if (numBase == 2) {
           // The new base dir now has two bucket files, since the delta dir has two bucket files
-          Assert.assertEquals("base_10000002_v0000031", parent.getName());
+          Assert.assertEquals("base_10000002_v0000018", parent.getName());
           Assert.assertEquals(2, buckets.length);
           Assert.assertEquals("bucket_00000", buckets[0].getPath().getName());
         }
@@ -1040,7 +1038,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     // Original bucket files, delta directories and previous base directory should have been cleaned up. Only one base with 2 files.
     status = listFilesByTable(fs, Table.NONACIDNESTEDPART);
     Assert.assertEquals(2, status.length);
-    Assert.assertEquals("base_10000002_v0000031", status[0].getPath().getParent().getName());
+    Assert.assertEquals("base_10000002_v0000018", status[0].getPath().getParent().getName());
     FileStatus[] buckets = fs.listStatus(status[0].getPath().getParent(), FileUtils.HIDDEN_FILES_PATH_FILTER);
     Arrays.sort(buckets);
     Assert.assertEquals(2, buckets.length);
@@ -1557,7 +1555,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
 
   private void writeBetweenWorkerAndCleanerForVariousTblProperties(String tblProperties) throws Exception {
     String tblName = "hive12352";
-    runStatementOnDriver("drop table if exists " + tblName);
+    dropTables(tblName);
     runStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
       " CLUSTERED BY(a) INTO 1 BUCKETS" + //currently ACID requires table to be bucketed
       " STORED AS ORC  TBLPROPERTIES ( " + tblProperties + " )");
@@ -1588,8 +1586,8 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     FileStatus[] status = fs.listStatus(new Path(getWarehouseDir() + "/" + tblName.toLowerCase()),
         FileUtils.HIDDEN_FILES_PATH_FILTER);
     Set<String> expectedDeltas = new HashSet<>();
-    expectedDeltas.add("delete_delta_0000001_0000002_v0000021");
-    expectedDeltas.add("delta_0000001_0000002_v0000021");
+    expectedDeltas.add("delete_delta_0000001_0000002_v0000008");
+    expectedDeltas.add("delta_0000001_0000002_v0000008");
     expectedDeltas.add("delete_delta_0000003_0000003_0000");
     Set<String> actualDeltas = new HashSet<>();
     for(FileStatus file : status) {
@@ -1607,8 +1605,8 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     status = fs.listStatus(new Path(getWarehouseDir() + "/" + tblName.toLowerCase()),
         FileUtils.HIDDEN_FILES_PATH_FILTER);
     expectedDeltas = new HashSet<>();
-    expectedDeltas.add("delete_delta_0000001_0000004_v0000026");
-    expectedDeltas.add("delta_0000001_0000004_v0000026");
+    expectedDeltas.add("delete_delta_0000001_0000004_v0000013");
+    expectedDeltas.add("delta_0000001_0000004_v0000013");
     actualDeltas = new HashSet<>();
     for(FileStatus file : status) {
       actualDeltas.add(file.getPath().getName());
@@ -3382,8 +3380,8 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     String oldDelta3 = "delta_0000003_0000003_0000";
     String oldDelta4 = "delta_0000004_0000004_0000";
 
-    String expectedDelta1 = p1 + "/delta_0000001_0000002_v0000021";
-    String expectedDelta2 = p2 + "/delta_0000003_0000004_v0000023";
+    String expectedDelta1 = p1 + "/delta_0000001_0000002_v0000009";
+    String expectedDelta2 = p2 + "/delta_0000003_0000004_v0000011";
 
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='p1') (a,b) values(1,2)");
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='p1') (a,b) values(3,4)");

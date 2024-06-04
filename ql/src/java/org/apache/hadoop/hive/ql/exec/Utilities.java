@@ -5063,11 +5063,6 @@ public final class Utilities {
     }
   }
 
-  public static boolean arePathsEqualOrWithin(Path p1, Path p2) {
-    return ((p1.toString().toLowerCase().indexOf(p2.toString().toLowerCase()) > -1) ||
-        (p2.toString().toLowerCase().indexOf(p1.toString().toLowerCase()) > -1)) ? true : false;
-  }
-
   public static String getTableOrMVSuffix(Context context, boolean createTableOrMVUseSuffix) {
     String suffix = "";
     if (createTableOrMVUseSuffix) {

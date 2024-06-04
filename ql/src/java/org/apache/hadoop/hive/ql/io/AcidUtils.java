@@ -2288,8 +2288,7 @@ public class AcidUtils {
    */
   public static ValidTxnWriteIdList getValidTxnWriteIdList(Configuration conf) {
     String txnString = conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
-    ValidTxnWriteIdList validTxnList = new ValidTxnWriteIdList(txnString);
-    return validTxnList;
+    return new ValidTxnWriteIdList(txnString);
   }
 
   /**
@@ -2445,15 +2444,12 @@ public class AcidUtils {
     if (sessionTxnMgr == null) {
       return null;
     }
-    ValidWriteIdList validWriteIdList = null;
-    ValidTxnWriteIdList validTxnWriteIdList = null;
-
     String validTxnList = conf.get(ValidTxnList.VALID_TXNS_KEY);
     List<String> tablesInput = new ArrayList<>();
     String fullTableName = getFullTableName(dbName, tableName);
     tablesInput.add(fullTableName);
 
-    validTxnWriteIdList = sessionTxnMgr.getValidWriteIds(tablesInput, validTxnList);
+    ValidTxnWriteIdList validTxnWriteIdList = sessionTxnMgr.getValidWriteIds(tablesInput, validTxnList);
     return validTxnWriteIdList != null ?
         validTxnWriteIdList.getTableValidWriteIdList(fullTableName) : null;
   }
@@ -3219,10 +3215,6 @@ public class AcidUtils {
     // check if txn has a materialized view rebuild
     if (tree.getToken().getType() == HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REBUILD) {
       return TxnType.MATER_VIEW_REBUILD;
-    }
-    // check if compaction request
-    if (tree.getFirstChildWithType(HiveParser.TOK_ALTERTABLE_COMPACT) != null){
-      return TxnType.COMPACTION;
     }
     // check if soft delete txn
     if (isSoftDeleteTxn(conf, tree))  {
