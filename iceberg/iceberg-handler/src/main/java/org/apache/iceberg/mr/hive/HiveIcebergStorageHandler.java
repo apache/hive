@@ -118,6 +118,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
+import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.DefaultFetchFormatter;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.FetchFormatter;
@@ -1804,7 +1805,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       fetcher.initialize(job, HiveTableUtil.getSerializationProps());
       org.apache.hadoop.hive.ql.metadata.Table metaDataPartTable =
           context.getDb().getTable(hmstbl.getDbName(), hmstbl.getTableName(), "partitions", true);
+      SessionState.getSessionConf().set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, "partition,spec_id");
       Deserializer currSerDe = metaDataPartTable.getDeserializer();
+      SessionState.getSessionConf().unset(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR);
       ObjectMapper mapper = new ObjectMapper();
       Table tbl = getTable(hmstbl);
       while (reader.next(key, value)) {
