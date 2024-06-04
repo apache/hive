@@ -2536,6 +2536,22 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_functions failed: unknown result')
     end
 
+    def get_functions_in_db(request)
+      send_get_functions_in_db(request)
+      return recv_get_functions_in_db()
+    end
+
+    def send_get_functions_in_db(request)
+      send_message('get_functions_in_db', Get_functions_in_db_args, :request => request)
+    end
+
+    def recv_get_functions_in_db()
+      result = receive_message(Get_functions_in_db_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_functions_in_db failed: unknown result')
+    end
+
     def get_function(dbName, funcName)
       send_get_function(dbName, funcName)
       return recv_get_function()
@@ -6672,6 +6688,17 @@ module ThriftHiveMetastore
         result.o1 = o1
       end
       write_result(result, oprot, 'get_functions', seqid)
+    end
+
+    def process_get_functions_in_db(seqid, iprot, oprot)
+      args = read_args(iprot, Get_functions_in_db_args)
+      result = Get_functions_in_db_result.new()
+      begin
+        result.success = @handler.get_functions_in_db(args.request)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_functions_in_db', seqid)
     end
 
     def process_get_function(seqid, iprot, oprot)
@@ -13773,6 +13800,40 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRING}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_functions_in_db_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::GetFunctionsRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_functions_in_db_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetFunctionsResponse},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 

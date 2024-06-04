@@ -3011,6 +3011,15 @@ public interface IMetaStoreClient extends AutoCloseable {
 
   /**
    * Get all functions matching a pattern
+   * @param dbName database name.
+   * @param pattern to match.  This is a java regex pattern.
+   * @throws MetaException error accessing the RDBMS
+   * @throws TException thrift transport error
+   */
+  List<Function> getFunctionsInDb(String dbName, String pattern)
+      throws TException;
+  /**
+   * Get all functions matching a pattern
    * @param catName catalog name.
    * @param dbName database name.
    * @param pattern to match.  This is a java regex pattern.

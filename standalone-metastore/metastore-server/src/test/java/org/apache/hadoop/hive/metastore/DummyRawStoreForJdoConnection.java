@@ -1042,6 +1042,11 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
+  public List<Function> getFunctionsInDb(String catName, String dbName, String pattern) throws MetaException {
+    return Collections.emptyList();
+  }
+
+  @Override
   public AggrStats get_aggr_stats_for(String catName, String dbName,
       String tblName, List<String> partNames, List<String> colNames,
       String engine)

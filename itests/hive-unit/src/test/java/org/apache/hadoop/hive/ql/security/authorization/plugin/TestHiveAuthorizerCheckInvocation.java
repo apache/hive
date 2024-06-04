@@ -680,6 +680,37 @@ public class TestHiveAuthorizerCheckInvocation {
     assertTrue("table name", viewName.equalsIgnoreCase(tableObj.getObjectName()));
   }
 
+  @Test
+  public void DropDatabaseCascade() throws Exception {
+    reset(mockedAuthorizer);
+    final String tableName1 = "foo_tbl", tableName2 = "foo_bar",
+        viewName = "foo_view", funcName = "testauthfunc1", funcName2 = "testauthfunc2";
+    driver.run("create table " + dbName + "." + tableName1 + "(eid int, yoj int)");
+    driver.run("create table " + dbName + "." + tableName2 + "(eid int, name string)");
+    driver.run("create function " + dbName + "." + funcName + " as 'org.apache.hadoop.hive.ql.udf.UDFPI'");
+    driver.run("create function " + dbName + "." + funcName2 + " as 'org.apache.hadoop.hive.ql.udf.UDFRand'");
+    reset(mockedAuthorizer);
+    int status = driver.compile("DROP DATABASE " + dbName + " CASCADE", true);
+    assertEquals(0, status);
+    Pair<List<HivePrivilegeObject>, List<HivePrivilegeObject>> io = getHivePrivilegeObjectInputs();
+    List<HivePrivilegeObject> inputs = io.getLeft();
+    assertEquals(1, inputs.size()); // database object
+    List<HivePrivilegeObject> outputs = io.getRight();
+    assertEquals(6, outputs.size()); // Default table, 2 tables, 2 functions and 1 db
+    HivePrivilegeObject privilegeObject = outputs.get(0);
+    assertEquals("input type", HivePrivilegeObjectType.TABLE_OR_VIEW, privilegeObject.getType());
+    privilegeObject = outputs.get(1);
+    assertEquals("input type", HivePrivilegeObjectType.TABLE_OR_VIEW, privilegeObject.getType());
+    privilegeObject = outputs.get(2);
+    assertEquals("input type", HivePrivilegeObjectType.TABLE_OR_VIEW, privilegeObject.getType());
+    privilegeObject = outputs.get(3);
+    assertEquals("input type", HivePrivilegeObjectType.FUNCTION, privilegeObject.getType());
+    privilegeObject = outputs.get(4);
+    assertEquals("input type", HivePrivilegeObjectType.FUNCTION, privilegeObject.getType());
+    privilegeObject = outputs.get(5);
+    assertEquals("input type", HivePrivilegeObjectType.DATABASE, privilegeObject.getType());
+  }
+
   /**
    * @return pair with left value as inputs and right value as outputs,
    *  passed in current call to authorizer.checkPrivileges

@@ -8885,6 +8885,30 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
+  public GetFunctionsResponse get_functions_in_db(GetFunctionsRequest req)
+      throws MetaException {
+    startFunction("get_functions", ": db=" + req.getDbName()
+        + " pat=" + req.getPattern());
+
+    RawStore ms = getMS();
+    Exception ex = null;
+    List<Function> funcNames = null;
+
+    try {
+      funcNames = ms.getFunctionsInDb(req.getCatalogName(), req.getDbName(), req.getPattern());
+    } catch (Exception e) {
+      ex = e;
+      throw newMetaException(e);
+    } finally {
+      endFunction("get_functions", funcNames != null, ex);
+    }
+    GetFunctionsResponse response = new GetFunctionsResponse();
+    response.setFunctions(funcNames);
+
+    return response;
+  }
+
+  @Override
   public GetAllFunctionsResponse get_all_functions()
       throws MetaException {
     GetAllFunctionsResponse response = new GetAllFunctionsResponse();

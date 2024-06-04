@@ -6289,6 +6289,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  public List<Function> getFunctionsInDb(String dbName, String pattern) throws HiveException {
+    try {
+      return getMSC().getFunctionsInDb(dbName, pattern);
+    } catch (TException te) {
+      throw new HiveException(te);
+    }
+  }
+
   public void setMetaConf(String propName, String propValue) throws HiveException {
     try {
       getMSC().setMetaConf(propName, propValue);

@@ -1795,6 +1795,18 @@ struct DropDatabaseRequest {
   8: optional bool deleteManagedDir=true
 }
 
+struct GetFunctionsRequest {
+  1: required string dbName,
+  2: optional string catalogName,
+  3: optional string pattern,
+  4: optional bool returnNames=true
+}
+
+struct GetFunctionsResponse {
+  1: optional list<string> function_names,
+  2: optional list<Function> functions
+}
+
 // Request type for cm_recycle
 struct CmRecycleRequest {
   1: required string dataPath,
@@ -3027,6 +3039,8 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
       throws (1:InvalidOperationException o1, 2:MetaException o2)
 
   list<string> get_functions(1:string dbName, 2:string pattern)
+      throws (1:MetaException o1)
+  GetFunctionsResponse get_functions_in_db(1:GetFunctionsRequest request)
       throws (1:MetaException o1)
   Function get_function(1:string dbName, 2:string funcName)
       throws (1:MetaException o1, 2:NoSuchObjectException o2)

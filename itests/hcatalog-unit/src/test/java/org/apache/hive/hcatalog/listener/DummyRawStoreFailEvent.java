@@ -1057,6 +1057,12 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
+  public List<Function> getFunctionsInDb(String catName, String dbName, String pattern)
+      throws MetaException {
+    return objectStore.getFunctionsInDb(catName, dbName, pattern);
+  }
+
+  @Override
   public AggrStats get_aggr_stats_for(String catName, String dbName,
                                       String tblName, List<String> partNames, List<String> colNames,
                                       String engine)
