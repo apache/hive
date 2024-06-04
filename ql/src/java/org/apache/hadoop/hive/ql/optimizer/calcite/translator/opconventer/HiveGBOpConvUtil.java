@@ -1028,32 +1028,65 @@ final class HiveGBOpConvUtil {
     List<ExprNodeDesc> reduceValues = rs.getConf().getValueCols();
     ArrayList<AggregationDesc> aggregations = new ArrayList<AggregationDesc>();
     int udafColStartPosInOriginalGB = gbInfo.gbKeys.size();
+
+    final List<List<ColumnInfo>> paramColInfoTable = new ArrayList<>(gbInfo.udafAttrs.size());
+    final List<List<String>> distinctColumnNameTable = new ArrayList<>(gbInfo.udafAttrs.size());
+    final Map<ColumnInfo, String> distinctColumnMapping = new HashMap<>();
+    for (int i = 0; i < gbInfo.udafAttrs.size(); i++) {
+      final UDAFAttrs udafAttr = gbInfo.udafAttrs.get(i);
+      final List<ColumnInfo> paramColInfo = new ArrayList<>(udafAttr.udafParams.size());
+      final List<String> distinctColNames = new ArrayList<>(udafAttr.udafParams.size());
+
+      for (int j = 0; j < udafAttr.udafParams.size(); j++) {
+        final int argPos = getColInfoPos(udafAttr.udafParams.get(j), gbInfo);
+        final ColumnInfo rsUDAFParamColInfo = rsColInfoLst.get(argPos);
+        paramColInfo.add(rsUDAFParamColInfo);
+
+        final String distinctColumnName;
+        if (udafAttr.isDistinctUDAF && lastReduceKeyColName != null) {
+          distinctColumnName = Utilities.ReduceField.KEY.name() + "." + lastReduceKeyColName
+                  + ":" + numDistinctUDFs + "." + SemanticAnalyzer.getColumnInternalName(j);
+          distinctColumnMapping.putIfAbsent(rsUDAFParamColInfo, distinctColumnName);
+        } else {
+          distinctColumnName = null;
+        }
+        distinctColNames.add(distinctColumnName);
+      }
+
+      paramColInfoTable.add(paramColInfo);
+      distinctColumnNameTable.add(distinctColNames);
+
+      if(udafAttr.isDistinctUDAF) {
+        numDistinctUDFs++;
+      }
+    }
+
     // the positions in rsColInfoLst are as follows
     // --grpkey--,--distkey--,--values--
     // but distUDAF may be before/after some non-distUDAF,
     // i.e., their positions can be mixed.
     // so for all UDAF we first check to see if it is groupby key, if not is it distinct key
     // if not it should be value
-    Map<Integer, List<ExprNodeDesc>> indexToParameter = new TreeMap<>();
-    for (int i = 0; i < gbInfo.udafAttrs.size(); i++) {
-      UDAFAttrs udafAttr = gbInfo.udafAttrs.get(i);
-      ArrayList<ExprNodeDesc> aggParameters = new ArrayList<ExprNodeDesc>();
+    final Map<Integer, List<ExprNodeDesc>> indexToParameter = new TreeMap<>();
+    for (int i = 0; i < paramColInfoTable.size(); i++) {
+      final ArrayList<ExprNodeDesc> aggParameters = new ArrayList<>();
 
-      ColumnInfo rsUDAFParamColInfo;
-      ExprNodeDesc udafParam;
-      ExprNodeDesc constantPropDistinctUDAFParam;
-      for (int j = 0; j < udafAttr.udafParams.size(); j++) {
-        int argPos = getColInfoPos(udafAttr.udafParams.get(j), gbInfo);
-        rsUDAFParamColInfo = rsColInfoLst.get(argPos);
-        String rsUDAFParamName = rsUDAFParamColInfo.getInternalName();
+      for (int j = 0; j < paramColInfoTable.get(i).size(); j++) {
+        final ColumnInfo rsUDAFParamColInfo = paramColInfoTable.get(i).get(j);
 
-        if (udafAttr.isDistinctUDAF && lastReduceKeyColName != null) {
-          rsUDAFParamName = Utilities.ReduceField.KEY.name() + "." + lastReduceKeyColName
-                  + ":" + numDistinctUDFs + "." + SemanticAnalyzer.getColumnInternalName(j);
+        final String rsUDAFParamName;
+        if (distinctColumnNameTable.get(i).get(j) != null) {
+          rsUDAFParamName = distinctColumnNameTable.get(i).get(j);
+        } else if (distinctColumnMapping.containsKey(rsUDAFParamColInfo)) {
+          // This UDAF is not labeled with DISTINCT, but it refers to a DISTINCT key.
+          // The original internal name could be already obsolete as any DISTINCT keys are renamed.
+          rsUDAFParamName = distinctColumnMapping.get(rsUDAFParamColInfo);
+        } else {
+          rsUDAFParamName = rsUDAFParamColInfo.getInternalName();
         }
-        udafParam = new ExprNodeColumnDesc(rsUDAFParamColInfo.getType(), rsUDAFParamName,
+        ExprNodeDesc udafParam = new ExprNodeColumnDesc(rsUDAFParamColInfo.getType(), rsUDAFParamName,
                 rsUDAFParamColInfo.getTabAlias(), rsUDAFParamColInfo.getIsVirtualCol());
-        constantPropDistinctUDAFParam = SemanticAnalyzer
+        final ExprNodeDesc constantPropDistinctUDAFParam = SemanticAnalyzer
                 .isConstantParameterInAggregationParameters(rsUDAFParamColInfo.getInternalName(),
                         reduceValues);
         if (constantPropDistinctUDAFParam != null) {
@@ -1062,10 +1095,8 @@ final class HiveGBOpConvUtil {
         aggParameters.add(udafParam);
       }
       indexToParameter.put(i, aggParameters);
-      if(udafAttr.isDistinctUDAF) {
-        numDistinctUDFs++;
-      }
     }
+
     for(Map.Entry<Integer, List<ExprNodeDesc>> e : indexToParameter.entrySet()){
       UDAFAttrs udafAttr = gbInfo.udafAttrs.get(e.getKey());
       Mode udafMode = SemanticAnalyzer.groupByDescModeToUDAFMode(gbMode, udafAttr.isDistinctUDAF);
