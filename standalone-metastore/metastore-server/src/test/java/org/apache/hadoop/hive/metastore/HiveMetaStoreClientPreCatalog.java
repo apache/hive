@@ -3309,12 +3309,6 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public List<Table> getTables(String dbname, String tablePattern, boolean isSkipClientFiltering)
-          throws MetaException {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public void updateCreationMetadata(String catName, String dbName, String tableName,
                                      CreationMetadata cm) throws TException {
     throw new UnsupportedOperationException();
