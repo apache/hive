@@ -1836,11 +1836,6 @@ public class Hive {
     return getTableObjects(dbName, ".*", null);
   }
 
-  public List<Table> getAllTableObjects(String dbName, boolean isSkipClientFiltering)
-      throws HiveException {
-    return getTableObjects(dbName, ".*", isSkipClientFiltering);
-  }
-
   /**
    * Get all materialized view names for the specified database.
    * @param dbName
@@ -1881,21 +1876,6 @@ public class Hive {
             return new Table(table);
           }
         }
-      );
-    } catch (Exception e) {
-      throw new HiveException(e);
-    }
-  }
-
-  public List<Table> getTableObjects(String dbName, String pattern, boolean isSkipClientFiltering) throws HiveException {
-    try {
-      return Lists.transform(getMSC().getTables(dbName, pattern, isSkipClientFiltering),
-              new com.google.common.base.Function<org.apache.hadoop.hive.metastore.api.Table, Table>() {
-                @Override
-                public Table apply(org.apache.hadoop.hive.metastore.api.Table table) {
-                  return new Table(table);
-                }
-              }
       );
     } catch (Exception e) {
       throw new HiveException(e);

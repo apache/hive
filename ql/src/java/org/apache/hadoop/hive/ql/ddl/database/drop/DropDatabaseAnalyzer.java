@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -35,6 +36,7 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 import java.util.List;
 
@@ -61,8 +63,12 @@ public class DropDatabaseAnalyzer extends BaseSemanticAnalyzer {
     // if cascade=true, then we need to authorize the drop table action as well, and add the tables to the outputs
     boolean isDbLevelLock = true;
     if (cascade) {
+      Hive newDb = null;
       try {
-        List<Table> tables = db.getAllTableObjects(databaseName, true);
+        HiveConf hiveConf = new HiveConf(conf);
+        hiveConf.set("hive.metastore.client.filter.enabled", "false");
+        newDb = Hive.get(hiveConf);
+        List<Table> tables = newDb.getAllTableObjects(databaseName);
         isDbLevelLock = !isSoftDelete || tables.stream().allMatch(
           table -> AcidUtils.isTableSoftDeleteEnabled(table, conf));
         for (Table table : tables) {
@@ -81,6 +87,15 @@ public class DropDatabaseAnalyzer extends BaseSemanticAnalyzer {
         }
       } catch (HiveException e) {
         throw new SemanticException(e);
+      } finally {
+        if (newDb != null) {
+          try {
+            // restore the newDb instance so that hive conf is restored for any other thread local calls.
+            newDb = Hive.get(conf);
+          } catch (HiveException e) {
+            throw new RuntimeException(e);
+          }
+        }
       }
     }
     inputs.add(new ReadEntity(database));
