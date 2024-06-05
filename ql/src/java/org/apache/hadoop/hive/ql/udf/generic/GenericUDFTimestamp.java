@@ -84,7 +84,7 @@ public class GenericUDFTimestamp extends GenericUDF {
       final PrimitiveGrouping grouping = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(tsInputTypes[0]);
       if (strict && grouping == PrimitiveGrouping.NUMERIC_GROUP) {
         throw new UDFArgumentException(
-                "Casting NUMERIC types to TIMESTAMP is prohibited (" + ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION + ")");
+            "Casting NUMERIC types to TIMESTAMP is prohibited (" + ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION + ")");
       }
       intToTimestampInSeconds = ss.getConf().getBoolVar(ConfVars.HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS);
     }
