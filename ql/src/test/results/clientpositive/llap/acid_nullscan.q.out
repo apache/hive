@@ -40,7 +40,7 @@ POSTHOOK: Input: default@acid_vectorized_n1
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT SUM(`$f0`) AS `$f0`
 FROM (SELECT *
-FROM (VALUES  (NULL)) AS `t` (`$f0`)
+FROM (SELECT NULL AS `$f0`) AS `t`
 WHERE 1 = 0) AS `t`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
