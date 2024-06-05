@@ -36,7 +36,7 @@ STAGE PLANS:
                   Select Operator
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: sum('a'), count(), sum(null), sum(null)
+                      aggregations: sum('a'), sum(null), count(null), sum(null)
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -45,19 +45,19 @@ STAGE PLANS:
                         null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: double), _col1 (type: bigint), _col2 (type: double), _col3 (type: double)
+                        value expressions: _col0 (type: double), _col1 (type: double), _col2 (type: bigint), _col3 (type: double)
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: sum(VALUE._col0), count(VALUE._col1), sum(VALUE._col2), sum(VALUE._col3)
+                aggregations: sum(VALUE._col0), sum(VALUE._col1), count(VALUE._col2), sum(VALUE._col3)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: double), (_col0 / _col1) (type: double), ((_col2 - ((_col3 * _col3) / _col1)) / _col1) (type: double), power(((_col2 - ((_col3 * _col3) / _col1)) / _col1), 0.5) (type: double)
+                  expressions: _col0 (type: double), (_col1 / _col2) (type: double), ((_col3 - ((_col1 * _col1) / _col2)) / _col2) (type: double), power(((_col3 - ((_col1 * _col1) / _col2)) / _col2), 0.5) (type: double)
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -92,4 +92,4 @@ FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-0.0	0.0	NULL	NULL
+0.0	NULL	NULL	NULL
