@@ -709,7 +709,7 @@ POSTHOOK: query: explain extended select int(1.2) from src limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT CAST(1.2 AS INT) AS `_o__c0`
+OPTIMIZED SQL: SELECT CAST(1 AS INT) AS `_o__c0`
 FROM `default`.`src`
 LIMIT 1
 STAGE DEPENDENCIES:
