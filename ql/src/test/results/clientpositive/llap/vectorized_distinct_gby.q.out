@@ -337,13 +337,13 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: bigint), _col1 (type: bigint), (UDFToDouble(_col0) / _col1) (type: double), power(((_col2 - ((_col3 * _col3) / _col1)) / _col1), 0.5) (type: double)
+                  expressions: _col0 (type: bigint), _col1 (type: bigint), (UDFToDouble(_col0) / _col1) (type: double), power((if(((_col2 - ((_col3 * _col3) / _col1)) < 0), 0, (_col2 - ((_col3 * _col3) / _col1))) / _col1), 0.5) (type: double)
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumnNums: [0, 1, 5, 10]
-                      selectExpressions: DoubleColDivideLongColumn(col 4:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 4:double) -> 5:double, FuncPowerDoubleToDouble(col 9:double)(children: DoubleColDivideLongColumn(col 8:double, col 1:bigint)(children: DoubleColSubtractDoubleColumn(col 2:double, col 7:double)(children: DoubleColDivideLongColumn(col 6:double, col 1:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 6:double) -> 7:double) -> 8:double) -> 9:double) -> 10:double
+                      projectedOutputColumnNums: [0, 1, 5, 16]
+                      selectExpressions: DoubleColDivideLongColumn(col 4:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 4:double) -> 5:double, FuncPowerDoubleToDouble(col 15:double)(children: DoubleColDivideLongColumn(col 14:double, col 1:bigint)(children: IfExprColumnCondExpr(col 9:boolean, col 10:doublecol 13:double)(children: DoubleColLessLongScalar(col 8:double, val 0)(children: DoubleColSubtractDoubleColumn(col 2:double, col 7:double)(children: DoubleColDivideLongColumn(col 6:double, col 1:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 6:double) -> 7:double) -> 8:double) -> 9:boolean, ConstantVectorExpression(val 0.0) -> 10:double, DoubleColSubtractDoubleColumn(col 2:double, col 12:double)(children: DoubleColDivideLongColumn(col 11:double, col 1:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 11:double) -> 12:double) -> 13:double) -> 14:double) -> 15:double) -> 16:double
                   Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false

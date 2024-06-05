@@ -517,6 +517,12 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
         rexBuilder.makeCall(
             SqlStdOperatorTable.MINUS,
             sumArgSquared, avgSumSquaredArg);
+    final RexNode zeroLiteral =
+            rexBuilder.makeExactLiteral(BigDecimal.ZERO);
+    final RexNode correctedDiff = rexBuilder.makeCall(SqlStdOperatorTable.CASE,
+            rexBuilder.makeCall(SqlStdOperatorTable.LESS_THAN, diff, zeroLiteral),
+            zeroLiteral,
+            diff);
 
     final RexNode denominator;
     if (biased) {
@@ -540,7 +546,7 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
 
     final RexNode div =
         rexBuilder.makeCall(
-            SqlStdOperatorTable.DIVIDE, diff, denominator);
+            SqlStdOperatorTable.DIVIDE, correctedDiff, denominator);
 
     RexNode result = div;
     if (sqrt) {
