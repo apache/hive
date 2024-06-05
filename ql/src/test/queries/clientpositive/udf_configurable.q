@@ -15,7 +15,7 @@ set hive.use.googleregex.engine=true;
 -- On HiveServer2
 SELECT
   -- DECIMAL because of hive.compat=latest
-  TYPEOF(cint1 / cint2),
+  cint1 / cint2,
   -- Allowed by hive.strict.timestamp.conversion=false
   cint1 = ctimestamp,
   -- Allowed by hive.strict.timestamp.conversion=false
@@ -37,7 +37,7 @@ set hive.fetch.task.conversion=none;
 set hive.vectorized.execution.enabled=false;
 SELECT
   -- DECIMAL because of hive.compat=latest
-  TYPEOF(cint1 / cint2),
+  cint1 / cint2,
   -- Allowed by hive.strict.timestamp.conversion=false
   cint1 = ctimestamp,
   -- Allowed by hive.strict.timestamp.conversion=false
