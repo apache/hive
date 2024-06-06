@@ -565,6 +565,14 @@ public class TestObjectStore {
     }
     Assert.assertEquals(1, partNames.size());
     Assert.assertEquals("country=US/state=MA", partNames.get(0));
+
+    try (AutoCloseable c = deadline()) {
+      partNames = objectStore.listPartitionNamesByFilter(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          new GetPartitionsArgs.GetPartitionsArgsBuilder().filter("Country != ''").build());
+    }
+    Assert.assertEquals(2, partNames.size());
+    Assert.assertEquals("country=US/state=CA", partNames.get(0));
+    Assert.assertEquals("country=US/state=MA", partNames.get(1));
   }
 
   @Test
