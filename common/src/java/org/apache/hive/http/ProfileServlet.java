@@ -353,11 +353,12 @@ public class ProfileServlet extends HttpServlet {
 
   private Output getOutput(final HttpServletRequest req) {
     final String outputArg = req.getParameter("output");
+    String outputFormat = outputArg.trim().toUpperCase();
     if (req.getParameter("output") != null) {
       try {
-        return Output.valueOf(outputArg.trim().toUpperCase());
+        return Output.valueOf(outputFormat);
       } catch (IllegalArgumentException e) {
-        LOG.warn("Output format value is invalid, returning with default HTML");
+        LOG.warn("Output format value '{}' is invalid, returning with default HTML", outputFormat);
         return Output.HTML;
       }
     }
