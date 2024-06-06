@@ -1551,9 +1551,11 @@ class MetaStoreDirectSql {
               : tableValue + " " + node.operator.getSqlOp() + " " + nodeValue0;
       // For equals and not-equals filter, we can add partition name filter to improve performance.
       boolean isOpEquals = Operator.isEqualOperator(node.operator);
-      if (isOpEquals || Operator.isNotEqualOperator(node.operator)) {
+      boolean isOpNotEqual = Operator.isNotEqualOperator(node.operator);
+      String nodeValueStr = node.value.toString();
+      if (StringUtils.isNotEmpty(nodeValueStr) && (isOpEquals || isOpNotEqual)) {
         Map<String, String> partKeyToVal = new HashMap<>();
-        partKeyToVal.put(partCol.getName(), node.value.toString());
+        partKeyToVal.put(partCol.getName(), nodeValueStr);
         String escapedNameFragment = Warehouse.makePartName(partKeyToVal, false);
         if (colType == FilterType.Date) {
           // Some engines like Pig will record both date and time values, in which case we need
