@@ -190,6 +190,10 @@ public class Date implements Comparable<Date> {
     }
   }
 
+  public static Date valueOf(java.sql.Date d) {
+    return new Date(d.toLocalDate());
+  }
+
   public static Date ofEpochDay(int epochDay) {
     return new Date(LocalDate.ofEpochDay(epochDay));
   }

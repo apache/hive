@@ -80,6 +80,20 @@ public class TestPrimitiveObjectInspectorUtils {
   }
 
   @Test
+  public void testGetDate() {
+    DateFormat gmtDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    gmtDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+    PrimitiveObjectInspector dateOI = PrimitiveObjectInspectorFactory
+        .getPrimitiveJavaObjectInspector(PrimitiveCategory.DATE);
+    assertEquals("1970-01-01", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getDate(Date.ofEpochDay(0), dateOI).toEpochMilli()));
+    assertEquals("2024-06-07", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getDate(Date.ofEpochMilli(1717752174344L), dateOI).toEpochMilli()));
+
+    // Test the compatibility of java.sql.Date that's removed in HIVE-20007
+    assertEquals("1970-01-01", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getDate(java.sql.Date.valueOf("1970-01-01"), dateOI).toEpochMilli()));
+    assertEquals("2024-06-07", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getDate(java.sql.Date.valueOf("2024-06-07"), dateOI).toEpochMilli()));
+  }
+
+  @Test
   public void testgetTimestampWithMillisecondsInt() {
     DateFormat gmtDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     gmtDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -148,6 +162,9 @@ public class TestPrimitiveObjectInspectorUtils {
     PrimitiveObjectInspector timestampOI = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(PrimitiveCategory.TIMESTAMP);
     assertEquals("2015-02-07 15:01:22.123", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(Timestamp.ofEpochMilli(1423321282123L), timestampOI).toSqlTimestamp()));
+
+    // Test the compatibility of java.sql.Timestamp that's removed in HIVE-20007
+    assertEquals("2024-06-07 09:22:54.344", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(new java.sql.Timestamp(1717752174344L), timestampOI).toSqlTimestamp()));
   }
 
   @Test

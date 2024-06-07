@@ -30,6 +30,9 @@ public class JavaTimestampObjectInspector
   }
 
   public TimestampWritableV2 getPrimitiveWritableObject(Object o) {
+    if (o instanceof java.sql.Timestamp) {
+      return new TimestampWritableV2(Timestamp.ofEpochMilli(((java.sql.Timestamp) o).getTime()));
+    }
     return o == null ? null : new TimestampWritableV2((Timestamp) o);
   }
 

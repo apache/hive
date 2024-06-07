@@ -33,6 +33,9 @@ public class JavaDateObjectInspector
   }
 
   public DateWritableV2 getPrimitiveWritableObject(Object o) {
+    if (o instanceof java.sql.Date) {
+      return new DateWritableV2(Date.valueOf((java.sql.Date) o));
+    }
     return o == null ? null : new DateWritableV2((Date) o);
   }
 
