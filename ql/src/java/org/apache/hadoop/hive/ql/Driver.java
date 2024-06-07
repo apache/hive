@@ -78,8 +78,8 @@ public class Driver implements IDriver {
       "snapshot was outdated when locks were acquired";
 
   private int maxRows = 100;
-
-  private final DriverContext driverContext;
+  @VisibleForTesting
+  final DriverContext driverContext;
   private final DriverState driverState = new DriverState();
   private final DriverTxnHandler driverTxnHandler;
 
@@ -143,7 +143,8 @@ public class Driver implements IDriver {
       return new CommandProcessorResponse(getSchema(), null);
     } catch (CommandProcessorException cpe) {
       processRunException(cpe);
-      throw cpe;
+      saveErrorMessageAndRethrow(cpe);
+      return null;
     }
   }
 
@@ -343,7 +344,7 @@ public class Driver implements IDriver {
       driverTxnHandler.acquireLocksIfNeeded();
     } catch (CommandProcessorException cpe) {
       driverTxnHandler.rollback(cpe);
-      throw cpe;
+      saveErrorMessageAndRethrow(cpe);
     }
   }
 
@@ -354,7 +355,7 @@ public class Driver implements IDriver {
       executor.execute();
     } catch (CommandProcessorException cpe) {
       driverTxnHandler.rollback(cpe);
-      throw cpe;
+      saveErrorMessageAndRethrow(cpe);
     }
   }
 
@@ -423,7 +424,8 @@ public class Driver implements IDriver {
       compileInternal(command, false);
       return new CommandProcessorResponse(getSchema(), null);
     } catch (CommandProcessorException cpe) {
-      throw cpe;
+      saveErrorMessageAndRethrow(cpe);
+      return null;
     } finally {
       if (cleanupTxnList) {
         // Valid txn list might be generated for a query compiled using this command, thus we need to reset it
@@ -462,7 +464,7 @@ public class Driver implements IDriver {
         } catch (LockException e) {
           LOG.warn("Exception in releasing locks", e);
         }
-        throw cpe;
+        saveErrorMessageAndRethrow(cpe);
       }
     }
     //Save compile-time PerfLogging for WebUI.
@@ -935,5 +937,10 @@ public class Driver implements IDriver {
 
   public StatsSource getStatsSource() {
     return driverContext.getStatsSource();
+  }
+
+  private void saveErrorMessageAndRethrow(CommandProcessorException cpe) throws CommandProcessorException {
+    driverContext.setQueryErrorMessage(cpe.getMessage());
+    throw cpe;
   }
 }

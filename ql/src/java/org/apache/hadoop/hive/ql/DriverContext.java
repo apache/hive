@@ -76,6 +76,7 @@ public class DriverContext {
 
   // HS2 operation handle guid string
   private String operationId;
+  private String queryErrorMessage;
 
   public DriverContext(QueryState queryState, QueryInfo queryInfo, HookRunner hookRunner,
       HiveTxnManager initTxnManager) {
@@ -220,5 +221,13 @@ public class DriverContext {
 
   public void setOperationId(String operationId) {
     this.operationId = operationId;
+  }
+
+  public String getQueryErrorMessage() {
+    return queryErrorMessage;
+  }
+
+  public void setQueryErrorMessage(String queryErrorMessage) {
+    this.queryErrorMessage = queryErrorMessage;
   }
 }
