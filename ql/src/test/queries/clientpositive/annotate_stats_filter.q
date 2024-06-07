@@ -1,5 +1,6 @@
 set hive.mapred.mode=nonstrict;
 set hive.stats.fetch.column.stats=true;
+set hive.cbo.fallback.strategy=NEVER;
 
 create table if not exists loc_staging (
   state string,
@@ -55,6 +56,7 @@ explain select * from loc_orc where !true;
 -- numRows: 8 rawDataSize: 804
 explain select * from loc_orc where true;
 -- numRows: 8 rawDataSize: 804
+explain cbo select * from loc_orc where 'foo';
 explain select * from loc_orc where 'foo';
 -- numRows: 8 rawDataSize: 804
 explain select * from loc_orc where true = true;
