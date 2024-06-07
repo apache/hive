@@ -109,4 +109,5 @@ public class Constants {
   public static final String CLUSTER_ID_ENV_VAR_NAME = "HIVE_CLUSTER_ID";
   public static final String CLUSTER_ID_CLI_OPT_NAME = "hive.cluster.id";
   public static final String CLUSTER_ID_HIVE_CONF_PROP = "hive.cluster.id";
+  public static final String ICEBERG_PARTITION_COLUMNS = "partition,spec_id";
 }
