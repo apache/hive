@@ -174,6 +174,11 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       Long openFileCost = splitSize > 0 ? splitSize : TableProperties.SPLIT_SIZE_DEFAULT;
       scan = scan.option(TableProperties.SPLIT_OPEN_FILE_COST, String.valueOf(openFileCost));
     }
+    //  TODO: Currently, this projection optimization stored on scan is not being used effectively on Hive side, as
+    //   Hive actually uses conf to propagate the projected columns to let the final reader to read the only
+    //   projected columns data. See IcebergInputFormat::readSchema(Configuration conf, Table table, boolean
+    //   caseSensitive). But we can consider using this projection optimization stored on scan in the future when
+    //   needed.
     Schema readSchema = InputFormatConfig.readSchema(conf);
     if (readSchema != null) {
       scan = scan.project(readSchema);
