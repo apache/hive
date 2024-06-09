@@ -44,6 +44,9 @@ public class CreateDatabaseOperation extends DDLOperation<CreateDatabaseDesc> {
 
   @Override
   public int execute() throws HiveException {
+    if (desc.getIfNotExists() && context.getDb().databaseExists(desc.getName())) {
+      return 0;
+    }
     Database database = new Database(desc.getName(), desc.getComment(), desc.getLocationUri(),
         desc.getDatabaseProperties());
     database.setOwnerName(SessionState.getUserFromAuthenticator());
