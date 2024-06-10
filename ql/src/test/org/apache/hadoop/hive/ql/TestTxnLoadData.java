@@ -94,8 +94,7 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     testMultiStatement(true);
   }
   private void loadDataUpdate(boolean isVectorized) throws Exception {
-    runStatementOnDriver("drop table if exists T");
-    runStatementOnDriver("drop table if exists Tstage");
+    dropTables("T", "Tstage");
     runStatementOnDriver(
       "create table T (a int, b int) stored as orc tblproperties('transactional'='true')");
     //Tstage is just a simple way to generate test data
@@ -139,8 +138,8 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     runStatementOnDriver("alter table T compact 'minor'");
     TestTxnCommands2.runWorker(hiveConf);
     String[][] expected3 = new String[][] {
-        {"{\"writeid\":2,\"bucketid\":536870913,\"rowid\":0}\t1\t17", "t/delta_0000001_0000004_v0000034/bucket_00000"},
-        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t2\t2", "t/delta_0000001_0000004_v0000034/bucket_00000"}
+        {"{\"writeid\":2,\"bucketid\":536870913,\"rowid\":0}\t1\t17", "t/delta_0000001_0000004_v0000019/bucket_00000"},
+        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t2\t2", "t/delta_0000001_0000004_v0000019/bucket_00000"}
     };
     checkResult(expected3, testQuery, isVectorized, "delete compact minor");
 
@@ -173,15 +172,14 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     runStatementOnDriver("alter table T compact 'major'");
     TestTxnCommands2.runWorker(hiveConf);
     String[][] expected6 = new String[][]{
-        {"{\"writeid\":7,\"bucketid\":536870913,\"rowid\":0}\t1\t17", "t/base_0000009_v0000049/bucket_00000"},
-        {"{\"writeid\":7,\"bucketid\":536936449,\"rowid\":0}\t1\t17", "t/base_0000009_v0000049/bucket_00001"},
-        {"{\"writeid\":9,\"bucketid\":536870912,\"rowid\":0}\t2\t2", "t/base_0000009_v0000049/bucket_00000"}
+        {"{\"writeid\":7,\"bucketid\":536870913,\"rowid\":0}\t1\t17", "t/base_0000009_v0000035/bucket_00000"},
+        {"{\"writeid\":7,\"bucketid\":536936449,\"rowid\":0}\t1\t17", "t/base_0000009_v0000035/bucket_00001"},
+        {"{\"writeid\":9,\"bucketid\":536870912,\"rowid\":0}\t2\t2", "t/base_0000009_v0000035/bucket_00000"}
     };
     checkResult(expected6, testQuery, isVectorized, "load data inpath compact major");
   }
   private void loadData(boolean isVectorized) throws Exception {
-    runStatementOnDriver("drop table if exists T");
-    runStatementOnDriver("drop table if exists Tstage");
+    dropTables("T", "Tstage");
     runStatementOnDriver("create table T (a int, b int) stored as orc tblproperties('transactional'='true')");
     runStatementOnDriver("insert into T values(0,2),(0,4)");
     //Tstage is just a simple way to generate test data
@@ -210,10 +208,10 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     runStatementOnDriver("alter table T compact 'minor'");
     TestTxnCommands2.runWorker(hiveConf);
     String[][] expected1 = new String[][] {
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t0\t2", "t/delta_0000001_0000002_v0000026/bucket_00000"},
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t0\t4", "t/delta_0000001_0000002_v0000026/bucket_00000"},
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "t/delta_0000001_0000002_v0000026/bucket_00000"},
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "t/delta_0000001_0000002_v0000026/bucket_00000"}
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t0\t2", "t/delta_0000001_0000002_v0000011/bucket_00000"},
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t0\t4", "t/delta_0000001_0000002_v0000011/bucket_00000"},
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "t/delta_0000001_0000002_v0000011/bucket_00000"},
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "t/delta_0000001_0000002_v0000011/bucket_00000"}
     };
     checkResult(expected1, testQuery, isVectorized, "load data inpath (minor)");
 
@@ -222,11 +220,11 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     runStatementOnDriver("alter table T compact 'major'");
     TestTxnCommands2.runWorker(hiveConf);
     String[][] expected2 = new String[][] {
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t0\t2", "t/base_0000003_v0000031/bucket_00000"},
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t0\t4", "t/base_0000003_v0000031/bucket_00000"},
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "t/base_0000003_v0000031/bucket_00000"},
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "t/base_0000003_v0000031/bucket_00000"},
-        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t2\t2", "t/base_0000003_v0000031/bucket_00000"}
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t0\t2", "t/base_0000003_v0000017/bucket_00000"},
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t0\t4", "t/base_0000003_v0000017/bucket_00000"},
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "t/base_0000003_v0000017/bucket_00000"},
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "t/base_0000003_v0000017/bucket_00000"},
+        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t2\t2", "t/base_0000003_v0000017/bucket_00000"}
     };
     checkResult(expected2, testQuery, isVectorized, "load data inpath (major)");
 
@@ -244,17 +242,16 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     runStatementOnDriver("alter table T compact 'major'");
     TestTxnCommands2.runWorker(hiveConf);
     String[][] expected4 = new String[][] {
-        {"{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\t5\t6", "t/base_0000005_v0000041/bucket_00000"},
-        {"{\"writeid\":4,\"bucketid\":536870912,\"rowid\":1}\t7\t8", "t/base_0000005_v0000041/bucket_00000"},
-        {"{\"writeid\":5,\"bucketid\":536870912,\"rowid\":0}\t6\t6", "t/base_0000005_v0000041/bucket_00000"}};
+        {"{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\t5\t6", "t/base_0000005_v0000026/bucket_00000"},
+        {"{\"writeid\":4,\"bucketid\":536870912,\"rowid\":1}\t7\t8", "t/base_0000005_v0000026/bucket_00000"},
+        {"{\"writeid\":5,\"bucketid\":536870912,\"rowid\":0}\t6\t6", "t/base_0000005_v0000026/bucket_00000"}};
     checkResult(expected4, testQuery, isVectorized, "load data inpath overwrite (major)");
   }
   /**
    * Load Data [overwrite] in to an (un-)partitioned acid converted table
    */
   private void loadDataNonAcid2AcidConversion(boolean isVectorized) throws Exception {
-    runStatementOnDriver("drop table if exists T");
-    runStatementOnDriver("drop table if exists Tstage");
+    dropTables("T", "Tstage");
     runStatementOnDriver("create table T (a int, b int) stored as orc tblproperties('transactional'='false')");
     //per acid write to test nonAcid2acid conversion mixed with load data
     runStatementOnDriver("insert into T values(0,2),(0,4)");
@@ -325,13 +322,13 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
 
     String[][] expected3 = new String[][] {
         {"{\"writeid\":10000002,\"bucketid\":536870912,\"rowid\":0}\t5\t6",
-            "t/base_10000003_v0000036/bucket_00000"},
+            "t/base_10000003_v0000014/bucket_00000"},
         {"{\"writeid\":10000002,\"bucketid\":536870912,\"rowid\":1}\t7\t8",
-            "t/base_10000003_v0000036/bucket_00000"},
+            "t/base_10000003_v0000014/bucket_00000"},
         {"{\"writeid\":10000002,\"bucketid\":536936448,\"rowid\":0}\t8\t8",
-            "t/base_10000003_v0000036/bucket_00001"},
+            "t/base_10000003_v0000014/bucket_00001"},
         {"{\"writeid\":10000003,\"bucketid\":536870912,\"rowid\":0}\t9\t9",
-            "t/base_10000003_v0000036/bucket_00000"}
+            "t/base_10000003_v0000014/bucket_00000"}
     };
     checkResult(expected3, testQuery, isVectorized, "load data inpath overwrite (major)");
   }
@@ -409,6 +406,7 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
   private void checkExpected(List<String> rs, String[][] expected, String msg) {
     super.checkExpected(rs, expected, msg, LOG, true);
   }
+  
   @Test
   public void testMMOrcTable() throws Exception {
     runStatementOnDriver("drop table if exists T");
@@ -424,8 +422,7 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
    * For example, delta_x_x_0001.
    */
   private void testMultiStatement(boolean isVectorized) throws Exception {
-    runStatementOnDriver("drop table if exists T");
-    runStatementOnDriver("drop table if exists Tstage");
+    dropTables("T", "Tstage");
     runStatementOnDriver("create table T (a int, b int) stored as orc tblproperties('transactional'='true')");
     //Tstage is just a simple way to generate test data
     runStatementOnDriver("create table Tstage (a int, b int) stored as orc tblproperties('transactional'='false')");
@@ -454,14 +451,15 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     runStatementOnDriver("alter table T compact 'major'");
     TestTxnCommands2.runWorker(hiveConf);
     String[][] expected2 = new String[][] {
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "t/base_0000001_v0000024/bucket_00000"},
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "t/base_0000001_v0000024/bucket_00000"},
-        {"{\"writeid\":1,\"bucketid\":536870913,\"rowid\":0}\t5\t5", "t/base_0000001_v0000024/bucket_00000"},
-        {"{\"writeid\":1,\"bucketid\":536870913,\"rowid\":1}\t6\t6", "t/base_0000001_v0000024/bucket_00000"}
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "t/base_0000001_v0000010/bucket_00000"},
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "t/base_0000001_v0000010/bucket_00000"},
+        {"{\"writeid\":1,\"bucketid\":536870913,\"rowid\":0}\t5\t5", "t/base_0000001_v0000010/bucket_00000"},
+        {"{\"writeid\":1,\"bucketid\":536870913,\"rowid\":1}\t6\t6", "t/base_0000001_v0000010/bucket_00000"}
     };
     checkResult(expected2, testQuery, isVectorized, "load data inpath (major)");
     //at lest for now, Load Data w/Overwrite is not allowed in a txn: HIVE-18154
   }
+  
   @Test
   public void testAbort() throws Exception {
     boolean isVectorized = false;

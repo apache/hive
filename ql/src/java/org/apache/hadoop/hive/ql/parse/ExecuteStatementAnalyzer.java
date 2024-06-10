@@ -225,7 +225,7 @@ public class ExecuteStatementAnalyzer extends SemanticAnalyzer{
 
       this.queryProperties = cachedPlan.getQueryProperties();
       this.setAutoCommitValue(cachedPlan.getAutoCommitValue());
-      this.transactionalInQuery = cachedPlan.hasTransactionalInQuery();
+      this.transactionalInQuery = cachedPlan.hasAcidReadWrite();
       this.acidFileSinks.addAll(cachedPlan.getAcidFileSinks());
       this.initCtx(cachedPlan.getCtx());
       this.ctx.setCboInfo(cachedPlan.getCboInfo());

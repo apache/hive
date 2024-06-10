@@ -1272,7 +1272,6 @@ public final class GenMapRedUtils {
       TableDesc ts = (TableDesc) fsInputDesc.getTableInfo().clone();
       Path mergeDest = srcMmWriteId == null ? finalName : finalName.getParent();
       fsOutputDesc = new FileSinkDesc(mergeDest, ts, conf.getBoolVar(ConfVars.COMPRESS_RESULT));
-      fsOutputDesc.setMmWriteId(srcMmWriteId);
       fsOutputDesc.setIsMerge(true);
       // Create and attach the filesink for the merge.
       OperatorFactory.getAndMakeChild(fsOutputDesc, inputRS, tsMerge);

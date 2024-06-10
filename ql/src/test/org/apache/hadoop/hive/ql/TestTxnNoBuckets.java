@@ -74,11 +74,10 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
   public void testNoBuckets() throws Exception {
     int[][] sourceVals1 = {{0,0,0},{3,3,3}};
     int[][] sourceVals2 = {{1,1,1},{2,2,2}};
-    runStatementOnDriver("drop table if exists tmp");
+    dropTables(NO_BUCKETS_TBL_NAME, "tmp");
     runStatementOnDriver("create table tmp (c1 integer, c2 integer, c3 integer) stored as orc tblproperties('transactional'='false')");
     runStatementOnDriver("insert into tmp " + makeValuesClause(sourceVals1));
     runStatementOnDriver("insert into tmp " + makeValuesClause(sourceVals2));
-    runStatementOnDriver(String.format("drop table if exists %s", NO_BUCKETS_TBL_NAME));
     runStatementOnDriver("create table " + NO_BUCKETS_TBL_NAME + " (c1 integer, c2 integer, c3 integer) stored " +
       "as orc tblproperties('transactional'='true', 'transactional_properties'='default')");
     String stmt = String.format("insert into %s select * from tmp", NO_BUCKETS_TBL_NAME);
@@ -165,10 +164,10 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
     */
 
     String expected[][] = {
-        {"{\"writeid\":2,\"bucketid\":536936449,\"rowid\":0}\t0\t0\t17", NO_BUCKETS_TBL_NAME + "/base_0000002_v0000026/bucket_00001"},
-        {"{\"writeid\":2,\"bucketid\":536870913,\"rowid\":0}\t1\t1\t17", NO_BUCKETS_TBL_NAME + "/base_0000002_v0000026/bucket_00000"},
-        {"{\"writeid\":1,\"bucketid\":536936448,\"rowid\":1}\t2\t2\t2", NO_BUCKETS_TBL_NAME + "/base_0000002_v0000026/bucket_00001"},
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t3\t3\t3", NO_BUCKETS_TBL_NAME + "/base_0000002_v0000026/bucket_00000"}
+        {"{\"writeid\":2,\"bucketid\":536936449,\"rowid\":0}\t0\t0\t17", NO_BUCKETS_TBL_NAME + "/base_0000002_v0000012/bucket_00001"},
+        {"{\"writeid\":2,\"bucketid\":536870913,\"rowid\":0}\t1\t1\t17", NO_BUCKETS_TBL_NAME + "/base_0000002_v0000012/bucket_00000"},
+        {"{\"writeid\":1,\"bucketid\":536936448,\"rowid\":1}\t2\t2\t2", NO_BUCKETS_TBL_NAME + "/base_0000002_v0000012/bucket_00001"},
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t3\t3\t3", NO_BUCKETS_TBL_NAME + "/base_0000002_v0000012/bucket_00000"}
     };
     checkResult(expected,
         "select ROW__ID, c1, c2, c3" + (shouldVectorize() ? "" : ", INPUT__FILE__NAME")
@@ -183,8 +182,8 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
     expectedFiles.add(NO_BUCKETS_TBL_NAME + "/delta_0000001_0000001_0000/bucket_00001_0");
     expectedFiles.add(NO_BUCKETS_TBL_NAME + "/delta_0000002_0000002_0001/bucket_00000_0");
     expectedFiles.add(NO_BUCKETS_TBL_NAME + "/delta_0000002_0000002_0001/bucket_00001_0");
-    expectedFiles.add(NO_BUCKETS_TBL_NAME + "/base_0000002_v0000026/bucket_00000");
-    expectedFiles.add(NO_BUCKETS_TBL_NAME + "/base_0000002_v0000026/bucket_00001");
+    expectedFiles.add(NO_BUCKETS_TBL_NAME + "/base_0000002_v0000012/bucket_00000");
+    expectedFiles.add(NO_BUCKETS_TBL_NAME + "/base_0000002_v0000012/bucket_00001");
     assertExpectedFileSet(expectedFiles, getWarehouseDir() + "/" + NO_BUCKETS_TBL_NAME, NO_BUCKETS_TBL_NAME);
 
     TestTxnCommands2.runCleaner(hiveConf);
@@ -193,8 +192,8 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
     Assert.assertEquals("Unexpected result after clean", stringifyValues(result), rs);
 
     expectedFiles.clear();
-    expectedFiles.add(NO_BUCKETS_TBL_NAME + "/base_0000002_v0000026/bucket_00000");
-    expectedFiles.add(NO_BUCKETS_TBL_NAME + "/base_0000002_v0000026/bucket_00001");
+    expectedFiles.add(NO_BUCKETS_TBL_NAME + "/base_0000002_v0000012/bucket_00000");
+    expectedFiles.add(NO_BUCKETS_TBL_NAME + "/base_0000002_v0000012/bucket_00001");
     assertExpectedFileSet(expectedFiles, getWarehouseDir() + "/" + NO_BUCKETS_TBL_NAME, NO_BUCKETS_TBL_NAME);
   }
 
@@ -204,14 +203,13 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
     int[][] sourceVals2 = {{1,1,1},{2,2,2}};
     int[][] sourceVals3 = {{3,3,3},{4,4,4}};
     int[][] sourceVals4 = {{5,5,5},{6,6,6}};
-    runStatementOnDriver("drop table if exists tmp");
+    dropTables(NO_BUCKETS_TBL_NAME, "tmp");
     runStatementOnDriver("create table tmp (c1 integer, c2 integer) partitioned by (c3 integer) stored as orc " +
       "tblproperties('transactional'='false')");
     runStatementOnDriver("insert into tmp " + makeValuesClause(sourceVals1));
     runStatementOnDriver("insert into tmp " + makeValuesClause(sourceVals2));
     runStatementOnDriver("insert into tmp " + makeValuesClause(sourceVals3));
     runStatementOnDriver("insert into tmp " + makeValuesClause(sourceVals4));
-    runStatementOnDriver("drop table if exists " + NO_BUCKETS_TBL_NAME);
     runStatementOnDriver(String.format("create table %s (c1 integer, c2 integer) partitioned by (c3 integer) stored " +
       "as orc tblproperties('transactional'='true', 'transactional_properties'='default')", NO_BUCKETS_TBL_NAME));
     String stmt = String.format("insert into %s partition(c3) select * from tmp", NO_BUCKETS_TBL_NAME);
@@ -244,7 +242,7 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
    */
   @Test
   public void testCTAS() throws Exception {
-    runStatementOnDriver("drop table if exists myctas");
+    dropTables("myctas");
     int[][] values = {{1,2},{3,4}};
     runStatementOnDriver("insert into " + Table.NONACIDORCTBL +  makeValuesClause(values));
     runStatementOnDriver("create table myctas stored as ORC TBLPROPERTIES ('transactional" +
@@ -292,7 +290,7 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
   @Test
   public void testCtasEmpty() throws Exception {
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID, true);
-    runStatementOnDriver("drop table if exists myctas");
+    dropTables("myctas");
     runStatementOnDriver("create table myctas stored as ORC as" +
         " select a, b from " + Table.NONACIDORCTBL);
     List<String> rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME" +
@@ -312,7 +310,7 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
     d = new Driver(hiveConf);
     int[][] values = {{1,2},{3,4},{5,6},{7,8},{9,10}};
     runStatementOnDriver("insert into " + TxnCommandsBaseForTests.Table.ACIDTBL + makeValuesClause(values));//HIVE-17138: this creates 1 delta_0000013_0000013_0000/bucket_00001
-    runStatementOnDriver("drop table if exists T");
+    dropTables("T");
     runStatementOnDriver("create table T (a int, b int) stored as ORC  TBLPROPERTIES ('transactional'='true')");
     /*
     So Union All removal kicks in and we get 3 subdirs in staging.
@@ -349,8 +347,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     hiveConf.setVar(HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
     d.close();
     d = new Driver(hiveConf);
-    int[][] values = {{1, 2}, {3, 4}, {5, 6}, {7, 8}, {9, 10}};
-    runStatementOnDriver("drop table if exists T");
+    dropTables("T");
     runStatementOnDriver("create table T (a int, b int) stored as ORC  TBLPROPERTIES ('transactional'='true')");
 
     CommandProcessorException e = runStatementOnDriverNegative(
@@ -378,7 +375,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
 
     int[][] values = {{1,2},{2,4},{5,6},{6,8},{9,10}};
     runStatementOnDriver("insert into " + Table.ACIDTBL + makeValuesClause(values));
-    runStatementOnDriver("drop table if exists T");
+    dropTables("T");
     runStatementOnDriver("create table T (a int, b int) stored as ORC  TBLPROPERTIES ('transactional'='false')");
     runStatementOnDriver("insert into T(a,b) select a, b from " + Table.ACIDTBL +
       " where a between 1 and 3 group by a, b union all select a, b from " + Table.ACIDTBL +
@@ -475,23 +472,23 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     /*Compaction preserves location of rows wrt buckets/tranches (for now)*/
     String expected4[][] = {
         {"{\"writeid\":0,\"bucketid\":537001984,\"rowid\":0}\t1\t2",
-            "warehouse/t/base_10000002_v0000030/bucket_00002"},
+            "warehouse/t/base_10000002_v0000016/bucket_00002"},
         {"{\"writeid\":0,\"bucketid\":537001984,\"rowid\":1}\t2\t4",
-            "warehouse/t/base_10000002_v0000030/bucket_00002"},
+            "warehouse/t/base_10000002_v0000016/bucket_00002"},
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":0}\t5\t6",
-            "warehouse/t/base_10000002_v0000030/bucket_00000"},
+            "warehouse/t/base_10000002_v0000016/bucket_00000"},
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":1}\t9\t10",
-            "warehouse/t/base_10000002_v0000030/bucket_00000"},
+            "warehouse/t/base_10000002_v0000016/bucket_00000"},
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":3}\t10\t20",
-            "warehouse/t/base_10000002_v0000030/bucket_00000"},
+            "warehouse/t/base_10000002_v0000016/bucket_00000"},
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":2}\t12\t12",
-            "warehouse/t/base_10000002_v0000030/bucket_00000"},
+            "warehouse/t/base_10000002_v0000016/bucket_00000"},
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":4}\t20\t40",
-            "warehouse/t/base_10000002_v0000030/bucket_00000"},
+            "warehouse/t/base_10000002_v0000016/bucket_00000"},
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":5}\t50\t60",
-            "warehouse/t/base_10000002_v0000030/bucket_00000"},
+            "warehouse/t/base_10000002_v0000016/bucket_00000"},
         {"{\"writeid\":10000001,\"bucketid\":536870913,\"rowid\":0}\t60\t88",
-            "warehouse/t/base_10000002_v0000030/bucket_00000"},
+            "warehouse/t/base_10000002_v0000016/bucket_00000"},
     };
     checkExpected(rs, expected4,"after major compact");
   }
@@ -499,7 +496,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
   public void testInsertFromUnion() throws Exception {
     int[][] values = {{1,2},{2,4},{5,6},{6,8},{9,10}};
     runStatementOnDriver("insert into " + Table.NONACIDNONBUCKET + makeValuesClause(values));
-    runStatementOnDriver("drop table if exists T");
+    dropTables("T");
     runStatementOnDriver("create table T (a int, b int) stored as ORC  TBLPROPERTIES ('transactional'='true')");
     runStatementOnDriver("insert into T(a,b) select a, b from " + Table.NONACIDNONBUCKET + " where a between 1 and 3 group by a, b union all select a, b from " + Table.NONACIDNONBUCKET + " where a between 5 and 7 union all select a, b from " + Table.NONACIDNONBUCKET + " where a >= 9");
     List<String> rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from T order by a, b, INPUT__FILE__NAME");
@@ -664,7 +661,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     hiveConf.setVar(HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
     //this enables vectorization of ROW__ID
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ROW_IDENTIFIER_ENABLED, true);//HIVE-12631
-    runStatementOnDriver("drop table if exists T");
+    dropTables("T");
     runStatementOnDriver("create table T(a int, b int) stored as orc tblproperties('transactional'='false')");
     int[][] values = {{1,2},{2,4},{5,6},{6,8},{9,10}};
     runStatementOnDriver("insert into T(a, b) " + makeValuesClause(values));
@@ -747,15 +744,15 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     rs = runStatementOnDriver(query);
     String[][] expected5 = {//the row__ids are the same after compaction
         {"{\"writeid\":10000001,\"bucketid\":536870913,\"rowid\":0}\t1\t17",
-            "warehouse/t/base_10000001_v0000030/bucket_00000"},
+            "warehouse/t/base_10000001_v0000018/bucket_00000"},
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":1}\t2\t4",
-            "warehouse/t/base_10000001_v0000030/bucket_00000"},
+            "warehouse/t/base_10000001_v0000018/bucket_00000"},
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":2}\t5\t6",
-            "warehouse/t/base_10000001_v0000030/bucket_00000"},
+            "warehouse/t/base_10000001_v0000018/bucket_00000"},
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":3}\t6\t8",
-            "warehouse/t/base_10000001_v0000030/bucket_00000"},
+            "warehouse/t/base_10000001_v0000018/bucket_00000"},
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":4}\t9\t10",
-            "warehouse/t/base_10000001_v0000030/bucket_00000"}
+            "warehouse/t/base_10000001_v0000018/bucket_00000"}
     };
     checkExpected(rs, expected5, "After major compaction");
     //vectorized because there is INPUT__FILE__NAME
@@ -770,7 +767,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
   @Test
   public void testCompactStatsGather() throws Exception {
     hiveConf.setIntVar(HiveConf.ConfVars.HIVE_OPT_SORT_DYNAMIC_PARTITION_THRESHOLD, -1);
-    runStatementOnDriver("drop table if exists T");
+    dropTables("T");
     runStatementOnDriver("create table T(a int, b int) partitioned by (p int, q int) " +
       "stored as orc TBLPROPERTIES ('transactional'='true')");
 
@@ -819,10 +816,10 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t1\t1\t4\t3", "t/p=1/q=1/delta_0000001_0000001_0000/bucket_00000_0"},
         {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t1\t1\t5\t1", "t/p=1/q=1/delta_0000003_0000003_0000/bucket_00000_0"},
         {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":1}\t1\t1\t5\t3", "t/p=1/q=1/delta_0000003_0000003_0000/bucket_00000_0"},
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2\t4\t2", "t/p=1/q=2/base_0000003_v0000021/bucket_00000"},
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t1\t2\t4\t4", "t/p=1/q=2/base_0000003_v0000021/bucket_00000"},
-        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t1\t2\t5\t2", "t/p=1/q=2/base_0000003_v0000021/bucket_00000"},
-        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":1}\t1\t2\t5\t4", "t/p=1/q=2/base_0000003_v0000021/bucket_00000"}
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2\t4\t2", "t/p=1/q=2/base_0000003_v0000011/bucket_00000"},
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t1\t2\t4\t4", "t/p=1/q=2/base_0000003_v0000011/bucket_00000"},
+        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t1\t2\t5\t2", "t/p=1/q=2/base_0000003_v0000011/bucket_00000"},
+        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":1}\t1\t2\t5\t4", "t/p=1/q=2/base_0000003_v0000011/bucket_00000"}
     };
     checkExpected(rs, expected2, "after major compaction");
 
@@ -848,7 +845,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
   @Test
   public void testDefault() throws Exception {
     hiveConf.set(MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID.getVarname(), "true");
-    runStatementOnDriver("drop table if exists T");
+    dropTables("T");
     runStatementOnDriver("create table T (a int, b int) stored as orc");
     runStatementOnDriver("insert into T values(1,2),(3,4)");
     String query = "select ROW__ID, a, b, INPUT__FILE__NAME from T order by a, b";
@@ -866,7 +863,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
   @Test
   public void testEmptyCompactionResult() throws Exception {
     hiveConf.set(MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID.getVarname(), "true");
-    runStatementOnDriver("drop table if exists T");
+    dropTables("T");
     runStatementOnDriver("create table T (a int, b int) stored as orc");
     int[][] data = {{1,2}, {3,4}};
     runStatementOnDriver("insert into T" + makeValuesClause(data));
@@ -911,7 +908,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
   @Test
   public void testGetPartitionsNoSession() throws Exception {
     hiveConf.setIntVar(HiveConf.ConfVars.HIVE_OPT_SORT_DYNAMIC_PARTITION_THRESHOLD, -1);
-    runStatementOnDriver("drop table if exists T");
+    dropTables("T");
     runStatementOnDriver("create table T(a int, b int) partitioned by (p int, q int) " +
         "stored as orc TBLPROPERTIES ('transactional'='true')");
 

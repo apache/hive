@@ -57,16 +57,12 @@ public abstract class QueryCompactor implements Compactor {
   /**
    * This is the final step of the compaction, which can vary based on compaction type. Usually this involves some file
    * operation.
-   * @param dest The final directory; basically an SD directory.
    * @param tmpTableName The name of the temporary table.
    * @param conf hive configuration.
-   * @param actualWriteIds valid write Ids used to fetch the high watermark Id.
-   * @param compactorTxnId transaction, that the compacter started.
    * @throws IOException failed to execute file system operation.
    * @throws HiveException failed to execute file operation within hive.
    */
-  protected void commitCompaction(String dest, String tmpTableName, HiveConf conf,
-      ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException, HiveException {}
+  protected void commitCompaction(String tmpTableName, HiveConf conf) throws IOException, HiveException {}
 
   protected SessionState setupQueryCompactionSession(HiveConf conf, CompactionInfo compactionInfo, Map<String, String> tblProperties) {
     String queueName = HiveConf.getVar(conf, HiveConf.ConfVars.COMPACTOR_JOB_QUEUE);
@@ -74,14 +70,21 @@ public abstract class QueryCompactor implements Compactor {
       conf.set(TezConfiguration.TEZ_QUEUE_NAME, queueName);
     }
     Util.disableLlapCaching(conf);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING, false);
     conf.set(HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_HDFS_ENCRYPTION_SHIM_CACHE_ON, false);
     Util.overrideConfProps(conf, compactionInfo, tblProperties);
+    
     String user = compactionInfo.runAs;
     SessionState sessionState = DriverUtils.setUpSessionState(conf, user, true);
     sessionState.setCompaction(true);
+    
     return sessionState;
+  }
+  
+  protected HiveConf setUpDriverSession(HiveConf hiveConf) {
+    return new HiveConf(hiveConf);
   }
   
   /**
@@ -98,12 +101,10 @@ public abstract class QueryCompactor implements Compactor {
    * @param dropQueries queries which drops the temporary tables.
    * @throws IOException error during the run of the compaction.
    */
-  void runCompactionQueries(HiveConf conf, String tmpTableName, StorageDescriptor storageDescriptor,
-      ValidWriteIdList writeIds, CompactionInfo compactionInfo, List<Path> resultDirs,
+  void runCompactionQueries(HiveConf conf, String tmpTableName, CompactionInfo compactionInfo, List<Path> resultDirs,
       List<String> createQueries, List<String> compactionQueries, List<String> dropQueries,
       Map<String, String> tblProperties) throws IOException {
     SessionState sessionState = setupQueryCompactionSession(conf, compactionInfo, tblProperties);
-    long compactorTxnId = Compactor.getCompactorTxnId(conf);
     try {
       for (String query : createQueries) {
         try {
@@ -133,9 +134,9 @@ public abstract class QueryCompactor implements Compactor {
           conf.set("hive.optimize.bucketingsorting", "false");
           conf.set("hive.vectorized.execution.enabled", "false");
         }
-        DriverUtils.runOnDriver(conf, sessionState, query, writeIds, compactorTxnId);
+        DriverUtils.runOnDriver(conf, sessionState, query);
       }
-      commitCompaction(storageDescriptor.getLocation(), tmpTableName, conf, writeIds, compactorTxnId);
+      commitCompaction(tmpTableName, conf);
     } catch (HiveException e) {
       LOG.error("Error doing query based {} compaction", compactionInfo.type, e);
       removeResultDirs(resultDirs, conf);

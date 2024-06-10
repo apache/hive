@@ -51,11 +51,9 @@ final class MinorQueryCompactor extends QueryCompactor {
     StorageDescriptor storageDescriptor = context.getSd();
     AcidDirectory dir = context.getAcidDirectory();
     ValidWriteIdList writeIds = context.getValidWriteIdList();
+    
     // Set up the session for driver.
-    HiveConf conf = new HiveConf(hiveConf);
-    conf.set(HiveConf.ConfVars.SPLIT_GROUPING_MODE.varname, CompactorUtil.COMPACTOR);
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_FETCH_COLUMN_STATS, false);
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_ESTIMATE_STATS, false);
+    HiveConf conf = setUpDriverSession(hiveConf);
 
     String tmpTableName =
         table.getDbName() + "_tmp_compactor_" + table.getTableName() + "_" + System.currentTimeMillis();
@@ -70,16 +68,22 @@ final class MinorQueryCompactor extends QueryCompactor {
     List<String> compactionQueries = getCompactionQueries(tmpTableName, table, writeIds);
     List<String> dropQueries = getDropQueries(tmpTableName);
 
-    runCompactionQueries(conf, tmpTableName, storageDescriptor, writeIds, context.getCompactionInfo(),
-        Lists.newArrayList(resultDeltaDir, resultDeleteDeltaDir), createQueries,
-        compactionQueries, dropQueries, table.getParameters());
+    runCompactionQueries(conf, tmpTableName, context.getCompactionInfo(), Lists.newArrayList(resultDeltaDir, resultDeleteDeltaDir), 
+        createQueries, compactionQueries, dropQueries, table.getParameters());
     return true;
   }
 
+  @Override
+  protected HiveConf setUpDriverSession(HiveConf hiveConf) {
+    HiveConf conf = super.setUpDriverSession(hiveConf);
+    conf.set(HiveConf.ConfVars.SPLIT_GROUPING_MODE.varname, CompactorUtil.COMPACTOR);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_FETCH_COLUMN_STATS, false);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_ESTIMATE_STATS, false);
+    return conf;
+  }
 
   @Override
-  protected void commitCompaction(String dest, String tmpTableName, HiveConf conf,
-      ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException, HiveException {
+  protected void commitCompaction(String tmpTableName, HiveConf conf) throws IOException, HiveException {
     Util.cleanupEmptyTableDir(conf, AcidUtils.DELTA_PREFIX + tmpTableName + "_result");
     Util.cleanupEmptyTableDir(conf, AcidUtils.DELETE_DELTA_PREFIX + tmpTableName + "_result");
   }
