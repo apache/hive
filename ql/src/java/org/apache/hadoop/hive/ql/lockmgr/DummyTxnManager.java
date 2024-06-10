@@ -47,7 +47,7 @@ import java.util.*;
  * An implementation of {@link HiveTxnManager} that does not support
  * transactions.  This provides default Hive behavior.
  */
-class DummyTxnManager extends HiveTxnManagerImpl {
+public class DummyTxnManager extends HiveTxnManagerImpl {
   static final private Logger LOG =
       LoggerFactory.getLogger(DummyTxnManager.class.getName());
 
