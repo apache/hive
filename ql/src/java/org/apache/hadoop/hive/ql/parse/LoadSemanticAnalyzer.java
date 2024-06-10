@@ -36,7 +36,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -68,6 +67,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_LOAD_DATA_USE_NATIVE_API;
 
 /**
@@ -92,21 +92,15 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
 
   public static FileStatus[] matchFilesOrDir(FileSystem fs, Path path)
       throws IOException {
-    FileStatus[] srcs = fs.globStatus(path, new PathFilter() {
-      @Override
-      public boolean accept(Path p) {
-        String name = p.getName();
-        return name.equals(EximUtil.METADATA_NAME) || (!name.startsWith("_") && !name.startsWith("."));
-      }
+    FileStatus[] srcs = fs.globStatus(path, p -> {
+      String name = p.getName();
+      return name.equals(EximUtil.METADATA_NAME) || (!name.startsWith("_") && !name.startsWith("."));
     });
     if ((srcs != null) && srcs.length == 1) {
       if (srcs[0].isDirectory()) {
-        srcs = fs.listStatus(srcs[0].getPath(), new PathFilter() {
-          @Override
-          public boolean accept(Path p) {
-            String name = p.getName();
-            return !name.startsWith("_") && !name.startsWith(".");
-          }
+        srcs = fs.listStatus(srcs[0].getPath(), p -> {
+          String name = p.getName();
+          return !name.startsWith("_") && !name.startsWith(".");
         });
       }
     }
@@ -128,7 +122,7 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
         try {
           path = new String(URLCodec.decodeUrl(
               new Path(System.getProperty("user.dir"), fromPath).toUri().toString()
-                  .getBytes("US-ASCII")), "US-ASCII");
+                  .getBytes(US_ASCII)), US_ASCII);
         } catch (DecoderException de) {
           throw new SemanticException("URL Decode failed", de);
         }
@@ -163,7 +157,7 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
 
   private List<FileStatus> applyConstraintsAndGetFiles(URI fromURI, Table table) throws SemanticException {
 
-    FileStatus[] srcs = null;
+    FileStatus[] srcs;
 
     // local mode implies that scheme should be "file"
     // we can change this going forward
@@ -362,7 +356,7 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
 
     Map<String, String> partSpec = ts.getPartSpec();
     if (partSpec == null) {
-      partSpec = new LinkedHashMap<String, String>();
+      partSpec = new LinkedHashMap<>();
       outputs.add(new WriteEntity(ts.tableHandle,
           (isOverWrite ? WriteEntity.WriteType.INSERT_OVERWRITE :
               WriteEntity.WriteType.INSERT)));
@@ -392,6 +386,7 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     int stmtId = -1;
     boolean isTxnTable = AcidUtils.isTransactionalTable(ts.tableHandle);
     if (isTxnTable) {
+      queryState.getValidTxnList();
       try {
         writeId = getTxnMgr().getTableWriteId(ts.tableHandle.getDbName(),
                 ts.tableHandle.getTableName());
@@ -492,8 +487,7 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
 
     // Make the columns list for the temp table (input data file).
     // Move all the partition columns at the end of table columns.
-    ArrayList<FieldSchema> colList = new ArrayList<FieldSchema>();
-    colList.addAll(table.getCols());
+    List<FieldSchema> colList = new ArrayList<>(table.getCols());
 
     // inpPartSpec is a mapping from partition column name to its value.
     Map<String, String> inpPartSpec = null;

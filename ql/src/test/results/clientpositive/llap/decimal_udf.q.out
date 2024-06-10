@@ -1921,11 +1921,11 @@ STAGE PLANS:
                   alias: decimal_udf
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: value (type: int), key (type: decimal(20,10)), UDFToDouble(key) (type: double), (UDFToDouble(key) * UDFToDouble(key)) (type: double)
-                    outputColumnNames: _col0, _col1, _col2, _col3
+                    expressions: value (type: int), UDFToDouble(key) (type: double), (UDFToDouble(key) * UDFToDouble(key)) (type: double)
+                    outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: sum(_col3), sum(_col2), count(_col1)
+                      aggregations: sum(_col2), sum(_col1), count(_col1)
                       keys: _col0 (type: int)
                       minReductionHashAggr: 0.99
                       mode: hash
@@ -2018,11 +2018,11 @@ STAGE PLANS:
                   alias: decimal_udf
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: value (type: int), key (type: decimal(20,10)), UDFToDouble(key) (type: double), (UDFToDouble(key) * UDFToDouble(key)) (type: double)
-                    outputColumnNames: _col0, _col1, _col2, _col3
+                    expressions: value (type: int), UDFToDouble(key) (type: double), (UDFToDouble(key) * UDFToDouble(key)) (type: double)
+                    outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: sum(_col3), sum(_col2), count(_col1)
+                      aggregations: sum(_col2), sum(_col1), count(_col1)
                       keys: _col0 (type: int)
                       minReductionHashAggr: 0.99
                       mode: hash

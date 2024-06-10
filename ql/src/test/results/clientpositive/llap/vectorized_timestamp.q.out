@@ -522,18 +522,18 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:ts:timestamp, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 2:ROW__IS__DELETED:boolean]
                   Select Operator
-                    expressions: ts (type: timestamp), UDFToDouble(ts) (type: double), (UDFToDouble(ts) * UDFToDouble(ts)) (type: double)
-                    outputColumnNames: _col0, _col1, _col2
+                    expressions: UDFToDouble(ts) (type: double), (UDFToDouble(ts) * UDFToDouble(ts)) (type: double)
+                    outputColumnNames: _col0, _col1
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 3, 6]
+                        projectedOutputColumnNums: [3, 6]
                         selectExpressions: CastTimestampToDouble(col 0:timestamp) -> 3:double, DoubleColMultiplyDoubleColumn(col 4:double, col 5:double)(children: CastTimestampToDouble(col 0:timestamp) -> 4:double, CastTimestampToDouble(col 0:timestamp) -> 5:double) -> 6:double
                     Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: sum(_col2), sum(_col1), count(_col0)
+                      aggregations: sum(_col1), sum(_col0), count(_col0)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumDouble(col 6:double) -> double, VectorUDAFSumDouble(col 3:double) -> double, VectorUDAFCount(col 0:timestamp) -> bigint
+                          aggregators: VectorUDAFSumDouble(col 6:double) -> double, VectorUDAFSumDouble(col 3:double) -> double, VectorUDAFCount(col 3:double) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           native: false

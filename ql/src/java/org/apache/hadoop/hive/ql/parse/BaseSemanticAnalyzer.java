@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,6 +33,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.antlr.runtime.TokenRewriteStream;
 import org.antlr.runtime.tree.CommonTree;
@@ -54,6 +56,7 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -69,8 +72,10 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo;
+import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
@@ -152,7 +157,7 @@ public abstract class BaseSemanticAnalyzer {
    * back and set it once we actually start running the query.
    * This also contains insert-only sinks.
    */
-  protected Set<FileSinkDesc> acidFileSinks = new HashSet<FileSinkDesc>();
+  protected Set<FileSinkDesc> acidFileSinks = new HashSet<>();
 
   // whether any ACID table or Insert-only (mm) table is involved in a query
   // They both require DbTxnManager and both need to recordValidTxns when acquiring locks in Driver
@@ -224,7 +229,7 @@ public abstract class BaseSemanticAnalyzer {
     return prepareQuery;
   }
 
-  class RowFormatParams {
+  static final class RowFormatParams {
     String fieldDelim = null;
     String fieldEscape = null;
     String collItemDelim = null;
@@ -283,12 +288,12 @@ public abstract class BaseSemanticAnalyzer {
       this.queryState = queryState;
       this.conf = queryState.getConf();
       this.db = db;
-      rootTasks = new ArrayList<Task<?>>();
+      rootTasks = new ArrayList<>();
       LOG = LoggerFactory.getLogger(this.getClass().getName());
       console = new LogHelper(LOG);
-      idToTableNameMap = new HashMap<String, String>();
-      inputs = new LinkedHashSet<ReadEntity>();
-      outputs = new LinkedHashSet<WriteEntity>();
+      idToTableNameMap = new HashMap<>();
+      inputs = new LinkedHashSet<>();
+      outputs = new LinkedHashSet<>();
       txnManager = queryState.getTxnManager();
       userSuppliedFunctions = new HashSet<>();
     } catch (Exception e) {
@@ -351,7 +356,7 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   protected void reset(boolean clearPartsCache) {
-    rootTasks = new ArrayList<Task<?>>();
+    rootTasks = new ArrayList<>();
   }
 
   public static String stripQuotes(String val) {
@@ -383,8 +388,7 @@ public abstract class BaseSemanticAnalyzer {
           bArray[j++] = (byte)val;
         }
 
-        String res = new String(bArray, charSetName);
-        return res;
+        return new String(bArray, charSetName);
       }
     } catch (UnsupportedEncodingException e) {
       throw new SemanticException(e);
@@ -529,7 +533,7 @@ public abstract class BaseSemanticAnalyzer {
     return tableName;
   }
 
-  public static String getTableAlias(ASTNode node) throws SemanticException {
+  public static String getTableAlias(ASTNode node) {
     // ptf node form is: ^(TOK_PTBLFUNCTION $name $alias?
     // partitionTableFunctionSource partitioningSpec? expression*)
     // guranteed to have an alias here: check done in processJoin
@@ -540,7 +544,7 @@ public abstract class BaseSemanticAnalyzer {
     return alias != null ? alias.toLowerCase() : null;
   }
 
-  protected static String getSimpleTableNameBase(ASTNode n) throws SemanticException {
+  protected static String getSimpleTableNameBase(ASTNode n) {
     switch (n.getType()) {
     case HiveParser.TOK_TABREF:
       int aliasIndex = findTabRefIdxs(n)[0];
@@ -613,7 +617,7 @@ public abstract class BaseSemanticAnalyzer {
 
   public static Map<String, String> getProps(ASTNode prop) {
     // Must be deterministic order map for consistent q-test output across Java versions
-    Map<String, String> mapProp = new LinkedHashMap<String, String>();
+    Map<String, String> mapProp = new LinkedHashMap<>();
     readProps(prop, mapProp);
     return mapProp;
   }
@@ -836,7 +840,7 @@ public abstract class BaseSemanticAnalyzer {
       List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints,
       List<SQLDefaultConstraint> defaultConstraints, List<SQLCheckConstraint> checkConstraints,
       Configuration conf) throws SemanticException {
-    List<FieldSchema> colList = new ArrayList<FieldSchema>();
+    List<FieldSchema> colList = new ArrayList<>();
     Tree parent = ast.getParent();
 
     for (int i = 0; i < ast.getChildCount(); i++) {
@@ -946,7 +950,7 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   public static List<String> getColumnNames(ASTNode ast) {
-    List<String> colList = new ArrayList<String>();
+    List<String> colList = new ArrayList<>();
     int numCh = ast.getChildCount();
     for (int i = 0; i < numCh; i++) {
       ASTNode child = (ASTNode) ast.getChild(i);
@@ -956,7 +960,7 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   protected List<Order> getColumnNamesOrder(ASTNode ast) throws SemanticException {
-    List<Order> colList = new ArrayList<Order>();
+    List<Order> colList = new ArrayList<>();
     int numCh = ast.getChildCount();
     for (int i = 0; i < numCh; i++) {
       ASTNode child = (ASTNode) ast.getChild(i);
@@ -994,7 +998,7 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
-  private static final Map<Integer, String> TOKEN_TO_TYPE = new HashMap<Integer, String>();
+  private static final Map<Integer, String> TOKEN_TO_TYPE = new HashMap<>();
 
   static {
     TOKEN_TO_TYPE.put(HiveParser.TOK_BOOLEAN, serdeConstants.BOOLEAN_TYPE_NAME);
@@ -1112,7 +1116,7 @@ public abstract class BaseSemanticAnalyzer {
     public Partition partHandle;
     public int numDynParts; // number of dynamic partition columns
     public List<Partition> partitions; // involved partitions in TableScanOperator/FileSinkOperator
-    public static enum SpecType {TABLE_ONLY, STATIC_PARTITION, DYNAMIC_PARTITION}
+    public enum SpecType {TABLE_ONLY, STATIC_PARTITION, DYNAMIC_PARTITION}
     public SpecType specType;
 
     public TableSpec(Hive db, HiveConf conf, ASTNode ast)
@@ -1153,8 +1157,7 @@ public abstract class BaseSemanticAnalyzer {
       }
     }
 
-    public TableSpec(Table tableHandle, List<Partition> partitions)
-        throws HiveException {
+    public TableSpec(Table tableHandle, List<Partition> partitions) {
       this.tableHandle = tableHandle;
       this.tableName =
           TableName.fromString(tableHandle.getTableName(), tableHandle.getCatalogName(), tableHandle.getDbName());
@@ -1172,17 +1175,15 @@ public abstract class BaseSemanticAnalyzer {
     }
 
     private boolean createDynPartSpec(ASTNode ast) {
-      if(ast.getToken().getType() != HiveParser.TOK_CREATETABLE &&
+      return ast.getToken().getType() != HiveParser.TOK_CREATETABLE &&
           ast.getToken().getType() != HiveParser.TOK_CREATE_MATERIALIZED_VIEW &&
           ast.getToken().getType() != HiveParser.TOK_ALTER_MATERIALIZED_VIEW &&
           tableHandle.getPartitionKeys().size() > 0
-          && (ast.getParent() != null && (ast.getParent().getType() == HiveParser.TOK_INSERT_INTO
+          
+        && (ast.getParent() != null && (ast.getParent().getType() == HiveParser.TOK_INSERT_INTO
           || ast.getParent().getType() == HiveParser.TOK_INSERT)
           || ast.getParent().getType() == HiveParser.TOK_DESTINATION
-          || ast.getParent().getType() == HiveParser.TOK_ANALYZE)) {
-        return true;
-      }
-      return false;
+          || ast.getParent().getType() == HiveParser.TOK_ANALYZE);
     }
     public TableSpec(Hive db, HiveConf conf, ASTNode ast, boolean allowDynamicPartitionsSpec,
         boolean allowPartialPartitionsSpec) throws SemanticException {
@@ -1225,9 +1226,9 @@ public abstract class BaseSemanticAnalyzer {
           ast.getToken().getType() != HiveParser.TOK_ALTER_MATERIALIZED_VIEW) {
         childIndex = 1;
         ASTNode partspec = (ASTNode) ast.getChild(1);
-        partitions = new ArrayList<Partition>();
+        partitions = new ArrayList<>();
         // partSpec is a mapping from partition column name to its value.
-        Map<String, String> tmpPartSpec = new HashMap<String, String>(partspec.getChildCount());
+        Map<String, String> tmpPartSpec = new HashMap<>(partspec.getChildCount());
         for (int i = 0; i < partspec.getChildCount(); ++i) {
           ASTNode partspec_val = (ASTNode) partspec.getChild(i);
           String val = null;
@@ -1258,7 +1259,7 @@ public abstract class BaseSemanticAnalyzer {
         if (tableHandle.getStorageHandler() != null && tableHandle.getStorageHandler().alwaysUnpartitioned()) {
           partSpec = tmpPartSpec;
         } else {
-          partSpec = new LinkedHashMap<String, String>(partspec.getChildCount());
+          partSpec = new LinkedHashMap<>(partspec.getChildCount());
           for (FieldSchema fs : parts) {
             String partKey = fs.getName();
             partSpec.put(partKey, tmpPartSpec.get(partKey));
@@ -1334,7 +1335,7 @@ public abstract class BaseSemanticAnalyzer {
         // if user hasn't specified partition spec generate it from table's partition spec
         // do this only if it is INSERT/INSERT INTO/INSERT OVERWRITE/ANALYZE
         List<FieldSchema> parts = tableHandle.getPartitionKeys();
-        partSpec = new LinkedHashMap<String, String>(parts.size());
+        partSpec = new LinkedHashMap<>(parts.size());
         for (FieldSchema fs : parts) {
           String partKey = fs.getName();
           partSpec.put(partKey, null);
@@ -1570,8 +1571,26 @@ public abstract class BaseSemanticAnalyzer {
     return acidFileSinks;
   }
 
-  public boolean hasTransactionalInQuery() {
+  public boolean hasAcidReadWrite() {
     return transactionalInQuery;
+  }
+
+  public boolean hasAcidResources() {
+    return hasAcidReadWrite() || getAcidDdlDesc() != null ||
+      Stream.of(getInputs(), getOutputs()).flatMap(Collection::stream)
+        .filter(entity -> entity.getType() == Entity.Type.TABLE || entity.getType() == Entity.Type.PARTITION)
+        .flatMap(entity -> {
+          Table tbl = entity.getTable();
+          if (tbl.isMaterializedView() && tbl.getMVMetadata() != null) {
+            return tbl.getMVMetadata().getSourceTables().stream().map(SourceTable::getTable);
+          }
+          Partition p = entity.getPartition();
+          if (p != null) {
+            tbl = p.getTable();
+          }
+          return Stream.of(tbl.getTTable());
+        })
+        .anyMatch(AcidUtils::isTransactionalTable);
   }
 
   protected ListBucketingCtx constructListBucketingCtx(List<String> skewedColNames,
@@ -1645,10 +1664,9 @@ public abstract class BaseSemanticAnalyzer {
    */
   public List<Map<String, String>> getPartitionSpecs(Table tbl, CommonTree ast)
       throws SemanticException {
-    List<Map<String, String>> partSpecs = new ArrayList<Map<String, String>>();
-    int childIndex = 0;
+    List<Map<String, String>> partSpecs = new ArrayList<>();
     // get partition metadata if partition specified
-    for (childIndex = 0; childIndex < ast.getChildCount(); childIndex++) {
+    for (int childIndex = 0; childIndex < ast.getChildCount(); childIndex++) {
       ASTNode partSpecNode = (ASTNode)ast.getChild(childIndex);
       // sanity check
       if (partSpecNode.getType() == HiveParser.TOK_PARTSPEC) {
@@ -1668,13 +1686,12 @@ public abstract class BaseSemanticAnalyzer {
     return partSpec;
   }
 
-  public static Map<String, String> getPartSpec(ASTNode node)
-      throws SemanticException {
+  public static Map<String, String> getPartSpec(ASTNode node) {
     if (node == null) {
       return null;
     }
 
-    Map<String, String> partSpec = new LinkedHashMap<String, String>();
+    Map<String, String> partSpec = new LinkedHashMap<>();
     for (int i = 0; i < node.getChildCount(); ++i) {
       ASTNode child = (ASTNode) node.getChild(i);
       String key = child.getChild(0).getText();
@@ -1720,7 +1737,7 @@ public abstract class BaseSemanticAnalyzer {
       return;
     }
 
-    Map<ASTNode, ExprNodeDesc> astExprNodeMap = new HashMap<ASTNode, ExprNodeDesc>();
+    Map<ASTNode, ExprNodeDesc> astExprNodeMap = new HashMap<>();
     if (!getPartExprNodeDesc(astNode, conf, astExprNodeMap)) {
       STATIC_LOG.warn("Dynamic partitioning is used; only validating "
           + astExprNodeMap.size() + " columns");
@@ -1731,7 +1748,7 @@ public abstract class BaseSemanticAnalyzer {
     }
 
     List<FieldSchema> parts = tbl.getPartitionKeys();
-    Map<String, String> partCols = new HashMap<String, String>(parts.size());
+    Map<String, String> partCols = new HashMap<>(parts.size());
     for (FieldSchema col : parts) {
       partCols.put(col.getName(), col.getType().toLowerCase());
     }
@@ -1843,7 +1860,7 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
-  public static Path tryQualifyPath(Path path, HiveConf conf) throws IOException {
+  public static Path tryQualifyPath(Path path, HiveConf conf) {
     try {
       return path.getFileSystem(conf).makeQualified(path);
     } catch (IOException e) {

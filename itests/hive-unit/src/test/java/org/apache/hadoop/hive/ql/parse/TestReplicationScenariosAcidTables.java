@@ -3768,7 +3768,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     );
 
     WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
-            .run("create table t1 (id int)")
+            .run("create table t1 (id int) stored as orc tblproperties (\"transactional\"=\"true\")")
             .run("insert into table t1 values (1)")
             .dump(primaryDbName, incrementalBatchConfigs);
 

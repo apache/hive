@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -84,7 +85,7 @@ class DriverTxnHandler {
   private final DriverContext driverContext;
   private final DriverState driverState;
 
-  private final List<HiveLock> hiveLocks = new ArrayList<HiveLock>();
+  private final List<HiveLock> hiveLocks = new ArrayList<>();
 
   private Context context;
   private Runnable txnRollbackRunner;
@@ -216,7 +217,8 @@ class DriverTxnHandler {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
 
-    if (!driverContext.getTxnManager().isTxnOpen() && driverContext.getTxnManager().supportsAcid()) {
+    if (!driverContext.getTxnManager().isTxnOpen() && driverContext.getTxnManager().supportsAcid() 
+        && !SessionState.get().isCompaction()) {
       /* non acid txn managers don't support txns but fwd lock requests to lock managers
          acid txn manager requires all locks to be associated with a txn so if we end up here w/o an open txn
          it's because we are processing something like "use <database> which by definition needs no locks */
@@ -229,9 +231,11 @@ class DriverTxnHandler {
       setWriteIdForAcidFileSinks();
       allocateWriteIdForAcidAnalyzeTable();
       boolean hasAcidDdl = setWriteIdForAcidDdl();
-      acquireLocksInternal();
-
-      if (driverContext.getPlan().hasAcidResourcesInQuery() || hasAcidDdl) {
+      
+      if (!SessionState.get().isCompaction()) {
+        acquireLocksInternal();
+      }
+      if (driverContext.getPlan().hasAcidReadWrite() || hasAcidDdl) {
         recordValidWriteIds();
       }
     } catch (Exception e) {
@@ -257,7 +261,7 @@ class DriverTxnHandler {
       List<FileSinkDesc> acidSinks = new ArrayList<>(driverContext.getPlan().getAcidSinks());
       //sorting makes tests easier to write since file names and ROW__IDs depend on statementId
       //so this makes (file name -> data) mapping stable
-      acidSinks.sort((FileSinkDesc fsd1, FileSinkDesc fsd2) -> fsd1.getDirName().compareTo(fsd2.getDirName()));
+      acidSinks.sort(Comparator.comparing(FileSinkDesc::getDirName));
 
       // If the direct insert is on, sort the FSOs by moveTaskId as well because the dir is the same for all except the union use cases.
       boolean isDirectInsertOn = false;
@@ -268,7 +272,7 @@ class DriverTxnHandler {
         }
       }
       if (isDirectInsertOn) {
-        acidSinks.sort((FileSinkDesc fsd1, FileSinkDesc fsd2) -> fsd1.getMoveTaskId().compareTo(fsd2.getMoveTaskId()));
+        acidSinks.sort(Comparator.comparing(FileSinkDesc::getMoveTaskId));
       }
 
       int maxStmtId = -1;
@@ -304,8 +308,10 @@ class DriverTxnHandler {
   private void allocateWriteIdForAcidAnalyzeTable() throws LockException {
     if (driverContext.getPlan().getAcidAnalyzeTable() != null) {
       Table table = driverContext.getPlan().getAcidAnalyzeTable().getTable();
-      driverContext.getTxnManager().setTableWriteId(
-          table.getDbName(), table.getTableName(), driverContext.getAnalyzeTableWriteId());
+      ValidWriteIdList writeIdList = AcidUtils.getTableValidWriteIdList(driverContext.getConf(),
+          TableName.getDbTable(table.getDbName(), table.getTableName()));
+      long writeId = (writeIdList != null) ? writeIdList.getHighWatermark() : -1;
+      driverContext.getTxnManager().setTableWriteId(table.getDbName(), table.getTableName(), writeId);
     }
   }
 
@@ -342,39 +348,40 @@ class DriverTxnHandler {
    *  Write the current set of valid write ids for the operated acid tables into the configuration so
    *  that it can be read by the input format.
    */
-  ValidTxnWriteIdList recordValidWriteIds() throws LockException {
+  void recordValidWriteIds() throws LockException {
     String txnString = driverContext.getConf().get(ValidTxnList.VALID_TXNS_KEY);
     if (Strings.isNullOrEmpty(txnString)) {
       throw new IllegalStateException("calling recordValidWriteIds() without initializing ValidTxnList " +
           JavaUtils.txnIdToString(driverContext.getTxnManager().getCurrentTxnId()));
     }
-
     ValidTxnWriteIdList txnWriteIds = getTxnWriteIds(txnString);
     setValidWriteIds(txnWriteIds);
-    driverContext.getTxnManager().addWriteIdsToMinHistory(driverContext.getPlan(), txnWriteIds);
     
-    LOG.debug("Encoding valid txn write ids info {} txnid: {}", txnWriteIds.toString(),
+    if ((!driverContext.isRetrial() || driverContext.isOutdatedTxn()) 
+          && !SessionState.get().isCompaction()) {
+      driverContext.getTxnManager().addWriteIdsToMinHistory(driverContext.getPlan(), txnWriteIds);
+    }
+    LOG.debug("Encoding valid txn write ids info {}, txnid: {}", txnWriteIds.toString(),
         driverContext.getTxnManager().getCurrentTxnId());
-    return txnWriteIds;
   }
 
   private ValidTxnWriteIdList getTxnWriteIds(String txnString) throws LockException {
-    List<String> txnTables = getTransactionalTables(getTables(true, true));
-    ValidTxnWriteIdList txnWriteIds = null;
-    if (driverContext.getCompactionWriteIds() != null) {
-      // This is kludgy: here we need to read with Compactor's snapshot/txn rather than the snapshot of the current
+    List<String> txnTables = getTransactionalTables();
+    final ValidTxnWriteIdList txnWriteIds;
+
+    if (SessionState.get().isCompaction()) {
+      // Here we are reading with Compactor's snapshot/txn rather than the snapshot of the current
       // {@code txnMgr}, in effect simulating a "flashback query" but can't actually share compactor's txn since it
-      // would run multiple statements.  See more comments in {@link org.apache.hadoop.hive.ql.txn.compactor.Worker}
+      // would run multiple statements. See more comments in {@link org.apache.hadoop.hive.ql.txn.compactor.Worker}
       // where it start the compactor txn*/
       if (txnTables.size() != 1) {
         throw new LockException("Unexpected tables in compaction: " + txnTables);
       }
-      txnWriteIds = new ValidTxnWriteIdList(driverContext.getCompactorTxnId());
-      txnWriteIds.addTableValidWriteIdList(driverContext.getCompactionWriteIds());
+      txnWriteIds = AcidUtils.getValidTxnWriteIdList(driverContext.getConf());
     } else {
       txnWriteIds = driverContext.getTxnManager().getValidWriteIds(txnTables, txnString);
     }
-    if (driverContext.getTxnType() == TxnType.READ_ONLY && !getTables(false, true).isEmpty()) {
+    if (driverContext.getTxnType() == TxnType.READ_ONLY && !getTables(false).isEmpty()) {
       throw new IllegalStateException(String.format(
           "Inferred transaction type '%s' doesn't conform to the actual query string '%s'",
           driverContext.getTxnType(), driverContext.getQueryState().getQueryString()));
@@ -471,14 +478,12 @@ class DriverTxnHandler {
     return nonSharedLockedTables;
   }
 
-  private Map<String, Table> getTables(boolean inputNeeded, boolean outputNeeded) {
+  private Map<String, Table> getTables(boolean inputNeeded) {
     Map<String, Table> tables = new HashMap<>();
     if (inputNeeded) {
       driverContext.getPlan().getInputs().forEach(input -> addTableFromEntity(input, tables));
     }
-    if (outputNeeded) {
-      driverContext.getPlan().getOutputs().forEach(output -> addTableFromEntity(output, tables));
-    }
+    driverContext.getPlan().getOutputs().forEach(output -> addTableFromEntity(output, tables));
     return tables;
   }
 
@@ -528,8 +533,8 @@ class DriverTxnHandler {
     }
   }
 
-  private List<String> getTransactionalTables(Map<String, Table> tables) {
-    return tables.entrySet().stream()
+  private List<String> getTransactionalTables() {
+    return getTables(true).entrySet().stream()
       .filter(entry -> AcidUtils.isTransactionalTable(entry.getValue()))
       .map(Map.Entry::getKey)
       .collect(Collectors.toList());
