@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context.RewritePolicy;
 import org.apache.hadoop.hive.ql.DriverUtils;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
@@ -109,7 +110,11 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
       }
 
       if (partitionList.isEmpty()) {
-        throw new HiveException("Invalid partition spec, no corresponding spec_id found");
+        throw new HiveException(ErrorMsg.INVALID_PARTITION_SPEC);
+      }
+
+      if (partitionList.size() > 1) {
+        throw new HiveException(ErrorMsg.TOO_MANY_COMPACTION_PARTITIONS);
       }
 
       int specId = partitionList.get(0).second();
