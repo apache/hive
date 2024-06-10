@@ -1118,7 +1118,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
       String tableName, List<String> partialPvals, int maxParts, String userName,
       List<String> groupNames) throws TException {
     org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tableName);
-    if (table == null || partialPvals == null) {
+    if (table == null) {
       //(assume) not a temp table - Try underlying client
       return super.listPartitionsWithAuthInfo(catName, dbName, tableName, partialPvals, maxParts, userName,
           groupNames);
@@ -1179,7 +1179,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
   public List<String> listPartitionNames(String catName, String dbName, String tblName,
       List<String> partVals, int maxParts) throws TException {
     org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
-    if (table == null || partVals == null) {
+    if (table == null) {
       return super.listPartitionNames(catName, dbName, tblName, partVals, maxParts);
     }
     TempTable tt = getPartitionedTempTable(table);
@@ -1295,7 +1295,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
   public List<Partition> listPartitions(String catName, String dbName, String tblName,
       List<String> partVals, int maxParts) throws TException {
     org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
-    if (table == null || partVals == null) {
+    if (table == null) {
       return super.listPartitions(catName, dbName, tblName, partVals, maxParts);
     }
     TempTable tt = getPartitionedTempTable(table);

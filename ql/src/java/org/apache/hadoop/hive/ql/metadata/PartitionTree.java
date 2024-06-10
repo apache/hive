@@ -22,7 +22,6 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +35,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.hadoop.hive.metastore.Warehouse.LOG;
 import static org.apache.hadoop.hive.metastore.Warehouse.makePartName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.makePartNameMatcher;
 
@@ -121,8 +121,8 @@ final class PartitionTree {
    * {@link MetaStoreUtils#getPvals(List, Map)}
    */
   List<Partition> getPartitionsByPartitionVals(List<String> partialPartVals) throws MetaException {
-    if (MetaStoreUtils.arePartValsEmpty(partialPartVals)) {
-      return new ArrayList<>(parts.values());
+    if (partialPartVals == null || partialPartVals.isEmpty()) {
+      throw new MetaException("Partition partial vals cannot be null or empty");
     }
     String partNameMatcher = makePartNameMatcher(tTable, partialPartVals, ".*");
     List<Partition> matchedPartitions = new ArrayList<>();

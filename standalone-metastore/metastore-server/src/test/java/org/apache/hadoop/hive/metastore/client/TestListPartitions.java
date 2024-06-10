@@ -425,13 +425,10 @@ public class TestListPartitions extends MetaStoreClientTest {
     assertEquals(0, partitions.size());
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testListPartitionsByValuesNoVals() throws Exception {
     createTable3PartCols1Part(client);
-    List<Partition> partitions = client.listPartitions(DB_NAME, TABLE_NAME,
-            Lists.newArrayList(), (short)-1);
-    assertEquals(1, partitions.size());
-    assertPartitionsHaveCorrectParams(partitions);
+    client.listPartitions(DB_NAME, TABLE_NAME, Lists.newArrayList(), (short)-1);
   }
 
   @Test(expected = MetaException.class)
@@ -755,14 +752,11 @@ public class TestListPartitions extends MetaStoreClientTest {
     assertTrue(partitions.isEmpty());
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testListPartitionsWithAuthByValuesNoVals() throws Exception {
-    List<List<String>> partValues = createTable4PartColsPartsAuthOn(client).testValues;
-    List<Partition> partitions = client.listPartitionsWithAuthInfo(DB_NAME, TABLE_NAME, Lists
-        .newArrayList(), (short)-1, "", Lists.newArrayList());
-    assertEquals(4, partitions.size());
-    assertPartitionsHaveCorrectValues(partitions, partValues);
-    assertPartitionsHaveCorrectParams(partitions);
+    createTable4PartColsPartsAuthOn(client);
+    client.listPartitionsWithAuthInfo(DB_NAME, TABLE_NAME, Lists
+            .newArrayList(), (short)-1, "", Lists.newArrayList());
   }
 
 
@@ -1436,13 +1430,10 @@ public class TestListPartitions extends MetaStoreClientTest {
         Lists.newArrayList("yyyy", "mm", "dd"));
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testListPartitionNamesByValuesNoPartVals() throws Exception {
-    List<List<String>> testValues = createTable4PartColsParts(client).testValues;
-    List<String> partitionNames = client.listPartitionNames(DB_NAME, TABLE_NAME,
-        Lists.newArrayList(), (short)-1);
-    assertTrue(partitionNames.size() == 4);
-    assertCorrectPartitionNames(partitionNames, testValues, Lists.newArrayList("yyyy", "mm", "dd"));
+    createTable4PartColsParts(client);
+    client.listPartitionNames(DB_NAME, TABLE_NAME, Lists.newArrayList(), (short)-1);
   }
 
   @Test(expected = MetaException.class)

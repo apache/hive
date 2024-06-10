@@ -3840,9 +3840,6 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public int getNumPartitionsByPs(String catName, String dbName, String tblName, List<String> partVals)
       throws MetaException, NoSuchObjectException {
-    if (MetaStoreUtils.arePartValsEmpty(partVals)) {
-      return getNumPartitionsByFilter(catName, dbName, tblName, HMSHandler.NO_FILTER_STRING);
-    }
 
     catName = normalizeIdentifier(catName);
     dbName = normalizeIdentifier(dbName);
@@ -4008,10 +4005,6 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public List<String> listPartitionNamesPs(String catName, String dbName, String tableName,
       List<String> part_vals, short max_parts) throws MetaException, NoSuchObjectException {
-    if (MetaStoreUtils.arePartValsEmpty(part_vals)) {
-      return listPartitionNames(catName, dbName, tableName, max_parts);
-    }
-
     List<String> partitionNames = new ArrayList<>();
     boolean success = false;
 
