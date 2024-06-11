@@ -57,7 +57,7 @@ public class IcebergInternalRecordWrapper implements Record, StructLike {
   public IcebergInternalRecordWrapper wrap(StructLike record) {
     int idx = 0;
     for (Types.NestedField field : readSchema.fields()) {
-      int position = fieldToPositionInTableSchema.get(field.name());
+      int position = fieldToPositionInReadSchema.get(field.name());
       values[idx] = record.get(position, Object.class);
       idx++;
     }
