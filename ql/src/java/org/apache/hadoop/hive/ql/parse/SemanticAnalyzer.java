@@ -3489,11 +3489,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     OpParseContext inputCtx = opParseCtx.get(input);
     RowResolver inputRR = inputCtx.getRowResolver();
     Map<ASTNode, String> exprToColumnAlias = qb.getParseInfo().getAllExprToColumnAlias();
-    for (ASTNode astNode : exprToColumnAlias.keySet()) {
-      if (inputRR.getExpression(astNode) != null) {
-        inputRR.put("", exprToColumnAlias.get(astNode), inputRR.getExpression(astNode));
-      }
-    }
+    inputRR.putAll(exprToColumnAlias);
     ASTNode condn = (ASTNode) havingExpr.getChild(0);
 
     if (!isCBOExecuted() && !qb.getParseInfo().getDestToGroupBy().isEmpty()) {

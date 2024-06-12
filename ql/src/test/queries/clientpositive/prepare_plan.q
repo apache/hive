@@ -3,6 +3,7 @@
 --SORT_QUERY_RESULTS
 
 set hive.explain.user=false;
+set hive.cbo.fallback.strategy=NEVER;
 
 -- single param
 explain extended prepare pcount from select count(*) from src where key > ?;
