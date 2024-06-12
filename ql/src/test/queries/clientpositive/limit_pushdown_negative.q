@@ -1,6 +1,7 @@
 --! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set hive.limit.pushdown.memory.usage=0.3f;
+set hive.cbo.fallback.strategy=NEVER;
 
 -- negative, RS + join
 explain select * from src a join src b on a.key=b.key limit 20;
