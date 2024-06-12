@@ -5850,14 +5850,24 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (tbl == null) {
         return null;
       }
-      HiveStorageHandler storageHandler =
-              HiveUtils.getStorageHandler(conf, tbl.getParameters().get(META_TABLE_STORAGE));
+      String className = getStorageHandlerClassName(tbl);
+      HiveStorageHandler storageHandler = HiveUtils.getStorageHandler(conf, className);
       return storageHandler;
     } catch (HiveException ex) {
       LOG.error("Failed createStorageHandler", ex);
       throw new MetaException(
               "Failed to load storage handler:  " + ex.getMessage());
     }
+  }
+
+  private static String getStorageHandlerClassName(org.apache.hadoop.hive.metastore.api.Table tbl) {
+    String tableType = tbl.getParameters().get(HiveMetaHook.TABLE_TYPE);
+    String metaTableStorage = tbl.getParameters().get(META_TABLE_STORAGE);
+    if (HiveMetaHook.ICEBERG.equalsIgnoreCase(tableType) && metaTableStorage == null) {
+      return "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler";
+    }
+
+    return metaTableStorage;
   }
 
   public static class SchemaException extends MetaException {
