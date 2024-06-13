@@ -1072,9 +1072,9 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
           hmsTable.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
         }
         // Set the serde info
-        hmsTable.getSd().setInputFormat("org.apache.iceberg.mr.hive.HiveIcebergInputFormat");
-        hmsTable.getSd().setOutputFormat("org.apache.iceberg.mr.hive.HiveIcebergOutputFormat");
-        hmsTable.getSd().getSerdeInfo().setSerializationLib("org.apache.iceberg.mr.hive.HiveIcebergSerDe");
+        hmsTable.getSd().setInputFormat(HiveIcebergInputFormat.class.getName());
+        hmsTable.getSd().setOutputFormat(HiveIcebergOutputFormat.class.getName());
+        hmsTable.getSd().getSerdeInfo().setSerializationLib(HiveIcebergSerDe.class.getName());
         String storageHandler = hmsTable.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE);
         // Check if META_TABLE_STORAGE is not present or is not an instance of ICEBERG_STORAGE_HANDLER
         if (storageHandler == null || !HiveTableOperations.isHiveIcebergStorageHandler(storageHandler)) {

@@ -57,6 +57,7 @@ public interface HiveMetaHook {
   String TABLE_TYPE = "table_type";
   String EXTERNAL = "EXTERNAL";
   String ICEBERG = "ICEBERG";
+  String HIVE_ICEBERG_STORAGE_HANDLER = "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler";
   
   String PROPERTIES_SEPARATOR = "'";
   String MIGRATE_HIVE_TO_ICEBERG = "migrate_hive_to_iceberg";
