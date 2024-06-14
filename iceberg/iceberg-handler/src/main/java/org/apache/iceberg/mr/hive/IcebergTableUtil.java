@@ -72,7 +72,6 @@ import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
-import org.apache.iceberg.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -383,8 +382,22 @@ public class IcebergTableUtil {
     return data;
   }
 
-  public static Pair<List<DataFile>, List<DeleteFile>> getDataAndDeleteFiles(Table table, int specId,
+  public static List<DataFile> getDataFiles(Table table, int specId,
       String partitionPath) {
+    CloseableIterable<FileScanTask> fileScanTasks =
+        table.newScan().useSnapshot(table.currentSnapshot().snapshotId()).ignoreResiduals().planFiles();
+    CloseableIterable<FileScanTask> filteredFileScanTasks =
+        CloseableIterable.filter(fileScanTasks, t -> {
+          DataFile file = t.asFileScanTask().file();
+          return file.specId() == specId && table.specs()
+              .get(specId).partitionToPath(file.partition()).equals(partitionPath);
+        });
+    List<DataFile> dataFiles =  Lists.newArrayList(
+        CloseableIterable.transform(filteredFileScanTasks, t -> t.file()));
+    return dataFiles;
+  }
+
+  public static List<DeleteFile> getDeleteFiles(Table table, int specId, String partitionPath) {
     Table deletesTable =
         MetadataTableUtils.createMetadataTableInstance(table, MetadataTableType.POSITION_DELETES);
     CloseableIterable<ScanTask> deletesScanTasks = deletesTable.newBatchScan().planFiles();
@@ -397,19 +410,7 @@ public class IcebergTableUtil {
     List<DeleteFile> deleteFiles =  Lists.newArrayList(
         CloseableIterable
             .transform(filteredDeletesScanTasks, t -> ((PositionDeletesScanTask) t).file()));
-
-    CloseableIterable<FileScanTask> fileScanTasks =
-        table.newScan().useSnapshot(table.currentSnapshot().snapshotId()).ignoreResiduals().planFiles();
-    CloseableIterable<FileScanTask> filteredFileScanTasks =
-        CloseableIterable.filter(fileScanTasks, t -> {
-          DataFile file = t.asFileScanTask().file();
-          return file.specId() == specId && table.specs()
-              .get(specId).partitionToPath(file.partition()).equals(partitionPath);
-        });
-    List<DataFile> dataFiles =  Lists.newArrayList(
-        CloseableIterable.transform(filteredFileScanTasks, t -> t.file()));
-
-    return Pair.of(dataFiles, deleteFiles);
+    return deleteFiles;
   }
 
   public static Expression generateExpressionFromPartitionSpec(Table table, Map<String, String> partitionSpec)

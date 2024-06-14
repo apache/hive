@@ -119,8 +119,8 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
 
       int specId = partitionList.get(0).second();
       HiveConf.setVar(conf, ConfVars.REWRITE_POLICY, RewritePolicy.PARTITION.name());
-      conf.set(IcebergCompactionContext.COMPACTION_PART_SPEC_ID, String.valueOf(specId));
-      conf.set(IcebergCompactionContext.COMPACTION_PARTITION_PATH, new Path(partSpec).toString());
+      conf.set(IcebergCompactionService.PARTITION_SPEC_ID, String.valueOf(specId));
+      conf.set(IcebergCompactionService.PARTITION_PATH, new Path(partSpec).toString());
 
       List<FieldSchema> partitionKeys = IcebergTableUtil.getPartitionKeys(icebergTable, specId);
       List<String> partValues = partitionKeys.stream().map(

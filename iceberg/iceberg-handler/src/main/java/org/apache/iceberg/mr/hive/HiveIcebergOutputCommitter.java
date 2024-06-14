@@ -79,7 +79,7 @@ import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.OutputFile;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
-import org.apache.iceberg.mr.hive.compaction.IcebergCompactionContext;
+import org.apache.iceberg.mr.hive.compaction.IcebergCompactionService;
 import org.apache.iceberg.mr.hive.writer.HiveIcebergWriter;
 import org.apache.iceberg.mr.hive.writer.WriterRegistry;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
@@ -90,7 +90,6 @@ import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.relocated.com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.Tasks;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -501,20 +500,19 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           .map(x -> x.getJobConf().get(ConfVars.REWRITE_POLICY.varname))
           .orElse(RewritePolicy.DEFAULT.name()));
 
-      Integer compactionPartSpecId = outputTable.jobContexts.stream()
-          .findAny()
-          .map(x -> x.getJobConf().get(IcebergCompactionContext.COMPACTION_PART_SPEC_ID))
-          .map(Integer::valueOf)
-          .orElse(null);
+      if (rewritePolicy != RewritePolicy.DEFAULT) {
+        Integer partitionSpecId = outputTable.jobContexts.stream()
+            .findAny()
+            .map(x -> x.getJobConf().get(IcebergCompactionService.PARTITION_SPEC_ID))
+            .map(Integer::valueOf)
+            .orElse(null);
 
-      String compactionPartitionPath = outputTable.jobContexts.stream()
-          .findAny()
-          .map(x -> x.getJobConf().get(IcebergCompactionContext.COMPACTION_PARTITION_PATH))
-          .orElse(null);
+        String partitionPath = outputTable.jobContexts.stream()
+            .findAny()
+            .map(x -> x.getJobConf().get(IcebergCompactionService.PARTITION_PATH))
+            .orElse(null);
 
-      if (rewritePolicy != RewritePolicy.DEFAULT || compactionPartSpecId != null) {
-        commitCompaction(table, startTime, filesForCommit, rewritePolicy, compactionPartSpecId,
-            compactionPartitionPath);
+        commitCompaction(table, startTime, filesForCommit, rewritePolicy, partitionSpecId, partitionPath);
       } else {
         commitOverwrite(table, branchName, startTime, filesForCommit);
       }
@@ -597,15 +595,15 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * Creates and commits an Iceberg compaction change with the provided data files.
    * Either full table or a selected partition contents is replaced with compacted files.
    *
-   * @param table                   The table we are changing
-   * @param startTime               The start time of the commit - used only for logging
-   * @param results                 The object containing the new files
-   * @param rewritePolicy           The rewrite policy to use for the insert overwrite commit
-   * @param compactionPartSpecId        The table spec_id for partition compaction operation
-   * @param compactionPartitionPath The path of the compacted partition
+   * @param table             The table we are changing
+   * @param startTime         The start time of the commit - used only for logging
+   * @param results           The object containing the new files
+   * @param rewritePolicy     The rewrite policy to use for the insert overwrite commit
+   * @param partitionSpecId   The table spec_id for partition compaction operation
+   * @param partitionPath     The path of the compacted partition
    */
   private void commitCompaction(Table table, long startTime, FilesForCommit results,
-      RewritePolicy rewritePolicy, Integer compactionPartSpecId, String compactionPartitionPath) {
+      RewritePolicy rewritePolicy, Integer partitionSpecId, String partitionPath) {
     Preconditions.checkArgument(results.deleteFiles().isEmpty(), "Can not handle deletes with overwrite");
     if (!results.dataFiles().isEmpty()) {
       if (rewritePolicy == RewritePolicy.ALL_PARTITIONS) {
@@ -618,14 +616,14 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         overwrite.commit();
         transaction.commitTransaction();
       } else {
-        Pair<List<DataFile>, List<DeleteFile>> existingFiles = IcebergTableUtil.getDataAndDeleteFiles(table,
-            compactionPartSpecId, compactionPartitionPath);
+        List<DataFile> existingDataFiles = IcebergTableUtil.getDataFiles(table, partitionSpecId, partitionPath);
+        List<DeleteFile> existingDeleteFiles = IcebergTableUtil.getDeleteFiles(table, partitionSpecId, partitionPath);
 
         RewriteFiles rewriteFiles = table.newRewrite();
         rewriteFiles.validateFromSnapshot(table.currentSnapshot().snapshotId());
 
-        existingFiles.first().forEach(rewriteFiles::deleteFile);
-        existingFiles.second().forEach(rewriteFiles::deleteFile);
+        existingDataFiles.forEach(rewriteFiles::deleteFile);
+        existingDeleteFiles.forEach(rewriteFiles::deleteFile);
         results.dataFiles().forEach(rewriteFiles::addFile);
 
         rewriteFiles.commit();

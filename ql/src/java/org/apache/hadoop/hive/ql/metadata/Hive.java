@@ -3665,8 +3665,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public Partition getPartition(Table tbl, Map<String, String> partSpec) throws HiveException {
     if (tbl.getStorageHandler() != null && tbl.getStorageHandler().alwaysUnpartitioned()) {
-      if (Context.RewritePolicy.fromString(conf.get(ConfVars.REWRITE_POLICY.varname, 
-          Context.RewritePolicy.DEFAULT.name())) == Context.RewritePolicy.PARTITION) {
+      if (Context.RewritePolicy.fromString(conf.get(ConfVars.REWRITE_POLICY.varname)) == 
+          Context.RewritePolicy.PARTITION) {
         return tbl.getStorageHandler().getPartitionAnySpec(tbl, partSpec);
       } else {
         return tbl.getStorageHandler().getPartition(tbl, partSpec);
