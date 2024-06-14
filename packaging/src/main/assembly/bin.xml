@@ -39,11 +39,11 @@
       <useStrictFiltering>false</useStrictFiltering>
       <useTransitiveFiltering>true</useTransitiveFiltering>
       <excludes>
-        <exclude>org.apache.calcite:*</exclude>
+        <!--exclude>org.apache.calcite:*</exclude-->
         <exclude>org.apache.hadoop:*</exclude>
         <exclude>org.apache.hive.hcatalog:*</exclude>
         <exclude>org.slf4j:*</exclude>
-        <exclude>log4j:*</exclude>
+        <!--exclude>log4j:*</exclude-->
         <exclude>ch.qos.reload4j:*</exclude>
         <exclude>junit:*</exclude>
         <exclude>commons-configuration:commons-configuration</exclude>
@@ -103,7 +103,7 @@
       <excludes>
         <exclude>org.apache.hadoop:*</exclude>
         <exclude>org.apache.hive:hive-jdbc:jar:standalone</exclude>
-        <exclude>org.apache.httpcomponents:*</exclude>
+        <!--exclude>org.apache.httpcomponents:*</exclude-->
       </excludes>
       <includes>
         <include>org.apache.hive.hcatalog:hive-webhcat:*</include>
