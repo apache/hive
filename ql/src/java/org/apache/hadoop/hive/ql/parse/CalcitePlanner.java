@@ -927,8 +927,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
     boolean isSupportedType = (qb.getIsQuery())
         || qb.isCTAS() || qb.isMaterializedView() || cboCtx.type == PreCboCtx.Type.INSERT
         || cboCtx.type == PreCboCtx.Type.MULTI_INSERT;
-    boolean noBadTokens = HiveCalciteUtil.validateASTForUnsupportedTokens(ast);
-    boolean result = isSupportedRoot && isSupportedType && noBadTokens;
+    boolean noUnsupportedFeatures = HiveCalciteUtil.validateASTAndQBForUnsupportedFeatures(ast, qb);
+    boolean result = isSupportedRoot && isSupportedType && noUnsupportedFeatures;
 
     String msg = "";
     if (!result) {
@@ -939,11 +939,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
         msg += "is not a query with at least one source table "
             + " or there is a subquery without a source table, or CTAS, or insert; ";
       }
-      if (!noBadTokens) {
-        msg += "has unsupported tokens; ";
-      }
-      if (msg.isEmpty()) {
-        msg += "has some unspecified limitations; ";
+      if (!noUnsupportedFeatures) {
+        msg += "has unsupported CBO features. Could be any of [CHARSETLITERAL, TABLESPLITSAMPLE, UNIQUEJOIN, " +
+            "TABLEBUCKETSAMPLE]; ";
       }
       msg = msg.substring(0, msg.length() - 2);
       if (needToLogMessage) {

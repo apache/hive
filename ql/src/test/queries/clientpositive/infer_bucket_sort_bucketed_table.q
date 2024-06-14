@@ -3,6 +3,7 @@
 
 
 set hive.exec.infer.bucket.sort=true;
+set hive.cbo.fallback.strategy=NEVER;
 
 -- Test writing to a bucketed table, the output should be bucketed by the bucketing key into the
 -- a number of files equal to the number of buckets

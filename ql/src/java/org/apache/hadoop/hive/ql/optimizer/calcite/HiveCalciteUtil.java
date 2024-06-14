@@ -82,6 +82,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
+import org.apache.hadoop.hive.ql.parse.QB;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -101,12 +102,10 @@ import com.google.common.collect.Sets;
 
 public class HiveCalciteUtil {
 
-  public static boolean validateASTForUnsupportedTokens(ASTNode ast) {
-    if (ParseUtils.containsTokenOfType(ast, HiveParser.TOK_CHARSETLITERAL, HiveParser.TOK_TABLESPLITSAMPLE)) {
-      return false;
-    } else {
-      return true;
-    }
+  public static boolean validateASTAndQBForUnsupportedFeatures(ASTNode ast, QB qb) {
+    return !ParseUtils.containsTokenOfType(ast, HiveParser.TOK_CHARSETLITERAL, HiveParser.TOK_TABLESPLITSAMPLE, 
+            HiveParser.TOK_UNIQUEJOIN, HiveParser.TOK_TABLEBUCKETSAMPLE) && 
+        !qb.hasTableSampleRecursive();
   }
 
   public static List<RexNode> getProjsFromBelowAsInputRef(final RelNode rel) {
