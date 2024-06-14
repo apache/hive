@@ -1071,6 +1071,16 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         if (!"1".equals(formatVersion)) {
           hmsTable.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
         }
+        // Set the serde info
+        hmsTable.getSd().setInputFormat(HiveIcebergInputFormat.class.getName());
+        hmsTable.getSd().setOutputFormat(HiveIcebergOutputFormat.class.getName());
+        hmsTable.getSd().getSerdeInfo().setSerializationLib(HiveIcebergSerDe.class.getName());
+        String storageHandler = hmsTable.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE);
+        // Check if META_TABLE_STORAGE is not present or is not an instance of ICEBERG_STORAGE_HANDLER
+        if (storageHandler == null || !HiveTableOperations.isHiveIcebergStorageHandler(storageHandler)) {
+          hmsTable.getParameters()
+              .put(hive_metastoreConstants.META_TABLE_STORAGE, HiveTableOperations.HIVE_ICEBERG_STORAGE_HANDLER);
+        }
       } catch (NoSuchTableException | NotFoundException ex) {
         // If the table doesn't exist, ignore throwing exception from here
       }

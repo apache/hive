@@ -25,3 +25,10 @@ DROP TABLE IF EXISTS ice_data;
 CREATE EXTERNAL TABLE ice_data (i int, s string) STORED BY ICEBERG;
 INSERT INTO ice_data VALUES (1, 'ABC'),(2, 'CCC'),(3, 'DBD');
 SHOW CREATE TABLE ice_data;
+
+set iceberg.engine.hive.enabled=false;
+DROP TABLE IF EXISTS ice_noHive;
+CREATE EXTERNAL TABLE ice_noHive (i int, s string) STORED BY ICEBERG;
+SHOW CREATE TABLE ice_noHive;
+INSERT INTO ice_noHive VALUES (1, 'ABC'),(2, 'CCC'),(3, 'DBD');
+SELECT * FROM ice_noHive;
