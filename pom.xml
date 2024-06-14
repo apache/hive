@@ -1728,6 +1728,7 @@
             <additionalClasspathElement>${basedir}/${hive.path.to.root}/conf</additionalClasspathElement>
           </additionalClasspathElements>
           <environmentVariables>
+            <HIVE_CLUSTER_ID>hive-test-cluster-id-env</HIVE_CLUSTER_ID>
             <TZ>US/Pacific</TZ>
             <LANG>en_US.UTF-8</LANG>
             <HADOOP_CLASSPATH>${test.conf.dir}:${basedir}/${hive.path.to.root}/conf</HADOOP_CLASSPATH>
@@ -1751,6 +1752,7 @@
             <mapred.job.tracker>local</mapred.job.tracker>
             <log4j.configurationFile>${test.log4j.scheme}${test.conf.dir}/hive-log4j2.properties</log4j.configurationFile>
             <hive.test.console.log.level>${test.console.log.level}</hive.test.console.log.level>
+            <hive.cluster.id>hive-test-cluster-id-cli</hive.cluster.id>
             <log4j.debug>true</log4j.debug>
             <!-- don't dirty up /tmp -->
             <java.io.tmpdir>${test.tmp.dir}</java.io.tmpdir>
