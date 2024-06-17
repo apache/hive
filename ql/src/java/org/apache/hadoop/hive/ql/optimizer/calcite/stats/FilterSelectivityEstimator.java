@@ -179,7 +179,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     case SEARCH:
       RexLiteral literal = (RexLiteral) call.operands.get(1);
       Sarg<?> sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
-      RexBuilder rexBuilder = new RexBuilder(new JavaTypeFactoryImpl(new HiveTypeSystemImpl()));
+      RexBuilder rexBuilder = childRel.getCluster().getRexBuilder();
       int minOrClauses = SessionState.getSessionConf().getIntVar(HiveConf.ConfVars.HIVE_POINT_LOOKUP_OPTIMIZER_MIN);
 
       // TODO: revisit this to better handle INs
