@@ -77,7 +77,7 @@ public class HiveFilterSortPredicates extends RelHomogeneousShuttle {
 
       final RexNode originalCond = filter.getCondition();
       final RexSortPredicatesShuttle sortPredicatesShuttle = new RexSortPredicatesShuttle(
-          input, filter.getCluster().getMetadataQuery());
+          input, filter.getCluster().getMetadataQuery(), filter.getCluster().getRexBuilder());
       final RexNode newCond = originalCond.accept(sortPredicatesShuttle);
       if (!sortPredicatesShuttle.modified) {
         // We are done, bail out
@@ -107,10 +107,12 @@ public class HiveFilterSortPredicates extends RelHomogeneousShuttle {
 
     private FilterSelectivityEstimator selectivityEstimator;
     private boolean modified;
+    private final RexBuilder rexBuilder;
 
-    private RexSortPredicatesShuttle(RelNode inputRel, RelMetadataQuery mq) {
+    private RexSortPredicatesShuttle(RelNode inputRel, RelMetadataQuery mq, RexBuilder rexBuilder) {
       selectivityEstimator = new FilterSelectivityEstimator(inputRel, mq);
       modified = false;
+      this.rexBuilder = rexBuilder;
     }
 
     @Override
@@ -181,7 +183,7 @@ public class HiveFilterSortPredicates extends RelHomogeneousShuttle {
     }
 
     private Double costPerTuple(RexNode e) {
-      return e.accept(new RexFunctionCost());
+      return e.accept(new RexFunctionCost(rexBuilder));
     }
 
   }
@@ -192,9 +194,12 @@ public class HiveFilterSortPredicates extends RelHomogeneousShuttle {
    * with the call having operands i in 1..n.
    */
   private static class RexFunctionCost extends RexVisitorImpl<Double> {
+    
+    private final RexBuilder rexBuilder;
 
-    private RexFunctionCost() {
+    private RexFunctionCost(RexBuilder rexBuilder) {
       super(true);
+      this.rexBuilder = rexBuilder;
     }
 
     @Override
@@ -204,11 +209,7 @@ public class HiveFilterSortPredicates extends RelHomogeneousShuttle {
       }
 
       if (call.getKind() == SqlKind.SEARCH) {
-        RexCall expandedCall = (RexCall) RexUtil.expandSearch(
-            new RexBuilder(new JavaTypeFactoryImpl(new HiveTypeSystemImpl())),
-            null,
-            call.clone(call.getType(), call.getOperands())
-        );
+        RexCall expandedCall = (RexCall) RexUtil.expandSearch(rexBuilder, null, call);
 
         return visitCall(expandedCall);
       }
