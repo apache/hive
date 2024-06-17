@@ -336,7 +336,7 @@ public class HiveFunctionHelper implements FunctionHelper {
   }
 
   private RexNode getExpression(RelDataType returnType, SqlOperator calciteOp, List<RexNode> inputs) {
-    if (Objects.requireNonNull(calciteOp.getKind()) == SqlKind.IN) {
+    if (calciteOp.getKind() == SqlKind.IN) {
       return rexBuilder.makeIn(inputs.get(0), inputs.subList(1, inputs.size()));
     }
     return rexBuilder.makeCall(returnType, calciteOp, inputs);
