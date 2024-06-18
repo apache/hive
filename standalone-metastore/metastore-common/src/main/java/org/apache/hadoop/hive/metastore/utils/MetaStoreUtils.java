@@ -123,7 +123,13 @@ public class MetaStoreUtils {
    * @return Timestamp in string format.
    */
   public static String convertTimestampToString(Timestamp timestamp) {
-    return TIMESTAMP_FORMATTER.format(timestamp.toLocalDateTime());
+    TimeZone defaultTimeZone = TimeZone.getDefault();
+    TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+
+    String str = TIMESTAMP_FORMATTER.format(timestamp.toLocalDateTime());
+
+    TimeZone.setDefault(defaultTimeZone);
+    return str;
   }
 
   /**
@@ -132,8 +138,14 @@ public class MetaStoreUtils {
    * @return java.sql.Timestamp object.
    */
   public static Timestamp convertStringToTimestamp(String timestamp) {
+    TimeZone defaultTimeZone = TimeZone.getDefault();
+    TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+
     LocalDateTime val = LocalDateTime.from(TIMESTAMP_FORMATTER.parse(timestamp));
-    return Timestamp.valueOf(val);
+    Timestamp ts = Timestamp.valueOf(val);
+
+    TimeZone.setDefault(defaultTimeZone);
+    return ts;
   }
 
   // Indicates a type was derived from the deserializer rather than Hive's metadata.
