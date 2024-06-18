@@ -61,7 +61,7 @@ public class TestMetaStoreUtils {
     List<Object[]> params = new ArrayList<>();
     long minDate = LocalDate.of(0, 1, 1).atStartOfDay().toEpochSecond(ZoneOffset.UTC);
     long maxDate = LocalDate.of(9999, 12, 31).atStartOfDay().toEpochSecond(ZoneOffset.UTC);
-    new Random(23).longs(500, minDate, maxDate).forEach(i -> {
+    new Random(22).longs(500, minDate, maxDate).forEach(i -> {
       LocalDateTime datetime = LocalDateTime.ofEpochSecond(i, 0, ZoneOffset.UTC);
       for (String zone : ZoneId.SHORT_IDS.values()) {
         params.add(new Object[] { zone, datetime });
