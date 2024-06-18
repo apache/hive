@@ -725,6 +725,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       case HiveParser.TOK_EXCEPTDISTINCT:
       case HiveParser.TOK_INTERSECTALL:
       case HiveParser.TOK_INTERSECTDISTINCT:
+      case HiveParser.TOK_QUALIFY:
         return true;
       default:
         for (int i = 0; i < node.getChildCount(); i++) {
