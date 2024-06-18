@@ -1,0 +1,105 @@
+PREHOOK: query: create table test (a int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test
+POSTHOOK: query: create table test (a int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test
+PREHOOK: query: explain cbo
+select * from test where 'foo'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from test where 'foo'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(a=[$0])
+  HiveTableScan(table=[[default, test]], table:alias=[test])
+
+PREHOOK: query: explain cbo
+select * from test where 'foo' and 'bar'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from test where 'foo' and 'bar'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(a=[$0])
+  HiveTableScan(table=[[default, test]], table:alias=[test])
+
+PREHOOK: query: explain cbo
+select * from test where 'foo' and a in (2, 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from test where 'foo' and a in (2, 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(a=[$0])
+  HiveFilter(condition=[IN($0, 2, 3)])
+    HiveTableScan(table=[[default, test]], table:alias=[test])
+
+PREHOOK: query: explain cbo 
+select * from test where not 'foo'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo 
+select * from test where not 'foo'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+CBO PLAN:
+HiveValues(tuples=[[]])
+
+PREHOOK: query: explain cbo
+select * from test where 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from test where 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(a=[$0])
+  HiveTableScan(table=[[default, test]], table:alias=[test])
+
+PREHOOK: query: explain cbo
+select * from test where 1 and 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from test where 1 and 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(a=[$0])
+  HiveTableScan(table=[[default, test]], table:alias=[test])
+
+PREHOOK: query: explain cbo
+select * from test where not 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from test where not 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+CBO PLAN:
+HiveValues(tuples=[[]])
+
