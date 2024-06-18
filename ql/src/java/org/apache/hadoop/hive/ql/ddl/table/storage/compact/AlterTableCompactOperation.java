@@ -145,6 +145,8 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
       if (partitions.isEmpty()) {
         throw new HiveException(ErrorMsg.INVALID_PARTITION_SPEC);
       }
+      // This validates that the partition spec given in the compaction command matches exactly one partition 
+      // in the table, not a partial partition spec.
       partitions = partitions.stream().filter(part -> part.getSpec().size() == partitionSpec.size()).collect(Collectors.toList());
       if (partitions.size() != 1) {
         throw new HiveException(ErrorMsg.TOO_MANY_COMPACTION_PARTITIONS);

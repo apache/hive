@@ -260,7 +260,9 @@ public class Context {
     PARTITION;
 
     public static RewritePolicy fromString(String rewritePolicy) {
-      Preconditions.checkArgument(null != rewritePolicy, "Invalid rewrite policy: null");
+      if (rewritePolicy == null) {
+        return DEFAULT;
+      }
 
       try {
         return valueOf(rewritePolicy.toUpperCase(Locale.ENGLISH));
