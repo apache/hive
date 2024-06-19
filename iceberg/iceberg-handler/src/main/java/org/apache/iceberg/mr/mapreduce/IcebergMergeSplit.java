@@ -22,65 +22,46 @@ package org.apache.iceberg.mr.mapreduce;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.iceberg.CombinedScanTask;
-import org.apache.iceberg.FileScanTask;
-import org.apache.iceberg.hadoop.Util;
-import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
+import org.apache.hadoop.mapred.FileSplit;
+import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.util.SerializationUtil;
 
-// Since this class extends `mapreduce.InputSplit and implements `mapred.InputSplit`, it can be returned by both MR v1
-// and v2 file formats.
-public class IcebergSplit extends InputSplit implements IcebergSplitContainer {
-
-  public static final String[] ANYWHERE = new String[]{"*"};
-
-  private CombinedScanTask task;
-
-  private transient String[] locations;
+public class IcebergMergeSplit extends FileSplit implements org.apache.hadoop.mapred.InputSplit {
   private transient Configuration conf;
+  private ContentFile contentFile;
 
   // public no-argument constructor for deserialization
-  public IcebergSplit() {
+  public IcebergMergeSplit() {
   }
 
-  IcebergSplit(Configuration conf, CombinedScanTask task) {
-    this.task = task;
+  public IcebergMergeSplit(Configuration conf,
+                           CombineHiveInputFormat.CombineHiveInputSplit split,
+                           Integer partition, Properties properties) throws IOException {
+    super(split.getPaths()[partition], split
+            .getStartOffsets()[partition], split.getLengths()[partition], split
+            .getLocations());
     this.conf = conf;
-  }
-
-  public CombinedScanTask task() {
-    return task;
-  }
-
-  @Override
-  public IcebergSplit icebergSplit() {
-    return this;
+    Path path = split.getPaths()[partition];
+    contentFile = (ContentFile) properties.get(path);
   }
 
   @Override
   public long getLength() {
-    return task.files().stream().mapToLong(FileScanTask::length).sum();
+    return contentFile.fileSizeInBytes();
   }
 
   @Override
   public String[] getLocations() {
-    // The implementation of getLocations() is only meant to be used during split computation
-    // getLocations() won't be accurate when called on worker nodes and will always return "*"
-    if (locations == null && conf != null) {
-      boolean localityPreferred = conf.getBoolean(InputFormatConfig.LOCALITY, false);
-      locations = localityPreferred ? Util.blockLocations(task, conf) : ANYWHERE;
-    } else {
-      locations = ANYWHERE;
-    }
-
-    return locations;
+    return new String[]{"*"};
   }
 
   @Override
   public void write(DataOutput out) throws IOException {
-    byte[] data = SerializationUtil.serializeToBytes(this.task);
+    byte[] data = SerializationUtil.serializeToBytes(this.contentFile);
     out.writeInt(data.length);
     out.write(data);
   }
@@ -89,6 +70,10 @@ public class IcebergSplit extends InputSplit implements IcebergSplitContainer {
   public void readFields(DataInput in) throws IOException {
     byte[] data = new byte[in.readInt()];
     in.readFully(data);
-    this.task = SerializationUtil.deserializeFromBytes(data);
+    this.contentFile = SerializationUtil.deserializeFromBytes(data);
+  }
+
+  public ContentFile getContentFile() {
+    return contentFile;
   }
 }
