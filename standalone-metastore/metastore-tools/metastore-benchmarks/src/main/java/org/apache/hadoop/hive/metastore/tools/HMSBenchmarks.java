@@ -43,6 +43,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.apache.hadoop.hive.metastore.tools.Util.addManyPartitions;
 import static org.apache.hadoop.hive.metastore.tools.Util.addManyPartitionsNoException;
@@ -437,6 +439,31 @@ final class HMSBenchmarks {
       throwingSupplierWrapper(() -> client.dropTable(dbName, tableName));
     }
   }
+
+  static DescriptiveStatistics benchmarkGetPartitionsByPs(@NotNull MicroBenchmark bench,
+                                                          @NotNull BenchData data,
+                                                          int count) {
+    final HMSClient client = data.getClient();
+    String dbName = data.dbName;
+    String tableName = data.tableName;
+
+    BenchmarkUtils.createPartitionedTable(client, dbName, tableName, createSchema(Arrays.asList("p_a", "p_b", "p_c")));
+    try {
+      // Create multiple partitions with values: [a0, b0, c0], [a0, b1, c1], [a0, b2, c2]...
+      List<List<String>> values = IntStream.range(0, count)
+          .mapToObj(i -> Arrays.asList("a0", "b" + i, "c" + i))
+          .collect(Collectors.toList());
+      addManyPartitionsNoException(client, dbName, tableName, null, values);
+      return bench.measure(
+          () ->
+              throwingSupplierWrapper(() ->
+                  client.getPartitionsByPs(dbName, tableName, Arrays.asList("a0")))
+      );
+    } finally {
+      throwingSupplierWrapper(() -> client.dropTable(dbName, tableName));
+    }
+  }
+
 
   static DescriptiveStatistics benchmarkGetPartitionsStat(@NotNull MicroBenchmark bench,
                                                           @NotNull BenchData data,

@@ -3840,34 +3840,39 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public int getNumPartitionsByPs(String catName, String dbName, String tblName, List<String> partVals)
       throws MetaException, NoSuchObjectException {
-    boolean success = false;
-    Query query = null;
-    Long result;
-    try {
-      openTransaction();
-      LOG.debug("executing getNumPartitionsByPs");
-      catName = normalizeIdentifier(catName);
-      dbName = normalizeIdentifier(dbName);
-      tblName = normalizeIdentifier(tblName);
-      Table table = getTable(catName, dbName, tblName);
-      if (table == null) {
-        throw new NoSuchObjectException(TableName.getQualified(catName, dbName, tblName)
-            + " table not found");
+
+    catName = normalizeIdentifier(catName);
+    dbName = normalizeIdentifier(dbName);
+    tblName = normalizeIdentifier(tblName);
+
+    return new GetHelper<Integer>(catName, dbName, tblName, true, true) {
+
+      @Override
+      protected String describeResult() {
+        return "Partition count by partial values";
       }
-      // size is known since it contains dbName, catName, tblName and partialRegex pattern
-      Map<String, String> params = new HashMap<>(4);
-      String filter = getJDOFilterStrForPartitionVals(table, partVals, params);
-      query = pm.newQuery(
-          "select count(partitionName) from org.apache.hadoop.hive.metastore.model.MPartition"
-      );
-      query.setFilter(filter);
-      query.declareParameters(makeParameterDeclarationString(params));
-      result = (Long) query.executeWithMap(params);
-      success = commitTransaction();
-    } finally {
-      rollbackAndCleanup(success, query);
-    }
-    return result.intValue();
+
+      @Override
+      protected Integer getSqlResult(GetHelper<Integer> ctx) throws MetaException {
+        return directSql.getNumPartitionsViaSqlPs(ctx.getTable(), partVals);
+      }
+
+      @Override
+      protected Integer getJdoResult(GetHelper<Integer> ctx)
+          throws MetaException, NoSuchObjectException, InvalidObjectException {
+        // size is known since it contains dbName, catName, tblName and partialRegex pattern
+        Map<String, String> params = new HashMap<>(4);
+        String filter = getJDOFilterStrForPartitionVals(ctx.getTable(), partVals, params);
+        try (QueryWrapper query = new QueryWrapper(pm.newQuery(
+            "select count(partitionName) from org.apache.hadoop.hive.metastore.model.MPartition"))) {
+          query.setFilter(filter);
+          query.declareParameters(makeParameterDeclarationString(params));
+          Long result = (Long) query.executeWithMap(params);
+
+          return result.intValue();
+        }
+      }
+    }.run(true);
   }
 
   /**
@@ -3884,8 +3889,10 @@ public class ObjectStore implements RawStore, Configurable {
    *          you want results for.  E.g., if resultsCol is partitionName, the Collection
    *          has types of String, and if resultsCol is null, the types are MPartition.
    */
-  private Collection<String> getPartitionPsQueryResults(String catName, String dbName, String tableName, List<String> part_vals,
-      int max_parts, String resultsCol) throws Exception {
+  private Collection<String> getPartitionPsQueryResults(String catName, String dbName,
+                                                        String tableName, List<String> part_vals,
+                                                        int max_parts, String resultsCol)
+      throws MetaException, NoSuchObjectException {
 
     Preconditions.checkState(this.currentTransaction.isActive());
 
@@ -3900,7 +3907,7 @@ public class ObjectStore implements RawStore, Configurable {
     // pattern
     Map<String, String> params = new HashMap<>(4);
     String filter = getJDOFilterStrForPartitionVals(table, part_vals, params);
-    try (Query query = pm.newQuery(MPartition.class)) {
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery(MPartition.class))) {
       query.setFilter(filter);
       query.declareParameters(makeParameterDeclarationString(params));
       if (max_parts >= 0) {
@@ -3917,27 +3924,6 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  /**
-   * If partVals all the values are empty strings, it means we are returning
-   * all the partitions and hence we can attempt to use a directSQL equivalent API which
-   * is considerably faster.
-   * @param partVals The partitions values used to filter out the partitions.
-   * @return true if partVals is empty or if all the values in partVals is empty strings.
-   * other wise false. If user or groups is valid then returns false since the directSQL
-   * doesn't support partition privileges.
-   */
-  private boolean canTryDirectSQL(List<String> partVals) {
-    if (partVals == null || partVals.isEmpty()) {
-      return true;
-    }
-    for (String val : partVals) {
-      if (val != null && !val.isEmpty()) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   @Override
   public List<Partition> listPartitionsPsWithAuth(String catName, String db_name, String tbl_name,
       GetPartitionsArgs args) throws MetaException, InvalidObjectException, NoSuchObjectException {
@@ -3952,32 +3938,19 @@ public class ObjectStore implements RawStore, Configurable {
         throw new NoSuchObjectException(
             TableName.getQualified(catName, db_name, tbl_name) + " table not found");
       }
-      int max_parts = args.getMax();
       String userName = args.getUserName();
       List<String> groupNames = args.getGroupNames();
       List<String> part_vals = args.getPart_vals();
       List<String> partNames = args.getPartNames();
-      boolean isAcidTable = TxnUtils.isAcidTable(mtbl.getParameters());
       boolean getauth = null != userName && null != groupNames &&
           "TRUE".equalsIgnoreCase(
               mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"));
-      // When partNames is given, sending to JDO directly.
-      if (canTryDirectSQL(part_vals) && partNames == null) {
-        LOG.info(
-            "Redirecting to directSQL enabled API: db: {} tbl: {} partVals: {}",
-            db_name, tbl_name, part_vals);
+      if (MetaStoreUtils.arePartValsEmpty(part_vals) && partNames == null) {
         partitions = getPartitions(catName, db_name, tbl_name, args);
+      } else  if (partNames != null) {
+        partitions = getPartitionsByNames(catName, db_name, tbl_name, args);
       } else {
-        if (partNames != null) {
-          partitions.addAll(getPartitionsViaOrmFilter(catName, db_name, tbl_name, isAcidTable, args));
-        } else {
-          Collection parts = getPartitionPsQueryResults(catName, db_name, tbl_name,
-                  part_vals, max_parts, null);
-          for (Object o : parts) {
-            Partition part = convertToPart(catName, db_name, tbl_name, (MPartition) o, isAcidTable, args);
-            partitions.add(part);
-          }
-        }
+        partitions = getPartitionsByPs(catName, db_name, tbl_name, args);
       }
       if (getauth) {
         for (Partition part : partitions) {
@@ -3997,6 +3970,36 @@ public class ObjectStore implements RawStore, Configurable {
       rollbackAndCleanup(success, null);
     }
     return partitions;
+  }
+
+  private List<Partition> getPartitionsByPs(String catName, String dbName,
+                                            String tblName, GetPartitionsArgs args)
+      throws MetaException, NoSuchObjectException {
+    catName = normalizeIdentifier(catName);
+    dbName = normalizeIdentifier(dbName);
+    tblName = normalizeIdentifier(tblName);
+
+    return new GetListHelper<Partition>(catName, dbName, tblName, true, true) {
+
+      @Override
+      protected List<Partition> getSqlResult(GetHelper<List<Partition>> ctx) throws MetaException {
+        return directSql.getPartitionsViaSqlPs(ctx.getTable(), args);
+      }
+
+      @Override
+      protected List<Partition> getJdoResult(GetHelper<List<Partition>> ctx)
+          throws MetaException, NoSuchObjectException {
+        List<Partition> result = new ArrayList<>();
+        Collection parts = getPartitionPsQueryResults(catName, dbName, tblName,
+            args.getPart_vals(), args.getMax(), null);
+        boolean isAcidTable = TxnUtils.isAcidTable(ctx.getTable());
+        for (Object o : parts) {
+          Partition part = convertToPart(catName, dbName, tblName, (MPartition) o, isAcidTable, args);
+          result.add(part);
+        }
+        return result;
+      }
+    }.run(true);
   }
 
   @Override
