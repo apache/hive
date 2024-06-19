@@ -460,6 +460,26 @@ public class MetaStoreUtils {
     }
     return pvals;
   }
+
+  /**
+   * If all the values of partVals are empty strings, it means we are returning
+   * all the partitions and hence we can use get_partitions API.
+   * @param partVals The partitions values used to filter out the partitions.
+   * @return true if partVals is empty or if all the values in partVals is empty strings.
+   * other wise false.
+   */
+  public static boolean arePartValsEmpty(List<String> partVals) {
+    if (partVals == null || partVals.isEmpty()) {
+      return true;
+    }
+    for (String val : partVals) {
+      if (val != null && !val.isEmpty()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   public static String makePartNameMatcher(Table table, List<String> partVals, String defaultStr) throws MetaException {
     List<FieldSchema> partCols = table.getPartitionKeys();
     int numPartKeys = partCols.size();
