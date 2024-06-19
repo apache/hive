@@ -240,7 +240,6 @@
                         <include>org/apache/hadoop/metrics2/**</include>
                         <include>org/apache/hadoop/security/token/**</include>
                         <include>org/apache/hadoop/util/*</include>
-                        <include>org/apache/hadoop/io/Writable.class</include>
                         <include>org/apache/hadoop/net/*</include>
                         <include>org/apache/hadoop/io/*</include>
                         <include>org/apache/hadoop/HadoopIllegalArgumentException.class</include>
