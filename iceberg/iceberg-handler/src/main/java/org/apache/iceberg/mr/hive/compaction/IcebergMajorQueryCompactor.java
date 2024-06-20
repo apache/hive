@@ -20,7 +20,6 @@
 package org.apache.iceberg.mr.hive.compaction;
 
 import java.io.IOException;
-import java.util.AbstractMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,19 +43,9 @@ import org.apache.hadoop.hive.ql.txn.compactor.QueryCompactor;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hive.iceberg.org.apache.orc.storage.common.TableName;
-import org.apache.iceberg.FileScanTask;
-import org.apache.iceberg.MetadataTableType;
-import org.apache.iceberg.MetadataTableUtils;
-import org.apache.iceberg.Partitioning;
-import org.apache.iceberg.PartitionsTable;
+import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.Table;
-import org.apache.iceberg.expressions.Expression;
-import org.apache.iceberg.expressions.Expressions;
-import org.apache.iceberg.expressions.ResidualEvaluator;
-import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.hive.IcebergTableUtil;
-import org.apache.iceberg.relocated.com.google.common.collect.Lists;
-import org.apache.iceberg.util.StructProjection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,36 +74,18 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
       Warehouse.makeSpecFromName(partSpecMap, new Path(partSpec), null);
 
       Table icebergTable = IcebergTableUtil.getTable(conf, table.getTTable());
-      Expression expression = IcebergTableUtil.generateExpressionFromPartitionSpec(icebergTable, partSpecMap);
-      PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
-          .createMetadataTableInstance(icebergTable, MetadataTableType.PARTITIONS);
+      Map<Integer, PartitionData> partitionInfo = IcebergTableUtil
+          .getPartitionInfo(icebergTable, partSpecMap, false);
 
-      List<Integer> specIdList = Lists.newArrayList();
-      try (CloseableIterable<FileScanTask> fileScanTasks = partitionsTable.newScan().planFiles()) {
-        fileScanTasks.forEach(task ->
-            CloseableIterable.filter(
-                CloseableIterable.transform(task.asDataTask().rows(), row -> {
-                  StructProjection data = row.get(IcebergTableUtil.PART_IDX, StructProjection.class);
-                  Integer specId = row.get(IcebergTableUtil.SPEC_IDX, Integer.class);
-                  return new AbstractMap.SimpleEntry<>(specId, IcebergTableUtil.toPartitionData(data,
-                      Partitioning.partitionType(icebergTable), icebergTable.specs().get(specId).partitionType()));
-                }), entry -> {
-                  ResidualEvaluator resEval = ResidualEvaluator.of(icebergTable.specs().get(entry.getKey()),
-                      expression, false);
-                  return resEval.residualFor(entry.getValue()).isEquivalentTo(Expressions.alwaysTrue()) &&
-                      entry.getValue().size() == partSpecMap.size();
-                }).forEach(entry -> specIdList.add(entry.getKey())));
-      }
-
-      if (specIdList.isEmpty()) {
+      if (partitionInfo.isEmpty()) {
         throw new HiveException(ErrorMsg.INVALID_PARTITION_SPEC);
       }
 
-      if (specIdList.size() > 1) {
+      if (partitionInfo.size() > 1) {
         throw new HiveException(ErrorMsg.TOO_MANY_COMPACTION_PARTITIONS);
       }
 
-      int specId = specIdList.get(0);
+      int specId = partitionInfo.keySet().stream().findFirst().get();
       HiveConf.setVar(conf, ConfVars.REWRITE_POLICY, RewritePolicy.PARTITION.name());
       conf.set(IcebergCompactionService.PARTITION_SPEC_ID, String.valueOf(specId));
       conf.set(IcebergCompactionService.PARTITION_PATH, new Path(partSpec).toString());

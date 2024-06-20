@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.mr.hive;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,8 @@ import org.apache.iceberg.MetadataTableUtils;
 import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
+import org.apache.iceberg.Partitioning;
+import org.apache.iceberg.PartitionsTable;
 import org.apache.iceberg.PositionDeletesScanTask;
 import org.apache.iceberg.RowLevelOperationMode;
 import org.apache.iceberg.ScanTask;
@@ -64,14 +67,17 @@ import org.apache.iceberg.UpdatePartitionSpec;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
+import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
+import org.apache.iceberg.util.StructProjection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -415,7 +421,7 @@ public class IcebergTableUtil {
 
   public static Expression generateExpressionFromPartitionSpec(Table table, Map<String, String> partitionSpec)
       throws SemanticException {
-    Map<String, PartitionField> partitionFieldMap = getAllPartitionFields(table).stream()
+    Map<String, PartitionField> partitionFieldMap = getPartitionFields(table).stream()
         .collect(Collectors.toMap(PartitionField::name, Function.identity()));
     Expression finalExp = Expressions.alwaysTrue();
     for (Map.Entry<String, String> entry : partitionSpec.entrySet()) {
@@ -452,8 +458,34 @@ public class IcebergTableUtil {
             String.format("Transform: %s", partField.transform().toString()))).collect(Collectors.toList());
   }
 
-  public static List<PartitionField> getAllPartitionFields(Table table) {
+  public static List<PartitionField> getPartitionFields(Table table) {
     return table.specs().values().stream().flatMap(spec -> spec.fields()
         .stream()).distinct().collect(Collectors.toList());
+  }
+
+  public static Map<Integer, PartitionData> getPartitionInfo(Table icebergTable, Map<String, String> partSpecMap,
+      boolean allowPartialSpec) throws SemanticException, IOException {
+    Expression expression = IcebergTableUtil.generateExpressionFromPartitionSpec(icebergTable, partSpecMap);
+    PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
+        .createMetadataTableInstance(icebergTable, MetadataTableType.PARTITIONS);
+
+    Map<Integer, PartitionData> result = Maps.newLinkedHashMap();
+    try (CloseableIterable<FileScanTask> fileScanTasks = partitionsTable.newScan().planFiles()) {
+      fileScanTasks.forEach(task ->
+          CloseableIterable.filter(
+              CloseableIterable.transform(task.asDataTask().rows(), row -> {
+                StructProjection data = row.get(IcebergTableUtil.PART_IDX, StructProjection.class);
+                Integer specId = row.get(IcebergTableUtil.SPEC_IDX, Integer.class);
+                return Maps.immutableEntry(specId, IcebergTableUtil.toPartitionData(data,
+                    Partitioning.partitionType(icebergTable), icebergTable.specs().get(specId).partitionType()));
+              }), entry -> {
+                ResidualEvaluator resEval = ResidualEvaluator.of(icebergTable.specs().get(entry.getKey()),
+                    expression, false);
+                return resEval.residualFor(entry.getValue()).isEquivalentTo(Expressions.alwaysTrue()) &&
+                    (entry.getValue().size() == partSpecMap.size() || allowPartialSpec);
+              }).forEach(entry -> result.put(entry.getKey(), entry.getValue())));
+    }
+
+    return result;
   }
 }

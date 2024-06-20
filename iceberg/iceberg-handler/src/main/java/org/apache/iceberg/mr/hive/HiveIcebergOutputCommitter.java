@@ -604,37 +604,38 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    */
   private void commitCompaction(Table table, long startTime, FilesForCommit results,
       RewritePolicy rewritePolicy, Integer partitionSpecId, String partitionPath) {
-    Preconditions.checkArgument(results.deleteFiles().isEmpty(), "Can not handle deletes with overwrite");
-    if (!results.dataFiles().isEmpty()) {
-      if (rewritePolicy == RewritePolicy.ALL_PARTITIONS) {
-        Transaction transaction = table.newTransaction();
-        DeleteFiles delete = transaction.newDelete();
-        delete.deleteFromRowFilter(Expressions.alwaysTrue());
-        delete.commit();
-        ReplacePartitions overwrite = transaction.newReplacePartitions();
-        results.dataFiles().forEach(overwrite::addFile);
-        overwrite.commit();
-        transaction.commitTransaction();
-      } else {
-        List<DataFile> existingDataFiles = IcebergTableUtil.getDataFiles(table, partitionSpecId, partitionPath);
-        List<DeleteFile> existingDeleteFiles = IcebergTableUtil.getDeleteFiles(table, partitionSpecId, partitionPath);
-
-        RewriteFiles rewriteFiles = table.newRewrite();
-        rewriteFiles.validateFromSnapshot(table.currentSnapshot().snapshotId());
-
-        existingDataFiles.forEach(rewriteFiles::deleteFile);
-        existingDeleteFiles.forEach(rewriteFiles::deleteFile);
-        results.dataFiles().forEach(rewriteFiles::addFile);
-
-        rewriteFiles.commit();
-      }
-      LOG.info("Compaction commit took {} ms for table: {} with {} file(s)", System.currentTimeMillis() - startTime,
-          table, results.dataFiles().size());
-    } else {
+    if (results.dataFiles().isEmpty()) {
       LOG.info("Empty compaction commit, took {} ms for table: {}", System.currentTimeMillis() - startTime, table);
+      return;
     }
+    if (rewritePolicy == RewritePolicy.ALL_PARTITIONS) {
+      // Full table compaction
+      Transaction transaction = table.newTransaction();
+      DeleteFiles delete = transaction.newDelete();
+      delete.deleteFromRowFilter(Expressions.alwaysTrue());
+      delete.commit();
+      ReplacePartitions overwrite = transaction.newReplacePartitions();
+      results.dataFiles().forEach(overwrite::addFile);
+      overwrite.commit();
+      transaction.commitTransaction();
+      LOG.debug("Compacted full table with files {}", results);
+    } else {
+      // Single partition compaction
+      List<DataFile> existingDataFiles = IcebergTableUtil.getDataFiles(table, partitionSpecId, partitionPath);
+      List<DeleteFile> existingDeleteFiles = IcebergTableUtil.getDeleteFiles(table, partitionSpecId, partitionPath);
 
-    LOG.debug("Compacted partitions with files {}", results);
+      RewriteFiles rewriteFiles = table.newRewrite();
+      rewriteFiles.validateFromSnapshot(table.currentSnapshot().snapshotId());
+
+      existingDataFiles.forEach(rewriteFiles::deleteFile);
+      existingDeleteFiles.forEach(rewriteFiles::deleteFile);
+      results.dataFiles().forEach(rewriteFiles::addFile);
+
+      rewriteFiles.commit();
+      LOG.debug("Compacted partition {} with files {}", partitionPath, results);
+    }
+    LOG.info("Compaction commit took {} ms for table: {} with {} file(s)", System.currentTimeMillis() - startTime,
+        table, results.dataFiles().size());
   }
 
   /**
