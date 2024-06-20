@@ -193,6 +193,9 @@ public class FunctionString extends BuiltinFunctions {
       return;
     }
     String str = evalPop(ctx.func_param(0).expr()).toString().toLowerCase();
+    if (exec.buildSql) {
+      str = Utils.quoteString(str);
+    }
     evalString(str);
   }
 
@@ -311,8 +314,8 @@ public class FunctionString extends BuiltinFunctions {
       evalNull();
       return;
     }
-    String str = evalPop(ctx.func_param(0).expr()).toString(); 
-    evalString(str);
+    String str = evalPop(ctx.func_param(0).expr()).toString();
+    evalSqlString(str);
   }
   
   /**
@@ -323,7 +326,10 @@ public class FunctionString extends BuiltinFunctions {
       evalNull();
       return;
     }
-    String str = evalPop(ctx.func_param(0).expr()).toString().toUpperCase(); 
+    String str = evalPop(ctx.func_param(0).expr()).toString().toUpperCase();
+    if (exec.buildSql) {
+      str = Utils.quoteString(str);
+    }
     evalString(str);
   }
 }

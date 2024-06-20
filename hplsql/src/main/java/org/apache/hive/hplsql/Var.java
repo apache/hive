@@ -31,7 +31,7 @@ import org.apache.hive.hplsql.executor.QueryResult;
 public class Var {
   // Data types
 	public enum Type {BOOL, CURSOR, DATE, DECIMAL, DERIVED_TYPE, DERIVED_ROWTYPE, DOUBLE, FILE, IDENT, BIGINT, INTERVAL, ROW, 
-	                  RS_LOCATOR, STRING, STRINGLIST, TIMESTAMP, NULL, HPL_OBJECT}
+	                  RS_LOCATOR, STRING, STRINGLIST, TIMESTAMP, NULL, HPL_OBJECT, HPL_SQL_UDF, SQL_STRING, VARIABLE}
 	public static final String DERIVED_TYPE = "DERIVED%TYPE";
 	public static final String DERIVED_ROWTYPE = "DERIVED%ROWTYPE";
 	public static Var Empty = new Var();
@@ -622,21 +622,16 @@ public class Var {
    * Convert value to SQL string - string literals are quoted and escaped, ab'c -&gt; 'ab''c'
    */
   public String toSqlString() {
-    if (value == null) {
+    if (type == Type.IDENT) {
+      return name;
+    }
+    else if (value == null) {
       return "NULL";
     }
     else if (type == Type.STRING) {
       return Utils.quoteString((String)value);
     }
-    return toString();
-  }
-
-  public String toSqlString(boolean isBuildSql, boolean handleStringType) {
-    if (type == Type.IDENT) {
-      return name;
-    } else if (handleStringType && value == null) {
-      return "NULL";
-    } else if (type == Type.TIMESTAMP && isBuildSql) {
+    else if (type == Type.TIMESTAMP) {
       int len = 19;
       String t = ((Timestamp) value).toString();   // .0 returned if the fractional part not set
       if (scale > 0) {
@@ -646,13 +641,10 @@ public class Var {
         t = t.substring(0, len);
       }
       return String.format("TIMESTAMP '%s'", t);
-    } else if (type == Type.DATE && isBuildSql) {
+    } else if (type == Type.DATE) {
       return String.format("DATE '%s'", ((Date) value).toString());
-    } else if (handleStringType && isBuildSql && type == Type.STRING) {
-      return Utils.quoteString(((String) value));
-    } else {
-      return toString();
     }
+    return toString();
   }
 	
   /**

@@ -789,7 +789,7 @@ public class Stmt {
       int cols = row.expr().size();
       for (int j = 0; j < cols; j++) {
         Var var = evalPop(row.expr(j));
-        String value = var.toSqlString(true, true);
+        String value = var.toSqlString();
         if (j == 0 && type == Conn.Type.HIVE && conf.insertValues == Conf.InsertValues.SELECT ) {
           sql.append("SELECT ");
         }

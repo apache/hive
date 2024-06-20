@@ -81,10 +81,10 @@ public class FunctionDatetime extends BuiltinFunctions {
    */
   public void currentDateSql(HplsqlParser.Expr_spec_funcContext ctx) {
     if (exec.getConnectionType() == Conn.Type.HIVE) {
-      evalString("TO_DATE(FROM_UNIXTIME(UNIX_TIMESTAMP()))");
+      evalSqlString("TO_DATE(FROM_UNIXTIME(UNIX_TIMESTAMP()))");
     } 
     else {
-      evalString(exec.getFormattedText(ctx));
+      evalSqlString(exec.getFormattedText(ctx));
     }
   }
   
@@ -111,10 +111,10 @@ public class FunctionDatetime extends BuiltinFunctions {
    */
   public void currentTimestampSql(HplsqlParser.Expr_spec_funcContext ctx) {
     if (exec.getConnectionType() == Conn.Type.HIVE) {
-      evalString("FROM_UNIXTIME(UNIX_TIMESTAMP())");
+      evalSqlString("FROM_UNIXTIME(UNIX_TIMESTAMP())");
     } 
     else {
-      evalString(Exec.getFormattedText(ctx));
+      evalSqlString(Exec.getFormattedText(ctx));
     }
   }
   
@@ -206,7 +206,7 @@ public class FunctionDatetime extends BuiltinFunctions {
       format = Utils.unquoteString(evalPop(ctx.func_param(1).expr()).toString());
     }
     DateTimeFormatter formatter = createDateTimeFormatter(format);
-    evalString(Utils.quoteString(formatter.format(new java.sql.Date(epoch * 1000).toLocalDate())));
+    evalString(formatter.format(new java.sql.Date(epoch * 1000).toLocalDate()));
   }
 
   /**

@@ -1896,7 +1896,8 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
       }
     }
     sql.append(")");
-    exec.stackPush(sql);
+    Var var = new Var(Type.SQL_STRING, sql);
+    exec.stackPush(var);
   }
 
   /**
@@ -1931,7 +1932,8 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
     sql.append(", \"");
     sql.append(getStoredProcedure(name.toUpperCase()));
     sql.append("\")");
-    exec.stackPush(sql);
+    Var var = new Var(Type.HPL_SQL_UDF, sql);
+    exec.stackPush(var);
     exec.registerUdf();
     return true;
   }
@@ -1957,7 +1959,8 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
    */
   @Override 
   public Integer visitExpr_agg_window_func(HplsqlParser.Expr_agg_window_funcContext ctx) {
-    exec.stackPush(Exec.getFormattedText(ctx));
+    Var var = new Var(Type.SQL_STRING, (Object) Exec.getFormattedText(ctx));
+    exec.stackPush(var);
     return 0; 
   }
   
@@ -2551,7 +2554,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
           exec.stackPush(var);
         }
       } else {
-        exec.stackPush(new Var(ident, Var.Type.STRING, var.toSqlString()));
+        exec.stackPush(new Var(ident, Type.VARIABLE, var.toSqlString()));
       }
     } else {
       if (exec.buildSql || exec.inCallStmt) {
@@ -2571,12 +2574,12 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
    */
   @Override 
   public Integer visitSingle_quotedString(HplsqlParser.Single_quotedStringContext ctx) { 
-    if (exec.buildSql) {
+    /*if (exec.buildSql) {
       exec.stackPush(ctx.getText());
     }
-    else {
+    else {*/
       exec.stackPush(Utils.unquoteString(ctx.getText()));
-    }
+    //}
     return 0;
   }
   

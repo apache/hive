@@ -130,23 +130,23 @@ public class FunctionMisc extends BuiltinFunctions {
   void currentSql(HplsqlParser.Expr_spec_funcContext ctx) {
     if (ctx.T_DATE() != null) {
       if (exec.getConnectionType() == Conn.Type.HIVE) {
-        evalString("TO_DATE(FROM_UNIXTIME(UNIX_TIMESTAMP()))");
+        evalSqlString("TO_DATE(FROM_UNIXTIME(UNIX_TIMESTAMP()))");
       } 
       else {
-        evalString("CURRENT_DATE");
+        evalSqlString("CURRENT_DATE");
       }
     }
     else if (ctx.T_TIMESTAMP() != null) {
       if (exec.getConnectionType() == Conn.Type.HIVE) {
-        evalString("FROM_UNIXTIME(UNIX_TIMESTAMP())");
+        evalSqlString("FROM_UNIXTIME(UNIX_TIMESTAMP())");
       } 
       else {
-        evalString("CURRENT_TIMESTAMP");
+        evalSqlString("CURRENT_TIMESTAMP");
       }
     } else if (ctx.T_USER() != null) {
-      evalString("CURRENT_USER()");
+      evalSqlString("CURRENT_USER()");
     } else {
-      evalString(exec.getFormattedText(ctx));
+      evalSqlString(exec.getFormattedText(ctx));
     }
   }
   
