@@ -90,6 +90,10 @@ public class CreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
+    if (ifNotExists && getDatabase(databaseName, false) != null) {
+      return;
+    }
+
     CreateDatabaseDesc desc = null;
     Database database = new Database(databaseName, comment, locationUri, props);
     if (type.equalsIgnoreCase(DatabaseType.NATIVE.name())) {
