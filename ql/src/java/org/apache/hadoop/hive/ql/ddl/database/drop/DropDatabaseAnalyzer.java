@@ -64,7 +64,11 @@ public class DropDatabaseAnalyzer extends BaseSemanticAnalyzer {
     boolean isDbLevelLock = true;
     if (cascade) {
       Hive newDb = null;
+      boolean allowClose = db.allowClose();
       try {
+        // Set the allowClose to false so that its underlying client won't be closed in case of
+        // the change of the thread-local Hive
+        db.setAllowClose(false);
         HiveConf hiveConf = new HiveConf(conf);
         hiveConf.set("hive.metastore.client.filter.enabled", "false");
         newDb = Hive.get(hiveConf);
@@ -96,6 +100,9 @@ public class DropDatabaseAnalyzer extends BaseSemanticAnalyzer {
             throw new RuntimeException(e);
           }
         }
+        db.setAllowClose(allowClose);
+        // The newDb and its underlying client would be closed while restoring the thread-local Hive
+        Hive.set(db);
       }
     }
     inputs.add(new ReadEntity(database));
