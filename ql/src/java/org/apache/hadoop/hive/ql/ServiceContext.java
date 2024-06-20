@@ -38,12 +38,21 @@ public class ServiceContext {
   }
 
   /**
-   * Logic for finding cluster id if any. Can be used as a utility.
+   * Logic for finding cluster id if any. Default value is empty string instead of null to stay safe
+   * with HiveConf.set().
+   * Precedence order: cli opt, env var, empty string
+   * Can be used as a utility.
    *
    * @return cluster id found from environment of system props
    */
   public static String findClusterId() {
-    return System.getProperty(Constants.CLUSTER_ID_CLI_OPT_NAME, System.getenv(Constants.CLUSTER_ID_ENV_VAR_NAME));
+    return System.getProperty(Constants.CLUSTER_ID_CLI_OPT_NAME,
+        getClusterIdFromEnv());
+  }
+
+  private static String getClusterIdFromEnv() {
+    return System.getenv(Constants.CLUSTER_ID_ENV_VAR_NAME) == null ? "" : System.getenv(
+        Constants.CLUSTER_ID_ENV_VAR_NAME);
   }
 
   public void setClusterIdInConf(HiveConf hiveConf) {
