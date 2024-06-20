@@ -104,13 +104,10 @@ public class Constants {
 
   public static final String HTTP_HEADER_REQUEST_TRACK = "X-Request-ID";
   public static final String TIME_POSTFIX_REQUEST_TRACK = "_TIME";
-  
-  public static final String ICEBERG_PARTITION_TABLE_SCHEMA = "partition,spec_id,record_count,file_count," +
-      "position_delete_record_count,position_delete_file_count,equality_delete_record_count," +
-      "equality_delete_file_count,last_updated_at,total_data_file_size_in_bytes,last_updated_snapshot_id";
   public static final String DELIMITED_JSON_SERDE = "org.apache.hadoop.hive.serde2.DelimitedJSONSerDe";
 
   public static final String CLUSTER_ID_ENV_VAR_NAME = "HIVE_CLUSTER_ID";
   public static final String CLUSTER_ID_CLI_OPT_NAME = "hive.cluster.id";
   public static final String CLUSTER_ID_HIVE_CONF_PROP = "hive.cluster.id";
+  public static final String ICEBERG_PARTITION_COLUMNS = "partition,spec_id";
 }

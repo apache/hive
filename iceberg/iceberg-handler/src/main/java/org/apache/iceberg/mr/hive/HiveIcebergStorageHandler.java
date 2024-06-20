@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -1804,7 +1805,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       fetcher.initialize(job, HiveTableUtil.getSerializationProps());
       org.apache.hadoop.hive.ql.metadata.Table metaDataPartTable =
           context.getDb().getTable(hmstbl.getDbName(), hmstbl.getTableName(), "partitions", true);
-      Deserializer currSerDe = metaDataPartTable.getDeserializer();
+      Deserializer currSerDe = HiveMetaStoreUtils.getDeserializer(job, metaDataPartTable.getTTable(),
+          metaDataPartTable.getMetaTable(), false);
       ObjectMapper mapper = new ObjectMapper();
       Table tbl = getTable(hmstbl);
       while (reader.next(key, value)) {
