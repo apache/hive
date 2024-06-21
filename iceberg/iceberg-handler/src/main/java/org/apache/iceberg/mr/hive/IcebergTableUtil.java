@@ -376,14 +376,16 @@ public class IcebergTableUtil {
     for (int i = 0; i < targetKeyType.fields().size(); i++) {
 
       int fi = i;
-      Object sourceKeyElem = sourceKeyType.fields().stream()
-          .filter(f -> f.name().equals(targetKeyType.fields().get(fi).name())).findFirst().get();
-
-      Object val =  sourceKey.get(sourceKeyType.fields().indexOf(sourceKeyElem),
-          targetKeyType.fields().get(i).type().typeId().javaClass());
-      if (val != null) {
-        data.set(i, val);
-      }
+      sourceKeyType.fields().stream()
+          .filter(f -> f.name().equals(targetKeyType.fields().get(fi).name()))
+          .findFirst().map(sourceKeyElem -> {
+            Object val =  sourceKey.get(sourceKeyType.fields().indexOf(sourceKeyElem),
+                targetKeyType.fields().get(fi).type().typeId().javaClass());
+            if (val != null) {
+              data.set(fi, val);
+            }
+            return val;
+          });
     }
     return data;
   }
@@ -398,9 +400,7 @@ public class IcebergTableUtil {
           return file.specId() == specId && table.specs()
               .get(specId).partitionToPath(file.partition()).equals(partitionPath);
         });
-    List<DataFile> dataFiles =  Lists.newArrayList(
-        CloseableIterable.transform(filteredFileScanTasks, t -> t.file()));
-    return dataFiles;
+    return Lists.newArrayList(CloseableIterable.transform(filteredFileScanTasks, t -> t.file()));
   }
 
   public static List<DeleteFile> getDeleteFiles(Table table, int specId, String partitionPath) {
@@ -413,10 +413,8 @@ public class IcebergTableUtil {
           return file.specId() == specId && table.specs()
               .get(specId).partitionToPath(file.partition()).equals(partitionPath);
         });
-    List<DeleteFile> deleteFiles =  Lists.newArrayList(
-        CloseableIterable
-            .transform(filteredDeletesScanTasks, t -> ((PositionDeletesScanTask) t).file()));
-    return deleteFiles;
+    return Lists.newArrayList(CloseableIterable.transform(filteredDeletesScanTasks,
+        t -> ((PositionDeletesScanTask) t).file()));
   }
 
   public static Expression generateExpressionFromPartitionSpec(Table table, Map<String, String> partitionSpec)

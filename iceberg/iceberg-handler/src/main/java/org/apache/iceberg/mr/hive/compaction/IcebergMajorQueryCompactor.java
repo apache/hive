@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
@@ -76,8 +77,9 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
       Table icebergTable = IcebergTableUtil.getTable(conf, table.getTTable());
       Map<Integer, PartitionData> partitionInfo = IcebergTableUtil
           .getPartitionInfo(icebergTable, partSpecMap, false);
+      Optional<Integer> specId = partitionInfo.keySet().stream().findFirst();
 
-      if (partitionInfo.isEmpty()) {
+      if (!specId.isPresent()) {
         throw new HiveException(ErrorMsg.INVALID_PARTITION_SPEC);
       }
 
@@ -85,12 +87,11 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
         throw new HiveException(ErrorMsg.TOO_MANY_COMPACTION_PARTITIONS);
       }
 
-      int specId = partitionInfo.keySet().stream().findFirst().get();
       HiveConf.setVar(conf, ConfVars.REWRITE_POLICY, RewritePolicy.PARTITION.name());
-      conf.set(IcebergCompactionService.PARTITION_SPEC_ID, String.valueOf(specId));
+      conf.set(IcebergCompactionService.PARTITION_SPEC_ID, String.valueOf(specId.get()));
       conf.set(IcebergCompactionService.PARTITION_PATH, new Path(partSpec).toString());
 
-      List<FieldSchema> partitionKeys = IcebergTableUtil.getPartitionKeys(icebergTable, specId);
+      List<FieldSchema> partitionKeys = IcebergTableUtil.getPartitionKeys(icebergTable, specId.get());
       List<String> partValues = partitionKeys.stream().map(
           fs -> String.join("=", HiveUtils.unparseIdentifier(fs.getName()),
               TypeInfoUtils.convertStringToLiteralForSQL(partSpecMap.get(fs.getName()),
@@ -108,7 +109,7 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
           compactTableName,
           StringUtils.join(partValues, ","),
           StringUtils.join(partValues, " and "),
-          queryFields, specId, VirtualColumn.PARTITION_SPEC_ID.getName());
+          queryFields, specId.get(), VirtualColumn.PARTITION_SPEC_ID.getName());
     }
 
     SessionState sessionState = setupQueryCompactionSession(conf, context.getCompactionInfo(), tblProperties);
