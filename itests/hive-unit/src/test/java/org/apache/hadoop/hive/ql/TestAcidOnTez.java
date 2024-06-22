@@ -58,7 +58,6 @@ import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.session.SessionState;
-
 import org.apache.orc.OrcProto;
 import org.apache.tez.mapreduce.hadoop.MRJobConfig;
 import org.junit.After;
@@ -115,8 +114,8 @@ public class TestAcidOnTez {
   public void setUp() throws Exception {
     hiveConf = new HiveConfForTest(getClass());
 
-    hiveConf.set("hive.tez.container.size", "128");
-    hiveConf.setBoolean("hive.merge.tezfiles", false);
+    hiveConf.set(HiveConf.ConfVars.HIVE_TEZ_CONTAINER_SIZE.varname, "128");
+    hiveConf.setBoolean(HiveConf.ConfVars.HIVE_MERGE_TEZ_FILES.varname, false);
 
     hiveConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
