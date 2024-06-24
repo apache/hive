@@ -380,7 +380,7 @@ public class MiniHS2 extends AbstractHiveService {
 
     // Set confOverlay parameters
     for (Map.Entry<String, String> entry : confOverlay.entrySet()) {
-      setConfProperty(entry.getKey(), entry.getValue());
+      getHiveConf().set(entry.getKey(), entry.getValue());
     }
 
     Exception hs2Exception = null;
