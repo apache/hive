@@ -97,7 +97,7 @@ public class MiniHS2 extends AbstractHiveService {
   }
 
   public static class Builder {
-    private HiveConf hiveConf = new HiveConf();
+    private HiveConf hiveConf = null;
     private MiniClusterType miniClusterType = MiniClusterType.LOCALFS_ONLY;
     private boolean useMiniKdc = false;
     private String serverPrincipal;
@@ -193,6 +193,9 @@ public class MiniHS2 extends AbstractHiveService {
     public MiniHS2 build() throws Exception {
       if (miniClusterType == MiniClusterType.MR && useMiniKdc) {
         throw new IOException("Can't create secure miniMr ... yet");
+      }
+      if (hiveConf == null) {
+        this.hiveConf = new HiveConf();
       }
       Iterator<Map.Entry<String, String>> iter = hiveConf.iterator();
       while (iter.hasNext()) {
