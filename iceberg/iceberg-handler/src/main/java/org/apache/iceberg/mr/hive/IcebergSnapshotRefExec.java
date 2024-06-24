@@ -103,6 +103,19 @@ public class IcebergSnapshotRefExec {
     }
   }
 
+  private static boolean refExistsAsTag(Table table, String tagName) {
+    SnapshotRef tagRef = table.refs().get(tagName);
+    if (tagRef != null) {
+      if (tagRef.isTag()) {
+        return true;
+      } else {
+        throw new IllegalArgumentException(
+            "Cannot complete create tag operation on " + tagName + ", as it exists as Branch");
+      }
+    }
+    return false;
+  }
+
   private static boolean refExistsAsBranch(Table table, String branchName) {
     SnapshotRef branchRef = table.refs().get(branchName);
     if (branchRef != null) {
@@ -154,6 +167,11 @@ public class IcebergSnapshotRefExec {
 
   public static void createTag(Table table, AlterTableSnapshotRefSpec.CreateSnapshotRefSpec createTagSpec) {
     String tagName = createTagSpec.getRefName();
+    boolean refExistsAsTag = refExistsAsTag(table, tagName);
+    if (createTagSpec.isIfNotExists() && refExistsAsTag) {
+      return;
+    }
+    boolean isReplace = createTagSpec.isReplace() && refExistsAsTag;
     Long snapshotId = null;
     if (createTagSpec.getSnapshotId() != null) {
       snapshotId = createTagSpec.getSnapshotId();
@@ -162,9 +180,14 @@ public class IcebergSnapshotRefExec {
     } else {
       snapshotId = table.currentSnapshot().snapshotId();
     }
-    LOG.info("Creating tag {} on iceberg table {} with snapshotId {}", tagName, table.name(), snapshotId);
     ManageSnapshots manageSnapshots = table.manageSnapshots();
-    manageSnapshots.createTag(tagName, snapshotId);
+    if (isReplace) {
+      LOG.info("Replacing tag {} on iceberg table {} with snapshotId {}", tagName, table.name(), snapshotId);
+      manageSnapshots.replaceTag(tagName, snapshotId);
+    } else {
+      LOG.info("Creating tag {} on iceberg table {} with snapshotId {}", tagName, table.name(), snapshotId);
+      manageSnapshots.createTag(tagName, snapshotId);
+    }
     if (createTagSpec.getMaxRefAgeMs() != null) {
       manageSnapshots.setMaxRefAgeMs(tagName, createTagSpec.getMaxRefAgeMs());
     }
