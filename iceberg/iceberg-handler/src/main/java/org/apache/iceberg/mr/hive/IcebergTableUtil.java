@@ -376,16 +376,19 @@ public class IcebergTableUtil {
     for (int i = 0; i < targetKeyType.fields().size(); i++) {
 
       int fi = i;
-      sourceKeyType.fields().stream()
-          .filter(f -> f.name().equals(targetKeyType.fields().get(fi).name()))
-          .findFirst().map(sourceKeyElem -> {
-            Object val =  sourceKey.get(sourceKeyType.fields().indexOf(sourceKeyElem),
-                targetKeyType.fields().get(fi).type().typeId().javaClass());
-            if (val != null) {
-              data.set(fi, val);
-            }
-            return val;
-          });
+      String fieldName = targetKeyType.fields().get(fi).name();
+      Object val = sourceKeyType.fields().stream()
+          .filter(f -> f.name().equals(fieldName)).findFirst()
+          .map(sourceKeyElem -> sourceKey.get(sourceKeyType.fields().indexOf(sourceKeyElem),
+              targetKeyType.fields().get(fi).type().typeId().javaClass()))
+          .orElseThrow(() -> new RuntimeException(
+              String.format("Error retrieving value of partition field %s", fieldName)));
+
+      if (val != null) {
+        data.set(fi, val);
+      } else {
+        throw new RuntimeException(String.format("Partition field's %s value is null", fieldName));
+      }
     }
     return data;
   }

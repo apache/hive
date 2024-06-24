@@ -1820,15 +1820,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public void validatePartSpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Map<String, String> partitionSpec,
       Context.RewritePolicy policy) throws SemanticException {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    if (policy == Context.RewritePolicy.PARTITION) {
-      validatePartSpecImpl(hmsTable, partitionSpec, IcebergTableUtil.getPartitionFields(table));
-    } else {
-      validatePartSpecImpl(hmsTable, partitionSpec, table.spec().fields());
-    }
+    List<PartitionField> partitionFields = (policy == Context.RewritePolicy.PARTITION) ?
+        IcebergTableUtil.getPartitionFields(table) : table.spec().fields();
+    validatePartSpecImpl(hmsTable, partitionSpec, partitionFields);
   }
 
   private void validatePartSpecImpl(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
-      Map<String, String> partitionSpec, List<PartitionField> allPartFields) throws SemanticException {
+      Map<String, String> partitionSpec, List<PartitionField> partitionFields) throws SemanticException {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     if (hmsTable.getSnapshotRef() != null && hasUndergonePartitionEvolution(table)) {
       // for this case we rewrite the query as delete query, so validations would be done as part of delete.
@@ -1840,7 +1838,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
 
     Map<String, Types.NestedField> mapOfPartColNamesWithTypes = Maps.newHashMap();
-    for (PartitionField partField : allPartFields) {
+    for (PartitionField partField : partitionFields) {
       Types.NestedField field = table.schema().findField(partField.sourceId());
       mapOfPartColNamesWithTypes.put(field.name(), field);
     }
