@@ -79,6 +79,8 @@ public abstract class HCatBaseTest {
    */
   protected void setUpHiveConf() {
     hiveConf = new HiveConf(this.getClass());
+    //TODO: HIVE-27998: hcatalog tests on Tez
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
     Path workDir = new Path(System.getProperty("test.tmp.dir",
         "target" + File.separator + "test" + File.separator + "tmp"));
     hiveConf.set("mapred.local.dir", workDir + File.separator + this.getClass().getSimpleName()

@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -34,7 +35,7 @@ public class TestDriver {
 
   @Before
   public void beforeTest() {
-    conf = new HiveConf();
+    conf = new HiveConfForTest(getClass());
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
@@ -62,8 +63,7 @@ public class TestDriver {
 
   @Test
   public void testDriverContextQueryErrorMessageRuntime() {
-    conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "tez");
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION, false);
+    conf.setInt("tez.am.counters.max.keys", 0);
     SessionState.start(conf);
     Driver driver = getDriver();
     try {
@@ -78,7 +78,9 @@ public class TestDriver {
       Assert.assertEquals(message, driver.driverContext.getQueryErrorMessage());
       // sanity check: the message is as expected
       Assert.assertTrue("Exception message is not as expected, got: " + message,
-          e.getMessage().startsWith("FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.tez.TezTask"));
+          e.getMessage().equalsIgnoreCase(
+              "FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Too many " +
+                  "counters: 1 max=0"));
     } finally {
       driver.close();
     }

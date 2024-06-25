@@ -65,7 +65,8 @@ public class TestDbNotificationCleanup {
     @BeforeClass
     public static void connectToMetastore() throws Exception {
         conf = new HiveConf();
-
+        //TODO: HIVE-27998: hcatalog tests on Tez
+        conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
         MetastoreConf.setVar(conf,MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS,
                 "org.apache.hive.hcatalog.listener.DbNotificationListener");
         conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);

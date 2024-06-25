@@ -70,9 +70,10 @@ public class TestSequenceFileReadWrite {
     dataDir = new File(System.getProperty("java.io.tmpdir") + File.separator +
         TestSequenceFileReadWrite.class.getCanonicalName() + "-" + System.currentTimeMillis());
     hiveConf = new HiveConf(this.getClass());
+    //TODO: HIVE-27998: hcatalog tests on Tez
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
     warehouseDir = HCatUtil.makePathASafeFileName(dataDir + File.separator + "warehouse");
     inputFileName = HCatUtil.makePathASafeFileName(dataDir + File.separator + "input.data");
-    hiveConf = new HiveConf(this.getClass());
     hiveConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");

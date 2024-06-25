@@ -20,6 +20,7 @@ package org.apache.hive.service.cli;
 
 import org.apache.hadoop.hive.UtilsForTest;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hive.service.cli.thrift.EmbeddedThriftBinaryCLIService;
 import org.apache.hive.service.cli.thrift.ThriftCLIService;
 import org.apache.hive.service.cli.thrift.ThriftCLIServiceClient;
@@ -37,7 +38,7 @@ public class TestEmbeddedThriftBinaryCLIService extends CLIServiceTest {
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     service = new EmbeddedThriftBinaryCLIService();
-    HiveConf conf = new HiveConf();
+    HiveConf conf = new HiveConfForTest(TestEmbeddedThriftBinaryCLIService.class);
     conf.setBoolean("datanucleus.schema.autoCreateTables", true);
     conf.setVar(HiveConf.ConfVars.HIVE_MAPRED_MODE, "nonstrict");
     UtilsForTest.expandHiveConfParams(conf);

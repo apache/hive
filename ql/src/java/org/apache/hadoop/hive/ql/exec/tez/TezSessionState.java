@@ -283,7 +283,7 @@ public class TezSessionState {
     } else {
       this.resources = new HiveResources(createTezDir(sessionId, "resources"));
       ensureLocalResources(conf, additionalFilesNotFromConf);
-      LOG.info("Created new resources: " + resources);
+      LOG.info("Created new resources: " + this.resources);
     }
 
     // unless already installed on all the cluster nodes, we'll have to

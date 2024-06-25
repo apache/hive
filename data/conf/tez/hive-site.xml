@@ -221,12 +221,6 @@
 </property>
 
 <property>
-  <name>hive.execution.engine</name>
-  <value>tez</value>
-  <description>Whether to use MR or Tez</description>
-</property>
-
-<property>
   <name>tez.am.node-blacklisting.enabled</name>
   <value>false</value>
 </property>

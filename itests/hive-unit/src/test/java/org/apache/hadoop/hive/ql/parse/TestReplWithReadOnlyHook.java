@@ -24,6 +24,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.shims.Utils;
@@ -42,7 +43,9 @@ public class TestReplWithReadOnlyHook extends BaseReplicationScenariosAcidTables
     overrides.put(MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getHiveName(),
       GzipJSONMessageEncoder.class.getCanonicalName());
 
-    conf = new HiveConf(TestReplWithReadOnlyHook.class);
+    conf = new HiveConfForTest(TestReplWithReadOnlyHook.class);
+    //TODO: HIVE-28044: Replication tests to run on Tez
+    conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
 
     MiniDFSCluster miniDFSCluster =

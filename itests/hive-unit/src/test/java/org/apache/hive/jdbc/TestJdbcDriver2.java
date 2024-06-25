@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
@@ -101,6 +102,7 @@ import static org.junit.Assert.fail;
  *
  */
 public class TestJdbcDriver2 {
+
   private static final Logger LOG = LoggerFactory.getLogger(TestJdbcDriver2.class);
   private static final String driverName = "org.apache.hive.jdbc.HiveDriver";
   private static final String testDbName = "testjdbcdriver";
@@ -118,7 +120,7 @@ public class TestJdbcDriver2 {
   private static final String dataTypeTableComment = "Table with many column data types";
   private static final String externalTableName = "testjdbcdriverexttbl";
   private static final String externalTableComment = "An external table";
-  private static HiveConf conf;
+  private static HiveConfForTest conf;
   private static String dataFileDir;
   private static Path dataFilePath;
   private static int dataFileRowCount;
@@ -130,9 +132,13 @@ public class TestJdbcDriver2 {
   @Rule public ExpectedException thrown = ExpectedException.none();
   @Rule public final TestName testName = new TestName();
 
-  private static Connection getConnection(String postfix) throws SQLException {
+  private static Connection getConnection(String prefix, String postfix) throws SQLException {
     Connection con1;
-    con1 = DriverManager.getConnection("jdbc:hive2:///" + postfix, "", "");
+    String connString = "jdbc:hive2:///" + prefix + "?" + conf.getOverlayOptionsAsQueryString()
+        + ";hive.lock.manager=org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager;" + postfix;
+    LOG.info("Connection string: {}", connString);
+    con1 = DriverManager
+        .getConnection(connString, "", "");
     assertNotNull("Connection is null", con1);
     assertFalse("Connection should not be closed", con1.isClosed());
     return con1;
@@ -193,10 +199,9 @@ public class TestJdbcDriver2 {
   @SuppressWarnings("deprecation")
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-    conf = new HiveConf(TestJdbcDriver2.class);
-    HiveConf initConf = new HiveConf(conf);
-    TestTxnDbUtil.setConfValues(initConf);
-    TestTxnDbUtil.prepDb(initConf);
+    conf = new HiveConfForTest(TestJdbcDriver2.class);
+    TestTxnDbUtil.setConfValues(conf);
+    TestTxnDbUtil.prepDb(conf);
     dataFileDir = conf.get("test.data.files").replace('\\', '/')
         .replace("c:", "");
     dataFilePath = new Path(dataFileDir, "kv1.txt");
@@ -211,7 +216,8 @@ public class TestJdbcDriver2 {
     System.setProperty(ConfVars.HIVE_SERVER2_PARALLEL_OPS_IN_SESSION.varname, "false");
     System.setProperty(ConfVars.REPL_CM_ENABLED.varname, "true");
     System.setProperty(ConfVars.REPL_CM_DIR.varname, "cmroot");
-    con = getConnection(defaultDbName + ";create=true");
+
+    con = getConnection(defaultDbName + ";create=true", "");
     Statement stmt = con.createStatement();
     assertNotNull("Statement is null", stmt);
     stmt.execute("set hive.support.concurrency = false");
@@ -224,7 +230,7 @@ public class TestJdbcDriver2 {
 
 
   @Test
-  public void testExceucteUpdateCounts() throws Exception {
+  public void testExecuteUpdateCounts() throws Exception {
     Statement stmt =  con.createStatement();
     stmt.execute("set " + ConfVars.HIVE_SUPPORT_CONCURRENCY.varname + "=true");
     stmt.execute("set " + ConfVars.HIVE_TXN_MANAGER.varname +
@@ -255,16 +261,16 @@ public class TestJdbcDriver2 {
   }
 
   @Test
-  public void testExceucteMergeCounts() throws Exception {
-    testExceucteMergeCounts(true);
+  public void testExecuteMergeCounts() throws Exception {
+    testExecuteMergeCounts(true);
   }
 
   @Test
-  public void testExceucteMergeCountsNoSplitUpdate() throws Exception {
-    testExceucteMergeCounts(false);
+  public void testExecuteMergeCountsNoSplitUpdate() throws Exception {
+    testExecuteMergeCounts(false);
   }
 
-  private void testExceucteMergeCounts(boolean splitUpdateEarly) throws Exception {
+  private void testExecuteMergeCounts(boolean splitUpdateEarly) throws Exception {
 
     Statement stmt =  con.createStatement();
     stmt.execute("set " + ConfVars.SPLIT_UPDATE.varname + "=" + splitUpdateEarly);
@@ -332,7 +338,7 @@ public class TestJdbcDriver2 {
    * @throws SQLException
    */
   public void testURLWithFetchSize() throws SQLException {
-    Connection con = getConnection(testDbName + ";fetchSize=1234");
+    Connection con = getConnection(testDbName + ";fetchSize=1234", "");
     Statement stmt = con.createStatement();
     assertEquals(stmt.getFetchSize(), 1234);
     stmt.close();
@@ -345,7 +351,7 @@ public class TestJdbcDriver2 {
    * @throws SQLException
    */
   public void testCreateTableAsExternal() throws SQLException {
-    Connection con = getConnection(testDbName + ";hiveCreateAsExternalLegacy=true");
+    Connection con = getConnection(testDbName + ";hiveCreateAsExternalLegacy=true", "");
     Statement stmt = con.createStatement();
     ResultSet res = stmt.executeQuery("set hive.create.as.external.legacy");
     assertTrue("ResultSet is empty", res.next());
@@ -701,7 +707,7 @@ public class TestJdbcDriver2 {
 
   @Test
   public void testSetOnConnection() throws Exception {
-    Connection connection = getConnection(testDbName + "?conf1=conf2;conf3=conf4#var1=var2;var3=var4");
+    Connection connection = getConnection(testDbName, "conf1=conf2;conf3=conf4#var1=var2;var3=var4");
     try {
       verifyConfValue(connection, "conf1", "conf2");
       verifyConfValue(connection, "conf3", "conf4");
@@ -1632,7 +1638,7 @@ public class TestJdbcDriver2 {
       fail(msg);
     }
 
-    Connection conn = getConnection("");
+    Connection conn = getConnection("", "");
     try {
       conn.setClientInfo("ApplicationName", "test");
       assertEquals("test", conn.getClientInfo("ApplicationName"));
@@ -3063,7 +3069,7 @@ public class TestJdbcDriver2 {
 
   @Test
   public void setAutoCommitOnClosedConnection() throws Exception {
-    Connection mycon = getConnection("");
+    Connection mycon = getConnection("", "");
     try {
       mycon.setAutoCommit(true);
       mycon.close();

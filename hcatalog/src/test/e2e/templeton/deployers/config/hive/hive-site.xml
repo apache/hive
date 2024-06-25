@@ -31,9 +31,10 @@
         <value>thrift://localhost:9933</value>
         <description>For Hive CLI to connect to</description>
     </property>
+    <!-- HIVE-27998: Make hcatalog tests run on Tez if needed -->
     <property>
         <name>hive.execution.engine</name>
-        <value>mr</value><!--tez-->
+        <value>mr</value>
     </property>
     <!--
     This enables client side Hive (RDBMS style) security

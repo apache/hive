@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import java.io.IOException;
-import java.net.ServerSocket;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
@@ -44,6 +43,8 @@ public class TestHiveRemote extends TestHive {
   @BeforeClass
   public static void setUp() throws Exception {
     hiveConf = new HiveConf(TestHiveRemote.class);
+    //TODO: HIVE-28289: TestHive/TestHiveRemote to run on Tez
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
     hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     hiveConf.setBoolVar(HiveConf.ConfVars.FIRE_EVENTS_FOR_DML, true);
@@ -76,18 +77,5 @@ public class TestHiveRemote extends TestHive {
    */
   @Override
   public void testDropTableTrash() {
-  }
-
-  /**
-   * Finds a free port.
-   *
-   * @return a free port
-   * @throws IOException
-   */
-  private String findFreePort() throws IOException {
-    ServerSocket socket= new ServerSocket(0);
-    int port = socket.getLocalPort();
-    socket.close();
-    return String.valueOf(port);
   }
 }

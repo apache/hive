@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.processors;
 import java.sql.SQLException;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Assert;
 import org.junit.Before;
@@ -34,7 +35,7 @@ public class TestCommandProcessorFactory {
 
   @Before
   public void setUp() throws Exception {
-    conf = new HiveConf();
+    conf = new HiveConfForTest(getClass());
   }
 
   @Test

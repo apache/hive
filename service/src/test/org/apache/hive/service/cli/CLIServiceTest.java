@@ -301,6 +301,8 @@ public abstract class CLIServiceTest {
   @Test
   public void testExecuteStatementParallel() throws Exception {
     Map<String, String> confOverlay = new HashMap<String, String>();
+    //TODO: HIVE-28283: CliServiceTest.testExecuteStatementParallel to run on Tez
+    confOverlay.put(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname, "mr");
     String tableName = "TEST_EXEC_PARALLEL";
     String columnDefinitions = "(ID STRING)";
 

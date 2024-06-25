@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.StorageStatistics;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -83,7 +84,7 @@ public class TestNullScanTaskDispatcher {
 
   @Before
   public void setup() {
-    hiveConf = new HiveConf();
+    hiveConf = new HiveConfForTest(getClass());
     hiveConf.set("fs.mock.impl", MockFileSystem.class.getName());
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_METADATA_ONLY_QUERIES, true);
     sessionState = SessionState.start(hiveConf);
