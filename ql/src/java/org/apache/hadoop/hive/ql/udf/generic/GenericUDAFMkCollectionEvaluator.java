@@ -66,18 +66,17 @@ public class GenericUDAFMkCollectionEvaluator extends GenericUDAFEvaluator
       inputOI = parameters[0];
       return ObjectInspectorFactory.getStandardListObjectInspector(
           ObjectInspectorUtils.getStandardObjectInspector(inputOI));
+    } else if (m == Mode.PARTIAL2 || m == Mode.FINAL) {
+      internalMergeOI = (ListObjectInspector) parameters[0];
+      inputOI = internalMergeOI.getListElementObjectInspector();
+      loi = (StandardListObjectInspector)
+          ObjectInspectorUtils.getStandardObjectInspector(internalMergeOI);
+      return loi;
     } else {
-      if (!(parameters[0] instanceof ListObjectInspector)) {
-        //no map aggregation.
-        inputOI = ObjectInspectorUtils.getStandardObjectInspector(parameters[0]);
-        return ObjectInspectorFactory.getStandardListObjectInspector(inputOI);
-      } else {
-        internalMergeOI = (ListObjectInspector) parameters[0];
-        inputOI = internalMergeOI.getListElementObjectInspector();
-        loi = (StandardListObjectInspector)
-            ObjectInspectorUtils.getStandardObjectInspector(internalMergeOI);
-        return loi;
-      }
+      //no map aggregation.
+      inputOI = parameters[0];
+      return ObjectInspectorFactory.getStandardListObjectInspector(
+          ObjectInspectorUtils.getStandardObjectInspector(inputOI));
     }
   }
 
