@@ -464,26 +464,27 @@ public class IcebergTableUtil {
         .stream()).distinct().collect(Collectors.toList());
   }
 
-  public static Map<Integer, PartitionData> getPartitionInfo(Table icebergTable, Map<String, String> partSpecMap,
+  public static Map<PartitionData, Integer> getPartitionInfo(Table icebergTable, Map<String, String> partSpecMap,
       boolean allowPartialSpec) throws SemanticException, IOException {
     Expression expression = IcebergTableUtil.generateExpressionFromPartitionSpec(icebergTable, partSpecMap);
     PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
         .createMetadataTableInstance(icebergTable, MetadataTableType.PARTITIONS);
 
-    Map<Integer, PartitionData> result = Maps.newLinkedHashMap();
+    Map<PartitionData, Integer> result = Maps.newLinkedHashMap();
     try (CloseableIterable<FileScanTask> fileScanTasks = partitionsTable.newScan().planFiles()) {
       fileScanTasks.forEach(task ->
           CloseableIterable.filter(
               CloseableIterable.transform(task.asDataTask().rows(), row -> {
                 StructProjection data = row.get(IcebergTableUtil.PART_IDX, StructProjection.class);
                 Integer specId = row.get(IcebergTableUtil.SPEC_IDX, Integer.class);
-                return Maps.immutableEntry(specId, IcebergTableUtil.toPartitionData(data,
-                    Partitioning.partitionType(icebergTable), icebergTable.specs().get(specId).partitionType()));
+                return Maps.immutableEntry(IcebergTableUtil.toPartitionData(data,
+                    Partitioning.partitionType(icebergTable), icebergTable.specs().get(specId).partitionType()),
+                    specId);
               }), entry -> {
-                ResidualEvaluator resEval = ResidualEvaluator.of(icebergTable.specs().get(entry.getKey()),
+                ResidualEvaluator resEval = ResidualEvaluator.of(icebergTable.specs().get(entry.getValue()),
                     expression, false);
-                return resEval.residualFor(entry.getValue()).isEquivalentTo(Expressions.alwaysTrue()) &&
-                    (entry.getValue().size() == partSpecMap.size() || allowPartialSpec);
+                return resEval.residualFor(entry.getKey()).isEquivalentTo(Expressions.alwaysTrue()) &&
+                    (entry.getKey().size() == partSpecMap.size() || allowPartialSpec);
               }).forEach(entry -> result.put(entry.getKey(), entry.getValue())));
     }
 

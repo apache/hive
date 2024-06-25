@@ -75,9 +75,9 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
       Warehouse.makeSpecFromName(partSpecMap, new Path(partSpec), null);
 
       Table icebergTable = IcebergTableUtil.getTable(conf, table.getTTable());
-      Map<Integer, PartitionData> partitionInfo = IcebergTableUtil
+      Map<PartitionData, Integer> partitionInfo = IcebergTableUtil
           .getPartitionInfo(icebergTable, partSpecMap, false);
-      Optional<Integer> specId = partitionInfo.keySet().stream().findFirst();
+      Optional<Integer> specId = partitionInfo.values().stream().findFirst();
 
       if (!specId.isPresent()) {
         throw new HiveException(ErrorMsg.INVALID_PARTITION_SPEC);

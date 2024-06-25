@@ -1962,8 +1962,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     try {
       return IcebergTableUtil
           .getPartitionInfo(icebergTable, partitionSpec, true).entrySet().stream().map(e -> {
-            PartitionData partitionData = e.getValue();
-            int specId = e.getKey();
+            PartitionData partitionData = e.getKey();
+            int specId = e.getValue();
             return icebergTable.specs().get(specId).partitionToPath(partitionData);
           }).collect(Collectors.toList());
     } catch (IOException e) {
