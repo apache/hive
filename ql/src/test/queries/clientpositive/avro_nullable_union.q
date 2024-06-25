@@ -1,4 +1,5 @@
 -- verify that we can write a nullable union type column with both nullable and non-nullable data
+set hive.cbo.fallback.strategy=NEVER;
 
 DROP TABLE IF EXISTS union_nullable_test_text;
 

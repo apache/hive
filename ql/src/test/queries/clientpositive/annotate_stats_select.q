@@ -1,6 +1,7 @@
 SET hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
 set hive.stats.fetch.column.stats=true;
+set hive.cbo.fallback.strategy=NEVER;
 
 create table if not exists alltypes (
  bo1 boolean,

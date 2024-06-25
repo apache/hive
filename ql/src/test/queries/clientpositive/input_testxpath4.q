@@ -1,5 +1,6 @@
 --! qt:dataset:src_thrift
 set hive.optimize.ppd=false;
+set hive.cbo.fallback.strategy=NEVER;
 
 EXPLAIN
 FROM src_thrift

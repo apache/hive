@@ -1,6 +1,7 @@
 --! qt:dataset:src_thrift
 set hive.vectorized.execution.enabled=false;
 set hive.test.vectorized.execution.enabled.override=disable;
+set hive.cbo.fallback.strategy=NEVER;
 
 add jar ${system:maven.local.repository}/org/apache/hive/hive-contrib/${system:hive.version}/hive-contrib-${system:hive.version}.jar;
 

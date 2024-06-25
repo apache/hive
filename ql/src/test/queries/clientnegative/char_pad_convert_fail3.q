@@ -1,3 +1,4 @@
+set hive.cbo.fallback.strategy=NEVER;
 
 create table over1k(
            t tinyint,

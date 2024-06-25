@@ -941,7 +941,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       if (!noUnsupportedFeatures) {
         msg += "has unsupported CBO features. Could be any of [CHARSETLITERAL, TABLESPLITSAMPLE, UNIQUEJOIN, " +
-            "TABLEBUCKETSAMPLE]; ";
+            "TABLEBUCKETSAMPLE, UNIONTYPE]; ";
       }
       msg = msg.substring(0, msg.length() - 2);
       if (needToLogMessage) {

@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.function.Predicate;
 
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptUtil;
@@ -103,9 +104,15 @@ import com.google.common.collect.Sets;
 public class HiveCalciteUtil {
 
   public static boolean validateASTAndQBForUnsupportedFeatures(ASTNode ast, QB qb) {
-    return !ParseUtils.containsTokenOfType(ast, HiveParser.TOK_CHARSETLITERAL, HiveParser.TOK_TABLESPLITSAMPLE, 
-            HiveParser.TOK_UNIQUEJOIN, HiveParser.TOK_TABLEBUCKETSAMPLE) && 
-        !qb.hasTableSampleRecursive();
+    Predicate<ASTNode> checkCreateUnion =
+        node -> node.getType() == HiveParser.TOK_FUNCTION &&
+            node.getChildCount() > 0 &&
+            node.getChild(0).getText().equalsIgnoreCase("create_union");
+    return !ParseUtils.containsTokenOfType(ast, checkCreateUnion,
+        HiveParser.TOK_CHARSETLITERAL, HiveParser.TOK_TABLESPLITSAMPLE, HiveParser.TOK_UNIQUEJOIN, 
+        HiveParser.TOK_TABLEBUCKETSAMPLE, HiveParser.TOK_UNIONTYPE) && 
+        !qb.hasTableSampleRecursive() &&
+        !qb.hasTableWithUnionType();
   }
 
   public static List<RexNode> getProjsFromBelowAsInputRef(final RelNode rel) {
