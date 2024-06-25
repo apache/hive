@@ -982,13 +982,13 @@ public class ObjectStore implements RawStore, Configurable {
     db.setOwnerType(principalType);
     if (mdb.getType().equalsIgnoreCase(DatabaseType.NATIVE.name())) {
       db.setType(DatabaseType.NATIVE);
-      db.setLocationUri(mdb.getLocationUri());
-      db.setManagedLocationUri(org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getManagedLocationUri(), null));
     } else {
       db.setType(DatabaseType.REMOTE);
       db.setConnector_name(org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getDataConnectorName(), null));
       db.setRemote_dbname(org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getRemoteDatabaseName(), null));
     }
+    db.setLocationUri(mdb.getLocationUri());
+    db.setManagedLocationUri(org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getManagedLocationUri(), null));
     db.setCatalogName(catName);
     db.setCreateTime(mdb.getCreateTime());
     return db;
