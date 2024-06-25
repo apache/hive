@@ -1,0 +1,95 @@
+package org.apache.hadoop.hive.ql.processors;
+
+import com.google.common.base.Joiner;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.ql.session.ProcessListInfo;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+
+import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_NULL_FORMAT;
+import static org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.defaultNullString;
+
+/**
+ * List operations/queries being performed in sessions within hiveserver2
+ */
+public class ShowProcesslistProcessor implements CommandProcessor{
+  private static final Logger LOG = LoggerFactory.getLogger(ShowProcesslistProcessor.class.getName());
+  private static final SessionState.LogHelper console = new SessionState.LogHelper(LOG);
+  private List<ProcessListInfo> liveQueries = null;
+
+  public void setup(List<ProcessListInfo> liveQueries) {
+    this.liveQueries = liveQueries;
+  }
+
+  /**
+   * Creates a Schema object with running operation details
+   * @return
+   */
+  private Schema getSchema(){
+    Schema sch = new Schema();
+    sch.addToFieldSchemas(new FieldSchema("User Name", "string", ""));
+    sch.addToFieldSchemas(new FieldSchema("Ip Addr", "string", ""));
+    sch.addToFieldSchemas(new FieldSchema("Execution Engine", "string", ""));
+    sch.addToFieldSchemas(new FieldSchema("Session Id", "string", ""));
+    sch.addToFieldSchemas(new FieldSchema("Session Active Time (s)", "string", ""));
+    sch.addToFieldSchemas(new FieldSchema("Session Idle Time (s)", "string", ""));
+    sch.addToFieldSchemas(new FieldSchema("Query ID", "string", ""));
+    sch.addToFieldSchemas(new FieldSchema("State", "string", ""));
+    sch.addToFieldSchemas(new FieldSchema("Opened Timestamp", "string", ""));
+    sch.addToFieldSchemas(new FieldSchema("Elapsed Time (s)", "string", ""));
+    sch.addToFieldSchemas(new FieldSchema("Runtime (s)", "string", ""));
+    sch.addToFieldSchemas(new FieldSchema("Query", "string", ""));
+    sch.putToProperties(SERIALIZATION_NULL_FORMAT, defaultNullString);
+    return sch;
+  }
+
+  @Override
+  public CommandProcessorResponse run(String command) throws CommandProcessorException {
+    try {
+      String[] tokens = command.split("\\s+");
+      boolean isCorrectSubCommand = "processlist".equalsIgnoreCase(tokens[0].toLowerCase());
+
+      if (tokens.length != 1 || ! isCorrectSubCommand) {
+        throw new CommandProcessorException("ShowProcessList Processor Failed: Unsupported sub-command option");
+      }
+      // TODO : Authorization?
+      if (liveQueries == null || liveQueries.isEmpty()) {
+        return new CommandProcessorResponse(getSchema(),"No queries running currently");
+      }
+      SessionState ss = SessionState.get();
+      liveQueries.forEach (query -> {
+            ss.out.println(
+                Joiner.on("\t").join(
+                    query.getUserName(),
+                    query.getIpAddr(),
+                    query.getExecutionEngine(),
+                    query.getSessionId(),
+                    query.getSessionActiveTime(),
+                    query.getSessionIdleTime(),
+                    query.getQueryId(),
+                    query.getState(),
+                    query.getBeginTime(),
+                    query.getElapsedTime(),
+                    query.getRuntime(),
+                    query.getQueryDisplay()
+                ));
+          }
+      );
+      return new CommandProcessorResponse(getSchema(), null);
+    } catch (Exception e) {
+      console.printError("Exception raised from ShowProcessListProcessor.run "
+          + e.getLocalizedMessage(), org.apache.hadoop.util.StringUtils
+          .stringifyException(e));
+      throw new CommandProcessorException(e.getLocalizedMessage(),e);
+    }
+  }
+
+  @Override
+  public void close() throws Exception {
+  }
+
+}
