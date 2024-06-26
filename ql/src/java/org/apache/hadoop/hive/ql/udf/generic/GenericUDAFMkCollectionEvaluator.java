@@ -62,21 +62,16 @@ public class GenericUDAFMkCollectionEvaluator extends GenericUDAFEvaluator
     super.init(m, parameters);
     // init output object inspectors
     // The output of a partial aggregation is a list
-    if (m == Mode.PARTIAL1) {
+    if (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE) {
       inputOI = parameters[0];
       return ObjectInspectorFactory.getStandardListObjectInspector(
           ObjectInspectorUtils.getStandardObjectInspector(inputOI));
-    } else if (m == Mode.PARTIAL2 || m == Mode.FINAL) {
+    } else {
       internalMergeOI = (ListObjectInspector) parameters[0];
       inputOI = internalMergeOI.getListElementObjectInspector();
       loi = (StandardListObjectInspector)
           ObjectInspectorUtils.getStandardObjectInspector(internalMergeOI);
       return loi;
-    } else {
-      //no map aggregation.
-      inputOI = parameters[0];
-      return ObjectInspectorFactory.getStandardListObjectInspector(
-          ObjectInspectorUtils.getStandardObjectInspector(inputOI));
     }
   }
 
