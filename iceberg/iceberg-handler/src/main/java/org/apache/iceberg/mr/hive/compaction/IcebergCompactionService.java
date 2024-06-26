@@ -29,6 +29,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class IcebergCompactionService extends CompactionService {
+  public static final String PARTITION_SPEC_ID = "compaction_part_spec_id";
+  public static final String PARTITION_PATH = "compaction_partition_path";
   private static final String CLASS_NAME = IcebergCompactionService.class.getName();
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 

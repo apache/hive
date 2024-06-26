@@ -741,8 +741,24 @@ public interface HiveStorageHandler extends Configurable {
     throw new UnsupportedOperationException("Storage handler does not support show partitions command");
   }
 
+  /**
+   * Validates that the provided partitionSpec is a valid according to the current table partitioning.
+   * @param hmsTable {@link org.apache.hadoop.hive.ql.metadata.Table} table metadata stored in Hive Metastore
+   * @param partitionSpec Map of Strings {@link java.util.Map} partition specification
+   */
   default void validatePartSpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Map<String, String> partitionSpec)
       throws SemanticException {
+    validatePartSpec(hmsTable, partitionSpec, Context.RewritePolicy.DEFAULT);
+  }
+
+  /**
+   * Validates that the provided partitionSpec is a valid according to the current table partitioning.
+   * @param hmsTable {@link org.apache.hadoop.hive.ql.metadata.Table} table metadata stored in Hive Metastore
+   * @param partitionSpec Map of Strings {@link java.util.Map} partition specification
+   * @param policy {@link org.apache.hadoop.hive.ql.Context.RewritePolicy} compaction rewrite policy
+   */
+  default void validatePartSpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Map<String, String> partitionSpec,
+      Context.RewritePolicy policy) throws SemanticException {
     throw new UnsupportedOperationException("Storage handler does not support validation of partition values");
   }
 
@@ -798,6 +814,19 @@ public interface HiveStorageHandler extends Configurable {
    */
   default Partition getPartition(org.apache.hadoop.hive.ql.metadata.Table table, Map<String, String> partitionSpec)
       throws SemanticException {
+    return getPartition(table, partitionSpec, Context.RewritePolicy.DEFAULT);
+  }
+
+  /**
+   * Returns partition based on table and partition specification.
+   * @param table {@link org.apache.hadoop.hive.ql.metadata.Table} table metadata stored in Hive Metastore
+   * @param partitionSpec Map of Strings {@link java.util.Map} partition specification
+   * @param policy {@link org.apache.hadoop.hive.ql.Context.RewritePolicy} compaction rewrite policy
+   * @return Partition {@link org.apache.hadoop.hive.ql.metadata.Partition}
+   * @throws SemanticException {@link org.apache.hadoop.hive.ql.parse.SemanticException}
+   */
+  default Partition getPartition(org.apache.hadoop.hive.ql.metadata.Table table, Map<String, String> partitionSpec,
+      Context.RewritePolicy policy) throws SemanticException {
     throw new UnsupportedOperationException("Storage handler does not support getting partition for a table.");
   }
 
