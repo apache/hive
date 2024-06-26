@@ -33,6 +33,16 @@ set hive.cbo.enable=false;
 select count(*) from alltypesorc where 'foo';
 
 set hive.cbo.enable=true;
+select count(*) from alltypesorc where 'true';
+set hive.cbo.enable=false;
+select count(*) from alltypesorc where 'true';
+
+set hive.cbo.enable=true;
+select count(*) from alltypesorc where 'false';
+set hive.cbo.enable=false;
+select count(*) from alltypesorc where 'false';
+
+set hive.cbo.enable=true;
 select count(*) from alltypesorc where true;
 set hive.cbo.enable=false;
 select count(*) from alltypesorc where true;
