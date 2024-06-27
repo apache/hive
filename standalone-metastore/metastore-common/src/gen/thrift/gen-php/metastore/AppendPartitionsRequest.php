@@ -28,15 +28,20 @@ class AppendPartitionsRequest
         ),
         2 => array(
             'var' => 'dbName',
-            'isRequired' => false,
+            'isRequired' => true,
             'type' => TType::STRING,
         ),
         3 => array(
             'var' => 'tableName',
-            'isRequired' => false,
+            'isRequired' => true,
             'type' => TType::STRING,
         ),
         4 => array(
+            'var' => 'name',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
+        5 => array(
             'var' => 'partVals',
             'isRequired' => false,
             'type' => TType::LST,
@@ -45,7 +50,7 @@ class AppendPartitionsRequest
                 'type' => TType::STRING,
                 ),
         ),
-        5 => array(
+        6 => array(
             'var' => 'environmentContext',
             'isRequired' => false,
             'type' => TType::STRUCT,
@@ -66,6 +71,10 @@ class AppendPartitionsRequest
      */
     public $tableName = null;
     /**
+     * @var string
+     */
+    public $name = null;
+    /**
      * @var string[]
      */
     public $partVals = null;
@@ -85,6 +94,9 @@ class AppendPartitionsRequest
             }
             if (isset($vals['tableName'])) {
                 $this->tableName = $vals['tableName'];
+            }
+            if (isset($vals['name'])) {
+                $this->name = $vals['name'];
             }
             if (isset($vals['partVals'])) {
                 $this->partVals = $vals['partVals'];
@@ -136,6 +148,13 @@ class AppendPartitionsRequest
                     }
                     break;
                 case 4:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->name);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 5:
                     if ($ftype == TType::LST) {
                         $this->partVals = array();
                         $_size1234 = 0;
@@ -151,7 +170,7 @@ class AppendPartitionsRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
-                case 5:
+                case 6:
                     if ($ftype == TType::STRUCT) {
                         $this->environmentContext = new \metastore\EnvironmentContext();
                         $xfer += $this->environmentContext->read($input);
@@ -188,11 +207,16 @@ class AppendPartitionsRequest
             $xfer += $output->writeString($this->tableName);
             $xfer += $output->writeFieldEnd();
         }
+        if ($this->name !== null) {
+            $xfer += $output->writeFieldBegin('name', TType::STRING, 4);
+            $xfer += $output->writeString($this->name);
+            $xfer += $output->writeFieldEnd();
+        }
         if ($this->partVals !== null) {
             if (!is_array($this->partVals)) {
                 throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
             }
-            $xfer += $output->writeFieldBegin('partVals', TType::LST, 4);
+            $xfer += $output->writeFieldBegin('partVals', TType::LST, 5);
             $output->writeListBegin(TType::STRING, count($this->partVals));
             foreach ($this->partVals as $iter1240) {
                 $xfer += $output->writeString($iter1240);
@@ -204,7 +228,7 @@ class AppendPartitionsRequest
             if (!is_object($this->environmentContext)) {
                 throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
             }
-            $xfer += $output->writeFieldBegin('environmentContext', TType::STRUCT, 5);
+            $xfer += $output->writeFieldBegin('environmentContext', TType::STRUCT, 6);
             $xfer += $this->environmentContext->write($output);
             $xfer += $output->writeFieldEnd();
         }

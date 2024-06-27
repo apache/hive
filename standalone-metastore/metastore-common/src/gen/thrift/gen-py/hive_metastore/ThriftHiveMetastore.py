@@ -866,7 +866,7 @@ class Iface(fb303.FacebookService.Iface):
         """
         pass
 
-    def get_partition_by_names_req(self, partitionReq):
+    def fetch_partition_names_req(self, partitionReq):
         """
         Parameters:
          - partitionReq
@@ -6024,24 +6024,24 @@ class Client(fb303.FacebookService.Client, Iface):
             raise result.o2
         raise TApplicationException(TApplicationException.MISSING_RESULT, "get_partition_names failed: unknown result")
 
-    def get_partition_by_names_req(self, partitionReq):
+    def fetch_partition_names_req(self, partitionReq):
         """
         Parameters:
          - partitionReq
 
         """
-        self.send_get_partition_by_names_req(partitionReq)
-        return self.recv_get_partition_by_names_req()
+        self.send_fetch_partition_names_req(partitionReq)
+        return self.recv_fetch_partition_names_req()
 
-    def send_get_partition_by_names_req(self, partitionReq):
-        self._oprot.writeMessageBegin('get_partition_by_names_req', TMessageType.CALL, self._seqid)
-        args = get_partition_by_names_req_args()
+    def send_fetch_partition_names_req(self, partitionReq):
+        self._oprot.writeMessageBegin('fetch_partition_names_req', TMessageType.CALL, self._seqid)
+        args = fetch_partition_names_req_args()
         args.partitionReq = partitionReq
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
 
-    def recv_get_partition_by_names_req(self):
+    def recv_fetch_partition_names_req(self):
         iprot = self._iprot
         (fname, mtype, rseqid) = iprot.readMessageBegin()
         if mtype == TMessageType.EXCEPTION:
@@ -6049,7 +6049,7 @@ class Client(fb303.FacebookService.Client, Iface):
             x.read(iprot)
             iprot.readMessageEnd()
             raise x
-        result = get_partition_by_names_req_result()
+        result = fetch_partition_names_req_result()
         result.read(iprot)
         iprot.readMessageEnd()
         if result.success is not None:
@@ -6058,7 +6058,7 @@ class Client(fb303.FacebookService.Client, Iface):
             raise result.o1
         if result.o2 is not None:
             raise result.o2
-        raise TApplicationException(TApplicationException.MISSING_RESULT, "get_partition_by_names_req failed: unknown result")
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "fetch_partition_names_req failed: unknown result")
 
     def get_partition_values(self, request):
         """
@@ -12736,7 +12736,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         self._processMap["get_partitions_with_auth"] = Processor.process_get_partitions_with_auth
         self._processMap["get_partitions_pspec"] = Processor.process_get_partitions_pspec
         self._processMap["get_partition_names"] = Processor.process_get_partition_names
-        self._processMap["get_partition_by_names_req"] = Processor.process_get_partition_by_names_req
+        self._processMap["fetch_partition_names_req"] = Processor.process_fetch_partition_names_req
         self._processMap["get_partition_values"] = Processor.process_get_partition_values
         self._processMap["get_partitions_ps"] = Processor.process_get_partitions_ps
         self._processMap["get_partitions_ps_with_auth"] = Processor.process_get_partitions_ps_with_auth
@@ -15813,13 +15813,13 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         oprot.writeMessageEnd()
         oprot.trans.flush()
 
-    def process_get_partition_by_names_req(self, seqid, iprot, oprot):
-        args = get_partition_by_names_req_args()
+    def process_fetch_partition_names_req(self, seqid, iprot, oprot):
+        args = fetch_partition_names_req_args()
         args.read(iprot)
         iprot.readMessageEnd()
-        result = get_partition_by_names_req_result()
+        result = fetch_partition_names_req_result()
         try:
-            result.success = self._handler.get_partition_by_names_req(args.partitionReq)
+            result.success = self._handler.fetch_partition_names_req(args.partitionReq)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -15837,7 +15837,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
             logging.exception('Unexpected exception in handler')
             msg_type = TMessageType.EXCEPTION
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-        oprot.writeMessageBegin("get_partition_by_names_req", msg_type, seqid)
+        oprot.writeMessageBegin("fetch_partition_names_req", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -36619,7 +36619,7 @@ get_partition_names_result.thrift_spec = (
 )
 
 
-class get_partition_by_names_req_args(object):
+class fetch_partition_names_req_args(object):
     """
     Attributes:
      - partitionReq
@@ -36654,7 +36654,7 @@ class get_partition_by_names_req_args(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('get_partition_by_names_req_args')
+        oprot.writeStructBegin('fetch_partition_names_req_args')
         if self.partitionReq is not None:
             oprot.writeFieldBegin('partitionReq', TType.STRUCT, 1)
             self.partitionReq.write(oprot)
@@ -36675,14 +36675,14 @@ class get_partition_by_names_req_args(object):
 
     def __ne__(self, other):
         return not (self == other)
-all_structs.append(get_partition_by_names_req_args)
-get_partition_by_names_req_args.thrift_spec = (
+all_structs.append(fetch_partition_names_req_args)
+fetch_partition_names_req_args.thrift_spec = (
     None,  # 0
     (1, TType.STRUCT, 'partitionReq', [PartitionsRequest, None], None, ),  # 1
 )
 
 
-class get_partition_by_names_req_result(object):
+class fetch_partition_names_req_result(object):
     """
     Attributes:
      - success
@@ -36735,7 +36735,7 @@ class get_partition_by_names_req_result(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('get_partition_by_names_req_result')
+        oprot.writeStructBegin('fetch_partition_names_req_result')
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRING, len(self.success))
@@ -36767,8 +36767,8 @@ class get_partition_by_names_req_result(object):
 
     def __ne__(self, other):
         return not (self == other)
-all_structs.append(get_partition_by_names_req_result)
-get_partition_by_names_req_result.thrift_spec = (
+all_structs.append(fetch_partition_names_req_result)
+fetch_partition_names_req_result.thrift_spec = (
     (0, TType.LIST, 'success', (TType.STRING, 'UTF8', False), None, ),  # 0
     (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
     (2, TType.STRUCT, 'o2', [MetaException, None], None, ),  # 2

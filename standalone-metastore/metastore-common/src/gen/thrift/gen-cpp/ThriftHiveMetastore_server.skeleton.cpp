@@ -500,9 +500,9 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_partition_names\n");
   }
 
-  void get_partition_by_names_req(std::vector<std::string> & _return, const PartitionsRequest& partitionReq) {
+  void fetch_partition_names_req(std::vector<std::string> & _return, const PartitionsRequest& partitionReq) {
     // Your implementation goes here
-    printf("get_partition_by_names_req\n");
+    printf("fetch_partition_names_req\n");
   }
 
   void get_partition_values(PartitionValuesResponse& _return, const PartitionValuesRequest& request) {

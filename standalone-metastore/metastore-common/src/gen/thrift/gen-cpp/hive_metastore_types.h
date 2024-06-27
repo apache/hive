@@ -8092,10 +8092,8 @@ void swap(DropPartitionsRequest &a, DropPartitionsRequest &b);
 std::ostream& operator<<(std::ostream& out, const DropPartitionsRequest& obj);
 
 typedef struct _DropPartitionRequest__isset {
-  _DropPartitionRequest__isset() : catName(false), dbName(false), tblName(false), partName(false), partVals(false), deleteData(false), environmentContext(false) {}
+  _DropPartitionRequest__isset() : catName(false), partName(false), partVals(false), deleteData(false), environmentContext(false) {}
   bool catName :1;
-  bool dbName :1;
-  bool tblName :1;
   bool partName :1;
   bool partVals :1;
   bool deleteData :1;
@@ -8146,13 +8144,9 @@ class DropPartitionRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.catName && !(catName == rhs.catName))
       return false;
-    if (__isset.dbName != rhs.__isset.dbName)
+    if (!(dbName == rhs.dbName))
       return false;
-    else if (__isset.dbName && !(dbName == rhs.dbName))
-      return false;
-    if (__isset.tblName != rhs.__isset.tblName)
-      return false;
-    else if (__isset.tblName && !(tblName == rhs.tblName))
+    if (!(tblName == rhs.tblName))
       return false;
     if (__isset.partName != rhs.__isset.partName)
       return false;
@@ -14466,12 +14460,11 @@ void swap(ExtendedTableInfo &a, ExtendedTableInfo &b);
 std::ostream& operator<<(std::ostream& out, const ExtendedTableInfo& obj);
 
 typedef struct _DropTableRequest__isset {
-  _DropTableRequest__isset() : catalogName(false), deleteData(false), envContext(false), dropPartitions(false), indexName(false) {}
+  _DropTableRequest__isset() : catalogName(false), deleteData(false), envContext(false), dropPartitions(false) {}
   bool catalogName :1;
   bool deleteData :1;
   bool envContext :1;
   bool dropPartitions :1;
-  bool indexName :1;
 } _DropTableRequest__isset;
 
 class DropTableRequest : public virtual ::apache::thrift::TBase {
@@ -14484,8 +14477,7 @@ class DropTableRequest : public virtual ::apache::thrift::TBase {
                      dbName(),
                      tableName(),
                      deleteData(0),
-                     dropPartitions(0),
-                     indexName() {
+                     dropPartitions(0) {
   }
 
   virtual ~DropTableRequest() noexcept;
@@ -14495,7 +14487,6 @@ class DropTableRequest : public virtual ::apache::thrift::TBase {
   bool deleteData;
   EnvironmentContext envContext;
   bool dropPartitions;
-  std::string indexName;
 
   _DropTableRequest__isset __isset;
 
@@ -14510,8 +14501,6 @@ class DropTableRequest : public virtual ::apache::thrift::TBase {
   void __set_envContext(const EnvironmentContext& val);
 
   void __set_dropPartitions(const bool val);
-
-  void __set_indexName(const std::string& val);
 
   bool operator == (const DropTableRequest & rhs) const
   {
@@ -14534,10 +14523,6 @@ class DropTableRequest : public virtual ::apache::thrift::TBase {
     if (__isset.dropPartitions != rhs.__isset.dropPartitions)
       return false;
     else if (__isset.dropPartitions && !(dropPartitions == rhs.dropPartitions))
-      return false;
-    if (__isset.indexName != rhs.__isset.indexName)
-      return false;
-    else if (__isset.indexName && !(indexName == rhs.indexName))
       return false;
     return true;
   }
@@ -18820,10 +18805,9 @@ void swap(AlterPartitionsRequest &a, AlterPartitionsRequest &b);
 std::ostream& operator<<(std::ostream& out, const AlterPartitionsRequest& obj);
 
 typedef struct _AppendPartitionsRequest__isset {
-  _AppendPartitionsRequest__isset() : catalogName(false), dbName(false), tableName(false), partVals(false), environmentContext(false) {}
+  _AppendPartitionsRequest__isset() : catalogName(false), name(false), partVals(false), environmentContext(false) {}
   bool catalogName :1;
-  bool dbName :1;
-  bool tableName :1;
+  bool name :1;
   bool partVals :1;
   bool environmentContext :1;
 } _AppendPartitionsRequest__isset;
@@ -18836,13 +18820,15 @@ class AppendPartitionsRequest : public virtual ::apache::thrift::TBase {
   AppendPartitionsRequest() noexcept
                           : catalogName(),
                             dbName(),
-                            tableName() {
+                            tableName(),
+                            name() {
   }
 
   virtual ~AppendPartitionsRequest() noexcept;
   std::string catalogName;
   std::string dbName;
   std::string tableName;
+  std::string name;
   std::vector<std::string>  partVals;
   EnvironmentContext environmentContext;
 
@@ -18854,6 +18840,8 @@ class AppendPartitionsRequest : public virtual ::apache::thrift::TBase {
 
   void __set_tableName(const std::string& val);
 
+  void __set_name(const std::string& val);
+
   void __set_partVals(const std::vector<std::string> & val);
 
   void __set_environmentContext(const EnvironmentContext& val);
@@ -18864,13 +18852,13 @@ class AppendPartitionsRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.catalogName && !(catalogName == rhs.catalogName))
       return false;
-    if (__isset.dbName != rhs.__isset.dbName)
+    if (!(dbName == rhs.dbName))
       return false;
-    else if (__isset.dbName && !(dbName == rhs.dbName))
+    if (!(tableName == rhs.tableName))
       return false;
-    if (__isset.tableName != rhs.__isset.tableName)
+    if (__isset.name != rhs.__isset.name)
       return false;
-    else if (__isset.tableName && !(tableName == rhs.tableName))
+    else if (__isset.name && !(name == rhs.name))
       return false;
     if (__isset.partVals != rhs.__isset.partVals)
       return false;

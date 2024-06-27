@@ -785,7 +785,7 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @throws \metastore\NoSuchObjectException
      * @throws \metastore\MetaException
      */
-    public function get_partition_by_names_req(\metastore\PartitionsRequest $partitionReq);
+    public function fetch_partition_names_req(\metastore\PartitionsRequest $partitionReq);
     /**
      * @param \metastore\PartitionValuesRequest $request
      * @return \metastore\PartitionValuesResponse

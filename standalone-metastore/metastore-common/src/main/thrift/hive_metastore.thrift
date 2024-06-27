@@ -968,8 +968,8 @@ struct DropPartitionsRequest {
 
 struct DropPartitionRequest {
   1: optional string catName,
-  2: optional string dbName,
-  3: optional string tblName,
+  2: required string dbName,
+  3: required string tblName,
   4: optional string partName,
   5: optional list<string> partVals,
   6: optional bool deleteData,
@@ -1769,8 +1769,7 @@ struct DropTableRequest {
  3: required string tableName,
  4: optional bool deleteData,
  5: optional EnvironmentContext envContext,
- 6: optional bool dropPartitions,
- 7: optional string indexName
+ 6: optional bool dropPartitions
 }
 
 struct GetDatabaseRequest {
@@ -2244,10 +2243,11 @@ struct AlterPartitionsRequest {
 
 struct AppendPartitionsRequest {
   1: optional string catalogName,
-  2: optional string dbName,
-  3: optional string tableName,
-  4: optional list<string> partVals,
-  5: optional EnvironmentContext environmentContext
+  2: required string dbName,
+  3: required string tableName,
+  4: optional string name,
+  5: optional list<string> partVals,
+  6: optional EnvironmentContext environmentContext
 }
 
 struct AlterPartitionsResponse {
@@ -2822,7 +2822,7 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
 
   list<string> get_partition_names(1:string db_name, 2:string tbl_name, 3:i16 max_parts=-1)
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
-  list<string> get_partition_by_names_req(1:PartitionsRequest partitionReq)
+  list<string> fetch_partition_names_req(1:PartitionsRequest partitionReq)
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
   PartitionValuesResponse get_partition_values(1:PartitionValuesRequest request)
     throws(1:MetaException o1, 2:NoSuchObjectException o2);

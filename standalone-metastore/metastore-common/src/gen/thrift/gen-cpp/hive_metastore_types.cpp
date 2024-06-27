@@ -19918,12 +19918,10 @@ __isset.catName = true;
 
 void DropPartitionRequest::__set_dbName(const std::string& val) {
   this->dbName = val;
-__isset.dbName = true;
 }
 
 void DropPartitionRequest::__set_tblName(const std::string& val) {
   this->tblName = val;
-__isset.tblName = true;
 }
 
 void DropPartitionRequest::__set_partName(const std::string& val) {
@@ -19964,6 +19962,8 @@ uint32_t DropPartitionRequest::read(::apache::thrift::protocol::TProtocol* iprot
 
   using ::apache::thrift::protocol::TProtocolException;
 
+  bool isset_dbName = false;
+  bool isset_tblName = false;
 
   while (true)
   {
@@ -19984,7 +19984,7 @@ uint32_t DropPartitionRequest::read(::apache::thrift::protocol::TProtocol* iprot
       case 2:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->dbName);
-          this->__isset.dbName = true;
+          isset_dbName = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -19992,7 +19992,7 @@ uint32_t DropPartitionRequest::read(::apache::thrift::protocol::TProtocol* iprot
       case 3:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->tblName);
-          this->__isset.tblName = true;
+          isset_tblName = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -20050,6 +20050,10 @@ uint32_t DropPartitionRequest::read(::apache::thrift::protocol::TProtocol* iprot
 
   xfer += iprot->readStructEnd();
 
+  if (!isset_dbName)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_tblName)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
   return xfer;
 }
 
@@ -20063,16 +20067,14 @@ uint32_t DropPartitionRequest::write(::apache::thrift::protocol::TProtocol* opro
     xfer += oprot->writeString(this->catName);
     xfer += oprot->writeFieldEnd();
   }
-  if (this->__isset.dbName) {
-    xfer += oprot->writeFieldBegin("dbName", ::apache::thrift::protocol::T_STRING, 2);
-    xfer += oprot->writeString(this->dbName);
-    xfer += oprot->writeFieldEnd();
-  }
-  if (this->__isset.tblName) {
-    xfer += oprot->writeFieldBegin("tblName", ::apache::thrift::protocol::T_STRING, 3);
-    xfer += oprot->writeString(this->tblName);
-    xfer += oprot->writeFieldEnd();
-  }
+  xfer += oprot->writeFieldBegin("dbName", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->dbName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("tblName", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->tblName);
+  xfer += oprot->writeFieldEnd();
+
   if (this->__isset.partName) {
     xfer += oprot->writeFieldBegin("partName", ::apache::thrift::protocol::T_STRING, 4);
     xfer += oprot->writeString(this->partName);
@@ -20143,8 +20145,8 @@ void DropPartitionRequest::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "DropPartitionRequest(";
   out << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
-  out << ", " << "dbName="; (__isset.dbName ? (out << to_string(dbName)) : (out << "<null>"));
-  out << ", " << "tblName="; (__isset.tblName ? (out << to_string(tblName)) : (out << "<null>"));
+  out << ", " << "dbName=" << to_string(dbName);
+  out << ", " << "tblName=" << to_string(tblName);
   out << ", " << "partName="; (__isset.partName ? (out << to_string(partName)) : (out << "<null>"));
   out << ", " << "partVals="; (__isset.partVals ? (out << to_string(partVals)) : (out << "<null>"));
   out << ", " << "deleteData="; (__isset.deleteData ? (out << to_string(deleteData)) : (out << "<null>"));
@@ -37081,11 +37083,6 @@ void DropTableRequest::__set_dropPartitions(const bool val) {
   this->dropPartitions = val;
 __isset.dropPartitions = true;
 }
-
-void DropTableRequest::__set_indexName(const std::string& val) {
-  this->indexName = val;
-__isset.indexName = true;
-}
 std::ostream& operator<<(std::ostream& out, const DropTableRequest& obj)
 {
   obj.printTo(out);
@@ -37164,14 +37161,6 @@ uint32_t DropTableRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 7:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->indexName);
-          this->__isset.indexName = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -37221,11 +37210,6 @@ uint32_t DropTableRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
     xfer += oprot->writeBool(this->dropPartitions);
     xfer += oprot->writeFieldEnd();
   }
-  if (this->__isset.indexName) {
-    xfer += oprot->writeFieldBegin("indexName", ::apache::thrift::protocol::T_STRING, 7);
-    xfer += oprot->writeString(this->indexName);
-    xfer += oprot->writeFieldEnd();
-  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -37239,7 +37223,6 @@ void swap(DropTableRequest &a, DropTableRequest &b) {
   swap(a.deleteData, b.deleteData);
   swap(a.envContext, b.envContext);
   swap(a.dropPartitions, b.dropPartitions);
-  swap(a.indexName, b.indexName);
   swap(a.__isset, b.__isset);
 }
 
@@ -37250,7 +37233,6 @@ DropTableRequest::DropTableRequest(const DropTableRequest& other1377) {
   deleteData = other1377.deleteData;
   envContext = other1377.envContext;
   dropPartitions = other1377.dropPartitions;
-  indexName = other1377.indexName;
   __isset = other1377.__isset;
 }
 DropTableRequest& DropTableRequest::operator=(const DropTableRequest& other1378) {
@@ -37260,7 +37242,6 @@ DropTableRequest& DropTableRequest::operator=(const DropTableRequest& other1378)
   deleteData = other1378.deleteData;
   envContext = other1378.envContext;
   dropPartitions = other1378.dropPartitions;
-  indexName = other1378.indexName;
   __isset = other1378.__isset;
   return *this;
 }
@@ -37273,7 +37254,6 @@ void DropTableRequest::printTo(std::ostream& out) const {
   out << ", " << "deleteData="; (__isset.deleteData ? (out << to_string(deleteData)) : (out << "<null>"));
   out << ", " << "envContext="; (__isset.envContext ? (out << to_string(envContext)) : (out << "<null>"));
   out << ", " << "dropPartitions="; (__isset.dropPartitions ? (out << to_string(dropPartitions)) : (out << "<null>"));
-  out << ", " << "indexName="; (__isset.indexName ? (out << to_string(indexName)) : (out << "<null>"));
   out << ")";
 }
 
@@ -47653,12 +47633,15 @@ __isset.catalogName = true;
 
 void AppendPartitionsRequest::__set_dbName(const std::string& val) {
   this->dbName = val;
-__isset.dbName = true;
 }
 
 void AppendPartitionsRequest::__set_tableName(const std::string& val) {
   this->tableName = val;
-__isset.tableName = true;
+}
+
+void AppendPartitionsRequest::__set_name(const std::string& val) {
+  this->name = val;
+__isset.name = true;
 }
 
 void AppendPartitionsRequest::__set_partVals(const std::vector<std::string> & val) {
@@ -47689,6 +47672,8 @@ uint32_t AppendPartitionsRequest::read(::apache::thrift::protocol::TProtocol* ip
 
   using ::apache::thrift::protocol::TProtocolException;
 
+  bool isset_dbName = false;
+  bool isset_tableName = false;
 
   while (true)
   {
@@ -47709,7 +47694,7 @@ uint32_t AppendPartitionsRequest::read(::apache::thrift::protocol::TProtocol* ip
       case 2:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->dbName);
-          this->__isset.dbName = true;
+          isset_dbName = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -47717,12 +47702,20 @@ uint32_t AppendPartitionsRequest::read(::apache::thrift::protocol::TProtocol* ip
       case 3:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->tableName);
-          this->__isset.tableName = true;
+          isset_tableName = true;
         } else {
           xfer += iprot->skip(ftype);
         }
         break;
       case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->name);
+          this->__isset.name = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->partVals.clear();
@@ -47742,7 +47735,7 @@ uint32_t AppendPartitionsRequest::read(::apache::thrift::protocol::TProtocol* ip
           xfer += iprot->skip(ftype);
         }
         break;
-      case 5:
+      case 6:
         if (ftype == ::apache::thrift::protocol::T_STRUCT) {
           xfer += this->environmentContext.read(iprot);
           this->__isset.environmentContext = true;
@@ -47759,6 +47752,10 @@ uint32_t AppendPartitionsRequest::read(::apache::thrift::protocol::TProtocol* ip
 
   xfer += iprot->readStructEnd();
 
+  if (!isset_dbName)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_tableName)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
   return xfer;
 }
 
@@ -47772,18 +47769,21 @@ uint32_t AppendPartitionsRequest::write(::apache::thrift::protocol::TProtocol* o
     xfer += oprot->writeString(this->catalogName);
     xfer += oprot->writeFieldEnd();
   }
-  if (this->__isset.dbName) {
-    xfer += oprot->writeFieldBegin("dbName", ::apache::thrift::protocol::T_STRING, 2);
-    xfer += oprot->writeString(this->dbName);
-    xfer += oprot->writeFieldEnd();
-  }
-  if (this->__isset.tableName) {
-    xfer += oprot->writeFieldBegin("tableName", ::apache::thrift::protocol::T_STRING, 3);
-    xfer += oprot->writeString(this->tableName);
+  xfer += oprot->writeFieldBegin("dbName", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->dbName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("tableName", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->tableName);
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.name) {
+    xfer += oprot->writeFieldBegin("name", ::apache::thrift::protocol::T_STRING, 4);
+    xfer += oprot->writeString(this->name);
     xfer += oprot->writeFieldEnd();
   }
   if (this->__isset.partVals) {
-    xfer += oprot->writeFieldBegin("partVals", ::apache::thrift::protocol::T_LIST, 4);
+    xfer += oprot->writeFieldBegin("partVals", ::apache::thrift::protocol::T_LIST, 5);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->partVals.size()));
       std::vector<std::string> ::const_iterator _iter1672;
@@ -47796,7 +47796,7 @@ uint32_t AppendPartitionsRequest::write(::apache::thrift::protocol::TProtocol* o
     xfer += oprot->writeFieldEnd();
   }
   if (this->__isset.environmentContext) {
-    xfer += oprot->writeFieldBegin("environmentContext", ::apache::thrift::protocol::T_STRUCT, 5);
+    xfer += oprot->writeFieldBegin("environmentContext", ::apache::thrift::protocol::T_STRUCT, 6);
     xfer += this->environmentContext.write(oprot);
     xfer += oprot->writeFieldEnd();
   }
@@ -47810,6 +47810,7 @@ void swap(AppendPartitionsRequest &a, AppendPartitionsRequest &b) {
   swap(a.catalogName, b.catalogName);
   swap(a.dbName, b.dbName);
   swap(a.tableName, b.tableName);
+  swap(a.name, b.name);
   swap(a.partVals, b.partVals);
   swap(a.environmentContext, b.environmentContext);
   swap(a.__isset, b.__isset);
@@ -47819,6 +47820,7 @@ AppendPartitionsRequest::AppendPartitionsRequest(const AppendPartitionsRequest& 
   catalogName = other1673.catalogName;
   dbName = other1673.dbName;
   tableName = other1673.tableName;
+  name = other1673.name;
   partVals = other1673.partVals;
   environmentContext = other1673.environmentContext;
   __isset = other1673.__isset;
@@ -47827,6 +47829,7 @@ AppendPartitionsRequest& AppendPartitionsRequest::operator=(const AppendPartitio
   catalogName = other1674.catalogName;
   dbName = other1674.dbName;
   tableName = other1674.tableName;
+  name = other1674.name;
   partVals = other1674.partVals;
   environmentContext = other1674.environmentContext;
   __isset = other1674.__isset;
@@ -47836,8 +47839,9 @@ void AppendPartitionsRequest::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "AppendPartitionsRequest(";
   out << "catalogName="; (__isset.catalogName ? (out << to_string(catalogName)) : (out << "<null>"));
-  out << ", " << "dbName="; (__isset.dbName ? (out << to_string(dbName)) : (out << "<null>"));
-  out << ", " << "tableName="; (__isset.tableName ? (out << to_string(tableName)) : (out << "<null>"));
+  out << ", " << "dbName=" << to_string(dbName);
+  out << ", " << "tableName=" << to_string(tableName);
+  out << ", " << "name="; (__isset.name ? (out << to_string(name)) : (out << "<null>"));
   out << ", " << "partVals="; (__isset.partVals ? (out << to_string(partVals)) : (out << "<null>"));
   out << ", " << "environmentContext="; (__isset.environmentContext ? (out << to_string(environmentContext)) : (out << "<null>"));
   out << ")";

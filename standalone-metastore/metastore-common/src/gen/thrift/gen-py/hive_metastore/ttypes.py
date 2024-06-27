@@ -11517,6 +11517,10 @@ class DropPartitionRequest(object):
         oprot.writeStructEnd()
 
     def validate(self):
+        if self.dbName is None:
+            raise TProtocolException(message='Required field dbName is unset!')
+        if self.tblName is None:
+            raise TProtocolException(message='Required field tblName is unset!')
         return
 
     def __repr__(self):
@@ -21098,19 +21102,17 @@ class DropTableRequest(object):
      - deleteData
      - envContext
      - dropPartitions
-     - indexName
 
     """
 
 
-    def __init__(self, catalogName=None, dbName=None, tableName=None, deleteData=None, envContext=None, dropPartitions=None, indexName=None,):
+    def __init__(self, catalogName=None, dbName=None, tableName=None, deleteData=None, envContext=None, dropPartitions=None,):
         self.catalogName = catalogName
         self.dbName = dbName
         self.tableName = tableName
         self.deleteData = deleteData
         self.envContext = envContext
         self.dropPartitions = dropPartitions
-        self.indexName = indexName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -21152,11 +21154,6 @@ class DropTableRequest(object):
                     self.dropPartitions = iprot.readBool()
                 else:
                     iprot.skip(ftype)
-            elif fid == 7:
-                if ftype == TType.STRING:
-                    self.indexName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
-                else:
-                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -21190,10 +21187,6 @@ class DropTableRequest(object):
         if self.dropPartitions is not None:
             oprot.writeFieldBegin('dropPartitions', TType.BOOL, 6)
             oprot.writeBool(self.dropPartitions)
-            oprot.writeFieldEnd()
-        if self.indexName is not None:
-            oprot.writeFieldBegin('indexName', TType.STRING, 7)
-            oprot.writeString(self.indexName.encode('utf-8') if sys.version_info[0] == 2 else self.indexName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -27202,16 +27195,18 @@ class AppendPartitionsRequest(object):
      - catalogName
      - dbName
      - tableName
+     - name
      - partVals
      - environmentContext
 
     """
 
 
-    def __init__(self, catalogName=None, dbName=None, tableName=None, partVals=None, environmentContext=None,):
+    def __init__(self, catalogName=None, dbName=None, tableName=None, name=None, partVals=None, environmentContext=None,):
         self.catalogName = catalogName
         self.dbName = dbName
         self.tableName = tableName
+        self.name = name
         self.partVals = partVals
         self.environmentContext = environmentContext
 
@@ -27240,6 +27235,11 @@ class AppendPartitionsRequest(object):
                 else:
                     iprot.skip(ftype)
             elif fid == 4:
+                if ftype == TType.STRING:
+                    self.name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
                 if ftype == TType.LIST:
                     self.partVals = []
                     (_etype1234, _size1231) = iprot.readListBegin()
@@ -27249,7 +27249,7 @@ class AppendPartitionsRequest(object):
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
-            elif fid == 5:
+            elif fid == 6:
                 if ftype == TType.STRUCT:
                     self.environmentContext = EnvironmentContext()
                     self.environmentContext.read(iprot)
@@ -27277,21 +27277,29 @@ class AppendPartitionsRequest(object):
             oprot.writeFieldBegin('tableName', TType.STRING, 3)
             oprot.writeString(self.tableName.encode('utf-8') if sys.version_info[0] == 2 else self.tableName)
             oprot.writeFieldEnd()
+        if self.name is not None:
+            oprot.writeFieldBegin('name', TType.STRING, 4)
+            oprot.writeString(self.name.encode('utf-8') if sys.version_info[0] == 2 else self.name)
+            oprot.writeFieldEnd()
         if self.partVals is not None:
-            oprot.writeFieldBegin('partVals', TType.LIST, 4)
+            oprot.writeFieldBegin('partVals', TType.LIST, 5)
             oprot.writeListBegin(TType.STRING, len(self.partVals))
             for iter1237 in self.partVals:
                 oprot.writeString(iter1237.encode('utf-8') if sys.version_info[0] == 2 else iter1237)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.environmentContext is not None:
-            oprot.writeFieldBegin('environmentContext', TType.STRUCT, 5)
+            oprot.writeFieldBegin('environmentContext', TType.STRUCT, 6)
             self.environmentContext.write(oprot)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
     def validate(self):
+        if self.dbName is None:
+            raise TProtocolException(message='Required field dbName is unset!')
+        if self.tableName is None:
+            raise TProtocolException(message='Required field tableName is unset!')
         return
 
     def __repr__(self):
@@ -33516,7 +33524,6 @@ DropTableRequest.thrift_spec = (
     (4, TType.BOOL, 'deleteData', None, None, ),  # 4
     (5, TType.STRUCT, 'envContext', [EnvironmentContext, None], None, ),  # 5
     (6, TType.BOOL, 'dropPartitions', None, None, ),  # 6
-    (7, TType.STRING, 'indexName', 'UTF8', None, ),  # 7
 )
 all_structs.append(GetDatabaseRequest)
 GetDatabaseRequest.thrift_spec = (
@@ -34023,8 +34030,9 @@ AppendPartitionsRequest.thrift_spec = (
     (1, TType.STRING, 'catalogName', 'UTF8', None, ),  # 1
     (2, TType.STRING, 'dbName', 'UTF8', None, ),  # 2
     (3, TType.STRING, 'tableName', 'UTF8', None, ),  # 3
-    (4, TType.LIST, 'partVals', (TType.STRING, 'UTF8', False), None, ),  # 4
-    (5, TType.STRUCT, 'environmentContext', [EnvironmentContext, None], None, ),  # 5
+    (4, TType.STRING, 'name', 'UTF8', None, ),  # 4
+    (5, TType.LIST, 'partVals', (TType.STRING, 'UTF8', False), None, ),  # 5
+    (6, TType.STRUCT, 'environmentContext', [EnvironmentContext, None], None, ),  # 6
 )
 all_structs.append(AlterPartitionsResponse)
 AlterPartitionsResponse.thrift_spec = (

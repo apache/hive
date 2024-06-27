@@ -16,7 +16,7 @@ use Thrift\Protocol\TProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
-class ThriftHiveMetastore_get_partition_by_names_req_result
+class ThriftHiveMetastore_fetch_partition_names_req_result
 {
     static public $isValidate = false;
 
@@ -74,7 +74,7 @@ class ThriftHiveMetastore_get_partition_by_names_req_result
 
     public function getName()
     {
-        return 'ThriftHiveMetastore_get_partition_by_names_req_result';
+        return 'ThriftHiveMetastore_fetch_partition_names_req_result';
     }
 
 
@@ -136,7 +136,7 @@ class ThriftHiveMetastore_get_partition_by_names_req_result
     public function write($output)
     {
         $xfer = 0;
-        $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_partition_by_names_req_result');
+        $xfer += $output->writeStructBegin('ThriftHiveMetastore_fetch_partition_names_req_result');
         if ($this->success !== null) {
             if (!is_array($this->success)) {
                 throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);

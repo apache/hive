@@ -1640,21 +1640,21 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partition_names failed: unknown result')
     end
 
-    def get_partition_by_names_req(partitionReq)
-      send_get_partition_by_names_req(partitionReq)
-      return recv_get_partition_by_names_req()
+    def fetch_partition_names_req(partitionReq)
+      send_fetch_partition_names_req(partitionReq)
+      return recv_fetch_partition_names_req()
     end
 
-    def send_get_partition_by_names_req(partitionReq)
-      send_message('get_partition_by_names_req', Get_partition_by_names_req_args, :partitionReq => partitionReq)
+    def send_fetch_partition_names_req(partitionReq)
+      send_message('fetch_partition_names_req', Fetch_partition_names_req_args, :partitionReq => partitionReq)
     end
 
-    def recv_get_partition_by_names_req()
-      result = receive_message(Get_partition_by_names_req_result)
+    def recv_fetch_partition_names_req()
+      result = receive_message(Fetch_partition_names_req_result)
       return result.success unless result.success.nil?
       raise result.o1 unless result.o1.nil?
       raise result.o2 unless result.o2.nil?
-      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partition_by_names_req failed: unknown result')
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'fetch_partition_names_req failed: unknown result')
     end
 
     def get_partition_values(request)
@@ -6007,17 +6007,17 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'get_partition_names', seqid)
     end
 
-    def process_get_partition_by_names_req(seqid, iprot, oprot)
-      args = read_args(iprot, Get_partition_by_names_req_args)
-      result = Get_partition_by_names_req_result.new()
+    def process_fetch_partition_names_req(seqid, iprot, oprot)
+      args = read_args(iprot, Fetch_partition_names_req_args)
+      result = Fetch_partition_names_req_result.new()
       begin
-        result.success = @handler.get_partition_by_names_req(args.partitionReq)
+        result.success = @handler.fetch_partition_names_req(args.partitionReq)
       rescue ::NoSuchObjectException => o1
         result.o1 = o1
       rescue ::MetaException => o2
         result.o2 = o2
       end
-      write_result(result, oprot, 'get_partition_by_names_req', seqid)
+      write_result(result, oprot, 'fetch_partition_names_req', seqid)
     end
 
     def process_get_partition_values(seqid, iprot, oprot)
@@ -11862,7 +11862,7 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class Get_partition_by_names_req_args
+  class Fetch_partition_names_req_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     PARTITIONREQ = 1
 
@@ -11878,7 +11878,7 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class Get_partition_by_names_req_result
+  class Fetch_partition_names_req_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SUCCESS = 0
     O1 = 1

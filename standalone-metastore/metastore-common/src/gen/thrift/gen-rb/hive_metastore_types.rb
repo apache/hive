@@ -3503,8 +3503,8 @@ class DropPartitionRequest
 
   FIELDS = {
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
-    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true},
-    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName', :optional => true},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
     PARTNAME => {:type => ::Thrift::Types::STRING, :name => 'partName', :optional => true},
     PARTVALS => {:type => ::Thrift::Types::LIST, :name => 'partVals', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     DELETEDATA => {:type => ::Thrift::Types::BOOL, :name => 'deleteData', :optional => true},
@@ -3514,6 +3514,8 @@ class DropPartitionRequest
   def struct_fields; FIELDS; end
 
   def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblName is unset!') unless @tblName
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -5888,7 +5890,6 @@ class DropTableRequest
   DELETEDATA = 4
   ENVCONTEXT = 5
   DROPPARTITIONS = 6
-  INDEXNAME = 7
 
   FIELDS = {
     CATALOGNAME => {:type => ::Thrift::Types::STRING, :name => 'catalogName', :optional => true},
@@ -5896,8 +5897,7 @@ class DropTableRequest
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
     DELETEDATA => {:type => ::Thrift::Types::BOOL, :name => 'deleteData', :optional => true},
     ENVCONTEXT => {:type => ::Thrift::Types::STRUCT, :name => 'envContext', :class => ::EnvironmentContext, :optional => true},
-    DROPPARTITIONS => {:type => ::Thrift::Types::BOOL, :name => 'dropPartitions', :optional => true},
-    INDEXNAME => {:type => ::Thrift::Types::STRING, :name => 'indexName', :optional => true}
+    DROPPARTITIONS => {:type => ::Thrift::Types::BOOL, :name => 'dropPartitions', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -7473,13 +7473,15 @@ class AppendPartitionsRequest
   CATALOGNAME = 1
   DBNAME = 2
   TABLENAME = 3
-  PARTVALS = 4
-  ENVIRONMENTCONTEXT = 5
+  NAME = 4
+  PARTVALS = 5
+  ENVIRONMENTCONTEXT = 6
 
   FIELDS = {
     CATALOGNAME => {:type => ::Thrift::Types::STRING, :name => 'catalogName', :optional => true},
-    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true},
-    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName', :optional => true},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
+    NAME => {:type => ::Thrift::Types::STRING, :name => 'name', :optional => true},
     PARTVALS => {:type => ::Thrift::Types::LIST, :name => 'partVals', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     ENVIRONMENTCONTEXT => {:type => ::Thrift::Types::STRUCT, :name => 'environmentContext', :class => ::EnvironmentContext, :optional => true}
   }
@@ -7487,6 +7489,8 @@ class AppendPartitionsRequest
   def struct_fields; FIELDS; end
 
   def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableName is unset!') unless @tableName
   end
 
   ::Thrift::Struct.generate_accessors self

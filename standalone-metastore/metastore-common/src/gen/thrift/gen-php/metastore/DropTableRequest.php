@@ -52,11 +52,6 @@ class DropTableRequest
             'isRequired' => false,
             'type' => TType::BOOL,
         ),
-        7 => array(
-            'var' => 'indexName',
-            'isRequired' => false,
-            'type' => TType::STRING,
-        ),
     );
 
     /**
@@ -83,10 +78,6 @@ class DropTableRequest
      * @var bool
      */
     public $dropPartitions = null;
-    /**
-     * @var string
-     */
-    public $indexName = null;
 
     public function __construct($vals = null)
     {
@@ -108,9 +99,6 @@ class DropTableRequest
             }
             if (isset($vals['dropPartitions'])) {
                 $this->dropPartitions = $vals['dropPartitions'];
-            }
-            if (isset($vals['indexName'])) {
-                $this->indexName = $vals['indexName'];
             }
         }
     }
@@ -177,13 +165,6 @@ class DropTableRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
-                case 7:
-                    if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->indexName);
-                    } else {
-                        $xfer += $input->skip($ftype);
-                    }
-                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -229,11 +210,6 @@ class DropTableRequest
         if ($this->dropPartitions !== null) {
             $xfer += $output->writeFieldBegin('dropPartitions', TType::BOOL, 6);
             $xfer += $output->writeBool($this->dropPartitions);
-            $xfer += $output->writeFieldEnd();
-        }
-        if ($this->indexName !== null) {
-            $xfer += $output->writeFieldBegin('indexName', TType::STRING, 7);
-            $xfer += $output->writeString($this->indexName);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

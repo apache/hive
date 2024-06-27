@@ -17,7 +17,6 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField DELETE_DATA_FIELD_DESC = new org.apache.thrift.protocol.TField("deleteData", org.apache.thrift.protocol.TType.BOOL, (short)4);
   private static final org.apache.thrift.protocol.TField ENV_CONTEXT_FIELD_DESC = new org.apache.thrift.protocol.TField("envContext", org.apache.thrift.protocol.TType.STRUCT, (short)5);
   private static final org.apache.thrift.protocol.TField DROP_PARTITIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("dropPartitions", org.apache.thrift.protocol.TType.BOOL, (short)6);
-  private static final org.apache.thrift.protocol.TField INDEX_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("indexName", org.apache.thrift.protocol.TType.STRING, (short)7);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new DropTableRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new DropTableRequestTupleSchemeFactory();
@@ -28,7 +27,6 @@ package org.apache.hadoop.hive.metastore.api;
   private boolean deleteData; // optional
   private @org.apache.thrift.annotation.Nullable EnvironmentContext envContext; // optional
   private boolean dropPartitions; // optional
-  private @org.apache.thrift.annotation.Nullable java.lang.String indexName; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -37,8 +35,7 @@ package org.apache.hadoop.hive.metastore.api;
     TABLE_NAME((short)3, "tableName"),
     DELETE_DATA((short)4, "deleteData"),
     ENV_CONTEXT((short)5, "envContext"),
-    DROP_PARTITIONS((short)6, "dropPartitions"),
-    INDEX_NAME((short)7, "indexName");
+    DROP_PARTITIONS((short)6, "dropPartitions");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -66,8 +63,6 @@ package org.apache.hadoop.hive.metastore.api;
           return ENV_CONTEXT;
         case 6: // DROP_PARTITIONS
           return DROP_PARTITIONS;
-        case 7: // INDEX_NAME
-          return INDEX_NAME;
         default:
           return null;
       }
@@ -112,7 +107,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final int __DELETEDATA_ISSET_ID = 0;
   private static final int __DROPPARTITIONS_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.CATALOG_NAME,_Fields.DELETE_DATA,_Fields.ENV_CONTEXT,_Fields.DROP_PARTITIONS,_Fields.INDEX_NAME};
+  private static final _Fields optionals[] = {_Fields.CATALOG_NAME,_Fields.DELETE_DATA,_Fields.ENV_CONTEXT,_Fields.DROP_PARTITIONS};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -128,8 +123,6 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, EnvironmentContext.class)));
     tmpMap.put(_Fields.DROP_PARTITIONS, new org.apache.thrift.meta_data.FieldMetaData("dropPartitions", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.INDEX_NAME, new org.apache.thrift.meta_data.FieldMetaData("indexName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(DropTableRequest.class, metaDataMap);
   }
@@ -165,9 +158,6 @@ package org.apache.hadoop.hive.metastore.api;
       this.envContext = new EnvironmentContext(other.envContext);
     }
     this.dropPartitions = other.dropPartitions;
-    if (other.isSetIndexName()) {
-      this.indexName = other.indexName;
-    }
   }
 
   public DropTableRequest deepCopy() {
@@ -184,7 +174,6 @@ package org.apache.hadoop.hive.metastore.api;
     this.envContext = null;
     setDropPartitionsIsSet(false);
     this.dropPartitions = false;
-    this.indexName = null;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -327,30 +316,6 @@ package org.apache.hadoop.hive.metastore.api;
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __DROPPARTITIONS_ISSET_ID, value);
   }
 
-  @org.apache.thrift.annotation.Nullable
-  public java.lang.String getIndexName() {
-    return this.indexName;
-  }
-
-  public void setIndexName(@org.apache.thrift.annotation.Nullable java.lang.String indexName) {
-    this.indexName = indexName;
-  }
-
-  public void unsetIndexName() {
-    this.indexName = null;
-  }
-
-  /** Returns true if field indexName is set (has been assigned a value) and false otherwise */
-  public boolean isSetIndexName() {
-    return this.indexName != null;
-  }
-
-  public void setIndexNameIsSet(boolean value) {
-    if (!value) {
-      this.indexName = null;
-    }
-  }
-
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case CATALOG_NAME:
@@ -401,14 +366,6 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
-    case INDEX_NAME:
-      if (value == null) {
-        unsetIndexName();
-      } else {
-        setIndexName((java.lang.String)value);
-      }
-      break;
-
     }
   }
 
@@ -433,9 +390,6 @@ package org.apache.hadoop.hive.metastore.api;
     case DROP_PARTITIONS:
       return isDropPartitions();
 
-    case INDEX_NAME:
-      return getIndexName();
-
     }
     throw new java.lang.IllegalStateException();
   }
@@ -459,8 +413,6 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetEnvContext();
     case DROP_PARTITIONS:
       return isSetDropPartitions();
-    case INDEX_NAME:
-      return isSetIndexName();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -532,15 +484,6 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
-    boolean this_present_indexName = true && this.isSetIndexName();
-    boolean that_present_indexName = true && that.isSetIndexName();
-    if (this_present_indexName || that_present_indexName) {
-      if (!(this_present_indexName && that_present_indexName))
-        return false;
-      if (!this.indexName.equals(that.indexName))
-        return false;
-    }
-
     return true;
   }
 
@@ -571,10 +514,6 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetDropPartitions()) ? 131071 : 524287);
     if (isSetDropPartitions())
       hashCode = hashCode * 8191 + ((dropPartitions) ? 131071 : 524287);
-
-    hashCode = hashCode * 8191 + ((isSetIndexName()) ? 131071 : 524287);
-    if (isSetIndexName())
-      hashCode = hashCode * 8191 + indexName.hashCode();
 
     return hashCode;
   }
@@ -647,16 +586,6 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetIndexName(), other.isSetIndexName());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetIndexName()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.indexName, other.indexName);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     return 0;
   }
 
@@ -723,16 +652,6 @@ package org.apache.hadoop.hive.metastore.api;
       if (!first) sb.append(", ");
       sb.append("dropPartitions:");
       sb.append(this.dropPartitions);
-      first = false;
-    }
-    if (isSetIndexName()) {
-      if (!first) sb.append(", ");
-      sb.append("indexName:");
-      if (this.indexName == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.indexName);
-      }
       first = false;
     }
     sb.append(")");
@@ -840,14 +759,6 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 7: // INDEX_NAME
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.indexName = iprot.readString();
-              struct.setIndexNameIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -895,13 +806,6 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeBool(struct.dropPartitions);
         oprot.writeFieldEnd();
       }
-      if (struct.indexName != null) {
-        if (struct.isSetIndexName()) {
-          oprot.writeFieldBegin(INDEX_NAME_FIELD_DESC);
-          oprot.writeString(struct.indexName);
-          oprot.writeFieldEnd();
-        }
-      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -934,10 +838,7 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetDropPartitions()) {
         optionals.set(3);
       }
-      if (struct.isSetIndexName()) {
-        optionals.set(4);
-      }
-      oprot.writeBitSet(optionals, 5);
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetCatalogName()) {
         oprot.writeString(struct.catalogName);
       }
@@ -950,9 +851,6 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetDropPartitions()) {
         oprot.writeBool(struct.dropPartitions);
       }
-      if (struct.isSetIndexName()) {
-        oprot.writeString(struct.indexName);
-      }
     }
 
     @Override
@@ -962,7 +860,7 @@ package org.apache.hadoop.hive.metastore.api;
       struct.setDbNameIsSet(true);
       struct.tableName = iprot.readString();
       struct.setTableNameIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(5);
+      java.util.BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         struct.catalogName = iprot.readString();
         struct.setCatalogNameIsSet(true);
@@ -979,10 +877,6 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(3)) {
         struct.dropPartitions = iprot.readBool();
         struct.setDropPartitionsIsSet(true);
-      }
-      if (incoming.get(4)) {
-        struct.indexName = iprot.readString();
-        struct.setIndexNameIsSet(true);
       }
     }
   }
