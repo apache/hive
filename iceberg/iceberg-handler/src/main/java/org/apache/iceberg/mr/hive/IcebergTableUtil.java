@@ -393,8 +393,7 @@ public class IcebergTableUtil {
     return data;
   }
 
-  public static List<DataFile> getDataFiles(Table table, int specId,
-      String partitionPath) {
+  public static List<DataFile> getDataFiles(Table table, int specId, String partitionPath) {
     CloseableIterable<FileScanTask> fileScanTasks =
         table.newScan().useSnapshot(table.currentSnapshot().snapshotId()).ignoreResiduals().planFiles();
     CloseableIterable<FileScanTask> filteredFileScanTasks =
@@ -402,6 +401,17 @@ public class IcebergTableUtil {
           DataFile file = t.asFileScanTask().file();
           return file.specId() == specId && table.specs()
               .get(specId).partitionToPath(file.partition()).equals(partitionPath);
+        });
+    return Lists.newArrayList(CloseableIterable.transform(filteredFileScanTasks, t -> t.file()));
+  }
+
+  public static List<DataFile> getDataFilesNotInSpec(Table table, int specId) {
+    CloseableIterable<FileScanTask> fileScanTasks =
+        table.newScan().useSnapshot(table.currentSnapshot().snapshotId()).ignoreResiduals().planFiles();
+    CloseableIterable<FileScanTask> filteredFileScanTasks =
+        CloseableIterable.filter(fileScanTasks, t -> {
+          DataFile file = t.asFileScanTask().file();
+          return file.specId() != specId;
         });
     return Lists.newArrayList(CloseableIterable.transform(filteredFileScanTasks, t -> t.file()));
   }
@@ -415,6 +425,19 @@ public class IcebergTableUtil {
           DeleteFile file = ((PositionDeletesScanTask) t).file();
           return file.specId() == specId && table.specs()
               .get(specId).partitionToPath(file.partition()).equals(partitionPath);
+        });
+    return Lists.newArrayList(CloseableIterable.transform(filteredDeletesScanTasks,
+        t -> ((PositionDeletesScanTask) t).file()));
+  }
+
+  public static List<DeleteFile> getDeleteFilesNotInSpec(Table table, int specId) {
+    Table deletesTable =
+        MetadataTableUtils.createMetadataTableInstance(table, MetadataTableType.POSITION_DELETES);
+    CloseableIterable<ScanTask> deletesScanTasks = deletesTable.newBatchScan().planFiles();
+    CloseableIterable<ScanTask> filteredDeletesScanTasks =
+        CloseableIterable.filter(deletesScanTasks, t -> {
+          DeleteFile file = ((PositionDeletesScanTask) t).file();
+          return file.specId() != specId;
         });
     return Lists.newArrayList(CloseableIterable.transform(filteredDeletesScanTasks,
         t -> ((PositionDeletesScanTask) t).file()));
@@ -465,7 +488,7 @@ public class IcebergTableUtil {
   }
 
   public static Map<PartitionData, Integer> getPartitionInfo(Table icebergTable, Map<String, String> partSpecMap,
-      boolean allowPartialSpec) throws SemanticException, IOException {
+      boolean allowPartialSpec, boolean latestSpecOnly) throws SemanticException, IOException {
     Expression expression = IcebergTableUtil.generateExpressionFromPartitionSpec(icebergTable, partSpecMap);
     PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
         .createMetadataTableInstance(icebergTable, MetadataTableType.PARTITIONS);
@@ -484,10 +507,16 @@ public class IcebergTableUtil {
                 ResidualEvaluator resEval = ResidualEvaluator.of(icebergTable.specs().get(entry.getValue()),
                     expression, false);
                 return resEval.residualFor(entry.getKey()).isEquivalentTo(Expressions.alwaysTrue()) &&
-                    (entry.getKey().size() == partSpecMap.size() || allowPartialSpec);
+                    (entry.getKey().size() == partSpecMap.size() || allowPartialSpec) &&
+                    (entry.getValue() == icebergTable.spec().specId() || !latestSpecOnly);
               }).forEach(entry -> result.put(entry.getKey(), entry.getValue())));
     }
 
     return result;
   }
+
+  public static boolean isPartitioned(Table table) {
+    return IcebergTableUtil.getPartitionFields(table).size() > 0;
+  }
+
 }

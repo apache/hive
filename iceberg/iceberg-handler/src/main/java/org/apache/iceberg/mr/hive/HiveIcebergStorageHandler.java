@@ -1935,13 +1935,18 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public List<Partition> getPartitions(org.apache.hadoop.hive.ql.metadata.Table table,
-      Map<String, String> partitionSpec) throws SemanticException {
-    return getPartitionNames(table, partitionSpec).stream()
+      Map<String, String> partitionSpec, boolean latestSpecOnly) throws SemanticException {
+    return getPartitionNames(table, partitionSpec, latestSpecOnly).stream()
         .map(partName -> {
           Map<String, String> partSpecMap = Maps.newLinkedHashMap();
           Warehouse.makeSpecFromName(partSpecMap, new Path(partName), null);
           return new DummyPartition(table, partName, partSpecMap);
         }).collect(Collectors.toList());
+  }
+
+  public boolean isPartitioned(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    return IcebergTableUtil.isPartitioned(table);
   }
 
   @Override
@@ -1970,12 +1975,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    */
   @Override
   public List<String> getPartitionNames(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
-      Map<String, String> partitionSpec) throws SemanticException {
+      Map<String, String> partitionSpec, boolean latestSpecOnly) throws SemanticException {
     Table icebergTable = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
 
     try {
       return IcebergTableUtil
-          .getPartitionInfo(icebergTable, partitionSpec, true).entrySet().stream().map(e -> {
+          .getPartitionInfo(icebergTable, partitionSpec, true, latestSpecOnly).entrySet().stream()
+          .map(e -> {
             PartitionData partitionData = e.getKey();
             int specId = e.getValue();
             return icebergTable.specs().get(specId).partitionToPath(partitionData);
@@ -2131,5 +2137,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
             Operation.DELETE.name());
     tableDesc.setProperty(HiveCustomStorageHandlerUtils.WRITE_OPERATION_CONFIG_PREFIX +
             tableDesc.getTableName(), Operation.DELETE.name());
+  }
+
+  @Override
+  public boolean isUndergonePartitionEvolution(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    return table.specs().size() > 1;
   }
 }

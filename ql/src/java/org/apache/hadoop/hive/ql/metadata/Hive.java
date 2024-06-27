@@ -4055,7 +4055,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     List<String> names = null;
     Table t = getTable(dbName, tblName);
     if (t.getStorageHandler() != null && t.getStorageHandler().alwaysUnpartitioned()) {
-      return t.getStorageHandler().getPartitionNames(t, partSpec);
+      return t.getStorageHandler().getPartitionNames(t, partSpec, false);
     }
 
     List<String> pvals = MetaStoreUtils.getPvals(t.getPartCols(), partSpec);
@@ -4298,7 +4298,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public List<Partition> getPartitions(Table tbl, Map<String, String> partialPartSpec)
   throws HiveException {
     if (tbl.getStorageHandler() != null && tbl.getStorageHandler().alwaysUnpartitioned()) {
-      return tbl.getStorageHandler().getPartitions(tbl, partialPartSpec);
+      return tbl.getStorageHandler().getPartitions(tbl, partialPartSpec, false);
     } else {
       return getPartitions(tbl, partialPartSpec, (short)-1); 
     }
