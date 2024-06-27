@@ -489,6 +489,8 @@ public enum ErrorMsg {
           HiveConf.ConfVars.SPLIT_UPDATE.varname + "\"=\"true\""),
   READ_ONLY_DATABASE(10436, "Database {0} is read-only", true),
   UNEXPECTED_PARTITION_TRANSFORM_SPEC(10437, "Partition transforms are only supported by Iceberg storage handler", true),
+  NONICEBERG_WITH_FILTER_COMPACTION_NOT_SUPPORTED(10440, "Compaction with filter is not allowed on non-Iceberg table {0}.{1}", true),
+  ICEBERG_COMPACTION_WITH_PART_SPEC_AND_FILTER_NOT_SUPPORTED(10441, "Compaction command with both partition spec and filter is not supported on Iceberg table {0}.{1}", true),
 
   //========================== 20000 range starts here ========================//
 

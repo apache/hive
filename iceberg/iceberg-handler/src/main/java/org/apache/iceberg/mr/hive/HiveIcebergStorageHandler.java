@@ -28,6 +28,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -393,7 +394,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     List<ExprNodeDesc> subExprNodes = pushedPredicate.getChildren();
     if (subExprNodes.removeIf(nodeDesc -> nodeDesc.getCols() != null &&
         (nodeDesc.getCols().contains(VirtualColumn.FILE_PATH.getName()) ||
-            nodeDesc.getCols().contains(VirtualColumn.PARTITION_SPEC_ID.getName())))) {
+            nodeDesc.getCols().contains(VirtualColumn.PARTITION_SPEC_ID.getName()) ||
+            nodeDesc.getCols().contains(VirtualColumn.PARTITION_HASH.getName())))) {
       if (subExprNodes.size() == 1) {
         pushedPredicate = subExprNodes.get(0);
       } else if (subExprNodes.isEmpty()) {
@@ -2093,6 +2095,55 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     } catch (IOException e) {
       throw new SemanticException(String.format("Error while fetching the partitions due to: %s", e));
     }
+  }
+
+  @Override
+  public List<Partition> getPartitionsWithFilter(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      ExprNodeDesc filter, boolean currentSpec) {
+    SearchArgument sarg = ConvertAstToSearchArg.create(conf, (ExprNodeGenericFuncDesc) filter);
+    Expression exp = HiveIcebergFilterFactory.generateFilterExpression(sarg);
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    int tableSpecId = table.spec().specId();
+    List<Partition> partitions = Lists.newArrayList();
+
+    TableScan scan = table.newScan().filter(exp).caseSensitive(false).includeColumnStats().ignoreResiduals();
+
+    try (CloseableIterable<FileScanTask> tasks = scan.planFiles()) {
+      tasks.forEach(task -> {
+        DataFile file = task.file();
+        PartitionSpec spec = task.spec();
+        if ((currentSpec && file.specId() == tableSpecId) || (!currentSpec && file.specId() != tableSpecId)) {
+          PartitionData partitionData = IcebergTableUtil.toPartitionData(task.partition(), spec.partitionType());
+          String partName = spec.partitionToPath(partitionData);
+          Map<String, String> partSpecMap = Maps.newLinkedHashMap();
+          Warehouse.makeSpecFromName(partSpecMap, new Path(partName), null);
+          DummyPartition partition = new DummyPartition(hmsTable, partName, partSpecMap);
+          if (!partitions.contains(partition)) {
+            partitions.add(partition);
+          }
+        }
+      });
+    } catch (IOException ioe) {
+      LOG.warn("Failed to close task iterable", ioe);
+    }
+    partitions.sort(Comparator.comparing(Partition::getName));
+    return partitions;
+  }
+
+  @Override
+  public boolean isFilterMatching(org.apache.hadoop.hive.ql.metadata.Table hmsTable, ExprNodeDesc filter) {
+    SearchArgument sarg = ConvertAstToSearchArg.create(conf, (ExprNodeGenericFuncDesc) filter);
+    Expression exp = HiveIcebergFilterFactory.generateFilterExpression(sarg);
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    TableScan scan = table.newScan().filter(exp).caseSensitive(false).includeColumnStats().ignoreResiduals();
+    boolean result = false;
+
+    try (CloseableIterable<FileScanTask> tasks = scan.planFiles()) {
+      result = tasks.iterator().hasNext();
+    } catch (IOException ioe) {
+      LOG.warn("Failed to close task iterable", ioe);
+    }
+    return result;
   }
 
   @Override

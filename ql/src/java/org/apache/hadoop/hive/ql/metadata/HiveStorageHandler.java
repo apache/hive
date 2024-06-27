@@ -869,6 +869,29 @@ public interface HiveStorageHandler extends Configurable {
         "undergone partition evolution.");
   }
 
+  /**
+   * Returns a list of partitions which contain any files whose content falls under the provided filter condition.
+   * @param hmsTable {@link org.apache.hadoop.hive.ql.metadata.Table} table metadata stored in Hive Metastore
+   * @param filter Iceberg filter expression
+   * @param currentSpec If true, returns partitions for the current partition spec, else for the older specs.
+   * @return List of Partitions {@link org.apache.hadoop.hive.ql.metadata.Partition}
+   */
+  default List<Partition> getPartitionsWithFilter(org.apache.hadoop.hive.ql.metadata.Table hmsTable,  
+      ExprNodeDesc filter, boolean currentSpec) { 
+    throw new UnsupportedOperationException("Storage handler does not support getting partitions " +
+        "by generic expressions");
+  }
+
+  /**
+   * Returns true if the filter expression matches any data and false otherwise
+   * @param hmsTable {@link org.apache.hadoop.hive.ql.metadata.Table} table metadata stored in Hive Metastore
+   * @param filter Iceberg filter expression
+   * @return boolean 
+   */
+  default boolean isFilterMatching(org.apache.hadoop.hive.ql.metadata.Table hmsTable, ExprNodeDesc filter) {
+    throw new UnsupportedOperationException("Storage handler does not support checking if filter has any match");
+  }
+
   default boolean supportsMergeFiles() {
     return false;
   }

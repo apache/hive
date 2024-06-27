@@ -511,6 +511,24 @@ public class IcebergTableUtil {
     return result;
   }
 
+  public static long getPartitionHash(Table icebergTable, String partitionPath) throws SemanticException, IOException {
+    PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
+        .createMetadataTableInstance(icebergTable, MetadataTableType.PARTITIONS);
+    Map<String, Long> partitionsMap = Maps.newLinkedHashMap();
+    try (CloseableIterable<FileScanTask> fileScanTasks = partitionsTable.newScan().planFiles()) {
+      fileScanTasks.forEach(task ->
+          CloseableIterable.transform(task.asDataTask().rows(), row -> {
+            StructProjection data = row.get(IcebergTableUtil.PART_IDX, StructProjection.class);
+            Integer specId = row.get(IcebergTableUtil.SPEC_IDX, Integer.class);
+            PartitionData partitionData = IcebergTableUtil.toPartitionData(data,
+                Partitioning.partitionType(icebergTable), icebergTable.specs().get(specId).partitionType());
+            String path = icebergTable.specs().get(specId).partitionToPath(partitionData);
+            return Maps.immutableEntry(path, IcebergAcidUtil.computeHash(data));
+          }).forEach(entry -> partitionsMap.put(entry.getKey(), entry.getValue())));
+    }
+    return partitionsMap.get(partitionPath);
+  }
+
   public static List<String> getPartitionNames(Table icebergTable, Map<String, String> partitionSpec,
       boolean latestSpecOnly) throws SemanticException {
     try {
