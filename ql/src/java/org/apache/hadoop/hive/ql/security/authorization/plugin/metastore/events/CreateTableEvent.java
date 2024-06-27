@@ -19,23 +19,27 @@
 
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
+import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthorizableEvent;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthzInfo;
+import org.apache.hadoop.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /*
  Authorizable Event for HiveMetaStore operation CreateTable
@@ -79,6 +83,24 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
     Database                  database = event.getDatabase();
     String                    uri   = getSdLocation(table.getSd());
 
+    // if the table is an iceberg storagehandler based table , need storageuri as hive privilege objects
+    // format: storagehandler type + cluster + location
+    LOG.debug("<== CreateTableEvent.getOutputHObjs(): ret={}", ret);
+    if (table.getParameters().containsKey(hive_metastoreConstants.META_TABLE_STORAGE)) {
+      Configuration conf = preEventContext.getHandler().getConf();
+      try {
+        HiveStorageHandler hiveStorageHandler = (HiveStorageHandler) ReflectionUtils.newInstance(
+                conf.getClassByName(table.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE)), event.getHandler().getConf());
+        String storageUri = hiveStorageHandler.getURIForAuth(table).toString();
+        if (storageUri.contains("iceberg")) {
+          ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.STORAGEHANDLER_URI, null, storageUri, null, null,
+                  HivePrivObjectActionType.OTHER, null, table.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE), table.getOwner(), table.getOwnerType()));
+        }
+      } catch (Exception ex) {
+        LOG.error("Exception occurred while getting the URI from storage handler: " + ex.getMessage(), ex);
+      }
+    }
+
     ret.add(getHivePrivilegeObject(database));
     ret.add(getHivePrivilegeObject(table));
 
@@ -88,7 +110,7 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
 
     COMMAND_STR = buildCommandString(COMMAND_STR,table);
 
-    LOG.debug("<== CreateTableEvent.getOutputHObjs(): ret={}", ret);
+    LOG.debug("<== CreateTableEvent.getOutputHObjs(): ret={}" + ret);
 
     return ret;
   }

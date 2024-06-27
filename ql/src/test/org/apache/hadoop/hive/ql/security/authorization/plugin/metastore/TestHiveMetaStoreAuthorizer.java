@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.*;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
@@ -31,17 +32,23 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.client.builder.*;
 import org.apache.hadoop.hive.metastore.events.*;
 import org.apache.hadoop.hive.ql.security.HadoopDefaultMetastoreAuthenticator;
+import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFactory;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactory;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.util.Map;
 import java.io.File;
 import java.util.Arrays;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -69,6 +76,8 @@ public class TestHiveMetaStoreAuthorizer {
   private Configuration conf;
   private HMSHandler hmsHandler;
 
+  static HiveAuthorizer dummyHiveAuthorizer;
+
   @Before
   public void setUp() throws Exception {
     conf = MetastoreConf.newMetastoreConf();
@@ -78,7 +87,7 @@ public class TestHiveMetaStoreAuthorizer {
     MetastoreConf.setVar(conf, ConfVars.PARTITION_NAME_WHITELIST_PATTERN, metaConfVal);
     MetastoreConf.setLongVar(conf, ConfVars.THRIFT_CONNECTION_RETRIES, 3);
     MetastoreConf.setBoolVar(conf, ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    MetastoreConf.setVar(conf, ConfVars.HIVE_AUTHORIZATION_MANAGER, DummyHiveAuthorizerFactory.class.getName());
+    MetastoreConf.setVar(conf, ConfVars.HIVE_AUTHORIZATION_MANAGER, DummyHmsAuthorizerFactory.class.getName());
     MetastoreConf.setVar(conf, ConfVars.PRE_EVENT_LISTENERS, HiveMetaStoreAuthorizer.class.getName());
     MetastoreConf.setVar(conf, ConfVars.HIVE_METASTORE_AUTHENTICATOR_MANAGER, HadoopDefaultMetastoreAuthenticator.class.getName() );
     conf.set("hadoop.proxyuser.hive.groups", "*");
@@ -104,6 +113,17 @@ public class TestHiveMetaStoreAuthorizer {
       FileUtils.deleteDirectory(new File(TEST_DATA_DIR));
     } catch (Exception e) {
       // NoSuchObjectException will be ignored if the step objects are not there
+    }
+    dummyHiveAuthorizer = Mockito.mock(HiveAuthorizer.class);
+  }
+
+  static class DummyHmsAuthorizerFactory implements HiveAuthorizerFactory {
+    @Override
+    public HiveAuthorizer createHiveAuthorizer(HiveMetastoreClientFactory metastoreClientFactory,
+        HiveConf conf, HiveAuthenticationProvider hiveAuthenticator, HiveAuthzSessionContext ctx)
+        throws HiveAuthzPluginException {
+      TestHiveMetaStoreAuthorizer.dummyHiveAuthorizer = Mockito.mock(HiveAuthorizer.class);
+      return TestHiveMetaStoreAuthorizer.dummyHiveAuthorizer;
     }
   }
 
@@ -439,4 +459,5 @@ public class TestHiveMetaStoreAuthorizer {
               .anyMatch(stack -> stack.contains(DummyHiveAuthorizer.class.getName())));
     }
   }
+  
 }

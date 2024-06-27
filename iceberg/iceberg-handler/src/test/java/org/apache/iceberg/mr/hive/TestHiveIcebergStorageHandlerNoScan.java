@@ -24,6 +24,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,19 +36,38 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.ColumnType;
+import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.InvalidInputException;
+import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFactory;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactory;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.FileFormat;
@@ -99,17 +119,27 @@ import org.mockito.Mockito;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ICEBERG_MASK_DEFAULT_LOCATION;
 import static org.apache.iceberg.TableProperties.GC_ENABLED;
 import static org.apache.iceberg.types.Types.NestedField.optional;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.runners.Parameterized.Parameter;
 import static org.junit.runners.Parameterized.Parameters;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @RunWith(Parameterized.class)
 public class TestHiveIcebergStorageHandlerNoScan {
   private static final PartitionSpec SPEC = PartitionSpec.unpartitioned();
+
+  static HiveAuthorizer dummyHiveAuthorizer;
+  private static final String tblName          = "tmptbl";
+  private static final String authorizedUser   = "sam";
+  private Configuration conf;
+  private HMSHandler hmsHandler;
 
   private static final Schema COMPLEX_SCHEMA = new Schema(
       optional(1, "id", Types.LongType.get()),
@@ -182,6 +212,17 @@ public class TestHiveIcebergStorageHandlerNoScan {
   @After
   public void after() throws Exception {
     HiveIcebergStorageHandlerTestUtils.close(shell);
+  }
+
+  static class DummyHmsAuthorizerFactory implements HiveAuthorizerFactory {
+    @Override
+    public HiveAuthorizer createHiveAuthorizer(HiveMetastoreClientFactory metastoreClientFactory,
+                                               HiveConf conf, HiveAuthenticationProvider hiveAuthenticator,
+                                               HiveAuthzSessionContext ctx)
+            throws HiveAuthzPluginException {
+      dummyHiveAuthorizer = Mockito.mock(HiveAuthorizer.class);
+      return dummyHiveAuthorizer;
+    }
   }
 
   @Test
@@ -2145,5 +2186,81 @@ public class TestHiveIcebergStorageHandlerNoScan {
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA.asStruct(),
         icebergTable.schema().asStruct());
     Assert.assertEquals(PartitionSpec.unpartitioned(), icebergTable.spec());
+  }
+
+  /**
+   * @return pair with left value as inputs and right value as outputs,
+   *  passed in current call to authorizer.checkPrivileges
+   */
+  private Pair<List<HivePrivilegeObject>, List<HivePrivilegeObject>> getHivePrivilegeObjectInputs()
+          throws HiveAuthzPluginException, HiveAccessControlException {
+    // Create argument capturer
+    // a class variable cast to this generic of generic class
+    Class<List<HivePrivilegeObject>> classListPrivObjects = (Class) List.class;
+    ArgumentCaptor<List<HivePrivilegeObject>> inputsCapturer = ArgumentCaptor
+            .forClass(classListPrivObjects);
+    ArgumentCaptor<List<HivePrivilegeObject>> outputsCapturer = ArgumentCaptor
+            .forClass(classListPrivObjects);
+
+    verify(dummyHiveAuthorizer).checkPrivileges(any(HiveOperationType.class),
+            inputsCapturer.capture(), outputsCapturer.capture(),
+            any(HiveAuthzContext.class));
+
+    return new ImmutablePair<List<HivePrivilegeObject>, List<HivePrivilegeObject>>(
+            inputsCapturer.getValue(), outputsCapturer.getValue());
+  }
+
+  @Test
+  public void testCreateTab() throws Exception, MetaException, InvalidInputException, AlreadyExistsException,
+          InvalidObjectException, HiveAccessControlException, HiveAuthzPluginException {
+    dummyHiveAuthorizer = Mockito.mock(HiveAuthorizer.class);
+    reset(dummyHiveAuthorizer);
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
+    try {
+      Map<String, String> tableParams = new HashMap<String, String>();
+      tableParams.putIfAbsent("external.table.purge", "true");
+      tableParams.putIfAbsent("current-schema", "{\"type\" :\"struct\", \"schema-id\":0, \"fields\":[{\"id\": 1, " +
+              "\"name\" :\"id\", \"required\":false, \"type\":\"int\"}, {\"id\":2, \"name\":\"txt\", " +
+              "\"required\":false, \"type\":\"string\"}]}");
+      tableParams.putIfAbsent("storage_handler", "org.apache.iceberg.mr.hive.HivelcebergStorageHandler");
+      tableParams.putIfAbsent("uuid", "c229e4b5-d1f8-4239-adeb-cb43d0f1d209");
+      tableParams.putIfAbsent("EXTERNAL", "TRUE");
+      tableParams.putIfAbsent("metadata_location", "hdfs://clustername/warehouse/tablespace/external/hive" +
+              "/icespark/metadata/00000-fa77f11c-6b5d-4da3-ae99-de907e525fbb.metadata.json");
+      tableParams.putIfAbsent("snapshot-count", "0");
+      tableParams.putIfAbsent("table_type", "ICEBERG");
+      org.apache.hadoop.hive.metastore.api.Table table = new TableBuilder()
+              .setTableName(tblName)
+              .setTableParams(tableParams)
+              .addCol("name", ColumnType.STRING_TYPE_NAME)
+              .setOwner(authorizedUser)
+              .build(conf);
+      List<String> allTables = hmsHandler.get_all_tables("default");
+      if (allTables.contains(tblName)) {
+        hmsHandler.drop_table("default", tblName, true);
+      }
+//      try {
+//        hmsHandler.drop_table("default",tblName,true);
+//      } catch (Exception e) {
+//        // drop the test table in case it already exists,
+//        // will continue the test if the NullPointerException is thrown out here
+//      }
+      hmsHandler.create_table(table);
+      Pair<List<HivePrivilegeObject>, List<HivePrivilegeObject>> io = getHivePrivilegeObjectInputs();
+      List<HivePrivilegeObject> outputs = io.getRight();
+      List<HivePrivilegeObject> inputs = io.getLeft();
+      assertEquals("2 outputs for this select", 2, outputs.size());
+      assertEquals("No input for this select", 0, inputs.size());
+      for (HivePrivilegeObject hivePrivilegeObject : outputs) {
+        if (hivePrivilegeObject.getObjectName() != null) {
+          assertTrue(hivePrivilegeObject.getObjectName().contains("storage_handler"));
+        }
+        if (hivePrivilegeObject.getType() != null) {
+          assertTrue(hivePrivilegeObject.getType().toString().contains("iceberg"));
+        }
+      }
+    } catch (Exception e) {
+      throw new Exception(e);
+    }
   }
 }
