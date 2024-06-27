@@ -19,9 +19,12 @@
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.*;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
@@ -31,21 +34,35 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.client.builder.*;
 import org.apache.hadoop.hive.metastore.events.*;
 import org.apache.hadoop.hive.ql.security.HadoopDefaultMetastoreAuthenticator;
+import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFactory;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactory;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import java.util.Map;
 import java.io.File;
 import java.util.Arrays;
-import java.util.Map;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
 
 /*
 Test whether HiveAuthorizer for MetaStore operation is trigger and HiveMetaStoreAuthzInfo is created by HiveMetaStoreAuthorizer
@@ -69,6 +86,8 @@ public class TestHiveMetaStoreAuthorizer {
   private Configuration conf;
   private HMSHandler hmsHandler;
 
+  static HiveAuthorizer dummyHiveAuthorizer;
+
   @Before
   public void setUp() throws Exception {
     conf = MetastoreConf.newMetastoreConf();
@@ -78,7 +97,7 @@ public class TestHiveMetaStoreAuthorizer {
     MetastoreConf.setVar(conf, ConfVars.PARTITION_NAME_WHITELIST_PATTERN, metaConfVal);
     MetastoreConf.setLongVar(conf, ConfVars.THRIFT_CONNECTION_RETRIES, 3);
     MetastoreConf.setBoolVar(conf, ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    MetastoreConf.setVar(conf, ConfVars.HIVE_AUTHORIZATION_MANAGER, DummyHiveAuthorizerFactory.class.getName());
+    MetastoreConf.setVar(conf, ConfVars.HIVE_AUTHORIZATION_MANAGER, DummyHmsAuthorizerFactory.class.getName());
     MetastoreConf.setVar(conf, ConfVars.PRE_EVENT_LISTENERS, HiveMetaStoreAuthorizer.class.getName());
     MetastoreConf.setVar(conf, ConfVars.HIVE_METASTORE_AUTHENTICATOR_MANAGER, HadoopDefaultMetastoreAuthenticator.class.getName() );
     conf.set("hadoop.proxyuser.hive.groups", "*");
@@ -104,6 +123,17 @@ public class TestHiveMetaStoreAuthorizer {
       FileUtils.deleteDirectory(new File(TEST_DATA_DIR));
     } catch (Exception e) {
       // NoSuchObjectException will be ignored if the step objects are not there
+    }
+    dummyHiveAuthorizer = Mockito.mock(HiveAuthorizer.class);
+  }
+
+  static class DummyHmsAuthorizerFactory implements HiveAuthorizerFactory {
+    @Override
+    public HiveAuthorizer createHiveAuthorizer(HiveMetastoreClientFactory metastoreClientFactory,
+        HiveConf conf, HiveAuthenticationProvider hiveAuthenticator, HiveAuthzSessionContext ctx)
+        throws HiveAuthzPluginException {
+      TestHiveMetaStoreAuthorizer.dummyHiveAuthorizer = Mockito.mock(HiveAuthorizer.class);
+      return TestHiveMetaStoreAuthorizer.dummyHiveAuthorizer;
     }
   }
 
@@ -437,6 +467,60 @@ public class TestHiveMetaStoreAuthorizer {
       String[] rootCauseStackTrace = ExceptionUtils.getRootCauseStackTrace(e);
       assertTrue(Arrays.stream(rootCauseStackTrace)
               .anyMatch(stack -> stack.contains(DummyHiveAuthorizer.class.getName())));
+    }
+  }
+
+  /**
+   * @return pair with left value as inputs and right value as outputs,
+   *  passed in current call to authorizer.checkPrivileges
+   * @throws HiveAuthzPluginException
+   * @throws HiveAccessControlException
+   */
+  private Pair<List<HivePrivilegeObject>, List<HivePrivilegeObject>> getHivePrivilegeObjectInputs() throws HiveAuthzPluginException,
+      HiveAccessControlException {
+    // Create argument capturer
+    // a class variable cast to this generic of generic class
+    Class<List<HivePrivilegeObject>> class_listPrivObjects = (Class) List.class;
+    ArgumentCaptor<List<HivePrivilegeObject>> inputsCapturer = ArgumentCaptor
+        .forClass(class_listPrivObjects);
+    ArgumentCaptor<List<HivePrivilegeObject>> outputsCapturer = ArgumentCaptor
+        .forClass(class_listPrivObjects);
+
+    verify(dummyHiveAuthorizer).checkPrivileges(any(HiveOperationType.class),
+        inputsCapturer.capture(), outputsCapturer.capture(),
+        any(HiveAuthzContext.class));
+
+    return new ImmutablePair<List<HivePrivilegeObject>, List<HivePrivilegeObject>>(
+        inputsCapturer.getValue(), outputsCapturer.getValue());
+  }
+
+  @Test
+  public void testCreateTab() {
+    reset(dummyHiveAuthorizer);
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
+    try {
+      Table table = new TableBuilder()
+          .setTableName(tblName)
+          .addCol("name", ColumnType.STRING_TYPE_NAME)
+          .setOwner(authorizedUser)
+          .build(conf);
+      hmsHandler.create_table(table);
+      Pair<List<HivePrivilegeObject>, List<HivePrivilegeObject>> io = getHivePrivilegeObjectInputs();
+      List<HivePrivilegeObject> outputs = io.getRight();
+      List<HivePrivilegeObject> inputs = io.getLeft();
+      assertEquals("No outputs for a select", 2, outputs.size());
+      assertEquals("One input for this select", 0, inputs.size());
+      for (HivePrivilegeObject hivePrivilegeObject : outputs){
+        if (hivePrivilegeObject.getObjectName().contains("storage_handler")){
+          assertTrue("If table created by iceberg storage handler, then the storage uri should be in outputs", hivePrivilegeObject.getObjectName().contains("iceberg"));
+          assertTrue(outputs.size() == inputs.size()+1);
+        }
+      }
+
+    } catch (Exception ex) {
+      String[] rootCauseStackTrace = ExceptionUtils.getRootCauseStackTrace(ex);
+      assertTrue(Arrays.stream(rootCauseStackTrace)
+          .anyMatch(stack -> stack.contains(DummyHiveAuthorizer.class.getName())));
     }
   }
 }

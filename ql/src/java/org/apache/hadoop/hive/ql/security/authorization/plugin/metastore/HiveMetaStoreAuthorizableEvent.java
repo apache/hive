@@ -19,10 +19,7 @@
 
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore;
 
-import org.apache.hadoop.hive.metastore.api.DataConnector;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 
@@ -62,6 +59,12 @@ public abstract class HiveMetaStoreAuthorizableEvent {
     return new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW, table.getDbName(),
         table.getTableName(), null, null, HivePrivilegeObject.HivePrivObjectActionType.OTHER, null, null,
         table.getOwner(), table.getOwnerType());
+  }
+
+  protected HivePrivilegeObject getHivePrivilegeObjectStorageHandlerUri(String storagehandler_uri, Table table) {
+    return new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.STORAGEHANDLER_URI, null, storagehandler_uri,
+             null, null, HivePrivilegeObject.HivePrivObjectActionType.OTHER, null, null,
+            table.getOwner(), table.getOwnerType());
   }
 
   protected HivePrivilegeObject getHivePrivilegeObjectDfsUri(String uri) {
