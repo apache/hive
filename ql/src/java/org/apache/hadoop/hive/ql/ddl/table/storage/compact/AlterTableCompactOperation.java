@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -89,7 +90,8 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
     }
 
     //Will directly initiate compaction if an un-partitioned table/a partition is specified in the request
-    if (desc.getPartitionSpec() != null || !table.isPartitioned()) {
+    if (desc.getPartitionSpec() != null || (!table.isPartitioned() && !DDLUtils.isIcebergTable(table) ) || 
+        (DDLUtils.isIcebergTable(table) && !table.getStorageHandler().isPartitioned(table))) {
       if (desc.getPartitionSpec() != null) {
         Optional<String> partitionName = partitionMap.keySet().stream().findFirst();
         partitionName.ifPresent(compactionRequest::setPartitionname);
@@ -135,7 +137,7 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
     List<Partition> partitions = new ArrayList<>();
 
     if (desc.getPartitionSpec() == null) {
-      if (table.isPartitioned()) {
+      if (table.isPartitioned() || (DDLUtils.isIcebergTable(table) && table.getStorageHandler().isPartitioned(table))) {
         // Compaction will get initiated for all the potential partitions that meets the criteria
         partitions = context.getDb().getPartitions(table);
       }

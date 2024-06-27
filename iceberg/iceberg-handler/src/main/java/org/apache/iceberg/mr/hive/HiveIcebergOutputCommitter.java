@@ -604,10 +604,6 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    */
   private void commitCompaction(Table table, long startTime, FilesForCommit results,
       RewritePolicy rewritePolicy, Integer partitionSpecId, String partitionPath) {
-    if (results.dataFiles().isEmpty()) {
-      LOG.info("Empty compaction commit, took {} ms for table: {}", System.currentTimeMillis() - startTime, table);
-      return;
-    }
     if (rewritePolicy == RewritePolicy.ALL_PARTITIONS) {
       // Full table compaction
       Transaction transaction = table.newTransaction();

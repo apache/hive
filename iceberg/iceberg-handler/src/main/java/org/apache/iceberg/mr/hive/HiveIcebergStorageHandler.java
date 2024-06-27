@@ -1927,9 +1927,16 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return getPartitionNames(table, partitionSpec).stream()
         .map(partName -> {
           Map<String, String> partSpecMap = Maps.newLinkedHashMap();
-          Warehouse.makeSpecFromName(partSpecMap, new Path(partName), null);
+          if (partName != null && !partName.isEmpty()) {
+            Warehouse.makeSpecFromName(partSpecMap, new Path(partName), null);
+          }
           return new DummyPartition(table, partName, partSpecMap);
         }).collect(Collectors.toList());
+  }
+
+  public boolean isPartitioned(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    return IcebergTableUtil.getPartitionFields(table).size() > 0;
   }
 
   @Override
@@ -1951,6 +1958,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   /**
    * Returns a list of partitions which are corresponding to the table based on the partition spec provided.
+   * Partitions in the currently active partition spec are returned at the end of the list.
    * @param hmsTable A Hive table instance.
    * @param partitionSpec Map containing partition specification.
    * @return A list of partition values which satisfies the partition spec provided corresponding to the table.
@@ -1963,7 +1971,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
     try {
       return IcebergTableUtil
-          .getPartitionInfo(icebergTable, partitionSpec, true).entrySet().stream().map(e -> {
+          .getPartitionInfo(icebergTable, partitionSpec, true).entrySet().stream()
+          .sorted((o1, o2) -> o1.getValue() == icebergTable.spec().specId() ? 1 : -1)
+          .map(e -> {
             PartitionData partitionData = e.getKey();
             int specId = e.getValue();
             return icebergTable.specs().get(specId).partitionToPath(partitionData);
