@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.hive.UtilsForTest;
@@ -45,7 +46,7 @@ import org.junit.Test;
 
 public class TestHplSqlViaBeeLine {
   private static MiniHS2 miniHS2;
-  private static final String userName = System.getProperty("user.name");
+  private static final String USER_NAME = System.getProperty("user.name");
 
   /**
    * Start up a local Hive Server 2 for these tests
@@ -72,7 +73,7 @@ public class TestHplSqlViaBeeLine {
 
   @Test
   public void testHplSqlMode() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
       "DROP TABLE IF EXISTS numbers;\n" +
       "CREATE TABLE numbers (n INT);\n" +
       "FOR i IN 1..10\n" +
@@ -92,12 +93,12 @@ public class TestHplSqlViaBeeLine {
       "  SELECT * FROM result;\n" +
       "END;\n" +
       "/\n";
-    testScriptFile(SCRIPT_TEXT, args(), "550");
+    testScriptFile(scriptText, args(), "550");
   }
 
   @Test
   public void testHplSqlProcedure() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
       "DROP TABLE IF EXISTS result;\n" +
       "CREATE TABLE result (s string);\n" +
       "CREATE PROCEDURE p1(s STRING)\n" +
@@ -107,23 +108,23 @@ public class TestHplSqlViaBeeLine {
       "p1();\n" +
       "SELECT * FROM result;\n" +
       "/\n";
-    testScriptFile(SCRIPT_TEXT, args(), "wrong number of arguments in call to 'p1'. Expected 1 got 0.", OutStream.ERR);
+    testScriptFile(scriptText, args(), "wrong number of arguments in call to 'p1'. Expected 1 got 0.", OutStream.ERR);
   }
 
   @Test
   public void testHplSqlMultipleStatementsWithDiv() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
       "DROP TABLE IF EXISTS result;\n" +
       "CREATE TABLE result (n int); /\n" +
       "DECLARE c INT = 1000 / 2;\n" +
       "EXEC 'INSERT INTO result VALUES(' || c || ')';\n" +
       "SELECT * from result; /\n";
-    testScriptFile(SCRIPT_TEXT, args(), "500");
+    testScriptFile(scriptText, args(), "500");
   }
 
   @Test
   public void testCursor() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
             "DROP TABLE IF EXISTS numbers;\n" +
             "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE numbers (n int);\n" +
@@ -150,12 +151,12 @@ public class TestHplSqlViaBeeLine {
             "uc();\n" +
             "SELECT * FROM result;\n" +
             "/\n";
-    testScriptFile(SCRIPT_TEXT, args(), "44946");
+    testScriptFile(scriptText, args(), "44946");
   }
 
   @Test
   public void testPackage() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
       "DROP TABLE IF EXISTS result;\n" +
       "CREATE TABLE result (n int);\n" +
       "CREATE PACKAGE Counter AS\n" +
@@ -171,12 +172,12 @@ public class TestHplSqlViaBeeLine {
       "Counter.inc(6173);\n" +
       "INSERT INTO result VALUES(Counter.current());\n" +
       "SELECT * FROM result;\n";
-    testScriptFile(SCRIPT_TEXT, args(), "12345");
+    testScriptFile(scriptText, args(), "12345");
   }
 
   @Test
   public void testUdfBoolean() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (col_b boolean);\n" +
             "INSERT INTO result VALUES(true);\n" +
@@ -187,12 +188,12 @@ public class TestHplSqlViaBeeLine {
             "   RETURN 'This is ' || b;\n" +
             "END;\n" +
             "SELECT check(col_b) FROM result ORDER BY col_b ASC;\n";
-    testScriptFile(SCRIPT_TEXT, args(), "This is false.*This is true");
+    testScriptFile(scriptText, args(), "This is false.*This is true");
   }
 
   @Test
   public void testUdfSmallInt() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (col_s smallint);\n" +
             "INSERT INTO result VALUES(123);\n" +
@@ -203,12 +204,12 @@ public class TestHplSqlViaBeeLine {
             "   RETURN s + s;\n" +
             "END;\n" +
             "SELECT dbl(col_s) FROM result;\n";
-    testScriptFile(SCRIPT_TEXT, args(), "246.*642");
+    testScriptFile(scriptText, args(), "246.*642");
   }
 
   @Test
   public void testUdfInt() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (col_i int);\n" +
             "INSERT INTO result VALUES(12345);\n" +
@@ -219,12 +220,12 @@ public class TestHplSqlViaBeeLine {
             "   RETURN i * 2;\n" +
             "END;\n" +
             "SELECT dbl(col_i) FROM result;\n";
-    testScriptFile(SCRIPT_TEXT, args(), "24690.*108642");
+    testScriptFile(scriptText, args(), "24690.*108642");
   }
 
   @Test
   public void testUdfBigInt() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (col_b bigint);\n" +
             "INSERT INTO result VALUES(123456789);\n" +
@@ -235,12 +236,12 @@ public class TestHplSqlViaBeeLine {
             "   RETURN b * 2;\n" +
             "END;\n" +
             "SELECT dbl(col_b) FROM result;\n";
-    testScriptFile(SCRIPT_TEXT, args(), "246913578.*1975308642");
+    testScriptFile(scriptText, args(), "246913578.*1975308642");
   }
 
   @Test
   public void testUdfFloat() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (col_f float);\n" +
             "INSERT INTO result VALUES(12345.6789);\n" +
@@ -251,12 +252,12 @@ public class TestHplSqlViaBeeLine {
             "   RETURN f * 2;\n" +
             "END;\n" +
             "SELECT dbl(col_f) FROM result;\n";
-    testScriptFile(SCRIPT_TEXT, args(), "24691.357421875.*197530.859375");
+    testScriptFile(scriptText, args(), "24691.357421875.*197530.859375");
   }
 
   @Test
   public void testUdfDouble() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (col_d double);\n" +
             "INSERT INTO result VALUES(123456789.12);\n" +
@@ -267,12 +268,12 @@ public class TestHplSqlViaBeeLine {
             "   RETURN d * 2;\n" +
             "END;\n" +
             "SELECT dbl(col_d) FROM result;\n";
-    testScriptFile(SCRIPT_TEXT, args(), "2.4691357824E8.*1.97530864396E9");
+    testScriptFile(scriptText, args(), "2.4691357824E8.*1.97530864396E9");
   }
 
   @Test
   public void testUdfString() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (col_s string);\n" +
             "INSERT INTO result VALUES('Alice');\n" +
@@ -283,12 +284,12 @@ public class TestHplSqlViaBeeLine {
             "   RETURN 'Hello ' || s || '!';\n" +
             "END;\n" +
             "SELECT hello(col_s) FROM result ORDER BY col_s ASC;\n";
-    testScriptFile(SCRIPT_TEXT, args(), "Hello Alice!.*Hello Smith!");
+    testScriptFile(scriptText, args(), "Hello Alice!.*Hello Smith!");
   }
 
   @Test
   public void testUdfDate() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (col_d date);\n" +
             "INSERT INTO result VALUES('2022-11-24');\n" +
@@ -299,12 +300,12 @@ public class TestHplSqlViaBeeLine {
             "   RETURN d;\n" +
             "END;\n" +
             "SELECT date_today(col_d) FROM result;\n";
-    testScriptFile(SCRIPT_TEXT, args(), "2022-11-24.*2022-12-25");
+    testScriptFile(scriptText, args(), "2022-11-24.*2022-12-25");
   }
 
   @Test
   public void testUdfTimestamp() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (col_t timestamp);\n" +
             "INSERT INTO result VALUES('2022-11-24 10:20:30');\n" +
@@ -315,12 +316,12 @@ public class TestHplSqlViaBeeLine {
             "   RETURN t;\n" +
             "END;\n" +
             "SELECT time_today(col_t) FROM result;\n";
-    testScriptFile(SCRIPT_TEXT, args(), "2022-11-24 10:20:30.*2022-12-25 06:30:30");
+    testScriptFile(scriptText, args(), "2022-11-24 10:20:30.*2022-12-25 06:30:30");
   }
 
   @Test
   public void testUdfDecimal() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (col_d decimal(15,2));\n" +
             "INSERT INTO result VALUES(123456789.98);\n" +
@@ -331,12 +332,12 @@ public class TestHplSqlViaBeeLine {
             "   RETURN d * 3;\n" +
             "END;\n" +
             "SELECT triple(col_d) FROM result;\n";
-    testScriptFile(SCRIPT_TEXT, args(), "370370369.94.*2962962963.36");
+    testScriptFile(scriptText, args(), "370370369.94.*2962962963.36");
   }
 
   @Test
   public void testUdfVarchar() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (col_v varchar(20));\n" +
             "INSERT INTO result VALUES('Smith');\n" +
@@ -347,12 +348,12 @@ public class TestHplSqlViaBeeLine {
             "   RETURN 'Hello ' || v || '!';\n" +
             "END;\n" +
             "SELECT hello(col_v) FROM result ORDER BY col_v ASC;\n";
-    testScriptFile(SCRIPT_TEXT, args(), "Hello Sachin!.*Hello Smith!");
+    testScriptFile(scriptText, args(), "Hello Sachin!.*Hello Smith!");
   }
 
   @Test
   public void testUdfChar() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (col_c char(10));\n" +
             "INSERT INTO result VALUES('Daya');\n" +
@@ -363,12 +364,12 @@ public class TestHplSqlViaBeeLine {
             "   RETURN 'Hello ' || c || '!';\n" +
             "END;\n" +
             "SELECT hello(col_c) FROM result ORDER BY col_c ASC;\n";
-    testScriptFile(SCRIPT_TEXT, args(), "Hello Alice!.*Hello Daya!");
+    testScriptFile(scriptText, args(), "Hello Alice!.*Hello Daya!");
   }
 
   @Test
   public void testUdfWhenUdfParamerAndActualParamDifferent() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (col_d decimal(10,2));\n" +
             "INSERT INTO result VALUES(12345.67);\n" +
@@ -379,30 +380,30 @@ public class TestHplSqlViaBeeLine {
             "   RETURN 'Hello ' || s || '!';\n" +
             "END;\n" +
             "SELECT hello(col_d) FROM result;\n";
-    testScriptFile(SCRIPT_TEXT, args(), "Hello 12345.67!.*Hello 98765.43!");
+    testScriptFile(scriptText, args(), "Hello 12345.67!.*Hello 98765.43!");
   }
 
   @Test
   public void testBuiltInUdf() throws Throwable {
-    String SCRIPT_TEXT = "SELECT abs(-2);\n";
-    testScriptFile(SCRIPT_TEXT, args(), "2");
+    String scriptText = "SELECT abs(-2);\n";
+    testScriptFile(scriptText, args(), "2");
   }
 
   @Test
   public void testNestedUdfAndProcedure() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "CREATE FUNCTION dbl(d int)\n" +
         "   RETURNS int\n" +
         "BEGIN\n" +
         "   RETURN d * 2;\n" +
         "END;\n" +
         "SELECT dbl(abs(-2)), abs(dbl(-2)), dbl(dbl(20));\n";
-    testScriptFile(SCRIPT_TEXT, args(), "4.*4\\.0.*80");
+    testScriptFile(scriptText, args(), "4.*4\\.0.*80");
   }
 
   @Test
     public void testDbChange() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "DROP TABLE IF EXISTS result;\n" +
         "CREATE TABLE result (n int);\n" +
         "create database test_db1;\n" +
@@ -412,12 +413,12 @@ public class TestHplSqlViaBeeLine {
         "use test_db1; f();/\n" +
         "use test_db2; f();/\n" +
         "SELECT sum(n) FROM default.result; /\n";
-    testScriptFile(SCRIPT_TEXT, args(), "85");
+    testScriptFile(scriptText, args(), "85");
   }
 
   @Test
   public void testTableSelect() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
             "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (s string);\n" +
             "DROP TABLE IF EXISTS emp;\n" +
@@ -433,12 +434,12 @@ public class TestHplSqlViaBeeLine {
             "SELECT name, age INTO names(1), ages(1) FROM emp WHERE name = 'alice';\n" +
             "INSERT INTO result VALUES(rows(200).name || ' is ' || rows(200).age || ' ' || names(1) || ' = ' || ages(1));\n" +
             "SELECT * FROM result;\n";
-    testScriptFile(SCRIPT_TEXT, args(), " alice is 20 alice = 20");
+    testScriptFile(scriptText, args(), " alice is 20 alice = 20");
   }
 
   @Test
   public void testTableTypeCustom() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
             "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (s string);\n" +
             "DROP TABLE IF EXISTS emp;\n" +
@@ -451,12 +452,12 @@ public class TestHplSqlViaBeeLine {
             "my_table2(101) := 'alice';\n" +
             "INSERT INTO result VALUES(my_table1(100) || ' ' ||  my_table2(101));\n" +
             "SELECT * FROM result;\n";
-    testScriptFile(SCRIPT_TEXT, args(), "bob alice");
+    testScriptFile(scriptText, args(), "bob alice");
   }
 
   @Test
   public void testTableIteration() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
             "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (s string);\n" +
             "DROP TABLE IF EXISTS emp;\n" +
@@ -476,12 +477,12 @@ public class TestHplSqlViaBeeLine {
             "END LOOP;\n" +
             "INSERT INTO result VALUES(s);\n" +
             "SELECT * FROM result;\n";
-    testScriptFile(SCRIPT_TEXT, args(), "bob alice ");
+    testScriptFile(scriptText, args(), "bob alice ");
   }
 
   @Test
   public void testTableRowAssignment() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
             "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (s string);\n" +
             "DROP TABLE IF EXISTS emp;\n" +
@@ -496,12 +497,12 @@ public class TestHplSqlViaBeeLine {
             "tbl(2) := tmp(1);" +
             "INSERT INTO result VALUES( tbl(1).name || ' ' || tbl(1).age || ' ' || tbl(2).name || ' ' || tbl(2).age );\n" +
             "SELECT * FROM result;\n";
-    testScriptFile(SCRIPT_TEXT, args(), "alice 16 bob 18");
+    testScriptFile(scriptText, args(), "alice 16 bob 18");
   }
 
   @Test
   public void testBulkCollectColumns() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
             "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (s string);\n" +
             "DROP TABLE IF EXISTS emp;\n" +
@@ -515,12 +516,12 @@ public class TestHplSqlViaBeeLine {
             "SELECT name, age BULK COLLECT INTO names, ages FROM emp;\n" +
             "INSERT INTO result VALUES(names(1) || ' = ' || ages(1) || ' ' || names(2) || ' = ' || ages(2));\n" +
             "SELECT * FROM result;\n";
-    testScriptFile(SCRIPT_TEXT, args(), " alice = 20 bob = 30");
+    testScriptFile(scriptText, args(), " alice = 20 bob = 30");
   }
 
   @Test
   public void testBulkCollectRows() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
             "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (s string);\n" +
             "DROP TABLE IF EXISTS emp;\n" +
@@ -532,12 +533,12 @@ public class TestHplSqlViaBeeLine {
             "SELECT * BULK COLLECT INTO tbl FROM emp;\n" +
             "INSERT INTO result VALUES(tbl(1).name || ' = ' || tbl(1).age || ' ' || tbl(2).name || ' = ' || tbl(2).age);\n" +
             "SELECT * FROM result;\n";
-    testScriptFile(SCRIPT_TEXT, args(), " alice = 20 bob = 30");
+    testScriptFile(scriptText, args(), " alice = 20 bob = 30");
   }
 
   @Test
   public void testBulkCollectFetch() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
             "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (s string);\n" +
             "DROP TABLE IF EXISTS emp;\n" +
@@ -552,12 +553,12 @@ public class TestHplSqlViaBeeLine {
             "CLOSE cur;\n" +
             "INSERT INTO result VALUES(rows(1).name || ' = ' || rows(1).age || ' ' || rows(2).name || ' = ' || rows(2).age);\n" +
             "SELECT * FROM result;\n";
-    testScriptFile(SCRIPT_TEXT, args(), " alice = 20 bob = 30");
+    testScriptFile(scriptText, args(), " alice = 20 bob = 30");
   }
 
   @Test
   public void testBulkCollectFetchLoop() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
             "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (s string);\n" +
             "DROP TABLE IF EXISTS emp;\n" +
@@ -581,12 +582,12 @@ public class TestHplSqlViaBeeLine {
             "CLOSE cur;\n" +
             "INSERT INTO result VALUES(s);\n" +
             "SELECT * FROM result;\n";
-    testScriptFile(SCRIPT_TEXT, args(), "e1=1 e2=2 e3=3 e4=4 e5=5 e6=6");
+    testScriptFile(scriptText, args(), "e1=1 e2=2 e3=3 e4=4 e5=5 e6=6");
   }
 
   @Test
   public void testDecimalCast() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "DECLARE\n" +
         "a DECIMAL(10,2);\n" +
         "BEGIN\n" +
@@ -594,12 +595,12 @@ public class TestHplSqlViaBeeLine {
         "print (a);\n" +
         "END;\n" +
         "/";
-    testScriptFile(SCRIPT_TEXT, args(), "10.50", OutStream.ERR);
+    testScriptFile(scriptText, args(), "10.50", OutStream.ERR);
   }
 
   @Test
   public void testNullCast() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "BEGIN\n" +
         "DECLARE a BIGINT;\n" +
         "print('started');\n" +
@@ -609,19 +610,19 @@ public class TestHplSqlViaBeeLine {
         "end;\n" +
         "/";
     // Inverted match, output should not have NPE
-    testScriptFile(SCRIPT_TEXT, args(), "^(.(?!(NullPointerException)))*$", OutStream.ERR);
+    testScriptFile(scriptText, args(), "^(.(?!(NullPointerException)))*$", OutStream.ERR);
   }
 
   @Test
   public void testACTIVITY_COUNTHplSqlFunction1() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "DROP TABLE IF EXISTS result;\n" +
         "CREATE TABLE result (col1 string);\n" +
         "INSERT INTO result VALUES('Alice');\n" +
         "INSERT INTO result VALUES('Bob');\n" +
         "SELECT * FROM result;\n" +
         "SELECT ACTIVITY_COUNT;";
-    testScriptFile(SCRIPT_TEXT, args(), "2");
+    testScriptFile(scriptText, args(), "2");
   }
 
   @Test
@@ -641,14 +642,14 @@ public class TestHplSqlViaBeeLine {
 
   @Test
   public void testCASTHplSqlFunction1() throws Throwable {
-    String SCRIPT_TEXT = "SELECT CAST('Abc' AS CHAR(1));";
-    testScriptFile(SCRIPT_TEXT, args(), "A");
+    String scriptText = "SELECT CAST('Abc' AS CHAR(1));";
+    testScriptFile(scriptText, args(), "A");
   }
 
   @Test
   public void testCASTHplSqlFunction2() throws Throwable {
-    String SCRIPT_TEXT = "SELECT CAST(TIMESTAMP '2015-03-12 10:58:34.111' AS CHAR(10));";
-    testScriptFile(SCRIPT_TEXT, args(), "2015-03-12");
+    String scriptText = "SELECT CAST(TIMESTAMP '2015-03-12 10:58:34.111' AS CHAR(10));";
+    testScriptFile(scriptText, args(), "2015-03-12");
   }
 
   @Test
@@ -659,240 +660,240 @@ public class TestHplSqlViaBeeLine {
 
   @Test
   public void testCHARHplSqlFunction() throws Throwable {
-    String SCRIPT_TEXT = "select CHAR(2023)";
-    testScriptFile(SCRIPT_TEXT, args(), "2023");
+    String scriptText = "select CHAR(2023)";
+    testScriptFile(scriptText, args(), "2023");
   }
 
   @Test
   public void testCOALESCEHplSQLFunction() throws Throwable {
-    String SCRIPT_TEXT = "select COALESCE(null,123,2023)";
-    testScriptFile(SCRIPT_TEXT, args(), "123");
+    String scriptText = "select COALESCE(null,123,2023)";
+    testScriptFile(scriptText, args(), "123");
   }
 
   @Test
   public void testCONCATHplSQLFunction() throws Throwable {
-    String SCRIPT_TEXT = "select CONCAT('a', 'b', NULL, 'c')";
-    testScriptFile(SCRIPT_TEXT, args(), "abc");
+    String scriptText = "select CONCAT('a', 'b', NULL, 'c')";
+    testScriptFile(scriptText, args(), "abc");
   }
 
   @Test
   public void testCURRENTHplSQLFunction1() throws Throwable {
-    String SCRIPT_TEXT = "SELECT CURRENT DATE;";
-    testCurrentDate(SCRIPT_TEXT);
+    String scriptText = "SELECT CURRENT DATE;";
+    testCurrentDate(scriptText);
   }
 
-  private void testCurrentDate(String SCRIPT_TEXT) throws Throwable {
+  private void testCurrentDate(String scriptText) throws Throwable {
     Date today = new Date(System.currentTimeMillis());
-    testScriptFile(SCRIPT_TEXT, args(), today.toString());
+    testScriptFile(scriptText, args(), today.toString());
   }
 
   @Test
   public void testCURRENTHplSQLFunction2() throws Throwable {
-    String SCRIPT_TEXT = "SELECT CURRENT TIMESTAMP;";
-    testCurrentTimestamp(SCRIPT_TEXT);
+    String scriptText = "SELECT CURRENT TIMESTAMP;";
+    testCurrentTimestamp(scriptText);
   }
 
-  private void testCurrentTimestamp(String SCRIPT_TEXT) throws Throwable {
+  private void testCurrentTimestamp(String scriptText) throws Throwable {
     Timestamp today = new Timestamp(System.currentTimeMillis());
     String timestamp = today.toString();
-    testScriptFile(SCRIPT_TEXT, args(), timestamp.substring(0, timestamp.length() - 9));
+    testScriptFile(scriptText, args(), timestamp.substring(0, timestamp.length() - 9));
   }
 
   @Test
   public void testCURRENTHplSQLFunction3() throws Throwable {
-    String SCRIPT_TEXT = "SELECT CURRENT USER;";
-    testScriptFile(SCRIPT_TEXT, args(), System.getProperty("user.name"));
+    String scriptText = "SELECT CURRENT USER;";
+    testScriptFile(scriptText, args(), System.getProperty("user.name"));
   }
 
   @Test
   public void testCURRENT_DATEHplSQLFunction() throws Throwable {
-    String SCRIPT_TEXT = "SELECT CURRENT_DATE;";
-    testCurrentDate(SCRIPT_TEXT);
+    String scriptText = "SELECT CURRENT_DATE;";
+    testCurrentDate(scriptText);
   }
 
   @Test
   public void testCURRENT_TIME_MILLISHplSQLFunction() throws Throwable {
-    String SCRIPT_TEXT = "SELECT CURRENT_TIME_MILLIS();";
-    testScriptFile(SCRIPT_TEXT, args(), String.valueOf(System.currentTimeMillis() / 100000));
+    String scriptText = "SELECT CURRENT_TIME_MILLIS();";
+    testScriptFile(scriptText, args(), String.valueOf(System.currentTimeMillis() / 100000));
   }
 
   @Test
   public void testCURRENT_TIMESTAMPHplSQLFunction() throws Throwable {
-    String SCRIPT_TEXT = "SELECT CURRENT_TIMESTAMP;";
-    testCurrentTimestamp(SCRIPT_TEXT);
+    String scriptText = "SELECT CURRENT_TIMESTAMP;";
+    testCurrentTimestamp(scriptText);
   }
 
   @Test
   public void testCURRENT_USERHplSQLFunction() throws Throwable {
-    String SCRIPT_TEXT = "SELECT CURRENT_USER;";
-    testScriptFile(SCRIPT_TEXT, args(), System.getProperty("user.name"));
+    String scriptText = "SELECT CURRENT_USER;";
+    testScriptFile(scriptText, args(), System.getProperty("user.name"));
   }
 
   @Test
   public void testDATEHplSQLFunction() throws Throwable {
-    String SCRIPT_TEXT = "SELECT DATE('2015-03-12');";
-    testScriptFile(SCRIPT_TEXT, args(), "2015-03-12");
+    String scriptText = "SELECT DATE('2015-03-12');";
+    testScriptFile(scriptText, args(), "2015-03-12");
   }
 
   @Test
   public void testDECODEHplSQLFunction() throws Throwable {
-    String SCRIPT_TEXT = "DECLARE var1 INT DEFAULT 3;\n" + "SELECT DECODE (var1, 1, 'A', 2, 'B', 3, 'C');";
-    testScriptFile(SCRIPT_TEXT, args(), "C");
+    String scriptText = "DECLARE var1 INT DEFAULT 3;\n" + "SELECT DECODE (var1, 1, 'A', 2, 'B', 3, 'C');";
+    testScriptFile(scriptText, args(), "C");
   }
 
   @Test
   public void testFROM_UNIXTIMEHplSQLFunction() throws Throwable {
-    String SCRIPT_TEXT = "SELECT from_unixtime(1447141681, 'yyyy-MM-dd');";
-    testScriptFile(SCRIPT_TEXT, args(), "2015-11-");
+    String scriptText = "SELECT from_unixtime(1447141681, 'yyyy-MM-dd');";
+    testScriptFile(scriptText, args(), "2015-11-");
   }
 
   @Test
   public void testINSTRHplSQLFunction1() throws Throwable {
-    String SCRIPT_TEXT = "SELECT INSTR('abc', 'b');";
-    testScriptFile(SCRIPT_TEXT, args(), "2");
+    String scriptText = "SELECT INSTR('abc', 'b');";
+    testScriptFile(scriptText, args(), "2");
   }
 
   @Test
   public void testINSTRHplSQLFunction2() throws Throwable {
-    String SCRIPT_TEXT = "SELECT INSTR('abcabcabc', 'b', 3, 2);";
-    testScriptFile(SCRIPT_TEXT, args(), "8");
+    String scriptText = "SELECT INSTR('abcabcabc', 'b', 3, 2);";
+    testScriptFile(scriptText, args(), "8");
   }
 
   @Test
   public void testLOWERHplSQLFunction() throws Throwable {
-    String SCRIPT_TEXT = "SELECT LOWER('ABC');";
-    testScriptFile(SCRIPT_TEXT, args(), "abc");
+    String scriptText = "SELECT LOWER('ABC');";
+    testScriptFile(scriptText, args(), "abc");
   }
 
   @Test
   public void testLENHplSQLFunction() throws Throwable {
-    String SCRIPT_TEXT = "SELECT LEN('Abc ');";
-    testScriptFile(SCRIPT_TEXT, args(), "3");
+    String scriptText = "SELECT LEN('Abc ');";
+    testScriptFile(scriptText, args(), "3");
   }
 
   @Test
   public void testLENGTHHplSQLFunction() throws Throwable {
-    String SCRIPT_TEXT = "SELECT LENGTH('Abc ');";
-    testScriptFile(SCRIPT_TEXT, args(), "4");
+    String scriptText = "SELECT LENGTH('Abc ');";
+    testScriptFile(scriptText, args(), "4");
   }
 
   @Test
   public void testMODHplSQLFunction() throws Throwable {
-    String SCRIPT_TEXT = "SELECT MOD(5,2);";
-    testScriptFile(SCRIPT_TEXT, args(), "1");
+    String scriptText = "SELECT MOD(5,2);";
+    testScriptFile(scriptText, args(), "1");
   }
 
   @Test
   public void testNOWHplSQLFunction() throws Throwable {
-    String SCRIPT_TEXT = "SELECT NOW();";
-    testCurrentTimestamp(SCRIPT_TEXT);
+    String scriptText = "SELECT NOW();";
+    testCurrentTimestamp(scriptText);
   }
 
   @Test
   public void testNVLHplSQLFunction() throws Throwable {
-    String SCRIPT_TEXT = "SELECT NVL(NULL, 100);";
-    testScriptFile(SCRIPT_TEXT, args(), "100");
+    String scriptText = "SELECT NVL(NULL, 100);";
+    testScriptFile(scriptText, args(), "100");
   }
 
   @Test
   public void testNVL2HplSQLFunction() throws Throwable {
-    String SCRIPT_TEXT = "SELECT NVL2(NULL, 100, 200);";
-    testScriptFile(SCRIPT_TEXT, args(), "200");
+    String scriptText = "SELECT NVL2(NULL, 100, 200);";
+    testScriptFile(scriptText, args(), "200");
   }
 
   @Test
   public void testREPLACEHplSQLFunction() throws Throwable {
-    String SCRIPT_TEXT = "SELECT replace('2016-03-03', '-', '');";
-    testScriptFile(SCRIPT_TEXT, args(), "20160303");
+    String scriptText = "SELECT replace('2016-03-03', '-', '');";
+    testScriptFile(scriptText, args(), "20160303");
   }
 
   @Test
   public void testSUBSTRHplSQLFunction1() throws Throwable {
-    String SCRIPT_TEXT = "SELECT SUBSTR('Remark', 3);";
-    testScriptFile(SCRIPT_TEXT, args(), "mark");
+    String scriptText = "SELECT SUBSTR('Remark', 3);";
+    testScriptFile(scriptText, args(), "mark");
   }
 
   @Test
   public void testSUBSTRHplSQLFunction2() throws Throwable {
-    String SCRIPT_TEXT = "SELECT SUBSTR('Remark', 3, 3);";
-    testScriptFile(SCRIPT_TEXT, args(), "mar");
+    String scriptText = "SELECT SUBSTR('Remark', 3, 3);";
+    testScriptFile(scriptText, args(), "mar");
   }
 
   @Test
   public void testSUBSTRINGHplSQLFunction1() throws Throwable {
-    String SCRIPT_TEXT = "SELECT SUBSTRING('Remark', 3);";
-    testScriptFile(SCRIPT_TEXT, args(), "mark");
+    String scriptText = "SELECT SUBSTRING('Remark', 3);";
+    testScriptFile(scriptText, args(), "mark");
   }
 
   @Test
   public void testSUBSTRINGHplSQLFunction2() throws Throwable {
-    String SCRIPT_TEXT = "SELECT SUBSTRING('Remark', 3, 3);";
-    testScriptFile(SCRIPT_TEXT, args(), "mar");
+    String scriptText = "SELECT SUBSTRING('Remark', 3, 3);";
+    testScriptFile(scriptText, args(), "mar");
   }
 
   @Test
   public void testSYSDATEHplSQLFunction() throws Throwable {
-    String SCRIPT_TEXT = "SELECT SYSDATE;";
-    testCurrentTimestamp(SCRIPT_TEXT);
+    String scriptText = "SELECT SYSDATE;";
+    testCurrentTimestamp(scriptText);
   }
 
   @Test
   public void testTIMESTAMP_ISOHplSQLFunction() throws Throwable {
-    String SCRIPT_TEXT = "SELECT TIMESTAMP_ISO('2015-03-12');";
-    testScriptFile(SCRIPT_TEXT, args(), "2015-03-12 00:00:00");
+    String scriptText = "SELECT TIMESTAMP_ISO('2015-03-12');";
+    testScriptFile(scriptText, args(), "2015-03-12 00:00:00");
   }
 
   @Test
   public void testTO_CHARHplSQLFunction() throws Throwable {
-    String SCRIPT_TEXT = "SELECT TO_CHAR(CURRENT_DATE);";
-    testCurrentDate(SCRIPT_TEXT);
+    String scriptText = "SELECT TO_CHAR(CURRENT_DATE);";
+    testCurrentDate(scriptText);
   }
 
   @Test
   public void testTO_TIMESTAMPHplSQLFunction1() throws Throwable {
-    String SCRIPT_TEXT = "SELECT TO_TIMESTAMP('2015-04-02', 'YYYY-MM-DD');";
-    testScriptFile(SCRIPT_TEXT, args(), "2015-04-02 00:00:00.0");
+    String scriptText = "SELECT TO_TIMESTAMP('2015-04-02', 'YYYY-MM-DD');";
+    testScriptFile(scriptText, args(), "2015-04-02 00:00:00.0");
   }
 
   @Test
   public void testTO_TIMESTAMPHplSQLFunction2() throws Throwable {
-    String SCRIPT_TEXT = "SELECT TO_TIMESTAMP('04/02/2015', 'mm/dd/yyyy');";
-    testScriptFile(SCRIPT_TEXT, args(), "2015-04-02 00:00:00.0");
+    String scriptText = "SELECT TO_TIMESTAMP('04/02/2015', 'mm/dd/yyyy');";
+    testScriptFile(scriptText, args(), "2015-04-02 00:00:00.0");
   }
 
   @Test
   public void testTO_TIMESTAMPHplSQLFunction3() throws Throwable {
-    String SCRIPT_TEXT = "SELECT TO_TIMESTAMP('2015-04-02 13:51:31', 'YYYY-MM-DD HH24:MI:SS');";
-    testScriptFile(SCRIPT_TEXT, args(), "2015-04-02 13:51:31.0");
+    String scriptText = "SELECT TO_TIMESTAMP('2015-04-02 13:51:31', 'YYYY-MM-DD HH24:MI:SS');";
+    testScriptFile(scriptText, args(), "2015-04-02 13:51:31.0");
   }
 
   @Test
   public void testTRIMHplSQLFunction() throws Throwable {
-    String SCRIPT_TEXT = "SELECT '#' || TRIM(' Hello ') || '#';";
-    testScriptFile(SCRIPT_TEXT, args(), "#Hello#");
+    String scriptText = "SELECT '#' || TRIM(' Hello ') || '#';";
+    testScriptFile(scriptText, args(), "#Hello#");
   }
 
   @Test
   public void testUNIX_TIMESTAMPHplSQLFunction() throws Throwable {
-    String SCRIPT_TEXT = "SELECT UNIX_TIMESTAMP()";
-    testScriptFile(SCRIPT_TEXT, args(), String.valueOf(System.currentTimeMillis()/10000));
+    String scriptText = "SELECT UNIX_TIMESTAMP()";
+    testScriptFile(scriptText, args(), String.valueOf(System.currentTimeMillis()/1000));
   }
 
   @Test
   public void testUPPERHplSQLFunction() throws Throwable {
-    String SCRIPT_TEXT = "SELECT UPPER('abc');";
-    testScriptFile(SCRIPT_TEXT, args(), "ABC");
+    String scriptText = "SELECT UPPER('abc');";
+    testScriptFile(scriptText, args(), "ABC");
   }
 
   @Test
   public void testUSERHplSQLFunction() throws Throwable {
-    String SCRIPT_TEXT = "SELECT USER;";
-    testScriptFile(SCRIPT_TEXT, args(), System.getProperty("user.name"));
+    String scriptText = "SELECT USER;";
+    testScriptFile(scriptText, args(), System.getProperty("user.name"));
   }
 
   @Test
   public void testTableAliasInColumnName() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "DROP TABLE IF EXISTS input;\n" +
             "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE input (col1 string, col2 int);\n" +
@@ -906,12 +907,12 @@ public class TestHplSqlViaBeeLine {
             "END;\n" +
             "p1();\n" +
             "SELECT * FROM result;\n";
-    testScriptFile(SCRIPT_TEXT, args(), "2023 = Hive");
+    testScriptFile(scriptText, args(), "2023 = Hive");
   }
 
   @Test
   public void testHplSqlProcedureCallingWithAllDefaultValues() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (s string);\n" +
             "CREATE PROCEDURE p1(s STRING DEFAULT 'default_val', num NUMBER DEFAULT 123)\n" +
@@ -920,12 +921,12 @@ public class TestHplSqlViaBeeLine {
             "END;\n" +
             "p1();\n" +
             "SELECT * FROM result;" ;
-    testScriptFile(SCRIPT_TEXT, args(), "default_val = 123");
+    testScriptFile(scriptText, args(), "default_val = 123");
   }
 
   @Test
   public void testHplSqlProcedureCallingWithSomeDefaultValues() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (s string);\n" +
             "CREATE PROCEDURE p1(s STRING DEFAULT 'default_val', num NUMBER DEFAULT 123)\n" +
@@ -934,12 +935,12 @@ public class TestHplSqlViaBeeLine {
             "END;\n" +
             "p1('Pass_Value');\n" +
             "SELECT * FROM result;" ;
-    testScriptFile(SCRIPT_TEXT, args(), "Pass_Value = 123");
+    testScriptFile(scriptText, args(), "Pass_Value = 123");
   }
 
   @Test
   public void testHplSqlProcedureWithDefaultValues() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (s string);\n" +
             "CREATE PROCEDURE p1(s STRING DEFAULT 'default_val', num NUMBER)\n" +
@@ -948,12 +949,12 @@ public class TestHplSqlViaBeeLine {
             "END;\n" +
             "p1(111);\n" +
             "SELECT * FROM result;" ;
-    testScriptFile(SCRIPT_TEXT, args(), "wrong number of arguments in call to 'p1'. Expected 2 got 1.", OutStream.ERR);
+    testScriptFile(scriptText, args(), "wrong number of arguments in call to 'p1'. Expected 2 got 1.", OutStream.ERR);
   }
 
   @Test
   public void testHplSqlProcedureWithSomeDefaultValues() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (s string);\n" +
             "CREATE PROCEDURE p1(s STRING, num NUMBER DEFAULT 123)\n" +
@@ -962,12 +963,12 @@ public class TestHplSqlViaBeeLine {
             "END;\n" +
             "p1('Passed_Val');\n" +
             "SELECT * FROM result;" ;
-    testScriptFile(SCRIPT_TEXT, args(), "Passed_Val = 123");
+    testScriptFile(scriptText, args(), "Passed_Val = 123");
   }
 
   @Test
   public void testHplSqlProcedureWithDefaultParamCallingWithNamedParameterBinding() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (s string);\n" +
             "CREATE PROCEDURE p1(s STRING DEFAULT 'default_val', num NUMBER)\n" +
@@ -976,12 +977,12 @@ public class TestHplSqlViaBeeLine {
             "END;\n" +
             "p1(num => 111);\n" +
             "SELECT * FROM result;" ;
-    testScriptFile(SCRIPT_TEXT, args(), "default_val = 111");
+    testScriptFile(scriptText, args(), "default_val = 111");
   }
 
   @Test
   public void testHplSqlProcedureWithAllDefaultParamsCallingWithNamedParameterBinding() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (s string);\n" +
             "CREATE PROCEDURE p1(s1 STRING default 'Default S1', s2 string default 'Default S2')\n" +
@@ -990,12 +991,12 @@ public class TestHplSqlViaBeeLine {
             "END;\n" +
             "p1(s2 => 'PassedValue S2');\n" +
             "SELECT * FROM result;" ;
-    testScriptFile(SCRIPT_TEXT, args(), "Default S1=PassedValue S2");
+    testScriptFile(scriptText, args(), "Default S1=PassedValue S2");
   }
 
   @Test
   public void testHplSqlProcedureWithoutParameters() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (s string);\n" +
             "CREATE PROCEDURE p1()\n" +
@@ -1004,12 +1005,12 @@ public class TestHplSqlViaBeeLine {
             "END;\n" +
             "p1('none');\n" +
             "SELECT * FROM result;" ;
-    testScriptFile(SCRIPT_TEXT, args(), "wrong number of arguments in call to 'p1'. Expected 0 got 1.", OutStream.ERR);
+    testScriptFile(scriptText, args(), "wrong number of arguments in call to 'p1'. Expected 0 got 1.", OutStream.ERR);
   }
 
   @Test
   public void testHiveVariableInHplsql() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (s string);\n" +
             "CREATE PROCEDURE p1()\n" +
@@ -1025,12 +1026,12 @@ public class TestHplSqlViaBeeLine {
     args.add("hivedb=sys");
     args.add("--hivevar");
     args.add("hivetbl=tbls");
-    testScriptFile(SCRIPT_TEXT, args, "sys.tbls");
+    testScriptFile(scriptText, args, "sys.tbls");
   }
 
   @Test
   public void testHplSqlContinueConditionHandler() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (s string);\n" +
             "CREATE PROCEDURE p1()\n" +
@@ -1044,12 +1045,12 @@ public class TestHplSqlViaBeeLine {
             " SIGNAL cnt_condition;\n" +
             "END IF;\n" +
             "SELECT * FROM result;";
-    testScriptFile(SCRIPT_TEXT, args(), "Continue CONDITION Handler invoked.");
+    testScriptFile(scriptText, args(), "Continue CONDITION Handler invoked.");
   }
 
   @Test
   public void testHplSqlExitConditionHandler() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "CREATE PROCEDURE p1()\n" +
             "BEGIN\n" +
             " PRINT('Exit CONDITION Handler invoked.');\n" +
@@ -1060,54 +1061,54 @@ public class TestHplSqlViaBeeLine {
             "IF 1 <> 2 THEN\n" +
             " SIGNAL cnt_condition;\n" +
             "END IF;";
-    testScriptFile(SCRIPT_TEXT, args(), "Exit CONDITION Handler invoked.", OutStream.ERR);
+    testScriptFile(scriptText, args(), "Exit CONDITION Handler invoked.", OutStream.ERR);
   }
 
   @Test
   public void testExecuteImmediateSelectCountStatement() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (s string);\n" +
             "execute immediate 'SELECT count(*) from result';";
     // Inverted match, output should not have NPE
-    testScriptFile(SCRIPT_TEXT, args(), "^(.(?!(ClassCastException)))*$", OutStream.ERR);
+    testScriptFile(scriptText, args(), "^(.(?!(ClassCastException)))*$", OutStream.ERR);
   }
 
   @Test
   public void testExecuteSelectCountStatement() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE result (s string);\n" +
             "execute 'SELECT count(*) from result';";
     // Inverted match, output should not have NPE
-    testScriptFile(SCRIPT_TEXT, args(), "^(.(?!(ClassCastException)))*$", OutStream.ERR);
+    testScriptFile(scriptText, args(), "^(.(?!(ClassCastException)))*$", OutStream.ERR);
   }
 
   @Test
   public void testSetHplsqlOnErrorStop() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "SET hplsql.onerror='stop';\n" +
             "insert into abc values('Tbl Not Exists');\n" +
             "SELECT CURRENT_USER;";
-    testScriptFile(SCRIPT_TEXT, args(), "^(.(?!(" + System.getProperty("user.name") + ")))*$");
+    testScriptFile(scriptText, args(), "^(.(?!(" + System.getProperty("user.name") + ")))*$");
   }
 
   @Test
   public void testSetHplsqlOnErrorSetError() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "SET hplsql.onerror='seterror';\n" +
             "insert into abc values('Tbl Not Exists');\n" +
             "if SQLCODE < 0\n" + " PRINT 'SQL Error...';";
-    testScriptFile(SCRIPT_TEXT, args(), "SessionState: SQL Error...", OutStream.ERR);
+    testScriptFile(scriptText, args(), "SessionState: SQL Error...", OutStream.ERR);
   }
 
   @Test
   public void testSetHplsqlOnErrorException() throws Throwable {
-    String SCRIPT_TEXT =
+    String scriptText =
         "SET hplsql.onerror='exception';\n" +
             "insert into abc values('Tbl Not Exists');\n" +
             "SELECT CURRENT_USER;";
-    testScriptFile(SCRIPT_TEXT, args(), "^(.(?!(" + System.getProperty("user.name") + ")))*$");
+    testScriptFile(scriptText, args(), "^(.(?!(" + System.getProperty("user.name") + ")))*$");
   }
 
   @Test
@@ -1376,7 +1377,7 @@ public class TestHplSqlViaBeeLine {
 
   private static List<String> args() {
     return Arrays.asList("-d", BeeLine.BEELINE_DEFAULT_JDBC_DRIVER,
-            "-u", miniHS2.getBaseJdbcURL() + ";mode=hplsql", "-n", userName);
+            "-u", miniHS2.getBaseJdbcURL() + ";mode=hplsql", "-n", USER_NAME);
   }
 
   private void testScriptFile(String scriptText, List<String> argList, String expectedPattern)
@@ -1395,6 +1396,19 @@ public class TestHplSqlViaBeeLine {
     copy.add("-f");
     copy.add(scriptFile.getAbsolutePath());
     String output = testCommandLineScript(copy, null, outStream);
+    if (scriptText.equals("SELECT UNIX_TIMESTAMP()")) {
+      Pattern pattern = Pattern.compile("\\|\\s*(\\d+)\\s*\\|");
+      Matcher matcher = pattern.matcher(output);
+      long expected = Long.parseLong(expectedPattern), actual = 0;
+      if (matcher.find()) {
+        actual = Long.parseLong(matcher.group(1));
+        if (Math.abs(actual - expected) > 5) {
+          output = String.valueOf(actual);
+        } else {
+          output = expectedPattern;
+        }
+      }
+    }
     if (!Pattern.compile(".*" + expectedPattern + ".*", Pattern.DOTALL).matcher(output).matches()) {
       fail("Output: '" + output + "' should match " + expectedPattern);
     }
