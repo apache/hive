@@ -24,16 +24,15 @@ import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import java.io.DataOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.TreeMap;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.udf.UDFLike;
 
 /**
  * Operation process showing the tables.
@@ -59,7 +58,7 @@ public class ShowTablesOperation extends DDLOperation<ShowTablesDesc> {
   }
 
   private void showTables() throws HiveException {
-    String pattern = MetaStoreUtils.convertSqlPatternToRegExp(desc.getPattern());
+    String pattern = UDFLike.likePatternToRegExp(desc.getPattern(), false);
     List<String> tableNames = new ArrayList<>(
         context.getDb().getTablesByType(desc.getDbName(), pattern, desc.getTypeFilter()));
     Collections.sort(tableNames);
@@ -75,13 +74,12 @@ public class ShowTablesOperation extends DDLOperation<ShowTablesDesc> {
 
   private void showTablesExtended() throws HiveException {
     TreeMap<String, String> tableNameToType = new TreeMap<>();
-    String pattern = MetaStoreUtils.convertSqlPatternToRegExp(desc.getPattern());
+    String pattern = UDFLike.likePatternToRegExp(desc.getPattern(), false);
     TableType typeFilter = desc.getTypeFilter();
     TableType[] tableTypes = typeFilter == null ? TableType.values() : new TableType[]{typeFilter};
     for (TableType tableType : tableTypes) {
-      String typeString = tableType.toString();
       List<String> tables = context.getDb().getTablesByType(desc.getDbName(), pattern, tableType);
-      tables.forEach(name -> tableNameToType.put(name, typeString));
+      tables.forEach(name -> tableNameToType.put(name, tableType.toString()));
     }
     LOG.debug("Found {} table(s) matching the SHOW EXTENDED TABLES statement.", tableNameToType.size());
 

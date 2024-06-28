@@ -53,7 +53,7 @@ public class ShowMaterializedViewsOperation extends DDLOperation<ShowMaterialize
     List<Table> viewObjects = new ArrayList<>(
         context.getDb().getMaterializedViewObjectsByPattern(desc.getDbName(), null));
     if (desc.getPattern() != null) {
-      Pattern pattern = Pattern.compile(UDFLike.likePatternToRegExp(desc.getPattern()), Pattern.CASE_INSENSITIVE);
+      Pattern pattern = Pattern.compile(UDFLike.likePatternToRegExp(desc.getPattern(), true), Pattern.CASE_INSENSITIVE);
       viewObjects = viewObjects.stream()
           .filter(object -> pattern.matcher(object.getTableName()).matches())
           .collect(Collectors.toList());

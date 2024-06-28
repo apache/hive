@@ -24,13 +24,13 @@ import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.ddl.table.info.show.tables.ShowTablesFormatter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.udf.UDFLike;
 
 /**
  * Operation process showing the views.
@@ -46,7 +46,7 @@ public class ShowViewsOperation extends DDLOperation<ShowViewsDesc> {
       throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, desc.getDbName());
     }
 
-    String pattern = MetaStoreUtils.convertSqlPatternToRegExp(desc.getPattern());
+    String pattern = UDFLike.likePatternToRegExp(desc.getPattern(), false);
     List<String> viewNames = context.getDb().getTablesByType(desc.getDbName(), pattern, TableType.VIRTUAL_VIEW);
     Collections.sort(viewNames);
     LOG.debug("Found {} view(s) matching the SHOW VIEWS statement.", viewNames.size());

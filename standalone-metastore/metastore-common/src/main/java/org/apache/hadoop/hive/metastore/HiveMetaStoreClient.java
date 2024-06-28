@@ -2902,7 +2902,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     Database db = null;
     try {
       db = getDatabase(catName, dbName);
-    } catch (Exception e) { /* appears exception is not thrown currently if db doesnt exist */ }
+    } catch (NoSuchObjectException e) { /* appears exception is not thrown currently if db doesnt exist */ }
 
     if (MetaStoreUtils.isDatabaseRemote(db)) {
       // TODO: remote database does not support list table names by pattern yet.
@@ -2930,7 +2930,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       String[] patterns = tablePattern.split("\\|");
       for (String pattern : patterns) {
         pattern = "(?i)" + pattern.replaceAll("\\.\\*", "\\*").replaceAll("\\*", ".*");
-        String filter = hive_metastoreConstants.HIVE_FILTER_FIELD_TABLE_NAME + " like \"" + pattern + "\"";
+        String filter = String.format("%s like \"%s\"", hive_metastoreConstants.HIVE_FILTER_FIELD_TABLE_NAME, pattern);
         tables.addAll(listTableNamesByFilter(catName, dbName, filter, (short) -1));
       }
     }
