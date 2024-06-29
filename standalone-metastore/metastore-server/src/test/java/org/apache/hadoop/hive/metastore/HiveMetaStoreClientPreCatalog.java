@@ -616,15 +616,10 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     try {
       if (null != client) {
         client.shutdown();
-        if ((transport == null) || !transport.isOpen()) {
-          LOG.info("Closed a connection to metastore, current connections: " + connCount.decrementAndGet());
-        }
       }
     } catch (TException e) {
       LOG.debug("Unable to shutdown metastore client. Will try closing transport directly.", e);
     }
-    // Transport would have got closed via client.shutdown(), so we dont need this, but
-    // just in case, we make this call.
     if ((transport != null) && transport.isOpen()) {
       transport.close();
       LOG.info("Closed a connection to metastore, current connections: " + connCount.decrementAndGet());
