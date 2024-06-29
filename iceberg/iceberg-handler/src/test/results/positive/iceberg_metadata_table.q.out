@@ -1,0 +1,90 @@
+PREHOOK: query: create table ice_ts_4 (id int, ts timestamp ) stored by iceberg stored as parquet tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_ts_4
+POSTHOOK: query: create table ice_ts_4 (id int, ts timestamp ) stored by iceberg stored as parquet tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_ts_4
+PREHOOK: query: insert into ice_ts_4 values (1, cast('2023-07-20 00:00:00' as timestamp)), (2, cast('2023-07-20 00:00:00' as timestamp))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_ts_4
+POSTHOOK: query: insert into ice_ts_4 values (1, cast('2023-07-20 00:00:00' as timestamp)), (2, cast('2023-07-20 00:00:00' as timestamp))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_ts_4
+PREHOOK: query: select * from ice_ts_4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_ts_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_ts_4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_ts_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	2023-07-20 00:00:00
+2	2023-07-20 00:00:00
+PREHOOK: query: delete from ice_ts_4 where id = 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_ts_4
+PREHOOK: Output: default@ice_ts_4
+POSTHOOK: query: delete from ice_ts_4 where id = 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_ts_4
+POSTHOOK: Output: default@ice_ts_4
+PREHOOK: query: select * from ice_ts_4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_ts_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_ts_4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_ts_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	2023-07-20 00:00:00
+PREHOOK: query: select readable_metrics from default.ice_ts_4.FILES
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_ts_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select readable_metrics from default.ice_ts_4.FILES
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_ts_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"id":{"column_size":46,"value_count":2,"null_value_count":0,"nan_value_count":null,"lower_bound":1,"upper_bound":2},"ts":{"column_size":76,"value_count":2,"null_value_count":0,"nan_value_count":null,"lower_bound":"2023-07-20 00:00:00","upper_bound":"2023-07-20 00:00:00"}}
+{"id":{"column_size":null,"value_count":null,"null_value_count":null,"nan_value_count":null,"lower_bound":null,"upper_bound":null},"ts":{"column_size":null,"value_count":null,"null_value_count":null,"nan_value_count":null,"lower_bound":null,"upper_bound":null}}
+PREHOOK: query: select readable_metrics from default.ice_ts_4.ALL_FILES
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_ts_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select readable_metrics from default.ice_ts_4.ALL_FILES
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_ts_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"id":{"column_size":46,"value_count":2,"null_value_count":0,"nan_value_count":null,"lower_bound":1,"upper_bound":2},"ts":{"column_size":76,"value_count":2,"null_value_count":0,"nan_value_count":null,"lower_bound":"2023-07-20 00:00:00","upper_bound":"2023-07-20 00:00:00"}}
+{"id":{"column_size":null,"value_count":null,"null_value_count":null,"nan_value_count":null,"lower_bound":null,"upper_bound":null},"ts":{"column_size":null,"value_count":null,"null_value_count":null,"nan_value_count":null,"lower_bound":null,"upper_bound":null}}
+PREHOOK: query: select readable_metrics from default.ice_ts_4.DATA_FILES
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_ts_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select readable_metrics from default.ice_ts_4.DATA_FILES
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_ts_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"id":{"column_size":46,"value_count":2,"null_value_count":0,"nan_value_count":null,"lower_bound":1,"upper_bound":2},"ts":{"column_size":76,"value_count":2,"null_value_count":0,"nan_value_count":null,"lower_bound":"2023-07-20 00:00:00","upper_bound":"2023-07-20 00:00:00"}}
+PREHOOK: query: select readable_metrics from default.ice_ts_4.ALL_DATA_FILES
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_ts_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select readable_metrics from default.ice_ts_4.ALL_DATA_FILES
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_ts_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"id":{"column_size":46,"value_count":2,"null_value_count":0,"nan_value_count":null,"lower_bound":1,"upper_bound":2},"ts":{"column_size":76,"value_count":2,"null_value_count":0,"nan_value_count":null,"lower_bound":"2023-07-20 00:00:00","upper_bound":"2023-07-20 00:00:00"}}
+PREHOOK: query: select readable_metrics from default.ice_ts_4.DELETE_FILES
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_ts_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select readable_metrics from default.ice_ts_4.DELETE_FILES
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_ts_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"id":{"column_size":null,"value_count":null,"null_value_count":null,"nan_value_count":null,"lower_bound":null,"upper_bound":null},"ts":{"column_size":null,"value_count":null,"null_value_count":null,"nan_value_count":null,"lower_bound":null,"upper_bound":null}}
