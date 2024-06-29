@@ -445,6 +445,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return transport;
   }
 
+  @VisibleForTesting
+  public static AtomicInteger getConnCount() {
+    return connCount;
+  }
+
   @Override
   public boolean isLocalMetaStore() {
     return localMetaStore;
@@ -1007,17 +1012,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     try {
       if (null != client) {
         client.shutdown();
-        if ((transport == null) || !transport.isOpen()) {
-          final int newCount = connCount.decrementAndGet();
-          LOG.info("Closed a connection to metastore, current connections: {}",
-                  newCount);
-        }
       }
     } catch (TException e) {
       LOG.debug("Unable to shutdown metastore client. Will try closing transport directly.", e);
     }
-    // Transport would have got closed via client.shutdown(), so we dont need this, but
-    // just in case, we make this call.
     if ((transport != null) && transport.isOpen()) {
       transport.close();
       final int newCount = connCount.decrementAndGet();
