@@ -167,10 +167,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"added-data-files":"1","deleted-data-files":"1","added-records":"3","deleted-records":"9","added-files-size":"#FileSize#","removed-files-size":"#FileSize#","changed-partition-count":"1","total-records":"3","total-files-size":"#FileSize#","total-data-files":"1","total-delete-files":"1","total-position-deletes":"2","total-equality-deletes":"0"}
 PREHOOK: query: delete from ice01 where null
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@ice01
 PREHOOK: Output: default@ice01
 POSTHOOK: query: delete from ice01 where null
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@ice01
 POSTHOOK: Output: default@ice01
 PREHOOK: query: select * from ice01

@@ -6,6 +6,8 @@
 --! qt:replace:/("removed-files-size":")\d+/$1#FileSize#/
 
 -- create an unpartitioned table with skip delete data set to false
+set hive.cbo.fallback.strategy=NEVER;
+
  create table ice01 (id int, name string) Stored by Iceberg stored as ORC
  TBLPROPERTIES('format-version'='2');
 
