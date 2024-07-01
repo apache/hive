@@ -31,6 +31,43 @@ LOAD DATA LOCAL INPATH "../../data/files/nested_orders.txt" INTO TABLE nested_or
 
 -- 1.1 when field is primitive
 
+set hive.map.aggr = true;
+
+SELECT c.id, sort_array(collect_set(named_struct("name", c.name, "date", o.d, "amount", o.amount)))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id;
+
+SELECT c.id, sort_array(collect_list(named_struct("name", c.name, "date", o.d, "amount", o.amount)))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id;
+
+-- cast decimal
+
+SELECT c.id, sort_array(collect_set(named_struct("name", c.name, "date", o.d, "amount", cast(o.amount as decimal(10,1)))))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id;
+
+SELECT c.id, sort_array(collect_list(named_struct("name", c.name, "date", o.d, "amount", cast(o.amount as decimal(10,1)))))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id;
+
+
+SELECT c.id, sort_array(collect_set(struct(c.name, o.d, o.amount)))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id;
+
+SELECT c.id, sort_array(collect_list(struct(c.name, o.d, o.amount)))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id;
+
+set hive.map.aggr = false;
+
 SELECT c.id, sort_array(collect_set(named_struct("name", c.name, "date", o.d, "amount", o.amount)))
 FROM customers c
 INNER JOIN orders o
@@ -67,6 +104,8 @@ ON (c.id = o.cid) GROUP BY c.id;
 
 -- 1.2 when field is map
 
+set hive.map.aggr = true;
+
 SELECT c.id, sort_array(collect_set(named_struct("name", c.name, "date", o.d, "sub", o.sub)))
 FROM customers c
 INNER JOIN nested_orders o
@@ -87,8 +126,53 @@ FROM customers c
 INNER JOIN nested_orders o
 ON (c.id = o.cid) GROUP BY c.id;
 
+set hive.map.aggr = false;
+
+SELECT c.id, sort_array(collect_set(named_struct("name", c.name, "date", o.d, "sub", o.sub)))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id;
+
+SELECT c.id, sort_array(collect_list(named_struct("name", c.name, "date", o.d, "sub", o.sub)))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id;
+
+SELECT c.id, sort_array(collect_set(struct(c.name, o.d, o.sub)))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id;
+
+SELECT c.id, sort_array(collect_list(struct(c.name, o.d, o.sub)))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id;
 
 -- 1.3 when field is list
+
+set hive.map.aggr = true;
+
+SELECT c.id, sort_array(collect_set(named_struct("name", c.name, "date", o.d, "sub", map_values(o.sub))))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id;
+
+SELECT c.id, sort_array(collect_list(named_struct("name", c.name, "date", o.d, "sub", map_values(o.sub))))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id;
+
+SELECT c.id, sort_array(collect_set(struct(c.name, o.d, map_values(o.sub))))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id;
+
+SELECT c.id, sort_array(collect_list(struct(c.name, o.d, map_values(o.sub))))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id;
+
+set hive.map.aggr = false;
 
 SELECT c.id, sort_array(collect_set(named_struct("name", c.name, "date", o.d, "sub", map_values(o.sub))))
 FROM customers c
@@ -115,6 +199,32 @@ ON (c.id = o.cid) GROUP BY c.id;
 
 -- 2.1 when field is primitive
 
+set hive.map.aggr = true;
+
+SELECT c.id, sort_array(collect_set(array(o.amount)))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id;
+
+SELECT c.id, sort_array(collect_list(array(o.amount)))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id;
+
+-- cast decimal
+
+SELECT c.id, sort_array(collect_set(array(cast(o.amount as decimal(10,1)))))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id;
+
+SELECT c.id, sort_array(collect_list(array(cast(o.amount as decimal(10,1)))))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id;
+
+set hive.map.aggr = false;
+
 SELECT c.id, sort_array(collect_set(array(o.amount)))
 FROM customers c
 INNER JOIN orders o
@@ -139,6 +249,20 @@ ON (c.id = o.cid) GROUP BY c.id;
 
 -- 2.2 when field is struct
 
+set hive.map.aggr = true;
+
+SELECT c.id, sort_array(collect_set(array(o.sub)))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id;
+
+SELECT c.id, sort_array(collect_list(array(o.sub)))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id;
+
+set hive.map.aggr = false;
+
 SELECT c.id, sort_array(collect_set(array(o.sub)))
 FROM customers c
 INNER JOIN nested_orders o
@@ -150,6 +274,20 @@ INNER JOIN nested_orders o
 ON (c.id = o.cid) GROUP BY c.id;
 
 -- 2.3 when field is list
+
+set hive.map.aggr = true;
+
+SELECT c.id, sort_array(collect_set(array(map_values(o.sub))))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id;
+
+SELECT c.id, sort_array(collect_list(array(map_values(o.sub))))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id;
+
+set hive.map.aggr = false;
 
 SELECT c.id, sort_array(collect_set(array(map_values(o.sub))))
 FROM customers c
@@ -165,6 +303,32 @@ ON (c.id = o.cid) GROUP BY c.id;
 -- 3. test map
 
 -- 3.1 when field is primitive
+
+set hive.map.aggr = true;
+
+SELECT c.id, sort_array(collect_set(map("amount", o.amount)))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id;
+
+SELECT c.id, sort_array(collect_list(map("amount", o.amount)))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id;
+
+-- cast decimal
+
+SELECT c.id, sort_array(collect_set(map("amount", cast(o.amount as decimal(10,1)))))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id;
+
+SELECT c.id, sort_array(collect_list(map("amount", cast(o.amount as decimal(10,1)))))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id;
+
+set hive.map.aggr = false;
 
 SELECT c.id, sort_array(collect_set(map("amount", o.amount)))
 FROM customers c
@@ -190,6 +354,20 @@ ON (c.id = o.cid) GROUP BY c.id;
 
 -- 3.2 when field is struct
 
+set hive.map.aggr = true;
+
+SELECT c.id, sort_array(collect_set(map("sub", o.sub)))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id;
+
+SELECT c.id, sort_array(collect_list(map("sub", o.sub)))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id;
+
+set hive.map.aggr = false;
+
 SELECT c.id, sort_array(collect_set(map("sub", o.sub)))
 FROM customers c
 INNER JOIN nested_orders o
@@ -202,6 +380,8 @@ ON (c.id = o.cid) GROUP BY c.id;
 
 -- 3.3 when field is list
 
+set hive.map.aggr = true;
+
 SELECT c.id, sort_array(collect_set(map("sub", map_values(o.sub))))
 FROM customers c
 INNER JOIN nested_orders o
@@ -212,6 +392,17 @@ FROM customers c
 INNER JOIN nested_orders o
 ON (c.id = o.cid) GROUP BY c.id;
 
+set hive.map.aggr = false;
+
+SELECT c.id, sort_array(collect_set(map("sub", map_values(o.sub))))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id;
+
+SELECT c.id, sort_array(collect_list(map("sub", map_values(o.sub))))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id;
 
 -- clean up
 
