@@ -1,6 +1,5 @@
 --! qt:dataset:src
 set hive.stats.dbclass=fs;
-set hive.cbo.fallback.strategy=NEVER;
 -- SORT_QUERY_RESULTS
 
 create table src_10_n0 as select * from src limit 10;

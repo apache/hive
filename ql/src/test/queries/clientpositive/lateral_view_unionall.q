@@ -1,4 +1,3 @@
-set hive.cbo.fallback.strategy=NEVER;
 create table tez_test_t1(md_exper string);
 insert into tez_test_t1 values('tez_test_t1-md_expr');
 

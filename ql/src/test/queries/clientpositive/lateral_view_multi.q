@@ -1,4 +1,3 @@
-set hive.cbo.fallback.strategy=NEVER;
 CREATE TABLE customer(orders array<string>);
 INSERT INTO customer VALUES (ARRAY('0', '1'));
 
