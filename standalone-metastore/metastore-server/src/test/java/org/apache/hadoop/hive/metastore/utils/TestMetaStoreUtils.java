@@ -67,6 +67,8 @@ public class TestMetaStoreUtils {
         params.add(new Object[] { zone, datetime });
       }
     });
+    params.add(new Object[] {"Europe/Paris", LocalDateTime.ofEpochSecond(14113274923L, 0, ZoneOffset.UTC)}); //daylight savings, 2417-03-26T02:08:43
+    params.add(new Object[] {"Asia/Kolkata", LocalDateTime.ofEpochSecond(-62166618924L, 0, ZoneOffset.UTC)}); // invalid year, 0000-01-07T22:44:36
     return params;
   }
 
