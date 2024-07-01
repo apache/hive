@@ -343,6 +343,8 @@ public class TestDbNotificationListener
     String dbLocationUri = testTempDir;
     String dbDescription = "no description";
     Database db = new Database(dbName, dbDescription, dbLocationUri, emptyParameters);
+    db.setOwnerName("test_user");
+    db.setCreateTime(startTime);
     msClient.createDatabase(db);
 
     // Read notification from metastore

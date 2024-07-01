@@ -16,7 +16,7 @@ use Thrift\Protocol\TProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
-class ThriftHiveMetastore_get_table_result
+class ThriftHiveMetastore_drop_partition_by_name_req_result
 {
     static public $isValidate = false;
 
@@ -24,33 +24,32 @@ class ThriftHiveMetastore_get_table_result
         0 => array(
             'var' => 'success',
             'isRequired' => false,
-            'type' => TType::STRUCT,
-            'class' => '\metastore\Table',
+            'type' => TType::BOOL,
         ),
         1 => array(
             'var' => 'o1',
             'isRequired' => false,
             'type' => TType::STRUCT,
-            'class' => '\metastore\MetaException',
+            'class' => '\metastore\NoSuchObjectException',
         ),
         2 => array(
             'var' => 'o2',
             'isRequired' => false,
             'type' => TType::STRUCT,
-            'class' => '\metastore\NoSuchObjectException',
+            'class' => '\metastore\MetaException',
         ),
     );
 
     /**
-     * @var \metastore\Table
+     * @var bool
      */
     public $success = null;
     /**
-     * @var \metastore\MetaException
+     * @var \metastore\NoSuchObjectException
      */
     public $o1 = null;
     /**
-     * @var \metastore\NoSuchObjectException
+     * @var \metastore\MetaException
      */
     public $o2 = null;
 
@@ -71,7 +70,7 @@ class ThriftHiveMetastore_get_table_result
 
     public function getName()
     {
-        return 'ThriftHiveMetastore_get_table_result';
+        return 'ThriftHiveMetastore_drop_partition_by_name_req_result';
     }
 
 
@@ -89,16 +88,15 @@ class ThriftHiveMetastore_get_table_result
             }
             switch ($fid) {
                 case 0:
-                    if ($ftype == TType::STRUCT) {
-                        $this->success = new \metastore\Table();
-                        $xfer += $this->success->read($input);
+                    if ($ftype == TType::BOOL) {
+                        $xfer += $input->readBool($this->success);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
                     break;
                 case 1:
                     if ($ftype == TType::STRUCT) {
-                        $this->o1 = new \metastore\MetaException();
+                        $this->o1 = new \metastore\NoSuchObjectException();
                         $xfer += $this->o1->read($input);
                     } else {
                         $xfer += $input->skip($ftype);
@@ -106,7 +104,7 @@ class ThriftHiveMetastore_get_table_result
                     break;
                 case 2:
                     if ($ftype == TType::STRUCT) {
-                        $this->o2 = new \metastore\NoSuchObjectException();
+                        $this->o2 = new \metastore\MetaException();
                         $xfer += $this->o2->read($input);
                     } else {
                         $xfer += $input->skip($ftype);
@@ -125,13 +123,10 @@ class ThriftHiveMetastore_get_table_result
     public function write($output)
     {
         $xfer = 0;
-        $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_table_result');
+        $xfer += $output->writeStructBegin('ThriftHiveMetastore_drop_partition_by_name_req_result');
         if ($this->success !== null) {
-            if (!is_object($this->success)) {
-                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
-            }
-            $xfer += $output->writeFieldBegin('success', TType::STRUCT, 0);
-            $xfer += $this->success->write($output);
+            $xfer += $output->writeFieldBegin('success', TType::BOOL, 0);
+            $xfer += $output->writeBool($this->success);
             $xfer += $output->writeFieldEnd();
         }
         if ($this->o1 !== null) {

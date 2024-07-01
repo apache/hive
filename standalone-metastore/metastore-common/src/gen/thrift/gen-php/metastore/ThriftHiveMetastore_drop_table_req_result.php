@@ -16,48 +16,49 @@ use Thrift\Protocol\TProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
-class ThriftHiveMetastore_alter_dataconnector_args
+class ThriftHiveMetastore_drop_table_req_result
 {
     static public $isValidate = false;
 
     static public $_TSPEC = array(
         1 => array(
-            'var' => 'name',
-            'isRequired' => false,
-            'type' => TType::STRING,
-        ),
-        2 => array(
-            'var' => 'connector',
+            'var' => 'o1',
             'isRequired' => false,
             'type' => TType::STRUCT,
-            'class' => '\metastore\DataConnector',
+            'class' => '\metastore\NoSuchObjectException',
+        ),
+        2 => array(
+            'var' => 'o3',
+            'isRequired' => false,
+            'type' => TType::STRUCT,
+            'class' => '\metastore\MetaException',
         ),
     );
 
     /**
-     * @var string
+     * @var \metastore\NoSuchObjectException
      */
-    public $name = null;
+    public $o1 = null;
     /**
-     * @var \metastore\DataConnector
+     * @var \metastore\MetaException
      */
-    public $connector = null;
+    public $o3 = null;
 
     public function __construct($vals = null)
     {
         if (is_array($vals)) {
-            if (isset($vals['name'])) {
-                $this->name = $vals['name'];
+            if (isset($vals['o1'])) {
+                $this->o1 = $vals['o1'];
             }
-            if (isset($vals['connector'])) {
-                $this->connector = $vals['connector'];
+            if (isset($vals['o3'])) {
+                $this->o3 = $vals['o3'];
             }
         }
     }
 
     public function getName()
     {
-        return 'ThriftHiveMetastore_alter_dataconnector_args';
+        return 'ThriftHiveMetastore_drop_table_req_result';
     }
 
 
@@ -75,16 +76,17 @@ class ThriftHiveMetastore_alter_dataconnector_args
             }
             switch ($fid) {
                 case 1:
-                    if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->name);
+                    if ($ftype == TType::STRUCT) {
+                        $this->o1 = new \metastore\NoSuchObjectException();
+                        $xfer += $this->o1->read($input);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
                     break;
                 case 2:
                     if ($ftype == TType::STRUCT) {
-                        $this->connector = new \metastore\DataConnector();
-                        $xfer += $this->connector->read($input);
+                        $this->o3 = new \metastore\MetaException();
+                        $xfer += $this->o3->read($input);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -102,18 +104,15 @@ class ThriftHiveMetastore_alter_dataconnector_args
     public function write($output)
     {
         $xfer = 0;
-        $xfer += $output->writeStructBegin('ThriftHiveMetastore_alter_dataconnector_args');
-        if ($this->name !== null) {
-            $xfer += $output->writeFieldBegin('name', TType::STRING, 1);
-            $xfer += $output->writeString($this->name);
+        $xfer += $output->writeStructBegin('ThriftHiveMetastore_drop_table_req_result');
+        if ($this->o1 !== null) {
+            $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
+            $xfer += $this->o1->write($output);
             $xfer += $output->writeFieldEnd();
         }
-        if ($this->connector !== null) {
-            if (!is_object($this->connector)) {
-                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
-            }
-            $xfer += $output->writeFieldBegin('connector', TType::STRUCT, 2);
-            $xfer += $this->connector->write($output);
+        if ($this->o3 !== null) {
+            $xfer += $output->writeFieldBegin('o3', TType::STRUCT, 2);
+            $xfer += $this->o3->write($output);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

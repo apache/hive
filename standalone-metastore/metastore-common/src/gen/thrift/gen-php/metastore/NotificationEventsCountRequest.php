@@ -163,13 +163,13 @@ class NotificationEventsCountRequest
                 case 6:
                     if ($ftype == TType::LST) {
                         $this->tableNames = array();
-                        $_size876 = 0;
-                        $_etype879 = 0;
-                        $xfer += $input->readListBegin($_etype879, $_size876);
-                        for ($_i880 = 0; $_i880 < $_size876; ++$_i880) {
-                            $elem881 = null;
-                            $xfer += $input->readString($elem881);
-                            $this->tableNames []= $elem881;
+                        $_size883 = 0;
+                        $_etype886 = 0;
+                        $xfer += $input->readListBegin($_etype886, $_size883);
+                        for ($_i887 = 0; $_i887 < $_size883; ++$_i887) {
+                            $elem888 = null;
+                            $xfer += $input->readString($elem888);
+                            $this->tableNames []= $elem888;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -221,8 +221,8 @@ class NotificationEventsCountRequest
             }
             $xfer += $output->writeFieldBegin('tableNames', TType::LST, 6);
             $output->writeListBegin(TType::STRING, count($this->tableNames));
-            foreach ($this->tableNames as $iter882) {
-                $xfer += $output->writeString($iter882);
+            foreach ($this->tableNames as $iter889) {
+                $xfer += $output->writeString($iter889);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

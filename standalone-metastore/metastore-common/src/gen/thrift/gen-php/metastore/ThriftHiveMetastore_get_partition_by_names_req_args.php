@@ -16,36 +16,36 @@ use Thrift\Protocol\TProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
-class ThriftHiveMetastore_create_dataconnector_args
+class ThriftHiveMetastore_get_partition_by_names_req_args
 {
     static public $isValidate = false;
 
     static public $_TSPEC = array(
         1 => array(
-            'var' => 'connector',
+            'var' => 'partitionReq',
             'isRequired' => false,
             'type' => TType::STRUCT,
-            'class' => '\metastore\DataConnector',
+            'class' => '\metastore\PartitionsRequest',
         ),
     );
 
     /**
-     * @var \metastore\DataConnector
+     * @var \metastore\PartitionsRequest
      */
-    public $connector = null;
+    public $partitionReq = null;
 
     public function __construct($vals = null)
     {
         if (is_array($vals)) {
-            if (isset($vals['connector'])) {
-                $this->connector = $vals['connector'];
+            if (isset($vals['partitionReq'])) {
+                $this->partitionReq = $vals['partitionReq'];
             }
         }
     }
 
     public function getName()
     {
-        return 'ThriftHiveMetastore_create_dataconnector_args';
+        return 'ThriftHiveMetastore_get_partition_by_names_req_args';
     }
 
 
@@ -64,8 +64,8 @@ class ThriftHiveMetastore_create_dataconnector_args
             switch ($fid) {
                 case 1:
                     if ($ftype == TType::STRUCT) {
-                        $this->connector = new \metastore\DataConnector();
-                        $xfer += $this->connector->read($input);
+                        $this->partitionReq = new \metastore\PartitionsRequest();
+                        $xfer += $this->partitionReq->read($input);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -83,13 +83,13 @@ class ThriftHiveMetastore_create_dataconnector_args
     public function write($output)
     {
         $xfer = 0;
-        $xfer += $output->writeStructBegin('ThriftHiveMetastore_create_dataconnector_args');
-        if ($this->connector !== null) {
-            if (!is_object($this->connector)) {
+        $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_partition_by_names_req_args');
+        if ($this->partitionReq !== null) {
+            if (!is_object($this->partitionReq)) {
                 throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
             }
-            $xfer += $output->writeFieldBegin('connector', TType::STRUCT, 1);
-            $xfer += $this->connector->write($output);
+            $xfer += $output->writeFieldBegin('partitionReq', TType::STRUCT, 1);
+            $xfer += $this->partitionReq->write($output);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

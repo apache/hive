@@ -333,16 +333,16 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // ABORTEDCOMPACTS
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map934 = iprot.readMapBegin();
-                struct.abortedcompacts = new java.util.HashMap<java.lang.Long,AbortCompactionResponseElement>(2*_map934.size);
-                long _key935;
-                @org.apache.thrift.annotation.Nullable AbortCompactionResponseElement _val936;
-                for (int _i937 = 0; _i937 < _map934.size; ++_i937)
+                org.apache.thrift.protocol.TMap _map942 = iprot.readMapBegin();
+                struct.abortedcompacts = new java.util.HashMap<java.lang.Long,AbortCompactionResponseElement>(2*_map942.size);
+                long _key943;
+                @org.apache.thrift.annotation.Nullable AbortCompactionResponseElement _val944;
+                for (int _i945 = 0; _i945 < _map942.size; ++_i945)
                 {
-                  _key935 = iprot.readI64();
-                  _val936 = new AbortCompactionResponseElement();
-                  _val936.read(iprot);
-                  struct.abortedcompacts.put(_key935, _val936);
+                  _key943 = iprot.readI64();
+                  _val944 = new AbortCompactionResponseElement();
+                  _val944.read(iprot);
+                  struct.abortedcompacts.put(_key943, _val944);
                 }
                 iprot.readMapEnd();
               }
@@ -368,10 +368,10 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(ABORTEDCOMPACTS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRUCT, struct.abortedcompacts.size()));
-          for (java.util.Map.Entry<java.lang.Long, AbortCompactionResponseElement> _iter938 : struct.abortedcompacts.entrySet())
+          for (java.util.Map.Entry<java.lang.Long, AbortCompactionResponseElement> _iter946 : struct.abortedcompacts.entrySet())
           {
-            oprot.writeI64(_iter938.getKey());
-            _iter938.getValue().write(oprot);
+            oprot.writeI64(_iter946.getKey());
+            _iter946.getValue().write(oprot);
           }
           oprot.writeMapEnd();
         }
@@ -396,10 +396,10 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.abortedcompacts.size());
-        for (java.util.Map.Entry<java.lang.Long, AbortCompactionResponseElement> _iter939 : struct.abortedcompacts.entrySet())
+        for (java.util.Map.Entry<java.lang.Long, AbortCompactionResponseElement> _iter947 : struct.abortedcompacts.entrySet())
         {
-          oprot.writeI64(_iter939.getKey());
-          _iter939.getValue().write(oprot);
+          oprot.writeI64(_iter947.getKey());
+          _iter947.getValue().write(oprot);
         }
       }
     }
@@ -408,16 +408,16 @@ package org.apache.hadoop.hive.metastore.api;
     public void read(org.apache.thrift.protocol.TProtocol prot, AbortCompactResponse struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TMap _map940 = iprot.readMapBegin(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRUCT); 
-        struct.abortedcompacts = new java.util.HashMap<java.lang.Long,AbortCompactionResponseElement>(2*_map940.size);
-        long _key941;
-        @org.apache.thrift.annotation.Nullable AbortCompactionResponseElement _val942;
-        for (int _i943 = 0; _i943 < _map940.size; ++_i943)
+        org.apache.thrift.protocol.TMap _map948 = iprot.readMapBegin(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRUCT); 
+        struct.abortedcompacts = new java.util.HashMap<java.lang.Long,AbortCompactionResponseElement>(2*_map948.size);
+        long _key949;
+        @org.apache.thrift.annotation.Nullable AbortCompactionResponseElement _val950;
+        for (int _i951 = 0; _i951 < _map948.size; ++_i951)
         {
-          _key941 = iprot.readI64();
-          _val942 = new AbortCompactionResponseElement();
-          _val942.read(iprot);
-          struct.abortedcompacts.put(_key941, _val942);
+          _key949 = iprot.readI64();
+          _val950 = new AbortCompactionResponseElement();
+          _val950.read(iprot);
+          struct.abortedcompacts.put(_key949, _val950);
         }
       }
       struct.setAbortedcompactsIsSet(true);

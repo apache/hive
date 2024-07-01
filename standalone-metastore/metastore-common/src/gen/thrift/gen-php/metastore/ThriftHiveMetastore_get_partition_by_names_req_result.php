@@ -16,25 +16,28 @@ use Thrift\Protocol\TProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
-class ThriftHiveMetastore_create_dataconnector_result
+class ThriftHiveMetastore_get_partition_by_names_req_result
 {
     static public $isValidate = false;
 
     static public $_TSPEC = array(
+        0 => array(
+            'var' => 'success',
+            'isRequired' => false,
+            'type' => TType::LST,
+            'etype' => TType::STRING,
+            'elem' => array(
+                'type' => TType::STRING,
+                ),
+        ),
         1 => array(
             'var' => 'o1',
             'isRequired' => false,
             'type' => TType::STRUCT,
-            'class' => '\metastore\AlreadyExistsException',
+            'class' => '\metastore\NoSuchObjectException',
         ),
         2 => array(
             'var' => 'o2',
-            'isRequired' => false,
-            'type' => TType::STRUCT,
-            'class' => '\metastore\InvalidObjectException',
-        ),
-        3 => array(
-            'var' => 'o3',
             'isRequired' => false,
             'type' => TType::STRUCT,
             'class' => '\metastore\MetaException',
@@ -42,36 +45,36 @@ class ThriftHiveMetastore_create_dataconnector_result
     );
 
     /**
-     * @var \metastore\AlreadyExistsException
+     * @var string[]
+     */
+    public $success = null;
+    /**
+     * @var \metastore\NoSuchObjectException
      */
     public $o1 = null;
     /**
-     * @var \metastore\InvalidObjectException
-     */
-    public $o2 = null;
-    /**
      * @var \metastore\MetaException
      */
-    public $o3 = null;
+    public $o2 = null;
 
     public function __construct($vals = null)
     {
         if (is_array($vals)) {
+            if (isset($vals['success'])) {
+                $this->success = $vals['success'];
+            }
             if (isset($vals['o1'])) {
                 $this->o1 = $vals['o1'];
             }
             if (isset($vals['o2'])) {
                 $this->o2 = $vals['o2'];
             }
-            if (isset($vals['o3'])) {
-                $this->o3 = $vals['o3'];
-            }
         }
     }
 
     public function getName()
     {
-        return 'ThriftHiveMetastore_create_dataconnector_result';
+        return 'ThriftHiveMetastore_get_partition_by_names_req_result';
     }
 
 
@@ -88,9 +91,25 @@ class ThriftHiveMetastore_create_dataconnector_result
                 break;
             }
             switch ($fid) {
+                case 0:
+                    if ($ftype == TType::LST) {
+                        $this->success = array();
+                        $_size1660 = 0;
+                        $_etype1663 = 0;
+                        $xfer += $input->readListBegin($_etype1663, $_size1660);
+                        for ($_i1664 = 0; $_i1664 < $_size1660; ++$_i1664) {
+                            $elem1665 = null;
+                            $xfer += $input->readString($elem1665);
+                            $this->success []= $elem1665;
+                        }
+                        $xfer += $input->readListEnd();
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 case 1:
                     if ($ftype == TType::STRUCT) {
-                        $this->o1 = new \metastore\AlreadyExistsException();
+                        $this->o1 = new \metastore\NoSuchObjectException();
                         $xfer += $this->o1->read($input);
                     } else {
                         $xfer += $input->skip($ftype);
@@ -98,16 +117,8 @@ class ThriftHiveMetastore_create_dataconnector_result
                     break;
                 case 2:
                     if ($ftype == TType::STRUCT) {
-                        $this->o2 = new \metastore\InvalidObjectException();
+                        $this->o2 = new \metastore\MetaException();
                         $xfer += $this->o2->read($input);
-                    } else {
-                        $xfer += $input->skip($ftype);
-                    }
-                    break;
-                case 3:
-                    if ($ftype == TType::STRUCT) {
-                        $this->o3 = new \metastore\MetaException();
-                        $xfer += $this->o3->read($input);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -125,7 +136,19 @@ class ThriftHiveMetastore_create_dataconnector_result
     public function write($output)
     {
         $xfer = 0;
-        $xfer += $output->writeStructBegin('ThriftHiveMetastore_create_dataconnector_result');
+        $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_partition_by_names_req_result');
+        if ($this->success !== null) {
+            if (!is_array($this->success)) {
+                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+            }
+            $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+            $output->writeListBegin(TType::STRING, count($this->success));
+            foreach ($this->success as $iter1666) {
+                $xfer += $output->writeString($iter1666);
+            }
+            $output->writeListEnd();
+            $xfer += $output->writeFieldEnd();
+        }
         if ($this->o1 !== null) {
             $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
             $xfer += $this->o1->write($output);
@@ -134,11 +157,6 @@ class ThriftHiveMetastore_create_dataconnector_result
         if ($this->o2 !== null) {
             $xfer += $output->writeFieldBegin('o2', TType::STRUCT, 2);
             $xfer += $this->o2->write($output);
-            $xfer += $output->writeFieldEnd();
-        }
-        if ($this->o3 !== null) {
-            $xfer += $output->writeFieldBegin('o3', TType::STRUCT, 3);
-            $xfer += $this->o3->write($output);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();
