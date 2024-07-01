@@ -112,7 +112,7 @@ public class TestHiveIcebergVectorization extends HiveIcebergStorageHandlerWithE
         inputFormat.getRecordReader(new FileSplit(dataFilePath, 0L, Long.MAX_VALUE, new String[]{}), jobConf,
             new MockReporter());
     HiveBatchIterator hiveBatchIterator = new HiveBatchIterator(
-        internalVectorizedRecordReader, jobConf, null, null, null);
+        internalVectorizedRecordReader, jobConf, null, null, null, table.spec());
 
     // Expected to be one batch exactly
     HiveBatchContext hiveBatchContext = hiveBatchIterator.next();

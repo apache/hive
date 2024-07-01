@@ -24,6 +24,8 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.DataFile;
+import org.apache.iceberg.DeleteFile;
+import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.avro.Avro;
 import org.apache.iceberg.data.avro.DataReader;
@@ -34,6 +36,7 @@ import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.CloseableIterator;
 import org.apache.iceberg.io.InputFile;
 import org.apache.iceberg.mapping.NameMappingParser;
+import org.apache.iceberg.mr.hive.IcebergAcidUtil;
 import org.apache.iceberg.orc.ORC;
 import org.apache.iceberg.parquet.Parquet;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
@@ -52,7 +55,14 @@ public final class IcebergMergeRecordReader<T> extends AbstractIcebergRecordRead
   }
 
   private CloseableIterator<T> nextTask() {
-    return openGeneric(mergeSplit.getContentFile(), getTable().schema()).iterator();
+    CloseableIterator<T> closeableIterator = openGeneric(mergeSplit.getContentFile(), getTable().schema()).iterator();
+    if (mergeSplit.getContentFile() instanceof DeleteFile) {
+      return new IcebergAcidUtil.MergeVirtualColumnAwareIterator<>(closeableIterator,
+              IcebergAcidUtil.createSerdeSchemaForDelete(getTable().schema().columns()), getConf(),
+              mergeSplit.getContentFile(), getTable());
+    } else {
+      return closeableIterator;
+    }
   }
 
   @Override
@@ -87,6 +97,12 @@ public final class IcebergMergeRecordReader<T> extends AbstractIcebergRecordRead
               getTable().io().newInputFile(dataFile.path().toString()),
               dataFile.keyMetadata()));
       schema = readSchema;
+    } else if (contentFile instanceof DeleteFile) {
+      DeleteFile deleteFile = (DeleteFile) contentFile;
+      inputFile = getTable().encryption().decrypt(EncryptedFiles.encryptedInput(
+              getTable().io().newInputFile(deleteFile.path().toString()),
+              deleteFile.keyMetadata()));
+      schema = new Schema(MetadataColumns.DELETE_FILE_PATH, MetadataColumns.DELETE_FILE_POS);
     }
     CloseableIterable<T> iterable;
     switch (contentFile.format()) {

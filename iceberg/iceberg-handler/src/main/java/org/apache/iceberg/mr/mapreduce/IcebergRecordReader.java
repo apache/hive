@@ -107,7 +107,8 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
     if (!isFetchVirtualColumns() || Utilities.getIsVectorized(getConf())) {
       return closeableIterator;
     }
-    return new IcebergAcidUtil.VirtualColumnAwareIterator<T>(closeableIterator, getExpectedSchema(), getConf());
+    return new IcebergAcidUtil.VirtualColumnAwareIterator<T>(closeableIterator, getExpectedSchema(),
+            getConf(), getTable());
   }
 
   @Override

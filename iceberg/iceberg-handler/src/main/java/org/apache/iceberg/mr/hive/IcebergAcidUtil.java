@@ -28,16 +28,22 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.io.PositionDeleteInfo;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.MetadataColumns;
+import org.apache.iceberg.PartitionKey;
+import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.data.GenericRecord;
+import org.apache.iceberg.data.InternalRecordWrapper;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.deletes.PositionDelete;
 import org.apache.iceberg.io.CloseableIterator;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Types;
+import org.apache.iceberg.util.SerializationUtil;
 import org.apache.iceberg.util.StructProjection;
 
 public class IcebergAcidUtil {
@@ -64,6 +70,9 @@ public class IcebergAcidUtil {
 
   private static final Types.NestedField PARTITION_HASH_META_COL = Types.NestedField.required(
       MetadataColumns.PARTITION_COLUMN_ID, MetadataColumns.PARTITION_COLUMN_NAME, Types.LongType.get());
+
+  public static final Types.NestedField PARTITION_PROJECTION = Types.NestedField.required(
+      Integer.MAX_VALUE - 6, "partition_projection", Types.StringType.get());
   private static final Map<Types.NestedField, Integer> SERDE_META_COLS = Maps.newLinkedHashMap();
 
   static {
@@ -71,6 +80,7 @@ public class IcebergAcidUtil {
     SERDE_META_COLS.put(PARTITION_HASH_META_COL, 1);
     SERDE_META_COLS.put(MetadataColumns.FILE_PATH, 2);
     SERDE_META_COLS.put(MetadataColumns.ROW_POSITION, 3);
+    SERDE_META_COLS.put(PARTITION_PROJECTION, 4);
   }
 
   /**
@@ -196,6 +206,30 @@ public class IcebergAcidUtil {
     return computeHash(part);
   }
 
+  public static PartitionKey parsePartitionKey(Record rec) {
+    String serializedStr = rec.get(SERDE_META_COLS.get(PARTITION_PROJECTION), String.class);
+    return SerializationUtil.deserializeFromBase64(serializedStr);
+  }
+
+  public static String getSerializedPartitionKey(Record rec, PartitionSpec partitionSpec) {
+    GenericRecord current = GenericRecord.create(partitionSpec.schema());
+    for (int index = 0; index < rec.size(); index++) {
+      current.set(index, rec.get(index));
+    }
+    StructLike structLike = new InternalRecordWrapper(partitionSpec.schema().asStruct()).wrap(current);
+    PartitionKey partitionKey = new PartitionKey(partitionSpec, partitionSpec.schema());
+    partitionKey.partition(structLike);
+    return SerializationUtil.serializeToBase64(partitionKey);
+  }
+
+  public static String getSerializedPartitionKey(StructLike structLike, PartitionSpec partitionSpec) {
+    PartitionKey partitionKey = new PartitionKey(partitionSpec, partitionSpec.schema());
+    for (int idx = 0; idx < structLike.size(); idx++) {
+      partitionKey.set(idx, structLike.get(idx, Object.class));
+    }
+    return SerializationUtil.serializeToBase64(partitionKey);
+  }
+
   public static String parseFilePath(Record rec) {
     return rec.get(FILE_READ_META_COLS.get(MetadataColumns.FILE_PATH), String.class);
   }
@@ -204,7 +238,7 @@ public class IcebergAcidUtil {
     return rec.get(FILE_READ_META_COLS.get(MetadataColumns.ROW_POSITION), Long.class);
   }
 
-  public static long computeHash(StructProjection struct) {
+  public static long computeHash(StructLike struct) {
     long partHash = -1;
     if (struct != null) {
       Object[] partFields = new Object[struct.size()];
@@ -229,13 +263,16 @@ public class IcebergAcidUtil {
     private GenericRecord current;
     private final Schema expectedSchema;
     private final Configuration conf;
+    private final Table table;
 
-    public VirtualColumnAwareIterator(CloseableIterator<T> currentIterator, Schema expectedSchema, Configuration conf) {
+    public VirtualColumnAwareIterator(CloseableIterator<T> currentIterator, Schema expectedSchema, Configuration conf,
+                                      Table table) {
       this.currentIterator = currentIterator;
       this.expectedSchema = expectedSchema;
       this.conf = conf;
       current = GenericRecord.create(
-          new Schema(expectedSchema.columns().subList(4, expectedSchema.columns().size())));
+              new Schema(expectedSchema.columns().subList(4, expectedSchema.columns().size())));
+      this.table = table;
     }
 
     @Override
@@ -252,13 +289,63 @@ public class IcebergAcidUtil {
     public T next() {
       T next = currentIterator.next();
       GenericRecord rec = (GenericRecord) next;
+      IcebergAcidUtil.copyFields(rec, FILE_READ_META_COLS.size(), current.size(), current);
+      int specId = IcebergAcidUtil.parseSpecId(rec);
       PositionDeleteInfo.setIntoConf(conf,
-          IcebergAcidUtil.parseSpecId(rec),
+          specId,
           IcebergAcidUtil.computePartitionHash(rec),
           IcebergAcidUtil.parseFilePath(rec),
-          IcebergAcidUtil.parseFilePosition(rec));
-      IcebergAcidUtil.copyFields(rec, FILE_READ_META_COLS.size(), current.size(), current);
+          IcebergAcidUtil.parseFilePosition(rec),
+          IcebergAcidUtil.getSerializedPartitionKey(current, table.specs().get(specId)));
       return (T) current;
     }
   }
+
+  public static class MergeVirtualColumnAwareIterator<T> implements CloseableIterator<T> {
+
+    private final CloseableIterator<T> currentIterator;
+    private GenericRecord current;
+    private final Schema expectedSchema;
+    private final Configuration conf;
+    private final int specId;
+    private final PartitionSpec partitionSpec;
+    private final StructLike partition;
+
+    public MergeVirtualColumnAwareIterator(CloseableIterator<T> currentIterator,
+                                           Schema expectedSchema, Configuration conf, ContentFile contentFile,
+                                           Table table) {
+      this.currentIterator = currentIterator;
+      this.expectedSchema = expectedSchema;
+      this.conf = conf;
+      this.partition = contentFile.partition();
+      current = GenericRecord.create(
+              new Schema(expectedSchema.columns().subList(0, expectedSchema.columns().size())));
+      this.specId = contentFile.specId();
+
+      this.partitionSpec = table.specs().get(specId);
+    }
+
+    @Override
+    public void close() throws IOException {
+      currentIterator.close();
+    }
+
+    @Override
+    public boolean hasNext() {
+      return currentIterator.hasNext();
+    }
+
+    @Override
+    public T next() {
+      T next = currentIterator.next();
+      GenericRecord rec = (GenericRecord) next;
+      current.set(SERDE_META_COLS.get(MetadataColumns.SPEC_ID), specId);
+      current.set(SERDE_META_COLS.get(PARTITION_HASH_META_COL), computeHash(partition));
+      current.set(SERDE_META_COLS.get(MetadataColumns.FILE_PATH), rec.get(0, String.class));
+      current.set(SERDE_META_COLS.get(MetadataColumns.ROW_POSITION), rec.get(1, Long.class));
+      current.set(SERDE_META_COLS.get(PARTITION_PROJECTION), getSerializedPartitionKey(partition, partitionSpec));
+      return (T) current;
+    }
+  }
+
 }

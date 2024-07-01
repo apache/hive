@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.hadoop.io.Writable;
 import org.apache.iceberg.DeleteFile;
+import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.data.GenericRecord;
@@ -58,12 +59,12 @@ class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
     Record rec = ((Container<Record>) row).get();
     PositionDelete<Record> positionDelete = IcebergAcidUtil.getPositionDelete(rec, rowDataTemplate);
     int specId = IcebergAcidUtil.parseSpecId(rec);
-    Record rowData = positionDelete.row();
+    PartitionKey partitionKey = IcebergAcidUtil.parsePartitionKey(rec);
     if (skipRowData) {
       // Set null as the row data as we intend to avoid writing the actual row data in the delete file.
       positionDelete.set(positionDelete.path(), positionDelete.pos(), null);
     }
-    writer.write(positionDelete, specs.get(specId), partition(rowData, specId));
+    writer.write(positionDelete, specs.get(specId), partitionKey);
   }
 
   @Override
