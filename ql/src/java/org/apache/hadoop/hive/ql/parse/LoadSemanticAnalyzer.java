@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
@@ -238,6 +239,7 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     } else {
       analyzeLoad(ast);
     }
+    queryState.setCommandType(HiveOperation.LOAD);
   }
 
   private void analyzeLoad(ASTNode ast) throws SemanticException {

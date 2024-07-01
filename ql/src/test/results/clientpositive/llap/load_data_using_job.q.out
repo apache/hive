@@ -191,11 +191,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 STAGE DEPENDENCIES:
@@ -266,11 +266,11 @@ STAGE PLANS:
       Basic Stats Work:
 
 PREHOOK: query: load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08
@@ -423,11 +423,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 STAGE DEPENDENCIES:
@@ -499,11 +499,11 @@ STAGE PLANS:
       Basic Stats Work:
 
 PREHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
@@ -661,11 +661,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin_n8
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin_n8
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 STAGE DEPENDENCIES:
@@ -737,11 +737,11 @@ STAGE PLANS:
       Basic Stats Work:
 
 PREHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin_n8
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin_n8
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
@@ -1017,11 +1017,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/bucketing.txt' INTO TABLE srcbucket_mapjoin_n8
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/bucketing.txt' INTO TABLE srcbucket_mapjoin_n8
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 STAGE DEPENDENCIES:
@@ -1090,11 +1090,11 @@ STAGE PLANS:
       Basic Stats Work:
 
 PREHOOK: query: load data local inpath '../../data/files/load_data_job/bucketing.txt' INTO TABLE srcbucket_mapjoin_n8
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/bucketing.txt' INTO TABLE srcbucket_mapjoin_n8
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: Lineage: srcbucket_mapjoin_n8.key SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
@@ -1244,11 +1244,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 STAGE DEPENDENCIES:
@@ -1319,11 +1319,11 @@ STAGE PLANS:
       Basic Stats Work:
 
 PREHOOK: query: load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08
@@ -1476,11 +1476,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 STAGE DEPENDENCIES:
@@ -1552,11 +1552,11 @@ STAGE PLANS:
       Basic Stats Work:
 
 PREHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
@@ -1714,11 +1714,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin_n8
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin_n8
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 STAGE DEPENDENCIES:
@@ -1790,11 +1790,11 @@ STAGE PLANS:
       Basic Stats Work:
 
 PREHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin_n8
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin_n8
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
@@ -2070,11 +2070,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions' INTO TABLE srcbucket_mapjoin_n8
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions' INTO TABLE srcbucket_mapjoin_n8
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 STAGE DEPENDENCIES:
@@ -2146,11 +2146,11 @@ STAGE PLANS:
       Basic Stats Work:
 
 PREHOOK: query: load data local inpath '../../data/files/load_data_job/partitions' INTO TABLE srcbucket_mapjoin_n8
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions' INTO TABLE srcbucket_mapjoin_n8
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
@@ -2662,11 +2662,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 STAGE DEPENDENCIES:
@@ -2737,11 +2737,11 @@ STAGE PLANS:
       Basic Stats Work:
 
 PREHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@hr=0
@@ -2903,13 +2903,13 @@ POSTHOOK: Output: default@srcbucket_mapjoin_n8
 PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
 SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
 SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 STAGE DEPENDENCIES:
@@ -2982,13 +2982,13 @@ STAGE PLANS:
 PREHOOK: query: load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
 SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
 SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08
@@ -3141,11 +3141,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_test_txn
 #### A masked pattern was here ####
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@orc_test_txn__temp_table_for_load_data__
 PREHOOK: Output: default@orc_test_txn
 #### A masked pattern was here ####
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@orc_test_txn__temp_table_for_load_data__
 POSTHOOK: Output: default@orc_test_txn
 STAGE DEPENDENCIES:
@@ -3218,11 +3218,11 @@ STAGE PLANS:
       Basic Stats Work:
 
 #### A masked pattern was here ####
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@orc_test_txn__temp_table_for_load_data__
 PREHOOK: Output: default@orc_test_txn
 #### A masked pattern was here ####
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@orc_test_txn__temp_table_for_load_data__
 POSTHOOK: Output: default@orc_test_txn
 POSTHOOK: Output: default@orc_test_txn@year=2016
@@ -3255,11 +3255,11 @@ POSTHOOK: Input: default@orc_test_txn@year=2018
 8	Henry	CSE	2016
 9	Harris	CSE	2017
 #### A masked pattern was here ####
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@orc_test_txn__temp_table_for_load_data__
 PREHOOK: Output: default@orc_test_txn
 #### A masked pattern was here ####
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@orc_test_txn__temp_table_for_load_data__
 POSTHOOK: Output: default@orc_test_txn
 POSTHOOK: Output: default@orc_test_txn@year=2016
@@ -3301,11 +3301,11 @@ POSTHOOK: Input: default@orc_test_txn@year=2018
 8	Henry	CSE	2016
 9	Harris	CSE	2017
 #### A masked pattern was here ####
-PREHOOK: type: QUERY
+PREHOOK: type: LOAD
 PREHOOK: Input: default@orc_test_txn__temp_table_for_load_data__
 PREHOOK: Output: default@orc_test_txn
 #### A masked pattern was here ####
-POSTHOOK: type: QUERY
+POSTHOOK: type: LOAD
 POSTHOOK: Input: default@orc_test_txn__temp_table_for_load_data__
 POSTHOOK: Output: default@orc_test_txn
 POSTHOOK: Output: default@orc_test_txn@year=2016
