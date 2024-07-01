@@ -213,8 +213,9 @@ public class Utils {
     int len = in.length();
     int i = 0;
     while (i < len) {
-      if (i + 4 <= len && in.substring(i, i + 4).compareTo("YYYY") == 0) {
-        out.append("yyyy");
+      if (i + 4 <= len && (in.substring(i, i + 4).compareTo("YYYY") == 0 || in.substring(i, i + 4)
+          .compareTo("yyyy") == 0)) {
+        out.append("uuuu");
         i += 4;
       }
       else if (i + 2 <= len && in.substring(i, i + 2).compareTo("mm") == 0) {

@@ -6,53 +6,53 @@ FUNCTION gettype(tag1 varchar2, srcvalue varchar2) return varchar2 as
       return '@I';
     end if;
 
-    if (tag1) = 'WHMM' then
+    if trim(tag1) = 'WHMM' then
       return '002';
     end if;
 
-    if (tag1) = 'TCPJ' and srcvalue = '010105' then
+    if trim(tag1) = 'TCPJ' and srcvalue = '010105' then
       return '010105';
     end if;
 
-    if (tag1) = 'TCPJ' and srcvalue != '010105' then
+    if trim(tag1) = 'TCPJ' and srcvalue != '010105' then
       return '003';
     end if;
 
-    if (tag1) = 'TCPJ' and srcvalue != '010105' then
+    if trim(tag1) = 'TCPJ' and srcvalue != '010105' then
       return '003_ticket';
     end if;
 
-    if (tag1) = 'TCJY' and srcvalue != '010105' then
+    if trim(tag1) = 'TCJY' and srcvalue != '010105' then
       return '003_ticket';
     end if;
 
-    if (tag1) = 'TCJY' and srcvalue != '010105' then
+    if trim(tag1) = 'TCJY' and srcvalue != '010105' then
       return '003_ticket';
     end if;
 
-    if (tag1) = 'YHHPD' then
+    if trim(tag1) = 'YHHPD' then
       return '002_foreign';
     end if;
 
-    if (tag1) = 'WHWZ' then
+    if trim(tag1) = 'WHWZ' then
       return '002_foreign';
     end if;
 
-    if (tag1) = 'WHLZ' then
+    if trim(tag1) = 'WHLZ' then
       return '002_foreign';
     end if;
 
-    if (tag1) = 'DEWZ' then
+    if trim(tag1) = 'DEWZ' then
       return '024_out';
     end if;
 
-    if (tag1) = 'DELZ' then
+    if trim(tag1) = 'DELZ' then
       return '024_out';
     end if;
 
     return srcvalue;
 
   END;
-  
+
   gettype('YHHPD', 'a');
   gettype('YHHPD', '@I');

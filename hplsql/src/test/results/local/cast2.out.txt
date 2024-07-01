@@ -1,0 +1,15 @@
+Ln:1 SET temp_int = 1
+Ln:2 PRINT
+1
+Ln:3 SET temp_float = 1.2
+Ln:4 PRINT
+1.2
+Ln:5 SET temp_double = 1.2
+Ln:6 PRINT
+1.2
+Ln:7 SET temp_decimal = 1.2000
+Ln:8 PRINT
+1.2000
+Ln:9 SET temp_string = '1.2'
+Ln:10 PRINT
+1.2
