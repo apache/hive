@@ -10,6 +10,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `BUCKETING_COLS` (
   `INTEGER_IDX` int,
   CONSTRAINT `SYS_PK_BUCKETING_COLS` PRIMARY KEY (`SD_ID`,`INTEGER_IDX`) DISABLE
 )
+COMMENT 'Stores information about the bucketing columns for a table'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -26,6 +27,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `CDS` (
   `CD_ID` bigint,
   CONSTRAINT `SYS_PK_CDS` PRIMARY KEY (`CD_ID`) DISABLE
 )
+COMMENT 'Stores information about the Catalog and Data Services used by Hive'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -44,6 +46,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `COLUMNS_V2` (
   `INTEGER_IDX` int,
   CONSTRAINT `SYS_PK_COLUMN_V2` PRIMARY KEY (`CD_ID`,`COLUMN_NAME`) DISABLE
 )
+COMMENT 'Stores metadata about columns in tables'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -65,6 +68,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `DATABASE_PARAMS` (
   `PARAM_VALUE` string,
   CONSTRAINT `SYS_PK_DATABASE_PARAMS` PRIMARY KEY (`DB_ID`,`PARAM_KEY`) DISABLE
 )
+COMMENT 'Stores database level parameters'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -85,6 +89,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `DBS` (
   `OWNER_TYPE` string,
   CONSTRAINT `SYS_PK_DBS` PRIMARY KEY (`DB_ID`) DISABLE
 )
+COMMENT 'Stores metadata about databases'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -112,6 +117,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `DB_PRIVS` (
   `AUTHORIZER` string,
   CONSTRAINT `SYS_PK_DB_PRIVS` PRIMARY KEY (`DB_GRANT_ID`) DISABLE
 )
+COMMENT 'Stores database level privileges'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -143,6 +149,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `GLOBAL_PRIVS` (
   `AUTHORIZER` string,
   CONSTRAINT `SYS_PK_GLOBAL_PRIVS` PRIMARY KEY (`USER_GRANT_ID`) DISABLE
 )
+COMMENT 'Stores global-level privileges'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -170,6 +177,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `PARTITIONS` (
   `TBL_ID` bigint,
   CONSTRAINT `SYS_PK_PARTITIONS` PRIMARY KEY (`PART_ID`) DISABLE
 )
+COMMENT 'Stores metadata about partitions'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -193,6 +201,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `PARTITION_KEYS` (
   `INTEGER_IDX` int,
   CONSTRAINT `SYS_PK_PARTITION_KEYS` PRIMARY KEY (`TBL_ID`,`PKEY_NAME`) DISABLE
 )
+COMMENT 'Stores metadata about partition keys'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -213,6 +222,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `PARTITION_KEY_VALS` (
   `INTEGER_IDX` int,
   CONSTRAINT `SYS_PK_PARTITION_KEY_VALS` PRIMARY KEY (`PART_ID`,`INTEGER_IDX`) DISABLE
 )
+COMMENT 'Stores metadata about partition key values'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -231,6 +241,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `PARTITION_PARAMS` (
   `PARAM_VALUE` string,
   CONSTRAINT `SYS_PK_PARTITION_PARAMS` PRIMARY KEY (`PART_ID`,`PARAM_KEY`) DISABLE
 )
+COMMENT 'Stores parameters for partitions'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -257,6 +268,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `PART_COL_PRIVS` (
   `AUTHORIZER` string,
   CONSTRAINT `SYS_PK_PART_COL_PRIVS` PRIMARY KEY (`PART_COLUMN_GRANT_ID`) DISABLE
 )
+COMMENT 'Stores partition column-level privileges'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -290,6 +302,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `PART_PRIVS` (
   `AUTHORIZER` string,
   CONSTRAINT `SYS_PK_PART_PRIVS` PRIMARY KEY (`PART_GRANT_ID`) DISABLE
 )
+COMMENT 'Stores partition-level privileges'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -316,6 +329,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `ROLES` (
   `ROLE_NAME` string,
   CONSTRAINT `SYS_PK_ROLES` PRIMARY KEY (`ROLE_ID`) DISABLE
 )
+COMMENT 'Stores role definitions'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -340,6 +354,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `ROLE_MAP` (
   `ROLE_ID` bigint,
   CONSTRAINT `SYS_PK_ROLE_MAP` PRIMARY KEY (`ROLE_GRANT_ID`) DISABLE
 )
+COMMENT 'Maps roles to privileges'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -369,6 +384,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `SDS` (
   `SERDE_ID` bigint,
   CONSTRAINT `SYS_PK_SDS` PRIMARY KEY (`SD_ID`) DISABLE
 )
+COMMENT 'Stores metadata about storage descriptors'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -393,6 +409,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `SD_PARAMS` (
   `PARAM_VALUE` string,
   CONSTRAINT `SYS_PK_SD_PARAMS` PRIMARY KEY (`SD_ID`,`PARAM_KEY`) DISABLE
 )
+COMMENT 'Stores parameters for storage descriptors'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -410,6 +427,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `SEQUENCE_TABLE` (
   `NEXT_VAL` bigint,
   CONSTRAINT `SYS_PK_SEQUENCE_TABLE` PRIMARY KEY (`SEQUENCE_NAME`) DISABLE
 )
+COMMENT 'Stores metadata about sequence tables'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -428,6 +446,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `SERDES` (
   `SLIB` string,
   CONSTRAINT `SYS_PK_SERDES` PRIMARY KEY (`SERDE_ID`) DISABLE
 )
+COMMENT 'Stores metadata about serializers/deserializers'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -447,6 +466,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `SERDE_PARAMS` (
   `PARAM_VALUE` string,
   CONSTRAINT `SYS_PK_SERDE_PARAMS` PRIMARY KEY (`SERDE_ID`,`PARAM_KEY`) DISABLE
 )
+COMMENT 'Stores parameters for serializers/deserializers'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -465,6 +485,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `SKEWED_COL_NAMES` (
   `INTEGER_IDX` int,
   CONSTRAINT `SYS_PK_SKEWED_COL_NAMES` PRIMARY KEY (`SD_ID`,`INTEGER_IDX`) DISABLE
 )
+COMMENT 'Stores metadata about skewed column names'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -483,6 +504,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `SKEWED_COL_VALUE_LOC_MAP` (
   `LOCATION` string,
   CONSTRAINT `SYS_PK_COL_VALUE_LOC_MAP` PRIMARY KEY (`SD_ID`,`STRING_LIST_ID_KID`) DISABLE
 )
+COMMENT 'Maps skewed column values to locations'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -499,6 +521,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `SKEWED_STRING_LIST` (
   `STRING_LIST_ID` bigint,
   CONSTRAINT `SYS_PK_SKEWED_STRING_LIST` PRIMARY KEY (`STRING_LIST_ID`) DISABLE
 )
+COMMENT 'Stores metadata about skewed string lists'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -515,6 +538,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `SKEWED_STRING_LIST_VALUES` (
   `INTEGER_IDX` int,
   CONSTRAINT `SYS_PK_SKEWED_STRING_LIST_VALUES` PRIMARY KEY (`STRING_LIST_ID`,`INTEGER_IDX`) DISABLE
 )
+COMMENT 'Stores values for skewed string lists'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -533,6 +557,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `SKEWED_VALUES` (
   `INTEGER_IDX` int,
   CONSTRAINT `SYS_PK_SKEWED_VALUES` PRIMARY KEY (`SD_ID_OID`,`INTEGER_IDX`) DISABLE
 )
+COMMENT 'Stores metadata about skewed values'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -552,6 +577,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `SORT_COLS` (
   `INTEGER_IDX` int,
   CONSTRAINT `SYS_PK_SORT_COLS` PRIMARY KEY (`SD_ID`,`INTEGER_IDX`) DISABLE
 )
+COMMENT 'Stores metadata about sort columns'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -571,6 +597,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `TABLE_PARAMS` (
   `PARAM_VALUE` string,
   CONSTRAINT `SYS_PK_TABLE_PARAMS` PRIMARY KEY (`TBL_ID`,`PARAM_KEY`) DISABLE
 )
+COMMENT 'Stores parameters for Hive tables'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -598,6 +625,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `TBLS` (
   `IS_REWRITE_ENABLED` boolean,
   CONSTRAINT `SYS_PK_TBLS` PRIMARY KEY (`TBL_ID`) DISABLE
 )
+COMMENT 'Stores metadata about Hive tables'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -625,6 +653,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `MV_CREATION_METADATA` (
   `TXN_LIST` string,
   CONSTRAINT `SYS_PK_MV_CREATION_METADATA` PRIMARY KEY (`MV_CREATION_METADATA_ID`) DISABLE
 )
+COMMENT 'Stores metadata about materialized view creations'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -641,6 +670,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `MV_TABLES_USED` (
   `MV_CREATION_METADATA_ID` bigint,
   `TBL_ID` bigint
 )
+COMMENT 'Stores metadata about materialized views used'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -665,6 +695,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `TBL_COL_PRIVS` (
   `AUTHORIZER` string,
   CONSTRAINT `SYS_PK_TBL_COL_PRIVS` PRIMARY KEY (`TBL_COLUMN_GRANT_ID`) DISABLE
 )
+COMMENT 'Stores table column-level privileges'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -698,6 +729,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `TBL_PRIVS` (
   `AUTHORIZER` string,
   CONSTRAINT `SYS_PK_TBL_PRIVS` PRIMARY KEY (`TBL_GRANT_ID`) DISABLE
 )
+COMMENT 'Stores table-level privileges'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -738,6 +770,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `TAB_COL_STATS` (
  `ENGINE` string,
   CONSTRAINT `SYS_PK_TAB_COL_STATS` PRIMARY KEY (`CS_ID`) DISABLE
 )
+COMMENT 'Stores statistics for Hive table columns'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -786,6 +819,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `PART_COL_STATS` (
  `ENGINE` string,
   CONSTRAINT `SYS_PK_PART_COL_STATS` PRIMARY KEY (`CS_ID`) DISABLE
 )
+COMMENT 'Stores statistics for partition columns'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -822,6 +856,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `DB_VERSION` (
   `VERSION_COMMENT` string,
   CONSTRAINT `SYS_PK_DB_VERSION` PRIMARY KEY (`VER_ID`) DISABLE
 )
+COMMENT 'Stores Hive schema version'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -845,6 +880,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `FUNCS` (
   `OWNER_TYPE` string,
   CONSTRAINT `SYS_PK_FUNCS` PRIMARY KEY (`FUNC_ID`) DISABLE
 )
+COMMENT 'Stores metadata about user-defined functions (UDFs)'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -892,6 +928,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `KEY_CONSTRAINTS`
   `DEFAULT_VALUE` string,
   CONSTRAINT `SYS_PK_KEY_CONSTRAINTS` PRIMARY KEY (`PARENT_TBL_ID`, `CONSTRAINT_NAME`, `POSITION`) DISABLE
 )
+COMMENT 'Stores metadata about key constraints'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -914,7 +951,7 @@ FROM
   \"KEY_CONSTRAINTS\""
 );
 
-CREATE OR REPLACE VIEW `TABLE_STATS_VIEW` AS
+CREATE OR REPLACE VIEW `TABLE_STATS_VIEW` COMMENT 'Provides tables stats and if column stats is accurate' AS
 SELECT
   `TBL_ID`,
   max(CASE `PARAM_KEY` WHEN 'COLUMN_STATS_ACCURATE' THEN `PARAM_VALUE` END) AS COLUMN_STATS_ACCURATE,
@@ -925,7 +962,7 @@ SELECT
   max(CASE `PARAM_KEY` WHEN 'transient_lastDdlTime' THEN `PARAM_VALUE` END) AS TRANSIENT_LAST_DDL_TIME
 FROM `TABLE_PARAMS` GROUP BY `TBL_ID`;
 
-CREATE OR REPLACE VIEW `PARTITION_STATS_VIEW` AS
+CREATE OR REPLACE VIEW `PARTITION_STATS_VIEW` COMMENT 'Provides detailed tables stats in partitioned tables' AS
 SELECT
   `PART_ID`,
   max(CASE `PARAM_KEY` WHEN 'COLUMN_STATS_ACCURATE' THEN `PARAM_VALUE` END) AS COLUMN_STATS_ACCURATE,
@@ -943,6 +980,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `WM_RESOURCEPLANS` (
   `QUERY_PARALLELISM` int,
   `DEFAULT_POOL_PATH` string
 )
+COMMENT 'Stores metadata about Warehouse Manager resource plans'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -964,6 +1002,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `WM_TRIGGERS` (
   `TRIGGER_EXPRESSION` string,
   `ACTION_EXPRESSION` string
 )
+COMMENT 'Stores metadata about Warehouse Manager triggers'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -990,6 +1029,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `WM_POOLS` (
   `QUERY_PARALLELISM` int,
   `SCHEDULING_POLICY` string
 )
+COMMENT 'Stores metadata about Warehouse Manager pools'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -1015,6 +1055,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `WM_POOLS_TO_TRIGGERS` (
   `POOL_PATH` string,
   `TRIGGER_NAME` string
 )
+COMMENT 'Maps Warehouse Manager pools to triggers'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -1048,6 +1089,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `WM_MAPPINGS` (
   `POOL_PATH` string,
   `ORDERING` int
 )
+COMMENT 'Stores metadata about Warehouse Manager mappings'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -1090,6 +1132,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `COMPACTION_QUEUE` (
   `CQ_POOL_NAME` string,
   `CQ_NUMBER_OF_BUCKETS` string
 )
+COMMENT 'Stores information about compaction jobs'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -1147,6 +1190,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `COMPLETED_COMPACTIONS` (
   `CC_POOL_NAME` string,
   `CC_NUMBER_OF_BUCKETS` string
 )
+COMMENT 'Stores metadata about completed compaction jobs'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -1208,7 +1252,7 @@ CREATE OR REPLACE VIEW `COMPACTIONS`
   `C_POOL_NAME`,
   `C_NUMBER_OF_BUCKETS`,
   `C_TBLPROPERTIES`
-) AS
+) COMMENT 'Detailed info about each compaction job' AS
 SELECT
   CC_ID,
   'default',
@@ -1282,6 +1326,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `SCHEDULED_QUERIES` (
   `ACTIVE_EXECUTION_ID` bigint,
   CONSTRAINT `SYS_PK_SCHEDULED_QUERIES` PRIMARY KEY (`SCHEDULED_QUERY_ID`) DISABLE
 )
+COMMENT 'Stores metadata about scheduled queries'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -1311,6 +1356,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `SCHEDULED_EXECUTIONS` (
   `LAST_UPDATE_TIME` int,
   CONSTRAINT `SYS_PK_SCHEDULED_EXECUTIONS` PRIMARY KEY (`SCHEDULED_EXECUTION_ID`) DISABLE
 )
+COMMENT 'Stores metadata about scheduled executions'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -1340,6 +1386,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `TXNS` (
     `TXN_HEARTBEAT_COUNT` int,
     `TXN_TYPE` int
 )
+COMMENT 'Stores metadata about transactions on Hive tables'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -1367,6 +1414,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `TXN_COMPONENTS` (
     `TC_OPERATION_TYPE` string,
     `TC_WRITEID` bigint
 )
+COMMENT 'Stores metadata about transaction components'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -1436,6 +1484,7 @@ CREATE EXTERNAL TABLE `HIVE_LOCKS` (
     `HL_BLOCKEDBY_EXT_ID` bigint,
     `HL_BLOCKEDBY_INT_ID` bigint
 )
+COMMENT 'Stores metadata about Hive table locks'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -1501,6 +1550,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `MIN_HISTORY_LEVEL` (
     `MHL_TXNID` bigint,
     `MHL_MIN_OPEN_TXNID` bigint
 )
+COMMENT 'Stores the minimum history level for the Hive metastore'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -1519,6 +1569,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `REPLICATION_METRICS_ORIG` (
     `PROGRESS` string,
     `MESSAGE_FORMAT` varchar(16)
 )
+COMMENT 'Stores metrics related to replication'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -1559,6 +1610,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `NOTIFICATION_LOG` (
   `MESSAGE` string,
   `MESSAGE_FORMAT` varchar(16)
 )
+COMMENT 'Stores information about the notification log used for change tracking'
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
@@ -1607,7 +1659,7 @@ CREATE OR REPLACE VIEW `SCHEMATA`
   `DEFAULT_CHARACTER_SET_SCHEMA`,
   `DEFAULT_CHARACTER_SET_NAME`,
   `SQL_PATH`
-) AS
+) COMMENT 'This VIEW retrieves information about Databases, owner details, and their locations, among others' AS
 SELECT DISTINCT
   'default',
   D.`NAME`,
@@ -1639,7 +1691,7 @@ CREATE OR REPLACE VIEW `TABLES`
   `IS_INSERTABLE_INTO`,
   `IS_TYPED`,
   `COMMIT_ACTION`
-) AS
+) COMMENT 'This VIEW retrieves details about each table in Hive' AS
 SELECT DISTINCT
   'default',
   D.NAME,
@@ -1672,7 +1724,7 @@ CREATE OR REPLACE VIEW `TABLE_PRIVILEGES`
   `PRIVILEGE_TYPE`,
   `IS_GRANTABLE`,
   `WITH_HIERARCHY`
-) AS
+) COMMENT 'This VIEW retrieves privileges information for all tables' AS
 SELECT DISTINCT
   P.`GRANTOR`,
   P.`PRINCIPAL_NAME`,
@@ -1742,7 +1794,7 @@ CREATE OR REPLACE VIEW `COLUMNS`
   `DECLARED_DATA_TYPE`,
   `DECLARED_NUMERIC_PRECISION`,
   `DECLARED_NUMERIC_SCALE`
-) AS
+) COMMENT 'This View retreives all information about a column' AS
 SELECT DISTINCT
   'default',
   D.NAME,
@@ -1854,7 +1906,7 @@ CREATE OR REPLACE VIEW `COLUMN_PRIVILEGES`
   `COLUMN_NAME`,
   `PRIVILEGE_TYPE`,
   `IS_GRANTABLE`
-) AS
+) COMMENT 'This View retreives all information about column privileges' AS
 SELECT DISTINCT
   P.`GRANTOR`,
   P.`PRINCIPAL_NAME`,
@@ -1899,7 +1951,7 @@ CREATE OR REPLACE VIEW `VIEWS`
   `IS_TRIGGER_UPDATABLE`,
   `IS_TRIGGER_DELETABLE`,
   `IS_TRIGGER_INSERTABLE_INTO`
-) AS
+) COMMENT 'This VIEW retrieves the definitions of all VIEWs created in Hive' AS
 SELECT DISTINCT
   'default',
   D.NAME,
@@ -1950,7 +2002,7 @@ CREATE OR REPLACE VIEW `COMPACTIONS`
   `C_POOL_NAME`,
   `C_NUMBER_OF_BUCKETS`,
   `C_TBLPROPERTIES`
-) AS
+) COMMENT 'This VIEW retrieves information about the Hive compaction jobs'  AS
 SELECT DISTINCT
   C_ID,
   C_CATALOG,
@@ -2040,7 +2092,7 @@ CREATE OR REPLACE VIEW `TRANSACTIONS` (
   `TC_PARTITION`,
   `TC_OPERATION_TYPE`,
   `TC_WRITEID`
-) AS
+) COMMENT 'This VIEW retrieves all information about a Transaction' AS
 SELECT DISTINCT
   `TXN_ID`,
   `STATE`,
@@ -2083,7 +2135,7 @@ CREATE OR REPLACE VIEW `LOCKS` (
   `AGENT_INFO`,
   `BLOCKEDBY_EXT_ID`,
   `BLOCKEDBY_INT_ID`
-) AS
+) COMMENT 'This VIEW retrieves infromation about Hive Locks' AS
 SELECT DISTINCT
   `LOCK_EXT_ID`,
   `LOCK_INT_ID`,
