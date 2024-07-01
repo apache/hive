@@ -32,7 +32,7 @@ public class LlapDaemonConfiguration extends Configuration {
       "hdfs-site.xml", "yarn-site.xml", "tez-site.xml", "hive-site.xml" };
 
   @InterfaceAudience.Private
-  public static final String[] SSL_DAEMON_CONFIGS = { "ssl-client.xml" };
+  public static final String[] SSL_DAEMON_CONFIGS = { "ssl-server.xml", "ssl-client.xml"};
 
   public LlapDaemonConfiguration() {
     super(true); // Load the defaults.
