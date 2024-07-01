@@ -380,6 +380,23 @@ if [[ "$SERVICE" =~ ^(hiveserver2|beeline|cli)$ ]] ; then
   fi
 fi
 
+# set heap size of hive processes based on HADOOP_HEAPSIZE env variables
+if [[ -n "${HADOOP_HEAPSIZE_MAX}" ]]; then
+  if [[ "${HADOOP_HEAPSIZE_MAX}" =~ ^[0-9]+$ ]]; then
+    export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Xmx${HADOOP_HEAPSIZE_MAX}m "
+  fi
+elif [[ -n "${HADOOP_HEAPSIZE}" ]]; then
+  if [[ "${HADOOP_HEAPSIZE}" =~ ^[0-9]+$ ]]; then
+    export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Xmx${HADOOP_HEAPSIZE}m "
+  fi
+fi
+
+if [[ -n "${HADOOP_HEAPSIZE_MIN}" ]]; then
+  if [[ "${HADOOP_HEAPSIZE_MIN}" =~ ^[0-9]+$ ]]; then
+    export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Xms${HADOOP_HEAPSIZE_MIN}m "
+  fi
+fi
+
 export JVM_PID="$$"
 
 if [ "$TORUN" = "" ] ; then
