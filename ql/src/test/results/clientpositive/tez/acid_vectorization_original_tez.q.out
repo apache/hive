@@ -375,7 +375,7 @@ Found 4 items
 -rw-rw-rw-   3 ### USER ### ### GROUP ###       8753 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-rw-rw-   3 ### USER ### ### GROUP ###       7531 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-rw-rw-   3 ### USER ### ### GROUP ###       7174 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7066 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7065 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: insert into over10k_orc_bucketed_n0 select * from over10k_n9
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k_n9
@@ -402,8 +402,8 @@ Found 8 items
 -rw-rw-rw-   3 ### USER ### ### GROUP ###       7531 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-rw-rw-   3 ### USER ### ### GROUP ###       7174 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-rw-rw-   3 ### USER ### ### GROUP ###       7174 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7066 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7066 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7065 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7065 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select distinct 7 as seven, INPUT__FILE__NAME from over10k_orc_bucketed_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k_orc_bucketed_n0

@@ -14,6 +14,8 @@
 --! qt:replace:/(MAJOR\s+succeeded\s+)[a-zA-Z0-9\-\.\s+]+(\s+manual)/$1#Masked#$2/
 -- Mask compaction id as they will be allocated in parallel threads
 --! qt:replace:/^[0-9]/#Masked#/
+-- Mask removed file size
+--! qt:replace:/(\S\"removed-files-size\\\":\\\")(\d+)(\\\")/$1#Masked#$3/
 
 set hive.llap.io.enabled=true;
 set hive.vectorized.execution.enabled=true;
