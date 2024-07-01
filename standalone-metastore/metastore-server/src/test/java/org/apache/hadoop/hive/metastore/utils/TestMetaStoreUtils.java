@@ -48,18 +48,23 @@ public class TestMetaStoreUtils {
   private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss");
   private final TimeZone timezone;
   private final String date;
-  private final String timestamp;
+  private final String timestampString;
+  private final Timestamp timestamp;
 
   public TestMetaStoreUtils(String zoneId, LocalDateTime timestamp) {
     this.timezone = TimeZone.getTimeZone(zoneId);
-    this.timestamp = timestamp.format(FORMATTER);
+    this.timestampString = timestamp.format(FORMATTER);
     this.date = timestamp.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE);
+
+    TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+    this.timestamp = Timestamp.valueOf(timestamp);
+    TimeZone.setDefault(DEFAULT);
   }
 
   @Parameterized.Parameters(name = "zoneId={0}, timestamp={1}")
   public static Collection<Object[]> generateZoneTimestampPairs() {
     List<Object[]> params = new ArrayList<>();
-    long minDate = LocalDate.of(0, 1, 1).atStartOfDay().toEpochSecond(ZoneOffset.UTC);
+    long minDate = LocalDate.of(1, 1, 1).atStartOfDay().toEpochSecond(ZoneOffset.UTC);
     long maxDate = LocalDate.of(9999, 12, 31).atStartOfDay().toEpochSecond(ZoneOffset.UTC);
     new Random(23).longs(500, minDate, maxDate).forEach(i -> {
       LocalDateTime datetime = LocalDateTime.ofEpochSecond(i, 0, ZoneOffset.UTC);
@@ -67,7 +72,26 @@ public class TestMetaStoreUtils {
         params.add(new Object[] { zone, datetime });
       }
     });
+    generateDaylightSavingTimestampPairs(params);
     return params;
+  }
+
+  public static void generateDaylightSavingTimestampPairs(List<Object[]> params) {
+    // For U.S timezones, the timestamp 2024-03-10 02:01:00 falls between the transition from 02:00 AM to 03:00 AM for daylight savings
+    params.add(new Object[] {"America/Anchorage", LocalDateTime.ofEpochSecond(1710036060L, 0, ZoneOffset.UTC)});
+    params.add(new Object[] {"America/St_Johns", LocalDateTime.ofEpochSecond(1710036060L, 0, ZoneOffset.UTC)});
+    params.add(new Object[] {"America/Chicago", LocalDateTime.ofEpochSecond(1710036060L, 0, ZoneOffset.UTC)});
+    params.add(new Object[] {"America/Indiana/Indianapolis", LocalDateTime.ofEpochSecond(1710036060L, 0, ZoneOffset.UTC)});
+    params.add(new Object[] {"America/Los_Angeles", LocalDateTime.ofEpochSecond(1710036060L, 0, ZoneOffset.UTC)});
+
+    // For Paris timezone, the timestamp 2024-03-31 02:02:02 falls between the transition from 02:00 AM to 03:00 AM for daylight savings
+    params.add(new Object[] {"Europe/Paris", LocalDateTime.ofEpochSecond(1711850522L, 0, ZoneOffset.UTC)});
+
+    // For New Zealand timezone, the timestamp 2024-09-29 02:03:04 falls between the transition from 02:00 AM to 03:00 AM for daylight savings
+    params.add(new Object[] {"Pacific/Auckland", LocalDateTime.ofEpochSecond(1727575384L, 0, ZoneOffset.UTC)});
+
+    // For Sydney timezone, the timestamp 2024-10-06 02:04:06 falls between the transition from 02:00 AM to 03:00 AM for daylight savings
+    params.add(new Object[] {"Australia/Sydney", LocalDateTime.ofEpochSecond(1728180246L, 0, ZoneOffset.UTC)});
   }
 
   @Before
@@ -82,7 +106,7 @@ public class TestMetaStoreUtils {
 
   @Test
   public void testTimestampToString() {
-    assertEquals(timestamp, MetaStoreUtils.convertTimestampToString(Timestamp.valueOf(timestamp)));
+    assertEquals(timestampString, MetaStoreUtils.convertTimestampToString(timestamp));
   }
 
   @Test
@@ -92,7 +116,7 @@ public class TestMetaStoreUtils {
 
   @Test
   public void testStringToTimestamp() {
-    assertEquals(Timestamp.valueOf(timestamp), MetaStoreUtils.convertStringToTimestamp(timestamp));
+    assertEquals(timestamp, MetaStoreUtils.convertStringToTimestamp(timestampString));
   }
 
   @AfterClass
