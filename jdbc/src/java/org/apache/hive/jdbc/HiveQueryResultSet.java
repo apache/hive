@@ -30,6 +30,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hive.service.cli.RowSet;
@@ -53,6 +60,7 @@ import org.apache.hive.service.rpc.thrift.TRowSet;
 import org.apache.hive.service.rpc.thrift.TTableSchema;
 import org.apache.hive.service.rpc.thrift.TTypeQualifierValue;
 import org.apache.hive.service.rpc.thrift.TTypeQualifiers;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,26 +72,29 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
 
   public static final Logger LOG = LoggerFactory.getLogger(HiveQueryResultSet.class);
 
+  private Connection connection;
   private TCLIService.Iface client;
   private TOperationHandle stmtHandle;
+  private TFetchOrientation orientation = TFetchOrientation.FETCH_NEXT;
+  private boolean check_operation_status;
   private int maxRows;
   private int fetchSize;
-  private int rowsFetched = 0;
+  private int fetchThreads;
+  private long rowsFetched = 0;
+  private boolean fetchDone = false;
 
   private RowSet fetchedRows;
   private Iterator<Object[]> fetchedRowsItr;
   private boolean isClosed = false;
   private boolean emptyResultSet = false;
   private boolean isScrollable = false;
-  private boolean fetchFirst = false;
-  private TGetOperationStatusResp operationStatus = null;
 
   private final TProtocolVersion protocol;
 
   public static class Builder {
 
-    private final Connection connection;
     private final Statement statement;
+    private Connection connection = null;
     private TCLIService.Iface client = null;
     private TOperationHandle stmtHandle = null;
 
@@ -98,6 +109,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     private List<String> colTypes;
     private List<JdbcColumnAttributes> colAttributes;
     private int fetchSize = 50;
+    private int fetchThreads = 1;
     private boolean emptyResultSet = false;
     private boolean isScrollable = false;
 
@@ -109,6 +121,11 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     public Builder(Connection connection) {
       this.statement = null;
       this.connection = connection;
+    }
+
+    public Builder setConnection(Connection connection) {
+      this.connection = connection;
+      return this;
     }
 
     public Builder setClient(TCLIService.Iface client) {
@@ -147,6 +164,11 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
       return this;
     }
 
+    public Builder setFetchThreads(int fetchThreads) {
+      this.fetchThreads = fetchThreads;
+      return this;
+    }
+
     public Builder setEmptyResultSet(boolean emptyResultSet) {
       this.emptyResultSet = emptyResultSet;
       return this;
@@ -169,8 +191,10 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
   protected HiveQueryResultSet(Builder builder) throws SQLException {
     this.statement = builder.statement;
     this.client = builder.client;
+    this.connection = builder.connection;
     this.stmtHandle = builder.stmtHandle;
     this.fetchSize = builder.fetchSize;
+    this.poolSize = builder.fetchThreads;
     columnNames = new ArrayList<String>();
     normalizedColumnNames = new ArrayList<String>();
     columnTypes = new ArrayList<String>();
@@ -182,11 +206,15 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     }
     this.emptyResultSet = builder.emptyResultSet;
     this.maxRows = builder.maxRows;
-    if (builder.emptyResultSet) {
-      this.maxRows = 0;
-    }
+    check_operation_status = (statement instanceof HiveStatement);
     this.isScrollable = builder.isScrollable;
     this.protocol = builder.getProtocolVersion();
+    InitEmptyIterator();
+    // The fetch path is usually the bottleneck with a single-threaded fetch
+    // so only convert results there if there are multiple fetch threads.
+    if (poolSize > 1) {
+      useConvertedResultSet = true;
+    }
   }
 
   /**
@@ -271,8 +299,18 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     colNames.forEach(i -> normalizedColumnNames.add(i.toLowerCase()));
   }
 
+  private void InitEmptyIterator() throws SQLException {
+    try {
+      fetchedRows = RowSetFactory.create(new TRowSet(), protocol);
+      fetchedRowsItr = fetchedRows.iterator();
+    } catch (TException e) {
+      throw new SQLException(e);
+    }
+  }
+
   @Override
   public void close() throws SQLException {
+    ShutdownPool();
     if (this.statement != null && (this.statement instanceof HiveStatement)) {
       /*
        * HIVE-25203: Be aware that a ResultSet is not supposed to control its parent Statement's
@@ -290,7 +328,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     client = null;
     stmtHandle = null;
     isClosed = true;
-    operationStatus = null;
+    InitEmptyIterator();
   }
 
   private void closeOperationHandle(TOperationHandle stmtHandle) throws SQLException {
@@ -307,6 +345,205 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     }
   }
 
+  ExecutorService pool = null;
+  volatile boolean hasStartRow = false;
+  int poolSize = 1;
+  int threadsStarted = 0;
+
+  private class FetchResult {
+    Exception ex;
+    RowSet fetchedRows;
+    boolean hasMoreRows;
+    long startRow;
+    int numRows;
+  }
+
+  BlockingQueue<FetchResult> resultQueue = new ArrayBlockingQueue<FetchResult>(4);
+  AtomicLong nextStartRow = new AtomicLong(1L);
+
+  volatile InterruptedException interruptException = null;
+  volatile boolean gotLastBatch = false;
+  volatile boolean poolDone = false;
+
+  private boolean nextRowBatch() throws SQLException {
+    if (isClosed) {
+      throw new SQLException("Resultset is closed");
+    }
+    if ((maxRows > 0 && rowsFetched >= maxRows) || emptyResultSet || fetchDone) {
+      return false;
+    }
+    if (check_operation_status) {
+      TGetOperationStatusResp operationStatus =
+        ((HiveStatement) statement).waitForOperationToComplete();
+      check_operation_status = false;
+    }
+
+// TODO: Could support pool with maxRows by bounding results instead
+    if (rowsFetched < fetchSize || poolSize == 0 || maxRows > 0) {
+      try {
+        int fetchSizeBounded = fetchSize;
+        if (maxRows > 0 && rowsFetched + fetchSize > maxRows) {
+          fetchSizeBounded = maxRows - (int)rowsFetched;
+        }
+        TFetchResultsReq fetchReq = new TFetchResultsReq(stmtHandle,
+            orientation, fetchSizeBounded);
+        TFetchResultsResp fetchResp = client.FetchResults(fetchReq);
+        Utils.verifySuccessWithInfo(fetchResp.getStatus());
+        TRowSet results = fetchResp.getResults();
+        if (results.getStartRowOffset() > 0) {
+          hasStartRow = true;
+        }
+        fetchedRows = RowSetFactory.create(results, protocol);
+        fetchDone = !fetchResp.isHasMoreRows() && fetchedRows.numRows() == 0;
+        if (fetchDone) {
+          gotLastBatch = true;
+        }
+        fetchedRows = RowSetFactory.create(results, protocol);
+        if (useConvertedResultSet) {
+          fetchedRows = new ConvertedResultSet(fetchedRows, getSchema());
+        }
+
+        nextStartRow.set(results.getStartRowOffset() + 1 + fetchedRows.numRows());
+      } catch (TException ex) {
+        ex.printStackTrace();
+        throw new SQLException("Error retrieving next row", ex);
+      }
+    } else {
+      if (!gotLastBatch) {
+        if (pool == null) {
+          pool = Executors.newFixedThreadPool(poolSize);
+        }
+        // Add another thread on each row batch up to the limit
+        if(threadsStarted < (hasStartRow ? poolSize : 1)) {
+          final boolean useMainClient = (threadsStarted == 0);
+          threadsStarted++;
+          pool.execute(()->{
+            LOG.debug("Started thread {}", Thread.currentThread().getName());
+
+            final TCLIService.Iface fetchClient;
+            if (useMainClient) {
+              fetchClient = client;
+            } else {
+              try {
+                fetchClient = ((HiveConnection)connection).Clone().GetClient();
+              } catch (SQLException e) {
+                LOG.debug("Multi-stream connection error {}", e.toString());
+                return;
+              }
+            }
+
+            while (!gotLastBatch && !poolDone) {
+              FetchResult result = new FetchResult();
+              try {
+                final TFetchResultsReq fetchReq = new TFetchResultsReq(
+                    stmtHandle, orientation, fetchSize);
+                TFetchResultsResp fetchResp = fetchClient.FetchResults(fetchReq);
+                Utils.verifySuccessWithInfo(fetchResp.getStatus());
+                TRowSet results = fetchResp.getResults();
+                if (results.getStartRowOffset() > 0) {
+                  hasStartRow = true;
+                }
+                result.fetchedRows = RowSetFactory.create(results, protocol);
+                result.numRows = result.fetchedRows.numRows();
+                boolean hasMoreRows = result.numRows > 0 || fetchResp.isHasMoreRows();
+                if (!hasMoreRows) {
+                  gotLastBatch = true;
+                }
+                result.hasMoreRows = hasMoreRows;
+                result.fetchedRows = RowSetFactory.create(results, protocol);
+                if (useConvertedResultSet) {
+                  result.fetchedRows =
+                      new ConvertedResultSet(result.fetchedRows, getSchema());
+                }
+                result.startRow = results.getStartRowOffset() + 1;
+                if (hasStartRow && result.startRow < nextStartRow.get()) {
+                  throw new SQLException("Unexpected row offset");
+                }
+              } catch (Exception e) {
+                result.ex = e;
+              }
+
+              try {
+                // Wait for earlier row sets to be added to the queue
+                synchronized(nextStartRow) {
+                  if (!poolDone) {
+                    if (result.ex == null) {
+                      if (hasStartRow) {
+                        while (nextStartRow.get() != result.startRow) {
+                          nextStartRow.wait();
+                        }
+                        nextStartRow.set(result.startRow + result.numRows);
+                      }
+                      poolDone = !result.hasMoreRows;
+                    } else {
+                      poolDone = true;
+                    }
+                    resultQueue.put(result);
+                    if (hasStartRow) {
+                      nextStartRow.notifyAll();
+                    }
+                  }
+                }
+              } catch (InterruptedException e) {
+                interruptException = e;
+                break;
+              }
+            }
+            // TODO: shutdown called here can make execute return
+            // RejectedExecutionException
+            // pool.shutdownNow();
+          });
+        }
+      }
+      try {
+        if (interruptException != null) {
+          throw interruptException;
+        }
+        FetchResult result = resultQueue.take();
+        fetchDone = !result.hasMoreRows;
+        if (result.ex != null) {
+          ShutdownPool();
+          throw new SQLException(result.ex);
+        }
+        fetchedRows = result.fetchedRows;
+      } catch (InterruptedException e) {
+        throw new SQLException(e);
+      }
+    }
+
+    orientation = TFetchOrientation.FETCH_NEXT;
+    fetchedRowsItr = fetchedRows.iterator();
+
+    return fetchedRowsItr.hasNext();
+  }
+
+  void DrainQueue() throws SQLException {
+    FetchResult result;
+    while ((result = resultQueue.poll()) != null) {
+      if (result.ex != null) {
+        throw new SQLException(result.ex);
+      }
+    }
+  }
+
+  void ShutdownPool() throws SQLException {
+    if (pool != null) {
+      poolDone = true;
+      DrainQueue();
+      pool.shutdownNow();
+      try {
+        while (!pool.awaitTermination(1, TimeUnit.SECONDS)) {
+          DrainQueue();
+          LOG.debug("Slow fetch thread shutdown");
+        }
+      } catch (InterruptedException e) {
+        throw new SQLException(e);
+      }
+      DrainQueue();
+      pool = null;
+    }
+  }
+
   /**
    * Moves the cursor down one row from its current position.
    *
@@ -315,58 +552,13 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
    *           if a database access error occurs.
    */
   public boolean next() throws SQLException {
-    if (isClosed) {
-      throw new SQLException("Resultset is closed");
-    }
-    if (emptyResultSet || (maxRows > 0 && rowsFetched >= maxRows)) {
-      return false;
-    }
-
-    /*
-     * Poll on the operation status, till the operation is complete.
-     * We need to wait only for HiveStatement to complete.
-     * HiveDatabaseMetaData which also uses this ResultSet returns only after the RPC is complete.
-     */
-    // when isHasResultSet is set, the query transitioned from running -> complete and is not expected go back to
-    // running state when fetching results (implicit state transition)
-    if ((statement instanceof HiveStatement) && (operationStatus == null || !operationStatus.isHasResultSet())) {
-      operationStatus = ((HiveStatement) statement).waitForOperationToComplete();
-    }
-
-    try {
-      TFetchOrientation orientation = TFetchOrientation.FETCH_NEXT;
-      if (fetchFirst) {
-        // If we are asked to start from beginning, clear the current fetched resultset
-        orientation = TFetchOrientation.FETCH_FIRST;
-        fetchedRows = null;
-        fetchedRowsItr = null;
-        fetchFirst = false;
-      }
-      if (fetchedRows == null || !fetchedRowsItr.hasNext()) {
-        TFetchResultsReq fetchReq = new TFetchResultsReq(stmtHandle,
-            orientation, fetchSize);
-        LOG.debug("HiveQueryResultsFetchReq: {}", fetchReq);
-        TFetchResultsResp fetchResp;
-        fetchResp = client.FetchResults(fetchReq);
-        Utils.verifySuccessWithInfo(fetchResp.getStatus());
-
-        TRowSet results = fetchResp.getResults();
-        fetchedRows = RowSetFactory.create(results, protocol);
-        fetchedRowsItr = fetchedRows.iterator();
-      }
-
-      if (!fetchedRowsItr.hasNext()) {
+    while (!fetchedRowsItr.hasNext()) {
+      if (!nextRowBatch()) {
         return false;
       }
-
-      row = fetchedRowsItr.next();
-      rowsFetched++;
-    } catch (SQLException eS) {
-      throw eS;
-    } catch (Exception ex) {
-      throw new SQLException("Error retrieving next row", ex);
     }
-    // NOTE: fetchOne doesn't throw new SQLFeatureNotSupportedException("Method not supported").
+    row = fetchedRowsItr.next();
+    rowsFetched++;
     return true;
   }
 
@@ -430,8 +622,15 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     if (!isScrollable) {
       throw new SQLException("Method not supported for TYPE_FORWARD_ONLY resultset");
     }
-    fetchFirst = true;
+
+    // If we are asked to start from begining, clear the current fetched resultset
+    InitEmptyIterator();
+    orientation = TFetchOrientation.FETCH_FIRST;
     rowsFetched = 0;
+    nextStartRow.set(1L);
+    fetchDone = false;
+    poolDone = false;
+    gotLastBatch = false;
   }
 
   @Override
@@ -444,7 +643,10 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
 
   @Override
   public int getRow() throws SQLException {
-    return rowsFetched;
+    if (rowsFetched > Integer.MAX_VALUE) {
+      throw new SQLException("getRow() result exceeds Int.MAX_VALUE");
+    }
+    return (int)rowsFetched;
   }
 
   @Override
