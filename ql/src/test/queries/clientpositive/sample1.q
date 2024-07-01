@@ -1,5 +1,7 @@
 --! qt:dataset:srcpart
 --! qt:dataset:srcbucket
+set hive.cbo.fallback.strategy=NEVER;
+
 CREATE TABLE dest1_n89(key INT, value STRING, dt STRING, hr STRING) STORED AS TEXTFILE;
 
 -- no input pruning, no sample filter

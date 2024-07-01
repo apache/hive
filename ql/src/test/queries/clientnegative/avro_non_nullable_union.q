@@ -1,4 +1,5 @@
 -- verify that Hive fails to read a union type column from avro file with null union data if AVRO schema definition is not nullable
+set hive.cbo.fallback.strategy=NEVER;
 
 DROP TABLE IF EXISTS union_nullable_test_text;
 

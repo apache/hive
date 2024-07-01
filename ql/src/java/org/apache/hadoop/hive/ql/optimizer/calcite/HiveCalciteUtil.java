@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.function.Predicate;
 
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptUtil;
@@ -82,6 +83,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
+import org.apache.hadoop.hive.ql.parse.QB;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -101,12 +103,16 @@ import com.google.common.collect.Sets;
 
 public class HiveCalciteUtil {
 
-  public static boolean validateASTForUnsupportedTokens(ASTNode ast) {
-    if (ParseUtils.containsTokenOfType(ast, HiveParser.TOK_CHARSETLITERAL, HiveParser.TOK_TABLESPLITSAMPLE)) {
-      return false;
-    } else {
-      return true;
-    }
+  public static boolean validateASTAndQBForUnsupportedFeatures(ASTNode ast, QB qb) {
+    Predicate<ASTNode> checkCreateUnion =
+        node -> node.getType() == HiveParser.TOK_FUNCTION &&
+            node.getChildCount() > 0 &&
+            node.getChild(0).getText().equalsIgnoreCase("create_union");
+    return !ParseUtils.containsTokenOfType(ast, checkCreateUnion,
+        HiveParser.TOK_CHARSETLITERAL, HiveParser.TOK_TABLESPLITSAMPLE, HiveParser.TOK_UNIQUEJOIN, 
+        HiveParser.TOK_TABLEBUCKETSAMPLE, HiveParser.TOK_UNIONTYPE) && 
+        !qb.hasTableSampleRecursive() &&
+        !qb.hasTableWithUnionType();
   }
 
   public static List<RexNode> getProjsFromBelowAsInputRef(final RelNode rel) {

@@ -131,6 +131,20 @@ public class QBExpr {
     }
     return qbexpr1.isSimpleSelectQuery() && qbexpr2.isSimpleSelectQuery();
   }
+  
+  public boolean hasTableWithUnionType() {
+    boolean found = false;
+    if (qb != null) {
+      found = qb.hasTableWithUnionType();
+    }
+    if (!found && qbexpr1 != null) {
+      found = qbexpr1.hasTableWithUnionType();
+    }
+    if (!found && qbexpr2 != null) {
+      found = qbexpr2.hasTableWithUnionType();
+    }
+    return found;
+  }
 
   /**
    * returns true, if the query block contains any query, or subquery without a source table

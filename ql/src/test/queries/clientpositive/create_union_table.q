@@ -1,3 +1,5 @@
+set hive.cbo.fallback.strategy=NEVER;
+
 explain create table abc(mydata uniontype<int,double,array<string>,struct<a:int,b:string>>,
 strct struct<a:int, b:string, c:string>);
 

@@ -1,6 +1,7 @@
 SET hive.vectorized.execution.enabled=true;
 set hive.vectorized.use.row.serde.deserialize=true;
 set hive.vectorized.use.vector.serde.deserialize=false;
+set hive.cbo.fallback.strategy=NEVER;
 dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/data_with_union/;
 dfs -copyFromLocal ../../data/files/data_with_union.txt ${system:test.tmp.dir}/data_with_union/data_with_union.txt;
 
