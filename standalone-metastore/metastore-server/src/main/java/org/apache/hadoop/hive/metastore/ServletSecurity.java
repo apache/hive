@@ -44,19 +44,20 @@ import java.util.Optional;
 /**
  * Secures servlet processing.
  */
-public class ServletSecurity {
-  private static final Logger LOG = LoggerFactory.getLogger(ServletSecurity.class);
+public class ServletSecurity implements SecureServletCaller {
+  private static final Logger LOG = LoggerFactory.getLogger(SecureServletCaller.class);
   static final String X_USER = MetaStoreUtils.USER_NAME_HTTP_HEADER;
   private final boolean isSecurityEnabled;
   private final boolean jwtAuthEnabled;
   private JWTValidator jwtValidator = null;
   private final Configuration conf;
 
-  ServletSecurity(Configuration conf, boolean jwt) {
+  public ServletSecurity(Configuration conf, boolean jwt) {
     this.conf = conf;
     this.isSecurityEnabled = UserGroupInformation.isSecurityEnabled();
     this.jwtAuthEnabled = jwt;
   }
+
 
   /**
    * Should be called in Servlet.init()
@@ -74,14 +75,6 @@ public class ServletSecurity {
   }
 
   /**
-   * Any http method executor.
-   */
-  @FunctionalInterface
-  interface MethodExecutor {
-    void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException;
-  }
-
-  /**
    * The method to call to secure the execution of a (http) method.
    * @param request the request
    * @param response the response
@@ -90,7 +83,7 @@ public class ServletSecurity {
    * @throws IOException if the Json in/out fail
    */
   public void execute(HttpServletRequest request, HttpServletResponse response, MethodExecutor executor)
-      throws ServletException, IOException {
+      throws IOException {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Logging headers in "+request.getMethod()+" request");
       Enumeration<String> headerNames = request.getHeaderNames();
@@ -124,7 +117,7 @@ public class ServletSecurity {
       } catch (RuntimeException e) {
         LOG.error("Exception when executing http request as user: " + clientUgi.getUserName(),
             e);
-        throw new ServletException(e);
+        throw new IOException(e);
       }
     } catch (HttpAuthenticationException e) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -178,7 +171,7 @@ public class ServletSecurity {
    * @param conf the configuration
    * @throws IOException if getting the server principal fails
    */
-  static void loginServerPincipal(Configuration conf) throws IOException {
+  static void loginServerPrincipal(Configuration conf) throws IOException {
     // This check is likely pointless, especially with the current state of the http
     // servlet which respects whatever comes in. Putting this in place for the moment
     // only to enable testing on an otherwise secure cluster.
@@ -193,6 +186,7 @@ public class ServletSecurity {
       LOG.info("Security is not enabled. Not logging in via keytab");
     }
   }
+
   /**
    * Creates an SSL context factory if configuration states so.
    * @param conf the configuration
