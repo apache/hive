@@ -32,6 +32,7 @@ import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.DEFAU
 import static org.apache.hadoop.hive.ql.ddl.view.create.AbstractCreateViewAnalyzer.validateTablesUsed;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.NON_FK_FILTERED;
 
+import com.google.common.base.Preconditions;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.AccessControlException;
@@ -1574,6 +1575,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     createTable.addChild(tableName);
     createTable.addChild(temporary);
+    if (cte.withColList != null) {
+      createTable.addChild(cte.withColList);
+    }
     createTable.addChild(cte.cteNode);
 
     SemanticAnalyzer analyzer = new SemanticAnalyzer(queryState);
@@ -7831,10 +7835,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (dpCtx != null) {
         throw new SemanticException("Dynamic partition context has already been created, this should not happen");
       }
-      if (!CollectionUtils.isEmpty(partitionColumnNames)) {
+      if (tblDesc != null && tblDesc.getWithColList() != null && !tblDesc.getWithColList().isEmpty()) {
+        Preconditions.checkState(tblDesc.isMaterialization());
+        if (tblDesc.getWithColList().size() > inputRR.getColumnInfos().size()) {
+          throw new SemanticException(ErrorMsg.WITH_COL_LIST_NUM_OVERFLOW, tblDesc.getFullTableName().getTable(),
+              Integer.toString(inputRR.getColumnInfos().size()), Integer.toString(tblDesc.getWithColList().size()));
+        }
+        ColsAndTypes ct = deriveFileSinkColTypes(inputRR, fieldSchemas, tblDesc.getWithColList());
+        cols = ct.cols;
+        colTypes = ct.colTypes;
+        isPartitioned = false;
+      } else if (!CollectionUtils.isEmpty(partitionColumnNames)) {
         ColsAndTypes ct = deriveFileSinkColTypes(
             inputRR, partitionColumnNames, sortColumnNames, distributeColumnNames, fieldSchemas, partitionColumns,
-            sortColumns, distributeColumns, fileSinkColInfos, sortColInfos, distributeColInfos);
+            sortColumns, distributeColumns, fileSinkColInfos, sortColInfos, distributeColInfos, new ArrayList<>());
         cols = ct.cols;
         colTypes = ct.colTypes;
         dpCtx = new DynamicPartitionCtx(partitionColumnNames,
@@ -8302,13 +8316,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       List<ColumnInfo> sortColInfos, List<ColumnInfo> distributeColInfos) throws SemanticException {
     return deriveFileSinkColTypes(inputRR, new ArrayList<>(), sortColumnNames, distributeColumnNames,
         fieldSchemas, new ArrayList<>(), sortColumns, distributeColumns, new ArrayList<>(),
-        sortColInfos, distributeColInfos);
+        sortColInfos, distributeColInfos, new ArrayList<>());
+  }
+
+  private ColsAndTypes deriveFileSinkColTypes(RowResolver inputRR, List<FieldSchema> fieldSchemas,
+      List<String> withColList) throws SemanticException {
+    return deriveFileSinkColTypes(inputRR, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), fieldSchemas,
+        new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
+        new ArrayList<>(), withColList);
   }
 
   private ColsAndTypes deriveFileSinkColTypes(
       RowResolver inputRR, List<String> partitionColumnNames, List<String> sortColumnNames, List<String> distributeColumnNames,
       List<FieldSchema> columns, List<FieldSchema> partitionColumns, List<FieldSchema> sortColumns, List<FieldSchema> distributeColumns,
-      List<ColumnInfo> fileSinkColInfos, List<ColumnInfo> sortColInfos, List<ColumnInfo> distributeColInfos) throws SemanticException {
+      List<ColumnInfo> fileSinkColInfos, List<ColumnInfo> sortColInfos, List<ColumnInfo> distributeColInfos,
+      List<String> withColList) throws SemanticException {
     ColsAndTypes result = new ColsAndTypes("", "");
     List<String> allColumns = new ArrayList<>();
     List<ColumnInfo> colInfos = inputRR.getColumnInfos();
@@ -8321,7 +8343,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (numNonPartitionedCols <= 0) {
       throw new SemanticException("Too many partition columns declared");
     }
-    for (ColumnInfo colInfo : colInfos) {
+    for (int i = 0; i < colInfos.size(); i++) {
+      final ColumnInfo colInfo = colInfos.get(i);
       String[] nm = inputRR.reverseLookup(colInfo.getInternalName());
 
       if (nm[1] != null) { // non-null column alias
@@ -8332,7 +8355,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String colName = colInfo.getInternalName();  //default column name
       if (columns != null) {
         FieldSchema col = new FieldSchema();
-        if (!("".equals(nm[0])) && nm[1] != null) {
+        if (i < withColList.size()) {
+          colName = withColList.get(i);
+        } else if (!("".equals(nm[0])) && nm[1] != null) {
           colName = unescapeIdentifier(colInfo.getAlias()).toLowerCase(); // remove ``
         }
         colName = fixCtasColumnName(colName);
@@ -13952,6 +13977,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean isTemporary = false;
     boolean isManaged = false;
     boolean isMaterialization = false;
+    List<String> withColList = new ArrayList<>();
     boolean isTransactional = false;
     ASTNode selectStmt = null;
     final int CREATE_TABLE = 0; // regular CREATE TABLE
@@ -14010,6 +14036,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.KW_TEMPORARY:
         isTemporary = true;
         isMaterialization = MATERIALIZATION_MARKER.equals(child.getText());
+        break;
+      case HiveParser.TOK_TABCOLNAME:
+        Preconditions.checkState(isMaterialization);
+        withColList = processTableColumnNames(child, qualifiedTabName.getTable());
         break;
       case HiveParser.KW_TRANSACTIONAL:
         isTransactional = true;
@@ -14399,6 +14429,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           skewedColNames, skewedValues, true, primaryKeys, foreignKeys,
           uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints);
       tableDesc.setMaterialization(isMaterialization);
+      tableDesc.setWithColList(withColList);
       tableDesc.setStoredAsSubDirectories(storedAsDirs);
       tableDesc.setNullFormat(rowFormatParams.nullFormat);
       qb.setTableDesc(tableDesc);
