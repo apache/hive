@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
+import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature.RelTreeSignatureWriter;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 
 import com.google.common.collect.ImmutableList;
@@ -202,16 +203,20 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   // Also include partition list key to trigger cost evaluation even if an
   // expression was already generated.
   @Override public RelWriter explainTerms(RelWriter pw) {
-    return super.explainTerms(pw)
+    final RelWriter writer = super.explainTerms(pw)
+        .itemIf("fromVersion", ((RelOptHiveTable) table).getHiveTableMD().getVersionIntervalFrom(),
+            isNotBlank(((RelOptHiveTable) table).getHiveTableMD().getVersionIntervalFrom()));
+    if (pw instanceof RelTreeSignatureWriter) {
+      return writer.item("tableScanTrait", this.tableScanTrait);
+    }
+    return writer
       .itemIf("qbid:alias", concatQbIDAlias, this.useQBIdInDigest)
       .itemIf("htColumns", this.neededColIndxsFrmReloptHT, pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
       .itemIf("insideView", this.isInsideView(), pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
       .itemIf("plKey", ((RelOptHiveTable) table).getPartitionListKey(), pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
       .itemIf("table:alias", tblAlias, !this.useQBIdInDigest)
       .itemIf("tableScanTrait", this.tableScanTrait,
-          pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
-      .itemIf("fromVersion", ((RelOptHiveTable) table).getHiveTableMD().getVersionIntervalFrom(),
-          isNotBlank(((RelOptHiveTable) table).getHiveTableMD().getVersionIntervalFrom()));
+          pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES);
   }
 
   @Override
