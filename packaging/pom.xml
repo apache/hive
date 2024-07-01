@@ -153,7 +153,15 @@
               </licenseUrlReplacements>
               <licenseUrlFileNames>
                 <APACHE-2.0>
-                  https?://www\.apache\.org/licenses/LICENSE-2\.0.*
+                  http://apache.org/licenses/LICENSE-2.0.txt
+                  \Qhttp://www.apache.org/licenses/LICENSE-2.0
+                  \Qhttps://www.apache.org/licenses/LICENSE-2.0.txt
+                  \Qhttp://www.apache.org/licenses/LICENSE-2.0.txt
+                  \Qhttp://www.apache.org/licenses/LICENSE-2.0.html
+                  \Qhttps://www.apache.org/licenses/LICENSE-2.0
+                  \Qhttps://www.apache.org/licenses/LICENSE-2.0
+                  \Qhttps://aws.amazon.com/apache2.0
+                  \Qhttps?://www.apache.org/licenses/LICENSE-2.0.*
                   \Qhttps://aws.amazon.com/apache2.0\E
                   \Qhttps://opensource.org/licenses/Apache-2.0\E
                   \Qhttp://www.apache.org/licenses/\E
@@ -163,6 +171,7 @@
                   https?://(www\.)?opensource.org/licenses/BSD-2-Clause
                 </BSD-2-CLAUSE>
                 <BSD-3-CLAUSE>
+		  https?://(www\.)?eclipse.org/org/documents/edl-v10.php
                   https?://(www\.)?opensource.org/licenses/BSD-3-Clause
                 </BSD-3-CLAUSE>
                 <LGPL-3.0-only>
