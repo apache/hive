@@ -288,9 +288,9 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       assert (parameters.length == 1);
       try {
         if (isEligibleValue((SumHiveDecimalWritableAgg) agg, parameters[0])) {
-          ((SumHiveDecimalWritableAgg)agg).nonNullCount++;
           ((SumHiveDecimalWritableAgg)agg).sum.mutateAdd(
               PrimitiveObjectInspectorUtils.getHiveDecimal(parameters[0], inputOI));
+          ((SumHiveDecimalWritableAgg)agg).nonNullCount++;
         }
       } catch (NumberFormatException e) {
         if (!warned) {
@@ -440,8 +440,8 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       assert (parameters.length == 1);
       try {
         if (isEligibleValue((SumDoubleAgg) agg, parameters[0])) {
-          ((SumDoubleAgg)agg).nonNullCount++;
           ((SumDoubleAgg)agg).sum += PrimitiveObjectInspectorUtils.getDouble(parameters[0], inputOI);
+          ((SumDoubleAgg)agg).nonNullCount++;
         }
       } catch (NumberFormatException e) {
         if (!warned) {
@@ -578,8 +578,8 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       assert (parameters.length == 1);
       try {
         if (isEligibleValue((SumLongAgg) agg, parameters[0])) {
-          ((SumLongAgg)agg).nonNullCount++;
           ((SumLongAgg)agg).sum += PrimitiveObjectInspectorUtils.getLong(parameters[0], inputOI);
+          ((SumLongAgg)agg).nonNullCount++;
         }
       } catch (NumberFormatException e) {
         if (!warned) {

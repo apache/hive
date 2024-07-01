@@ -92,4 +92,4 @@ FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-0.0	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
