@@ -470,14 +470,14 @@ FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1"
                 TableScan
                   alias: db1_ext_auth1
                   properties:
-                    hive.sql.query SELECT "ikey" * 2 AS "*"
+                    hive.sql.query SELECT "ikey" * 2 AS "_o__c1"
 FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1"
-                    hive.sql.query.fieldNames *
+                    hive.sql.query.fieldNames _o__c1
                     hive.sql.query.fieldTypes int
                     hive.sql.query.split true
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: * (type: int)
+                    expressions: _o__c1 (type: int)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
@@ -713,16 +713,21 @@ STAGE PLANS:
         TableScan
           alias: p
           properties:
-            hive.sql.query SELECT "ikey"
+            hive.sql.query SELECT "ikey", "bkey", "fkey", "dkey"
 FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1"
-WHERE ("bkey" = 10 AND "dkey" = 15.15 OR "bkey" = 20 AND "dkey" = 25.25) AND "bkey" IN (10, 20) AND ("dkey" IN (15.15, 25.25) AND "ikey" IS NOT NULL)
-            hive.sql.query.fieldNames ikey
-            hive.sql.query.fieldTypes int
+WHERE "ikey" IS NOT NULL
+            hive.sql.query.fieldNames ikey,bkey,fkey,dkey
+            hive.sql.query.fieldTypes int,bigint,float,double
             hive.sql.query.split true
           Select Operator
-            expressions: ikey (type: int)
-            outputColumnNames: _col0
-            ListSink
+            expressions: ikey (type: int), bkey (type: bigint), dkey (type: double)
+            outputColumnNames: _col0, _col1, _col3
+            Filter Operator
+              predicate: ((_col1) IN (10L, 20L) and (_col3) IN (15.15D, 25.25D) and (struct(_col1,_col3)) IN (const struct(10L,15.15D), const struct(20L,25.25D))) (type: boolean)
+              Select Operator
+                expressions: _col0 (type: int)
+                outputColumnNames: _col0
+                ListSink
 
 PREHOOK: query: SELECT P.ikey
 FROM

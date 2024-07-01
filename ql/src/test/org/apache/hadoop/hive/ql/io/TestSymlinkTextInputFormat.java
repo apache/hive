@@ -158,7 +158,7 @@ public class TestSymlinkTextInputFormat {
 
       drv.run(loadFileCommand);
 
-      String cmd = "select key*1 from " + tblName;
+      String cmd = "select key*2 from " + tblName;
       ecode = drv.compile(cmd, true);
       if (ecode != 0) {
         throw new Exception("Select compile: " + cmd

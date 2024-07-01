@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.List;
 
 import org.apache.calcite.plan.RelOptRule;
@@ -29,8 +28,8 @@ import org.apache.calcite.plan.RelOptRuleOperand;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelOptUtil.InputFinder;
 import org.apache.calcite.plan.RelOptUtil.RexInputConverter;
-import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.plan.RelRule;
+import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
@@ -66,18 +65,18 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
   /**
    * Creates a PushFilterPastJoinRule with an explicit root operand.
    */
-  protected HiveFilterJoinRule(RelOptRuleOperand operand, String id, boolean smart,
+  protected HiveFilterJoinRule(Config conf, RelOptRuleOperand operand, String id, boolean smart,
       RelBuilderFactory relBuilderFactory) {
 
     super(
-      (Config) RelRule.Config.EMPTY
+      conf
       .withDescription("HiveFilterJoinRule(" + id + ")")
       .withOperandSupplier(b0 ->
         b0.exactly(operand))
+      .withRelBuilderFactory(relBuilderFactory)
       .as(FilterJoinRule.Config.class)
       .withSmart(smart)
       .withPredicate((join, joinType, exp) -> true)
-      .withRelBuilderFactory(relBuilderFactory)
     );
   }
 
@@ -107,7 +106,7 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
    */
   public static class HiveFilterJoinMergeRule extends HiveFilterJoinRule {
     public HiveFilterJoinMergeRule() {
-      super(operand(Filter.class, operand(Join.class, any())),
+      super(FilterIntoJoinRule.FilterIntoJoinRuleConfig.DEFAULT, operand(Filter.class, operand(Join.class, any())),
           HiveFilterJoinMergeRule.class.getSimpleName(), true, HiveRelFactories.HIVE_BUILDER);
     }
 
@@ -130,7 +129,7 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
 
   public static class HiveFilterJoinTransposeRule extends HiveFilterJoinRule {
     public HiveFilterJoinTransposeRule() {
-      super(RelOptRule.operand(Join.class, RelOptRule.any()),
+      super(JoinConditionPushRule.JoinConditionPushRuleConfig.DEFAULT, RelOptRule.operand(Join.class, RelOptRule.any()),
           HiveFilterJoinTransposeRule.class.getSimpleName(), true, HiveRelFactories.HIVE_BUILDER);
     }
 
@@ -365,7 +364,7 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
     }
     RexBuilder rexBuilder = joinRel.getCluster().getRexBuilder();
     List<RelDataTypeField> joinFields = joinRel.getRowType().getFieldList();
-    final int nSysFields = 0; // joinRel.getSystemFieldList().size();
+    final int nSysFields = 0;
     final List<RelDataTypeField> leftFields =
         joinRel.getInputs().get(0).getRowType().getFieldList();
     final int nFieldsLeft = leftFields.size();
@@ -418,7 +417,7 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
       } else if (pushRight && rightBitmap.contains(inputBits)) {
         if (!filter.isAlwaysTrue()) {
           // adjust the field references in the filter to reflect
-          // that fields in the right now shift over to the left;
+          // that fields in the right now shift over to the left
           // since we never push filters to a NULL generating
           // child, the types of the source should match the dest
           // so we don't need to explicitly pass the destination

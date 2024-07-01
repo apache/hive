@@ -52,7 +52,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
-                  filterExpr: (cdate) IN (DATE'1969-10-26', DATE'1969-07-14') (type: boolean)
+                  filterExpr: (cdate) IN (DATE'1969-07-14', DATE'1969-10-26') (type: boolean)
                   Statistics: Num rows: 12289 Data size: 339304 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -60,8 +60,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColumnInList(col 3:date, values [-67, -171])
-                    predicate: (cdate) IN (DATE'1969-10-26', DATE'1969-07-14') (type: boolean)
+                        predicateExpression: FilterLongColumnInList(col 3:date, values [-171, -67])
+                    predicate: (cdate) IN (DATE'1969-07-14', DATE'1969-10-26') (type: boolean)
                     Statistics: Num rows: 12289 Data size: 339304 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cdate (type: date)
@@ -153,7 +153,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
-                  filterExpr: ((cdate <> DATE'1969-10-26') and (cdate <> DATE'1969-07-14') and (cdate <> DATE'1970-01-21')) (type: boolean)
+                  filterExpr: ((cdate <> DATE'1969-07-14') and (cdate <> DATE'1969-10-26') and (cdate <> DATE'1970-01-21')) (type: boolean)
                   Statistics: Num rows: 12289 Data size: 339304 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -161,8 +161,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDateColNotEqualDateScalar(col 3:date, val -67), FilterDateColNotEqualDateScalar(col 3:date, val -171), FilterDateColNotEqualDateScalar(col 3:date, val 20))
-                    predicate: ((cdate <> DATE'1969-10-26') and (cdate <> DATE'1969-07-14') and (cdate <> DATE'1970-01-21')) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterDateColNotEqualDateScalar(col 3:date, val -171), FilterDateColNotEqualDateScalar(col 3:date, val -67), FilterDateColNotEqualDateScalar(col 3:date, val 20))
+                    predicate: ((cdate <> DATE'1969-07-14') and (cdate <> DATE'1969-10-26') and (cdate <> DATE'1970-01-21')) (type: boolean)
                     Statistics: Num rows: 12289 Data size: 339304 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Select Vectorization:
@@ -269,7 +269,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
-                  filterExpr: ((cdecimal1) IN (2365.8945945946, -3367.6517567568) or (cdecimal1) IN (881.0135135135)) (type: boolean)
+                  filterExpr: ((cdecimal1) IN (-3367.6517567568, 2365.8945945946) or (cdecimal1) IN (881.0135135135)) (type: boolean)
                   Statistics: Num rows: 12289 Data size: 1027600 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -277,8 +277,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterDecimalColumnInList(col 1:decimal(20,10), values [2365.8945945946, -3367.6517567568]), FilterDecimalColumnInList(col 1:decimal(20,10), values [881.0135135135]))
-                    predicate: ((cdecimal1) IN (2365.8945945946, -3367.6517567568) or (cdecimal1) IN (881.0135135135)) (type: boolean)
+                        predicateExpression: FilterExprOrExpr(children: FilterDecimalColumnInList(col 1:decimal(20,10), values [-3367.6517567568, 2365.8945945946]), FilterDecimalColumnInList(col 1:decimal(20,10), values [881.0135135135]))
+                    predicate: ((cdecimal1) IN (-3367.6517567568, 2365.8945945946) or (cdecimal1) IN (881.0135135135)) (type: boolean)
                     Statistics: Num rows: 6 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cdecimal1 (type: decimal(20,10))
@@ -370,7 +370,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
-                  filterExpr: ((cdecimal1 <> 2365.8945945946) and (cdecimal1 <> -3367.6517567568) and (cdecimal1 <> 881.0135135135)) (type: boolean)
+                  filterExpr: ((cdecimal1 <> -3367.6517567568) and (cdecimal1 <> 881.0135135135) and (cdecimal1 <> 2365.8945945946)) (type: boolean)
                   Statistics: Num rows: 12289 Data size: 1027600 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -378,8 +378,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDecimalColNotEqualDecimalScalar(col 1:decimal(20,10), val 2365.8945945946), FilterDecimalColNotEqualDecimalScalar(col 1:decimal(20,10), val -3367.6517567568), FilterDecimalColNotEqualDecimalScalar(col 1:decimal(20,10), val 881.0135135135))
-                    predicate: ((cdecimal1 <> 2365.8945945946) and (cdecimal1 <> -3367.6517567568) and (cdecimal1 <> 881.0135135135)) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterDecimalColNotEqualDecimalScalar(col 1:decimal(20,10), val -3367.6517567568), FilterDecimalColNotEqualDecimalScalar(col 1:decimal(20,10), val 881.0135135135), FilterDecimalColNotEqualDecimalScalar(col 1:decimal(20,10), val 2365.8945945946))
+                    predicate: ((cdecimal1 <> -3367.6517567568) and (cdecimal1 <> 881.0135135135) and (cdecimal1 <> 2365.8945945946)) (type: boolean)
                     Statistics: Num rows: 12289 Data size: 1027600 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Select Vectorization:
@@ -1155,13 +1155,13 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: (cdate) IN (DATE'1969-10-26', DATE'1969-07-14') (type: boolean)
+                    expressions: (cdate) IN (DATE'1969-07-14', DATE'1969-10-26') (type: boolean)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [6]
-                        selectExpressions: LongColumnInList(col 3, values [-67, -171]) -> 6:boolean
+                        selectExpressions: LongColumnInList(col 3, values [-171, -67]) -> 6:boolean
                     Statistics: Num rows: 12289 Data size: 339304 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
@@ -1300,13 +1300,13 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: ((cdecimal1) IN (2365.8945945946, -3367.6517567568) or (cdecimal1) IN (881.0135135135)) (type: boolean)
+                    expressions: ((cdecimal1) IN (-3367.6517567568, 2365.8945945946) or (cdecimal1) IN (881.0135135135)) (type: boolean)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [8]
-                        selectExpressions: ColOrCol(col 6:boolean, col 7:boolean)(children: DecimalColumnInList(col 1:decimal(20,10), values [2365.8945945946, -3367.6517567568]) -> 6:boolean, DecimalColumnInList(col 1:decimal(20,10), values [881.0135135135]) -> 7:boolean) -> 8:boolean
+                        selectExpressions: ColOrCol(col 6:boolean, col 7:boolean)(children: DecimalColumnInList(col 1:decimal(20,10), values [-3367.6517567568, 2365.8945945946]) -> 6:boolean, DecimalColumnInList(col 1:decimal(20,10), values [881.0135135135]) -> 7:boolean) -> 8:boolean
                     Statistics: Num rows: 12289 Data size: 1027600 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
