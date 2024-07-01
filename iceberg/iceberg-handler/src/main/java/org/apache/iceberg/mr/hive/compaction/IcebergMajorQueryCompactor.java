@@ -72,7 +72,11 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
       org.apache.hadoop.hive.ql.metadata.Table table = Hive.get(conf).getTable(context.getTable().getDbName(),
           context.getTable().getTableName());
       Map<String, String> partSpecMap = new LinkedHashMap<>();
-      Warehouse.makeSpecFromName(partSpecMap, new Path(partSpec), null);
+      if (!partSpec.isEmpty()) {
+        // Can be empty for a table that was unpartitioned and then after partition evolution became partitioned.
+        // In this case partSpec will be null for its unpartitioned part.
+        Warehouse.makeSpecFromName(partSpecMap, new Path(partSpec), null);
+      }
 
       Table icebergTable = IcebergTableUtil.getTable(conf, table.getTTable());
       Map<PartitionData, Integer> partitionInfo = IcebergTableUtil
@@ -89,7 +93,7 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
 
       HiveConf.setVar(conf, ConfVars.REWRITE_POLICY, RewritePolicy.PARTITION.name());
       conf.set(IcebergCompactionService.PARTITION_SPEC_ID, String.valueOf(specId.get()));
-      conf.set(IcebergCompactionService.PARTITION_PATH, new Path(partSpec).toString());
+      conf.set(IcebergCompactionService.PARTITION_PATH, partSpec.isEmpty() ? "" : new Path(partSpec).toString());
 
       List<FieldSchema> partitionKeys = IcebergTableUtil.getPartitionKeys(icebergTable, specId.get());
       List<String> partValues = partitionKeys.stream().map(
@@ -104,12 +108,22 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
           .filter(col -> !partSpecMap.containsKey(col))
           .collect(Collectors.joining(","));
 
-      compactionQuery = String.format("insert overwrite table %1$s partition(%2$s) " +
-              "select %4$s from %1$s where %3$s and %6$s = %5$d",
-          compactTableName,
-          StringUtils.join(partValues, ","),
-          StringUtils.join(partValues, " and "),
-          queryFields, specId.get(), VirtualColumn.PARTITION_SPEC_ID.getName());
+      if (!partSpec.isEmpty()) {
+        compactionQuery = String.format("insert overwrite table %1$s partition(%2$s) " +
+                "select %4$s from %1$s where %3$s and %6$s = %5$d",
+            compactTableName,
+            StringUtils.join(partValues, ","),
+            StringUtils.join(partValues, " and "),
+            queryFields, specId.get(), VirtualColumn.PARTITION_SPEC_ID.getName());
+      } else {
+        // A single filter on a virtual column causes errors during compilation,
+        // added another filter on file_path as a workaround.
+        compactionQuery = String.format("insert overwrite table %1$s " +
+                "select %2$s from %1$s where %4$s = %3$d and %5$s is not null",
+            compactTableName,
+            queryFields, specId.get(), VirtualColumn.PARTITION_SPEC_ID.getName(),
+            VirtualColumn.FILE_PATH.getName());
+      }
     }
 
     SessionState sessionState = setupQueryCompactionSession(conf, context.getCompactionInfo(), tblProperties);

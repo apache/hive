@@ -842,6 +842,10 @@ public interface HiveStorageHandler extends Configurable {
     throw new UnsupportedOperationException("Storage handler does not support getting partitions for a table.");
   }
 
+  default boolean isPartitioned(org.apache.hadoop.hive.ql.metadata.Table table) {
+    throw new UnsupportedOperationException("Storage handler does not support checking if table is partitioned.");
+  }
+
   default boolean supportsMergeFiles() {
     return false;
   }

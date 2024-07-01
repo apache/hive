@@ -493,7 +493,8 @@ public class CompactorUtil {
 
       checkInterrupt(Initiator.class.getName());
 
-      CompactionType type = checkForCompaction(ci, validWriteIds, sd, t.getParameters(), runAs, txnHandler, conf);
+      CompactionType type = MetaStoreUtils.isIcebergTable(t.getParameters()) ? ci.type : 
+          checkForCompaction(ci, validWriteIds, sd, t.getParameters(), runAs, txnHandler, conf);
       if (type != null) {
         ci.type = type;
         return requestCompaction(ci, runAs, hostName, txnHandler);
