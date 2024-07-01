@@ -361,8 +361,8 @@ public class CliConfigs {
     }
   }
 
-  public static class NegativeLlapCliDriver extends AbstractCliConfig {
-    public NegativeLlapCliDriver() {
+  public static class NegativeLlapCliConfig extends AbstractCliConfig {
+    public NegativeLlapCliConfig() {
       super(CoreNegativeCliDriver.class);
       try {
         setQueryDir("ql/src/test/queries/clientnegative");
