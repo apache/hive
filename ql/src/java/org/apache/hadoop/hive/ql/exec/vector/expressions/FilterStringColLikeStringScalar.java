@@ -82,7 +82,7 @@ public class FilterStringColLikeStringScalar extends AbstractFilterStringColLike
     COMPLEX(ComplexChecker.class) {
       @Override
       String format(String pattern) {
-        return "^" + UDFLike.likePatternToRegExp(pattern) + "$";
+        return "^" + UDFLike.likePatternToRegExp(pattern, true) + "$";
       }
     },
     // Accepts chained LIKE patterns without escaping like "abc%def%ghi%" and
