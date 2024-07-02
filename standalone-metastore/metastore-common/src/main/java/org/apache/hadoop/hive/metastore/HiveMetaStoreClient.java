@@ -449,6 +449,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @VisibleForTesting
+  @SuppressFBWarnings(value = "MS_EXPOSE_REP", justification = "intended_to_do")
   public static AtomicInteger getConnCount() {
     return connCount;
   }
