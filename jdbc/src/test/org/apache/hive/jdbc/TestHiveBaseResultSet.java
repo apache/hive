@@ -32,7 +32,7 @@ import org.apache.hive.service.cli.TableSchema;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.mockito.internal.util.reflection.FieldSetter;
+import org.apache.hive.common.util.ReflectionUtil;
 
 /**
  * Test suite for {@link HiveBaseResultSet} class.
@@ -259,7 +259,7 @@ public class TestHiveBaseResultSet {
     resultSet.normalizedColumnNames = Arrays.asList("one", "two", "three");
 
     Field executorField = HiveBaseResultSet.class.getDeclaredField("columnNameIndexCache");
-    FieldSetter.setField(resultSet, executorField, new HashMap<>());
+    ReflectionUtil.setField(resultSet, executorField, new HashMap<>());
 
     when(resultSet.getSchema()).thenReturn(schema);
     when(resultSet.findColumn("one")).thenCallRealMethod();
@@ -290,7 +290,7 @@ public class TestHiveBaseResultSet {
     resultSet.normalizedColumnNames = Arrays.asList("table.one", "table.two", "table.three");
 
     Field executorField = HiveBaseResultSet.class.getDeclaredField("columnNameIndexCache");
-    FieldSetter.setField(resultSet, executorField, new HashMap<>());
+    ReflectionUtil.setField(resultSet, executorField, new HashMap<>());
 
     when(resultSet.getSchema()).thenReturn(schema);
     when(resultSet.findColumn("one")).thenCallRealMethod();
@@ -322,7 +322,7 @@ public class TestHiveBaseResultSet {
     resultSet.normalizedColumnNames = Arrays.asList("table.one");
 
     Field executorField = HiveBaseResultSet.class.getDeclaredField("columnNameIndexCache");
-    FieldSetter.setField(resultSet, executorField, new HashMap<>());
+    ReflectionUtil.setField(resultSet, executorField, new HashMap<>());
 
     when(resultSet.getSchema()).thenReturn(schema);
     when(resultSet.findColumn("zero")).thenCallRealMethod();

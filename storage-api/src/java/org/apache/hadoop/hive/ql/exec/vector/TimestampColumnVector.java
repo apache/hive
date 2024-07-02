@@ -478,6 +478,7 @@ public class TimestampColumnVector extends ColumnVector {
    * Supports keeping a TimestampWritable object without having to import that definition...
    * @return
    */
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
   public Writable getScratchWritable() {
     return scratchWritable;
   }
@@ -486,6 +487,7 @@ public class TimestampColumnVector extends ColumnVector {
    * Set the convenience writable object stored by this column vector
    * @param scratchWritable
    */
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
   public void setScratchWritable(Writable scratchWritable) {
     this.scratchWritable = scratchWritable;
   }

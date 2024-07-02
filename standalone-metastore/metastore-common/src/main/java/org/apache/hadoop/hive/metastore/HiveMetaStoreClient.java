@@ -66,6 +66,7 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.common.util.SuppressFBWarnings;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.api.Package;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -429,6 +430,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
    * Swaps the first element of the metastoreUris array with a random element from the
    * remainder of the array.
    */
+  @SuppressFBWarnings(value ="DMI_RANDOM_USED_ONLY_ONCE", justification = "intended_to_do")
   private void promoteRandomMetaStoreURI() {
     if (metastoreUris.length <= 1) {
       return;
@@ -441,6 +443,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @VisibleForTesting
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
   public TTransport getTTransport() {
     return transport;
   }

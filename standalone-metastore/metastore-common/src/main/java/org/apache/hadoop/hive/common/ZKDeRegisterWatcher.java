@@ -20,13 +20,13 @@ package org.apache.hadoop.hive.common;
 
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
-
+import org.apache.hadoop.hive.common.util.SuppressFBWarnings;
 /**
  * The watcher class which sets the de-register flag when the given znode is deleted.
  */
 public class ZKDeRegisterWatcher implements Watcher {
   private ZooKeeperHiveHelper zooKeeperHiveHelper;
-
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2",justification = "intended_to_do")
   public ZKDeRegisterWatcher(ZooKeeperHiveHelper zooKeeperHiveHelper) {
     this.zooKeeperHiveHelper = zooKeeperHiveHelper;
   }
