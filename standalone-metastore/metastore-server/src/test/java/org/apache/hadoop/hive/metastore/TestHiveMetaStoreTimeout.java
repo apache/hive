@@ -182,7 +182,7 @@ public class TestHiveMetaStoreTimeout {
       try(HiveMetaStoreClient c = new HiveMetaStoreClient(newConf)) {
         Assert.fail("should throw connection timeout exception.");
       } catch (MetaException e) {
-        Assert.assertTrue("unexpected Exception", e.getMessage().contains("connect timed out"));
+        Assert.assertTrue("unexpected Exception", e.getMessage().toLowerCase().contains("connect timed out"));
       }
       return null;
     });
