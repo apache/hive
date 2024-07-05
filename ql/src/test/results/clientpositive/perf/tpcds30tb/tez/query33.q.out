@@ -1,19 +1,3 @@
-CTE Suggestion 0:HiveProject(ca_address_sk=[$0], ca_gmt_offset=[CAST(-6:DECIMAL(5, 2)):DECIMAL(5, 2)])
-  HiveFilter(condition=[=($11, -6:DECIMAL(1, 0))])
-    HiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
-
-CTE Suggestion 1:HiveProject(i_item_sk=[$0], i_manufact_id=[$13])
-  HiveFilter(condition=[IS NOT NULL($13)])
-    HiveTableScan(table=[[default, item]], table:alias=[item])
-
-CTE Suggestion 2:HiveProject(i_manufact_id=[$13])
-  HiveFilter(condition=[AND(=($12, _UTF-16LE'Books                                             '), IS NOT NULL($13))])
-    HiveTableScan(table=[[default, item]], table:alias=[item])
-
-CTE Suggestion 3:HiveProject(d_date_sk=[$0], d_year=[CAST(1999):INTEGER], d_moy=[CAST(3):INTEGER])
-  HiveFilter(condition=[AND(=($6, 1999), =($8, 3))])
-    HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
