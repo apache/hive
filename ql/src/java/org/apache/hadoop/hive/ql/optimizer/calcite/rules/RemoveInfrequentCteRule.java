@@ -25,15 +25,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Rule that removes unused CTEs from the plan by expanding the respective TableScans.
+ * Rule that removes CTEs from the plan by expanding the respective TableScans.
  * <p>The rule assumes that all materializations registered in the planner refer to CTEs.</p>
  */
-public class RemoveUnusedCteRule extends RelOptRule {
+public class RemoveInfrequentCteRule extends RelOptRule {
 
   private final int referenceThreshold;
   private final Map<List<String>, Long> tableOccurrences;
 
-  public RemoveUnusedCteRule(Map<List<String>, Long> tableOccurrences, int referenceThreshold) {
+  public RemoveInfrequentCteRule(Map<List<String>, Long> tableOccurrences, int referenceThreshold) {
     super(operand(TableScan.class, none()));
     this.tableOccurrences = tableOccurrences;
     this.referenceThreshold = referenceThreshold;

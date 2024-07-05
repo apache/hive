@@ -178,7 +178,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSortLimitR
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveEmptySingleRules;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.RemoveUnusedCteRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.RemoveInfrequentCteRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAggregateProjectMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializationRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
@@ -2167,7 +2167,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // Use some defined match order ensuring consistent introduction of spool operators; avoids plan flakiness
           .addMatchOrder(HepMatchOrder.DEPTH_FIRST)
           .addRuleInstance(new TableScanToSpoolRule(tableOccurrences, referenceThreshold))
-          .addRuleInstance(new RemoveUnusedCteRule(tableOccurrences, referenceThreshold))
+          .addRuleInstance(new RemoveInfrequentCteRule(tableOccurrences, referenceThreshold))
           .build();
       final RelNode spoolPlan = executeProgram(ctePlan, spoolProgram, mdProvider, executorProvider, cteMVs, true);
       if (ctePlan.getRelDigest().equals(spoolPlan.getRelDigest())) {
