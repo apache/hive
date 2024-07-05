@@ -562,13 +562,15 @@ public class HiveMaterializedViewUtils {
     } catch (MetaException e) {
       throw new RuntimeException(e);
     }
-    RelOptHiveTable viewTable =
-        new RelOptHiveTable(null, cluster.getTypeFactory(), fullName, body.getRowType(), new Table(metaTable), columns,
+    Table hiveTable = new Table(metaTable);
+    hiveTable.setMaterializedTable(true);
+    RelOptHiveTable optTable =
+        new RelOptHiveTable(null, cluster.getTypeFactory(), fullName, body.getRowType(), hiveTable, columns,
             Collections.emptyList(), Collections.emptyList(), new HiveConf(), Hive.getThreadLocal(),
             new QueryTables(true), new HashMap<>(), new HashMap<>(), new AtomicInteger());
-    viewTable.setRowCount(cluster.getMetadataQuery().getRowCount(body));
+    optTable.setRowCount(cluster.getMetadataQuery().getRowCount(body));
     final TableScan scan =
-        new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), viewTable, viewName, null, false, false);
+        new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable, viewName, null, false, false);
 
     return new RelOptMaterialization(scan, body, null, fullName);
   }

@@ -601,13 +601,11 @@ public class ASTConverter {
       TableSpool spool = (TableSpool) r;
       ASTConverter cteConverter =
           new ASTConverter(spool.getInput(), this.derivedTableCount, planMapper, Collections.emptyList());
-      String tableName = Iterables.getLast(spool.getTable().getQualifiedName());
+      String cteAlias = Iterables.getLast(spool.getTable().getQualifiedName());
       ASTNode cte = ASTBuilder.createAST(HiveParser.TOK_CTE, "TOK_CTE");
-      cte.addChild(ASTBuilder.subQuery(cteConverter.convert(), tableName));
+      cte.addChild(ASTBuilder.subQuery(cteConverter.convert(), cteAlias));
       ctes.add(cte);
-      ASTBuilder tabref = ASTBuilder.construct(HiveParser.TOK_TABREF, "TOK_TABREF")
-          .add(ASTBuilder.construct(HiveParser.TOK_TABNAME, "TOK_TABNAME").add(HiveParser.Identifier, tableName));
-      return new QueryBlockInfo(cteConverter.getRowSchema(tableName), tabref.node());
+      return new QueryBlockInfo(cteConverter.getRowSchema(cteAlias), ASTBuilder.cte(cteAlias));
     } else {
       ASTConverter src = new ASTConverter(r, this.derivedTableCount, planMapper, this.ctes);
       ASTNode srcAST = src.convert();

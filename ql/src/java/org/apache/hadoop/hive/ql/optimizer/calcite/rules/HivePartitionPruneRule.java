@@ -50,7 +50,7 @@ public class HivePartitionPruneRule extends RelOptRule {
       HiveTableScan tScan) {
     // Original table
     RelOptHiveTable hiveTable = (RelOptHiveTable) tScan.getTable();
-    if (hiveTable.getHiveTableMD().isTemporary()) {
+    if (hiveTable.getHiveTableMD().isMaterializedTable()) {
       return;
     }
 
