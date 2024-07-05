@@ -155,7 +155,12 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     return new URI(fromScheme, fromAuthority, path, null, null);
   }
 
-  private List<FileStatus> applyConstraintsAndGetFiles(URI fromURI, Table table) throws SemanticException {
+  /**
+   * Verifies the file path existence. If the path is a directory, then it is
+   * verified to not be a glob pattern. If the path is a file, then it is
+   * verified to be a valid file name.
+   */
+  private FileStatus[] verifyFilePathExists(URI fromURI) throws SemanticException {
 
     FileStatus[] srcs;
 
@@ -166,7 +171,6 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
           ErrorMsg.ILLEGAL_PATH.getMsg(), fromTree,
           "Source file system should be \"file\" if \"local\" is specified"));
     }
-
     try {
       FileSystem fileSystem = FileSystem.get(fromURI, conf);
       srcs = matchFilesOrDir(fileSystem, new Path(fromURI));
@@ -175,6 +179,15 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
             ErrorMsg.INVALID_PATH.getMsg(), fromTree,
             "No files matching path " + fromURI));
       }
+    } catch (IOException e) {
+      throw new SemanticException(ASTErrorUtils.getMsg(
+              ErrorMsg.INVALID_PATH.getMsg(), fromTree), e);
+    }
+    return srcs;
+  }
+  private List<FileStatus> applyConstraintsAndGetFiles(URI fromURI, Table table, FileStatus[] srcs)
+          throws SemanticException {
+    try {
 
       for (FileStatus oneSrc : srcs) {
         if (oneSrc.isDir()) {
@@ -182,6 +195,7 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
           return null;
         }
       }
+      FileSystem fileSystem = FileSystem.get(fromURI, conf);
       AcidUtils.validateAcidFiles(table, srcs, fileSystem);
       // Do another loop if table is bucketed
       List<String> bucketCols = table.getBucketCols();
@@ -284,6 +298,8 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
       throw new SemanticException(ASTErrorUtils.getMsg(
           ErrorMsg.INVALID_PATH.getMsg(), fromTree, e.getMessage()), e);
     }
+    // validate the arguments
+    FileStatus[] srcs = verifyFilePathExists(fromURI);
 
     // initialize destination table/partition
     TableSpec ts = new TableSpec(db, conf, (ASTNode) tableTree);
@@ -338,7 +354,7 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     }
 
     // make sure the arguments make sense
-    List<FileStatus> files = applyConstraintsAndGetFiles(fromURI, ts.tableHandle);
+    List<FileStatus> files = applyConstraintsAndGetFiles(fromURI, ts.tableHandle, srcs);
     if (queryReWritten) {
       return;
     }
