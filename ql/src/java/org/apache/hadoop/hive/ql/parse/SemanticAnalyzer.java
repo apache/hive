@@ -7834,7 +7834,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (!CollectionUtils.isEmpty(partitionColumnNames)) {
         ColsAndTypes ct = deriveFileSinkColTypes(
             inputRR, partitionColumnNames, sortColumnNames, distributeColumnNames, fieldSchemas, partitionColumns,
-            sortColumns, distributeColumns, fileSinkColInfos, sortColInfos, distributeColInfos);
+            sortColumns, distributeColumns, fileSinkColInfos, sortColInfos, distributeColInfos,
+            destTableIsMaterialization);
         cols = ct.cols;
         colTypes = ct.colTypes;
         dpCtx = new DynamicPartitionCtx(partitionColumnNames,
@@ -7845,7 +7846,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       } else {
         ColsAndTypes ct = deriveFileSinkColTypes(
             inputRR, sortColumnNames, distributeColumnNames, fieldSchemas, sortColumns, distributeColumns,
-            sortColInfos, distributeColInfos);
+            sortColInfos, distributeColInfos, destTableIsMaterialization);
         cols = ct.cols;
         colTypes = ct.colTypes;
         isPartitioned = false;
@@ -8299,16 +8300,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private ColsAndTypes deriveFileSinkColTypes(RowResolver inputRR, List<String> sortColumnNames, List<String> distributeColumnNames,
       List<FieldSchema> fieldSchemas, List<FieldSchema> sortColumns, List<FieldSchema> distributeColumns,
-      List<ColumnInfo> sortColInfos, List<ColumnInfo> distributeColInfos) throws SemanticException {
+      List<ColumnInfo> sortColInfos, List<ColumnInfo> distributeColInfos, boolean isMaterialized)
+      throws SemanticException {
     return deriveFileSinkColTypes(inputRR, new ArrayList<>(), sortColumnNames, distributeColumnNames,
         fieldSchemas, new ArrayList<>(), sortColumns, distributeColumns, new ArrayList<>(),
-        sortColInfos, distributeColInfos);
+        sortColInfos, distributeColInfos, isMaterialized);
   }
 
   private ColsAndTypes deriveFileSinkColTypes(
       RowResolver inputRR, List<String> partitionColumnNames, List<String> sortColumnNames, List<String> distributeColumnNames,
       List<FieldSchema> columns, List<FieldSchema> partitionColumns, List<FieldSchema> sortColumns, List<FieldSchema> distributeColumns,
-      List<ColumnInfo> fileSinkColInfos, List<ColumnInfo> sortColInfos, List<ColumnInfo> distributeColInfos) throws SemanticException {
+      List<ColumnInfo> fileSinkColInfos, List<ColumnInfo> sortColInfos, List<ColumnInfo> distributeColInfos,
+      boolean isMaterialized) throws SemanticException {
     ColsAndTypes result = new ColsAndTypes("", "");
     List<String> allColumns = new ArrayList<>();
     List<ColumnInfo> colInfos = inputRR.getColumnInfos();
@@ -8340,7 +8343,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         allColumns.add(colName);
         String typeName = colInfo.getType().getTypeName();
         // CTAS should NOT create a VOID type
-        if (typeName.equals(serdeConstants.VOID_TYPE_NAME)) {
+        if (!isMaterialized && typeName.equals(serdeConstants.VOID_TYPE_NAME)) {
           throw new SemanticException(ErrorMsg.CTAS_CREATES_VOID_TYPE.getMsg(colName));
         }
         col.setType(typeName);
