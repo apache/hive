@@ -50,9 +50,7 @@ public final class CommonRelSubExprRegisterRule extends CommonRelSubExprRule {
   @Override
   public void onMatch(final RelOptRuleCall call) {
     CommonTableExpressionRegistry r = call.getPlanner().getContext().unwrap(CommonTableExpressionRegistry.class);
-    if (r != null) {
-      r.add(call.rel(0));
-    }
+    r.add(call.rel(0));
   }
 
   /**
