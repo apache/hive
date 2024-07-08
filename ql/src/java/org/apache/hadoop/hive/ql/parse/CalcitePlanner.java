@@ -2160,9 +2160,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
         cteMVs.add(HiveMaterializedViewUtils.createCTEMaterialization("cte_suggestion_" + i, cte, conf));
       }
       final RelNode ctePlan = rewriteUsingViews(planner, basePlan, mdProvider, executorProvider, cteMVs);
-      Map<List<String>, Long> tableOccurrences = RelOptUtil.findAllTables(ctePlan).stream()
+      Map<List<String>, Integer> tableOccurrences = RelOptUtil.findAllTables(ctePlan).stream()
           .map(RelOptTable::getQualifiedName)
-          .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+          .collect(Collectors.toMap(Function.identity(), v -> 1, Integer::sum));
       HepProgram spoolProgram = HepProgram.builder()
           // Use some defined match order ensuring consistent introduction of spool operators; avoids plan flakiness
           .addMatchOrder(HepMatchOrder.DEPTH_FIRST)
