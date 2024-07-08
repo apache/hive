@@ -31,9 +31,9 @@ import java.util.Map;
 public class RemoveInfrequentCteRule extends RelOptRule {
 
   private final int referenceThreshold;
-  private final Map<List<String>, Long> tableOccurrences;
+  private final Map<List<String>, Integer> tableOccurrences;
 
-  public RemoveInfrequentCteRule(Map<List<String>, Long> tableOccurrences, int referenceThreshold) {
+  public RemoveInfrequentCteRule(Map<List<String>, Integer> tableOccurrences, int referenceThreshold) {
     super(operand(TableScan.class, none()));
     this.tableOccurrences = tableOccurrences;
     this.referenceThreshold = referenceThreshold;
@@ -43,7 +43,7 @@ public class RemoveInfrequentCteRule extends RelOptRule {
   @Override
   public boolean matches(final RelOptRuleCall call) {
     TableScan scan = call.rel(0);
-    return tableOccurrences.getOrDefault(scan.getTable().getQualifiedName(), 0L) <= referenceThreshold;
+    return tableOccurrences.getOrDefault(scan.getTable().getQualifiedName(), 0) <= referenceThreshold;
   }
 
   @Override

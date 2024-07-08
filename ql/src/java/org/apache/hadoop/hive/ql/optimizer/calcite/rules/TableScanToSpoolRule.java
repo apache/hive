@@ -36,8 +36,8 @@ public class TableScanToSpoolRule extends RelOptRule {
    */
   private final Set<String> spools = new HashSet<>();
   private final int referenceThreshold;
-  private final Map<List<String>, Long> tableOccurrences;
-  public TableScanToSpoolRule(Map<List<String>, Long> tableOccurrences, int referenceThreshold) {
+  private final Map<List<String>, Integer> tableOccurrences;
+  public TableScanToSpoolRule(Map<List<String>, Integer> tableOccurrences, int referenceThreshold) {
     super(operand(TableScan.class, none()));
     this.referenceThreshold = referenceThreshold;
     this.tableOccurrences = tableOccurrences;
@@ -51,7 +51,7 @@ public class TableScanToSpoolRule extends RelOptRule {
     if (spools.contains(tableName.toString())) {
       return false;
     }
-    return tableOccurrences.getOrDefault(tableName, 0L) > referenceThreshold;
+    return tableOccurrences.getOrDefault(tableName, 0) > referenceThreshold;
   }
 
   @Override
