@@ -78,7 +78,7 @@ public class ASTBuilder {
     assert hts != null;
     RelOptHiveTable hTbl = (RelOptHiveTable) hts.getTable();
     if (hTbl.getHiveTableMD().isMaterializedTable()) {
-      return cte(hTbl.getHiveTableMD().getTableName());
+      return cte(hTbl.getHiveTableMD().getTableName(), hts.getTableAlias());
     }
     ASTBuilder tableNameBuilder = ASTBuilder.construct(HiveParser.TOK_TABNAME, "TOK_TABNAME")
         .add(HiveParser.Identifier, hTbl.getHiveTableMD().getDbName())
@@ -191,11 +191,12 @@ public class ASTBuilder {
   }
 
   /**
-   * @return an ASTNode representing a (table) reference to a CTE with the specified alias.
+   * @return an ASTNode representing a (table) reference to a CTE with the specified name and alias.
    */
-  public static ASTNode cte(String alias) {
+  public static ASTNode cte(String name, final String alias) {
     return ASTBuilder.construct(HiveParser.TOK_TABREF, "TOK_TABREF")
-        .add(ASTBuilder.construct(HiveParser.TOK_TABNAME, "TOK_TABNAME").add(HiveParser.Identifier, alias)).node();
+        .add(ASTBuilder.construct(HiveParser.TOK_TABNAME, "TOK_TABNAME").add(HiveParser.Identifier, name))
+        .add(HiveParser.Identifier, alias).node();
   }
 
   public static ASTNode join(ASTNode left, ASTNode right, JoinRelType joinType, ASTNode cond) {
