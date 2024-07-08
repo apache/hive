@@ -60,8 +60,8 @@ public class TestAuthWithDigestMD5 {
         MetastoreConf.setVar(conf, ConfVars.KERBEROS_PRINCIPAL, hiveMetastorePrincipal);
         MetastoreConf.setVar(conf, ConfVars.KERBEROS_KEYTAB_FILE, hiveMetastoreKeytab);
 
-        MetastoreConf.setTimeVar(conf, ConfVars.DELEGATION_TOKEN_RENEW_INTERVAL,10000, TimeUnit.MILLISECONDS);
-        MetastoreConf.setTimeVar(conf, ConfVars.DELEGATION_TOKEN_GC_INTERVAL,3000, TimeUnit.MILLISECONDS);
+        MetastoreConf.setTimeVar(conf, ConfVars.DELEGATION_TOKEN_RENEW_INTERVAL,2000, TimeUnit.MILLISECONDS);
+        MetastoreConf.setTimeVar(conf, ConfVars.DELEGATION_TOKEN_GC_INTERVAL,1000, TimeUnit.MILLISECONDS);
 
         port = MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(),
                 conf);
@@ -84,7 +84,7 @@ public class TestAuthWithDigestMD5 {
         delegationToken.setService(new Text(HS2TOKEN));
         UserGroupInformation.getCurrentUser().addToken(delegationToken);
 
-        Thread.sleep(15000);
+        Thread.sleep(4000);
         client = new HiveMetaStoreClient(conf);
         client.close();
     }

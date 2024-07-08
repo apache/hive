@@ -246,7 +246,7 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
    * that cannot be reused due to private method access. Logic here can more efficiently
    * deal with external token store by only loading into memory the minimum data needed.
    */
-  protected void removeExpiredTokens() {
+  protected void removeExpiredTokens() throws InvalidToken {
     long now = System.currentTimeMillis();
     for (DelegationTokenIdentifier id : tokenStore.getAllDelegationTokenIdentifiers()) {
       if (now > id.getMaxDate()) {
@@ -259,7 +259,8 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
     }
   }
 
-  private void renewIfRequired(long currentTime, DelegationTokenIdentifier id, DelegationTokenInformation tokenInfo) {
+  private void renewIfRequired(long currentTime, DelegationTokenIdentifier id, DelegationTokenInformation tokenInfo)
+          throws InvalidToken {
     if (tokenInfo != null) {
       if (currentTime > tokenInfo.getRenewDate() && currentTime < id.getMaxDate()) {
         // This will be the case when now > tokenInfo.getRenewDate() but less than the token expiration/max time.
@@ -270,11 +271,11 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
                   id.getKind(), new Text());
           renewToken(t, UserGroupInformation.getCurrentUser().getShortUserName());
         } catch (IOException e) {
-          throw new IllegalStateException("Unable to renew token: " + id);
+          throw new InvalidToken("Unable to renew token: " + id);
         }
-      } else if (currentTime >= id.getMaxDate()) {
+      } else if (currentTime > id.getMaxDate()) {
         // In this case expiry time has passed and this token cannot be further renewed.
-        throw new IllegalStateException("Expiration time passed. Cannot renew the token.");
+        throw new InvalidToken("Expiration time passed. Cannot renew the token.");
       }
     }
   }
