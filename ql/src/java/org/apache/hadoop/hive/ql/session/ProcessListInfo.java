@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.hadoop.hive.ql.session;
 
 /**
@@ -15,11 +32,10 @@ public class ProcessListInfo {
   private final String runtime;  // tracks only running portion of the query.
   private final long elapsedTime;
   private final String state;
-  private final String queryDisplay;
 
   private ProcessListInfo( String userName, String ipAddr, String sessionId,  long sessionActiveTime,
       long sessionIdleTime,String queryId, String executionEngine, long beginTime,
-      String runtime, long elapsedTime, String state, String queryDisplay) {
+      String runtime, long elapsedTime, String state ) {
     this.userName = userName;
     this.ipAddr = ipAddr;
     this.sessionId = sessionId;
@@ -31,11 +47,9 @@ public class ProcessListInfo {
     this.runtime= runtime;
     this.elapsedTime = elapsedTime;
     this.state = state;
-    this.queryDisplay = queryDisplay;
   }
 
   public String getSessionId() { return sessionId; }
-
   public String getUserName() {
     return userName;
   }
@@ -45,19 +59,11 @@ public class ProcessListInfo {
   public long getSessionActiveTime() { return sessionActiveTime; }
   public long getSessionIdleTime() { return sessionIdleTime; }
   public String getExecutionEngine() { return executionEngine; }
-
   public long getBeginTime() { return beginTime; }
-
   public String getQueryId() { return queryId; }
-
   public String getRuntime() { return runtime; }
-
   public long getElapsedTime() { return elapsedTime; }
-
   public String getState() { return state; }
-
-  public String getQueryDisplay() { return queryDisplay; }
-
   public static class Builder {
     private String userName ;
     private String ipAddr;
@@ -70,7 +76,6 @@ public class ProcessListInfo {
     private String runtime;
     private long elapsedTime;
     private String state;
-    private String queryDisplay;
 
     public Builder setSessionId(String sessionId){
       this.sessionId = sessionId;
@@ -127,15 +132,10 @@ public class ProcessListInfo {
       return this;
     }
 
-    public Builder setQueryDisplay(String queryDisplay) {
-      this.queryDisplay = queryDisplay;
-      return this;
-    }
-
     public ProcessListInfo build() {
       ProcessListInfo processListInfo = new ProcessListInfo(userName, ipAddr, sessionId, sessionActiveTime,
           sessionIdleTime, queryId, executionEngine, beginTime, runtime,
-          elapsedTime, state, queryDisplay);
+          elapsedTime, state);
       return processListInfo;
     }
   }
