@@ -173,7 +173,6 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
               .setRuntime(query.getRuntime() == null ? "Not finished" : String.valueOf(query.getRuntime() / 1000))
               .setElapsedTime(query.getElapsedTime() / 1000)
               .setState(query.getState())
-              .setQueryDisplay(query.getQueryDisplay() == null ? "Unknown" : query.getQueryDisplay().getQueryString())
               .build();
         })
         .collect(Collectors.toList());
