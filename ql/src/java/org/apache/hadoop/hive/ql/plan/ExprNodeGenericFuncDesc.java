@@ -111,6 +111,9 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
 
   @Override
   public ObjectInspector getWritableObjectInspector() {
+    if (writableObjectInspector == null) {
+      writableObjectInspector = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(typeInfo);
+    }
     return writableObjectInspector;
   }
 
