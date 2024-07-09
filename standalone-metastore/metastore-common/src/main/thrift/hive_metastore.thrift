@@ -2749,8 +2749,6 @@ service ThriftHiveMetastore extends fb303.FacebookService
       2:EnvironmentContext environment_context)
       throws (1:InvalidObjectException o1, 2:AlreadyExistsException o2,
       3:MetaException o3)
-  Partition add_partition_req(1:AddPartitionsRequest addPartitionsReq)
-        throws (1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
   i32 add_partitions(1:list<Partition> new_parts)
                        throws(1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
   i32 add_partitions_pspec(1:list<PartitionSpec> new_parts)
@@ -2769,8 +2767,6 @@ service ThriftHiveMetastore extends fb303.FacebookService
   Partition append_partition_by_name_with_environment_context(1:string db_name, 2:string tbl_name,
       3:string part_name, 4:EnvironmentContext environment_context)
                        throws (1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
-  Partition append_partition_by_name_req(1:AppendPartitionsRequest appendPartitionRequest)
-        throws (1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
   bool drop_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals, 4:bool deleteData)
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
   bool drop_partition_with_environment_context(1:string db_name, 2:string tbl_name,
@@ -2782,8 +2778,6 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
   bool drop_partition_by_name_with_environment_context(1:string db_name, 2:string tbl_name,
       3:string part_name, 4:bool deleteData, 5:EnvironmentContext environment_context)
-                       throws(1:NoSuchObjectException o1, 2:MetaException o2)
-  bool drop_partition_by_name_req(1:DropPartitionRequest dropPartitionReq)
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
   DropPartitionsResult drop_partitions_req(1: DropPartitionsRequest req)
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)

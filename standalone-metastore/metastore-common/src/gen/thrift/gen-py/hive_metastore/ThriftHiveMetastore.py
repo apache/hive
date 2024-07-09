@@ -592,14 +592,6 @@ class Iface(fb303.FacebookService.Iface):
         """
         pass
 
-    def add_partition_req(self, addPartitionsReq):
-        """
-        Parameters:
-         - addPartitionsReq
-
-        """
-        pass
-
     def add_partitions(self, new_parts):
         """
         Parameters:
@@ -674,14 +666,6 @@ class Iface(fb303.FacebookService.Iface):
         """
         pass
 
-    def append_partition_by_name_req(self, appendPartitionRequest):
-        """
-        Parameters:
-         - appendPartitionRequest
-
-        """
-        pass
-
     def drop_partition(self, db_name, tbl_name, part_vals, deleteData):
         """
         Parameters:
@@ -732,14 +716,6 @@ class Iface(fb303.FacebookService.Iface):
          - part_name
          - deleteData
          - environment_context
-
-        """
-        pass
-
-    def drop_partition_by_name_req(self, dropPartitionReq):
-        """
-        Parameters:
-         - dropPartitionReq
 
         """
         pass
@@ -4888,44 +4864,6 @@ class Client(fb303.FacebookService.Client, Iface):
             raise result.o3
         raise TApplicationException(TApplicationException.MISSING_RESULT, "add_partition_with_environment_context failed: unknown result")
 
-    def add_partition_req(self, addPartitionsReq):
-        """
-        Parameters:
-         - addPartitionsReq
-
-        """
-        self.send_add_partition_req(addPartitionsReq)
-        return self.recv_add_partition_req()
-
-    def send_add_partition_req(self, addPartitionsReq):
-        self._oprot.writeMessageBegin('add_partition_req', TMessageType.CALL, self._seqid)
-        args = add_partition_req_args()
-        args.addPartitionsReq = addPartitionsReq
-        args.write(self._oprot)
-        self._oprot.writeMessageEnd()
-        self._oprot.trans.flush()
-
-    def recv_add_partition_req(self):
-        iprot = self._iprot
-        (fname, mtype, rseqid) = iprot.readMessageBegin()
-        if mtype == TMessageType.EXCEPTION:
-            x = TApplicationException()
-            x.read(iprot)
-            iprot.readMessageEnd()
-            raise x
-        result = add_partition_req_result()
-        result.read(iprot)
-        iprot.readMessageEnd()
-        if result.success is not None:
-            return result.success
-        if result.o1 is not None:
-            raise result.o1
-        if result.o2 is not None:
-            raise result.o2
-        if result.o3 is not None:
-            raise result.o3
-        raise TApplicationException(TApplicationException.MISSING_RESULT, "add_partition_req failed: unknown result")
-
     def add_partitions(self, new_parts):
         """
         Parameters:
@@ -5250,44 +5188,6 @@ class Client(fb303.FacebookService.Client, Iface):
             raise result.o3
         raise TApplicationException(TApplicationException.MISSING_RESULT, "append_partition_by_name_with_environment_context failed: unknown result")
 
-    def append_partition_by_name_req(self, appendPartitionRequest):
-        """
-        Parameters:
-         - appendPartitionRequest
-
-        """
-        self.send_append_partition_by_name_req(appendPartitionRequest)
-        return self.recv_append_partition_by_name_req()
-
-    def send_append_partition_by_name_req(self, appendPartitionRequest):
-        self._oprot.writeMessageBegin('append_partition_by_name_req', TMessageType.CALL, self._seqid)
-        args = append_partition_by_name_req_args()
-        args.appendPartitionRequest = appendPartitionRequest
-        args.write(self._oprot)
-        self._oprot.writeMessageEnd()
-        self._oprot.trans.flush()
-
-    def recv_append_partition_by_name_req(self):
-        iprot = self._iprot
-        (fname, mtype, rseqid) = iprot.readMessageBegin()
-        if mtype == TMessageType.EXCEPTION:
-            x = TApplicationException()
-            x.read(iprot)
-            iprot.readMessageEnd()
-            raise x
-        result = append_partition_by_name_req_result()
-        result.read(iprot)
-        iprot.readMessageEnd()
-        if result.success is not None:
-            return result.success
-        if result.o1 is not None:
-            raise result.o1
-        if result.o2 is not None:
-            raise result.o2
-        if result.o3 is not None:
-            raise result.o3
-        raise TApplicationException(TApplicationException.MISSING_RESULT, "append_partition_by_name_req failed: unknown result")
-
     def drop_partition(self, db_name, tbl_name, part_vals, deleteData):
         """
         Parameters:
@@ -5495,42 +5395,6 @@ class Client(fb303.FacebookService.Client, Iface):
         if result.o2 is not None:
             raise result.o2
         raise TApplicationException(TApplicationException.MISSING_RESULT, "drop_partition_by_name_with_environment_context failed: unknown result")
-
-    def drop_partition_by_name_req(self, dropPartitionReq):
-        """
-        Parameters:
-         - dropPartitionReq
-
-        """
-        self.send_drop_partition_by_name_req(dropPartitionReq)
-        return self.recv_drop_partition_by_name_req()
-
-    def send_drop_partition_by_name_req(self, dropPartitionReq):
-        self._oprot.writeMessageBegin('drop_partition_by_name_req', TMessageType.CALL, self._seqid)
-        args = drop_partition_by_name_req_args()
-        args.dropPartitionReq = dropPartitionReq
-        args.write(self._oprot)
-        self._oprot.writeMessageEnd()
-        self._oprot.trans.flush()
-
-    def recv_drop_partition_by_name_req(self):
-        iprot = self._iprot
-        (fname, mtype, rseqid) = iprot.readMessageBegin()
-        if mtype == TMessageType.EXCEPTION:
-            x = TApplicationException()
-            x.read(iprot)
-            iprot.readMessageEnd()
-            raise x
-        result = drop_partition_by_name_req_result()
-        result.read(iprot)
-        iprot.readMessageEnd()
-        if result.success is not None:
-            return result.success
-        if result.o1 is not None:
-            raise result.o1
-        if result.o2 is not None:
-            raise result.o2
-        raise TApplicationException(TApplicationException.MISSING_RESULT, "drop_partition_by_name_req failed: unknown result")
 
     def drop_partitions_req(self, req):
         """
@@ -12708,7 +12572,6 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         self._processMap["alter_table_req"] = Processor.process_alter_table_req
         self._processMap["add_partition"] = Processor.process_add_partition
         self._processMap["add_partition_with_environment_context"] = Processor.process_add_partition_with_environment_context
-        self._processMap["add_partition_req"] = Processor.process_add_partition_req
         self._processMap["add_partitions"] = Processor.process_add_partitions
         self._processMap["add_partitions_pspec"] = Processor.process_add_partitions_pspec
         self._processMap["append_partition"] = Processor.process_append_partition
@@ -12717,13 +12580,11 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         self._processMap["append_partition_req"] = Processor.process_append_partition_req
         self._processMap["append_partition_by_name"] = Processor.process_append_partition_by_name
         self._processMap["append_partition_by_name_with_environment_context"] = Processor.process_append_partition_by_name_with_environment_context
-        self._processMap["append_partition_by_name_req"] = Processor.process_append_partition_by_name_req
         self._processMap["drop_partition"] = Processor.process_drop_partition
         self._processMap["drop_partition_with_environment_context"] = Processor.process_drop_partition_with_environment_context
         self._processMap["drop_partition_req"] = Processor.process_drop_partition_req
         self._processMap["drop_partition_by_name"] = Processor.process_drop_partition_by_name
         self._processMap["drop_partition_by_name_with_environment_context"] = Processor.process_drop_partition_by_name_with_environment_context
-        self._processMap["drop_partition_by_name_req"] = Processor.process_drop_partition_by_name_req
         self._processMap["drop_partitions_req"] = Processor.process_drop_partitions_req
         self._processMap["get_partition"] = Processor.process_get_partition
         self._processMap["get_partition_req"] = Processor.process_get_partition_req
@@ -14959,38 +14820,6 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         oprot.writeMessageEnd()
         oprot.trans.flush()
 
-    def process_add_partition_req(self, seqid, iprot, oprot):
-        args = add_partition_req_args()
-        args.read(iprot)
-        iprot.readMessageEnd()
-        result = add_partition_req_result()
-        try:
-            result.success = self._handler.add_partition_req(args.addPartitionsReq)
-            msg_type = TMessageType.REPLY
-        except TTransport.TTransportException:
-            raise
-        except InvalidObjectException as o1:
-            msg_type = TMessageType.REPLY
-            result.o1 = o1
-        except AlreadyExistsException as o2:
-            msg_type = TMessageType.REPLY
-            result.o2 = o2
-        except MetaException as o3:
-            msg_type = TMessageType.REPLY
-            result.o3 = o3
-        except TApplicationException as ex:
-            logging.exception('TApplication exception in handler')
-            msg_type = TMessageType.EXCEPTION
-            result = ex
-        except Exception:
-            logging.exception('Unexpected exception in handler')
-            msg_type = TMessageType.EXCEPTION
-            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-        oprot.writeMessageBegin("add_partition_req", msg_type, seqid)
-        result.write(oprot)
-        oprot.writeMessageEnd()
-        oprot.trans.flush()
-
     def process_add_partitions(self, seqid, iprot, oprot):
         args = add_partitions_args()
         args.read(iprot)
@@ -15247,38 +15076,6 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         oprot.writeMessageEnd()
         oprot.trans.flush()
 
-    def process_append_partition_by_name_req(self, seqid, iprot, oprot):
-        args = append_partition_by_name_req_args()
-        args.read(iprot)
-        iprot.readMessageEnd()
-        result = append_partition_by_name_req_result()
-        try:
-            result.success = self._handler.append_partition_by_name_req(args.appendPartitionRequest)
-            msg_type = TMessageType.REPLY
-        except TTransport.TTransportException:
-            raise
-        except InvalidObjectException as o1:
-            msg_type = TMessageType.REPLY
-            result.o1 = o1
-        except AlreadyExistsException as o2:
-            msg_type = TMessageType.REPLY
-            result.o2 = o2
-        except MetaException as o3:
-            msg_type = TMessageType.REPLY
-            result.o3 = o3
-        except TApplicationException as ex:
-            logging.exception('TApplication exception in handler')
-            msg_type = TMessageType.EXCEPTION
-            result = ex
-        except Exception:
-            logging.exception('Unexpected exception in handler')
-            msg_type = TMessageType.EXCEPTION
-            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-        oprot.writeMessageBegin("append_partition_by_name_req", msg_type, seqid)
-        result.write(oprot)
-        oprot.writeMessageEnd()
-        oprot.trans.flush()
-
     def process_drop_partition(self, seqid, iprot, oprot):
         args = drop_partition_args()
         args.read(iprot)
@@ -15420,35 +15217,6 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
             msg_type = TMessageType.EXCEPTION
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
         oprot.writeMessageBegin("drop_partition_by_name_with_environment_context", msg_type, seqid)
-        result.write(oprot)
-        oprot.writeMessageEnd()
-        oprot.trans.flush()
-
-    def process_drop_partition_by_name_req(self, seqid, iprot, oprot):
-        args = drop_partition_by_name_req_args()
-        args.read(iprot)
-        iprot.readMessageEnd()
-        result = drop_partition_by_name_req_result()
-        try:
-            result.success = self._handler.drop_partition_by_name_req(args.dropPartitionReq)
-            msg_type = TMessageType.REPLY
-        except TTransport.TTransportException:
-            raise
-        except NoSuchObjectException as o1:
-            msg_type = TMessageType.REPLY
-            result.o1 = o1
-        except MetaException as o2:
-            msg_type = TMessageType.REPLY
-            result.o2 = o2
-        except TApplicationException as ex:
-            logging.exception('TApplication exception in handler')
-            msg_type = TMessageType.EXCEPTION
-            result = ex
-        except Exception:
-            logging.exception('Unexpected exception in handler')
-            msg_type = TMessageType.EXCEPTION
-            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-        oprot.writeMessageBegin("drop_partition_by_name_req", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -31561,167 +31329,6 @@ add_partition_with_environment_context_result.thrift_spec = (
 )
 
 
-class add_partition_req_args(object):
-    """
-    Attributes:
-     - addPartitionsReq
-
-    """
-
-
-    def __init__(self, addPartitionsReq=None,):
-        self.addPartitionsReq = addPartitionsReq
-
-    def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
-            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
-            return
-        iprot.readStructBegin()
-        while True:
-            (fname, ftype, fid) = iprot.readFieldBegin()
-            if ftype == TType.STOP:
-                break
-            if fid == 1:
-                if ftype == TType.STRUCT:
-                    self.addPartitionsReq = AddPartitionsRequest()
-                    self.addPartitionsReq.read(iprot)
-                else:
-                    iprot.skip(ftype)
-            else:
-                iprot.skip(ftype)
-            iprot.readFieldEnd()
-        iprot.readStructEnd()
-
-    def write(self, oprot):
-        if oprot._fast_encode is not None and self.thrift_spec is not None:
-            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
-            return
-        oprot.writeStructBegin('add_partition_req_args')
-        if self.addPartitionsReq is not None:
-            oprot.writeFieldBegin('addPartitionsReq', TType.STRUCT, 1)
-            self.addPartitionsReq.write(oprot)
-            oprot.writeFieldEnd()
-        oprot.writeFieldStop()
-        oprot.writeStructEnd()
-
-    def validate(self):
-        return
-
-    def __repr__(self):
-        L = ['%s=%r' % (key, value)
-             for key, value in self.__dict__.items()]
-        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-    def __ne__(self, other):
-        return not (self == other)
-all_structs.append(add_partition_req_args)
-add_partition_req_args.thrift_spec = (
-    None,  # 0
-    (1, TType.STRUCT, 'addPartitionsReq', [AddPartitionsRequest, None], None, ),  # 1
-)
-
-
-class add_partition_req_result(object):
-    """
-    Attributes:
-     - success
-     - o1
-     - o2
-     - o3
-
-    """
-
-
-    def __init__(self, success=None, o1=None, o2=None, o3=None,):
-        self.success = success
-        self.o1 = o1
-        self.o2 = o2
-        self.o3 = o3
-
-    def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
-            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
-            return
-        iprot.readStructBegin()
-        while True:
-            (fname, ftype, fid) = iprot.readFieldBegin()
-            if ftype == TType.STOP:
-                break
-            if fid == 0:
-                if ftype == TType.STRUCT:
-                    self.success = Partition()
-                    self.success.read(iprot)
-                else:
-                    iprot.skip(ftype)
-            elif fid == 1:
-                if ftype == TType.STRUCT:
-                    self.o1 = InvalidObjectException.read(iprot)
-                else:
-                    iprot.skip(ftype)
-            elif fid == 2:
-                if ftype == TType.STRUCT:
-                    self.o2 = AlreadyExistsException.read(iprot)
-                else:
-                    iprot.skip(ftype)
-            elif fid == 3:
-                if ftype == TType.STRUCT:
-                    self.o3 = MetaException.read(iprot)
-                else:
-                    iprot.skip(ftype)
-            else:
-                iprot.skip(ftype)
-            iprot.readFieldEnd()
-        iprot.readStructEnd()
-
-    def write(self, oprot):
-        if oprot._fast_encode is not None and self.thrift_spec is not None:
-            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
-            return
-        oprot.writeStructBegin('add_partition_req_result')
-        if self.success is not None:
-            oprot.writeFieldBegin('success', TType.STRUCT, 0)
-            self.success.write(oprot)
-            oprot.writeFieldEnd()
-        if self.o1 is not None:
-            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
-            self.o1.write(oprot)
-            oprot.writeFieldEnd()
-        if self.o2 is not None:
-            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
-            self.o2.write(oprot)
-            oprot.writeFieldEnd()
-        if self.o3 is not None:
-            oprot.writeFieldBegin('o3', TType.STRUCT, 3)
-            self.o3.write(oprot)
-            oprot.writeFieldEnd()
-        oprot.writeFieldStop()
-        oprot.writeStructEnd()
-
-    def validate(self):
-        return
-
-    def __repr__(self):
-        L = ['%s=%r' % (key, value)
-             for key, value in self.__dict__.items()]
-        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-    def __ne__(self, other):
-        return not (self == other)
-all_structs.append(add_partition_req_result)
-add_partition_req_result.thrift_spec = (
-    (0, TType.STRUCT, 'success', [Partition, None], None, ),  # 0
-    (1, TType.STRUCT, 'o1', [InvalidObjectException, None], None, ),  # 1
-    (2, TType.STRUCT, 'o2', [AlreadyExistsException, None], None, ),  # 2
-    (3, TType.STRUCT, 'o3', [MetaException, None], None, ),  # 3
-)
-
-
 class add_partitions_args(object):
     """
     Attributes:
@@ -33158,167 +32765,6 @@ append_partition_by_name_with_environment_context_result.thrift_spec = (
 )
 
 
-class append_partition_by_name_req_args(object):
-    """
-    Attributes:
-     - appendPartitionRequest
-
-    """
-
-
-    def __init__(self, appendPartitionRequest=None,):
-        self.appendPartitionRequest = appendPartitionRequest
-
-    def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
-            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
-            return
-        iprot.readStructBegin()
-        while True:
-            (fname, ftype, fid) = iprot.readFieldBegin()
-            if ftype == TType.STOP:
-                break
-            if fid == 1:
-                if ftype == TType.STRUCT:
-                    self.appendPartitionRequest = AppendPartitionsRequest()
-                    self.appendPartitionRequest.read(iprot)
-                else:
-                    iprot.skip(ftype)
-            else:
-                iprot.skip(ftype)
-            iprot.readFieldEnd()
-        iprot.readStructEnd()
-
-    def write(self, oprot):
-        if oprot._fast_encode is not None and self.thrift_spec is not None:
-            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
-            return
-        oprot.writeStructBegin('append_partition_by_name_req_args')
-        if self.appendPartitionRequest is not None:
-            oprot.writeFieldBegin('appendPartitionRequest', TType.STRUCT, 1)
-            self.appendPartitionRequest.write(oprot)
-            oprot.writeFieldEnd()
-        oprot.writeFieldStop()
-        oprot.writeStructEnd()
-
-    def validate(self):
-        return
-
-    def __repr__(self):
-        L = ['%s=%r' % (key, value)
-             for key, value in self.__dict__.items()]
-        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-    def __ne__(self, other):
-        return not (self == other)
-all_structs.append(append_partition_by_name_req_args)
-append_partition_by_name_req_args.thrift_spec = (
-    None,  # 0
-    (1, TType.STRUCT, 'appendPartitionRequest', [AppendPartitionsRequest, None], None, ),  # 1
-)
-
-
-class append_partition_by_name_req_result(object):
-    """
-    Attributes:
-     - success
-     - o1
-     - o2
-     - o3
-
-    """
-
-
-    def __init__(self, success=None, o1=None, o2=None, o3=None,):
-        self.success = success
-        self.o1 = o1
-        self.o2 = o2
-        self.o3 = o3
-
-    def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
-            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
-            return
-        iprot.readStructBegin()
-        while True:
-            (fname, ftype, fid) = iprot.readFieldBegin()
-            if ftype == TType.STOP:
-                break
-            if fid == 0:
-                if ftype == TType.STRUCT:
-                    self.success = Partition()
-                    self.success.read(iprot)
-                else:
-                    iprot.skip(ftype)
-            elif fid == 1:
-                if ftype == TType.STRUCT:
-                    self.o1 = InvalidObjectException.read(iprot)
-                else:
-                    iprot.skip(ftype)
-            elif fid == 2:
-                if ftype == TType.STRUCT:
-                    self.o2 = AlreadyExistsException.read(iprot)
-                else:
-                    iprot.skip(ftype)
-            elif fid == 3:
-                if ftype == TType.STRUCT:
-                    self.o3 = MetaException.read(iprot)
-                else:
-                    iprot.skip(ftype)
-            else:
-                iprot.skip(ftype)
-            iprot.readFieldEnd()
-        iprot.readStructEnd()
-
-    def write(self, oprot):
-        if oprot._fast_encode is not None and self.thrift_spec is not None:
-            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
-            return
-        oprot.writeStructBegin('append_partition_by_name_req_result')
-        if self.success is not None:
-            oprot.writeFieldBegin('success', TType.STRUCT, 0)
-            self.success.write(oprot)
-            oprot.writeFieldEnd()
-        if self.o1 is not None:
-            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
-            self.o1.write(oprot)
-            oprot.writeFieldEnd()
-        if self.o2 is not None:
-            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
-            self.o2.write(oprot)
-            oprot.writeFieldEnd()
-        if self.o3 is not None:
-            oprot.writeFieldBegin('o3', TType.STRUCT, 3)
-            self.o3.write(oprot)
-            oprot.writeFieldEnd()
-        oprot.writeFieldStop()
-        oprot.writeStructEnd()
-
-    def validate(self):
-        return
-
-    def __repr__(self):
-        L = ['%s=%r' % (key, value)
-             for key, value in self.__dict__.items()]
-        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-    def __ne__(self, other):
-        return not (self == other)
-all_structs.append(append_partition_by_name_req_result)
-append_partition_by_name_req_result.thrift_spec = (
-    (0, TType.STRUCT, 'success', [Partition, None], None, ),  # 0
-    (1, TType.STRUCT, 'o1', [InvalidObjectException, None], None, ),  # 1
-    (2, TType.STRUCT, 'o2', [AlreadyExistsException, None], None, ),  # 2
-    (3, TType.STRUCT, 'o3', [MetaException, None], None, ),  # 3
-)
-
-
 class drop_partition_args(object):
     """
     Attributes:
@@ -34235,154 +33681,6 @@ class drop_partition_by_name_with_environment_context_result(object):
         return not (self == other)
 all_structs.append(drop_partition_by_name_with_environment_context_result)
 drop_partition_by_name_with_environment_context_result.thrift_spec = (
-    (0, TType.BOOL, 'success', None, None, ),  # 0
-    (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
-    (2, TType.STRUCT, 'o2', [MetaException, None], None, ),  # 2
-)
-
-
-class drop_partition_by_name_req_args(object):
-    """
-    Attributes:
-     - dropPartitionReq
-
-    """
-
-
-    def __init__(self, dropPartitionReq=None,):
-        self.dropPartitionReq = dropPartitionReq
-
-    def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
-            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
-            return
-        iprot.readStructBegin()
-        while True:
-            (fname, ftype, fid) = iprot.readFieldBegin()
-            if ftype == TType.STOP:
-                break
-            if fid == 1:
-                if ftype == TType.STRUCT:
-                    self.dropPartitionReq = DropPartitionRequest()
-                    self.dropPartitionReq.read(iprot)
-                else:
-                    iprot.skip(ftype)
-            else:
-                iprot.skip(ftype)
-            iprot.readFieldEnd()
-        iprot.readStructEnd()
-
-    def write(self, oprot):
-        if oprot._fast_encode is not None and self.thrift_spec is not None:
-            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
-            return
-        oprot.writeStructBegin('drop_partition_by_name_req_args')
-        if self.dropPartitionReq is not None:
-            oprot.writeFieldBegin('dropPartitionReq', TType.STRUCT, 1)
-            self.dropPartitionReq.write(oprot)
-            oprot.writeFieldEnd()
-        oprot.writeFieldStop()
-        oprot.writeStructEnd()
-
-    def validate(self):
-        return
-
-    def __repr__(self):
-        L = ['%s=%r' % (key, value)
-             for key, value in self.__dict__.items()]
-        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-    def __ne__(self, other):
-        return not (self == other)
-all_structs.append(drop_partition_by_name_req_args)
-drop_partition_by_name_req_args.thrift_spec = (
-    None,  # 0
-    (1, TType.STRUCT, 'dropPartitionReq', [DropPartitionRequest, None], None, ),  # 1
-)
-
-
-class drop_partition_by_name_req_result(object):
-    """
-    Attributes:
-     - success
-     - o1
-     - o2
-
-    """
-
-
-    def __init__(self, success=None, o1=None, o2=None,):
-        self.success = success
-        self.o1 = o1
-        self.o2 = o2
-
-    def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
-            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
-            return
-        iprot.readStructBegin()
-        while True:
-            (fname, ftype, fid) = iprot.readFieldBegin()
-            if ftype == TType.STOP:
-                break
-            if fid == 0:
-                if ftype == TType.BOOL:
-                    self.success = iprot.readBool()
-                else:
-                    iprot.skip(ftype)
-            elif fid == 1:
-                if ftype == TType.STRUCT:
-                    self.o1 = NoSuchObjectException.read(iprot)
-                else:
-                    iprot.skip(ftype)
-            elif fid == 2:
-                if ftype == TType.STRUCT:
-                    self.o2 = MetaException.read(iprot)
-                else:
-                    iprot.skip(ftype)
-            else:
-                iprot.skip(ftype)
-            iprot.readFieldEnd()
-        iprot.readStructEnd()
-
-    def write(self, oprot):
-        if oprot._fast_encode is not None and self.thrift_spec is not None:
-            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
-            return
-        oprot.writeStructBegin('drop_partition_by_name_req_result')
-        if self.success is not None:
-            oprot.writeFieldBegin('success', TType.BOOL, 0)
-            oprot.writeBool(self.success)
-            oprot.writeFieldEnd()
-        if self.o1 is not None:
-            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
-            self.o1.write(oprot)
-            oprot.writeFieldEnd()
-        if self.o2 is not None:
-            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
-            self.o2.write(oprot)
-            oprot.writeFieldEnd()
-        oprot.writeFieldStop()
-        oprot.writeStructEnd()
-
-    def validate(self):
-        return
-
-    def __repr__(self):
-        L = ['%s=%r' % (key, value)
-             for key, value in self.__dict__.items()]
-        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-    def __ne__(self, other):
-        return not (self == other)
-all_structs.append(drop_partition_by_name_req_result)
-drop_partition_by_name_req_result.thrift_spec = (
     (0, TType.BOOL, 'success', None, None, ),  # 0
     (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
     (2, TType.STRUCT, 'o2', [MetaException, None], None, ),  # 2

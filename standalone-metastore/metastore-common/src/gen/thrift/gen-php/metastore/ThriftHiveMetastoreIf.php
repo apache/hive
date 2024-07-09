@@ -520,14 +520,6 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function add_partition_with_environment_context(\metastore\Partition $new_part, \metastore\EnvironmentContext $environment_context);
     /**
-     * @param \metastore\AddPartitionsRequest $addPartitionsReq
-     * @return \metastore\Partition
-     * @throws \metastore\InvalidObjectException
-     * @throws \metastore\AlreadyExistsException
-     * @throws \metastore\MetaException
-     */
-    public function add_partition_req(\metastore\AddPartitionsRequest $addPartitionsReq);
-    /**
      * @param \metastore\Partition[] $new_parts
      * @return int
      * @throws \metastore\InvalidObjectException
@@ -602,14 +594,6 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function append_partition_by_name_with_environment_context($db_name, $tbl_name, $part_name, \metastore\EnvironmentContext $environment_context);
     /**
-     * @param \metastore\AppendPartitionsRequest $appendPartitionRequest
-     * @return \metastore\Partition
-     * @throws \metastore\InvalidObjectException
-     * @throws \metastore\AlreadyExistsException
-     * @throws \metastore\MetaException
-     */
-    public function append_partition_by_name_req(\metastore\AppendPartitionsRequest $appendPartitionRequest);
-    /**
      * @param string $db_name
      * @param string $tbl_name
      * @param string[] $part_vals
@@ -658,13 +642,6 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @throws \metastore\MetaException
      */
     public function drop_partition_by_name_with_environment_context($db_name, $tbl_name, $part_name, $deleteData, \metastore\EnvironmentContext $environment_context);
-    /**
-     * @param \metastore\DropPartitionRequest $dropPartitionReq
-     * @return bool
-     * @throws \metastore\NoSuchObjectException
-     * @throws \metastore\MetaException
-     */
-    public function drop_partition_by_name_req(\metastore\DropPartitionRequest $dropPartitionReq);
     /**
      * @param \metastore\DropPartitionsRequest $req
      * @return \metastore\DropPartitionsResult

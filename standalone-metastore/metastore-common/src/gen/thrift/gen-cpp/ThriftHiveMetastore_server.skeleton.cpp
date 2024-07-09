@@ -360,11 +360,6 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("add_partition_with_environment_context\n");
   }
 
-  void add_partition_req(Partition& _return, const AddPartitionsRequest& addPartitionsReq) {
-    // Your implementation goes here
-    printf("add_partition_req\n");
-  }
-
   int32_t add_partitions(const std::vector<Partition> & new_parts) {
     // Your implementation goes here
     printf("add_partitions\n");
@@ -405,11 +400,6 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("append_partition_by_name_with_environment_context\n");
   }
 
-  void append_partition_by_name_req(Partition& _return, const AppendPartitionsRequest& appendPartitionRequest) {
-    // Your implementation goes here
-    printf("append_partition_by_name_req\n");
-  }
-
   bool drop_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const bool deleteData) {
     // Your implementation goes here
     printf("drop_partition\n");
@@ -433,11 +423,6 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   bool drop_partition_by_name_with_environment_context(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const bool deleteData, const EnvironmentContext& environment_context) {
     // Your implementation goes here
     printf("drop_partition_by_name_with_environment_context\n");
-  }
-
-  bool drop_partition_by_name_req(const DropPartitionRequest& dropPartitionReq) {
-    // Your implementation goes here
-    printf("drop_partition_by_name_req\n");
   }
 
   void drop_partitions_req(DropPartitionsResult& _return, const DropPartitionsRequest& req) {

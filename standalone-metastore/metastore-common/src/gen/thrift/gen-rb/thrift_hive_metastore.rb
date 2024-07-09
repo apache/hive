@@ -1150,24 +1150,6 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'add_partition_with_environment_context failed: unknown result')
     end
 
-    def add_partition_req(addPartitionsReq)
-      send_add_partition_req(addPartitionsReq)
-      return recv_add_partition_req()
-    end
-
-    def send_add_partition_req(addPartitionsReq)
-      send_message('add_partition_req', Add_partition_req_args, :addPartitionsReq => addPartitionsReq)
-    end
-
-    def recv_add_partition_req()
-      result = receive_message(Add_partition_req_result)
-      return result.success unless result.success.nil?
-      raise result.o1 unless result.o1.nil?
-      raise result.o2 unless result.o2.nil?
-      raise result.o3 unless result.o3.nil?
-      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'add_partition_req failed: unknown result')
-    end
-
     def add_partitions(new_parts)
       send_add_partitions(new_parts)
       return recv_add_partitions()
@@ -1312,24 +1294,6 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'append_partition_by_name_with_environment_context failed: unknown result')
     end
 
-    def append_partition_by_name_req(appendPartitionRequest)
-      send_append_partition_by_name_req(appendPartitionRequest)
-      return recv_append_partition_by_name_req()
-    end
-
-    def send_append_partition_by_name_req(appendPartitionRequest)
-      send_message('append_partition_by_name_req', Append_partition_by_name_req_args, :appendPartitionRequest => appendPartitionRequest)
-    end
-
-    def recv_append_partition_by_name_req()
-      result = receive_message(Append_partition_by_name_req_result)
-      return result.success unless result.success.nil?
-      raise result.o1 unless result.o1.nil?
-      raise result.o2 unless result.o2.nil?
-      raise result.o3 unless result.o3.nil?
-      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'append_partition_by_name_req failed: unknown result')
-    end
-
     def drop_partition(db_name, tbl_name, part_vals, deleteData)
       send_drop_partition(db_name, tbl_name, part_vals, deleteData)
       return recv_drop_partition()
@@ -1413,23 +1377,6 @@ module ThriftHiveMetastore
       raise result.o1 unless result.o1.nil?
       raise result.o2 unless result.o2.nil?
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'drop_partition_by_name_with_environment_context failed: unknown result')
-    end
-
-    def drop_partition_by_name_req(dropPartitionReq)
-      send_drop_partition_by_name_req(dropPartitionReq)
-      return recv_drop_partition_by_name_req()
-    end
-
-    def send_drop_partition_by_name_req(dropPartitionReq)
-      send_message('drop_partition_by_name_req', Drop_partition_by_name_req_args, :dropPartitionReq => dropPartitionReq)
-    end
-
-    def recv_drop_partition_by_name_req()
-      result = receive_message(Drop_partition_by_name_req_result)
-      return result.success unless result.success.nil?
-      raise result.o1 unless result.o1.nil?
-      raise result.o2 unless result.o2.nil?
-      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'drop_partition_by_name_req failed: unknown result')
     end
 
     def drop_partitions_req(req)
@@ -5615,21 +5562,6 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'add_partition_with_environment_context', seqid)
     end
 
-    def process_add_partition_req(seqid, iprot, oprot)
-      args = read_args(iprot, Add_partition_req_args)
-      result = Add_partition_req_result.new()
-      begin
-        result.success = @handler.add_partition_req(args.addPartitionsReq)
-      rescue ::InvalidObjectException => o1
-        result.o1 = o1
-      rescue ::AlreadyExistsException => o2
-        result.o2 = o2
-      rescue ::MetaException => o3
-        result.o3 = o3
-      end
-      write_result(result, oprot, 'add_partition_req', seqid)
-    end
-
     def process_add_partitions(seqid, iprot, oprot)
       args = read_args(iprot, Add_partitions_args)
       result = Add_partitions_result.new()
@@ -5750,21 +5682,6 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'append_partition_by_name_with_environment_context', seqid)
     end
 
-    def process_append_partition_by_name_req(seqid, iprot, oprot)
-      args = read_args(iprot, Append_partition_by_name_req_args)
-      result = Append_partition_by_name_req_result.new()
-      begin
-        result.success = @handler.append_partition_by_name_req(args.appendPartitionRequest)
-      rescue ::InvalidObjectException => o1
-        result.o1 = o1
-      rescue ::AlreadyExistsException => o2
-        result.o2 = o2
-      rescue ::MetaException => o3
-        result.o3 = o3
-      end
-      write_result(result, oprot, 'append_partition_by_name_req', seqid)
-    end
-
     def process_drop_partition(seqid, iprot, oprot)
       args = read_args(iprot, Drop_partition_args)
       result = Drop_partition_result.new()
@@ -5828,19 +5745,6 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'drop_partition_by_name_with_environment_context', seqid)
-    end
-
-    def process_drop_partition_by_name_req(seqid, iprot, oprot)
-      args = read_args(iprot, Drop_partition_by_name_req_args)
-      result = Drop_partition_by_name_req_result.new()
-      begin
-        result.success = @handler.drop_partition_by_name_req(args.dropPartitionReq)
-      rescue ::NoSuchObjectException => o1
-        result.o1 = o1
-      rescue ::MetaException => o2
-        result.o2 = o2
-      end
-      write_result(result, oprot, 'drop_partition_by_name_req', seqid)
     end
 
     def process_drop_partitions_req(seqid, iprot, oprot)
@@ -10726,44 +10630,6 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class Add_partition_req_args
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    ADDPARTITIONSREQ = 1
-
-    FIELDS = {
-      ADDPARTITIONSREQ => {:type => ::Thrift::Types::STRUCT, :name => 'addPartitionsReq', :class => ::AddPartitionsRequest}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Add_partition_req_result
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    SUCCESS = 0
-    O1 = 1
-    O2 = 2
-    O3 = 3
-
-    FIELDS = {
-      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Partition},
-      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::InvalidObjectException},
-      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::AlreadyExistsException},
-      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
   class Add_partitions_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     NEW_PARTS = 1
@@ -11088,44 +10954,6 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class Append_partition_by_name_req_args
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    APPENDPARTITIONREQUEST = 1
-
-    FIELDS = {
-      APPENDPARTITIONREQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'appendPartitionRequest', :class => ::AppendPartitionsRequest}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Append_partition_by_name_req_result
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    SUCCESS = 0
-    O1 = 1
-    O2 = 2
-    O3 = 3
-
-    FIELDS = {
-      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Partition},
-      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::InvalidObjectException},
-      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::AlreadyExistsException},
-      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
   class Drop_partition_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     DB_NAME = 1
@@ -11315,42 +11143,6 @@ module ThriftHiveMetastore
   end
 
   class Drop_partition_by_name_with_environment_context_result
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    SUCCESS = 0
-    O1 = 1
-    O2 = 2
-
-    FIELDS = {
-      SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
-      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
-      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Drop_partition_by_name_req_args
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    DROPPARTITIONREQ = 1
-
-    FIELDS = {
-      DROPPARTITIONREQ => {:type => ::Thrift::Types::STRUCT, :name => 'dropPartitionReq', :class => ::DropPartitionRequest}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Drop_partition_by_name_req_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SUCCESS = 0
     O1 = 1
