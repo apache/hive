@@ -3200,9 +3200,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     private RelNode genFilterRelNode(RexNode filterExpression, RelNode srcRel,
         ImmutableMap<String, Integer> outerNameToPosMap, RowResolver outerRR) {
-      if (RexUtil.isLiteral(filterExpression, false)
-          && filterExpression.getType().getSqlTypeName() != SqlTypeName.BOOLEAN) {
-        // Cast filterExpression of queries like select * from t1 where 'foo'
+      if (filterExpression.getType().getSqlTypeName() != SqlTypeName.BOOLEAN) {
+        // Cast filterExpression with BOOLEAN if it is not BOOLEAN
         RelDataType booleanType = srcRel.getCluster().getTypeFactory().createSqlType(SqlTypeName.BOOLEAN);
         filterExpression = srcRel.getCluster().getRexBuilder()
             .makeCast(booleanType, filterExpression);
