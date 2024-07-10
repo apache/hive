@@ -67,7 +67,6 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePointLookupOptimizerRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.RexVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.Schema;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -102,6 +101,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableSet;
+
+import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil.transformOrToInAndInequalityToBetween;
 
 /*
  * convert a RexNode to an ExprNodeDesc
@@ -241,8 +242,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
           throw new RuntimeException("Failed to instantiate udf: ", e);
         }
       } else {
-        return visitCall((RexCall) HivePointLookupOptimizerRule
-            .analyzeRexNode(
+        return visitCall((RexCall) transformOrToInAndInequalityToBetween(
                 rexBuilder,
                 call.accept(RexUtil.searchShuttle(rexBuilder, null, -1)),
                 minOrClauses

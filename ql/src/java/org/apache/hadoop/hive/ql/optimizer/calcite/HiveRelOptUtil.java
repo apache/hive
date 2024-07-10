@@ -77,6 +77,7 @@ import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.mapping.Mappings;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePointLookupOptimizerRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -1176,5 +1177,21 @@ public class HiveRelOptUtil extends RelOptUtil {
       distributionKeys.add(m.get(keyIndex));
     }
     return distributionKeys;
+  }
+
+  public static RexNode transformOrToInAndInequalityToBetween(
+      RexBuilder rexBuilder, RexNode condition, int minNumORClauses) {
+    // 1. We try to transform possible candidates
+    HivePointLookupOptimizerRule.RexTransformIntoInClause transformIntoInClause = new HivePointLookupOptimizerRule.RexTransformIntoInClause(rexBuilder, minNumORClauses);
+    RexNode newCondition = transformIntoInClause.apply(condition);
+
+    // 2. We merge IN expressions
+    HivePointLookupOptimizerRule.RexMergeInClause mergeInClause = new HivePointLookupOptimizerRule.RexMergeInClause(rexBuilder);
+    newCondition = mergeInClause.apply(newCondition);
+
+    // 3. Close BETWEEN expressions if possible
+    HivePointLookupOptimizerRule.RexTransformIntoBetween t = new HivePointLookupOptimizerRule.RexTransformIntoBetween(rexBuilder);
+    newCondition = t.apply(newCondition);
+    return newCondition;
   }
 }
