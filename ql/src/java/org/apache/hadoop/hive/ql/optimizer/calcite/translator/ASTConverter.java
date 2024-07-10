@@ -89,7 +89,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.JdbcHiveTableScan;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePointLookupOptimizerRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter.HiveToken;
 import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -107,6 +106,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Iterables;
 
 import static org.apache.calcite.rel.core.Values.isEmpty;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil.transformOrToInAndInequalityToBetween;
 
 public class ASTConverter {
   private static final Logger LOG = LoggerFactory.getLogger(ASTConverter.class);
@@ -1123,8 +1123,7 @@ public class ASTConverter {
 
           // Expand SEARCH operator
         } else {
-          return visitCall((RexCall) HivePointLookupOptimizerRule
-              .analyzeRexNode(
+          return visitCall((RexCall) transformOrToInAndInequalityToBetween(
                   rexBuilder,
                   call.accept(RexUtil.searchShuttle(rexBuilder, null, -1)),
                   minOrClauses
