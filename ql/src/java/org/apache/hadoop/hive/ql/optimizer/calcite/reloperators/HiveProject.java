@@ -44,6 +44,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.correlation.CorrelationInfoVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.correlation.HiveCorrelationInfo;
 
+import static org.apache.hadoop.hive.ql.optimizer.calcite.Bug.CALCITE_VERSION;
+
 public class HiveProject extends Project implements HiveRelNode {
 
   // Information about correlations within a subquery.
@@ -142,7 +144,8 @@ public class HiveProject extends Project implements HiveRelNode {
   @Override
   public RelWriter explainTerms(RelWriter pw) {
     // Remove this if block after upgrading Calcite to 1.35+
-    if (pw.getDetailLevel() == SqlExplainLevel.ALL_ATTRIBUTES && getDigest().contains("SEARCH")) {
+    if (CALCITE_VERSION < 35 
+        && pw.getDetailLevel() == SqlExplainLevel.ALL_ATTRIBUTES && getDigest().contains("SEARCH")) {
       return ((HiveProject) this.accept(
           RexUtil.searchShuttle(
               new RexBuilder(new JavaTypeFactoryImpl(new HiveTypeSystemImpl())),
