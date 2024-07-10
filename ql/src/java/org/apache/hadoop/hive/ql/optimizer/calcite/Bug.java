@@ -29,6 +29,8 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;
  *
  */
 public final class Bug {
+  
+  public static final int CALCITE_VERSION = 33;
 
   /**
    * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-1851">CALCITE-1851</a> is fixed.
