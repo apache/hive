@@ -62,6 +62,8 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 
+import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil.transformOrToInAndInequalityToBetween;
+
 /**
  * This optimization attempts to identify and close expanded INs and BETWEENs
  *
@@ -92,7 +94,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       final RexBuilder rexBuilder = filter.getCluster().getRexBuilder();
       final RexNode condition = RexUtil.pullFactors(rexBuilder, filter.getCondition());
 
-      RexNode newCondition = analyzeRexNode(rexBuilder, condition, minNumORClauses);
+      RexNode newCondition = transformOrToInAndInequalityToBetween(rexBuilder, condition, minNumORClauses);
 
       // If we could not transform anything, we bail out
       if (newCondition.toString().equals(condition.toString())) {
@@ -117,7 +119,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       final RexBuilder rexBuilder = join.getCluster().getRexBuilder();
       final RexNode condition = RexUtil.pullFactors(rexBuilder, join.getCondition());
 
-      RexNode newCondition = analyzeRexNode(rexBuilder, condition, minNumORClauses);
+      RexNode newCondition = transformOrToInAndInequalityToBetween(rexBuilder, condition, minNumORClauses);
 
       // If we could not transform anything, we bail out
       if (newCondition.toString().equals(condition.toString())) {
@@ -149,7 +151,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       final RexBuilder rexBuilder = project.getCluster().getRexBuilder();
       List<RexNode> newProjects = new ArrayList<>();
       for (RexNode oldNode : project.getProjects()) {
-        RexNode newNode = analyzeRexNode(rexBuilder, oldNode, minNumORClauses);
+        RexNode newNode = transformOrToInAndInequalityToBetween(rexBuilder, oldNode, minNumORClauses);
         if (!newNode.toString().equals(oldNode.toString())) {
           changed = true;
           newProjects.add(newNode);
@@ -178,29 +180,14 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
     this.minNumORClauses = minNumORClauses;
   }
 
-  public static RexNode analyzeRexNode(RexBuilder rexBuilder, RexNode condition, int minNumORClauses) {
-    // 1. We try to transform possible candidates
-    RexTransformIntoInClause transformIntoInClause = new RexTransformIntoInClause(rexBuilder, minNumORClauses);
-    RexNode newCondition = transformIntoInClause.apply(condition);
-
-    // 2. We merge IN expressions
-    RexMergeInClause mergeInClause = new RexMergeInClause(rexBuilder);
-    newCondition = mergeInClause.apply(newCondition);
-
-    // 3. Close BETWEEN expressions if possible
-    RexTransformIntoBetween t = new RexTransformIntoBetween(rexBuilder);
-    newCondition = t.apply(newCondition);
-    return newCondition;
-  }
-
   /**
    * Transforms inequality candidates into [NOT] BETWEEN calls.
    *
    */
-  protected static class RexTransformIntoBetween extends RexShuttle {
+  public static class RexTransformIntoBetween extends RexShuttle {
     private final RexBuilder rexBuilder;
 
-    RexTransformIntoBetween(RexBuilder rexBuilder) {
+    public RexTransformIntoBetween(RexBuilder rexBuilder) {
       this.rexBuilder = rexBuilder;
     }
 
@@ -410,11 +397,11 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
   /**
    * Transforms OR clauses into IN clauses, when possible.
    */
-  protected static class RexTransformIntoInClause extends RexShuttle {
+  public static class RexTransformIntoInClause extends RexShuttle {
     private final RexBuilder rexBuilder;
     private final int minNumORClauses;
 
-    RexTransformIntoInClause(RexBuilder rexBuilder, int minNumORClauses) {
+    public RexTransformIntoInClause(RexBuilder rexBuilder, int minNumORClauses) {
       this.rexBuilder = rexBuilder;
       this.minNumORClauses = minNumORClauses;
     }
@@ -571,10 +558,10 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
   /**
    * Merge IN clauses, when possible.
    */
-  protected static class RexMergeInClause extends RexShuttle {
+  public static class RexMergeInClause extends RexShuttle {
     private final RexBuilder rexBuilder;
 
-    RexMergeInClause(RexBuilder rexBuilder) {
+    public RexMergeInClause(RexBuilder rexBuilder) {
       this.rexBuilder = rexBuilder;
     }
 
