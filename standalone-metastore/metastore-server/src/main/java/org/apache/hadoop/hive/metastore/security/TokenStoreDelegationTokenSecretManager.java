@@ -246,7 +246,7 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
    * that cannot be reused due to private method access. Logic here can more efficiently
    * deal with external token store by only loading into memory the minimum data needed.
    */
-  protected void removeExpiredTokens() throws InvalidToken {
+  protected void renewOrRemoveExpiredTokens() {
     long now = System.currentTimeMillis();
     for (DelegationTokenIdentifier id : tokenStore.getAllDelegationTokenIdentifiers()) {
       if (now > id.getMaxDate()) {
@@ -254,7 +254,11 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
         this.tokenStore.removeToken(id); // no need to look at token info
       } else {
         // get token info to check renew date
-        renewIfRequired(now, id, tokenStore.getToken(id));
+        try {
+          renewIfRequired(now, id, tokenStore.getToken(id));
+        } catch (InvalidToken e) {
+          LOGGER.warn("Failed to renew token: " + id, e);
+        }
       }
     }
   }
@@ -333,7 +337,7 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
             }
           }
           if (lastTokenCacheCleanup + tokenRemoverScanInterval < now) {
-            removeExpiredTokens();
+            renewOrRemoveExpiredTokens();
             lastTokenCacheCleanup = now;
           }
           try {
