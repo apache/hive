@@ -49,7 +49,7 @@ import java.util.concurrent.TimeUnit;
     long tokenRenewInterval = renewSecs * 1000;
     long tokenGcInterval = gcTime * 1000;
     return new TokenStoreDelegationTokenSecretManager(secretKeyInterval, tokenMaxLifetime,
-            tokenRenewInterval, tokenGcInterval, tokenStore);
+        tokenRenewInterval, tokenGcInterval, tokenStore);
   }
 
 
@@ -98,8 +98,8 @@ import java.util.concurrent.TimeUnit;
     try {
       mgr.startThreads();
       String tokenStr =
-              mgr.getDelegationToken(UserGroupInformation.getCurrentUser().getShortUserName(),
-                      UserGroupInformation.getCurrentUser().getShortUserName());
+          mgr.getDelegationToken(UserGroupInformation.getCurrentUser().getShortUserName(),
+              UserGroupInformation.getCurrentUser().getShortUserName());
       DelegationTokenIdentifier id = getID(tokenStr);
       Assert.assertNotNull(mgr.verifyDelegationToken(tokenStr));
 

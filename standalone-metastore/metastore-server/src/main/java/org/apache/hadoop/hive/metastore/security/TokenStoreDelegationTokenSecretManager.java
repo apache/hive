@@ -275,7 +275,7 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
                   id.getKind(), new Text());
           renewToken(t, UserGroupInformation.getCurrentUser().getShortUserName());
         } catch (IOException e) {
-          throw new InvalidToken("Unable to renew token: " + id);
+          throw new InvalidToken("Unable to renew token: " + id + " due to " + e.getMessage());
         }
       } else if (currentTime > id.getMaxDate()) {
         // In this case expiry time has passed and this token cannot be further renewed.
