@@ -41,9 +41,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** All the HMS operations like table,view,materialized_view should implement this. */
-interface HiveOperationsBase {
+public interface HiveOperationsBase {
 
   Logger LOG = LoggerFactory.getLogger(HiveOperationsBase.class);
+  String HIVE_ICEBERG_STORAGE_HANDLER = "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler";
+
   // The max size is based on HMS backend database. For Hive versions below 2.3, the max table parameter size is 4000
   // characters, see https://issues.apache.org/jira/browse/HIVE-12274
   // set to 0 to not expose Iceberg metadata in HMS Table properties.
@@ -97,6 +99,15 @@ interface HiveOperationsBase {
     NoSuchIcebergTableException.check(
         tableType != null && tableType.equalsIgnoreCase(BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE),
         "Not an iceberg table: %s (type=%s)", fullName, tableType);
+  }
+
+  static boolean isHiveIcebergStorageHandler(String storageHandler) {
+    try {
+      Class<?> storageHandlerClass = Class.forName(storageHandler);
+      return Class.forName(HIVE_ICEBERG_STORAGE_HANDLER).isAssignableFrom(storageHandlerClass);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException("Error checking storage handler class", e);
+    }
   }
 
   default void persistTable(Table hmsTable, boolean updateHiveTable, String metadataLocation)

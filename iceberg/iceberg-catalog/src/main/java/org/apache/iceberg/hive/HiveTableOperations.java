@@ -75,8 +75,6 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
       "iceberg.hive.metadata-refresh-max-retries";
   private static final int HIVE_ICEBERG_METADATA_REFRESH_MAX_RETRIES_DEFAULT = 2;
 
-  public static final String HIVE_ICEBERG_STORAGE_HANDLER = "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler";
-
   private static final BiMap<String, String> ICEBERG_TO_HMS_TRANSLATION =
       ImmutableBiMap.of(
           // gc.enabled in Iceberg and external.table.purge in Hive are meant to do the same things
@@ -344,7 +342,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
     if (hiveEngineEnabled) {
       String storageHandler = parameters.get(hive_metastoreConstants.META_TABLE_STORAGE);
       // Check if META_TABLE_STORAGE is not present or is not an instance of ICEBERG_STORAGE_HANDLER
-      if (storageHandler == null || !isHiveIcebergStorageHandler(storageHandler)) {
+      if (storageHandler == null || !HiveOperationsBase.isHiveIcebergStorageHandler(storageHandler)) {
         parameters.put(hive_metastoreConstants.META_TABLE_STORAGE, HIVE_ICEBERG_STORAGE_HANDLER);
       }
     } else {
@@ -523,21 +521,6 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
       return new MetastoreLock(conf, metaClients, catalogName, database, tableName);
     } else {
       return new NoLock();
-    }
-  }
-
-  /**
-   * Checks if the storage_handler property is already set to HIVE_ICEBERG_STORAGE_HANDLER.
-   * @param storageHandler Storage Handler class
-   * @return true if the storage_handler property is set to HIVE_ICEBERG_STORAGE_HANDLER
-   */
-  public static boolean isHiveIcebergStorageHandler(String storageHandler) {
-    try {
-      Class<?> storageHandlerClass = Class.forName(storageHandler);
-      Class<?> icebergStorageHandlerClass = Class.forName(HIVE_ICEBERG_STORAGE_HANDLER);
-      return icebergStorageHandlerClass.isAssignableFrom(storageHandlerClass);
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException("Error checking storage handler class", e);
     }
   }
 }
