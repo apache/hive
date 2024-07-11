@@ -95,6 +95,7 @@
     <protobuf.version>3.24.4</protobuf.version>
     <io.grpc.version>1.51.0</io.grpc.version>
     <sqlline.version>1.9.0</sqlline.version>
+    <snappy.version>1.1.10.5</snappy.version>
     <jline.version>2.14.6</jline.version>
     <ST4.version>4.0.4</ST4.version>
     <storage-api.version>4.1.0-SNAPSHOT</storage-api.version>
@@ -364,6 +365,11 @@
         <groupId>org.springframework</groupId>
         <artifactId>spring-core</artifactId>
         <version>${spring.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.xerial.snappy</groupId>
+        <artifactId>snappy-java</artifactId>
+        <version>${snappy.version}</version>
       </dependency>
       <!-- JDBC drivers -->
       <dependency>
