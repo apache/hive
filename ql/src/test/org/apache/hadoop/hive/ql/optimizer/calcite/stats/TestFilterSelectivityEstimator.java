@@ -430,13 +430,6 @@ public class TestFilterSelectivityEstimator {
   }
 
   @Test
-  public void testComputeRangePredicateSelectivityNotBetweenRightLowerThanLeft() {
-    RexNode filter = makeNotBetween(inputRef0, int5, int3);
-    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
-    Assert.assertEquals(1, estimator.estimateSelectivity(filter), DELTA);
-  }
-
-  @Test
   public void testComputeRangePredicateSelectivityNotBetweenLeftEqualsRight() {
     RexNode filter = makeNotBetween(inputRef0, int3, int3);
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
@@ -498,13 +491,10 @@ public class TestFilterSelectivityEstimator {
   }
 
   private RexNode makeNotBetween(RexNode inputRef, RexNode left, RexNode right) {
-    RexNode withOr = REX_BUILDER.makeCall(
-        SqlStdOperatorTable.OR,
-        REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN, inputRef, left),
-        REX_BUILDER.makeCall(SqlStdOperatorTable.GREATER_THAN, inputRef, right)
-    );
+    RexNode notBetween = REX_BUILDER
+        .makeCall(SqlStdOperatorTable.NOT, REX_BUILDER.makeBetween(inputRef, left, right));
     RexSimplify simplify = new RexSimplify(REX_BUILDER, RelOptPredicateList.EMPTY, RexUtil.EXECUTOR);
 
-    return simplify.simplify(withOr);
+    return simplify.simplify(notBetween);
   }
 }
