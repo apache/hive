@@ -1006,7 +1006,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <argLine>-Xmx2048m --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED</argLine>
+          <argLine>-Xmx2048m --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED</argLine>
           <environmentVariables>
             <HIVE_CLUSTER_ID>hive-test-cluster-id-env</HIVE_CLUSTER_ID>
             <TZ>US/Pacific</TZ>
