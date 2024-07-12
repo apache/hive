@@ -96,9 +96,20 @@ public class AlterTableEvent extends HiveMetaStoreAuthorizableEvent {
     Table oldTable = event.getOldTable();
     String oldUri   = (oldTable != null) ? getSdLocation(oldTable.getSd()) : "";
     String newUri   = getSdLocation(newTable.getSd());
+    // if the table is storagehandler based table, need storageuri as hive privilege objects
+    //  storagehandler type + cluster + location
+    String storagehandler_uri = newTable.getParameters().getOrDefault("storage_handler", null);
+    if (storagehandler_uri != null && storagehandler_uri.contains("iceberg")){
+      storagehandler_uri = "hiveicebergstoragehandler://"+ newTable.getParameters().getOrDefault("metadata_location", "");
+    }
 
     if (!StringUtils.equals(oldUri, newUri)) {
       ret.add(getHivePrivilegeObjectDfsUri(newUri));
+    }
+
+    // if use iceberg storage handler, the storage handler uri needs to be added into privilege objects
+    if (storagehandler_uri != null && storagehandler_uri.contains("iceberg")){
+      ret.add(getHivePrivilegeObjectStorageHandlerUri(storagehandler_uri));
     }
 
     LOG.debug("<== AlterTableEvent.getOutputHObjs(): ret={}", ret);
