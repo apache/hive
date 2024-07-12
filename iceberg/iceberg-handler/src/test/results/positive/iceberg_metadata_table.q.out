@@ -88,3 +88,31 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_ts_4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"id":{"column_size":null,"value_count":null,"null_value_count":null,"nan_value_count":null,"lower_bound":null,"upper_bound":null},"ts":{"column_size":null,"value_count":null,"null_value_count":null,"nan_value_count":null,"lower_bound":null,"upper_bound":null}}
+PREHOOK: query: CREATE EXTERNAL TABLE ice_part  (`col1` int, `decimalA` decimal(5,2), `decimalC` decimal(5,2)) PARTITIONED BY SPEC
+(decimalC) stored by iceberg tblproperties('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_part
+POSTHOOK: query: CREATE EXTERNAL TABLE ice_part  (`col1` int, `decimalA` decimal(5,2), `decimalC` decimal(5,2)) PARTITIONED BY SPEC
+(decimalC) stored by iceberg tblproperties('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_part
+PREHOOK: query: insert into ice_part values(1, 122.91, 102.21), (1, 12.32, 200.12)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_part
+POSTHOOK: query: insert into ice_part values(1, 122.91, 102.21), (1, 12.32, 200.12)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_part
+PREHOOK: query: select last_updated_at from default.ice_part.PARTITIONS
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_part
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select last_updated_at from default.ice_part.PARTITIONS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_part
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+  ###MaskedTimeStamp### 
+  ###MaskedTimeStamp### 
