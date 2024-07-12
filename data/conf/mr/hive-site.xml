@@ -156,6 +156,21 @@
   <value>org.apache.hadoop.hive.ql.hooks.PostExecutePrinter</value>
   <description>Post Execute Hook for Tests</description>
 </property>
+  
+<property>
+  <name>yarn.app.mapreduce.am.command-opts</name>
+  <value> --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED </value>
+</property>
+
+<property>
+  <name>mapreduce.map.java.opts</name>
+  <value> --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/java.util.regex=ALL-UNNAMED </value>
+</property>
+
+<property>
+  <name>mapreduce.reduce.java.opts</name>
+  <value> --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/java.util.regex=ALL-UNNAMED </value>
+</property>
 
 <property>
   <name>hive.support.concurrency</name>
