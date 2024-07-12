@@ -1426,14 +1426,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   /**
-   * Create a new DataConnector // TODO
-   *
-   * @param connector
+   * Create a new DataConnector
+   * @param connector object.
    * @throws AlreadyExistsException
    * @throws InvalidObjectException
    * @throws MetaException
    * @throws TException
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#create_dataconnector(DataConnector)
    */
   @Override
   public void createDataConnector(DataConnector connector)
