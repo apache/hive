@@ -32,15 +32,12 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hive.iceberg.com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.ClientPool;
 import org.apache.iceberg.PartitionSpecParser;
-import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotSummary;
 import org.apache.iceberg.SortOrderParser;
@@ -49,13 +46,11 @@ import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.exceptions.AlreadyExistsException;
 import org.apache.iceberg.exceptions.CommitFailedException;
 import org.apache.iceberg.exceptions.CommitStateUnknownException;
-import org.apache.iceberg.exceptions.NoSuchIcebergTableException;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.exceptions.ValidationException;
 import org.apache.iceberg.hadoop.ConfigProperties;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
-import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.BiMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableBiMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
@@ -72,26 +67,21 @@ import static org.apache.iceberg.TableProperties.GC_ENABLED;
  * TODO we should be able to extract some more commonalities to BaseMetastoreTableOperations to
  * avoid code duplication between this class and Metacat Tables.
  */
-public class HiveTableOperations extends BaseMetastoreTableOperations {
+public class HiveTableOperations extends BaseMetastoreTableOperations
+    implements HiveOperationsBase {
   private static final Logger LOG = LoggerFactory.getLogger(HiveTableOperations.class);
-  private static final String HIVE_ICEBERG_METADATA_REFRESH_MAX_RETRIES = "iceberg.hive.metadata-refresh-max-retries";
+
+  private static final String HIVE_ICEBERG_METADATA_REFRESH_MAX_RETRIES =
+      "iceberg.hive.metadata-refresh-max-retries";
   private static final int HIVE_ICEBERG_METADATA_REFRESH_MAX_RETRIES_DEFAULT = 2;
 
-  // the max size is based on HMS backend database. For Hive versions below 2.3, the max table parameter size is 4000
-  // characters, see https://issues.apache.org/jira/browse/HIVE-12274
-  // set to 0 to not expose Iceberg metadata in HMS Table properties.
-  private static final String HIVE_TABLE_PROPERTY_MAX_SIZE = "iceberg.hive.table-property-max-size";
-  private static final String NO_LOCK_EXPECTED_KEY = "expected_parameter_key";
-  private static final String NO_LOCK_EXPECTED_VALUE = "expected_parameter_value";
-  private static final long HIVE_TABLE_PROPERTY_MAX_SIZE_DEFAULT = 32672;
-
-  public static final String HIVE_ICEBERG_STORAGE_HANDLER = "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler";
-
-  private static final BiMap<String, String> ICEBERG_TO_HMS_TRANSLATION = ImmutableBiMap.of(
-      // gc.enabled in Iceberg and external.table.purge in Hive are meant to do the same things but with different names
-      GC_ENABLED, "external.table.purge",
-      TableProperties.PARQUET_COMPRESSION, ParquetOutputFormat.COMPRESSION,
-      TableProperties.PARQUET_ROW_GROUP_SIZE_BYTES, ParquetOutputFormat.BLOCK_SIZE);
+  private static final BiMap<String, String> ICEBERG_TO_HMS_TRANSLATION =
+      ImmutableBiMap.of(
+          // gc.enabled in Iceberg and external.table.purge in Hive are meant to do the same things
+          // but with different names
+          GC_ENABLED, "external.table.purge",
+          TableProperties.PARQUET_COMPRESSION, ParquetOutputFormat.COMPRESSION,
+          TableProperties.PARQUET_ROW_GROUP_SIZE_BYTES, ParquetOutputFormat.BLOCK_SIZE);
 
   /**
    * Provides key translation where necessary between Iceberg and HMS props. This translation is needed because some
@@ -120,8 +110,9 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
   private final FileIO fileIO;
   private final ClientPool<IMetaStoreClient, TException> metaClients;
 
-  protected HiveTableOperations(Configuration conf, ClientPool metaClients, FileIO fileIO,
-                                String catalogName, String database, String table) {
+  protected HiveTableOperations(
+        Configuration conf, ClientPool<IMetaStoreClient, TException> metaClients, FileIO fileIO,
+        String catalogName, String database, String table) {
     this.conf = conf;
     this.metaClients = metaClients;
     this.fileIO = fileIO;
@@ -130,8 +121,11 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
     this.database = database;
     this.tableName = table;
     this.metadataRefreshMaxRetries =
-        conf.getInt(HIVE_ICEBERG_METADATA_REFRESH_MAX_RETRIES, HIVE_ICEBERG_METADATA_REFRESH_MAX_RETRIES_DEFAULT);
-    this.maxHiveTablePropertySize = conf.getLong(HIVE_TABLE_PROPERTY_MAX_SIZE, HIVE_TABLE_PROPERTY_MAX_SIZE_DEFAULT);
+        conf.getInt(
+            HIVE_ICEBERG_METADATA_REFRESH_MAX_RETRIES,
+            HIVE_ICEBERG_METADATA_REFRESH_MAX_RETRIES_DEFAULT);
+    this.maxHiveTablePropertySize =
+        conf.getLong(HIVE_TABLE_PROPERTY_MAX_SIZE, HIVE_TABLE_PROPERTY_MAX_SIZE_DEFAULT);
   }
 
   @Override
@@ -149,7 +143,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
     String metadataLocation = null;
     try {
       Table table = metaClients.run(client -> client.getTable(database, tableName));
-      validateTableIsIceberg(table, fullName);
+      HiveOperationsBase.validateTableIsIceberg(table, fullName);
 
       metadataLocation = table.getParameters().get(METADATA_LOCATION_PROP);
 
@@ -159,7 +153,8 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
       }
 
     } catch (TException e) {
-      String errMsg = String.format("Failed to get table info from metastore %s.%s", database, tableName);
+      String errMsg =
+          String.format("Failed to get table info from metastore %s.%s", database, tableName);
       throw new RuntimeException(errMsg, e);
 
     } catch (InterruptedException e) {
@@ -181,7 +176,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
     CommitStatus commitStatus = CommitStatus.FAILURE;
     boolean updateHiveTable = false;
 
-    HiveLock lock = lockObject(metadata);
+    HiveLock lock = lockObject(base);
     try {
       lock.lock();
 
@@ -196,32 +191,36 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
         updateHiveTable = true;
         LOG.debug("Committing existing table: {}", fullName);
       } else {
-        tbl = newHmsTable(metadata);
+        tbl = newHmsTable(metadata.property(HiveCatalog.HMS_TABLE_OWNER, HiveHadoopUtil.currentUser()));
         LOG.debug("Committing new table: {}", fullName);
       }
 
-      tbl.setSd(storageDescriptor(metadata, hiveEngineEnabled)); // set to pickup any schema changes
+      tbl.setSd(HiveOperationsBase.storageDescriptor(metadata, hiveEngineEnabled)); // set to pickup any schema changes
 
       String metadataLocation = tbl.getParameters().get(METADATA_LOCATION_PROP);
       String baseMetadataLocation = base != null ? base.metadataFileLocation() : null;
       if (!Objects.equals(baseMetadataLocation, metadataLocation)) {
         throw new CommitFailedException(
-            "Base metadata location '%s' is not same as the current table metadata location '%s' for %s.%s",
+            "Cannot commit: Base metadata location '%s' is not same as the current table metadata location" +
+              " '%s' for %s.%s",
             baseMetadataLocation, metadataLocation, database, tableName);
       }
 
       // get Iceberg props that have been removed
       Set<String> removedProps = Collections.emptySet();
       if (base != null) {
-        removedProps = base.properties().keySet().stream()
-            .filter(key -> !metadata.properties().containsKey(key))
-            .collect(Collectors.toSet());
+        removedProps =
+            base.properties().keySet().stream()
+                .filter(key -> !metadata.properties().containsKey(key))
+                .collect(Collectors.toSet());
       }
 
-      Map<String, String> summary = Optional.ofNullable(metadata.currentSnapshot())
-          .map(Snapshot::summary)
-          .orElseGet(ImmutableMap::of);
-      setHmsTableParameters(newMetadataLocation, tbl, metadata, removedProps, hiveEngineEnabled, summary);
+      Map<String, String> summary =
+          Optional.ofNullable(metadata.currentSnapshot())
+              .map(Snapshot::summary)
+              .orElseGet(ImmutableMap::of);
+      setHmsTableParameters(
+          newMetadataLocation, tbl, metadata, removedProps, hiveEngineEnabled, summary);
 
       if (!keepHiveStats) {
         StatsSetupConst.setBasicStatsState(tbl.getParameters(), StatsSetupConst.FALSE);
@@ -231,18 +230,18 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
       lock.ensureActive();
       try {
         persistTable(
-            tbl, updateHiveTable, hiveLockEnabled(metadata, conf) ? null : baseMetadataLocation);
+            tbl, updateHiveTable, hiveLockEnabled(base, conf) ? null : baseMetadataLocation);
         lock.ensureActive();
 
         commitStatus = CommitStatus.SUCCESS;
       } catch (LockException le) {
         commitStatus = CommitStatus.UNKNOWN;
         throw new CommitStateUnknownException(
-                "Failed to heartbeat for hive lock while " +
-                "committing changes. This can lead to a concurrent commit attempt be able to overwrite this commit. " +
-                "Please check the commit history. If you are running into this issue, try reducing " +
-                "iceberg.hive.lock-heartbeat-interval-ms.",
-                le);
+            "Failed to heartbeat for hive lock while " +
+              "committing changes. This can lead to a concurrent commit attempt be able to overwrite this commit. " +
+              "Please check the commit history. If you are running into this issue, try reducing " +
+              "iceberg.hive.lock-heartbeat-interval-ms.",
+            le);
       } catch (org.apache.hadoop.hive.metastore.api.AlreadyExistsException e) {
         throw new AlreadyExistsException(e, "Table already exists: %s.%s", database, tableName);
 
@@ -253,11 +252,10 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
         throw e;
 
       } catch (Throwable e) {
-        if (e.getMessage()
-            .contains(
-                "The table has been modified. The parameter value for key '" +
-                    HiveTableOperations.METADATA_LOCATION_PROP +
-                    "' is")) {
+        if (e.getMessage() != null && e.getMessage().contains(
+            "The table has been modified. The parameter value for key '" +
+              HiveTableOperations.METADATA_LOCATION_PROP +
+              "' is")) {
           throw new CommitFailedException(
               e, "The table %s.%s has been modified concurrently", database, tableName);
         }
@@ -265,8 +263,8 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
         if (e.getMessage() != null && e.getMessage().contains("Table/View 'HIVE_LOCKS' does not exist")) {
           throw new RuntimeException(
               "Failed to acquire locks from metastore because the underlying metastore " +
-                  "table 'HIVE_LOCKS' does not exist. This can occur when using an embedded metastore which does not " +
-                  "support transactions. To fix this use an alternative metastore.",
+                "table 'HIVE_LOCKS' does not exist. This can occur when using an embedded metastore which does not " +
+                "support transactions. To fix this use an alternative metastore.",
               e);
         }
 
@@ -283,7 +281,8 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
         }
       }
     } catch (TException e) {
-      throw new RuntimeException(String.format("Metastore operation failed for %s.%s", database, tableName), e);
+      throw new RuntimeException(
+          String.format("Metastore operation failed for %s.%s", database, tableName), e);
 
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
@@ -300,34 +299,6 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
   }
 
   @VisibleForTesting
-  void persistTable(Table hmsTable, boolean updateHiveTable, String expectedMetadataLocation)
-      throws TException, InterruptedException {
-    if (updateHiveTable) {
-      metaClients.run(
-          client -> {
-            MetastoreUtil.alterTable(
-                client,
-                database,
-                tableName,
-                hmsTable,
-                expectedMetadataLocation != null ?
-                    ImmutableMap.of(
-                        NO_LOCK_EXPECTED_KEY,
-                        METADATA_LOCATION_PROP,
-                        NO_LOCK_EXPECTED_VALUE,
-                        expectedMetadataLocation) :
-                    ImmutableMap.of());
-            return null;
-          });
-    } else {
-      metaClients.run(client -> {
-        client.createTable(hmsTable);
-        return null;
-      });
-    }
-  }
-
-  @VisibleForTesting
   Table loadHmsTable() throws TException, InterruptedException {
     try {
       return metaClients.run(client -> client.getTable(database, tableName));
@@ -337,43 +308,22 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
     }
   }
 
-  private Table newHmsTable(TableMetadata metadata) {
-    Preconditions.checkNotNull(metadata, "'metadata' parameter can't be null");
-    final long currentTimeMillis = System.currentTimeMillis();
-
-    Table newTable = new Table(tableName,
-        database,
-        metadata.property(HiveCatalog.HMS_TABLE_OWNER, HiveHadoopUtil.currentUser()),
-        (int) currentTimeMillis / 1000,
-        (int) currentTimeMillis / 1000,
-        Integer.MAX_VALUE,
-        null,
-        Collections.emptyList(),
-        Maps.newHashMap(),
-        null,
-        null,
-        TableType.EXTERNAL_TABLE.toString());
-
-    newTable.getParameters().put("EXTERNAL", "TRUE"); // using the external table type also requires this
-    return newTable;
-  }
-
   private void setHmsTableParameters(String newMetadataLocation, Table tbl, TableMetadata metadata,
-                                     Set<String> obsoleteProps, boolean hiveEngineEnabled,
-                                     Map<String, String> summary) {
+        Set<String> obsoleteProps, boolean hiveEngineEnabled,
+        Map<String, String> summary) {
     Map<String, String> parameters = Optional.ofNullable(tbl.getParameters())
         .orElseGet(Maps::newHashMap);
 
     // push all Iceberg table properties into HMS
     metadata.properties().entrySet().stream()
-            .filter(entry -> !entry.getKey().equalsIgnoreCase(HiveCatalog.HMS_TABLE_OWNER))
-            .forEach(
-              entry -> {
-                String key = entry.getKey();
-                // translate key names between Iceberg and HMS where needed
-                String hmsKey = ICEBERG_TO_HMS_TRANSLATION.getOrDefault(key, key);
-                parameters.put(hmsKey, entry.getValue());
-              });
+        .filter(entry -> !entry.getKey().equalsIgnoreCase(HiveCatalog.HMS_TABLE_OWNER))
+        .forEach(
+            entry -> {
+              String key = entry.getKey();
+              // translate key names between Iceberg and HMS where needed
+              String hmsKey = ICEBERG_TO_HMS_TRANSLATION.getOrDefault(key, key);
+              parameters.put(hmsKey, entry.getValue());
+            });
     if (metadata.uuid() != null) {
       parameters.put(TableProperties.UUID, metadata.uuid());
     }
@@ -392,7 +342,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
     if (hiveEngineEnabled) {
       String storageHandler = parameters.get(hive_metastoreConstants.META_TABLE_STORAGE);
       // Check if META_TABLE_STORAGE is not present or is not an instance of ICEBERG_STORAGE_HANDLER
-      if (storageHandler == null || !isHiveIcebergStorageHandler(storageHandler)) {
+      if (storageHandler == null || !HiveOperationsBase.isHiveIcebergStorageHandler(storageHandler)) {
         parameters.put(hive_metastoreConstants.META_TABLE_STORAGE, HIVE_ICEBERG_STORAGE_HANDLER);
       }
     } else {
@@ -426,8 +376,10 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
 
     Snapshot currentSnapshot = metadata.currentSnapshot();
     if (exposeInHmsProperties() && currentSnapshot != null) {
-      parameters.put(TableProperties.CURRENT_SNAPSHOT_ID, String.valueOf(currentSnapshot.snapshotId()));
-      parameters.put(TableProperties.CURRENT_SNAPSHOT_TIMESTAMP, String.valueOf(currentSnapshot.timestampMillis()));
+      parameters.put(
+          TableProperties.CURRENT_SNAPSHOT_ID, String.valueOf(currentSnapshot.snapshotId()));
+      parameters.put(
+          TableProperties.CURRENT_SNAPSHOT_TIMESTAMP, String.valueOf(currentSnapshot.timestampMillis()));
       setSnapshotSummary(parameters, currentSnapshot);
     }
 
@@ -442,19 +394,11 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
         parameters.put(TableProperties.CURRENT_SNAPSHOT_SUMMARY, summary);
       } else {
         LOG.warn("Not exposing the current snapshot({}) summary in HMS since it exceeds {} characters",
-                currentSnapshot.snapshotId(), maxHiveTablePropertySize);
+            currentSnapshot.snapshotId(), maxHiveTablePropertySize);
       }
     } catch (JsonProcessingException e) {
-      LOG.warn("Failed to convert current snapshot({}) summary to a json string", currentSnapshot.snapshotId(), e);
-    }
-  }
-
-  @VisibleForTesting
-  void setSchema(TableMetadata metadata, Map<String, String> parameters) {
-    parameters.remove(TableProperties.CURRENT_SCHEMA);
-    if (exposeInHmsProperties() && metadata.schema() != null) {
-      String schema = SchemaParser.toJson(metadata.schema());
-      setField(parameters, TableProperties.CURRENT_SCHEMA, schema);
+      LOG.warn("Failed to convert current snapshot({}) summary to a json string",
+          currentSnapshot.snapshotId(), e);
     }
   }
 
@@ -476,47 +420,35 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
     }
   }
 
-  private void setField(Map<String, String> parameters, String key, String value) {
-    if (value.length() <= maxHiveTablePropertySize) {
-      parameters.put(key, value);
-    } else {
-      LOG.warn("Not exposing {} in HMS since it exceeds {} characters", key, maxHiveTablePropertySize);
-    }
+  @Override
+  public long maxHiveTablePropertySize() {
+    return maxHiveTablePropertySize;
   }
 
-  private boolean exposeInHmsProperties() {
-    return maxHiveTablePropertySize > 0;
+  @Override
+  public String database() {
+    return database;
   }
 
-  private StorageDescriptor storageDescriptor(TableMetadata metadata, boolean hiveEngineEnabled) {
+  @Override
+  public String table() {
+    return tableName;
+  }
 
-    final StorageDescriptor storageDescriptor = new StorageDescriptor();
-    storageDescriptor.setCols(HiveSchemaUtil.convert(metadata.schema()));
-    storageDescriptor.setLocation(metadata.location());
-    SerDeInfo serDeInfo = new SerDeInfo();
-    serDeInfo.setParameters(Maps.newHashMap());
-    if (hiveEngineEnabled) {
-      storageDescriptor.setInputFormat("org.apache.iceberg.mr.hive.HiveIcebergInputFormat");
-      storageDescriptor.setOutputFormat("org.apache.iceberg.mr.hive.HiveIcebergOutputFormat");
-      serDeInfo.setSerializationLib("org.apache.iceberg.mr.hive.HiveIcebergSerDe");
-    } else {
-      storageDescriptor.setOutputFormat("org.apache.hadoop.mapred.FileOutputFormat");
-      storageDescriptor.setInputFormat("org.apache.hadoop.mapred.FileInputFormat");
-      serDeInfo.setSerializationLib("org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe");
-    }
-    storageDescriptor.setSerdeInfo(serDeInfo);
-    return storageDescriptor;
+  @Override
+  public TableType tableType() {
+    return TableType.EXTERNAL_TABLE;
+  }
+
+  @Override
+  public ClientPool<IMetaStoreClient, TException> metaClients() {
+    return metaClients;
   }
 
   private void cleanupMetadataAndUnlock(CommitStatus commitStatus, String metadataLocation,
       HiveLock lock) {
     try {
-      if (commitStatus == CommitStatus.FAILURE) {
-        // If we are sure the commit failed, clean up the uncommitted metadata file
-        io().deleteFile(metadataLocation);
-      }
-    } catch (RuntimeException e) {
-      LOG.error("Failed to cleanup metadata file at {}", metadataLocation, e);
+      HiveOperationsBase.cleanupMetadata(io(), commitStatus.name(), metadataLocation);
     } finally {
       doUnlock(lock);
     }
@@ -530,12 +462,6 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
         LOG.warn("Failed to unlock {}.{}", database, tableName, e);
       }
     }
-  }
-
-  static void validateTableIsIceberg(Table table, String fullName) {
-    String tableType = table.getParameters().get(TABLE_TYPE_PROP);
-    NoSuchIcebergTableException.check(tableType != null && tableType.equalsIgnoreCase(ICEBERG_TABLE_TYPE_VALUE),
-        "Not an iceberg table: %s (type=%s)", fullName, tableType);
   }
 
   /**
@@ -558,7 +484,8 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
       return metadata.propertyAsBoolean(TableProperties.ENGINE_HIVE_ENABLED, false);
     }
 
-    return conf.getBoolean(ConfigProperties.ENGINE_HIVE_ENABLED, true);
+    return conf.getBoolean(
+        ConfigProperties.ENGINE_HIVE_ENABLED, true);
   }
 
   /**
@@ -579,7 +506,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
    * @return if the hive engine related values should be enabled or not
    */
   private static boolean hiveLockEnabled(TableMetadata metadata, Configuration conf) {
-    if (metadata.properties().get(TableProperties.HIVE_LOCK_ENABLED) != null) {
+    if (metadata != null && metadata.properties().get(TableProperties.HIVE_LOCK_ENABLED) != null) {
       // We know that the property is set, so default value will not be used,
       return metadata.propertyAsBoolean(TableProperties.HIVE_LOCK_ENABLED, false);
     }
@@ -594,21 +521,6 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
       return new MetastoreLock(conf, metaClients, catalogName, database, tableName);
     } else {
       return new NoLock();
-    }
-  }
-
-  /**
-   * Checks if the storage_handler property is already set to HIVE_ICEBERG_STORAGE_HANDLER.
-   * @param storageHandler Storage Handler class
-   * @return true if the storage_handler property is set to HIVE_ICEBERG_STORAGE_HANDLER
-   */
-  public static boolean isHiveIcebergStorageHandler(String storageHandler) {
-    try {
-      Class<?> storageHandlerClass = Class.forName(storageHandler);
-      Class<?> icebergStorageHandlerClass = Class.forName(HIVE_ICEBERG_STORAGE_HANDLER);
-      return icebergStorageHandlerClass.isAssignableFrom(storageHandlerClass);
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException("Error checking storage handler class", e);
     }
   }
 }

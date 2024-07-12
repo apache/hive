@@ -25,7 +25,7 @@
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
     <path.to.iceberg.root>.</path.to.iceberg.root>
-    <iceberg.version>1.4.3</iceberg.version>
+    <iceberg.version>1.5.2</iceberg.version>
     <kryo-shaded.version>4.0.3</kryo-shaded.version>
     <iceberg.mockito-core.version>3.4.4</iceberg.mockito-core.version>
     <iceberg.avro.version>1.11.3</iceberg.avro.version>
@@ -36,6 +36,7 @@
     <google.errorprone.version>2.5.1</google.errorprone.version>
     <assertj.version>3.24.2</assertj.version>
     <junit.jupiter.version>5.10.0</junit.jupiter.version>
+    <awaitility.version>4.2.1</awaitility.version>
     <immutables.value.version>2.10.0</immutables.value.version>
     <validate.skip>false</validate.skip>
     <caffeine.version>2.9.3</caffeine.version>
@@ -211,6 +212,11 @@
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-params</artifactId>
         <version>${junit.jupiter.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.awaitility</groupId>
+        <artifactId>awaitility</artifactId>
+        <version>${awaitility.version}</version>
       </dependency>
       <dependency>
         <groupId>com.esotericsoftware</groupId>

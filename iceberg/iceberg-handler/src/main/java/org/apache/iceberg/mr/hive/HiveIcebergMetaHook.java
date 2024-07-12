@@ -105,6 +105,7 @@ import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.hive.CachedClientPool;
+import org.apache.iceberg.hive.HiveOperationsBase;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.hive.MetastoreLock;
@@ -1077,7 +1078,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         hmsTable.getSd().getSerdeInfo().setSerializationLib(HiveIcebergSerDe.class.getName());
         String storageHandler = hmsTable.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE);
         // Check if META_TABLE_STORAGE is not present or is not an instance of ICEBERG_STORAGE_HANDLER
-        if (storageHandler == null || !HiveTableOperations.isHiveIcebergStorageHandler(storageHandler)) {
+        if (storageHandler == null || !HiveOperationsBase.isHiveIcebergStorageHandler(storageHandler)) {
           hmsTable.getParameters()
               .put(hive_metastoreConstants.META_TABLE_STORAGE, HiveTableOperations.HIVE_ICEBERG_STORAGE_HANDLER);
         }
