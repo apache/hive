@@ -24,7 +24,7 @@
 
   <property>
     <name>tez.am.resource.memory.mb</name>
-    <value>128</value>
+    <value>256</value>
   </property>
   <property>
     <name>tez.runtime.io.sort.mb</name>
