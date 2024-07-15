@@ -49,7 +49,7 @@
 <!-- the Vertex resource, so this has to be defined in order to get consistent test results -->
 <property>
   <name>hive.tez.container.size</name>
-  <value>128</value>
+  <value>256</value>
 </property>
 
 <property>
