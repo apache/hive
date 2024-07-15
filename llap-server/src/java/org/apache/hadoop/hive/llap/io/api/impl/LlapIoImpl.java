@@ -308,13 +308,10 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     LOG.debug("Starting proactive eviction.");
     long time = System.currentTimeMillis();
 
-    long markedBytes = 0;
-    if (useLowLevelCache) {
-      markedBytes += dataCache.markBuffersForProactiveEviction(predicate, isInstantDeallocation);
-      markedBytes += fileMetadataCache.markBuffersForProactiveEviction(predicate, isInstantDeallocation);
-      if (serdeCache != null) {
-        markedBytes += serdeCache.markBuffersForProactiveEviction(predicate, isInstantDeallocation);
-      }
+    long markedBytes = dataCache.markBuffersForProactiveEviction(predicate, isInstantDeallocation);
+    markedBytes += fileMetadataCache.markBuffersForProactiveEviction(predicate, isInstantDeallocation);
+    if (serdeCache != null) {
+      markedBytes += serdeCache.markBuffersForProactiveEviction(predicate, isInstantDeallocation);
     }
 
     // Signal mark phase of proactive eviction was done
