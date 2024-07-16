@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import org.antlr.runtime.tree.Tree;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelTraitSet;
@@ -107,6 +108,25 @@ public class HiveCalciteUtil {
     } else {
       return true;
     }
+  }
+
+  public static boolean requiresCBO(Tree node) {
+    switch (node.getType()) {
+      // Hive can't support the following features without CBO
+      case HiveParser.TOK_EXCEPTALL:
+      case HiveParser.TOK_EXCEPTDISTINCT:
+      case HiveParser.TOK_INTERSECTALL:
+      case HiveParser.TOK_INTERSECTDISTINCT:
+      case HiveParser.TOK_QUALIFY:
+        return true;
+      default:
+        for (int i = 0; i < node.getChildCount(); i++) {
+          if (requiresCBO(node.getChild(i))) {
+            return true;
+          }
+        }
+    }
+    return false;
   }
 
   public static List<RexNode> getProjsFromBelowAsInputRef(final RelNode rel) {
