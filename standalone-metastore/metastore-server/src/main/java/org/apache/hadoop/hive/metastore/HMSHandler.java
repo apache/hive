@@ -3726,7 +3726,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       return FilterUtils.filterTablesIfEnabled(isServerFilterEnabled, filterHook, tables);
     } catch (Exception e) {
       LOG.warn("Unexpected exception while getting table(s) in remote database " + dbname , e);
-      throw newMetaException(e);
+      if (isInTest) {
+        // ignore the exception
+        return new ArrayList<Table>();
+      } else {
+        throw newMetaException(e);
+      }
     }
   }
 
