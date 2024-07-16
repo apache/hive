@@ -785,7 +785,6 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   List<Table> getTables(String catName, String dbName, List<String> tableNames, GetProjectionsSpec projectionsSpec)
           throws MetaException, InvalidOperationException, UnknownDBException, TException;
-
   /**
    * Get tables as objects (rather than just fetching their names).  This is more expensive and
    * should only be used if you actually need all the information about the tables.
@@ -3008,6 +3007,15 @@ public interface IMetaStoreClient extends AutoCloseable {
   List<String> getFunctions(String dbName, String pattern)
       throws MetaException, TException;
 
+  /**
+   * Get all functions matching a pattern
+   * @param dbName database name.
+   * @param pattern to match.  This is a java regex pattern.
+   * @throws MetaException error accessing the RDBMS
+   * @throws TException thrift transport error
+   */
+  List<Function> getFunctionsInDb(String dbName, String pattern)
+      throws TException;
   /**
    * Get all functions matching a pattern
    * @param catName catalog name.

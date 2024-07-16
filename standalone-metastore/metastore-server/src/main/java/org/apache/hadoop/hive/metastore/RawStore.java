@@ -1624,6 +1624,15 @@ public interface RawStore extends Configurable {
   List<String> getFunctions(String catName, String dbName, String pattern) throws MetaException;
 
   /**
+   * Retrieve list of function names based on name pattern.
+   * @param dbName database name
+   * @param pattern pattern to match
+   * @return functions that match the pattern
+   * @throws MetaException incorrectly specified function
+   */
+  List<Function> getFunctionsInDb(String catName, String dbName, String pattern) throws MetaException;
+
+  /**
    * Get aggregated stats for a table or partition(s).
    * @param catName catalog name.
    * @param dbName database name.

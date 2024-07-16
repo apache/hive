@@ -168,6 +168,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  void drop_function(string dbName, string funcName)')
     print('  void alter_function(string dbName, string funcName, Function newFunc)')
     print('   get_functions(string dbName, string pattern)')
+    print('   get_functions_in_db(string dbName, string pattern)')
     print('  Function get_function(string dbName, string funcName)')
     print('  GetAllFunctionsResponse get_all_functions()')
     print('  bool create_role(Role role)')
@@ -1255,6 +1256,12 @@ elif cmd == 'get_functions':
         print('get_functions requires 2 args')
         sys.exit(1)
     pp.pprint(client.get_functions(args[0], args[1],))
+
+elif cmd == 'get_functions_in_db':
+    if len(args) != 2:
+        print('get_functions_in_db requires 2 args')
+        sys.exit(1)
+    pp.pprint(client.get_functions_in_db(args[0], args[1],))
 
 elif cmd == 'get_function':
     if len(args) != 2:
