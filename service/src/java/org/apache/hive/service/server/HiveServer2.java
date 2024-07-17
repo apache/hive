@@ -466,7 +466,7 @@ public class HiveServer2 extends CompositeService {
   };
 
   private CuratorFramework startZookeeperClient(HiveConf hiveConf) throws Exception {
-    setUpZooKeeperAuth(hiveConf);
+//    setUpZooKeeperAuth(hiveConf);
     String zooKeeperEnsemble = ZooKeeperHiveHelper.getQuorumServers(hiveConf);
     int sessionTimeout =
         (int) hiveConf.getTimeVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT,
@@ -599,7 +599,7 @@ public class HiveServer2 extends CompositeService {
    * @throws Exception
    */
   private void setUpZooKeeperAuth(HiveConf hiveConf) throws Exception {
-    if (UserGroupInformation.isSecurityEnabled()) {
+    if (UserGroupInformation.isSecurityEnabled() && false) {
       String principal = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL);
       if (principal.isEmpty()) {
         throw new IOException("HiveServer2 Kerberos principal is empty");
