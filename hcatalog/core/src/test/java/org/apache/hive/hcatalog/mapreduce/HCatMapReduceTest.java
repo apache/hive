@@ -97,7 +97,7 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
   private static List<HCatRecord> writeRecords = new ArrayList<HCatRecord>();
   private static List<HCatRecord> readRecords = new ArrayList<HCatRecord>();
 
-  private static FileSystem fs;
+  protected static FileSystem fs;
   private String externalTableLocation = null;
   protected String tableName;
   protected String serdeClass;
@@ -282,7 +282,7 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
   Job runMRCreate(Map<String, String> partitionValues, List<HCatFieldSchema> partitionColumns,
       List<HCatRecord> records, int writeCount, boolean assertWrite) throws Exception {
     return runMRCreate(partitionValues, partitionColumns, records, writeCount, assertWrite,
-        true, null);
+        true, new HashMap<String, String>());
   }
 
   /**
@@ -298,12 +298,15 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
    */
   Job runMRCreate(Map<String, String> partitionValues, List<HCatFieldSchema> partitionColumns,
       List<HCatRecord> records, int writeCount, boolean assertWrite, boolean asSingleMapTask,
-      String customDynamicPathPattern) throws Exception {
+      Map<String, String> properties) throws Exception {
 
     writeRecords = records;
     MapCreate.writeCount = 0;
 
     Configuration conf = new Configuration();
+    for (Map.Entry<String, String> entry : properties.entrySet()) {
+      conf.set(entry.getKey(), entry.getValue());
+    }
     Job job = new Job(conf, "hcat mapreduce write test");
     job.setJarByClass(this.getClass());
     job.setMapperClass(HCatMapReduceTest.MapCreate.class);
@@ -331,9 +334,9 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
     job.setOutputFormatClass(HCatOutputFormat.class);
 
     OutputJobInfo outputJobInfo = OutputJobInfo.create(dbName, tableName, partitionValues);
-    if (customDynamicPathPattern != null) {
+    /*if (customDynamicPathPattern != null) {
       job.getConfiguration().set(HCatConstants.HCAT_DYNAMIC_CUSTOM_PATTERN, customDynamicPathPattern);
-    }
+    }*/
     HCatOutputFormat.setOutput(job, outputJobInfo);
 
     job.setMapOutputKeyClass(BytesWritable.class);
