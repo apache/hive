@@ -69,7 +69,7 @@ public class TestHiveTableScan {
     RelDataType tblType = factory.builder().add("col1", SqlTypeName.INTEGER).add("col2", SqlTypeName.VARCHAR).build();
     Table tblMeta = new Table("default", "dummy");
     return new RelOptHiveTable(null, factory, Arrays.asList("default", "dummy"), tblType, tblMeta,
-        Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), new HiveConf(), null,
+        Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), new HiveConf(),
         new QueryTables(), new HashMap<>(), new HashMap<>(), new AtomicInteger(0));
   }
 }
