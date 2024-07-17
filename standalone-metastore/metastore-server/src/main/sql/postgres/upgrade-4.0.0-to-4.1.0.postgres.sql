@@ -1,3 +1,8 @@
+--liquibase formatted sql
+
+--changeset deniskuzZ:13 labels:4.1.0 dbms:mssql
+--comment: Upgrade MetaStore schema from 4.0.0 to 4.1.0
+
 SELECT 'Upgrading MetaStore schema from 4.0.0 to 4.1.0';
 
 -- HIVE-27725

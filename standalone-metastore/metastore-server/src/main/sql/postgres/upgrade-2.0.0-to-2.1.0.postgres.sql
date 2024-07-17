@@ -1,3 +1,8 @@
+--liquibase formatted sql
+
+--changeset Gates:3 labels:2.1.0 dbms:postgresql
+--comment: Upgrade MetaStore schema from 2.0.0 to 2.1.0
+
 SELECT 'Upgrading MetaStore schema from 2.0.0 to 2.1.0';
 
 --\i 033-HIVE-13076.postgres.sql;

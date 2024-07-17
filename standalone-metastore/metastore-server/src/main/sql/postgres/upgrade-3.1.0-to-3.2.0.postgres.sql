@@ -1,3 +1,8 @@
+--liquibase formatted sql
+
+--changeset Hariappan:8 labels:3.2.0 dbms:postgresql
+--comment: Upgrade MetaStore schema from 3.1.0 to 3.2.0
+
 SELECT 'Upgrading MetaStore schema from 3.1.0 to 3.2.0';
 
 -- HIVE-19267

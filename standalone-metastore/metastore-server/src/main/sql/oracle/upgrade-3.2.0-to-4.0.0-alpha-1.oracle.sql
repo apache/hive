@@ -1,3 +1,8 @@
+--liquibase formatted sql
+
+--changeset Gates:9 labels:4.0.0-alpha-1 dbms:oracle
+--comment: Upgrade MetaStore schema from 3.2.0 to 4.0.0-alpha-1
+
 SELECT 'Upgrading MetaStore schema from 3.2.0 to 4.0.0-alpha-1' AS Status from dual;
 
 -- HIVE-21336 safeguards from changes user may have made after 3.x schema was installed.

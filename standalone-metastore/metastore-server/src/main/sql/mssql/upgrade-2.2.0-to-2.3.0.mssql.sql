@@ -1,3 +1,8 @@
+--liquibase formatted sql
+
+--changeset Gates:5 labels:2.3.0 dbms:mssql
+--comment: Upgrade MetaStore schema from 2.2.0 to 2.3.0
+
 SELECT 'Upgrading MetaStore schema from 2.2.0 to 2.3.0' AS MESSAGE;
 
 --:r 025-HIVE-16399.mssql.sql

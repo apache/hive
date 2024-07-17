@@ -19,6 +19,7 @@ package org.apache.hive.beeline.schematool;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.tools.schematool.CommandBuilder;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper;
 import org.junit.After;
 import org.junit.Before;
@@ -46,8 +47,8 @@ public class TestHiveSchemaTool {
   @Mock
   private HiveConf hiveConf;
   private MockedStatic<HiveSchemaHelper> hiveSchemaHelperMockedStatic;
-  private HiveSchemaTool.HiveSchemaToolCommandBuilder builder;
-  private String pasword = "reallySimplePassword";
+  private CommandBuilder builder;
+  private final String password = "reallySimplePassword";
 
   @Before
   public void setup() throws IOException {
@@ -63,7 +64,10 @@ public class TestHiveSchemaTool {
     if (!file.exists()) {
       file.createNewFile();
     }
-    builder = new HiveSchemaTool.HiveSchemaToolCommandBuilder(hiveConf, null, null, "testUser", pasword, scriptFile);
+    HiveSchemaHelper.MetaStoreConnectionInfo info = new HiveSchemaHelper.MetaStoreConnectionInfo(
+        "testUser", password, null, null, false, null
+    );
+    builder = new CommandBuilder(info, new String[]{"--isolation=TRANSACTION_READ_COMMITTED"});
   }
 
   @After
@@ -77,12 +81,12 @@ public class TestHiveSchemaTool {
 
   @Test
   public void shouldReturnStrippedPassword() throws IOException {
-    assertFalse(builder.buildToLog().contains(pasword));
+    assertFalse(builder.buildToLog(scriptFile).contains(password));
   }
 
   @Test
-  public void shouldReturnActualPassword() throws IOException {
-    String[] strings = builder.buildToRun();
-    assertTrue(Arrays.asList(strings).contains(pasword));
+  public void shouldReturnActualPassword() {
+    String[] strings = builder.buildToRun(scriptFile);
+    assertTrue(Arrays.asList(strings).contains(password));
   }
 }

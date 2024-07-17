@@ -61,7 +61,6 @@ import org.apache.thrift.TException;
 import org.junit.Assert;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
-
 import org.junit.Before;
 import org.junit.After;
 import org.junit.Test;
@@ -84,6 +83,7 @@ public class TestHiveMetaTool {
   private static final String TEST_DATA_DIR = new File(System.getProperty("java.io.tmpdir") +
           File.separator + TestHiveMetaTool.class.getCanonicalName() + "-" + System.currentTimeMillis()
   ).getPath().replaceAll("\\\\", "/");
+
   @Before
   public void setUp() throws Exception {
 
@@ -93,6 +93,7 @@ public class TestHiveMetaTool {
       System.setOut(new PrintStream(os));
 
       hiveConf = new HiveConfForTest(HiveMetaTool.class);
+      TestTxnDbUtil.prepDb(hiveConf);
       client = new HiveMetaStoreClient(hiveConf);
 
       createDatabase();
@@ -121,7 +122,6 @@ public class TestHiveMetaTool {
       hiveConf.setBoolean("mapred.input.dir.recursive", true);
       TestTxnDbUtil.setConfValues(hiveConf);
       txnHandler = TxnUtils.getTxnStore(hiveConf);
-      TestTxnDbUtil.prepDb(hiveConf);
       File f = new File(getWarehouseDir());
       if (f.exists()) {
         FileUtil.fullyDelete(f);
@@ -166,15 +166,15 @@ public class TestHiveMetaTool {
     parameters.put(AvroTableProperties.SCHEMA_URL.getPropName(), AVRO_URI);
     tbl.setParameters(parameters);
 
-    List<FieldSchema> fields = new ArrayList<FieldSchema>(2);
+    List<FieldSchema> fields = new ArrayList<>(2);
     fields.add(new FieldSchema("name", serdeConstants.STRING_TYPE_NAME, ""));
     fields.add(new FieldSchema("income", serdeConstants.INT_TYPE_NAME, ""));
 
     StorageDescriptor sd = new StorageDescriptor();
     sd.setCols(fields);
-    sd.setParameters(new HashMap<String, String>());
+    sd.setParameters(new HashMap<>());
     sd.setSerdeInfo(new SerDeInfo());
-    sd.getSerdeInfo().setParameters(new HashMap<String, String>());
+    sd.getSerdeInfo().setParameters(new HashMap<>());
     sd.getParameters().put(AvroTableProperties.SCHEMA_URL.getPropName(), AVRO_URI);
     tbl.setSd(sd);
 
@@ -240,23 +240,23 @@ public class TestHiveMetaTool {
     Assert.assertEquals(outLocationSet.size(), 4);
     JSONArray outArr = outJS.getJSONArray(expectedOutLoc1);
     Assert.assertEquals(outArr.length(), 1);
-    Assert.assertTrue(outArr.getString(0).equals("db1.ext"));
+    assertEquals("db1.ext", outArr.getString(0));
     String expectedOutLoc2 = getAbsolutePath(getWarehouseDir() + "/db2.db");
     Assert.assertTrue(outLocationSet.contains(expectedOutLoc2));
     outArr = outJS.getJSONArray(expectedOutLoc2);
     Assert.assertEquals(outArr.length(), 1);
-    Assert.assertTrue(outArr.getString(0).equals("db2.ext"));
+    assertEquals("db2.ext", outArr.getString(0));
     String expectedOutLoc3 = getAbsolutePath(getTestDataDir() + "/part");
     Assert.assertTrue(outLocationSet.contains(expectedOutLoc3));
     outArr = outJS.getJSONArray(expectedOutLoc3);
     Assert.assertEquals(outArr.length(), 2);
-    Assert.assertTrue(outArr.getString(0).equals("db3.ext.p=0"));
-    Assert.assertTrue(outArr.getString(1).equals("db3.ext.p=1"));
+    assertEquals("db3.ext.p=0", outArr.getString(0));
+    assertEquals("db3.ext.p=1", outArr.getString(1));
     String expectedOutLoc4 = getAbsolutePath(getTestDataDir() + "/ext/tblLoc");
     Assert.assertTrue(outLocationSet.contains(expectedOutLoc4));
     outArr = outJS.getJSONArray(expectedOutLoc4);
     Assert.assertEquals(outArr.length(), 1);
-    Assert.assertTrue(outArr.getString(0).equals("db3.ext p(0/2)"));
+    assertEquals("db3.ext p(0/2)", outArr.getString(0));
 
 
     // Case 2 : Check with special chars in partition-names : including quotes, timestamp formats, spaces, backslash etc.
@@ -311,31 +311,31 @@ public class TestHiveMetaTool {
     Assert.assertTrue(outLocationSet.contains(expectedOutLoc1));
     outArr = outJS.getJSONArray(expectedOutLoc1); //t1
     Assert.assertEquals(outArr.length(), 1);
-    Assert.assertTrue(outArr.getString(0).equals("default.ext p(3/5)"));
+    assertEquals("default.ext p(3/5)", outArr.getString(0));
     Assert.assertTrue(outLocationSet.contains(expectedOutLoc2));
     outArr = outJS.getJSONArray(expectedOutLoc2); //t2
     Assert.assertEquals(outArr.length(), 1);
-    Assert.assertTrue(outArr.getString(0).equals("default.ext2 p(2/4)"));
+    assertEquals("default.ext2 p(2/4)", outArr.getString(0));
     Assert.assertTrue(outLocationSet.contains(expectedOutLoc3)); //t1_parts
     outArr = outJS.getJSONArray(expectedOutLoc3);
     Assert.assertEquals(outArr.length(), 2);
-    Assert.assertTrue(outArr.getString(0).equals("default.ext.p= A%22"));  //spaces, quotes
-    Assert.assertTrue(outArr.getString(1).equals("default.ext.p=A%5C")); //backslash
+    assertEquals("default.ext.p= A%22", outArr.getString(0));  //spaces, quotes
+    assertEquals("default.ext.p=A%5C", outArr.getString(1)); //backslash
     Assert.assertTrue(outLocationSet.contains(expectedOutLoc4)); //t2_parts
     outArr = outJS.getJSONArray(expectedOutLoc4);
     Assert.assertEquals(outArr.length(), 2);
-    Assert.assertTrue(outArr.getString(0).equals("default.ext2.flt=0.1/dbl=3.22")); //periods, slash
-    Assert.assertTrue(outArr.getString(1).equals("default.ext2.flt=0.22/dbl=2.22"));
+    assertEquals("default.ext2.flt=0.1/dbl=3.22", outArr.getString(0)); //periods, slash
+    assertEquals("default.ext2.flt=0.22/dbl=2.22", outArr.getString(1));
     Assert.assertTrue(outLocationSet.contains(expectedOutLoc5)); //t3
     outArr = outJS.getJSONArray(expectedOutLoc5);
     Assert.assertEquals(outArr.length(), 1);
-    Assert.assertTrue(outArr.getString(0).equals("default.ext3 p(0/3)"));
+    assertEquals("default.ext3 p(0/3)", outArr.getString(0));
     Assert.assertTrue(outLocationSet.contains(expectedOutLoc6)); //t3_parts
     outArr = outJS.getJSONArray(expectedOutLoc6);
     Assert.assertEquals(outArr.length(), 3);
-    Assert.assertTrue(outArr.getString(0).equals("default.ext3.dt=2020-12-01/timest=23%3A23%3A23")); //date, timestamp formats
-    Assert.assertTrue(outArr.getString(1).equals("default.ext3.dt=2020-12-02/timest=22%3A22%3A22"));
-    Assert.assertTrue(outArr.getString(2).equals("default.ext3.dt=2020-12-03/timest=21%3A21%3A21.1234"));
+    assertEquals("default.ext3.dt=2020-12-01/timest=23%3A23%3A23", outArr.getString(0)); //date, timestamp formats
+    assertEquals("default.ext3.dt=2020-12-02/timest=22%3A22%3A22", outArr.getString(1));
+    assertEquals("default.ext3.dt=2020-12-03/timest=21%3A21%3A21.1234", outArr.getString(2));
   }
 
   /*
@@ -343,7 +343,6 @@ public class TestHiveMetaTool {
    */
   @Test
   public void testDiffExtTblLocs() throws Exception {
-    String extTblLocation = getTestDataDir() + "/ext";
     String outLocation = getTestDataDir() + "/extTblOutput";
     Configuration conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL, getWarehouseDir());
@@ -375,13 +374,13 @@ public class TestHiveMetaTool {
     Assert.assertTrue(outLocationSet.contains(defaultDbLoc));
     JSONArray outArr = outJS.getJSONArray(defaultDbLoc);
     Assert.assertEquals(outArr.length(), 1);
-    Assert.assertTrue(outArr.getString(0).equals("- diffdb.ext2")); // dropped ext2 from default location
+    assertEquals("- diffdb.ext2", outArr.getString(0)); // dropped ext2 from default location
     String partLoc = getAbsolutePath(getTestDataDir() + "/part");
     Assert.assertTrue(outLocationSet.contains(partLoc));
     outArr = outJS.getJSONArray(partLoc);
     Assert.assertEquals(outArr.length(), 2); //two entries - 1 for added partition and 1 for dropped partition
-    Assert.assertTrue(outArr.getString(0).equals("+ diffdb.ext1.p=3"));
-    Assert.assertTrue(outArr.getString(1).equals("- diffdb.ext1.p=0"));
+    assertEquals("+ diffdb.ext1.p=3", outArr.getString(0));
+    assertEquals("- diffdb.ext1.p=0", outArr.getString(1));
   }
 
   private String getAbsolutePath(String extTblLocation) {
@@ -432,7 +431,7 @@ public class TestHiveMetaTool {
     assertEquals(expectedUri, table.getSd().getParameters().get(AvroTableProperties.SCHEMA_URL.getPropName()));
   }
 
-  protected List<String> runStatementOnDriver(String stmt) throws Exception {
+  protected void runStatementOnDriver(String stmt) throws Exception {
     try {
       d.run(stmt);
     } catch (CommandProcessorException e) {
@@ -440,7 +439,6 @@ public class TestHiveMetaTool {
     }
     List<String> rs = new ArrayList<>();
     d.getResults(rs);
-    return rs;
   }
 
   @After

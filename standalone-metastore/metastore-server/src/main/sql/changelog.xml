@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <preConditions/>
+
+    <!-- Already existing old scripts created prior to Liquibase introduction. These are in SQL format and per dbms -->
+    <include file="derby/hive-schema-1.2.0.derby.sql"/>
+    <include file="derby/upgrade-1.2.0-to-2.0.0.derby.sql"/>
+    <include file="derby/upgrade-2.0.0-to-2.1.0.derby.sql"/>
+    <include file="derby/upgrade-2.1.0-to-2.2.0.derby.sql"/>
+    <include file="derby/upgrade-2.2.0-to-2.3.0.derby.sql"/>
+    <include file="derby/upgrade-2.2.0-to-2.3.0.derby.sql"/>
+    <include file="derby/upgrade-2.3.0-to-3.0.0.derby.sql"/>
+    <include file="derby/upgrade-3.0.0-to-3.1.0.derby.sql"/>
+    <include file="derby/upgrade-3.1.0-to-3.2.0.derby.sql"/>
+    <include file="derby/upgrade-3.2.0-to-4.0.0-alpha-1.derby.sql"/>
+    <include file="derby/upgrade-4.0.0-alpha-1-to-4.0.0-alpha-2.derby.sql"/>
+    <include file="derby/upgrade-4.0.0-alpha-2-to-4.0.0-beta-1.derby.sql"/>
+    <include file="derby/upgrade-4.0.0-beta-1-to-4.0.0.derby.sql"/>
+    <include file="derby/upgrade-4.0.0-to-4.1.0.derby.sql"/>
+
+    <include file="mssql/hive-schema-1.2.0.mssql.sql"/>
+    <include file="mssql/upgrade-1.2.0-to-2.0.0.mssql.sql"/>
+    <include file="mssql/upgrade-2.0.0-to-2.1.0.mssql.sql"/>
+    <include file="mssql/upgrade-2.1.0-to-2.2.0.mssql.sql"/>
+    <include file="mssql/upgrade-2.2.0-to-2.3.0.mssql.sql"/>
+    <include file="mssql/upgrade-2.2.0-to-2.3.0.mssql.sql"/>
+    <include file="mssql/upgrade-2.3.0-to-3.0.0.mssql.sql"/>
+    <include file="mssql/upgrade-3.0.0-to-3.1.0.mssql.sql"/>
+    <include file="mssql/upgrade-3.1.0-to-3.2.0.mssql.sql"/>
+    <include file="mssql/upgrade-3.2.0-to-4.0.0-alpha-1.mssql.sql"/>
+    <include file="mssql/upgrade-4.0.0-alpha-2-to-4.0.0-beta-1.mssql.sql"/>
+    <include file="mssql/upgrade-4.0.0-beta-1-to-4.0.0.mssql.sql"/>
+    <include file="mssql/upgrade-4.0.0-to-4.1.0.mssql.sql"/>
+
+    <include file="mysql/hive-schema-1.2.0.mysql.sql"/>
+    <include file="mysql/upgrade-1.2.0-to-2.0.0.mysql.sql"/>
+    <include file="mysql/upgrade-2.0.0-to-2.1.0.mysql.sql"/>
+    <include file="mysql/upgrade-2.1.0-to-2.2.0.mysql.sql"/>
+    <include file="mysql/upgrade-2.2.0-to-2.3.0.mysql.sql"/>
+    <include file="mysql/upgrade-2.2.0-to-2.3.0.mysql.sql"/>
+    <include file="mysql/upgrade-2.3.0-to-3.0.0.mysql.sql"/>
+    <include file="mysql/upgrade-3.0.0-to-3.1.0.mysql.sql"/>
+    <include file="mysql/upgrade-3.1.0-to-3.2.0.mysql.sql"/>
+    <include file="mysql/upgrade-3.2.0-to-4.0.0-alpha-1.mysql.sql"/>
+    <include file="mysql/upgrade-4.0.0-alpha-2-to-4.0.0-beta-1.mysql.sql"/>
+    <include file="mysql/upgrade-4.0.0-beta-1-to-4.0.0.mysql.sql"/>
+    <include file="mysql/upgrade-4.0.0-to-4.1.0.mysql.sql"/>
+
+    <include file="oracle/hive-schema-1.2.0.oracle.sql"/>
+    <include file="oracle/upgrade-1.2.0-to-2.0.0.oracle.sql"/>
+    <include file="oracle/upgrade-2.0.0-to-2.1.0.oracle.sql"/>
+    <include file="oracle/upgrade-2.1.0-to-2.2.0.oracle.sql"/>
+    <include file="oracle/upgrade-2.2.0-to-2.3.0.oracle.sql"/>
+    <include file="oracle/upgrade-2.2.0-to-2.3.0.oracle.sql"/>
+    <include file="oracle/upgrade-2.3.0-to-3.0.0.oracle.sql"/>
+    <include file="oracle/upgrade-3.0.0-to-3.1.0.oracle.sql"/>
+    <include file="oracle/upgrade-3.1.0-to-3.2.0.oracle.sql"/>
+    <include file="oracle/upgrade-3.2.0-to-4.0.0-alpha-1.oracle.sql"/>
+    <include file="oracle/upgrade-4.0.0-alpha-2-to-4.0.0-beta-1.oracle.sql"/>
+    <include file="oracle/upgrade-4.0.0-beta-1-to-4.0.0.oracle.sql"/>
+    <include file="oracle/upgrade-4.0.0-to-4.1.0.oracle.sql"/>
+
+    <include file="postgres/hive-schema-1.2.0.postgres.sql"/>
+    <include file="postgres/upgrade-1.2.0-to-2.0.0.postgres.sql"/>
+    <include file="postgres/upgrade-2.0.0-to-2.1.0.postgres.sql"/>
+    <include file="postgres/upgrade-2.1.0-to-2.2.0.postgres.sql"/>
+    <include file="postgres/upgrade-2.2.0-to-2.3.0.postgres.sql"/>
+    <include file="postgres/upgrade-2.2.0-to-2.3.0.postgres.sql"/>
+    <include file="postgres/upgrade-2.3.0-to-3.0.0.postgres.sql"/>
+    <include file="postgres/upgrade-3.0.0-to-3.1.0.postgres.sql"/>
+    <include file="postgres/upgrade-3.1.0-to-3.2.0.postgres.sql"/>
+    <include file="postgres/upgrade-3.2.0-to-4.0.0-alpha-1.postgres.sql"/>
+    <include file="postgres/upgrade-4.0.0-alpha-2-to-4.0.0-beta-1.postgres.sql"/>
+    <include file="postgres/upgrade-4.0.0-beta-1-to-4.0.0.postgres.sql"/>
+    <include file="postgres/upgrade-4.0.0-to-4.1.0.postgres.sql"/>
+
+    <!-- New scripts are in XML format, therefore suitable for all supported dbms -->
+    <include file="xml/upgrade-4.1.0-to-4.1.1.xml"/>
+
+
+</databaseChangeLog>

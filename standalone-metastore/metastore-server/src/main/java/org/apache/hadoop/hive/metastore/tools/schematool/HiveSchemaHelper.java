@@ -17,32 +17,29 @@
  */
 package org.apache.hadoop.hive.metastore.tools.schematool;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.IllegalFormatException;
-import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class HiveSchemaHelper {
+
   private static final Logger LOG = LoggerFactory.getLogger(HiveSchemaHelper.class);
+  private static final Pattern dbTypePattern = Pattern.compile("jdbc:(.+?)(?:ql)?:");
 
   public static final String DB_DERBY = "derby";
   public static final String DB_HIVE = "hive";
   public static final String DB_MSSQL = "mssql";
   public static final String DB_MYSQL = "mysql";
-  public static final String DB_POSTGRACE = "postgres";
+  public static final String DB_POSTGRES = "postgres";
   public static final String DB_ORACLE = "oracle";
   public static final String EMBEDDED_HS2_URL =
       "jdbc:hive2://?hive.conf.restricted.list=;hive.security.authorization.sqlstd.confwhitelist=.*;"
@@ -64,7 +61,7 @@ public class HiveSchemaHelper {
    * @return metastore connection object
    * @throws org.apache.hadoop.hive.metastore.HiveMetaException
    */
-  public static Connection getConnectionToMetastore(String userName, String password, String url,
+  private static Connection getConnectionToMetastore(String userName, String password, String url,
       String driver, boolean printInfo, Configuration conf, String schema) throws HiveMetaException {
     try {
       url = url == null ? getValidConfVar(MetastoreConf.ConfVars.CONNECT_URL_KEY, conf) : url;
@@ -98,10 +95,26 @@ public class HiveSchemaHelper {
     }
   }
 
-  public static Connection getConnectionToMetastore(MetaStoreConnectionInfo info, String schema)
+  public static Connection getConnectionToMetastore(MetaStoreConnectionInfo info, Configuration conf, String schema)
       throws HiveMetaException {
     return getConnectionToMetastore(info.getUsername(), info.getPassword(), info.getUrl(), info.getDriver(),
-        info.getPrintInfo(), info.getConf(), schema);
+        info.getPrintInfo(), conf, schema);
+  }
+
+  public static MetaStoreConnectionInfo getConnectionInfoFromConfiguration(Configuration configuration) throws IOException, HiveMetaException {
+    String url = MetastoreConf.getAsString(configuration, MetastoreConf.ConfVars.CONNECT_URL_KEY);
+    Matcher matcher = dbTypePattern.matcher(url);
+    if (matcher.find()) {
+      return new MetaStoreConnectionInfo(
+          MetastoreConf.getAsString(configuration, MetastoreConf.ConfVars.CONNECTION_USER_NAME),
+          MetastoreConf.getPassword(configuration, MetastoreConf.ConfVars.PWD),
+          MetastoreConf.getAsString(configuration, MetastoreConf.ConfVars.CONNECT_URL_KEY),
+          MetastoreConf.getAsString(configuration, MetastoreConf.ConfVars.CONNECTION_DRIVER),
+          false, matcher.group(1)
+      );
+    } else {
+      throw new HiveMetaException("Unable to determine database type from connection url!");
+    }
   }
 
   public static String getValidConfVar(MetastoreConf.ConfVars confVar, Configuration conf)
@@ -115,485 +128,7 @@ public class HiveSchemaHelper {
 
   private static void logAndPrintToStdout(String msg) {
     LOG.info(msg);
-    System.out.println(msg);
-  }
-
-  public interface NestedScriptParser {
-
-    enum CommandType {
-      PARTIAL_STATEMENT,
-      TERMINATED_STATEMENT,
-      COMMENT
-    }
-
-    String DEFAULT_DELIMITER = ";";
-    String DEFAULT_QUOTE = "\"";
-
-    /**
-     * Find the type of given command
-     */
-    boolean isPartialCommand(String dbCommand) throws IllegalArgumentException;
-
-    /**
-     * Parse the DB specific nesting format and extract the inner script name if any
-     *
-     * @param dbCommand command from parent script
-     * @throws IllegalFormatException
-     */
-    String getScriptName(String dbCommand) throws IllegalArgumentException;
-
-    /**
-     * Find if the given command is a nested script execution
-     */
-    boolean isNestedScript(String dbCommand);
-
-    /**
-     * Find if the given command should not be passed to DB
-     */
-    boolean isNonExecCommand(String dbCommand);
-
-    /**
-     * Get the SQL statement delimiter
-     */
-    String getDelimiter();
-
-    /**
-     * Get the SQL indentifier quotation character
-     */
-    String getQuoteCharacter();
-
-    /**
-     * Clear any client specific tags
-     */
-    String cleanseCommand(String dbCommand);
-
-    /**
-     * Does the DB required table/column names quoted
-     */
-    boolean needsQuotedIdentifier();
-
-    /**
-     * Flatten the nested upgrade script into a buffer
-     *
-     * @param scriptDir  upgrade script directory
-     * @param scriptFile upgrade script file
-     * @return string of sql commands
-     */
-    String buildCommand(String scriptDir, String scriptFile)
-        throws IllegalFormatException, IOException;
-
-    /**
-     * Flatten the nested upgrade script into a buffer
-     *
-     * @param scriptDir  upgrade script directory
-     * @param scriptFile upgrade script file
-     * @param fixQuotes whether to replace quote characters
-     * @return string of sql commands
-     */
-    String buildCommand(String scriptDir, String scriptFile, boolean fixQuotes)
-        throws IllegalFormatException, IOException;
-  }
-
-  /**
-   * Base implementation of NestedScriptParser abstractCommandParser.
-   */
-  private static abstract class AbstractCommandParser implements NestedScriptParser {
-    private List<String> dbOpts;
-    private String msUsername;
-    private String msPassword;
-    private Configuration conf;
-    // Depending on whether we are using beeline or sqlline the line endings have to be handled
-    // differently.
-    private final boolean usingSqlLine;
-
-    public AbstractCommandParser(String dbOpts, String msUsername, String msPassword,
-        Configuration conf, boolean usingSqlLine) {
-      setDbOpts(dbOpts);
-      this.msUsername = msUsername;
-      this.msPassword = msPassword;
-      this.conf = conf;
-      this.usingSqlLine = usingSqlLine;
-    }
-
-    @Override
-    public boolean isPartialCommand(String dbCommand) throws IllegalArgumentException{
-      if (dbCommand == null || dbCommand.isEmpty()) {
-        throw new IllegalArgumentException("invalid command line " + dbCommand);
-      }
-      dbCommand = dbCommand.trim();
-      if (dbCommand.endsWith(getDelimiter()) || isNonExecCommand(dbCommand)) {
-        return false;
-      } else {
-        return true;
-      }
-    }
-
-    @Override
-    public boolean isNonExecCommand(String dbCommand) {
-      return (dbCommand.startsWith("--") || dbCommand.startsWith("#"));
-    }
-
-    @Override
-    public String getDelimiter() {
-      return DEFAULT_DELIMITER;
-    }
-
-    @Override
-    public String getQuoteCharacter() {
-      return DEFAULT_QUOTE;
-    }
-
-
-    @Override
-    public String cleanseCommand(String dbCommand) {
-      // strip off the delimiter
-      if (dbCommand.endsWith(getDelimiter())) {
-        dbCommand = dbCommand.substring(0,
-            dbCommand.length() - getDelimiter().length());
-      }
-      return dbCommand;
-    }
-
-    @Override
-    public boolean needsQuotedIdentifier() {
-      return false;
-    }
-
-    @Override
-    public String buildCommand(
-      String scriptDir, String scriptFile) throws IllegalFormatException, IOException {
-      return buildCommand(scriptDir, scriptFile, false);
-    }
-
-    @Override
-    public String buildCommand(
-      String scriptDir, String scriptFile, boolean fixQuotes) throws IllegalFormatException, IOException {
-      BufferedReader bfReader =
-          new BufferedReader(new FileReader(scriptDir + File.separatorChar + scriptFile));
-      String currLine;
-      StringBuilder sb = new StringBuilder();
-      String currentCommand = null;
-      while ((currLine = bfReader.readLine()) != null) {
-        currLine = currLine.trim();
-
-        if (fixQuotes && !getQuoteCharacter().equals(DEFAULT_QUOTE)) {
-          currLine = currLine.replace("\\\"", getQuoteCharacter());
-        }
-
-        if (currLine.isEmpty()) {
-          continue; // skip empty lines
-        }
-
-        if (currentCommand == null) {
-          currentCommand = currLine;
-        } else {
-          currentCommand = currentCommand + " " + currLine;
-        }
-        if (isPartialCommand(currLine)) {
-          // if its a partial line, continue collecting the pieces
-          continue;
-        }
-
-        // if this is a valid executable command then add it to the buffer
-        if (!isNonExecCommand(currentCommand)) {
-          currentCommand = cleanseCommand(currentCommand);
-          if (isNestedScript(currentCommand)) {
-            // if this is a nested sql script then flatten it
-            String currScript = getScriptName(currentCommand);
-            sb.append(buildCommand(scriptDir, currScript));
-          } else {
-            // Now we have a complete statement, process it
-            // write the line to buffer
-            sb.append(currentCommand);
-            if (usingSqlLine) sb.append(";");
-            sb.append(System.getProperty("line.separator"));
-          }
-        }
-        currentCommand = null;
-      }
-      bfReader.close();
-      return sb.toString();
-    }
-
-    private void setDbOpts(String dbOpts) {
-      if (dbOpts != null) {
-        this.dbOpts = Lists.newArrayList(dbOpts.split(","));
-      } else {
-        this.dbOpts = Lists.newArrayList();
-      }
-    }
-
-    protected List<String> getDbOpts() {
-      return dbOpts;
-    }
-
-    protected String getMsUsername() {
-      return msUsername;
-    }
-
-    protected String getMsPassword() {
-      return msPassword;
-    }
-
-    protected Configuration getConf() {
-      return conf;
-    }
-  }
-
-  // Derby commandline parser
-  public static class DerbyCommandParser extends AbstractCommandParser {
-    private static final String DERBY_NESTING_TOKEN = "RUN";
-
-    public DerbyCommandParser(String dbOpts, String msUsername, String msPassword,
-        Configuration conf, boolean usingSqlLine) {
-      super(dbOpts, msUsername, msPassword, conf, usingSqlLine);
-    }
-
-    @Override
-    public String getScriptName(String dbCommand) throws IllegalArgumentException {
-
-      if (!isNestedScript(dbCommand)) {
-        throw new IllegalArgumentException("Not a script format " + dbCommand);
-      }
-      String[] tokens = dbCommand.split(" ");
-      if (tokens.length != 2) {
-        throw new IllegalArgumentException("Couldn't parse line " + dbCommand);
-      }
-      return tokens[1].replace(";", "").replaceAll("'", "");
-    }
-
-    @Override
-    public boolean isNestedScript(String dbCommand) {
-      // Derby script format is RUN '<file>'
-     return dbCommand.startsWith(DERBY_NESTING_TOKEN);
-    }
-  }
-
-  // Derby commandline parser
-  public static class HiveCommandParser extends AbstractCommandParser {
-    private static String HIVE_NESTING_TOKEN = "SOURCE";
-    private final NestedScriptParser nestedDbCommandParser;
-
-    public HiveCommandParser(String dbOpts, String msUsername, String msPassword,
-        Configuration conf, String metaDbType, boolean usingSqlLine) {
-      super(dbOpts, msUsername, msPassword, conf, usingSqlLine);
-      nestedDbCommandParser = getDbCommandParser(metaDbType, usingSqlLine);
-    }
-
-    @Override
-    public String getQuoteCharacter() {
-      return nestedDbCommandParser.getQuoteCharacter();
-    }
-
-    @Override
-    public String getScriptName(String dbCommand) throws IllegalArgumentException {
-
-      if (!isNestedScript(dbCommand)) {
-        throw new IllegalArgumentException("Not a script format " + dbCommand);
-      }
-      String[] tokens = dbCommand.split(" ");
-      if (tokens.length != 2) {
-        throw new IllegalArgumentException("Couldn't parse line " + dbCommand);
-      }
-      return tokens[1].replace(";", "");
-    }
-
-    @Override
-    public boolean isNestedScript(String dbCommand) {
-     return dbCommand.startsWith(HIVE_NESTING_TOKEN);
-    }
-  }
-
-  // MySQL parser
-  public static class MySqlCommandParser extends AbstractCommandParser {
-    private static final String MYSQL_NESTING_TOKEN = "SOURCE";
-    private static final String DELIMITER_TOKEN = "DELIMITER";
-    private String delimiter = DEFAULT_DELIMITER;
-
-    public MySqlCommandParser(String dbOpts, String msUsername, String msPassword,
-        Configuration conf, boolean usingSqlLine) {
-      super(dbOpts, msUsername, msPassword, conf, usingSqlLine);
-    }
-
-    @Override
-    public boolean isPartialCommand(String dbCommand) throws IllegalArgumentException{
-      boolean isPartial = super.isPartialCommand(dbCommand);
-      // if this is a delimiter directive, reset our delimiter
-      if (dbCommand.startsWith(DELIMITER_TOKEN)) {
-        String[] tokens = dbCommand.split(" ");
-        if (tokens.length != 2) {
-          throw new IllegalArgumentException("Couldn't parse line " + dbCommand);
-        }
-        delimiter = tokens[1];
-      }
-      return isPartial;
-    }
-
-    @Override
-    public String getScriptName(String dbCommand) throws IllegalArgumentException {
-      String[] tokens = dbCommand.split(" ");
-      if (tokens.length != 2) {
-        throw new IllegalArgumentException("Couldn't parse line " + dbCommand);
-      }
-      // remove ending ';'
-      return tokens[1].replace(";", "");
-    }
-
-    @Override
-    public boolean isNestedScript(String dbCommand) {
-      return dbCommand.startsWith(MYSQL_NESTING_TOKEN);
-    }
-
-    @Override
-    public String getDelimiter() {
-      return delimiter;
-    }
-
-    @Override
-    public String getQuoteCharacter() {
-      return "`";
-    }
-
-    @Override
-    public boolean needsQuotedIdentifier() {
-      return true;
-    }
-
-    @Override
-    public boolean isNonExecCommand(String dbCommand) {
-      return super.isNonExecCommand(dbCommand) ||
-          (dbCommand.startsWith("/*") && dbCommand.endsWith("*/")) ||
-          dbCommand.startsWith(DELIMITER_TOKEN);
-    }
-
-    @Override
-    public String cleanseCommand(String dbCommand) {
-      return super.cleanseCommand(dbCommand).replaceAll("/\\*.*?\\*/[^;]", "");
-    }
-
-  }
-
-  // Postgres specific parser
-  public static class PostgresCommandParser extends AbstractCommandParser {
-    private static final String POSTGRES_NESTING_TOKEN = "\\i";
-    @VisibleForTesting
-    public static final String POSTGRES_STANDARD_STRINGS_OPT = "SET standard_conforming_strings";
-    @VisibleForTesting
-    public static final String POSTGRES_SKIP_STANDARD_STRINGS_DBOPT = "postgres.filter.81";
-
-    public PostgresCommandParser(String dbOpts, String msUsername, String msPassword,
-        Configuration conf, boolean usingSqlLine) {
-      super(dbOpts, msUsername, msPassword, conf, usingSqlLine);
-    }
-
-    @Override
-    public String getScriptName(String dbCommand) throws IllegalArgumentException {
-      String[] tokens = dbCommand.split(" ");
-      if (tokens.length != 2) {
-        throw new IllegalArgumentException("Couldn't parse line " + dbCommand);
-      }
-      // remove ending ';'
-      return tokens[1].replace(";", "");
-    }
-
-    @Override
-    public boolean isNestedScript(String dbCommand) {
-      return dbCommand.startsWith(POSTGRES_NESTING_TOKEN);
-    }
-
-    @Override
-    public boolean needsQuotedIdentifier() {
-      return true;
-    }
-
-    @Override
-    public boolean isNonExecCommand(String dbCommand) {
-      // Skip "standard_conforming_strings" command which is read-only in older
-      // Postgres versions like 8.1
-      // See: http://www.postgresql.org/docs/8.2/static/release-8-1.html
-      if (getDbOpts().contains(POSTGRES_SKIP_STANDARD_STRINGS_DBOPT)) {
-        if (dbCommand.startsWith(POSTGRES_STANDARD_STRINGS_OPT)) {
-          return true;
-        }
-      }
-      return super.isNonExecCommand(dbCommand);
-    }
-  }
-
-  //Oracle specific parser
-  public static class OracleCommandParser extends AbstractCommandParser {
-    private static final String ORACLE_NESTING_TOKEN = "@";
-
-    public OracleCommandParser(String dbOpts, String msUsername, String msPassword,
-        Configuration conf, boolean usingSqlLine) {
-      super(dbOpts, msUsername, msPassword, conf, usingSqlLine);
-    }
-
-    @Override
-    public String getScriptName(String dbCommand) throws IllegalArgumentException {
-      if (!isNestedScript(dbCommand)) {
-        throw new IllegalArgumentException("Not a nested script format " + dbCommand);
-      }
-      // remove ending ';' and starting '@'
-      return dbCommand.replace(";", "").replace(ORACLE_NESTING_TOKEN, "");
-    }
-
-    @Override
-    public boolean isNestedScript(String dbCommand) {
-      return dbCommand.startsWith(ORACLE_NESTING_TOKEN);
-    }
-  }
-
-  //MSSQL specific parser
-  public static class MSSQLCommandParser extends AbstractCommandParser {
-    private static final String MSSQL_NESTING_TOKEN = ":r";
-
-    public MSSQLCommandParser(String dbOpts, String msUsername, String msPassword,
-        Configuration conf, boolean usingSqlLine) {
-      super(dbOpts, msUsername, msPassword, conf, usingSqlLine);
-    }
-
-    @Override
-    public String getScriptName(String dbCommand) throws IllegalArgumentException {
-      String[] tokens = dbCommand.split(" ");
-      if (tokens.length != 2) {
-        throw new IllegalArgumentException("Couldn't parse line " + dbCommand);
-      }
-      return tokens[1];
-    }
-
-    @Override
-    public boolean isNestedScript(String dbCommand) {
-      return dbCommand.startsWith(MSSQL_NESTING_TOKEN);
-    }
-  }
-
-  public static NestedScriptParser getDbCommandParser(String dbName, boolean usingSqlLine) {
-    return getDbCommandParser(dbName, null, usingSqlLine);
-  }
-
-  public static NestedScriptParser getDbCommandParser(String dbName, String metaDbName, boolean usingSqlLine) {
-    return getDbCommandParser(dbName, null, null, null, null, metaDbName, usingSqlLine);
-  }
-
-  public static NestedScriptParser getDbCommandParser(String dbName,
-      String dbOpts, String msUsername, String msPassword,
-      Configuration conf, String metaDbType, boolean usingSqlLine) {
-    if (dbName.equalsIgnoreCase(DB_DERBY)) {
-      return new DerbyCommandParser(dbOpts, msUsername, msPassword, conf, usingSqlLine);
-    } else if (dbName.equalsIgnoreCase(DB_HIVE)) {
-      return new HiveCommandParser(dbOpts, msUsername, msPassword, conf, metaDbType, usingSqlLine);
-    } else if (dbName.equalsIgnoreCase(DB_MSSQL)) {
-      return new MSSQLCommandParser(dbOpts, msUsername, msPassword, conf, usingSqlLine);
-    } else if (dbName.equalsIgnoreCase(DB_MYSQL)) {
-      return new MySqlCommandParser(dbOpts, msUsername, msPassword, conf, usingSqlLine);
-    } else if (dbName.equalsIgnoreCase(DB_POSTGRACE)) {
-      return new PostgresCommandParser(dbOpts, msUsername, msPassword, conf, usingSqlLine);
-    } else if (dbName.equalsIgnoreCase(DB_ORACLE)) {
-      return new OracleCommandParser(dbOpts, msUsername, msPassword, conf, usingSqlLine);
-    } else {
-      throw new IllegalArgumentException("Unknown dbType " + dbName);
-    }
+    LOG.info(msg);
   }
 
   public static class MetaStoreConnectionInfo {
@@ -602,21 +137,17 @@ public class HiveSchemaHelper {
     private final String url;
     private final String driver;
     private final boolean printInfo;
-    private final Configuration conf;
     private final String dbType;
-    private final String metaDbType;
 
     public MetaStoreConnectionInfo(String userName, String password, String url, String driver,
-                                   boolean printInfo, Configuration conf, String dbType, String metaDbType) {
+                                   boolean printInfo, String dbType) {
       super();
       this.userName = userName;
       this.password = password;
       this.url = url;
       this.driver = driver;
       this.printInfo = printInfo;
-      this.conf = conf;
       this.dbType = dbType;
-      this.metaDbType = metaDbType;
     }
 
     public String getPassword() {
@@ -635,10 +166,6 @@ public class HiveSchemaHelper {
       return printInfo;
     }
 
-    public Configuration getConf() {
-      return conf;
-    }
-
     public String getUsername() {
       return userName;
     }
@@ -651,8 +178,5 @@ public class HiveSchemaHelper {
       return dbType;
     }
 
-    public String getMetaDbType() {
-      return metaDbType;
-    }
   }
 }

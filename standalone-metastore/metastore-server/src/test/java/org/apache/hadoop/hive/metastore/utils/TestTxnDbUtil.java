@@ -17,29 +17,10 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.SQLTransactionRollbackException;
-import java.sql.Statement;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Scanner;
-import java.util.Set;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
-import org.apache.hadoop.hive.metastore.IMetaStoreSchemaInfo;
-import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfoFactory;
+import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
@@ -48,6 +29,22 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Scanner;
+import java.util.Set;
 
 import static org.apache.hadoop.hive.metastore.DatabaseProduct.determineDatabaseProduct;
 
@@ -92,22 +89,13 @@ public final class TestTxnDbUtil {
     Statement stmt = null;
     try {
       conn = getConnection(conf);
-      String s = conn.getMetaData().getDatabaseProductName();
-      DatabaseProduct dbProduct = determineDatabaseProduct(s, conf);
       stmt = conn.createStatement();
       if (checkDbPrepared(stmt)) {
         return;
       }
-      String schemaRootPath = getSchemaRootPath();
-      IMetaStoreSchemaInfo metaStoreSchemaInfo =
-          MetaStoreSchemaInfoFactory.get(conf, schemaRootPath, dbProduct.getHiveSchemaPostfix());
-      String initFile = metaStoreSchemaInfo.generateInitFileName(null);
-      try (InputStream is = new FileInputStream(
-          metaStoreSchemaInfo.getMetaStoreScriptDir() + File.separator + initFile)) {
-        LOG.info("Reinitializing the metastore db with {} on the database {}", initFile,
-            MetastoreConf.getVar(conf, ConfVars.CONNECT_URL_KEY));
-        importSQL(stmt, is);
-      }
+
+      SchemaToolTestUtil.executeCommand(getSchemaRootPath(), conf,
+          new String[]{"-initSchema", "-dbType", "derby"});
     } catch (SQLException e) {
       try {
         if (conn != null) {
@@ -116,8 +104,9 @@ public final class TestTxnDbUtil {
       } catch (SQLException re) {
         LOG.error("Error rolling back: " + re.getMessage());
       }
+    } catch (HiveMetaException e) {
       // This might be a deadlock, if so, let's retry
-      if (e instanceof SQLTransactionRollbackException && deadlockCnt++ < 5) {
+      if (deadlockCnt++ < 5) {
         LOG.warn("Caught deadlock, retrying db creation");
         prepDb(conf);
       } else {

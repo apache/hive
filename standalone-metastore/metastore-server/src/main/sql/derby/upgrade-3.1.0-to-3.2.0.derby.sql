@@ -1,4 +1,8 @@
--- Upgrade MetaStore schema from 3.1.0 to 3.2.0
+--liquibase formatted sql
+
+--changeset Gates:8 labels:3.2.0 dbms:derby
+--comment: Upgrade MetaStore schema from 3.1.0 to 3.2.0
+
 -- HIVE-19267
 CREATE TABLE TXN_WRITE_NOTIFICATION_LOG (
   WNL_ID bigint NOT NULL,

@@ -1,4 +1,8 @@
--- Upgrade MetaStore schema from 3.0.0 to 3.1.0
+--liquibase formatted sql
+
+--changeset Gates:7 labels:3.1.0 dbms:derby
+--comment: Upgrade MetaStore schema from 3.0.0 to 3.1.0
+
 -- HIVE-19440
 ALTER TABLE "APP"."GLOBAL_PRIVS" ADD "AUTHORIZER" VARCHAR(128);
 DROP INDEX "APP"."GLOBALPRIVILEGEINDEX";

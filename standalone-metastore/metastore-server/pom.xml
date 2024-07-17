@@ -352,6 +352,11 @@
       <version>${jetty.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.liquibase</groupId>
+      <artifactId>liquibase-core</artifactId>
+      <version>${liquibase.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-jdbc</artifactId>
     </dependency>
@@ -523,6 +528,7 @@
         <directory>${basedir}/src/main/resources</directory>
         <includes>
           <include>package.jdo</include>
+          <include>log4j2.xml</include>
         </includes>
       </resource>
     </resources>

@@ -1,3 +1,8 @@
+-- liquibase formatted sql
+
+-- changeset Gates:4 labels:2.2.0 dbms:mysql
+-- comment: Upgrade MetaStore schema from 2.1.0 to 2.2.0
+
 SELECT 'Upgrading MetaStore schema from 2.1.0 to 2.2.0' AS MESSAGE;
 
 -- SOURCE 037-HIVE-14496.mysql.sql;

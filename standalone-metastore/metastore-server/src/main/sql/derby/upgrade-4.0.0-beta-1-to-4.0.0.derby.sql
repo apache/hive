@@ -1,3 +1,8 @@
+--liquibase formatted sql
+
+--changeset Stamatis:12 labels:4.0.0 dbms:derby
+--comment: Upgrade MetaStore schema from 4.0.0-beta-1 to 4.0.0
+
 -- HIVE-24815 Remove "IDXS" Table from Metastore Schema
 DROP TABLE "APP"."INDEX_PARAMS";
 DROP TABLE "APP"."IDXS";
