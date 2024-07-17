@@ -16,10 +16,14 @@
  * limitations under the License.
  */
 
+def discardDaysToKeep = '365'
+def discardNumToKeep = '' // Unlimited
+if (env.BRANCH_NAME != 'master') {
+  discardDaysToKeep = '60'
+  discardNumToKeep = '5'
+}
 properties([
-    // For master keep all builds for one year
-    // For other branches/PRs keep at most 5 builds for at most two months
-    buildDiscarder(logRotator(daysToKeepStr: env.BRANCH_NAME=='master'?'365':'60', numToKeepStr: env.BRANCH_NAME=='master'?'':'5')),
+    buildDiscarder(logRotator(daysToKeepStr: discardDaysToKeep, numToKeepStr: discardNumToKeep))
     // max 5 build/branch/day
     rateLimitBuilds(throttle: [count: 5, durationName: 'day', userBoost: true]),
     // do not run multiple testruns on the same branch
