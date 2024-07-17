@@ -1022,6 +1022,9 @@ public class TestHiveIcebergStorageHandlerNoScan {
     if (HiveVersion.min(HiveVersion.HIVE_3)) {
       expectedIcebergProperties.put("bucketing_version", "2");
     }
+    expectedIcebergProperties.put(TableProperties.DELETE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
+    expectedIcebergProperties.put(TableProperties.UPDATE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
+    expectedIcebergProperties.put(TableProperties.MERGE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
     Assert.assertEquals(expectedIcebergProperties, icebergTable.properties());
 
     if (Catalogs.hiveCatalog(shell.getHiveConf(), tableProperties)) {
