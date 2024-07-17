@@ -56,7 +56,6 @@ import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo.ForeignKeyCol;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
@@ -107,8 +106,6 @@ public class RelOptHiveTable implements RelOptTable {
   private List<RelReferentialConstraint>          referentialConstraints;
   private boolean                                 fetchedReferentialConstraints;
   private final HiveConf                          hiveConf;
-
-  private final Hive                              db;
   private final ParsedQueryTables                 tablesCache;
   private final Map<String, PrunedPartitionList>  partitionCache;
   private final Map<String, ColumnStatsList>      colStatsCache;
@@ -122,7 +119,7 @@ public class RelOptHiveTable implements RelOptTable {
 
   public RelOptHiveTable(RelOptSchema calciteSchema, RelDataTypeFactory typeFactory, List<String> qualifiedTblName,
       RelDataType rowType, Table hiveTblMetadata, List<ColumnInfo> hiveNonPartitionCols, List<ColumnInfo> hivePartitionCols,
-      List<VirtualColumn> hiveVirtualCols, HiveConf hconf, Hive db, ParsedQueryTables tabNameToTabObject,
+      List<VirtualColumn> hiveVirtualCols, HiveConf hconf, ParsedQueryTables tabNameToTabObject,
       Map<String, PrunedPartitionList> partitionCache, Map<String, ColumnStatsList> colStatsCache,
       AtomicInteger noColsMissingStats) {
     this.schema = calciteSchema;
@@ -139,7 +136,6 @@ public class RelOptHiveTable implements RelOptTable {
     this.noOfNonVirtualCols = hiveNonPartitionCols.size() + hivePartitionCols.size();
     this.hiveVirtualCols = ImmutableList.copyOf(hiveVirtualCols);
     this.hiveConf = hconf;
-    this.db = db;
     this.tablesCache = tabNameToTabObject;
     this.partitionCache = partitionCache;
     this.colStatsCache = colStatsCache;
@@ -226,7 +222,7 @@ public class RelOptHiveTable implements RelOptTable {
     // 3. Build new Table
     return new RelOptHiveTable(this.schema, this.typeFactory, this.qualifiedTblName, newRowType,
         this.hiveTblMetadata, newHiveNonPartitionCols, newHivePartitionCols, newHiveVirtualCols,
-        this.hiveConf, this.db, this.tablesCache, this.partitionCache, this.colStatsCache,
+        this.hiveConf, this.tablesCache, this.partitionCache, this.colStatsCache,
         this.noColsMissingStats);
   }
 
