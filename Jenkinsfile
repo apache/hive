@@ -23,7 +23,7 @@ if (env.BRANCH_NAME != 'master') {
   discardNumToKeep = '5'
 }
 properties([
-    buildDiscarder(logRotator(daysToKeepStr: discardDaysToKeep, numToKeepStr: discardNumToKeep))
+    buildDiscarder(logRotator(daysToKeepStr: discardDaysToKeep, numToKeepStr: discardNumToKeep)),
     // max 5 build/branch/day
     rateLimitBuilds(throttle: [count: 5, durationName: 'day', userBoost: true]),
     // do not run multiple testruns on the same branch
