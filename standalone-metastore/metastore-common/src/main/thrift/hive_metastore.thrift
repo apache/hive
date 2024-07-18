@@ -932,7 +932,8 @@ struct AddPartitionsRequest {
   6: optional string catName,
   7: optional string validWriteIdList,
   8: optional bool skipColumnSchemaForPartition,
-  9: optional list<FieldSchema> partitionColSchema
+  9: optional list<FieldSchema> partitionColSchema,
+  10: optional EnvironmentContext environmentContext
 }
 
 // Return type for drop_partitions_req
@@ -963,6 +964,16 @@ struct DropPartitionsRequest {
   8: optional bool needResult=true,
   9: optional string catName,
   10: optional bool skipColumnSchemaForPartition
+}
+
+struct DropPartitionRequest {
+  1: optional string catName,
+  2: required string dbName,
+  3: required string tblName,
+  4: optional string partName,
+  5: optional list<string> partVals,
+  6: optional bool deleteData,
+  7: optional EnvironmentContext environmentContext
 }
 
 struct PartitionValuesRequest {
@@ -1752,11 +1763,25 @@ struct ExtendedTableInfo {
  4: optional list<string> requiredWriteCapabilities // capabilities required for write access
 }
 
+struct DropTableRequest {
+ 1: optional string catalogName,
+ 2: required string dbName,
+ 3: required string tableName,
+ 4: optional bool deleteData,
+ 5: optional EnvironmentContext envContext,
+ 6: optional bool dropPartitions
+}
+
 struct GetDatabaseRequest {
  1: optional string name,
  2: optional string catalogName,
  3: optional list<string> processorCapabilities,
  4: optional string processorIdentifier
+}
+
+struct AlterDatabaseRequest {
+ 1: required string oldDbName,
+ 2: required Database newDb
 }
 
 struct DropDatabaseRequest {
@@ -2128,16 +2153,28 @@ struct CreateDatabaseRequest {
   8: optional string catalogName,
   9: optional i32 createTime,
   10: optional string managedLocationUri,
-  11: optional string type,
-  12: optional string dataConnectorName
+  11: optional DatabaseType type,
+  12: optional string dataConnectorName,
+  13: optional string remote_dbname
 }
 
 struct CreateDataConnectorRequest {
-  1: DataConnector connector
+  1: required DataConnector connector
 }
 
 struct GetDataConnectorRequest {
   1: required string connectorName
+}
+
+struct AlterDataConnectorRequest {
+  1: required string connectorName,
+  2: required DataConnector newConnector
+}
+
+struct DropDataConnectorRequest {
+  1: required string connectorName,
+  2: optional bool ifNotExists,
+  3: optional bool checkReferences
 }
 
 struct ScheduledQueryPollRequest {
@@ -2202,6 +2239,15 @@ struct AlterPartitionsRequest {
   7: optional string validWriteIdList,
   8: optional bool skipColumnSchemaForPartition,
   9: optional list<FieldSchema> partitionColSchema
+}
+
+struct AppendPartitionsRequest {
+  1: optional string catalogName,
+  2: required string dbName,
+  3: required string tableName,
+  4: optional string name,
+  5: optional list<string> partVals,
+  6: optional EnvironmentContext environmentContext
 }
 
 struct AlterPartitionsResponse {
@@ -2537,6 +2583,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void drop_catalog(1: DropCatalogRequest catName) throws (1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
 
   void create_database(1:Database database) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
+  void create_database_req(1:CreateDatabaseRequest createDatabaseRequest) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
   Database get_database(1:string name) throws(1:NoSuchObjectException o1, 2:MetaException o2)
   Database get_database_req(1:GetDatabaseRequest request) throws(1:NoSuchObjectException o1, 2:MetaException o2)
   void drop_database(1:string name, 2:bool deleteData, 3:bool cascade) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
@@ -2544,12 +2591,13 @@ service ThriftHiveMetastore extends fb303.FacebookService
   list<string> get_databases(1:string pattern) throws(1:MetaException o1)
   list<string> get_all_databases() throws(1:MetaException o1)
   void alter_database(1:string dbname, 2:Database db) throws(1:MetaException o1, 2:NoSuchObjectException o2)
+  void alter_database_req(1:AlterDatabaseRequest alterDbReq) throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
-  void create_dataconnector(1:DataConnector connector) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
+  void create_dataconnector_req(1:CreateDataConnectorRequest connectorReq) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
   DataConnector get_dataconnector_req(1:GetDataConnectorRequest request) throws(1:NoSuchObjectException o1, 2:MetaException o2)
-  void drop_dataconnector(1:string name, 2:bool ifNotExists, 3:bool checkReferences) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
+  void drop_dataconnector_req(1:DropDataConnectorRequest dropDcReq) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
   list<string> get_dataconnectors() throws(1:MetaException o1)
-  void alter_dataconnector(1:string name, 2:DataConnector connector) throws(1:MetaException o1, 2:NoSuchObjectException o2)
+  void alter_dataconnector_req(1:AlterDataConnectorRequest alterReq) throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
     // returns the type with given name (make seperate calls for the dependent types if needed)
   Type get_type(1:string name)  throws(1:MetaException o1, 2:NoSuchObjectException o2)
@@ -2619,6 +2667,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void drop_table_with_environment_context(1:string dbname, 2:string name, 3:bool deleteData,
       4:EnvironmentContext environment_context)
                        throws(1:NoSuchObjectException o1, 2:MetaException o3)
+  void drop_table_req(1:DropTableRequest dropTableReq)
+        throws(1:NoSuchObjectException o1, 2:MetaException o3)
   void truncate_table(1:string dbName, 2:string tableName, 3:list<string> partNames)
                           throws(1:MetaException o1)
   TruncateTableResponse truncate_table_req(1:TruncateTableRequest req) throws(1:MetaException o1)
@@ -2630,9 +2680,6 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws (1: MetaException o1)
   list<string> get_all_tables(1: string db_name) throws (1: MetaException o1)
 
-  Table get_table(1:string dbname, 2:string tbl_name)
-                       throws (1:MetaException o1, 2:NoSuchObjectException o2)
-  list<Table> get_table_objects_by_name(1:string dbname, 2:list<string> tbl_names)
   list<ExtendedTableInfo> get_tables_ext(1: GetTablesExtRequest req) throws (1: MetaException o1)
   GetTableResult get_table_req(1:GetTableRequest req) throws (1:MetaException o1, 2:NoSuchObjectException o2)
   GetTablesResult get_table_objects_by_name_req(1:GetTablesRequest req)
@@ -2713,6 +2760,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   Partition append_partition_with_environment_context(1:string db_name, 2:string tbl_name,
       3:list<string> part_vals, 4:EnvironmentContext environment_context)
                        throws (1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
+  Partition append_partition_req(1:AppendPartitionsRequest appendPartitionsReq)
+                       throws (1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
   Partition append_partition_by_name(1:string db_name, 2:string tbl_name, 3:string part_name)
                        throws (1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
   Partition append_partition_by_name_with_environment_context(1:string db_name, 2:string tbl_name,
@@ -2722,6 +2771,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
   bool drop_partition_with_environment_context(1:string db_name, 2:string tbl_name,
       3:list<string> part_vals, 4:bool deleteData, 5:EnvironmentContext environment_context)
+                       throws(1:NoSuchObjectException o1, 2:MetaException o2)
+  bool drop_partition_req(1:DropPartitionRequest dropPartitionReq)
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
   bool drop_partition_by_name(1:string db_name, 2:string tbl_name, 3:string part_name, 4:bool deleteData)
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
@@ -2765,7 +2816,8 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
 
   list<string> get_partition_names(1:string db_name, 2:string tbl_name, 3:i16 max_parts=-1)
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
-
+  list<string> fetch_partition_names_req(1:PartitionsRequest partitionReq)
+                       throws(1:NoSuchObjectException o1, 2:MetaException o2)
   PartitionValuesResponse get_partition_values(1:PartitionValuesRequest request)
     throws(1:MetaException o1, 2:NoSuchObjectException o2);
 
