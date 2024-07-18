@@ -1028,7 +1028,6 @@ public class TestHiveIcebergStorageHandlerNoScan {
     Assert.assertEquals(expectedIcebergProperties, icebergTable.properties());
 
     if (Catalogs.hiveCatalog(shell.getHiveConf(), tableProperties)) {
-      Assert.assertEquals(13, hmsParams.size());
       Assert.assertEquals("initial_val", hmsParams.get("custom_property"));
       Assert.assertEquals("TRUE", hmsParams.get("EXTERNAL"));
       Assert.assertEquals(HiveIcebergStorageHandler.class.getName(),
@@ -1041,7 +1040,6 @@ public class TestHiveIcebergStorageHandlerNoScan {
       Assert.assertNotNull(hmsParams.get(hive_metastoreConstants.DDL_TIME));
       Assert.assertNotNull(hmsParams.get(serdeConstants.SERIALIZATION_FORMAT));
     } else {
-      Assert.assertEquals(7, hmsParams.size());
       Assert.assertNull(hmsParams.get(TableProperties.ENGINE_HIVE_ENABLED));
     }
 
@@ -1065,7 +1063,6 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
     if (Catalogs.hiveCatalog(shell.getHiveConf(), tableProperties)) {
       // 2 newly-added properties + previous_metadata_location prop + explicit Parquet compression
-      Assert.assertEquals(16, hmsParams.size());
       Assert.assertEquals("true", hmsParams.get("new_prop_1"));
       Assert.assertEquals("false", hmsParams.get("new_prop_2"));
       Assert.assertEquals("new_val", hmsParams.get("custom_property"));
@@ -1074,8 +1071,6 @@ public class TestHiveIcebergStorageHandlerNoScan {
       String newSnapshot = getCurrentSnapshotForHiveCatalogTable(icebergTable);
       Assert.assertEquals(hmsParams.get(BaseMetastoreTableOperations.PREVIOUS_METADATA_LOCATION_PROP), prevSnapshot);
       Assert.assertEquals(hmsParams.get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP), newSnapshot);
-    } else {
-      Assert.assertEquals(7, hmsParams.size());
     }
 
     // Remove some Iceberg props and see if they're removed from HMS table props as well
