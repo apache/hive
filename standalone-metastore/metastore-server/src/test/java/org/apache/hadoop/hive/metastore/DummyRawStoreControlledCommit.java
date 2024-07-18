@@ -1574,7 +1574,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   @Override
   public MTable ensureGetMTable(String catName, String dbName, String tblName) throws NoSuchObjectException {
-      return objectStore.ensureGetMTable(catName, dbName, catName);
+      return objectStore.ensureGetMTable(catName, dbName, tblName);
   }
     
   @Override

@@ -676,8 +676,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
       return needResults ? new ArrayList<>() : null;
     }
     Partition part = parts.get(0);
-    AddPartitionsRequest req = new AddPartitionsRequest(
-        part.getDbName(), part.getTableName(), parts, ifNotExists);
+    AddPartitionsRequest req = new AddPartitionsRequest(part.getDbName(), part.getTableName(), parts, ifNotExists);
     req.setNeedResult(needResults);
     AddPartitionsResult result = client.add_partitions_req(req);
     return needResults ? filterHook.filterPartitions(result.getPartitions()) : null;
@@ -780,9 +779,9 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public void createDataConnector(DataConnector connector)
-      throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
-    client.create_dataconnector(connector);
+  public void createDataConnector(DataConnector connector) throws TException {
+    CreateDataConnectorRequest connectorReq = new CreateDataConnectorRequest(connector);
+    client.create_dataconnector_req(connectorReq);
   }
 
   /**
@@ -980,9 +979,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public void dropDataConnector(String name, boolean ifNotExists, boolean checkReferences)
-      throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
-    client.drop_dataconnector(name, ifNotExists, checkReferences);
+  public void dropDataConnector(String name, boolean ifNotExists, boolean checkReferences) throws TException {
+    DropDataConnectorRequest dropDcReq = new DropDataConnectorRequest(name);
+    dropDcReq.setIfNotExists(ifNotExists);
+    dropDcReq.setCheckReferences(checkReferences);
+    client.drop_dataconnector_req(dropDcReq);
   }
 
   /**
@@ -1806,9 +1807,9 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public void alterDataConnector(String dcName, DataConnector connector)
-      throws MetaException, NoSuchObjectException, TException {
-    client.alter_dataconnector(dcName, connector);
+  public void alterDataConnector(String dcName, DataConnector connector) throws TException {
+    AlterDataConnectorRequest alterReq = new AlterDataConnectorRequest(dcName, connector);
+    client.alter_dataconnector_req(alterReq);
   }
 
   /**
