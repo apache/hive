@@ -92,7 +92,7 @@ public class AlterTableCompactAnalyzer extends AbstractAlterTableAnalyzer {
   }
   
   @Override
-  protected void setAcidDdlDesc(DDLDescWithWriteId desc) {
-    // doesn't need an open txn
+  public boolean hasAcidResources() {
+    return false; // doesn't need an open txn
   }
 }
