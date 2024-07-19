@@ -61,11 +61,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.LinkedList;
 import java.util.Optional;
@@ -356,7 +354,6 @@ public class HiveAlterHandler implements AlterHandler {
 
           // also the location field in partition
           parts = msdb.getPartitions(catName, dbname, name, -1);
-          Map<List<FieldSchema>, List<Partition>> partsByCols = new HashMap<>();
           for (Partition part : parts) {
             String oldPartLoc = part.getSd().getLocation();
             if (dataWasMoved && oldPartLoc.contains(oldTblLocPath)) {
@@ -367,31 +364,6 @@ public class HiveAlterHandler implements AlterHandler {
             }
             part.setDbName(newDbName);
             part.setTableName(newTblName);
-            partsByCols.computeIfAbsent(part.getSd().getCols(), k -> new ArrayList<>()).add(part);
-          }
-          Map<String, Map<String, ColumnStatistics>> engineToColStats = new HashMap<>();
-          if (rename) {
-            // If this is the table rename, get the partition column statistics first
-            for (Map.Entry<List<FieldSchema>, List<Partition>> entry : partsByCols.entrySet()) {
-              List<String> colNames = entry.getKey().stream().map(fs -> fs.getName()).collect(Collectors.toList());
-              List<String> partNames = new ArrayList<>();
-              for (Partition part : entry.getValue()) {
-                partNames.add(Warehouse.makePartName(oldt.getPartitionKeys(), part.getValues()));
-              }
-              List<List<ColumnStatistics>> colStats =
-                  msdb.getPartitionColumnStatistics(catName, dbname, name, partNames, colNames);
-              for (List<ColumnStatistics> cs : colStats) {
-                if (cs != null && !cs.isEmpty()) {
-                  String engine = cs.get(0).getEngine();
-                  cs.stream().forEach(stats -> {
-                    stats.getStatsDesc().setDbName(newDbName);
-                    stats.getStatsDesc().setTableName(newTblName);
-                    String partName = stats.getStatsDesc().getPartName();
-                    engineToColStats.computeIfAbsent(engine, key -> new HashMap<>()).put(partName, stats);
-                  });
-                }
-              }
-            }
           }
           // Do not verify stats parameters on a partitioned table.
           msdb.alterTable(catName, dbname, name, newt, null);
@@ -411,14 +383,6 @@ public class HiveAlterHandler implements AlterHandler {
             });
           }
           Deadline.checkTimeout();
-          if (rename) {
-            for (Entry<String, Map<String, ColumnStatistics>> entry : engineToColStats.entrySet()) {
-              // We will send ALTER_TABLE event after the db change, set listeners to null so that no extra
-              // event that could pollute the replication will be sent.
-              msdb.updatePartitionColumnStatisticsInBatch(entry.getValue(), oldt,
-                  null, writeIdList, newt.getWriteId());
-            }
-          }
         } else {
           msdb.alterTable(catName, dbname, name, newt, writeIdList);
         }
@@ -495,12 +459,8 @@ public class HiveAlterHandler implements AlterHandler {
       throw new InvalidOperationException(
           "Unable to change partition or table."
               + " Check metastore logs for detailed stack." + e.getMessage());
-    } catch (InvalidInputException e) {
-        LOG.debug("Accessing Metastore failed due to invalid input ", e);
-        throw new InvalidOperationException(
-            "Unable to change partition or table."
-                + " Check metastore logs for detailed stack." + e.getMessage());
-    } catch (NoSuchObjectException e) {
+    }
+    catch (NoSuchObjectException e) {
       LOG.debug("Object not found in metastore ", e);
       throw new InvalidOperationException(
           "Unable to change partition or table. Object " +  e.getMessage() + " does not exist."
