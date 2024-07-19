@@ -688,7 +688,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
           this.ctx.setCboInfo(cboMsg);
 
           // Determine if we should re-throw the exception OR if we try to mark the query to retry as non-CBO.
-          if (fallbackStrategy.isFatal(e) || HiveCalciteUtil.requiresCBO(ast)) {
+          final boolean requiresCBO = queryProperties.hasQualify()
+              || queryProperties.hasExcept()
+              || queryProperties.hasIntersect();
+          if (requiresCBO || fallbackStrategy.isFatal(e)) {
             if (e instanceof RuntimeException || e instanceof SemanticException) {
               // These types of exceptions do not need wrapped
               throw e;
