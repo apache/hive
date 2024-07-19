@@ -114,6 +114,7 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.MergeTaskProperties;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.reexec.ReCompileException;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -138,7 +139,6 @@ import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.iceberg.BaseMetastoreTableOperations;
-import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataOperations;
 import org.apache.iceberg.ExpireSnapshots;
@@ -147,6 +147,7 @@ import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.FindFiles;
 import org.apache.iceberg.GenericBlobMetadata;
 import org.apache.iceberg.GenericStatisticsFile;
+import org.apache.iceberg.HasTableOperations;
 import org.apache.iceberg.ManifestFile;
 import org.apache.iceberg.MetadataTableType;
 import org.apache.iceberg.MetadataTableUtils;
@@ -166,6 +167,7 @@ import org.apache.iceberg.SortField;
 import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.StatisticsFile;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.TableScan;
 import org.apache.iceberg.actions.DeleteOrphanFiles;
@@ -645,7 +647,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    */
   @Override
   public LockType getLockType(WriteEntity writeEntity) {
-    return LockType.SHARED_READ;
+    if (WriteEntity.WriteType.INSERT_OVERWRITE == writeEntity.getWriteType()) {
+      return LockType.EXCL_WRITE;
+    }
+    return LockType.SHARED_WRITE;
   }
 
   @Override
@@ -1395,6 +1400,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       schema = table.schema();
       spec = table.spec();
 
+      if (table instanceof HasTableOperations && table.currentSnapshot() != null) {
+        TableMetadata metadata = ((HasTableOperations) table).operations().refresh();
+        if (!metadata.metadataFileLocation().equals(
+            props.getProperty(BaseMetastoreTableOperations.METADATA_LOCATION_PROP))) {
+          throw new ReCompileException("Snapshot is outdated");
+        }
+      }
       // serialize table object into config
       Table serializableTable = SerializableTable.copyOf(table);
       checkAndSkipIoConfigSerialization(configuration, serializableTable);
