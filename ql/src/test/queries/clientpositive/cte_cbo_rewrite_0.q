@@ -98,3 +98,64 @@ FROM emps e
 INNER JOIN depts d ON e.deptno = d.deptno
 GROUP BY d.name
 HAVING AVG(e.salary) < 100000;
+
+-- Ensure that branch pruning (e.q., in UNION) is done before CTE detection and does not lead to broken queries/plans.
+-- A scan over a CTE should always have the respective Spool operator in the plan; in other words if we introduce CTEs
+-- we should not prune out the Spools.
+EXPLAIN CBO
+SELECT * FROM (
+SELECT d.name, 'HIGH' as salary_range
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) >= 100000
+UNION
+SELECT d.name, 'LOW' as salary_range
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) < 100000) summary
+WHERE salary_range = 'HIGH';
+
+SELECT * FROM (
+SELECT d.name, 'HIGH' as salary_range
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) >= 100000
+UNION
+SELECT d.name, 'LOW' as salary_range
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) < 100000) summary
+WHERE salary_range = 'HIGH';
+
+EXPLAIN CBO
+SELECT * FROM (
+SELECT d.name, 'HIGH' as salary_range
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) >= 100000
+UNION
+SELECT d.name, 'LOW' as salary_range
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) < 100000) summary
+WHERE salary_range = 'LOW';
+
+SELECT * FROM (
+SELECT d.name, 'HIGH' as salary_range
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) >= 100000
+UNION
+SELECT d.name, 'LOW' as salary_range
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) < 100000) summary
+WHERE salary_range = 'LOW';
