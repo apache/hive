@@ -23,6 +23,7 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
+import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionRegistry;
@@ -35,7 +36,8 @@ import java.util.function.Predicate;
  * Rule for saving relational expressions that appear more than once in a query tree to the planner context.
  */
 public final class CommonRelSubExprRegisterRule extends CommonRelSubExprRule {
-  public static final CommonRelSubExprRegisterRule JOIN = new CommonRelSubExprRegisterRule(operand(Join.class, any()));
+  public static final CommonRelSubExprRegisterRule JOIN =
+      new CommonRelSubExprRegisterRule(operandJ(Join.class, null, j -> JoinRelType.INNER == j.getJoinType(), any()));
   public static final CommonRelSubExprRegisterRule AGGREGATE =
       new CommonRelSubExprRegisterRule(operand(Aggregate.class, any()));
   public static final CommonRelSubExprRegisterRule FILTER =
