@@ -327,8 +327,8 @@ public class IcebergTableUtil {
   }
 
   public static boolean isV2Table(Map<String, String> props) {
-    return props != null &&
-        "2".equals(props.get(TableProperties.FORMAT_VERSION));
+    return props == null ||
+        "2".equals(props.get(TableProperties.FORMAT_VERSION)) || props.get(TableProperties.FORMAT_VERSION) == null;
   }
 
   public static boolean isCopyOnWriteMode(Context.Operation operation, BinaryOperator<String> props) {

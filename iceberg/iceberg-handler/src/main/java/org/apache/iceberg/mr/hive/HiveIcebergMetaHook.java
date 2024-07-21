@@ -1068,10 +1068,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
           hmsTable.getParameters().put("current-snapshot-id", String.valueOf(snapshot.snapshotId()));
         }
         String formatVersion = String.valueOf(((BaseTable) tbl).operations().current().formatVersion());
-        // If it is not the default format version, then set it in the table properties.
-        if (!"1".equals(formatVersion)) {
-          hmsTable.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
-        }
+        hmsTable.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
         // Set the serde info
         hmsTable.getSd().setInputFormat(HiveIcebergInputFormat.class.getName());
         hmsTable.getSd().setOutputFormat(HiveIcebergOutputFormat.class.getName());
