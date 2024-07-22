@@ -63,7 +63,6 @@ public class GenericUDAFMkCollectionEvaluator extends GenericUDAFEvaluator
     // init output object inspectors
     // Mode.PARTIAL1 or Mode.COMPLETE: T => List[T]
     // Mode.PARTIAL2 or Mode.FINAL: List[T] => List[T]
-    // The output of a partial aggregation is a list, output of COMPLETE is List as well
     if (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE) {
       inputOI = parameters[0];
       return ObjectInspectorFactory.getStandardListObjectInspector(
