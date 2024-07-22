@@ -61,13 +61,13 @@ public class GenericUDAFMkCollectionEvaluator extends GenericUDAFEvaluator
       throws HiveException {
     super.init(m, parameters);
     // init output object inspectors
-    // Mode.PARTIAL1 or Mode.COMPLETE: T => List[T]
-    // Mode.PARTIAL2 or Mode.FINAL: List[T] => List[T]
     if (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE) {
+      // T => List[T]
       inputOI = parameters[0];
       return ObjectInspectorFactory.getStandardListObjectInspector(
           ObjectInspectorUtils.getStandardObjectInspector(inputOI));
     } else {
+      // List[T] => List[T]
       internalMergeOI = (ListObjectInspector) parameters[0];
       inputOI = internalMergeOI.getListElementObjectInspector();
       loi = (StandardListObjectInspector)
