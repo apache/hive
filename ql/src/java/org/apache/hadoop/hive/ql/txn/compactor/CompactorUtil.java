@@ -424,6 +424,10 @@ public class CompactorUtil {
   private static CompactionType checkForCompaction(final CompactionInfo ci, final ValidWriteIdList writeIds,
       final StorageDescriptor sd, final Map<String, String> tblProperties, final String runAs, TxnStore txnHandler,
       HiveConf conf) throws IOException, InterruptedException {
+    if (MetaStoreUtils.isIcebergTable(tblProperties)) {
+      return ci.type;
+    }
+
     // If it's marked as too many aborted, we already know we need to compact
     if (ci.tooManyAborts) {
       LOG.debug("Found too many aborted transactions for "
@@ -493,8 +497,7 @@ public class CompactorUtil {
 
       checkInterrupt(Initiator.class.getName());
 
-      CompactionType type = MetaStoreUtils.isIcebergTable(t.getParameters()) ? ci.type : 
-          checkForCompaction(ci, validWriteIds, sd, t.getParameters(), runAs, txnHandler, conf);
+      CompactionType type = checkForCompaction(ci, validWriteIds, sd, t.getParameters(), runAs, txnHandler, conf);
       if (type != null) {
         ci.type = type;
         return requestCompaction(ci, runAs, hostName, txnHandler);

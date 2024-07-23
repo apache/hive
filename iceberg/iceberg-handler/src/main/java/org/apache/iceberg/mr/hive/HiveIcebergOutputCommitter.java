@@ -604,7 +604,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    */
   private void commitCompaction(Table table, long startTime, FilesForCommit results,
       RewritePolicy rewritePolicy, Integer partitionSpecId, String partitionPath) {
-    if (rewritePolicy == RewritePolicy.ALL_PARTITIONS) {
+    if (rewritePolicy == RewritePolicy.FULL_TABLE) {
       // Full table compaction
       Transaction transaction = table.newTransaction();
       DeleteFiles delete = transaction.newDelete();
@@ -617,13 +617,10 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       LOG.debug("Compacted full table with files {}", results);
     } else {
       // Single partition compaction
-      List<DataFile> existingDataFiles = partitionPath != null ?
-          IcebergTableUtil.getDataFiles(table, partitionSpecId, partitionPath) :
-          IcebergTableUtil.getDataFilesNotInSpec(table, partitionSpecId);
-
-      List<DeleteFile> existingDeleteFiles = partitionPath != null ?
-          IcebergTableUtil.getDeleteFiles(table, partitionSpecId, partitionPath) :
-          IcebergTableUtil.getDeleteFilesNotInSpec(table, partitionSpecId);
+      List<DataFile> existingDataFiles =
+          IcebergTableUtil.getDataFiles(table, partitionSpecId, partitionPath, partitionPath != null);
+      List<DeleteFile> existingDeleteFiles =
+          IcebergTableUtil.getDeleteFiles(table, partitionSpecId, partitionPath, partitionPath != null);
 
       RewriteFiles rewriteFiles = table.newRewrite();
       rewriteFiles.validateFromSnapshot(table.currentSnapshot().snapshotId());

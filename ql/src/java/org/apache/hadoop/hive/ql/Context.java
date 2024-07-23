@@ -255,7 +255,7 @@ public class Context {
   public enum RewritePolicy {
 
     DEFAULT,
-    ALL_PARTITIONS,
+    FULL_TABLE,
     PARTITION;
 
     public static RewritePolicy fromString(String rewritePolicy) {

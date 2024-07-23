@@ -69,8 +69,8 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
     String compactionQuery;
 
     if (partSpec == null) {
-      if (!IcebergTableUtil.isPartitioned(icebergTable)) {
-        HiveConf.setVar(conf, ConfVars.REWRITE_POLICY, RewritePolicy.ALL_PARTITIONS.name());
+      if (!icebergTable.spec().isPartitioned()) {
+        HiveConf.setVar(conf, ConfVars.REWRITE_POLICY, RewritePolicy.FULL_TABLE.name());
         compactionQuery = String.format("insert overwrite table %s select * from %<s", compactTableName);
       } else if (icebergTable.specs().size() > 1) {
         // Compacting partitions of old partition specs on a partitioned table with partition evolution
@@ -83,7 +83,9 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
             compactTableName, VirtualColumn.PARTITION_SPEC_ID.getName(), icebergTable.spec().specId(),
             VirtualColumn.FILE_PATH.getName());
       } else {
-        return true;
+        // Partitioned table without partition evolution with partition spec as null in the compaction request - this
+        // code branch is not supposed to be reachable
+        throw new HiveException(ErrorMsg.NO_COMPACTION_PARTITION);
       }
     } else {
       Map<String, String> partSpecMap = new LinkedHashMap<>();

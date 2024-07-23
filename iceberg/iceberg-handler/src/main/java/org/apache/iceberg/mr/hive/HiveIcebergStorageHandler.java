@@ -1913,10 +1913,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   private boolean hasUndergonePartitionEvolution(Table table) {
     // If it is a table which has undergone partition evolution, return true.
+    // if a table has undergone partition evolution, the current spec is not necessary the latest which can happen
+    // if partition spec was changed to one of table's past specs.
     return table.currentSnapshot() != null &&
         table.currentSnapshot().allManifests(table.io()).parallelStream()
         .map(ManifestFile::partitionSpecId)
-        .anyMatch(id -> id < table.spec().specId());
+        .anyMatch(id -> id != table.spec().specId());
   }
 
   private boolean isIdentityPartitionTable(org.apache.hadoop.hive.ql.metadata.Table table) {
@@ -1946,7 +1948,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   public boolean isPartitioned(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    return IcebergTableUtil.isPartitioned(table);
+    return table.spec().isPartitioned();
   }
 
   @Override
@@ -2140,8 +2142,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public boolean isUndergonePartitionEvolution(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+  public boolean hasUndergonePartitionEvolution(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    return table.specs().size() > 1;
+    return hasUndergonePartitionEvolution(table);
   }
 }
