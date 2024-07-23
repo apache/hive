@@ -69,6 +69,6 @@ HiveJoin(condition=[=($1, $2)], joinType=[inner], algorithm=[none], cost=[not av
         HiveFilter(condition=[<>($0, 0)])
           HiveTableScan(table=[[default, table2]], table:alias=[table2])
   HiveProject(tenant_id=[$0], tenant_key=[$1])
-    HiveFilter(condition=[IS NOT NULL($0)])
+    HiveFilter(condition=[AND(OR(IS NOT DISTINCT FROM($0, 0), <>($0, 0)), IS NOT NULL($0))])
       HiveTableScan(table=[[default, tenant_1]], table:alias=[dt])
 

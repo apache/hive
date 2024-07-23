@@ -79,7 +79,7 @@ POSTHOOK: Input: default@t2
 CBO PLAN:
 HiveSemiJoin(condition=[=($0, $1)], joinType=[semi])
   HiveProject(col0=[$0])
-    HiveFilter(condition=[IN($0, 1, 2)])
+    HiveFilter(condition=[AND(OR(IS NOT DISTINCT FROM($0, 1), IS NOT DISTINCT FROM($0, 2)), IS NOT NULL($0))])
       HiveTableScan(table=[[default, t2]], table:alias=[t2])
   HiveProject($f0=[$0])
     HiveUnion(all=[true])
