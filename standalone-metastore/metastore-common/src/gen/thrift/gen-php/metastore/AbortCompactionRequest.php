@@ -92,13 +92,13 @@ class AbortCompactionRequest
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->compactionIds = array();
-                        $_size818 = 0;
-                        $_etype821 = 0;
-                        $xfer += $input->readListBegin($_etype821, $_size818);
-                        for ($_i822 = 0; $_i822 < $_size818; ++$_i822) {
-                            $elem823 = null;
-                            $xfer += $input->readI64($elem823);
-                            $this->compactionIds []= $elem823;
+                        $_size825 = 0;
+                        $_etype828 = 0;
+                        $xfer += $input->readListBegin($_etype828, $_size825);
+                        for ($_i829 = 0; $_i829 < $_size825; ++$_i829) {
+                            $elem830 = null;
+                            $xfer += $input->readI64($elem830);
+                            $this->compactionIds []= $elem830;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -139,8 +139,8 @@ class AbortCompactionRequest
             }
             $xfer += $output->writeFieldBegin('compactionIds', TType::LST, 1);
             $output->writeListBegin(TType::I64, count($this->compactionIds));
-            foreach ($this->compactionIds as $iter824) {
-                $xfer += $output->writeI64($iter824);
+            foreach ($this->compactionIds as $iter831) {
+                $xfer += $output->writeI64($iter831);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

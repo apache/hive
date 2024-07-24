@@ -424,7 +424,7 @@ JOIN src src2 ON (src1.key = src2.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-0.0	NULL
+NULL	NULL
 PREHOOK: query: SELECT sum(src1.value), exception_in_vertex_udaf ("Reducer 2", "0,1,2", 0)
 FROM src src1
 JOIN src src2 ON (src1.key = src2.key)
@@ -437,7 +437,7 @@ JOIN src src2 ON (src1.key = src2.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-0.0	NULL
+NULL	NULL
 PREHOOK: query: SELECT sum(src1.value), exception_in_vertex_udaf ("Reducer 2", "0-2", 0)
 FROM src src1
 JOIN src src2 ON (src1.key = src2.key)
@@ -450,7 +450,7 @@ JOIN src src2 ON (src1.key = src2.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-0.0	NULL
+NULL	NULL
 PREHOOK: query: SELECT sum(src1.value), exception_in_vertex_udaf ("Reducer 2", 0, "0")
 FROM src src1
 JOIN src src2 ON (src1.key = src2.key)
@@ -463,7 +463,7 @@ JOIN src src2 ON (src1.key = src2.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-0.0	NULL
+NULL	NULL
 PREHOOK: query: SELECT sum(src1.value), exception_in_vertex_udaf ("Reducer 2", 0, "0")
 FROM src src1
 JOIN src src2 ON (src1.key = src2.key)
@@ -476,7 +476,7 @@ JOIN src src2 ON (src1.key = src2.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-0.0	NULL
+NULL	NULL
 PREHOOK: query: EXPLAIN
 SELECT sum(src1.value), exception_in_vertex_udaf ("Reducer 3", 0, 0)
 FROM src src1
@@ -607,7 +607,7 @@ JOIN src src2 ON (src1.key = src2.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-0.0	NULL
+NULL	NULL
 PREHOOK: query: EXPLAIN
 SELECT exception_in_vertex_udf (src1.value, "Map 1")
 FROM src src1

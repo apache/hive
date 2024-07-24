@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.PartitionsStatsResult;
 import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
@@ -264,7 +265,8 @@ final class HMSClient implements AutoCloseable {
   }
 
   Table getTable(@NotNull String dbName, @NotNull String tableName) throws TException {
-    return client.get_table(dbName, tableName);
+    GetTableRequest req = new GetTableRequest(dbName, tableName);
+    return client.get_table_req(req).getTable();
   }
 
   Partition createPartition(@NotNull Table table, @NotNull List<String> values) throws TException {

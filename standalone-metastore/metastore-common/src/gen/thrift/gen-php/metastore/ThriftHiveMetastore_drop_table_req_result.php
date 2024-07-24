@@ -16,7 +16,7 @@ use Thrift\Protocol\TProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
-class ThriftHiveMetastore_create_dataconnector_result
+class ThriftHiveMetastore_drop_table_req_result
 {
     static public $isValidate = false;
 
@@ -25,15 +25,9 @@ class ThriftHiveMetastore_create_dataconnector_result
             'var' => 'o1',
             'isRequired' => false,
             'type' => TType::STRUCT,
-            'class' => '\metastore\AlreadyExistsException',
+            'class' => '\metastore\NoSuchObjectException',
         ),
         2 => array(
-            'var' => 'o2',
-            'isRequired' => false,
-            'type' => TType::STRUCT,
-            'class' => '\metastore\InvalidObjectException',
-        ),
-        3 => array(
             'var' => 'o3',
             'isRequired' => false,
             'type' => TType::STRUCT,
@@ -42,13 +36,9 @@ class ThriftHiveMetastore_create_dataconnector_result
     );
 
     /**
-     * @var \metastore\AlreadyExistsException
+     * @var \metastore\NoSuchObjectException
      */
     public $o1 = null;
-    /**
-     * @var \metastore\InvalidObjectException
-     */
-    public $o2 = null;
     /**
      * @var \metastore\MetaException
      */
@@ -60,9 +50,6 @@ class ThriftHiveMetastore_create_dataconnector_result
             if (isset($vals['o1'])) {
                 $this->o1 = $vals['o1'];
             }
-            if (isset($vals['o2'])) {
-                $this->o2 = $vals['o2'];
-            }
             if (isset($vals['o3'])) {
                 $this->o3 = $vals['o3'];
             }
@@ -71,7 +58,7 @@ class ThriftHiveMetastore_create_dataconnector_result
 
     public function getName()
     {
-        return 'ThriftHiveMetastore_create_dataconnector_result';
+        return 'ThriftHiveMetastore_drop_table_req_result';
     }
 
 
@@ -90,21 +77,13 @@ class ThriftHiveMetastore_create_dataconnector_result
             switch ($fid) {
                 case 1:
                     if ($ftype == TType::STRUCT) {
-                        $this->o1 = new \metastore\AlreadyExistsException();
+                        $this->o1 = new \metastore\NoSuchObjectException();
                         $xfer += $this->o1->read($input);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
                     break;
                 case 2:
-                    if ($ftype == TType::STRUCT) {
-                        $this->o2 = new \metastore\InvalidObjectException();
-                        $xfer += $this->o2->read($input);
-                    } else {
-                        $xfer += $input->skip($ftype);
-                    }
-                    break;
-                case 3:
                     if ($ftype == TType::STRUCT) {
                         $this->o3 = new \metastore\MetaException();
                         $xfer += $this->o3->read($input);
@@ -125,19 +104,14 @@ class ThriftHiveMetastore_create_dataconnector_result
     public function write($output)
     {
         $xfer = 0;
-        $xfer += $output->writeStructBegin('ThriftHiveMetastore_create_dataconnector_result');
+        $xfer += $output->writeStructBegin('ThriftHiveMetastore_drop_table_req_result');
         if ($this->o1 !== null) {
             $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
             $xfer += $this->o1->write($output);
             $xfer += $output->writeFieldEnd();
         }
-        if ($this->o2 !== null) {
-            $xfer += $output->writeFieldBegin('o2', TType::STRUCT, 2);
-            $xfer += $this->o2->write($output);
-            $xfer += $output->writeFieldEnd();
-        }
         if ($this->o3 !== null) {
-            $xfer += $output->writeFieldBegin('o3', TType::STRUCT, 3);
+            $xfer += $output->writeFieldBegin('o3', TType::STRUCT, 2);
             $xfer += $this->o3->write($output);
             $xfer += $output->writeFieldEnd();
         }

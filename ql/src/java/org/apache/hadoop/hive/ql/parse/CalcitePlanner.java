@@ -3199,18 +3199,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private RelNode genFilterRelNode(RexNode filterExpression, RelNode srcRel,
-        ImmutableMap<String, Integer> outerNameToPosMap, RowResolver outerRR) throws SemanticException {
-      if (RexUtil.isLiteral(filterExpression, false)
-          && filterExpression.getType().getSqlTypeName() != SqlTypeName.BOOLEAN) {
-        // queries like select * from t1 where 'foo';
-        // Calcite's rule PushFilterThroughProject chokes on it. Arguably, we
-        // can insert a cast to
-        // boolean in such cases, but since Postgres, Oracle and MS SQL server
-        // fail on compile time
-        // for such queries, its an arcane corner case, not worth of adding that
-        // complexity.
-        throw new CalciteSemanticException("Filter expression with non-boolean return type.",
-            UnsupportedFeature.Filter_expression_with_non_boolean_return_type);
+        ImmutableMap<String, Integer> outerNameToPosMap, RowResolver outerRR) {
+      if (filterExpression.getType().getSqlTypeName() != SqlTypeName.BOOLEAN) {
+        // Cast filterExpression with BOOLEAN if it is not BOOLEAN
+        RelDataType booleanType = srcRel.getCluster().getTypeFactory().createSqlType(SqlTypeName.BOOLEAN);
+        filterExpression = srcRel.getCluster().getRexBuilder()
+            .makeCast(booleanType, filterExpression);
       }
       final ImmutableMap<String, Integer> hiveColNameCalcitePosMap =
           this.relToHiveColNameCalcitePosMap.get(srcRel);
