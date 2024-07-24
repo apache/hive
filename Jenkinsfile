@@ -376,8 +376,6 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
                   RENAME_TMP=`echo \$a | sed s/TEST-//g`
                   mv \${RENAME_TMP/.xml/-output.txt} \${RENAME_TMP/.xml/-output-save.txt}
                 done
-                # removes all stdout and err for passed tests
-                xmlstarlet ed -L -d 'testsuite/testcase/system-out[count(../failure)=0]' -d 'testsuite/testcase/system-err[count(../failure)=0]' `find . -name 'TEST*xml' -path '*/surefire-reports/*'`
                 # remove all output.txt files
                 find . -name '*output.txt' -path '*/surefire-reports/*' -exec unlink "{}" \\;
               """
