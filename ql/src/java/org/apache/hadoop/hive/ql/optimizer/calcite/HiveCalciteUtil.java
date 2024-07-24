@@ -669,7 +669,7 @@ public class HiveCalciteUtil {
     Map<String,RexNode> stringToRexNode = Maps.newLinkedHashMap();
     RexSimplify simplify = new RexSimplify(inp.getCluster().getRexBuilder(), RelOptPredicateList.EMPTY, RexUtil.EXECUTOR);
     for (RexNode r : predsToPushDown) {
-      r = simplify(simplify, r);
+      r = simplify.simplify(r);
       String rexNodeString = r.toString();
       if (predicatesToExclude.add(rexNodeString)) {
         stringToRexNode.put(rexNodeString, r);
@@ -695,20 +695,6 @@ public class HiveCalciteUtil {
     }
     predicatesToExclude.addAll(predicatesInSubtree);
     return newConjuncts.build();
-  }
-  
-  private static RexNode simplify(RexSimplify simplifier, RexNode node) {
-    RexNode result = node;
-    int maxTries = 5;
-    for (int i = 0; i < maxTries; i++) {
-      RexNode simplified = simplifier.simplify(result);
-      if (simplified.equals(result)) {
-        break;
-      }
-      result = simplified;
-    }
-    
-    return result;
   }
 
   public static RexNode getTypeSafePred(RelOptCluster cluster, RexNode rex, RelDataType rType) {
