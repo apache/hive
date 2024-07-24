@@ -1363,12 +1363,13 @@ public class BeeLine implements Closeable {
     int lastExecutionResult = ERRNO_OK;
     Character mask = (System.getProperty("jline.terminal", "").equals("jline.UnsupportedTerminal")) ? null
                        : ConsoleReader.NULL_MASK;
-
+    int lineNum = 1;
     while (!exit) {
+      String line = null;
       try {
         // Execute one instruction; terminate on executing a script if there is an error
         // in silent mode, prevent the query and prompt being echoed back to terminal
-        String line = (getOpts().isSilent() && getOpts().getScriptFile() != null) ? reader
+        line = (getOpts().isSilent() && getOpts().getScriptFile() != null) ? reader
             .readLine(null, mask) : reader.readLine(getPrompt());
 
         // trim line
@@ -1376,7 +1377,7 @@ public class BeeLine implements Closeable {
           line = line.trim();
         }
 
-        if (!dispatch(line)) {
+        if (!dispatch(line, lineNum)) {
           lastExecutionResult = ERRNO_OTHER;
           if (exitOnError) {
             break;
@@ -1388,6 +1389,9 @@ public class BeeLine implements Closeable {
       } catch (Throwable t) {
         handleException(t);
         return ERRNO_OTHER;
+      } finally {
+        if(line != null && !line.equals("\n") )
+       lineNum++;
       }
     }
     return lastExecutionResult;
@@ -1488,6 +1492,14 @@ public class BeeLine implements Closeable {
    * @return true if the command was "successful"
    */
   boolean dispatch(String line) {
+    return dispatchHelper(line, 0);
+  }
+
+  boolean dispatch(String line, int lineNum) {
+    return dispatchHelper(line, lineNum);
+  }
+
+  private boolean dispatchHelper(String line, int lineNum) {
     if (line == null) {
       // exit
       exit = true;
@@ -1516,10 +1528,10 @@ public class BeeLine implements Closeable {
         // handle SQLLine command in beeline which starts with ! and does not end with ;
         return execCommandWithPrefix(line);
       } else {
-        return commands.sql(line, getOpts().getEntireLineAsCommand());
+        return commands.sql(line, lineNum, getOpts().getEntireLineAsCommand());
       }
     } else {
-      return commands.sql(line, getOpts().getEntireLineAsCommand());
+      return commands.sql(line, lineNum, getOpts().getEntireLineAsCommand());
     }
   }
 
@@ -2535,7 +2547,6 @@ public class BeeLine implements Closeable {
   public void setCurrentDatabase(String currentDatabase) {
     this.currentDatabase = currentDatabase;
   }
-
   /**
    * Setting the BeeLine into test mode.
    * Print only the errors, the operation log and the query results.
