@@ -25,7 +25,7 @@
   <name>Hive Service</name>
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
-    <nimbus-jose-jwt.version>9.31</nimbus-jose-jwt.version>
+    <nimbus-jose-jwt.version>9.37.3</nimbus-jose-jwt.version>
   </properties>
   <dependencies>
     <!-- dependencies are always listed in sorted order by groupId, artifactId -->
