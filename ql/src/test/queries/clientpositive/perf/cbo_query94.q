@@ -1,3 +1,4 @@
+set hive.optimize.cte.suggester.class=org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionPrintSuggester;
 set hive.mapred.mode=nonstrict;
 set hive.auto.convert.anti.join=true;
 -- start query 1 in stream 0 using template query94.tpl and seed 2031708268

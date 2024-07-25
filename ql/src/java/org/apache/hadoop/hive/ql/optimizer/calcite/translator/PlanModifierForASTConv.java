@@ -36,6 +36,7 @@ import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.SetOp;
 import org.apache.calcite.rel.core.Sort;
+import org.apache.calcite.rel.core.Spool;
 import org.apache.calcite.rel.core.Window.RexWinAggCall;
 import org.apache.calcite.rel.rules.MultiJoin;
 import org.apache.calcite.rel.type.RelDataType;
@@ -43,6 +44,7 @@ import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.sql.SqlAggFunction;
+import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
@@ -208,6 +210,12 @@ public class PlanModifierForASTConv {
           // called recursively, it will have the correct parent.
           rel = newParent.getInputs().get(0);
         }
+      } else if (rel instanceof Spool) {
+        Spool spool = (Spool) rel;
+        RelBuilder b = HiveRelFactories.HIVE_BUILDER.create(spool.getCluster(),null);
+        b.push(spool.getInput());
+        b.project(b.fields(), spool.getTable().getRowType().getFieldNames(), true);
+        spool.replaceInput(0, b.build());
       }
     }
 
