@@ -3837,7 +3837,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       return FilterUtils.filterTablesIfEnabled(isServerFilterEnabled, filterHook, tables);
     } catch (Exception e) {
       LOG.warn("Unexpected exception while getting table(s) in remote database " + dbname , e);
-      return new ArrayList<Table>();
+      if (isInTest) {
+        // ignore the exception
+        return new ArrayList<Table>();
+      } else {
+        throw newMetaException(e);
+      }
     }
   }
 
@@ -6312,7 +6317,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
         return DataConnectorProviderFactory.getDataConnectorProvider(db).getTableNames();
       }
-    } catch (Exception e) { /* appears we return empty set instead of throwing an exception */ }
+    } catch (Exception e) {
+      throw newMetaException(e);
+    }
 
     try {
       ret = getMS().getTables(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], pattern);
