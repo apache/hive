@@ -79,8 +79,5 @@
     <include file="postgres/upgrade-4.0.0-beta-1-to-4.0.0.postgres.sql"/>
     <include file="postgres/upgrade-4.0.0-to-4.1.0.postgres.sql"/>
 
-    <!-- New scripts are in XML format, therefore suitable for all supported dbms -->
-    <include file="xml/upgrade-4.1.0-to-4.1.1.xml"/>
-
 
 </databaseChangeLog>
