@@ -80,9 +80,6 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
   //  Cached values, to save on round trips to database.
   private String dbVersion = null;
 
-  /**
-   *
-   */
   public HiveDatabaseMetaData(HiveConnection connection, TCLIService.Iface client,
       TSessionHandle sessHandle) {
     this.connection = connection;

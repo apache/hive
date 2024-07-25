@@ -213,10 +213,6 @@ public class StoreNumbers {
     System.exit(job.waitForCompletion(true) ? 0 : 1);
   }
 
-
-  /**
-   *
-   */
   private static void usage() {
     System.err.println("Usage: hadoop jar storenumbers <serveruri> <part|nopart|nopart_pig> <-libjars hive-hcat jar>\n" +
       "\tIf the second argument is \"part\" data is written to datestamp = '2010101' partition of " +

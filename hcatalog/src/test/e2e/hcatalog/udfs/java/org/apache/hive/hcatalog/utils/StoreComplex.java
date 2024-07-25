@@ -120,10 +120,6 @@ public class StoreComplex {
     System.exit(job.waitForCompletion(true) ? 0 : 1);
   }
 
-
-  /**
-   *
-   */
   private static void usage() {
     System.err.println("Usage: hadoop jar testudf.jar storecomplex <serveruri> <-libjars hive-hcat jar>\n" +
       "The hcat jar location should be specified as file://<full path to jar>\n");

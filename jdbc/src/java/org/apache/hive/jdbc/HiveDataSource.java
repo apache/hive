@@ -31,10 +31,7 @@ import javax.sql.DataSource;
  *
  */
 public class HiveDataSource implements DataSource {
-
-  /**
-   *
-   */
+  
   public HiveDataSource() {
     // TODO Auto-generated constructor stub
   }

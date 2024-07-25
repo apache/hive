@@ -126,9 +126,6 @@ similarly for mapKeyType/mapKeyTypeInfo */
     return category != Category.PRIMITIVE;
   }
 
-  /**
-   *
-   */
   private static final long serialVersionUID = 1L;
 
   String fieldName = null;
