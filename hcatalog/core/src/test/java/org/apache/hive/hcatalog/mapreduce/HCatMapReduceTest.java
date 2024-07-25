@@ -334,9 +334,6 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
     job.setOutputFormatClass(HCatOutputFormat.class);
 
     OutputJobInfo outputJobInfo = OutputJobInfo.create(dbName, tableName, partitionValues);
-    /*if (customDynamicPathPattern != null) {
-      job.getConfiguration().set(HCatConstants.HCAT_DYNAMIC_CUSTOM_PATTERN, customDynamicPathPattern);
-    }*/
     HCatOutputFormat.setOutput(job, outputJobInfo);
 
     job.setMapOutputKeyClass(BytesWritable.class);
