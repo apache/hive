@@ -115,7 +115,7 @@ public class TestCBORuleFiredOnlyOnce {
 
       // If this operator has been visited already by the rule,
       // we do not need to apply the optimization
-      if (registry != null && registry.getVisited(this).contains(node)) {
+      if (registry != null && registry.hasBeenVisitedBy(this, node)) {
         return false;
       }
 
