@@ -190,8 +190,6 @@ public final class DDLUtils {
 
   public static void addDbAndTableToOutputs(Database database, TableName tableName, TableType type, boolean isTemporary,
       Map<String, String> properties, Set<WriteEntity> outputs) {
-    outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_SHARED));
-
     Table table = new Table(tableName.getDb(), tableName.getTable());
     table.setParameters(properties);
     table.setTableType(type);
