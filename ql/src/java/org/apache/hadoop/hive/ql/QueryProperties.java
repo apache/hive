@@ -50,7 +50,6 @@ public class QueryProperties {
   boolean hasPTF = false;
   boolean hasWindowing = false;
   boolean hasQualify = false;
-
   boolean hasExcept = false;
   boolean hasIntersect = false;
 
@@ -331,7 +330,6 @@ public class QueryProperties {
     hasPTF = false;
     hasWindowing = false;
     hasQualify = false;
-
     hasExcept = false;
     hasIntersect = false;
 
