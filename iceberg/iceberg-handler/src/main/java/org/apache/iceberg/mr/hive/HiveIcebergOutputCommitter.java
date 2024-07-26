@@ -71,7 +71,6 @@ import org.apache.iceberg.RowDelta;
 import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.Table;
-import org.apache.iceberg.Transaction;
 import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
@@ -513,7 +512,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
             .map(x -> x.getJobConf().get(IcebergCompactionService.PARTITION_PATH))
             .orElse(null);
 
-        commitCompaction(table, startTime, filesForCommit, rewritePolicy, partitionSpecId, partitionPath);
+        commitCompaction(table, startTime, filesForCommit, partitionSpecId, partitionPath);
       } else {
         commitOverwrite(table, branchName, startTime, filesForCommit);
       }
@@ -599,44 +598,29 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * @param table             The table we are changing
    * @param startTime         The start time of the commit - used only for logging
    * @param results           The object containing the new files
-   * @param rewritePolicy     The rewrite policy to use for the insert overwrite commit
    * @param partitionSpecId   The table spec_id for partition compaction operation
    * @param partitionPath     The path of the compacted partition
    */
-  private void commitCompaction(Table table, long startTime, FilesForCommit results,
-      RewritePolicy rewritePolicy, Integer partitionSpecId, String partitionPath) {
-    if (rewritePolicy == RewritePolicy.FULL_TABLE) {
-      // Full table compaction
-      Transaction transaction = table.newTransaction();
-      DeleteFiles delete = transaction.newDelete();
-      delete.deleteFromRowFilter(Expressions.alwaysTrue());
-      delete.commit();
-      ReplacePartitions overwrite = transaction.newReplacePartitions();
-      results.dataFiles().forEach(overwrite::addFile);
-      overwrite.commit();
-      transaction.commitTransaction();
-      LOG.debug("Compacted full table with files {}", results);
-    } else {
-      // Single partition compaction
-      List<DataFile> existingDataFiles =
-          IcebergTableUtil.getDataFiles(table, partitionSpecId, partitionPath,
-              partitionPath == null ? Predicate.isEqual(partitionSpecId).negate() : Predicate.isEqual(partitionSpecId));
-      List<DeleteFile> existingDeleteFiles =
-          IcebergTableUtil.getDeleteFiles(table, partitionSpecId, partitionPath,
-              partitionPath == null ? Predicate.isEqual(partitionSpecId).negate() : Predicate.isEqual(partitionSpecId));
+  private void commitCompaction(Table table, long startTime, FilesForCommit results, Integer partitionSpecId,
+      String partitionPath) {
+    List<DataFile> existingDataFiles =
+        IcebergTableUtil.getDataFiles(table, partitionSpecId, partitionPath,
+            partitionPath == null ? Predicate.isEqual(partitionSpecId).negate() : Predicate.isEqual(partitionSpecId));
+    List<DeleteFile> existingDeleteFiles =
+        IcebergTableUtil.getDeleteFiles(table, partitionSpecId, partitionPath,
+            partitionPath == null ? Predicate.isEqual(partitionSpecId).negate() : Predicate.isEqual(partitionSpecId));
 
-      RewriteFiles rewriteFiles = table.newRewrite();
-      rewriteFiles.validateFromSnapshot(table.currentSnapshot().snapshotId());
+    RewriteFiles rewriteFiles = table.newRewrite();
+    rewriteFiles.validateFromSnapshot(table.currentSnapshot().snapshotId());
 
-      existingDataFiles.forEach(rewriteFiles::deleteFile);
-      existingDeleteFiles.forEach(rewriteFiles::deleteFile);
-      results.dataFiles().forEach(rewriteFiles::addFile);
+    existingDataFiles.forEach(rewriteFiles::deleteFile);
+    existingDeleteFiles.forEach(rewriteFiles::deleteFile);
+    results.dataFiles().forEach(rewriteFiles::addFile);
 
-      rewriteFiles.commit();
-      LOG.debug("Compacted partition {} with files {}", partitionPath, results);
-    }
-    LOG.info("Compaction commit took {} ms for table: {} with {} file(s)", System.currentTimeMillis() - startTime,
-        table, results.dataFiles().size());
+    rewriteFiles.commit();
+    LOG.info("Compaction commit took {} ms for table: {} partition: {} with {} file(s)",
+        System.currentTimeMillis() - startTime, table, partitionPath == null ? "N/A" : partitionPath,
+        results.dataFiles().size());
   }
 
   /**
