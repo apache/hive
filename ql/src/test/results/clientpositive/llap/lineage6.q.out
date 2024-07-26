@@ -1,0 +1,28 @@
+PREHOOK: query: create table table_1_qegkz (id int, first_name string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_1_qegkz
+PREHOOK: query: create table table_2_gkvuw (id int, last_name string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_2_gkvuw
+PREHOOK: query: select table_1_qegkz.id, concat_ws(' ' , table_1_qegkz.first_name, table_2_gkvuw.last_name) full_name from table_1_qegkz, table_2_gkvuw where table_1_qegkz.id = table_2_gkvuw.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_1_qegkz
+PREHOOK: Input: default@table_2_gkvuw
+#### A masked pattern was here ####
+{"version":"1.0","engine":"tez","database":"default","hash":"35144a690834a6399b85caf27dbf8a3c","queryText":"select table_1_qegkz.id, concat_ws(' ' , table_1_qegkz.first_name, table_2_gkvuw.last_name) full_name from table_1_qegkz, table_2_gkvuw where table_1_qegkz.id = table_2_gkvuw.id","edges":[{"sources":[2],"targets":[0],"edgeType":"PROJECTION"},{"sources":[3,4],"targets":[1],"expression":"concat_ws(' ', table_1_qegkz.first_name, table_2_gkvuw.last_name)","edgeType":"PROJECTION"},{"sources":[2],"targets":[0,1],"expression":"table_1_qegkz.id is not null","edgeType":"PREDICATE"},{"sources":[2,5],"targets":[0,1],"expression":"(table_1_qegkz.id = table_2_gkvuw.id)","edgeType":"PREDICATE"},{"sources":[5],"targets":[0,1],"expression":"table_2_gkvuw.id is not null","edgeType":"PREDICATE"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"table_1_qegkz.id"},{"id":1,"vertexType":"COLUMN","vertexId":"full_name"},{"id":2,"vertexType":"COLUMN","vertexId":"default.table_1_qegkz.id"},{"id":3,"vertexType":"COLUMN","vertexId":"default.table_1_qegkz.first_name"},{"id":4,"vertexType":"COLUMN","vertexId":"default.table_2_gkvuw.last_name"},{"id":5,"vertexType":"COLUMN","vertexId":"default.table_2_gkvuw.id"}]}
+PREHOOK: query: create view view_fcuyp as (select table_1_qegkz.id, concat_ws(' ' , table_1_qegkz.first_name, table_2_gkvuw.last_name) full_name from table_1_qegkz, table_2_gkvuw where table_1_qegkz.id = table_2_gkvuw.id)
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@table_1_qegkz
+PREHOOK: Input: default@table_2_gkvuw
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view_fcuyp
+{"version":"1.0","engine":"tez","database":"default","hash":"26e597ea7b3ca43b008466502b235b52","queryText":"create view view_fcuyp as (select table_1_qegkz.id, concat_ws(' ' , table_1_qegkz.first_name, table_2_gkvuw.last_name) full_name from table_1_qegkz, table_2_gkvuw where table_1_qegkz.id = table_2_gkvuw.id)","edges":[],"vertices":[]}
+PREHOOK: query: create view view_fcuyp2 as (select table_1_qegkz.id, concat_ws(' ' , table_1_qegkz.first_name, table_2_gkvuw.last_name) full_name from table_1_qegkz, table_2_gkvuw where table_1_qegkz.id = table_2_gkvuw.id)
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@table_1_qegkz
+PREHOOK: Input: default@table_2_gkvuw
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view_fcuyp2
+{"version":"1.0","engine":"tez","database":"default","hash":"3c6019537df2f6001cce07de1aa0e352","queryText":"create view view_fcuyp2 as (select table_1_qegkz.id, concat_ws(' ' , table_1_qegkz.first_name, table_2_gkvuw.last_name) full_name from table_1_qegkz, table_2_gkvuw where table_1_qegkz.id = table_2_gkvuw.id)","edges":[{"sources":[2],"targets":[0],"edgeType":"PROJECTION"},{"sources":[3,4],"targets":[1],"expression":"concat_ws(' ', table_1_qegkz.first_name, table_2_gkvuw.last_name)","edgeType":"PROJECTION"},{"sources":[2],"targets":[0,1],"expression":"table_1_qegkz.id is not null","edgeType":"PREDICATE"},{"sources":[2,5],"targets":[0,1],"expression":"(table_1_qegkz.id = table_2_gkvuw.id)","edgeType":"PREDICATE"},{"sources":[5],"targets":[0,1],"expression":"table_2_gkvuw.id is not null","edgeType":"PREDICATE"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"default.view_fcuyp2.id"},{"id":1,"vertexType":"COLUMN","vertexId":"default.view_fcuyp2.full_name"},{"id":2,"vertexType":"COLUMN","vertexId":"default.table_1_qegkz.id"},{"id":3,"vertexType":"COLUMN","vertexId":"default.table_1_qegkz.first_name"},{"id":4,"vertexType":"COLUMN","vertexId":"default.table_2_gkvuw.last_name"},{"id":5,"vertexType":"COLUMN","vertexId":"default.table_2_gkvuw.id"}]}
