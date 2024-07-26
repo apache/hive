@@ -185,12 +185,7 @@ public class Driver implements IDriver {
 
       lockAndRespond();
 
-      if (validateTxnList()) {
-        // the reason that we set the txn manager for the cxt here is because each query has its own ctx object.
-        // The txn mgr is shared across the same instance of Driver, which can run multiple queries.
-        context.setHiveTxnManager(driverContext.getTxnManager());
-        perfLogger = SessionState.getPerfLogger(true);
-      }
+      validateTxnList();
       execute();
 
       FetchTask fetchTask = driverContext.getPlan().getFetchTask();
