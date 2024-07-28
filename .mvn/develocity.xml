@@ -37,6 +37,9 @@
         <![CDATA[authenticated]]>
       </onlyIf>
     </publishing>
+    <capture>
+      <testLogging>false</testLogging>
+    </capture>
   </buildScan>
   <buildCache>
     <local>
