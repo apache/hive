@@ -1,0 +1,16 @@
+PREHOOK: query: create table dectbl (deccol decimal(4,1))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dectbl
+POSTHOOK: query: create table dectbl (deccol decimal(4,1))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dectbl
+PREHOOK: query: select * from dectbl where deccol = '123.3'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dectbl
+#### A masked pattern was here ####
+POSTHOOK: query: select * from dectbl where deccol = '123.3'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dectbl
+#### A masked pattern was here ####
