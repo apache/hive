@@ -182,7 +182,6 @@ public class Driver implements IDriver {
       context.setHiveTxnManager(driverContext.getTxnManager());
 
       DriverUtils.checkInterrupted(driverState, driverContext, "at acquiring the lock.", null, null);
-
       lockAndRespond();
 
       validateTxnList();
