@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.lineage;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -77,7 +77,7 @@ public class Generator extends Transform {
   private static final Map<HiveOperation, Function<ParseContext, Boolean>> filterMap;
 
   static {
-    Map<HiveOperation, Function<ParseContext, Boolean>> map = new HashMap<>();
+    Map<HiveOperation, Function<ParseContext, Boolean>> map = new EnumMap<>(HiveOperation.class);
     map.put(HiveOperation.CREATETABLE, parseContext -> parseContext.getCreateTable() != null);
     map.put(HiveOperation.CREATETABLE_AS_SELECT, parseContext -> parseContext.getQueryProperties().isCTAS());
     map.put(HiveOperation.CREATEVIEW, parseContext -> parseContext.getQueryProperties().isView());
