@@ -218,7 +218,8 @@ public class TestPermsGrp {
     argsList.addAll(Arrays.asList(args));
     ProcessBuilder builder = new ProcessBuilder().command(argsList.toArray(new String[] {}));
     builder.environment().put("CLASSPATH", System.getProperty("java.class.path"));
-
+    builder.environment().put("JAVA_TOOL_OPTIONS", "--add-opens=java.base/java.net=ALL-UNNAMED");
+    
     Process p = builder.start();
 
     String line;
