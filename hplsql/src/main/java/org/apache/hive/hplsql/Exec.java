@@ -2573,13 +2573,8 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
    * Single quoted string literal 
    */
   @Override 
-  public Integer visitSingle_quotedString(HplsqlParser.Single_quotedStringContext ctx) { 
-    /*if (exec.buildSql) {
-      exec.stackPush(ctx.getText());
-    }
-    else {*/
-      exec.stackPush(Utils.unquoteString(ctx.getText()));
-    //}
+  public Integer visitSingle_quotedString(HplsqlParser.Single_quotedStringContext ctx) {
+    exec.stackPush(Utils.unquoteString(ctx.getText()));
     return 0;
   }
   

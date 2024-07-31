@@ -52,12 +52,11 @@ public class FunctionString extends BuiltinFunctions {
    */
   void concat(HplsqlParser.Expr_func_paramsContext ctx) {
     StringBuilder val = new StringBuilder();
-    appendSingleQuote(val);
     int cnt = getParamCount(ctx);
     boolean nulls = true;
     for (int i = 0; i < cnt; i++) {
       Var c = evalPop(ctx.func_param(i).expr());
-      if (!c.isNull() && !"null".equals((String)c.value)) {
+      if (!c.isNull()) {
         String value = c.toString();
         value = unquoteString(value);
         val.append(value);
@@ -68,7 +67,6 @@ public class FunctionString extends BuiltinFunctions {
       evalNull();
     }
     else {
-      appendSingleQuote(val);
       evalString(val);
     }
   }
@@ -193,9 +191,7 @@ public class FunctionString extends BuiltinFunctions {
       return;
     }
     String str = evalPop(ctx.func_param(0).expr()).toString().toLowerCase();
-    if (exec.buildSql) {
-      str = Utils.quoteString(str);
-    }
+    str = unquoteString(str);
     evalString(str);
   }
 
@@ -250,28 +246,13 @@ public class FunctionString extends BuiltinFunctions {
     if (start == 0) {
       start = 1;
     }
-    StringBuilder resultStr = new StringBuilder();
     if (len == -1) {
       if (start > 0) {
-        String substring = str.substring(start - 1);
-        appendSingleQuote(resultStr);
-        resultStr.append(substring);
-        appendSingleQuote(resultStr);
-        evalString(resultStr);
+        evalString(str.substring(start - 1));
       }
     }
     else {
-      String substring = str.substring(start - 1, start - 1 + len);
-      appendSingleQuote(resultStr);
-      resultStr.append(substring);
-      appendSingleQuote(resultStr);
-      evalString(resultStr);
-    }
-  }
-
-  private void appendSingleQuote(StringBuilder resultStr) {
-    if (exec.buildSql) {
-      resultStr.append("'");
+      evalString(str.substring(start - 1, start - 1 + len));      
     }
   }
 
@@ -327,9 +308,7 @@ public class FunctionString extends BuiltinFunctions {
       return;
     }
     String str = evalPop(ctx.func_param(0).expr()).toString().toUpperCase();
-    if (exec.buildSql) {
-      str = Utils.quoteString(str);
-    }
+    str = unquoteString(str);
     evalString(str);
   }
 }

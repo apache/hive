@@ -159,9 +159,6 @@ public class FunctionMisc extends BuiltinFunctions {
   
   public Var currentUser() {
     String currentUser = System.getProperty("user.name");
-    if (exec.buildSql) {
-      currentUser = Utils.quoteString(currentUser);
-    }
     return new Var(currentUser);
   }
   
@@ -212,7 +209,7 @@ public class FunctionMisc extends BuiltinFunctions {
   void nvl2(HplsqlParser.Expr_func_paramsContext ctx) {
     if (ctx.func_param().size() == 3) {
       Var firstParam = evalPop(ctx.func_param(0).expr());
-      if (!(firstParam.isNull() || "null".equals((String)firstParam.value))) {
+      if (!firstParam.isNull()) {
         eval(ctx.func_param(1).expr());
       }
       else {

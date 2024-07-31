@@ -572,9 +572,6 @@ public class Expression {
     int cnt = ctx.expr_concat_item().size();
     for (int i = 0; i < cnt; i++) {
       String concatStr = Utils.quoteString(evalPop(ctx.expr_concat_item(i)).toString());
-      /*if (!concatStr.startsWith("'") || !concatStr.endsWith("'")) {
-        concatStr = Utils.quoteString(concatStr);
-      }*/
       sql.append(concatStr);
       if (i + 1 < cnt) {
         sql.append(", ");
