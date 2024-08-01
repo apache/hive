@@ -1,5 +1,5 @@
 Ln:1 SELECT
-Ln:1 select coalesce(max(info_id) + 1, 0) from sproc_info
+Ln:1 select coalesce(max(info_id)+1,0) into NextID from sproc_info with rr use and keep exclusive locks
 Ln:1 Not executed - offline mode set
 Ln:3 SELECT
 Ln:3 select cd, cd + inc days, cd - inc days + coalesce(inc, 0) days

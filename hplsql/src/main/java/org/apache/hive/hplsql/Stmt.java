@@ -787,8 +787,9 @@ public class Stmt {
     for (int i = 0; i < rows; i++) {
       HplsqlParser.Insert_stmt_rowContext row =ctx.insert_stmt_rows().insert_stmt_row(i);
       int cols = row.expr().size();
-      for (int j = 0; j < cols; j++) {         
-        String value = evalPop(row.expr(j)).toSqlString();
+      for (int j = 0; j < cols; j++) {
+        Var var = evalPop(row.expr(j));
+        String value = var.toSqlString();
         if (j == 0 && type == Conn.Type.HIVE && conf.insertValues == Conf.InsertValues.SELECT ) {
           sql.append("SELECT ");
         }
@@ -1170,13 +1171,17 @@ public class Stmt {
    */
   public Integer update(HplsqlParser.Update_stmtContext ctx) {
     trace(ctx, "UPDATE");
-    boolean oldBuildSql = exec.buildSql;
     String sql = null;
-    try {
-      exec.buildSql = true;
-      sql = generateUpdateQuery(ctx);
-    } finally {
-      exec.buildSql = oldBuildSql;
+    if (exec.getOffline()) {
+      sql = exec.getFormattedText(ctx);
+    } else {
+      boolean oldBuildSql = exec.buildSql;
+      try {
+        exec.buildSql = true;
+        sql = generateUpdateQuery(ctx);
+      } finally {
+        exec.buildSql = oldBuildSql;
+      }
     }
     trace(ctx, sql);
     QueryResult query = queryExecutor.executeQuery(sql, ctx);
