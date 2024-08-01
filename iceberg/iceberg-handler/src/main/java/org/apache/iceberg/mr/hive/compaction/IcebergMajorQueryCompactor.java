@@ -85,7 +85,7 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
       } else {
         // Partitioned table without partition evolution with partition spec as null in the compaction request - this
         // code branch is not supposed to be reachable
-        throw new HiveException(ErrorMsg.NO_COMPACTION_PARTITION);
+        throw new HiveException(ErrorMsg.COMPACTION_NO_PARTITION);
       }
     } else {
       Map<String, String> partSpecMap = new LinkedHashMap<>();

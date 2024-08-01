@@ -4055,7 +4055,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     List<String> names = null;
     Table t = getTable(dbName, tblName);
     if (t.getStorageHandler() != null && t.getStorageHandler().alwaysUnpartitioned()) {
-      return t.getStorageHandler().getPartitionNames(t, partSpec, false);
+      return t.getStorageHandler().getPartitionNames(t, partSpec);
     }
 
     List<String> pvals = MetaStoreUtils.getPvals(t.getPartCols(), partSpec);

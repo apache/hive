@@ -782,7 +782,7 @@ public interface HiveStorageHandler extends Configurable {
    * Returns partitions names for the current table spec that correspond to the provided partition spec.
    * @param hmsTable {@link org.apache.hadoop.hive.ql.metadata.Table} table metadata stored in Hive Metastore
    * @param partitionSpec Map of Strings {@link java.util.Map} partition specification
-   * @return Optional of ErrorMsg {@link org.apache.hadoop.hive.ql.ErrorMsg}
+   * @return List of partition names
    */
   default List<String> getPartitionNames(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
       Map<String, String> partitionSpec) throws SemanticException {
@@ -794,7 +794,7 @@ public interface HiveStorageHandler extends Configurable {
    * @param hmsTable {@link org.apache.hadoop.hive.ql.metadata.Table} table metadata stored in Hive Metastore
    * @param partitionSpec Map of Strings {@link java.util.Map} partition specification
    * @param latestSpecOnly Tells whether to return partition names for the latest spec only or for past specs too
-   * @return Optional of ErrorMsg {@link org.apache.hadoop.hive.ql.ErrorMsg}
+   * @return List of partition names
    */
   default List<String> getPartitionNames(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
       Map<String, String> partitionSpec, boolean latestSpecOnly) throws SemanticException {
