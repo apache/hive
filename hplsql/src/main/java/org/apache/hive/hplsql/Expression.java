@@ -571,8 +571,7 @@ public class Expression {
     sql.append("CONCAT(");
     int cnt = ctx.expr_concat_item().size();
     for (int i = 0; i < cnt; i++) {
-      String concatStr = Utils.quoteString(evalPop(ctx.expr_concat_item(i)).toString());
-      sql.append(concatStr);
+      sql.append(evalPop(ctx.expr_concat_item(i)).toSqlString());
       if (i + 1 < cnt) {
         sql.append(", ");
       }
