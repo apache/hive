@@ -19,8 +19,10 @@
 package org.apache.hive.hplsql.functions;
 
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.ResolverStyle;
 import java.util.TimeZone;
 
 import org.apache.commons.lang3.StringUtils;
@@ -38,24 +40,40 @@ public class FunctionDatetime extends BuiltinFunctions {
   @Override
   public void register(BuiltinFunctions f) {
     f.map.put("DATE", this::date);
+    f.map.put("FROM_UNIXTIME", this::fromUnixtime);
     f.map.put("NOW", ctx -> now(ctx));
     f.map.put("TIMESTAMP_ISO", this::timestampIso);
     f.map.put("TO_TIMESTAMP", this::toTimestamp);
+    f.map.put("UNIX_TIMESTAMP", this::unixTimestamp);
     f.map.put("CURRENT_TIME_MILLIS", this::currentTimeMillis);
 
+    f.specMap.put("CURRENT_DATE", this::currentDate);
+    f.specMap.put("CURRENT_TIMESTAMP", this::currentTimestamp);
     f.specMap.put("SYSDATE", this::currentTimestamp);
 
     f.specSqlMap.put("CURRENT_DATE", (FuncSpecCommand) this::currentDateSql);
     f.specSqlMap.put("CURRENT_TIMESTAMP", (FuncSpecCommand) this::currentTimestampSql);
  }
+
+  private static DateTimeFormatter createDateTimeFormatter(String format) {
+    return DateTimeFormatter.ofPattern(format).withZone(TimeZone.getTimeZone("UTC").toZoneId())
+        .withResolverStyle(ResolverStyle.STRICT);
+  }
+
+  /**
+   * CURRENT_DATE
+   */
+  public void currentDate(HplsqlParser.Expr_spec_funcContext ctx) {
+    evalVar(currentDate());
+  }
   
   /**
    * CURRENT_DATE
    */
   public static Var currentDate() {
-    SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-    String s = f.format(Calendar.getInstance().getTime());
-    return new Var(Var.Type.DATE, Utils.toDate(s)); 
+    DateTimeFormatter formatter = createDateTimeFormatter("yyyy-MM-dd");
+    String date = formatter.format(new java.sql.Date(System.currentTimeMillis()).toLocalDate());
+    return new Var(Var.Type.DATE, Utils.toDate(date));
   }
   
   /**
@@ -63,10 +81,10 @@ public class FunctionDatetime extends BuiltinFunctions {
    */
   public void currentDateSql(HplsqlParser.Expr_spec_funcContext ctx) {
     if (exec.getConnectionType() == Conn.Type.HIVE) {
-      evalString("TO_DATE(FROM_UNIXTIME(UNIX_TIMESTAMP()))");
+      evalSqlString("TO_DATE(FROM_UNIXTIME(UNIX_TIMESTAMP()))");
     } 
     else {
-      evalString(exec.getFormattedText(ctx));
+      evalSqlString(exec.getFormattedText(ctx));
     }
   }
   
@@ -83,9 +101,9 @@ public class FunctionDatetime extends BuiltinFunctions {
     if (precision > 0 && precision <= 3) {
       format += "." + StringUtils.repeat("S", precision);
     }
-    SimpleDateFormat f = new SimpleDateFormat(format);
-    String s = f.format(Calendar.getInstance(TimeZone.getDefault()).getTime());
-    return new Var(Utils.toTimestamp(s), precision); 
+    DateTimeFormatter formatter = createDateTimeFormatter(format);
+    String timestamp = formatter.format(new java.sql.Timestamp(System.currentTimeMillis()).toLocalDateTime());
+    return new Var(Utils.toTimestamp(timestamp), precision);
   }
   
   /**
@@ -93,10 +111,10 @@ public class FunctionDatetime extends BuiltinFunctions {
    */
   public void currentTimestampSql(HplsqlParser.Expr_spec_funcContext ctx) {
     if (exec.getConnectionType() == Conn.Type.HIVE) {
-      evalString("FROM_UNIXTIME(UNIX_TIMESTAMP())");
+      evalSqlString("FROM_UNIXTIME(UNIX_TIMESTAMP())");
     } 
     else {
-      evalString(Exec.getFormattedText(ctx));
+      evalSqlString(Exec.getFormattedText(ctx));
     }
   }
   
@@ -153,13 +171,49 @@ public class FunctionDatetime extends BuiltinFunctions {
     String sqlFormat = Utils.unquoteString(evalPop(ctx.func_param(1).expr()).toString());
     String format = Utils.convertSqlDatetimeFormat(sqlFormat);
     try {
-      long timeInMs = new SimpleDateFormat(format).parse(value).getTime();
-      evalVar(new Var(Var.Type.TIMESTAMP, new Timestamp(timeInMs)));
+      DateTimeFormatter formatter = createDateTimeFormatter(format);
+      LocalDateTime val = null;
+      if (format.length() > 10) {
+        val = LocalDateTime.parse(value, formatter);
+      } else {
+        val = LocalDate.parse(value, formatter).atStartOfDay();
+      }
+      evalVar(new Var(Var.Type.TIMESTAMP, Timestamp.valueOf(val)));
     }
     catch (Exception e) {
       exec.signal(e);
       evalNull();
     }
+  }
+
+  /**
+   * FROM_UNIXTIME() function (convert seconds since 1970-01-01 00:00:00 to timestamp)
+   */
+  void fromUnixtime(HplsqlParser.Expr_func_paramsContext ctx) {
+    int cnt = BuiltinFunctions.getParamCount(ctx);
+    if (cnt == 0) {
+      evalNull();
+      return;
+    }
+    Var value = evalPop(ctx.func_param(0).expr());
+    if (value.type != Var.Type.BIGINT) {
+      Var newVar = new Var(Var.Type.BIGINT);
+      value = newVar.cast(value);
+    }
+    long epoch = value.longValue();
+    String format = "yyyy-MM-dd HH:mm:ss";
+    if (cnt > 1) {
+      format = Utils.unquoteString(evalPop(ctx.func_param(1).expr()).toString());
+    }
+    DateTimeFormatter formatter = createDateTimeFormatter(format);
+    evalString(formatter.format(new java.sql.Date(epoch * 1000).toLocalDate()));
+  }
+
+  /**
+   * UNIX_TIMESTAMP() function (current date and time in seconds since 1970-01-01 00:00:00)
+   */
+  void unixTimestamp(HplsqlParser.Expr_func_paramsContext ctx) {
+    evalVar(new Var(System.currentTimeMillis()/1000));
   }
 
   public void currentTimeMillis(HplsqlParser.Expr_func_paramsContext ctx) {

@@ -1,0 +1,33 @@
+Ln:1 IF
+Ln:1 IF TRUE executed
+Ln:2 PRINT
+Correct
+Ln:7 IF
+Ln:7 IF TRUE executed
+Ln:8 PRINT
+Correct
+Ln:13 IF
+Ln:13 IF TRUE executed
+Ln:14 PRINT
+Correct
+Ln:19 IF
+Ln:19 IF TRUE executed
+Ln:20 PRINT
+Correct
+Ln:25 IF
+Ln:25 IF TRUE executed
+Ln:26 PRINT
+Correct
+Ln:31 DECLARE c STRING
+Ln:33 IF
+Ln:33 IF TRUE executed
+Ln:34 PRINT
+Correct
+Ln:39 IF
+Ln:39 IF TRUE executed
+Ln:40 PRINT
+Correct
+Ln:45 IF
+Ln:45 IF TRUE executed
+Ln:46 PRINT
+Correct

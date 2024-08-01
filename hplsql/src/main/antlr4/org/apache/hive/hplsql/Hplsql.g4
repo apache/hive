@@ -1049,8 +1049,8 @@ expr :
      | expr_case
      | expr_cursor_attribute
      | expr_agg_window_func
-     | expr_func
      | expr_spec_func
+     | expr_func
      | expr_atom    
      ;
 
