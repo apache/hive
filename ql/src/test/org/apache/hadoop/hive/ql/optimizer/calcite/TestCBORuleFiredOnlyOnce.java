@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.and;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.eq;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.or;
 import static org.junit.Assert.assertEquals;
 
 import java.util.List;
@@ -31,6 +34,7 @@ import org.apache.calcite.plan.hep.HepPlanner;
 import org.apache.calcite.plan.hep.HepProgramBuilder;
 import org.apache.calcite.rel.AbstractRelNode;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.metadata.CachingRelMetadataProvider;
 import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
@@ -38,16 +42,21 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rel.type.RelRecordType;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePreFilteringRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulesRegistry;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import org.junit.runner.RunWith;
+import org.mockito.junit.MockitoJUnitRunner;
 
-public class TestCBORuleFiredOnlyOnce {
-
-
+@RunWith(MockitoJUnitRunner.class)
+public class TestCBORuleFiredOnlyOnce extends TestRuleBase {
+  
   @Test
   public void testRuleFiredOnlyOnce() {
 
@@ -89,6 +98,85 @@ public class TestCBORuleFiredOnlyOnce {
     // It is fired only once: on the original node
     assertEquals(1, DummyRule.INSTANCE.numberOnMatch);
   }
+  
+  @Test
+  public void testHivePreFilteringRuleFiredOnlyOnce() {
+    HiveConf conf = new HiveConf();
+
+    // Create HepPlanner
+    HepProgramBuilder programBuilder = new HepProgramBuilder();
+    programBuilder.addMatchOrder(HepMatchOrder.DEPTH_FIRST);
+    programBuilder = programBuilder.addRuleCollection(
+        ImmutableList.of(
+            new HivePreFilteringRuleWithCountMatches(
+                conf.getIntVar(HiveConf.ConfVars.HIVE_CBO_CNF_NODES_LIMIT)
+            )
+        )
+    );
+
+    // Create rules registry to not trigger a rule more than once
+    HiveRulesRegistry registry = new HiveRulesRegistry();
+    HivePlannerContext context = new HivePlannerContext(null, registry, null, null, null);
+    HepPlanner planner = new HepPlanner(programBuilder.build(), context);
+
+    // Create MD provider
+    HiveDefaultRelMetadataProvider mdProvider = new HiveDefaultRelMetadataProvider(conf, null);
+    List<RelMetadataProvider> list = Lists.newArrayList();
+    list.add(mdProvider.getMetadataProvider());
+    planner.registerMetadataProviders(list);
+    RelMetadataProvider chainedProvider = ChainedRelMetadataProvider.of(list);
+
+    final RelNode node = getFilterOnJoinNode();
+
+    node.getCluster().setMetadataProvider(
+        new CachingRelMetadataProvider(chainedProvider, planner));
+
+    planner.setRoot(node);
+
+    planner.findBestExp();
+    
+    assertEquals(1, HivePreFilteringRuleWithCountMatches.countOnMatches);
+  }
+  
+  private RelNode getFilterOnJoinNode() {
+    RelNode ts1 = createTS(t1NativeMock, "t1");
+    RelNode ts2 = createTS(t2NativeMock, "t2");
+    RexNode joinCondition = REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS,
+        REX_BUILDER.makeInputRef(ts1.getRowType().getFieldList().get(0).getType(), 0),
+        REX_BUILDER.makeInputRef(ts2.getRowType().getFieldList().get(0).getType(), 0));
+    
+    return REL_BUILDER
+        .push(ts1)
+        .push(ts2)
+        .join(JoinRelType.INNER, joinCondition)
+        .filter(
+            and(REL_BUILDER,
+                eq(REL_BUILDER, "c", 1),
+                or(REL_BUILDER,
+                    REL_BUILDER.call(SqlStdOperatorTable.IS_NULL, REL_BUILDER.field("d")),
+                    REL_BUILDER.call(SqlStdOperatorTable.GREATER_THAN, REL_BUILDER.field("d"), 
+                        REL_BUILDER.literal(2)
+                    )
+                )
+            )
+        )
+        .build();
+  }
+  
+  private static class HivePreFilteringRuleWithCountMatches extends HivePreFilteringRule {
+    public static int countOnMatches;
+    
+    public HivePreFilteringRuleWithCountMatches(int maxCNFNodeCount) {
+      super(maxCNFNodeCount);
+      countOnMatches = 0;
+    }
+
+    @Override
+    public void onMatch(RelOptRuleCall call) {
+      countOnMatches++;
+      super.onMatch(call);
+    }
+  }
 
   public static class DummyRule extends RelOptRule {
 
@@ -115,7 +203,7 @@ public class TestCBORuleFiredOnlyOnce {
 
       // If this operator has been visited already by the rule,
       // we do not need to apply the optimization
-      if (registry != null && registry.getVisited(this).contains(node)) {
+      if (registry != null && registry.hasBeenVisitedBy(this, node)) {
         return false;
       }
 

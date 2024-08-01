@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules.views;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
+import org.apache.hadoop.hive.ql.optimizer.calcite.TestRuleBase;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.junit.Test;
 import org.junit.runner.RunWith;

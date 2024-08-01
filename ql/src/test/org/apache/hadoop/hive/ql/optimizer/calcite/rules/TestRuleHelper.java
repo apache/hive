@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.plan.AbstractRelOptPlanner;
 import org.apache.calcite.plan.RelOptCluster;
-import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptSchema;
 import org.apache.calcite.plan.RelOptUtil;
@@ -37,11 +36,7 @@ import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -88,16 +83,16 @@ public class TestRuleHelper {
     return HiveRelFactories.HIVE_BUILDER.create(optCluster, schemaMock);
   }
 
-  static RexNode eq(RelBuilder relBuilder, String field, Number value) {
+  public static RexNode eq(RelBuilder relBuilder, String field, Number value) {
     return relBuilder.call(SqlStdOperatorTable.EQUALS,
         relBuilder.field(field), relBuilder.literal(value));
   }
 
-  static RexNode or(RelBuilder relBuilder, RexNode... args) {
+  public static RexNode or(RelBuilder relBuilder, RexNode... args) {
     return relBuilder.call(SqlStdOperatorTable.OR, args);
   }
 
-  static RexNode and(RelBuilder relBuilder, RexNode... args) {
+  public static RexNode and(RelBuilder relBuilder, RexNode... args) {
     return relBuilder.call(SqlStdOperatorTable.AND, args);
   }
 
