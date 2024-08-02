@@ -27,7 +27,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
-import org.apache.calcite.rel.core.Filter;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 
 public class HiveRulesRegistry {
 
@@ -48,20 +48,13 @@ public class HiveRulesRegistry {
   }
 
   private String getRelNodeIdentifier(RelNode node) {
-    if (node instanceof Filter) {
-      String inputClass = ((Filter) node).getInput().getClass().getSimpleName();
-      String condition = ((Filter) node).getCondition().toString();
-      String rowType = node.getRowType().toString();
-      return "input=" + inputClass + " condition=" + condition + " rowtype=" + rowType;
-    }
-
-    return node.getDigest();
+    return ((HiveRelNode) node).getIdentifier();
   }
 
   public Set<String> getPushedPredicates(RelNode operator, int pos) {
     if (!this.registryPushedPredicates.containsKey(operator)) {
       for (int i = 0; i < operator.getInputs().size(); i++) {
-        this.registryPushedPredicates.get(operator).add(Sets.<String>newHashSet());
+        this.registryPushedPredicates.get(operator).add(Sets.newHashSet());
       }
     }
     return this.registryPushedPredicates.get(operator).get(pos);

@@ -24,4 +24,8 @@ public interface HiveRelNode extends RelNode {
 
   /** Calling convention for relational operations that occur in Hive. */
   Convention CONVENTION = new Convention.Impl("HIVE", HiveRelNode.class);
+  
+  default String getIdentifier() {
+    return this.getDigest();
+  }
 }

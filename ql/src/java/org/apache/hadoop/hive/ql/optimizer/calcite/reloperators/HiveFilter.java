@@ -100,6 +100,14 @@ public class HiveFilter extends Filter implements HiveRelNode {
     return correlationInfos.get();
   }
 
+  @Override
+  public String getIdentifier() {
+    String inputClass = getInput().getClass().getSimpleName();
+    String condition = getCondition().toString();
+    String rowType = getRowType().toString();
+    return "input=" + inputClass + " condition=" + condition + " rowtype=" + rowType;
+  }
+
   /**
    * CorrelationInfoSupplier allows for a lazy fetch so that the HiveCorrelationInfo
    * only gets retrieved on demand.
