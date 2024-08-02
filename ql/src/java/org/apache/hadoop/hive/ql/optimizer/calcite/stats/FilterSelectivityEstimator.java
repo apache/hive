@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.calcite.plan.RelOptUtil;
@@ -30,6 +31,7 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
+import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
@@ -41,8 +43,10 @@ import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.calcite.util.Sarg;
 import org.apache.datasketches.kll.KllFloatsSketch;
 import org.apache.datasketches.memory.Memory;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -52,7 +56,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.calcite.sql.fun.SqlStdOperatorTable.NOT_BETWEEN;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil.transformOrToInAndInequalityToBetween;
 
 public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
 
@@ -171,7 +175,36 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       break;
     }
 
-    default:
+    case SEARCH:
+      RexLiteral literal = (RexLiteral) call.operands.get(1);
+      Sarg<?> sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
+      RexBuilder rexBuilder = childRel.getCluster().getRexBuilder();
+      int minOrClauses = SessionState.getSessionConf().getIntVar(HiveConf.ConfVars.HIVE_POINT_LOOKUP_OPTIMIZER_MIN);
+
+      // TODO: revisit this to better handle INs
+      if (sarg.isPoints()) {
+        selectivity = computeFunctionSelectivity(call);
+        if (selectivity != null) {
+          selectivity = selectivity * (call.operands.size() - 1);
+          if (selectivity <= 0.0) {
+            selectivity = 0.10;
+          } else if (selectivity >= 1.0) {
+            selectivity = 1.0;
+          }
+        }
+        break;
+
+      } else {
+        return  visitCall((RexCall) 
+            transformOrToInAndInequalityToBetween(
+                rexBuilder,
+                call.accept(RexUtil.searchShuttle(rexBuilder, null, -1)),
+                minOrClauses
+            )
+        );
+      }
+
+      default:
       selectivity = computeFunctionSelectivity(call);
     }
 

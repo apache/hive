@@ -20,10 +20,13 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
+import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.rel.RelHomogeneousShuttle;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
+import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexDynamicParam;
 import org.apache.calcite.rex.RexFieldAccess;
@@ -31,9 +34,11 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
+import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.util.Pair;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.FilterSelectivityEstimator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdSize;
 import org.slf4j.Logger;
@@ -72,7 +77,7 @@ public class HiveFilterSortPredicates extends RelHomogeneousShuttle {
 
       final RexNode originalCond = filter.getCondition();
       final RexSortPredicatesShuttle sortPredicatesShuttle = new RexSortPredicatesShuttle(
-          input, filter.getCluster().getMetadataQuery());
+          input, filter.getCluster().getMetadataQuery(), filter.getCluster().getRexBuilder());
       final RexNode newCond = originalCond.accept(sortPredicatesShuttle);
       if (!sortPredicatesShuttle.modified) {
         // We are done, bail out
@@ -102,10 +107,12 @@ public class HiveFilterSortPredicates extends RelHomogeneousShuttle {
 
     private FilterSelectivityEstimator selectivityEstimator;
     private boolean modified;
+    private final RexBuilder rexBuilder;
 
-    private RexSortPredicatesShuttle(RelNode inputRel, RelMetadataQuery mq) {
+    private RexSortPredicatesShuttle(RelNode inputRel, RelMetadataQuery mq, RexBuilder rexBuilder) {
       selectivityEstimator = new FilterSelectivityEstimator(inputRel, mq);
       modified = false;
+      this.rexBuilder = rexBuilder;
     }
 
     @Override
@@ -176,7 +183,7 @@ public class HiveFilterSortPredicates extends RelHomogeneousShuttle {
     }
 
     private Double costPerTuple(RexNode e) {
-      return e.accept(new RexFunctionCost());
+      return e.accept(new RexFunctionCost(rexBuilder));
     }
 
   }
@@ -187,15 +194,24 @@ public class HiveFilterSortPredicates extends RelHomogeneousShuttle {
    * with the call having operands i in 1..n.
    */
   private static class RexFunctionCost extends RexVisitorImpl<Double> {
+    
+    private final RexBuilder rexBuilder;
 
-    private RexFunctionCost() {
+    private RexFunctionCost(RexBuilder rexBuilder) {
       super(true);
+      this.rexBuilder = rexBuilder;
     }
 
     @Override
     public Double visitCall(RexCall call) {
       if (!deep) {
         return null;
+      }
+
+      if (call.getKind() == SqlKind.SEARCH) {
+        RexCall expandedCall = (RexCall) RexUtil.expandSearch(rexBuilder, null, call);
+
+        return visitCall(expandedCall);
       }
 
       Double cost = 0.d;

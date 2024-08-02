@@ -20,10 +20,13 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 import com.google.common.base.Preconditions;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
+import com.google.common.collect.Range;
 import org.apache.calcite.avatica.util.ByteString;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.type.RelDataType;
@@ -37,6 +40,7 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
+import org.apache.calcite.rex.RexUnknownAs;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.rex.RexWindow;
@@ -46,6 +50,7 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.DateString;
 import org.apache.calcite.util.NlsString;
+import org.apache.calcite.util.Sarg;
 import org.apache.calcite.util.TimeString;
 import org.apache.calcite.util.TimestampString;
 import org.apache.hadoop.hive.common.type.Date;
@@ -61,6 +66,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.RexVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.Schema;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -82,6 +88,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
@@ -94,6 +101,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableSet;
+
+import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil.transformOrToInAndInequalityToBetween;
 
 /*
  * convert a RexNode to an ExprNodeDesc
@@ -108,7 +117,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
   private final RelDataTypeFactory dTFactory;
   protected final Logger LOG = LoggerFactory.getLogger(this.getClass().getName());
   private static long uniqueCounter = 0;
-  private RexBuilder rexBuilder = null;
+  private final RexBuilder rexBuilder;
 
   public ExprNodeConverter(String tabAlias, RelDataType inputRowType,
       Set<Integer> vCols, RelDataTypeFactory dTFactory) {
@@ -126,12 +135,6 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
   }
 
   public ExprNodeConverter(String tabAlias, String columnAlias, RelDataType inputRowType,
-                           RelDataType outputRowType, Set<Integer> inputVCols, RexBuilder rexBuilder) {
-    this(tabAlias, columnAlias, inputRowType, outputRowType, inputVCols, rexBuilder.getTypeFactory(), false);
-    this.rexBuilder = rexBuilder;
-  }
-
-  public ExprNodeConverter(String tabAlias, String columnAlias, RelDataType inputRowType,
           RelDataType outputRowType, Set<Integer> inputVCols, RelDataTypeFactory dTFactory,
           boolean foldExpr) {
     super(true);
@@ -140,6 +143,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
     this.inputVCols = ImmutableSet.copyOf(inputVCols);
     this.dTFactory = dTFactory;
     this.foldExpr = foldExpr;
+    this.rexBuilder = new RexBuilder(dTFactory);
   }
 
   public List<WindowFunctionSpec> getWindowFunctionSpec() {
@@ -202,6 +206,48 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       call = (RexCall) RexUtil.not(rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, call.operands));
       for (RexNode operand : call.operands) {
         args.add(operand.accept(this));
+      }
+    } else if (call.getKind() == SqlKind.SEARCH) {
+      RexNode searchOperand = call.getOperands().get(0);
+      args.add(searchOperand.accept(this));
+      RexLiteral literal = (RexLiteral)call.operands.get(1);
+      Sarg<?> sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
+      int minOrClauses = SessionState.getSessionConf().getIntVar(HiveConf.ConfVars.HIVE_POINT_LOOKUP_OPTIMIZER_MIN);
+
+      if (sarg.isPoints()) {
+        for (Range<?> range : sarg.rangeSet.asRanges()) {
+          args.add(visitLiteral((RexLiteral) rexBuilder.makeLiteral(
+                  range.lowerEndpoint(), literal.getType(), true, true)));
+        }
+        GenericUDF hiveUdf = SqlFunctionConverter.getHiveUDF(HiveIn.INSTANCE, call.getType(), args.size());
+        try {
+          if (sarg.nullAs == RexUnknownAs.UNKNOWN) {
+            return ExprNodeGenericFuncDesc.newInstance(hiveUdf, args);
+          } else if (sarg.nullAs == RexUnknownAs.TRUE) {
+            GenericUDF orUdf = SqlFunctionConverter.getHiveUDF(SqlStdOperatorTable.OR, call.getType(), 2);
+            ExprNodeDesc orExprNodeDesc =
+                visitCall((RexCall) rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, call.getOperands().get(0)));
+            return ExprNodeGenericFuncDesc
+                .newInstance(orUdf, Arrays.asList(orExprNodeDesc, ExprNodeGenericFuncDesc.newInstance(hiveUdf, args)));
+          } else {
+            GenericUDF andUdf = SqlFunctionConverter.getHiveUDF(SqlStdOperatorTable.AND, call.getType(), 2);
+            ExprNodeDesc andExprNodeDesc =
+                visitCall((RexCall) rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, call.getOperands().get(0)));
+            return ExprNodeGenericFuncDesc
+                .newInstance(
+                    andUdf, Arrays.asList(andExprNodeDesc, ExprNodeGenericFuncDesc.newInstance(hiveUdf, args))
+                );
+          }
+        } catch (UDFArgumentException e) {
+          throw new RuntimeException("Failed to instantiate udf: ", e);
+        }
+      } else {
+        return visitCall((RexCall) transformOrToInAndInequalityToBetween(
+                rexBuilder,
+                call.accept(RexUtil.searchShuttle(rexBuilder, null, -1)),
+                minOrClauses
+            )
+        );
       }
     } else {
       for (RexNode operand : call.operands) {
