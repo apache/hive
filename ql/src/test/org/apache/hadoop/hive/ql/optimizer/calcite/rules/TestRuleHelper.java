@@ -83,16 +83,16 @@ public class TestRuleHelper {
     return HiveRelFactories.HIVE_BUILDER.create(optCluster, schemaMock);
   }
 
-  public static RexNode eq(RelBuilder relBuilder, String field, Number value) {
+  static RexNode eq(RelBuilder relBuilder, String field, Number value) {
     return relBuilder.call(SqlStdOperatorTable.EQUALS,
         relBuilder.field(field), relBuilder.literal(value));
   }
 
-  public static RexNode or(RelBuilder relBuilder, RexNode... args) {
+  static RexNode or(RelBuilder relBuilder, RexNode... args) {
     return relBuilder.call(SqlStdOperatorTable.OR, args);
   }
 
-  public static RexNode and(RelBuilder relBuilder, RexNode... args) {
+  static RexNode and(RelBuilder relBuilder, RexNode... args) {
     return relBuilder.call(SqlStdOperatorTable.AND, args);
   }
 

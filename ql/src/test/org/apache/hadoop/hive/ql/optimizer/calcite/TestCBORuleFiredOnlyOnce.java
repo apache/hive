@@ -17,9 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
-import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.and;
-import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.eq;
-import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.or;
 import static org.junit.Assert.assertEquals;
 
 import java.util.List;
@@ -151,11 +148,11 @@ public class TestCBORuleFiredOnlyOnce extends TestRuleBase {
         .push(ts2)
         .join(JoinRelType.INNER, joinCondition)
         .filter(
-            and(REL_BUILDER,
-                eq(REL_BUILDER, "c", 1),
-                or(REL_BUILDER,
-                    REL_BUILDER.call(SqlStdOperatorTable.IS_NULL, REL_BUILDER.field("d")),
-                    REL_BUILDER.call(SqlStdOperatorTable.GREATER_THAN, REL_BUILDER.field("d"), 
+            REL_BUILDER.and(
+                REL_BUILDER.equals(REL_BUILDER.field("c"), REL_BUILDER.literal(1)),
+                REL_BUILDER.or(
+                    REL_BUILDER.isNull(REL_BUILDER.field("d")),
+                    REL_BUILDER.call(SqlStdOperatorTable.GREATER_THAN, REL_BUILDER.field("d"),
                         REL_BUILDER.literal(2)
                     )
                 )
