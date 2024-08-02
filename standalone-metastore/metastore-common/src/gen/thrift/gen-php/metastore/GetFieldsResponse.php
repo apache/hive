@@ -69,14 +69,14 @@ class GetFieldsResponse
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->fields = array();
-                        $_size1269 = 0;
-                        $_etype1272 = 0;
-                        $xfer += $input->readListBegin($_etype1272, $_size1269);
-                        for ($_i1273 = 0; $_i1273 < $_size1269; ++$_i1273) {
-                            $elem1274 = null;
-                            $elem1274 = new \metastore\FieldSchema();
-                            $xfer += $elem1274->read($input);
-                            $this->fields []= $elem1274;
+                        $_size1283 = 0;
+                        $_etype1286 = 0;
+                        $xfer += $input->readListBegin($_etype1286, $_size1283);
+                        for ($_i1287 = 0; $_i1287 < $_size1283; ++$_i1287) {
+                            $elem1288 = null;
+                            $elem1288 = new \metastore\FieldSchema();
+                            $xfer += $elem1288->read($input);
+                            $this->fields []= $elem1288;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -103,8 +103,8 @@ class GetFieldsResponse
             }
             $xfer += $output->writeFieldBegin('fields', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->fields));
-            foreach ($this->fields as $iter1275) {
-                $xfer += $iter1275->write($output);
+            foreach ($this->fields as $iter1289) {
+                $xfer += $iter1289->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

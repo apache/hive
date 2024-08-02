@@ -5,6 +5,7 @@ SET hive.vectorized.execution.reduce.enabled=true;
 set hive.vectorized.execution.ptf.enabled=true;
 set hive.fetch.task.conversion=none;
 set hive.cli.print.header=true;
+set hive.cbo.fallback.strategy=NEVER;
 
 create table t_n15(category int, live int, comments int) stored as orc;
 insert into table t_n15 select key, 0, 2 from src tablesample(3 rows);

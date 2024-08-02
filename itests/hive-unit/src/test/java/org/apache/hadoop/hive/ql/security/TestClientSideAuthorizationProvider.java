@@ -25,17 +25,21 @@ import java.util.List;
 
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.exec.tez.ObjectCache;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.tez.runtime.common.objectregistry.ObjectRegistryImpl;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertFalse;
@@ -62,16 +66,13 @@ public class TestClientSideAuthorizationProvider {
 
   @Before
   public void setUp() throws Exception {
-
-
-
     // Turn off metastore-side authorization
     System.setProperty(HiveConf.ConfVars.METASTORE_PRE_EVENT_LISTENERS.varname,
         "");
 
     int port = MetaStoreTestUtils.startMetaStoreWithRetry();
 
-    clientHiveConf = new HiveConf(this.getClass());
+    clientHiveConf = new HiveConfForTest(this.getClass());
 
     // Turn on client-side authorization
     clientHiveConf.setBoolVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED,true);
@@ -93,6 +94,9 @@ public class TestClientSideAuthorizationProvider {
     SessionState.start(new CliSessionState(clientHiveConf));
     msc = new HiveMetaStoreClient(clientHiveConf);
     driver = DriverFactory.newDriver(clientHiveConf);
+
+    // this test involves limit operator which needs an object cache
+    ObjectCache.setupObjectRegistry(new ObjectRegistryImpl());
   }
 
   @After

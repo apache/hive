@@ -48,7 +48,7 @@ public class StageIDsRearranger implements PhysicalPlanResolver {
     for (Task task : getExplainOrder(pctx)) {
       task.setId(PREFIX + (++counter));
     }
-    return null;
+    return pctx;
   }
 
   private static List<Task> getExplainOrder(PhysicalContext pctx) {

@@ -55,6 +55,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
@@ -132,10 +133,10 @@ public class TestUtilities {
   }
 
   @Test
-  public void testgetDbTableName() throws HiveException{
+  public void testGetDbTableName() throws HiveException{
     String tablename;
     String [] dbtab;
-    SessionState.start(new HiveConf(this.getClass()));
+    SessionState.start(new HiveConfForTest(getClass()));
     String curDefaultdb = SessionState.get().getCurrentDatabase();
 
     //test table without db portion
@@ -249,7 +250,7 @@ public class TestUtilities {
 
   private List<Path> runRemoveTempOrDuplicateFilesTestCase(String executionEngine, boolean dPEnabled)
       throws Exception {
-    Configuration hconf = new HiveConf(this.getClass());
+    Configuration hconf = new HiveConfForTest(getClass());
     // do this to verify that Utilities.removeTempOrDuplicateFiles does not revert to default scheme information
     hconf.set("fs.defaultFS", "hdfs://should-not-be-used/");
     hconf.set(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname, executionEngine);

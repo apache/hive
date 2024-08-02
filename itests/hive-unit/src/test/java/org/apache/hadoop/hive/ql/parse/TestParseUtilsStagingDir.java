@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DFSTestUtil;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -61,7 +62,7 @@ public class TestParseUtilsStagingDir {
     System.setProperty("jceks.key.serialFilter", "java.lang.Enum;java.security.KeyRep;" +
         "java.security.KeyRep$Type;javax.crypto.spec.SecretKeySpec;" +
         "org.apache.hadoop.crypto.key.JavaKeyStoreProvider$KeyMetadata;!*");
-    conf = new HiveConf();
+    conf = new HiveConfForTest(TestParseUtilsStagingDir.class);
     conf.set("hadoop.security.key.provider.path", "jceks://file" + jksFile);
 
     miniDFSCluster =

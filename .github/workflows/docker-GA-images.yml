@@ -36,7 +36,8 @@ on:
         required: true
         default: '0.10.2'
 
-
+env:
+  DEVELOCITY_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
 
 jobs:
   buildFromArchive:

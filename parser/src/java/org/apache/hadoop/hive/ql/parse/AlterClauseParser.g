@@ -75,6 +75,7 @@ alterTableStatementSuffix
     | alterStatementSuffixSetOwner
     | alterStatementSuffixSetPartSpec
     | alterStatementSuffixExecute
+    | (KW_CREATE KW_OR KW_REPLACE KW_TAG) => alterStatementSuffixCreateOrReplaceTag
     | alterStatementSuffixCreateBranch
     | alterStatementSuffixDropBranch
     | alterStatementSuffixCreateTag
@@ -582,9 +583,16 @@ alterStatementSuffixDropTag
 alterStatementSuffixCreateTag
 @init { gParent.pushMsg("alter table create tag", state); }
 @after { gParent.popMsg(state); }
-    : KW_CREATE KW_TAG tagName=identifier snapshotIdOfRef? refRetain?
-    -> ^(TOK_ALTERTABLE_CREATE_TAG $tagName snapshotIdOfRef? refRetain?)
+    : KW_CREATE KW_TAG ifNotExists? tagName=identifier snapshotIdOfRef? refRetain?
+    -> ^(TOK_ALTERTABLE_CREATE_TAG $tagName ifNotExists? snapshotIdOfRef? refRetain?)
     ;
+
+alterStatementSuffixCreateOrReplaceTag
+@init { gParent.pushMsg("alter table create tag", state); }
+@after { gParent.popMsg(state); }
+     : KW_CREATE KW_OR KW_REPLACE KW_TAG tagName=identifier snapshotIdOfRef? refRetain?
+     -> ^(TOK_ALTERTABLE_CREATE_TAG $tagName KW_REPLACE snapshotIdOfRef? refRetain?)
+     ;
 
 fileFormat
 @init { gParent.pushMsg("file format specification", state); }

@@ -60,6 +60,10 @@ public class QOutProcessor {
   private static final PatternReplacementPair MASK_DATA_SIZE = new PatternReplacementPair(
       Pattern.compile(" Data size: [1-9][0-9]*"),
       " Data size: ###Masked###");
+    private static final PatternReplacementPair MASK_TIMESTAMP = new PatternReplacementPair(
+      Pattern.compile(
+          "[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9].[0-9]{1,3} [a-zA-Z/]*"),
+        "  ###MaskedTimeStamp### ");
   private static final PatternReplacementPair MASK_LINEAGE = new PatternReplacementPair(
       Pattern.compile("POSTHOOK: Lineage: .*"),
       "POSTHOOK: Lineage: ###Masked###");
@@ -143,7 +147,7 @@ public class QOutProcessor {
   };
 
   private enum Mask {
-    STATS("-- MASK_STATS"), DATASIZE("-- MASK_DATA_SIZE"), LINEAGE("-- MASK_LINEAGE");
+    STATS("-- MASK_STATS"), DATASIZE("-- MASK_DATA_SIZE"), LINEAGE("-- MASK_LINEAGE"), TIMESTAMP("-- MASK_TIMESTAMP");
     private Pattern pattern;
 
     Mask(String pattern) {
@@ -252,6 +256,7 @@ public class QOutProcessor {
       maskPattern(result, Mask.STATS, MASK_STATS);
       maskPattern(result, Mask.DATASIZE, MASK_DATA_SIZE);
       maskPattern(result, Mask.LINEAGE,  MASK_LINEAGE);
+      maskPattern(result, Mask.TIMESTAMP, MASK_TIMESTAMP);
 
       for (String prefix : maskIfStartsWith) {
         if (result.line.startsWith(prefix)) {

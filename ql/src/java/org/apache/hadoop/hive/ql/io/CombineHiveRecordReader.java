@@ -70,14 +70,12 @@ public class CombineHiveRecordReader<K extends WritableComparable, V extends Wri
           + inputFormatClassName);
     }
     InputFormat inputFormat = HiveInputFormat.getInputFormatFromCache(inputFormatClass, jobConf);
+    MapWork mrwork = null;
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon())) {
       try {
         // TODO : refactor this out
         if (pathToPartInfo == null) {
-          MapWork mrwork = (MapWork) Utilities.getMergeWork(jobConf);
-          if (mrwork == null) {
-            mrwork = Utilities.getMapWork(jobConf);
-          }
+          mrwork = getMrWork(jobConf);
           pathToPartInfo = mrwork.getPathToPartitionInfo();
         }
 
@@ -88,14 +86,21 @@ public class CombineHiveRecordReader<K extends WritableComparable, V extends Wri
       }
     }
 
+    FileSplit inputSplit;
     // create a split for the given partition
-    FileSplit fsplit = new FileSplit(hsplit.getPaths()[partition], hsplit
-        .getStartOffsets()[partition], hsplit.getLengths()[partition], hsplit
-        .getLocations());
+    if (inputFormat instanceof CombineHiveInputFormat.MergeSplits) {
+      mrwork = getMrWork(jobConf);
+      inputSplit = ((CombineHiveInputFormat.MergeSplits) inputFormat).createMergeSplit(jobConf, hsplit, partition,
+              mrwork.getMergeSplitProperties());
+    } else {
+      inputSplit = new FileSplit(hsplit.getPaths()[partition], hsplit
+              .getStartOffsets()[partition], hsplit.getLengths()[partition], hsplit
+              .getLocations());
+    }
 
-    this.setRecordReader(inputFormat.getRecordReader(fsplit, jobConf, reporter));
+    this.setRecordReader(inputFormat.getRecordReader(inputSplit, jobConf, reporter));
 
-    this.initIOContext(fsplit, jobConf, inputFormatClass, this.recordReader);
+    this.initIOContext(inputSplit, jobConf, inputFormatClass, this.recordReader);
 
     //If current split is from the same file as preceding split and the preceding split has footerbuffer,
     //the current split should use the preceding split's footerbuffer in order to skip footer correctly.
@@ -125,6 +130,14 @@ public class CombineHiveRecordReader<K extends WritableComparable, V extends Wri
       }
     }
     return part;
+  }
+
+  private MapWork getMrWork(JobConf jobConf) {
+    MapWork mrwork = (MapWork) Utilities.getMergeWork(jobConf);
+    if (mrwork == null) {
+      mrwork = Utilities.getMapWork(jobConf);
+    }
+    return mrwork;
   }
 
   @Override

@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
@@ -38,8 +39,6 @@ import java.io.File;
 import static org.apache.hadoop.hive.ql.TestAcidOnTez.TEST_DATA_DIR;
 import static org.apache.hadoop.hive.ql.TestAcidOnTez.TEST_WAREHOUSE_DIR;
 import static org.apache.hadoop.hive.ql.TestAcidOnTez.runStatementOnDriver;
-import static org.apache.hadoop.hive.ql.TestAcidOnTez.setupTez;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -70,7 +69,7 @@ public class TestConstraintsMerge {
 
   @Before
   public void setUp() throws Exception {
-    hiveConf = new HiveConf(this.getClass());
+    hiveConf = new HiveConfForTest(getClass());
     hiveConf.set(ConfVars.PRE_EXEC_HOOKS.varname, "");
     hiveConf.set(ConfVars.POST_EXEC_HOOKS.varname, "");
     hiveConf.set(ConfVars.METASTORE_WAREHOUSE.varname, TEST_WAREHOUSE_DIR);
@@ -134,19 +133,17 @@ public class TestConstraintsMerge {
 
   @Test
   public void testUpdateInMergeViolatesCheckConstraint() throws Exception {
-    HiveConf confForTez = new HiveConf(hiveConf);
-    confForTez.setBoolVar(HiveConf.ConfVars.HIVE_EXPLAIN_USER, false);
-    setupTez(confForTez);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_EXPLAIN_USER, false);
 
     runStatementOnDriver("insert into " + Table.TBL_CHECK_MERGE + "(name, age, gpa) values " +
-            "('student1', 16, 2.0)", confForTez);
+            "('student1', 16, 2.0)", hiveConf);
 
     Throwable error = null;
     try {
       runStatementOnDriver("merge into " + Table.TBL_CHECK_MERGE +
               " using (select age from table_source) source\n" +
               "on source.age=table_check_merge.age\n" +
-              "when matched then update set gpa=6", confForTez);
+              "when matched then update set gpa=6", hiveConf);
     } catch (Throwable t) {
       error = t;
     }

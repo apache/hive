@@ -203,7 +203,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  filterExpr: UDFToBoolean(cint) (type: boolean)
+                  filterExpr: (cint <> 0) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -211,9 +211,9 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsTrue(col 14:boolean)(children: CastLongToBooleanViaLongToLong(col 2:int) -> 14:boolean)
-                    predicate: UDFToBoolean(cint) (type: boolean)
-                    Statistics: Num rows: 6144 Data size: 18348 Basic stats: COMPLETE Column stats: COMPLETE
+                        predicateExpression: FilterLongColNotEqualLongScalar(col 2:int, val 0)
+                    predicate: (cint <> 0) (type: boolean)
+                    Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
@@ -223,10 +223,10 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
                       keys: cint (type: int)
-                      minReductionHashAggr: 0.4
+                      minReductionHashAggr: 0.5031738
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 6104 Data size: 18228 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 6105 Data size: 18232 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: z
@@ -236,7 +236,7 @@ STAGE PLANS:
                             className: VectorReduceSinkLongOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 6104 Data size: 18228 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 6105 Data size: 18232 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -268,7 +268,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 6104 Data size: 18228 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 6105 Data size: 18232 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count(_col0)
                   Group By Vectorization:

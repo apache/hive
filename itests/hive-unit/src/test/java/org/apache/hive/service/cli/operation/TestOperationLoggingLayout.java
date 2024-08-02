@@ -24,8 +24,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.log.HushableRandomAccessFileAppender;
 import org.apache.hadoop.hive.ql.log.LogDivertAppender;
 import org.apache.hadoop.hive.ql.log.LogDivertAppenderForTest;
@@ -69,7 +69,7 @@ public class TestOperationLoggingLayout {
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     tableName = "TestOperationLoggingLayout_table";
-    hiveConf = new HiveConf();
+    hiveConf = new HiveConfForTest(TestOperationLoggingLayout.class);
     hiveConf.set(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "execution");
     miniHS2 = new MiniHS2(hiveConf);
     confOverlay = new HashMap<String, String>();

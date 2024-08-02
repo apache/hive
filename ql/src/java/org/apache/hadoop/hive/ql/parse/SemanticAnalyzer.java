@@ -3489,11 +3489,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     OpParseContext inputCtx = opParseCtx.get(input);
     RowResolver inputRR = inputCtx.getRowResolver();
     Map<ASTNode, String> exprToColumnAlias = qb.getParseInfo().getAllExprToColumnAlias();
-    for (ASTNode astNode : exprToColumnAlias.keySet()) {
-      if (inputRR.getExpression(astNode) != null) {
-        inputRR.put("", exprToColumnAlias.get(astNode), inputRR.getExpression(astNode));
-      }
-    }
+    inputRR.putAll(exprToColumnAlias);
     ASTNode condn = (ASTNode) havingExpr.getChild(0);
 
     if (!isCBOExecuted() && !qb.getParseInfo().getDestToGroupBy().isEmpty()) {
@@ -12750,7 +12746,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             List<String> colNames = new ArrayList<>();
             extractColumnInfos(table, colNames, new ArrayList<>());
 
-            basicInfos.put(new HivePrivilegeObject(table.getDbName(), table.getTableName(), colNames), null);
+            basicInfos.put(new HivePrivilegeObject(table.getDbName(), table.getTableName(), colNames,
+                table.getOwner(), table.getOwnerType()), null);
           }
         } else {
           List<String> colNames;
@@ -12766,7 +12763,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             extractColumnInfos(table, colNames, colTypes);
           }
 
-          basicInfos.put(new HivePrivilegeObject(table.getDbName(), table.getTableName(), colNames),
+          basicInfos.put(new HivePrivilegeObject(table.getDbName(), table.getTableName(), colNames,
+              table.getOwner(), table.getOwnerType()),
               new MaskAndFilterInfo(colTypes, additionalTabInfo.toString(), alias, astNode, table.isView(), table.isNonNative()));
         }
       }

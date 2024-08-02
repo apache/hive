@@ -94,7 +94,10 @@ public class TestHiveMetaStoreAuthorizer {
     // Create the 'hive' catalog with new warehouse directory
     HMSHandler.createDefaultCatalog(rawStore, new Warehouse(conf));
     try {
-      hmsHandler.drop_dataconnector(dcName, true ,true);
+      DropDataConnectorRequest dropDcReq = new DropDataConnectorRequest(dcName);
+      dropDcReq.setIfNotExists(true);
+      dropDcReq.setCheckReferences(true);
+      hmsHandler.drop_dataconnector_req(dropDcReq);
       hmsHandler.drop_table(dbName, tblName, true);
       hmsHandler.drop_database(dbName, true, false);
       hmsHandler.drop_catalog(new DropCatalogRequest(catalogName));
@@ -372,7 +375,8 @@ public class TestHiveMetaStoreAuthorizer {
     UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(unAuthorizedUser));
     try {
       DataConnector connector = new DataConnector(dcName, "mysql", "jdbc:mysql://localhost:3306/hive");
-      hmsHandler.create_dataconnector(connector);
+      CreateDataConnectorRequest connectorReq = new CreateDataConnectorRequest(connector);
+      hmsHandler.create_dataconnector_req(connectorReq);
     } catch (Exception e) {
       String err = e.getMessage();
       String expected = "Operation type " + HiveOperationType.CREATEDATACONNECTOR+ " not allowed for user:" + unAuthorizedUser;
@@ -385,7 +389,8 @@ public class TestHiveMetaStoreAuthorizer {
     UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
     try {
       DataConnector connector = new DataConnector(dcName, "mysql", "jdbc:mysql://localhost:3306/hive");
-      hmsHandler.create_dataconnector(connector);
+      CreateDataConnectorRequest connectorReq = new CreateDataConnectorRequest(connector);
+      hmsHandler.create_dataconnector_req(connectorReq);
     } catch (Exception e) {
       fail("testS_CreateDataConnector_authorizedUser() failed with " + e);
     }
@@ -396,10 +401,12 @@ public class TestHiveMetaStoreAuthorizer {
     UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
     try {
       DataConnector connector = new DataConnector(dcName, "mysql", "jdbc:mysql://localhost:3306/hive");
-      hmsHandler.create_dataconnector(connector);
+      CreateDataConnectorRequest connectorReq = new CreateDataConnectorRequest(connector);
+      hmsHandler.create_dataconnector_req(connectorReq);
 
       DataConnector newConnector = new DataConnector(dcName, "mysql", "jdbc:mysql://localhost:3308/hive");
-      hmsHandler.alter_dataconnector(dcName, newConnector);
+      AlterDataConnectorRequest alterReq = new AlterDataConnectorRequest(dcName, newConnector);
+      hmsHandler.alter_dataconnector_req(alterReq);
     } catch (Exception e) {
       fail("testT_AlterDataConnector_AuthorizedUser() failed with " + e);
     }
@@ -409,7 +416,10 @@ public class TestHiveMetaStoreAuthorizer {
   public void testU_DropDataConnector_authorizedUser() {
     UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
     try {
-      hmsHandler.drop_dataconnector(dcName, true, true);
+      DropDataConnectorRequest dropDcReq = new DropDataConnectorRequest(dcName);
+      dropDcReq.setIfNotExists(true);
+      dropDcReq.setCheckReferences(true);
+      hmsHandler.drop_dataconnector_req(dropDcReq);
     } catch (Exception e) {
       fail("testU_DropDataConnector_authorizedUser() failed with " + e);
     }

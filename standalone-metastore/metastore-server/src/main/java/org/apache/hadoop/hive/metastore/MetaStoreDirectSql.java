@@ -762,6 +762,28 @@ class MetaStoreDirectSql {
     return getPartitionsByPartitionIdsInBatch(catName, dbName, tableName, partitionIds, isAcidTable, args);
   }
 
+  public List<Partition> getPartitionsViaSqlPs(Table table, GetPartitionsArgs args) throws MetaException {
+    String catName = table.getCatName();
+    String dbName = table.getDbName();
+    String tblName = table.getTableName();
+
+    String sqlFilter = "" + PARTITIONS + ".\"PART_NAME\" like ? ";
+    String partialName = MetaStoreUtils.makePartNameMatcher(table, args.getPart_vals(), "_%");
+    List<Long> partitionIds = getPartitionFieldsViaSqlFilter(
+        catName, dbName, tblName, Arrays.asList("\"PART_ID\""), sqlFilter,
+        Arrays.asList(partialName), Collections.emptyList(), args.getMax());
+    if (partitionIds.isEmpty()) {
+      return Collections.emptyList(); // no partitions, bail early.
+    }
+    boolean isAcidTable = TxnUtils.isAcidTable(table);
+    return Batchable.runBatched(batchSize, partitionIds, new Batchable<Long, Partition>() {
+      @Override
+      public List<Partition> run(List<Long> input) throws MetaException {
+        return getPartitionsByPartitionIds(catName, dbName, tblName, input, isAcidTable, args);
+      }
+    });
+  }
+
   /**
    * This method can be used to return "partially-filled" partitions when clients are only interested in
    * some fields of the Partition objects. The partitionFields parameter is a list of dot separated
@@ -1250,7 +1272,6 @@ class MetaStoreDirectSql {
   }
 
   public int getNumPartitionsViaSqlFilter(SqlFilterForPushdown filter) throws MetaException {
-    boolean doTrace = LOG.isDebugEnabled();
     String catName = filter.catName.toLowerCase();
     String dbName = filter.dbName.toLowerCase();
     String tblName = filter.tableName.toLowerCase();
@@ -1273,13 +1294,32 @@ class MetaStoreDirectSql {
       params[i + 3] = filter.params.get(i);
     }
 
-    long start = doTrace ? System.nanoTime() : 0;
     try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
       query.setUnique(true);
-      int sqlResult = MetastoreDirectSqlUtils.extractSqlInt(query.executeWithArray(params));
-      long queryTime = doTrace ? System.nanoTime() : 0;
-      MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, queryTime);
-      return sqlResult;
+      return MetastoreDirectSqlUtils.extractSqlInt(executeWithArray(query.getInnerQuery(), params, queryText));
+    }
+  }
+
+  public int getNumPartitionsViaSqlPs(Table table, List<String> partVals) throws MetaException {
+    String partialName = MetaStoreUtils.makePartNameMatcher(table, partVals, "_%");
+
+    // Get number of partitions by doing count on PART_ID.
+    String queryText = "select count(" + PARTITIONS + ".\"PART_ID\") from " + PARTITIONS + ""
+      + "  inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\" "
+      + "    and " + TBLS + ".\"TBL_NAME\" = ? "
+      + "  inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" "
+      + "     and " + DBS + ".\"NAME\" = ? "
+      + " where " + DBS + ".\"CTLG_NAME\" = ? and " + PARTITIONS + ".\"PART_NAME\" like ? ";
+
+    Object[] params = new Object[4];
+    params[0] = table.getTableName();
+    params[1] = table.getDbName();
+    params[2] = table.getCatName();
+    params[3] = partialName;
+
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+      query.setUnique(true);
+      return MetastoreDirectSqlUtils.extractSqlInt(executeWithArray(query.getInnerQuery(), params, queryText));
     }
   }
 

@@ -78,7 +78,7 @@ public class ParseDriver {
 
     @Override
     public Object dupTree(Object t, Object parent) {
-      // Overriden to copy start index / end index, that is needed through optimization,
+      // Overridden to copy start index / end index, that is needed through optimization,
       // e.g., for masking/filtering
       ASTNode astNode = (ASTNode) t;
       ASTNode astNodeCopy = (ASTNode) super.dupTree(t, parent);

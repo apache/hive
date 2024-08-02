@@ -37,6 +37,7 @@ import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -126,7 +127,7 @@ public class TestStreamingDynamicPartitioning {
   private final static String dbName2 = "testing2";
 
   public TestStreamingDynamicPartitioning() throws Exception {
-    conf = new HiveConf(this.getClass());
+    conf = new HiveConfForTest(getClass());
     conf.set("fs.raw.impl", RawFileSystem.class.getName());
     conf
       .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,

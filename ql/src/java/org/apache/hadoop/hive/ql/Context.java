@@ -33,7 +33,6 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.google.common.base.Preconditions;
 import org.antlr.runtime.TokenRewriteStream;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.tuple.Pair;
@@ -256,16 +255,23 @@ public class Context {
   public enum RewritePolicy {
 
     DEFAULT,
-    ALL_PARTITIONS;
+    ALL_PARTITIONS,
+    PARTITION;
 
     public static RewritePolicy fromString(String rewritePolicy) {
-      Preconditions.checkArgument(null != rewritePolicy, "Invalid rewrite policy: null");
+      if (rewritePolicy == null) {
+        return DEFAULT;
+      }
 
       try {
         return valueOf(rewritePolicy.toUpperCase(Locale.ENGLISH));
       } catch (IllegalArgumentException var2) {
         throw new IllegalArgumentException(String.format("Invalid rewrite policy: %s", rewritePolicy), var2);
       }
+    }
+
+    public static RewritePolicy get(HiveConf conf) {
+      return fromString(conf.get(HiveConf.ConfVars.REWRITE_POLICY.varname));
     }
   }
   private String getMatchedText(ASTNode n) {

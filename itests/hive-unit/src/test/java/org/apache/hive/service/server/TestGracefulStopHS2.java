@@ -49,6 +49,8 @@ public class TestGracefulStopHS2 {
     MiniHS2.cleanupLocalDir();
     try {
       HiveConf conf = new HiveConf();
+      //TODO: HIVE-28296: TestGracefulStopHS2 to run on Tez
+      conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
       conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
       conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED, false);
       conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_COL_AUTOGATHER, false);

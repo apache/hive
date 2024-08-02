@@ -64,6 +64,8 @@ public class TestOperationLoggingAPIWithMr extends OperationLoggingAPITestBase {
     };
     hiveConf = new HiveConf();
     hiveConf.set(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "verbose");
+    // this test is mr specific
+    hiveConf.set(ConfVars.HIVE_EXECUTION_ENGINE.varname, "mr");
     miniHS2 = new MiniHS2(hiveConf);
     confOverlay = new HashMap<String, String>();
     confOverlay.put(ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");

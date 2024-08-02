@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.PartitionsStatsResult;
 import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
@@ -264,7 +265,8 @@ final class HMSClient implements AutoCloseable {
   }
 
   Table getTable(@NotNull String dbName, @NotNull String tableName) throws TException {
-    return client.get_table(dbName, tableName);
+    GetTableRequest req = new GetTableRequest(dbName, tableName);
+    return client.get_table_req(req).getTable();
   }
 
   Partition createPartition(@NotNull Table table, @NotNull List<String> values) throws TException {
@@ -339,6 +341,11 @@ final class HMSClient implements AutoCloseable {
   List<Partition> getPartitionsByFilter(@NotNull String dbName, @NotNull String tableName,
                                         @NotNull String filter) throws TException {
     return client.get_partitions_by_filter(dbName, tableName, filter, (short) -1);
+  }
+
+  List<Partition> getPartitionsByPs(@NotNull String dbName, @NotNull String tableName,
+                                    @NotNull List<String> partVals) throws TException {
+    return client.get_partitions_ps_with_auth(dbName, tableName, partVals, (short) -1, null, null);
   }
 
   PartitionsStatsResult getPartitionsStats(PartitionsStatsRequest request) throws TException {

@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -56,6 +57,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.FileInputFormat;
+import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -368,18 +370,14 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       PartitionDesc part = HiveFileFormatUtils.getFromPathRecursively(
           pathToPartitionInfo, path, IOPrepareCache.get().allocatePartitionDescMap());
       TableDesc tableDesc = part.getTableDesc();
-      if (tableDesc != null) {
-        boolean useDefaultFileFormat = part.getInputFileFormatClass()
-                .isAssignableFrom(tableDesc.getInputFileFormatClass());
-        if (tableDesc.isNonNative() && useDefaultFileFormat) {
-          return super.getSplits(job, numSplits);
-        }
-      }
-
       // Use HiveInputFormat if any of the paths is not splittable
       Class inputFormatClass = part.getInputFileFormatClass();
       String inputFormatClassName = inputFormatClass.getName();
       InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
+      if (tableDesc != null && tableDesc.isNonNative() && mrwork.getMergeSplitProperties() == null) {
+        return super.getSplits(job, numSplits);
+      }
+
       String deserializerClassName = null;
       try {
         deserializerClassName = part.getDeserializer(job).getClass().getName();
@@ -764,5 +762,9 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
      */
   public interface AvoidSplitCombination {
     boolean shouldSkipCombine(Path path, Configuration conf) throws IOException;
+  }
+
+  public interface MergeSplits extends AvoidSplitCombination {
+    FileSplit createMergeSplit(Configuration conf, CombineHiveInputSplit split, Integer partition, Properties splitProperties) throws IOException;
   }
 }

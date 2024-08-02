@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -132,8 +133,6 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
-import org.apache.hadoop.mapred.JobContextImpl;
-import org.apache.hadoop.mapred.JobID;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
@@ -200,7 +199,6 @@ import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.types.Conversions;
-import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.ByteBuffers;
 import org.apache.iceberg.util.Pair;
@@ -217,8 +215,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   private static final Splitter TABLE_NAME_SPLITTER = Splitter.on("..");
   private static final String TABLE_NAME_SEPARATOR = "..";
   // Column index for partition metadata table
-  private static final int SPEC_IDX = 1;
-  private static final int PART_IDX = 0;
   public static final String COPY_ON_WRITE = "copy-on-write";
   public static final String MERGE_ON_READ = "merge-on-read";
   public static final String STATS = "/stats/snap-";
@@ -384,7 +380,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
     List<ExprNodeDesc> subExprNodes = pushedPredicate.getChildren();
     if (subExprNodes.removeIf(nodeDesc -> nodeDesc.getCols() != null &&
-        nodeDesc.getCols().contains(VirtualColumn.FILE_PATH.getName()))) {
+        (nodeDesc.getCols().contains(VirtualColumn.FILE_PATH.getName()) ||
+            nodeDesc.getCols().contains(VirtualColumn.PARTITION_SPEC_ID.getName())))) {
       if (subExprNodes.size() == 1) {
         pushedPredicate = subExprNodes.get(0);
       } else if (subExprNodes.isEmpty()) {
@@ -763,7 +760,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     if (location != null) {
       HiveTableUtil.cleanupTableObjectFile(location, configuration);
     }
-    List<JobContext> jobContextList = generateJobContext(configuration, tableName, snapshotRef);
+    List<JobContext> jobContextList = HiveIcebergOutputCommitter
+            .generateJobContext(configuration, tableName, snapshotRef);
     if (jobContextList.isEmpty()) {
       return;
     }
@@ -1146,8 +1144,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         // If the table is empty we don't have any danger that some data can get lost.
         return;
       }
-      if (RewritePolicy.fromString(conf.get(ConfVars.REWRITE_POLICY.varname, RewritePolicy.DEFAULT.name())) ==
-          RewritePolicy.ALL_PARTITIONS) {
+      if (RewritePolicy.fromString(conf.get(ConfVars.REWRITE_POLICY.varname)) != RewritePolicy.DEFAULT) {
         // Table rewriting has special logic as part of IOW that handles the case when table had a partition evolution
         return;
       }
@@ -1569,41 +1566,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return true;
   }
 
-  /**
-   * Generates {@link JobContext}s for the OutputCommitter for the specific table.
-   * @param configuration The configuration used for as a base of the JobConf
-   * @param tableName The name of the table we are planning to commit
-   * @param branchName the name of the branch
-   * @return The generated Optional JobContext list or empty if not presents.
-   */
-  private List<JobContext> generateJobContext(Configuration configuration, String tableName,
-      String branchName) {
-    JobConf jobConf = new JobConf(configuration);
-    Optional<Map<String, SessionStateUtil.CommitInfo>> commitInfoMap =
-        SessionStateUtil.getCommitInfo(jobConf, tableName);
-    if (commitInfoMap.isPresent()) {
-      List<JobContext> jobContextList = Lists.newLinkedList();
-      for (SessionStateUtil.CommitInfo commitInfo : commitInfoMap.get().values()) {
-        JobID jobID = JobID.forName(commitInfo.getJobIdStr());
-        commitInfo.getProps().forEach(jobConf::set);
-
-        // we should only commit this current table because
-        // for multi-table inserts, this hook method will be called sequentially for each target table
-        jobConf.set(InputFormatConfig.OUTPUT_TABLES, tableName);
-        if (branchName != null) {
-          jobConf.set(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF, branchName);
-        }
-
-        jobContextList.add(new JobContextImpl(jobConf, jobID, null));
-      }
-      return jobContextList;
-    } else {
-      // most likely empty write scenario
-      LOG.debug("Unable to find commit information in query state for table: {}", tableName);
-      return Collections.emptyList();
-    }
-  }
-
   private String getOperationType() {
     return SessionStateUtil.getProperty(conf, Operation.class.getSimpleName())
         .orElse(Operation.OTHER.name());
@@ -1840,14 +1802,16 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       fetcher.initialize(job, HiveTableUtil.getSerializationProps());
       org.apache.hadoop.hive.ql.metadata.Table metaDataPartTable =
           context.getDb().getTable(hmstbl.getDbName(), hmstbl.getTableName(), "partitions", true);
-      Deserializer currSerDe = metaDataPartTable.getDeserializer();
+      Deserializer currSerDe = HiveMetaStoreUtils.getDeserializer(job, metaDataPartTable.getTTable(),
+          metaDataPartTable.getMetaTable(), false);
       ObjectMapper mapper = new ObjectMapper();
       Table tbl = getTable(hmstbl);
       while (reader.next(key, value)) {
         String[] row =
             fetcher.convert(currSerDe.deserialize(value), currSerDe.getObjectInspector())
                 .toString().split("\t");
-        parts.add(HiveTableUtil.getParseData(row[PART_IDX], row[SPEC_IDX], mapper, tbl.spec().specId()));
+        parts.add(HiveTableUtil.getParseData(row[IcebergTableUtil.PART_IDX], row[IcebergTableUtil.SPEC_IDX],
+            mapper, tbl.spec().specId()));
       }
     }
     Collections.sort(parts);
@@ -1855,8 +1819,16 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public void validatePartSpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Map<String, String> partitionSpec)
-      throws SemanticException {
+  public void validatePartSpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Map<String, String> partitionSpec,
+      Context.RewritePolicy policy) throws SemanticException {
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    List<PartitionField> partitionFields = (policy == Context.RewritePolicy.PARTITION) ?
+        IcebergTableUtil.getPartitionFields(table) : table.spec().fields();
+    validatePartSpecImpl(hmsTable, partitionSpec, partitionFields);
+  }
+
+  private void validatePartSpecImpl(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      Map<String, String> partitionSpec, List<PartitionField> partitionFields) throws SemanticException {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     if (hmsTable.getSnapshotRef() != null && hasUndergonePartitionEvolution(table)) {
       // for this case we rewrite the query as delete query, so validations would be done as part of delete.
@@ -1868,7 +1840,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
 
     Map<String, Types.NestedField> mapOfPartColNamesWithTypes = Maps.newHashMap();
-    for (PartitionField partField : table.spec().fields()) {
+    for (PartitionField partField : partitionFields) {
       Types.NestedField field = table.schema().findField(partField.sourceId());
       mapOfPartColNamesWithTypes.put(field.name(), field);
     }
@@ -1911,7 +1883,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       return false;
     }
 
-    Expression finalExp = generateExpressionFromPartitionSpec(table, partitionSpec);
+    Expression finalExp = IcebergTableUtil.generateExpressionFromPartitionSpec(table, partitionSpec);
     FindFiles.Builder builder = new FindFiles.Builder(table).withRecordsMatching(finalExp);
     Set<DataFile> dataFiles = Sets.newHashSet(builder.collect());
     boolean result = true;
@@ -1943,14 +1915,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public Optional<ErrorMsg> isEligibleForCompaction(
       org.apache.hadoop.hive.ql.metadata.Table table, Map<String, String> partitionSpec) {
-    if (partitionSpec != null) {
-      Table icebergTable = IcebergTableUtil.getTable(conf, table.getTTable());
-      if (hasUndergonePartitionEvolution(icebergTable)) {
-        return Optional.of(ErrorMsg.COMPACTION_PARTITION_EVOLUTION);
-      }
-      if (!isIdentityPartitionTable(table)) {
-        return Optional.of(ErrorMsg.COMPACTION_NON_IDENTITY_PARTITION_SPEC);
-      }
+    if (partitionSpec != null && !isIdentityPartitionTable(table)) {
+      return Optional.of(ErrorMsg.COMPACTION_NON_IDENTITY_PARTITION_SPEC);
     }
     return Optional.empty();
   }
@@ -1959,13 +1925,22 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public List<Partition> getPartitions(org.apache.hadoop.hive.ql.metadata.Table table,
       Map<String, String> partitionSpec) throws SemanticException {
     return getPartitionNames(table, partitionSpec).stream()
-        .map(partName -> new DummyPartition(table, partName, partitionSpec)).collect(Collectors.toList());
+        .map(partName -> {
+          Map<String, String> partSpecMap = Maps.newLinkedHashMap();
+          Warehouse.makeSpecFromName(partSpecMap, new Path(partName), null);
+          return new DummyPartition(table, partName, partSpecMap);
+        }).collect(Collectors.toList());
   }
 
   @Override
   public Partition getPartition(org.apache.hadoop.hive.ql.metadata.Table table,
+      Map<String, String> partitionSpec, Context.RewritePolicy policy) throws SemanticException {
+    validatePartSpec(table, partitionSpec, policy);
+    return getPartitionImpl(table, partitionSpec);
+  }
+
+  private Partition getPartitionImpl(org.apache.hadoop.hive.ql.metadata.Table table,
       Map<String, String> partitionSpec) throws SemanticException {
-    validatePartSpec(table, partitionSpec);
     try {
       String partName = Warehouse.makePartName(partitionSpec, false);
       return new DummyPartition(table, partName, partitionSpec);
@@ -1985,60 +1960,17 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public List<String> getPartitionNames(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
       Map<String, String> partitionSpec) throws SemanticException {
     Table icebergTable = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
-            .createMetadataTableInstance(icebergTable, MetadataTableType.PARTITIONS);
-    Expression expression = generateExpressionFromPartitionSpec(icebergTable, partitionSpec);
-    Set<PartitionData> partitionList = Sets.newHashSet();
-    try (CloseableIterable<FileScanTask> fileScanTasks = partitionsTable.newScan().planFiles()) {
-      fileScanTasks.forEach(task -> {
-        partitionList.addAll(Sets.newHashSet(CloseableIterable.transform(task.asDataTask().rows(), row -> {
-          StructProjection data = row.get(PART_IDX, StructProjection.class);
-          PartitionSpec pSpec = icebergTable.spec();
-          PartitionData partitionData = new PartitionData(pSpec.partitionType());
-          for (int index = 0; index < pSpec.fields().size(); index++) {
-            partitionData.set(index, data.get(index, Object.class));
-          }
-          return partitionData;
-        })));
-      });
 
-      List<String> partPathList = partitionList.stream().filter(partitionData -> {
-        ResidualEvaluator resEval = ResidualEvaluator.of(icebergTable.spec(), expression, false);
-        return resEval.residualFor(partitionData).isEquivalentTo(Expressions.alwaysTrue());
-      }).map(partitionData -> icebergTable.spec().partitionToPath(partitionData)).collect(Collectors.toList());
-
-      return partPathList;
+    try {
+      return IcebergTableUtil
+          .getPartitionInfo(icebergTable, partitionSpec, true).entrySet().stream().map(e -> {
+            PartitionData partitionData = e.getKey();
+            int specId = e.getValue();
+            return icebergTable.specs().get(specId).partitionToPath(partitionData);
+          }).collect(Collectors.toList());
     } catch (IOException e) {
       throw new SemanticException(String.format("Error while fetching the partitions due to: %s", e));
     }
-  }
-
-  private Expression generateExpressionFromPartitionSpec(Table table, Map<String, String> partitionSpec)
-      throws SemanticException {
-    Map<String, PartitionField> partitionFieldMap = table.spec().fields().stream()
-        .collect(Collectors.toMap(PartitionField::name, Function.identity()));
-    Expression finalExp = Expressions.alwaysTrue();
-    for (Map.Entry<String, String> entry : partitionSpec.entrySet()) {
-      String partColName = entry.getKey();
-      if (partitionFieldMap.containsKey(partColName)) {
-        PartitionField partitionField = partitionFieldMap.get(partColName);
-        Type resultType = partitionField.transform().getResultType(table.schema()
-                .findField(partitionField.sourceId()).type());
-        Object value = Conversions.fromPartitionString(resultType, entry.getValue());
-        TransformSpec.TransformType transformType = TransformSpec.fromString(partitionField.transform().toString());
-        Iterable<?> iterable = () -> Collections.singletonList(value).iterator();
-        if (TransformSpec.TransformType.IDENTITY == transformType) {
-          Expression boundPredicate = Expressions.in(partitionField.name(), iterable);
-          finalExp = Expressions.and(finalExp, boundPredicate);
-        } else {
-          throw new SemanticException(
-                  String.format("Partition transforms are not supported via truncate operation: %s", partColName));
-        }
-      } else {
-        throw new SemanticException(String.format("No partition column/transform by the name: %s", partColName));
-      }
-    }
-    return finalExp;
   }
 
   /**
@@ -2123,14 +2055,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public List<FieldSchema> getPartitionKeys(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     Table icebergTable = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    Schema schema = icebergTable.schema();
-    List<FieldSchema> hiveSchema = HiveSchemaUtil.convert(schema);
-    Map<String, String> colNameToColType = hiveSchema.stream()
-        .collect(Collectors.toMap(FieldSchema::getName, FieldSchema::getType));
-    return icebergTable.spec().fields().stream().map(partField ->
-      new FieldSchema(schema.findColumnName(partField.sourceId()),
-      colNameToColType.get(schema.findColumnName(partField.sourceId())),
-      String.format("Transform: %s", partField.transform().toString()))).collect(Collectors.toList());
+    return IcebergTableUtil.getPartitionKeys(icebergTable, icebergTable.spec().specId());
   }
 
   @Override
@@ -2147,7 +2072,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     try (CloseableIterable<FileScanTask> fileScanTasks = partitionsTable.newScan().planFiles()) {
       fileScanTasks.forEach(task ->
           partitionList.addAll(Sets.newHashSet(CloseableIterable.transform(task.asDataTask().rows(), row -> {
-            StructProjection data = row.get(PART_IDX, StructProjection.class);
+            StructProjection data = row.get(IcebergTableUtil.PART_IDX, StructProjection.class);
             return IcebergTableUtil.toPartitionData(data, pSpec.partitionType());
           })).stream()
              .filter(partitionData -> resEval.residualFor(partitionData).isEquivalentTo(Expressions.alwaysTrue()))
@@ -2172,7 +2097,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     String tableName = properties.getProperty(Catalogs.NAME);
     String snapshotRef = properties.getProperty(Catalogs.SNAPSHOT_REF);
     Configuration configuration = SessionState.getSessionConf();
-    List<JobContext> originalContextList = generateJobContext(configuration, tableName, snapshotRef);
+    List<JobContext> originalContextList = HiveIcebergOutputCommitter
+            .generateJobContext(configuration, tableName, snapshotRef);
     List<JobContext> jobContextList = originalContextList.stream()
             .map(TezUtil::enrichContextWithVertexId)
             .collect(Collectors.toList());

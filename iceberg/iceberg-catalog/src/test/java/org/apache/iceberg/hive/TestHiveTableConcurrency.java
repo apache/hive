@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.hive;
 
+import java.time.Duration;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -31,6 +32,7 @@ import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.relocated.com.google.common.util.concurrent.MoreExecutors;
 import org.apache.iceberg.util.Tasks;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.iceberg.TableProperties.COMMIT_MAX_RETRY_WAIT_MS;
@@ -55,19 +57,17 @@ public class TestHiveTableConcurrency extends HiveTableBaseTest {
         (ThreadPoolExecutor) Executors.newFixedThreadPool(2));
 
     AtomicInteger barrier = new AtomicInteger(0);
-    Tasks.range(2)
+    int threadsCount = 2;
+    Tasks.range(threadsCount)
         .stopOnFailure().throwFailureWhenFinished()
         .executeWith(executorService)
         .run(index -> {
           for (int numCommittedFiles = 0; numCommittedFiles < 10; numCommittedFiles++) {
-            while (barrier.get() < numCommittedFiles * 2) {
-              try {
-                Thread.sleep(10);
-              } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-              }
-            }
-
+            final int currentFilesCount = numCommittedFiles;
+            Awaitility.await()
+                .pollInterval(Duration.ofMillis(10))
+                .atMost(Duration.ofSeconds(10))
+                .until(() -> barrier.get() >= currentFilesCount * threadsCount);
             icebergTable.newFastAppend().appendFile(file).commit();
             barrier.incrementAndGet();
           }

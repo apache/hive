@@ -51,6 +51,12 @@
   </property>
   -->
 
+  <!-- HIVE-28031: Adapt some cli driver tests to Tez where it's applicable -->
+  <property>
+    <name>hive.execution.engine</name>
+    <value>mr</value>
+  </property>
+
   <property>
     <name>hive.exec.scratchdir</name>
     <value>${test.tmp.dir}/scratchdir</value>

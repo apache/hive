@@ -33,6 +33,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  GetCatalogsResponse get_catalogs()')
     print('  void drop_catalog(DropCatalogRequest catName)')
     print('  void create_database(Database database)')
+    print('  void create_database_req(CreateDatabaseRequest createDatabaseRequest)')
     print('  Database get_database(string name)')
     print('  Database get_database_req(GetDatabaseRequest request)')
     print('  void drop_database(string name, bool deleteData, bool cascade)')
@@ -40,11 +41,12 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('   get_databases(string pattern)')
     print('   get_all_databases()')
     print('  void alter_database(string dbname, Database db)')
-    print('  void create_dataconnector(DataConnector connector)')
+    print('  void alter_database_req(AlterDatabaseRequest alterDbReq)')
+    print('  void create_dataconnector_req(CreateDataConnectorRequest connectorReq)')
     print('  DataConnector get_dataconnector_req(GetDataConnectorRequest request)')
-    print('  void drop_dataconnector(string name, bool ifNotExists, bool checkReferences)')
+    print('  void drop_dataconnector_req(DropDataConnectorRequest dropDcReq)')
     print('   get_dataconnectors()')
-    print('  void alter_dataconnector(string name, DataConnector connector)')
+    print('  void alter_dataconnector_req(AlterDataConnectorRequest alterReq)')
     print('  Type get_type(string name)')
     print('  bool create_type(Type type)')
     print('  bool drop_type(string type)')
@@ -69,6 +71,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  Table translate_table_dryrun(CreateTableRequest request)')
     print('  void drop_table(string dbname, string name, bool deleteData)')
     print('  void drop_table_with_environment_context(string dbname, string name, bool deleteData, EnvironmentContext environment_context)')
+    print('  void drop_table_req(DropTableRequest dropTableReq)')
     print('  void truncate_table(string dbName, string tableName,  partNames)')
     print('  TruncateTableResponse truncate_table_req(TruncateTableRequest req)')
     print('   get_tables(string db_name, string pattern)')
@@ -77,8 +80,6 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('   get_materialized_views_for_rewriting(string db_name)')
     print('   get_table_meta(string db_patterns, string tbl_patterns,  tbl_types)')
     print('   get_all_tables(string db_name)')
-    print('  Table get_table(string dbname, string tbl_name)')
-    print('   get_table_objects_by_name(string dbname,  tbl_names)')
     print('   get_tables_ext(GetTablesExtRequest req)')
     print('  GetTableResult get_table_req(GetTableRequest req)')
     print('  GetTablesResult get_table_objects_by_name_req(GetTablesRequest req)')
@@ -96,10 +97,12 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  Partition append_partition(string db_name, string tbl_name,  part_vals)')
     print('  AddPartitionsResult add_partitions_req(AddPartitionsRequest request)')
     print('  Partition append_partition_with_environment_context(string db_name, string tbl_name,  part_vals, EnvironmentContext environment_context)')
+    print('  Partition append_partition_req(AppendPartitionsRequest appendPartitionsReq)')
     print('  Partition append_partition_by_name(string db_name, string tbl_name, string part_name)')
     print('  Partition append_partition_by_name_with_environment_context(string db_name, string tbl_name, string part_name, EnvironmentContext environment_context)')
     print('  bool drop_partition(string db_name, string tbl_name,  part_vals, bool deleteData)')
     print('  bool drop_partition_with_environment_context(string db_name, string tbl_name,  part_vals, bool deleteData, EnvironmentContext environment_context)')
+    print('  bool drop_partition_req(DropPartitionRequest dropPartitionReq)')
     print('  bool drop_partition_by_name(string db_name, string tbl_name, string part_name, bool deleteData)')
     print('  bool drop_partition_by_name_with_environment_context(string db_name, string tbl_name, string part_name, bool deleteData, EnvironmentContext environment_context)')
     print('  DropPartitionsResult drop_partitions_req(DropPartitionsRequest req)')
@@ -114,6 +117,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('   get_partitions_with_auth(string db_name, string tbl_name, i16 max_parts, string user_name,  group_names)')
     print('   get_partitions_pspec(string db_name, string tbl_name, i32 max_parts)')
     print('   get_partition_names(string db_name, string tbl_name, i16 max_parts)')
+    print('   fetch_partition_names_req(PartitionsRequest partitionReq)')
     print('  PartitionValuesResponse get_partition_values(PartitionValuesRequest request)')
     print('   get_partitions_ps(string db_name, string tbl_name,  part_vals, i16 max_parts)')
     print('   get_partitions_ps_with_auth(string db_name, string tbl_name,  part_vals, i16 max_parts, string user_name,  group_names)')
@@ -446,6 +450,12 @@ elif cmd == 'create_database':
         sys.exit(1)
     pp.pprint(client.create_database(eval(args[0]),))
 
+elif cmd == 'create_database_req':
+    if len(args) != 1:
+        print('create_database_req requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.create_database_req(eval(args[0]),))
+
 elif cmd == 'get_database':
     if len(args) != 1:
         print('get_database requires 1 args')
@@ -488,11 +498,17 @@ elif cmd == 'alter_database':
         sys.exit(1)
     pp.pprint(client.alter_database(args[0], eval(args[1]),))
 
-elif cmd == 'create_dataconnector':
+elif cmd == 'alter_database_req':
     if len(args) != 1:
-        print('create_dataconnector requires 1 args')
+        print('alter_database_req requires 1 args')
         sys.exit(1)
-    pp.pprint(client.create_dataconnector(eval(args[0]),))
+    pp.pprint(client.alter_database_req(eval(args[0]),))
+
+elif cmd == 'create_dataconnector_req':
+    if len(args) != 1:
+        print('create_dataconnector_req requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.create_dataconnector_req(eval(args[0]),))
 
 elif cmd == 'get_dataconnector_req':
     if len(args) != 1:
@@ -500,11 +516,11 @@ elif cmd == 'get_dataconnector_req':
         sys.exit(1)
     pp.pprint(client.get_dataconnector_req(eval(args[0]),))
 
-elif cmd == 'drop_dataconnector':
-    if len(args) != 3:
-        print('drop_dataconnector requires 3 args')
+elif cmd == 'drop_dataconnector_req':
+    if len(args) != 1:
+        print('drop_dataconnector_req requires 1 args')
         sys.exit(1)
-    pp.pprint(client.drop_dataconnector(args[0], eval(args[1]), eval(args[2]),))
+    pp.pprint(client.drop_dataconnector_req(eval(args[0]),))
 
 elif cmd == 'get_dataconnectors':
     if len(args) != 0:
@@ -512,11 +528,11 @@ elif cmd == 'get_dataconnectors':
         sys.exit(1)
     pp.pprint(client.get_dataconnectors())
 
-elif cmd == 'alter_dataconnector':
-    if len(args) != 2:
-        print('alter_dataconnector requires 2 args')
+elif cmd == 'alter_dataconnector_req':
+    if len(args) != 1:
+        print('alter_dataconnector_req requires 1 args')
         sys.exit(1)
-    pp.pprint(client.alter_dataconnector(args[0], eval(args[1]),))
+    pp.pprint(client.alter_dataconnector_req(eval(args[0]),))
 
 elif cmd == 'get_type':
     if len(args) != 1:
@@ -662,6 +678,12 @@ elif cmd == 'drop_table_with_environment_context':
         sys.exit(1)
     pp.pprint(client.drop_table_with_environment_context(args[0], args[1], eval(args[2]), eval(args[3]),))
 
+elif cmd == 'drop_table_req':
+    if len(args) != 1:
+        print('drop_table_req requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.drop_table_req(eval(args[0]),))
+
 elif cmd == 'truncate_table':
     if len(args) != 3:
         print('truncate_table requires 3 args')
@@ -709,18 +731,6 @@ elif cmd == 'get_all_tables':
         print('get_all_tables requires 1 args')
         sys.exit(1)
     pp.pprint(client.get_all_tables(args[0],))
-
-elif cmd == 'get_table':
-    if len(args) != 2:
-        print('get_table requires 2 args')
-        sys.exit(1)
-    pp.pprint(client.get_table(args[0], args[1],))
-
-elif cmd == 'get_table_objects_by_name':
-    if len(args) != 2:
-        print('get_table_objects_by_name requires 2 args')
-        sys.exit(1)
-    pp.pprint(client.get_table_objects_by_name(args[0], eval(args[1]),))
 
 elif cmd == 'get_tables_ext':
     if len(args) != 1:
@@ -824,6 +834,12 @@ elif cmd == 'append_partition_with_environment_context':
         sys.exit(1)
     pp.pprint(client.append_partition_with_environment_context(args[0], args[1], eval(args[2]), eval(args[3]),))
 
+elif cmd == 'append_partition_req':
+    if len(args) != 1:
+        print('append_partition_req requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.append_partition_req(eval(args[0]),))
+
 elif cmd == 'append_partition_by_name':
     if len(args) != 3:
         print('append_partition_by_name requires 3 args')
@@ -847,6 +863,12 @@ elif cmd == 'drop_partition_with_environment_context':
         print('drop_partition_with_environment_context requires 5 args')
         sys.exit(1)
     pp.pprint(client.drop_partition_with_environment_context(args[0], args[1], eval(args[2]), eval(args[3]), eval(args[4]),))
+
+elif cmd == 'drop_partition_req':
+    if len(args) != 1:
+        print('drop_partition_req requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.drop_partition_req(eval(args[0]),))
 
 elif cmd == 'drop_partition_by_name':
     if len(args) != 4:
@@ -931,6 +953,12 @@ elif cmd == 'get_partition_names':
         print('get_partition_names requires 3 args')
         sys.exit(1)
     pp.pprint(client.get_partition_names(args[0], args[1], eval(args[2]),))
+
+elif cmd == 'fetch_partition_names_req':
+    if len(args) != 1:
+        print('fetch_partition_names_req requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.fetch_partition_names_req(eval(args[0]),))
 
 elif cmd == 'get_partition_values':
     if len(args) != 1:

@@ -54,6 +54,8 @@ public abstract class DbTxnManagerEndToEndTestBase {
   protected TxnStore txnHandler;
 
   public DbTxnManagerEndToEndTestBase() {
+    //TODO: HIVE-28029: Make unit tests based on DbTxnManagerEndToEndTestBase run on Tez
+    conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
       "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);

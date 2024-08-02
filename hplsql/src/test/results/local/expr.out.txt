@@ -23,3 +23,7 @@ Ln:16 SET c = 3
 Ln:17 SET c = 2
 Ln:18 PRINT
 2
+Ln:20 PRINT
+Correct
+Ln:21 PRINT
+Correct

@@ -1,7 +1,11 @@
 Ln:1 SELECT
-Ln:1 SELECT branch_code, branch_no, c_no, cd_type
+Ln:1 SELECT branch_code,
+    branch_no,
+    c_no,
+    cd_type
 FROM EMPLOYEE
-    WHERE S_CODE = 'C' AND (branch_no) NOT IN (
+    WHERE S_CODE = 'C'
+        AND (branch_no) NOT IN (
             SELECT branch_code
             FROM DEPARTMENT
             WHERE branch_code = 'ABC'

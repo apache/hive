@@ -1,0 +1,281 @@
+PREHOOK: query: explain cbo
+select * from alltypesorc where 'foo'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from alltypesorc where 'foo'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(ctinyint=[$0], csmallint=[$1], cint=[$2], cbigint=[$3], cfloat=[$4], cdouble=[$5], cstring1=[$6], cstring2=[$7], ctimestamp1=[$8], ctimestamp2=[$9], cboolean1=[$10], cboolean2=[$11])
+  HiveTableScan(table=[[default, alltypesorc]], table:alias=[alltypesorc])
+
+PREHOOK: query: explain cbo
+select * from alltypesorc where 'foo' and 'bar'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from alltypesorc where 'foo' and 'bar'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(ctinyint=[$0], csmallint=[$1], cint=[$2], cbigint=[$3], cfloat=[$4], cdouble=[$5], cstring1=[$6], cstring2=[$7], ctimestamp1=[$8], ctimestamp2=[$9], cboolean1=[$10], cboolean2=[$11])
+  HiveTableScan(table=[[default, alltypesorc]], table:alias=[alltypesorc])
+
+PREHOOK: query: explain cbo
+select * from alltypesorc where 'foo' or 'bar'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from alltypesorc where 'foo' or 'bar'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(ctinyint=[$0], csmallint=[$1], cint=[$2], cbigint=[$3], cfloat=[$4], cdouble=[$5], cstring1=[$6], cstring2=[$7], ctimestamp1=[$8], ctimestamp2=[$9], cboolean1=[$10], cboolean2=[$11])
+  HiveTableScan(table=[[default, alltypesorc]], table:alias=[alltypesorc])
+
+PREHOOK: query: explain cbo
+select * from alltypesorc where 'foo' and cint in (2, 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from alltypesorc where 'foo' and cint in (2, 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(ctinyint=[$0], csmallint=[$1], cint=[$2], cbigint=[$3], cfloat=[$4], cdouble=[$5], cstring1=[$6], cstring2=[$7], ctimestamp1=[$8], ctimestamp2=[$9], cboolean1=[$10], cboolean2=[$11])
+  HiveFilter(condition=[IN($2, 2, 3)])
+    HiveTableScan(table=[[default, alltypesorc]], table:alias=[alltypesorc])
+
+PREHOOK: query: explain cbo 
+select * from alltypesorc where not 'foo'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo 
+select * from alltypesorc where not 'foo'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+CBO PLAN:
+HiveValues(tuples=[[]])
+
+PREHOOK: query: explain cbo
+select * from alltypesorc where 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from alltypesorc where 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(ctinyint=[$0], csmallint=[$1], cint=[$2], cbigint=[$3], cfloat=[$4], cdouble=[$5], cstring1=[$6], cstring2=[$7], ctimestamp1=[$8], ctimestamp2=[$9], cboolean1=[$10], cboolean2=[$11])
+  HiveTableScan(table=[[default, alltypesorc]], table:alias=[alltypesorc])
+
+PREHOOK: query: explain cbo
+select * from alltypesorc where 1 and 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from alltypesorc where 1 and 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(ctinyint=[$0], csmallint=[$1], cint=[$2], cbigint=[$3], cfloat=[$4], cdouble=[$5], cstring1=[$6], cstring2=[$7], ctimestamp1=[$8], ctimestamp2=[$9], cboolean1=[$10], cboolean2=[$11])
+  HiveTableScan(table=[[default, alltypesorc]], table:alias=[alltypesorc])
+
+PREHOOK: query: explain cbo
+select * from alltypesorc where not 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from alltypesorc where not 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+CBO PLAN:
+HiveValues(tuples=[[]])
+
+PREHOOK: query: select count(*) from alltypesorc where 'foo'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from alltypesorc where 'foo'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+12288
+PREHOOK: query: select count(*) from alltypesorc where 'foo'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from alltypesorc where 'foo'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+12288
+PREHOOK: query: select count(*) from alltypesorc where 'true'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from alltypesorc where 'true'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+12288
+PREHOOK: query: select count(*) from alltypesorc where 'true'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from alltypesorc where 'true'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+12288
+PREHOOK: query: select count(*) from alltypesorc where 'false'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from alltypesorc where 'false'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+0
+PREHOOK: query: select count(*) from alltypesorc where 'false'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from alltypesorc where 'false'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+0
+PREHOOK: query: select count(*) from alltypesorc where true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from alltypesorc where true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+12288
+PREHOOK: query: select count(*) from alltypesorc where true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from alltypesorc where true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+12288
+PREHOOK: query: select count(*) from alltypesorc where false
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from alltypesorc where false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+0
+PREHOOK: query: select count(*) from alltypesorc where false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from alltypesorc where false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+0
+PREHOOK: query: select count(*) from alltypesorc where 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from alltypesorc where 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+12288
+PREHOOK: query: select count(*) from alltypesorc where 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from alltypesorc where 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+12288
+PREHOOK: query: select count(*) from alltypesorc where 0
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from alltypesorc where 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+0
+PREHOOK: query: select count(*) from alltypesorc where 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from alltypesorc where 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+0
+PREHOOK: query: select count(*) from alltypesorc where -1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from alltypesorc where -1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+12288
+PREHOOK: query: select count(*) from alltypesorc where -1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from alltypesorc where -1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+12288
+PREHOOK: query: select count(*) from alltypesorc where null
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from alltypesorc where null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+0
+PREHOOK: query: select count(*) from alltypesorc where null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from alltypesorc where null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+0

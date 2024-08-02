@@ -138,10 +138,6 @@
         <value>false</value>
     </property>
     <property>
-        <name>hive.execution.engine</name>
-        <value>tez</value>
-    </property>
-    <property>
         <name>hive.vectorized.execution.mapjoin.minmax.enabled</name>
         <value>true</value>
     </property>
