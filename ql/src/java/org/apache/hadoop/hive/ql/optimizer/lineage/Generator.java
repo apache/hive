@@ -67,14 +67,11 @@ import org.slf4j.LoggerFactory;
 public class Generator extends Transform {
 
   private static final Logger LOG = LoggerFactory.getLogger(Generator.class);
-
-  public static Generator fromConf(HiveConf conf) {
-    return new Generator(createFilterPredicateFromConf(conf));
-  }
-
   private static final String ALL = "ALL";
   private static final String NONE = "NONE";
   private static final Map<HiveOperation, Function<ParseContext, Boolean>> filterMap;
+
+  private final Predicate<ParseContext> statementFilter;
 
   static {
     Map<HiveOperation, Function<ParseContext, Boolean>> map = new EnumMap<>(HiveOperation.class);
@@ -87,6 +84,10 @@ public class Generator extends Transform {
         parseContext -> !(parseContext.getLoadTableWork() == null || parseContext.getLoadTableWork().isEmpty()));
     map.put(HiveOperation.QUERY, parseContext -> parseContext.getQueryProperties().isQuery());
     filterMap = Collections.unmodifiableMap(map);
+  }
+
+  public static Generator fromConf(HiveConf conf) {
+    return new Generator(createFilterPredicateFromConf(conf));
   }
 
   static Predicate<ParseContext> createFilterPredicateFromConf(Configuration conf) {
@@ -120,8 +121,6 @@ public class Generator extends Transform {
     return parseContext ->
         operations.stream().anyMatch(hiveOperation -> filterMap.get(hiveOperation).apply(parseContext));
   }
-
-  private final Predicate<ParseContext> statementFilter;
 
   public Generator(Predicate<ParseContext> statementFilter) {
     this.statementFilter = statementFilter;
