@@ -42,6 +42,7 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePreFilteringRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulesRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.TestRuleBase;
@@ -238,7 +239,7 @@ public class TestCBORuleFiredOnlyOnce extends TestRuleBase {
     }
   }
 
-  public static class DummyNode extends AbstractRelNode {
+  public static class DummyNode extends AbstractRelNode implements HiveRelNode {
 
     protected DummyNode(RelOptCluster cluster, RelTraitSet traits) {
       super(cluster, cluster.traitSet());
