@@ -18,10 +18,7 @@
 
 package org.apache.hive.hplsql;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.io.StringReader;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -31,9 +28,7 @@ import org.junit.Test;
  */
 public class TestHplsqlOffline {
 
-  private final ByteArrayOutputStream out = new ByteArrayOutputStream();
-
-  @Test
+    @Test
   public void testCreateTable() throws Exception {
     run("create_table");
   }
@@ -112,30 +107,16 @@ public class TestHplsqlOffline {
    * Run a test file
    */
   void run(String testFile) throws Exception {
-    System.setOut(new PrintStream(out));
+    TestConsole console = new TestConsole("(Configuration file|Parser tree):.*");
     Exec exec = new Exec();
+    exec.console = console;
+
     String[] args = { "-f", "src/test/queries/offline/" + testFile + ".sql", "-trace", "-offline" };
     exec.run(args);
-    String s = getTestOutput(out.toString()).trim();
+    String s = console.out.toString().trim();
     FileUtils.writeStringToFile(new java.io.File("target/tmp/log/" + testFile + ".out.txt"), s);
     String t = FileUtils.readFileToString(new java.io.File("src/test/results/offline/" + testFile + ".out.txt"), "utf-8").trim();
-    System.setOut(null);
     Assert.assertEquals(t, s);
   }
 
-  /**
-   * Get test output
-   */
-  String getTestOutput(String s) throws Exception {
-    StringBuilder sb = new StringBuilder();
-    BufferedReader reader = new BufferedReader(new StringReader(s));
-    String line = null;
-    while ((line = reader.readLine()) != null) {
-      if (!line.startsWith("log4j:") && !line.contains("INFO Log4j")) {
-        sb.append(line);
-        sb.append("\n");
-      }
-    }
-    return sb.toString();
-  }
 }
