@@ -18,7 +18,6 @@
 
 package org.apache.hive.hplsql;
 
-import java.io.ByteArrayOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
