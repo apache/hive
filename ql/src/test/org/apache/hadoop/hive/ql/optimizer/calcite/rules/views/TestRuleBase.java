@@ -52,6 +52,7 @@ import java.util.Map;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
 
 public class TestRuleBase {
   protected static RelBuilder REL_BUILDER;

@@ -25,7 +25,6 @@ import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
-import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.plan.hep.HepMatchOrder;
 import org.apache.calcite.plan.hep.HepPlanner;
 import org.apache.calcite.plan.hep.HepProgramBuilder;
@@ -83,7 +82,7 @@ public class TestCBORuleFiredOnlyOnce extends TestRuleBase {
     planner.registerMetadataProviders(list);
     RelMetadataProvider chainedProvider = ChainedRelMetadataProvider.of(list);
 
-    final RelNode node = new DummyNode(cluster, cluster.traitSet());
+    final RelNode node = new DummyNode(cluster);
 
     node.getCluster().setMetadataProvider(
         new CachingRelMetadataProvider(chainedProvider, planner));
@@ -202,11 +201,7 @@ public class TestCBORuleFiredOnlyOnce extends TestRuleBase {
 
       // If this operator has been visited already by the rule,
       // we do not need to apply the optimization
-      if (registry != null && registry.hasBeenVisitedBy(this, node)) {
-        return false;
-      }
-
-      return true;
+      return registry == null || !registry.hasBeenVisitedBy(this, node);
     }
 
     @Override
@@ -228,7 +223,7 @@ public class TestCBORuleFiredOnlyOnce extends TestRuleBase {
       }
 
       // We create a new op if it is the first time we fire the rule
-      final RelNode newNode = new DummyNode(node.getCluster(), node.getTraitSet());
+      final RelNode newNode = new DummyNode(node.getCluster());
       // We register it so we do not fire the rule on it again
       if (registry != null) {
         registry.registerVisited(this, newNode);
@@ -241,7 +236,7 @@ public class TestCBORuleFiredOnlyOnce extends TestRuleBase {
 
   public static class DummyNode extends AbstractRelNode implements HiveRelNode {
 
-    protected DummyNode(RelOptCluster cluster, RelTraitSet traits) {
+    protected DummyNode(RelOptCluster cluster) {
       super(cluster, cluster.traitSet());
     }
 
