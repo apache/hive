@@ -1266,10 +1266,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         IcebergSnapshotRefExec.createBranch(icebergTable, createBranchSpec);
         break;
       case CREATE_TAG:
-        Optional.ofNullable(icebergTable.currentSnapshot()).orElseThrow(() -> new UnsupportedOperationException(
-            String.format("Cannot alter %s on iceberg table %s.%s which has no snapshot",
-                alterTableSnapshotRefSpec.getOperationType().getName(), hmsTable.getDbName(),
-                hmsTable.getTableName())));
+        // https://errorprone.info/bugpattern/ReturnValueIgnored
+        if (!Optional.ofNullable(icebergTable.currentSnapshot()).isPresent()) {
+          throw new UnsupportedOperationException(
+                  String.format("Cannot alter %s on iceberg table %s.%s which has no snapshot",
+                          alterTableSnapshotRefSpec.getOperationType().getName(), hmsTable.getDbName(),
+                          hmsTable.getTableName()));
+        }
         AlterTableSnapshotRefSpec.CreateSnapshotRefSpec createTagSpec =
             (AlterTableSnapshotRefSpec.CreateSnapshotRefSpec) alterTableSnapshotRefSpec.getOperationParams();
         IcebergSnapshotRefExec.createTag(icebergTable, createTagSpec);

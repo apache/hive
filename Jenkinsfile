@@ -295,6 +295,7 @@ fi
         stage('init-metastore') {
            withEnv(["dbType=$dbType"]) {
              sh '''#!/bin/bash -e
+             sw java 17 && . /etc/profile.d/java.sh
 set -x
 echo 127.0.0.1 dev_$dbType | sudo tee -a /etc/hosts
 . /etc/profile.d/confs.sh
@@ -403,6 +404,7 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
       }
       stage('Generate javadoc') {
           sh """#!/bin/bash -e
+          sw java 17 && . /etc/profile.d/java.sh
 mvn install javadoc:javadoc javadoc:aggregate -DskipTests -pl '!itests/hive-jmh,!itests/util'
 """
       }
