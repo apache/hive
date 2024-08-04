@@ -34,10 +34,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.hadoop.hive.metastore.SecureServletCaller;
-import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
-import org.apache.iceberg.relocated.com.google.common.io.CharStreams;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
+import org.apache.iceberg.relocated.com.google.common.io.CharStreams;
 import org.apache.iceberg.rest.HMSCatalogAdapter.HTTPMethod;
 import org.apache.iceberg.rest.HMSCatalogAdapter.Route;
 import org.apache.iceberg.rest.responses.ErrorResponse;
@@ -81,7 +81,7 @@ public class HMSCatalogServlet extends HttpServlet {
     }
   }
 
-  protected void doPatch(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+  protected void doPatch(HttpServletRequest request, HttpServletResponse response) throws IOException {
     security.execute(request, response, this::execute);
   }
 

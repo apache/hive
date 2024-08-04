@@ -378,5 +378,4 @@ public abstract class HMSTestBase {
     // no response stream,
     return responseCode;
   }
-
 }

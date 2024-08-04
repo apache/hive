@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.BaseTransaction;
@@ -169,6 +168,7 @@ public class HMSCatalogAdapter implements RESTClient {
 
     /**
      * An exception safe way of getting a route by name.
+     *
      * @param name the route name
      * @return the route instance or null if it could not be found
      */
@@ -248,6 +248,7 @@ public class HMSCatalogAdapter implements RESTClient {
       return responseClass;
     }
   }
+
   /**
    * @param route a route/api-call name
    * @return the metric counter name for the api-call

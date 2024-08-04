@@ -42,12 +42,14 @@ import org.slf4j.LoggerFactory;
 
 
 public class HMSCatalogServer {
+  private static final String CACHE_EXPIRY = "hive.metastore.catalog.cache.expiry";
   /**
    * The metric names prefix.
    */
   static final String HMS_METRIC_PREFIX = "hmscatalog.";
   private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogServer.class);
   private static Reference<Catalog> catalogRef;
+
   static Catalog getLastCatalog() {
     return catalogRef != null ? catalogRef.get() :  null;
   }
@@ -79,7 +81,8 @@ public class HMSCatalogServer {
       properties.put("external-warehouse", cextwarehouse);
     }
     catalog.initialize("hive", properties);
-    return HiveCachingCatalog.wrap(catalog);
+    long expiry = configuration.getLong(CACHE_EXPIRY, 60_000L);
+    return expiry > 0? HiveCachingCatalog.wrap(catalog, expiry) : catalog;
   }
 
   public static HttpServlet createServlet(Configuration configuration, Catalog catalog) throws IOException {

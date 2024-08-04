@@ -223,7 +223,7 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
 
     try {
       Table table = actor.getTable(fromDatabase, fromName);
-      HiveTableOperations.validateTableIsIceberg(table, fullTableName(name, from));
+      HiveOperationsBase.validateTableIsIceberg(table, fullTableName(name, from));
 
       table.setDbName(toDatabase);
       table.setTableName(to.name());

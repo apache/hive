@@ -28,13 +28,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.util.Preconditions;
 import org.apache.hive.iceberg.com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.iceberg.BaseMetastoreTableOperations;
+import org.apache.iceberg.ClientPool;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotSummary;
@@ -79,11 +82,6 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
   static final String NO_LOCK_EXPECTED_KEY = "expected_parameter_key";
   static final String NO_LOCK_EXPECTED_VALUE = "expected_parameter_value";
   private static final long HIVE_TABLE_PROPERTY_MAX_SIZE_DEFAULT = 32672;
-
-
-  private static final String HIVE_ICEBERG_METADATA_REFRESH_MAX_RETRIES =
-      "iceberg.hive.metadata-refresh-max-retries";
-  private static final int HIVE_ICEBERG_METADATA_REFRESH_MAX_RETRIES_DEFAULT = 2;
 
   private static final BiMap<String, String> ICEBERG_TO_HMS_TRANSLATION =
       ImmutableBiMap.of(
@@ -153,7 +151,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
     try {
       Table table = actor.getTable(database, tableName);
       if (table != null) {
-        validateTableIsIceberg(table, fullName);
+        HiveOperationsBase.validateTableIsIceberg(table, fullName);
         metadataLocation = table.getParameters().get(METADATA_LOCATION_PROP);
       } else {
         if (currentMetadataLocation() != null) {
@@ -311,8 +309,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
     LOG.info("Committed to table {} with the new metadata location {}", fullName, newMetadataLocation);
   }
 
-  @VisibleForTesting
-  void persistTable(Table hmsTable, boolean updateHiveTable, String expectedMetadataLocation)
+  public void persistTable(Table hmsTable, boolean updateHiveTable, String expectedMetadataLocation)
       throws TException, InterruptedException {
     if (updateHiveTable) {
       actor.alterTable(
@@ -324,7 +321,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
       actor.createTable(hmsTable);
     }
   }
-  
+
   Table loadHmsTable() throws TException, InterruptedException {
     try {
       return actor.getTable(database, tableName);
@@ -354,7 +351,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
     newTable.getParameters().put("EXTERNAL", "TRUE"); // using the external table type also requires this
     return newTable;
   }
-  
+
   private void setHmsTableParameters(String newMetadataLocation, Table tbl, TableMetadata metadata,
         Set<String> obsoleteProps, boolean hiveEngineEnabled,
         Map<String, String> summary) {
@@ -489,7 +486,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
 
   @Override
   public ClientPool<IMetaStoreClient, TException> metaClients() {
-    return metaClients;
+    return actor instanceof HiveCatalogActor ? ((HiveCatalogActor) actor).clientPool() : null;
   }
 
   private void cleanupMetadataAndUnlock(CommitStatus commitStatus, String metadataLocation,

@@ -163,9 +163,14 @@ public class TestHiveCatalog extends HMSTestBase {
 
   static String currentMetadataLocation(TableOperations ops) {
     if (ops instanceof HiveTableOperations) {
-      return ((HiveTableOperations) ops).currentMetadataLocation();
+      String location = ((HiveTableOperations) ops).currentMetadataLocation();
+      if (location != null) {
+        return location;
+      }
     }
-    return ops.current().metadataFileLocation();
+    String str = ops.metadataFileLocation("?");
+    TableMetadata meta = ops.refresh();
+    return meta.metadataFileLocation();
   }
 
   protected static ImmutableMap meta =
@@ -497,7 +502,7 @@ public class TestHiveCatalog extends HMSTestBase {
 
     assertThatThrownBy(() -> nsCatalog.createNamespace(namespace1))
         .isInstanceOf(AlreadyExistsException.class)
-        .hasMessage("Namespace '" + namespace1 + "' already exists!");
+        .hasMessage("Namespace already exists: nolocation");
 
     String hiveLocalDir = temp.newFolder().toURI().toString();
     // remove the trailing slash of the URI
@@ -1370,9 +1375,9 @@ public class TestHiveCatalog extends HMSTestBase {
     assertThat(t0).isNotNull();
     Table registeringTable = catalog.loadTable(identifier);
     assertThat(registeringTable).isNotNull();
-    catalog.dropTable(identifier, false);
     TableOperations ops = ((HasTableOperations) registeringTable).operations();
     String metadataLocation = currentMetadataLocation(ops);
+    catalog.dropTable(identifier, false);
     Table registeredTable = catalog.registerTable(identifier, metadataLocation);
     assertThat(registeredTable).isNotNull();
     //TestHelpers.assertSerializedAndLoadedMetadata(registeringTable, registeredTable);

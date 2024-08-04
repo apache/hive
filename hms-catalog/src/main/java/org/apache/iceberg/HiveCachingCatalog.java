@@ -24,6 +24,12 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.RemovalCause;
 import com.github.benmanes.caffeine.cache.RemovalListener;
 import com.github.benmanes.caffeine.cache.Ticker;
+import java.time.Duration;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.SupportsNamespaces;
@@ -36,12 +42,6 @@ import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Duration;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
@@ -62,44 +62,30 @@ public class HiveCachingCatalog<CATALOG extends Catalog & SupportsNamespaces> im
   private final CATALOG catalog;
   private final boolean caseSensitive;
 
-  private HiveCachingCatalog(CATALOG catalog, boolean caseSensitive, long expirationIntervalMillis) {
-    this(catalog, caseSensitive, expirationIntervalMillis, Ticker.systemTicker());
-  }
-
   @SuppressWarnings("checkstyle:VisibilityModifier")
-  protected HiveCachingCatalog(
-      CATALOG catalog, boolean caseSensitive, long expirationIntervalMillis, Ticker ticker) {
+  protected HiveCachingCatalog(CATALOG catalog, long expirationIntervalMillis) {
     Preconditions.checkArgument(
         expirationIntervalMillis != 0,
         "When %s is set to 0, the catalog cache should be disabled. This indicates a bug.",
         CatalogProperties.CACHE_EXPIRATION_INTERVAL_MS);
     this.catalog = catalog;
-    this.caseSensitive = caseSensitive;
+    this.caseSensitive = true;
     this.expirationIntervalMillis = expirationIntervalMillis;
-    this.tableCache = createTableCache(ticker);
+    this.tableCache = createTableCache(Ticker.systemTicker());
   }
 
   public CATALOG unwrap() {
     return catalog;
   }
 
-  public static <C extends Catalog & SupportsNamespaces> HiveCachingCatalog<C> wrap(C catalog) {
-    return wrap(catalog, CatalogProperties.CACHE_EXPIRATION_INTERVAL_MS_OFF);
+  public static <C extends Catalog & SupportsNamespaces>
+  HiveCachingCatalog<C> wrap(C catalog, long expirationIntervalMillis) {
+    return new HiveCachingCatalog(catalog, expirationIntervalMillis);
   }
 
-  public static <C extends Catalog & SupportsNamespaces>
-      HiveCachingCatalog<C> wrap(C catalog, long expirationIntervalMillis) {
-    return wrap(catalog, true, expirationIntervalMillis);
-  }
-
-  public static <C extends Catalog & SupportsNamespaces>
-      HiveCachingCatalog<C> wrap(C catalog, boolean caseSensitive, long expirationIntervalMillis) {
-    return new HiveCachingCatalog(catalog, caseSensitive, expirationIntervalMillis);
-  }
 
   private Cache<TableIdentifier, Table> createTableCache(Ticker ticker) {
     Caffeine<Object, Object> cacheBuilder = Caffeine.newBuilder().softValues();
-
     if (expirationIntervalMillis > 0) {
       return cacheBuilder
           .removalListener(new MetadataTableInvalidatingRemovalListener())
@@ -108,16 +94,11 @@ public class HiveCachingCatalog<CATALOG extends Catalog & SupportsNamespaces> im
           .ticker(ticker)
           .build();
     }
-
     return cacheBuilder.build();
   }
 
   private TableIdentifier canonicalizeIdentifier(TableIdentifier tableIdentifier) {
-    if (caseSensitive) {
-      return tableIdentifier;
-    } else {
-      return tableIdentifier.toLowerCase();
-    }
+    return caseSensitive ? tableIdentifier : tableIdentifier.toLowerCase();
   }
 
   @Override
@@ -130,36 +111,29 @@ public class HiveCachingCatalog<CATALOG extends Catalog & SupportsNamespaces> im
     return catalog.listTables(namespace);
   }
 
+  private Table loadTableHive(TableIdentifier ident) {
+    return catalog.loadTable(ident);
+  }
+
   @Override
   public Table loadTable(TableIdentifier ident) {
     TableIdentifier canonicalized = canonicalizeIdentifier(ident);
     Table cached = tableCache.getIfPresent(canonicalized);
     if (cached != null) {
-      // there are cases (create table) where table metadata need to be refreshed to be consumed
-      if (cached instanceof HasTableOperations) {
-        TableOperations ops = ((HasTableOperations) cached).operations();
-        if (ops != null) {
-          ops.refresh();
-        }
-      }
       return cached;
     }
 
     if (MetadataTableUtils.hasMetadataTableName(canonicalized)) {
       TableIdentifier originTableIdentifier =
           TableIdentifier.of(canonicalized.namespace().levels());
-      Table originTable = tableCache.get(originTableIdentifier, catalog::loadTable);
+      Table originTable = tableCache.get(originTableIdentifier, this::loadTableHive);
 
       // share TableOperations instance of origin table for all metadata tables, so that metadata
       // table instances are
       // also refreshed as well when origin table instance is refreshed.
       if (originTable instanceof HasTableOperations) {
         TableOperations ops = ((HasTableOperations) originTable).operations();
-        if (ops != null) {
-          ops.refresh();
-        }
         MetadataTableType type = MetadataTableType.from(canonicalized.name());
-
         Table metadataTable =
             MetadataTableUtils.createMetadataTableInstance(
                 ops, catalog.name(), originTableIdentifier, canonicalized, type);
@@ -167,8 +141,7 @@ public class HiveCachingCatalog<CATALOG extends Catalog & SupportsNamespaces> im
         return metadataTable;
       }
     }
-
-    return tableCache.get(canonicalized, catalog::loadTable);
+    return tableCache.get(canonicalized, this::loadTableHive);
   }
 
   @Override
