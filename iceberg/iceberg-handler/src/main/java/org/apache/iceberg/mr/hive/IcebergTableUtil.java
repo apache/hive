@@ -511,4 +511,19 @@ public class IcebergTableUtil {
 
     return result;
   }
+
+  public static List<String> getPartitionNames(Table icebergTable, Map<String, String> partitionSpec,
+      boolean latestSpecOnly) throws SemanticException {
+    try {
+      return IcebergTableUtil
+          .getPartitionInfo(icebergTable, partitionSpec, true, latestSpecOnly).entrySet().stream()
+          .map(e -> {
+            PartitionData partitionData = e.getKey();
+            int specId = e.getValue();
+            return icebergTable.specs().get(specId).partitionToPath(partitionData);
+          }).collect(Collectors.toList());
+    } catch (IOException e) {
+      throw new SemanticException(String.format("Error while fetching the partitions due to: %s", e));
+    }
+  }
 }

@@ -90,8 +90,8 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
     }
 
     //Will directly initiate compaction if an un-partitioned table/a partition is specified in the request
-    if (desc.getPartitionSpec() != null || (!table.isPartitioned() && !DDLUtils.isIcebergTable(table) ) || 
-        (DDLUtils.isIcebergTable(table) && !table.getStorageHandler().isPartitioned(table))) {
+    if (desc.getPartitionSpec() != null || !(table.isPartitioned() || 
+        (DDLUtils.isIcebergTable(table) && table.getStorageHandler().isPartitioned(table)))) {
       if (desc.getPartitionSpec() != null) {
         Optional<String> partitionName = partitionMap.keySet().stream().findFirst();
         partitionName.ifPresent(compactionRequest::setPartitionname);
@@ -108,8 +108,7 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
       }
       // If Iceberg table had partition evolution, it will create compaction request without partition specification,
       // and it will compact all files from old partition specs, besides compacting partitions of current spec in parallel.
-      if (DDLUtils.isIcebergTable(table) && table.getStorageHandler().isPartitioned(table) &&
-          table.getStorageHandler().hasUndergonePartitionEvolution(table)) {
+      if (DDLUtils.isIcebergTable(table) && table.getStorageHandler().hasUndergonePartitionEvolution(table)) {
         compactionRequest.setPartitionname(null);
         CompactionResponse compactionResponse = txnHandler.compact(compactionRequest);
         parseCompactionResponse(compactionResponse, table, compactionRequest.getPartitionname());

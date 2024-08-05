@@ -1937,7 +1937,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public List<Partition> getPartitions(org.apache.hadoop.hive.ql.metadata.Table table,
       Map<String, String> partitionSpec, boolean latestSpecOnly) throws SemanticException {
-    return getPartitionNames(table, partitionSpec, latestSpecOnly).stream()
+    Table icebergTable = IcebergTableUtil.getTable(conf, table.getTTable());
+    return IcebergTableUtil.getPartitionNames(icebergTable, partitionSpec, latestSpecOnly).stream()
         .map(partName -> {
           Map<String, String> partSpecMap = Maps.newLinkedHashMap();
           Warehouse.makeSpecFromName(partSpecMap, new Path(partName), null);
@@ -1974,22 +1975,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    * @return A list of partition values which satisfies the partition spec provided corresponding to the table.
    * @throws SemanticException Exception raised when there is an issue performing a scan on the partitions table.
    */
-  @Override
   public List<String> getPartitionNames(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
-      Map<String, String> partitionSpec, boolean latestSpecOnly) throws SemanticException {
+      Map<String, String> partitionSpec) throws SemanticException {
     Table icebergTable = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-
-    try {
-      return IcebergTableUtil
-          .getPartitionInfo(icebergTable, partitionSpec, true, latestSpecOnly).entrySet().stream()
-          .map(e -> {
-            PartitionData partitionData = e.getKey();
-            int specId = e.getValue();
-            return icebergTable.specs().get(specId).partitionToPath(partitionData);
-          }).collect(Collectors.toList());
-    } catch (IOException e) {
-      throw new SemanticException(String.format("Error while fetching the partitions due to: %s", e));
-    }
+    return IcebergTableUtil.getPartitionNames(icebergTable, partitionSpec, true);
   }
 
   /**

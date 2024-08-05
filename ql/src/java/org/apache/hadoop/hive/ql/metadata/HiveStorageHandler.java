@@ -786,20 +786,7 @@ public interface HiveStorageHandler extends Configurable {
    */
   default List<String> getPartitionNames(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
       Map<String, String> partitionSpec) throws SemanticException {
-    return getPartitionNames(hmsTable, partitionSpec, true);
-  }
-
-  /**
-   * Returns partitions names that correspond to the provided partition spec.
-   * @param hmsTable {@link org.apache.hadoop.hive.ql.metadata.Table} table metadata stored in Hive Metastore
-   * @param partitionSpec Map of Strings {@link java.util.Map} partition specification
-   * @param latestSpecOnly Tells whether to return partition names for the latest spec only or for past specs too
-   * @return List of partition names
-   */
-  default List<String> getPartitionNames(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
-      Map<String, String> partitionSpec, boolean latestSpecOnly) throws SemanticException {
-    throw new UnsupportedOperationException("Storage handler does not support getting partitions " +
-        "by a partition specification.");
+    throw new UnsupportedOperationException("Storage handler does not support getting partition names");
   }
 
   default ColumnInfo getColumnInfo(org.apache.hadoop.hive.ql.metadata.Table hmsTable, String colName)
