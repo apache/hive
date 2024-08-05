@@ -8106,10 +8106,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     canBeMerged &= !destTableIsFullAcid;
     if (destinationTable != null && destinationTable.getStorageHandler() != null) {
       canBeMerged &= destinationTable.getStorageHandler().supportsMergeFiles();
-      // TODO: Support for merge task for update, delete and merge queries
+      // TODO: Support for merge task for update and merge queries
       //  when storage handler supports it.
+      if (Context.Operation.DELETE.equals(ctx.getOperation()) && !deleting(dest)) {
+        canBeMerged = true;
+      }
       if (Context.Operation.UPDATE.equals(ctx.getOperation())
-              || Context.Operation.DELETE.equals(ctx.getOperation())
               || Context.Operation.MERGE.equals(ctx.getOperation())) {
         canBeMerged = false;
       }

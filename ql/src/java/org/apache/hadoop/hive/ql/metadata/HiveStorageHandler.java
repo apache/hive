@@ -855,4 +855,8 @@ public interface HiveStorageHandler extends Configurable {
     throw new UnsupportedOperationException("Storage handler does not support getting merge input files " +
             "for a table.");
   }
+
+  default void setMergeTaskDeleteProperties(TableDesc tableDesc) {
+    throw new UnsupportedOperationException("Storage handler does not support getting custom delete merge schema.");
+  }
 }

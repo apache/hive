@@ -420,11 +420,13 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
           targetDirs.add(target);
         }
 
-        LoadMultiFilesDesc lmfd = new LoadMultiFilesDesc(toMove,
-            targetDirs, lfd.getIsDfsDir(), lfd.getColumns(), lfd.getColumnTypes());
         mvWork.setLoadFileWork(null);
         mvWork.setLoadTableWork(null);
-        mvWork.setMultiFilesDesc(lmfd);
+        if (!useCustomStorageHandler) {
+          LoadMultiFilesDesc lmfd = new LoadMultiFilesDesc(toMove,
+                  targetDirs, lfd.getIsDfsDir(), lfd.getColumns(), lfd.getColumnTypes());
+          mvWork.setMultiFilesDesc(lmfd);
+        }
       } else {
         resTsks.add(mrTask);
       }

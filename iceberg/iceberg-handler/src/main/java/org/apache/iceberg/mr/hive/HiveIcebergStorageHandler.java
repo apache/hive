@@ -115,6 +115,7 @@ import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.MergeTaskProperties;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.ql.stats.Partish;
@@ -222,7 +223,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public static final String TABLE_DEFAULT_LOCATION = "TABLE_DEFAULT_LOCATION";
 
   private static final List<VirtualColumn> ACID_VIRTUAL_COLS = ImmutableList.of(VirtualColumn.PARTITION_SPEC_ID,
-      VirtualColumn.PARTITION_HASH, VirtualColumn.FILE_PATH, VirtualColumn.ROW_POSITION);
+      VirtualColumn.PARTITION_HASH, VirtualColumn.FILE_PATH, VirtualColumn.ROW_POSITION,
+      VirtualColumn.PARTITION_PROJECTION);
   private static final List<FieldSchema> ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA = ACID_VIRTUAL_COLS.stream()
       .map(v -> new FieldSchema(v.getName(), v.getTypeInfo().getTypeName(), ""))
       .collect(Collectors.toList());
@@ -321,6 +323,16 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       jobConf.set(opKey, tableDesc.getProperties().getProperty(opKey));
       Preconditions.checkArgument(!tableName.contains(TABLE_NAME_SEPARATOR),
           "Can not handle table " + tableName + ". Its name contains '" + TABLE_NAME_SEPARATOR + "'");
+      if (HiveCustomStorageHandlerUtils.getWriteOperation(tableDesc.getProperties()::getProperty, tableName) != null) {
+        HiveCustomStorageHandlerUtils.setWriteOperation(jobConf, tableName,
+            Context.Operation.valueOf(tableDesc.getProperties().getProperty(
+                HiveCustomStorageHandlerUtils.WRITE_OPERATION_CONFIG_PREFIX + tableName)));
+      }
+      boolean isMergeTaskEnabled = Boolean.parseBoolean(tableDesc.getProperty(
+              HiveCustomStorageHandlerUtils.MERGE_TASK_ENABLED + tableName));
+      if (isMergeTaskEnabled) {
+        HiveCustomStorageHandlerUtils.setMergeTaskEnabled(jobConf, tableName, isMergeTaskEnabled);
+      }
       String tables = jobConf.get(InputFormatConfig.OUTPUT_TABLES);
       tables = tables == null ? tableName : tables + TABLE_NAME_SEPARATOR + tableName;
       jobConf.set(InputFormatConfig.OUTPUT_TABLES, tables);
@@ -2111,5 +2123,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public MergeTaskProperties getMergeTaskProperties(Properties properties) {
     return new IcebergMergeTaskProperties(properties);
+  }
+
+  @Override
+  public void setMergeTaskDeleteProperties(TableDesc tableDesc) {
+    tableDesc.setProperty(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName(),
+            Operation.DELETE.name());
+    tableDesc.setProperty(HiveCustomStorageHandlerUtils.WRITE_OPERATION_CONFIG_PREFIX +
+            tableDesc.getTableName(), Operation.DELETE.name());
   }
 }
