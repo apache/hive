@@ -1912,11 +1912,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   private boolean hasUndergonePartitionEvolution(Table table) {
-    // If it is a table which has undergone partition evolution, return true.
+    // The current spec is not necessary the latest which can happen when partition spec was changed to one of
+    // table's past specs.
     return table.currentSnapshot() != null &&
         table.currentSnapshot().allManifests(table.io()).parallelStream()
         .map(ManifestFile::partitionSpecId)
-        .anyMatch(id -> id < table.spec().specId());
+        .anyMatch(id -> id != table.spec().specId());
   }
 
   private boolean isIdentityPartitionTable(org.apache.hadoop.hive.ql.metadata.Table table) {
@@ -1935,13 +1936,19 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public List<Partition> getPartitions(org.apache.hadoop.hive.ql.metadata.Table table,
-      Map<String, String> partitionSpec) throws SemanticException {
-    return getPartitionNames(table, partitionSpec).stream()
+      Map<String, String> partitionSpec, boolean latestSpecOnly) throws SemanticException {
+    Table icebergTable = IcebergTableUtil.getTable(conf, table.getTTable());
+    return IcebergTableUtil.getPartitionNames(icebergTable, partitionSpec, latestSpecOnly).stream()
         .map(partName -> {
           Map<String, String> partSpecMap = Maps.newLinkedHashMap();
           Warehouse.makeSpecFromName(partSpecMap, new Path(partName), null);
           return new DummyPartition(table, partName, partSpecMap);
         }).collect(Collectors.toList());
+  }
+
+  public boolean isPartitioned(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    return table.spec().isPartitioned();
   }
 
   @Override
@@ -1968,21 +1975,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    * @return A list of partition values which satisfies the partition spec provided corresponding to the table.
    * @throws SemanticException Exception raised when there is an issue performing a scan on the partitions table.
    */
-  @Override
   public List<String> getPartitionNames(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
       Map<String, String> partitionSpec) throws SemanticException {
     Table icebergTable = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-
-    try {
-      return IcebergTableUtil
-          .getPartitionInfo(icebergTable, partitionSpec, true).entrySet().stream().map(e -> {
-            PartitionData partitionData = e.getKey();
-            int specId = e.getValue();
-            return icebergTable.specs().get(specId).partitionToPath(partitionData);
-          }).collect(Collectors.toList());
-    } catch (IOException e) {
-      throw new SemanticException(String.format("Error while fetching the partitions due to: %s", e));
-    }
+    return IcebergTableUtil.getPartitionNames(icebergTable, partitionSpec, true);
   }
 
   /**
@@ -2131,5 +2127,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
             Operation.DELETE.name());
     tableDesc.setProperty(HiveCustomStorageHandlerUtils.WRITE_OPERATION_CONFIG_PREFIX +
             tableDesc.getTableName(), Operation.DELETE.name());
+  }
+
+  @Override
+  public boolean hasUndergonePartitionEvolution(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    return hasUndergonePartitionEvolution(table);
   }
 }

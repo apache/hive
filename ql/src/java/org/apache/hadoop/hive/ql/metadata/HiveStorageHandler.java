@@ -778,10 +778,15 @@ public interface HiveStorageHandler extends Configurable {
     throw new UnsupportedOperationException("Storage handler does not support validating eligibility for compaction");
   }
 
+  /**
+   * Returns partitions names for the current table spec that correspond to the provided partition spec.
+   * @param hmsTable {@link org.apache.hadoop.hive.ql.metadata.Table} table metadata stored in Hive Metastore
+   * @param partitionSpec Map of Strings {@link java.util.Map} partition specification
+   * @return List of partition names
+   */
   default List<String> getPartitionNames(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
       Map<String, String> partitionSpec) throws SemanticException {
-    throw new UnsupportedOperationException("Storage handler does not support getting partitions " +
-            "by a partition specification.");
+    throw new UnsupportedOperationException("Storage handler does not support getting partition names");
   }
 
   default ColumnInfo getColumnInfo(org.apache.hadoop.hive.ql.metadata.Table hmsTable, String colName)
@@ -839,7 +844,29 @@ public interface HiveStorageHandler extends Configurable {
    */
   default List<Partition> getPartitions(org.apache.hadoop.hive.ql.metadata.Table table, 
       Map<String, String> partitionSpec) throws SemanticException {
+    return getPartitions(table, partitionSpec, true);
+  }
+
+  /**
+   * Returns a list of partitions based on table and partial partition specification.
+   * @param table {@link org.apache.hadoop.hive.ql.metadata.Table} table metadata stored in Hive Metastore
+   * @param partitionSpec Map of Strings {@link java.util.Map} partition specification
+   * @param latestSpecOnly Specifies if to return only partitions for the latest partition spec
+   * @return List of Partitions {@link org.apache.hadoop.hive.ql.metadata.Partition}
+   * @throws SemanticException {@link org.apache.hadoop.hive.ql.parse.SemanticException}
+   */
+  default List<Partition> getPartitions(org.apache.hadoop.hive.ql.metadata.Table table,
+      Map<String, String> partitionSpec, boolean latestSpecOnly) throws SemanticException {
     throw new UnsupportedOperationException("Storage handler does not support getting partitions for a table.");
+  }
+
+  default boolean isPartitioned(org.apache.hadoop.hive.ql.metadata.Table table) {
+    throw new UnsupportedOperationException("Storage handler does not support checking if table is partitioned.");
+  }
+
+  default boolean hasUndergonePartitionEvolution(org.apache.hadoop.hive.ql.metadata.Table table) {
+    throw new UnsupportedOperationException("Storage handler does not support checking if table " +
+        "undergone partition evolution.");
   }
 
   default boolean supportsMergeFiles() {

@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -604,11 +605,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    */
   private void commitCompaction(Table table, long startTime, FilesForCommit results,
       RewritePolicy rewritePolicy, Integer partitionSpecId, String partitionPath) {
-    if (results.dataFiles().isEmpty()) {
-      LOG.info("Empty compaction commit, took {} ms for table: {}", System.currentTimeMillis() - startTime, table);
-      return;
-    }
-    if (rewritePolicy == RewritePolicy.ALL_PARTITIONS) {
+    if (rewritePolicy == RewritePolicy.FULL_TABLE) {
       // Full table compaction
       Transaction transaction = table.newTransaction();
       DeleteFiles delete = transaction.newDelete();
@@ -621,8 +618,12 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       LOG.debug("Compacted full table with files {}", results);
     } else {
       // Single partition compaction
-      List<DataFile> existingDataFiles = IcebergTableUtil.getDataFiles(table, partitionSpecId, partitionPath);
-      List<DeleteFile> existingDeleteFiles = IcebergTableUtil.getDeleteFiles(table, partitionSpecId, partitionPath);
+      List<DataFile> existingDataFiles =
+          IcebergTableUtil.getDataFiles(table, partitionSpecId, partitionPath,
+              partitionPath == null ? Predicate.isEqual(partitionSpecId).negate() : Predicate.isEqual(partitionSpecId));
+      List<DeleteFile> existingDeleteFiles =
+          IcebergTableUtil.getDeleteFiles(table, partitionSpecId, partitionPath,
+              partitionPath == null ? Predicate.isEqual(partitionSpecId).negate() : Predicate.isEqual(partitionSpecId));
 
       RewriteFiles rewriteFiles = table.newRewrite();
       rewriteFiles.validateFromSnapshot(table.currentSnapshot().snapshotId());

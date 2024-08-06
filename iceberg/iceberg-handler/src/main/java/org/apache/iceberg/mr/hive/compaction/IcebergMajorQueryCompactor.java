@@ -63,20 +63,35 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
 
     HiveConf conf = new HiveConf(context.getConf());
     String partSpec = context.getCompactionInfo().partName;
+    org.apache.hadoop.hive.ql.metadata.Table table = Hive.get(conf).getTable(context.getTable().getDbName(),
+        context.getTable().getTableName());
+    Table icebergTable = IcebergTableUtil.getTable(conf, table.getTTable());
     String compactionQuery;
 
     if (partSpec == null) {
-      HiveConf.setVar(conf, ConfVars.REWRITE_POLICY, RewritePolicy.ALL_PARTITIONS.name());
-      compactionQuery = String.format("insert overwrite table %s select * from %<s", compactTableName);
+      if (!icebergTable.spec().isPartitioned()) {
+        HiveConf.setVar(conf, ConfVars.REWRITE_POLICY, RewritePolicy.FULL_TABLE.name());
+        compactionQuery = String.format("insert overwrite table %s select * from %<s", compactTableName);
+      } else if (icebergTable.specs().size() > 1) {
+        // Compacting partitions of old partition specs on a partitioned table with partition evolution
+        HiveConf.setVar(conf, ConfVars.REWRITE_POLICY, RewritePolicy.PARTITION.name());
+        conf.set(IcebergCompactionService.PARTITION_SPEC_ID, String.valueOf(icebergTable.spec().specId()));
+        // A single filter on a virtual column causes errors during compilation,
+        // added another filter on file_path as a workaround.
+        compactionQuery = String.format("insert overwrite table %1$s select * from %1$s " +
+                "where %2$s != %3$d and %4$s is not null",
+            compactTableName, VirtualColumn.PARTITION_SPEC_ID.getName(), icebergTable.spec().specId(),
+            VirtualColumn.FILE_PATH.getName());
+      } else {
+        // Partitioned table without partition evolution with partition spec as null in the compaction request - this
+        // code branch is not supposed to be reachable
+        throw new HiveException(ErrorMsg.COMPACTION_NO_PARTITION);
+      }
     } else {
-      org.apache.hadoop.hive.ql.metadata.Table table = Hive.get(conf).getTable(context.getTable().getDbName(),
-          context.getTable().getTableName());
       Map<String, String> partSpecMap = new LinkedHashMap<>();
       Warehouse.makeSpecFromName(partSpecMap, new Path(partSpec), null);
-
-      Table icebergTable = IcebergTableUtil.getTable(conf, table.getTTable());
       Map<PartitionData, Integer> partitionInfo = IcebergTableUtil
-          .getPartitionInfo(icebergTable, partSpecMap, false);
+          .getPartitionInfo(icebergTable, partSpecMap, false, false);
       Optional<Integer> specId = partitionInfo.values().stream().findFirst();
 
       if (!specId.isPresent()) {

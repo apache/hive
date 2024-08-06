@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -393,28 +394,47 @@ public class IcebergTableUtil {
     return data;
   }
 
-  public static List<DataFile> getDataFiles(Table table, int specId,
-      String partitionPath) {
+  /**
+   * Returns list of data files filtered by specId and partitionPath as following:
+   *  1. If matchBySpecId is true, then filters files by specId == file's specId, else by specId != file's specId
+   *  2. If partitionPath is not null, then also filters files where partitionPath == file's partition path
+   * @param table the iceberg table
+   * @param specId partition spec id
+   * @param partitionPath partition path
+   * @param matchBySpecId filter that's applied on data files' spec ids
+   */
+  public static List<DataFile> getDataFiles(Table table, int specId, String partitionPath,
+      Predicate<Object> matchBySpecId) {
     CloseableIterable<FileScanTask> fileScanTasks =
         table.newScan().useSnapshot(table.currentSnapshot().snapshotId()).ignoreResiduals().planFiles();
     CloseableIterable<FileScanTask> filteredFileScanTasks =
         CloseableIterable.filter(fileScanTasks, t -> {
           DataFile file = t.asFileScanTask().file();
-          return file.specId() == specId && table.specs()
-              .get(specId).partitionToPath(file.partition()).equals(partitionPath);
+          return matchBySpecId.test(file.specId()) && (partitionPath == null || (partitionPath != null &&
+                  table.specs().get(specId).partitionToPath(file.partition()).equals(partitionPath)));
         });
     return Lists.newArrayList(CloseableIterable.transform(filteredFileScanTasks, t -> t.file()));
   }
 
-  public static List<DeleteFile> getDeleteFiles(Table table, int specId, String partitionPath) {
+  /**
+   * Returns list of delete files filtered by specId and partitionPath as following:
+   *  1. If matchBySpecId is true, then filters files by specId == file's specId, else by specId != file's specId
+   *  2. If partitionPath is not null, then also filters files where partitionPath == file's partition path
+   * @param table the iceberg table
+   * @param specId partition spec id
+   * @param partitionPath partition path
+   * @param matchBySpecId filter that's applied on delete files' spec ids
+   */
+  public static List<DeleteFile> getDeleteFiles(Table table, int specId, String partitionPath,
+      Predicate<Object> matchBySpecId) {
     Table deletesTable =
         MetadataTableUtils.createMetadataTableInstance(table, MetadataTableType.POSITION_DELETES);
     CloseableIterable<ScanTask> deletesScanTasks = deletesTable.newBatchScan().planFiles();
     CloseableIterable<ScanTask> filteredDeletesScanTasks =
         CloseableIterable.filter(deletesScanTasks, t -> {
           DeleteFile file = ((PositionDeletesScanTask) t).file();
-          return file.specId() == specId && table.specs()
-              .get(specId).partitionToPath(file.partition()).equals(partitionPath);
+          return matchBySpecId.test(file.specId()) && (partitionPath == null || (partitionPath != null &&
+              table.specs().get(specId).partitionToPath(file.partition()).equals(partitionPath)));
         });
     return Lists.newArrayList(CloseableIterable.transform(filteredDeletesScanTasks,
         t -> ((PositionDeletesScanTask) t).file()));
@@ -465,7 +485,7 @@ public class IcebergTableUtil {
   }
 
   public static Map<PartitionData, Integer> getPartitionInfo(Table icebergTable, Map<String, String> partSpecMap,
-      boolean allowPartialSpec) throws SemanticException, IOException {
+      boolean allowPartialSpec, boolean latestSpecOnly) throws SemanticException, IOException {
     Expression expression = IcebergTableUtil.generateExpressionFromPartitionSpec(icebergTable, partSpecMap);
     PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
         .createMetadataTableInstance(icebergTable, MetadataTableType.PARTITIONS);
@@ -484,10 +504,26 @@ public class IcebergTableUtil {
                 ResidualEvaluator resEval = ResidualEvaluator.of(icebergTable.specs().get(entry.getValue()),
                     expression, false);
                 return resEval.residualFor(entry.getKey()).isEquivalentTo(Expressions.alwaysTrue()) &&
-                    (entry.getKey().size() == partSpecMap.size() || allowPartialSpec);
+                    (entry.getKey().size() == partSpecMap.size() || allowPartialSpec) &&
+                    (entry.getValue() == icebergTable.spec().specId() || !latestSpecOnly);
               }).forEach(entry -> result.put(entry.getKey(), entry.getValue())));
     }
 
     return result;
+  }
+
+  public static List<String> getPartitionNames(Table icebergTable, Map<String, String> partitionSpec,
+      boolean latestSpecOnly) throws SemanticException {
+    try {
+      return IcebergTableUtil
+          .getPartitionInfo(icebergTable, partitionSpec, true, latestSpecOnly).entrySet().stream()
+          .map(e -> {
+            PartitionData partitionData = e.getKey();
+            int specId = e.getValue();
+            return icebergTable.specs().get(specId).partitionToPath(partitionData);
+          }).collect(Collectors.toList());
+    } catch (IOException e) {
+      throw new SemanticException(String.format("Error while fetching the partitions due to: %s", e));
+    }
   }
 }

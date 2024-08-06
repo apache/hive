@@ -4298,7 +4298,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public List<Partition> getPartitions(Table tbl, Map<String, String> partialPartSpec)
   throws HiveException {
     if (tbl.getStorageHandler() != null && tbl.getStorageHandler().alwaysUnpartitioned()) {
-      return tbl.getStorageHandler().getPartitions(tbl, partialPartSpec);
+      return tbl.getStorageHandler().getPartitions(tbl, partialPartSpec, false);
     } else {
       return getPartitions(tbl, partialPartSpec, (short)-1); 
     }
