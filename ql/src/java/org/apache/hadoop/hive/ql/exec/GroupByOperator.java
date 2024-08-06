@@ -964,7 +964,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
 
     int oldSize = hashAggregations.size();
     int flushSize = (int) (oldSize * hashAggrFlushPercent);
-    LOG.trace("Hash Tbl flush: #hash table = {}", oldSize);
+    LOG.trace("Hash Tbl flush: #hash table = {}, flush size = {}", oldSize, flushSize);
 
     Iterator<Map.Entry<KeyWrapper, AggregationBuffer[]>> iter = hashAggregations
         .entrySet().iterator();
