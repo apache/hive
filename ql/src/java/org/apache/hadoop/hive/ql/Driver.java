@@ -45,13 +45,12 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.formatting.JsonMetaDataFormatter;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
@@ -188,19 +187,17 @@ public class Driver implements IDriver {
       DriverUtils.checkInterrupted(driverState, driverContext, "at acquiring the lock.", null, null);
 
       lockAndRespond();
-
       try {
-        context.getLoadTableOutputMap().entrySet()
-          .stream()
-          .filter(ltEntry -> DDLUtils.isIcebergTable(ltEntry.getValue().getTable()))
-          .forEach(ltEntry -> {
-              TableDesc tableInfo = ltEntry.getKey().getTable();
-              PlanUtils.configureOutputJobPropertiesForStorageHandler(tableInfo);
+        context.getLoadTableOutputMap().forEach(
+          (ltd, we) -> {
+            HiveStorageHandler handler = we.getTable().getStorageHandler();
+            if (handler != null) {
+              handler.validateCurrentSnapshot(ltd.getTable());
+            }
           });
       } catch (ReCompileException ex) {
         compileInternal(context.getCmd(), true);
       }
-
       if (validateTxnList()) {
         // the reason that we set the txn manager for the cxt here is because each query has its own ctx object.
         // The txn mgr is shared across the same instance of Driver, which can run multiple queries.

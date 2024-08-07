@@ -218,7 +218,8 @@ class DriverTxnHandler {
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
 
     if (!driverContext.getTxnManager().isTxnOpen() && driverContext.getTxnManager().supportsAcid() 
-        && driverContext.getPlan().hasAcidResources() 
+        && (driverContext.getPlan().hasAcidResources() 
+          || !HiveConf.getBoolVar(driverContext.getConf(), HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED)) 
         && !SessionState.get().isCompaction()) {
       /* non acid txn managers don't support txns but fwd lock requests to lock managers
          acid txn manager requires all locks to be associated with a txn so if we end up here w/o an open txn
@@ -520,11 +521,11 @@ class DriverTxnHandler {
       if (driverContext.getTxnManager().isImplicitTransactionOpen(context)
           || driverContext.getPlan().getOperation() == HiveOperation.COMMIT) {
         endTransactionAndCleanup(true);
-      } else if (!driverContext.getPlan().hasAcidResources()
-          || driverContext.getPlan().getOperation() == HiveOperation.ROLLBACK) {
+      } else if (driverContext.getPlan().getOperation() == HiveOperation.ROLLBACK) {
         endTransactionAndCleanup(false);
       } else if (!driverContext.getTxnManager().isTxnOpen()
-          && driverContext.getQueryState().getHiveOperation() == HiveOperation.REPLLOAD) {
+          && (driverContext.getQueryState().getHiveOperation() == HiveOperation.REPLLOAD 
+            || !SessionState.get().isCompaction())) {
         // repl load during migration, commits the explicit txn and start some internal txns. Call
         // releaseLocksAndCommitOrRollback to do the clean up.
         endTransactionAndCleanup(false);

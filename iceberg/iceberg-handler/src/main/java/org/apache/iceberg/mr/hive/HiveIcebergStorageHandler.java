@@ -139,6 +139,7 @@ import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.iceberg.BaseMetastoreTableOperations;
+import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataOperations;
 import org.apache.iceberg.ExpireSnapshots;
@@ -147,7 +148,6 @@ import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.FindFiles;
 import org.apache.iceberg.GenericBlobMetadata;
 import org.apache.iceberg.GenericStatisticsFile;
-import org.apache.iceberg.HasTableOperations;
 import org.apache.iceberg.ManifestFile;
 import org.apache.iceberg.MetadataTableType;
 import org.apache.iceberg.MetadataTableUtils;
@@ -179,6 +179,7 @@ import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.expressions.Projections;
 import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.expressions.StrictMetricsEvaluator;
+import org.apache.iceberg.hadoop.ConfigProperties;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.io.CloseableIterable;
@@ -1400,13 +1401,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       schema = table.schema();
       spec = table.spec();
 
-      if (table instanceof HasTableOperations && table.currentSnapshot() != null) {
-        TableMetadata metadata = ((HasTableOperations) table).operations().refresh();
-        if (!metadata.metadataFileLocation().equals(
-            props.getProperty(BaseMetastoreTableOperations.METADATA_LOCATION_PROP))) {
-          throw new ReCompileException("Snapshot is outdated");
-        }
-      }
       // serialize table object into config
       Table serializableTable = SerializableTable.copyOf(table);
       checkAndSkipIoConfigSerialization(configuration, serializableTable);
@@ -1453,6 +1447,24 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     // We need to remove this otherwise the job.xml will be invalid as column comments are separated with '\0' and
     // the serialization utils fail to serialize this character
     map.remove("columns.comments");
+  }
+
+  public void validateCurrentSnapshot(TableDesc tableDesc) {
+    if (conf.getBoolean(ConfigProperties.LOCK_HIVE_ENABLED, TableProperties.HIVE_LOCK_ENABLED_DEFAULT) ||
+        !HiveConf.getBoolVar(conf, ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED)) {
+      return;
+    }
+    Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
+    if (table.currentSnapshot() != null || table instanceof BaseTable) {
+      TableMetadata currentMetadata = ((BaseTable) table).operations().current();
+      if (currentMetadata.propertyAsBoolean(TableProperties.HIVE_LOCK_ENABLED, false)) {
+        return;
+      }
+      TableMetadata newMetadata = ((BaseTable) table).operations().refresh();
+      if (!currentMetadata.uuid().equals(newMetadata.uuid())) {
+        throw new ReCompileException("Current snapshot is outdated");
+      }
+    }
   }
 
   /**
