@@ -124,6 +124,8 @@ select max(num_distincts) from sys.tab_col_stats;
 
 select * from compactions;
 
+select MHL_TXNID,MHL_MIN_OPEN_TXNID from MIN_HISTORY_LEVEL;
+
 use INFORMATION_SCHEMA;
 
 select count(*) from SCHEMATA;
