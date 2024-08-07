@@ -119,8 +119,24 @@ insert into ice_parquet_date_transform_bucket partition (pcol = 'gfhutjkgkd') se
 describe formatted ice_parquet_date_transform_bucket;
 select * from ice_parquet_date_transform_bucket;
 
+create external table ice_parquet_decimal_transform_bucket(
+  pcol decimal(38, 0)
+) partitioned by spec (bucket(16, pcol))
+stored by iceberg;
+
+explain insert into ice_parquet_decimal_transform_bucket values
+('0'),
+('50000000000000000000441610525');
+insert into ice_parquet_decimal_transform_bucket values
+('0'),
+('50000000000000000000441610525');
+
+describe formatted ice_parquet_decimal_transform_bucket;
+select * from ice_parquet_decimal_transform_bucket;
+
 drop table ice_parquet_date_transform_year;
 drop table ice_parquet_date_transform_month;
 drop table ice_parquet_date_transform_day;
 drop table ice_parquet_date_transform_truncate;
 drop table ice_parquet_date_transform_bucket;
+drop table ice_parquet_decimal_transform_bucket;
