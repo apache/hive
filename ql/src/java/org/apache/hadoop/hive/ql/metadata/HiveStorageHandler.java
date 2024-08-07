@@ -683,6 +683,9 @@ public interface HiveStorageHandler extends Configurable {
   default SnapshotContext getCurrentSnapshotContext(org.apache.hadoop.hive.ql.metadata.Table table) {
     return null;
   }
+  
+  default void validateCurrentSnapshot(TableDesc tableDesc) {
+  }
 
   /**
    * Return snapshot metadata of table snapshots which are newer than the specified.
