@@ -402,18 +402,18 @@ public class IcebergTableUtil {
    * @param table the iceberg table
    * @param specId partition spec id
    * @param partitionPath partition path
-   * @param matchBySpecId filter that's applied on data files' spec ids
    */
-  public static List<DataFile> getDataFiles(Table table, Integer specId, String partitionPath,
-      Predicate<Object> matchBySpecId) {
+  public static List<DataFile> getDataFiles(Table table, Integer specId, String partitionPath) {
+    PartitionSpec spec = table.spec().isPartitioned() ? table.specs().get(specId) : table.spec();
+    Predicate<Object> matchByEquality = Predicate.isEqual(specId);
+    Predicate<Object> matchBySpecId = partitionPath != null ? matchByEquality : matchByEquality.negate();
     CloseableIterable<FileScanTask> fileScanTasks =
         table.newScan().useSnapshot(table.currentSnapshot().snapshotId()).ignoreResiduals().planFiles();
     CloseableIterable<FileScanTask> filteredFileScanTasks =
         CloseableIterable.filter(fileScanTasks, t -> {
           DataFile file = t.asFileScanTask().file();
-          return !table.spec().isPartitioned() ||
-              (matchBySpecId.test(file.specId()) && (partitionPath == null || (partitionPath != null &&
-                  table.specs().get(specId).partitionToPath(file.partition()).equals(partitionPath))));
+          return !spec.isPartitioned() || matchBySpecId.test(file.specId()) &&
+              (partitionPath == null || spec.partitionToPath(file.partition()).equals(partitionPath));
         });
     return Lists.newArrayList(CloseableIterable.transform(filteredFileScanTasks, t -> t.file()));
   }
@@ -426,19 +426,19 @@ public class IcebergTableUtil {
    * @param table the iceberg table
    * @param specId partition spec id
    * @param partitionPath partition path
-   * @param matchBySpecId filter that's applied on delete files' spec ids
    */
-  public static List<DeleteFile> getDeleteFiles(Table table, Integer specId, String partitionPath,
-      Predicate<Object> matchBySpecId) {
+  public static List<DeleteFile> getDeleteFiles(Table table, Integer specId, String partitionPath) {
+    PartitionSpec spec = table.spec().isPartitioned() ? table.specs().get(specId) : table.spec();
+    Predicate<Object> matchByEquality = Predicate.isEqual(specId);
+    Predicate<Object> matchBySpecId = partitionPath != null ? matchByEquality : matchByEquality.negate();
     Table deletesTable =
         MetadataTableUtils.createMetadataTableInstance(table, MetadataTableType.POSITION_DELETES);
     CloseableIterable<ScanTask> deletesScanTasks = deletesTable.newBatchScan().planFiles();
     CloseableIterable<ScanTask> filteredDeletesScanTasks =
         CloseableIterable.filter(deletesScanTasks, t -> {
           DeleteFile file = ((PositionDeletesScanTask) t).file();
-          return !table.spec().isPartitioned() ||
-              (matchBySpecId.test(file.specId()) && (partitionPath == null || (partitionPath != null &&
-                  table.specs().get(specId).partitionToPath(file.partition()).equals(partitionPath))));
+          return !spec.isPartitioned() || matchBySpecId.test(file.specId()) &&
+              (partitionPath == null || spec.partitionToPath(file.partition()).equals(partitionPath));
         });
     return Lists.newArrayList(CloseableIterable.transform(filteredDeletesScanTasks,
         t -> ((PositionDeletesScanTask) t).file()));

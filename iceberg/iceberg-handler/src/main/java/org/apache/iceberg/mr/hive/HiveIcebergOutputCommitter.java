@@ -35,7 +35,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -603,15 +602,11 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    */
   private void commitCompaction(Table table, long startTime, FilesForCommit results, Integer partitionSpecId,
       String partitionPath) {
-    List<DataFile> existingDataFiles =
-        IcebergTableUtil.getDataFiles(table, partitionSpecId, partitionPath,
-            partitionPath == null ? Predicate.isEqual(partitionSpecId).negate() : Predicate.isEqual(partitionSpecId));
-    List<DeleteFile> existingDeleteFiles =
-        IcebergTableUtil.getDeleteFiles(table, partitionSpecId, partitionPath,
-            partitionPath == null ? Predicate.isEqual(partitionSpecId).negate() : Predicate.isEqual(partitionSpecId));
+    List<DataFile> existingDataFiles = IcebergTableUtil.getDataFiles(table, partitionSpecId, partitionPath);
+    List<DeleteFile> existingDeleteFiles = IcebergTableUtil.getDeleteFiles(table, partitionSpecId, partitionPath);
 
     RewriteFiles rewriteFiles = table.newRewrite();
-    rewriteFiles.validateFromSnapshot(table.currentSnapshot().snapshotId());
+    rewriteFiles.validateFromSnapshot(getSnapshotId(table, null));
 
     existingDataFiles.forEach(rewriteFiles::deleteFile);
     existingDeleteFiles.forEach(rewriteFiles::deleteFile);
