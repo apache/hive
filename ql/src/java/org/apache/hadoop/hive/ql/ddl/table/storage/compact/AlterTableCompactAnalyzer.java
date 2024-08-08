@@ -92,7 +92,7 @@ public class AlterTableCompactAnalyzer extends AbstractAlterTableAnalyzer {
   }
   
   @Override
-  public boolean hasAcidResources() {
+  public boolean isRequiresOpenTransaction() {
     return false; // doesn't need an open txn
   }
 }

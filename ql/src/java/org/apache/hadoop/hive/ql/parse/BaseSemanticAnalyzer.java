@@ -1571,12 +1571,12 @@ public abstract class BaseSemanticAnalyzer {
     return acidFileSinks;
   }
 
-  public boolean hasAcidReadWrite() {
+  public boolean hasTransactionalInQuery() {
     return transactionalInQuery;
   }
 
-  public boolean hasAcidResources() {
-    return hasAcidReadWrite() || getAcidDdlDesc() != null ||
+  public boolean isRequiresOpenTransaction() {
+    return hasTransactionalInQuery() || getAcidDdlDesc() != null ||
       Stream.of(getInputs(), getOutputs()).flatMap(Collection::stream)
         .filter(entity -> entity.getType() == Entity.Type.TABLE || entity.getType() == Entity.Type.PARTITION)
         .flatMap(entity -> {

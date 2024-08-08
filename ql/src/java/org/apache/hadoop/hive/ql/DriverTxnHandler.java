@@ -218,7 +218,7 @@ class DriverTxnHandler {
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
 
     if (!driverContext.getTxnManager().isTxnOpen() && driverContext.getTxnManager().supportsAcid() 
-        && (driverContext.getPlan().hasAcidResources() 
+        && (driverContext.getPlan().isRequiresOpenTransaction() 
           || !HiveConf.getBoolVar(driverContext.getConf(), HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED)) 
         && !SessionState.get().isCompaction()) {
       /* non acid txn managers don't support txns but fwd lock requests to lock managers
@@ -237,7 +237,7 @@ class DriverTxnHandler {
       if (!SessionState.get().isCompaction()) {
         acquireLocksInternal();
       }
-      if (driverContext.getPlan().hasAcidReadWrite() || hasAcidDdl) {
+      if (driverContext.getPlan().hasAcidResourcesInQuery() || hasAcidDdl) {
         recordValidWriteIds();
       }
     } catch (Exception e) {

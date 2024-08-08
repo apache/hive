@@ -219,7 +219,7 @@ public class Executor {
     if (driverContext.getCacheUsage().getStatus() == CacheUsage.CacheStatus.CAN_CACHE_QUERY_RESULTS &&
         driverContext.getPlan().getFetchTask() != null) {
       ValidTxnWriteIdList txnWriteIdList = null;
-      if (driverContext.getPlan().hasAcidReadWrite()) {
+      if (driverContext.getPlan().hasAcidResourcesInQuery()) {
         txnWriteIdList = AcidUtils.getValidTxnWriteIdList(driverContext.getConf());
       }
       // The results of this query execution might be cacheable.
