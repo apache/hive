@@ -19,9 +19,11 @@ package org.apache.hive.jdbc;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.withSettings;
 
 import java.sql.SQLException;
 
@@ -47,7 +49,6 @@ import java.io.ByteArrayInputStream;
 
 public class TestHivePreparedStatement {
 
-  @Mock
   private HiveConnection connection;
   @Mock
   private Iface client;
@@ -65,6 +66,7 @@ public class TestHivePreparedStatement {
 
   @Before
   public void before() throws Exception {
+    connection = mock(HiveConnection.class, withSettings().useConstructor());
     MockitoAnnotations.initMocks(this);
     when(tExecStatementResp.getStatus()).thenReturn(tStatusSuccess);
     when(tExecStatementResp.getOperationHandle()).thenReturn(tOperationHandle);
