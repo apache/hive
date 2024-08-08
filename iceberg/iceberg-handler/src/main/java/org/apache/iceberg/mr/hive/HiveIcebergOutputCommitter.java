@@ -888,7 +888,6 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
                 LOG.info("Cleaning job for jobID: {}, table: {}", jobContext.getJobID(), output);
 
                 Table table = output.getKey();
-                FileSystem fileSystem = new Path(table.location()).getFileSystem(jobConf);
                 String jobLocation = generateJobLocation(table.location(), jobConf, jobContext.getJobID());
                 // list jobLocation to get number of forCommit files
                 // we do this because map/reduce num in jobConf is unreliable

@@ -1461,7 +1461,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         return;
       }
       TableMetadata newMetadata = ((BaseTable) table).operations().refresh();
-      if (!currentMetadata.uuid().equals(newMetadata.uuid())) {
+      if (!Objects.equals(newMetadata.metadataFileLocation(), currentMetadata.metadataFileLocation())) {
         throw new ReCompileException("Current snapshot is outdated");
       }
     }

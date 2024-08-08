@@ -275,7 +275,6 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
         required(2, "p", Types.IntegerType.get())
     );
     PartitionSpec spec = PartitionSpec.builderFor(schema).truncate("i", 10).build();
-    shell.getHiveConf().setBoolean(ConfigProperties.LOCK_HIVE_ENABLED, false);
 
     try (MockedStatic<HiveTableOperations> tableOps = mockStatic(HiveTableOperations.class, CALLS_REAL_METHODS)) {
       tableOps.when(() -> method.invoke(null, anyMap(), eq(true)))
