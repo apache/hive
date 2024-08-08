@@ -27,6 +27,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.MD5Hash;
+import org.apache.hadoop.util.SuppressFBWarnings;
 
 /****************************************************************
  * A Proxy for LocalFileSystem
@@ -119,6 +120,7 @@ public class ProxyLocalFileSystem extends FilterFileSystem {
     private MD5Hash md5;
     private String algorithmName;
 
+    @SuppressFBWarnings(value="EI_EXPOSE_REP2", justification = "intended_to_do")
     public PFileChecksum(MD5Hash md5, String algorithmName) {
       this.md5 = md5;
       this.algorithmName = algorithmName;

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore.partition.spec;
 
+import org.apache.hadoop.hive.common.util.SuppressFBWarnings;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
@@ -38,6 +39,7 @@ public class PartitionSpecWithSharedSDProxy extends PartitionSpecProxy {
 
   private PartitionSpec partitionSpec;
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
   public PartitionSpecWithSharedSDProxy(PartitionSpec partitionSpec) throws MetaException {
     assert partitionSpec.isSetSharedSDPartitionSpec();
     if (partitionSpec.getSharedSDPartitionSpec().getSd() == null) {

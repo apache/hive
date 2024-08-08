@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<!--**********************************************************************
+Copyright (c) 2006 Erik Bengtson and others. All rights reserved.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Contributors:
+2006 Andy Jefferson - added enhancer extension point
+2006 Andy Jefferson - added datasource extension point
+2006 Andy Jefferson - added L2 cache, value generators, etc
+2008 Andy Jefferson - added SQL Expressions, SQL Methods, SQL Operations, SQL TableNamer
+2009 Andy Jefferson - added RDBMS Request plugins
+    ...
+**********************************************************************-->
+<plugin id="org.datanucleus.store.rdbms" provider-name="DataNucleus">
+    <extension-point id="datastoreadapter" name="Datastore Adapter" schema="schema/datastoreadapter.exsd"/>
+    <extension-point id="connectionpool" name="ConnectionPool" schema="schema/connectionpool.exsd"/>
+    <extension-point id="sql_expression" name="SQL Expressions" schema="schema/sql_expression.exsd"/>
+    <extension-point id="sql_method" name="SQL Methods" schema="schema/sql_method.exsd"/>
+    <extension-point id="sql_operation" name="SQL Expressions" schema="schema/sql_operation.exsd"/>
+    <extension-point id="sql_tablenamer" name="SQL Table Namer" schema="schema/sql_tablenamer.exsd"/>
+    <extension-point id="java_mapping" name="Types Mapping" schema="schema/java_mapping.exsd"/>
+    <extension-point id="column_mapping" name="Datastore Mapping" schema="schema/column_mapping.exsd"/>
+    <extension-point id="identifierfactory" name="Identifier Factory" schema="schema/identifierfactory.exsd"/>
+
+    <!-- STORE MANAGER -->
+    <extension point="org.datanucleus.store_manager">
+        <store-manager class-name="org.datanucleus.store.rdbms.RDBMSStoreManager" url-key="jdbc" key="rdbms"/>
+    </extension>
+
+    <!-- AUTOSTART MECHANISMS -->
+    <extension point="org.datanucleus.autostart">
+        <autostart class-name="org.datanucleus.store.rdbms.autostart.SchemaAutoStarter" name="SchemaTable"/>
+    </extension>
+
+    <!-- CONNECTION FACTORY -->
+    <extension point="org.datanucleus.store_connectionfactory">
+        <connectionfactory name="rdbms/tx" class-name="org.datanucleus.store.rdbms.ConnectionFactoryImpl" transactional="true" datastore="rdbms"/>
+        <connectionfactory name="rdbms/nontx" class-name="org.datanucleus.store.rdbms.ConnectionFactoryImpl" transactional="false" datastore="rdbms"/>
+    </extension>
+
+    <!-- PERSISTENCE PROPERTIES -->
+    <extension point="org.datanucleus.persistence_properties">
+        <persistence-property name="datanucleus.rdbms.useLegacyNativeValueStrategy" datastore="true" value="false" validator="org.datanucleus.properties.BooleanPropertyValidator"/>
+        <persistence-property name="datanucleus.rdbms.dynamicSchemaUpdates" datastore="true" value="false" validator="org.datanucleus.properties.BooleanPropertyValidator"/>
+        <persistence-property name="datanucleus.rdbms.tableColumnOrder" datastore="true" value="owner-first"/>
+
+        <persistence-property name="datanucleus.rdbms.query.fetchDirection" datastore="true" value="forward" validator="org.datanucleus.store.rdbms.RDBMSPropertyValidator"/>
+        <persistence-property name="datanucleus.rdbms.query.resultSetType" datastore="true" value="forward-only" validator="org.datanucleus.store.rdbms.RDBMSPropertyValidator"/>
+        <persistence-property name="datanucleus.rdbms.query.resultSetConcurrency" datastore="true" value="read-only" validator="org.datanucleus.store.rdbms.RDBMSPropertyValidator"/>
+        <persistence-property name="datanucleus.rdbms.query.multivaluedFetch" datastore="true" value="exists" validator="org.datanucleus.store.rdbms.RDBMSPropertyValidator"/>
+
+        <persistence-property name="datanucleus.rdbms.classAdditionMaxRetries" datastore="true" value="3" validator="org.datanucleus.properties.IntegerPropertyValidator"/>
+        <persistence-property name="datanucleus.rdbms.statementBatchLimit" datastore="true" value="50" validator="org.datanucleus.properties.IntegerPropertyValidator"/>
+        <persistence-property name="datanucleus.rdbms.discriminatorPerSubclassTable" datastore="true" value="false" validator="org.datanucleus.properties.BooleanPropertyValidator"/>
+        <persistence-property name="datanucleus.rdbms.constraintCreateMode" datastore="true" value="DataNucleus" validator="org.datanucleus.store.rdbms.RDBMSPropertyValidator"/>
+        <persistence-property name="datanucleus.rdbms.uniqueConstraints.mapInverse" datastore="true" value="true" validator="org.datanucleus.properties.BooleanPropertyValidator"/>
+        <persistence-property name="datanucleus.rdbms.initializeColumnInfo" datastore="true" value="ALL" validator="org.datanucleus.store.rdbms.RDBMSPropertyValidator"/>
+        <persistence-property name="datanucleus.rdbms.useDefaultSqlType" datastore="true" value="true" validator="org.datanucleus.properties.BooleanPropertyValidator"/>
+        <persistence-property name="datanucleus.rdbms.stringDefaultLength" datastore="true" value="255" validator="org.datanucleus.properties.IntegerPropertyValidator"/>
+        <persistence-property name="datanucleus.rdbms.stringLengthExceededAction" datastore="true" value="EXCEPTION" validator="org.datanucleus.store.rdbms.RDBMSPropertyValidator"/>
+        <persistence-property name="datanucleus.rdbms.persistEmptyStringAsNull" datastore="true" value="false" validator="org.datanucleus.properties.BooleanPropertyValidator"/>
+        <persistence-property name="datanucleus.rdbms.checkExistTablesOrViews" datastore="true" value="true" validator="org.datanucleus.properties.BooleanPropertyValidator"/>
+        <persistence-property name="datanucleus.rdbms.schemaTable.tableName" datastore="true"/>
+
+        <persistence-property name="datanucleus.rdbms.datastoreAdapterClassName" datastore="true"/>
+        <persistence-property name="datanucleus.rdbms.omitDatabaseMetaDataGetColumns" datastore="true" value="false" validator="org.datanucleus.properties.BooleanPropertyValidator"/>
+        <persistence-property name="datanucleus.rdbms.omitValueGenerationGetColumns" datastore="true" value="false" validator="org.datanucleus.properties.BooleanPropertyValidator"/>
+        <persistence-property name="datanucleus.rdbms.refreshAllTablesOnRefreshColumns" datastore="true" value="false" validator="org.datanucleus.properties.BooleanPropertyValidator"/>
+        <persistence-property name="datanucleus.rdbms.sqlTableNamingStrategy" datastore="true" value="alpha-scheme"/>
+        <persistence-property name="datanucleus.rdbms.allowColumnReuse" datastore="true" value="false"/>
+        <persistence-property name="datanucleus.rdbms.useColumnDefaultWhenNull" datastore="true" value="true"/>
+        
+        <persistence-property name="datanucleus.rdbms.cloneCalendarForDateTimezone" datastore="true" value="false" validator="org.datanucleus.properties.BooleanPropertyValidator"/>
+
+        <persistence-property name="datanucleus.rdbms.statementLogging" datastore="true" value="JDBC" validator="org.datanucleus.store.rdbms.RDBMSPropertyValidator"/>
+        <persistence-property name="datanucleus.rdbms.autoFetchUnloadedBasicFields" datastore="true" value="false" validator="org.datanucleus.properties.BooleanPropertyValidator"/>
+        <persistence-property name="datanucleus.rdbms.autoFetchUnloadedFKs" datastore="true" value="false" validator="org.datanucleus.properties.BooleanPropertyValidator"/>
+
+        <!-- Adapter specific properties -->
+        <persistence-property name="datanucleus.rdbms.informix.useSerialForIdentity" datastore="true" validator="org.datanucleus.properties.BooleanPropertyValidator"/>
+        <persistence-property name="datanucleus.rdbms.oracle.nlsSortOrder" datastore="true" value="LATIN"/>
+        <persistence-property name="datanucleus.rdbms.mysql.engineType" datastore="true"/>
+        <persistence-property name="datanucleus.rdbms.mysql.collation" datastore="true"/>
+        <persistence-property name="datanucleus.rdbms.mysql.characterSet" datastore="true"/>
+
+        <!-- TODO Rename these to "datanucleus.rdbms.connectionPool.*" or move to "core" -->
+        <persistence-property name="datanucleus.connectionPool.maxStatements" datastore="true" value="0" validator="org.datanucleus.properties.IntegerPropertyValidator"/>
+        <persistence-property name="datanucleus.connectionPool.maxPoolSize" datastore="true" validator="org.datanucleus.properties.IntegerPropertyValidator"/>
+        <persistence-property name="datanucleus.connectionPool.minPoolSize" datastore="true" validator="org.datanucleus.properties.IntegerPropertyValidator"/>
+        <persistence-property name="datanucleus.connectionPool.initialPoolSize" datastore="true" validator="org.datanucleus.properties.IntegerPropertyValidator"/>
+        <persistence-property name="datanucleus.connectionPool.maxIdle" datastore="true" validator="org.datanucleus.properties.IntegerPropertyValidator"/>
+        <persistence-property name="datanucleus.connectionPool.minIdle" datastore="true" validator="org.datanucleus.properties.IntegerPropertyValidator"/>
+        <persistence-property name="datanucleus.connectionPool.maxActive" datastore="true" validator="org.datanucleus.properties.IntegerPropertyValidator"/>
+        <persistence-property name="datanucleus.connectionPool.maxWait" datastore="true" validator="org.datanucleus.properties.IntegerPropertyValidator"/>
+        <persistence-property name="datanucleus.connectionPool.testSQL" datastore="true" validator="org.datanucleus.properties.StringPropertyValidator"/>
+        <persistence-property name="datanucleus.connectionPool.timeBetweenEvictionRunsMillis" datastore="true" validator="org.datanucleus.properties.IntegerPropertyValidator"/>
+        <persistence-property name="datanucleus.connectionPool.minEvictableIdleTimeMillis" datastore="true" validator="org.datanucleus.properties.IntegerPropertyValidator"/>
+        <persistence-property name="datanucleus.connectionPool.maxConnections" datastore="true" validator="org.datanucleus.properties.IntegerPropertyValidator"/>
+        <persistence-property name="datanucleus.connectionPool.driverProps"/>
+    </extension>
+
+    <!-- VALUE GENERATORS -->
+    <extension point="org.datanucleus.store_valuegenerator">
+        <valuegenerator name="datastore-uuid-hex" class-name="org.datanucleus.store.rdbms.valuegenerator.DatastoreUUIDHexGenerator" datastore="rdbms"/>
+        <valuegenerator name="increment" class-name="org.datanucleus.store.rdbms.valuegenerator.TableGenerator" datastore="rdbms"/>
+        <valuegenerator name="max" class-name="org.datanucleus.store.rdbms.valuegenerator.MaxGenerator" datastore="rdbms"/>
+        <valuegenerator name="sequence" class-name="org.datanucleus.store.rdbms.valuegenerator.SequenceGenerator" datastore="rdbms"/>
+    </extension>
+
+    <!-- DATASTORE ADAPTERS -->
+    <extension point="org.datanucleus.store.rdbms.datastoreadapter">
+        <datastore-adapter vendor-id="Adaptive Server Anywhere" class-name="org.datanucleus.store.rdbms.adapter.SybaseAdapter" priority="0"/>
+        <datastore-adapter vendor-id="Adaptive Server Enterprise" class-name="org.datanucleus.store.rdbms.adapter.SybaseAdapter" priority="0"/>
+        <datastore-adapter vendor-id="Adaptive Server IQ" class-name="org.datanucleus.store.rdbms.adapter.SybaseAdapter" priority="0"/>
+        <datastore-adapter vendor-id="as/400" class-name="org.datanucleus.store.rdbms.adapter.DB2AS400Adapter" priority="1"/>
+        <datastore-adapter vendor-id="cloudscape" class-name="org.datanucleus.store.rdbms.adapter.DerbyAdapter" priority="0"/>
+        <datastore-adapter vendor-id="db2" class-name="org.datanucleus.store.rdbms.adapter.DB2Adapter" priority="0"/>
+        <datastore-adapter vendor-id="derby" class-name="org.datanucleus.store.rdbms.adapter.DerbyAdapter" priority="0"/>
+        <datastore-adapter vendor-id="firebird" class-name="org.datanucleus.store.rdbms.adapter.FirebirdAdapter" priority="0"/>
+        <datastore-adapter vendor-id="Google Cloud Spanner" class-name="org.datanucleus.store.rdbms.adapter.CloudSpannerAdapter" priority="0"/>
+        <datastore-adapter vendor-id="h2" class-name="org.datanucleus.store.rdbms.adapter.H2Adapter" priority="0"/>
+        <datastore-adapter vendor-id="hsql" class-name="org.datanucleus.store.rdbms.adapter.HSQLAdapter" priority="0"/>
+        <datastore-adapter vendor-id="informix" class-name="org.datanucleus.store.rdbms.adapter.InformixAdapter" priority="0"/>
+        <datastore-adapter vendor-id="interbase" class-name="org.datanucleus.store.rdbms.adapter.FirebirdAdapter" priority="0"/>
+        <datastore-adapter vendor-id="mariadb" class-name="org.datanucleus.store.rdbms.adapter.MySQLAdapter" priority="0"/>
+        <datastore-adapter vendor-id="microsoft" class-name="org.datanucleus.store.rdbms.adapter.SQLServerAdapter" priority="0"/>
+        <datastore-adapter vendor-id="mysql" class-name="org.datanucleus.store.rdbms.adapter.MySQLAdapter" priority="0"/>
+        <datastore-adapter vendor-id="nuodb" class-name="org.datanucleus.store.rdbms.adapter.NuoDBAdapter" priority="0"/>
+        <datastore-adapter vendor-id="oracle" class-name="org.datanucleus.store.rdbms.adapter.OracleAdapter" priority="0"/>
+        <datastore-adapter vendor-id="pointbase" class-name="org.datanucleus.store.rdbms.adapter.PointbaseAdapter" priority="0"/>
+        <datastore-adapter vendor-id="postgresql" class-name="org.datanucleus.store.rdbms.adapter.PostgreSQLAdapter" priority="0"/>
+        <datastore-adapter vendor-id="sap db" class-name="org.datanucleus.store.rdbms.adapter.SAPDBAdapter" priority="0"/>
+        <datastore-adapter vendor-id="sapdb" class-name="org.datanucleus.store.rdbms.adapter.SAPDBAdapter" priority="0"/>
+        <datastore-adapter vendor-id="sqlanywhere" class-name="org.datanucleus.store.rdbms.adapter.SQLAnywhereAdapter" priority="0"/>
+        <datastore-adapter vendor-id="sqlite" class-name="org.datanucleus.store.rdbms.adapter.SQLiteAdapter" priority="0"/>
+        <datastore-adapter vendor-id="sybase" class-name="org.datanucleus.store.rdbms.adapter.SybaseAdapter" priority="0"/>
+        <datastore-adapter vendor-id="timesten" class-name="org.datanucleus.store.rdbms.adapter.TimesTenAdapter" priority="0"/>
+        <datastore-adapter vendor-id="virtuoso" class-name="org.datanucleus.store.rdbms.adapter.VirtuosoAdapter" priority="0"/>
+    </extension>
+</plugin>

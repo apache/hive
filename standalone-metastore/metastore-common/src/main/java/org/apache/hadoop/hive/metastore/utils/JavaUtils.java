@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.utils;
 
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,6 +97,7 @@ public class JavaUtils {
    * @param <T> the type of the class to be returned
    * @return an object of the requested type
    */
+  @SuppressFBWarnings(value = "REFLC_REFLECTION_MAY_INCREASE_ACCESSIBILITY_OF_CLASS", justification = "intended_to_do")
   public static <T> T newInstance(Class<T> theClass) {
     try {
       return theClass.newInstance();
