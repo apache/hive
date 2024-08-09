@@ -1517,7 +1517,7 @@ TBLPROPERTIES (
 "hive.sql.query" =
 "SELECT
     \"MHL_TXNID\",
-    \"MHL_MIN_OPEN_TXNID\",
+    \"MHL_MIN_OPEN_TXNID\"
 FROM \"MIN_HISTORY_LEVEL\""
 );
 

@@ -1643,6 +1643,14 @@ POSTHOOK: Input: sys@completed_compactions
 #### A masked pattern was here ####
 1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.1.0-SNAPSHOT	NULL	default	NULL	NULL
 2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.1.0-SNAPSHOT	NULL	default	NULL	NULL
+PREHOOK: query: select MHL_TXNID,MHL_MIN_OPEN_TXNID from MIN_HISTORY_LEVEL
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@min_history_level
+#### A masked pattern was here ####
+POSTHOOK: query: select MHL_TXNID,MHL_MIN_OPEN_TXNID from MIN_HISTORY_LEVEL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@min_history_level
+#### A masked pattern was here ####
 PREHOOK: query: use INFORMATION_SCHEMA
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:information_schema
