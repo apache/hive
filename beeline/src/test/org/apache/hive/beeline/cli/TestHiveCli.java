@@ -52,6 +52,19 @@ public class TestHiveCli {
       "create table if not exists test.testSrcTbl3(sc3 string);";
   private final static String SOURCE_CONTEXT4 = "show tables;!ls;show tables;\nquit;";
   private final static String SOURCE_CONTEXT5 = "-- test;\n;show tables;\nquit;";
+  private final static String SOURCE_CONTEXT6 = "   CREATE TABLLLE DUMMY_SS (A INT)\n";
+  private final static String SOURCE_CONTEXT7 = "    CREATE\n\nTABLLE\n (A INT);\n\n";
+  private final static String SOURCE_CONTEXT8 = "show databases; show tables;CREATE TABLLLE DUMMY_MS (A INT);\n";
+  private final static String SOURCE_CONTEXT9 = "--comment\n\nshow databases;\n\nshow tables;\n" +
+          "\n--comment\n\n  CREATE\n\n  TABLEE DUMMY_MM;\n";
+  private final static String SOURCE_CONTEXT10 = "show databases;\n" + "CREATE\n\n  TABLEE DUMMY_MM;\n";
+  private final static String SOURCE_CONTEXT11 = "--comment\n\n--comment\n" +
+          "\nSET hive.server2.logging.operation.enabled=true;\n\nSET hive.server2.logging.operation.level=VERBOSE;" +
+          "\n\nshow tables;" +
+          "      CREATE TABLEE DUMMY;";
+  private final static String SOURCE_CONTEXT12= "DROP DATABASE IF EXISTS tlqe_9 CASCADE;\nCREATE DATABASE tlqe_9;" +
+          "\n USE tlqe_9;\n"+" \n"+"--comment\n"+" \n"+"SHOW DATABASES;\n" + " \n"+"show tables;\n" +" \n" +
+          "--comment\n" + " \n"+ "CREATE" +" \n" + "TABLEE DUMMY_MM;\n";
 
   private final static String CMD = "create database if not exists test;\n" +
       "create table if not exists test.testTbl(a string, b string);\n";
@@ -293,6 +306,58 @@ public class TestHiveCli {
     cli = new HiveCli();
     initFromFile();
     redirectOutputStream();
+  }
+
+  @Test
+  public void testErrorLineNumberSS() {
+    File f = generateTmpFile(SOURCE_CONTEXT6);
+    verifyCMD(null, "ParseException line 1:", err, new String[] { "-f", "\"" + f.getAbsolutePath() + "\"" }, ERRNO_OTHER, true);
+    f.delete();
+  }
+
+//   Tests a single query spread across in multiple lines
+  @Test
+  public void testErrorLineNumberSM() {
+    File f = generateTmpFile(SOURCE_CONTEXT7);
+    verifyCMD(null, "ParseException line 2:", err, new String[] { "-f", "\"" + f.getAbsolutePath() + "\"" }, ERRNO_OTHER, true);
+    f.delete();
+  }
+
+  @Test
+  public void testErrorLineNumber() {
+    File f = generateTmpFile(SOURCE_CONTEXT12);
+    verifyCMD(null, " Error at line 13", err, new String[] { "-f", "\"" + f.getAbsolutePath() + "\"" }, ERRNO_OTHER, true);
+    f.delete();
+  }
+
+  // Tests multiple queries in a single line
+  @Test
+  public void testErrorLineNumberMS() {
+    File f = generateTmpFile(SOURCE_CONTEXT8);
+    verifyCMD(null, "ParseException line 1:", err, new String[] { "-f", "\"" + f.getAbsolutePath() + "\"" }, ERRNO_OTHER, true);
+    f.delete();
+  }
+
+  // Tests multiple queries spread across in multiple lines
+  @Test
+  public void testErrorLineNumberMM() {
+    File f = generateTmpFile(SOURCE_CONTEXT9);
+    verifyCMD(null, "Error at line 9", err, new String[] { "-f", "\"" + f.getAbsolutePath() + "\"" }, ERRNO_OTHER, true);
+    f.delete();
+  }
+
+  @Test
+  public void testErrorLineNumberSJ() {
+    File f = generateTmpFile(SOURCE_CONTEXT10);
+    verifyCMD(null, "Error at line 2", err, new String[] { "-f", "\"" + f.getAbsolutePath() + "\"" }, ERRNO_OTHER, true);
+    f.delete();
+  }
+
+  @Test
+  public void testErrorLineNumberSL() {
+    File f = generateTmpFile(SOURCE_CONTEXT11);
+    verifyCMD(null, "Error at line 9", err, new String[] { "-f", "\"" + f.getAbsolutePath() + "\"" }, ERRNO_OTHER, true);
+    f.delete();
   }
 
   private void redirectOutputStream() {

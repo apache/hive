@@ -934,6 +934,14 @@ public class Commands {
   // Return false only occurred error when execution the sql and the sql should follow the rules
   // of beeline.
   private boolean executeInternal(String sql, boolean call) {
+    return executeInternalHelper(sql, call, 0);
+  }
+
+  private boolean executeInternal(String sql, boolean call, int lineNum) {
+    return executeInternalHelper(sql, call, lineNum);
+  }
+
+  private boolean executeInternalHelper(String sql, boolean call, int lineNum) {
     if (!beeLine.isBeeLine()) {
       sql = cliToBeelineCmd(sql);
     }
@@ -1068,7 +1076,13 @@ public class Commands {
         }
       }
     } catch (Exception e) {
-      return beeLine.error(e);
+      //Appending a correct error message in case an exception is encountered while executing a Hql file to beeline.
+      if(lineNum != 0) {
+        String correctErrorMessage = appendCorrectLineNumberToErrorMessage(e.getMessage(), lineNum);
+        return beeLine.error(new SQLException(correctErrorMessage));
+      } else {
+        return beeLine.error(e);
+      }
     }
     beeLine.showWarnings();
     if (hook != null) {
@@ -1082,6 +1096,18 @@ public class Commands {
       return beeLine.getOpts().isReport();
     }
     return !beeLine.getOpts().isSilent();
+  }
+
+  /**
+   * Append an error message with the correct line number if the error has not occurred in line 1 as defaulted by beeline
+   *@return Correct error message
+   */
+  private String appendCorrectLineNumberToErrorMessage(String message, int lineNum) {
+      if (lineNum != 1) {
+          return String.format("%s\n" + "Please ignore line number 1, marked in the above error message. Error at line %s.",
+                    message, lineNum);
+      }
+      return message;
   }
 
   /*
@@ -1145,6 +1171,10 @@ public class Commands {
     return execute(line, false, entireLineAsCommand);
   }
 
+  public boolean sql(String line, int lineNum, boolean entireLineAsCommand) {
+    return execute(line, lineNum, false, entireLineAsCommand);
+  }
+
   public String substituteVariables(HiveConf conf, String line) {
     if (!beeLine.isBeeLine()) {
       // Substitution is only supported in non-beeline mode.
@@ -1191,6 +1221,15 @@ public class Commands {
   }
 
   private boolean execute(String line, boolean call, boolean entireLineAsCommand) {
+    return executeHelper(line, 0, call, entireLineAsCommand);
+  }
+
+  private boolean execute(String line, int lineNum, boolean call, boolean entireLineAsCommand) {
+    return executeHelper(line, lineNum, call, entireLineAsCommand);
+  }
+
+
+  private boolean executeHelper(String line, int lineNum, boolean call, boolean entireLineAsCommand) {
     if (line == null || line.length() == 0) {
       return false; // ???
     }
@@ -1213,7 +1252,7 @@ public class Commands {
     for (int i = 0; i < cmdList.size(); i++) {
       String sql = cmdList.get(i).trim();
       if (sql.length() != 0) {
-        if (!executeInternal(sql, call)) {
+        if (!executeInternal(sql, call, lineNum)) {
           return false;
         }
       }
