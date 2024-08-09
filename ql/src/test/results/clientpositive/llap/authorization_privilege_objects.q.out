@@ -42,8 +42,8 @@ PREHOOK: query: SHOW TABLES IN test_auth_obj_db
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:test_auth_obj_db
 filterListCmdObjects
-HIVE PRIVILEGE OBJECT { objectName: test_privs type: TABLE_OR_VIEW actionType: OTHER dbName: test_auth_obj_db OWNER: testuser OWNERTYPE: USER}
-HIVE PRIVILEGE OBJECT { objectName: test_privs2 type: TABLE_OR_VIEW actionType: OTHER dbName: test_auth_obj_db OWNER: testuser2 OWNERTYPE: USER}
+HIVE PRIVILEGE OBJECT { objectName: test_privs type: TABLE_OR_VIEW actionType: OTHER dbName: test_auth_obj_db}
+HIVE PRIVILEGE OBJECT { objectName: test_privs2 type: TABLE_OR_VIEW actionType: OTHER dbName: test_auth_obj_db}
 POSTHOOK: query: SHOW TABLES IN test_auth_obj_db
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:test_auth_obj_db
