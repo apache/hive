@@ -888,7 +888,6 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
 
     conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED, true);
     HiveTxnManager txnMgr = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-    txnMgr.openTxn(ctx, "T1");
     driver.compileAndRespond("insert into tab_not_acid partition(np='blah') values(7,8)", true);
     ((DbTxnManager)txnMgr).acquireLocks(driver.getPlan(), ctx, "T1", false);
     List<ShowLocksResponseElement> locks = getLocks(txnMgr);

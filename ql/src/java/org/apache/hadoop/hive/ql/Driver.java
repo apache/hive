@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.formatting.JsonMetaDataFormatter;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
@@ -53,6 +54,7 @@ import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.reexec.ReCompileException;
 import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -184,7 +186,17 @@ public class Driver implements IDriver {
       DriverUtils.checkInterrupted(driverState, driverContext, "at acquiring the lock.", null, null);
 
       lockAndRespond();
-
+      try {
+        context.getLoadTableOutputMap().forEach(
+          (ltd, we) -> {
+            HiveStorageHandler handler = we.getTable().getStorageHandler();
+            if (handler != null) {
+              handler.validateCurrentSnapshot(ltd.getTable());
+            }
+          });
+      } catch (ReCompileException ex) {
+        compileInternal(context.getCmd(), true);
+      }
       if (validateTxnList()) {
         // the reason that we set the txn manager for the cxt here is because each query has its own ctx object.
         // The txn mgr is shared across the same instance of Driver, which can run multiple queries.
@@ -270,7 +282,7 @@ public class Driver implements IDriver {
           driverContext.getConf().unset(ValidTxnList.VALID_TXNS_KEY);
           driverContext.setRetrial(true);
 
-          if (driverContext.getPlan().hasAcidReadWrite()) {
+          if (driverContext.getPlan().hasAcidResourcesInQuery()) {
             compileInternal(context.getCmd(), true);
             driverTxnHandler.recordValidWriteIds();
             driverTxnHandler.setWriteIdForAcidFileSinks();

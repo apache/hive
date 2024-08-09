@@ -114,6 +114,7 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.MergeTaskProperties;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.reexec.ReCompileException;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -166,6 +167,7 @@ import org.apache.iceberg.SortField;
 import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.StatisticsFile;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.TableScan;
 import org.apache.iceberg.actions.DeleteOrphanFiles;
@@ -177,6 +179,7 @@ import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.expressions.Projections;
 import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.expressions.StrictMetricsEvaluator;
+import org.apache.iceberg.hadoop.ConfigProperties;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.io.CloseableIterable;
@@ -645,7 +648,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    */
   @Override
   public LockType getLockType(WriteEntity writeEntity) {
-    return LockType.SHARED_READ;
+    if (WriteEntity.WriteType.INSERT_OVERWRITE == writeEntity.getWriteType()) {
+      return LockType.EXCL_WRITE;
+    }
+    return LockType.SHARED_WRITE;
   }
 
   @Override
@@ -1441,6 +1447,24 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     // We need to remove this otherwise the job.xml will be invalid as column comments are separated with '\0' and
     // the serialization utils fail to serialize this character
     map.remove("columns.comments");
+  }
+
+  public void validateCurrentSnapshot(TableDesc tableDesc) {
+    if (conf.getBoolean(ConfigProperties.LOCK_HIVE_ENABLED, TableProperties.HIVE_LOCK_ENABLED_DEFAULT) ||
+        !HiveConf.getBoolVar(conf, ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED)) {
+      return;
+    }
+    Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
+    if (table.currentSnapshot() != null || table instanceof BaseTable) {
+      TableMetadata currentMetadata = ((BaseTable) table).operations().current();
+      if (currentMetadata.propertyAsBoolean(TableProperties.HIVE_LOCK_ENABLED, false)) {
+        return;
+      }
+      TableMetadata newMetadata = ((BaseTable) table).operations().refresh();
+      if (!currentMetadata.uuid().equals(newMetadata.uuid())) {
+        throw new ReCompileException("Current snapshot is outdated");
+      }
+    }
   }
 
   /**

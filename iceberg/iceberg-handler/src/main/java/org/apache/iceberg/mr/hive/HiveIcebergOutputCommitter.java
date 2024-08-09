@@ -441,13 +441,14 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
 
     Table table = null;
     String branchName = null;
-
+    Long snapshotId = null;
     Expression filterExpr = Expressions.alwaysTrue();
 
     for (JobContext jobContext : outputTable.jobContexts) {
       JobConf conf = jobContext.getJobConf();
       table = Optional.ofNullable(table).orElse(Catalogs.loadTable(conf, catalogProperties));
       branchName = conf.get(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF);
+      snapshotId = getSnapshotId(outputTable.table, branchName);
 
       Expression jobContextFilterExpr = (Expression) SessionStateUtil.getResource(conf, InputFormatConfig.QUERY_FILTERS)
           .orElse(Expressions.alwaysTrue());
@@ -491,7 +492,6 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
             table, outputTable.jobContexts.stream().map(JobContext::getJobID)
                 .map(String::valueOf).collect(Collectors.joining(",")));
       } else {
-        Long snapshotId = getSnapshotId(outputTable.table, branchName);
         commitWrite(table, branchName, snapshotId, startTime, filesForCommit, operation, filterExpr);
       }
     } else {
@@ -513,9 +513,9 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
             .map(x -> x.getJobConf().get(IcebergCompactionService.PARTITION_PATH))
             .orElse(null);
 
-        commitCompaction(table, startTime, filesForCommit, rewritePolicy, partitionSpecId, partitionPath);
+        commitCompaction(table, snapshotId, startTime, filesForCommit, rewritePolicy, partitionSpecId, partitionPath);
       } else {
-        commitOverwrite(table, branchName, startTime, filesForCommit);
+        commitOverwrite(table, branchName, snapshotId, startTime, filesForCommit);
       }
     }
   }
@@ -570,6 +570,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       RowDelta write = table.newRowDelta();
       results.dataFiles().forEach(write::addRows);
       results.deleteFiles().forEach(write::addDeletes);
+
       if (StringUtils.isNotEmpty(branchName)) {
         write.toBranch(HiveUtils.getTableSnapshotRef(branchName));
       }
@@ -603,7 +604,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * @param partitionSpecId   The table spec_id for partition compaction operation
    * @param partitionPath     The path of the compacted partition
    */
-  private void commitCompaction(Table table, long startTime, FilesForCommit results,
+  private void commitCompaction(Table table, Long snapshotId, long startTime, FilesForCommit results,
       RewritePolicy rewritePolicy, Integer partitionSpecId, String partitionPath) {
     if (rewritePolicy == RewritePolicy.FULL_TABLE) {
       // Full table compaction
@@ -613,6 +614,12 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       delete.commit();
       ReplacePartitions overwrite = transaction.newReplacePartitions();
       results.dataFiles().forEach(overwrite::addFile);
+
+      if (snapshotId != null) {
+        overwrite.validateFromSnapshot(snapshotId);
+      }
+      overwrite.validateNoConflictingDeletes();
+      overwrite.validateNoConflictingData();
       overwrite.commit();
       transaction.commitTransaction();
       LOG.debug("Compacted full table with files {}", results);
@@ -626,12 +633,13 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
               partitionPath == null ? Predicate.isEqual(partitionSpecId).negate() : Predicate.isEqual(partitionSpecId));
 
       RewriteFiles rewriteFiles = table.newRewrite();
-      rewriteFiles.validateFromSnapshot(table.currentSnapshot().snapshotId());
-
       existingDataFiles.forEach(rewriteFiles::deleteFile);
       existingDeleteFiles.forEach(rewriteFiles::deleteFile);
       results.dataFiles().forEach(rewriteFiles::addFile);
 
+      if (snapshotId != null) {
+        rewriteFiles.validateFromSnapshot(snapshotId);
+      }
       rewriteFiles.commit();
       LOG.debug("Compacted partition {} with files {}", partitionPath, results);
     }
@@ -641,29 +649,37 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
 
   /**
    * Creates and commits an Iceberg insert overwrite change with the provided data files.
-   * For unpartitioned tables the table content is replaced with the new data files. If not data files are provided
-   * then the unpartitioned table is truncated.
-   * For partitioned tables the relevant partitions are replaced with the new data files. If no data files are provided
-   * then the unpartitioned table remains unchanged.
+   * For non-partitioned tables the table content is replaced with the new data files. Table is truncated
+   * if no data files are provided.
+   * For partitioned tables the relevant partitions are replaced with the new data files. Table remains unchanged
+   * unless data files are provided.
    *
-   * @param table                   The table we are changing
-   * @param startTime               The start time of the commit - used only for logging
-   * @param results                 The object containing the new files
+   * @param table     The table we are changing
+   * @param startTime The start time of the commit - used only for logging
+   * @param results   The object containing the new files
    */
-  private void commitOverwrite(Table table, String branchName, long startTime, FilesForCommit results) {
+  private void commitOverwrite(Table table, String branchName, Long snapshotId, long startTime,
+      FilesForCommit results) {
     Preconditions.checkArgument(results.deleteFiles().isEmpty(), "Can not handle deletes with overwrite");
     if (!results.dataFiles().isEmpty()) {
       ReplacePartitions overwrite = table.newReplacePartitions();
       results.dataFiles().forEach(overwrite::addFile);
+
       if (StringUtils.isNotEmpty(branchName)) {
         overwrite.toBranch(HiveUtils.getTableSnapshotRef(branchName));
       }
+      if (snapshotId != null) {
+        overwrite.validateFromSnapshot(snapshotId);
+      }
+      overwrite.validateNoConflictingDeletes();
+      overwrite.validateNoConflictingData();
       overwrite.commit();
       LOG.info("Overwrite commit took {} ms for table: {} with {} file(s)", System.currentTimeMillis() - startTime,
           table, results.dataFiles().size());
     } else if (table.spec().isUnpartitioned()) {
       DeleteFiles deleteFiles = table.newDelete();
       deleteFiles.deleteFromRowFilter(Expressions.alwaysTrue());
+
       if (StringUtils.isNotEmpty(branchName)) {
         deleteFiles.toBranch(HiveUtils.getTableSnapshotRef(branchName));
       }
@@ -672,7 +688,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           "Commit took {} ms for table: {}", System.currentTimeMillis() - startTime, table);
     }
 
-    LOG.debug("Overwrote partitions with files {}", results);
+    LOG.debug("Overwrite partitions with files {}", results);
   }
 
   /**
