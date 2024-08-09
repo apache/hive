@@ -1,7 +1,6 @@
 --! qt:dataset:src
 --! qt:dataset:part
 set hive.fetch.task.conversion=more;
-set hive.cbo.fallback.strategy=NEVER;
 
 --HIVE-2608 Do not require AS a,b,c part in LATERAL VIEW
 EXPLAIN SELECT myTab.* from src LATERAL VIEW explode(map('key1', 100, 'key2', 200)) myTab limit 2;

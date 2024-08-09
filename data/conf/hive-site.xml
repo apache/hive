@@ -325,12 +325,7 @@
   <name>hive.scheduled.queries.executor.enabled</name>
   <value>false</value>
 </property>
-
-<property>
-  <name>hive.cbo.fallback.strategy</name>
-  <value>TEST</value>
-</property>
-
+    
 <property>
   <name>iceberg.hive.keep.stats</name>
   <value>true</value>

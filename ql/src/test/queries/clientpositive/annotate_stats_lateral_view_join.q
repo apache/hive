@@ -1,5 +1,4 @@
 set hive.fetch.task.conversion=none;
-set hive.cbo.fallback.strategy=NEVER;
 
 -- setting up a table with multiple rows
 drop table if exists annotate_stats_lateral_view_join_test;

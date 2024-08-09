@@ -389,11 +389,6 @@
 </property>
 
 <property>
-  <name>hive.cbo.fallback.strategy</name>
-  <value>TEST</value>
-</property>
-
-<property>
   <name>hive.txn.xlock.ctas</name>
   <value>false</value>
 </property>
