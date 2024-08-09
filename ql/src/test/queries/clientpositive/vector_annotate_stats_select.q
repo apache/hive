@@ -2,6 +2,7 @@ SET hive.vectorized.execution.enabled=true;
 set hive.fetch.task.conversion=none;
 set hive.mapred.mode=nonstrict;
 set hive.stats.fetch.column.stats=true;
+set hive.cbo.fallback.strategy=NEVER;
 
 create table if not exists alltypes_n4 (
  bo1 boolean,

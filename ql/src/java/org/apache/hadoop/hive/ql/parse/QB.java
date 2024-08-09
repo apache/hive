@@ -316,6 +316,35 @@ public class QB {
   public boolean hasTableSample(String alias) {
     return qbp.getTabSample(alias) != null;
   }
+  
+  public boolean hasTableSampleRecursive() {
+    if (!qbp.getNameToSample().isEmpty()) {
+      return true;
+    }
+    
+    for (QBExpr qbExpr: aliasToSubq.values()) {
+      if (qbExpr.getQB() != null && qbExpr.getQB().hasTableSampleRecursive()) {
+        return true;
+      }
+    }
+    
+    return false;
+  }
+  
+  public boolean hasTableWithUnionType() {
+    if (getMetaData().getAliasToTable().values().stream()
+        .anyMatch(table -> "true".equalsIgnoreCase(table.getParameters().get("containsUnionType")))) {
+      return true;
+    }
+    
+    for (QBExpr qbExpr: aliasToSubq.values()) {
+      if (qbExpr.hasTableWithUnionType()) {
+        return true;
+      }
+    }
+    
+    return false;
+  }
 
   public CreateTableDesc getTableDesc() {
     return tblDesc;
