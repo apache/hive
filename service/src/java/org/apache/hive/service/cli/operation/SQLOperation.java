@@ -261,6 +261,10 @@ public class SQLOperation extends ExecuteStatementOperation {
   @Override
   public void runInternal() throws HiveSQLException {
     setState(OperationState.PENDING);
+    // Set the query string and id from query state information
+    queryInfo.setQueryDisplay(new QueryDisplay());
+    queryInfo.getQueryDisplay().setQueryStr(queryState.getQueryString());
+    queryInfo.getQueryDisplay().setQueryId(queryState.getQueryId());
 
     final boolean doRunAsync = shouldRunAsync();
     final boolean asyncPrepare = doRunAsync
