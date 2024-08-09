@@ -170,7 +170,7 @@ public class TestHiveCli {
   @Test
   public void testSqlFromCmdWithEmbeddedQuotes() {
     verifyCMD(null, "hive", out,
-        new String[] { "-e", "select \"hive\"" }, ERRNO_OK, true);
+        new String[] { "-e", "select \"hive\";" }, ERRNO_OK, true);
   }
 
   @Test
