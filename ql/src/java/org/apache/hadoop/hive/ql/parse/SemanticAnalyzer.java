@@ -683,15 +683,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         qbexpr.setOpcode(QBExpr.Opcode.UNION);
         break;
       case HiveParser.TOK_INTERSECTALL:
+        queryProperties.setHasIntersect(true);
         qbexpr.setOpcode(QBExpr.Opcode.INTERSECTALL);
         break;
       case HiveParser.TOK_INTERSECTDISTINCT:
+        queryProperties.setHasIntersect(true);
         qbexpr.setOpcode(QBExpr.Opcode.INTERSECT);
         break;
       case HiveParser.TOK_EXCEPTALL:
+        queryProperties.setHasExcept(true);
         qbexpr.setOpcode(QBExpr.Opcode.EXCEPTALL);
         break;
       case HiveParser.TOK_EXCEPTDISTINCT:
+        queryProperties.setHasExcept(true);
         qbexpr.setOpcode(QBExpr.Opcode.EXCEPT);
         break;
       default:
@@ -1988,6 +1992,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
 
       case HiveParser.TOK_QUALIFY:
+        queryProperties.setHasQualify(true);
         qbp.setQualifyExprForClause(ctx_1.dest, ast);
         qbp.addAggregationExprsForClause(ctx_1.dest,
                 doPhase1GetAggregationsFromSelect(ast, qb, ctx_1.dest));
