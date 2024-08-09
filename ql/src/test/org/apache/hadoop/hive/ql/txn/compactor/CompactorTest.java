@@ -145,8 +145,8 @@ public abstract class CompactorTest {
     // Set this config to true in the base class, there are extended test classes which set this config to false.
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER, true);
     TestTxnDbUtil.setConfValues(conf);
-    TestTxnDbUtil.cleanDb(conf);
     TestTxnDbUtil.prepDb(conf);
+    TestTxnDbUtil.cleanDb(conf);
     ms = new HiveMetaStoreClient(conf);
     txnHandler = TxnUtils.getTxnStore(conf);
     Path tmpPath = new Path(System.getProperty("test.tmp.dir"), "compactor_test_table_" + TMP_DIR_ID.getAndIncrement());

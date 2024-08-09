@@ -25,20 +25,21 @@ import java.io.IOException;
 
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper;
-import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.NestedScriptParser;
-import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.PostgresCommandParser;
+import org.apache.hadoop.hive.metastore.tools.schematool.commandparser.NestedScriptParser;
+import org.apache.hadoop.hive.metastore.tools.schematool.commandparser.NestedScriptParserFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class TestSchemaTool {
+
+  private final NestedScriptParserFactory scriptParserFactory = new NestedScriptParserFactory();
 
   /**
    * Test script formatting
    */
   @Test
   public void testScripts() throws Exception {
-    String testScript[] = {
+    String[] testScript = {
         "-- this is a comment",
       "DROP TABLE IF EXISTS fooTab;",
       "/*!1234 this is comment code like mysql */;",
@@ -46,7 +47,7 @@ public class TestSchemaTool {
       "DROP TABLE footab;",
       "-- ending comment"
     };
-    String resultScript[] = {
+    String[] resultScript = {
       "DROP TABLE IF EXISTS fooTab",
       "/*!1234 this is comment code like mysql */",
       "CREATE TABLE fooTab(id INTEGER)",
@@ -55,7 +56,7 @@ public class TestSchemaTool {
     String expectedSQL = StringUtils.join(resultScript, System.getProperty("line.separator")) +
         System.getProperty("line.separator");
     File testScriptFile = generateTestScript(testScript);
-    String flattenedSql = HiveSchemaHelper.getDbCommandParser("derby", false)
+    String flattenedSql = scriptParserFactory.getNestedScriptParser("derby", null)
         .buildCommand(testScriptFile.getParentFile().getPath(),
             testScriptFile.getName());
 
@@ -71,13 +72,13 @@ public class TestSchemaTool {
     String childTab2 = "childTab2";
     String parentTab = "fooTab";
 
-    String childTestScript1[] = {
+    String[] childTestScript1 = {
       "-- this is a comment ",
       "DROP TABLE IF EXISTS " + childTab1 + ";",
       "CREATE TABLE " + childTab1 + "(id INTEGER);",
       "DROP TABLE " + childTab1 + ";"
     };
-    String childTestScript2[] = {
+    String[] childTestScript2 = {
         "-- this is a comment",
         "DROP TABLE IF EXISTS " + childTab2 + ";",
         "CREATE TABLE " + childTab2 + "(id INTEGER);",
@@ -85,7 +86,7 @@ public class TestSchemaTool {
         "DROP TABLE " + childTab2 + ";"
     };
 
-    String parentTestScript[] = {
+    String[] parentTestScript = {
         " -- this is a comment",
         "DROP TABLE IF EXISTS " + parentTab + ";",
         " -- this is another comment ",
@@ -97,7 +98,7 @@ public class TestSchemaTool {
       };
 
     File testScriptFile = generateTestScript(parentTestScript);
-    String flattenedSql = HiveSchemaHelper.getDbCommandParser("derby", false)
+    String flattenedSql = scriptParserFactory.getNestedScriptParser("derby", null)
         .buildCommand(testScriptFile.getParentFile().getPath(),
             testScriptFile.getName());
     Assert.assertFalse(flattenedSql.contains("RUN"));
@@ -116,13 +117,13 @@ public class TestSchemaTool {
     String childTab2 = "childTab2";
     String parentTab = "fooTab";
 
-    String childTestScript1[] = {
+    String[] childTestScript1 = {
       "/* this is a comment code */",
       "DROP TABLE IF EXISTS " + childTab1 + ";",
       "CREATE TABLE " + childTab1 + "(id INTEGER);",
       "DROP TABLE " + childTab1 + ";"
     };
-    String childTestScript2[] = {
+    String[] childTestScript2 = {
         "/* this is a special exec code */;",
         "DROP TABLE IF EXISTS " + childTab2 + ";",
         "CREATE TABLE " + childTab2 + "(id INTEGER);",
@@ -130,7 +131,7 @@ public class TestSchemaTool {
         "DROP TABLE " + childTab2 + ";"
     };
 
-    String parentTestScript[] = {
+    String[] parentTestScript = {
         " -- this is a comment",
         "DROP TABLE IF EXISTS " + parentTab + ";",
         " /* this is special exec code */;",
@@ -142,7 +143,7 @@ public class TestSchemaTool {
       };
 
     File testScriptFile = generateTestScript(parentTestScript);
-    String flattenedSql = HiveSchemaHelper.getDbCommandParser("mysql", false)
+    String flattenedSql = scriptParserFactory.getNestedScriptParser("mysql", null)
         .buildCommand(testScriptFile.getParentFile().getPath(),
             testScriptFile.getName());
     Assert.assertFalse(flattenedSql.contains("RUN"));
@@ -157,7 +158,7 @@ public class TestSchemaTool {
    */
   @Test
   public void testScriptWithDelimiter() throws Exception {
-    String testScript[] = {
+    String[] testScript = {
         "-- this is a comment",
       "DROP TABLE IF EXISTS fooTab;",
       "DELIMITER $$",
@@ -171,7 +172,7 @@ public class TestSchemaTool {
       "DROP TABLE footab;",
       "-- ending comment"
     };
-    String resultScript[] = {
+    String[] resultScript = {
       "DROP TABLE IF EXISTS fooTab",
       "/*!1234 this is comment code like mysql */",
       "CREATE TABLE fooTab(id INTEGER)",
@@ -184,7 +185,7 @@ public class TestSchemaTool {
     String expectedSQL = StringUtils.join(resultScript, System.getProperty("line.separator")) +
         System.getProperty("line.separator");
     File testScriptFile = generateTestScript(testScript);
-    NestedScriptParser testDbParser = HiveSchemaHelper.getDbCommandParser("mysql", false);
+    NestedScriptParser testDbParser = scriptParserFactory.getNestedScriptParser("mysql", null);
     String flattenedSql = testDbParser.buildCommand(testScriptFile.getParentFile().getPath(),
         testScriptFile.getName());
 
@@ -196,7 +197,7 @@ public class TestSchemaTool {
    */
   @Test
   public void testScriptMultiRowComment() throws Exception {
-    String testScript[] = {
+    String[] testScript = {
         "-- this is a comment",
       "DROP TABLE IF EXISTS fooTab;",
       "DELIMITER $$",
@@ -209,7 +210,7 @@ public class TestSchemaTool {
       "DROP TABLE footab;",
       "-- ending comment"
     };
-    String parsedScript[] = {
+    String[] parsedScript = {
       "DROP TABLE IF EXISTS fooTab",
       "/*!1234 this is comment code like mysql */",
       "CREATE TABLE fooTab(id INTEGER)",
@@ -219,7 +220,7 @@ public class TestSchemaTool {
     String expectedSQL = StringUtils.join(parsedScript, System.getProperty("line.separator")) +
         System.getProperty("line.separator");
     File testScriptFile = generateTestScript(testScript);
-    NestedScriptParser testDbParser = HiveSchemaHelper.getDbCommandParser("mysql", false);
+    NestedScriptParser testDbParser = scriptParserFactory.getNestedScriptParser("mysql", null);
     String flattenedSql = testDbParser.buildCommand(testScriptFile.getParentFile().getPath(),
         testScriptFile.getName());
 
@@ -235,13 +236,13 @@ public class TestSchemaTool {
     String childTab2 = "childTab2";
     String parentTab = "fooTab";
 
-    String childTestScript1[] = {
+    String[] childTestScript1 = {
       "-- this is a comment ",
       "DROP TABLE IF EXISTS " + childTab1 + ";",
       "CREATE TABLE " + childTab1 + "(id INTEGER);",
       "DROP TABLE " + childTab1 + ";"
     };
-    String childTestScript2[] = {
+    String[] childTestScript2 = {
         "-- this is a comment",
         "DROP TABLE IF EXISTS " + childTab2 + ";",
         "CREATE TABLE " + childTab2 + "(id INTEGER);",
@@ -249,7 +250,7 @@ public class TestSchemaTool {
         "DROP TABLE " + childTab2 + ";"
     };
 
-    String parentTestScript[] = {
+    String[] parentTestScript = {
         " -- this is a comment",
         "DROP TABLE IF EXISTS " + parentTab + ";",
         " -- this is another comment ",
@@ -261,7 +262,7 @@ public class TestSchemaTool {
       };
 
     File testScriptFile = generateTestScript(parentTestScript);
-    String flattenedSql = HiveSchemaHelper.getDbCommandParser("oracle", false)
+    String flattenedSql = scriptParserFactory.getNestedScriptParser("oracle", null)
         .buildCommand(testScriptFile.getParentFile().getPath(),
             testScriptFile.getName());
     Assert.assertFalse(flattenedSql.contains("@"));
@@ -276,24 +277,23 @@ public class TestSchemaTool {
    */
   @Test
   public void testPostgresFilter() throws Exception {
-    String testScript[] = {
+    String[] testScript = {
         "-- this is a comment",
         "DROP TABLE IF EXISTS fooTab;",
-        HiveSchemaHelper.PostgresCommandParser.POSTGRES_STANDARD_STRINGS_OPT + ";",
+        NestedScriptParser.POSTGRES_STANDARD_STRINGS_OPT + ";",
         "CREATE TABLE fooTab(id INTEGER);",
         "DROP TABLE footab;",
         "-- ending comment"
     };
 
-    String expectedScriptWithOptionPresent[] = {
+    String[] expectedScriptWithOptionPresent = {
         "DROP TABLE IF EXISTS fooTab",
-        HiveSchemaHelper.PostgresCommandParser.POSTGRES_STANDARD_STRINGS_OPT,
+        NestedScriptParser.POSTGRES_STANDARD_STRINGS_OPT,
         "CREATE TABLE fooTab(id INTEGER)",
         "DROP TABLE footab",
     };
 
-    NestedScriptParser noDbOptParser = HiveSchemaHelper
-        .getDbCommandParser("postgres", false);
+    NestedScriptParser noDbOptParser = scriptParserFactory.getNestedScriptParser("postgres", null);
     String expectedSQL = StringUtils.join(
         expectedScriptWithOptionPresent, System.getProperty("line.separator")) +
             System.getProperty("line.separator");
@@ -302,16 +302,14 @@ public class TestSchemaTool {
         testScriptFile.getParentFile().getPath(), testScriptFile.getName());
     Assert.assertEquals(expectedSQL, flattenedSql);
 
-    String expectedScriptWithOptionAbsent[] = {
+    String[] expectedScriptWithOptionAbsent = {
         "DROP TABLE IF EXISTS fooTab",
         "CREATE TABLE fooTab(id INTEGER)",
         "DROP TABLE footab",
     };
 
-    NestedScriptParser dbOptParser = HiveSchemaHelper.getDbCommandParser(
-        "postgres",
-        PostgresCommandParser.POSTGRES_SKIP_STANDARD_STRINGS_DBOPT,
-        null, null, null, null, false);
+    NestedScriptParser dbOptParser = scriptParserFactory.getNestedScriptParser(
+        "postgres", NestedScriptParser.POSTGRES_SKIP_STANDARD_STRINGS_DBOPT);
     expectedSQL = StringUtils.join(
         expectedScriptWithOptionAbsent, System.getProperty("line.separator")) +
             System.getProperty("line.separator");

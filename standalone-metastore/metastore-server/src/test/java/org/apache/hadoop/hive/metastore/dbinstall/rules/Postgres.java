@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore.dbinstall.rules;
 
+import org.apache.hadoop.hive.metastore.utils.SchemaToolTestUtil;
+
 /**
  * JUnit TestRule for Postgres.
  */
@@ -28,7 +30,7 @@ public class Postgres extends DatabaseRule {
 
   @Override
   public String[] getDockerAdditionalArgs() {
-    return buildArray("-p", "5432:5432", "-e", "POSTGRES_PASSWORD=" + getDbRootPassword(), "-d");
+    return SchemaToolTestUtil.buildArray("-p", "5432:5432", "-e", "POSTGRES_PASSWORD=" + getDbRootPassword(), "-d");
   }
 
   @Override

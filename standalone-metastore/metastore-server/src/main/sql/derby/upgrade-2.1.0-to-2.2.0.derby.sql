@@ -1,4 +1,8 @@
--- Upgrade MetaStore schema from 2.1.0 to 2.2.0
+--liquibase formatted sql
+
+--changeset Gates:4 labels:2.2.0 dbms:derby
+--comment: Upgrade MetaStore schema from 2.1.0 to 2.2.0
+
 --RUN '037-HIVE-14496.derby.sql';
 -- Step 1: Add the column allowing null
 ALTER TABLE "APP"."TBLS" ADD "IS_REWRITE_ENABLED" CHAR(1);

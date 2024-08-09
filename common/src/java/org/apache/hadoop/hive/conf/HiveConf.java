@@ -1240,7 +1240,7 @@ public class HiveConf extends Configuration {
         + "To enable auto create also set hive.metastore.schema.verification=false. Auto creation is not "
         + "recommended for production use cases, run schematool command instead." ),
     /**
-     * @deprecated Use MetastoreConf.SCHEMA_VERIFICATION
+     * @deprecated No longer in use, neither {@link org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars#SCHEMA_VERIFICATION}
      */
     @Deprecated
     METASTORE_SCHEMA_VERIFICATION("hive.metastore.schema.verification", true,

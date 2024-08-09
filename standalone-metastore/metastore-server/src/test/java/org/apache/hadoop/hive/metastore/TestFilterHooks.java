@@ -228,6 +228,9 @@ public class TestFilterHooks {
    * @throws Exception
    */
   protected void creatEnv(Configuration conf) throws Exception {
+    TestTxnDbUtil.cleanDb(conf);
+    TestTxnDbUtil.prepDb(conf);
+
     client = createClient(conf);
 
     client.dropDatabase(DBNAME1, true, true, true);
@@ -267,8 +270,6 @@ public class TestFilterHooks {
     client.createDataConnector(dc1);
     client.createDataConnector(dc2);
 
-    TestTxnDbUtil.cleanDb(conf);
-    TestTxnDbUtil.prepDb(conf);
     client.compact2(DBNAME1, TAB1, null, CompactionType.MAJOR, new HashMap<>());
     client.compact2(DBNAME1, TAB2, "name=value1", CompactionType.MINOR, new HashMap<>());
   }

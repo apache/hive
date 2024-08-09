@@ -456,6 +456,7 @@ public class TestHiveMetaStoreTxns {
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     TestTxnDbUtil.setConfValues(conf);
     TestTxnDbUtil.prepDb(conf);
+    TestTxnDbUtil.cleanDb(conf);
     client = new HiveMetaStoreClient(conf);
   }
 

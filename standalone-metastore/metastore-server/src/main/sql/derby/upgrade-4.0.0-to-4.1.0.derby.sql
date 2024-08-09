@@ -1,3 +1,8 @@
+--liquibase formatted sql
+
+--changeset deniskuzZ:13 labels:4.1.0 dbms:derby
+--comment: Upgrade MetaStore schema from 4.0.0 to 4.1.0
+
 -- HIVE-27725
 DROP INDEX "APP"."TAB_COL_STATS_IDX";
 CREATE INDEX "APP"."TAB_COL_STATS_IDX" ON "APP"."TAB_COL_STATS" ("TBL_ID", "COLUMN_NAME");

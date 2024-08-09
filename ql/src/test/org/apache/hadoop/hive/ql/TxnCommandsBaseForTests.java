@@ -137,6 +137,7 @@ public abstract class TxnCommandsBaseForTests {
       
     TestTxnDbUtil.setConfValues(hiveConf);
     TestTxnDbUtil.prepDb(hiveConf);
+    TestTxnDbUtil.cleanDb(hiveConf);
     txnHandler = TxnUtils.getTxnStore(hiveConf);
     File f = new File(getWarehouseDir());
     if (f.exists()) {

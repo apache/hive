@@ -1,3 +1,8 @@
+-- liquibase formatted sql
+
+-- changeset Pvary:10 labels:4.0.0-alpha-2 dbms:mysql
+-- comment: Upgrade MetaStore schema from 4.0.0-alpha-1 to 4.0.0-alpha-2
+
 SELECT 'Upgrading MetaStore schema from 4.0.0-alpha-1 to 4.0.0-alpha-2' AS MESSAGE;
 
 -- HIVE-26280

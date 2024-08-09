@@ -529,6 +529,7 @@ public class TestDbTxnManager {
   @Before
   public void setUp() throws Exception {
     TestTxnDbUtil.prepDb(conf);
+    TestTxnDbUtil.cleanDb(conf);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
     txnMgr = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     txnMgr.getLockManager();//init lock manager

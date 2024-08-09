@@ -112,8 +112,8 @@ public abstract class CompactorOnTezTest {
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON, true);
 
     TestTxnDbUtil.setConfValues(hiveConf);
-    TestTxnDbUtil.cleanDb(hiveConf);
     TestTxnDbUtil.prepDb(hiveConf);
+    TestTxnDbUtil.cleanDb(hiveConf);
     conf = hiveConf;
     // Use tez as execution engine for this test class
     setupTez(conf);
