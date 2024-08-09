@@ -965,8 +965,6 @@ public class TypeCheckProcFactory<T> {
 
         insertCast(funcText, children);
 
-        validateUDF(node, isFunction, ctx, fi, children);
-
         // Try to infer the type of the constant only if there are two
         // nodes, one of them is column and the other is numeric const
         if (exprFactory.isCompareFunction(fi)
@@ -988,6 +986,7 @@ public class TypeCheckProcFactory<T> {
             children.set(constIdx, newChild);
           }
         }
+        validateUDF(node, isFunction, ctx, fi, children);
         // The "in" function is sometimes changed to an "or".  Later on, the "or"
         // function is processed a little differently.  We don't want to process this
         // new "or" function differently, so we track it with this variable.
