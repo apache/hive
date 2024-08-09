@@ -64,6 +64,10 @@ public abstract class HiveMetaStoreAuthorizableEvent {
         table.getOwner(), table.getOwnerType());
   }
 
+  protected HivePrivilegeObject getHivePrivilegeObjectStorageHandlerUri(String storagehandler_uri) {
+    return new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.STORAGEHANDLER_URI, null, storagehandler_uri);
+  }
+
   protected HivePrivilegeObject getHivePrivilegeObjectDfsUri(String uri) {
     return new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.DFS_URI, null, uri);
   }
