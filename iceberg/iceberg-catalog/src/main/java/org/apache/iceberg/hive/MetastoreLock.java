@@ -32,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockLevel;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
@@ -42,7 +41,6 @@ import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
-import org.apache.iceberg.ClientPool;
 import org.apache.iceberg.exceptions.CommitFailedException;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.MoreObjects;
@@ -76,7 +74,7 @@ public class MetastoreLock implements HiveLock {
   private static final long HIVE_TABLE_LEVEL_LOCK_EVICT_MS_DEFAULT = TimeUnit.MINUTES.toMillis(10);
   private static volatile Cache<String, ReentrantLock> commitLockCache;
 
-  private final ClientPool<IMetaStoreClient, TException> metaClients;
+  private final HiveActor actor;
 
   private final String databaseName;
   private final String tableName;
@@ -96,9 +94,9 @@ public class MetastoreLock implements HiveLock {
   private ReentrantLock jvmLock = null;
   private Heartbeat heartbeat = null;
 
-  public MetastoreLock(Configuration conf, ClientPool<IMetaStoreClient, TException> metaClients,
+  public MetastoreLock(Configuration conf, HiveActor actor,
                        String catalogName, String databaseName, String tableName) {
-    this.metaClients = metaClients;
+    this.actor = actor;
     this.fullName = catalogName + "." + databaseName + "." + tableName;
     this.databaseName = databaseName;
     this.tableName = tableName;
@@ -121,12 +119,13 @@ public class MetastoreLock implements HiveLock {
         conf.getLong(HIVE_TABLE_LEVEL_LOCK_EVICT_MS, HIVE_TABLE_LEVEL_LOCK_EVICT_MS_DEFAULT);
 
     this.agentInfo = "Iceberg-" + UUID.randomUUID();
-
+    // trying a different fix table names with '%'
+    final String nameFormat = "iceberg-hive-lock-heartbeat-" + fullName.replace("%", "_") + "-%d";
     this.exitingScheduledExecutorService =
             Executors.newSingleThreadScheduledExecutor(
                     new ThreadFactoryBuilder()
                             .setDaemon(true)
-                            .setNameFormat("iceberg-hive-lock-heartbeat-" + fullName.replace("%", "%%") + "-%d")
+                            .setNameFormat(nameFormat)
                             .build());
 
     initTableLevelLockCache(tableLevelLockCacheEvictionTimeout);
@@ -140,8 +139,7 @@ public class MetastoreLock implements HiveLock {
     hmsLockId = Optional.of(acquireLock());
 
     // Starting heartbeat for the HMS lock
-    heartbeat =
-            new Heartbeat(metaClients, hmsLockId.get(), lockHeartbeatIntervalTime);
+    heartbeat = new Heartbeat(actor, hmsLockId.get(), lockHeartbeatIntervalTime);
     heartbeat.schedule(exitingScheduledExecutorService);
   }
 
@@ -207,7 +205,7 @@ public class MetastoreLock implements HiveLock {
             .onlyRetryOn(WaitingForLockException.class)
             .run(id -> {
               try {
-                LockResponse response = metaClients.run(client -> client.checkLock(id));
+                LockResponse response = actor.checkLock(id);
                 LockState newState = response.getState();
                 lockInfo.lockState = newState;
                 if (newState.equals(LockState.WAITING)) {
@@ -300,7 +298,7 @@ public class MetastoreLock implements HiveLock {
             .run(
                 request -> {
                   try {
-                    LockResponse lockResponse = metaClients.run(client -> client.lock(request));
+                    LockResponse lockResponse = actor.lock(request);
                     lockInfo.lockId = lockResponse.getLockid();
                     lockInfo.lockState = lockResponse.getState();
                   } catch (TException te) {
@@ -358,7 +356,7 @@ public class MetastoreLock implements HiveLock {
     showLocksRequest.setTablename(tableName);
     ShowLocksResponse response;
     try {
-      response = metaClients.run(client -> client.showLocks(showLocksRequest));
+      response = actor.showLocks(showLocksRequest);
     } catch (TException e) {
       throw new LockException(e, "Failed to find lock for table %s.%s", databaseName, tableName);
     }
@@ -374,7 +372,6 @@ public class MetastoreLock implements HiveLock {
   }
 
   private void unlock(Optional<Long> lockId) {
-
     Long id = null;
     try {
       if (!lockId.isPresent()) {
@@ -421,11 +418,8 @@ public class MetastoreLock implements HiveLock {
 
   @VisibleForTesting
   void doUnlock(long lockId) throws TException, InterruptedException {
-    metaClients.run(
-        client -> {
-          client.unlock(lockId);
-          return null;
-        });
+    actor.unlock(lockId);
+
   }
 
 
@@ -459,15 +453,14 @@ public class MetastoreLock implements HiveLock {
   }
 
   private static class Heartbeat implements Runnable {
-    private final ClientPool<IMetaStoreClient, TException> hmsClients;
+    private final HiveActor actor;
     private final long lockId;
     private final long intervalMs;
     private ScheduledFuture<?> future;
     private volatile Exception encounteredException = null;
 
-    Heartbeat(
-            ClientPool<IMetaStoreClient, TException> hmsClients, long lockId, long intervalMs) {
-      this.hmsClients = hmsClients;
+    Heartbeat(HiveActor actor, long lockId, long intervalMs) {
+      this.actor = actor;
       this.lockId = lockId;
       this.intervalMs = intervalMs;
       this.future = null;
@@ -476,11 +469,7 @@ public class MetastoreLock implements HiveLock {
     @Override
     public void run() {
       try {
-        hmsClients.run(
-            client -> {
-              client.heartbeat(0, lockId);
-              return null;
-            });
+        actor.heartbeat(0, lockId);
       } catch (TException | InterruptedException e) {
         this.encounteredException = e;
         throw new CommitFailedException(e, "Failed to heartbeat for lock: %d", lockId);

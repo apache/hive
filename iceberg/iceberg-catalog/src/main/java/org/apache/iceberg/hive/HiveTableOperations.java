@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.util.Preconditions;
 import org.apache.hive.iceberg.com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.ClientPool;
@@ -71,9 +72,16 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
     implements HiveOperationsBase {
   private static final Logger LOG = LoggerFactory.getLogger(HiveTableOperations.class);
 
-  private static final String HIVE_ICEBERG_METADATA_REFRESH_MAX_RETRIES =
-      "iceberg.hive.metadata-refresh-max-retries";
+  private static final String HIVE_ICEBERG_METADATA_REFRESH_MAX_RETRIES = "iceberg.hive.metadata-refresh-max-retries";
   private static final int HIVE_ICEBERG_METADATA_REFRESH_MAX_RETRIES_DEFAULT = 2;
+
+  // the max size is based on HMS backend database. For Hive versions below 2.3, the max table parameter size is 4000
+  // characters, see https://issues.apache.org/jira/browse/HIVE-12274
+  // set to 0 to not expose Iceberg metadata in HMS Table properties.
+  private static final String HIVE_TABLE_PROPERTY_MAX_SIZE = "iceberg.hive.table-property-max-size";
+  static final String NO_LOCK_EXPECTED_KEY = "expected_parameter_key";
+  static final String NO_LOCK_EXPECTED_VALUE = "expected_parameter_value";
+  private static final long HIVE_TABLE_PROPERTY_MAX_SIZE_DEFAULT = 32672;
 
   private static final BiMap<String, String> ICEBERG_TO_HMS_TRANSLATION =
       ImmutableBiMap.of(
@@ -108,13 +116,12 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
   private final long maxHiveTablePropertySize;
   private final int metadataRefreshMaxRetries;
   private final FileIO fileIO;
-  private final ClientPool<IMetaStoreClient, TException> metaClients;
+  private final HiveActor actor;
 
-  protected HiveTableOperations(
-        Configuration conf, ClientPool<IMetaStoreClient, TException> metaClients, FileIO fileIO,
-        String catalogName, String database, String table) {
+  public HiveTableOperations(Configuration conf, HiveActor actor, FileIO fileIO,
+                             String catalogName, String database, String table) {
     this.conf = conf;
-    this.metaClients = metaClients;
+    this.actor = actor;
     this.fileIO = fileIO;
     this.fullName = catalogName + "." + database + "." + table;
     this.catalogName = catalogName;
@@ -142,11 +149,15 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
   protected void doRefresh() {
     String metadataLocation = null;
     try {
-      Table table = metaClients.run(client -> client.getTable(database, tableName));
-      HiveOperationsBase.validateTableIsIceberg(table, fullName);
-
-      metadataLocation = table.getParameters().get(METADATA_LOCATION_PROP);
-
+      Table table = actor.getTable(database, tableName);
+      if (table != null) {
+        HiveOperationsBase.validateTableIsIceberg(table, fullName);
+        metadataLocation = table.getParameters().get(METADATA_LOCATION_PROP);
+      } else {
+        if (currentMetadataLocation() != null) {
+          throw new NoSuchTableException("No such table: %s.%s", database, tableName);
+        }
+      }
     } catch (NoSuchObjectException e) {
       if (currentMetadataLocation() != null) {
         throw new NoSuchTableException("No such table: %s.%s", database, tableName);
@@ -298,14 +309,47 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
     LOG.info("Committed to table {} with the new metadata location {}", fullName, newMetadataLocation);
   }
 
-  @VisibleForTesting
+  public void persistTable(Table hmsTable, boolean updateHiveTable, String expectedMetadataLocation)
+      throws TException, InterruptedException {
+    if (updateHiveTable) {
+      actor.alterTable(
+                database,
+                tableName,
+                hmsTable,
+                expectedMetadataLocation);
+    } else {
+      actor.createTable(hmsTable);
+    }
+  }
+
   Table loadHmsTable() throws TException, InterruptedException {
     try {
-      return metaClients.run(client -> client.getTable(database, tableName));
+      return actor.getTable(database, tableName);
     } catch (NoSuchObjectException nte) {
       LOG.trace("Table not found {}", fullName, nte);
       return null;
     }
+  }
+
+  protected Table newHmsTable(TableMetadata metadata) {
+    Preconditions.checkNotNull(metadata, "'metadata' parameter can't be null");
+    final long currentTimeMillis = System.currentTimeMillis();
+
+    Table newTable = new Table(tableName,
+        database,
+        metadata.property(HiveCatalog.HMS_TABLE_OWNER, HiveHadoopUtil.currentUser()),
+        (int) currentTimeMillis / 1000,
+        (int) currentTimeMillis / 1000,
+        Integer.MAX_VALUE,
+        null,
+        Collections.emptyList(),
+        Maps.newHashMap(),
+        null,
+        null,
+        TableType.EXTERNAL_TABLE.toString());
+
+    newTable.getParameters().put("EXTERNAL", "TRUE"); // using the external table type also requires this
+    return newTable;
   }
 
   private void setHmsTableParameters(String newMetadataLocation, Table tbl, TableMetadata metadata,
@@ -442,7 +486,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
 
   @Override
   public ClientPool<IMetaStoreClient, TException> metaClients() {
-    return metaClients;
+    return actor instanceof HiveCatalogActor ? ((HiveCatalogActor) actor).clientPool() : null;
   }
 
   private void cleanupMetadataAndUnlock(CommitStatus commitStatus, String metadataLocation,
@@ -518,7 +562,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
   @VisibleForTesting
   HiveLock lockObject(TableMetadata metadata) {
     if (hiveLockEnabled(metadata, conf)) {
-      return new MetastoreLock(conf, metaClients, catalogName, database, tableName);
+      return actor.newLock(metadata, catalogName, database, tableName);
     } else {
       return new NoLock();
     }
