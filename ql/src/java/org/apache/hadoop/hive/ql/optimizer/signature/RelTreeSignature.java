@@ -85,15 +85,15 @@ public final class RelTreeSignature {
     }
     final StringWriter sw = new StringWriter();
     final RelWriter planWriter =
-        new NonRecursiveRelWriterImpl(
+        new RelTreeSignatureWriter(
             new PrintWriter(sw), SqlExplainLevel.EXPPLAN_ATTRIBUTES, false);
     rel.explain(planWriter);
     return sw.toString();
   }
 
-  static class NonRecursiveRelWriterImpl extends RelWriterImplCopy {
+  public static class RelTreeSignatureWriter extends RelWriterImplCopy {
 
-    public NonRecursiveRelWriterImpl(PrintWriter pw, SqlExplainLevel detailLevel, boolean withIdPrefix) {
+    public RelTreeSignatureWriter(PrintWriter pw, SqlExplainLevel detailLevel, boolean withIdPrefix) {
       super(pw, detailLevel, withIdPrefix);
     }
 
