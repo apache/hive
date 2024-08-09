@@ -403,9 +403,10 @@ public class SemiJoinReductionMerge extends Transform {
     float memoryThreshold = HiveConf.getFloatVar(hiveConf, HiveConf.ConfVars.HIVE_MAP_AGGR_MEMORY_THRESHOLD);
     float minReductionHashAggr = HiveConf.getFloatVar(hiveConf, HiveConf.ConfVars.HIVE_MAP_AGGR_HASH_MIN_REDUCTION);
     float minReductionHashAggrLowerBound = HiveConf.getFloatVar(hiveConf, HiveConf.ConfVars.HIVE_MAP_AGGR_HASH_MIN_REDUCTION_LOWER_BOUND);
+    float hashAggrFlushPercent = HiveConf.getFloatVar(hiveConf, HiveConf.ConfVars.HIVE_MAP_AGGR_HASH_FLUSH_SIZE_PERCENT);
     GroupByDesc groupBy =
         new GroupByDesc(gbMode, gbOutputNames, Collections.emptyList(), gbAggs, false, groupByMemoryUsage,
-            memoryThreshold, minReductionHashAggr, minReductionHashAggrLowerBound, null, false, -1, false);
+            memoryThreshold, minReductionHashAggr, minReductionHashAggrLowerBound, hashAggrFlushPercent, null, false, -1, false);
     groupBy.setColumnExprMap(Collections.emptyMap());
     return (GroupByOperator) OperatorFactory.getAndMakeChild(groupBy, new RowSchema(gbColInfos), parentOp);
   }
