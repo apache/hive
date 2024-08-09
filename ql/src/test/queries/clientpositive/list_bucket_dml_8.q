@@ -1,11 +1,10 @@
 --! qt:dataset:srcpart
 set hive.mapred.mode=nonstrict;
 set hive.exec.dynamic.partition=true;
-set hive.input.format=org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
+set hive.tez.input.format=org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 set hive.merge.smallfiles.avgsize=200;
 set mapred.input.dir.recursive=true;
-set hive.merge.mapfiles=false;	
-set hive.merge.mapredfiles=false;
+set hive.merge.tezfiles=false;
 
 -- list bucketing alter table ... concatenate: 
 -- Use list bucketing DML to generate mutilple files in partitions by turning off merge
@@ -53,7 +52,7 @@ create table list_bucketing_dynamic_part_n2 (key String, value String)
     partitioned by (ds String, hr String) 
     skewed by (key, value) on (('484','val_484'),('51','val_14'),('103','val_103'))
     stored as DIRECTORIES
-    STORED AS RCFILE;
+    STORED AS ORC;
 
 -- list bucketing DML without merge. use bucketize to generate a few small files.
 explain extended
@@ -73,7 +72,7 @@ alter table list_bucketing_dynamic_part_n2 partition (ds='2008-04-08', hr='b1') 
 
 desc formatted list_bucketing_dynamic_part_n2 partition (ds='2008-04-08', hr='b1');
 
-set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
+set hive.tez.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 select count(1) from srcpart where ds = '2008-04-08';
 select count(*) from list_bucketing_dynamic_part_n2;
 explain extended
