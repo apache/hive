@@ -81,52 +81,77 @@ public class HMSCatalogServlet extends HttpServlet {
     }
   }
 
-  protected void doPatch(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    security.execute(request, response, this::execute);
-  }
-
-  @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    security.execute(request, response, this::execute);
-  }
-
-  @Override
-  protected void doPut(HttpServletRequest request,
-                       HttpServletResponse response) throws IOException {
-    security.execute(request, response, this::execute);
-  }
-
-  @Override
-  protected void doHead(HttpServletRequest request, HttpServletResponse response)
-      throws IOException {
-    security.execute(request, response, this::execute);
-  }
-
-  @Override
-  protected void doPost(HttpServletRequest request, HttpServletResponse response)
-      throws IOException {
-    security.execute(request, response, this::execute);
-  }
-
-  @Override
-  protected void doDelete(HttpServletRequest request, HttpServletResponse response)
-      throws IOException {
-    security.execute(request, response, this::execute);
-  }
-
-  private void execute(HttpServletRequest request, HttpServletResponse response)
-      throws IOException {
-    ServletRequestContext context = ServletRequestContext.from(request);
-    response.setStatus(HttpServletResponse.SC_OK);
-    responseHeaders.forEach(response::setHeader);
-
-    if (context.error().isPresent()) {
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      RESTObjectMapper.mapper().writeValue(response.getWriter(), context.error().get());
-      return;
-    }
-
+  protected void doPatch(HttpServletRequest request, HttpServletResponse response)  {
     try {
+      security.execute(request, response, this::execute);
+    } catch (IOException e) {
+      LOG.error("PATCH failed", e);
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Override
+  protected void doGet(HttpServletRequest request, HttpServletResponse response) {
+    try {
+      security.execute(request, response, this::execute);
+    } catch (IOException e) {
+      LOG.error("GET failed", e);
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Override
+  protected void doPut(HttpServletRequest request, HttpServletResponse response) {
+    try {
+      security.execute(request, response, this::execute);
+    } catch (IOException e) {
+      LOG.error("PUT failed", e);
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Override
+  protected void doHead(HttpServletRequest request, HttpServletResponse response) {
+    try {
+      security.execute(request, response, this::execute);
+    } catch (IOException e) {
+      LOG.error("HEAD failed", e);
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Override
+  protected void doPost(HttpServletRequest request, HttpServletResponse response) {
+    try {
+      security.execute(request, response, this::execute);
+    } catch (IOException e) {
+      LOG.error("POST failed", e);
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Override
+  protected void doDelete(HttpServletRequest request, HttpServletResponse response)  {
+    try {
+      security.execute(request, response, this::execute);
+    } catch (IOException e) {
+      LOG.error("DELETE failed", e);
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  private void execute(HttpServletRequest request, HttpServletResponse response) {
+    try {
+      ServletRequestContext context = ServletRequestContext.from(request);
+      response.setStatus(HttpServletResponse.SC_OK);
+      responseHeaders.forEach(response::setHeader);
+
+      final Optional<ErrorResponse> error = context.error();
+      if (error.isPresent()) {
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        RESTObjectMapper.mapper().writeValue(response.getWriter(), error.get());
+        return;
+      }
       Object responseBody =
           restCatalogAdapter.execute(
               context.method(),
