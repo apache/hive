@@ -44,6 +44,7 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.orc.OrcProto;
+import org.apache.orc.impl.BufferChunk;
 import org.apache.orc.impl.OrcTail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -227,7 +228,7 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
       byte[] tailBuffer = new byte[tailLen];
       in.readFully(tailBuffer);
       OrcProto.FileTail fileTail = OrcProto.FileTail.parseFrom(tailBuffer);
-      orcTail = new OrcTail(fileTail, null);
+      orcTail = new OrcTail(fileTail, new BufferChunk(0, 0), -1);
     }
     if (hasLongFileId) {
       fileKey = in.readLong();
