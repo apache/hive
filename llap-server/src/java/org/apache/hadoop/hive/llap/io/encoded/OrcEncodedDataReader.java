@@ -546,13 +546,6 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     LlapIoImpl.ORC_LOGGER.trace("Creating reader for {} ({})", path, split.getPath());
     long startTime = counters.startTimeCounter();
     ReaderOptions opts = EncodedOrcFile.readerOptions(jobConf).filesystem(fsSupplier).fileMetadata(fileMetadata);
-    if (split instanceof OrcSplit) {
-      OrcTail orcTail = ((OrcSplit) split).getOrcTail();
-      if (orcTail != null) {
-        LlapIoImpl.ORC_LOGGER.debug("Setting OrcTail. path={}", path);
-        opts.orcTail(orcTail);
-      }
-    }
     orcReader = EncodedOrcFile.createReader(path, opts);
     counters.incrWallClockCounter(LlapIOCounters.HDFS_TIME_NS, startTime);
   }
