@@ -75,7 +75,6 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
       } else if (icebergTable.specs().size() > 1) {
         // Compacting partitions of old partition specs on a partitioned table with partition evolution
         HiveConf.setVar(conf, ConfVars.REWRITE_POLICY, RewritePolicy.PARTITION.name());
-        conf.set(IcebergCompactionService.PARTITION_SPEC_ID, String.valueOf(icebergTable.spec().specId()));
         // A single filter on a virtual column causes errors during compilation,
         // added another filter on file_path as a workaround.
         compactionQuery = String.format("insert overwrite table %1$s select * from %1$s " +
@@ -103,7 +102,6 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
       }
 
       HiveConf.setVar(conf, ConfVars.REWRITE_POLICY, RewritePolicy.PARTITION.name());
-      conf.set(IcebergCompactionService.PARTITION_SPEC_ID, String.valueOf(specId.get()));
       conf.set(IcebergCompactionService.PARTITION_PATH, new Path(partSpec).toString());
 
       List<FieldSchema> partitionKeys = IcebergTableUtil.getPartitionKeys(icebergTable, specId.get());
