@@ -144,6 +144,15 @@ public interface IMetaStoreClient extends AutoCloseable {
       throws NoSuchObjectException, InvalidOperationException, MetaException, TException;
 
   /**
+   * Drop a catalog.  Catalogs must be empty to be dropped, there is no cascade for dropping a
+   * catalog.
+   * @param catName name of the catalog to drop
+   * @param ifExists if true, do not throw an error if the catalog does not exist.
+   * @throws TException general thrift exception.
+   */
+  void dropCatalog(String catName, boolean ifExists) throws TException;
+
+  /**
    * Get the names of all databases in the default catalog that match the given pattern.
    * @param databasePattern pattern for the database name to patch
    * @return List of database names.

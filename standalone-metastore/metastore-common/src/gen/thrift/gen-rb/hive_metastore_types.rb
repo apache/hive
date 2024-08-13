@@ -1756,9 +1756,11 @@ end
 class DropCatalogRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   NAME = 1
+  IFEXISTS = 2
 
   FIELDS = {
-    NAME => {:type => ::Thrift::Types::STRING, :name => 'name'}
+    NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
+    IFEXISTS => {:type => ::Thrift::Types::BOOL, :name => 'ifExists', :optional => true}
   }
 
   def struct_fields; FIELDS; end
