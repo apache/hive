@@ -990,26 +990,14 @@ nonReserved
     | KW_OPTIMIZE
     | KW_APPLICATION
     | KW_COMPACT_ID
-    | KW_CONF
     | KW_DATACONNECTOR
     | KW_DATACONNECTORS
-    | KW_DATABASE
     | KW_DDL
-    | KW_EXCHANGE
-    | KW_EXTENDED
-    | KW_FOLLOWING
     | KW_FORCE
-    | KW_IF
-    | KW_LESS
-    | KW_MACRO
-    | KW_MORE
     | KW_OLDER
     | KW_PKFK_JOIN
-    | KW_PRECEDING
-    | KW_SYNC
     | KW_THAN
     | KW_TIMESTAMPLOCALTZ
-    | KW_UNBOUNDED
 ;
 
 //The following SQL2011 reserved keywords are used as function name only, but not as identifiers.

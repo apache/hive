@@ -49,6 +49,7 @@ public class TestReservedWords {
         "CHAR",
         "COLUMN",
         "COMMIT",
+        "CONF", // Hive specific reserved keyword as of 1.2.0
         "CONSTRAINT",
         "CONVERT",
         "CREATE",
@@ -58,6 +59,7 @@ public class TestReservedWords {
         "CURRENT_DATE",
         "CURRENT_TIMESTAMP",
         "CURSOR",
+        "DATABASE", // Hive specific reserved keyword as of 1.2.0
         "DATE",
         "DECIMAL",
         "DELETE",
@@ -68,13 +70,16 @@ public class TestReservedWords {
         "ELSE",
         "END",
         "EXCEPT",
+        "EXCHANGE", // Hive specific reserved keyword as of 1.2.0
         "EXISTS",
+        "EXTENDED", // Hive specific reserved keyword as of 1.2.0
         "EXTERNAL",
         "EXTRACT",
         "FALSE",
         "FETCH",
         "FLOAT",
         "FLOOR",
+        "FOLLOWING", // Hive specific reserved keyword as of 1.2.0
         "FOR",
         "FOREIGN",
         "FROM",
@@ -85,6 +90,7 @@ public class TestReservedWords {
         "GROUPING",
         "HAVING",
         "IMPORT",
+        "IF", // Hive specific reserved keyword as of 1.2.0
         "IN",
         "INNER",
         "INSERT",
@@ -97,11 +103,14 @@ public class TestReservedWords {
         "LATERAL",
         "LEADING",
         "LEFT",
+        "LESS", // Hive specific reserved keyword as of 1.2.0
         "LIKE",
         "LOCAL",
-        "MAP", // Hive specific keyword
+        "MACRO", // Hive specific reserved keyword as of 1.2.0
+        "MAP", // Hive specific reserved keyword as of 1.2.0
         "MERGE",
-        "MINUS", // Hive specific keyword
+        "MINUS", // HIVE-12765: Hive specific reserved keyword since 2.2.0
+        "MORE", // Hive specific reserved keyword as of 1.2.0
         "NONE",
         "NOT",
         "NULL",
@@ -115,21 +124,22 @@ public class TestReservedWords {
         "OVER",
         "PARTITION",
         "PERCENT",
+        "PRECEDING", // Hive specific reserved keyword as of 1.2.0
         "PRECISION",
         "PREPARE",
         "PRESERVE",
         "PRIMARY",
         "PROCEDURE",
-        "QUALIFY", // Not a part of the ANSI standard
+        "QUALIFY", // HIVE-25589: Not a part of the ANSI standard, but it should be reserved
         "RANGE",
         "READS",
         "REAL",
-        "REDUCE", // Hive specific keyword
+        "REDUCE", // Hive specific reserved keyword as of 1.2.0
         "REFERENCES",
-        "REGEXP", // Hive specific keyword
+        "REGEXP", // HIVE-11600: Hive specific reserved keyword since 2.0.0
         "REVOKE",
         "RIGHT",
-        "RLIKE", // Hive specific keyword
+        "RLIKE", // HIVE-11600: Hive specific reserved keyword since 2.0.0
         "ROLLBACK",
         "ROLLUP",
         "ROW",
@@ -139,6 +149,7 @@ public class TestReservedWords {
         "SMALLINT",
         "SOME",
         "START",
+        "SYNC", // HIVE-17824: Hive specific reserved keyword since 3.0.0
         "TABLE",
         "TABLESAMPLE",
         "THEN",
@@ -146,13 +157,14 @@ public class TestReservedWords {
         "TIMESTAMP",
         "TO",
         "TRAILING",
-        "TRANSFORM", // Hive specific keyword
+        "TRANSFORM", // Hive specific reserved keyword as of 1.2.0
         "TRIGGER",
         "TRUE",
         "TRUNCATE",
+        "UNBOUNDED", // Hive specific reserved keyword as of 1.2.0
         "UNION",
         "UNIQUE",
-        "UNIQUEJOIN", // Hive specific keyword
+        "UNIQUEJOIN", // Hive specific reserved keyword as of 1.2.0
         "UPDATE",
         "USER",
         "USING",
