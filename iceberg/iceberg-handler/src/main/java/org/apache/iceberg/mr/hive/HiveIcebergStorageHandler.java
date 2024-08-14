@@ -1449,6 +1449,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     map.remove("columns.comments");
   }
 
+  @Override
   public void validateCurrentSnapshot(TableDesc tableDesc) {
     if (conf.getBoolean(ConfigProperties.LOCK_HIVE_ENABLED, TableProperties.HIVE_LOCK_ENABLED_DEFAULT) ||
         !HiveConf.getBoolVar(conf, ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED)) {

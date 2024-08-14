@@ -48,7 +48,6 @@ import org.mockito.MockedStatic;
 import static org.apache.iceberg.mr.hive.HiveIcebergStorageHandlerTestUtils.init;
 import static org.apache.iceberg.types.Types.NestedField.required;
 import static org.assertj.core.util.Strings.quote;
-
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
@@ -56,15 +55,13 @@ import static org.mockito.Mockito.mockStatic;
 
 public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngineBase {
 
-  private Method method;
-
   @Before
   public void setUpTables() throws NoSuchMethodException {
     PartitionSpec spec =
         PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA).identity("last_name")
             .bucket("customer_id", 16).build();
 
-    method = HiveTableOperations.class.getDeclaredMethod("setStorageHandler", Map.class, Boolean.TYPE);
+    Method method = HiveTableOperations.class.getDeclaredMethod("setStorageHandler", Map.class, Boolean.TYPE);
     method.setAccessible(true);
 
     try (MockedStatic<HiveTableOperations> tableOps = mockStatic(HiveTableOperations.class, CALLS_REAL_METHODS)) {
@@ -276,22 +273,19 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
     );
     PartitionSpec spec = PartitionSpec.builderFor(schema).truncate("i", 10).build();
 
-    try (MockedStatic<HiveTableOperations> tableOps = mockStatic(HiveTableOperations.class, CALLS_REAL_METHODS)) {
-      tableOps.when(() -> method.invoke(null, anyMap(), eq(true)))
-        .thenAnswer(invocation -> null);
-      // create and insert an initial batch of records
-      testTables.createTable(shell, "ice_t", schema, spec, fileFormat,
-          TestHelper.RecordsBuilder.newInstance(schema)
-            .add(1, 1)
-            .add(2, 2)
-            .add(10, 10)
-            .add(20, 20)
-            .add(40, 40)
-            .add(30, 30)
-            .build(),
-          2, Collections.emptyMap(),
-          quote(HiveIcebergStorageHandler.class.getName()));
-    }
+    // create and insert an initial batch of records
+    testTables.createTable(shell, "ice_t", schema, spec, fileFormat,
+        TestHelper.RecordsBuilder.newInstance(schema)
+          .add(1, 1)
+          .add(2, 2)
+          .add(10, 10)
+          .add(20, 20)
+          .add(40, 40)
+          .add(30, 30)
+          .build(),
+        2, Collections.emptyMap(),
+        quote(HiveIcebergStorageHandler.class.getName()));
+
     String[] singleFilterQuery = new String[] { "INSERT INTO ice_t SELECT i*100, p*100 FROM ice_t",
         "INSERT OVERWRITE TABLE ice_t SELECT i+1, p+1 FROM ice_t" };
 
