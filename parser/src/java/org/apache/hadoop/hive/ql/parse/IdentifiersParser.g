@@ -988,10 +988,32 @@ nonReserved
     | KW_TAG
     | KW_FAST_FORWARD
     | KW_OPTIMIZE
+    | KW_APPLICATION
+    | KW_COMPACT_ID
+    | KW_CONF
+    | KW_DATACONNECTOR
+    | KW_DATACONNECTORS
+    | KW_DATABASE
+    | KW_DDL
+    | KW_EXCHANGE
+    | KW_EXTENDED
+    | KW_FOLLOWING
+    | KW_FORCE
+    | KW_IF
+    | KW_LESS
+    | KW_MACRO
+    | KW_MORE
+    | KW_OLDER
+    | KW_PKFK_JOIN
+    | KW_PRECEDING
+    | KW_SYNC
+    | KW_THAN
+    | KW_TIMESTAMPLOCALTZ
+    | KW_UNBOUNDED
 ;
 
 //The following SQL2011 reserved keywords are used as function name only, but not as identifiers.
 sql11ReservedKeywordsUsedAsFunctionName
     :
-    KW_IF | KW_ARRAY | KW_MAP | KW_BIGINT | KW_BINARY | KW_BOOLEAN | KW_CURRENT_DATE | KW_CURRENT_TIMESTAMP | KW_DATE | KW_DOUBLE | KW_FLOAT | KW_REAL | KW_GROUPING | KW_INT | KW_SMALLINT | KW_TIMESTAMP
+    KW_ARRAY | KW_MAP | KW_BIGINT | KW_BINARY | KW_BOOLEAN | KW_CURRENT_DATE | KW_CURRENT_TIMESTAMP | KW_DATE | KW_DOUBLE | KW_FLOAT | KW_REAL | KW_GROUPING | KW_INT | KW_SMALLINT | KW_TIMESTAMP
     ;
