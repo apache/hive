@@ -52,7 +52,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static org.apache.commons.lang3.StringUtils.substringAfterLast;
 
 /**
  * A data accessor that should in theory work with all JDBC compliant database drivers.
@@ -368,8 +367,7 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
       if (!tableName.equals(m.group(2).replaceAll("[`\"]", ""))) {
         throw new RuntimeException("Cannot find " + tableName + " in sql query " + sql);
       }
-      result = String.format("%s (%s) %s%s", 
-          m.group(1), boundaryQuery, substringAfterLast(tableName, "."), m.group(3));
+      result = String.format("%s (%s) tmptable %s", m.group(1), boundaryQuery, m.group(3));
     } else {
       result = boundaryQuery;
     }
