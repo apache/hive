@@ -927,8 +927,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
     boolean isSupportedType = (qb.getIsQuery())
         || qb.isCTAS() || qb.isMaterializedView() || cboCtx.type == PreCboCtx.Type.INSERT
         || cboCtx.type == PreCboCtx.Type.MULTI_INSERT;
-    boolean noUnsupportedFeatures = HiveCalciteUtil.validateASTAndQBForUnsupportedFeatures(ast, qb);
-    boolean result = isSupportedRoot && isSupportedType && noUnsupportedFeatures;
+    
+    Pair<Boolean, String> unsupportedFeatures = HiveCalciteUtil.unsupportedFeaturesPresentInASTorQB(ast, qb);
+    boolean result = isSupportedRoot && isSupportedType && Boolean.FALSE.equals(unsupportedFeatures.getKey());
 
     String msg = "";
     if (!result) {
@@ -939,9 +940,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         msg += "is not a query with at least one source table "
             + " or there is a subquery without a source table, or CTAS, or insert; ";
       }
-      if (!noUnsupportedFeatures) {
-        msg += "has unsupported CBO features. Could be any of [CHARSETLITERAL, TABLESPLITSAMPLE, UNIQUEJOIN, " +
-            "TABLEBUCKETSAMPLE, UNIONTYPE]; ";
+      if (Boolean.TRUE.equals(unsupportedFeatures.getKey())) {
+        msg += "has unsupported feature [" + unsupportedFeatures.getValue() + "]; ";
       }
       msg = msg.substring(0, msg.length() - 2);
       if (needToLogMessage) {

@@ -103,16 +103,27 @@ import com.google.common.collect.Sets;
 
 public class HiveCalciteUtil {
 
-  public static boolean validateASTAndQBForUnsupportedFeatures(ASTNode ast, QB qb) {
+  public static Pair<Boolean, String> unsupportedFeaturesPresentInASTorQB(ASTNode ast, QB qb) {
     Predicate<ASTNode> checkCreateUnion =
         node -> node.getType() == HiveParser.TOK_FUNCTION &&
             node.getChildCount() > 0 &&
             node.getChild(0).getText().equalsIgnoreCase("create_union");
-    return !ParseUtils.containsTokenOfType(ast, checkCreateUnion,
-        HiveParser.TOK_CHARSETLITERAL, HiveParser.TOK_TABLESPLITSAMPLE, HiveParser.TOK_UNIQUEJOIN, 
-        HiveParser.TOK_TABLEBUCKETSAMPLE, HiveParser.TOK_UNIONTYPE) && 
-        !qb.hasTableSampleRecursive() &&
-        !qb.hasTableWithUnionType();
+    
+    Pair<Boolean, String> containsToken = ParseUtils.containsTokenOfType(ast, checkCreateUnion,
+        HiveParser.TOK_CHARSETLITERAL, HiveParser.TOK_TABLESPLITSAMPLE, HiveParser.TOK_UNIQUEJOIN,
+        HiveParser.TOK_TABLEBUCKETSAMPLE, HiveParser.TOK_UNIONTYPE);
+    
+    if (Boolean.TRUE.equals(containsToken.getKey())) {
+      return containsToken;
+    }
+    if (qb.hasTableSampleRecursive()) {
+      return Pair.of(true, "TOK_TABLEBUCKETSAMPLE");
+    }
+    if (qb.hasTableWithUnionType()) {
+      return Pair.of(true, "TOK_UNIONTYPE");
+    }
+    
+    return Pair.of(false, null);
   }
 
   public static List<RexNode> getProjsFromBelowAsInputRef(final RelNode rel) {
