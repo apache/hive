@@ -52,6 +52,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.apache.commons.lang3.StringUtils.substringAfterLast;
 
 /**
  * A data accessor that should in theory work with all JDBC compliant database drivers.
@@ -62,7 +63,7 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
   protected static final int DEFAULT_FETCH_SIZE = 1000;
   protected static final Logger LOGGER = LoggerFactory.getLogger(GenericJdbcDatabaseAccessor.class);
   private DataSource dbcpDataSource = null;
-  static final Pattern fromPattern = Pattern.compile("(.*?\\sfrom\\s)(.*+)", Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
+  static final Pattern fromPattern = Pattern.compile("(.*?\\sfrom\\s+)([^\\s]+)(.*?)", Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
 
   private static ColumnMetadataAccessor<TypeInfo> typeInfoTranslator = (meta, col) -> {
     JDBCType type = JDBCType.valueOf(meta.getColumnType(col));
@@ -196,7 +197,7 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
         return rs.getInt(1);
       }
       else {
-        LOGGER.warn("The count query did not return any results.", countQuery);
+        LOGGER.warn("The count query {} did not return any results.", countQuery);
         throw new HiveJdbcDatabaseAccessException("Count query did not return any results.");
       }
     }
@@ -361,26 +362,14 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
     String result;
     if (tableName != null) {
       // Looking for table name in from clause, replace with the boundary query
-      // TODO consolidate this
-      // Currently only use simple string match, this should be improved by looking
-      // for only table name in from clause
-      String tableString = null;
       Matcher m = fromPattern.matcher(sql);
       Preconditions.checkArgument(m.matches());
-      String queryBeforeFrom = m.group(1);
-      String queryAfterFrom = " " + m.group(2) + " ";
-
-      Character[] possibleDelimits = new Character[] {'`', '\"', ' '};
-      for (Character possibleDelimit : possibleDelimits) {
-        if (queryAfterFrom.contains(possibleDelimit + tableName + possibleDelimit)) {
-          tableString = possibleDelimit + tableName + possibleDelimit;
-          break;
-        }
-      }
-      if (tableString == null) {
+      
+      if (!tableName.equals(m.group(2).replaceAll("[`\"]", ""))) {
         throw new RuntimeException("Cannot find " + tableName + " in sql query " + sql);
       }
-      result = queryBeforeFrom + queryAfterFrom.replace(tableString, " (" + boundaryQuery + ") " + tableName + " ");
+      result = String.format("%s (%s) %s%s", 
+          m.group(1), boundaryQuery, substringAfterLast(tableName, "."), m.group(3));
     } else {
       result = boundaryQuery;
     }
