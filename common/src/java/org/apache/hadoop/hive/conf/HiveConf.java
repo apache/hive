@@ -5138,6 +5138,15 @@ public class HiveConf extends Configuration {
     LLAP_WEBUI_SPNEGO_PRINCIPAL("hive.llap.webui.spnego.principal", "",
         "The LLAP WebUI SPNEGO service principal. Configured similarly to\n" +
         "hive.server2.webui.spnego.principal"),
+    HIVE_SERVER2_WEBUI_HTTP_COOKIE_MAX_AGE("hive.server2.ui.http.cookie.max.age", "86400s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Maximum age in seconds for server side cookie used by HS2 in HTTP mode."),
+    HIVE_SERVER2_WEBUI_HTTP_COOKIE_DOMAIN("hive.server2.ui.http.cookie.domain", null,
+        "Domain for the HS2 generated cookies"),
+    HIVE_SERVER2_WEBUI_HTTP_COOKIE_PATH("hive.server2.ui.http.cookie.path", null,
+        "Path for the HS2 generated cookies"),
+    HIVE_SERVER2_WEBUI_ENABLE_LDAP("hive.server2.webui.enable.ldap", false,
+        "Whether to enable LDAP\n"),
     LLAP_FS_KERBEROS_PRINCIPAL("hive.llap.task.principal", "",
         "The name of the principal to use to run tasks. By default, the clients are required\n" +
         "to provide tokens to access HDFS/etc."),
