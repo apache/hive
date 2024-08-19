@@ -2536,20 +2536,20 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_functions failed: unknown result')
     end
 
-    def get_functions_in_db(request)
-      send_get_functions_in_db(request)
-      return recv_get_functions_in_db()
+    def get_functions_req(request)
+      send_get_functions_req(request)
+      return recv_get_functions_req()
     end
 
-    def send_get_functions_in_db(request)
-      send_message('get_functions_in_db', Get_functions_in_db_args, :request => request)
+    def send_get_functions_req(request)
+      send_message('get_functions_req', Get_functions_req_args, :request => request)
     end
 
-    def recv_get_functions_in_db()
-      result = receive_message(Get_functions_in_db_result)
+    def recv_get_functions_req()
+      result = receive_message(Get_functions_req_result)
       return result.success unless result.success.nil?
       raise result.o1 unless result.o1.nil?
-      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_functions_in_db failed: unknown result')
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_functions_req failed: unknown result')
     end
 
     def get_function(dbName, funcName)
@@ -6690,15 +6690,15 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'get_functions', seqid)
     end
 
-    def process_get_functions_in_db(seqid, iprot, oprot)
-      args = read_args(iprot, Get_functions_in_db_args)
-      result = Get_functions_in_db_result.new()
+    def process_get_functions_req(seqid, iprot, oprot)
+      args = read_args(iprot, Get_functions_req_args)
+      result = Get_functions_req_result.new()
       begin
-        result.success = @handler.get_functions_in_db(args.request)
+        result.success = @handler.get_functions_req(args.request)
       rescue ::MetaException => o1
         result.o1 = o1
       end
-      write_result(result, oprot, 'get_functions_in_db', seqid)
+      write_result(result, oprot, 'get_functions_req', seqid)
     end
 
     def process_get_function(seqid, iprot, oprot)
@@ -13811,7 +13811,7 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class Get_functions_in_db_args
+  class Get_functions_req_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     REQUEST = 1
 
@@ -13827,7 +13827,7 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class Get_functions_in_db_result
+  class Get_functions_req_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SUCCESS = 0
     O1 = 1

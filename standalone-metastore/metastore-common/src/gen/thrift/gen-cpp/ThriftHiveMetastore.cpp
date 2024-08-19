@@ -38075,11 +38075,11 @@ uint32_t ThriftHiveMetastore_get_functions_presult::read(::apache::thrift::proto
 }
 
 
-ThriftHiveMetastore_get_functions_in_db_args::~ThriftHiveMetastore_get_functions_in_db_args() noexcept {
+ThriftHiveMetastore_get_functions_req_args::~ThriftHiveMetastore_get_functions_req_args() noexcept {
 }
 
 
-uint32_t ThriftHiveMetastore_get_functions_in_db_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ThriftHiveMetastore_get_functions_req_args::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -38120,10 +38120,10 @@ uint32_t ThriftHiveMetastore_get_functions_in_db_args::read(::apache::thrift::pr
   return xfer;
 }
 
-uint32_t ThriftHiveMetastore_get_functions_in_db_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ThriftHiveMetastore_get_functions_req_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_functions_in_db_args");
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_functions_req_args");
 
   xfer += oprot->writeFieldBegin("request", ::apache::thrift::protocol::T_STRUCT, 1);
   xfer += this->request.write(oprot);
@@ -38135,14 +38135,14 @@ uint32_t ThriftHiveMetastore_get_functions_in_db_args::write(::apache::thrift::p
 }
 
 
-ThriftHiveMetastore_get_functions_in_db_pargs::~ThriftHiveMetastore_get_functions_in_db_pargs() noexcept {
+ThriftHiveMetastore_get_functions_req_pargs::~ThriftHiveMetastore_get_functions_req_pargs() noexcept {
 }
 
 
-uint32_t ThriftHiveMetastore_get_functions_in_db_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ThriftHiveMetastore_get_functions_req_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_functions_in_db_pargs");
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_functions_req_pargs");
 
   xfer += oprot->writeFieldBegin("request", ::apache::thrift::protocol::T_STRUCT, 1);
   xfer += (*(this->request)).write(oprot);
@@ -38154,11 +38154,11 @@ uint32_t ThriftHiveMetastore_get_functions_in_db_pargs::write(::apache::thrift::
 }
 
 
-ThriftHiveMetastore_get_functions_in_db_result::~ThriftHiveMetastore_get_functions_in_db_result() noexcept {
+ThriftHiveMetastore_get_functions_req_result::~ThriftHiveMetastore_get_functions_req_result() noexcept {
 }
 
 
-uint32_t ThriftHiveMetastore_get_functions_in_db_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ThriftHiveMetastore_get_functions_req_result::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -38207,11 +38207,11 @@ uint32_t ThriftHiveMetastore_get_functions_in_db_result::read(::apache::thrift::
   return xfer;
 }
 
-uint32_t ThriftHiveMetastore_get_functions_in_db_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ThriftHiveMetastore_get_functions_req_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
 
   uint32_t xfer = 0;
 
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_functions_in_db_result");
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_functions_req_result");
 
   if (this->__isset.success) {
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRUCT, 0);
@@ -38228,11 +38228,11 @@ uint32_t ThriftHiveMetastore_get_functions_in_db_result::write(::apache::thrift:
 }
 
 
-ThriftHiveMetastore_get_functions_in_db_presult::~ThriftHiveMetastore_get_functions_in_db_presult() noexcept {
+ThriftHiveMetastore_get_functions_req_presult::~ThriftHiveMetastore_get_functions_req_presult() noexcept {
 }
 
 
-uint32_t ThriftHiveMetastore_get_functions_in_db_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ThriftHiveMetastore_get_functions_req_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -75832,18 +75832,18 @@ void ThriftHiveMetastoreClient::recv_get_functions(std::vector<std::string> & _r
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "get_functions failed: unknown result");
 }
 
-void ThriftHiveMetastoreClient::get_functions_in_db(GetFunctionsResponse& _return, const GetFunctionsRequest& request)
+void ThriftHiveMetastoreClient::get_functions_req(GetFunctionsResponse& _return, const GetFunctionsRequest& request)
 {
-  send_get_functions_in_db(request);
-  recv_get_functions_in_db(_return);
+  send_get_functions_req(request);
+  recv_get_functions_req(_return);
 }
 
-void ThriftHiveMetastoreClient::send_get_functions_in_db(const GetFunctionsRequest& request)
+void ThriftHiveMetastoreClient::send_get_functions_req(const GetFunctionsRequest& request)
 {
   int32_t cseqid = 0;
-  oprot_->writeMessageBegin("get_functions_in_db", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("get_functions_req", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  ThriftHiveMetastore_get_functions_in_db_pargs args;
+  ThriftHiveMetastore_get_functions_req_pargs args;
   args.request = &request;
   args.write(oprot_);
 
@@ -75852,7 +75852,7 @@ void ThriftHiveMetastoreClient::send_get_functions_in_db(const GetFunctionsReque
   oprot_->getTransport()->flush();
 }
 
-void ThriftHiveMetastoreClient::recv_get_functions_in_db(GetFunctionsResponse& _return)
+void ThriftHiveMetastoreClient::recv_get_functions_req(GetFunctionsResponse& _return)
 {
 
   int32_t rseqid = 0;
@@ -75872,12 +75872,12 @@ void ThriftHiveMetastoreClient::recv_get_functions_in_db(GetFunctionsResponse& _
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  if (fname.compare("get_functions_in_db") != 0) {
+  if (fname.compare("get_functions_req") != 0) {
     iprot_->skip(::apache::thrift::protocol::T_STRUCT);
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  ThriftHiveMetastore_get_functions_in_db_presult result;
+  ThriftHiveMetastore_get_functions_req_presult result;
   result.success = &_return;
   result.read(iprot_);
   iprot_->readMessageEnd();
@@ -75890,7 +75890,7 @@ void ThriftHiveMetastoreClient::recv_get_functions_in_db(GetFunctionsResponse& _
   if (result.__isset.o1) {
     throw result.o1;
   }
-  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "get_functions_in_db failed: unknown result");
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "get_functions_req failed: unknown result");
 }
 
 void ThriftHiveMetastoreClient::get_function(Function& _return, const std::string& dbName, const std::string& funcName)
@@ -92885,41 +92885,41 @@ void ThriftHiveMetastoreProcessor::process_get_functions(int32_t seqid, ::apache
   }
 }
 
-void ThriftHiveMetastoreProcessor::process_get_functions_in_db(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+void ThriftHiveMetastoreProcessor::process_get_functions_req(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
   void* ctx = nullptr;
   if (this->eventHandler_.get() != nullptr) {
-    ctx = this->eventHandler_->getContext("ThriftHiveMetastore.get_functions_in_db", callContext);
+    ctx = this->eventHandler_->getContext("ThriftHiveMetastore.get_functions_req", callContext);
   }
-  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "ThriftHiveMetastore.get_functions_in_db");
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "ThriftHiveMetastore.get_functions_req");
 
   if (this->eventHandler_.get() != nullptr) {
-    this->eventHandler_->preRead(ctx, "ThriftHiveMetastore.get_functions_in_db");
+    this->eventHandler_->preRead(ctx, "ThriftHiveMetastore.get_functions_req");
   }
 
-  ThriftHiveMetastore_get_functions_in_db_args args;
+  ThriftHiveMetastore_get_functions_req_args args;
   args.read(iprot);
   iprot->readMessageEnd();
   uint32_t bytes = iprot->getTransport()->readEnd();
 
   if (this->eventHandler_.get() != nullptr) {
-    this->eventHandler_->postRead(ctx, "ThriftHiveMetastore.get_functions_in_db", bytes);
+    this->eventHandler_->postRead(ctx, "ThriftHiveMetastore.get_functions_req", bytes);
   }
 
-  ThriftHiveMetastore_get_functions_in_db_result result;
+  ThriftHiveMetastore_get_functions_req_result result;
   try {
-    iface_->get_functions_in_db(result.success, args.request);
+    iface_->get_functions_req(result.success, args.request);
     result.__isset.success = true;
   } catch (MetaException &o1) {
     result.o1 = std::move(o1);
     result.__isset.o1 = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != nullptr) {
-      this->eventHandler_->handlerError(ctx, "ThriftHiveMetastore.get_functions_in_db");
+      this->eventHandler_->handlerError(ctx, "ThriftHiveMetastore.get_functions_req");
     }
 
     ::apache::thrift::TApplicationException x(e.what());
-    oprot->writeMessageBegin("get_functions_in_db", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    oprot->writeMessageBegin("get_functions_req", ::apache::thrift::protocol::T_EXCEPTION, seqid);
     x.write(oprot);
     oprot->writeMessageEnd();
     oprot->getTransport()->writeEnd();
@@ -92928,17 +92928,17 @@ void ThriftHiveMetastoreProcessor::process_get_functions_in_db(int32_t seqid, ::
   }
 
   if (this->eventHandler_.get() != nullptr) {
-    this->eventHandler_->preWrite(ctx, "ThriftHiveMetastore.get_functions_in_db");
+    this->eventHandler_->preWrite(ctx, "ThriftHiveMetastore.get_functions_req");
   }
 
-  oprot->writeMessageBegin("get_functions_in_db", ::apache::thrift::protocol::T_REPLY, seqid);
+  oprot->writeMessageBegin("get_functions_req", ::apache::thrift::protocol::T_REPLY, seqid);
   result.write(oprot);
   oprot->writeMessageEnd();
   bytes = oprot->getTransport()->writeEnd();
   oprot->getTransport()->flush();
 
   if (this->eventHandler_.get() != nullptr) {
-    this->eventHandler_->postWrite(ctx, "ThriftHiveMetastore.get_functions_in_db", bytes);
+    this->eventHandler_->postWrite(ctx, "ThriftHiveMetastore.get_functions_req", bytes);
   }
 }
 
@@ -114256,19 +114256,19 @@ void ThriftHiveMetastoreConcurrentClient::recv_get_functions(std::vector<std::st
   } // end while(true)
 }
 
-void ThriftHiveMetastoreConcurrentClient::get_functions_in_db(GetFunctionsResponse& _return, const GetFunctionsRequest& request)
+void ThriftHiveMetastoreConcurrentClient::get_functions_req(GetFunctionsResponse& _return, const GetFunctionsRequest& request)
 {
-  int32_t seqid = send_get_functions_in_db(request);
-  recv_get_functions_in_db(_return, seqid);
+  int32_t seqid = send_get_functions_req(request);
+  recv_get_functions_req(_return, seqid);
 }
 
-int32_t ThriftHiveMetastoreConcurrentClient::send_get_functions_in_db(const GetFunctionsRequest& request)
+int32_t ThriftHiveMetastoreConcurrentClient::send_get_functions_req(const GetFunctionsRequest& request)
 {
   int32_t cseqid = this->sync_->generateSeqId();
   ::apache::thrift::async::TConcurrentSendSentry sentry(this->sync_.get());
-  oprot_->writeMessageBegin("get_functions_in_db", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("get_functions_req", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  ThriftHiveMetastore_get_functions_in_db_pargs args;
+  ThriftHiveMetastore_get_functions_req_pargs args;
   args.request = &request;
   args.write(oprot_);
 
@@ -114280,7 +114280,7 @@ int32_t ThriftHiveMetastoreConcurrentClient::send_get_functions_in_db(const GetF
   return cseqid;
 }
 
-void ThriftHiveMetastoreConcurrentClient::recv_get_functions_in_db(GetFunctionsResponse& _return, const int32_t seqid)
+void ThriftHiveMetastoreConcurrentClient::recv_get_functions_req(GetFunctionsResponse& _return, const int32_t seqid)
 {
 
   int32_t rseqid = 0;
@@ -114309,7 +114309,7 @@ void ThriftHiveMetastoreConcurrentClient::recv_get_functions_in_db(GetFunctionsR
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
       }
-      if (fname.compare("get_functions_in_db") != 0) {
+      if (fname.compare("get_functions_req") != 0) {
         iprot_->skip(::apache::thrift::protocol::T_STRUCT);
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
@@ -114318,7 +114318,7 @@ void ThriftHiveMetastoreConcurrentClient::recv_get_functions_in_db(GetFunctionsR
         using ::apache::thrift::protocol::TProtocolException;
         throw TProtocolException(TProtocolException::INVALID_DATA);
       }
-      ThriftHiveMetastore_get_functions_in_db_presult result;
+      ThriftHiveMetastore_get_functions_req_presult result;
       result.success = &_return;
       result.read(iprot_);
       iprot_->readMessageEnd();
@@ -114334,7 +114334,7 @@ void ThriftHiveMetastoreConcurrentClient::recv_get_functions_in_db(GetFunctionsR
         throw result.o1;
       }
       // in a bad state, don't commit
-      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "get_functions_in_db failed: unknown result");
+      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "get_functions_req failed: unknown result");
     }
     // seqid != rseqid
     this->sync_->updatePending(fname, mtype, rseqid);

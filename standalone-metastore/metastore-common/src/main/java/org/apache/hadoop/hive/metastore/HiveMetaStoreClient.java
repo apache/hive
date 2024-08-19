@@ -4728,13 +4728,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public List<Function> getFunctionsInDb(String dbName, String pattern) throws TException {
+  public GetFunctionsResponse getFunctionsRequest(String dbName, String pattern) throws TException {
     GetFunctionsRequest request = new GetFunctionsRequest(dbName);
     request.setCatalogName(getDefaultCatalog(conf));
     request.setPattern(pattern);
     request.setReturnNames(false);
-    return client.get_functions_in_db(request).getFunctions();
-//    return client.get_functions_in_db(prependCatalogToDbName(getDefaultCatalog(conf), dbName, conf), pattern);
+    return client.get_functions_req(request);
   }
 
   @Override

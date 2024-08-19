@@ -3040,7 +3040,7 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
 
   list<string> get_functions(1:string dbName, 2:string pattern)
       throws (1:MetaException o1)
-  GetFunctionsResponse get_functions_in_db(1:GetFunctionsRequest request)
+  GetFunctionsResponse get_functions_req(1:GetFunctionsRequest request)
       throws (1:MetaException o1)
   Function get_function(1:string dbName, 2:string funcName)
       throws (1:MetaException o1, 2:NoSuchObjectException o2)

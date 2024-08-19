@@ -16,49 +16,36 @@ use Thrift\Protocol\TProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
-class ThriftHiveMetastore_get_functions_in_db_result
+class ThriftHiveMetastore_get_functions_req_args
 {
     static public $isValidate = false;
 
     static public $_TSPEC = array(
-        0 => array(
-            'var' => 'success',
-            'isRequired' => false,
-            'type' => TType::STRUCT,
-            'class' => '\metastore\GetFunctionsResponse',
-        ),
         1 => array(
-            'var' => 'o1',
+            'var' => 'request',
             'isRequired' => false,
             'type' => TType::STRUCT,
-            'class' => '\metastore\MetaException',
+            'class' => '\metastore\GetFunctionsRequest',
         ),
     );
 
     /**
-     * @var \metastore\GetFunctionsResponse
+     * @var \metastore\GetFunctionsRequest
      */
-    public $success = null;
-    /**
-     * @var \metastore\MetaException
-     */
-    public $o1 = null;
+    public $request = null;
 
     public function __construct($vals = null)
     {
         if (is_array($vals)) {
-            if (isset($vals['success'])) {
-                $this->success = $vals['success'];
-            }
-            if (isset($vals['o1'])) {
-                $this->o1 = $vals['o1'];
+            if (isset($vals['request'])) {
+                $this->request = $vals['request'];
             }
         }
     }
 
     public function getName()
     {
-        return 'ThriftHiveMetastore_get_functions_in_db_result';
+        return 'ThriftHiveMetastore_get_functions_req_args';
     }
 
 
@@ -75,18 +62,10 @@ class ThriftHiveMetastore_get_functions_in_db_result
                 break;
             }
             switch ($fid) {
-                case 0:
-                    if ($ftype == TType::STRUCT) {
-                        $this->success = new \metastore\GetFunctionsResponse();
-                        $xfer += $this->success->read($input);
-                    } else {
-                        $xfer += $input->skip($ftype);
-                    }
-                    break;
                 case 1:
                     if ($ftype == TType::STRUCT) {
-                        $this->o1 = new \metastore\MetaException();
-                        $xfer += $this->o1->read($input);
+                        $this->request = new \metastore\GetFunctionsRequest();
+                        $xfer += $this->request->read($input);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -104,18 +83,13 @@ class ThriftHiveMetastore_get_functions_in_db_result
     public function write($output)
     {
         $xfer = 0;
-        $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_functions_in_db_result');
-        if ($this->success !== null) {
-            if (!is_object($this->success)) {
+        $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_functions_req_args');
+        if ($this->request !== null) {
+            if (!is_object($this->request)) {
                 throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
             }
-            $xfer += $output->writeFieldBegin('success', TType::STRUCT, 0);
-            $xfer += $this->success->write($output);
-            $xfer += $output->writeFieldEnd();
-        }
-        if ($this->o1 !== null) {
-            $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
-            $xfer += $this->o1->write($output);
+            $xfer += $output->writeFieldBegin('request', TType::STRUCT, 1);
+            $xfer += $this->request->write($output);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

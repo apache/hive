@@ -760,9 +760,9 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_functions\n");
   }
 
-  void get_functions_in_db(GetFunctionsResponse& _return, const GetFunctionsRequest& request) {
+  void get_functions_req(GetFunctionsResponse& _return, const GetFunctionsRequest& request) {
     // Your implementation goes here
-    printf("get_functions_in_db\n");
+    printf("get_functions_req\n");
   }
 
   void get_function(Function& _return, const std::string& dbName, const std::string& funcName) {

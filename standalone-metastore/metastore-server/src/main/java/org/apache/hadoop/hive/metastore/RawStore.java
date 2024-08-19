@@ -1621,6 +1621,7 @@ public interface RawStore extends Configurable {
    * @return functions that match the pattern
    * @throws MetaException incorrectly specified function
    */
+  @Deprecated
   List<String> getFunctions(String catName, String dbName, String pattern) throws MetaException;
 
   /**
@@ -1630,7 +1631,8 @@ public interface RawStore extends Configurable {
    * @return functions that match the pattern
    * @throws MetaException incorrectly specified function
    */
-  List<Function> getFunctionsInDb(String catName, String dbName, String pattern) throws MetaException;
+  <T> List<T> getFunctionsRequest(String catName, String dbName, String pattern,
+      boolean isReturnNames) throws MetaException;
 
   /**
    * Get aggregated stats for a table or partition(s).

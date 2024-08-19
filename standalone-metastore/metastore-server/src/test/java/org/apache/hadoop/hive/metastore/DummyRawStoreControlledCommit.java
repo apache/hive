@@ -1020,8 +1020,9 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public List<Function> getFunctionsInDb(String catName, String dbName, String pattern) throws MetaException {
-    return objectStore.getFunctionsInDb(catName, dbName, pattern);
+  public <T> List<T> getFunctionsRequest(String catName, String dbName,
+      String pattern, boolean isReturnNames) throws MetaException {
+    return objectStore.getFunctionsRequest(catName, dbName, pattern, isReturnNames);
   }
 
   @Override

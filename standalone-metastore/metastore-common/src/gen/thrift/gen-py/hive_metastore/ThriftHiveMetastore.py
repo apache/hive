@@ -1340,7 +1340,7 @@ class Iface(fb303.FacebookService.Iface):
         """
         pass
 
-    def get_functions_in_db(self, request):
+    def get_functions_req(self, request):
         """
         Parameters:
          - request
@@ -8020,24 +8020,24 @@ class Client(fb303.FacebookService.Client, Iface):
             raise result.o1
         raise TApplicationException(TApplicationException.MISSING_RESULT, "get_functions failed: unknown result")
 
-    def get_functions_in_db(self, request):
+    def get_functions_req(self, request):
         """
         Parameters:
          - request
 
         """
-        self.send_get_functions_in_db(request)
-        return self.recv_get_functions_in_db()
+        self.send_get_functions_req(request)
+        return self.recv_get_functions_req()
 
-    def send_get_functions_in_db(self, request):
-        self._oprot.writeMessageBegin('get_functions_in_db', TMessageType.CALL, self._seqid)
-        args = get_functions_in_db_args()
+    def send_get_functions_req(self, request):
+        self._oprot.writeMessageBegin('get_functions_req', TMessageType.CALL, self._seqid)
+        args = get_functions_req_args()
         args.request = request
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
 
-    def recv_get_functions_in_db(self):
+    def recv_get_functions_req(self):
         iprot = self._iprot
         (fname, mtype, rseqid) = iprot.readMessageBegin()
         if mtype == TMessageType.EXCEPTION:
@@ -8045,14 +8045,14 @@ class Client(fb303.FacebookService.Client, Iface):
             x.read(iprot)
             iprot.readMessageEnd()
             raise x
-        result = get_functions_in_db_result()
+        result = get_functions_req_result()
         result.read(iprot)
         iprot.readMessageEnd()
         if result.success is not None:
             return result.success
         if result.o1 is not None:
             raise result.o1
-        raise TApplicationException(TApplicationException.MISSING_RESULT, "get_functions_in_db failed: unknown result")
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "get_functions_req failed: unknown result")
 
     def get_function(self, dbName, funcName):
         """
@@ -12694,7 +12694,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         self._processMap["drop_function"] = Processor.process_drop_function
         self._processMap["alter_function"] = Processor.process_alter_function
         self._processMap["get_functions"] = Processor.process_get_functions
-        self._processMap["get_functions_in_db"] = Processor.process_get_functions_in_db
+        self._processMap["get_functions_req"] = Processor.process_get_functions_req
         self._processMap["get_function"] = Processor.process_get_function
         self._processMap["get_all_functions"] = Processor.process_get_all_functions
         self._processMap["create_role"] = Processor.process_create_role
@@ -17291,13 +17291,13 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         oprot.writeMessageEnd()
         oprot.trans.flush()
 
-    def process_get_functions_in_db(self, seqid, iprot, oprot):
-        args = get_functions_in_db_args()
+    def process_get_functions_req(self, seqid, iprot, oprot):
+        args = get_functions_req_args()
         args.read(iprot)
         iprot.readMessageEnd()
-        result = get_functions_in_db_result()
+        result = get_functions_req_result()
         try:
-            result.success = self._handler.get_functions_in_db(args.request)
+            result.success = self._handler.get_functions_req(args.request)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -17312,7 +17312,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
             logging.exception('Unexpected exception in handler')
             msg_type = TMessageType.EXCEPTION
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-        oprot.writeMessageBegin("get_functions_in_db", msg_type, seqid)
+        oprot.writeMessageBegin("get_functions_req", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -45202,7 +45202,7 @@ get_functions_result.thrift_spec = (
 )
 
 
-class get_functions_in_db_args(object):
+class get_functions_req_args(object):
     """
     Attributes:
      - request
@@ -45237,7 +45237,7 @@ class get_functions_in_db_args(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('get_functions_in_db_args')
+        oprot.writeStructBegin('get_functions_req_args')
         if self.request is not None:
             oprot.writeFieldBegin('request', TType.STRUCT, 1)
             self.request.write(oprot)
@@ -45258,14 +45258,14 @@ class get_functions_in_db_args(object):
 
     def __ne__(self, other):
         return not (self == other)
-all_structs.append(get_functions_in_db_args)
-get_functions_in_db_args.thrift_spec = (
+all_structs.append(get_functions_req_args)
+get_functions_req_args.thrift_spec = (
     None,  # 0
     (1, TType.STRUCT, 'request', [GetFunctionsRequest, None], None, ),  # 1
 )
 
 
-class get_functions_in_db_result(object):
+class get_functions_req_result(object):
     """
     Attributes:
      - success
@@ -45307,7 +45307,7 @@ class get_functions_in_db_result(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('get_functions_in_db_result')
+        oprot.writeStructBegin('get_functions_req_result')
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.STRUCT, 0)
             self.success.write(oprot)
@@ -45332,8 +45332,8 @@ class get_functions_in_db_result(object):
 
     def __ne__(self, other):
         return not (self == other)
-all_structs.append(get_functions_in_db_result)
-get_functions_in_db_result.thrift_spec = (
+all_structs.append(get_functions_req_result)
+get_functions_req_result.thrift_spec = (
     (0, TType.STRUCT, 'success', [GetFunctionsResponse, None], None, ),  # 0
     (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
 )

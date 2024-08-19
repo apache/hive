@@ -174,7 +174,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void drop_function(const std::string& dbName, const std::string& funcName) = 0;
   virtual void alter_function(const std::string& dbName, const std::string& funcName, const Function& newFunc) = 0;
   virtual void get_functions(std::vector<std::string> & _return, const std::string& dbName, const std::string& pattern) = 0;
-  virtual void get_functions_in_db(GetFunctionsResponse& _return, const GetFunctionsRequest& request) = 0;
+  virtual void get_functions_req(GetFunctionsResponse& _return, const GetFunctionsRequest& request) = 0;
   virtual void get_function(Function& _return, const std::string& dbName, const std::string& funcName) = 0;
   virtual void get_all_functions(GetAllFunctionsResponse& _return) = 0;
   virtual bool create_role(const Role& role) = 0;
@@ -798,7 +798,7 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void get_functions(std::vector<std::string> & /* _return */, const std::string& /* dbName */, const std::string& /* pattern */) override {
     return;
   }
-  void get_functions_in_db(GetFunctionsResponse& /* _return */, const GetFunctionsRequest& /* request */) override {
+  void get_functions_req(GetFunctionsResponse& /* _return */, const GetFunctionsRequest& /* request */) override {
     return;
   }
   void get_function(Function& /* _return */, const std::string& /* dbName */, const std::string& /* funcName */) override {
@@ -20260,37 +20260,37 @@ class ThriftHiveMetastore_get_functions_presult {
 
 };
 
-typedef struct _ThriftHiveMetastore_get_functions_in_db_args__isset {
-  _ThriftHiveMetastore_get_functions_in_db_args__isset() : request(false) {}
+typedef struct _ThriftHiveMetastore_get_functions_req_args__isset {
+  _ThriftHiveMetastore_get_functions_req_args__isset() : request(false) {}
   bool request :1;
-} _ThriftHiveMetastore_get_functions_in_db_args__isset;
+} _ThriftHiveMetastore_get_functions_req_args__isset;
 
-class ThriftHiveMetastore_get_functions_in_db_args {
+class ThriftHiveMetastore_get_functions_req_args {
  public:
 
-  ThriftHiveMetastore_get_functions_in_db_args(const ThriftHiveMetastore_get_functions_in_db_args&);
-  ThriftHiveMetastore_get_functions_in_db_args& operator=(const ThriftHiveMetastore_get_functions_in_db_args&);
-  ThriftHiveMetastore_get_functions_in_db_args() noexcept {
+  ThriftHiveMetastore_get_functions_req_args(const ThriftHiveMetastore_get_functions_req_args&);
+  ThriftHiveMetastore_get_functions_req_args& operator=(const ThriftHiveMetastore_get_functions_req_args&);
+  ThriftHiveMetastore_get_functions_req_args() noexcept {
   }
 
-  virtual ~ThriftHiveMetastore_get_functions_in_db_args() noexcept;
+  virtual ~ThriftHiveMetastore_get_functions_req_args() noexcept;
   GetFunctionsRequest request;
 
-  _ThriftHiveMetastore_get_functions_in_db_args__isset __isset;
+  _ThriftHiveMetastore_get_functions_req_args__isset __isset;
 
   void __set_request(const GetFunctionsRequest& val);
 
-  bool operator == (const ThriftHiveMetastore_get_functions_in_db_args & rhs) const
+  bool operator == (const ThriftHiveMetastore_get_functions_req_args & rhs) const
   {
     if (!(request == rhs.request))
       return false;
     return true;
   }
-  bool operator != (const ThriftHiveMetastore_get_functions_in_db_args &rhs) const {
+  bool operator != (const ThriftHiveMetastore_get_functions_req_args &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const ThriftHiveMetastore_get_functions_in_db_args & ) const;
+  bool operator < (const ThriftHiveMetastore_get_functions_req_args & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -20298,42 +20298,42 @@ class ThriftHiveMetastore_get_functions_in_db_args {
 };
 
 
-class ThriftHiveMetastore_get_functions_in_db_pargs {
+class ThriftHiveMetastore_get_functions_req_pargs {
  public:
 
 
-  virtual ~ThriftHiveMetastore_get_functions_in_db_pargs() noexcept;
+  virtual ~ThriftHiveMetastore_get_functions_req_pargs() noexcept;
   const GetFunctionsRequest* request;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-typedef struct _ThriftHiveMetastore_get_functions_in_db_result__isset {
-  _ThriftHiveMetastore_get_functions_in_db_result__isset() : success(false), o1(false) {}
+typedef struct _ThriftHiveMetastore_get_functions_req_result__isset {
+  _ThriftHiveMetastore_get_functions_req_result__isset() : success(false), o1(false) {}
   bool success :1;
   bool o1 :1;
-} _ThriftHiveMetastore_get_functions_in_db_result__isset;
+} _ThriftHiveMetastore_get_functions_req_result__isset;
 
-class ThriftHiveMetastore_get_functions_in_db_result {
+class ThriftHiveMetastore_get_functions_req_result {
  public:
 
-  ThriftHiveMetastore_get_functions_in_db_result(const ThriftHiveMetastore_get_functions_in_db_result&);
-  ThriftHiveMetastore_get_functions_in_db_result& operator=(const ThriftHiveMetastore_get_functions_in_db_result&);
-  ThriftHiveMetastore_get_functions_in_db_result() noexcept {
+  ThriftHiveMetastore_get_functions_req_result(const ThriftHiveMetastore_get_functions_req_result&);
+  ThriftHiveMetastore_get_functions_req_result& operator=(const ThriftHiveMetastore_get_functions_req_result&);
+  ThriftHiveMetastore_get_functions_req_result() noexcept {
   }
 
-  virtual ~ThriftHiveMetastore_get_functions_in_db_result() noexcept;
+  virtual ~ThriftHiveMetastore_get_functions_req_result() noexcept;
   GetFunctionsResponse success;
   MetaException o1;
 
-  _ThriftHiveMetastore_get_functions_in_db_result__isset __isset;
+  _ThriftHiveMetastore_get_functions_req_result__isset __isset;
 
   void __set_success(const GetFunctionsResponse& val);
 
   void __set_o1(const MetaException& val);
 
-  bool operator == (const ThriftHiveMetastore_get_functions_in_db_result & rhs) const
+  bool operator == (const ThriftHiveMetastore_get_functions_req_result & rhs) const
   {
     if (!(success == rhs.success))
       return false;
@@ -20341,32 +20341,32 @@ class ThriftHiveMetastore_get_functions_in_db_result {
       return false;
     return true;
   }
-  bool operator != (const ThriftHiveMetastore_get_functions_in_db_result &rhs) const {
+  bool operator != (const ThriftHiveMetastore_get_functions_req_result &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const ThriftHiveMetastore_get_functions_in_db_result & ) const;
+  bool operator < (const ThriftHiveMetastore_get_functions_req_result & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-typedef struct _ThriftHiveMetastore_get_functions_in_db_presult__isset {
-  _ThriftHiveMetastore_get_functions_in_db_presult__isset() : success(false), o1(false) {}
+typedef struct _ThriftHiveMetastore_get_functions_req_presult__isset {
+  _ThriftHiveMetastore_get_functions_req_presult__isset() : success(false), o1(false) {}
   bool success :1;
   bool o1 :1;
-} _ThriftHiveMetastore_get_functions_in_db_presult__isset;
+} _ThriftHiveMetastore_get_functions_req_presult__isset;
 
-class ThriftHiveMetastore_get_functions_in_db_presult {
+class ThriftHiveMetastore_get_functions_req_presult {
  public:
 
 
-  virtual ~ThriftHiveMetastore_get_functions_in_db_presult() noexcept;
+  virtual ~ThriftHiveMetastore_get_functions_req_presult() noexcept;
   GetFunctionsResponse* success;
   MetaException o1;
 
-  _ThriftHiveMetastore_get_functions_in_db_presult__isset __isset;
+  _ThriftHiveMetastore_get_functions_req_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -35744,9 +35744,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void get_functions(std::vector<std::string> & _return, const std::string& dbName, const std::string& pattern) override;
   void send_get_functions(const std::string& dbName, const std::string& pattern);
   void recv_get_functions(std::vector<std::string> & _return);
-  void get_functions_in_db(GetFunctionsResponse& _return, const GetFunctionsRequest& request) override;
-  void send_get_functions_in_db(const GetFunctionsRequest& request);
-  void recv_get_functions_in_db(GetFunctionsResponse& _return);
+  void get_functions_req(GetFunctionsResponse& _return, const GetFunctionsRequest& request) override;
+  void send_get_functions_req(const GetFunctionsRequest& request);
+  void recv_get_functions_req(GetFunctionsResponse& _return);
   void get_function(Function& _return, const std::string& dbName, const std::string& funcName) override;
   void send_get_function(const std::string& dbName, const std::string& funcName);
   void recv_get_function(Function& _return);
@@ -36301,7 +36301,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_drop_function(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_alter_function(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_functions(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
-  void process_get_functions_in_db(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_functions_req(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_function(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_all_functions(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_create_role(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -36586,7 +36586,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["drop_function"] = &ThriftHiveMetastoreProcessor::process_drop_function;
     processMap_["alter_function"] = &ThriftHiveMetastoreProcessor::process_alter_function;
     processMap_["get_functions"] = &ThriftHiveMetastoreProcessor::process_get_functions;
-    processMap_["get_functions_in_db"] = &ThriftHiveMetastoreProcessor::process_get_functions_in_db;
+    processMap_["get_functions_req"] = &ThriftHiveMetastoreProcessor::process_get_functions_req;
     processMap_["get_function"] = &ThriftHiveMetastoreProcessor::process_get_function;
     processMap_["get_all_functions"] = &ThriftHiveMetastoreProcessor::process_get_all_functions;
     processMap_["create_role"] = &ThriftHiveMetastoreProcessor::process_create_role;
@@ -38172,13 +38172,13 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
-  void get_functions_in_db(GetFunctionsResponse& _return, const GetFunctionsRequest& request) override {
+  void get_functions_req(GetFunctionsResponse& _return, const GetFunctionsRequest& request) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->get_functions_in_db(_return, request);
+      ifaces_[i]->get_functions_req(_return, request);
     }
-    ifaces_[i]->get_functions_in_db(_return, request);
+    ifaces_[i]->get_functions_req(_return, request);
     return;
   }
 
@@ -39910,9 +39910,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void get_functions(std::vector<std::string> & _return, const std::string& dbName, const std::string& pattern) override;
   int32_t send_get_functions(const std::string& dbName, const std::string& pattern);
   void recv_get_functions(std::vector<std::string> & _return, const int32_t seqid);
-  void get_functions_in_db(GetFunctionsResponse& _return, const GetFunctionsRequest& request) override;
-  int32_t send_get_functions_in_db(const GetFunctionsRequest& request);
-  void recv_get_functions_in_db(GetFunctionsResponse& _return, const int32_t seqid);
+  void get_functions_req(GetFunctionsResponse& _return, const GetFunctionsRequest& request) override;
+  int32_t send_get_functions_req(const GetFunctionsRequest& request);
+  void recv_get_functions_req(GetFunctionsResponse& _return, const int32_t seqid);
   void get_function(Function& _return, const std::string& dbName, const std::string& funcName) override;
   int32_t send_get_function(const std::string& dbName, const std::string& funcName);
   void recv_get_function(Function& _return, const int32_t seqid);

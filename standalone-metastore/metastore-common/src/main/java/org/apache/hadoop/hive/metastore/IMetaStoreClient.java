@@ -3004,6 +3004,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
+  @Deprecated
   List<String> getFunctions(String dbName, String pattern)
       throws MetaException, TException;
 
@@ -3014,7 +3015,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
-  List<Function> getFunctionsInDb(String dbName, String pattern)
+  GetFunctionsResponse getFunctionsRequest(String dbName, String pattern)
       throws TException;
   /**
    * Get all functions matching a pattern
@@ -3024,6 +3025,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
+  @Deprecated
   List<String> getFunctions(String catName, String dbName, String pattern)
       throws MetaException, TException;
 

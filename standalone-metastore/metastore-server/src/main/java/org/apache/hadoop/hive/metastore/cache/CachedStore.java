@@ -2617,8 +2617,9 @@ public class CachedStore implements RawStore, Configurable {
     return rawStore.getFunctions(catName, dbName, pattern);
   }
 
-  @Override public List<Function> getFunctionsInDb(String catName, String dbName, String pattern) throws MetaException {
-    return rawStore.getFunctionsInDb(catName, dbName, pattern);
+  @Override public <T> List<T> getFunctionsRequest(String catName, String dbName,
+      String pattern, boolean isReturnNames) throws MetaException {
+    return rawStore.getFunctionsRequest(catName, dbName, pattern, isReturnNames);
   }
 
   @Override public NotificationEventResponse getNextNotification(NotificationEventRequest rqst) {

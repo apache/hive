@@ -11879,7 +11879,8 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<Function> getFunctionsInDb(String catName, String dbName, String pattern) throws MetaException {
+  public <T> List<T> getFunctionsRequest(String catName, String dbName, String pattern,
+      boolean isReturnNames) throws MetaException {
     boolean commited = false;
     Query query = null;
     try {
@@ -11895,11 +11896,22 @@ public class ObjectStore implements RawStore, Configurable {
         appendPatternCondition(filterBuilder, "functionName", pattern, parameterVals);
       }
       query = pm.newQuery(MFunction.class, filterBuilder.toString());
+      if (isReturnNames) {
+        query.setResult("functionName");
+      }
       query.setOrdering("functionName ascending");
       List<MFunction> functionList = (List<MFunction>) query.executeWithArray(parameterVals.toArray(new String[0]));
       pm.retrieveAll(functionList);
       commited = commitTransaction();
-      return convertToFunctions(functionList);
+      if (!isReturnNames) {
+        return (List<T>)convertToFunctions(functionList);
+      } else {
+        List<String> funcs = new ArrayList<>();
+        for (Iterator i = functionList.iterator(); i.hasNext();) {
+          funcs.add((String) i.next());
+        }
+        return (List<T>)funcs;
+      }
     } finally {
       rollbackAndCleanup(commited, query);
     }

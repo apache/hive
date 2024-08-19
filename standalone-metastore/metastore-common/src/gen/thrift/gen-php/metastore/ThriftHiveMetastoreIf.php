@@ -1218,7 +1218,7 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @return \metastore\GetFunctionsResponse
      * @throws \metastore\MetaException
      */
-    public function get_functions_in_db(\metastore\GetFunctionsRequest $request);
+    public function get_functions_req(\metastore\GetFunctionsRequest $request);
     /**
      * @param string $dbName
      * @param string $funcName

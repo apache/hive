@@ -6271,7 +6271,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public List<Function> getFunctionsInDb(String dbName, String pattern) throws HiveException {
     try {
-      return getMSC().getFunctionsInDb(dbName, pattern);
+      return getMSC().getFunctionsRequest(dbName, pattern).getFunctions();
     } catch (TException te) {
       throw new HiveException(te);
     }
