@@ -4078,7 +4078,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         assert nonNull(tmp);
         if (ensureUniqueCols) {
-          if (!output.putWithCheck(tmp[0], tmp[1], null, oColInfo)) {
+          if (!output.putWithCheck(tmp[0], tmp[1], oColInfo.getInternalName(), oColInfo)) {
             throw new CalciteSemanticException("Cannot add column to RR: " + tmp[0] + "." + tmp[1]
                 + " => " + oColInfo + " due to duplication, see previous warnings",
                 UnsupportedFeature.Duplicates_in_RR);
@@ -8106,10 +8106,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     canBeMerged &= !destTableIsFullAcid;
     if (destinationTable != null && destinationTable.getStorageHandler() != null) {
       canBeMerged &= destinationTable.getStorageHandler().supportsMergeFiles();
-      // TODO: Support for merge task for update, delete and merge queries
+      // TODO: Support for merge task for update and merge queries
       //  when storage handler supports it.
+      if (Context.Operation.DELETE.equals(ctx.getOperation()) && !deleting(dest)) {
+        canBeMerged = true;
+      }
       if (Context.Operation.UPDATE.equals(ctx.getOperation())
-              || Context.Operation.DELETE.equals(ctx.getOperation())
               || Context.Operation.MERGE.equals(ctx.getOperation())) {
         canBeMerged = false;
       }

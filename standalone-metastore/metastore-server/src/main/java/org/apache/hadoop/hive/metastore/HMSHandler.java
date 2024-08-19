@@ -1059,6 +1059,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public void drop_catalog(DropCatalogRequest rqst)
       throws NoSuchObjectException, InvalidOperationException, MetaException {
     String catName = rqst.getName();
+    boolean ifExists = rqst.isIfExists();
     startFunction("drop_catalog", ": " + catName);
     if (DEFAULT_CATALOG_NAME.equalsIgnoreCase(catName)) {
       endFunction("drop_catalog", false, null);
@@ -1068,7 +1069,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     boolean success = false;
     Exception ex = null;
     try {
-      dropCatalogCore(catName);
+      dropCatalogCore(catName, ifExists);
       success = true;
     } catch (Exception e) {
       ex = e;
@@ -1081,7 +1082,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   }
 
-  private void dropCatalogCore(String catName)
+  private void dropCatalogCore(String catName, boolean ifExists)
       throws MetaException, NoSuchObjectException, InvalidOperationException {
     boolean success = false;
     Catalog cat = null;
@@ -1121,7 +1122,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         }
       }
 
-      ms.dropCatalog(catName) ;
+      ms.dropCatalog(catName);
       if (!transactionalListeners.isEmpty()) {
         transactionalListenerResponses =
             MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
@@ -1130,6 +1131,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
 
       success = ms.commitTransaction();
+    } catch (NoSuchObjectException e) {
+      if (!ifExists) {
+        throw new NoSuchObjectException(e.getMessage());
+      } else {
+        ms.rollbackTransaction();
+      }
     } finally {
       if (success) {
         wh.deleteDir(wh.getDnsPath(new Path(cat.getLocationUri())), false, false, false);

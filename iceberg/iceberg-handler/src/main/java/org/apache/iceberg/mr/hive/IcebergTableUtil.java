@@ -393,28 +393,47 @@ public class IcebergTableUtil {
     return data;
   }
 
-  public static List<DataFile> getDataFiles(Table table, int specId,
-      String partitionPath) {
+  /**
+   * Returns table's list of data files as following:
+   *  1. If the table is unpartitioned, returns all data files.
+   *  2. If partitionPath is not provided, returns all data files that belong to the non-latest partition spec.
+   *  3. If partitionPath is provided, returns all data files that belong to the corresponding partition.
+   * @param table the iceberg table
+   * @param partitionPath partition path
+   */
+  public static List<DataFile> getDataFiles(Table table, String partitionPath) {
     CloseableIterable<FileScanTask> fileScanTasks =
         table.newScan().useSnapshot(table.currentSnapshot().snapshotId()).ignoreResiduals().planFiles();
     CloseableIterable<FileScanTask> filteredFileScanTasks =
         CloseableIterable.filter(fileScanTasks, t -> {
           DataFile file = t.asFileScanTask().file();
-          return file.specId() == specId && table.specs()
-              .get(specId).partitionToPath(file.partition()).equals(partitionPath);
+          return !table.spec().isPartitioned() ||
+              (partitionPath == null && file.specId() != table.spec().specId()) ||
+              (partitionPath != null &&
+                  table.specs().get(file.specId()).partitionToPath(file.partition()).equals(partitionPath));
         });
     return Lists.newArrayList(CloseableIterable.transform(filteredFileScanTasks, t -> t.file()));
   }
 
-  public static List<DeleteFile> getDeleteFiles(Table table, int specId, String partitionPath) {
+  /**
+   * Returns table's list of delete files as following:
+   *  1. If the table is unpartitioned, returns all delete files.
+   *  2. If partitionPath is not provided, returns all delete files that belong to the non-latest partition spec.
+   *  3. If partitionPath is provided, returns all delete files that belong to corresponding partition.
+   * @param table the iceberg table
+   * @param partitionPath partition path
+   */
+  public static List<DeleteFile> getDeleteFiles(Table table, String partitionPath) {
     Table deletesTable =
         MetadataTableUtils.createMetadataTableInstance(table, MetadataTableType.POSITION_DELETES);
     CloseableIterable<ScanTask> deletesScanTasks = deletesTable.newBatchScan().planFiles();
     CloseableIterable<ScanTask> filteredDeletesScanTasks =
         CloseableIterable.filter(deletesScanTasks, t -> {
           DeleteFile file = ((PositionDeletesScanTask) t).file();
-          return file.specId() == specId && table.specs()
-              .get(specId).partitionToPath(file.partition()).equals(partitionPath);
+          return !table.spec().isPartitioned() ||
+              (partitionPath == null && file.specId() != table.spec().specId()) ||
+              (partitionPath != null &&
+                  table.specs().get(file.specId()).partitionToPath(file.partition()).equals(partitionPath));
         });
     return Lists.newArrayList(CloseableIterable.transform(filteredDeletesScanTasks,
         t -> ((PositionDeletesScanTask) t).file()));
@@ -465,7 +484,7 @@ public class IcebergTableUtil {
   }
 
   public static Map<PartitionData, Integer> getPartitionInfo(Table icebergTable, Map<String, String> partSpecMap,
-      boolean allowPartialSpec) throws SemanticException, IOException {
+      boolean allowPartialSpec, boolean latestSpecOnly) throws SemanticException, IOException {
     Expression expression = IcebergTableUtil.generateExpressionFromPartitionSpec(icebergTable, partSpecMap);
     PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
         .createMetadataTableInstance(icebergTable, MetadataTableType.PARTITIONS);
@@ -484,10 +503,26 @@ public class IcebergTableUtil {
                 ResidualEvaluator resEval = ResidualEvaluator.of(icebergTable.specs().get(entry.getValue()),
                     expression, false);
                 return resEval.residualFor(entry.getKey()).isEquivalentTo(Expressions.alwaysTrue()) &&
-                    (entry.getKey().size() == partSpecMap.size() || allowPartialSpec);
+                    (entry.getKey().size() == partSpecMap.size() || allowPartialSpec) &&
+                    (entry.getValue() == icebergTable.spec().specId() || !latestSpecOnly);
               }).forEach(entry -> result.put(entry.getKey(), entry.getValue())));
     }
 
     return result;
+  }
+
+  public static List<String> getPartitionNames(Table icebergTable, Map<String, String> partitionSpec,
+      boolean latestSpecOnly) throws SemanticException {
+    try {
+      return IcebergTableUtil
+          .getPartitionInfo(icebergTable, partitionSpec, true, latestSpecOnly).entrySet().stream()
+          .map(e -> {
+            PartitionData partitionData = e.getKey();
+            int specId = e.getValue();
+            return icebergTable.specs().get(specId).partitionToPath(partitionData);
+          }).collect(Collectors.toList());
+    } catch (IOException e) {
+      throw new SemanticException(String.format("Error while fetching the partitions due to: %s", e));
+    }
   }
 }

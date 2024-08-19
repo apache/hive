@@ -373,7 +373,7 @@ public enum ErrorMsg {
       "metastore."),
   INVALID_COMPACTION_TYPE(10282, "Invalid compaction type, supported values are 'major' and " +
       "'minor'"),
-  NO_COMPACTION_PARTITION(10283, "You must specify a partition to compact for partitioned tables"),
+  COMPACTION_NO_PARTITION(10283, "You must specify a partition to compact for partitioned tables"),
   TOO_MANY_COMPACTION_PARTITIONS(10284, "Compaction can only be requested on one partition at a " +
       "time."),
   DISTINCT_NOT_SUPPORTED(10285, "Distinct keyword is not support in current context"),

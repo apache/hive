@@ -1083,6 +1083,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     client.drop_catalog(new DropCatalogRequest(catName));
   }
 
+  public void dropCatalog(String catName, boolean ifExists) throws TException {
+    DropCatalogRequest rqst = new DropCatalogRequest(catName);
+    rqst.setIfExists(ifExists);
+    client.drop_catalog(rqst);
+  }
+
   /**
    * @param new_part
    * @return the added partition

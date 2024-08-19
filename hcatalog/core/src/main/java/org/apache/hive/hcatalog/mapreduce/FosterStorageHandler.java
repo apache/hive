@@ -135,7 +135,9 @@ public class FosterStorageHandler extends DefaultStorageHandler {
           typeNamesSb.append(dataField.getTypeString());
         }
         jobProperties.put(IOConstants.SCHEMA_EVOLUTION_COLUMNS, columnNamesSb.toString());
+        jobProperties.put(IOConstants.COLUMNS, columnNamesSb.toString());
         jobProperties.put(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, typeNamesSb.toString());
+        jobProperties.put(IOConstants.COLUMNS_TYPES, typeNamesSb.toString());
 
         boolean isTransactionalTable = AcidUtils.isTablePropertyTransactional(tableProperties);
         AcidUtils.AcidOperationalProperties acidOperationalProperties =

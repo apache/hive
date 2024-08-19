@@ -2808,6 +2808,217 @@ gfhutjkgkd	67489376589302	76859
 gfhutjkgkd	67489376589302	76859
 gfhutjkgkd	67489376589302	76859
 gfhutjkgkd	67489376589302	76859
+PREHOOK: query: create external table ice_parquet_decimal_transform_bucket(
+  pcol decimal(38, 0)
+) partitioned by spec (bucket(16, pcol))
+stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_parquet_decimal_transform_bucket
+POSTHOOK: query: create external table ice_parquet_decimal_transform_bucket(
+  pcol decimal(38, 0)
+) partitioned by spec (bucket(16, pcol))
+stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_parquet_decimal_transform_bucket
+PREHOOK: query: explain insert into ice_parquet_decimal_transform_bucket values
+('0'),
+('50000000000000000000441610525')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parquet_decimal_transform_bucket
+POSTHOOK: query: explain insert into ice_parquet_decimal_transform_bucket values
+('0'),
+('50000000000000000000441610525')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parquet_decimal_transform_bucket
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: _dummy_table
+                  Row Limit Per Split: 1
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: array(const struct('0'),const struct('50000000000000000000441610525')) (type: array<struct<col1:string>>)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                    UDTF Operator
+                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      function name: inline
+                      Select Operator
+                        expressions: CAST( col1 AS decimal(38,0)) (type: decimal(38,0))
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: iceberg_bucket(_col0, 16) (type: int)
+                          null sort order: a
+                          sort order: +
+                          Map-reduce partition columns: iceberg_bucket(_col0, 16) (type: int)
+                          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: decimal(38,0))
+                        Select Operator
+                          expressions: _col0 (type: decimal(38,0))
+                          outputColumnNames: pcol
+                          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                          Group By Operator
+                            aggregations: min(pcol), max(pcol), count(1), count(pcol), compute_bit_vector_hll(pcol)
+                            minReductionHashAggr: 0.4
+                            mode: hash
+                            outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                            Statistics: Num rows: 1 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
+                            Reduce Output Operator
+                              null sort order: 
+                              sort order: 
+                              Statistics: Num rows: 1 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
+                              value expressions: _col0 (type: decimal(38,0)), _col1 (type: decimal(38,0)), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary)
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: decimal(38,0)), KEY.iceberg_bucket(_col0, 16) (type: int)
+                outputColumnNames: _col0, iceberg_bucket(_col0, 16)
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                      output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                      serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                      name: default.ice_parquet_decimal_transform_bucket
+        Reducer 3 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 1 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'DECIMAL' (type: string), _col0 (type: decimal(38,0)), _col1 (type: decimal(38,0)), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  Statistics: Num rows: 1 Data size: 475 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 475 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.ice_parquet_decimal_transform_bucket
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: pcol
+          Column Types: decimal(38,0)
+          Table: default.ice_parquet_decimal_transform_bucket
+
+PREHOOK: query: insert into ice_parquet_decimal_transform_bucket values
+('0'),
+('50000000000000000000441610525')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parquet_decimal_transform_bucket
+POSTHOOK: query: insert into ice_parquet_decimal_transform_bucket values
+('0'),
+('50000000000000000000441610525')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parquet_decimal_transform_bucket
+PREHOOK: query: describe formatted ice_parquet_decimal_transform_bucket
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_parquet_decimal_transform_bucket
+POSTHOOK: query: describe formatted ice_parquet_decimal_transform_bucket
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_parquet_decimal_transform_bucket
+# col_name            	data_type           	comment             
+pcol                	decimal(38,0)       	                    
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+pcol                	BUCKET[16]          	 
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"pcol\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"pcol\",\"required\":false,\"type\":\"decimal(38, 0)\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"added-data-files\":\"2\",\"added-records\":\"2\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"2\",\"total-records\":\"2\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"pcol_bucket\",\"transform\":\"bucket[16]\",\"source-id\":1,\"field-id\":1000}]}
+	format-version      	2                   
+	iceberg.orc.files.only	false               
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	#Masked#                   
+	numRows             	2                   
+	parquet.compression 	zstd                
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	rawDataSize         	0                   
+	serialization.format	1                   
+	snapshot-count      	1                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: select * from ice_parquet_decimal_transform_bucket
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet_decimal_transform_bucket
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_parquet_decimal_transform_bucket
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet_decimal_transform_bucket
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+50000000000000000000441610525
 PREHOOK: query: drop table ice_parquet_date_transform_year
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ice_parquet_date_transform_year
@@ -2858,3 +3069,13 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ice_parquet_date_transform_bucket
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice_parquet_date_transform_bucket
+PREHOOK: query: drop table ice_parquet_decimal_transform_bucket
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_parquet_decimal_transform_bucket
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_parquet_decimal_transform_bucket
+POSTHOOK: query: drop table ice_parquet_decimal_transform_bucket
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_parquet_decimal_transform_bucket
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_parquet_decimal_transform_bucket

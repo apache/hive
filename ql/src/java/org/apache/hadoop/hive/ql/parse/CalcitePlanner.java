@@ -3055,7 +3055,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 intervals, null, null);
             optTable = new RelOptHiveTable(relOptSchema, relOptSchema.getTypeFactory(), fullyQualifiedTabName,
                 rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
-                db, tabNameToTabObject, partitionCache, colStatsCache, noColsMissingStats);
+                tabNameToTabObject, partitionCache, colStatsCache, noColsMissingStats);
             final TableScan scan = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
                 optTable, null == tableAlias ? tabMetaData.getTableName() : tableAlias,
                 getAliasId(tableAlias, qb), HiveConf.getBoolVar(conf,
@@ -3066,7 +3066,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           } else {
             optTable = new RelOptHiveTable(relOptSchema, relOptSchema.getTypeFactory(), fullyQualifiedTabName,
                   rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
-                  db, tabNameToTabObject, partitionCache, colStatsCache, noColsMissingStats);
+                  tabNameToTabObject, partitionCache, colStatsCache, noColsMissingStats);
             final HiveTableScan hts = new HiveTableScan(cluster,
                   cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
                   null == tableAlias ? tabMetaData.getTableName() : tableAlias,
@@ -3131,7 +3131,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           fullyQualifiedTabName.add(tabMetaData.getTableName());
           optTable = new RelOptHiveTable(relOptSchema, relOptSchema.getTypeFactory(), fullyQualifiedTabName,
               rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
-              db, tabNameToTabObject, partitionCache, colStatsCache, noColsMissingStats);
+              tabNameToTabObject, partitionCache, colStatsCache, noColsMissingStats);
           // Build Hive Table Scan Rel
           tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
               null == tableAlias ? tabMetaData.getTableName() : tableAlias,

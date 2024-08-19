@@ -3200,6 +3200,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public void dropCatalog(String catName, boolean ifExists) throws TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public List<String> getDatabases(String catName, String databasePattern) throws TException {
     throw new UnsupportedOperationException();
   }

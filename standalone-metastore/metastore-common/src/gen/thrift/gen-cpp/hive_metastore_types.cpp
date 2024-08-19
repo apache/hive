@@ -7093,6 +7093,11 @@ DropCatalogRequest::~DropCatalogRequest() noexcept {
 void DropCatalogRequest::__set_name(const std::string& val) {
   this->name = val;
 }
+
+void DropCatalogRequest::__set_ifExists(const bool val) {
+  this->ifExists = val;
+__isset.ifExists = true;
+}
 std::ostream& operator<<(std::ostream& out, const DropCatalogRequest& obj)
 {
   obj.printTo(out);
@@ -7129,6 +7134,14 @@ uint32_t DropCatalogRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
           xfer += iprot->skip(ftype);
         }
         break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->ifExists);
+          this->__isset.ifExists = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -7150,6 +7163,11 @@ uint32_t DropCatalogRequest::write(::apache::thrift::protocol::TProtocol* oprot)
   xfer += oprot->writeString(this->name);
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.ifExists) {
+    xfer += oprot->writeFieldBegin("ifExists", ::apache::thrift::protocol::T_BOOL, 2);
+    xfer += oprot->writeBool(this->ifExists);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -7158,15 +7176,18 @@ uint32_t DropCatalogRequest::write(::apache::thrift::protocol::TProtocol* oprot)
 void swap(DropCatalogRequest &a, DropCatalogRequest &b) {
   using ::std::swap;
   swap(a.name, b.name);
+  swap(a.ifExists, b.ifExists);
   swap(a.__isset, b.__isset);
 }
 
 DropCatalogRequest::DropCatalogRequest(const DropCatalogRequest& other242) {
   name = other242.name;
+  ifExists = other242.ifExists;
   __isset = other242.__isset;
 }
 DropCatalogRequest& DropCatalogRequest::operator=(const DropCatalogRequest& other243) {
   name = other243.name;
+  ifExists = other243.ifExists;
   __isset = other243.__isset;
   return *this;
 }
@@ -7174,6 +7195,7 @@ void DropCatalogRequest::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "DropCatalogRequest(";
   out << "name=" << to_string(name);
+  out << ", " << "ifExists="; (__isset.ifExists ? (out << to_string(ifExists)) : (out << "<null>"));
   out << ")";
 }
 

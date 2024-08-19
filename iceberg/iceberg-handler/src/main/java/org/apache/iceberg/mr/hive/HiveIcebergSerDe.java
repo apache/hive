@@ -157,7 +157,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
 
   private static Schema projectedSchema(Configuration configuration, String tableName, Schema tableSchema,
       Map<String, String> jobConfs) {
-    Context.Operation operation = HiveCustomStorageHandlerUtils.getWriteOperation(configuration, tableName);
+    Context.Operation operation = HiveCustomStorageHandlerUtils.getWriteOperation(configuration::get, tableName);
     if (operation == null) {
       jobConfs.put(InputFormatConfig.CASE_SENSITIVE, "false");
       String[] selectedColumns = ColumnProjectionUtils.getReadColumnNames(configuration);

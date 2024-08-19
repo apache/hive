@@ -126,7 +126,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:PARTITION__SPEC__ID:int, 3:PARTITION__HASH:bigint, 4:FILE__PATH:string, 5:ROW__POSITION:bigint]
+                      vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:PARTITION__SPEC__ID:int, 3:PARTITION__HASH:bigint, 4:FILE__PATH:string, 5:ROW__POSITION:bigint, 6:PARTITION__PROJECTION:string]
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
@@ -348,7 +348,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t_float:float, 1:t_double:double, 2:t_boolean:boolean, 3:t_int:int, 4:t_bigint:bigint, 5:t_binary:binary, 6:t_string:string, 7:t_timestamp:timestamp, 8:t_date:date, 9:t_decimal:decimal(4,2), 10:PARTITION__SPEC__ID:int, 11:PARTITION__HASH:bigint, 12:FILE__PATH:string, 13:ROW__POSITION:bigint]
+                      vectorizationSchemaColumns: [0:t_float:float, 1:t_double:double, 2:t_boolean:boolean, 3:t_int:int, 4:t_bigint:bigint, 5:t_binary:binary, 6:t_string:string, 7:t_timestamp:timestamp, 8:t_date:date, 9:t_decimal:decimal(4,2), 10:PARTITION__SPEC__ID:int, 11:PARTITION__HASH:bigint, 12:FILE__PATH:string, 13:ROW__POSITION:bigint, 14:PARTITION__PROJECTION:string]
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
@@ -553,7 +553,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p1:string, 1:b:string, 2:a:int, 3:p2:string, 4:PARTITION__SPEC__ID:int, 5:PARTITION__HASH:bigint, 6:FILE__PATH:string, 7:ROW__POSITION:bigint]
+                      vectorizationSchemaColumns: [0:p1:string, 1:b:string, 2:a:int, 3:p2:string, 4:PARTITION__SPEC__ID:int, 5:PARTITION__HASH:bigint, 6:FILE__PATH:string, 7:ROW__POSITION:bigint, 8:PARTITION__PROJECTION:string]
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
