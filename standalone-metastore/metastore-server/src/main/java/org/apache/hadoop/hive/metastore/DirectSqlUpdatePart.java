@@ -51,6 +51,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 
 import javax.jdo.PersistenceManager;
+import javax.jdo.Transaction;
 import javax.jdo.datastore.JDOConnection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -99,14 +100,6 @@ class DirectSqlUpdatePart {
     this.dbType = dbType;
     this.maxBatchSize = batchSize;
     sqlGenerator = new SQLGenerator(dbType, conf);
-  }
-
-  void rollbackDBConn(Connection dbConn) {
-    try {
-      if (dbConn != null && !dbConn.isClosed()) dbConn.rollback();
-    } catch (SQLException e) {
-      LOG.warn("Failed to rollback db connection ", e);
-    }
   }
 
   void closeDbConn(JDOConnection jdoConn) {
@@ -484,14 +477,14 @@ class DirectSqlUpdatePart {
                                                       String validWriteIds, long writeId,
                                                       List<TransactionalMetaStoreEventListener> transactionalListeners)
           throws MetaException {
+
     JDOConnection jdoConn = null;
-    Connection dbConn = null;
-    boolean committed = false;
+    Transaction tx = pm.currentTransaction();
     try {
       dbType.lockInternal();
+      tx.begin();
       jdoConn = pm.getDataStoreConnection();
-      dbConn = (Connection) (jdoConn.getNativeConnection());
-
+      Connection dbConn = (Connection) jdoConn.getNativeConnection();
       setAnsiQuotes(dbConn);
 
       Map<PartitionInfo, ColumnStatistics> partitionInfoMap = getPartitionInfo(dbConn, tbl.getId(), partColStatsMap);
@@ -526,18 +519,18 @@ class DirectSqlUpdatePart {
         MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
                 EventMessage.EventType.UPDATE_PARTITION_COLUMN_STAT_BATCH, eventBatch, dbConn, sqlGenerator);
       }
-      dbConn.commit();
-      committed = true;
+      closeDbConn(jdoConn);
+      tx.commit();
       return result;
     } catch (Exception e) {
       LOG.error("Unable to update Column stats for  " + tbl.getTableName(), e);
       throw new MetaException("Unable to update Column stats for  " + tbl.getTableName()
               + " due to: "  + e.getMessage());
     } finally {
-      if (!committed) {
-        rollbackDBConn(dbConn);
+      if (tx.isActive()) {
+        closeDbConn(jdoConn);
+        tx.rollback();
       }
-      closeDbConn(jdoConn);
       dbType.unlockInternal();
     }
   }
@@ -548,14 +541,13 @@ class DirectSqlUpdatePart {
    */
   public long getNextCSIdForMPartitionColumnStatistics(long numStats) throws MetaException {
     long maxCsId = 0;
-    boolean committed = false;
-    Connection dbConn = null;
     JDOConnection jdoConn = null;
-
+    Transaction tx = pm.currentTransaction();
     try {
       dbType.lockInternal();
+      tx.begin();
       jdoConn = pm.getDataStoreConnection();
-      dbConn = (Connection) (jdoConn.getNativeConnection());
+      Connection dbConn = (Connection) jdoConn.getNativeConnection();
 
       setAnsiQuotes(dbConn);
 
@@ -602,18 +594,18 @@ class DirectSqlUpdatePart {
       try (Statement statement = dbConn.createStatement()) {
         statement.executeUpdate(query);
       }
-      dbConn.commit();
-      committed = true;
+      closeDbConn(jdoConn);
+      tx.commit();
       return maxCsId;
     } catch (Exception e) {
       LOG.error("Unable to getNextCSIdForMPartitionColumnStatistics", e);
       throw new MetaException("Unable to getNextCSIdForMPartitionColumnStatistics  "
               + " due to: " + e.getMessage());
     } finally {
-      if (!committed) {
-        rollbackDBConn(dbConn);
+      if (tx.isActive()) {
+        closeDbConn(jdoConn);
+        tx.rollback();
       }
-      closeDbConn(jdoConn);
       dbType.unlockInternal();
     }
   }
