@@ -3604,7 +3604,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public GetFunctionsResponse getFunctionsRequest(String dbName, String pattern) throws TException {
+  public GetFunctionsResponse getFunctionsRequest(GetFunctionsRequest functionRequest) throws TException {
     throw new UnsupportedOperationException();
   }
 

@@ -116,6 +116,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
+import org.apache.hadoop.hive.metastore.api.GetFunctionsRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
@@ -6271,7 +6272,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public List<Function> getFunctionsInDb(String dbName, String pattern) throws HiveException {
     try {
-      return getMSC().getFunctionsRequest(dbName, pattern).getFunctions();
+      GetFunctionsRequest request = new GetFunctionsRequest(dbName);
+      request.setPattern(pattern);
+      request.setCatalogName(getDefaultCatalog(conf));
+      request.setReturnNames(false);
+      return getMSC().getFunctionsRequest(request).getFunctions();
     } catch (TException te) {
       throw new HiveException(te);
     }
