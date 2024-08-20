@@ -584,24 +584,9 @@ public class ObjectStore implements RawStore, Configurable {
    */
   @Override
   public boolean openTransaction() {
-    return openTransaction(null);
-  }
-
-  /**
-   * Opens a new one or the one already created. Every call of this function must
-   * have corresponding commit or rollback function call.
-   *
-   * @param isolationLevel The transaction isolation level. Only possible to set on the first call.
-   * @return an active transaction
-   */
-  @Override
-  public boolean openTransaction(String isolationLevel) {
     openTrasactionCalls++;
     if (openTrasactionCalls == 1) {
       currentTransaction = pm.currentTransaction();
-      if (isolationLevel != null) {
-        currentTransaction.setIsolationLevel(isolationLevel);
-      }
       currentTransaction.begin();
       transactionStatus = TXN_STATUS.OPEN;
     } else {
@@ -610,11 +595,6 @@ public class ObjectStore implements RawStore, Configurable {
       if ((currentTransaction == null) || (!currentTransaction.isActive())){
         throw new RuntimeException("openTransaction called in an interior"
             + " transaction scope, but currentTransaction is not active.");
-      }
-
-      // Can not change the isolation level on an already open transaction
-      if (isolationLevel != null && !isolationLevel.equals(currentTransaction.getIsolationLevel())) {
-        throw new RuntimeException("Can not set isolation level on an open transaction");
       }
     }
 
@@ -1270,51 +1250,6 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return success;
   }
-
-  /*
-  public DataConnector getDataConnectorInternal(String name)
-      throws MetaException, NoSuchObjectException {
-    return new GetDcHelper(name, true, true) {
-      @Override
-      protected DataConnector getSqlResult(GetHelper<DataConnector> ctx) throws MetaException {
-        try {
-        return getJDODataConnector(name);
-      }
-
-      @Override
-      protected DataConnector getJdoResult(GetHelper<DataConnector> ctx) throws MetaException, NoSuchObjectException {
-        return getJDODataConnector(name);
-      }
-    }.run(false);
-  }
-
-  private DataConnector getDataConnectorInternal(String name) throws NoSuchObjectException {
-    MDataConnector mdc = null;
-    boolean commited = false;
-    try {
-      openTransaction();
-      mdc = getMDataConnector(name);
-      commited = commitTransaction();
-    } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
-    }
-    DataConnector connector = new DataConnector();
-    connector.setName(mdc.getName());
-    connector.setType(mdc.getType());
-    connector.setUrl(mdc.getUrl());
-    connector.setDescription(mdc.getDescription());
-    connector.setParameters(convertMap(mdc.getParameters()));
-    connector.setOwnerName(mdc.getOwnerName());
-    String type = org.apache.commons.lang3.StringUtils.defaultIfBlank(mdc.getOwnerType(), null);
-    PrincipalType principalType = (type == null) ? null : PrincipalType.valueOf(type);
-    connector.setOwnerType(principalType);
-    connector.setCreateTime(mdc.getCreateTime());
-    return connector;
-  }
-   */
-
 
   private MType getMType(Type type) {
     List<MFieldSchema> fields = new ArrayList<>();

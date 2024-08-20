@@ -88,11 +88,6 @@ public interface IHMSHandler extends ThriftHiveMetastore.Iface, Configurable {
   @Deprecated
   Table get_table_core(final String catName, final String dbname, final String name)
       throws MetaException, NoSuchObjectException;
-  @Deprecated
-  Table get_table_core(final String catName, final String dbname,
-                       final String name,
-                       final String writeIdList)
-      throws MetaException, NoSuchObjectException;
 
   /**
    *

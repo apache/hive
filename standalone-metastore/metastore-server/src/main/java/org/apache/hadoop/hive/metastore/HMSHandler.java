@@ -2245,52 +2245,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return transformedTbl != null ? transformedTbl : tbl;
   }
 
-  private void create_table_core(final RawStore ms, final Table tbl,
-                                 final EnvironmentContext envContext)
-      throws AlreadyExistsException, MetaException,
-      InvalidObjectException, NoSuchObjectException, InvalidInputException {
-    CreateTableRequest req = new CreateTableRequest(tbl);
-    req.setEnvContext(envContext);
-    create_table_core(ms, req);
-  }
-
-  private void create_table_core(final RawStore ms, final Table tbl,
-                                 final EnvironmentContext envContext, List<SQLPrimaryKey> primaryKeys,
-                                 List<SQLForeignKey> foreignKeys, List<SQLUniqueConstraint> uniqueConstraints,
-                                 List<SQLNotNullConstraint> notNullConstraints, List<SQLDefaultConstraint> defaultConstraints,
-                                 List<SQLCheckConstraint> checkConstraints,
-                                 List<String> processorCapabilities, String processorIdentifier)
-      throws AlreadyExistsException, MetaException,
-      InvalidObjectException, NoSuchObjectException, InvalidInputException {
-    CreateTableRequest req = new CreateTableRequest(tbl);
-    if (envContext != null) {
-      req.setEnvContext(envContext);
-    }
-    if (primaryKeys != null) {
-      req.setPrimaryKeys(primaryKeys);
-    }
-    if (foreignKeys != null) {
-      req.setForeignKeys(foreignKeys);
-    }
-    if (uniqueConstraints != null) {
-      req.setUniqueConstraints(uniqueConstraints);
-    }
-    if (notNullConstraints != null) {
-      req.setNotNullConstraints(notNullConstraints);
-    }
-    if (defaultConstraints != null) {
-      req.setDefaultConstraints(defaultConstraints);
-    }
-    if (checkConstraints != null) {
-      req.setCheckConstraints(checkConstraints);
-    }
-    if (processorCapabilities != null) {
-      req.setProcessorCapabilities(processorCapabilities);
-      req.setProcessorIdentifier(processorIdentifier);
-    }
-    create_table_core(ms, req);
-  }
-
   private void create_table_core(final RawStore ms, final CreateTableRequest req)
       throws AlreadyExistsException, MetaException,
       InvalidObjectException, NoSuchObjectException, InvalidInputException {
@@ -3719,20 +3673,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return get_table_core(getTableRequest);
   }
 
-  @Override
-  @Deprecated
-  public Table get_table_core(
-      final String catName,
-      final String dbname,
-      final String name,
-      final String writeIdList)
-      throws MetaException, NoSuchObjectException {
-    GetTableRequest getTableRequest = new GetTableRequest(dbname,name);
-    getTableRequest.setCatName(catName);
-    getTableRequest.setValidWriteIdList(writeIdList);
-    return get_table_core(getTableRequest);
-  }
-
   /**
    * This function retrieves table from metastore. If getColumnStats flag is true,
    * then engine should be specified so the table is retrieve with the column stats
@@ -4790,74 +4730,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         part.putToParameters(key, paramVal);
       }
     }
-  }
-
-  private Partition add_partition_core(final RawStore ms,
-                                       final Partition part, final EnvironmentContext envContext)
-      throws TException {
-    boolean success = false;
-    Table tbl = null;
-    Map<String, String> transactionalListenerResponses = Collections.emptyMap();
-    if (!part.isSetCatName()) {
-      part.setCatName(getDefaultCatalog(conf));
-    }
-    try {
-      ms.openTransaction();
-      tbl = ms.getTable(part.getCatName(), part.getDbName(), part.getTableName(), null);
-      if (tbl == null) {
-        throw new InvalidObjectException(
-            "Unable to add partition because table or database do not exist");
-      }
-
-      firePreEvent(new PreAddPartitionEvent(tbl, part, this));
-
-      if (part.getValues() == null || part.getValues().isEmpty()) {
-        throw new MetaException("The partition values cannot be null or empty.");
-      }
-      boolean shouldAdd = startAddPartition(ms, part, tbl.getPartitionKeys(), false);
-      assert shouldAdd; // start would throw if it already existed here
-      boolean madeDir = createLocationForAddedPartition(tbl, part);
-      try {
-        initializeAddedPartition(tbl, part, madeDir, envContext);
-        initializePartitionParameters(tbl, part);
-        success = ms.addPartition(part);
-      } finally {
-        if (!success && madeDir) {
-          wh.deleteDir(new Path(part.getSd().getLocation()), true, false,
-              ReplChangeManager.shouldEnableCm(ms.getDatabase(part.getCatName(), part.getDbName()), tbl));
-        }
-      }
-
-      // Setting success to false to make sure that if the listener fails, rollback happens.
-      success = false;
-
-      if (!transactionalListeners.isEmpty()) {
-        transactionalListenerResponses =
-            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                EventType.ADD_PARTITION,
-                new AddPartitionEvent(tbl, Arrays.asList(part), true, this),
-                envContext);
-
-      }
-
-      // we proceed only if we'd actually succeeded anyway, otherwise,
-      // we'd have thrown an exception
-      success = ms.commitTransaction();
-    } finally {
-      if (!success) {
-        ms.rollbackTransaction();
-      }
-
-      if (!listeners.isEmpty()) {
-        MetaStoreListenerNotifier.notifyEvent(listeners,
-            EventType.ADD_PARTITION,
-            new AddPartitionEvent(tbl, Arrays.asList(part), success, this),
-            envContext,
-            transactionalListenerResponses, ms);
-
-      }
-    }
-    return part;
   }
 
   @Deprecated
@@ -6784,21 +6656,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       endFunction("append_partition_by_name", ret != null, ex, tbl_name);
     }
     return ret;
-  }
-
-  private boolean drop_partition_by_name_core(final RawStore ms, final String catName,
-      final String db_name, final String tbl_name, final String part_name,
-      final boolean deleteData, final EnvironmentContext envContext)
-      throws TException, IOException {
-
-    List<String> partVals;
-    try {
-      partVals = getPartValsFromName(ms, catName, db_name, tbl_name, part_name);
-    } catch (InvalidObjectException e) {
-      throw new NoSuchObjectException(e.getMessage());
-    }
-
-    return drop_partition_common(ms, catName, db_name, tbl_name, partVals, deleteData, envContext);
   }
 
   @Deprecated
