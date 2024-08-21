@@ -945,7 +945,10 @@ public class StatsOptimizer extends Transform {
         if (!StatsUtils.areBasicStatsUptoDateForQueryAnswering(tbl, tbl.getParameters())) {
           return null;
         }
-        rowCnt = Long.valueOf(tbl.getProperty(StatsSetupConst.ROW_COUNT));
+        Map<String, String> basicStats = MetaStoreUtils.isNonNativeTable(tbl.getTTable()) ?
+          tbl.getStorageHandler().getBasicStatistics(tbl) : tbl.getParameters();
+
+        rowCnt = Long.valueOf(basicStats.get(StatsSetupConst.ROW_COUNT));
       }
       return rowCnt;
     }

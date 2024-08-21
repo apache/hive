@@ -254,7 +254,12 @@ public interface HiveStorageHandler extends Configurable {
    * @param partish a partish wrapper class
    * @return map of basic statistics, can be null
    */
+  @Deprecated
   default Map<String, String> getBasicStatistics(Partish partish) {
+    return getBasicStatistics(partish.getTable());
+  }
+
+  default Map<String, String> getBasicStatistics(org.apache.hadoop.hive.ql.metadata.Table table) {
     return null;
   }
 
