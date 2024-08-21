@@ -11900,17 +11900,17 @@ public class ObjectStore implements RawStore, Configurable {
         query.setResult("functionName");
       }
       query.setOrdering("functionName ascending");
-      List<MFunction> functionList = (List<MFunction>) query.executeWithArray(parameterVals.toArray(new String[0]));
-      pm.retrieveAll(functionList);
-      commited = commitTransaction();
+
       if (!isReturnNames) {
+        List<MFunction> functionList = (List<MFunction>) query.executeWithArray(parameterVals.toArray(new String[0]));
+        pm.retrieveAll(functionList);
+        commited = commitTransaction();
         return (List<T>)convertToFunctions(functionList);
       } else {
-        List<String> funcs = new ArrayList<>();
-        for (Iterator i = functionList.iterator(); i.hasNext();) {
-          funcs.add((String) i.next());
-        }
-        return (List<T>)funcs;
+        List<String> functionList = (List<String>) query.executeWithArray(parameterVals.toArray(new String[0]));
+        pm.retrieveAll(functionList);
+        commited = commitTransaction();
+        return (List<T>)functionList;
       }
     } finally {
       rollbackAndCleanup(commited, query);
