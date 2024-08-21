@@ -453,7 +453,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     // For write queries where rows got modified, don't fetch from cache as values could have changed.
     Map<String, String> stats = Maps.newHashMap();
     if (!getStatsSource().equals(HiveMetaHook.ICEBERG)) {
-      return stats;
+      return hmsTable.getParameters();
     }
     Table table = getTable(hmsTable);
 
