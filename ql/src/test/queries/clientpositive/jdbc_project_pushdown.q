@@ -42,16 +42,3 @@ explain cbo select book.title, author.fname from book join author
 where book.author = author.id
 and ucase(book.title) = 'LES MISERABLES'
 and substring(author.lname, 0, 3) = 'Hug';
-
-set hive.cbo.rule.exclusion.regex=JDBCPushProjectAboveConverter;
-
-explain cbo select id from book where substring(title, 0, 3) = 'Les';
-
-explain cbo select id from book where ucase(title) = 'LES MISERABLES';
-
-explain cbo select book.title, author.fname from book join author on book.author = author.id;
-
-explain cbo select book.title, author.fname from book join author
-where book.author = author.id
-and ucase(book.title) = 'LES MISERABLES'
-and substring(author.lname, 0, 3) = 'Hug';

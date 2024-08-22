@@ -172,7 +172,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSortLimitR
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveEmptySingleRules;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCPushProjectAboveConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializationRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelDistribution;
@@ -2305,12 +2304,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
         generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN,
             rules.toArray(new RelOptRule[rules.size()]));
-        
-        generatePartialProgram(program, false, HepMatchOrder.TOP_DOWN,
-            JDBCPushProjectAboveConverter.INSTANCE,
-            new HiveFieldTrimmerRule(false),
-            JDBCProjectPushDownRule.INSTANCE
-        );
       }
 
       // 9. Run rules to aid in translation from Calcite tree to Hive tree

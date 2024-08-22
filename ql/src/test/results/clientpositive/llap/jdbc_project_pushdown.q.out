@@ -82,110 +82,25 @@ CBO PLAN:
 HiveJdbcConverter(convention=[JDBC.POSTGRES])
   JdbcProject(id=[$0])
     JdbcFilter(condition=[=(SUBSTRING($1, 0, 3), _UTF-16LE'Les')])
-      JdbcHiveTableScan(table=[[default, book]], table:alias=[book])
-
-PREHOOK: query: explain cbo select id from book where ucase(title) = 'LES MISERABLES'
-PREHOOK: type: QUERY
-PREHOOK: Input: default@book
-PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: explain cbo select id from book where ucase(title) = 'LES MISERABLES'
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@book
-POSTHOOK: Output: hdfs://### HDFS PATH ###
-CBO PLAN:
-HiveProject(id=[$0])
-  HiveFilter(condition=[=(CAST(ucase($1)):VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'LES MISERABLES')])
-    HiveProject($f0=[$0], $f1=[$1])
-      HiveJdbcConverter(convention=[JDBC.POSTGRES])
-        JdbcProject($f0=[$0], $f1=[$1])
-          JdbcHiveTableScan(table=[[default, book]], table:alias=[book])
-
-PREHOOK: query: explain cbo select book.title, author.fname from book join author on book.author = author.id
-PREHOOK: type: QUERY
-PREHOOK: Input: default@author
-PREHOOK: Input: default@book
-PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: explain cbo select book.title, author.fname from book join author on book.author = author.id
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@author
-POSTHOOK: Input: default@book
-POSTHOOK: Output: hdfs://### HDFS PATH ###
-CBO PLAN:
-HiveJdbcConverter(convention=[JDBC.POSTGRES])
-  JdbcProject(title=[$0], fname=[$3])
-    JdbcJoin(condition=[=($1, $2)], joinType=[inner])
-      JdbcProject(title=[$1], author=[$2])
-        JdbcFilter(condition=[IS NOT NULL($2)])
-          JdbcHiveTableScan(table=[[default, book]], table:alias=[book])
-      JdbcProject(id=[$0], fname=[$1])
-        JdbcFilter(condition=[IS NOT NULL($0)])
-          JdbcHiveTableScan(table=[[default, author]], table:alias=[author])
-
-PREHOOK: query: explain cbo select book.title, author.fname from book join author
-where book.author = author.id
-and ucase(book.title) = 'LES MISERABLES'
-and substring(author.lname, 0, 3) = 'Hug'
-PREHOOK: type: QUERY
-PREHOOK: Input: default@author
-PREHOOK: Input: default@book
-PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: explain cbo select book.title, author.fname from book join author
-where book.author = author.id
-and ucase(book.title) = 'LES MISERABLES'
-and substring(author.lname, 0, 3) = 'Hug'
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@author
-POSTHOOK: Input: default@book
-POSTHOOK: Output: hdfs://### HDFS PATH ###
-CBO PLAN:
-HiveProject(title=[$0], fname=[$3])
-  HiveJoin(condition=[=($1, $2)], joinType=[inner], algorithm=[none], cost=[not available])
-    HiveProject($f1=[$0], $f2=[$1])
-      HiveFilter(condition=[=(CAST(ucase($0)):VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'LES MISERABLES')])
-        HiveProject($f1=[$0], $f2=[$1])
-          HiveJdbcConverter(convention=[JDBC.POSTGRES])
-            JdbcProject($f1=[$1], $f2=[$2])
-              JdbcFilter(condition=[IS NOT NULL($2)])
-                JdbcHiveTableScan(table=[[default, book]], table:alias=[book])
-    HiveProject(id=[$0], fname=[$1])
-      HiveJdbcConverter(convention=[JDBC.POSTGRES])
-        JdbcProject(id=[$0], fname=[$1])
-          JdbcFilter(condition=[AND(=(SUBSTRING($2, 0, 3), _UTF-16LE'Hug'), IS NOT NULL($0))])
-            JdbcHiveTableScan(table=[[default, author]], table:alias=[author])
-
-PREHOOK: query: explain cbo select id from book where substring(title, 0, 3) = 'Les'
-PREHOOK: type: QUERY
-PREHOOK: Input: default@book
-PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: explain cbo select id from book where substring(title, 0, 3) = 'Les'
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@book
-POSTHOOK: Output: hdfs://### HDFS PATH ###
-Excluded rules: JDBCPushProjectAboveConverter
-
-CBO PLAN:
-HiveJdbcConverter(convention=[JDBC.POSTGRES])
-  JdbcProject(id=[$0])
-    JdbcFilter(condition=[=(SUBSTRING($1, 0, 3), _UTF-16LE'Les')])
-      JdbcHiveTableScan(table=[[default, book]], table:alias=[book])
-
-PREHOOK: query: explain cbo select id from book where ucase(title) = 'LES MISERABLES'
-PREHOOK: type: QUERY
-PREHOOK: Input: default@book
-PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: explain cbo select id from book where ucase(title) = 'LES MISERABLES'
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@book
-POSTHOOK: Output: hdfs://### HDFS PATH ###
-Excluded rules: JDBCPushProjectAboveConverter
-
-CBO PLAN:
-HiveProject(id=[$0])
-  HiveFilter(condition=[=(CAST(ucase($1)):VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'LES MISERABLES')])
-    HiveProject(id=[$0], title=[$1], author=[$2])
-      HiveJdbcConverter(convention=[JDBC.POSTGRES])
+      JdbcProject(id=[$0], title=[$1])
         JdbcHiveTableScan(table=[[default, book]], table:alias=[book])
 
+PREHOOK: query: explain cbo select id from book where ucase(title) = 'LES MISERABLES'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@book
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo select id from book where ucase(title) = 'LES MISERABLES'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@book
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveProject(id=[$0])
+  HiveFilter(condition=[=(CAST(ucase($1)):VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'LES MISERABLES')])
+    HiveProject(id=[$0], title=[$1])
+      HiveJdbcConverter(convention=[JDBC.POSTGRES])
+        JdbcProject(id=[$0], title=[$1])
+          JdbcHiveTableScan(table=[[default, book]], table:alias=[book])
+
 PREHOOK: query: explain cbo select book.title, author.fname from book join author on book.author = author.id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@author
@@ -196,18 +111,18 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@author
 POSTHOOK: Input: default@book
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-Excluded rules: JDBCPushProjectAboveConverter
-
 CBO PLAN:
 HiveJdbcConverter(convention=[JDBC.POSTGRES])
   JdbcProject(title=[$0], fname=[$3])
     JdbcJoin(condition=[=($1, $2)], joinType=[inner])
-      JdbcProject(title=[$1], author=[$2])
-        JdbcFilter(condition=[IS NOT NULL($2)])
-          JdbcHiveTableScan(table=[[default, book]], table:alias=[book])
+      JdbcProject(title=[$0], author=[$1])
+        JdbcFilter(condition=[IS NOT NULL($1)])
+          JdbcProject(title=[$1], author=[$2])
+            JdbcHiveTableScan(table=[[default, book]], table:alias=[book])
       JdbcProject(id=[$0], fname=[$1])
         JdbcFilter(condition=[IS NOT NULL($0)])
-          JdbcHiveTableScan(table=[[default, author]], table:alias=[author])
+          JdbcProject(id=[$0], fname=[$1])
+            JdbcHiveTableScan(table=[[default, author]], table:alias=[author])
 
 PREHOOK: query: explain cbo select book.title, author.fname from book join author
 where book.author = author.id
@@ -225,17 +140,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@author
 POSTHOOK: Input: default@book
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-Excluded rules: JDBCPushProjectAboveConverter
-
 CBO PLAN:
 HiveProject(title=[$0], fname=[$3])
   HiveJoin(condition=[=($1, $2)], joinType=[inner], algorithm=[none], cost=[not available])
-    HiveProject(title=[$1], author=[$2])
-      HiveFilter(condition=[=(CAST(ucase($1)):VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'LES MISERABLES')])
-        HiveProject(id=[$0], title=[$1], author=[$2])
+    HiveProject(title=[$0], author=[$1])
+      HiveFilter(condition=[=(CAST(ucase($0)):VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'LES MISERABLES')])
+        HiveProject(title=[$0], author=[$1])
           HiveJdbcConverter(convention=[JDBC.POSTGRES])
-            JdbcFilter(condition=[IS NOT NULL($2)])
-              JdbcHiveTableScan(table=[[default, book]], table:alias=[book])
+            JdbcFilter(condition=[IS NOT NULL($1)])
+              JdbcProject(title=[$1], author=[$2])
+                JdbcHiveTableScan(table=[[default, book]], table:alias=[book])
     HiveProject(id=[$0], fname=[$1])
       HiveJdbcConverter(convention=[JDBC.POSTGRES])
         JdbcProject(id=[$0], fname=[$1])
