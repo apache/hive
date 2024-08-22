@@ -50,7 +50,7 @@ public class JavaIOTmpdirVariableCoercion extends VariableCoercion {
       Path absolutePath = FileUtils.makeAbsolute(LOCAL_FILE_SYSTEM, originalPath);
       return absolutePath.toString();
     } catch (IOException exception) {
-      LOG.warn(String.format("Unable to resolve 'java.io.tmpdir' for absolute path '%s'", originalValue));
+      LOG.warn("Unable to resolve 'java.io.tmpdir' for absolute path '%s'".formatted(originalValue));
       return originalValue;
     }
   }
