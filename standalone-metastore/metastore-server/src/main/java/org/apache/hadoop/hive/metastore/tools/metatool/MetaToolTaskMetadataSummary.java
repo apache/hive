@@ -20,14 +20,11 @@ package org.apache.hadoop.hive.metastore.tools.metatool;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.metastore.tools.MetaToolObjectStore;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -36,7 +33,7 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
     void execute() {
       try {
         String[] inputParams = getCl().getMetadataSummaryParams();
-        ObjectStore objectStore = getObjectStore();
+        MetaToolObjectStore objectStore = getObjectStore();
         List<MetadataTableSummary> tableSummariesList = objectStore.getMetadataSummary(null, null, null);
         if (tableSummariesList == null || tableSummariesList.size() == 0) {
           System.out.println("Return set of tables is empty or null");
