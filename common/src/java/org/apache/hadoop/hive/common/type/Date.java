@@ -116,8 +116,8 @@ public class Date implements Comparable<Date> {
 
   @Override
   public boolean equals(Object other) {
-    if (other instanceof Date) {
-      return compareTo((Date) other) == 0;
+    if (other instanceof Date date) {
+      return compareTo(date) == 0;
     }
     return false;
   }
