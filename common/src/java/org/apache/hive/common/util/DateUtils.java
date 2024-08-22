@@ -52,7 +52,7 @@ public class DateUtils {
     if (strVal != null) {
       result = Integer.parseInt(strVal);
       if (result < minValue || result > maxValue) {
-        throw new IllegalArgumentException(String.format("%s value %d outside range [%d, %d]",
+        throw new IllegalArgumentException("%s value %d outside range [%d, %d]".formatted(
             fieldName, result, minValue, maxValue));
       }
     }
