@@ -216,7 +216,7 @@ public class HiveStringUtils {
     }
     StringBuilder s = new StringBuilder();
     for(int i = start; i < end; i++) {
-      s.append(String.format("%02x", bytes[i]));
+      s.append("%02x".formatted(bytes[i]));
     }
     return s.toString();
   }

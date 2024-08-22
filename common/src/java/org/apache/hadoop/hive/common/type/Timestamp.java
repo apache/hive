@@ -134,8 +134,8 @@ public class Timestamp implements Comparable<Timestamp> {
 
   @Override
   public boolean equals(Object other) {
-    if (other instanceof Timestamp) {
-      return compareTo((Timestamp) other) == 0;
+    if (other instanceof Timestamp timestamp) {
+      return compareTo(timestamp) == 0;
     }
     return false;
   }
