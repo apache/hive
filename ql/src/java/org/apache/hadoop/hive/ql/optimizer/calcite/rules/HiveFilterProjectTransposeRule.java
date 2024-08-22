@@ -36,6 +36,7 @@ import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.rules.FilterProjectTransposeRule;
+import org.apache.calcite.rel.rules.ProjectMergeRule;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
@@ -66,43 +67,47 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
   public static final HiveFilterProjectTransposeRule DETERMINISTIC_WINDOWING_ON_NON_FILTERING_JOIN =
       new HiveFilterProjectTransposeRule(
           operand(Filter.class, operand(Project.class, operand(Join.class, any()))),
-          HiveRelFactories.HIVE_BUILDER, true, true);
+          HiveRelFactories.HIVE_BUILDER, true, true, ProjectMergeRule.DEFAULT_BLOAT);
 
   public static final HiveFilterProjectTransposeRule DETERMINISTIC_WINDOWING =
           new HiveFilterProjectTransposeRule(Filter.class, HiveProject.class,
-                  HiveRelFactories.HIVE_BUILDER, true, true);
+                  HiveRelFactories.HIVE_BUILDER, true, true, ProjectMergeRule.DEFAULT_BLOAT);
 
   public static final HiveFilterProjectTransposeRule DETERMINISTIC_ON_NON_FILTERING_JOIN =
       new HiveFilterProjectTransposeRule(
           operand(Filter.class, operand(Project.class, operand(Join.class, any()))),
-          HiveRelFactories.HIVE_BUILDER, true, false);
+          HiveRelFactories.HIVE_BUILDER, true, false, ProjectMergeRule.DEFAULT_BLOAT);
 
   public static final HiveFilterProjectTransposeRule DETERMINISTIC =
           new HiveFilterProjectTransposeRule(Filter.class, HiveProject.class,
-                  HiveRelFactories.HIVE_BUILDER, true, false);
+                  HiveRelFactories.HIVE_BUILDER, true, false, ProjectMergeRule.DEFAULT_BLOAT);
 
   public static final HiveFilterProjectTransposeRule INSTANCE =
           new HiveFilterProjectTransposeRule(Filter.class, HiveProject.class,
-                  HiveRelFactories.HIVE_BUILDER, false, false);
+                  HiveRelFactories.HIVE_BUILDER, false, false, ProjectMergeRule.DEFAULT_BLOAT);
 
   private final boolean onlyDeterministic;
 
   private final boolean pushThroughWindowing;
 
+  private final int bloat;
+
   private HiveFilterProjectTransposeRule(Class<? extends Filter> filterClass,
       Class<? extends Project> projectClass, RelBuilderFactory relBuilderFactory,
-      boolean onlyDeterministic,boolean pushThroughWindowing) {
+      boolean onlyDeterministic,boolean pushThroughWindowing, int bloat) {
     super(filterClass, projectClass, false, false, relBuilderFactory);
     this.onlyDeterministic = onlyDeterministic;
     this.pushThroughWindowing = pushThroughWindowing;
+    this.bloat = bloat;
   }
 
   private HiveFilterProjectTransposeRule(RelOptRuleOperand operand,
       RelBuilderFactory relBuilderFactory,
-      boolean onlyDeterministic, boolean pushThroughWindowing) {
+      boolean onlyDeterministic, boolean pushThroughWindowing, int bloat) {
     super(operand, false, false, relBuilderFactory);
     this.onlyDeterministic = onlyDeterministic;
     this.pushThroughWindowing = pushThroughWindowing;
+    this.bloat = bloat;
   }
 
   @Override
@@ -193,15 +198,21 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
       RelNode newProjRel = getNewProject(filterCondToPushBelowProj, unPushedFilCondAboveProj, origproject, filter.getCluster()
           .getTypeFactory(), call.builder());
 
-      call.transformTo(newProjRel);
+      if (newProjRel != null) {
+        call.transformTo(newProjRel);
+      }
     }
   }
 
-  private static RelNode getNewProject(RexNode filterCondToPushBelowProj, RexNode unPushedFilCondAboveProj, Project oldProj,
+  private RelNode getNewProject(RexNode filterCondToPushBelowProj, RexNode unPushedFilCondAboveProj, Project oldProj,
       RelDataTypeFactory typeFactory, RelBuilder relBuilder) {
 
     // convert the filter to one that references the child of the project.
-    RexNode newPushedCondition = RelOptUtil.pushPastProject(filterCondToPushBelowProj, oldProj);
+    RexNode newPushedCondition =
+        HiveRelOptUtil.pushPastProjectUnlessBloat(filterCondToPushBelowProj, oldProj, bloat);
+    if (newPushedCondition == null) {
+      return null;
+    }
 
     // Remove cast of BOOLEAN NOT NULL to BOOLEAN or vice versa. Filter accepts
     // nullable and not-nullable conditions, but a CAST might get in the way of
