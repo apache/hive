@@ -47,128 +47,130 @@ public class TestTezJsonParser {
     String content = new String(baos.toByteArray(), StandardCharsets.UTF_8);
     Assert
         .assertEquals(
-            "Plan optimized by CBO.\n"
-                + "\n"
-                + "Vertex dependency in root stage\n"
-                + "Map 1 <- Map 5 (BROADCAST_EDGE)\n"
-                + "Map 6 <- Map 8 (BROADCAST_EDGE)\n"
-                + "Map 9 <- Map 10 (BROADCAST_EDGE)\n"
-                + "Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)\n"
-                + "Reducer 3 <- Reducer 2 (SIMPLE_EDGE)\n"
-                + "Reducer 4 <- Reducer 3 (SIMPLE_EDGE)\n"
-                + "Reducer 7 <- Map 11 (BROADCAST_EDGE), Map 12 (BROADCAST_EDGE), Map 6 (SIMPLE_EDGE), Map 9 (SIMPLE_EDGE)\n"
-                + "\n"
-                + "Stage-0\n"
-                + "  Fetch Operator\n"
-                + "    limit:100\n"
-                + "    Stage-1\n"
-                + "      Reducer 4\n"
-                + "      File Output Operator [FS_55]\n"
-                + "        Limit [LIM_54] (rows=100 width=133)\n"
-                + "          Number of rows:100\n"
-                + "          Select Operator [SEL_53] (rows=2319458 width=133)\n"
-                + "            Output:[\"_col0\",\"_col1\",\"_col2\",\"_col3\",\"_col4\",\"_col5\",\"_col6\"]\n"
-                + "          <-Reducer 3 [SIMPLE_EDGE]\n"
-                + "            SHUFFLE [RS_52]\n"
-                + "              Group By Operator [GBY_50] (rows=2319458 width=133)\n"
-                + "                Output:[\"_col0\",\"_col1\",\"_col2\",\"_col3\",\"_col4\",\"_col5\",\"_col6\"],aggregations:[\"sum(VALUE._col0)\",\"sum(VALUE._col1)\",\"sum(VALUE._col2)\"],keys:KEY._col0, KEY._col1, KEY._col2, KEY._col3\n"
-                + "              <-Reducer 2 [SIMPLE_EDGE]\n"
-                + "                SHUFFLE [RS_49]\n"
-                + "                  PartitionCols:_col0, _col1, _col2, _col3\n"
-                + "                  Group By Operator [GBY_48] (rows=4638916 width=133)\n"
-                + "                    Output:[\"_col0\",\"_col1\",\"_col2\",\"_col3\",\"_col4\",\"_col5\",\"_col6\"],aggregations:[\"sum(_col18)\",\"sum(_col26)\",\"sum(_col3)\"],keys:_col11, _col12, _col8, _col9\n"
-                + "                    Merge Join Operator [MERGEJOIN_99] (rows=4638916 width=133)\n"
-                + "                      Conds:RS_44._col1, _col2=RS_45._col17, _col16(Inner),Output:[\"_col3\",\"_col8\",\"_col9\",\"_col11\",\"_col12\",\"_col18\",\"_col26\"]\n"
-                + "                    <-Map 1 [SIMPLE_EDGE]\n"
-                + "                      SHUFFLE [RS_44]\n"
-                + "                        PartitionCols:_col1, _col2\n"
-                + "                        Map Join Operator [MAPJOIN_93] (rows=1585702 width=204)\n"
-                + "                          Conds:SEL_2._col0=RS_42._col0(Inner),HybridGraceHashJoin:true,Output:[\"_col1\",\"_col2\",\"_col3\"]\n"
-                + "                        <-Map 5 [BROADCAST_EDGE]\n"
-                + "                          BROADCAST [RS_42]\n"
-                + "                            PartitionCols:_col0\n"
-                + "                            Select Operator [SEL_5] (rows=4058 width=140)\n"
-                + "                              Output:[\"_col0\"]\n"
-                + "                              Filter Operator [FIL_86] (rows=4058 width=140)\n"
-                + "                                predicate:(d_moy BETWEEN 4 AND 10 and (d_year = 1998) and d_date_sk is not null)\n"
-                + "                                TableScan [TS_3] (rows=73049 width=140)\n"
-                + "                                  default@date_dim,d3,Tbl:COMPLETE,Col:NONE,Output:[\"d_date_sk\",\"d_year\",\"d_moy\"]\n"
-                + "                        <-Select Operator [SEL_2] (rows=1441548 width=204)\n"
-                + "                            Output:[\"_col0\",\"_col1\",\"_col2\",\"_col3\"]\n"
-                + "                            Filter Operator [FIL_85] (rows=1441548 width=204)\n"
-                + "                              predicate:(cs_bill_customer_sk is not null and cs_item_sk is not null and cs_sold_date_sk is not null)\n"
-                + "                              TableScan [TS_0] (rows=1441548 width=204)\n"
-                + "                                default@catalog_sales,catalog_sales,Tbl:COMPLETE,Col:NONE,Output:[\"cs_sold_date_sk\",\"cs_bill_customer_sk\",\"cs_item_sk\",\"cs_net_profit\"]\n"
-                + "                    <-Reducer 7 [SIMPLE_EDGE]\n"
-                + "                      SHUFFLE [RS_45]\n"
-                + "                        PartitionCols:_col17, _col16\n"
-                + "                        Select Operator [SEL_40] (rows=4217197 width=133)\n"
-                + "                          Output:[\"_col1\",\"_col2\",\"_col4\",\"_col5\",\"_col11\",\"_col16\",\"_col17\",\"_col19\"]\n"
-                + "                          Map Join Operator [MAPJOIN_98] (rows=4217197 width=133)\n"
-                + "                            Conds:MAPJOIN_97._col3=RS_38._col0(Inner),HybridGraceHashJoin:true,Output:[\"_col5\",\"_col10\",\"_col11\",\"_col13\",\"_col18\",\"_col19\",\"_col21\",\"_col22\"]\n"
-                + "                          <-Map 12 [BROADCAST_EDGE]\n"
-                + "                            BROADCAST [RS_38]\n"
-                + "                              PartitionCols:_col0\n"
-                + "                              Select Operator [SEL_27] (rows=12 width=261)\n"
-                + "                                Output:[\"_col0\",\"_col1\",\"_col2\"]\n"
-                + "                                Filter Operator [FIL_92] (rows=12 width=261)\n"
-                + "                                  predicate:s_store_sk is not null\n"
-                + "                                  TableScan [TS_25] (rows=12 width=261)\n"
-                + "                                    default@store,store,Tbl:COMPLETE,Col:NONE,Output:[\"s_store_sk\",\"s_store_id\",\"s_store_name\"]\n"
-                + "                          <-Map Join Operator [MAPJOIN_97] (rows=3833816 width=133)\n"
-                + "                              Conds:MERGEJOIN_96._col1=RS_35._col0(Inner),HybridGraceHashJoin:true,Output:[\"_col3\",\"_col5\",\"_col10\",\"_col11\",\"_col13\",\"_col18\",\"_col19\"]\n"
-                + "                            <-Map 11 [BROADCAST_EDGE]\n"
-                + "                              BROADCAST [RS_35]\n"
-                + "                                PartitionCols:_col0\n"
-                + "                                Select Operator [SEL_24] (rows=18000 width=279)\n"
-                + "                                  Output:[\"_col0\",\"_col1\",\"_col2\"]\n"
-                + "                                  Filter Operator [FIL_91] (rows=18000 width=279)\n"
-                + "                                    predicate:i_item_sk is not null\n"
-                + "                                    TableScan [TS_22] (rows=18000 width=279)\n"
-                + "                                      default@item,item,Tbl:COMPLETE,Col:NONE,Output:[\"i_item_sk\",\"i_item_id\",\"i_item_desc\"]\n"
-                + "                            <-Merge Join Operator [MERGEJOIN_96] (rows=3485288 width=133)\n"
-                + "                                Conds:RS_31._col1, _col2, _col4=RS_32._col1, _col2, _col3(Inner),Output:[\"_col1\",\"_col3\",\"_col5\",\"_col10\",\"_col11\",\"_col13\"]\n"
-                + "                              <-Map 6 [SIMPLE_EDGE]\n"
-                + "                                SHUFFLE [RS_31]\n"
-                + "                                  PartitionCols:_col1, _col2, _col4\n"
-                + "                                  Map Join Operator [MAPJOIN_94] (rows=3168444 width=133)\n"
-                + "                                    Conds:SEL_8._col0=RS_29._col0(Inner),HybridGraceHashJoin:true,Output:[\"_col1\",\"_col2\",\"_col3\",\"_col4\",\"_col5\"]\n"
-                + "                                  <-Map 8 [BROADCAST_EDGE]\n"
-                + "                                    BROADCAST [RS_29]\n"
-                + "                                      PartitionCols:_col0\n"
-                + "                                      Select Operator [SEL_11] (rows=18262 width=140)\n"
-                + "                                        Output:[\"_col0\"]\n"
-                + "                                        Filter Operator [FIL_88] (rows=18262 width=140)\n"
-                + "                                          predicate:((d_moy = 4) and (d_year = 1998) and d_date_sk is not null)\n"
-                + "                                          TableScan [TS_9] (rows=73049 width=140)\n"
-                + "                                            default@date_dim,d1,Tbl:COMPLETE,Col:NONE,Output:[\"d_date_sk\",\"d_year\",\"d_moy\"]\n"
-                + "                                  <-Select Operator [SEL_8] (rows=2880404 width=133)\n"
-                + "                                      Output:[\"_col0\",\"_col1\",\"_col2\",\"_col3\",\"_col4\",\"_col5\"]\n"
-                + "                                      Filter Operator [FIL_87] (rows=2880404 width=133)\n"
-                + "                                        predicate:(ss_item_sk is not null and ss_customer_sk is not null and ss_ticket_number is not null and ss_sold_date_sk is not null and ss_store_sk is not null)\n"
-                + "                                        TableScan [TS_6] (rows=2880404 width=133)\n"
-                + "                                          default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:[\"ss_sold_date_sk\",\"ss_item_sk\",\"ss_customer_sk\",\"ss_store_sk\",\"ss_ticket_number\",\"ss_net_profit\"]\n"
-                + "                              <-Map 9 [SIMPLE_EDGE]\n"
-                + "                                SHUFFLE [RS_32]\n"
-                + "                                  PartitionCols:_col1, _col2, _col3\n"
-                + "                                  Map Join Operator [MAPJOIN_95] (rows=316265 width=112)\n"
-                + "                                    Conds:SEL_14._col0=RS_19._col0(Inner),HybridGraceHashJoin:true,Output:[\"_col1\",\"_col2\",\"_col3\",\"_col4\"]\n"
-                + "                                  <-Map 10 [BROADCAST_EDGE]\n"
-                + "                                    BROADCAST [RS_19]\n"
-                + "                                      PartitionCols:_col0\n"
-                + "                                      Select Operator [SEL_17] (rows=4058 width=140)\n"
-                + "                                        Output:[\"_col0\"]\n"
-                + "                                        Filter Operator [FIL_90] (rows=4058 width=140)\n"
-                + "                                          predicate:(d_moy BETWEEN 4 AND 10 and (d_year = 1998) and d_date_sk is not null)\n"
-                + "                                          TableScan [TS_15] (rows=73049 width=140)\n"
-                + "                                            default@date_dim,d2,Tbl:COMPLETE,Col:NONE,Output:[\"d_date_sk\",\"d_year\",\"d_moy\"]\n"
-                + "                                  <-Select Operator [SEL_14] (rows=287514 width=112)\n"
-                + "                                      Output:[\"_col0\",\"_col1\",\"_col2\",\"_col3\",\"_col4\"]\n"
-                + "                                      Filter Operator [FIL_89] (rows=287514 width=112)\n"
-                + "                                        predicate:(sr_item_sk is not null and sr_customer_sk is not null and sr_ticket_number is not null and sr_returned_date_sk is not null)\n"
-                + "                                        TableScan [TS_12] (rows=287514 width=112)\n"
-                + "                                          default@store_returns,store_returns,Tbl:COMPLETE,Col:NONE,Output:[\"sr_returned_date_sk\",\"sr_item_sk\",\"sr_customer_sk\",\"sr_ticket_number\",\"sr_net_loss\"]\n"
-                + "\n" + "", content);
+            """
+            Plan optimized by CBO.
+            
+            Vertex dependency in root stage
+            Map 1 <- Map 5 (BROADCAST_EDGE)
+            Map 6 <- Map 8 (BROADCAST_EDGE)
+            Map 9 <- Map 10 (BROADCAST_EDGE)
+            Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
+            Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+            Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+            Reducer 7 <- Map 11 (BROADCAST_EDGE), Map 12 (BROADCAST_EDGE), Map 6 (SIMPLE_EDGE), Map 9 (SIMPLE_EDGE)
+            
+            Stage-0
+              Fetch Operator
+                limit:100
+                Stage-1
+                  Reducer 4
+                  File Output Operator [FS_55]
+                    Limit [LIM_54] (rows=100 width=133)
+                      Number of rows:100
+                      Select Operator [SEL_53] (rows=2319458 width=133)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
+                      <-Reducer 3 [SIMPLE_EDGE]
+                        SHUFFLE [RS_52]
+                          Group By Operator [GBY_50] (rows=2319458 width=133)
+                            Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)","sum(VALUE._col2)"],keys:KEY._col0, KEY._col1, KEY._col2, KEY._col3
+                          <-Reducer 2 [SIMPLE_EDGE]
+                            SHUFFLE [RS_49]
+                              PartitionCols:_col0, _col1, _col2, _col3
+                              Group By Operator [GBY_48] (rows=4638916 width=133)
+                                Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"],aggregations:["sum(_col18)","sum(_col26)","sum(_col3)"],keys:_col11, _col12, _col8, _col9
+                                Merge Join Operator [MERGEJOIN_99] (rows=4638916 width=133)
+                                  Conds:RS_44._col1, _col2=RS_45._col17, _col16(Inner),Output:["_col3","_col8","_col9","_col11","_col12","_col18","_col26"]
+                                <-Map 1 [SIMPLE_EDGE]
+                                  SHUFFLE [RS_44]
+                                    PartitionCols:_col1, _col2
+                                    Map Join Operator [MAPJOIN_93] (rows=1585702 width=204)
+                                      Conds:SEL_2._col0=RS_42._col0(Inner),HybridGraceHashJoin:true,Output:["_col1","_col2","_col3"]
+                                    <-Map 5 [BROADCAST_EDGE]
+                                      BROADCAST [RS_42]
+                                        PartitionCols:_col0
+                                        Select Operator [SEL_5] (rows=4058 width=140)
+                                          Output:["_col0"]
+                                          Filter Operator [FIL_86] (rows=4058 width=140)
+                                            predicate:(d_moy BETWEEN 4 AND 10 and (d_year = 1998) and d_date_sk is not null)
+                                            TableScan [TS_3] (rows=73049 width=140)
+                                              default@date_dim,d3,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_moy"]
+                                    <-Select Operator [SEL_2] (rows=1441548 width=204)
+                                        Output:["_col0","_col1","_col2","_col3"]
+                                        Filter Operator [FIL_85] (rows=1441548 width=204)
+                                          predicate:(cs_bill_customer_sk is not null and cs_item_sk is not null and cs_sold_date_sk is not null)
+                                          TableScan [TS_0] (rows=1441548 width=204)
+                                            default@catalog_sales,catalog_sales,Tbl:COMPLETE,Col:NONE,Output:["cs_sold_date_sk","cs_bill_customer_sk","cs_item_sk","cs_net_profit"]
+                                <-Reducer 7 [SIMPLE_EDGE]
+                                  SHUFFLE [RS_45]
+                                    PartitionCols:_col17, _col16
+                                    Select Operator [SEL_40] (rows=4217197 width=133)
+                                      Output:["_col1","_col2","_col4","_col5","_col11","_col16","_col17","_col19"]
+                                      Map Join Operator [MAPJOIN_98] (rows=4217197 width=133)
+                                        Conds:MAPJOIN_97._col3=RS_38._col0(Inner),HybridGraceHashJoin:true,Output:["_col5","_col10","_col11","_col13","_col18","_col19","_col21","_col22"]
+                                      <-Map 12 [BROADCAST_EDGE]
+                                        BROADCAST [RS_38]
+                                          PartitionCols:_col0
+                                          Select Operator [SEL_27] (rows=12 width=261)
+                                            Output:["_col0","_col1","_col2"]
+                                            Filter Operator [FIL_92] (rows=12 width=261)
+                                              predicate:s_store_sk is not null
+                                              TableScan [TS_25] (rows=12 width=261)
+                                                default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_store_id","s_store_name"]
+                                      <-Map Join Operator [MAPJOIN_97] (rows=3833816 width=133)
+                                          Conds:MERGEJOIN_96._col1=RS_35._col0(Inner),HybridGraceHashJoin:true,Output:["_col3","_col5","_col10","_col11","_col13","_col18","_col19"]
+                                        <-Map 11 [BROADCAST_EDGE]
+                                          BROADCAST [RS_35]
+                                            PartitionCols:_col0
+                                            Select Operator [SEL_24] (rows=18000 width=279)
+                                              Output:["_col0","_col1","_col2"]
+                                              Filter Operator [FIL_91] (rows=18000 width=279)
+                                                predicate:i_item_sk is not null
+                                                TableScan [TS_22] (rows=18000 width=279)
+                                                  default@item,item,Tbl:COMPLETE,Col:NONE,Output:["i_item_sk","i_item_id","i_item_desc"]
+                                        <-Merge Join Operator [MERGEJOIN_96] (rows=3485288 width=133)
+                                            Conds:RS_31._col1, _col2, _col4=RS_32._col1, _col2, _col3(Inner),Output:["_col1","_col3","_col5","_col10","_col11","_col13"]
+                                          <-Map 6 [SIMPLE_EDGE]
+                                            SHUFFLE [RS_31]
+                                              PartitionCols:_col1, _col2, _col4
+                                              Map Join Operator [MAPJOIN_94] (rows=3168444 width=133)
+                                                Conds:SEL_8._col0=RS_29._col0(Inner),HybridGraceHashJoin:true,Output:["_col1","_col2","_col3","_col4","_col5"]
+                                              <-Map 8 [BROADCAST_EDGE]
+                                                BROADCAST [RS_29]
+                                                  PartitionCols:_col0
+                                                  Select Operator [SEL_11] (rows=18262 width=140)
+                                                    Output:["_col0"]
+                                                    Filter Operator [FIL_88] (rows=18262 width=140)
+                                                      predicate:((d_moy = 4) and (d_year = 1998) and d_date_sk is not null)
+                                                      TableScan [TS_9] (rows=73049 width=140)
+                                                        default@date_dim,d1,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_moy"]
+                                              <-Select Operator [SEL_8] (rows=2880404 width=133)
+                                                  Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+                                                  Filter Operator [FIL_87] (rows=2880404 width=133)
+                                                    predicate:(ss_item_sk is not null and ss_customer_sk is not null and ss_ticket_number is not null and ss_sold_date_sk is not null and ss_store_sk is not null)
+                                                    TableScan [TS_6] (rows=2880404 width=133)
+                                                      default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_sold_date_sk","ss_item_sk","ss_customer_sk","ss_store_sk","ss_ticket_number","ss_net_profit"]
+                                          <-Map 9 [SIMPLE_EDGE]
+                                            SHUFFLE [RS_32]
+                                              PartitionCols:_col1, _col2, _col3
+                                              Map Join Operator [MAPJOIN_95] (rows=316265 width=112)
+                                                Conds:SEL_14._col0=RS_19._col0(Inner),HybridGraceHashJoin:true,Output:["_col1","_col2","_col3","_col4"]
+                                              <-Map 10 [BROADCAST_EDGE]
+                                                BROADCAST [RS_19]
+                                                  PartitionCols:_col0
+                                                  Select Operator [SEL_17] (rows=4058 width=140)
+                                                    Output:["_col0"]
+                                                    Filter Operator [FIL_90] (rows=4058 width=140)
+                                                      predicate:(d_moy BETWEEN 4 AND 10 and (d_year = 1998) and d_date_sk is not null)
+                                                      TableScan [TS_15] (rows=73049 width=140)
+                                                        default@date_dim,d2,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_moy"]
+                                              <-Select Operator [SEL_14] (rows=287514 width=112)
+                                                  Output:["_col0","_col1","_col2","_col3","_col4"]
+                                                  Filter Operator [FIL_89] (rows=287514 width=112)
+                                                    predicate:(sr_item_sk is not null and sr_customer_sk is not null and sr_ticket_number is not null and sr_returned_date_sk is not null)
+                                                    TableScan [TS_12] (rows=287514 width=112)
+                                                      default@store_returns,store_returns,Tbl:COMPLETE,Col:NONE,Output:["sr_returned_date_sk","sr_item_sk","sr_customer_sk","sr_ticket_number","sr_net_loss"]
+            
+            """, content);
   }
 
 }

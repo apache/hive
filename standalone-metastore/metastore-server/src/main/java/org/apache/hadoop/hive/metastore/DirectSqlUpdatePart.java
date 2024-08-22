@@ -1088,7 +1088,7 @@ class DirectSqlUpdatePart {
     ExecutionContext ec = ((JDOPersistenceManager) pm).getExecutionContext();
     AbstractClassMetaData cmd = ec.getMetaDataManager().getMetaDataForClass(modelClass, ec.getClassLoaderResolver());
     if (cmd.getIdentityType() == IdentityType.DATASTORE) {
-      return (Long) ec.getStoreManager().getValueGenerationStrategyValue(ec, cmd, -1);
+      return (Long) ec.getStoreManager().getValueGenerationStrategyValue(ec, cmd, null);
     } else {
       throw new MetaException("Identity type is not datastore.");
     }
