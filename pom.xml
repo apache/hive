@@ -108,7 +108,7 @@
     <antlr.version>3.5.2</antlr.version>
     <!-- Make sure to sync it with standalone-metastore/pom.xml -->
     <antlr4.version>4.9.3</antlr4.version>
-    <apache-directory-server.version>1.5.7</apache-directory-server.version>
+    <apache-directory-server.version>2.0.0-M1</apache-directory-server.version>
     <!-- Include arrow for LlapOutputFormatService -->
     <arrow.version>12.0.0</arrow.version>
     <avatica.version>1.12.0</avatica.version>
