@@ -54,6 +54,10 @@
       <exclusions>
         <exclusion>
           <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-client-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-common</artifactId>
         </exclusion>
         <exclusion>
@@ -278,18 +282,22 @@
     <dependency>
       <groupId>org.datanucleus</groupId>
       <artifactId>datanucleus-api-jdo</artifactId>
+      <version>6.0.0-release</version>
     </dependency>
     <dependency>
       <groupId>org.datanucleus</groupId>
       <artifactId>datanucleus-core</artifactId>
+      <version>6.0.0-release</version>
     </dependency>
     <dependency>
       <groupId>org.datanucleus</groupId>
       <artifactId>datanucleus-rdbms</artifactId>
+      <version>6.0.0-release</version>
     </dependency>
     <dependency>
       <groupId>org.datanucleus</groupId>
       <artifactId>javax.jdo</artifactId>
+      <version>3.2.0-release</version>
     </dependency>
     <dependency>
       <groupId>org.skyscreamer</groupId>
@@ -560,6 +568,16 @@
           <artifactId>exec-maven-plugin</artifactId>
           <version>${maven.exec.plugin.version}</version>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <configuration>
+            <compilerArgs>
+              <arg>--add-exports</arg>
+              <arg>jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+            </compilerArgs>
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -729,7 +747,7 @@
       <plugin>
         <groupId>org.datanucleus</groupId>
         <artifactId>datanucleus-maven-plugin</artifactId>
-        <version>5.2.1</version>
+        <version>6.0.0-release</version>
         <configuration>
           <api>JDO</api>
           <verbose>false</verbose>
