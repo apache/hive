@@ -91,8 +91,9 @@ def buildHive(args) {
 set -x
 . /etc/profile.d/confs.sh
 export USER="`whoami`"
-export MAVEN_OPTS="-Xmx2g"
+export MAVEN_OPTS="-Xmx4G"
 export -n HIVE_CONF_DIR
+sw java 17 && . /etc/profile.d/java.sh
 mkdir -p .m2/repository
 cp $SETTINGS .m2/settings.xml
 OPTS=" -s $PWD/.m2/settings.xml -B -Dtest.groups= "
