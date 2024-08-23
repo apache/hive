@@ -523,6 +523,7 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${maven.surefire.plugin.version}</version>
           <configuration>
+            <argLine>${maven.test.jvm.args}</argLine>
             <enableOutErrElements>false</enableOutErrElements>
             <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
           </configuration>
