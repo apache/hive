@@ -20,6 +20,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import org.apache.calcite.adapter.jdbc.JdbcConvention;
 import org.apache.calcite.adapter.jdbc.JdbcRel;
+import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcAggregate;
+import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcAggregateRule;
 import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcFilter;
 import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcFilterRule;
 import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcJoin;
@@ -888,6 +890,28 @@ public class RelFieldTrimmer implements ReflectiveVisitor {
         throw new AssertionError("unknown setOp " + setOp);
     }
     return result(relBuilder.build(), mapping);
+  }
+
+  public TrimResult trimFields(
+      final JdbcAggregate jdbcAggregate,
+      ImmutableBitSet fieldsUsed,
+      Set<RelDataTypeField> extraFields) {
+
+    TrimResult trimResult = trimFields((Aggregate) jdbcAggregate, fieldsUsed, extraFields);
+    RelNode newInput = trimResult.left;
+    final Mapping inputMapping = trimResult.right;
+
+    if (newInput instanceof JdbcAggregate) {
+      return trimResult;
+    }
+
+    if (newInput instanceof Aggregate) {
+      JdbcAggregate newAggregate =
+          (JdbcAggregate) JdbcAggregateRule.create((JdbcConvention) jdbcAggregate.getConvention()).convert(newInput);
+      return result(newAggregate, inputMapping);
+    }
+
+    return trimFields((RelNode) jdbcAggregate, fieldsUsed, extraFields);
   }
 
   /**

@@ -42,3 +42,23 @@ explain cbo select book.title, author.fname from book join author
 where book.author = author.id
 and ucase(book.title) = 'LES MISERABLES'
 and substring(author.lname, 0, 3) = 'Hug';
+
+explain cbo 
+select author.fname, count(book.title) as books
+from book join author
+where book.author = author.id
+group by author.fname;
+
+explain cbo 
+select ucase(author.fname), count(book.title) as books
+from book join author
+where book.author = author.id
+group by ucase(author.fname);
+
+explain cbo 
+select ucase(author.fname), count(book.title) as books
+from book join author
+where book.author = author.id
+group by author.fname
+order by ucase(author.fname)
+limit 5;

@@ -33,7 +33,8 @@ POSTHOOK: Input: default@country_0
 CBO PLAN:
 HiveJdbcConverter(convention=[JDBC.MYSQL])
   JdbcAggregate(group=[{}], agg#0=[count()])
-    JdbcHiveTableScan(table=[[default, country_0]], table:alias=[country_0])
+    JdbcProject(DUMMY=[0])
+      JdbcHiveTableScan(table=[[default, country_0]], table:alias=[country_0])
 
 PREHOOK: query: SELECT COUNT(*) FROM country_0
 PREHOOK: type: QUERY
@@ -81,7 +82,8 @@ POSTHOOK: Input: default@country_1
 CBO PLAN:
 HiveJdbcConverter(convention=[JDBC.MYSQL])
   JdbcAggregate(group=[{}], agg#0=[count()])
-    JdbcHiveTableScan(table=[[default, country_1]], table:alias=[country_1])
+    JdbcProject(DUMMY=[0])
+      JdbcHiveTableScan(table=[[default, country_1]], table:alias=[country_1])
 
 PREHOOK: query: SELECT COUNT(*) FROM country_1
 PREHOOK: type: QUERY
@@ -127,7 +129,8 @@ POSTHOOK: Input: default@country_2
 CBO PLAN:
 HiveJdbcConverter(convention=[JDBC.MYSQL])
   JdbcAggregate(group=[{}], agg#0=[count()])
-    JdbcHiveTableScan(table=[[default, country_2]], table:alias=[country_2])
+    JdbcProject(DUMMY=[0])
+      JdbcHiveTableScan(table=[[default, country_2]], table:alias=[country_2])
 
 PREHOOK: query: SELECT COUNT(*) FROM country_2
 PREHOOK: type: QUERY
@@ -175,7 +178,8 @@ POSTHOOK: Input: default@country_3
 CBO PLAN:
 HiveJdbcConverter(convention=[JDBC.MYSQL])
   JdbcAggregate(group=[{}], agg#0=[count()])
-    JdbcHiveTableScan(table=[[default, country_3]], table:alias=[country_3])
+    JdbcProject(DUMMY=[0])
+      JdbcHiveTableScan(table=[[default, country_3]], table:alias=[country_3])
 
 PREHOOK: query: SELECT COUNT(*) FROM country_3
 PREHOOK: type: QUERY
