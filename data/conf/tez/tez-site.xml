@@ -36,4 +36,8 @@
     <name>tez.am.dag.scheduler.class</name>
     <value>org.apache.tez.dag.app.dag.impl.DAGSchedulerNaturalOrderControlled</value>
   </property>
+  <property>
+    <name>tez.am.launch.cmd-opts</name>
+    <value> --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util.regex=ALL-UNNAMED </value>
+  </property>
 </configuration>
