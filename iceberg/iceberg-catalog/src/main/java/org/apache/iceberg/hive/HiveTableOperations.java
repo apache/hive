@@ -338,16 +338,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
       parameters.put(PREVIOUS_METADATA_LOCATION_PROP, currentMetadataLocation());
     }
 
-    // If needed set the 'storage_handler' property to enable query from Hive
-    if (hiveEngineEnabled) {
-      String storageHandler = parameters.get(hive_metastoreConstants.META_TABLE_STORAGE);
-      // Check if META_TABLE_STORAGE is not present or is not an instance of ICEBERG_STORAGE_HANDLER
-      if (storageHandler == null || !HiveOperationsBase.isHiveIcebergStorageHandler(storageHandler)) {
-        parameters.put(hive_metastoreConstants.META_TABLE_STORAGE, HIVE_ICEBERG_STORAGE_HANDLER);
-      }
-    } else {
-      parameters.remove(hive_metastoreConstants.META_TABLE_STORAGE);
-    }
+    setStorageHandler(parameters, hiveEngineEnabled);
 
     // Set the basic statistics
     if (summary.get(SnapshotSummary.TOTAL_DATA_FILES_PROP) != null) {
@@ -366,6 +357,15 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
     setSortOrder(metadata, parameters);
 
     tbl.setParameters(parameters);
+  }
+
+  public static void setStorageHandler(Map<String, String> parameters, boolean hiveEngineEnabled) {
+    // If needed set the 'storage_handler' property to enable query from Hive
+    if (hiveEngineEnabled) {
+      parameters.put(hive_metastoreConstants.META_TABLE_STORAGE, HiveOperationsBase.HIVE_ICEBERG_STORAGE_HANDLER);
+    } else {
+      parameters.remove(hive_metastoreConstants.META_TABLE_STORAGE);
+    }
   }
 
   @VisibleForTesting
