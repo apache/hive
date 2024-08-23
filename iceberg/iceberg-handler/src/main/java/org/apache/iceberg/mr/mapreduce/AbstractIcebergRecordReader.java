@@ -39,9 +39,9 @@ import org.apache.iceberg.mr.hive.IcebergAcidUtil;
 public abstract class AbstractIcebergRecordReader<T> extends RecordReader<Void, T> {
 
   private TaskAttemptContext context;
-  private Configuration conf;
-  private Table table;
-  private Schema expectedSchema;
+  protected Configuration conf;
+  protected Table table;
+  protected Schema expectedSchema;
   private String nameMapping;
   private boolean reuseContainers;
   private boolean caseSensitive;
@@ -106,24 +106,12 @@ public abstract class AbstractIcebergRecordReader<T> extends RecordReader<Void, 
     return context;
   }
 
-  public Configuration getConf() {
-    return conf;
-  }
-
   public boolean isReuseContainers() {
     return reuseContainers;
   }
 
-  public Schema getExpectedSchema() {
-    return expectedSchema;
-  }
-
   public String getNameMapping() {
     return nameMapping;
-  }
-
-  public Table getTable() {
-    return table;
   }
 
   public InputFormatConfig.InMemoryDataModel getInMemoryDataModel() {
