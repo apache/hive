@@ -302,6 +302,7 @@ echo 127.0.0.1 dev_$dbType | sudo tee -a /etc/hosts
 sw hive-dev $PWD
 export DOCKER_NETWORK=host
 export DBNAME=metastore
+export HADOOP_CLIENT_OPTS="--add-opens java.base/java.net=ALL-UNNAMED"
 reinit_metastore $dbType
 time docker rm -f dev_$dbType || true
 '''
