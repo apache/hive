@@ -32,4 +32,8 @@
     <name>tez.counters.max</name>
     <value>1024</value>
   </property>
+  <property>
+    <name>tez.am.launch.cmd-opts</name>
+    <value> --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util.regex=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED </value>
+  </property>
 </configuration>
