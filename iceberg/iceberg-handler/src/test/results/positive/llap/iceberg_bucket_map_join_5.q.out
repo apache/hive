@@ -166,7 +166,7 @@ POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n0
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Map 1 <- Map 3 (BROADCAST_EDGE)
+Map 1 <- Map 3 (CUSTOM_EDGE)
 Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
@@ -182,9 +182,9 @@ Stage-0
             Group By Operator [GBY_37] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
               Map Join Operator [MAPJOIN_36] (rows=372 width=8)
-                Conds:SEL_35._col0=RS_33._col0(Inner)
-              <-Map 3 [BROADCAST_EDGE] vectorized, llap
-                BROADCAST [RS_33]
+                BucketMapJoin:true,Conds:SEL_35._col0=RS_33._col0(Inner)
+              <-Map 3 [CUSTOM_EDGE] vectorized, llap
+                MULTICAST [RS_33]
                   PartitionCols:_col0
                   Select Operator [SEL_32] (rows=238 width=4)
                     Output:["_col0"]
@@ -197,7 +197,7 @@ Stage-0
                   Filter Operator [FIL_34] (rows=238 width=89)
                     predicate:((part = '1') and key is not null)
                     TableScan [TS_0] (rows=238 width=89)
-                      default@srcbucket_mapjoin_part_1,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","part"]
+                      default@srcbucket_mapjoin_part_1,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:2,Grouping Partition Columns:["key"],Output:["key","part"]
 
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2_n0 b
@@ -233,7 +233,7 @@ POSTHOOK: Input: default@srcbucket_mapjoin_part_3
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Map 1 <- Map 3 (BROADCAST_EDGE)
+Map 1 <- Map 3 (CUSTOM_EDGE)
 Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
@@ -249,9 +249,9 @@ Stage-0
             Group By Operator [GBY_37] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
               Map Join Operator [MAPJOIN_36] (rows=372 width=8)
-                Conds:SEL_35._col0=RS_33._col0(Inner)
-              <-Map 3 [BROADCAST_EDGE] vectorized, llap
-                BROADCAST [RS_33]
+                BucketMapJoin:true,Conds:SEL_35._col0=RS_33._col0(Inner)
+              <-Map 3 [CUSTOM_EDGE] vectorized, llap
+                MULTICAST [RS_33]
                   PartitionCols:_col0
                   Select Operator [SEL_32] (rows=238 width=4)
                     Output:["_col0"]
@@ -264,7 +264,7 @@ Stage-0
                   Filter Operator [FIL_34] (rows=238 width=89)
                     predicate:((part = '1') and key is not null)
                     TableScan [TS_0] (rows=238 width=89)
-                      default@srcbucket_mapjoin_part_1,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","part"]
+                      default@srcbucket_mapjoin_part_1,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:2,Grouping Partition Columns:["key"],Output:["key","part"]
 
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_3 b

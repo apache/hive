@@ -61,6 +61,9 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
    */
   private List<String> partColumns;
 
+  private List<String> groupingPartitionColumns;
+  private Integer groupingNumBuckets;
+
   /**
    * Used for split sampling (row count per split)
    * For example,
@@ -105,6 +108,12 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
 
   public static final String PARTITION_PRUNING_FILTER =
       "hive.io.pruning.filter";
+
+  public static final String GROUPING_PARTITION_COLUMNS =
+      "hive.io.grouping.partition.columns";
+
+  public static final String GROUPING_NUM_BUCKETS =
+      "hive.io.grouping.num.buckets";
 
   public static final String AS_OF_TIMESTAMP =
       "hive.io.as.of.timestamp";
@@ -348,6 +357,26 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
 
   public List<String> getPartColumns () {
     return partColumns;
+  }
+
+  public void setGroupingPartitionColumns(List<String> groupingPartitionColumns) {
+    this.groupingPartitionColumns = groupingPartitionColumns;
+  }
+
+  @Explain(displayName = "Grouping Partition Columns", explainLevels = { Level.USER, Level.EXTENDED })
+  @Signature
+  public List<String> getGroupingPartitionColumns() {
+    return groupingPartitionColumns;
+  }
+
+  public void setGroupingNumBuckets(int groupingNumBuckets) {
+    this.groupingNumBuckets = groupingNumBuckets;
+  }
+
+  @Explain(displayName = "Grouping Num Buckets", explainLevels = { Level.USER, Level.EXTENDED })
+  @Signature
+  public Integer getGroupingNumBuckets() {
+    return groupingNumBuckets;
   }
 
   public void setGatherStats(boolean gatherStats) {

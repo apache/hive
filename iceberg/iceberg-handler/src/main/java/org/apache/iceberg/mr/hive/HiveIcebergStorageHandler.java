@@ -114,6 +114,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.MergeTaskProperties;
+import org.apache.hadoop.hive.ql.plan.PartitionAwareOptimizationCtx;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
@@ -764,6 +765,39 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     customSortExprs.addAll(transformSpecs.stream().map(spec ->
         IcebergTransformSortFunctionUtil.getCustomSortExprs(spec, fieldOrderMap.get(spec.getColumnName()) + offset)
     ).collect(Collectors.toList()));
+  }
+
+  @Override
+  public boolean supportsPartitionAwareOptimization(org.apache.hadoop.hive.ql.metadata.Table table) {
+    if (hasUndergonePartitionEvolution(table)) {
+      // Don't support complex cases yet
+      return false;
+    }
+    final List<TransformSpec> specs = getPartitionTransformSpec(table);
+    // Currently, we support the only bucket transform
+    return specs.stream().anyMatch(HiveIcebergStorageHandler::isBucket);
+  }
+
+  @Override
+  public PartitionAwareOptimizationCtx createPartitionAwareOptimizationContext(
+      org.apache.hadoop.hive.ql.metadata.Table table) {
+    // Currently, we support the only bucket transform
+    final List<String> bucketColumnNames = Lists.newArrayList();
+    final List<Integer> numBuckets = Lists.newArrayList();
+    getPartitionTransformSpec(table).stream().filter(HiveIcebergStorageHandler::isBucket).forEach(spec -> {
+      bucketColumnNames.add(spec.getColumnName());
+      numBuckets.add(spec.getTransformParam().get());
+    });
+
+    if (bucketColumnNames.isEmpty()) {
+      return null;
+    }
+    final IcebergBucketFunction bucketFunction = new IcebergBucketFunction(bucketColumnNames, numBuckets);
+    return new PartitionAwareOptimizationCtx(bucketFunction);
+  }
+
+  private static boolean isBucket(TransformSpec spec) {
+    return spec.getTransformType() == TransformSpec.TransformType.BUCKET && spec.getTransformParam().isPresent();
   }
 
   @Override

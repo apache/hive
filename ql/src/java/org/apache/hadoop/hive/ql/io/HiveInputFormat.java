@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.io;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.util.OptionalInt;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -58,6 +59,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
@@ -171,6 +173,19 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       return inputFormatClassName;
     }
 
+    public OptionalInt getBucketId() {
+      if (inputSplit instanceof PartitionAwareSplit) {
+        final PartitionAwareSplit split = (PartitionAwareSplit) inputSplit;
+        final OptionalInt bucketHashCode = split.getBucketHashCode();
+        return bucketHashCode.isPresent()
+            ? OptionalInt.of(ObjectInspectorUtils.getBucketNumber(bucketHashCode.getAsInt(), split.getNumBuckets()))
+            : OptionalInt.empty();
+      }
+
+      final int bucketId = Utilities.parseSplitBucket(inputSplit);
+      return bucketId == -1 ? OptionalInt.empty() : OptionalInt.of(bucketId);
+    }
+
     @Override
     public Path getPath() {
       if (inputSplit instanceof FileSplit) {
@@ -257,6 +272,18 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         byte[] allBytes = new byte[pathBytes.length + 8];
         System.arraycopy(pathBytes, 0, allBytes, 0, pathBytes.length);
         SerDeUtils.writeLong(allBytes, pathBytes.length, getStart() >> 3);
+        return allBytes;
+      }
+    }
+
+    public byte[] getBytesForIdentity() {
+      if (inputSplit instanceof HashableInputSplit) {
+        return ((HashableInputSplit) inputSplit).getBytesForHash();
+      } else {
+        byte[] pathBytes = getPath().toString().getBytes();
+        byte[] allBytes = new byte[pathBytes.length + 8];
+        System.arraycopy(pathBytes, 0, allBytes, 0, pathBytes.length);
+        SerDeUtils.writeLong(allBytes, pathBytes.length, getStart());
         return allBytes;
       }
     }
@@ -811,6 +838,12 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
           pushDownProjection = true;
           // push down filters and as of information
           pushFiltersAndAsOf(newjob, tableScan, this.mrwork);
+          final List<String> groupingPartitionColumns = tableScan.getConf().getGroupingPartitionColumns();
+          if (groupingPartitionColumns != null) {
+            newjob.setStrings(TableScanDesc.GROUPING_PARTITION_COLUMNS,
+                groupingPartitionColumns.toArray(new String[0]));
+            newjob.setInt(TableScanDesc.GROUPING_NUM_BUCKETS, tableScan.getConf().getGroupingNumBuckets());
+          }
         }
       } else {
         if (LOG.isDebugEnabled()) {

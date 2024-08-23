@@ -31,7 +31,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.iceberg.CombinedScanTask;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataTask;
 import org.apache.iceberg.FileFormat;
@@ -39,6 +38,7 @@ import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Partitioning;
+import org.apache.iceberg.ScanTaskGroup;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.avro.Avro;
@@ -99,8 +99,8 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
   public void initialize(InputSplit split, TaskAttemptContext newContext) {
     // For now IcebergInputFormat does its own split planning and does not accept FileSplit instances
     super.initialize(split, newContext);
-    CombinedScanTask task = ((IcebergSplit) split).task();
-    this.tasks = task.files();
+    ScanTaskGroup<FileScanTask> task = ((IcebergSplit) split).task();
+    this.tasks = task.tasks();
     this.currentIterator = nextTask();
   }
 
