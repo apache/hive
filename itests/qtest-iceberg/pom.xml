@@ -495,6 +495,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
+          <argLine>${maven.test.jvm.args}</argLine>
           <additionalClasspathElements>
             <additionalClasspathElement>${test.conf.dir}</additionalClasspathElement>
             <additionalClasspathElement>${basedir}/${hive.path.to.root}/conf</additionalClasspathElement>
