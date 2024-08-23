@@ -423,6 +423,8 @@
           <compilerArgs>
             <arg>--add-opens</arg>
             <arg>org.apache.hadoop/org.apache.hadoop.fs=ALL-UNNAMED</arg>
+            <arg>--add-opens</arg>
+            <arg>java.base/java.net=ALL-UNNAMED</arg>
           </compilerArgs>
         </configuration>
       </plugin>
