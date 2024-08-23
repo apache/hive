@@ -8,6 +8,6 @@ select table_1_qegkz.id, concat_ws(' ' , table_1_qegkz.first_name, table_2_gkvuw
 
 create view view_fcuyp as (select table_1_qegkz.id, concat_ws(' ' , table_1_qegkz.first_name, table_2_gkvuw.last_name) full_name from table_1_qegkz, table_2_gkvuw where table_1_qegkz.id = table_2_gkvuw.id);
 
-set hive.lineage.statement.filter=Query,CREATEVIEW;
+set hive.lineage.statement.filter=Query,CREATE_VIEW;
 
 create view view_fcuyp2 as (select table_1_qegkz.id, concat_ws(' ' , table_1_qegkz.first_name, table_2_gkvuw.last_name) full_name from table_1_qegkz, table_2_gkvuw where table_1_qegkz.id = table_2_gkvuw.id);

@@ -35,7 +35,7 @@ public class TestGenerator {
   public void testCreateFilterPredicateFromConf() {
     HiveConf conf = new HiveConf();
     conf.set(HiveConf.ConfVars.HIVE_LINEAGE_STATEMENT_FILTER.varname,
-        "CREATEtABLE_AS_sELECT," + HiveOperation.QUERY.name());
+        "CREATE_tABLE_AS_sELECT," + HiveOperation.QUERY.name());
 
     Predicate<ParseContext> predicate = Generator.createFilterPredicateFromConf(conf);
 
@@ -87,7 +87,8 @@ public class TestGenerator {
         () -> Generator.createFilterPredicateFromConf(conf)
     );
 
-    assertThat(exception.getMessage(), is("org.apache.hadoop.hive.ql.plan.HiveOperation.Invalid"));
+    assertThat(exception.getMessage(), is(
+        "org.apache.hadoop.hive.ql.optimizer.lineage.Generator$LineageInfoFilter.Invalid"));
   }
 
   @Test
@@ -100,6 +101,6 @@ public class TestGenerator {
         () -> Generator.createFilterPredicateFromConf(conf)
     );
 
-    assertThat(exception.getMessage(), is("No other value can be specified when None is present!"));
+    assertThat(exception.getMessage(), is("No other value can be specified when NONE is present!"));
   }
 }
