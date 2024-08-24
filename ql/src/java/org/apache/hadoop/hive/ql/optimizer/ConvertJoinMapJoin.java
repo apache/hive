@@ -68,6 +68,7 @@ import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OpTraits;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
@@ -865,6 +866,35 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
         } else if (bucketingVersion != localVersion) {
           // versions dont match, return false.
           LOG.debug("SMB Join can't be performed due to bucketing version mismatch");
+          return false;
+        }
+      }
+    }
+
+    /* As SMB replaces last RS op from the joining branches and the JOIN op with MERGEJOIN, we need to ensure
+     * the RS before these RS, in both branches, are partitioning using same hash generator. It
+     * differs depending on ReducerTraits.UNIFORM i.e. ReduceSinkOperator#computeMurmurHash or
+     * ReduceSinkOperator#computeHashCode, leading to different code for same value. Skip SMB join in such cases.
+     */
+    Boolean prevRsHasUniformTrait = null;
+    for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
+      // Assertion of mandatory single parent is already being done in bucket version check earlier
+      Operator<?> op = parentOp.getParentOperators().get(0);
+      while (op != null && !(op instanceof TableScanOperator || op instanceof ReduceSinkOperator
+              || op instanceof CommonJoinOperator)) {
+        // If op has parents it is guaranteed to be 1.
+        List<Operator<?>> parents = op.getParentOperators();
+        Preconditions.checkState(parents.size() == 0 || parents.size() == 1);
+        op = parents.size() == 1 ? parents.get(0) : null;
+      }
+
+      if (op instanceof ReduceSinkOperator) {
+        boolean hasUniformTrait = ((ReduceSinkOperator) op).getConf()
+                .getReducerTraits().contains(ReduceSinkDesc.ReducerTraits.UNIFORM);
+        if (prevRsHasUniformTrait == null) {
+          prevRsHasUniformTrait = hasUniformTrait;
+        } else if (prevRsHasUniformTrait != hasUniformTrait) {
+          LOG.debug("SMB Join can't be performed due to partition hash generator mismatch across join branches");
           return false;
         }
       }
