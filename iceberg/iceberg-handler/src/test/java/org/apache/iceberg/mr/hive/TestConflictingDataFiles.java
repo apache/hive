@@ -20,8 +20,10 @@
 
 package org.apache.iceberg.mr.hive;
 
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.iceberg.FileFormat;
@@ -51,13 +53,16 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
   private final String storageHandlerStub = "'org.apache.iceberg.mr.hive.HiveIcebergStorageHandlerStub'";
 
   @Before
-  public void setUpTables() {
+  public void setUpTables() throws NoSuchMethodException {
     PartitionSpec spec =
         PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA).identity("last_name")
             .bucket("customer_id", 16).build();
 
+    Method method = HiveTableOperations.class.getDeclaredMethod("setStorageHandler", Map.class, Boolean.TYPE);
+    method.setAccessible(true);
+
     try (MockedStatic<HiveTableOperations> tableOps = mockStatic(HiveTableOperations.class, CALLS_REAL_METHODS)) {
-      tableOps.when(() -> HiveTableOperations.setStorageHandler(anyMap(), eq(true)))
+      tableOps.when(() -> method.invoke(null, anyMap(), eq(true)))
           .thenAnswer(invocation -> null);
       // create and insert an initial batch of records
       testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec, fileFormat,

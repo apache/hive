@@ -359,7 +359,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
     tbl.setParameters(parameters);
   }
 
-  public static void setStorageHandler(Map<String, String> parameters, boolean hiveEngineEnabled) {
+  private static void setStorageHandler(Map<String, String> parameters, boolean hiveEngineEnabled) {
     // If needed set the 'storage_handler' property to enable query from Hive
     if (hiveEngineEnabled) {
       parameters.put(hive_metastoreConstants.META_TABLE_STORAGE, HiveOperationsBase.HIVE_ICEBERG_STORAGE_HANDLER);
