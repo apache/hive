@@ -28,11 +28,13 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 import org.apache.iceberg.expressions.BoundPredicate;
 import org.apache.iceberg.expressions.BoundSetPredicate;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.ExpressionVisitors;
 import org.apache.iceberg.expressions.UnboundPredicate;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 
 public class TestHelpers {
@@ -84,23 +86,22 @@ public class TestHelpers {
     }
   }
 
-  // commented out because the schemaId() method was only added to org.apache.iceberg.Schema after the 0.11.0 release
-//  public static void assertSameSchemaList(List<Schema> list1, List<Schema> list2) {
-//    if (list1.size() != list2.size()) {
-//      Assert.fail("Should have same number of schemas in both lists");
-//    }
-//
-//    IntStream.range(0, list1.size()).forEach(
-//        index -> {
-//          Schema schema1 = list1.get(index);
-//          Schema schema2 = list2.get(index);
-//          Assert.assertEquals("Should have matching schema id",
-//              schema1.schemaId(), schema2.schemaId());
-//          Assert.assertEquals("Should have matching schema struct",
-//              schema1.asStruct(), schema2.asStruct());
-//        }
-//    );
-//  }
+  public static void assertSameSchemaList(List<Schema> list1, List<Schema> list2) {
+    Assertions.assertThat(list1)
+        .as("Should have same number of schemas in both lists")
+        .hasSameSizeAs(list2);
+
+    IntStream.range(0, list1.size())
+        .forEach(
+            index -> {
+              Schema schema1 = list1.get(index);
+              Schema schema2 = list2.get(index);
+              Assert.assertEquals(
+                  "Should have matching schema id", schema1.schemaId(), schema2.schemaId());
+              Assert.assertEquals(
+                  "Should have matching schema struct", schema1.asStruct(), schema2.asStruct());
+            });
+  }
 
   public static void assertSerializedMetadata(Table expected, Table actual) {
     Assert.assertEquals("Name must match", expected.name(), actual.name());
@@ -118,6 +119,26 @@ public class TestHelpers {
     Assert.assertEquals("Current snapshot must match", expected.currentSnapshot(), actual.currentSnapshot());
     Assert.assertEquals("Snapshots must match", expected.snapshots(), actual.snapshots());
     Assert.assertEquals("History must match", expected.history(), actual.history());
+  }
+
+  public static void assertSameSchemaMap(Map<Integer, Schema> map1, Map<Integer, Schema> map2) {
+    Assertions.assertThat(map1)
+        .as("Should have same number of schemas in both maps")
+        .hasSameSizeAs(map2);
+
+    map1.forEach(
+        (schemaId, schema1) -> {
+          Schema schema2 = map2.get(schemaId);
+          Assert.assertNotNull(
+              String.format("Schema ID %s does not exist in map: %s", schemaId, map2), schema2);
+
+          Assert.assertEquals(
+              "Should have matching schema id", schema1.schemaId(), schema2.schemaId());
+          Assert.assertTrue(
+              String.format(
+                  "Should be the same schema. Schema 1: %s, schema 2: %s", schema1, schema2),
+              schema1.sameSchema(schema2));
+        });
   }
 
   private static class CheckReferencesBound extends ExpressionVisitors.ExpressionVisitor<Void> {
