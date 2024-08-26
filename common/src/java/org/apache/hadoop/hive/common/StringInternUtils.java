@@ -29,74 +29,15 @@ import java.util.Map;
  */
 public class StringInternUtils {
 
-  // When a URI instance is initialized, it creates a bunch of private String
-  // fields, never bothering about their possible duplication. It would be
-  // best if we could tell URI constructor to intern these strings right away.
-  // Without this option, we can only use reflection to "fix" strings in these
-  // fields after a URI has been created.
-  private static Class uriClass = URI.class;
-  private static Field stringField, schemeField, authorityField, hostField, pathField,
-      fragmentField, schemeSpecificPartField;
-
-  static {
-    try {
-      stringField = uriClass.getDeclaredField("string");
-      schemeField = uriClass.getDeclaredField("scheme");
-      authorityField = uriClass.getDeclaredField("authority");
-      hostField = uriClass.getDeclaredField("host");
-      pathField = uriClass.getDeclaredField("path");
-      fragmentField = uriClass.getDeclaredField("fragment");
-      schemeSpecificPartField = uriClass.getDeclaredField("schemeSpecificPart");
-    } catch (NoSuchFieldException e) {
-      throw new RuntimeException(e);
-    }
-
-    // Note that the calls below will throw an exception if a Java SecurityManager
-    // is installed and configured to forbid invoking setAccessible(). In practice
-    // this is not a problem in Hive.
-    stringField.setAccessible(true);
-    schemeField.setAccessible(true);
-    authorityField.setAccessible(true);
-    hostField.setAccessible(true);
-    pathField.setAccessible(true);
-    fragmentField.setAccessible(true);
-    schemeSpecificPartField.setAccessible(true);
-  }
-
   public static URI internStringsInUri(URI uri) {
-    if (uri == null) return null;
-    try {
-      String string = (String) stringField.get(uri);
-      if (string != null) stringField.set(uri, string.intern());
-      String scheme = (String) schemeField.get(uri);
-      if (scheme != null) schemeField.set(uri, scheme.intern());
-      String authority = (String) authorityField.get(uri);
-      if (authority != null) authorityField.set(uri, authority.intern());
-      String host = (String) hostField.get(uri);
-      if (host != null) hostField.set(uri, host.intern());
-      String path = (String) pathField.get(uri);
-      if (path != null) pathField.set(uri, path.intern());
-      String fragment = (String) fragmentField.get(uri);
-      if (fragment != null) fragmentField.set(uri, fragment.intern());
-      String schemeSpecificPart = (String) schemeSpecificPartField.get(uri);
-      if (schemeSpecificPart != null) schemeSpecificPartField.set(uri, schemeSpecificPart.intern());
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
     return uri;
   }
 
   public static Path internUriStringsInPath(Path path) {
-    if (path != null) internStringsInUri(path.toUri());
     return path;
   }
 
   public static Path[] internUriStringsInPathArray(Path[] paths) {
-    if (paths != null) {
-      for (Path path : paths) {
-        internUriStringsInPath(path);
-      }
-    }
     return paths;
   }
 
