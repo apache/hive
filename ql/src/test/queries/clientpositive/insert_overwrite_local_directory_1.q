@@ -103,6 +103,12 @@ select key,value from local_rctable;
 
 dfs -cat ../../data/files/local_rctable_out/000000_0;
 
+--set mapreduce.framework.name=yarn;
+insert overwrite local directory '${system:test.tmp.dir}/data/files/local_rctable_out'
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '\t'
+select key,value from local_rctable group by key, value;
+
 drop table local_rctable;
 drop table array_table_n0;
 drop table map_table_n1;
