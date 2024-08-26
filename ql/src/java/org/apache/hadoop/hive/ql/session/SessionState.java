@@ -1305,21 +1305,6 @@ public class SessionState {
     }
   }
 
-  static void registerJars(List<String> newJars) throws IllegalArgumentException {
-    LogHelper console = getConsole();
-    try {
-      AddToClassPathAction addAction = new AddToClassPathAction(
-          Thread.currentThread().getContextClassLoader(), newJars);
-      final ClassLoader newLoader = AccessController.doPrivileged(addAction);
-      Thread.currentThread().setContextClassLoader(newLoader);
-      SessionState.get().getConf().setClassLoader(newLoader);
-      console.printInfo("Added " + newJars + " to class path");
-    } catch (Exception e) {
-      String message = "Unable to register " + newJars;
-      throw new IllegalArgumentException(message, e);
-    }
-  }
-
   /**
    * Load the jars under the path specified in hive.aux.jars.path property. Add
    * the jars to the classpath so the local task can refer to them.
@@ -1340,7 +1325,6 @@ public class SessionState {
 
   /**
    * Reload the jars under the path specified in hive.reloadable.aux.jars.path property.
-   *
    * @throws IOException
    */
   public void loadReloadableAuxJars() throws IOException {
@@ -1373,6 +1357,21 @@ public class SessionState {
     }
     preReloadableAuxJars.clear();
     preReloadableAuxJars.addAll(reloadedAuxJars);
+  }
+
+  static void registerJars(List<String> newJars) throws IllegalArgumentException {
+    LogHelper console = getConsole();
+    try {
+      AddToClassPathAction addAction = new AddToClassPathAction(
+          Thread.currentThread().getContextClassLoader(), newJars);
+      final ClassLoader newLoader = AccessController.doPrivileged(addAction);
+      Thread.currentThread().setContextClassLoader(newLoader);
+      SessionState.get().getConf().setClassLoader(newLoader);
+      console.printInfo("Added " + newJars + " to class path");
+    } catch (Exception e) {
+      String message = "Unable to register " + newJars;
+      throw new IllegalArgumentException(message, e);
+    }
   }
 
   static boolean unregisterJar(List<String> jarsToUnregister) {
