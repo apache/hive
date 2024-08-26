@@ -9816,6 +9816,68 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         throw new \Exception("get_functions failed: unknown result");
     }
 
+    public function get_functions_req(\metastore\GetFunctionsRequest $request)
+    {
+        $this->send_get_functions_req($request);
+        return $this->recv_get_functions_req();
+    }
+
+    public function send_get_functions_req(\metastore\GetFunctionsRequest $request)
+    {
+        $args = new \metastore\ThriftHiveMetastore_get_functions_req_args();
+        $args->request = $request;
+        $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+        if ($bin_accel) {
+            thrift_protocol_write_binary(
+                $this->output_,
+                'get_functions_req',
+                TMessageType::CALL,
+                $args,
+                $this->seqid_,
+                $this->output_->isStrictWrite()
+            );
+        } else {
+            $this->output_->writeMessageBegin('get_functions_req', TMessageType::CALL, $this->seqid_);
+            $args->write($this->output_);
+            $this->output_->writeMessageEnd();
+            $this->output_->getTransport()->flush();
+        }
+    }
+
+    public function recv_get_functions_req()
+    {
+        $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+        if ($bin_accel) {
+            $result = thrift_protocol_read_binary(
+                $this->input_,
+                '\metastore\ThriftHiveMetastore_get_functions_req_result',
+                $this->input_->isStrictRead()
+            );
+        } else {
+            $rseqid = 0;
+            $fname = null;
+            $mtype = 0;
+
+            $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+            if ($mtype == TMessageType::EXCEPTION) {
+                $x = new TApplicationException();
+                $x->read($this->input_);
+                $this->input_->readMessageEnd();
+                throw $x;
+            }
+            $result = new \metastore\ThriftHiveMetastore_get_functions_req_result();
+            $result->read($this->input_);
+            $this->input_->readMessageEnd();
+        }
+        if ($result->success !== null) {
+            return $result->success;
+        }
+        if ($result->o1 !== null) {
+            throw $result->o1;
+        }
+        throw new \Exception("get_functions_req failed: unknown result");
+    }
+
     public function get_function($dbName, $funcName)
     {
         $this->send_get_function($dbName, $funcName);
