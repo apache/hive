@@ -69,6 +69,7 @@ public class QueryProperties {
 
   // True if this statement creates or replaces a materialized view
   private boolean isMaterializedView;
+  private boolean isView;
 
   public boolean isQuery() {
     return query;
@@ -283,6 +284,14 @@ public class QueryProperties {
 
   public void setMaterializedView(boolean isMaterializedView) {
     this.isMaterializedView = isMaterializedView;
+  }
+
+  public boolean isView() {
+    return isView;
+  }
+
+  public void setView(boolean view) {
+    isView = view;
   }
 
   public void clear() {
