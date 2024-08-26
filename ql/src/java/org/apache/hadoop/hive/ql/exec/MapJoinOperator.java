@@ -177,7 +177,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
     // On Tez only: The hash map might already be cached in the container we run
     // the task in. On MR: The cache is a no-op.
-    String queryId = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVEQUERYID);
+    String queryId = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVE_QUERY_ID);
     // The cacheKey may have already been defined in the MapJoin conf spec
     // as part of the Shared Work Optimization if it can be reused among
     // multiple mapjoin operators. In that case, we take that key from conf

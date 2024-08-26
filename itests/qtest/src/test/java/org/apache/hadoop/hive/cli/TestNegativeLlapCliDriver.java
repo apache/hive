@@ -33,7 +33,7 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class TestNegativeLlapCliDriver {
 
-  static CliAdapter adapter = new CliConfigs.NegativeLlapCliDriver().getCliAdapter();
+  static CliAdapter adapter = new CliConfigs.NegativeLlapCliConfig().getCliAdapter();
 
   @Parameters(name = "{0}")
   public static List<Object[]> getParameters() throws Exception {

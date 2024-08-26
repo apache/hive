@@ -127,7 +127,7 @@ public class CopyUtils {
                           Path dst, boolean deleteSource, boolean overwrite,
                           DataCopyStatistics copyStatistics) throws IOException {
     retryableFxn(() -> {
-      boolean preserveXAttrs = FileUtils.shouldPreserveXAttrs(hiveConf, srcFS, dstFS);
+      boolean preserveXAttrs = FileUtils.shouldPreserveXAttrs(hiveConf, srcFS, dstFS, paths[0]);
       FileUtils.copy(srcFS, paths, dstFS, dst, deleteSource, overwrite, preserveXAttrs, hiveConf,
           copyStatistics);
       return null;

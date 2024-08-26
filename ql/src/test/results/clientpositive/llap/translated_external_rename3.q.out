@@ -103,7 +103,7 @@ Table Parameters:
 	bucketing_version   	2                   
 	external.table.purge	TRUE                
 	numFiles            	2                   
-	totalSize           	4                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -139,7 +139,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	1                   
-	totalSize           	2                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

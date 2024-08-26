@@ -53,7 +53,7 @@ POSTHOOK: Input: cdh_82023_repro_db@data
 POSTHOOK: Output: cdh_82023_repro_db@background
 POSTHOOK: Output: database:cdh_82023_repro_db
 POSTHOOK: Lineage: background.text EXPRESSION [(data)xouter.FieldSchema(name:text, type:string, comment:null), ]
-Warning: Shuffle Join MERGEJOIN[42][tables = [xouter, sq_1_notin_nullcheck]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[45][tables = [xouter, sq_1_notin_nullcheck]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: SELECT * FROM `cdh_82023_repro_db`.`background`
 PREHOOK: type: QUERY
 PREHOOK: Input: cdh_82023_repro_db@background
@@ -85,7 +85,7 @@ POSTHOOK: Input: cdh_82023_repro_db@data
 POSTHOOK: Output: cdh_82023_repro_db@foreground
 POSTHOOK: Output: database:cdh_82023_repro_db
 POSTHOOK: Lineage: foreground.text EXPRESSION [(data)xouter.FieldSchema(name:text, type:string, comment:null), ]
-Warning: Shuffle Join MERGEJOIN[43][tables = [xouter, sq_1_notin_nullcheck]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[46][tables = [xouter, sq_1_notin_nullcheck]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: SELECT * FROM `cdh_82023_repro_db`.`foreground`
 PREHOOK: type: QUERY
 PREHOOK: Input: cdh_82023_repro_db@background

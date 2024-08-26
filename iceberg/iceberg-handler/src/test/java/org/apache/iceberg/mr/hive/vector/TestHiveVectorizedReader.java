@@ -98,8 +98,9 @@ public class TestHiveVectorizedReader {
     try (MockedStatic<ParquetFileReader> mockedParquetFileReader = Mockito.mockStatic(ParquetFileReader.class,
         Mockito.CALLS_REAL_METHODS)) {
       for (InputSplit split : splits) {
-        try (RecordReader<Void, ?> reader = inputFormat.createRecordReader(split, context)) {
-          reader.initialize(split, context);
+        try (RecordReader<Void, ?> r = inputFormat.createRecordReader(split, context)) {
+          r.initialize(split, context);
+          r.nextKeyValue();
         }
       }
       mockedParquetFileReader.verify(times(1), () ->

@@ -23,7 +23,9 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.PartitionManagementTask;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.thrift.TException;
 import org.jetbrains.annotations.NotNull;
@@ -41,11 +43,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.apache.hadoop.hive.metastore.tools.Util.addManyPartitions;
 import static org.apache.hadoop.hive.metastore.tools.Util.addManyPartitionsNoException;
+import static org.apache.hadoop.hive.metastore.tools.Util.createManyPartitions;
 import static org.apache.hadoop.hive.metastore.tools.Util.createSchema;
 import static org.apache.hadoop.hive.metastore.tools.Util.throwingSupplierWrapper;
+import static org.apache.hadoop.hive.metastore.tools.Util.updateManyPartitionsStatsNoException;
 
 /**
  * Actual benchmark code.
@@ -181,22 +187,23 @@ final class HMSBenchmarks {
   }
 
   static DescriptiveStatistics benchmarkCreatePartition(@NotNull MicroBenchmark bench,
-                                                        @NotNull BenchData data) {
+                                                        @NotNull BenchData data,
+                                                        int howMany) {
     final HMSClient client = data.getClient();
     String dbName = data.dbName;
     String tableName = data.tableName;
 
     BenchmarkUtils.createPartitionedTable(client, dbName, tableName);
-    final List<String> values = Collections.singletonList("d1");
     try {
       Table t = client.getTable(dbName, tableName);
-      Partition partition = new Util.PartitionBuilder(t)
-          .withValues(values)
-          .build();
+      List<Partition> parts = createManyPartitions(t, null, Collections.singletonList("d"), howMany);
 
       return bench.measure(null,
-          () -> throwingSupplierWrapper(() -> client.addPartition(partition)),
-          () -> throwingSupplierWrapper(() -> client.dropPartition(dbName, tableName, values)));
+          () -> throwingSupplierWrapper(() -> {
+            parts.forEach(part -> throwingSupplierWrapper(() -> client.addPartition(part)));
+            return null;
+          }),
+          () -> throwingSupplierWrapper(() -> client.dropPartitions(dbName, tableName, null)));
     } catch (TException e) {
       e.printStackTrace();
       return new DescriptiveStatistics();
@@ -336,6 +343,35 @@ final class HMSBenchmarks {
     }
   }
 
+  static DescriptiveStatistics benchmarkAlterPartitions(@NotNull MicroBenchmark bench,
+                                                        @NotNull BenchData data,
+                                                        int count) {
+    final HMSClient client = data.getClient();
+    String dbName = data.dbName;
+    String tableName = data.tableName;
+
+    BenchmarkUtils.createPartitionedTable(client, dbName, tableName);
+    try {
+      return bench.measure(
+          () -> addManyPartitionsNoException(client, dbName, tableName, null,
+              Collections.singletonList("d"), count),
+          () -> throwingSupplierWrapper(() -> {
+            List<Partition> newPartitions = client.getPartitions(dbName, tableName);
+            newPartitions.forEach(p -> {
+              p.getParameters().put("new_param", "param_val");
+              p.getSd().setCols(Arrays.asList(new FieldSchema("new_col", "string", null)));
+            });
+            client.alterPartitions(dbName, tableName, newPartitions);
+            return null;
+          }),
+          () -> throwingSupplierWrapper(() ->
+              client.dropPartitions(dbName, tableName, null))
+      );
+    } finally {
+      throwingSupplierWrapper(() -> client.dropTable(dbName, tableName));
+    }
+  }
+
   static DescriptiveStatistics benchmarkGetPartitionNames(@NotNull MicroBenchmark bench,
                                                           @NotNull BenchData data,
                                                           int count) {
@@ -372,6 +408,103 @@ final class HMSBenchmarks {
           () ->
               throwingSupplierWrapper(() ->
                   client.getPartitionsByNames(dbName, tableName, partitionNames))
+      );
+    } finally {
+      throwingSupplierWrapper(() -> client.dropTable(dbName, tableName));
+    }
+  }
+
+  static DescriptiveStatistics benchmarkGetPartitionsByFilter(@NotNull MicroBenchmark bench,
+                                                              @NotNull BenchData data,
+                                                              int count) {
+    final HMSClient client = data.getClient();
+    String dbName = data.dbName;
+    String tableName = data.tableName;
+
+    BenchmarkUtils.createPartitionedTable(client, dbName, tableName, createSchema(Arrays.asList("p_a", "p_b", "p_c")));
+    try {
+      addManyPartitionsNoException(client, dbName, tableName, null,
+              Arrays.asList("a", "b", "c"), count);
+      return bench.measure(
+          () ->
+              throwingSupplierWrapper(() -> {
+                  // test multiple cases for get_partitions_by_filter
+                  client.getPartitionsByFilter(dbName, tableName, "`p_a`='a0'");
+                  client.getPartitionsByFilter(dbName, tableName,
+                      "`p_a`='a0' or `p_b`='b0' or `p_c`='c0' or `p_a`='a1' or `p_b`='b1' or `p_c`='c1'");
+              return null;
+              })
+      );
+    } finally {
+      throwingSupplierWrapper(() -> client.dropTable(dbName, tableName));
+    }
+  }
+
+  static DescriptiveStatistics benchmarkGetPartitionsByPs(@NotNull MicroBenchmark bench,
+                                                          @NotNull BenchData data,
+                                                          int count) {
+    final HMSClient client = data.getClient();
+    String dbName = data.dbName;
+    String tableName = data.tableName;
+
+    BenchmarkUtils.createPartitionedTable(client, dbName, tableName, createSchema(Arrays.asList("p_a", "p_b", "p_c")));
+    try {
+      // Create multiple partitions with values: [a0, b0, c0], [a0, b1, c1], [a0, b2, c2]...
+      List<List<String>> values = IntStream.range(0, count)
+          .mapToObj(i -> Arrays.asList("a0", "b" + i, "c" + i))
+          .collect(Collectors.toList());
+      addManyPartitionsNoException(client, dbName, tableName, null, values);
+      return bench.measure(
+          () ->
+              throwingSupplierWrapper(() ->
+                  client.getPartitionsByPs(dbName, tableName, Arrays.asList("a0")))
+      );
+    } finally {
+      throwingSupplierWrapper(() -> client.dropTable(dbName, tableName));
+    }
+  }
+
+
+  static DescriptiveStatistics benchmarkGetPartitionsStat(@NotNull MicroBenchmark bench,
+                                                          @NotNull BenchData data,
+                                                          int count) {
+    final HMSClient client = data.getClient();
+    String dbName = data.dbName;
+    String tableName = data.tableName;
+
+    BenchmarkUtils.createPartitionedTable(client, dbName, tableName);
+    try {
+      addManyPartitionsNoException(client, dbName, tableName, null,
+              Collections.singletonList("d"), count);
+      List<String> partNames = throwingSupplierWrapper(() ->
+              client.getPartitionNames(dbName, tableName));
+      updateManyPartitionsStatsNoException(client, dbName, tableName, partNames);
+      PartitionsStatsRequest request = new PartitionsStatsRequest(
+              dbName, tableName, Arrays.asList("name"), partNames);
+      return bench.measure(
+          () ->
+              throwingSupplierWrapper(() -> client.getPartitionsStats(request))
+      );
+    } finally {
+      throwingSupplierWrapper(() -> client.dropTable(dbName, tableName));
+    }
+  }
+
+  static DescriptiveStatistics benchmarkUpdatePartitionsStat(@NotNull MicroBenchmark bench,
+                                                             @NotNull BenchData data,
+                                                             int count) {
+    final HMSClient client = data.getClient();
+    String dbName = data.dbName;
+    String tableName = data.tableName;
+
+    BenchmarkUtils.createPartitionedTable(client, dbName, tableName);
+    try {
+      addManyPartitionsNoException(client, dbName, tableName, null,
+              Collections.singletonList("d"), count);
+      List<String> partNames = throwingSupplierWrapper(() ->
+              client.getPartitionNames(dbName, tableName));
+      return bench.measure(
+              () -> updateManyPartitionsStatsNoException(client, dbName, tableName, partNames)
       );
     } finally {
       throwingSupplierWrapper(() -> client.dropTable(dbName, tableName));

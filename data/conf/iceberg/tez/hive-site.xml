@@ -40,8 +40,7 @@
 
 <property>
   <name>hive.tez.container.size</name>
-  <value>128</value>
-  <description></description>
+  <value>512</value>
 </property>
 
 <property>
@@ -221,12 +220,6 @@
 </property>
 
 <property>
-  <name>hive.execution.engine</name>
-  <value>tez</value>
-  <description>Whether to use MR or Tez</description>
-</property>
-
-<property>
   <name>tez.am.node-blacklisting.enabled</name>
   <value>false</value>
 </property>
@@ -263,6 +256,11 @@
 <property>
   <name>tez.am.launch.cmd-opts</name>
   <value> -Dlog4j.configurationFile=tez-container-log4j2.properties -Dtez.container.log.level=INFO -Dtez.container.root.logger=CLA </value>
+</property>
+
+<property>
+  <name>hive.tez.exec.print.summary</name>
+  <value>true</value>
 </property>
 
 <property>

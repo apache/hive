@@ -185,7 +185,7 @@ public class SharedCache {
   public void setConcurrencyLevel(int cl){
     this.concurrencyLevel = cl;
   }
-  //number of miliseconds between size updates.
+  //number of milliseconds between size updates.
   public void setRefreshInterval(int interval){
     this.refreshInterval = interval;
   }
@@ -519,7 +519,7 @@ public class SharedCache {
     /**
      * Common method to cache constraints
      * @param constraintsList list of constraints to add to cache
-     * @param fromPrewarm is this method called as part of perwarm phase
+     * @param fromPrewarm is this method called as part of prewarm phase
      * @param mn Constraint type
      * @return memory constraint is handled by cache eviction policy hence this method will always return true
      * if correct constraint type is provided.
@@ -1519,7 +1519,7 @@ public class SharedCache {
         cacheLock.writeLock().lock();
         // Since we allow write operations on cache while prewarm is happening:
         // 1. Don't add databases that were deleted while we were preparing list for prewarm
-        // 2. Skip overwriting exisiting db object
+        // 2. Skip overwriting existing db object
         // (which is present because it was added after prewarm started)
         if (catalogsDeletedDuringPrewarm.contains(catCopy.getName())) {
           continue;
@@ -1622,7 +1622,7 @@ public class SharedCache {
         cacheLock.writeLock().lock();
         // Since we allow write operations on cache while prewarm is happening:
         // 1. Don't add databases that were deleted while we were preparing list for prewarm
-        // 2. Skip overwriting exisiting db object
+        // 2. Skip overwriting existing db object
         // (which is present because it was added after prewarm started)
         String key = CacheUtils.buildDbKey(dbCopy.getCatalogName().toLowerCase(), dbCopy.getName().toLowerCase());
         if (databasesDeletedDuringPrewarm.contains(key)) {
@@ -2707,7 +2707,7 @@ public class SharedCache {
   }
 
   /**
-   * This resets the contents of the cataog cache so that we can re-fill it in another test.
+   * This resets the contents of the catalog cache so that we can re-fill it in another test.
    */
   void resetCatalogCache() {
     isCatalogCachePrewarmed = false;

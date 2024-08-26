@@ -128,7 +128,8 @@ public class TestHiveIcebergTruncateTable extends HiveIcebergStorageHandlerWithE
   }
 
   @Test
-  public void testTruncateTableWithPartitionSpec() throws IOException, TException, InterruptedException {
+  public void testTruncateTableWithPartitionSpecOnUnpartitionedTable() throws IOException, TException,
+      InterruptedException {
     // Create an Iceberg table with some record and try to run a truncate table command with partition
     // spec. The command should fail as the table is unpartitioned in Hive. Then check if the
     // initial data and the table statistics are not changed.
@@ -141,8 +142,7 @@ public class TestHiveIcebergTruncateTable extends HiveIcebergStorageHandlerWithE
     shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS");
 
     AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
-        "Using partition spec in query is unsupported for non-native table backed by: " +
-            "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler",
+        "Writing data into a partition fails when the Iceberg table is unpartitioned.",
         () -> {
           shell.executeStatement("TRUNCATE " + identifier + " PARTITION (customer_id=1)");
         });
@@ -155,7 +155,34 @@ public class TestHiveIcebergTruncateTable extends HiveIcebergStorageHandlerWithE
   }
 
   @Test
-  public void testTruncateTablePartitionedIcebergTable() throws IOException, TException, InterruptedException {
+  public void testTruncateTableWithPartitionSpecOnPartitionedTable() {
+    // Create an Iceberg table with some record and try to run a truncate table command with partition
+    // spec. The command should fail as the table is unpartitioned in Hive. Then check if the
+    // initial data and the table statistics are not changed.
+    String databaseName = "default";
+    String tableName = "customers";
+    TableIdentifier identifier = TableIdentifier.of(databaseName, tableName);
+    PartitionSpec spec =
+        PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA).identity("customer_id").build();
+    testTables.createTable(shell, tableName, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    shell.executeStatement("ALTER TABLE " + identifier + " SET TBLPROPERTIES('external.table.purge'='true')");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS");
+
+    shell.executeStatement("TRUNCATE " + identifier + " PARTITION (customer_id=1)");
+
+    List<Object[]> rows = shell.executeStatement("SELECT * FROM " + identifier);
+    List<Record> truncatedRecords = TestHelper.RecordsBuilder
+        .newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(0L, "Alice", "Brown")
+        .add(2L, "Trudy", "Pink")
+        .build();
+    HiveIcebergTestUtils.validateData(truncatedRecords,
+        HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, rows), 0);
+  }
+
+  @Test
+  public void testTruncateTablePartitionedIcebergTable() throws TException, InterruptedException {
     // Create a partitioned Iceberg table with some initial data and run a truncate table command on this table.
     // Then check if the data is deleted and the table statistics are reset to 0.
     String databaseName = "default";

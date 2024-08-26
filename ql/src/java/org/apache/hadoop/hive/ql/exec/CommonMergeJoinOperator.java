@@ -136,13 +136,13 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
     int bucketSize;
 
-    int oldVar = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEMAPJOINBUCKETCACHESIZE);
+    int oldVar = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVE_MAPJOIN_BUCKET_CACHE_SIZE);
     shortcutUnmatchedRows = HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVE_JOIN_SHORTCUT_UNMATCHED_ROWS);
 
     if (oldVar != 100) {
       bucketSize = oldVar;
     } else {
-      bucketSize = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVESMBJOINCACHEROWS);
+      bucketSize = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVE_SMBJOIN_CACHE_ROWS);
     }
 
     for (byte pos = 0; pos < order.length; pos++) {

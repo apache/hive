@@ -32,7 +32,7 @@ import org.apache.iceberg.util.SerializationUtil;
 
 // Since this class extends `mapreduce.InputSplit and implements `mapred.InputSplit`, it can be returned by both MR v1
 // and v2 file formats.
-public class IcebergSplit extends InputSplit implements org.apache.hadoop.mapred.InputSplit, IcebergSplitContainer {
+public class IcebergSplit extends InputSplit implements IcebergSplitContainer {
 
   public static final String[] ANYWHERE = new String[]{"*"};
 

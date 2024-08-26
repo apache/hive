@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -60,12 +61,19 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.getTypeStringFromAST;
+import static org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.unescapeIdentifier;
 
 
 /**
@@ -204,7 +212,7 @@ public final class ParseUtils {
 
     switch(filterCondn.getType()) {
     case HiveParser.TOK_TABLE_OR_COL:
-      String tableOrCol = SemanticAnalyzer.unescapeIdentifier(filterCondn.getChild(0).getText()
+      String tableOrCol = unescapeIdentifier(filterCondn.getChild(0).getText()
           .toLowerCase());
       return getIndex(tabAliases, tableOrCol);
     case HiveParser.Identifier:
@@ -526,14 +534,13 @@ public final class ParseUtils {
     return sb.toString();
   }
 
-  public static CBOPlan parseQuery(HiveConf conf, String viewQuery)
+  public static CBOPlan parseQuery(Context ctx, String viewQuery)
       throws SemanticException, ParseException {
-    final Context ctx = new Context(conf);
-    ctx.setIsLoadingMaterializedView(true);
     final ASTNode ast = parse(viewQuery, ctx);
-    final CalcitePlanner analyzer = getAnalyzer(conf, ctx);
+    final CalcitePlanner analyzer = getAnalyzer((HiveConf) ctx.getConf(), ctx);
     RelNode logicalPlan = analyzer.genLogicalPlan(ast);
-    return new CBOPlan(ast, logicalPlan, analyzer.getInvalidAutomaticRewritingMaterializationReason());
+    return new CBOPlan(
+        ast, logicalPlan, analyzer.getMaterializationValidationResult().getSupportedRewriteAlgorithms());
   }
 
   public static List<FieldSchema> parseQueryAndGetSchema(HiveConf conf, String viewQuery)
@@ -563,9 +570,11 @@ public final class ParseUtils {
    */
   public static Map<Integer, List<ExprNodeGenericFuncDesc>> getFullPartitionSpecs(
       CommonTree ast, Table table, Configuration conf, boolean canGroupExprs) throws SemanticException {
-    String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULTPARTITIONNAME);
+    String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
     Map<String, String> colTypes = new HashMap<>();
-    for (FieldSchema fs : table.getPartitionKeys()) {
+    List<FieldSchema> partitionKeys = table.getStorageHandler() != null && table.getStorageHandler().alwaysUnpartitioned() ?
+            table.getStorageHandler().getPartitionKeys(table) : table.getPartitionKeys();
+    for (FieldSchema fs : partitionKeys) {
       colTypes.put(fs.getName().toLowerCase(), fs.getType());
     }
 
@@ -671,5 +680,97 @@ public final class ParseUtils {
       val = val.substring(1, val.length() - 1);
     }
     return val;
+  }
+
+  public static ReparseResult parseRewrittenQuery(Context ctx, StringBuilder rewrittenQueryStr)
+      throws SemanticException {
+    return parseRewrittenQuery(ctx, rewrittenQueryStr.toString());
+  }
+
+  /**
+   * Parse the newly generated SQL statement to get a new AST.
+   */
+  public static ReparseResult parseRewrittenQuery(Context ctx,
+      String rewrittenQueryStr)
+      throws SemanticException {
+    // Set dynamic partitioning to nonstrict so that queries do not need any partition
+    // references.
+    // TODO: this may be a perf issue as it prevents the optimizer.. or not
+    HiveConf.setVar(ctx.getConf(), HiveConf.ConfVars.DYNAMIC_PARTITIONING_MODE, "nonstrict");
+    // Disable LLAP IO wrapper; doesn't propagate extra ACID columns correctly.
+    HiveConf.setBoolVar(ctx.getConf(), HiveConf.ConfVars.LLAP_IO_ROW_WRAPPER_ENABLED, false);
+    // Parse the rewritten query string
+    Context rewrittenCtx;
+    rewrittenCtx = new Context(ctx.getConf());
+    rewrittenCtx.setHDFSCleanup(true);
+    // We keep track of all the contexts that are created by this query
+    // so we can clear them when we finish execution
+    ctx.addSubContext(rewrittenCtx);
+    rewrittenCtx.setExplainConfig(ctx.getExplainConfig());
+    rewrittenCtx.setExplainPlan(ctx.isExplainPlan());
+    rewrittenCtx.setStatsSource(ctx.getStatsSource());
+    rewrittenCtx.setPlanMapper(ctx.getPlanMapper());
+    rewrittenCtx.setIsUpdateDeleteMerge(true);
+    rewrittenCtx.setCmd(rewrittenQueryStr);
+
+    ASTNode rewrittenTree;
+    try {
+      LOG.info("Going to reparse <{}> as \n<{}>", ctx.getCmd(), rewrittenQueryStr);
+      rewrittenTree = ParseUtils.parse(rewrittenQueryStr, rewrittenCtx);
+    } catch (ParseException e) {
+      throw new SemanticException(ErrorMsg.UPDATEDELETE_PARSE_ERROR.getMsg(), e);
+    }
+    return new ReparseResult(rewrittenTree, rewrittenCtx);
+  }
+
+  public static final class ReparseResult {
+    public final ASTNode rewrittenTree;
+    public final Context rewrittenCtx;
+    ReparseResult(ASTNode n, Context c) {
+      rewrittenTree = n;
+      rewrittenCtx = c;
+    }
+  }
+
+  public static TypeInfo getComplexTypeTypeInfo(ASTNode typeNode) throws SemanticException {
+    switch (typeNode.getType()) {
+      case HiveParser.TOK_LIST:
+        ListTypeInfo listTypeInfo = new ListTypeInfo();
+        listTypeInfo.setListElementTypeInfo(getComplexTypeTypeInfo((ASTNode) typeNode.getChild(0)));
+        return listTypeInfo;
+      case HiveParser.TOK_MAP:
+        MapTypeInfo mapTypeInfo = new MapTypeInfo();
+        String keyTypeString = getTypeStringFromAST((ASTNode) typeNode.getChild(0));
+        mapTypeInfo.setMapKeyTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo(keyTypeString));
+        mapTypeInfo.setMapValueTypeInfo(getComplexTypeTypeInfo((ASTNode) typeNode.getChild(1)));
+        return mapTypeInfo;
+      case HiveParser.TOK_STRUCT:
+        StructTypeInfo structTypeInfo = new StructTypeInfo();
+        Map<String, TypeInfo> fields = collectStructFieldNames(typeNode);
+        structTypeInfo.setAllStructFieldNames(new ArrayList<>(fields.keySet()));
+        structTypeInfo.setAllStructFieldTypeInfos(new ArrayList<>(fields.values()));
+        return structTypeInfo;
+      default:
+        String typeString = getTypeStringFromAST(typeNode);
+        return TypeInfoFactory.getPrimitiveTypeInfo(typeString);
+    }
+  }
+
+  private static Map<String, TypeInfo> collectStructFieldNames(ASTNode structTypeNode) throws SemanticException {
+    ASTNode fieldListNode = (ASTNode) structTypeNode.getChild(0);
+    assert fieldListNode.getType() == HiveParser.TOK_TABCOLLIST;
+
+    Map<String, TypeInfo> result = new LinkedHashMap<>(fieldListNode.getChildCount());
+    for (int i = 0; i < fieldListNode.getChildCount(); i++) {
+      ASTNode child = (ASTNode) fieldListNode.getChild(i);
+
+      String attributeIdentifier = unescapeIdentifier(child.getChild(0).getText());
+      if (result.containsKey(attributeIdentifier)) {
+        throw new SemanticException(ErrorMsg.AMBIGUOUS_STRUCT_ATTRIBUTE, attributeIdentifier);
+      } else {
+        result.put(attributeIdentifier, getComplexTypeTypeInfo((ASTNode) child.getChild(1)));
+      }
+    }
+    return result;
   }
 }

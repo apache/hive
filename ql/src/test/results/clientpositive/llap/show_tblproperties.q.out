@@ -45,7 +45,7 @@ numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 tmp	true
-totalSize	0
+totalSize	#Masked#
 #### A masked pattern was here ####
 PREHOOK: query: show tblproperties tmpfoo("bar")
 PREHOOK: type: SHOW_TBLPROPERTIES
@@ -65,7 +65,7 @@ numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 tmp	true
-totalSize	0
+totalSize	#Masked#
 #### A masked pattern was here ####
 PREHOOK: query: show tblproperties default.tmpfoo("bar")
 PREHOOK: type: SHOW_TBLPROPERTIES
@@ -121,7 +121,7 @@ numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 tmp	true
-totalSize	0
+totalSize	#Masked#
 #### A masked pattern was here ####
 PREHOOK: query: show tblproperties default.tmpfoo("bar")
 PREHOOK: type: SHOW_TBLPROPERTIES
@@ -141,7 +141,7 @@ numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 tmp	true1
-totalSize	0
+totalSize	#Masked#
 #### A masked pattern was here ####
 PREHOOK: query: show tblproperties tmpfoo("bar")
 PREHOOK: type: SHOW_TBLPROPERTIES
@@ -167,7 +167,7 @@ numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 tmp	true1
-totalSize	0
+totalSize	#Masked#
 #### A masked pattern was here ####
 PREHOOK: query: show tblproperties db1.tmpfoo("bar")
 PREHOOK: type: SHOW_TBLPROPERTIES

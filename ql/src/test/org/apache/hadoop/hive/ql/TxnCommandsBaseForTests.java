@@ -106,6 +106,8 @@ public abstract class TxnCommandsBaseForTests {
   }
   void initHiveConf() {
     hiveConf = new HiveConf(this.getClass());
+    //TODO: HIVE-28029: Make unit tests based on TxnCommandsBaseForTests run on Tez
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
   }
   void setUpInternal() throws Exception {
     initHiveConf();
@@ -119,23 +121,23 @@ public abstract class TxnCommandsBaseForTests {
         + File.separator + "mapred" + File.separator + "staging");
     hiveConf.set("mapred.temp.dir", workDir + File.separator + this.getClass().getSimpleName()
         + File.separator + "mapred" + File.separator + "temp");
-    hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
-    hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
-    hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, getWarehouseDir());
-    hiveConf.setVar(HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
+    hiveConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
+    hiveConf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
+    hiveConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname, getWarehouseDir());
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_INPUT_FORMAT, HiveInputFormat.class.getName());
     hiveConf
       .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     hiveConf.setBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK, true);
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.SPLIT_UPDATE, true);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_COL_AUTOGATHER, false);
     hiveConf.setBoolean("mapred.input.dir.recursive", true);
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON, true);
       
     TestTxnDbUtil.setConfValues(hiveConf);
-    txnHandler = TxnUtils.getTxnStore(hiveConf);
     TestTxnDbUtil.prepDb(hiveConf);
+    txnHandler = TxnUtils.getTxnStore(hiveConf);
     File f = new File(getWarehouseDir());
     if (f.exists()) {
       FileUtil.fullyDelete(f);
@@ -360,10 +362,13 @@ public abstract class TxnCommandsBaseForTests {
     checkExpected(rs, expectedResult, msg + (isVectorized ? " vect" : ""), LOG, !isVectorized);
     assertVectorized(isVectorized, query);
   }
-  void dropTable(String[] tabs) throws Exception {
-    for(String tab : tabs) {
-      d.run("drop table if exists " + tab);
+  void dropTables(String... tables) throws Exception {
+    HiveConf queryConf = d.getQueryState().getConf();
+    queryConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
+    for (String table : tables) {
+      d.run("drop table if exists " + table);
     }
+    queryConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
   }
   Driver swapDrivers(Driver otherDriver) {
     Driver tmp = d;

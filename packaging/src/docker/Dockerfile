@@ -84,6 +84,7 @@ COPY entrypoint.sh /
 COPY conf $HIVE_HOME/conf
 RUN chmod +x /entrypoint.sh
 
+
 ARG UID=1000
 RUN adduser --no-create-home --disabled-login --gecos "" --uid $UID hive && \
     chown hive /opt/tez && \
@@ -91,7 +92,9 @@ RUN adduser --no-create-home --disabled-login --gecos "" --uid $UID hive && \
     chown hive /opt/hadoop && \
     chown hive /opt/hive/conf && \
     mkdir -p /opt/hive/data/warehouse && \
-    chown hive /opt/hive/data/warehouse
+    chown hive /opt/hive/data/warehouse && \
+    mkdir -p /home/hive/.beeline && \
+    chown hive /home/hive/.beeline
 
 USER hive
 WORKDIR /opt/hive

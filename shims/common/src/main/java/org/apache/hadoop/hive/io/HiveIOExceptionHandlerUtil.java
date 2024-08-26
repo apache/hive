@@ -21,8 +21,12 @@ import java.io.IOException;
 
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HiveIOExceptionHandlerUtil {
+
+  private static final Logger LOG = LoggerFactory.getLogger(HiveIOExceptionHandlerUtil.class.getName());
 
   private static final ThreadLocal<HiveIOExceptionHandlerChain> handlerChainInstance =
     new ThreadLocal<HiveIOExceptionHandlerChain>();
@@ -52,6 +56,7 @@ public class HiveIOExceptionHandlerUtil {
    */
   public static RecordReader handleRecordReaderCreationException(Exception e,
       JobConf job) throws IOException {
+    LOG.error("RecordReader#init() threw an exception: ", e);
     HiveIOExceptionHandlerChain ioExpectionHandlerChain = get(job);
     if (ioExpectionHandlerChain != null) {
       return ioExpectionHandlerChain.handleRecordReaderCreationException(e);
@@ -72,6 +77,7 @@ public class HiveIOExceptionHandlerUtil {
    */
   public static boolean handleRecordReaderNextException(Exception e, JobConf job)
       throws IOException {
+    LOG.error("RecordReader#next() threw an exception: ", e);
     HiveIOExceptionHandlerChain ioExpectionHandlerChain = get(job);
     if (ioExpectionHandlerChain != null) {
       return ioExpectionHandlerChain.handleRecordReaderNextException(e);

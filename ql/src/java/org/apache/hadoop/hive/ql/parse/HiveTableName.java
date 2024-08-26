@@ -38,7 +38,7 @@ public final class HiveTableName extends TableName {
    * @throws SemanticException
    */
   public static TableName of(Table table) throws SemanticException {
-    return ofNullable(table.getTableName(), table.getDbName());
+    return ofNullable(table.getTableName(), table.getDbName(), table.getSnapshotRef());
   }
 
   /**

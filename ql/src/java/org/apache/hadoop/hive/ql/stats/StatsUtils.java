@@ -605,7 +605,7 @@ public class StatsUtils {
     partCS.setAvgColLen(StatsUtils.getAvgColLenOf(conf,
         ci.getObjectInspector(), partCS.getColumnType()));
     partCS.setRange(getRangePartitionColumn(partList, ci.getInternalName(),
-        ci.getType().getTypeName(), conf.getVar(ConfVars.DEFAULTPARTITIONNAME)));
+        ci.getType().getTypeName(), conf.getVar(ConfVars.DEFAULT_PARTITION_NAME)));
     return partCS;
   }
 

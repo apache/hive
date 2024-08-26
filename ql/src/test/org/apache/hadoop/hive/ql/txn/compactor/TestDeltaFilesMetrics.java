@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.junit.After;
@@ -52,6 +53,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 public class TestDeltaFilesMetrics extends CompactorTest  {
 
+  private static AcidMetricService metricService;
+
   private void setUpHiveConf() {
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.METASTORE_DELTAMETRICS_DELTA_NUM_THRESHOLD, 1);
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.METASTORE_DELTAMETRICS_OBSOLETE_DELTA_NUM_THRESHOLD, 1);
@@ -64,16 +67,21 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
 
   @Override
   @Before
-  public void setup() throws Exception {
+  public synchronized void setup() throws Exception {
     this.conf = new HiveConf();
     setUpHiveConf();
     setup(conf);
     MetricsFactory.init(conf);
+    if (metricService == null) {
+      metricService = new AcidMetricService();
+      metricService.setConf(conf);
+    }
   }
 
   @After
   public void tearDown() throws Exception {
     MetricsFactory.close();
+    compactorTestCleanup();
   }
 
   private static void verifyDeltaMetricsMatch(Map<String, Integer> expected, String metricName) throws Exception {
@@ -126,7 +134,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
 
     startInitiator();
 
-    TimeUnit.SECONDS.sleep(2);
+    metricService.run();
     // 2 active deltas
     // 1 small delta
     // 0 obsolete deltas
@@ -142,7 +150,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
 
     startWorker();
 
-    TimeUnit.SECONDS.sleep(2);
+    metricService.run();
     // 0 active deltas
     // 0 small delta
     // 2 obsolete deltas
@@ -176,7 +184,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 2);
     startInitiator();
 
-    TimeUnit.SECONDS.sleep(2);
+    metricService.run();
     // 3 active deltas
     // 2 small deltas
     // 2 obsolete deltas
@@ -192,7 +200,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
 
     startCleaner();
 
-    TimeUnit.SECONDS.sleep(2);
+    metricService.run();
     // 3 active deltas
     // 2 small deltas
     // 0 obsolete delta
@@ -208,7 +216,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
 
     startWorker();
 
-    TimeUnit.SECONDS.sleep(2);
+    metricService.run();
     // 1 active delta
     // 0 small delta
     // 3 obsolete deltas
@@ -224,7 +232,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
 
     startCleaner();
 
-    TimeUnit.SECONDS.sleep(2);
+    metricService.run();
     verifyDeltaMetricsMatch(
         ImmutableMap.of(dbName + "." + tblName + Path.SEPARATOR + partName, 1),
         MetricsConstants.COMPACTION_NUM_DELTAS);
@@ -234,6 +242,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     verifyDeltaMetricsMatch(
         ImmutableMap.of(),
         MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS);
+    ms.dropTable(dbName, tblName);
   }
 
   @Test
@@ -282,7 +291,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     HiveConf.setFloatVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_PCT_THRESHOLD, 0.4f);
     startInitiator();
 
-    TimeUnit.SECONDS.sleep(2);
+    metricService.run();
     verifyDeltaMetricsMatch(
         ImmutableMap.of(
             dbName + "." + tblName + Path.SEPARATOR + part1Name, 2,
@@ -305,7 +314,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     startWorker();
     startWorker();
 
-    TimeUnit.SECONDS.sleep(2);
+    metricService.run();
     verifyDeltaMetricsMatch(
         ImmutableMap.of(
             dbName + "." + tblName + Path.SEPARATOR + part1Name, 2,
@@ -323,7 +332,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     startCleaner();
     startCleaner();
 
-    TimeUnit.SECONDS.sleep(2);
+    metricService.run();
     verifyDeltaMetricsMatch(
         ImmutableMap.of(
           dbName + "." + tblName + Path.SEPARATOR + part1Name, 2,
@@ -335,6 +344,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     verifyDeltaMetricsMatch(
         ImmutableMap.of(),
         MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS);
+    ms.dropTable(dbName, tblName);
   }
 
   @Test
@@ -363,7 +373,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
 
     startInitiator();
 
-    TimeUnit.SECONDS.sleep(2);
+    metricService.run();
     // 2 active deltas
     // 1 small delta
     // 0 obsolete deltas
@@ -379,7 +389,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
 
     startWorker();
 
-    TimeUnit.SECONDS.sleep(2);
+    metricService.run();
     // 0 active delta
     // 0 small delta
     // 2 obsolete delta
@@ -395,7 +405,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
 
     startCleaner();
 
-    TimeUnit.SECONDS.sleep(2);
+    metricService.run();
     // 0 active delta
     // 0 small delta
     // 0 obsolete delta
@@ -408,6 +418,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     verifyDeltaMetricsMatch(
         ImmutableMap.of(),
         MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS);
+    ms.dropTable(dbName, tblName);
   }
 
   private LockComponent createLockComponent(String dbName, String tblName, String partName) {

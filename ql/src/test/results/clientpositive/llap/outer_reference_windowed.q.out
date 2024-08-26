@@ -148,7 +148,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	4                   
 	rawDataSize         	12                  
-	totalSize           	16                  
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

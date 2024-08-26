@@ -338,4 +338,63 @@ public class TestFileUtils {
     }
     return count;
   }
+
+  @Test
+  public void testResolveSymlinks() throws IOException {
+    HiveConf conf = new HiveConf();
+
+    java.nio.file.Path original = java.nio.file.Files.createTempFile("", "");
+    java.nio.file.Path symlinkPath = java.nio.file.Paths.get(original.toString() + ".symlink");
+    java.nio.file.Path symlinkOfSymlinkPath = java.nio.file.Paths.get(original.toString() + ".symlink.symlink");
+
+    // symlink -> original
+    java.nio.file.Files.createSymbolicLink(symlinkPath, original);
+    // symlink -> symlink -> original
+    java.nio.file.Files.createSymbolicLink(symlinkOfSymlinkPath, symlinkPath);
+
+    Assert.assertTrue(java.nio.file.Files.isSymbolicLink(symlinkPath));
+    Assert.assertTrue(java.nio.file.Files.isSymbolicLink(symlinkOfSymlinkPath));
+
+    // average usage 1: symlink points to the original
+    Path originalPathResolved = FileUtils.resolveSymlinks(new Path(symlinkPath.toUri()), conf);
+    Assert.assertEquals(original.toUri(), originalPathResolved.toUri());
+
+    // average usage 2: symlink2 -> symlink -> original points to the original
+    Path originalPathResolved2 = FileUtils.resolveSymlinks(new Path(symlinkOfSymlinkPath.toUri()), conf);
+    Assert.assertEquals(original.toUri(), originalPathResolved2.toUri());
+
+    // providing a symlink path without scheme: still resolving it as it was 'file' scheme
+    // resolve to the original path then returning without scheme
+    Path originalPathWithoutScheme = Path.getPathWithoutSchemeAndAuthority(new Path(original.toUri()));
+    Path symlinkPathWithoutScheme = Path.getPathWithoutSchemeAndAuthority(new Path(symlinkPath.toUri()));
+    Assert.assertNull(originalPathWithoutScheme.toUri().getScheme());
+    Assert.assertNull(symlinkPathWithoutScheme.toUri().getScheme());
+
+    Path originalPathResolvedWithoutInputScheme = FileUtils.resolveSymlinks(symlinkPathWithoutScheme, conf);
+    // return path also hasn't got a scheme
+    Assert.assertNull("Path without scheme should be resolved to another Path without scheme",
+        originalPathResolvedWithoutInputScheme.toUri().getScheme());
+    Assert.assertEquals(originalPathResolvedWithoutInputScheme, originalPathWithoutScheme);
+
+    // a non-symlink is resolved to itself
+    Path originalPathResolvedFromOriginal = FileUtils.resolveSymlinks(new Path(original.toUri()), conf);
+    Assert.assertEquals(original.toUri(), originalPathResolvedFromOriginal.toUri());
+
+    // 1. a nonexistent path is resolved to itself, resolveSymlinks doesn't care if the path doesn't exist
+    // 2. a relative path without a scheme cannot be used to construct an URI, hence we get the input Path back
+    Path nonexistentPath = new Path("./nonexistent-" + System.currentTimeMillis());
+    Assert.assertEquals(nonexistentPath.toUri(), FileUtils.resolveSymlinks(nonexistentPath, conf).toUri());
+
+    try {
+      FileUtils.resolveSymlinks(null, conf);
+      Assert.fail("IllegalArgumentException should be thrown in case of null input");
+    } catch (IllegalArgumentException e) {
+      Assert.assertEquals("Cannot resolve symlink for a null Path", e.getMessage());
+    }
+
+    // hdfs is not supported, return safely with the original path
+    Path hdfsPath = new Path("hdfs://localhost:0/user/hive/warehouse/src");
+    Path resolvedHdfsPath = FileUtils.resolveSymlinks(hdfsPath, conf);
+    Assert.assertEquals(hdfsPath.toUri(), resolvedHdfsPath.toUri());
+  }
 }

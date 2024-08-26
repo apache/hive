@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.util.ReflectionUtils;
 
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_STATS_DBCLASS;
 
 /**
  * A factory of stats publisher and aggregator implementations of the
@@ -43,7 +43,7 @@ public final class StatsFactory {
   private final Configuration jobConf;
 
   public static StatsFactory newFactory(Configuration conf) {
-    return newFactory(HiveConf.getVar(conf, HIVESTATSDBCLASS), conf);
+    return newFactory(HiveConf.getVar(conf, HIVE_STATS_DBCLASS), conf);
   }
 
   /**

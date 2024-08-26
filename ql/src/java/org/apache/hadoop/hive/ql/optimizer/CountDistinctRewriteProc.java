@@ -180,7 +180,7 @@ public class CountDistinctRewriteProc extends Transform {
         return -1;
       }
       // check if it is potential to trigger nullscan
-      if (pGraphContext.getConf().getBoolVar(HiveConf.ConfVars.HIVEMETADATAONLYQUERIES)) {
+      if (pGraphContext.getConf().getBoolVar(HiveConf.ConfVars.HIVE_METADATA_ONLY_QUERIES)) {
         for (TableScanOperator tsOp : pGraphContext.getTopOps().values()) {
           List<Integer> colIDs = tsOp.getNeededColumnIDs();
           TableScanDesc desc = tsOp.getConf();

@@ -735,7 +735,6 @@ part_col_stats	big_decimal_low_value
 part_col_stats	column_name
 part_col_stats	column_type
 part_col_stats	cs_id
-part_col_stats	db_name
 part_col_stats	double_high_value
 part_col_stats	double_low_value
 part_col_stats	engine
@@ -748,8 +747,6 @@ part_col_stats	num_falses
 part_col_stats	num_nulls
 part_col_stats	num_trues
 part_col_stats	part_id
-part_col_stats	partition_name
-part_col_stats	table_name
 part_privs	authorizer
 part_privs	create_time
 part_privs	grant_option
@@ -907,7 +904,6 @@ tab_col_stats	big_decimal_low_value
 tab_col_stats	column_name
 tab_col_stats	column_type
 tab_col_stats	cs_id
-tab_col_stats	db_name
 tab_col_stats	double_high_value
 tab_col_stats	double_low_value
 tab_col_stats	engine
@@ -919,7 +915,6 @@ tab_col_stats	num_distincts
 tab_col_stats	num_falses
 tab_col_stats	num_nulls
 tab_col_stats	num_trues
-tab_col_stats	table_name
 tab_col_stats	tbl_id
 table_params	param_key
 table_params	param_value
@@ -1446,13 +1441,17 @@ hive_test_user	hive_test_user
 hive_test_user	hive_test_user
 hive_test_user	hive_test_user
 hive_test_user	hive_test_user
-PREHOOK: query: select table_name, column_name, num_nulls, num_distincts from tab_col_stats order by table_name, column_name limit 10
+PREHOOK: query: select tbls.tbl_name, column_name, num_nulls, num_distincts from tab_col_stats inner join tbls on tab_col_stats.tbl_id=tbls.tbl_id join dbs on tbls.db_id=dbs.db_id order by tbls.tbl_name, column_name limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: sys@dbs
 PREHOOK: Input: sys@tab_col_stats
+PREHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-POSTHOOK: query: select table_name, column_name, num_nulls, num_distincts from tab_col_stats order by table_name, column_name limit 10
+POSTHOOK: query: select tbls.tbl_name, column_name, num_nulls, num_distincts from tab_col_stats inner join tbls on tab_col_stats.tbl_id=tbls.tbl_id join dbs on tbls.db_id=dbs.db_id order by tbls.tbl_name, column_name limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@tab_col_stats
+POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
 part	p_brand	0	16
 part	p_comment	0	25
@@ -1464,13 +1463,17 @@ part	p_retailprice	0	25
 part	p_size	0	21
 part	p_type	0	24
 src	key	0	316
-PREHOOK: query: select table_name, partition_name, column_name, num_nulls, num_distincts from part_col_stats order by table_name, partition_name, column_name limit 10
+PREHOOK: query: select tbls.tbl_name, partitions.part_name, column_name, num_nulls, num_distincts from part_col_stats inner join partitions on part_col_stats.part_id=partitions.part_id inner join tbls on partitions.tbl_id=tbls.tbl_id order by tbls.tbl_name, partitions.part_name, column_name limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@part_col_stats
+PREHOOK: Input: sys@partitions
+PREHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-POSTHOOK: query: select table_name, partition_name, column_name, num_nulls, num_distincts from part_col_stats order by table_name, partition_name, column_name limit 10
+POSTHOOK: query: select tbls.tbl_name, partitions.part_name, column_name, num_nulls, num_distincts from part_col_stats inner join partitions on part_col_stats.part_id=partitions.part_id inner join tbls on partitions.tbl_id=tbls.tbl_id order by tbls.tbl_name, partitions.part_name, column_name limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@part_col_stats
+POSTHOOK: Input: sys@partitions
+POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
 PREHOOK: query: select schema_version from version order by schema_version limit 5
 PREHOOK: type: QUERY
@@ -1482,7 +1485,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: sys@version
 #### A masked pattern was here ####
-4.0.0-beta-1
+4.1.0
 PREHOOK: query: select func_name, func_type from funcs order by func_name, func_type limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@funcs
@@ -1536,8 +1539,6 @@ POSTHOOK: query: describe sys.tab_col_stats
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: sys@tab_col_stats
 cs_id               	bigint              	from deserializer   
-db_name             	string              	from deserializer   
-table_name          	string              	from deserializer   
 column_name         	string              	from deserializer   
 column_type         	string              	from deserializer   
 tbl_id              	bigint              	from deserializer   
@@ -1640,8 +1641,16 @@ POSTHOOK: Input: sys@compaction_queue
 POSTHOOK: Input: sys@compactions
 POSTHOOK: Input: sys@completed_compactions
 #### A masked pattern was here ####
-1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-beta-2-SNAPSHOT	NULL	default	NULL	NULL
-2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-beta-2-SNAPSHOT	NULL	default	NULL	NULL
+1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.1.0-SNAPSHOT	NULL	default	NULL	NULL
+2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.1.0-SNAPSHOT	NULL	default	NULL	NULL
+PREHOOK: query: select MHL_TXNID,MHL_MIN_OPEN_TXNID from MIN_HISTORY_LEVEL
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@min_history_level
+#### A masked pattern was here ####
+POSTHOOK: query: select MHL_TXNID,MHL_MIN_OPEN_TXNID from MIN_HISTORY_LEVEL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@min_history_level
+#### A masked pattern was here ####
 PREHOOK: query: use INFORMATION_SCHEMA
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:information_schema
@@ -1876,8 +1885,8 @@ POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-beta-2-SNAPSHOT	NULL	default	NULL	NULL
-2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-beta-2-SNAPSHOT	NULL	default	NULL	NULL
+1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.1.0-SNAPSHOT	NULL	default	NULL	NULL
+2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.1.0-SNAPSHOT	NULL	default	NULL	NULL
 PREHOOK: query: select TXN_ID, STATE, AGENT_INFO, META_INFO, HEARTBEAT_COUNT, TYPE, TC_DATABASE, TC_TABLE, TC_PARTITION, TC_OPERATION_TYPE, TC_WRITEID from TRANSACTIONS
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@transactions

@@ -18,15 +18,32 @@
 
 package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 
-import org.apache.calcite.sql.fun.SqlAbstractTimeFunction;
+import org.apache.calcite.sql.SqlFunction;
+import org.apache.calcite.sql.SqlFunctionCategory;
+import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.type.OperandTypes;
+import org.apache.calcite.sql.type.ReturnTypes;
+import org.apache.calcite.sql.type.SqlTypeFamily;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.sql.type.SqlTypeTransforms;
+
+import java.util.Arrays;
 
 /**
- * Calcite SQL operator mapping to FROM_UNIXTIME Hive UDF
+ * Calcite SQL operator mapping to FROM_UNIXTIME Hive UDF.
+ * <p>
+ * The return type of the function is declared as {@code VARCHAR(100)} since it is highly unlikely that a user will 
+ * request a timestamp format that requires more than 100 characters.
+ * </p>
  */
-public class HiveFromUnixTimeSqlOperator extends SqlAbstractTimeFunction {
-  public static final HiveFromUnixTimeSqlOperator INSTANCE = new HiveFromUnixTimeSqlOperator();
-  protected HiveFromUnixTimeSqlOperator() {
-    super("FROM_UNIXTIME", SqlTypeName.TIMESTAMP);
+public final class HiveFromUnixTimeSqlOperator {
+  public static final SqlFunction INSTANCE = new SqlFunction("FROM_UNIXTIME",
+      SqlKind.OTHER_FUNCTION,
+      ReturnTypes.explicit(SqlTypeName.VARCHAR, 100).andThen(SqlTypeTransforms.TO_NULLABLE),
+      null,
+      OperandTypes.family(Arrays.asList(SqlTypeFamily.INTEGER, SqlTypeFamily.STRING), number -> number == 1),
+      SqlFunctionCategory.STRING);
+
+  private HiveFromUnixTimeSqlOperator() {
   }
 }

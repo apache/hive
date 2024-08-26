@@ -51,7 +51,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	1                   
-	totalSize           	2                   
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	insert_only         
 #### A masked pattern was here ####
@@ -119,7 +119,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	1                   
-	totalSize           	2                   
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	insert_only         
 #### A masked pattern was here ####
@@ -187,7 +187,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	1                   
-	totalSize           	2                   
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	insert_only         
 #### A masked pattern was here ####
@@ -255,7 +255,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	1                   
-	totalSize           	2                   
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	insert_only         
 #### A masked pattern was here ####
@@ -321,7 +321,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	1                   
-	totalSize           	2                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -385,7 +385,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	1                   
-	totalSize           	2                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -446,7 +446,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

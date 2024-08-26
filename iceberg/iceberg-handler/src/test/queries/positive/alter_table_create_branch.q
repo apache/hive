@@ -3,10 +3,13 @@ set hive.explain.user=false;
 
 create table iceTbl (id int, name string) Stored by Iceberg;
 
--- creating branch requires table to have current snapshot. here insert some values to generate current snapshot
+-- create a branch on an empty table
+explain alter table iceTbl create branch test_branch_0;
+alter table iceTbl create branch test_branch_0;
+
 insert into iceTbl values(1, 'jack');
 
--- create s branch test_branch_1 with default values based on the current snapshotId
+-- create a branch test_branch_1 with default values based on the current snapshotId
 explain alter table iceTbl create branch test_branch_1;
 alter table iceTbl create branch test_branch_1;
 -- check the values, one value
@@ -32,6 +35,20 @@ explain alter table iceTbl create branch test_branch_4 with snapshot retention 5
 alter table iceTbl create branch test_branch_4 with snapshot retention 5 snapshots 5 days;
 -- check the values, four values
 select * from iceTbl for system_version as of 'test_branch_4';
+
+-- Create a branch based on an existing tag.
+alter table iceTbl create tag test_tag;
+explain alter table iceTbl create branch test_branch_10 for tag as of test_tag;
+alter table iceTbl create branch test_branch_10 for tag as of test_tag;
+
+-- create a branch which already exists
+explain alter table iceTbl create branch if not exists test_branch_10;
+alter table iceTbl create branch if not exists test_branch_10;
+
+-- create or replace
+explain alter table iceTbl create or replace branch test_branch_1;
+alter table iceTbl create or replace branch test_branch_1;
+select * from default.iceTbl.branch_test_branch_1;
 
 -- drop a branch
 explain alter table iceTbl drop branch test_branch_3;

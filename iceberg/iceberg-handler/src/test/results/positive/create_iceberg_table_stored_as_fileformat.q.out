@@ -35,20 +35,24 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"i\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"s\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"ts\",\"required\":false,\"type\":\"timestamp\"},{\"id\":4,\"name\":\"d\",\"required\":false,\"type\":\"date\"}]}
-	engine.hive.enabled 	true                
+	format-version      	2                   
 	iceberg.orc.files.only	true                
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
 	numRows             	0                   
+	parquet.compression 	zstd                
 	rawDataSize         	0                   
 	serialization.format	1                   
 	snapshot-count      	0                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	#Masked#                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
 	write.format.default	orc                 
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -103,20 +107,24 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"i\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"s\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"ts\",\"required\":false,\"type\":\"timestamp\"},{\"id\":4,\"name\":\"d\",\"required\":false,\"type\":\"date\"}]}
-	engine.hive.enabled 	true                
+	format-version      	2                   
 	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
 	numRows             	0                   
+	parquet.compression 	zstd                
 	rawDataSize         	0                   
 	serialization.format	1                   
 	snapshot-count      	0                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	#Masked#                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
 	write.format.default	parquet             
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -171,20 +179,24 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"i\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"s\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"ts\",\"required\":false,\"type\":\"timestamp\"},{\"id\":4,\"name\":\"d\",\"required\":false,\"type\":\"date\"}]}
-	engine.hive.enabled 	true                
+	format-version      	2                   
 	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
 	numRows             	0                   
+	parquet.compression 	zstd                
 	rawDataSize         	0                   
 	serialization.format	1                   
 	snapshot-count      	0                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	#Masked#                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
 	write.format.default	avro                
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -239,20 +251,24 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"i\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"s\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"ts\",\"required\":false,\"type\":\"timestamp\"},{\"id\":4,\"name\":\"d\",\"required\":false,\"type\":\"date\"}]}
-	engine.hive.enabled 	true                
+	format-version      	2                   
 	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
 	numRows             	0                   
+	parquet.compression 	zstd                
 	rawDataSize         	0                   
 	serialization.format	1                   
 	snapshot-count      	0                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	#Masked#                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
 	write.format.default	avro                
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -302,20 +318,24 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"i\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"s\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"ts\",\"required\":false,\"type\":\"timestamp\"},{\"id\":4,\"name\":\"d\",\"required\":false,\"type\":\"date\"}]}
 	dummy               	dummy_value         
-	engine.hive.enabled 	true                
+	format-version      	2                   
 	iceberg.orc.files.only	true                
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
 	numRows             	0                   
+	parquet.compression 	zstd                
 	rawDataSize         	0                   
 	serialization.format	1                   
 	snapshot-count      	0                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	#Masked#                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
 	write.format.default	orc                 
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 

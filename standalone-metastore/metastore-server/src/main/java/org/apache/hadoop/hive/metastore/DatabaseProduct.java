@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.SQLTransactionRollbackException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -26,12 +27,16 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Stream;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,9 +52,19 @@ import com.google.common.base.Preconditions;
  * */
 public class DatabaseProduct implements Configurable {
   static final private Logger LOG = LoggerFactory.getLogger(DatabaseProduct.class.getName());
+  private static final Class<Exception>[] unrecoverableExceptions = new Class[]{
+          // TODO: collect more unrecoverable Exceptions
+          SQLIntegrityConstraintViolationException.class,
+          DeadlineException.class
+  };
+
+  /**
+   * Derby specific concurrency control
+   */
+  private static final ReentrantLock derbyLock = new ReentrantLock(true);
 
   public enum DbType {DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER, CUSTOM, UNDEFINED};
-  public DbType dbType;
+  static public DbType dbType;
 
   // Singleton instance
   private static DatabaseProduct theDatabaseProduct;
@@ -154,6 +169,11 @@ public class DatabaseProduct implements Configurable {
     return dbt;
   }
 
+  public static boolean isRecoverableException(Throwable t) {
+    return Stream.of(unrecoverableExceptions)
+                 .allMatch(ex -> ExceptionUtils.indexOfType(t, ex) < 0);
+  }
+
   public final boolean isDERBY() {
     return dbType == DbType.DERBY;
   }
@@ -193,10 +213,11 @@ public class DatabaseProduct implements Configurable {
 
   /**
    * Is the given exception a table not found exception
-   * @param e Exception
+   * @param t Exception
    * @return
    */
-  public boolean isTableNotExistsError(SQLException e) {
+  public boolean isTableNotExistsError(Throwable t) {
+    SQLException e = TxnUtils.getSqlException(t);    
     return (isPOSTGRES() && "42P01".equalsIgnoreCase(e.getSQLState()))
         || (isMYSQL() && "42S02".equalsIgnoreCase(e.getSQLState()))
         || (isORACLE() && "42000".equalsIgnoreCase(e.getSQLState()) && e.getMessage().contains("ORA-00942"))
@@ -249,7 +270,9 @@ public class DatabaseProduct implements Configurable {
 
   protected String toTimestamp(String tableValue) {
     if (isORACLE()) {
-      return "TO_TIMESTAMP(" + tableValue + ", 'YYYY-MM-DD HH:mm:ss')";
+      return "TO_TIMESTAMP(" + tableValue + ", 'YYYY-MM-DD HH24:mi:ss')";
+    } else if (isSQLSERVER()) {
+      return "CONVERT(DATETIME, " + tableValue + ")";
     } else {
       return "cast(" + tableValue + " as TIMESTAMP)";
     }
@@ -546,41 +569,42 @@ public class DatabaseProduct implements Configurable {
     }
   }
 
-  public boolean isDuplicateKeyError(SQLException ex) {
+  public boolean isDuplicateKeyError(Throwable t) {
+    SQLException sqlEx = TxnUtils.getSqlException(t); 
     switch (dbType) {
     case DERBY:
     case CUSTOM: // ANSI SQL
-      if("23505".equals(ex.getSQLState())) {
+      if("23505".equals(sqlEx.getSQLState())) {
         return true;
       }
       break;
     case MYSQL:
       //https://dev.mysql.com/doc/refman/5.5/en/error-messages-server.html
-      if((ex.getErrorCode() == 1022 || ex.getErrorCode() == 1062 || ex.getErrorCode() == 1586)
-        && "23000".equals(ex.getSQLState())) {
+      if((sqlEx.getErrorCode() == 1022 || sqlEx.getErrorCode() == 1062 || sqlEx.getErrorCode() == 1586)
+        && "23000".equals(sqlEx.getSQLState())) {
         return true;
       }
       break;
     case SQLSERVER:
       //2627 is unique constaint violation incl PK, 2601 - unique key
-      if ((ex.getErrorCode() == 2627 || ex.getErrorCode() == 2601) && "23000".equals(ex.getSQLState())) {
+      if ((sqlEx.getErrorCode() == 2627 || sqlEx.getErrorCode() == 2601) && "23000".equals(sqlEx.getSQLState())) {
         return true;
       }
       break;
     case ORACLE:
-      if(ex.getErrorCode() == 1 && "23000".equals(ex.getSQLState())) {
+      if(sqlEx.getErrorCode() == 1 && "23000".equals(sqlEx.getSQLState())) {
         return true;
       }
       break;
     case POSTGRES:
       //http://www.postgresql.org/docs/8.1/static/errcodes-appendix.html
-      if("23505".equals(ex.getSQLState())) {
+      if("23505".equals(sqlEx.getSQLState())) {
         return true;
       }
       break;
     default:
-      String msg = ex.getMessage() +
-                " (SQLState=" + ex.getSQLState() + ", ErrorCode=" + ex.getErrorCode() + ")";
+      String msg = sqlEx.getMessage() +
+                " (SQLState=" + sqlEx.getSQLState() + ", ErrorCode=" + sqlEx.getErrorCode() + ")";
       throw new IllegalArgumentException("Unexpected DB type: " + dbType + "; " + msg);
   }
   return false;
@@ -733,6 +757,21 @@ public class DatabaseProduct implements Configurable {
     return val;
   }
 
+  /**
+   * Get the max rows in a query with paramSize.
+   * @param batch the configured batch size
+   * @param paramSize the parameter size in a query statement
+   * @return the max allowed rows in a query
+   */
+  public int getMaxRows(int batch, int paramSize) {
+    if (isSQLSERVER()) {
+      // SQL Server supports a maximum of 2100 parameters in a request. Adjust the maxRowsInBatch accordingly
+      int maxAllowedRows = (2100 - paramSize) / paramSize;
+      return Math.min(batch, maxAllowedRows);
+    }
+    return batch;
+  }
+
   // This class implements the Configurable interface for the benefit
   // of "plugin" instances created via reflection (see invocation of
   // ReflectionUtils.newInstance in method determineDatabaseProduct)
@@ -744,5 +783,22 @@ public class DatabaseProduct implements Configurable {
   @Override
   public void setConf(Configuration c) {
     myConf = c;
+  }
+
+  /**
+   * lockInternal() and {@link #unlockInternal()} are used to serialize those operations that require
+   * Select ... For Update to sequence operations properly.  In practice that means when running
+   * with Derby database.  See more notes at class level.
+   */
+  public void lockInternal() {
+    if (isDERBY()) {
+      derbyLock.lock();
+    }
+  }
+
+  public void unlockInternal() {
+    if (isDERBY()) {
+      derbyLock.unlock();
+    }
   }
 }

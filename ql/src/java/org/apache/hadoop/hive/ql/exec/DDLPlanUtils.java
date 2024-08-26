@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.metadata.DefaultConstraint.DefaultConstraintCol
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
@@ -60,8 +61,10 @@ import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -72,16 +75,21 @@ import org.stringtemplate.v4.ST;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
+import static org.apache.hadoop.hive.ql.metadata.HiveUtils.unparseIdentifier;
+import static org.apache.hadoop.hive.serde.serdeConstants.UNION_TYPE_NAME;
 
 public class DDLPlanUtils {
   private static final String EXTERNAL = "external";
@@ -133,8 +141,8 @@ public class DDLPlanUtils {
   private static final String CREATE_DATABASE_STMT = "CREATE DATABASE IF NOT EXISTS <" + DATABASE_NAME + ">;";
 
   private final String CREATE_TABLE_TEMPLATE =
-    "CREATE <" + TEMPORARY + "><" + EXTERNAL + ">TABLE <if(" + DATABASE_NAME + ")>`<" + DATABASE_NAME + ">`.<endif>"
-      + "`<" + TABLE_NAME + ">`(\n" +
+    "CREATE <" + TEMPORARY + "><" + EXTERNAL + ">TABLE <if(" + DATABASE_NAME + ")><" + DATABASE_NAME + ">.<endif>"
+      + "<" + TABLE_NAME + ">(\n" +
       "<" + LIST_COLUMNS + ">)\n" +
       "<" + COMMENT + ">\n" +
       "<" + PARTITIONS + ">\n" +
@@ -147,8 +155,8 @@ public class DDLPlanUtils {
       "<" + PROPERTIES + ">)";
 
   private static final String CREATE_VIEW_TEMPLATE =
-    "CREATE VIEW <if(" + DATABASE_NAME + ")>`<" + DATABASE_NAME + ">`.<endif>`<" + TABLE_NAME +
-      ">`<" + PARTITIONS + "> AS <" + SQL + ">";
+    "CREATE VIEW <if(" + DATABASE_NAME + ")><" + DATABASE_NAME + ">.<endif><" + TABLE_NAME +
+      "><" + PARTITIONS + "> AS <" + SQL + ">";
 
   private final String CREATE_TABLE_TEMPLATE_LOCATION = "LOCATION\n" +
     "<" + LOCATION + ">\n";
@@ -230,7 +238,7 @@ public class DDLPlanUtils {
       + TABLE_NAME + "> PARTITION <" + PARTITION_NAME + "> FOR COLUMN <"
       + COLUMN_NAME + "> BUT IT IS NOT SUPPORTED YET. THE BASE64 VALUE FOR THE HISTOGRAM IS <"
       + BASE_64_VALUE + "> ";
-
+  
   /**
    * Returns the create database query for a give database name.
    *
@@ -238,13 +246,13 @@ public class DDLPlanUtils {
    * @return
    */
   public List<String> getCreateDatabaseStmt(Set<String> dbNames) {
-    List<String> allDbStmt = new ArrayList<String>();
+    List<String> allDbStmt = new ArrayList<>();
     for (String dbName : dbNames) {
       if (dbName.equals("default")) {
         continue;
       }
       ST command = new ST(CREATE_DATABASE_STMT);
-      command.add(DATABASE_NAME, dbName);
+      command.add(DATABASE_NAME, unparseIdentifier(dbName));
       allDbStmt.add(command.render());
     }
     return allDbStmt;
@@ -265,18 +273,33 @@ public class DDLPlanUtils {
   }
 
   public String getPartitionActualName(Partition pt) {
-    Map<String, String> colTypeMap = getTableColumnsToType(pt.getTable());
+    Map<String, PrimitiveObjectInspector.PrimitiveCategory> columnsToPrimitiveCategoryMap =
+        getPartitionColumnToPrimitiveCategory(pt);
     String[] partColsDef = pt.getName().split("/");
     List<String> ptParam = new ArrayList<>();
     for (String partCol : partColsDef) {
       String[] colValue = partCol.split("=");
-      if (colTypeMap.get(colValue[0]).equalsIgnoreCase("string")) {
-        ptParam.add(colValue[0] + "='" + colValue[1] + "'");
-      } else {
-        ptParam.add(colValue[0] + "=" + colValue[1]);
-      }
+      ptParam.add(unparseIdentifier(colValue[0]) + "=" +
+          TypeInfoUtils.convertStringToLiteralForSQL(colValue[1], columnsToPrimitiveCategoryMap.get(colValue[0])));
     }
     return StringUtils.join(ptParam, ",");
+  }
+
+  /**
+   * Get PrimitiveCategory for all partition columns
+   *
+   * @param pt Partition object
+   * @return Map of partition columns to PrimitiveCategory
+   */
+  private Map<String, PrimitiveObjectInspector.PrimitiveCategory> getPartitionColumnToPrimitiveCategory(Partition pt) {
+    Map<String, PrimitiveObjectInspector.PrimitiveCategory> resultMap = new HashMap<>();
+    for (FieldSchema schema: pt.getTable().getPartCols()) {
+      resultMap.put(
+          schema.getName(),
+          ((PrimitiveTypeInfo) TypeInfoUtils.getTypeInfoFromTypeString(schema.getType())).getPrimitiveCategory()
+      );
+    }
+    return resultMap;
   }
 
   public boolean checkIfDefaultPartition(String pt) {
@@ -292,14 +315,13 @@ public class DDLPlanUtils {
    *
    * @param pt
    * @return
-   * @throws MetaException
    */
   //TODO: Adding/Updating Stats to Default Partition Not Allowed. Need to Fix Later
-  public String getAlterTableAddPartition(Partition pt) throws MetaException {
+  public String getAlterTableAddPartition(Partition pt) {
     Table tb = pt.getTable();
     ST command = new ST(ALTER_TABLE_CREATE_PARTITION);
-    command.add(DATABASE_NAME, tb.getDbName());
-    command.add(TABLE_NAME, tb.getTableName());
+    command.add(DATABASE_NAME, unparseIdentifier(tb.getDbName()));
+    command.add(TABLE_NAME, unparseIdentifier(tb.getTableName()));
     command.add(PARTITION, getPartitionActualName(pt));
     if (checkIfDefaultPartition(pt.getName())) {
       command.add(COMMENT_SQL, "--");
@@ -482,9 +504,9 @@ public class DDLPlanUtils {
    */
   public String getAlterTableStmtCol(ColumnStatisticsData columnStatisticsData, String colName, String tblName, String dbName) {
     ST command = new ST(ALTER_TABLE_UPDATE_STATISTICS_TABLE_COLUMN);
-    command.add(DATABASE_NAME, dbName);
-    command.add(TABLE_NAME, tblName);
-    command.add(COLUMN_NAME, colName);
+    command.add(DATABASE_NAME, unparseIdentifier(dbName));
+    command.add(TABLE_NAME, unparseIdentifier(tblName));
+    command.add(COLUMN_NAME, unparseIdentifier(colName));
     command.add(TBLPROPERTIES, addAllColStats(columnStatisticsData));
     return command.render();
   }
@@ -510,18 +532,18 @@ public class DDLPlanUtils {
       String base64BitVector = checkBitVectors(statisticsObj.getStatsData());
       if (base64BitVector != null) {
         ST command = new ST(EXIST_BIT_VECTORS);
-        command.add(DATABASE_NAME, tbl.getDbName());
-        command.add(TABLE_NAME, tbl.getTableName());
-        command.add(COLUMN_NAME, statisticsObj.getColName());
+        command.add(DATABASE_NAME, unparseIdentifier(tbl.getDbName()));
+        command.add(TABLE_NAME, unparseIdentifier(tbl.getTableName()));
+        command.add(COLUMN_NAME, unparseIdentifier(statisticsObj.getColName()));
         command.add(BASE_64_VALUE, base64BitVector);
         alterTblStmt.add(command.render());
       }
       String base64Histogram = checkHistogram(statisticsObj.getStatsData());
       if (base64Histogram != null) {
         ST command = new ST(EXIST_HISTOGRAM);
-        command.add(DATABASE_NAME, tbl.getDbName());
-        command.add(TABLE_NAME, tbl.getTableName());
-        command.add(COLUMN_NAME, statisticsObj.getColName());
+        command.add(DATABASE_NAME, unparseIdentifier(tbl.getDbName()));
+        command.add(TABLE_NAME, unparseIdentifier(tbl.getTableName()));
+        command.add(COLUMN_NAME, unparseIdentifier(statisticsObj.getColName()));
         command.add(BASE_64_VALUE, base64Histogram);
         alterTblStmt.add(command.render());
       }
@@ -542,9 +564,9 @@ public class DDLPlanUtils {
   public String getAlterTableStmtPartitionColStat(ColumnStatisticsData columnStatisticsData, String colName,
                                                   String tblName, String ptName, String dbName) {
     ST command = new ST(ALTER_TABLE_UPDATE_STATISTICS_PARTITION_COLUMN);
-    command.add(DATABASE_NAME, dbName);
-    command.add(TABLE_NAME, tblName);
-    command.add(COLUMN_NAME, colName);
+    command.add(DATABASE_NAME, unparseIdentifier(dbName));
+    command.add(TABLE_NAME, unparseIdentifier(tblName));
+    command.add(COLUMN_NAME, unparseIdentifier(colName));
     command.add(PARTITION_NAME, ptName);
     command.add(TBLPROPERTIES, addAllColStats(columnStatisticsData));
     if (checkIfDefaultPartition(ptName)) {
@@ -566,7 +588,7 @@ public class DDLPlanUtils {
                                                              String tblName,
                                                              String ptName,
                                                              String dbName) {
-    List<String> alterTableStmt = new ArrayList<String>();
+    List<String> alterTableStmt = new ArrayList<>();
     ColumnStatisticsObj[] columnStatisticsObj = columnStatisticsObjList.toArray(new ColumnStatisticsObj[0]);
     for (ColumnStatisticsObj statisticsObj : columnStatisticsObj) {
       alterTableStmt.add(getAlterTableStmtPartitionColStat(
@@ -574,20 +596,20 @@ public class DDLPlanUtils {
       String base64BitVectors = checkBitVectors(statisticsObj.getStatsData());
       if (base64BitVectors != null) {
         ST command = new ST(EXIST_BIT_VECTORS_PARTITIONED);
-        command.add(DATABASE_NAME, dbName);
-        command.add(TABLE_NAME, tblName);
+        command.add(DATABASE_NAME, unparseIdentifier(dbName));
+        command.add(TABLE_NAME, unparseIdentifier(tblName));
         command.add(PARTITION_NAME, ptName);
-        command.add(COLUMN_NAME, statisticsObj.getColName());
+        command.add(COLUMN_NAME, unparseIdentifier(statisticsObj.getColName()));
         command.add(BASE_64_VALUE, base64BitVectors);
         alterTableStmt.add(command.render());
       }
       String base64Histogram = checkHistogram(statisticsObj.getStatsData());
       if (base64Histogram != null) {
         ST command = new ST(EXIST_HISTOGRAM_PARTITIONED);
-        command.add(DATABASE_NAME, dbName);
-        command.add(TABLE_NAME, tblName);
+        command.add(DATABASE_NAME, unparseIdentifier(dbName));
+        command.add(TABLE_NAME, unparseIdentifier(tblName));
         command.add(PARTITION_NAME, ptName);
-        command.add(COLUMN_NAME, statisticsObj.getColName());
+        command.add(COLUMN_NAME, unparseIdentifier(statisticsObj.getColName()));
         command.add(BASE_64_VALUE, base64Histogram);
         alterTableStmt.add(command.render());
       }
@@ -616,8 +638,8 @@ public class DDLPlanUtils {
   public String getAlterTableStmtPartitionStatsBasic(Partition pt) {
     Map<String, String> parameters = pt.getParameters();
     ST command = new ST(ALTER_TABLE_UPDATE_STATISTICS_PARTITION_BASIC);
-    command.add(DATABASE_NAME, pt.getTable().getDbName());
-    command.add(TABLE_NAME, pt.getTable().getTableName());
+    command.add(DATABASE_NAME, unparseIdentifier(pt.getTable().getDbName()));
+    command.add(TABLE_NAME, unparseIdentifier(pt.getTable().getTableName()));
     command.add(PARTITION_NAME, getPartitionActualName(pt));
     command.add(TBLPROPERTIES, paramToValues(parameters));
     if (checkIfDefaultPartition(pt.getName())) {
@@ -664,8 +686,8 @@ public class DDLPlanUtils {
   public String getAlterTableStmtTableStatsBasic(Table tbl) {
     Map<String, String> parameters = tbl.getParameters();
     ST command = new ST(ALTER_TABLE_UPDATE_STATISTICS_TABLE_BASIC);
-    command.add(TABLE_NAME, tbl.getTableName());
-    command.add(DATABASE_NAME, tbl.getDbName());
+    command.add(TABLE_NAME, unparseIdentifier(tbl.getTableName()));
+    command.add(DATABASE_NAME, unparseIdentifier(tbl.getDbName()));
     command.add(TBLPROPERTIES, paramToValues(parameters));
     return command.render();
   }
@@ -675,37 +697,49 @@ public class DDLPlanUtils {
       return null;
     }
     ST command = new ST(ALTER_TABLE_ADD_PRIMARY_KEY);
-    command.add(TABLE_NAME, pr.getTableName());
-    command.add(DATABASE_NAME, pr.getDatabaseName());
-    command.add(CONSTRAINT_NAME, pr.getConstraintName());
-    command.add(COL_NAMES, String.join(",", pr.getColNames().values()));
+    command.add(TABLE_NAME, unparseIdentifier(pr.getTableName()));
+    command.add(DATABASE_NAME, unparseIdentifier(pr.getDatabaseName()));
+    command.add(CONSTRAINT_NAME, unparseIdentifier(pr.getConstraintName()));
+    command.add(COL_NAMES, unparseListOfIdentifiersAndJoin(pr.getColNames().values(), ","));
     command.add(ENABLE, pr.getEnable());
     command.add(VALIDATE, pr.getValidate());
     command.add(RELY, pr.getRely());
     return command.render();
   }
 
-  public void getAlterTableStmtForeignKeyConstraint(ForeignKeyInfo fr, List<String> constraints, Set<String> allTableNames) {
+  public void getAlterTableStmtForeignKeyConstraint(ForeignKeyInfo fr, List<String> constraints) {
     if (!ForeignKeyInfo.isNotEmpty(fr)) {
       return;
     }
     Map<String, List<ForeignKeyInfo.ForeignKeyCol>> all = fr.getForeignKeys();
     for (String key : all.keySet()) {
-      for (ForeignKeyInfo.ForeignKeyCol fkc : all.get(key)) {
-        ST command = new ST(ALTER_TABLE_ADD_FOREIGN_KEY);
-        command.add(CHILD_TABLE_NAME, fr.getChildTableName());
-        command.add(DATABASE_NAME, fr.getChildDatabaseName());
-        command.add(CONSTRAINT_NAME, key);
-        command.add(CHILD_COL_NAME, fkc.childColName);
-        command.add(DATABASE_NAME_FR, fkc.parentDatabaseName);
-        command.add(PARENT_TABLE_NAME, fkc.parentTableName);
-        command.add(PARENT_COL_NAME, fkc.parentColName);
-        command.add(ENABLE, fkc.enable);
-        command.add(VALIDATE, fkc.validate);
-        command.add(RELY, fkc.rely);
-        constraints.add(command.render());
+      List<ForeignKeyInfo.ForeignKeyCol> fkCols = all.get(key);
+      Set<String> parentCols = new LinkedHashSet<>(fkCols.size());
+      Set<String> childCols = new LinkedHashSet<>(fkCols.size());
+
+      for (ForeignKeyInfo.ForeignKeyCol fkc: fkCols) {
+        parentCols.add(fkc.parentColName);
+        childCols.add(fkc.childColName);
       }
+      ST command = new ST(ALTER_TABLE_ADD_FOREIGN_KEY);
+      command.add(CHILD_TABLE_NAME, unparseIdentifier(fr.getChildTableName()));
+      command.add(DATABASE_NAME, unparseIdentifier(fr.getChildDatabaseName()));
+      command.add(CONSTRAINT_NAME, unparseIdentifier(key));
+      command.add(CHILD_COL_NAME, unparseListOfIdentifiersAndJoin(childCols, ", "));
+      command.add(DATABASE_NAME_FR, unparseIdentifier(fkCols.get(0).parentDatabaseName));
+      command.add(PARENT_TABLE_NAME, unparseIdentifier(fkCols.get(0).parentTableName));
+      command.add(PARENT_COL_NAME, unparseListOfIdentifiersAndJoin(parentCols, ", "));
+      command.add(ENABLE, fkCols.get(0).enable);
+      command.add(VALIDATE, fkCols.get(0).validate);
+      command.add(RELY, fkCols.get(0).rely);
+      constraints.add(command.render());
     }
+  }
+
+  private String unparseListOfIdentifiersAndJoin(Collection<String> collection, String delimiter) {
+    return collection.stream()
+        .map(HiveUtils::unparseIdentifier)
+        .collect(Collectors.joining(delimiter));
   }
 
   public void getAlterTableStmtUniqueConstraint(UniqueConstraint uq, List<String> constraints) {
@@ -715,14 +749,14 @@ public class DDLPlanUtils {
     Map<String, List<UniqueConstraint.UniqueConstraintCol>> uniqueConstraints = uq.getUniqueConstraints();
     for (String key : uniqueConstraints.keySet()) {
       ST command = new ST(ALTER_TABLE_ADD_UNIQUE_CONSTRAINT);
-      command.add(DATABASE_NAME, uq.getDatabaseName());
-      command.add(TABLE_NAME, uq.getTableName());
-      command.add(CONSTRAINT_NAME, key);
+      command.add(DATABASE_NAME, unparseIdentifier(uq.getDatabaseName()));
+      command.add(TABLE_NAME, unparseIdentifier(uq.getTableName()));
+      command.add(CONSTRAINT_NAME, unparseIdentifier(key));
       List<String> colNames = new ArrayList<>();
       for (UniqueConstraint.UniqueConstraintCol col : uniqueConstraints.get(key)) {
         colNames.add(col.colName);
       }
-      command.add(COLUMN_NAME, Joiner.on(",").join(colNames));
+      command.add(COLUMN_NAME, unparseListOfIdentifiersAndJoin(colNames, ","));
       command.add(ENABLE, uniqueConstraints.get(key).get(0).enable);
       command.add(VALIDATE, uniqueConstraints.get(key).get(0).validate);
       command.add(RELY, uniqueConstraints.get(key).get(0).rely);
@@ -740,9 +774,9 @@ public class DDLPlanUtils {
       List<DefaultConstraintCol> defaultConstraintCols = defaultConstraints.get(constraintName);
       for (DefaultConstraintCol col : defaultConstraintCols) {
         ST command = new ST(ALTER_TABLE_ADD_DEFAULT_CONSTRAINT);
-        command.add(DATABASE_NAME, dc.getTableName());
-        command.add(TABLE_NAME, dc.getTableName());
-        command.add(COLUMN_NAME, col.colName);
+        command.add(DATABASE_NAME, unparseIdentifier(dc.getTableName()));
+        command.add(TABLE_NAME, unparseIdentifier(dc.getTableName()));
+        command.add(COLUMN_NAME, unparseIdentifier(col.colName));
         command.add(COL_TYPE, colType.get(col.colName));
         command.add(DEFAULT_VALUE, col.defaultVal);
         command.add(ENABLE, col.enable);
@@ -763,9 +797,9 @@ public class DDLPlanUtils {
       if (checkConstraintCols != null && checkConstraintCols.size() > 0) {
         for (CheckConstraintCol col : checkConstraintCols) {
           ST command = new ST(ALTER_TABLE_ADD_CHECK_CONSTRAINT);
-          command.add(DATABASE_NAME, ck.getDatabaseName());
-          command.add(TABLE_NAME, ck.getTableName());
-          command.add(CONSTRAINT_NAME, constraintName);
+          command.add(DATABASE_NAME, unparseIdentifier(ck.getDatabaseName()));
+          command.add(TABLE_NAME, unparseIdentifier(ck.getTableName()));
+          command.add(CONSTRAINT_NAME, unparseIdentifier(constraintName));
           command.add(CHECK_EXPRESSION, col.getCheckExpression());
           command.add(ENABLE, col.getEnable());
           command.add(VALIDATE, col.getValidate());
@@ -786,11 +820,11 @@ public class DDLPlanUtils {
     Map<String, List<String>> enableValidateRely = nc.getEnableValidateRely();
     for (String constraintName : notNullConstraints.keySet()) {
       ST command = new ST(ALTER_TABLE_ADD_NOT_NULL_CONSTRAINT);
-      command.add(DATABASE_NAME, nc.getDatabaseName());
-      command.add(TABLE_NAME, nc.getTableName());
-      command.add(COLUMN_NAME, notNullConstraints.get(constraintName));
+      command.add(DATABASE_NAME, unparseIdentifier(nc.getDatabaseName()));
+      command.add(TABLE_NAME, unparseIdentifier(nc.getTableName()));
+      command.add(COLUMN_NAME, unparseIdentifier(notNullConstraints.get(constraintName)));
       command.add(COL_TYPE, colType.get(notNullConstraints.get(constraintName)));
-      command.add(CONSTRAINT_NAME, constraintName);
+      command.add(CONSTRAINT_NAME, unparseIdentifier(constraintName));
       command.add(ENABLE, enableValidateRely.get(constraintName).get(0));
       command.add(VALIDATE, enableValidateRely.get(constraintName).get(1));
       command.add(RELY, enableValidateRely.get(constraintName).get(2));
@@ -803,9 +837,9 @@ public class DDLPlanUtils {
    *
    * @param tb
    */
-  public List<String> populateConstraints(Table tb, Set<String> allTableNames) {
+  public List<String> populateConstraints(Table tb) {
     List<String> constraints = new ArrayList<>();
-    getAlterTableStmtForeignKeyConstraint(tb.getForeignKeyInfo(), constraints, allTableNames);
+    getAlterTableStmtForeignKeyConstraint(tb.getForeignKeyInfo(), constraints);
     getAlterTableStmtUniqueConstraint(tb.getUniqueKeyInfo(), constraints);
     getAlterTableStmtDefaultConstraint(tb.getDefaultConstraint(), tb, constraints);
     getAlterTableStmtCheckConstraint(tb.getCheckConstraint(), constraints);
@@ -835,9 +869,9 @@ public class DDLPlanUtils {
     ST command = new ST(CREATE_VIEW_TEMPLATE);
 
     if (!isRelative) {
-      command.add(DATABASE_NAME, table.getDbName());
+      command.add(DATABASE_NAME, unparseIdentifier(table.getDbName()));
     }
-    command.add(TABLE_NAME, table.getTableName());
+    command.add(TABLE_NAME, unparseIdentifier(table.getTableName()));
     command.add(PARTITIONS, getPartitionsForView(table));
     command.add(SQL, table.getViewExpandedText());
 
@@ -849,9 +883,9 @@ public class DDLPlanUtils {
     ST command = new ST(CREATE_TABLE_TEMPLATE);
 
     if (!isRelative) {
-      command.add(DATABASE_NAME, table.getDbName());
+      command.add(DATABASE_NAME, unparseIdentifier(table.getDbName()));
     }
-    command.add(TABLE_NAME, table.getTableName());
+    command.add(TABLE_NAME, unparseIdentifier(table.getTableName()));
     command.add(TEMPORARY, getTemporary(table));
     command.add(EXTERNAL, getExternal(table));
     command.add(LIST_COLUMNS, getColumns(table));
@@ -876,10 +910,10 @@ public class DDLPlanUtils {
   }
 
   private String getColumns(Table table) {
-    List<String> columnDescs = new ArrayList<String>();
+    List<String> columnDescs = new ArrayList<>();
     for (FieldSchema column : table.getCols()) {
       String columnType = formatType(TypeInfoUtils.getTypeInfoFromTypeString(column.getType()));
-      String columnDesc = "  `" + column.getName() + "` " + columnType;
+      String columnDesc = "  " + unparseIdentifier(column.getName()) + " " + columnType;
       if (column.getComment() != null) {
         columnDesc += " COMMENT '" + HiveStringUtils.escapeHiveCommand(column.getComment()) + "'";
       }
@@ -889,7 +923,7 @@ public class DDLPlanUtils {
   }
 
   /**
-   * Struct fields are identifiers, need to be put between ``.
+   * Struct fields are identifiers, need to be unparsed.
    */
   public static String formatType(TypeInfo typeInfo) {
     switch (typeInfo.getCategory()) {
@@ -907,7 +941,7 @@ public class DDLPlanUtils {
           String structElementName = structTypeInfo.getAllStructFieldNames().get(i);
           String structElementType = formatType(structTypeInfo.getAllStructFieldTypeInfos().get(i));
 
-          structFormattedType.append("`" + structElementName + "`:" + structElementType);
+          structFormattedType.append(unparseIdentifier(structElementName) + ":" + structElementType);
         }
         return "struct<" + structFormattedType.toString() + ">";
       case LIST:
@@ -931,7 +965,7 @@ public class DDLPlanUtils {
           String unionElementType = formatType(unionElementTypeInfo);
           unionFormattedType.append(unionElementType);
         }
-        return "uniontype<" + unionFormattedType.toString() + ">";
+        return UNION_TYPE_NAME + "<" + unionFormattedType.toString() + ">";
       default:
         throw new RuntimeException("Unknown type: " + typeInfo.getCategory());
     }
@@ -949,7 +983,7 @@ public class DDLPlanUtils {
     }
     List<String> partitionCols = new ArrayList<String>();
     for (String col : table.getPartColNames()) {
-      partitionCols.add('`' + col + '`');
+      partitionCols.add(unparseIdentifier(col));
     }
     return " PARTITIONED ON (" + StringUtils.join(partitionCols, ", ") + ")";
   }
@@ -962,7 +996,7 @@ public class DDLPlanUtils {
 
     List<String> partitionDescs = new ArrayList<String>();
     for (FieldSchema partitionKey : partitionKeys) {
-      String partitionDesc = "  `" + partitionKey.getName() + "` " + partitionKey.getType();
+      String partitionDesc = "  " + unparseIdentifier(partitionKey.getName()) + " " + partitionKey.getType();
       if (partitionKey.getComment() != null) {
         partitionDesc += " COMMENT '" + HiveStringUtils.escapeHiveCommand(partitionKey.getComment()) + "'";
       }
@@ -981,11 +1015,11 @@ public class DDLPlanUtils {
       List<String> partitionTransforms = new ArrayList<>();
       for (TransformSpec spec : specs) {
         if (spec.getTransformType() == TransformSpec.TransformType.IDENTITY) {
-          partitionTransforms.add(spec.getColumnName());
+          partitionTransforms.add(unparseIdentifier(spec.getColumnName()));
         } else {
           partitionTransforms.add(spec.getTransformType().name() + "(" +
             (spec.getTransformParam().isPresent() ? spec.getTransformParam().get() + ", " : "") +
-            spec.getColumnName() + ")");
+            unparseIdentifier(spec.getColumnName()) + ")");
         }
       }
       return "PARTITIONED BY SPEC ( \n" + StringUtils.join(partitionTransforms, ", \n") + ")";
@@ -998,14 +1032,14 @@ public class DDLPlanUtils {
     if (bucketCols.isEmpty()) {
       return "";
     }
-
-    String buckets = "CLUSTERED BY ( \n  `" + StringUtils.join(bucketCols, "`, \n  `") + "`) \n";
+    String buckets = "CLUSTERED BY (\n  " + unparseListOfIdentifiersAndJoin(bucketCols, ",\n  ") + ")\n";
 
     List<Order> sortColumns = table.getSortCols();
     if (!sortColumns.isEmpty()) {
       List<String> sortKeys = new ArrayList<String>();
       for (Order sortColumn : sortColumns) {
-        String sortKeyDesc = "  " + sortColumn.getCol() + " " + DirectionUtils.codeToText(sortColumn.getOrder());
+        String sortKeyDesc = "  " + unparseIdentifier(sortColumn.getCol()) + " " +
+            DirectionUtils.codeToText(sortColumn.getOrder());
         sortKeys.add(sortKeyDesc);
       }
       buckets += "SORTED BY ( \n" + StringUtils.join(sortKeys, ", \n") + ") \n";
@@ -1021,13 +1055,13 @@ public class DDLPlanUtils {
       return "";
     }
 
-    List<String> columnValuesList = new ArrayList<String>();
+    List<String> columnValuesList = new ArrayList<>();
     for (List<String> columnValues : skewedInfo.getSkewedColValues()) {
       columnValuesList.add("('" + StringUtils.join(columnValues, "','") + "')");
     }
 
     String skewed =
-      "SKEWED BY (" + StringUtils.join(skewedInfo.getSkewedColNames(), ",") + ")\n" +
+      "SKEWED BY (" + unparseListOfIdentifiersAndJoin(skewedInfo.getSkewedColNames(), ",") + ")\n" +
         "  ON (" + StringUtils.join(columnValuesList, ",") + ")";
     if (table.isStoredAsSubDirectories()) {
       skewed += "\n  STORED AS DIRECTORIES";

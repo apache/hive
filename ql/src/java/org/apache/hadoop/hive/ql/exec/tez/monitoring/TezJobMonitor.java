@@ -77,7 +77,7 @@ public class TezJobMonitor {
   private static final int MAX_RETRY_INTERVAL = 2500;
   private static final int MAX_RETRY_FAILURES = (MAX_RETRY_INTERVAL / MAX_CHECK_INTERVAL) + 1;
 
-  private final PerfLogger perfLogger = SessionState.getPerfLogger();
+  private final PerfLogger perfLogger;
   private static final List<DAGClient> shutdownList;
   private final List<BaseWork> topSortedWorks;
 
@@ -117,13 +117,14 @@ public class TezJobMonitor {
   private final TezCounters counters;
 
   public TezJobMonitor(List<BaseWork> topSortedWorks, final DAGClient dagClient, HiveConf conf, DAG dag,
-    Context ctx, final TezCounters counters) {
+    Context ctx, final TezCounters counters, PerfLogger perfLogger) {
     this.topSortedWorks = topSortedWorks;
     this.dagClient = dagClient;
     this.hiveConf = conf;
     this.dag = dag;
     this.context = ctx;
     console = SessionState.getConsole();
+    this.perfLogger = perfLogger;
     updateFunction = updateFunction();
     this.counters = counters;
   }
@@ -132,8 +133,8 @@ public class TezJobMonitor {
     return InPlaceUpdate.canRenderInPlace(hiveConf)
         && !SessionState.getConsole().getIsSilent()
         && !SessionState.get().isHiveServerQuery()
-        ? new RenderStrategy.InPlaceUpdateFunction(this)
-        : new RenderStrategy.LogToFileFunction(this);
+        ? new RenderStrategy.InPlaceUpdateFunction(this, perfLogger)
+        : new RenderStrategy.LogToFileFunction(this, perfLogger);
   }
 
   private boolean isProfilingEnabled() {
@@ -444,8 +445,8 @@ public class TezJobMonitor {
       //llap IO summary
       if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.LLAP_IO_ENABLED, false)) {
         new LLAPioSummary(progressMap, dagClient).print(console);
-        new FSCountersSummary(progressMap, dagClient).print(console);
       }
+      new FSCountersSummary(progressMap, dagClient).print(console);
       String wmQueue = HiveConf.getVar(hiveConf, ConfVars.HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE);
       if (wmQueue != null && !wmQueue.isEmpty()) {
         new LlapWmSummary(progressMap, dagClient).print(console);

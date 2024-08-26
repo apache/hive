@@ -125,6 +125,21 @@ public class RowResolver implements Serializable{
     return false;
   }
 
+  /**
+   * Puts a resolver entry corresponding to the expression and its
+   * column alias which is used for alias recognition in the latter constructs
+   * @param exprToColumnAlias
+   *          The map containing the expression to alias mapping
+   * @throws SemanticException
+   */
+  public void putAll(Map<ASTNode, String> exprToColumnAlias) throws SemanticException {
+    for (ASTNode astNode : exprToColumnAlias.keySet()) {
+      if (getExpression(astNode) != null) {
+        put("", exprToColumnAlias.get(astNode), getExpression(astNode));
+      }
+    }
+  }
+
   private void keepAmbiguousInfo(String col_alias, String tab_alias) {
     // we keep track of duplicate <tab alias, col alias> so that get can check
     // for ambiguity

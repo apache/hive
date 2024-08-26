@@ -21,10 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
-import java.sql.SQLException;
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 import javax.jdo.JDOException;
 
@@ -44,10 +41,6 @@ import org.datanucleus.exceptions.NucleusException;
 @InterfaceStability.Evolving
 public class RetryingHMSHandler extends AbstractHMSHandlerProxy {
   private static final Logger LOG = LoggerFactory.getLogger(RetryingHMSHandler.class);
-  private static final Class<SQLException>[] unrecoverableSqlExceptions = new Class[]{
-      // TODO: collect more unrecoverable SQLExceptions
-      SQLIntegrityConstraintViolationException.class
-  };
 
   private final long retryInterval;
   private final int retryLimit;
@@ -185,8 +178,6 @@ public class RetryingHMSHandler extends AbstractHMSHandlerProxy {
     if (!(t instanceof JDOException || t instanceof NucleusException)) {
       return false;
     }
-
-    return Stream.of(unrecoverableSqlExceptions)
-                 .allMatch(ex -> ExceptionUtils.indexOfType(t, ex) < 0);
+    return DatabaseProduct.isRecoverableException(t);
   }
 }

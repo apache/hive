@@ -97,7 +97,7 @@ public class MiniHS2 extends AbstractHiveService {
   }
 
   public static class Builder {
-    private HiveConf hiveConf = new HiveConf();
+    private HiveConf hiveConf = null;
     private MiniClusterType miniClusterType = MiniClusterType.LOCALFS_ONLY;
     private boolean useMiniKdc = false;
     private String serverPrincipal;
@@ -193,6 +193,9 @@ public class MiniHS2 extends AbstractHiveService {
     public MiniHS2 build() throws Exception {
       if (miniClusterType == MiniClusterType.MR && useMiniKdc) {
         throw new IOException("Can't create secure miniMr ... yet");
+      }
+      if (hiveConf == null) {
+        this.hiveConf = new HiveConf();
       }
       Iterator<Map.Entry<String, String>> iter = hiveConf.iterator();
       while (iter.hasNext()) {
@@ -304,7 +307,7 @@ public class MiniHS2 extends AbstractHiveService {
       }
       // store the config in system properties
       mr.setupConfiguration(getHiveConf());
-      baseFsDir = new Path(new Path(fs.getUri()), "/base");
+      baseFsDir = new Path(new Path(fs.getUri()), HiveConf.ConfVars.SCRATCH_DIR.getDefaultValue());
     } else {
       // This is FS only mode, just initialize the dfs root directory.
       fs = FileSystem.getLocal(hiveConf);
@@ -348,12 +351,12 @@ public class MiniHS2 extends AbstractHiveService {
     Path scratchDir = new Path(baseFsDir, "scratch");
     // Create root scratchdir with write all, so that user impersonation has no issues.
     Utilities.createDirsWithPermission(hiveConf, scratchDir, WRITE_ALL_PERM, true);
-    System.setProperty(HiveConf.ConfVars.SCRATCHDIR.varname, scratchDir.toString());
-    hiveConf.setVar(ConfVars.SCRATCHDIR, scratchDir.toString());
+    System.setProperty(HiveConf.ConfVars.SCRATCH_DIR.varname, scratchDir.toString());
+    hiveConf.setVar(ConfVars.SCRATCH_DIR, scratchDir.toString());
 
     String localScratchDir = baseDir.getPath() + File.separator + "scratch";
-    System.setProperty(HiveConf.ConfVars.LOCALSCRATCHDIR.varname, localScratchDir);
-    hiveConf.setVar(ConfVars.LOCALSCRATCHDIR, localScratchDir);
+    System.setProperty(HiveConf.ConfVars.LOCAL_SCRATCH_DIR.varname, localScratchDir);
+    hiveConf.setVar(ConfVars.LOCAL_SCRATCH_DIR, localScratchDir);
   }
 
   public MiniHS2(HiveConf hiveConf) throws Exception {

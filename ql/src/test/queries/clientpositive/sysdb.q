@@ -102,9 +102,9 @@ select column_name, grantor, principal_name from tbl_col_privs order by column_n
 
 select grantor, principal_name from tbl_privs order by grantor, principal_name limit 5;
 
-select table_name, column_name, num_nulls, num_distincts from tab_col_stats order by table_name, column_name limit 10;
+select tbls.tbl_name, column_name, num_nulls, num_distincts from tab_col_stats inner join tbls on tab_col_stats.tbl_id=tbls.tbl_id join dbs on tbls.db_id=dbs.db_id order by tbls.tbl_name, column_name limit 10;
 
-select table_name, partition_name, column_name, num_nulls, num_distincts from part_col_stats order by table_name, partition_name, column_name limit 10;
+select tbls.tbl_name, partitions.part_name, column_name, num_nulls, num_distincts from part_col_stats inner join partitions on part_col_stats.part_id=partitions.part_id inner join tbls on partitions.tbl_id=tbls.tbl_id order by tbls.tbl_name, partitions.part_name, column_name limit 10;
 
 select schema_version from version order by schema_version limit 5;
 
@@ -123,6 +123,8 @@ explain select max(num_distincts) from sys.tab_col_stats;
 select max(num_distincts) from sys.tab_col_stats;
 
 select * from compactions;
+
+select MHL_TXNID,MHL_MIN_OPEN_TXNID from MIN_HISTORY_LEVEL;
 
 use INFORMATION_SCHEMA;
 

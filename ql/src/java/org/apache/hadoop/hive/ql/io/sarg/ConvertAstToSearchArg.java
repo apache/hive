@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.io.sarg;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -52,7 +51,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -74,6 +73,7 @@ public class ConvertAstToSearchArg {
 
   private final SearchArgument.Builder builder;
   private final Configuration conf;
+  private boolean partial = false;
 
   /*
    * Create a new type for handling precision conversions from Decimal -> Double/Float
@@ -104,6 +104,14 @@ public class ConvertAstToSearchArg {
     this.conf = conf;
     builder = SearchArgumentFactory.newBuilder(conf);
     parse(expression);
+  }
+
+  /**
+   * Returns whether the given expression is partially converted to a search argument from the hive filter.
+   * @return True if the expression is partially converted, otherwise false.
+   */
+  public boolean isPartial() {
+    return partial;
   }
 
   /**
@@ -316,11 +324,13 @@ public class ConvertAstToSearchArg {
     String columnName = getColumnName(expression, variable);
     if (columnName == null) {
       builder.literal(SearchArgument.TruthValue.YES_NO_NULL);
+      partial = true;
       return;
     }
     BoxType boxType = getType(expression.getChildren().get(variable));
     if (boxType == null) {
       builder.literal(SearchArgument.TruthValue.YES_NO_NULL);
+      partial = true;
       return;
     }
 
@@ -370,6 +380,7 @@ public class ConvertAstToSearchArg {
       LOG.warn("Exception thrown during SARG creation. Returning YES_NO_NULL." +
           " Exception: " + e.getMessage());
       builder.literal(SearchArgument.TruthValue.YES_NO_NULL);
+      partial = true;
     }
 
     if (needSwap) {
@@ -429,7 +440,7 @@ public class ConvertAstToSearchArg {
       // if it is a reference to a boolean column, covert it to a truth test.
       if (expression instanceof ExprNodeColumnDesc) {
         ExprNodeColumnDesc columnDesc = (ExprNodeColumnDesc) expression;
-        if (columnDesc.getTypeString().equals("boolean")) {
+        if (columnDesc.getTypeString().equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
           builder.equals(columnDesc.getColumn(), PredicateLeaf.Type.BOOLEAN,
               true);
           return;
@@ -438,6 +449,7 @@ public class ConvertAstToSearchArg {
 
       // otherwise, we don't know what to do so make it a maybe
       builder.literal(SearchArgument.TruthValue.YES_NO_NULL);
+      partial = true;
       return;
     }
 
@@ -499,6 +511,7 @@ public class ConvertAstToSearchArg {
       // otherwise, we didn't understand it, so mark it maybe
     } else {
       builder.literal(SearchArgument.TruthValue.YES_NO_NULL);
+      partial = true;
     }
   }
 
@@ -556,6 +569,11 @@ public class ConvertAstToSearchArg {
     return new ConvertAstToSearchArg(conf, expression).buildSearchArgument();
   }
 
+  public static ConvertAstToSearchArg.Result createSearchArgument(Configuration conf, ExprNodeGenericFuncDesc expression) {
+    ConvertAstToSearchArg convertAstToSearchArg = new ConvertAstToSearchArg(conf, expression);
+    return new ConvertAstToSearchArg.Result(convertAstToSearchArg.buildSearchArgument(), convertAstToSearchArg.isPartial());
+  }
+
   private final static ThreadLocal<Kryo> kryo = new ThreadLocal<Kryo>() {
     protected Kryo initialValue() { return SerializationUtilities.createNewKryo(); }
   };
@@ -588,6 +606,24 @@ public class ConvertAstToSearchArg {
       kryo.writeObject(out, sarg);
       SerializationUtilities.releaseKryo(kryo);
       return Base64.encodeBase64String(out.toBytes());
+    }
+  }
+
+  public static final class Result {
+    private final SearchArgument sarg;
+    private final boolean partial;
+
+    Result(SearchArgument sarg, boolean partial) {
+      this.sarg = sarg;
+      this.partial = partial;
+    }
+
+    public SearchArgument getSearchArgument() {
+      return sarg;
+    }
+
+    public boolean isPartial() {
+      return partial;
     }
   }
 

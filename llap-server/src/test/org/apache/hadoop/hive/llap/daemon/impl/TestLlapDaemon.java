@@ -34,9 +34,14 @@ import org.mockito.Mock;
 import org.mockito.internal.util.reflection.Fields;
 import org.mockito.internal.util.reflection.InstanceField;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -55,6 +60,11 @@ public class TestLlapDaemon {
       MetricsUtils.METRICS_PROCESS_NAME
   };
 
+  public static final String TEST_LOCAL_DIR = new File(System.getProperty("java.io.tmpdir") +
+      File.separator + TestLlapDaemon.class.getCanonicalName()
+      + "-" + System.currentTimeMillis()
+  ).getPath().replaceAll("\\\\", "/");
+
   private Configuration hiveConf = new HiveConf();
 
   @Mock
@@ -64,17 +74,19 @@ public class TestLlapDaemon {
   private ArgumentCaptor<Iterable<Map.Entry<String, String>>> captor;
 
   private LlapDaemon daemon;
+  private String[] localDirs = new String[] {TEST_LOCAL_DIR};
+  private int defaultWebPort = HiveConf.ConfVars.LLAP_DAEMON_WEB_PORT.defaultIntVal;
 
   @Before
   public void setUp() {
     initMocks(this);
-    HiveConf.setVar(hiveConf, HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS, "@llap");
-    HiveConf.setVar(hiveConf, HiveConf.ConfVars.HIVE_ZOOKEEPER_QUORUM, "localhost");
-
-    String[] localDirs = new String[1];
+    setupConf(hiveConf);
     LlapDaemonInfo.initialize("testDaemon", hiveConf);
-    daemon = new LlapDaemon(hiveConf, 1, LlapDaemon.getTotalHeapSize(), false, false,
-            -1, localDirs, 0, false, 0,0, 0, -1, "TestLlapDaemon");
+  }
+
+  private void setupConf(Configuration conf) {
+    HiveConf.setVar(conf, HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS, "localhost");
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST, true);
   }
 
   @After
@@ -83,19 +95,56 @@ public class TestLlapDaemon {
     for (String mSource : METRICS_SOURCES) {
       ms.unregisterSource(mSource);
     }
-    daemon.shutdown();
+    if (daemon != null) {
+      daemon.shutdown();
+    }
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testEnforceProperNumberOfIOThreads() throws IOException {
-    Configuration thisHiveConf = new HiveConf();
-    HiveConf.setVar(thisHiveConf, HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS, "@llap");
-    HiveConf.setIntVar(thisHiveConf, HiveConf.ConfVars.LLAP_DAEMON_NUM_EXECUTORS, 4);
-    HiveConf.setIntVar(thisHiveConf, HiveConf.ConfVars.LLAP_IO_THREADPOOL_SIZE, 3);
+    HiveConf.setIntVar(hiveConf, HiveConf.ConfVars.LLAP_IO_THREADPOOL_SIZE, 3);
 
-    LlapDaemon thisDaemon = new LlapDaemon(thisHiveConf, 1, LlapDaemon.getTotalHeapSize(), false, false,
-            -1, new String[1], 0, false, 0,0, 0, -1, "TestLlapDaemon");
-    thisDaemon.close();
+    daemon = new LlapDaemon(hiveConf, 4, LlapDaemon.getTotalHeapSize(), true, false,
+            -1, new String[1], 0, false, 0,0, 0, defaultWebPort, "TestLlapDaemon");
+  }
+
+   @Test
+  public void testLocalDirCleaner() throws IOException, InterruptedException {
+    HiveConf.setTimeVar(hiveConf, HiveConf.ConfVars.LLAP_LOCAL_DIR_CLEANER_CLEANUP_INTERVAL, 2, TimeUnit.SECONDS);
+    HiveConf.setTimeVar(hiveConf, HiveConf.ConfVars.LLAP_LOCAL_DIR_CLEANER_FILE_MODIFY_TIME_THRESHOLD, 1,
+        TimeUnit.SECONDS);
+
+    createFile(localDirs[0] + "/hive/appcache/file1");
+    createFile(localDirs[0] + "/hive/appcache/file2");
+    createFile(localDirs[0] + "/file3");
+
+    daemon = new LlapDaemon(hiveConf, 1, LlapDaemon.getTotalHeapSize(), false, false,
+        -1, localDirs, 0, false, 0,0, 0, defaultWebPort, "TestLlapDaemon");
+    daemon.init(hiveConf);
+
+    assertFileExists(localDirs[0] + "/hive/appcache/file1", true);
+    assertFileExists(localDirs[0] + "/hive/appcache/file2", true);
+    assertFileExists(localDirs[0] + "/file3", true);
+
+    daemon.start();
+    Thread.sleep(5000);
+
+    assertFileExists(localDirs[0] + "/hive/appcache/file1", false);
+    assertFileExists(localDirs[0] + "/hive/appcache/file2", false);
+    assertFileExists(localDirs[0] + "/file3", false);
+
+    // folder is preserved
+    assertFileExists(localDirs[0] + "/hive/appcache", true);
+  }
+
+  private void assertFileExists(String strPath, boolean exists) {
+    assertEquals(strPath + " " + (exists ? "doesn't exist" : "exists"), exists, Files.exists(Paths.get(strPath)));
+  }
+
+  private void createFile(String strPath) throws IOException {
+    Path path = Paths.get(strPath);
+    Files.createDirectories(path.getParent());
+    Files.createFile(path);
   }
 
   @Test
@@ -103,6 +152,10 @@ public class TestLlapDaemon {
     // Given
     int enabledExecutors = 0;
     int enabledQueue = 2;
+
+    daemon = new LlapDaemon(hiveConf, 1, LlapDaemon.getTotalHeapSize(), false, false,
+        -1, new String[1], 0, false, 0,0, 0, defaultWebPort, "TestLlapDaemon");
+
     trySetMock(daemon, LlapRegistryService.class, mockRegistry);
 
     // When

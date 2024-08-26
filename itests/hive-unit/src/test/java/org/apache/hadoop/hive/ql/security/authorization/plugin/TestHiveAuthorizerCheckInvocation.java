@@ -38,6 +38,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -97,7 +98,7 @@ public class TestHiveAuthorizerCheckInvocation {
 
   @BeforeClass
   public static void beforeTest() throws Exception {
-    conf = new HiveConf();
+    conf = new HiveConfForTest(TestHiveAuthorizerCheckInvocation.class);
 
     // Turn on mocked authorization
     conf.setVar(ConfVars.HIVE_AUTHORIZATION_MANAGER, MockedHiveAuthorizerFactory.class.getName());
@@ -107,7 +108,7 @@ public class TestHiveAuthorizerCheckInvocation {
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
     conf.setVar(ConfVars.HIVE_TXN_MANAGER, DbTxnManager.class.getName());
     conf.setBoolVar(ConfVars.HIVE_QUERY_RESULTS_CACHE_ENABLED, true);
-    conf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
+    conf.setVar(HiveConf.ConfVars.HIVE_MAPRED_MODE, "nonstrict");
     conf.setBoolVar(ConfVars.HIVE_TEST_AUTHORIZATION_SQLSTD_HS2_MODE, true);
     conf.setBoolVar(ConfVars.HIVE_ZOOKEEPER_KILLQUERY_ENABLE, false);
 

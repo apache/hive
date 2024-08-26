@@ -5,12 +5,12 @@ POSTHOOK: query: drop table if exists tbl_ice_mixed
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: database:default
 PREHOOK: query: create external table tbl_ice_mixed(a int, b string) stored by iceberg stored as orc
-TBLPROPERTIES ('iceberg.decimal64.vectorization'='true')
+TBLPROPERTIES ('iceberg.decimal64.vectorization'='true',"format-version"='1')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_ice_mixed
 POSTHOOK: query: create external table tbl_ice_mixed(a int, b string) stored by iceberg stored as orc
-TBLPROPERTIES ('iceberg.decimal64.vectorization'='true')
+TBLPROPERTIES ('iceberg.decimal64.vectorization'='true',"format-version"='1')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice_mixed
@@ -48,21 +48,25 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:int, 1:b:string]
-                    Group By Vectorization:
-                        aggregators: VectorUDAFMaxLong(col 0:int) -> int
-                        className: VectorGroupByOperator
-                        groupByMode: HASH
-                        keyExpressions: col 1:string
-                        native: false
-                        vectorProcessingMode: HASH
-                        projectedOutputColumnNums: [0]
-                      Reduce Sink Vectorization:
-                          className: VectorReduceSinkStringOperator
-                          keyColumns: 0:string
-                          native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumns: 1:int
+                      vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:PARTITION__SPEC__ID:int, 3:PARTITION__HASH:bigint, 4:FILE__PATH:string, 5:ROW__POSITION:bigint, 6:PARTITION__PROJECTION:string]
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1]
+                      Group By Vectorization:
+                          aggregators: VectorUDAFMaxLong(col 0:int) -> int
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          keyExpressions: col 1:string
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: [0]
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkStringOperator
+                            keyColumns: 0:string
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: 1:int
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -154,16 +158,18 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 vectorized
-      File Output Operator [FS_10]
-        Group By Operator [GBY_9] (rows=10 width=92)
+      File Output Operator [FS_11]
+        Group By Operator [GBY_10] (rows=10 width=92)
           Output:["_col0","_col1"],aggregations:["max(VALUE._col0)"],keys:KEY._col0
         <-Map 1 [SIMPLE_EDGE] vectorized
-          SHUFFLE [RS_8]
+          SHUFFLE [RS_9]
             PartitionCols:_col0
-            Group By Operator [GBY_7] (rows=10 width=92)
+            Group By Operator [GBY_8] (rows=10 width=92)
               Output:["_col0","_col1"],aggregations:["max(a)"],keys:b
-              TableScan [TS_0] (rows=19 width=92)
-                default@tbl_ice_mixed,tbl_ice_mixed,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
+              Select Operator [SEL_7] (rows=19 width=92)
+                Output:["a","b"]
+                TableScan [TS_0] (rows=19 width=92)
+                  default@tbl_ice_mixed,tbl_ice_mixed,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
 
 PREHOOK: query: explain vectorization only detail  select b, max(a) from tbl_ice_mixed group by b
 PREHOOK: type: QUERY
@@ -191,21 +197,25 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:int, 1:b:string]
-                    Group By Vectorization:
-                        aggregators: VectorUDAFMaxLong(col 0:int) -> int
-                        className: VectorGroupByOperator
-                        groupByMode: HASH
-                        keyExpressions: col 1:string
-                        native: false
-                        vectorProcessingMode: HASH
-                        projectedOutputColumnNums: [0]
-                      Reduce Sink Vectorization:
-                          className: VectorReduceSinkStringOperator
-                          keyColumns: 0:string
-                          native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumns: 1:int
+                      vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:PARTITION__SPEC__ID:int, 3:PARTITION__HASH:bigint, 4:FILE__PATH:string, 5:ROW__POSITION:bigint, 6:PARTITION__PROJECTION:string]
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1]
+                      Group By Vectorization:
+                          aggregators: VectorUDAFMaxLong(col 0:int) -> int
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          keyExpressions: col 1:string
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: [0]
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkStringOperator
+                            keyColumns: 0:string
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: 1:int
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -283,7 +293,7 @@ PREHOOK: query: create external table tbl_ice_mixed_all_types (
     t_date DATE,
     t_decimal DECIMAL(4,2)
     ) stored by iceberg stored as orc
-    TBLPROPERTIES ('iceberg.decimal64.vectorization'='true')
+    TBLPROPERTIES ('iceberg.decimal64.vectorization'='true',"format-version"='1')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_ice_mixed_all_types
@@ -299,7 +309,7 @@ POSTHOOK: query: create external table tbl_ice_mixed_all_types (
     t_date DATE,
     t_decimal DECIMAL(4,2)
     ) stored by iceberg stored as orc
-    TBLPROPERTIES ('iceberg.decimal64.vectorization'='true')
+    TBLPROPERTIES ('iceberg.decimal64.vectorization'='true',"format-version"='1')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice_mixed_all_types
@@ -341,21 +351,25 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t_float:float, 1:t_double:double, 2:t_boolean:boolean, 3:t_int:int, 4:t_bigint:bigint, 5:t_binary:binary, 6:t_string:string, 7:t_timestamp:timestamp, 8:t_date:date, 9:t_decimal:decimal(4,2)/DECIMAL_64]
-                    Group By Vectorization:
-                        aggregators: VectorUDAFMaxDouble(col 0:float) -> float
-                        className: VectorGroupByOperator
-                        groupByMode: HASH
-                        keyExpressions: col 1:double, col 2:boolean, col 3:int, col 4:bigint, col 5:binary, col 6:string, col 7:timestamp, col 8:date, ConvertDecimal64ToDecimal(col 9:decimal(4,2)/DECIMAL_64) -> 10:decimal(4,2)
-                        native: false
-                        vectorProcessingMode: HASH
-                        projectedOutputColumnNums: [0]
-                      Reduce Sink Vectorization:
-                          className: VectorReduceSinkMultiKeyOperator
-                          keyColumns: 0:double, 1:boolean, 2:int, 3:bigint, 4:binary, 5:string, 6:timestamp, 7:date, 8:decimal(4,2)
-                          native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumns: 9:float
+                      vectorizationSchemaColumns: [0:t_float:float, 1:t_double:double, 2:t_boolean:boolean, 3:t_int:int, 4:t_bigint:bigint, 5:t_binary:binary, 6:t_string:string, 7:t_timestamp:timestamp, 8:t_date:date, 9:t_decimal:decimal(4,2)/DECIMAL_64, 10:PARTITION__SPEC__ID:int, 11:PARTITION__HASH:bigint, 12:FILE__PATH:string, 13:ROW__POSITION:bigint, 14:PARTITION__PROJECTION:string]
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+                      Group By Vectorization:
+                          aggregators: VectorUDAFMaxDouble(col 0:float) -> float
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          keyExpressions: col 1:double, col 2:boolean, col 3:int, col 4:bigint, col 5:binary, col 6:string, col 7:timestamp, col 8:date, ConvertDecimal64ToDecimal(col 9:decimal(4,2)/DECIMAL_64) -> 15:decimal(4,2)
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: [0]
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkMultiKeyOperator
+                            keyColumns: 0:double, 1:boolean, 2:int, 3:bigint, 4:binary, 5:string, 6:timestamp, 7:date, 8:decimal(4,2)
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: 9:float
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -453,21 +467,25 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t_float:float, 1:t_double:double, 2:t_boolean:boolean, 3:t_int:int, 4:t_bigint:bigint, 5:t_binary:binary, 6:t_string:string, 7:t_timestamp:timestamp, 8:t_date:date, 9:t_decimal:decimal(4,2)]
-                    Group By Vectorization:
-                        aggregators: VectorUDAFMaxDouble(col 0:float) -> float
-                        className: VectorGroupByOperator
-                        groupByMode: HASH
-                        keyExpressions: col 1:double, col 2:boolean, col 3:int, col 4:bigint, col 5:binary, col 6:string, col 7:timestamp, col 8:date, col 9:decimal(4,2)
-                        native: false
-                        vectorProcessingMode: HASH
-                        projectedOutputColumnNums: [0]
-                      Reduce Sink Vectorization:
-                          className: VectorReduceSinkMultiKeyOperator
-                          keyColumns: 0:double, 1:boolean, 2:int, 3:bigint, 4:binary, 5:string, 6:timestamp, 7:date, 8:decimal(4,2)
-                          native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumns: 9:float
+                      vectorizationSchemaColumns: [0:t_float:float, 1:t_double:double, 2:t_boolean:boolean, 3:t_int:int, 4:t_bigint:bigint, 5:t_binary:binary, 6:t_string:string, 7:t_timestamp:timestamp, 8:t_date:date, 9:t_decimal:decimal(4,2), 10:PARTITION__SPEC__ID:int, 11:PARTITION__HASH:bigint, 12:FILE__PATH:string, 13:ROW__POSITION:bigint, 14:PARTITION__PROJECTION:string]
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+                      Group By Vectorization:
+                          aggregators: VectorUDAFMaxDouble(col 0:float) -> float
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          keyExpressions: col 1:double, col 2:boolean, col 3:int, col 4:bigint, col 5:binary, col 6:string, col 7:timestamp, col 8:date, col 9:decimal(4,2)
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: [0]
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkMultiKeyOperator
+                            keyColumns: 0:double, 1:boolean, 2:int, 3:bigint, 4:binary, 5:string, 6:timestamp, 7:date, 8:decimal(4,2)
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: 9:float
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -539,18 +557,20 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 vectorized
-      File Output Operator [FS_11]
-        Select Operator [SEL_10] (rows=2 width=373)
+      File Output Operator [FS_12]
+        Select Operator [SEL_11] (rows=2 width=373)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"]
-          Group By Operator [GBY_9] (rows=2 width=373)
+          Group By Operator [GBY_10] (rows=2 width=373)
             Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"],aggregations:["max(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2, KEY._col3, KEY._col4, KEY._col5, KEY._col6, KEY._col7, KEY._col8
           <-Map 1 [SIMPLE_EDGE] vectorized
-            SHUFFLE [RS_8]
+            SHUFFLE [RS_9]
               PartitionCols:_col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-              Group By Operator [GBY_7] (rows=2 width=373)
+              Group By Operator [GBY_8] (rows=2 width=373)
                 Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"],aggregations:["max(t_float)"],keys:t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal
-                TableScan [TS_0] (rows=2 width=373)
-                  default@tbl_ice_mixed_all_types,tbl_ice_mixed_all_types,Tbl:COMPLETE,Col:COMPLETE,Output:["t_float","t_double","t_boolean","t_int","t_bigint","t_binary","t_string","t_timestamp","t_date","t_decimal"]
+                Select Operator [SEL_7] (rows=2 width=373)
+                  Output:["t_float","t_double","t_boolean","t_int","t_bigint","t_binary","t_string","t_timestamp","t_date","t_decimal"]
+                  TableScan [TS_0] (rows=2 width=373)
+                    default@tbl_ice_mixed_all_types,tbl_ice_mixed_all_types,Tbl:COMPLETE,Col:COMPLETE,Output:["t_float","t_double","t_boolean","t_int","t_bigint","t_binary","t_string","t_timestamp","t_date","t_decimal"]
 
 PREHOOK: query: select max(t_float), t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal from tbl_ice_mixed_all_types
         group by t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal
@@ -604,18 +624,20 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 vectorized
-      File Output Operator [FS_11]
-        Select Operator [SEL_10] (rows=2 width=373)
+      File Output Operator [FS_12]
+        Select Operator [SEL_11] (rows=2 width=373)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"]
-          Group By Operator [GBY_9] (rows=2 width=373)
+          Group By Operator [GBY_10] (rows=2 width=373)
             Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"],aggregations:["max(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2, KEY._col3, KEY._col4, KEY._col5, KEY._col6, KEY._col7, KEY._col8
           <-Map 1 [SIMPLE_EDGE] vectorized
-            SHUFFLE [RS_8]
+            SHUFFLE [RS_9]
               PartitionCols:_col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-              Group By Operator [GBY_7] (rows=2 width=373)
+              Group By Operator [GBY_8] (rows=2 width=373)
                 Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"],aggregations:["max(t_float)"],keys:t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal
-                TableScan [TS_0] (rows=2 width=373)
-                  default@tbl_ice_mixed_all_types,tbl_ice_mixed_all_types,Tbl:COMPLETE,Col:COMPLETE,Output:["t_float","t_double","t_boolean","t_int","t_bigint","t_binary","t_string","t_timestamp","t_date","t_decimal"]
+                Select Operator [SEL_7] (rows=2 width=373)
+                  Output:["t_float","t_double","t_boolean","t_int","t_bigint","t_binary","t_string","t_timestamp","t_date","t_decimal"]
+                  TableScan [TS_0] (rows=2 width=373)
+                    default@tbl_ice_mixed_all_types,tbl_ice_mixed_all_types,Tbl:COMPLETE,Col:COMPLETE,Output:["t_float","t_double","t_boolean","t_int","t_bigint","t_binary","t_string","t_timestamp","t_date","t_decimal"]
 
 PREHOOK: query: select max(t_float), t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal from tbl_ice_mixed_all_types
         group by t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal
@@ -634,7 +656,7 @@ PREHOOK: query: create external table tbl_ice_mixed_parted (
     b string
     ) partitioned by (p1 string, p2 string)
 #### A masked pattern was here ####
-    TBLPROPERTIES ('iceberg.decimal64.vectorization'='true')
+    TBLPROPERTIES ('iceberg.decimal64.vectorization'='true',"format-version"='1')
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
@@ -644,7 +666,7 @@ POSTHOOK: query: create external table tbl_ice_mixed_parted (
     b string
     ) partitioned by (p1 string, p2 string)
 #### A masked pattern was here ####
-    TBLPROPERTIES ('iceberg.decimal64.vectorization'='true')
+    TBLPROPERTIES ('iceberg.decimal64.vectorization'='true',"format-version"='1')
 POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 POSTHOOK: Output: database:default
@@ -770,7 +792,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p1:string, 1:b:string, 2:a:int, 3:p2:string]
+                      vectorizationSchemaColumns: [0:p1:string, 1:b:string, 2:a:int, 3:p2:string, 4:PARTITION__SPEC__ID:int, 5:PARTITION__HASH:bigint, 6:FILE__PATH:string, 7:ROW__POSITION:bigint, 8:PARTITION__PROJECTION:string]
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true

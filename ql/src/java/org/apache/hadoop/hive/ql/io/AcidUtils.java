@@ -92,7 +92,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.txn.CompactionState;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionState;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -1417,6 +1417,13 @@ public class AcidUtils {
     return directory;
   }
 
+  public static AcidDirectory getAcidState(StorageDescriptor sd, ValidWriteIdList writeIds, HiveConf conf)
+      throws IOException {
+    Path location = new Path(sd.getLocation());
+    FileSystem fs = location.getFileSystem(conf);
+    return getAcidState(fs, location, conf, writeIds, Ref.from(false), false);
+  }
+
   private static void findBestWorkingDeltas(ValidWriteIdList writeIdList, AcidDirectory directory) {
     Collections.sort(directory.getCurrentDirectories());
     //so now, 'current directories' should be sorted like delta_5_20 delta_5_10 delta_11_20 delta_51_60 for example
@@ -2281,8 +2288,7 @@ public class AcidUtils {
    */
   public static ValidTxnWriteIdList getValidTxnWriteIdList(Configuration conf) {
     String txnString = conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
-    ValidTxnWriteIdList validTxnList = new ValidTxnWriteIdList(txnString);
-    return validTxnList;
+    return new ValidTxnWriteIdList(txnString);
   }
 
   /**
@@ -2438,15 +2444,12 @@ public class AcidUtils {
     if (sessionTxnMgr == null) {
       return null;
     }
-    ValidWriteIdList validWriteIdList = null;
-    ValidTxnWriteIdList validTxnWriteIdList = null;
-
     String validTxnList = conf.get(ValidTxnList.VALID_TXNS_KEY);
     List<String> tablesInput = new ArrayList<>();
     String fullTableName = getFullTableName(dbName, tableName);
     tablesInput.add(fullTableName);
 
-    validTxnWriteIdList = sessionTxnMgr.getValidWriteIds(tablesInput, validTxnList);
+    ValidTxnWriteIdList validTxnWriteIdList = sessionTxnMgr.getValidWriteIds(tablesInput, validTxnList);
     return validTxnWriteIdList != null ?
         validTxnWriteIdList.getTableValidWriteIdList(fullTableName) : null;
   }
@@ -3213,10 +3216,6 @@ public class AcidUtils {
     if (tree.getToken().getType() == HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REBUILD) {
       return TxnType.MATER_VIEW_REBUILD;
     }
-    // check if compaction request
-    if (tree.getFirstChildWithType(HiveParser.TOK_ALTERTABLE_COMPACT) != null){
-      return TxnType.COMPACTION;
-    }
     // check if soft delete txn
     if (isSoftDeleteTxn(conf, tree))  {
       return TxnType.SOFT_DELETE;
@@ -3378,9 +3377,9 @@ public class AcidUtils {
     }
   }
 
-  public static boolean isNonNativeAcidTable(Table table, boolean isWriteOperation) {
+  public static boolean isNonNativeAcidTable(Table table) {
     return table != null && table.getStorageHandler() != null &&
-        table.getStorageHandler().supportsAcidOperations(table, isWriteOperation) != HiveStorageHandler.AcidSupportType.NONE;
+        table.getStorageHandler().supportsAcidOperations() != HiveStorageHandler.AcidSupportType.NONE;
   }
 
   /**
@@ -3393,7 +3392,7 @@ public class AcidUtils {
     if (isTransactionalTable(table)) {
       return Lists.newArrayList(VirtualColumn.ROWID);
     } else {
-      if (isNonNativeAcidTable(table, false)) {
+      if (isNonNativeAcidTable(table)) {
         return table.getStorageHandler().acidVirtualColumns();
       }
     }
@@ -3402,7 +3401,7 @@ public class AcidUtils {
 
   public static boolean acidTableWithoutTransactions(Table table) {
     return table != null && table.getStorageHandler() != null &&
-        table.getStorageHandler().supportsAcidOperations(table, true) ==
+        table.getStorageHandler().supportsAcidOperations() ==
             HiveStorageHandler.AcidSupportType.WITHOUT_TRANSACTIONS;
   }
 

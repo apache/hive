@@ -47,7 +47,7 @@ public class TestUpgradeTool extends TxnCommandsBaseForTests {
   public void testPostUpgrade() throws Exception {
     int[][] data = {{1, 2}, {3, 4}, {5, 6}};
     int[][] dataPart = {{1, 2, 10}, {3, 4, 11}, {5, 6, 12}};
-    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "dynamic");
+    hiveConf.setVar(HiveConf.ConfVars.DYNAMIC_PARTITIONING_MODE, "dynamic");
     runStatementOnDriver("drop table if exists TAcid");
     runStatementOnDriver("drop table if exists TAcidPart");
     runStatementOnDriver("drop table if exists TFlat");

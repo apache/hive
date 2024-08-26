@@ -86,4 +86,10 @@ public class DropDatabaseAnalyzer extends BaseSemanticAnalyzer {
     DropDatabaseDesc desc = new DropDatabaseDesc(databaseName, ifExists, cascade, new ReplicationSpec());
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
+
+  @Override
+  public boolean hasAcidResources() {
+    // check DB tags once supported (i.e. ICEBERG_ONLY, ACID_ONLY, EXTERNAL_ONLY)
+    return true;
+  }
 }

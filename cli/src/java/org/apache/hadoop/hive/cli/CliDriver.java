@@ -425,7 +425,7 @@ public class CliDriver {
           ret = processCmd(command.toString());
           lastRet = ret;
         } catch (CommandProcessorException e) {
-          boolean ignoreErrors = HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLIIGNOREERRORS);
+          boolean ignoreErrors = HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLI_IGNORE_ERRORS);
           if (!ignoreErrors) {
             throw e;
           }
@@ -740,7 +740,7 @@ public class CliDriver {
       logInitDetailMessage = e.getMessage();
     }
 
-    CliSessionState ss = new CliSessionState(new HiveConf(SessionState.class));
+    CliSessionState ss = new CliSessionState(getConf());
     ss.in = System.in;
     try {
       ss.out =
@@ -773,7 +773,7 @@ public class CliDriver {
     }
 
     // read prompt configuration and substitute variables.
-    prompt = conf.getVar(HiveConf.ConfVars.CLIPROMPT);
+    prompt = conf.getVar(HiveConf.ConfVars.CLI_PROMPT);
     prompt = new VariableSubstitution(new HiveVariableSource() {
       @Override
       public Map<String, String> getHiveVariable() {
@@ -809,9 +809,14 @@ public class CliDriver {
     } catch (CommandProcessorException e) {
       return e.getResponseCode();
     } finally {
+      SessionState.endStart(ss);
       ss.resetThreadName();
       ss.close();
     }
+  }
+
+  protected HiveConf getConf() {
+    return new HiveConf(SessionState.class);
   }
 
   /**
@@ -936,7 +941,7 @@ public class CliDriver {
    * @return String to show user for current db value
    */
   private static String getFormattedDb(HiveConf conf, CliSessionState ss) {
-    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLIPRINTCURRENTDB)) {
+    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLI_PRINT_CURRENT_DB)) {
       return "";
     }
     //BUG: This will not work in remote mode - HIVE-5153

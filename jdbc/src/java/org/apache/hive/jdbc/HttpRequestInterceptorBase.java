@@ -104,7 +104,7 @@ public abstract class HttpRequestInterceptorBase implements HttpRequestIntercept
         }
       }
       // Add custom cookies if passed to the jdbc driver
-      if (customCookies != null) {
+      if (customCookies != null && !customCookies.isEmpty()) {
         String cookieHeaderKeyValues = "";
         Header cookieHeaderServer = httpRequest.getFirstHeader("Cookie");
         if ((cookieHeaderServer != null) && (cookieHeaderServer.getValue() != null)) {

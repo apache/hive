@@ -327,11 +327,6 @@
 </property>
 
 <property>
-  <name>hive.strict.timestamp.conversion</name>
-  <value>false</value>
-</property>
-
-<property>
   <name>hive.cbo.fallback.strategy</name>
   <value>TEST</value>
 </property>
@@ -368,5 +363,10 @@
   <property>
     <name>hive.async.cleanup.service.thread.count</name>
     <value>4</value>
+  </property>
+
+  <property>
+    <name>hive.tez.exec.print.summary</name>
+    <value>true</value>
   </property>
 </configuration>

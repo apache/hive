@@ -26,7 +26,6 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
@@ -79,8 +78,8 @@ public class Driver implements IDriver {
       "snapshot was outdated when locks were acquired";
 
   private int maxRows = 100;
-
-  private final DriverContext driverContext;
+  @VisibleForTesting
+  final DriverContext driverContext;
   private final DriverState driverState = new DriverState();
   private final DriverTxnHandler driverTxnHandler;
 
@@ -104,17 +103,6 @@ public class Driver implements IDriver {
 
   public Driver(QueryState queryState, QueryInfo queryInfo) {
     this(queryState, queryInfo, null);
-  }
-
-  public Driver(QueryState queryState, ValidWriteIdList compactionWriteIds, long compactorTxnId) {
-    this(queryState);
-    driverContext.setCompactionWriteIds(compactionWriteIds);
-    driverContext.setCompactorTxnId(compactorTxnId);
-  }
-
-  public Driver(QueryState queryState, long analyzeTableWriteId) {
-    this(queryState);
-    driverContext.setAnalyzeTableWriteId(analyzeTableWriteId);
   }
 
   public Driver(QueryState queryState, QueryInfo queryInfo, HiveTxnManager txnManager) {
@@ -155,7 +143,8 @@ public class Driver implements IDriver {
       return new CommandProcessorResponse(getSchema(), null);
     } catch (CommandProcessorException cpe) {
       processRunException(cpe);
-      throw cpe;
+      saveErrorMessageAndRethrow(cpe);
+      return null;
     }
   }
 
@@ -278,11 +267,10 @@ public class Driver implements IDriver {
             // data add ends up being > than the data delete.
             driverContext.getTxnManager().clearCaches();
           }
+          driverContext.getConf().unset(ValidTxnList.VALID_TXNS_KEY);
           driverContext.setRetrial(true);
-          driverContext.getConf().set(ValidTxnList.VALID_TXNS_KEY,
-              driverContext.getTxnManager().getValidTxns().toString());
 
-          if (driverContext.getPlan().hasAcidResourcesInQuery()) {
+          if (driverContext.getPlan().hasAcidReadWrite()) {
             compileInternal(context.getCmd(), true);
             driverTxnHandler.recordValidWriteIds();
             driverTxnHandler.setWriteIdForAcidFileSinks();
@@ -356,7 +344,7 @@ public class Driver implements IDriver {
       driverTxnHandler.acquireLocksIfNeeded();
     } catch (CommandProcessorException cpe) {
       driverTxnHandler.rollback(cpe);
-      throw cpe;
+      saveErrorMessageAndRethrow(cpe);
     }
   }
 
@@ -367,7 +355,7 @@ public class Driver implements IDriver {
       executor.execute();
     } catch (CommandProcessorException cpe) {
       driverTxnHandler.rollback(cpe);
-      throw cpe;
+      saveErrorMessageAndRethrow(cpe);
     }
   }
 
@@ -436,7 +424,8 @@ public class Driver implements IDriver {
       compileInternal(command, false);
       return new CommandProcessorResponse(getSchema(), null);
     } catch (CommandProcessorException cpe) {
-      throw cpe;
+      saveErrorMessageAndRethrow(cpe);
+      return null;
     } finally {
       if (cleanupTxnList) {
         // Valid txn list might be generated for a query compiled using this command, thus we need to reset it
@@ -475,7 +464,7 @@ public class Driver implements IDriver {
         } catch (LockException e) {
           LOG.warn("Exception in releasing locks", e);
         }
-        throw cpe;
+        saveErrorMessageAndRethrow(cpe);
       }
     }
     //Save compile-time PerfLogging for WebUI.
@@ -948,5 +937,10 @@ public class Driver implements IDriver {
 
   public StatsSource getStatsSource() {
     return driverContext.getStatsSource();
+  }
+
+  private void saveErrorMessageAndRethrow(CommandProcessorException cpe) throws CommandProcessorException {
+    driverContext.setQueryErrorMessage(cpe.getMessage());
+    throw cpe;
   }
 }

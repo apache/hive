@@ -18,19 +18,25 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.CheckResult;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.util.StringUtils;
 
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.fail;
@@ -81,5 +87,27 @@ public class PartitionUtil {
             partsNotInMs.add(result);
         }
         return partsNotInMs;
+    }
+
+
+    public static void addPartitions(IMetaStoreClient db, String dbName, String tableName, String location,
+         HiveConf hiveConf, int numPartitions) throws Exception {
+        List<Partition> partitions = new ArrayList<>();
+        for (int i = 0; i < numPartitions; i++) {
+            partitions.add(buildPartition(dbName, tableName, String.valueOf(i), location + "/city=" + i, hiveConf));
+        }
+        db.add_partitions(partitions, true, true);
+    }
+
+    protected static Partition buildPartition(String dbName, String tableName, String value,
+         String location, HiveConf hiveConf) throws MetaException {
+        return new PartitionBuilder()
+                .setDbName(dbName)
+                .setTableName(tableName)
+                .addValue(value)
+                .addCol("test_id", "int", "test col id")
+                .addCol("test_value", "string", "test col value")
+                .setLocation(location)
+                .build(hiveConf);
     }
 }

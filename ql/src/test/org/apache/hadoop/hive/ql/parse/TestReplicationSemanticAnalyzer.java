@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -32,7 +33,7 @@ public class TestReplicationSemanticAnalyzer {
   private static HiveConf hiveConf = buildHiveConf();
 
   public static HiveConf buildHiveConf() {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = new HiveConfForTest(TestReplicationSemanticAnalyzer.class);
     conf.setVar(HIVE_QUOTEDID_SUPPORT, Quotation.NONE.stringValue());
     return conf;
   }

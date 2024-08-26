@@ -214,7 +214,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	10                  
 	rawDataSize         	96                  
-	totalSize           	106                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -427,7 +427,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	10                  
 	rawDataSize         	96                  
-	totalSize           	106                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -640,7 +640,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	10                  
 	rawDataSize         	120                 
-	totalSize           	199                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -704,7 +704,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	10                  
 	rawDataSize         	120                 
-	totalSize           	199                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -918,7 +918,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	10                  
 	rawDataSize         	96                  
-	totalSize           	106                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

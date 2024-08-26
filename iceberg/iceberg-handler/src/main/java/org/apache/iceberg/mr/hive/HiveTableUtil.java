@@ -234,7 +234,7 @@ public class HiveTableUtil {
   }
 
   static String generateTableObjectLocation(String tableLocation, Configuration conf) {
-    return tableLocation + "/temp/" + conf.get(HiveConf.ConfVars.HIVEQUERYID.varname) + TABLE_EXTENSION;
+    return tableLocation + "/temp/" + conf.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname) + TABLE_EXTENSION;
   }
 
   static void createFileForTableObject(Table table, Configuration conf) {
@@ -302,10 +302,10 @@ public class HiveTableUtil {
 
   static JobConf getPartJobConf(Configuration confs, org.apache.hadoop.hive.ql.metadata.Table tbl) {
     JobConf job = new JobConf(confs);
-    job.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, Constants.ICEBERG_PARTITION_TABLE_SCHEMA);
+    job.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, Constants.ICEBERG_PARTITION_COLUMNS);
     job.set(InputFormatConfig.TABLE_LOCATION, tbl.getPath().toString());
     job.set(InputFormatConfig.TABLE_IDENTIFIER, tbl.getFullyQualifiedName() + ".partitions");
-    HiveConf.setVar(job, HiveConf.ConfVars.HIVEFETCHOUTPUTSERDE, Constants.DELIMITED_JSON_SERDE);
+    HiveConf.setVar(job, HiveConf.ConfVars.HIVE_FETCH_OUTPUT_SERDE, Constants.DELIMITED_JSON_SERDE);
     HiveConf.setBoolVar(job, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     return job;
   }

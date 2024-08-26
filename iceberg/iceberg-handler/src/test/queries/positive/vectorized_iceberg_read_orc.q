@@ -2,7 +2,7 @@ set hive.vectorized.execution.enabled=true;
 
 drop table if exists tbl_ice_orc;
 create external table tbl_ice_orc(a int, b string) stored by iceberg stored as orc
-TBLPROPERTIES ('iceberg.decimal64.vectorization'='true');
+TBLPROPERTIES ('iceberg.decimal64.vectorization'='true',"format-version"='1');
 insert into table tbl_ice_orc values (1, 'one'), (2, 'two'), (3, 'three'), (4, 'four'), (5, 'five'), (111, 'one'), (22, 'two'), (11, 'one'), (44444, 'four'), (44, 'four');
 analyze table tbl_ice_orc compute statistics for columns;
 
@@ -23,7 +23,7 @@ create external table tbl_ice_orc_all_types (
     t_date DATE,
     t_decimal DECIMAL(4,2)
     ) stored by iceberg stored as orc
-    TBLPROPERTIES ('iceberg.decimal64.vectorization'='true');
+    TBLPROPERTIES ('iceberg.decimal64.vectorization'='true',"format-version"='1');
 insert into tbl_ice_orc_all_types values (1.1, 1.2, false, 4, 567890123456789, '6', "col7", cast('2012-10-03 19:58:08' as timestamp), date('1234-09-09'), cast('10.01' as decimal(4,2)));
 
 explain select max(t_float), t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal from tbl_ice_orc_all_types
@@ -39,7 +39,7 @@ create external table tbl_ice_orc_parted (
     b string
     ) partitioned by (p1 string, p2 string)
     stored by iceberg stored as orc location 'file:/tmp/tbl_ice_orc_parted'
-    TBLPROPERTIES ('iceberg.decimal64.vectorization'='true');
+    TBLPROPERTIES ('iceberg.decimal64.vectorization'='true',"format-version"='1');
 
 insert into tbl_ice_orc_parted values
                                       (1, 'aa', 'Europe', 'Hungary'),
@@ -89,7 +89,7 @@ create external table tbl_ice_orc_complex (
     structofarrays struct<names:array<string>, birthdays:array<string>>,
     structofmaps struct<map1:map<string, string>, map2:map<string, string>>
     ) stored by iceberg stored as orc
-    TBLPROPERTIES ('iceberg.decimal64.vectorization'='true');
+    TBLPROPERTIES ('iceberg.decimal64.vectorization'='true',"format-version"='1');
 
 -- insert some test data
 insert into tbl_ice_orc_complex values (

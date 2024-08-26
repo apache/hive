@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.util.TimeZone;
+import java.time.ZoneId;
 
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
@@ -45,7 +45,7 @@ public class GenericUDFFromUtcTimestamp extends GenericUDF {
   private transient PrimitiveObjectInspector[] argumentOIs;
   private transient TimestampConverter timestampConverter;
   private transient TextConverter textConverter;
-  private transient TimeZone tzUTC = TimeZone.getTimeZone("UTC");
+  protected transient ZoneId zoneIdUTC = ZoneId.of("UTC");
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments)
@@ -86,31 +86,31 @@ public class GenericUDFFromUtcTimestamp extends GenericUDF {
     }
 
     Timestamp inputTs = ((TimestampWritableV2) converted_o0).getTimestamp();
-
     String tzStr = textConverter.convert(o1).toString();
-    TimeZone timezone = TimeZone.getTimeZone(tzStr);
-
-    TimeZone fromTz;
-    TimeZone toTz;
-    if (invert()) {
-      fromTz = timezone;
-      toTz = tzUTC;
-    } else {
-      fromTz = tzUTC;
-      toTz = timezone;
-    }
-
-    // inputTs is the year/month/day/hour/minute/second in the local timezone.
-    // For this UDF we want it in the timezone represented by fromTz
-    TimestampTZ fromTs = TimestampTZUtil.parse(inputTs.toString(), fromTz.toZoneId());
+    ZoneId zoneId = ZoneId.of(tzStr, ZoneId.SHORT_IDS);
+    
+    ZoneId fromTz = getFromZoneId(zoneId);
+    ZoneId toTz = getToZoneId(zoneId);
+    
+    // inputTs is the year/month/day/hour/minute/second in the local zoneId.
+    // For this UDF we want it in the zoneId represented by fromTz
+    TimestampTZ fromTs = TimestampTZUtil.parse(inputTs.toString(), fromTz);
     if (fromTs == null) {
       return null;
     }
 
     // Now output this timestamp's millis value to the equivalent toTz.
     Timestamp result = Timestamp.valueOf(
-        fromTs.getZonedDateTime().withZoneSameInstant(toTz.toZoneId()).toLocalDateTime().toString());
+        fromTs.getZonedDateTime().withZoneSameInstant(toTz).toLocalDateTime().toString());
     return result;
+  }
+
+  protected ZoneId getToZoneId(ZoneId zoneId) {
+    return zoneId;
+  }
+
+  protected ZoneId getFromZoneId(ZoneId zoneId) {
+    return this.zoneIdUTC;
   }
 
   @Override
@@ -129,7 +129,4 @@ public class GenericUDFFromUtcTimestamp extends GenericUDF {
     return "from_utc_timestamp";
   }
 
-  protected boolean invert() {
-    return false;
-  }
 }

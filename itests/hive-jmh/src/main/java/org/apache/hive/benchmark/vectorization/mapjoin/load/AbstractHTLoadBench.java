@@ -45,7 +45,6 @@ import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
-import org.powermock.api.mockito.PowerMockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +53,8 @@ import java.util.concurrent.TimeUnit;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @BenchmarkMode(Mode.AverageTime)
 @Warmup(iterations = 3, time = 1, timeUnit = TimeUnit.SECONDS)
@@ -89,25 +90,25 @@ public abstract class AbstractHTLoadBench {
   @Benchmark
   public void hashTableLoadBench() throws Exception {
     /* Mocking TezContext */
-    this.mockTezContext = PowerMockito.mock(TezContext.class);
-    ProcessorContext mockProcessorContest = PowerMockito.mock(ProcessorContext.class);
-    AbstractLogicalInput mockLogicalInput = PowerMockito.mock(AbstractLogicalInput.class);
-    TezCounters mockTezCounters = PowerMockito.mock(TezCounters.class);
-    TezCounter mockTezCounter = PowerMockito.mock(TezCounter.class);
-    InputContext mockInputContext = PowerMockito.mock(InputContext.class);
+    this.mockTezContext = mock(TezContext.class);
+    ProcessorContext mockProcessorContest = mock(ProcessorContext.class);
+    AbstractLogicalInput mockLogicalInput = mock(AbstractLogicalInput.class);
+    TezCounters mockTezCounters = mock(TezCounters.class);
+    TezCounter mockTezCounter = mock(TezCounter.class);
+    InputContext mockInputContext = mock(InputContext.class);
     // Make sure the KEY estimation is correct to have properly sized HT
-    PowerMockito.when(mockTezCounter.getValue()).thenReturn((long)rowCount);
-    PowerMockito.when(mockTezContext.getInput(any())).thenReturn(mockLogicalInput);
-    PowerMockito.when(mockLogicalInput.getContext()).thenReturn(mockInputContext);
-    PowerMockito.when(mockInputContext.getCounters()).thenReturn(mockTezCounters);
-    PowerMockito.when(mockTezCounters.findCounter(anyString(), anyString())).thenReturn(mockTezCounter);
-    PowerMockito.when(mockTezContext.getTezProcessorContext()).thenReturn(mockProcessorContest);
-    PowerMockito.when(mockTezContext.getTezProcessorContext().getCounters()).thenReturn(mockTezCounters);
-    PowerMockito.when(mockTezContext.getTezProcessorContext().getCounters().findCounter(anyString(), anyString())).
+    when(mockTezCounter.getValue()).thenReturn((long)rowCount);
+    when(mockTezContext.getInput(any())).thenReturn(mockLogicalInput);
+    when(mockLogicalInput.getContext()).thenReturn(mockInputContext);
+    when(mockInputContext.getCounters()).thenReturn(mockTezCounters);
+    when(mockTezCounters.findCounter(anyString(), anyString())).thenReturn(mockTezCounter);
+    when(mockTezContext.getTezProcessorContext()).thenReturn(mockProcessorContest);
+    when(mockTezContext.getTezProcessorContext().getCounters()).thenReturn(mockTezCounters);
+    when(mockTezContext.getTezProcessorContext().getCounters().findCounter(anyString(), anyString())).
         thenReturn(mockTezCounter);
     // Replace streaming Tez-Input with our custom Iterator
-    PowerMockito.when(mockTezContext.getInput(any())).thenReturn(mockLogicalInput);
-    PowerMockito.when(mockLogicalInput.getReader()).thenReturn(customKeyValueReader);
+    when(mockTezContext.getInput(any())).thenReturn(mockLogicalInput);
+    when(mockLogicalInput.getReader()).thenReturn(customKeyValueReader);
     /* Mocking Done*/
     HashTableLoader ht = LOAD_THREADS_NUM == 0 ?
         new LegacyVectorMapJoinFastHashTableLoader(mockTezContext, testDesc.hiveConf, createMapJoinResult.mapJoinOperator) :
@@ -122,8 +123,8 @@ public abstract class AbstractHTLoadBench {
       TypeInfo[] smallTableValueTypeInfos, int[] smallTableRetainKeyColumnNums,
       SmallTableGenerationParameters smallTableGenerationParameters) throws Exception {
 
-    hiveConf.set(HiveConf.ConfVars.HIVEMAPJOINPARALELHASHTABLETHREADS.varname, LOAD_THREADS_NUM + "");
-    LOG.info("Number of threads: " + hiveConf.get(HiveConf.ConfVars.HIVEMAPJOINPARALELHASHTABLETHREADS.varname));
+    hiveConf.set(HiveConf.ConfVars.HIVE_MAPJOIN_PARALEL_HASHTABLE_THREADS.varname, LOAD_THREADS_NUM + "");
+    LOG.info("Number of threads: " + hiveConf.get(HiveConf.ConfVars.HIVE_MAPJOIN_PARALEL_HASHTABLE_THREADS.varname));
 
 
     this.rowCount = rowCount;

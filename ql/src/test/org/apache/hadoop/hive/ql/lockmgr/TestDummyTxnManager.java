@@ -24,6 +24,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -50,7 +51,7 @@ import java.util.List;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestDummyTxnManager {
-  private final HiveConf conf = new HiveConf();
+  private final HiveConf conf = new HiveConfForTest(getClass());
   private HiveTxnManager txnMgr;
   private Context ctx;
   private int nextInput = 1;
@@ -112,8 +113,8 @@ public class TestDummyTxnManager {
     DriverState driverInterrupted = new DriverState();
     driverInterrupted.abort();
     LockException lEx = new LockException(ErrorMsg.LOCK_ACQUIRE_CANCELLED.getMsg());
-    when(mockLockManager.lock(anyListOf(HiveLockObj.class), eq(false), eq(driverState))).thenReturn(expectedLocks);
-    when(mockLockManager.lock(anyListOf(HiveLockObj.class), eq(false), eq(driverInterrupted))).thenThrow(lEx);
+    when(mockLockManager.lock(anyList(), eq(false), eq(driverState))).thenReturn(expectedLocks);
+    when(mockLockManager.lock(anyList(), eq(false), eq(driverInterrupted))).thenThrow(lEx);
     lenient().doNothing().when(mockLockManager).setContext(any(HiveLockManagerCtx.class));
     doNothing().when(mockLockManager).close();
     ArgumentCaptor<List> lockObjsCaptor = ArgumentCaptor.forClass(List.class);

@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
@@ -41,7 +42,6 @@ import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.Utils;
-
 import org.junit.rules.TestName;
 import org.junit.After;
 import org.junit.Assert;
@@ -65,7 +65,6 @@ import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION
  * TestReplicationScenariosAcidTablesBase - base class for replication for ACID tables tests
  */
 public class BaseReplicationScenariosAcidTables {
-
   @Rule
   public final TestName testName = new TestName();
 
@@ -81,7 +80,9 @@ public class BaseReplicationScenariosAcidTables {
 
   static void internalBeforeClassSetup(Map<String, String> overrides, Class clazz)
           throws Exception {
-    conf = new HiveConf(clazz);
+    conf = new HiveConfForTest(clazz);
+    //TODO: HIVE-28044: Replication tests to run on Tez
+    conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =

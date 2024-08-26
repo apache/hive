@@ -52,7 +52,7 @@ class TableStatsRequest
         ),
         6 => array(
             'var' => 'engine',
-            'isRequired' => true,
+            'isRequired' => false,
             'type' => TType::STRING,
         ),
         7 => array(
@@ -85,7 +85,7 @@ class TableStatsRequest
     /**
      * @var string
      */
-    public $engine = null;
+    public $engine = "hive";
     /**
      * @var int
      */

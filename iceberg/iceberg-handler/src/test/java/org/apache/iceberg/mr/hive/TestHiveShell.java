@@ -85,9 +85,9 @@ public class TestHiveShell {
   public void start() {
     // Create a copy of the HiveConf for the metastore
     metastore.start(new HiveConf(hs2Conf), 20);
-    hs2Conf.setVar(HiveConf.ConfVars.METASTOREURIS, metastore.hiveConf().getVar(HiveConf.ConfVars.METASTOREURIS));
-    hs2Conf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE,
-        metastore.hiveConf().getVar(HiveConf.ConfVars.METASTOREWAREHOUSE));
+    hs2Conf.setVar(HiveConf.ConfVars.METASTORE_URIS, metastore.hiveConf().getVar(HiveConf.ConfVars.METASTORE_URIS));
+    hs2Conf.setVar(HiveConf.ConfVars.METASTORE_WAREHOUSE,
+        metastore.hiveConf().getVar(HiveConf.ConfVars.METASTORE_WAREHOUSE));
     hs2Conf.setVar(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL,
         metastore.hiveConf().getVar(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL));
 
@@ -195,22 +195,21 @@ public class TestHiveShell {
     // Switch off optimizers in order to contain the map reduction within this JVM
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_CBO_ENABLED, true);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_INFER_BUCKET_SORT, false);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVEMETADATAONLYQUERIES, false);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVEOPTINDEXFILTER, false);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN, false);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESKEWJOIN, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_METADATA_ONLY_QUERIES, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_OPT_INDEX_FILTER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_CONVERT_JOIN, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SKEW_JOIN, false);
 
     // Speed up test execution
-    hiveConf.setLongVar(HiveConf.ConfVars.HIVECOUNTERSPULLINTERVAL, 1L);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
+    hiveConf.setLongVar(HiveConf.ConfVars.HIVE_COUNTERS_PULL_INTERVAL, 1L);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
 
     // Resource configuration
     hiveConf.setInt("mapreduce.map.memory.mb", 1024);
 
     // Tez configuration
     hiveConf.setBoolean("tez.local.mode", true);
-    // TODO: enable below option once HIVE-26445 is investigated
-    // hiveConf.setBoolean("tez.local.mode.without.network", true);
+    hiveConf.setBoolean("tez.local.mode.without.network", true);
 
     // Disable vectorization for HiveIcebergInputFormat
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);

@@ -22,13 +22,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Properties;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -68,8 +68,7 @@ public class TestGenTezWork {
   @SuppressWarnings("unchecked")
   @Before
   public void setUp() throws Exception {
-    // Init conf
-    final HiveConf conf = new HiveConf(SemanticAnalyzer.class);
+    final HiveConf conf = new HiveConfForTest(getClass());
     SessionState.start(conf);
 
     // Init parse context

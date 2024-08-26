@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.common;
 
+import static org.apache.hadoop.hive.shims.Utils.RAW_RESERVED_VIRTUAL_PATH;
+
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -27,6 +29,7 @@ import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+import java.nio.file.Paths;
 import java.security.AccessControlException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -60,11 +63,13 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.PathExistsException;
 import org.apache.hadoop.fs.PathIsDirectoryException;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.security.UserGroupInformation;
+import com.google.common.base.Preconditions;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.functional.RemoteIterators;
 import org.apache.hive.common.util.ShutdownHookManager;
@@ -766,7 +771,7 @@ public final class FileUtils {
       // is tried and it fails. We depend upon that behaviour in cases like replication,
       // wherein if distcp fails, there is good reason to not plod along with a trivial
       // implementation, and fail instead.
-      copied = doIOUtilsCopyBytes(srcFS, srcFS.getFileStatus(src), dstFS, dst, deleteSource, overwrite, shouldPreserveXAttrs(conf, srcFS, dstFS), conf, copyStatistics);
+      copied = doIOUtilsCopyBytes(srcFS, srcFS.getFileStatus(src), dstFS, dst, deleteSource, overwrite, shouldPreserveXAttrs(conf, srcFS, dstFS, src), conf, copyStatistics);
     }
     return copied;
   }
@@ -894,11 +899,21 @@ public final class FileUtils {
     }
   }
 
-  public static boolean shouldPreserveXAttrs(HiveConf conf, FileSystem srcFS, FileSystem dstFS) throws IOException {
-    if (!Utils.checkFileSystemXAttrSupport(srcFS) || !Utils.checkFileSystemXAttrSupport(dstFS)){
-      return false;
+  public static boolean shouldPreserveXAttrs(HiveConf conf, FileSystem srcFS, FileSystem dstFS, Path path) throws IOException {
+    Preconditions.checkNotNull(path);
+    if (conf.getBoolVar(ConfVars.DFS_XATTR_ONLY_SUPPORTED_ON_RESERVED_NAMESPACE)) {
+
+      if (!(path.toUri().getPath().startsWith(RAW_RESERVED_VIRTUAL_PATH)
+        && Utils.checkFileSystemXAttrSupport(srcFS, new Path(RAW_RESERVED_VIRTUAL_PATH))
+        && Utils.checkFileSystemXAttrSupport(dstFS, new Path(RAW_RESERVED_VIRTUAL_PATH)))) {
+        return false;
+      }
+    } else {
+      if (!Utils.checkFileSystemXAttrSupport(srcFS) || !Utils.checkFileSystemXAttrSupport(dstFS)) {
+        return false;
+      }
     }
-    for (Map.Entry<String,String> entry : conf.getPropsWithPrefix(Utils.DISTCP_OPTIONS_PREFIX).entrySet()) {
+    for (Map.Entry<String, String> entry : conf.getPropsWithPrefix(Utils.DISTCP_OPTIONS_PREFIX).entrySet()) {
       String distCpOption = entry.getKey();
       if (distCpOption.startsWith("p")) {
         return distCpOption.contains("x");
@@ -1385,6 +1400,56 @@ public final class FileUtils {
         throws IOException {
     return RemoteIterators.filteringRemoteIterator(fs.listFiles(path, recursive),
         status -> filter.accept(status.getPath()));
+  }
+
+  /**
+   * Resolves a symlink on a local filesystem. In case of any exceptions or scheme other than "file"
+   * it simply returns the original path. Refer to DEBUG level logs for further details.
+   * @param path input path to be resolved
+   * @param conf a Configuration instance to be used while e.g. resolving the FileSystem if necessary
+   * @return the resolved target Path or the original if the input Path is not a symlink
+   * @throws IOException
+   */
+  public static Path resolveSymlinks(Path path, Configuration conf) throws IOException {
+    if (path == null) {
+      throw new IllegalArgumentException("Cannot resolve symlink for a null Path");
+    }
+
+    URI uri = path.toUri();
+    String scheme = uri.getScheme();
+
+    /*
+     * If you're about to extend this method to e.g. HDFS, simply remove this check.
+     * There is a known exception reproduced by whroot_external1.q, which can be referred to,
+     * which is because java.nio is not prepared by default for other schemes like "hdfs".
+     */
+    if (scheme != null && !"file".equalsIgnoreCase(scheme)) {
+      LOG.debug("scheme '{}' is not supported for resolving symlinks", scheme);
+      return path;
+    }
+
+    // we're expecting 'file' scheme, so if scheme == null, we need to add it to path before resolving,
+    // otherwise Paths.get will fail with java.lang.IllegalArgumentException: Missing scheme
+    if (scheme == null) {
+      try {
+        uri =  new URI("file", uri.getAuthority(), uri.toString(), null, null);
+      } catch (URISyntaxException e) {
+        // e.g. in case of relative URI, we cannot create a new URI
+        LOG.debug("URISyntaxException while creating uri from path without scheme {}", path, e);
+        return path;
+      }
+    }
+
+    try {
+      java.nio.file.Path srcPath = Paths.get(uri);
+      URI targetUri = srcPath.toRealPath().toUri();
+      // stick to the original scheme
+      return new Path(scheme, targetUri.getAuthority(),
+          Path.getPathWithoutSchemeAndAuthority(new Path(targetUri)).toString());
+    } catch (Exception e) {
+      LOG.debug("Exception while calling toRealPath of {}", path, e);
+      return path;
+    }
   }
 
   public static class AdaptingIterator<T> implements Iterator<T> {

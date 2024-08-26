@@ -27,6 +27,8 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -54,7 +56,7 @@ public class TestHplSqlViaBeeLine {
     hiveConf.setVar(HiveConf.ConfVars.HIVE_LOCK_MANAGER,
             "org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager");
     hiveConf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE, 10);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_METADATA_QUERIES, false);
     hiveConf.set(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "verbose");
     miniHS2 = new MiniHS2(hiveConf, MiniHS2.MiniClusterType.TEZ);
     Map<String, String> confOverlay = new HashMap<>();
@@ -105,7 +107,7 @@ public class TestHplSqlViaBeeLine {
       "p1();\n" +
       "SELECT * FROM result;\n" +
       "/\n";
-    testScriptFile(SCRIPT_TEXT, args(), "Hello world");
+    testScriptFile(SCRIPT_TEXT, args(), "wrong number of arguments in call to 'p1'. Expected 1 got 0.", OutStream.ERR);
   }
 
   @Test
@@ -184,8 +186,8 @@ public class TestHplSqlViaBeeLine {
             "BEGIN\n" +
             "   RETURN 'This is ' || b;\n" +
             "END;\n" +
-            "SELECT check(col_b) FROM result;\n";
-    testScriptFile(SCRIPT_TEXT, args(), "This is true.*This is false");
+            "SELECT check(col_b) FROM result ORDER BY col_b ASC;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "This is false.*This is true");
   }
 
   @Test
@@ -280,7 +282,7 @@ public class TestHplSqlViaBeeLine {
             "BEGIN\n" +
             "   RETURN 'Hello ' || s || '!';\n" +
             "END;\n" +
-            "SELECT hello(col_s) FROM result;\n";
+            "SELECT hello(col_s) FROM result ORDER BY col_s ASC;\n";
     testScriptFile(SCRIPT_TEXT, args(), "Hello Alice!.*Hello Smith!");
   }
 
@@ -344,8 +346,8 @@ public class TestHplSqlViaBeeLine {
             "BEGIN\n" +
             "   RETURN 'Hello ' || v || '!';\n" +
             "END;\n" +
-            "SELECT hello(col_v) FROM result;\n";
-    testScriptFile(SCRIPT_TEXT, args(), "Hello Smith!.*Hello Sachin!");
+            "SELECT hello(col_v) FROM result ORDER BY col_v ASC;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "Hello Sachin!.*Hello Smith!");
   }
 
   @Test
@@ -360,8 +362,8 @@ public class TestHplSqlViaBeeLine {
             "BEGIN\n" +
             "   RETURN 'Hello ' || c || '!';\n" +
             "END;\n" +
-            "SELECT hello(col_c) FROM result;\n";
-    testScriptFile(SCRIPT_TEXT, args(), "Hello Daya!.*Hello Alice!");
+            "SELECT hello(col_c) FROM result ORDER BY col_c ASC;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "Hello Alice!.*Hello Daya!");
   }
 
   @Test
@@ -610,11 +612,772 @@ public class TestHplSqlViaBeeLine {
     testScriptFile(SCRIPT_TEXT, args(), "^(.(?!(NullPointerException)))*$", OutStream.ERR);
   }
 
+  @Test
+  public void testACTIVITY_COUNTHplSqlFunction1() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+        "CREATE TABLE result (col1 string);\n" +
+        "INSERT INTO result VALUES('Alice');\n" +
+        "INSERT INTO result VALUES('Bob');\n" +
+        "SELECT * FROM result;\n" +
+        "SELECT ACTIVITY_COUNT;";
+    testScriptFile(SCRIPT_TEXT, args(), "2");
+  }
+
+  @Test
+  public void testACTIVITY_COUNTHplSqlFunction2() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (col1 string);\n" +
+            "INSERT INTO result VALUES('Alice');\n" +
+            "INSERT INTO result VALUES('Bob');\n" +
+            "DECLARE var INT;\n" +
+            "SELECT count(*) INTO var FROM result;\n" +
+            "IF ACTIVITY_COUNT = 1 THEN\n" +
+            " PRINT 'id = ' || var;\n" +
+            "END IF;";
+    testScriptFile(SCRIPT_TEXT, args(), "id = 2", OutStream.ERR);
+  }
+
+  @Test
+  public void testCASTHplSqlFunction1() throws Throwable {
+    String SCRIPT_TEXT = "SELECT CAST('Abc' AS CHAR(1));";
+    testScriptFile(SCRIPT_TEXT, args(), "A");
+  }
+
+  @Test
+  public void testCASTHplSqlFunction2() throws Throwable {
+    String SCRIPT_TEXT = "SELECT CAST(TIMESTAMP '2015-03-12 10:58:34.111' AS CHAR(10));";
+    testScriptFile(SCRIPT_TEXT, args(), "2015-03-12");
+  }
+
+  @Test
+  public void testCASTHplSqlFunction3() throws Throwable {
+    String SCRIPT_TEXT = "SELECT CAST(DATE '2023-05-29' AS CHAR(4));";
+    testScriptFile(SCRIPT_TEXT, args(), "2023");
+  }
+
+  @Test
+  public void testCHARHplSqlFunction() throws Throwable {
+    String SCRIPT_TEXT = "select CHAR(2023)";
+    testScriptFile(SCRIPT_TEXT, args(), "2023");
+  }
+
+  @Test
+  public void testCOALESCEHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "select COALESCE(null,123,2023)";
+    testScriptFile(SCRIPT_TEXT, args(), "123");
+  }
+
+  @Test
+  public void testCONCATHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "select CONCAT('a', 'b', NULL, 'c')";
+    testScriptFile(SCRIPT_TEXT, args(), "abc");
+  }
+
+  @Test
+  public void testCURRENTHplSQLFunction1() throws Throwable {
+    String SCRIPT_TEXT = "SELECT CURRENT DATE;";
+    testCurrentDate(SCRIPT_TEXT);
+  }
+
+  private void testCurrentDate(String SCRIPT_TEXT) throws Throwable {
+    Date today = new Date(System.currentTimeMillis());
+    testScriptFile(SCRIPT_TEXT, args(), today.toString());
+  }
+
+  @Test
+  public void testCURRENTHplSQLFunction2() throws Throwable {
+    String SCRIPT_TEXT = "SELECT CURRENT TIMESTAMP;";
+    testCurrentTimestamp(SCRIPT_TEXT);
+  }
+
+  private void testCurrentTimestamp(String SCRIPT_TEXT) throws Throwable {
+    Timestamp today = new Timestamp(System.currentTimeMillis());
+    String timestamp = today.toString();
+    testScriptFile(SCRIPT_TEXT, args(), timestamp.substring(0, timestamp.length() - 9));
+  }
+
+  @Test
+  public void testCURRENTHplSQLFunction3() throws Throwable {
+    String SCRIPT_TEXT = "SELECT CURRENT USER;";
+    testScriptFile(SCRIPT_TEXT, args(), System.getProperty("user.name"));
+  }
+
+  @Test
+  public void testCURRENT_DATEHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT CURRENT_DATE;";
+    testCurrentDate(SCRIPT_TEXT);
+  }
+
+  @Test
+  public void testCURRENT_TIME_MILLISHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT CURRENT_TIME_MILLIS();";
+    testScriptFile(SCRIPT_TEXT, args(), String.valueOf(System.currentTimeMillis() / 100000));
+  }
+
+  @Test
+  public void testCURRENT_TIMESTAMPHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT CURRENT_TIMESTAMP;";
+    testCurrentTimestamp(SCRIPT_TEXT);
+  }
+
+  @Test
+  public void testCURRENT_USERHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT CURRENT_USER;";
+    testScriptFile(SCRIPT_TEXT, args(), System.getProperty("user.name"));
+  }
+
+  @Test
+  public void testDATEHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT DATE('2015-03-12');";
+    testScriptFile(SCRIPT_TEXT, args(), "2015-03-12");
+  }
+
+  @Test
+  public void testDECODEHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "DECLARE var1 INT DEFAULT 3;\n" + "SELECT DECODE (var1, 1, 'A', 2, 'B', 3, 'C');";
+    testScriptFile(SCRIPT_TEXT, args(), "C");
+  }
+
+  @Test
+  public void testFROM_UNIXTIMEHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT from_unixtime(1447141681, 'yyyy-MM-dd');";
+    testScriptFile(SCRIPT_TEXT, args(), "2015-11-");
+  }
+
+  @Test
+  public void testINSTRHplSQLFunction1() throws Throwable {
+    String SCRIPT_TEXT = "SELECT INSTR('abc', 'b');";
+    testScriptFile(SCRIPT_TEXT, args(), "2");
+  }
+
+  @Test
+  public void testINSTRHplSQLFunction2() throws Throwable {
+    String SCRIPT_TEXT = "SELECT INSTR('abcabcabc', 'b', 3, 2);";
+    testScriptFile(SCRIPT_TEXT, args(), "8");
+  }
+
+  @Test
+  public void testLOWERHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT LOWER('ABC');";
+    testScriptFile(SCRIPT_TEXT, args(), "abc");
+  }
+
+  @Test
+  public void testLENHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT LEN('Abc ');";
+    testScriptFile(SCRIPT_TEXT, args(), "3");
+  }
+
+  @Test
+  public void testLENGTHHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT LENGTH('Abc ');";
+    testScriptFile(SCRIPT_TEXT, args(), "4");
+  }
+
+  @Test
+  public void testMODHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT MOD(5,2);";
+    testScriptFile(SCRIPT_TEXT, args(), "1");
+  }
+
+  @Test
+  public void testNOWHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT NOW();";
+    testCurrentTimestamp(SCRIPT_TEXT);
+  }
+
+  @Test
+  public void testNVLHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT NVL(NULL, 100);";
+    testScriptFile(SCRIPT_TEXT, args(), "100");
+  }
+
+  @Test
+  public void testNVL2HplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT NVL2(NULL, 100, 200);";
+    testScriptFile(SCRIPT_TEXT, args(), "200");
+  }
+
+  @Test
+  public void testREPLACEHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT replace('2016-03-03', '-', '');";
+    testScriptFile(SCRIPT_TEXT, args(), "20160303");
+  }
+
+  @Test
+  public void testSUBSTRHplSQLFunction1() throws Throwable {
+    String SCRIPT_TEXT = "SELECT SUBSTR('Remark', 3);";
+    testScriptFile(SCRIPT_TEXT, args(), "mark");
+  }
+
+  @Test
+  public void testSUBSTRHplSQLFunction2() throws Throwable {
+    String SCRIPT_TEXT = "SELECT SUBSTR('Remark', 3, 3);";
+    testScriptFile(SCRIPT_TEXT, args(), "mar");
+  }
+
+  @Test
+  public void testSUBSTRINGHplSQLFunction1() throws Throwable {
+    String SCRIPT_TEXT = "SELECT SUBSTRING('Remark', 3);";
+    testScriptFile(SCRIPT_TEXT, args(), "mark");
+  }
+
+  @Test
+  public void testSUBSTRINGHplSQLFunction2() throws Throwable {
+    String SCRIPT_TEXT = "SELECT SUBSTRING('Remark', 3, 3);";
+    testScriptFile(SCRIPT_TEXT, args(), "mar");
+  }
+
+  @Test
+  public void testSYSDATEHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT SYSDATE;";
+    testCurrentTimestamp(SCRIPT_TEXT);
+  }
+
+  @Test
+  public void testTIMESTAMP_ISOHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT TIMESTAMP_ISO('2015-03-12');";
+    testScriptFile(SCRIPT_TEXT, args(), "2015-03-12 00:00:00");
+  }
+
+  @Test
+  public void testTO_CHARHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT TO_CHAR(CURRENT_DATE);";
+    testCurrentDate(SCRIPT_TEXT);
+  }
+
+  @Test
+  public void testTO_TIMESTAMPHplSQLFunction1() throws Throwable {
+    String SCRIPT_TEXT = "SELECT TO_TIMESTAMP('2015-04-02', 'YYYY-MM-DD');";
+    testScriptFile(SCRIPT_TEXT, args(), "2015-04-02 00:00:00.0");
+  }
+
+  @Test
+  public void testTO_TIMESTAMPHplSQLFunction2() throws Throwable {
+    String SCRIPT_TEXT = "SELECT TO_TIMESTAMP('04/02/2015', 'mm/dd/yyyy');";
+    testScriptFile(SCRIPT_TEXT, args(), "2015-04-02 00:00:00.0");
+  }
+
+  @Test
+  public void testTO_TIMESTAMPHplSQLFunction3() throws Throwable {
+    String SCRIPT_TEXT = "SELECT TO_TIMESTAMP('2015-04-02 13:51:31', 'YYYY-MM-DD HH24:MI:SS');";
+    testScriptFile(SCRIPT_TEXT, args(), "2015-04-02 13:51:31.0");
+  }
+
+  @Test
+  public void testTRIMHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT '#' || TRIM(' Hello ') || '#';";
+    testScriptFile(SCRIPT_TEXT, args(), "#Hello#");
+  }
+
+  @Test
+  public void testUNIX_TIMESTAMPHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT UNIX_TIMESTAMP()";
+    testScriptFile(SCRIPT_TEXT, args(), String.valueOf(System.currentTimeMillis()/10000));
+  }
+
+  @Test
+  public void testUPPERHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT UPPER('abc');";
+    testScriptFile(SCRIPT_TEXT, args(), "ABC");
+  }
+
+  @Test
+  public void testUSERHplSQLFunction() throws Throwable {
+    String SCRIPT_TEXT = "SELECT USER;";
+    testScriptFile(SCRIPT_TEXT, args(), System.getProperty("user.name"));
+  }
+
+  @Test
+  public void testTableAliasInColumnName() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS input;\n" +
+            "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE input (col1 string, col2 int);\n" +
+            "CREATE TABLE result (res string);\n" +
+            "INSERT INTO input VALUES('Hive', 2023);\n" +
+            "CREATE PROCEDURE p1() AS\n" +
+            "  BEGIN\n" +
+            "    FOR rec IN (select tab.col1, tab.col2 num from input tab) LOOP\n" +
+            "      INSERT INTO result VALUES(rec.num || ' = ' || rec.col1);\n" +
+            "  END LOOP;\n" +
+            "END;\n" +
+            "p1();\n" +
+            "SELECT * FROM result;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "2023 = Hive");
+  }
+
+  @Test
+  public void testHplSqlProcedureCallingWithAllDefaultValues() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "CREATE PROCEDURE p1(s STRING DEFAULT 'default_val', num NUMBER DEFAULT 123)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(s || ' = ' || num);\n" +
+            "END;\n" +
+            "p1();\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "default_val = 123");
+  }
+
+  @Test
+  public void testHplSqlProcedureCallingWithSomeDefaultValues() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "CREATE PROCEDURE p1(s STRING DEFAULT 'default_val', num NUMBER DEFAULT 123)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(s || ' = ' || num);\n" +
+            "END;\n" +
+            "p1('Pass_Value');\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "Pass_Value = 123");
+  }
+
+  @Test
+  public void testHplSqlProcedureWithDefaultValues() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "CREATE PROCEDURE p1(s STRING DEFAULT 'default_val', num NUMBER)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(s || ' = ' || num);\n" +
+            "END;\n" +
+            "p1(111);\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "wrong number of arguments in call to 'p1'. Expected 2 got 1.", OutStream.ERR);
+  }
+
+  @Test
+  public void testHplSqlProcedureWithSomeDefaultValues() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "CREATE PROCEDURE p1(s STRING, num NUMBER DEFAULT 123)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(s || ' = ' || num);\n" +
+            "END;\n" +
+            "p1('Passed_Val');\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "Passed_Val = 123");
+  }
+
+  @Test
+  public void testHplSqlProcedureWithDefaultParamCallingWithNamedParameterBinding() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "CREATE PROCEDURE p1(s STRING DEFAULT 'default_val', num NUMBER)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(s || ' = ' || num);\n" +
+            "END;\n" +
+            "p1(num => 111);\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "default_val = 111");
+  }
+
+  @Test
+  public void testHplSqlProcedureWithAllDefaultParamsCallingWithNamedParameterBinding() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "CREATE PROCEDURE p1(s1 STRING default 'Default S1', s2 string default 'Default S2')\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(s1 || '=' || s2);\n" +
+            "END;\n" +
+            "p1(s2 => 'PassedValue S2');\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "Default S1=PassedValue S2");
+  }
+
+  @Test
+  public void testHplSqlProcedureWithoutParameters() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "CREATE PROCEDURE p1()\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES('No param');\n" +
+            "END;\n" +
+            "p1('none');\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "wrong number of arguments in call to 'p1'. Expected 0 got 1.", OutStream.ERR);
+  }
+
+  @Test
+  public void testHiveVariableInHplsql() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "CREATE PROCEDURE p1()\n" +
+            "DECLARE hivedb_tbl string;\n" +
+            "BEGIN\n" +
+            "SELECT hivedb || '.' || hivetbl into hivedb_tbl;\n" +
+            "INSERT INTO result VALUES(hivedb_tbl);\n" +
+            "END;\n" +
+            "p1();\n" +
+            "SELECT * FROM result;" ;
+    List<String> args = new ArrayList<>(args());
+    args.add("--hivevar");
+    args.add("hivedb=sys");
+    args.add("--hivevar");
+    args.add("hivetbl=tbls");
+    testScriptFile(SCRIPT_TEXT, args, "sys.tbls");
+  }
+
+  @Test
+  public void testHplSqlContinueConditionHandler() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "CREATE PROCEDURE p1()\n" +
+            "BEGIN\n" +
+            " INSERT INTO result VALUES('Continue CONDITION Handler invoked.');\n" +
+            "END;\n" +
+            "DECLARE cnt_condition CONDITION;\n" +
+            "DECLARE CONTINUE HANDLER FOR cnt_condition\n" +
+            " p1();\n" +
+            "IF 1 <> 2 THEN\n" +
+            " SIGNAL cnt_condition;\n" +
+            "END IF;\n" +
+            "SELECT * FROM result;";
+    testScriptFile(SCRIPT_TEXT, args(), "Continue CONDITION Handler invoked.");
+  }
+
+  @Test
+  public void testHplSqlExitConditionHandler() throws Throwable {
+    String SCRIPT_TEXT =
+        "CREATE PROCEDURE p1()\n" +
+            "BEGIN\n" +
+            " PRINT('Exit CONDITION Handler invoked.');\n" +
+            "END;\n" +
+            "DECLARE cnt_condition CONDITION;\n" +
+            "DECLARE EXIT HANDLER FOR cnt_condition\n" +
+            " p1();\n" +
+            "IF 1 <> 2 THEN\n" +
+            " SIGNAL cnt_condition;\n" +
+            "END IF;";
+    testScriptFile(SCRIPT_TEXT, args(), "Exit CONDITION Handler invoked.", OutStream.ERR);
+  }
+
+  @Test
+  public void testExecuteImmediateSelectCountStatement() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "execute immediate 'SELECT count(*) from result';";
+    // Inverted match, output should not have NPE
+    testScriptFile(SCRIPT_TEXT, args(), "^(.(?!(ClassCastException)))*$", OutStream.ERR);
+  }
+
+  @Test
+  public void testExecuteSelectCountStatement() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "execute 'SELECT count(*) from result';";
+    // Inverted match, output should not have NPE
+    testScriptFile(SCRIPT_TEXT, args(), "^(.(?!(ClassCastException)))*$", OutStream.ERR);
+  }
+
+  @Test
+  public void testSetHplsqlOnErrorStop() throws Throwable {
+    String SCRIPT_TEXT =
+        "SET hplsql.onerror='stop';\n" +
+            "insert into abc values('Tbl Not Exists');\n" +
+            "SELECT CURRENT_USER;";
+    testScriptFile(SCRIPT_TEXT, args(), "^(.(?!(" + System.getProperty("user.name") + ")))*$");
+  }
+
+  @Test
+  public void testSetHplsqlOnErrorSetError() throws Throwable {
+    String SCRIPT_TEXT =
+        "SET hplsql.onerror='seterror';\n" +
+            "insert into abc values('Tbl Not Exists');\n" +
+            "if SQLCODE < 0\n" + " PRINT 'SQL Error...';";
+    testScriptFile(SCRIPT_TEXT, args(), "SessionState: SQL Error...", OutStream.ERR);
+  }
+
+  @Test
+  public void testSetHplsqlOnErrorException() throws Throwable {
+    String SCRIPT_TEXT =
+        "SET hplsql.onerror='exception';\n" +
+            "insert into abc values('Tbl Not Exists');\n" +
+            "SELECT CURRENT_USER;";
+    testScriptFile(SCRIPT_TEXT, args(), "^(.(?!(" + System.getProperty("user.name") + ")))*$");
+  }
+
+  @Test
+  public void testHplSqlProcedureWithCast1Udf() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (id int, s string);\n" +
+            "CREATE PROCEDURE p1(s1 STRING, s2 string)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(cast(s1 as int), s2);\n" +
+            "END;\n" +
+            "p1('786', 'Cloud');\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "786.*Cloud");
+  }
+
+  @Test
+  public void testHplSqlProcedureWithCast2Udf() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s1 string, s2 string);\n" +
+            "CREATE PROCEDURE p1(s1 STRING, s2 string)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(cast(s1 as char(1)), s2);\n" +
+            "END;\n" +
+            "p1('Hive', 'Cloud');\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "H.*Cloud");
+  }
+
+  @Test
+  public void testHplSqlProcedureWithCast3Udf() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s1 string, s2 string);\n" +
+            "CREATE PROCEDURE p1(s1 STRING, s2 string)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(CAST(TIMESTAMP '2015-03-12 10:58:34.111' AS CHAR(10)), s2);\n" +
+            "END;\n" +
+            "p1('Hive', 'Cloud');\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "2015-03-12.*Cloud");
+  }
+
+  @Test
+  public void testHplSqlProcedureWithCOALESCEUdf() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (id int, s string);\n" +
+            "CREATE PROCEDURE p1(s1 int, s2 string)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(COALESCE(NULL, s1, 2, 3), s2);\n" +
+            "END;\n" +
+            "p1(786, 'Cloud');\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "786.*Cloud");
+  }
+
+  @Test
+  public void testHplSqlProcedureWithCONCATUdf() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (id int, s string);\n" +
+            "CREATE PROCEDURE p1(s1 int, s2 string)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(s1, CONCAT('M', 'y ', NULL, s2));\n" +
+            "END;\n" +
+            "p1(786, 'Cloud');\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "786.*My Cloud");
+  }
+
+  @Test
+  public void testHplSqlProcedureWithSYSDATEUdf() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (name String, join_date timestamp);\n" +
+            "CREATE PROCEDURE p1(s1 string)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(s1, SYSDATE);\n" +
+            "END;\n" +
+            "p1('Bob');\n" +
+            "SELECT * FROM result;" ;
+    Timestamp today = new Timestamp(System.currentTimeMillis());
+    String timestamp = today.toString();
+    testScriptFile(SCRIPT_TEXT, args(), "Bob.*" + timestamp.substring(0, timestamp.length() - 9));
+  }
+
+  @Test
+  public void testHplSqlProcedureWithCurrent_DateUdf() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (name String, join_date date);\n" +
+            "CREATE PROCEDURE p1(s1 string)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(s1, current_date);\n" +
+            "END;\n" +
+            "p1('Bob');\n" +
+            "SELECT * FROM result;" ;
+    Date today = new Date(System.currentTimeMillis());
+    testScriptFile(SCRIPT_TEXT, args(), "Bob.*" + today.toString());
+  }
+
+  @Test
+  public void testHplSqlProcedureWithCurrent_TimestampUdf() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (name String, join_time timestamp);\n" +
+            "CREATE PROCEDURE p1(s1 string)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(s1, current_timestamp);\n" +
+            "END;\n" +
+            "p1('Bob');\n" +
+            "SELECT * FROM result;" ;
+    Timestamp today = new Timestamp(System.currentTimeMillis());
+    String timestamp = today.toString();
+    testScriptFile(SCRIPT_TEXT, args(), "Bob.*" + timestamp.substring(0, timestamp.length() - 9));
+  }
+
+  @Test
+  public void testHplSqlProcedureWithCurrent_UserUdf() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (name String);\n" +
+            "CREATE PROCEDURE p1(s1 string)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(current_user);\n" +
+            "END;\n" +
+            "p1('Bob');\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), System.getProperty("user.name"));
+  }
+
+  @Test
+  public void testHplSqlProcedureWithFrom_UnixtimeUdf() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (name String);\n" +
+            "CREATE PROCEDURE p1(jt int)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(from_unixtime(jt, 'yyyy-MM-dd'));\n" +
+            "END;\n" +
+            "p1(1447141681);\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "2015-11-");
+  }
+
+  @Test
+  public void testHplSqlProcedureWithInstrUdf() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (name String);\n" +
+            "CREATE PROCEDURE p1(s1 string)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(instr(s1, 'b', -3, 2));\n" +
+            "END;\n" +
+            "p1('abcabcabc');\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "2");
+  }
+
+  @Test
+  public void testHplSqlProcedureWithLowerUdf() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (name String);\n" +
+            "CREATE PROCEDURE p1(s1 string)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(lower(s1));\n" +
+            "END;\n" +
+            "p1('ABCD');\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "abcd");
+  }
+
+  @Test
+  public void testHplSqlProcedureWithLengthUdf() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (name String);\n" +
+            "CREATE PROCEDURE p1(s1 string)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(length(s1));\n" +
+            "END;\n" +
+            "p1('Cloud');\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "5");
+  }
+
+  @Test
+  public void testHplSqlProcedureWithNvlUdf() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (name String);\n" +
+            "CREATE PROCEDURE p1(s1 string)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(nvl(NULL,s1));\n" +
+            "END;\n" +
+            "p1('Cloud');\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "Cloud");
+  }
+
+  @Test
+  public void testHplSqlProcedureWithReplaceUdf() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (name String);\n" +
+            "CREATE PROCEDURE p1(s1 string)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(replace(s1, '-', ''));\n" +
+            "END;\n" +
+            "p1('2024-02-29');\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "20240229");
+  }
+
+  @Test
+  public void testHplSqlProcedureWithTrimUdf() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (name String);\n" +
+            "CREATE PROCEDURE p1(s1 string)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES('#' || TRIM(s1) || '#');\n" +
+            "END;\n" +
+            "p1(' Cloud ');\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "#Cloud#");
+  }
+
+  @Test
+  public void testHplSqlProcedureWithUnix_TimestampUdf() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (col_millis int);\n" +
+            "CREATE PROCEDURE p1()\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(UNIX_TIMESTAMP());\n" +
+            "END;\n" +
+            "p1();\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), String.valueOf(System.currentTimeMillis()/100000));
+  }
+
+  @Test
+  public void testHplSqlProcedureWithUpperUdf() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (name String);\n" +
+            "CREATE PROCEDURE p1(s1 string)\n" +
+            "BEGIN\n" +
+            "INSERT INTO result VALUES(upper(s1));\n" +
+            "END;\n" +
+            "p1('abcd');\n" +
+            "SELECT * FROM result;" ;
+    testScriptFile(SCRIPT_TEXT, args(), "ABCD");
+  }
+
+  @Test
+  public void testCastHplSqlFunction() throws Throwable {
+    String SCRIPT_TEXT =
+            "SELECT CAST('1' AS int);" ;
+    testScriptFile(SCRIPT_TEXT, args(), "1");
+  }
+
   private static List<String> args() {
     return Arrays.asList("-d", BeeLine.BEELINE_DEFAULT_JDBC_DRIVER,
             "-u", miniHS2.getBaseJdbcURL() + ";mode=hplsql", "-n", userName);
   }
-
 
   private void testScriptFile(String scriptText, List<String> argList, String expectedPattern)
           throws Throwable {

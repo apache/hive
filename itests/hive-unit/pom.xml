@@ -17,7 +17,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive-it</artifactId>
-    <version>4.0.0-beta-2-SNAPSHOT</version>
+    <version>4.1.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>hive-it-unit</artifactId>
@@ -26,7 +26,7 @@
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
     <testcontainers.version>1.15.2</testcontainers.version>
-    <htmlunit.version>2.67.0</htmlunit.version>
+    <htmlunit.version>2.70.0</htmlunit.version>
   </properties>
   <dependencies>
     <!-- intra-project -->
@@ -115,6 +115,10 @@
           <artifactId>commons-logging</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-protobuf-history-plugin</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.tez</groupId>
@@ -510,9 +514,6 @@
             <configuration>
               <target>
                 <mkdir dir="${test.tmp.dir}/scripts/metastore"/>
-                <copy todir="${test.tmp.dir}/scripts/metastore">
-                  <fileset dir="${basedir}/${hive.path.to.root}/metastore/scripts/"/>
-                </copy>
                 <copy todir="${test.tmp.dir}/scripts/metastore/upgrade" overwrite="true">
                   <fileset dir="${basedir}/${hive.path.to.root}/standalone-metastore/metastore-server/src/main/sql/"/>
                 </copy>

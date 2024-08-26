@@ -60,6 +60,7 @@ import org.slf4j.LoggerFactory;
 public class GenericUDAFSum extends AbstractGenericUDAFResolver {
 
   static final Logger LOG = LoggerFactory.getLogger(GenericUDAFSum.class.getName());
+  public static final int SUM_RESULT_PRECISION_INCREASE = 10;
 
   @Override
   public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters)
@@ -252,7 +253,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       // 10b rows. The scale is the same as the input.
       DecimalTypeInfo outputTypeInfo = null;
       if (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE) {
-        int precision = Math.min(HiveDecimal.MAX_PRECISION, inputPrecision + 10);
+        int precision = Math.min(HiveDecimal.MAX_PRECISION, inputPrecision + SUM_RESULT_PRECISION_INCREASE);
         outputTypeInfo = TypeInfoFactory.getDecimalTypeInfo(precision, inputScale);
       } else {
         outputTypeInfo = TypeInfoFactory.getDecimalTypeInfo(inputPrecision, inputScale);
@@ -287,9 +288,9 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       assert (parameters.length == 1);
       try {
         if (isEligibleValue((SumHiveDecimalWritableAgg) agg, parameters[0])) {
-          ((SumHiveDecimalWritableAgg)agg).nonNullCount++;
           ((SumHiveDecimalWritableAgg)agg).sum.mutateAdd(
               PrimitiveObjectInspectorUtils.getHiveDecimal(parameters[0], inputOI));
+          ((SumHiveDecimalWritableAgg)agg).nonNullCount++;
         }
       } catch (NumberFormatException e) {
         if (!warned) {
@@ -439,8 +440,8 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       assert (parameters.length == 1);
       try {
         if (isEligibleValue((SumDoubleAgg) agg, parameters[0])) {
-          ((SumDoubleAgg)agg).nonNullCount++;
           ((SumDoubleAgg)agg).sum += PrimitiveObjectInspectorUtils.getDouble(parameters[0], inputOI);
+          ((SumDoubleAgg)agg).nonNullCount++;
         }
       } catch (NumberFormatException e) {
         if (!warned) {
@@ -577,8 +578,8 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       assert (parameters.length == 1);
       try {
         if (isEligibleValue((SumLongAgg) agg, parameters[0])) {
-          ((SumLongAgg)agg).nonNullCount++;
           ((SumLongAgg)agg).sum += PrimitiveObjectInspectorUtils.getLong(parameters[0], inputOI);
+          ((SumLongAgg)agg).nonNullCount++;
         }
       } catch (NumberFormatException e) {
         if (!warned) {

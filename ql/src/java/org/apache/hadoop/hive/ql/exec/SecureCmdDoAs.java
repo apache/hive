@@ -23,8 +23,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -68,7 +70,13 @@ public class SecureCmdDoAs {
     tokenPath = new Path(tokenFile.toURI());
 
     //write credential with token to file
-    cred.writeTokenStorageFile(tokenPath, conf);
+    FsPermission umask = FsPermission.getUMask(conf);
+    FsPermission targetPerm = FsPermission.createImmutable((short) 0700);
+
+    try (FSDataOutputStream os = tokenPath.getFileSystem(conf).createFile(tokenPath)
+        .permission(targetPerm.applyUMask(umask)).build()) {
+      cred.writeTokenStorageToStream(os, Credentials.SerializedFormat.WRITABLE);
+    }
   }
 
   public void addEnv(Map<String, String> env){

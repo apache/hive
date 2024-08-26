@@ -169,8 +169,13 @@ public class StatsRulesProcFactory {
       Table table = tsop.getConf().getTableMetadata();
 
       try {
-        // gather statistics for the first time and the attach it to table scan operator
-        Statistics stats = StatsUtils.collectStatistics(aspCtx.getConf(), partList, colStatsCached, table, tsop);
+        Statistics stats;
+        if (table.isMaterializedTable()) {
+          stats = tsop.getStatistics();
+        } else {
+          // gather statistics for the first time and attach it to table scan operator
+          stats = StatsUtils.collectStatistics(aspCtx.getConf(), partList, colStatsCached, table, tsop);
+        }
 
         stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, tsop);
         tsop.setStatistics(stats);
@@ -1528,7 +1533,7 @@ public class StatsRulesProcFactory {
 
       AnnotateStatsProcCtx aspCtx = (AnnotateStatsProcCtx) procCtx;
       HiveConf conf = aspCtx.getConf();
-      long maxSplitSize = HiveConf.getLongVar(conf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE);
+      long maxSplitSize = HiveConf.getLongVar(conf, HiveConf.ConfVars.MAPRED_MAX_SPLIT_SIZE);
       List<AggregationDesc> aggDesc = gop.getConf().getAggregators();
       Map<String, ExprNodeDesc> colExprMap = gop.getColumnExprMap();
       RowSchema rs = gop.getSchema();
@@ -1577,7 +1582,7 @@ public class StatsRulesProcFactory {
         // be updated to bytes per reducer (1GB default)
         if (top == null) {
           inputSize = parentStats.getDataSize();
-          maxSplitSize = HiveConf.getLongVar(conf, HiveConf.ConfVars.BYTESPERREDUCER);
+          maxSplitSize = HiveConf.getLongVar(conf, HiveConf.ConfVars.BYTES_PER_REDUCER);
         } else {
           inputSize = top.getConf().getStatistics().getDataSize();
         }
@@ -1875,7 +1880,7 @@ public class StatsRulesProcFactory {
 
     /**
      * This method does not take into account many configs used at runtime to
-     * disable hash aggregation like HIVEMAPAGGRHASHMINREDUCTION. This method
+     * disable hash aggregation like HIVE_MAP_AGGR_HASH_MIN_REDUCTION. This method
      * roughly estimates the number of rows and size of each row to see if it
      * can fit in hashtable for aggregation.
      * @param gop - group by operator
@@ -1891,8 +1896,8 @@ public class StatsRulesProcFactory {
       GroupByDesc.Mode mode = desc.getMode();
 
       if (mode.equals(GroupByDesc.Mode.HASH)) {
-        float hashAggMem = conf.getFloatVar(HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY);
-        float hashAggMaxThreshold = conf.getFloatVar(HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
+        float hashAggMem = conf.getFloatVar(HiveConf.ConfVars.HIVE_MAP_AGGR_HASH_MEMORY);
+        float hashAggMaxThreshold = conf.getFloatVar(HiveConf.ConfVars.HIVE_MAP_AGGR_MEMORY_THRESHOLD);
 
         // get available map memory in bytes
         long totalMemory = DagUtils.getContainerResource(conf).getMemorySize() * 1024L * 1024L;

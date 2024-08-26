@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
@@ -39,6 +40,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
+import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
@@ -56,6 +58,7 @@ import org.apache.iceberg.mr.mapred.AbstractMapredIcebergRecordReader;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.mr.mapred.MapredIcebergInputFormat;
 import org.apache.iceberg.mr.mapreduce.IcebergInputFormat;
+import org.apache.iceberg.mr.mapreduce.IcebergMergeSplit;
 import org.apache.iceberg.mr.mapreduce.IcebergSplit;
 import org.apache.iceberg.mr.mapreduce.IcebergSplitContainer;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
@@ -64,7 +67,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
-    implements CombineHiveInputFormat.AvoidSplitCombination, VectorizedInputFormatInterface,
+    implements CombineHiveInputFormat.MergeSplits, VectorizedInputFormatInterface,
     LlapCacheOnlyInputFormatInterface.VectorizedOnly {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergInputFormat.class);
@@ -102,6 +105,19 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
     if (hiveFilter != null) {
       ExprNodeGenericFuncDesc exprNodeDesc = SerializationUtilities
           .deserializeObject(hiveFilter, ExprNodeGenericFuncDesc.class);
+      return getFilterExpr(conf, exprNodeDesc);
+    }
+    return null;
+  }
+
+  /**
+   * getFilterExpr extracts search argument from ExprNodeGenericFuncDesc and returns Iceberg Filter Expression
+   * @param conf - job conf
+   * @param exprNodeDesc - Describes a GenericFunc node
+   * @return Iceberg Filter Expression
+   */
+  static Expression getFilterExpr(Configuration conf, ExprNodeGenericFuncDesc exprNodeDesc) {
+    if (exprNodeDesc != null) {
       SearchArgument sarg = ConvertAstToSearchArg.create(conf, exprNodeDesc);
       try {
         return HiveIcebergFilterFactory.generateFilterExpression(sarg);
@@ -178,7 +194,7 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
 
   @Override
   public boolean shouldSkipCombine(Path path, Configuration conf) {
-    return true;
+    return false;
   }
 
   @Override
@@ -211,5 +227,12 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
   public static String getVectorizationConfName(String tableName) {
     String dbAndTableName = TableName.fromString(tableName, null, null).getNotEmptyDbTable();
     return ICEBERG_DISABLE_VECTORIZATION_PREFIX + dbAndTableName;
+  }
+
+  @Override
+  public FileSplit createMergeSplit(Configuration conf,
+                                    CombineHiveInputFormat.CombineHiveInputSplit split,
+                                    Integer partition, Properties properties) throws IOException {
+    return new IcebergMergeSplit(conf, split, partition, properties);
   }
 }

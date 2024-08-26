@@ -23,6 +23,7 @@ package org.apache.iceberg.mr.hive;
 import java.io.IOException;
 import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.BaseTable;
+import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.junit.Assert;
@@ -34,6 +35,12 @@ import org.junit.Test;
  * Tests covering the rollback feature
  */
 public class TestHiveIcebergRollback extends HiveIcebergStorageHandlerWithEngineBase {
+
+  @Override
+  protected void validateTestParams() {
+    Assume.assumeTrue(fileFormat == FileFormat.PARQUET && isVectorized &&
+        testTableType == TestTables.TestTableType.HIVE_CATALOG && formatVersion == 2);
+  }
 
   @Test
   public void testRollbackToTimestamp() throws IOException, InterruptedException {
@@ -132,6 +139,16 @@ public class TestHiveIcebergRollback extends HiveIcebergStorageHandlerWithEngine
         "Cannot roll back to snapshot, not an ancestor of the current state", () -> {
         shell.executeStatement("ALTER TABLE " + identifier.name() + " EXECUTE ROLLBACK(" +
             table.history().get(1).snapshotId() + ")");
+        });
+  }
+
+  @Test
+  public void testNonIcebergRollback() {
+    shell.executeStatement("CREATE TABLE non_ice (id int)");
+
+    AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
+        "ALTER EXECUTE is not supported for table", () -> {
+        shell.executeStatement("ALTER TABLE non_ice EXECUTE ROLLBACK('2022-09-26 00:00:00')");
         });
   }
 }

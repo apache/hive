@@ -19,9 +19,13 @@ package org.apache.hadoop.hive.ql.parse;
 
 import static org.apache.hadoop.hive.ql.parse.ParseUtils.ensureClassExists;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import java.util.Objects;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -48,8 +52,13 @@ public class StorageFormat {
 
   public enum StorageHandlerTypes {
     DEFAULT(),
-    ICEBERG("\'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler\'",
+    ICEBERG("'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler'",
         "org.apache.iceberg.mr.hive.HiveIcebergInputFormat", "org.apache.iceberg.mr.hive.HiveIcebergOutputFormat");
+
+    private static final List<StorageHandlerTypes> NON_DEFAULT_TYPES = Arrays
+        .stream(values())
+        .filter(type -> type != StorageHandlerTypes.DEFAULT)
+        .collect(Collectors.toList());
 
     private final String className;
     private final String inputFormat;
@@ -133,7 +142,7 @@ public class StorageFormat {
             BaseSemanticAnalyzer.readProps((ASTNode) grandChild.getChild(0), serdeProps);
             break;
           default:
-            storageHandler = processStorageHandler(grandChild.getText());
+            storageHandler = processStorageHandler(grandChild);
         }
       }
       break;
@@ -157,20 +166,43 @@ public class StorageFormat {
     return true;
   }
 
-  private String processStorageHandler(String name) throws SemanticException {
-    for (StorageHandlerTypes type : StorageHandlerTypes.values()) {
-      if (type.name().equalsIgnoreCase(name)) {
-        name = type.className();
-        inputFormat = type.inputFormat();
-        outputFormat = type.outputFormat();
-        break;
+  private String processStorageHandler(ASTNode node) throws SemanticException {
+    if (node.getType() == HiveParser.StringLiteral) {
+      // e.g. STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler'
+      try {
+        return ensureClassExists(BaseSemanticAnalyzer.unescapeSQLString(node.getText()));
+      } catch (SemanticException e) {
+        throw createUnsupportedStorageHandlerTypeError(node, e);
       }
     }
-
-    return ensureClassExists(BaseSemanticAnalyzer.unescapeSQLString(name));
+    if (node.getType() == HiveParser.Identifier) {
+      // e.g. STORED BY ICEBERG
+      for (StorageHandlerTypes type : StorageHandlerTypes.NON_DEFAULT_TYPES) {
+        if (type.name().equalsIgnoreCase(node.getText())) {
+          Objects.requireNonNull(type.className());
+          inputFormat = type.inputFormat();
+          outputFormat = type.outputFormat();
+          return ensureClassExists(BaseSemanticAnalyzer.unescapeSQLString(type.className()));
+        }
+      }
+    }
+    throw createUnsupportedStorageHandlerTypeError(node, null);
   }
 
-  protected void processStorageFormat(String name) throws SemanticException {
+  private static SemanticException createUnsupportedStorageHandlerTypeError(ASTNode node, Throwable cause) {
+    final String supportedTypes = StorageHandlerTypes
+        .NON_DEFAULT_TYPES
+        .stream()
+        .map(Enum::toString)
+        .collect(Collectors.joining(", "));
+    return new SemanticException(String.format(
+        "The storage handler specified in the STORED BY clause is not recognized: %s. Please use one of the supported "
+            + "types, which are %s, or provide the Fully Qualified Class Name (FQCN) of a valid storage handler.",
+        node.getText(), supportedTypes
+    ), cause);
+  }
+
+  public void processStorageFormat(String name) throws SemanticException {
     StorageFormatDescriptor descriptor = getDescriptor(name, "STORED AS clause");
     inputFormat = ensureClassExists(descriptor.getInputFormat());
     outputFormat = ensureClassExists(descriptor.getOutputFormat());
@@ -180,9 +212,9 @@ public class StorageFormat {
     if (serde == null) {
       // RCFile supports a configurable SerDe
       if (name.equalsIgnoreCase(IOConstants.RCFILE)) {
-        serde = ensureClassExists(HiveConf.getVar(conf, HiveConf.ConfVars.HIVEDEFAULTRCFILESERDE));
+        serde = ensureClassExists(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DEFAULT_RCFILE_SERDE));
       } else {
-        serde = ensureClassExists(HiveConf.getVar(conf, HiveConf.ConfVars.HIVEDEFAULTSERDE));
+        serde = ensureClassExists(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DEFAULT_SERDE));
       }
     }
   }
@@ -197,8 +229,8 @@ public class StorageFormat {
             HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_FILE_FORMAT);
         serde = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_SERDE);
       } else {
-        defaultFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT);
-        defaultManagedFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEDEFAULTMANAGEDFILEFORMAT);
+        defaultFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DEFAULT_FILEFORMAT);
+        defaultManagedFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DEFAULT_MANAGED_FILEFORMAT);
       }
 
       if (!isExternal && !"none".equals(defaultManagedFormat)) {
@@ -211,7 +243,7 @@ public class StorageFormat {
       } else {
         processStorageFormat(defaultFormat);
         if (defaultFormat.equalsIgnoreCase(IOConstants.RCFILE)) {
-          serde = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEDEFAULTRCFILESERDE);
+          serde = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DEFAULT_RCFILE_SERDE);
         }
       }
     }

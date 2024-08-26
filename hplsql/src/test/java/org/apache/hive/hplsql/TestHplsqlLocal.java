@@ -68,7 +68,7 @@ public class TestHplsqlLocal {
   public void testCast() throws Exception {
     run("cast");
   }
-  
+
   @Test
   public void testCast2() throws Exception {
     run("cast2");
@@ -273,6 +273,7 @@ public class TestHplsqlLocal {
   public void testInclude() throws Exception {
     run("include");
   }
+
   @Test
   public void testInstr() throws Exception {
     run("instr");

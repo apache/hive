@@ -252,7 +252,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           DumpMetaData dmd = new DumpMetaData(hiveDumpRoot, conf);
           // Initialize ReplChangeManager instance since we will require it to encode file URI.
           ReplChangeManager.getInstance(conf);
-          Path cmRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLCMDIR));
+          Path cmRoot = new Path(conf.getVar(HiveConf.ConfVars.REPL_CM_DIR));
           Long lastReplId;
           LOG.info("Data copy at load enabled : {}", conf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET));
           if (isFailoverTarget) {
@@ -1406,7 +1406,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           for (String tblName : Utils.matchesTbl(hiveDb, dbName, work.replScope)) {
             Table table = null;
             try {
-              HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, dbName).table(tblName, conf);
+              HiveWrapper.Tuple<Table> tableTuple = createHiveWrapper(hiveDb, dbName).table(tblName, conf);
               table = tableTuple != null ? tableTuple.object : null;
 
               //disable materialized-view replication if not configured
@@ -1803,6 +1803,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       // Just log a debug message and skip it.
       LOG.debug(e.getMessage());
     }
+  }
+
+  HiveWrapper createHiveWrapper(Hive hiveDb, String dbName){
+    return new HiveWrapper(hiveDb, dbName);
   }
 
   private HiveWrapper.Tuple<Function> functionTuple(String functionName, String dbName, Hive hiveDb) {

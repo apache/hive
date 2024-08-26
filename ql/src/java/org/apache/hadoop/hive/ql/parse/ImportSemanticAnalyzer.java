@@ -214,7 +214,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
    * hence for import to work correctly we have to pass in the sessionState default Db via the
    * parsedDbName parameter
    */
-  public static boolean prepareImport(boolean isImportCmd,
+  private boolean prepareImport(boolean isImportCmd,
                                       boolean isLocationSet, boolean isExternalSet, boolean isPartSpecSet,
                                       boolean waitOnPrecursor,
                                       String parsedLocation, String parsedTableName, String overrideDBName,
@@ -224,6 +224,9 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
                                       long writeId, // Initialize with 0 for non-ACID and non-MM tables.
                                       MetaData rv
   ) throws IOException, MetaException, HiveException, URISyntaxException {
+    if (!isExternalSet) {
+      queryState.getValidTxnList();
+    }
     return prepareImport(isImportCmd, isLocationSet, isExternalSet, isPartSpecSet, waitOnPrecursor,
                          parsedLocation, parsedTableName, overrideDBName, parsedPartSpec, fromLocn,
                          x, updatedMetadata, txnMgr, writeId, rv, null, null);
@@ -1211,7 +1214,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (tblDesc.getLocation() == null) {
-      if (parentDb != null && !tblDesc.isExternal() && org.apache.commons.lang.StringUtils.isNotBlank(parentDb.getManagedLocationUri())) {
+      if (parentDb != null && !tblDesc.isExternal() && StringUtils.isNotBlank(parentDb.getManagedLocationUri())) {
         tblDesc.setLocation(new Path(parentDb.getManagedLocationUri(), tblDesc.getTableName()).toString());
         LOG.info("Setting the location for table {} as {}", tblDesc.getTableName(), tblDesc.getLocation());
       } else if (!waitOnPrecursor) {

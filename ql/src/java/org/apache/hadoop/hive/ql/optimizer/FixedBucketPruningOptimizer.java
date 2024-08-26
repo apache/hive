@@ -202,7 +202,7 @@ public class FixedBucketPruningOptimizer extends Transform {
       BitSet bs = new BitSet(numBuckets);
       bs.clear();
       PrimitiveObjectInspector bucketOI = (PrimitiveObjectInspector)bucketField.getFieldObjectInspector();
-      PrimitiveObjectInspector constOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(bucketOI.getPrimitiveCategory());
+      PrimitiveObjectInspector constOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(bucketOI.getTypeInfo());
       // Fetch the bucketing version from table scan operator
       int bucketingVersion = top.getConf().getTableMetadata().getBucketingVersion();
 

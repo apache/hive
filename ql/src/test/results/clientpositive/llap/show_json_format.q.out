@@ -75,7 +75,7 @@ PREHOOK: query: SHOW MATERIALIZED VIEWS
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
-{"materialized views":[{"MV Name":"mv","Rewriting Enabled":"No","Mode":"Manual refresh","Incremental rebuild":"Unknown"}]}
+{"materialized views":[{"MV Name":"mv","Rewriting Enabled":"No","Mode":"Manual refresh","Incremental rebuild":"Not available"}]}
 PREHOOK: query: CREATE RESOURCE PLAN rp
 PREHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest

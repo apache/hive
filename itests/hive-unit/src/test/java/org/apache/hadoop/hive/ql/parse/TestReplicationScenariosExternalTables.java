@@ -1026,7 +1026,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
       InjectableBehaviourObjectStore.resetAlterTableModifier();
     }
 
-    Path baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    Path baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPL_DIR));
     Path nonRecoverablePath = TestReplicationScenarios.getNonRecoverablePath(baseDumpDir, primaryDbName, primary.hiveConf);
     if(nonRecoverablePath != null){
       baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);
@@ -1302,7 +1302,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode());
     }
     //delete non recoverable marker
-    Path dumpPath = new Path(primary.hiveConf.get(HiveConf.ConfVars.REPLDIR.varname),
+    Path dumpPath = new Path(primary.hiveConf.get(HiveConf.ConfVars.REPL_DIR.varname),
       Base64.getEncoder().encodeToString(primaryDbName.toLowerCase()
         .getBytes(StandardCharsets.UTF_8.name())));
     FileSystem fs = dumpPath.getFileSystem(conf);

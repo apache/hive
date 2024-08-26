@@ -1,6 +1,7 @@
 --! qt:dataset:srcpart
 --! qt:dataset:src
 
+set hive.cbo.fallback.strategy=NEVER;
 create table test_union_lateral_view(key int, arr_ele int, value string);
 
 EXPLAIN 

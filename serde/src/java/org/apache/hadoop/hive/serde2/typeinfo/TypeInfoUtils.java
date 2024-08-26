@@ -1009,4 +1009,36 @@ public final class TypeInfoUtils {
     }
     return false;
   }
+
+  public static String convertStringToLiteralForSQL(String value, PrimitiveCategory category) {
+    if (shouldEncloseQuotes(category)) {
+      return "'" + value.replace("'", "\\'") + "'";
+    }
+    return value;
+  }
+
+  private static boolean shouldEncloseQuotes(PrimitiveCategory category) {
+    switch(category) {
+      case STRING:
+      case DATE:
+      case TIMESTAMP:
+      case TIMESTAMPLOCALTZ:
+      case BINARY:
+      case INTERVAL_DAY_TIME:
+      case INTERVAL_YEAR_MONTH:
+        return true;
+      case VOID:
+      case BOOLEAN:
+      case BYTE:
+      case SHORT:
+      case INT:
+      case LONG:
+      case FLOAT:
+      case DOUBLE:
+      case DECIMAL:
+      case UNKNOWN:
+      default:
+        return false;
+    }
+  }
 }

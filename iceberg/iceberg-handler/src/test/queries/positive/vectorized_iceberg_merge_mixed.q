@@ -3,9 +3,9 @@
 -- Mask neededVirtualColumns due to non-strict order
 --! qt:replace:/(\s+neededVirtualColumns:\s)(.*)/$1#Masked#/
 -- Mask width
---! qt:replace:/(width=17)\d+/$1####/
+--! qt:replace:/(width=55)\d+/$1###/
 -- Mask total data size
---! qt:replace:/(Data size: 35)\d+/$1####/
+--! qt:replace:/(Data size: 11)\d+/$1####/
 
 set hive.vectorized.execution.enabled=true;
 set hive.llap.io.enabled=false;

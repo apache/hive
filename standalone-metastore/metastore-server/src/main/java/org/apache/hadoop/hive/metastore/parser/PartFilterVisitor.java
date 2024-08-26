@@ -17,22 +17,16 @@
  */
 package org.apache.hadoop.hive.metastore.parser;
 
-import java.sql.Date;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.antlr.v4.runtime.tree.RuleNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 
 import static org.apache.hadoop.hive.metastore.parser.ExpressionTree.LeafNode;
 import static org.apache.hadoop.hive.metastore.parser.ExpressionTree.LogicalOperator;
@@ -40,14 +34,6 @@ import static org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
 import static org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeNode;
 
 public class PartFilterVisitor extends PartitionFilterBaseVisitor<Object> {
-  private final DateTimeFormatter dateFormat = createDateTimeFormatter("uuuu-MM-dd");
-  private final DateTimeFormatter timestampFormat = createDateTimeFormatter("uuuu-MM-dd HH:mm:ss");
-
-  private DateTimeFormatter createDateTimeFormatter(String format) {
-    return DateTimeFormatter.ofPattern(format)
-            .withZone(TimeZone.getTimeZone("UTC").toZoneId())
-            .withResolverStyle(ResolverStyle.STRICT);
-  }
 
   /**
    * Override the default behavior for all visit methods. This will only return a non-null result
@@ -243,27 +229,27 @@ public class PartFilterVisitor extends PartitionFilterBaseVisitor<Object> {
   }
 
   @Override
-  public Date visitDateLiteral(PartitionFilterParser.DateLiteralContext ctx) {
+  public String visitDateLiteral(PartitionFilterParser.DateLiteralContext ctx) {
     PartitionFilterParser.DateContext date = ctx.date();
     String dateValue = unquoteString(date.value.getText());
     try {
-      LocalDate localDate = LocalDate.parse(dateValue, dateFormat);
-      return Date.valueOf(localDate);
+      MetaStoreUtils.convertStringToDate(dateValue);
     } catch (DateTimeParseException e) {
       throw new ParseCancellationException(e.getMessage());
     }
+    return dateValue;
   }
 
   @Override
-  public Timestamp visitTimestampLiteral(PartitionFilterParser.TimestampLiteralContext ctx) {
+  public String visitTimestampLiteral(PartitionFilterParser.TimestampLiteralContext ctx) {
     PartitionFilterParser.TimestampContext timestamp = ctx.timestamp();
     String timestampValue = unquoteString(timestamp.value.getText());
     try {
-      LocalDateTime val = LocalDateTime.from(timestampFormat.parse(timestampValue));
-      return Timestamp.valueOf(val);
+      MetaStoreUtils.convertStringToTimestamp(timestampValue);
     } catch (DateTimeParseException e) {
       throw new ParseCancellationException(e.getMessage());
     }
+    return timestampValue;
   }
 
   @Override

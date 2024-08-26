@@ -45,7 +45,7 @@ public class RCFileMapReduceInputFormat<K extends LongWritable, V extends BytesR
   @Override
   public List<InputSplit> getSplits(JobContext job) throws IOException {
     HiveConf.setLongVar(job.getConfiguration(),
-        HiveConf.ConfVars.MAPREDMINSPLITSIZE, SequenceFile.SYNC_INTERVAL);
+        HiveConf.ConfVars.MAPRED_MIN_SPLIT_SIZE, SequenceFile.SYNC_INTERVAL);
     return super.getSplits(job);
   }
 }

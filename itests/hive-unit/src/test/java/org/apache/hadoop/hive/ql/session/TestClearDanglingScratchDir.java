@@ -30,8 +30,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.util.Shell;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -52,16 +52,16 @@ public class TestClearDanglingScratchDir {
   @BeforeClass
   static public void oneTimeSetup() throws Exception {
     m_dfs = new MiniDFSCluster.Builder(new Configuration()).numDataNodes(1).format(true).build();
-    conf = new HiveConf();
+    conf = new HiveConfForTest(TestClearDanglingScratchDir.class);
     conf.set(HiveConf.ConfVars.HIVE_SCRATCH_DIR_LOCK.toString(), "true");
     conf.set(HiveConf.ConfVars.METASTORE_AUTO_CREATE_ALL.toString(), "true");
     LoggerFactory.getLogger("SessionState");
-    conf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE,
+    conf.setVar(HiveConf.ConfVars.METASTORE_WAREHOUSE,
         new Path(System.getProperty("test.tmp.dir"), "warehouse").toString());
     conf.set(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY,
         m_dfs.getFileSystem().getUri().toString());
 
-    scratchDir = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR));
+    scratchDir = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCH_DIR));
     m_dfs.getFileSystem().mkdirs(scratchDir);
     m_dfs.getFileSystem().setPermission(scratchDir, new FsPermission("777"));
   }
@@ -146,7 +146,7 @@ public class TestClearDanglingScratchDir {
    */
   @Test
   public void testLocalDanglingFilesCleaning() throws Exception {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = new HiveConfForTest(getClass());
     conf.set("fs.default.name", "file:///");
     String tmpDir = System.getProperty("test.tmp.dir");
     conf.set("hive.exec.scratchdir", tmpDir + "/hive-27317-hdfsscratchdir");
@@ -163,7 +163,7 @@ public class TestClearDanglingScratchDir {
     // Simulating hdfs dangling dir and its inuse.lck file
     // Note: Give scratch dirs all the write permissions
     FsPermission allPermissions = new FsPermission((short)00777);
-    customScratchDir = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR));
+    customScratchDir = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCH_DIR));
     Utilities.createDirsWithPermission(conf, customScratchDir, allPermissions, true);
     Path hdfsRootDir = new Path(customScratchDir + l + userName + l + hdfs);
     Path hdfsSessionDir = new Path(hdfsRootDir + l + userName + l + appId);
@@ -171,7 +171,7 @@ public class TestClearDanglingScratchDir {
     fs.create(hdfsSessionLock);
 
     // Simulating local dangling files
-    customLocalTmpDir = new Path (HiveConf.getVar(conf, HiveConf.ConfVars.LOCALSCRATCHDIR));
+    customLocalTmpDir = new Path (HiveConf.getVar(conf, HiveConf.ConfVars.LOCAL_SCRATCH_DIR));
     Path localSessionDir = new Path(customLocalTmpDir + l + appId);
     Path localPipeOutFileRemove = new Path(customLocalTmpDir + l
             + appId + "-started-with-session-name.pipeout");

@@ -93,7 +93,7 @@ PREHOOK: Input: default@orc_ppd_n0
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with ORC_14 by ORC Java 1.8.3
+File Version:#Masked#
 Rows: 1049
 Compression: ZLIB
 Compression size: 262144
@@ -291,7 +291,7 @@ PREHOOK: Input: default@orc_ppd_n0
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with ORC_14 by ORC Java 1.8.3
+File Version:#Masked#
 Rows: 1049
 Compression: ZLIB
 Compression size: 262144
@@ -501,7 +501,7 @@ PREHOOK: Input: default@orc_ppd_part@ds=2015/hr=10
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with ORC_14 by ORC Java 1.8.3
+File Version:#Masked#
 Rows: 1049
 Compression: ZLIB
 Compression size: 262144

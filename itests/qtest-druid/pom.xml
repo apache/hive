@@ -21,7 +21,7 @@
   <parent>
     <artifactId>hive-it</artifactId>
     <groupId>org.apache.hive</groupId>
-    <version>4.0.0-beta-2-SNAPSHOT</version>
+    <version>4.1.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>hive-it-druid</artifactId>
@@ -33,7 +33,7 @@
     <druid.avatica.version>1.15.0</druid.avatica.version>
     <druid.curator.version>4.0.0</druid.curator.version>
     <druid.jersey.version>1.19.3</druid.jersey.version>
-    <druid.jetty.version>9.4.40.v20210413</druid.jetty.version>
+    <druid.jetty.version>9.4.45.v20220203</druid.jetty.version>
     <druid.derby.version>10.11.1.1</druid.derby.version>
     <druid.guava.version>16.0.1</druid.guava.version>
     <druid.guice.version>4.1.0</druid.guice.version>
@@ -319,9 +319,6 @@
             <configuration>
               <target>
                 <mkdir dir="${test.tmp.dir}/scripts/metastore"/>
-                <copy todir="${test.tmp.dir}/scripts/metastore">
-                  <fileset dir="${basedir}/${hive.path.to.root}/metastore/scripts/"/>
-                </copy>
                 <copy todir="${test.tmp.dir}/scripts/metastore/upgrade" overwrite="true">
                   <fileset dir="${basedir}/${hive.path.to.root}/standalone-metastore/metastore-server/src/main/sql/"/>
                 </copy>

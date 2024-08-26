@@ -89,7 +89,7 @@ public class Cleaner extends MetaStoreCompactorThread {
 
           for (TaskHandler cleanupHandler : cleanupHandlers) {
             try {
-              checkInterrupt();
+              CompactorUtil.checkInterrupt(CLASS_NAME);
               List<Runnable> tasks = cleanupHandler.getTasks();
               List<CompletableFuture<Void>> asyncTasks = new ArrayList<>();
               for (Runnable task : tasks) {
@@ -112,7 +112,7 @@ public class Cleaner extends MetaStoreCompactorThread {
               throw t;
             }
           }
-          checkInterrupt();
+          CompactorUtil.checkInterrupt(CLASS_NAME);
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
           return;

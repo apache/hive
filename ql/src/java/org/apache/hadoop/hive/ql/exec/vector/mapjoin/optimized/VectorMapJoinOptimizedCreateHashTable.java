@@ -55,6 +55,7 @@ public class VectorMapJoinOptimizedCreateHashTable {
     case SHORT:
     case INT:
     case LONG:
+    case DATE:
       switch (hashTableKind) {
       case HASH_MAP:
         hashTable = new VectorMapJoinOptimizedLongHashMap(

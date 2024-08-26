@@ -79,17 +79,17 @@ STAGE PLANS:
                 TableScan
                   alias: t1
                   filterExpr: (b = 1) (type: boolean)
-                  Statistics: Num rows: 69 Data size: 13710 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 70 Data size: #Masked# Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (b = 1) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 198 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: #Masked# Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: a (type: int), 1 (type: int)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 198 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: #Masked# Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 1 Data size: 198 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: #Masked# Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat

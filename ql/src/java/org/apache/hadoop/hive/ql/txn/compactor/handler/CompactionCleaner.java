@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
-import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -90,7 +90,7 @@ class CompactionCleaner extends TaskHandler {
       // when min_history_level is finally dropped, than every HMS will commit compaction the new way
       // and minTxnIdSeenOpen can be removed and minOpenTxnId can be used instead.
       return readyToClean.stream().map(ci -> {
-        long cleanerWaterMark = (ci.minOpenWriteId > 0) ? ci.nextTxnId + 1 : minTxnIdSeenOpen;
+        long cleanerWaterMark = (ci.minOpenWriteId >= 0) ? ci.nextTxnId + 1 : minTxnIdSeenOpen;
         LOG.info("Cleaning based on min open txn id: {}", cleanerWaterMark);
         return ThrowingRunnable.unchecked(() -> clean(ci, cleanerWaterMark, metricsEnabled));
       }).collect(Collectors.toList());
@@ -292,7 +292,7 @@ class CompactionCleaner extends TaskHandler {
      * should not touch the newer obsolete directories to not violate the retentionTime for those.
      */
     if (ci.highestWriteId < validWriteIdList.getHighWatermark()) {
-      validWriteIdList = validWriteIdList.updateHighWatermark(ci.highestWriteId);
+      validWriteIdList.setHighWatermark(ci.highestWriteId);
     }
     return validWriteIdList;
   }

@@ -35,7 +35,7 @@ POSTHOOK: query: CREATE TABLE unionall_lateralview2(col1 INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@unionall_lateralview2
-Warning: Shuffle Join MERGEJOIN[38][tables = [x1, expdobj]] in Stage 'Reducer 6' is a cross product
+Warning: Shuffle Join MERGEJOIN[38][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 6' is a cross product
 PREHOOK: query: INSERT INTO unionall_lateralview2
 SELECT 1 AS `col1`
 FROM unionall_lateralview1
