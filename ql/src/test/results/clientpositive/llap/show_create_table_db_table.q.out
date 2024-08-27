@@ -132,7 +132,6 @@ LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
   'bucketing_version'='2', 
-  'containsUnionType'='true', 
 #### A masked pattern was here ####
 PREHOOK: query: DROP TABLE tmp_feng.tmp_showcrt1
 PREHOOK: type: DROPTABLE
