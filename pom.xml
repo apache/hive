@@ -28,7 +28,6 @@
   <inceptionYear>2008</inceptionYear>
   <modules>
     <module>storage-api</module>
-    <module>standalone-metastore</module>
     <module>accumulo-handler</module>
     <module>vector-code-gen</module>
     <module>beeline</module>
@@ -59,6 +58,7 @@
     <module>kudu-handler</module>
     <module>testutils</module>
     <module>packaging</module>
+    <module>standalone-metastore</module>
     <module>kafka-handler</module>
   </modules>
   <properties>
@@ -830,8 +830,8 @@
         <version>${datanucleus-core.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.apache.hive</groupId>
-        <artifactId>patched-datanucleus-rdbms</artifactId>
+        <groupId>org.datanucleus</groupId>
+        <artifactId>datanucleus-rdbms</artifactId>
         <version>${datanucleus-rdbms.version}</version>
       </dependency>
       <dependency>

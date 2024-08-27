@@ -26,7 +26,6 @@
   <name>Hive Standalone Metastore</name>
   <inceptionYear>2008</inceptionYear>
   <modules>
-    <module>patched-datanucleus-rdbms</module>
     <module>metastore-common</module>
     <module>metastore-server</module>
     <module>metastore-tools</module>
@@ -318,8 +317,8 @@
         <version>${datanucleus-core.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.apache.hive</groupId>
-        <artifactId>patched-datanucleus-rdbms</artifactId>
+        <groupId>org.datanucleus</groupId>
+        <artifactId>datanucleus-rdbms</artifactId>
         <version>${datanucleus-rdbms.version}</version>
       </dependency>
       <dependency>
