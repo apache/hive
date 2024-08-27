@@ -11879,6 +11879,45 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
+  public <T> List<T> getFunctionsRequest(String catName, String dbName, String pattern,
+      boolean isReturnNames) throws MetaException {
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
+      dbName = normalizeIdentifier(dbName);
+      // Take the pattern and split it on the | to get all the composing
+      // patterns
+      List<String> parameterVals = new ArrayList<>();
+      StringBuilder filterBuilder = new StringBuilder();
+      appendSimpleCondition(filterBuilder, "database.name", new String[] { dbName }, parameterVals);
+      appendSimpleCondition(filterBuilder, "database.catalogName", new String[] {catName}, parameterVals);
+      if(pattern != null) {
+        appendPatternCondition(filterBuilder, "functionName", pattern, parameterVals);
+      }
+      query = pm.newQuery(MFunction.class, filterBuilder.toString());
+      if (isReturnNames) {
+        query.setResult("functionName");
+      }
+      query.setOrdering("functionName ascending");
+
+      if (!isReturnNames) {
+        List<MFunction> functionList = (List<MFunction>) query.executeWithArray(parameterVals.toArray(new String[0]));
+        pm.retrieveAll(functionList);
+        commited = commitTransaction();
+        return (List<T>)convertToFunctions(functionList);
+      } else {
+        List<String> functionList = (List<String>) query.executeWithArray(parameterVals.toArray(new String[0]));
+        pm.retrieveAll(functionList);
+        commited = commitTransaction();
+        return (List<T>)functionList;
+      }
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+  }
+
+  @Override
   public void createOrUpdateStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException {
     boolean committed = false;
     MStoredProc mProc;
