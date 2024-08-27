@@ -59,7 +59,7 @@
     <maven.surefire.version>2.20.1</maven.surefire.version>
 
     <!-- Dependency versions -->
-    <antlr.version>3.5.2</antlr.version>
+    <antlr.version>3.5.3</antlr.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
     <commons-dbcp.version>1.4</commons-dbcp.version>
     <commons-lang3.version>3.2</commons-lang3.version>
