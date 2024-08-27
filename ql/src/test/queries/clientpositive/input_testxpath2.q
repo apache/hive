@@ -1,5 +1,4 @@
 --! qt:dataset:src_thrift
-set hive.cbo.fallback.strategy=NEVER;
 CREATE TABLE dest1_n32(lint_size INT, lintstring_size INT, mstringstring_size INT) STORED AS TEXTFILE;
 
 EXPLAIN

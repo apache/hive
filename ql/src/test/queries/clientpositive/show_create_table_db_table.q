@@ -1,5 +1,4 @@
 -- Test SHOW CREATE TABLE on a table name of format "db.table".
-set hive.cbo.fallback.strategy=NEVER;
 
 CREATE DATABASE tmp_feng comment 'for show create table test';
 SHOW DATABASES;

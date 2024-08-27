@@ -835,11 +835,6 @@ public class Table implements Serializable {
 
   public void setFields(List<FieldSchema> fields) {
     tTable.getSd().setCols(fields);
-    
-    // Add property if any column is of type UNIONTYPE
-    if (fields.stream().anyMatch(fieldSchema -> fieldSchema.getType().toLowerCase().contains("uniontype"))) {
-      setProperty("containsUnionType", "true");
-    }
   }
 
   public void setNumBuckets(int nb) {

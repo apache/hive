@@ -2,7 +2,6 @@
 --! qt:dataset:src
 -- SORT_QUERY_RESULTS
 -- union of constants, udf outputs, and columns from text table and thrift table
-set hive.cbo.fallback.strategy=NEVER;
 
 explain
 SELECT key, count(1)

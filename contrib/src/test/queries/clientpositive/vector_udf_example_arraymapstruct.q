@@ -2,7 +2,6 @@
 
 set hive.vectorized.execution.enabled=true;
 set hive.test.vectorized.execution.enabled.override=enable;
-set hive.cbo.fallback.strategy=NEVER;
 
 add jar ${system:maven.local.repository}/org/apache/hive/hive-contrib/${system:hive.version}/hive-contrib-${system:hive.version}.jar;
 

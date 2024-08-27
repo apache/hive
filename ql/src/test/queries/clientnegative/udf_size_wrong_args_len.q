@@ -1,5 +1,4 @@
 --! qt:dataset:src_thrift
-set hive.cbo.fallback.strategy=NEVER;
 FROM src_thrift
 SELECT size(src_thrift.lint, src_thrift.lintstring), 
        size()

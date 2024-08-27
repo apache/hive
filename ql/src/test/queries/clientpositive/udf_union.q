@@ -1,6 +1,5 @@
 --! qt:dataset:src
 set hive.fetch.task.conversion=more;
-set hive.cbo.fallback.strategy=NEVER;
 
 DESCRIBE FUNCTION create_union;
 DESCRIBE FUNCTION EXTENDED create_union;

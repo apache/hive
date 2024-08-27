@@ -1,7 +1,5 @@
 -- all primitive types
 -- timestamp_w_tz TIMESTAMP WITH LOCAL TIME ZONE is not supported by hive's orc implementation
-set hive.cbo.fallback.strategy=NEVER;
-
 CREATE EXTERNAL TABLE test_all_orc_types(tinyint_type TINYINT, smallint_type SMALLINT, bigint_type BIGINT, int_type INT, float_type FLOAT, double_type double, decimal_type DECIMAL(4,2), timestamp_type TIMESTAMP, date_type DATE, string_type STRING, varchar_type VARCHAR(100), char_type CHAR(34), boolean_type BOOLEAN, binary_type BINARY) STORED AS ORC LOCATION '${system:test.tmp.dir}/test_all_orc_types';
 -- insert two rows (the other tables only have 1 row)
 INSERT INTO test_all_orc_types VALUES (1, 2, 3, 4, 2.2, 2.2, 20.20, '2022-06-30 10:20:30', '2020-04-23', 'str1', 'varchar1', 'char', true, 'binary_maybe'),

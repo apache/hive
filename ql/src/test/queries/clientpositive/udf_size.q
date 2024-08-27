@@ -1,6 +1,5 @@
 --! qt:dataset:src_thrift
 set hive.fetch.task.conversion=more;
-set hive.cbo.fallback.strategy=NEVER;
 
 DESCRIBE FUNCTION size;
 DESCRIBE FUNCTION EXTENDED size;
