@@ -39,7 +39,6 @@ import com.google.common.collect.Lists;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.util.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -292,27 +291,16 @@ public final class ParseUtils {
     });
   }
 
-  public static Pair<Boolean, String> containsTokenOfType(
+  public static boolean containsTokenOfType(
       ASTNode root, Predicate<ASTNode> extraPredicate, Integer ... tokens) {
     final Set<Integer> tokensToMatch = new HashSet<>(Arrays.asList(tokens));
-    final String[] matched = {null};
-    boolean check = containsTokenOfType(root, new PTFUtils.Predicate<ASTNode>() {
+
+    return containsTokenOfType(root, new PTFUtils.Predicate<ASTNode>() {
       @Override
       public boolean apply(ASTNode node) {
-        if (tokensToMatch.contains(node.getType())) {
-          matched[0] = node.getText();
-          return true;
-        }
-        if (extraPredicate.test(node)) {
-          matched[0] = "CREATE_UNION";
-          return true;
-        }
-        
-        return false;
+        return tokensToMatch.contains(node.getType()) || extraPredicate.test(node);
       }
     });
-    
-    return Pair.of(check, matched[0]);
   }
 
   public static boolean containsTokenOfType(ASTNode root, PTFUtils.Predicate<ASTNode> predicate) {
