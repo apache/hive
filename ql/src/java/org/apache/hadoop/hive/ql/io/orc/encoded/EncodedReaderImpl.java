@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.io.orc.encoded;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,9 +38,7 @@ import org.apache.hadoop.hive.common.io.DiskRangeList.CreateHelper;
 import org.apache.hadoop.hive.common.io.DiskRangeList.MutateHelper;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.orc.CompressionCodec;
-import org.apache.orc.CompressionKind;
 import org.apache.orc.DataReader;
 import org.apache.orc.OrcConf;
 import org.apache.orc.OrcFile.WriterVersion;
@@ -62,14 +59,11 @@ import org.apache.orc.impl.BufferChunk;
 import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace.RangesSrc;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.PoolFactory;
-import org.apache.hadoop.io.compress.zlib.ZlibDecompressor;
-import org.apache.hadoop.io.compress.zlib.ZlibDecompressor.ZlibDirectDecompressor;
+import org.apache.hive.common.util.CleanerUtil;
 import org.apache.orc.OrcProto;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.CodedInputStream;
-
-import sun.misc.Cleaner;
 
 
 /**
@@ -106,17 +100,6 @@ import sun.misc.Cleaner;
 //       schema evolution/ACID schema considerations should be on higher level.
 class EncodedReaderImpl implements EncodedReader {
   public static final Logger LOG = LoggerFactory.getLogger(EncodedReaderImpl.class);
-  private static Field cleanerField;
-  static {
-    try {
-      // TODO: To make it work for JDK9 use CleanerUtil from https://issues.apache.org/jira/browse/HADOOP-12760
-      final Class<?> dbClazz = Class.forName("java.nio.DirectByteBuffer");
-      cleanerField = dbClazz.getDeclaredField("cleaner");
-      cleanerField.setAccessible(true);
-    } catch (Throwable t) {
-      cleanerField = null;
-    }
-  }
   private static final Object POOLS_CREATION_LOCK = new Object();
   private static Pools POOLS;
   private static class Pools {
@@ -443,7 +426,7 @@ class EncodedReaderImpl implements EncodedReader {
                     trace.logStartStripeStream(sctx.kind);
                     sctx.stripeLevelStream = POOLS.csdPool.take();
                     // We will be using this for each RG while also sending RGs to processing.
-                    // To avoid buffers being unlocked, run refcount one ahead; so each RG 
+                    // To avoid buffers being unlocked, run refcount one ahead; so each RG
                     // processing will decref once, and the last one will unlock the buffers.
                     sctx.stripeLevelStream.incRef();
                     // For stripe-level streams we don't need the extra refcount on the block.
@@ -677,7 +660,7 @@ class EncodedReaderImpl implements EncodedReader {
           }
           continue;
         }
-        
+
       }
       if (!(toFree instanceof CacheChunk)) continue;
       CacheChunk cc = (CacheChunk)toFree;
@@ -1052,7 +1035,7 @@ class EncodedReaderImpl implements EncodedReader {
    * to handle just for this case.
    * We could avoid copy in non-zcr case and manage the buffer that was not allocated by our
    * allocator. Uncompressed case is not mainline though so let's not complicate it.
-   * @param kind 
+   * @param kind
    */
   private DiskRangeList preReadUncompressedStream(long baseOffset, DiskRangeList start,
       long streamOffset, long streamEnd, Kind kind) throws IOException {
@@ -1564,7 +1547,7 @@ class EncodedReaderImpl implements EncodedReader {
         ProcCacheChunk cc = addOneCompressionBlockByteBuffer(copy, isUncompressed, cbStartOffset,
             cbEndOffset, remaining, (BufferChunk)next, toDecompress, cacheBuffers, true);
         if (compressed.remaining() <= 0 && toRelease.remove(compressed)) {
-          releaseBuffer(compressed, true); // We copied the entire buffer. 
+          releaseBuffer(compressed, true); // We copied the entire buffer.
         } // else there's more data to process; will be handled in next call.
         return cc;
       }
@@ -1651,19 +1634,14 @@ class EncodedReaderImpl implements EncodedReader {
       dataReader.releaseBuffer(bb);
       return;
     }
-    Field localCf = cleanerField;
-    if (!bb.isDirect() || localCf == null) return;
+    if (!bb.isDirect() || !CleanerUtil.UNMAP_SUPPORTED) {
+      return;
+    }
     try {
-      Cleaner cleaner = (Cleaner) localCf.get(bb);
-      if (cleaner != null) {
-        cleaner.clean();
-      } else {
-        LOG.debug("Unable to clean a buffer using cleaner - no cleaner");
-      }
+      CleanerUtil.getCleaner().freeBuffer(bb);
     } catch (Exception e) {
       // leave it for GC to clean up
-      LOG.warn("Unable to clean direct buffers using Cleaner.");
-      cleanerField = null;
+      LOG.warn("Unable to clean direct buffers using Cleaner");
     }
   }
 
@@ -2017,7 +1995,7 @@ class EncodedReaderImpl implements EncodedReader {
       hasError = false;
     } finally {
       // At this point, everything in the list is going to have a refcount of one. Unless it
-      // failed between the allocation and the incref for a single item, we should be ok. 
+      // failed between the allocation and the incref for a single item, we should be ok.
       if (hasError) {
         try {
           releaseInitialRefcounts(toRead.next);

@@ -22,10 +22,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -365,67 +365,89 @@ public class SerializationUtilities {
   }
 
   /**
-   * Supports sublists created via {@link ArrayList#subList(int, int)} since java7 (oracle jdk,
-   * represented by <code>java.util.ArrayList$SubList</code>).
+   * Supports sublists created via {@link ArrayList#subList(int, int)} since java7 and {@link LinkedList#subList(int, int)} since java9 (openjdk).
    * This is from kryo-serializers package.
    */
   private static class ArrayListSubListSerializer extends com.esotericsoftware.kryo.Serializer<List<?>> {
 
-      private Field _parentField;
-      private Field _parentOffsetField;
-      private Field _sizeField;
+    private Field _parentField;
+    private Field _parentOffsetField;
+    private Field _sizeField;
 
-      public ArrayListSubListSerializer() {
-          try {
-              final Class<?> clazz = Class.forName("java.util.ArrayList$SubList");
-              _parentField = clazz.getDeclaredField("parent");
-              _parentOffsetField = clazz.getDeclaredField( "parentOffset" );
-              _sizeField = clazz.getDeclaredField( "size" );
-              _parentField.setAccessible( true );
-              _parentOffsetField.setAccessible( true );
-              _sizeField.setAccessible( true );
-          } catch (final Exception e) {
-              throw new RuntimeException(e);
-          }
-      }
-
-      @Override
-      public List<?> read(final Kryo kryo, final Input input, final Class<List<?>> clazz) {
-          kryo.reference(FAKE_REFERENCE);
-          final List<?> list = (List<?>) kryo.readClassAndObject(input);
-          final int fromIndex = input.readInt(true);
-          final int toIndex = input.readInt(true);
-          return list.subList(fromIndex, toIndex);
-      }
-
-      @Override
-      public void write(final Kryo kryo, final Output output, final List<?> obj) {
-        try {
-            kryo.writeClassAndObject(output, _parentField.get(obj));
-            final int parentOffset = _parentOffsetField.getInt( obj );
-            final int fromIndex = parentOffset;
-            output.writeInt(fromIndex, true);
-            final int toIndex = fromIndex + _sizeField.getInt( obj );
-            output.writeInt(toIndex, true);
-        } catch (final Exception e) {
-                throw new RuntimeException(e);
-        }
-      }
-
-      @Override
-      public List<?> copy(final Kryo kryo, final List<?> original) {
-        try {
-            kryo.reference(FAKE_REFERENCE);
-            final List<?> list = (List<?>) _parentField.get(original);
-            final int parentOffset = _parentOffsetField.getInt( original );
-            final int fromIndex = parentOffset;
-            final int toIndex = fromIndex + _sizeField.getInt( original );
-            return kryo.copy(list).subList(fromIndex, toIndex);
-        } catch (final Exception e) {
-                throw new RuntimeException(e);
-        }
+    public ArrayListSubListSerializer() {
+      try {
+        final Class<?> clazz = Class.forName("java.util.ArrayList$SubList");
+        _parentField = getParentField(clazz);
+        _parentOffsetField = getOffsetField(clazz);
+        _sizeField = clazz.getDeclaredField("size");
+        _parentField.setAccessible(true);
+        _parentOffsetField.setAccessible(true);
+        _sizeField.setAccessible(true);
+      } catch (final Exception e) {
+        throw new RuntimeException(e);
       }
     }
+
+    private static Field getParentField(Class clazz) throws NoSuchFieldException {
+      try {
+        // java 9+
+        return clazz.getDeclaredField("root");
+      } catch (NoSuchFieldException e) {
+        return clazz.getDeclaredField("parent");
+      }
+    }
+
+    private static Field getOffsetField(Class<?> clazz) throws NoSuchFieldException {
+      try {
+        // up to jdk8 (which also has an "offset" field (we don't need) - therefore we check "parentOffset" first
+        return clazz.getDeclaredField("parentOffset");
+      } catch (NoSuchFieldException e) {
+        // jdk9+ only has "offset" which is the parent offset
+        return clazz.getDeclaredField("offset");
+      }
+    }
+
+    @Override
+    public List<?> read(final Kryo kryo, final Input input, final Class<List<?>> clazz) {
+      kryo.reference(FAKE_REFERENCE);
+      final List<?> list = (List<?>) kryo.readClassAndObject(input);
+      final int fromIndex = input.readInt(true);
+      final int toIndex = input.readInt(true);
+      return list.subList(fromIndex, toIndex);
+    }
+
+    @Override
+    public void write(final Kryo kryo, final Output output, final List<?> obj) {
+      try {
+        kryo.writeClassAndObject(output, _parentField.get(obj));
+        final int parentOffset = _parentOffsetField.getInt(obj);
+        final int fromIndex = parentOffset;
+        output.writeInt(fromIndex, true);
+        final int toIndex = fromIndex + _sizeField.getInt(obj);
+        output.writeInt(toIndex, true);
+      } catch (final RuntimeException e) {
+        // Don't eat and wrap RuntimeExceptions because the ObjectBuffer.write...
+        // handles SerializationException specifically (resizing the buffer)...
+        throw e;
+      } catch (final Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    @Override
+    public List<?> copy(final Kryo kryo, final List<?> original) {
+      kryo.reference(FAKE_REFERENCE);
+      try {
+        final List<?> list = (List<?>) _parentField.get(original);
+        final int parentOffset = _parentOffsetField.getInt(original);
+        final int fromIndex = parentOffset;
+        final int toIndex = fromIndex + _sizeField.getInt(original);
+        return kryo.copy(list).subList(fromIndex, toIndex);
+      } catch (final Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
 
   /**
    * A kryo {@link Serializer} for lists created via {@link Arrays#asList(Object...)}.
@@ -750,20 +772,12 @@ public class SerializationUtilities {
   }
 
   public static String serializeExpression(ExprNodeGenericFuncDesc expr) {
-    try {
-      return new String(Base64.encodeBase64(serializeExpressionToKryo(expr)), "UTF-8");
-    } catch (UnsupportedEncodingException ex) {
-      throw new RuntimeException("UTF-8 support required", ex);
-    }
+    return new String(Base64.encodeBase64(serializeExpressionToKryo(expr)),
+        StandardCharsets.UTF_8);
   }
 
   public static ExprNodeGenericFuncDesc deserializeExpression(String s) {
-    byte[] bytes;
-    try {
-      bytes = Base64.decodeBase64(s.getBytes("UTF-8"));
-    } catch (UnsupportedEncodingException ex) {
-      throw new RuntimeException("UTF-8 support required", ex);
-    }
+    byte[] bytes = Base64.decodeBase64(s.getBytes(StandardCharsets.UTF_8));
     return deserializeExpressionFromKryo(bytes);
   }
 
@@ -794,19 +808,14 @@ public class SerializationUtilities {
   }
 
   public static String serializeObject(Serializable expr) {
-    try {
-      return new String(Base64.encodeBase64(serializeObjectToKryo(expr)), "UTF-8");
-    } catch (UnsupportedEncodingException ex) {
-      throw new RuntimeException("UTF-8 support required", ex);
-    }
+    return new String(Base64.encodeBase64(serializeObjectToKryo(expr)),
+        StandardCharsets.UTF_8);
   }
 
-  public static <T extends Serializable> T deserializeObject(String s, Class<T> clazz) {
-    try {
-      return deserializeObjectFromKryo(Base64.decodeBase64(s.getBytes("UTF-8")), clazz);
-    } catch (UnsupportedEncodingException ex) {
-      throw new RuntimeException("UTF-8 support required", ex);
-    }
+  public static <T extends Serializable> T deserializeObject(String s,
+                                                             Class<T> clazz) {
+    return deserializeObjectFromKryo(
+        Base64.decodeBase64(s.getBytes(StandardCharsets.UTF_8)), clazz);
   }
 
 }
