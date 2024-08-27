@@ -21,23 +21,19 @@ package org.apache.iceberg.mr.hive.writer;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.apache.hadoop.io.Writable;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.PartitionKey;
-import org.apache.iceberg.PartitionSpec;
-import org.apache.iceberg.Schema;
+import org.apache.iceberg.Table;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.deletes.PositionDelete;
-import org.apache.iceberg.io.ClusteredPositionDeleteWriter;
 import org.apache.iceberg.io.DeleteWriteResult;
-import org.apache.iceberg.io.FileIO;
-import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.mr.hive.FilesForCommit;
 import org.apache.iceberg.mr.hive.IcebergAcidUtil;
+import org.apache.iceberg.mr.hive.writer.WriterBuilder.Context;
 import org.apache.iceberg.mr.mapred.Container;
 
 class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
@@ -46,14 +42,13 @@ class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
   private final boolean skipRowData;
   private final boolean isMergeTask;
 
-  HiveIcebergDeleteWriter(Schema schema, Map<Integer, PartitionSpec> specs,
-      FileWriterFactory<Record> writerFactory, OutputFileFactory fileFactory, FileIO io,
-      long targetFileSize, boolean skipRowData, boolean isMergeTask) {
-    super(schema, specs, io,
-        new ClusteredPositionDeleteWriter<>(writerFactory, fileFactory, io, targetFileSize));
-    rowDataTemplate = GenericRecord.create(schema);
-    this.skipRowData = skipRowData;
-    this.isMergeTask = isMergeTask;
+  HiveIcebergDeleteWriter(Table table, HiveFileWriterFactory writerFactory,
+      OutputFileFactory deleteFileFactory, Context context) {
+    super(table, newDeleteWriter(table, writerFactory, deleteFileFactory, context));
+
+    this.rowDataTemplate = GenericRecord.create(table.schema());
+    this.skipRowData = context.skipRowData();
+    this.isMergeTask = context.isMergeTask();
   }
 
   @Override

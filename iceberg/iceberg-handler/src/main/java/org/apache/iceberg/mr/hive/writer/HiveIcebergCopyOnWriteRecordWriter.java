@@ -21,22 +21,18 @@ package org.apache.iceberg.mr.hive.writer;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import org.apache.hadoop.io.Writable;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
-import org.apache.iceberg.PartitionSpec;
-import org.apache.iceberg.Schema;
+import org.apache.iceberg.Table;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.deletes.PositionDelete;
-import org.apache.iceberg.io.ClusteredDataWriter;
 import org.apache.iceberg.io.DataWriteResult;
-import org.apache.iceberg.io.FileIO;
-import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.mr.hive.FilesForCommit;
 import org.apache.iceberg.mr.hive.IcebergAcidUtil;
+import org.apache.iceberg.mr.hive.writer.WriterBuilder.Context;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 
@@ -47,13 +43,12 @@ class HiveIcebergCopyOnWriteRecordWriter extends HiveIcebergWriterBase {
   private final GenericRecord rowDataTemplate;
   private final List<DataFile> replacedDataFiles;
 
-  HiveIcebergCopyOnWriteRecordWriter(Schema schema, Map<Integer, PartitionSpec> specs, int currentSpecId,
-      FileWriterFactory<Record> fileWriterFactory, OutputFileFactory fileFactory, FileIO io,
-      long targetFileSize) {
-    super(schema, specs, io,
-        new ClusteredDataWriter<>(fileWriterFactory, fileFactory, io, targetFileSize));
-    this.currentSpecId = currentSpecId;
-    this.rowDataTemplate = GenericRecord.create(schema);
+  HiveIcebergCopyOnWriteRecordWriter(Table table, HiveFileWriterFactory writerFactory,
+      OutputFileFactory deleteFileFactory, Context context) {
+    super(table, newDataWriter(table, writerFactory, deleteFileFactory, context));
+
+    this.currentSpecId = table.spec().specId();
+    this.rowDataTemplate = GenericRecord.create(table.schema());
     this.replacedDataFiles = Lists.newArrayList();
   }
 

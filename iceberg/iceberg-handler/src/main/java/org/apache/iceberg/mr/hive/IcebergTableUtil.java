@@ -78,6 +78,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
+import org.apache.iceberg.util.PropertyUtil;
 import org.apache.iceberg.util.StructProjection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -349,6 +350,10 @@ public class IcebergTableUtil {
         break;
     }
     return RowLevelOperationMode.COPY_ON_WRITE.modeName().equalsIgnoreCase(mode);
+  }
+
+  public static boolean isFanoutEnabled(Map<String, String> props) {
+    return PropertyUtil.propertyAsBoolean(props, "write.fanout.enabled", true);
   }
 
   public static void performMetadataDelete(Table icebergTable, String branchName, SearchArgument sarg) {
