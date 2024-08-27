@@ -102,10 +102,19 @@ import com.google.common.collect.Sets;
 
 public class HiveCalciteUtil {
 
-  public static boolean validateASTAndQBForUnsupportedFeatures(ASTNode ast, QB qb) {
-    return !ParseUtils.containsTokenOfType(ast, HiveParser.TOK_CHARSETLITERAL, HiveParser.TOK_TABLESPLITSAMPLE, 
-            HiveParser.TOK_UNIQUEJOIN, HiveParser.TOK_TABLEBUCKETSAMPLE) && 
-        !qb.hasTableSampleRecursive();
+  public static Pair<Boolean, String> unsupportedFeaturesPresentInASTorQB(ASTNode ast, QB qb) {
+    Pair<Boolean, String> containsToken = 
+        ParseUtils.containsTokenOfType(ast, HiveParser.TOK_CHARSETLITERAL, HiveParser.TOK_TABLESPLITSAMPLE, 
+            HiveParser.TOK_UNIQUEJOIN, HiveParser.TOK_TABLEBUCKETSAMPLE);
+
+    if (Boolean.TRUE.equals(containsToken.getKey())) {
+      return containsToken;
+    }
+    if (qb.hasTableSampleRecursive()) {
+      return Pair.of(true, "TOK_TABLEBUCKETSAMPLE");
+    }
+
+    return Pair.of(false, null);
   }
 
   public static List<RexNode> getProjsFromBelowAsInputRef(final RelNode rel) {
