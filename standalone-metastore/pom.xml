@@ -67,10 +67,10 @@
     <commons-logging.version>1.1.3</commons-logging.version>
     <commons-dbcp2.version>2.12.0</commons-dbcp2.version>
     <datasketches.version>1.2.0</datasketches.version>
-    <datanucleus-api-jdo.version>5.2.8</datanucleus-api-jdo.version>
-    <datanucleus-core.version>5.2.10</datanucleus-core.version>
+    <datanucleus-api-jdo.version>6.0.3</datanucleus-api-jdo.version>
+    <datanucleus-core.version>6.0.8</datanucleus-core.version>
     <datanucleus-jdo.version>3.2.0-release</datanucleus-jdo.version>
-    <datanucleus-rdbms.version>5.2.10</datanucleus-rdbms.version>
+    <datanucleus-rdbms.version>6.0.8</datanucleus-rdbms.version>
     <derby.version>10.14.2.0</derby.version>
     <mariadb.version>2.5.0</mariadb.version>
     <mssql.version>6.2.1.jre8</mssql.version>
