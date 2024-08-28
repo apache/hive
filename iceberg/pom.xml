@@ -35,7 +35,6 @@
     <google.errorprone.javac.version>9+181-r4173-1</google.errorprone.javac.version>
     <google.errorprone.version>2.5.1</google.errorprone.version>
     <assertj.version>3.24.2</assertj.version>
-    <junit.jupiter.version>5.10.0</junit.jupiter.version>
     <awaitility.version>4.2.1</awaitility.version>
     <immutables.value.version>2.10.0</immutables.value.version>
     <validate.skip>false</validate.skip>
@@ -202,16 +201,6 @@
         <groupId>org.assertj</groupId>
         <artifactId>assertj-core</artifactId>
         <version>${assertj.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-api</artifactId>
-        <version>${junit.jupiter.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-params</artifactId>
-        <version>${junit.jupiter.version}</version>
       </dependency>
       <dependency>
         <groupId>org.awaitility</groupId>

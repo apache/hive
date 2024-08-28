@@ -1083,6 +1083,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     client.drop_catalog(new DropCatalogRequest(catName));
   }
 
+  public void dropCatalog(String catName, boolean ifExists) throws TException {
+    DropCatalogRequest rqst = new DropCatalogRequest(catName);
+    rqst.setIfExists(ifExists);
+    client.drop_catalog(rqst);
+  }
+
   /**
    * @param new_part
    * @return the added partition
@@ -4725,6 +4731,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<String> getFunctions(String catName, String dbName, String pattern) throws TException {
     return client.get_functions(prependCatalogToDbName(catName, dbName, conf), pattern);
+  }
+
+  @Override
+  public GetFunctionsResponse getFunctionsRequest(GetFunctionsRequest functionRequest) throws TException {
+    return client.get_functions_req(functionRequest);
   }
 
   @Override

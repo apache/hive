@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.callEmbeddedMetastore;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependCatalogToDbName;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -3200,6 +3201,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public void dropCatalog(String catName, boolean ifExists) throws TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public List<String> getDatabases(String catName, String databasePattern) throws TException {
     throw new UnsupportedOperationException();
   }
@@ -3599,6 +3605,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   @Override
   public List<String> getFunctions(String catName, String dbName, String pattern) throws TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public GetFunctionsResponse getFunctionsRequest(GetFunctionsRequest functionRequest) throws TException {
     throw new UnsupportedOperationException();
   }
 

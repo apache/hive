@@ -101,15 +101,6 @@ public interface HiveOperationsBase {
         "Not an iceberg table: %s (type=%s)", fullName, tableType);
   }
 
-  static boolean isHiveIcebergStorageHandler(String storageHandler) {
-    try {
-      Class<?> storageHandlerClass = Class.forName(storageHandler);
-      return Class.forName(HIVE_ICEBERG_STORAGE_HANDLER).isAssignableFrom(storageHandlerClass);
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException("Error checking storage handler class", e);
-    }
-  }
-
   default void persistTable(Table hmsTable, boolean updateHiveTable, String metadataLocation)
       throws TException, InterruptedException {
     if (updateHiveTable) {

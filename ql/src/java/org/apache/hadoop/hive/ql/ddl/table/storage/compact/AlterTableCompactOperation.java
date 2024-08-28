@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -89,7 +90,8 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
     }
 
     //Will directly initiate compaction if an un-partitioned table/a partition is specified in the request
-    if (desc.getPartitionSpec() != null || !table.isPartitioned()) {
+    if (desc.getPartitionSpec() != null || !(table.isPartitioned() || 
+        (DDLUtils.isIcebergTable(table) && table.getStorageHandler().isPartitioned(table)))) {
       if (desc.getPartitionSpec() != null) {
         Optional<String> partitionName = partitionMap.keySet().stream().findFirst();
         partitionName.ifPresent(compactionRequest::setPartitionname);
@@ -103,6 +105,13 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
             CompactorUtil.initiateCompactionForPartition(table.getTTable(), partitionMapEntry.getValue(),
                 compactionRequest, ServerUtils.hostname(), txnHandler, context.getConf());
         parseCompactionResponse(compactionResponse, table, partitionMapEntry.getKey());
+      }
+      // If Iceberg table had partition evolution, it will create compaction request without partition specification,
+      // and it will compact all files from old partition specs, besides compacting partitions of current spec in parallel.
+      if (DDLUtils.isIcebergTable(table) && table.getStorageHandler().hasUndergonePartitionEvolution(table)) {
+        compactionRequest.setPartitionname(null);
+        CompactionResponse compactionResponse = txnHandler.compact(compactionRequest);
+        parseCompactionResponse(compactionResponse, table, compactionRequest.getPartitionname());
       }
     }
     return 0;
@@ -135,7 +144,7 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
     List<Partition> partitions = new ArrayList<>();
 
     if (desc.getPartitionSpec() == null) {
-      if (table.isPartitioned()) {
+      if (table.isPartitioned() || (DDLUtils.isIcebergTable(table) && table.getStorageHandler().isPartitioned(table))) {
         // Compaction will get initiated for all the potential partitions that meets the criteria
         partitions = context.getDb().getPartitions(table);
       }

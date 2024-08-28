@@ -1057,6 +1057,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public void drop_catalog(DropCatalogRequest rqst)
       throws NoSuchObjectException, InvalidOperationException, MetaException {
     String catName = rqst.getName();
+    boolean ifExists = rqst.isIfExists();
     startFunction("drop_catalog", ": " + catName);
     if (DEFAULT_CATALOG_NAME.equalsIgnoreCase(catName)) {
       endFunction("drop_catalog", false, null);
@@ -1066,7 +1067,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     boolean success = false;
     Exception ex = null;
     try {
-      dropCatalogCore(catName);
+      dropCatalogCore(catName, ifExists);
       success = true;
     } catch (Exception e) {
       ex = e;
@@ -1079,7 +1080,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   }
 
-  private void dropCatalogCore(String catName)
+  private void dropCatalogCore(String catName, boolean ifExists)
       throws MetaException, NoSuchObjectException, InvalidOperationException {
     boolean success = false;
     Catalog cat = null;
@@ -1119,7 +1120,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         }
       }
 
-      ms.dropCatalog(catName) ;
+      ms.dropCatalog(catName);
       if (!transactionalListeners.isEmpty()) {
         transactionalListenerResponses =
             MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
@@ -1128,6 +1129,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
 
       success = ms.commitTransaction();
+    } catch (NoSuchObjectException e) {
+      if (!ifExists) {
+        throw new NoSuchObjectException(e.getMessage());
+      } else {
+        ms.rollbackTransaction();
+      }
     } finally {
       if (success) {
         wh.deleteDir(wh.getDnsPath(new Path(cat.getLocationUri())), false, false, false);
@@ -3837,7 +3844,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       return FilterUtils.filterTablesIfEnabled(isServerFilterEnabled, filterHook, tables);
     } catch (Exception e) {
       LOG.warn("Unexpected exception while getting table(s) in remote database " + dbname , e);
-      return new ArrayList<Table>();
+      if (isInTest) {
+        // ignore the exception
+        return new ArrayList<Table>();
+      } else {
+        throw newMetaException(e);
+      }
     }
   }
 
@@ -4249,10 +4261,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       MTable mTable = getMS().ensureGetMTable(catName, dbName, tblName);
       db = ms.getDatabase(catName, dbName);
 
-      if (!parts.isEmpty()) {
-        firePreEvent(new PreAddPartitionEvent(tbl, parts, this));
-      }
-
       Set<PartValEqWrapperLite> partsToAdd = new HashSet<>(parts.size());
       List<Partition> partitionsToAdd = new ArrayList<>(parts.size());
       List<FieldSchema> partitionKeys = tbl.getPartitionKeys();
@@ -4280,6 +4288,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         } else {
           existingParts.add(part);
         }
+      }
+
+      // Only authorize on newly created partitions
+      if (!partitionsToAdd.isEmpty()) {
+        firePreEvent(new PreAddPartitionEvent(tbl, partitionsToAdd, this));
       }
 
       newParts.addAll(createPartitionFolders(partitionsToAdd, tbl, addedPartitions, envContext));
@@ -6311,7 +6324,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
         return DataConnectorProviderFactory.getDataConnectorProvider(db).getTableNames();
       }
-    } catch (Exception e) { /* appears we return empty set instead of throwing an exception */ }
+    } catch (Exception e) {
+      throw newMetaException(e);
+    }
 
     try {
       ret = getMS().getTables(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], pattern);
@@ -8874,6 +8889,31 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
 
     return funcNames;
+  }
+
+  @Override
+  public GetFunctionsResponse get_functions_req(GetFunctionsRequest req)
+      throws MetaException {
+    startFunction("get_functions_req", ": db=" + req.getDbName()
+        + " pat=" + req.getPattern());
+
+    RawStore ms = getMS();
+    Exception ex = null;
+    List<Function> funcs = null;
+    String catName = req.isSetCatalogName() ? req.getCatalogName() : getDefaultCatalog(conf);
+    try {
+      funcs = ms.getFunctionsRequest(catName, req.getDbName(),
+          req.getPattern(), req.isReturnNames());
+    } catch (Exception e) {
+      ex = e;
+      throw newMetaException(e);
+    } finally {
+      endFunction("get_functions", funcs != null, ex);
+    }
+    GetFunctionsResponse response = new GetFunctionsResponse();
+    response.setFunctions(funcs);
+
+    return response;
   }
 
   @Override

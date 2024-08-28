@@ -339,15 +339,15 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 1864 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ss_sold_date_sk:int, 1:ss_sold_time_sk:int, 2:ss_item_sk2:int, 3:ss_customer_sk2:int, 4:ss_cdemo_sk:int, 5:ss_hdemo_sk:int, 6:ss_addr_sk:int, 7:ss_store_sk:int, 8:ss_promo_sk:int, 9:ss_ticket_number:int, 10:ss_quantity:int, 11:ss_wholesale_cost:decimal(7,2), 12:ss_list_price:decimal(7,2), 13:ss_sales_price:decimal(7,2), 14:ss_ext_discount_amt:decimal(7,2), 15:ss_ext_sales_price:decimal(7,2), 16:ss_ext_wholesale_cost:decimal(7,2), 17:ss_ext_list_price:decimal(7,2), 18:ss_ext_tax:decimal(7,2), 19:ss_coupon_amt:decimal(7,2), 20:ss_net_paid:decimal(7,2), 21:ss_net_paid_inc_tax:decimal(7,2), 22:ss_net_profit:decimal(7,2), 23:PARTITION__SPEC__ID:int, 24:PARTITION__HASH:bigint, 25:FILE__PATH:string, 26:ROW__POSITION:bigint]
+                      vectorizationSchemaColumns: [0:ss_sold_date_sk:int, 1:ss_sold_time_sk:int, 2:ss_item_sk2:int, 3:ss_customer_sk2:int, 4:ss_cdemo_sk:int, 5:ss_hdemo_sk:int, 6:ss_addr_sk:int, 7:ss_store_sk:int, 8:ss_promo_sk:int, 9:ss_ticket_number:int, 10:ss_quantity:int, 11:ss_wholesale_cost:decimal(7,2), 12:ss_list_price:decimal(7,2), 13:ss_sales_price:decimal(7,2), 14:ss_ext_discount_amt:decimal(7,2), 15:ss_ext_sales_price:decimal(7,2), 16:ss_ext_wholesale_cost:decimal(7,2), 17:ss_ext_list_price:decimal(7,2), 18:ss_ext_tax:decimal(7,2), 19:ss_coupon_amt:decimal(7,2), 20:ss_net_paid:decimal(7,2), 21:ss_net_paid_inc_tax:decimal(7,2), 22:ss_net_profit:decimal(7,2), 23:PARTITION__SPEC__ID:int, 24:PARTITION__HASH:bigint, 25:FILE__PATH:string, 26:ROW__POSITION:bigint, 27:PARTITION__PROJECTION:string]
                   Select Operator
                     expressions: ss_sold_time_sk (type: int), ss_item_sk2 (type: int), ss_customer_sk2 (type: int), ss_cdemo_sk (type: int), ss_hdemo_sk (type: int), ss_addr_sk (type: int), ss_store_sk (type: int), ss_promo_sk (type: int), ss_ticket_number (type: int), ss_quantity (type: int), ss_wholesale_cost (type: decimal(7,2)), ss_list_price (type: decimal(7,2)), ss_sales_price (type: decimal(7,2)), ss_ext_discount_amt (type: decimal(7,2)), ss_ext_sales_price (type: decimal(7,2)), ss_ext_wholesale_cost (type: decimal(7,2)), ss_ext_list_price (type: decimal(7,2)), ss_ext_tax (type: decimal(7,2)), ss_coupon_amt (type: decimal(7,2)), ss_net_paid (type: decimal(7,2)), ss_net_paid_inc_tax (type: decimal(7,2)), ss_net_profit (type: decimal(7,2)), (floor((UDFToDouble(ss_item_sk2) / 1000.0D)) * 1000L) BETWEEN 1000L AND 2000L (type: boolean), (ss_ext_discount_amt < 0) (type: boolean)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 31, 32]
-                        selectExpressions: LongColumnBetween(col 30:bigint, left 1000, right 2000)(children: LongColMultiplyLongScalar(col 29:bigint, val 1000)(children: FuncFloorDoubleToLong(col 28:double)(children: DoubleColDivideDoubleScalar(col 27:double, val 1000.0)(children: CastLongToDouble(col 2:int) -> 27:double) -> 28:double) -> 29:bigint) -> 30:bigint) -> 31:boolean, DecimalColLessDecimalScalar(col 14:decimal(7,2), val 0) -> 32:boolean
+                        projectedOutputColumnNums: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 32, 33]
+                        selectExpressions: LongColumnBetween(col 31:bigint, left 1000, right 2000)(children: LongColMultiplyLongScalar(col 30:bigint, val 1000)(children: FuncFloorDoubleToLong(col 29:double)(children: DoubleColDivideDoubleScalar(col 28:double, val 1000.0)(children: CastLongToDouble(col 2:int) -> 28:double) -> 29:double) -> 30:bigint) -> 31:bigint) -> 32:boolean, DecimalColLessDecimalScalar(col 14:decimal(7,2), val 0) -> 33:boolean
                     Statistics: Num rows: 5 Data size: 1904 Basic stats: COMPLETE Column stats: COMPLETE
                     Map Join Operator
                       condition map:
@@ -356,74 +356,74 @@ STAGE PLANS:
                         0 {_col22} {_col23}
                         1 
                       keys:
-                        0 _col1 (type: int), _col2 (type: int)
-                        1 _col6 (type: int), _col7 (type: int)
+                        0 _col2 (type: int), _col1 (type: int)
+                        1 _col8 (type: int), _col7 (type: int)
                       Map Join Vectorization:
-                          bigTableFilterExpressions: SelectColumnIsTrue(col 31:boolean), SelectColumnIsTrue(col 32:boolean)
-                          bigTableKeyColumns: 2:int, 3:int
+                          bigTableFilterExpressions: SelectColumnIsTrue(col 32:boolean), SelectColumnIsTrue(col 33:boolean)
+                          bigTableKeyColumns: 3:int, 2:int
                           bigTableRetainColumnNums: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
                           bigTableValueColumns: 1:int, 2:int, 3:int, 4:int, 5:int, 6:int, 7:int, 8:int, 9:int, 10:int, 11:decimal(7,2), 12:decimal(7,2), 13:decimal(7,2), 14:decimal(7,2), 15:decimal(7,2), 16:decimal(7,2), 17:decimal(7,2), 18:decimal(7,2), 19:decimal(7,2), 20:decimal(7,2), 21:decimal(7,2), 22:decimal(7,2)
                           className: VectorMapJoinOuterMultiKeyOperator
                           native: true
                           nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
-                          outerSmallTableKeyMapping: 2 -> 39, 3 -> 40
-                          projectedOutput: 1:int, 2:int, 3:int, 4:int, 5:int, 6:int, 7:int, 8:int, 9:int, 10:int, 11:decimal(7,2), 12:decimal(7,2), 13:decimal(7,2), 14:decimal(7,2), 15:decimal(7,2), 16:decimal(7,2), 17:decimal(7,2), 18:decimal(7,2), 19:decimal(7,2), 20:decimal(7,2), 21:decimal(7,2), 22:decimal(7,2), 33:int, 34:bigint, 35:string, 36:bigint, 37:int, 38:int, 39:int, 40:int, 41:int, 42:int, 43:int, 44:int, 45:int, 46:int, 47:int, 48:decimal(7,2), 49:decimal(7,2), 50:decimal(7,2), 51:decimal(7,2), 52:decimal(7,2), 53:decimal(7,2), 54:decimal(7,2), 55:decimal(7,2), 56:decimal(7,2), 57:decimal(7,2), 58:decimal(7,2), 59:decimal(7,2)
-                          smallTableValueMapping: 33:int, 34:bigint, 35:string, 36:bigint, 37:int, 38:int, 41:int, 42:int, 43:int, 44:int, 45:int, 46:int, 47:int, 48:decimal(7,2), 49:decimal(7,2), 50:decimal(7,2), 51:decimal(7,2), 52:decimal(7,2), 53:decimal(7,2), 54:decimal(7,2), 55:decimal(7,2), 56:decimal(7,2), 57:decimal(7,2), 58:decimal(7,2), 59:decimal(7,2)
+                          outerSmallTableKeyMapping: 2 -> 41, 3 -> 42
+                          projectedOutput: 1:int, 2:int, 3:int, 4:int, 5:int, 6:int, 7:int, 8:int, 9:int, 10:int, 11:decimal(7,2), 12:decimal(7,2), 13:decimal(7,2), 14:decimal(7,2), 15:decimal(7,2), 16:decimal(7,2), 17:decimal(7,2), 18:decimal(7,2), 19:decimal(7,2), 20:decimal(7,2), 21:decimal(7,2), 22:decimal(7,2), 34:int, 35:bigint, 36:string, 37:bigint, 38:string, 39:int, 40:int, 41:int, 42:int, 43:int, 44:int, 45:int, 46:int, 47:int, 48:int, 49:int, 50:decimal(7,2), 51:decimal(7,2), 52:decimal(7,2), 53:decimal(7,2), 54:decimal(7,2), 55:decimal(7,2), 56:decimal(7,2), 57:decimal(7,2), 58:decimal(7,2), 59:decimal(7,2), 60:decimal(7,2), 61:decimal(7,2)
+                          smallTableValueMapping: 34:int, 35:bigint, 36:string, 37:bigint, 38:string, 39:int, 40:int, 43:int, 44:int, 45:int, 46:int, 47:int, 48:int, 49:int, 50:decimal(7,2), 51:decimal(7,2), 52:decimal(7,2), 53:decimal(7,2), 54:decimal(7,2), 55:decimal(7,2), 56:decimal(7,2), 57:decimal(7,2), 58:decimal(7,2), 59:decimal(7,2), 60:decimal(7,2), 61:decimal(7,2)
                           hashTableImplementationType: OPTIMIZED
-                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36, _col37, _col38, _col39, _col40, _col41, _col42, _col43, _col44, _col45, _col46, _col47, _col48, _col49, _col50
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36, _col37, _col38, _col39, _col40, _col41, _col42, _col43, _col44, _col45, _col46, _col47, _col48, _col49, _col50, _col51
                       input vertices:
                         1 Map 6
-                      Statistics: Num rows: 7 Data size: 6656 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 7 Data size: 7208 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
-                        expressions: _col39 (type: decimal(7,2)), _col19 (type: decimal(7,2)), _col32 (type: int), _col38 (type: int), _col24 (type: int), _col21 (type: decimal(7,2)), _col26 (type: string), _col7 (type: int), _col3 (type: int), _col10 (type: decimal(7,2)), _col48 (type: decimal(7,2)), _col37 (type: int), _col6 (type: int), _col49 (type: decimal(7,2)), _col11 (type: decimal(7,2)), _col33 (type: int), _col17 (type: decimal(7,2)), _col14 (type: decimal(7,2)), _col44 (type: decimal(7,2)), _col46 (type: decimal(7,2)), _col20 (type: decimal(7,2)), _col8 (type: int), _col34 (type: int), _col30 (type: int), _col40 (type: decimal(7,2)), _col35 (type: int), _col4 (type: int), _col47 (type: decimal(7,2)), _col5 (type: int), _col13 (type: decimal(7,2)), _col12 (type: decimal(7,2)), _col43 (type: decimal(7,2)), _col42 (type: decimal(7,2)), _col1 (type: int), _col16 (type: decimal(7,2)), _col28 (type: int), _col2 (type: int), _col15 (type: decimal(7,2)), _col18 (type: decimal(7,2)), _col25 (type: bigint), _col9 (type: int), _col29 (type: int), _col41 (type: decimal(7,2)), _col0 (type: int), _col27 (type: bigint), _col50 (type: decimal(7,2)), _col31 (type: int), _col36 (type: int), _col45 (type: decimal(7,2))
-                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36, _col37, _col38, _col39, _col40, _col41, _col42, _col43, _col44, _col45, _col46, _col47, _col48
+                        expressions: _col40 (type: decimal(7,2)), _col19 (type: decimal(7,2)), _col33 (type: int), _col39 (type: int), _col24 (type: int), _col21 (type: decimal(7,2)), _col26 (type: string), _col7 (type: int), _col3 (type: int), _col10 (type: decimal(7,2)), _col49 (type: decimal(7,2)), _col38 (type: int), _col28 (type: string), _col6 (type: int), _col50 (type: decimal(7,2)), _col11 (type: decimal(7,2)), _col34 (type: int), _col17 (type: decimal(7,2)), _col14 (type: decimal(7,2)), _col45 (type: decimal(7,2)), _col47 (type: decimal(7,2)), _col20 (type: decimal(7,2)), _col8 (type: int), _col35 (type: int), _col31 (type: int), _col41 (type: decimal(7,2)), _col36 (type: int), _col4 (type: int), _col48 (type: decimal(7,2)), _col5 (type: int), _col13 (type: decimal(7,2)), _col12 (type: decimal(7,2)), _col44 (type: decimal(7,2)), _col43 (type: decimal(7,2)), _col1 (type: int), _col16 (type: decimal(7,2)), _col29 (type: int), _col2 (type: int), _col15 (type: decimal(7,2)), _col18 (type: decimal(7,2)), _col25 (type: bigint), _col9 (type: int), _col30 (type: int), _col42 (type: decimal(7,2)), _col0 (type: int), _col27 (type: bigint), _col51 (type: decimal(7,2)), _col32 (type: int), _col37 (type: int), _col46 (type: decimal(7,2))
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36, _col37, _col38, _col39, _col40, _col41, _col42, _col43, _col44, _col45, _col46, _col47, _col48, _col49
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [48, 20, 41, 47, 33, 22, 35, 8, 4, 11, 57, 46, 7, 58, 12, 42, 18, 15, 53, 55, 21, 9, 43, 39, 49, 44, 5, 56, 6, 14, 13, 52, 51, 2, 17, 37, 3, 16, 19, 34, 10, 38, 50, 1, 36, 59, 40, 45, 54]
-                        Statistics: Num rows: 7 Data size: 6656 Basic stats: COMPLETE Column stats: COMPLETE
+                            projectedOutputColumnNums: [50, 20, 43, 49, 34, 22, 36, 8, 4, 11, 59, 48, 38, 7, 60, 12, 44, 18, 15, 55, 57, 21, 9, 45, 41, 51, 46, 5, 58, 6, 14, 13, 54, 53, 2, 17, 39, 3, 16, 19, 35, 10, 40, 52, 1, 37, 61, 42, 47, 56]
+                        Statistics: Num rows: 7 Data size: 7208 Basic stats: COMPLETE Column stats: COMPLETE
                         Filter Operator
                           Filter Vectorization:
                               className: VectorFilterOperator
                               native: true
-                              predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongColumn(col 39:int, col 2:int), FilterLongColEqualLongColumn(col 40:int, col 3:int), FilterLongColEqualLongScalar(col 37:int, val 2451181), FilterLongColumnBetween(col 30:bigint, left 1000, right 2000)(children: LongColMultiplyLongScalar(col 29:bigint, val 1000)(children: FuncFloorDoubleToLong(col 27:double)(children: LongColDivideLongScalar(col 2:int, val 1000) -> 27:double) -> 29:bigint) -> 30:bigint), FilterDecimalColLessDecimalScalar(col 14:decimal(7,2), val 0), SelectColumnIsNull(col 51:decimal(7,2)))
-                          predicate: ((_col23 = _col33) and (_col46 = _col36) and (_col35 = 2451181) and (floor((_col33 / 1000)) * 1000) BETWEEN 1000 AND 2000 and (_col29 < 0) and _col32 is null) (type: boolean)
-                          Statistics: Num rows: 1 Data size: 2976 Basic stats: COMPLETE Column stats: COMPLETE
+                              predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongColumn(col 41:int, col 2:int), FilterLongColEqualLongColumn(col 42:int, col 3:int), FilterLongColEqualLongScalar(col 39:int, val 2451181), FilterLongColumnBetween(col 31:bigint, left 1000, right 2000)(children: LongColMultiplyLongScalar(col 30:bigint, val 1000)(children: FuncFloorDoubleToLong(col 28:double)(children: LongColDivideLongScalar(col 2:int, val 1000) -> 28:double) -> 30:bigint) -> 31:bigint), FilterDecimalColLessDecimalScalar(col 14:decimal(7,2), val 0), SelectColumnIsNull(col 53:decimal(7,2)))
+                          predicate: ((_col24 = _col34) and (_col47 = _col37) and (_col36 = 2451181) and (floor((_col34 / 1000)) * 1000) BETWEEN 1000 AND 2000 and (_col30 < 0) and _col33 is null) (type: boolean)
+                          Statistics: Num rows: 1 Data size: 3160 Basic stats: COMPLETE Column stats: COMPLETE
                           Select Operator
-                            expressions: _col4 (type: int), _col39 (type: bigint), _col6 (type: string), _col44 (type: bigint), _col41 (type: int), _col23 (type: int), _col46 (type: int), _col2 (type: int), _col15 (type: int), _col22 (type: int), _col25 (type: int), _col47 (type: int), _col11 (type: int), _col3 (type: int), _col0 (type: decimal(7,2)), _col24 (type: decimal(7,2)), _col42 (type: decimal(7,2)), _col31 (type: decimal(7,2)), _col18 (type: decimal(7,2)), _col48 (type: decimal(7,2)), _col19 (type: decimal(7,2)), _col27 (type: decimal(7,2)), _col10 (type: decimal(7,2)), _col13 (type: decimal(7,2)), _col45 (type: decimal(7,2))
-                            outputColumnNames: _col0, _col1, _col2, _col3, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26
+                            expressions: _col4 (type: int), _col40 (type: bigint), _col6 (type: string), _col45 (type: bigint), _col12 (type: string), _col42 (type: int), _col24 (type: int), _col47 (type: int), _col2 (type: int), _col16 (type: int), _col23 (type: int), _col26 (type: int), _col48 (type: int), _col11 (type: int), _col3 (type: int), _col0 (type: decimal(7,2)), _col25 (type: decimal(7,2)), _col43 (type: decimal(7,2)), _col32 (type: decimal(7,2)), _col19 (type: decimal(7,2)), _col49 (type: decimal(7,2)), _col20 (type: decimal(7,2)), _col28 (type: decimal(7,2)), _col10 (type: decimal(7,2)), _col14 (type: decimal(7,2)), _col46 (type: decimal(7,2))
+                            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27
                             Select Vectorization:
                                 className: VectorSelectOperator
                                 native: true
-                                projectedOutputColumnNums: [33, 34, 35, 36, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 52, 53, 54, 55, 56, 57, 58, 59]
-                            Statistics: Num rows: 1 Data size: 1476 Basic stats: COMPLETE Column stats: COMPLETE
+                                projectedOutputColumnNums: [34, 35, 36, 37, 38, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 54, 55, 56, 57, 58, 59, 60, 61]
+                            Statistics: Num rows: 1 Data size: 1660 Basic stats: COMPLETE Column stats: COMPLETE
                             Reduce Output Operator
-                              key expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: string), _col3 (type: bigint)
-                              null sort order: zzzz
-                              sort order: ++++
+                              key expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: string), _col3 (type: bigint), _col4 (type: string)
+                              null sort order: zzzzz
+                              sort order: +++++
                               Reduce Sink Vectorization:
                                   className: VectorReduceSinkObjectHashOperator
-                                  keyColumns: 33:int, 34:bigint, 35:string, 36:bigint
+                                  keyColumns: 34:int, 35:bigint, 36:string, 37:bigint, 38:string
                                   native: true
                                   nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                                  valueColumns: 38:int, 39:int, 40:int, 41:int, 42:int, 43:int, 44:int, 45:int, 46:int, 47:int, 48:decimal(7,2), 49:decimal(7,2), 50:decimal(7,2), 52:decimal(7,2), 53:decimal(7,2), 54:decimal(7,2), 55:decimal(7,2), 56:decimal(7,2), 57:decimal(7,2), 58:decimal(7,2), 59:decimal(7,2)
-                              Statistics: Num rows: 1 Data size: 1476 Basic stats: COMPLETE Column stats: COMPLETE
-                              value expressions: _col5 (type: int), _col6 (type: int), _col7 (type: int), _col8 (type: int), _col9 (type: int), _col10 (type: int), _col11 (type: int), _col12 (type: int), _col13 (type: int), _col14 (type: int), _col15 (type: decimal(7,2)), _col16 (type: decimal(7,2)), _col17 (type: decimal(7,2)), _col19 (type: decimal(7,2)), _col20 (type: decimal(7,2)), _col21 (type: decimal(7,2)), _col22 (type: decimal(7,2)), _col23 (type: decimal(7,2)), _col24 (type: decimal(7,2)), _col25 (type: decimal(7,2)), _col26 (type: decimal(7,2))
+                                  valueColumns: 40:int, 41:int, 42:int, 43:int, 44:int, 45:int, 46:int, 47:int, 48:int, 49:int, 50:decimal(7,2), 51:decimal(7,2), 52:decimal(7,2), 54:decimal(7,2), 55:decimal(7,2), 56:decimal(7,2), 57:decimal(7,2), 58:decimal(7,2), 59:decimal(7,2), 60:decimal(7,2), 61:decimal(7,2)
+                              Statistics: Num rows: 1 Data size: 1660 Basic stats: COMPLETE Column stats: COMPLETE
+                              value expressions: _col6 (type: int), _col7 (type: int), _col8 (type: int), _col9 (type: int), _col10 (type: int), _col11 (type: int), _col12 (type: int), _col13 (type: int), _col14 (type: int), _col15 (type: int), _col16 (type: decimal(7,2)), _col17 (type: decimal(7,2)), _col18 (type: decimal(7,2)), _col20 (type: decimal(7,2)), _col21 (type: decimal(7,2)), _col22 (type: decimal(7,2)), _col23 (type: decimal(7,2)), _col24 (type: decimal(7,2)), _col25 (type: decimal(7,2)), _col26 (type: decimal(7,2)), _col27 (type: decimal(7,2))
                         Filter Operator
                           Filter Vectorization:
                               className: VectorFilterOperator
                               native: true
-                              predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongColumn(col 39:int, col 2:int), FilterLongColEqualLongColumn(col 40:int, col 3:int), FilterLongColEqualLongScalar(col 37:int, val 2451181), FilterLongColumnBetween(col 30:bigint, left 1000, right 2000)(children: LongColMultiplyLongScalar(col 29:bigint, val 1000)(children: FuncFloorDoubleToLong(col 27:double)(children: LongColDivideLongScalar(col 2:int, val 1000) -> 27:double) -> 29:bigint) -> 30:bigint), FilterDecimalColLessDecimalScalar(col 14:decimal(7,2), val 0), SelectColumnIsNull(col 51:decimal(7,2)))
-                          predicate: ((_col23 = _col33) and (_col46 = _col36) and (_col35 = 2451181) and (floor((_col33 / 1000)) * 1000) BETWEEN 1000 AND 2000 and (_col29 < 0) and _col32 is null) (type: boolean)
-                          Statistics: Num rows: 1 Data size: 2976 Basic stats: COMPLETE Column stats: COMPLETE
+                              predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongColumn(col 41:int, col 2:int), FilterLongColEqualLongColumn(col 42:int, col 3:int), FilterLongColEqualLongScalar(col 39:int, val 2451181), FilterLongColumnBetween(col 31:bigint, left 1000, right 2000)(children: LongColMultiplyLongScalar(col 30:bigint, val 1000)(children: FuncFloorDoubleToLong(col 28:double)(children: LongColDivideLongScalar(col 2:int, val 1000) -> 28:double) -> 30:bigint) -> 31:bigint), FilterDecimalColLessDecimalScalar(col 14:decimal(7,2), val 0), SelectColumnIsNull(col 53:decimal(7,2)))
+                          predicate: ((_col24 = _col34) and (_col47 = _col37) and (_col36 = 2451181) and (floor((_col34 / 1000)) * 1000) BETWEEN 1000 AND 2000 and (_col30 < 0) and _col33 is null) (type: boolean)
+                          Statistics: Num rows: 1 Data size: 3160 Basic stats: COMPLETE Column stats: COMPLETE
                           Select Operator
-                            expressions: 2451181 (type: int), _col41 (type: int), _col23 (type: int), _col46 (type: int), _col2 (type: int), _col15 (type: int), _col22 (type: int), _col25 (type: int), _col47 (type: int), _col11 (type: int), _col3 (type: int), _col0 (type: decimal(7,2)), _col24 (type: decimal(7,2)), _col42 (type: decimal(7,2)), 0 (type: decimal(7,2)), _col31 (type: decimal(7,2)), _col18 (type: decimal(7,2)), _col48 (type: decimal(7,2)), _col19 (type: decimal(7,2)), _col27 (type: decimal(7,2)), _col10 (type: decimal(7,2)), _col13 (type: decimal(7,2)), _col45 (type: decimal(7,2))
+                            expressions: 2451181 (type: int), _col42 (type: int), _col24 (type: int), _col47 (type: int), _col2 (type: int), _col16 (type: int), _col23 (type: int), _col26 (type: int), _col48 (type: int), _col11 (type: int), _col3 (type: int), _col0 (type: decimal(7,2)), _col25 (type: decimal(7,2)), _col43 (type: decimal(7,2)), 0 (type: decimal(7,2)), _col32 (type: decimal(7,2)), _col19 (type: decimal(7,2)), _col49 (type: decimal(7,2)), _col20 (type: decimal(7,2)), _col28 (type: decimal(7,2)), _col10 (type: decimal(7,2)), _col14 (type: decimal(7,2)), _col46 (type: decimal(7,2))
                             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22
                             Select Vectorization:
                                 className: VectorSelectOperator
                                 native: true
-                                projectedOutputColumnNums: [29, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 60, 52, 53, 54, 55, 56, 57, 58, 59]
-                                selectExpressions: ConstantVectorExpression(val 2451181) -> 29:int, ConstantVectorExpression(val 0) -> 60:decimal(7,2)
+                                projectedOutputColumnNums: [30, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 62, 54, 55, 56, 57, 58, 59, 60, 61]
+                                selectExpressions: ConstantVectorExpression(val 2451181) -> 30:int, ConstantVectorExpression(val 0) -> 62:decimal(7,2)
                             Statistics: Num rows: 1 Data size: 1388 Basic stats: COMPLETE Column stats: COMPLETE
                             Reduce Output Operator
                               key expressions: _col3 (type: int), iceberg_bucket(_col2, 3) (type: int)
@@ -432,28 +432,28 @@ STAGE PLANS:
                               Map-reduce partition columns: _col3 (type: int), iceberg_bucket(_col2, 3) (type: int)
                               Reduce Sink Vectorization:
                                   className: VectorReduceSinkMultiKeyOperator
-                                  keyColumns: 40:int, 61:int
-                                  keyExpressions: VectorUDFAdaptor(iceberg_bucket(_col2, 3)) -> 61:int
+                                  keyColumns: 42:int, 63:int
+                                  keyExpressions: VectorUDFAdaptor(iceberg_bucket(_col2, 3)) -> 63:int
                                   native: true
                                   nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                                  valueColumns: 29:int, 38:int, 39:int, 40:int, 41:int, 42:int, 43:int, 44:int, 45:int, 46:int, 47:int, 48:decimal(7,2), 49:decimal(7,2), 50:decimal(7,2), 60:decimal(7,2), 52:decimal(7,2), 53:decimal(7,2), 54:decimal(7,2), 55:decimal(7,2), 56:decimal(7,2), 57:decimal(7,2), 58:decimal(7,2), 59:decimal(7,2)
+                                  valueColumns: 30:int, 40:int, 41:int, 42:int, 43:int, 44:int, 45:int, 46:int, 47:int, 48:int, 49:int, 50:decimal(7,2), 51:decimal(7,2), 52:decimal(7,2), 62:decimal(7,2), 54:decimal(7,2), 55:decimal(7,2), 56:decimal(7,2), 57:decimal(7,2), 58:decimal(7,2), 59:decimal(7,2), 60:decimal(7,2), 61:decimal(7,2)
                               Statistics: Num rows: 1 Data size: 1388 Basic stats: COMPLETE Column stats: COMPLETE
                               value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: int), _col8 (type: int), _col9 (type: int), _col10 (type: int), _col11 (type: decimal(7,2)), _col12 (type: decimal(7,2)), _col13 (type: decimal(7,2)), _col14 (type: decimal(7,2)), _col15 (type: decimal(7,2)), _col16 (type: decimal(7,2)), _col17 (type: decimal(7,2)), _col18 (type: decimal(7,2)), _col19 (type: decimal(7,2)), _col20 (type: decimal(7,2)), _col21 (type: decimal(7,2)), _col22 (type: decimal(7,2))
                         Filter Operator
                           Filter Vectorization:
                               className: VectorFilterOperator
                               native: true
-                              predicateExpression: FilterExprAndExpr(children: SelectColumnIsNull(col 39:int), SelectColumnIsNull(col 40:int), SelectColumnIsNull(col 37:int))
-                          predicate: (_col23 is null and _col46 is null and _col35 is null) (type: boolean)
-                          Statistics: Num rows: 3 Data size: 4696 Basic stats: COMPLETE Column stats: COMPLETE
+                              predicateExpression: FilterExprAndExpr(children: SelectColumnIsNull(col 41:int), SelectColumnIsNull(col 42:int), SelectColumnIsNull(col 39:int))
+                          predicate: (_col24 is null and _col47 is null and _col36 is null) (type: boolean)
+                          Statistics: Num rows: 3 Data size: 5064 Basic stats: COMPLETE Column stats: COMPLETE
                           Select Operator
-                            expressions: 2451181 (type: int), _col43 (type: int), _col33 (type: int), _col36 (type: int), _col8 (type: int), _col26 (type: int), _col28 (type: int), _col12 (type: int), _col7 (type: int), _col21 (type: int), _col40 (type: int), _col9 (type: decimal(7,2)), _col14 (type: decimal(7,2)), _col30 (type: decimal(7,2)), _col29 (type: decimal(7,2)), _col17 (type: decimal(7,2)), _col37 (type: decimal(7,2)), _col34 (type: decimal(7,2)), _col16 (type: decimal(7,2)), _col38 (type: decimal(7,2)), _col1 (type: decimal(7,2)), _col20 (type: decimal(7,2)), _col5 (type: decimal(7,2))
+                            expressions: 2451181 (type: int), _col44 (type: int), _col34 (type: int), _col37 (type: int), _col8 (type: int), _col27 (type: int), _col29 (type: int), _col13 (type: int), _col7 (type: int), _col22 (type: int), _col41 (type: int), _col9 (type: decimal(7,2)), _col15 (type: decimal(7,2)), _col31 (type: decimal(7,2)), _col30 (type: decimal(7,2)), _col18 (type: decimal(7,2)), _col38 (type: decimal(7,2)), _col35 (type: decimal(7,2)), _col17 (type: decimal(7,2)), _col39 (type: decimal(7,2)), _col1 (type: decimal(7,2)), _col21 (type: decimal(7,2)), _col5 (type: decimal(7,2))
                             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22
                             Select Vectorization:
                                 className: VectorSelectOperator
                                 native: true
-                                projectedOutputColumnNums: [30, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
-                                selectExpressions: ConstantVectorExpression(val 2451181) -> 30:int
+                                projectedOutputColumnNums: [31, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+                                selectExpressions: ConstantVectorExpression(val 2451181) -> 31:int
                             Statistics: Num rows: 3 Data size: 2900 Basic stats: COMPLETE Column stats: COMPLETE
                             Reduce Output Operator
                               key expressions: _col3 (type: int), iceberg_bucket(_col2, 3) (type: int)
@@ -462,56 +462,56 @@ STAGE PLANS:
                               Map-reduce partition columns: _col3 (type: int), iceberg_bucket(_col2, 3) (type: int)
                               Reduce Sink Vectorization:
                                   className: VectorReduceSinkMultiKeyOperator
-                                  keyColumns: 3:int, 62:int
-                                  keyExpressions: VectorUDFAdaptor(iceberg_bucket(_col2, 3)) -> 62:int
+                                  keyColumns: 3:int, 64:int
+                                  keyExpressions: VectorUDFAdaptor(iceberg_bucket(_col2, 3)) -> 64:int
                                   native: true
                                   nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                                  valueColumns: 30:int, 1:int, 2:int, 3:int, 4:int, 5:int, 6:int, 7:int, 8:int, 9:int, 10:int, 11:decimal(7,2), 12:decimal(7,2), 13:decimal(7,2), 14:decimal(7,2), 15:decimal(7,2), 16:decimal(7,2), 17:decimal(7,2), 18:decimal(7,2), 19:decimal(7,2), 20:decimal(7,2), 21:decimal(7,2), 22:decimal(7,2)
+                                  valueColumns: 31:int, 1:int, 2:int, 3:int, 4:int, 5:int, 6:int, 7:int, 8:int, 9:int, 10:int, 11:decimal(7,2), 12:decimal(7,2), 13:decimal(7,2), 14:decimal(7,2), 15:decimal(7,2), 16:decimal(7,2), 17:decimal(7,2), 18:decimal(7,2), 19:decimal(7,2), 20:decimal(7,2), 21:decimal(7,2), 22:decimal(7,2)
                               Statistics: Num rows: 3 Data size: 2900 Basic stats: COMPLETE Column stats: COMPLETE
                               value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: int), _col8 (type: int), _col9 (type: int), _col10 (type: int), _col11 (type: decimal(7,2)), _col12 (type: decimal(7,2)), _col13 (type: decimal(7,2)), _col14 (type: decimal(7,2)), _col15 (type: decimal(7,2)), _col16 (type: decimal(7,2)), _col17 (type: decimal(7,2)), _col18 (type: decimal(7,2)), _col19 (type: decimal(7,2)), _col20 (type: decimal(7,2)), _col21 (type: decimal(7,2)), _col22 (type: decimal(7,2))
                         Filter Operator
                           Filter Vectorization:
                               className: VectorFilterOperator
                               native: true
-                              predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongColumn(col 39:int, col 2:int), FilterLongColEqualLongColumn(col 40:int, col 3:int), FilterLongColEqualLongScalar(col 37:int, val 2451181), FilterLongColumnBetween(col 30:bigint, left 1000, right 2000)(children: LongColMultiplyLongScalar(col 29:bigint, val 1000)(children: FuncFloorDoubleToLong(col 27:double)(children: LongColDivideLongScalar(col 2:int, val 1000) -> 27:double) -> 29:bigint) -> 30:bigint), FilterDecimalColLessDecimalScalar(col 14:decimal(7,2), val 0))
-                          predicate: ((_col23 = _col33) and (_col46 = _col36) and (_col35 = 2451181) and (floor((_col33 / 1000)) * 1000) BETWEEN 1000 AND 2000 and (_col29 < 0)) (type: boolean)
-                          Statistics: Num rows: 1 Data size: 2976 Basic stats: COMPLETE Column stats: COMPLETE
+                              predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongColumn(col 41:int, col 2:int), FilterLongColEqualLongColumn(col 42:int, col 3:int), FilterLongColEqualLongScalar(col 39:int, val 2451181), FilterLongColumnBetween(col 31:bigint, left 1000, right 2000)(children: LongColMultiplyLongScalar(col 30:bigint, val 1000)(children: FuncFloorDoubleToLong(col 28:double)(children: LongColDivideLongScalar(col 2:int, val 1000) -> 28:double) -> 30:bigint) -> 31:bigint), FilterDecimalColLessDecimalScalar(col 14:decimal(7,2), val 0))
+                          predicate: ((_col24 = _col34) and (_col47 = _col37) and (_col36 = 2451181) and (floor((_col34 / 1000)) * 1000) BETWEEN 1000 AND 2000 and (_col30 < 0)) (type: boolean)
+                          Statistics: Num rows: 1 Data size: 3160 Basic stats: COMPLETE Column stats: COMPLETE
                           Select Operator
-                            expressions: _col4 (type: int), _col6 (type: string), _col39 (type: bigint), _col44 (type: bigint)
-                            outputColumnNames: _col4, _col6, _col39, _col44
+                            expressions: _col4 (type: int), _col6 (type: string), _col12 (type: string), _col40 (type: bigint), _col45 (type: bigint)
+                            outputColumnNames: _col4, _col6, _col12, _col40, _col45
                             Select Vectorization:
                                 className: VectorSelectOperator
                                 native: true
-                                projectedOutputColumnNums: [33, 35, 34, 36]
-                            Statistics: Num rows: 1 Data size: 2976 Basic stats: COMPLETE Column stats: COMPLETE
+                                projectedOutputColumnNums: [34, 36, 38, 35, 37]
+                            Statistics: Num rows: 1 Data size: 3160 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: count()
                               Group By Vectorization:
                                   aggregators: VectorUDAFCountStar(*) -> bigint
                                   className: VectorGroupByOperator
                                   groupByMode: HASH
-                                  keyExpressions: col 33:int, col 34:bigint, col 35:string, col 36:bigint
+                                  keyExpressions: col 34:int, col 35:bigint, col 36:string, col 37:bigint, col 38:string
                                   native: false
                                   vectorProcessingMode: HASH
                                   projectedOutputColumnNums: [0]
-                              keys: _col4 (type: int), _col39 (type: bigint), _col6 (type: string), _col44 (type: bigint)
+                              keys: _col4 (type: int), _col40 (type: bigint), _col6 (type: string), _col45 (type: bigint), _col12 (type: string)
                               minReductionHashAggr: 0.4
                               mode: hash
-                              outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                              Statistics: Num rows: 1 Data size: 212 Basic stats: COMPLETE Column stats: COMPLETE
+                              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                              Statistics: Num rows: 1 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
                               Reduce Output Operator
-                                key expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: string), _col3 (type: bigint)
-                                null sort order: zzzz
-                                sort order: ++++
-                                Map-reduce partition columns: _col0 (type: int), _col1 (type: bigint), _col2 (type: string), _col3 (type: bigint)
+                                key expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: string), _col3 (type: bigint), _col4 (type: string)
+                                null sort order: zzzzz
+                                sort order: +++++
+                                Map-reduce partition columns: _col0 (type: int), _col1 (type: bigint), _col2 (type: string), _col3 (type: bigint), _col4 (type: string)
                                 Reduce Sink Vectorization:
                                     className: VectorReduceSinkMultiKeyOperator
-                                    keyColumns: 0:int, 1:bigint, 2:string, 3:bigint
+                                    keyColumns: 0:int, 1:bigint, 2:string, 3:bigint, 4:string
                                     native: true
                                     nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                                    valueColumns: 4:bigint
-                                Statistics: Num rows: 1 Data size: 212 Basic stats: COMPLETE Column stats: COMPLETE
-                                value expressions: _col4 (type: bigint)
+                                    valueColumns: 5:bigint
+                                Statistics: Num rows: 1 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
+                                value expressions: _col5 (type: bigint)
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -527,7 +527,7 @@ STAGE PLANS:
                     includeColumns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
                     dataColumns: ss_sold_date_sk:int, ss_sold_time_sk:int, ss_item_sk2:int, ss_customer_sk2:int, ss_cdemo_sk:int, ss_hdemo_sk:int, ss_addr_sk:int, ss_store_sk:int, ss_promo_sk:int, ss_ticket_number:int, ss_quantity:int, ss_wholesale_cost:decimal(7,2), ss_list_price:decimal(7,2), ss_sales_price:decimal(7,2), ss_ext_discount_amt:decimal(7,2), ss_ext_sales_price:decimal(7,2), ss_ext_wholesale_cost:decimal(7,2), ss_ext_list_price:decimal(7,2), ss_ext_tax:decimal(7,2), ss_coupon_amt:decimal(7,2), ss_net_paid:decimal(7,2), ss_net_paid_inc_tax:decimal(7,2), ss_net_profit:decimal(7,2)
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [double, double, bigint, bigint, bigint, bigint, bigint, bigint, string, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, decimal(7,2), decimal(7,2), decimal(7,2), decimal(7,2), decimal(7,2), decimal(7,2), decimal(7,2), decimal(7,2), decimal(7,2), decimal(7,2), decimal(7,2), decimal(7,2), decimal(7,2), bigint, bigint]
+                    scratchColumnTypeNames: [double, double, bigint, bigint, bigint, bigint, bigint, bigint, string, bigint, string, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, decimal(7,2), decimal(7,2), decimal(7,2), decimal(7,2), decimal(7,2), decimal(7,2), decimal(7,2), decimal(7,2), decimal(7,2), decimal(7,2), decimal(7,2), decimal(7,2), decimal(7,2), bigint, bigint]
         Map 6 
             Map Operator Tree:
                 TableScan
@@ -536,7 +536,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 11#### Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ss_sold_date_sk:int, 1:ss_sold_time_sk:int, 2:ss_item_sk:int, 3:ss_customer_sk:int, 4:ss_cdemo_sk:int, 5:ss_hdemo_sk:int, 6:ss_addr_sk:int, 7:ss_store_sk:int, 8:ss_promo_sk:int, 9:ss_ticket_number:int, 10:ss_quantity:int, 11:ss_wholesale_cost:decimal(7,2), 12:ss_list_price:decimal(7,2), 13:ss_sales_price:decimal(7,2), 14:ss_ext_discount_amt:decimal(7,2), 15:ss_ext_sales_price:decimal(7,2), 16:ss_ext_wholesale_cost:decimal(7,2), 17:ss_ext_list_price:decimal(7,2), 18:ss_ext_tax:decimal(7,2), 19:ss_coupon_amt:decimal(7,2), 20:ss_net_paid:decimal(7,2), 21:ss_net_paid_inc_tax:decimal(7,2), 22:ss_net_profit:decimal(7,2), 23:PARTITION__SPEC__ID:int, 24:PARTITION__HASH:bigint, 25:FILE__PATH:string, 26:ROW__POSITION:bigint]
+                      vectorizationSchemaColumns: [0:ss_sold_date_sk:int, 1:ss_sold_time_sk:int, 2:ss_item_sk:int, 3:ss_customer_sk:int, 4:ss_cdemo_sk:int, 5:ss_hdemo_sk:int, 6:ss_addr_sk:int, 7:ss_store_sk:int, 8:ss_promo_sk:int, 9:ss_ticket_number:int, 10:ss_quantity:int, 11:ss_wholesale_cost:decimal(7,2), 12:ss_list_price:decimal(7,2), 13:ss_sales_price:decimal(7,2), 14:ss_ext_discount_amt:decimal(7,2), 15:ss_ext_sales_price:decimal(7,2), 16:ss_ext_wholesale_cost:decimal(7,2), 17:ss_ext_list_price:decimal(7,2), 18:ss_ext_tax:decimal(7,2), 19:ss_coupon_amt:decimal(7,2), 20:ss_net_paid:decimal(7,2), 21:ss_net_paid_inc_tax:decimal(7,2), 22:ss_net_profit:decimal(7,2), 23:PARTITION__SPEC__ID:int, 24:PARTITION__HASH:bigint, 25:FILE__PATH:string, 26:ROW__POSITION:bigint, 27:PARTITION__PROJECTION:string]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -545,27 +545,27 @@ STAGE PLANS:
                     predicate: ((ss_sold_date_sk = 2451181) and ss_item_sk is not null and ss_customer_sk is not null) (type: boolean)
                     Statistics: Num rows: 2 Data size: 1400 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: PARTITION__SPEC__ID (type: int), PARTITION__HASH (type: bigint), FILE__PATH (type: string), ROW__POSITION (type: bigint), 2451181 (type: int), ss_sold_time_sk (type: int), ss_item_sk (type: int), ss_customer_sk (type: int), ss_cdemo_sk (type: int), ss_hdemo_sk (type: int), ss_addr_sk (type: int), ss_store_sk (type: int), ss_promo_sk (type: int), ss_ticket_number (type: int), ss_quantity (type: int), ss_wholesale_cost (type: decimal(7,2)), ss_list_price (type: decimal(7,2)), ss_sales_price (type: decimal(7,2)), ss_ext_discount_amt (type: decimal(7,2)), ss_ext_sales_price (type: decimal(7,2)), ss_ext_wholesale_cost (type: decimal(7,2)), ss_ext_list_price (type: decimal(7,2)), ss_ext_tax (type: decimal(7,2)), ss_coupon_amt (type: decimal(7,2)), ss_net_paid (type: decimal(7,2)), ss_net_paid_inc_tax (type: decimal(7,2)), ss_net_profit (type: decimal(7,2))
-                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26
+                      expressions: PARTITION__SPEC__ID (type: int), PARTITION__HASH (type: bigint), FILE__PATH (type: string), ROW__POSITION (type: bigint), PARTITION__PROJECTION (type: string), 2451181 (type: int), ss_sold_time_sk (type: int), ss_item_sk (type: int), ss_customer_sk (type: int), ss_cdemo_sk (type: int), ss_hdemo_sk (type: int), ss_addr_sk (type: int), ss_store_sk (type: int), ss_promo_sk (type: int), ss_ticket_number (type: int), ss_quantity (type: int), ss_wholesale_cost (type: decimal(7,2)), ss_list_price (type: decimal(7,2)), ss_sales_price (type: decimal(7,2)), ss_ext_discount_amt (type: decimal(7,2)), ss_ext_sales_price (type: decimal(7,2)), ss_ext_wholesale_cost (type: decimal(7,2)), ss_ext_list_price (type: decimal(7,2)), ss_ext_tax (type: decimal(7,2)), ss_coupon_amt (type: decimal(7,2)), ss_net_paid (type: decimal(7,2)), ss_net_paid_inc_tax (type: decimal(7,2)), ss_net_profit (type: decimal(7,2))
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [23, 24, 25, 26, 27, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
-                          selectExpressions: ConstantVectorExpression(val 2451181) -> 27:int
-                      Statistics: Num rows: 2 Data size: 1808 Basic stats: COMPLETE Column stats: COMPLETE
+                          projectedOutputColumnNums: [23, 24, 25, 26, 27, 28, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+                          selectExpressions: ConstantVectorExpression(val 2451181) -> 28:int
+                      Statistics: Num rows: 2 Data size: 2176 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col6 (type: int), _col7 (type: int)
+                        key expressions: _col8 (type: int), _col7 (type: int)
                         null sort order: zz
                         sort order: ++
-                        Map-reduce partition columns: _col6 (type: int), _col7 (type: int)
+                        Map-reduce partition columns: _col8 (type: int), _col7 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
-                            keyColumns: 2:int, 3:int
+                            keyColumns: 3:int, 2:int
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumns: 23:int, 24:bigint, 25:string, 26:bigint, 27:int, 1:int, 4:int, 5:int, 6:int, 7:int, 8:int, 9:int, 10:int, 11:decimal(7,2), 12:decimal(7,2), 13:decimal(7,2), 14:decimal(7,2), 15:decimal(7,2), 16:decimal(7,2), 17:decimal(7,2), 18:decimal(7,2), 19:decimal(7,2), 20:decimal(7,2), 21:decimal(7,2), 22:decimal(7,2)
-                        Statistics: Num rows: 2 Data size: 1808 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: string), _col3 (type: bigint), _col4 (type: int), _col5 (type: int), _col8 (type: int), _col9 (type: int), _col10 (type: int), _col11 (type: int), _col12 (type: int), _col13 (type: int), _col14 (type: int), _col15 (type: decimal(7,2)), _col16 (type: decimal(7,2)), _col17 (type: decimal(7,2)), _col18 (type: decimal(7,2)), _col19 (type: decimal(7,2)), _col20 (type: decimal(7,2)), _col21 (type: decimal(7,2)), _col22 (type: decimal(7,2)), _col23 (type: decimal(7,2)), _col24 (type: decimal(7,2)), _col25 (type: decimal(7,2)), _col26 (type: decimal(7,2))
+                            valueColumns: 23:int, 24:bigint, 25:string, 26:bigint, 27:string, 28:int, 1:int, 4:int, 5:int, 6:int, 7:int, 8:int, 9:int, 10:int, 11:decimal(7,2), 12:decimal(7,2), 13:decimal(7,2), 14:decimal(7,2), 15:decimal(7,2), 16:decimal(7,2), 17:decimal(7,2), 18:decimal(7,2), 19:decimal(7,2), 20:decimal(7,2), 21:decimal(7,2), 22:decimal(7,2)
+                        Statistics: Num rows: 2 Data size: 2176 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: string), _col3 (type: bigint), _col4 (type: string), _col5 (type: int), _col6 (type: int), _col9 (type: int), _col10 (type: int), _col11 (type: int), _col12 (type: int), _col13 (type: int), _col14 (type: int), _col15 (type: int), _col16 (type: decimal(7,2)), _col17 (type: decimal(7,2)), _col18 (type: decimal(7,2)), _col19 (type: decimal(7,2)), _col20 (type: decimal(7,2)), _col21 (type: decimal(7,2)), _col22 (type: decimal(7,2)), _col23 (type: decimal(7,2)), _col24 (type: decimal(7,2)), _col25 (type: decimal(7,2)), _col26 (type: decimal(7,2)), _col27 (type: decimal(7,2))
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -588,32 +588,32 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
-                reduceColumnNullOrder: zzzz
-                reduceColumnSortOrder: ++++
+                reduceColumnNullOrder: zzzzz
+                reduceColumnSortOrder: +++++
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
-                    dataColumnCount: 25
-                    dataColumns: KEY.reducesinkkey0:int, KEY.reducesinkkey1:bigint, KEY.reducesinkkey2:string, KEY.reducesinkkey3:bigint, VALUE._col1:int, VALUE._col2:int, VALUE._col3:int, VALUE._col4:int, VALUE._col5:int, VALUE._col6:int, VALUE._col7:int, VALUE._col8:int, VALUE._col9:int, VALUE._col10:int, VALUE._col11:decimal(7,2)/DECIMAL_64, VALUE._col12:decimal(7,2)/DECIMAL_64, VALUE._col13:decimal(7,2)/DECIMAL_64, VALUE._col15:decimal(7,2)/DECIMAL_64, VALUE._col16:decimal(7,2)/DECIMAL_64, VALUE._col17:decimal(7,2)/DECIMAL_64, VALUE._col18:decimal(7,2)/DECIMAL_64, VALUE._col19:decimal(7,2)/DECIMAL_64, VALUE._col20:decimal(7,2)/DECIMAL_64, VALUE._col21:decimal(7,2)/DECIMAL_64, VALUE._col22:decimal(7,2)/DECIMAL_64
+                    dataColumnCount: 26
+                    dataColumns: KEY.reducesinkkey0:int, KEY.reducesinkkey1:bigint, KEY.reducesinkkey2:string, KEY.reducesinkkey3:bigint, KEY.reducesinkkey4:string, VALUE._col1:int, VALUE._col2:int, VALUE._col3:int, VALUE._col4:int, VALUE._col5:int, VALUE._col6:int, VALUE._col7:int, VALUE._col8:int, VALUE._col9:int, VALUE._col10:int, VALUE._col11:decimal(7,2)/DECIMAL_64, VALUE._col12:decimal(7,2)/DECIMAL_64, VALUE._col13:decimal(7,2)/DECIMAL_64, VALUE._col15:decimal(7,2)/DECIMAL_64, VALUE._col16:decimal(7,2)/DECIMAL_64, VALUE._col17:decimal(7,2)/DECIMAL_64, VALUE._col18:decimal(7,2)/DECIMAL_64, VALUE._col19:decimal(7,2)/DECIMAL_64, VALUE._col20:decimal(7,2)/DECIMAL_64, VALUE._col21:decimal(7,2)/DECIMAL_64, VALUE._col22:decimal(7,2)/DECIMAL_64
                     partitionColumnCount: 0
                     scratchColumnTypeNames: [bigint, decimal(7,2)]
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: bigint), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: bigint), 2451181 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: int), VALUE._col5 (type: int), VALUE._col6 (type: int), VALUE._col7 (type: int), VALUE._col8 (type: int), VALUE._col9 (type: int), VALUE._col10 (type: int), VALUE._col11 (type: decimal(7,2)), VALUE._col12 (type: decimal(7,2)), VALUE._col13 (type: decimal(7,2)), null (type: decimal(7,2)), VALUE._col15 (type: decimal(7,2)), VALUE._col16 (type: decimal(7,2)), VALUE._col17 (type: decimal(7,2)), VALUE._col18 (type: decimal(7,2)), VALUE._col19 (type: decimal(7,2)), VALUE._col20 (type: decimal(7,2)), VALUE._col21 (type: decimal(7,2)), VALUE._col22 (type: decimal(7,2))
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26
+                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: bigint), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: bigint), KEY.reducesinkkey4 (type: string), 2451181 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: int), VALUE._col5 (type: int), VALUE._col6 (type: int), VALUE._col7 (type: int), VALUE._col8 (type: int), VALUE._col9 (type: int), VALUE._col10 (type: int), VALUE._col11 (type: decimal(7,2)), VALUE._col12 (type: decimal(7,2)), VALUE._col13 (type: decimal(7,2)), null (type: decimal(7,2)), VALUE._col15 (type: decimal(7,2)), VALUE._col16 (type: decimal(7,2)), VALUE._col17 (type: decimal(7,2)), VALUE._col18 (type: decimal(7,2)), VALUE._col19 (type: decimal(7,2)), VALUE._col20 (type: decimal(7,2)), VALUE._col21 (type: decimal(7,2)), VALUE._col22 (type: decimal(7,2))
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [0, 1, 2, 3, 25, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 26, 17, 18, 19, 20, 21, 22, 23, 24]
-                    selectExpressions: ConstantVectorExpression(val 2451181) -> 25:int, ConstantVectorExpression(val null) -> 26:decimal(7,2)
-                Statistics: Num rows: 1 Data size: 1592 Basic stats: COMPLETE Column stats: COMPLETE
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 26, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 27, 18, 19, 20, 21, 22, 23, 24, 25]
+                    selectExpressions: ConstantVectorExpression(val 2451181) -> 26:int, ConstantVectorExpression(val null) -> 27:decimal(7,2)
+                Statistics: Num rows: 1 Data size: 1776 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 1592 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 1776 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
                       output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
@@ -694,46 +694,46 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
-                reduceColumnNullOrder: zzzz
-                reduceColumnSortOrder: ++++
+                reduceColumnNullOrder: zzzzz
+                reduceColumnSortOrder: +++++
                 allNative: false
                 usesVectorUDFAdaptor: true
                 vectorized: true
                 rowBatchContext:
-                    dataColumnCount: 5
-                    dataColumns: KEY._col0:int, KEY._col1:bigint, KEY._col2:string, KEY._col3:bigint, VALUE._col0:bigint
+                    dataColumnCount: 6
+                    dataColumns: KEY._col0:int, KEY._col1:bigint, KEY._col2:string, KEY._col3:bigint, KEY._col4:string, VALUE._col0:bigint
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFCountMerge(col 4:bigint) -> bigint
+                    aggregators: VectorUDAFCountMerge(col 5:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    keyExpressions: col 0:int, col 1:bigint, col 2:string, col 3:bigint
+                    keyExpressions: col 0:int, col 1:bigint, col 2:string, col 3:bigint, col 4:string
                     native: false
                     vectorProcessingMode: MERGE_PARTIAL
                     projectedOutputColumnNums: [0]
-                keys: KEY._col0 (type: int), KEY._col1 (type: bigint), KEY._col2 (type: string), KEY._col3 (type: bigint)
+                keys: KEY._col0 (type: int), KEY._col1 (type: bigint), KEY._col2 (type: string), KEY._col3 (type: bigint), KEY._col4 (type: string)
                 mode: mergepartial
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                Statistics: Num rows: 1 Data size: 212 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 1 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   Filter Vectorization:
                       className: VectorFilterOperator
                       native: true
-                      predicateExpression: FilterLongColGreaterLongScalar(col 4:bigint, val 1)
-                  predicate: (_col4 > 1L) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 212 Basic stats: COMPLETE Column stats: COMPLETE
+                      predicateExpression: FilterLongColGreaterLongScalar(col 5:bigint, val 1)
+                  predicate: (_col5 > 1L) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: cardinality_violation(_col0,_col1,_col2,_col3) (type: int)
+                    expressions: cardinality_violation(_col0,_col1,_col2,_col3,_col4) (type: int)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5]
-                        selectExpressions: VectorUDFAdaptor(cardinality_violation(_col0,_col1,_col2,_col3)) -> 5:int
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: VectorUDFAdaptor(cardinality_violation(_col0,_col1,_col2,_col3,_col4)) -> 6:int
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -938,23 +938,23 @@ Stage-6
               Reducer 2 vectorized
               File Output Operator [FS_66]
                 table:{"name:":"default.store_sales"}
-                Select Operator [SEL_65] (rows=1 width=1592)
-                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26"]
+                Select Operator [SEL_65] (rows=1 width=1776)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26","_col27"]
                 <-Map 1 [SIMPLE_EDGE] vectorized
                   SHUFFLE [RS_60]
-                    Select Operator [SEL_56] (rows=1 width=1476)
-                      Output:["_col0","_col1","_col2","_col3","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26"]
-                      Filter Operator [FIL_52] (rows=1 width=2976)
-                        predicate:((_col23 = _col33) and (_col46 = _col36) and (_col35 = 2451181) and (floor((_col33 / 1000)) * 1000) BETWEEN 1000 AND 2000 and (_col29 < 0) and _col32 is null)
-                        Select Operator [SEL_51] (rows=7 width=950)
-                          Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26","_col27","_col28","_col29","_col30","_col31","_col32","_col33","_col34","_col35","_col36","_col37","_col38","_col39","_col40","_col41","_col42","_col43","_col44","_col45","_col46","_col47","_col48"]
-                          Map Join Operator [MAPJOIN_50] (rows=7 width=950)
-                            Conds:SEL_49._col1, _col2=RS_48._col6, _col7(Left Outer),Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col24","_col25","_col26","_col27","_col28","_col29","_col30","_col31","_col32","_col33","_col34","_col35","_col36","_col37","_col38","_col39","_col40","_col41","_col42","_col43","_col44","_col45","_col46","_col47","_col48","_col49","_col50"]
+                    Select Operator [SEL_56] (rows=1 width=1660)
+                      Output:["_col0","_col1","_col2","_col3","_col4","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col20","_col21","_col22","_col23","_col24","_col25","_col26","_col27"]
+                      Filter Operator [FIL_52] (rows=1 width=3160)
+                        predicate:((_col24 = _col34) and (_col47 = _col37) and (_col36 = 2451181) and (floor((_col34 / 1000)) * 1000) BETWEEN 1000 AND 2000 and (_col30 < 0) and _col33 is null)
+                        Select Operator [SEL_51] (rows=7 width=1029)
+                          Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26","_col27","_col28","_col29","_col30","_col31","_col32","_col33","_col34","_col35","_col36","_col37","_col38","_col39","_col40","_col41","_col42","_col43","_col44","_col45","_col46","_col47","_col48","_col49"]
+                          Map Join Operator [MAPJOIN_50] (rows=7 width=1029)
+                            Conds:SEL_49._col2, _col1=RS_48._col8, _col7(Left Outer),Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col24","_col25","_col26","_col27","_col28","_col29","_col30","_col31","_col32","_col33","_col34","_col35","_col36","_col37","_col38","_col39","_col40","_col41","_col42","_col43","_col44","_col45","_col46","_col47","_col48","_col49","_col50","_col51"]
                           <-Map 6 [BROADCAST_EDGE] vectorized
                             BROADCAST [RS_48]
-                              PartitionCols:_col6, _col7
-                              Select Operator [SEL_47] (rows=2 width=904)
-                                Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26"]
+                              PartitionCols:_col8, _col7
+                              Select Operator [SEL_47] (rows=2 width=1088)
+                                Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26","_col27"]
                                 Filter Operator [FIL_46] (rows=2 width=700)
                                   predicate:((ss_sold_date_sk = 2451181) and ss_item_sk is not null and ss_customer_sk is not null)
                                   TableScan [TS_2] (rows=2 width=55###)
@@ -973,8 +973,8 @@ Stage-6
                     PartitionCols:_col3, iceberg_bucket(_col2, 3)
                     Select Operator [SEL_57] (rows=1 width=1388)
                       Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22"]
-                      Filter Operator [FIL_53] (rows=1 width=2976)
-                        predicate:((_col23 = _col33) and (_col46 = _col36) and (_col35 = 2451181) and (floor((_col33 / 1000)) * 1000) BETWEEN 1000 AND 2000 and (_col29 < 0) and _col32 is null)
+                      Filter Operator [FIL_53] (rows=1 width=3160)
+                        predicate:((_col24 = _col34) and (_col47 = _col37) and (_col36 = 2451181) and (floor((_col34 / 1000)) * 1000) BETWEEN 1000 AND 2000 and (_col30 < 0) and _col33 is null)
                          Please refer to the previous Select Operator [SEL_51]
               Reducer 4 vectorized
               File Output Operator [FS_70]
@@ -986,27 +986,27 @@ Stage-6
                     PartitionCols:_col3, iceberg_bucket(_col2, 3)
                     Select Operator [SEL_58] (rows=3 width=966)
                       Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22"]
-                      Filter Operator [FIL_54] (rows=3 width=1565)
-                        predicate:(_col23 is null and _col46 is null and _col35 is null)
+                      Filter Operator [FIL_54] (rows=3 width=1688)
+                        predicate:(_col24 is null and _col47 is null and _col36 is null)
                          Please refer to the previous Select Operator [SEL_51]
               Reducer 5 vectorized
               File Output Operator [FS_74]
                 table:{"name:":"default.merge_tmp_table"}
                 Select Operator [SEL_73] (rows=1 width=4)
                   Output:["_col0"]
-                  Filter Operator [FIL_72] (rows=1 width=212)
-                    predicate:(_col4 > 1L)
-                    Group By Operator [GBY_71] (rows=1 width=212)
-                      Output:["_col0","_col1","_col2","_col3","_col4"],aggregations:["count(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2, KEY._col3
+                  Filter Operator [FIL_72] (rows=1 width=396)
+                    predicate:(_col5 > 1L)
+                    Group By Operator [GBY_71] (rows=1 width=396)
+                      Output:["_col0","_col1","_col2","_col3","_col4","_col5"],aggregations:["count(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2, KEY._col3, KEY._col4
                     <-Map 1 [SIMPLE_EDGE] vectorized
                       SHUFFLE [RS_64]
-                        PartitionCols:_col0, _col1, _col2, _col3
-                        Group By Operator [GBY_63] (rows=1 width=212)
-                          Output:["_col0","_col1","_col2","_col3","_col4"],aggregations:["count()"],keys:_col4, _col39, _col6, _col44
-                          Select Operator [SEL_59] (rows=1 width=2976)
-                            Output:["_col4","_col6","_col39","_col44"]
-                            Filter Operator [FIL_55] (rows=1 width=2976)
-                              predicate:((_col23 = _col33) and (_col46 = _col36) and (_col35 = 2451181) and (floor((_col33 / 1000)) * 1000) BETWEEN 1000 AND 2000 and (_col29 < 0))
+                        PartitionCols:_col0, _col1, _col2, _col3, _col4
+                        Group By Operator [GBY_63] (rows=1 width=396)
+                          Output:["_col0","_col1","_col2","_col3","_col4","_col5"],aggregations:["count()"],keys:_col4, _col40, _col6, _col45, _col12
+                          Select Operator [SEL_59] (rows=1 width=3160)
+                            Output:["_col4","_col6","_col12","_col40","_col45"]
+                            Filter Operator [FIL_55] (rows=1 width=3160)
+                              predicate:((_col24 = _col34) and (_col47 = _col37) and (_col36 = 2451181) and (floor((_col34 / 1000)) * 1000) BETWEEN 1000 AND 2000 and (_col30 < 0))
                                Please refer to the previous Select Operator [SEL_51]
 Stage-7
   Stats Work{}

@@ -3489,11 +3489,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     OpParseContext inputCtx = opParseCtx.get(input);
     RowResolver inputRR = inputCtx.getRowResolver();
     Map<ASTNode, String> exprToColumnAlias = qb.getParseInfo().getAllExprToColumnAlias();
-    for (ASTNode astNode : exprToColumnAlias.keySet()) {
-      if (inputRR.getExpression(astNode) != null) {
-        inputRR.put("", exprToColumnAlias.get(astNode), inputRR.getExpression(astNode));
-      }
-    }
+    inputRR.putAll(exprToColumnAlias);
     ASTNode condn = (ASTNode) havingExpr.getChild(0);
 
     if (!isCBOExecuted() && !qb.getParseInfo().getDestToGroupBy().isEmpty()) {
@@ -4082,7 +4078,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         assert nonNull(tmp);
         if (ensureUniqueCols) {
-          if (!output.putWithCheck(tmp[0], tmp[1], null, oColInfo)) {
+          if (!output.putWithCheck(tmp[0], tmp[1], oColInfo.getInternalName(), oColInfo)) {
             throw new CalciteSemanticException("Cannot add column to RR: " + tmp[0] + "." + tmp[1]
                 + " => " + oColInfo + " due to duplication, see previous warnings",
                 UnsupportedFeature.Duplicates_in_RR);
@@ -8110,10 +8106,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     canBeMerged &= !destTableIsFullAcid;
     if (destinationTable != null && destinationTable.getStorageHandler() != null) {
       canBeMerged &= destinationTable.getStorageHandler().supportsMergeFiles();
-      // TODO: Support for merge task for update, delete and merge queries
+      // TODO: Support for merge task for update and merge queries
       //  when storage handler supports it.
+      if (Context.Operation.DELETE.equals(ctx.getOperation()) && !deleting(dest)) {
+        canBeMerged = true;
+      }
       if (Context.Operation.UPDATE.equals(ctx.getOperation())
-              || Context.Operation.DELETE.equals(ctx.getOperation())
               || Context.Operation.MERGE.equals(ctx.getOperation())) {
         canBeMerged = false;
       }
@@ -13228,7 +13226,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           || postExecHooks.contains("org.apache.atlas.hive.hook.HiveHook")) {
         List<Transform> transformations = new ArrayList<Transform>();
         transformations.add(new HiveOpConverterPostProc());
-        transformations.add(new Generator(postExecHooks));
+        transformations.add(Generator.fromConf(conf));
         for (Transform t : transformations) {
           pCtx = t.transform(pCtx);
         }
@@ -15667,7 +15665,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void copyInfoToQueryProperties(QueryProperties queryProperties) {
     if (qb != null) {
-      queryProperties.setQuery(qb.getIsQuery());
+      queryProperties.setQuery(qb.getIsQuery() && !forViewCreation);
       queryProperties.setAnalyzeCommand(qb.getParseInfo().isAnalyzeCommand());
       queryProperties.setNoScanAnalyzeCommand(qb.getParseInfo().isNoScanAnalyzeCommand());
       queryProperties.setAnalyzeRewrite(qb.isAnalyzeRewrite());
@@ -15675,6 +15673,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       queryProperties.setHasOuterOrderBy(!qb.getParseInfo().getIsSubQ() &&
           !qb.getParseInfo().getDestToOrderBy().isEmpty());
       queryProperties.setOuterQueryLimit(qb.getParseInfo().getOuterQueryLimit());
+      queryProperties.setView(forViewCreation);
       queryProperties.setMaterializedView(qb.isMaterializedView());
     }
   }

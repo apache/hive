@@ -659,6 +659,10 @@ class AlterDatabaseRequest; end
 
 class DropDatabaseRequest; end
 
+class GetFunctionsRequest; end
+
+class GetFunctionsResponse; end
+
 class CmRecycleRequest; end
 
 class CmRecycleResponse; end
@@ -1756,9 +1760,11 @@ end
 class DropCatalogRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   NAME = 1
+  IFEXISTS = 2
 
   FIELDS = {
-    NAME => {:type => ::Thrift::Types::STRING, :name => 'name'}
+    NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
+    IFEXISTS => {:type => ::Thrift::Types::BOOL, :name => 'ifExists', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -5981,6 +5987,47 @@ class DropDatabaseRequest
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field ignoreUnknownDb is unset!') if @ignoreUnknownDb.nil?
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field deleteData is unset!') if @deleteData.nil?
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field cascade is unset!') if @cascade.nil?
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetFunctionsRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  DBNAME = 1
+  CATALOGNAME = 2
+  PATTERN = 3
+  RETURNNAMES = 4
+
+  FIELDS = {
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    CATALOGNAME => {:type => ::Thrift::Types::STRING, :name => 'catalogName', :optional => true},
+    PATTERN => {:type => ::Thrift::Types::STRING, :name => 'pattern', :optional => true},
+    RETURNNAMES => {:type => ::Thrift::Types::BOOL, :name => 'returnNames', :default => true, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetFunctionsResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  FUNCTION_NAMES = 1
+  FUNCTIONS = 2
+
+  FIELDS = {
+    FUNCTION_NAMES => {:type => ::Thrift::Types::LIST, :name => 'function_names', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
+    FUNCTIONS => {:type => ::Thrift::Types::LIST, :name => 'functions', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Function}, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
   end
 
   ::Thrift::Struct.generate_accessors self

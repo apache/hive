@@ -981,13 +981,13 @@ public class ObjectStore implements RawStore, Configurable {
     db.setOwnerType(principalType);
     if (mdb.getType().equalsIgnoreCase(DatabaseType.NATIVE.name())) {
       db.setType(DatabaseType.NATIVE);
-      db.setLocationUri(mdb.getLocationUri());
-      db.setManagedLocationUri(org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getManagedLocationUri(), null));
     } else {
       db.setType(DatabaseType.REMOTE);
       db.setConnector_name(org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getDataConnectorName(), null));
       db.setRemote_dbname(org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getRemoteDatabaseName(), null));
     }
+    db.setLocationUri(mdb.getLocationUri());
+    db.setManagedLocationUri(org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getManagedLocationUri(), null));
     db.setCatalogName(catName);
     db.setCreateTime(mdb.getCreateTime());
     return db;
@@ -11782,6 +11782,45 @@ public class ObjectStore implements RawStore, Configurable {
       rollbackAndCleanup(commited, query);
     }
     return funcs;
+  }
+
+  @Override
+  public <T> List<T> getFunctionsRequest(String catName, String dbName, String pattern,
+      boolean isReturnNames) throws MetaException {
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
+      dbName = normalizeIdentifier(dbName);
+      // Take the pattern and split it on the | to get all the composing
+      // patterns
+      List<String> parameterVals = new ArrayList<>();
+      StringBuilder filterBuilder = new StringBuilder();
+      appendSimpleCondition(filterBuilder, "database.name", new String[] { dbName }, parameterVals);
+      appendSimpleCondition(filterBuilder, "database.catalogName", new String[] {catName}, parameterVals);
+      if(pattern != null) {
+        appendPatternCondition(filterBuilder, "functionName", pattern, parameterVals);
+      }
+      query = pm.newQuery(MFunction.class, filterBuilder.toString());
+      if (isReturnNames) {
+        query.setResult("functionName");
+      }
+      query.setOrdering("functionName ascending");
+
+      if (!isReturnNames) {
+        List<MFunction> functionList = (List<MFunction>) query.executeWithArray(parameterVals.toArray(new String[0]));
+        pm.retrieveAll(functionList);
+        commited = commitTransaction();
+        return (List<T>)convertToFunctions(functionList);
+      } else {
+        List<String> functionList = (List<String>) query.executeWithArray(parameterVals.toArray(new String[0]));
+        pm.retrieveAll(functionList);
+        commited = commitTransaction();
+        return (List<T>)functionList;
+      }
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
   }
 
   @Override

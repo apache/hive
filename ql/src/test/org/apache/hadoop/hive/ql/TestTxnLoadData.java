@@ -391,16 +391,16 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
    */
   @Test
   public void testValidations() throws Exception {
-    runStatementOnDriver("drop table if exists T");
-    runStatementOnDriver("drop table if exists Tstage");
-    runStatementOnDriver("create table T (a int, b int) clustered by (a) into 2 buckets stored as orc tblproperties('transactional'='true')");
+    runStatementOnDriver("drop table if exists t");
+    runStatementOnDriver("drop table if exists tstage");
+    runStatementOnDriver("create table t (a int, b int) clustered by (a) into 2 buckets stored as orc tblproperties('transactional'='true')");
     File createdFile= folder.newFile("myfile.txt");
     FileUtils.writeStringToFile(createdFile, "hello world");
-    runStatementOnDriver("create table Tstage (a int, b int) stored as orc tblproperties('transactional'='false')");
+    runStatementOnDriver("create table tstage (a int, b int) stored as orc tblproperties('transactional'='false')");
     //this creates an ORC data file with correct schema under table root
-    runStatementOnDriver("insert into Tstage values(1,2),(3,4)");
+    runStatementOnDriver("insert into tstage values(1,2),(3,4)");
     // This will work with the new support of rewriting load into IAS.
-    runStatementOnDriver("load data local inpath '" + getWarehouseDir() + "/Tstage' into table T");
+    runStatementOnDriver("load data local inpath '" + getWarehouseDir() + "/tstage' into table t");
   }
 
   private void checkExpected(List<String> rs, String[][] expected, String msg) {

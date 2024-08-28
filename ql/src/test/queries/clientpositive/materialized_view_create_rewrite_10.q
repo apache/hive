@@ -1,6 +1,6 @@
 -- Try to run incremental on a non-transactional MV in presence of delete operations
 -- Compiler should fall back to full rebuild.
-
+--! qt:replace:/(\S Data size\:\s+)\S+(\s+Basic stats\: \S+ Column stats\: \S+)/$1#Masked#$2/
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 

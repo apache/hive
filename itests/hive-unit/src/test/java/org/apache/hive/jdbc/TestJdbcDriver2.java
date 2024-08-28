@@ -3428,4 +3428,26 @@ public class TestJdbcDriver2 {
       stmt.close();
     }
   }
+  /**
+   * These test methods validate the error handling when attempting to load data from a non-existent file into different types of Hive tables.
+   * Each test creates a specific type of table ( dynamically partitioned, or bucketed), and then attempts to load data from a non-existent file.
+   * The tests pass if an exception is thrown with a message containing the string "Invalid path".
+   */
+  @Test
+  public void testLoadDataNegativeForDynamicPartition() throws Exception {
+    HiveStatement stmt = (HiveStatement) con.createStatement();
+    try {
+      stmt.execute("drop table if exists T");
+      stmt.execute("create table T (a int, b int) partitioned by (p int) stored as orc");
+      try {
+        stmt.execute("load data local inpath '/path/to/nonexistent/file.txt' into table T");
+        fail("Expected an exception to be thrown");
+      } catch (Exception e) {
+        assertTrue("load data inpath",
+                e.getMessage() != null && e.getMessage().contains("Invalid path"));
+      }
+    } finally {
+      stmt.close();
+    }
+  }
 }

@@ -9,6 +9,14 @@ DROP TABLE IF EXISTS ice_t;
 CREATE EXTERNAL TABLE ice_t (i int, s string, ts timestamp, d date) STORED BY ICEBERG;
 SHOW CREATE TABLE ice_t;
 
+DROP TABLE IF EXISTS ice_tv1;
+CREATE EXTERNAL TABLE ice_tv1 (i int, s string, ts timestamp, d date) STORED BY ICEBERG TBLPROPERTIES('format-version'='1');
+SHOW CREATE TABLE ice_tv1;
+
+DROP TABLE IF EXISTS ice_tv2;
+CREATE EXTERNAL TABLE ice_tv2 (i int, s string, ts timestamp, d date) STORED BY ICEBERG TBLPROPERTIES('format-version'='2');
+SHOW CREATE TABLE ice_tv2;
+
 DROP TABLE IF EXISTS ice_t_transform;
 CREATE EXTERNAL TABLE ice_t_transform (year_field date, month_field date, day_field date, hour_field timestamp, truncate_field string, bucket_field int, identity_field int) PARTITIONED BY SPEC (year(year_field), month(month_field), day(day_field), hour(hour_field), truncate(2, truncate_field), bucket(2, bucket_field), identity_field) STORED BY ICEBERG;
 SHOW CREATE TABLE ice_t_transform;

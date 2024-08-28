@@ -1,0 +1,263 @@
+PREHOOK: query: create table ice_orc (
+    first_name string, 
+    last_name string,
+    dept_id bigint
+ )
+stored by iceberg stored as orc 
+tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: create table ice_orc (
+    first_name string, 
+    last_name string,
+    dept_id bigint
+ )
+stored by iceberg stored as orc 
+tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: insert into ice_orc VALUES ('fn1','ln1', 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: insert into ice_orc VALUES ('fn1','ln1', 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: insert into ice_orc VALUES ('fn2','ln2', 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: insert into ice_orc VALUES ('fn2','ln2', 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: insert into ice_orc VALUES ('fn3','ln3', 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: insert into ice_orc VALUES ('fn3','ln3', 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: insert into ice_orc VALUES ('fn4','ln4', 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: insert into ice_orc VALUES ('fn4','ln4', 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: delete from ice_orc where last_name in ('ln3', 'ln4')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+POSTHOOK: query: delete from ice_orc where last_name in ('ln3', 'ln4')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+PREHOOK: query: alter table ice_orc set partition spec(dept_id)
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@ice_orc
+POSTHOOK: query: alter table ice_orc set partition spec(dept_id)
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@ice_orc
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn5','ln5')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc@dept_id=2
+POSTHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn5','ln5')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc@dept_id=2
+PREHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn6','ln6')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc@dept_id=2
+POSTHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn6','ln6')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc@dept_id=2
+PREHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn7','ln7')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc@dept_id=2
+POSTHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn7','ln7')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc@dept_id=2
+PREHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn8','ln8')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc@dept_id=2
+POSTHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn8','ln8')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc@dept_id=2
+PREHOOK: query: delete from ice_orc where last_name in ('ln7', 'ln8')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+POSTHOOK: query: delete from ice_orc where last_name in ('ln7', 'ln8')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+PREHOOK: query: select * from ice_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ice_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+fn1	ln1	1
+fn2	ln2	1
+fn5	ln5	2
+fn6	ln6	2
+PREHOOK: query: describe formatted ice_orc
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_orc
+POSTHOOK: query: describe formatted ice_orc
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_orc
+# col_name            	data_type           	comment             
+first_name          	string              	                    
+last_name           	string              	                    
+dept_id             	bigint              	                    
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+dept_id             	IDENTITY            	 
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"dept_id\":\"true\",\"first_name\":\"true\",\"last_name\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"dept_id\",\"required\":false,\"type\":\"long\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"deleted-data-files\":\"2\",\"deleted-records\":\"2\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"4\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"4\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000}]}
+	format-version      	2                   
+	iceberg.orc.files.only	true                
+#### A masked pattern was here ####
+	numFiles            	4                   
+	numRows             	4                   
+	parquet.compression 	zstd                
+#### A masked pattern was here ####
+	rawDataSize         	0                   
+	serialization.format	1                   
+	snapshot-count      	10                  
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	orc                 
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: show compactions
+PREHOOK: type: SHOW COMPACTIONS
+POSTHOOK: query: show compactions
+POSTHOOK: type: SHOW COMPACTIONS
+CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
+PREHOOK: query: alter table ice_orc COMPACT 'major' and wait
+PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@ice_orc
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: alter table ice_orc COMPACT 'major' and wait
+POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@ice_orc
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: select * from ice_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ice_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+fn1	ln1	1
+fn2	ln2	1
+fn5	ln5	2
+fn6	ln6	2
+PREHOOK: query: describe formatted ice_orc
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_orc
+POSTHOOK: query: describe formatted ice_orc
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_orc
+# col_name            	data_type           	comment             
+first_name          	string              	                    
+last_name           	string              	                    
+dept_id             	bigint              	                    
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+dept_id             	IDENTITY            	 
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"dept_id\":\"true\",\"first_name\":\"true\",\"last_name\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"dept_id\",\"required\":false,\"type\":\"long\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"added-data-files\":\"1\",\"deleted-data-files\":\"2\",\"added-records\":\"2\",\"deleted-records\":\"2\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"2\",\"total-records\":\"4\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"2\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000}]}
+	format-version      	2                   
+	iceberg.orc.files.only	true                
+#### A masked pattern was here ####
+	numFiles            	2                   
+	numRows             	4                   
+	parquet.compression 	zstd                
+#### A masked pattern was here ####
+	rawDataSize         	0                   
+	serialization.format	1                   
+	snapshot-count      	12                  
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	orc                 
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: show compactions
+PREHOOK: type: SHOW COMPACTIONS
+POSTHOOK: query: show compactions
+POSTHOOK: type: SHOW COMPACTIONS
+CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
+#Masked#	default	ice_orc	dept_id=2	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	ice_orc	 --- 	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 

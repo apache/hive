@@ -1014,6 +1014,12 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public <T> List<T> getFunctionsRequest(String catName, String dbName,
+      String pattern, boolean isReturnNames) throws MetaException {
+    return objectStore.getFunctionsRequest(catName, dbName, pattern, isReturnNames);
+  }
+
+  @Override
   public AggrStats get_aggr_stats_for(String catName, String dbName,
       String tblName, List<String> partNames, List<String> colNames, String engine)
       throws MetaException {

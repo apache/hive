@@ -46,6 +46,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.sql.rowset.serial.SerialClob;
+
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
@@ -309,12 +311,14 @@ public abstract class HiveBaseResultSet implements ResultSet {
 
   @Override
   public Clob getClob(int i) throws SQLException {
-    throw new SQLFeatureNotSupportedException("Method not supported");
+    String str = getString(i);
+    return str == null ? null : new SerialClob(str.toCharArray());
   }
 
   @Override
   public Clob getClob(String colName) throws SQLException {
-    throw new SQLFeatureNotSupportedException("Method not supported");
+    String str = getString(colName);
+    return str == null ? null : new SerialClob(str.toCharArray());
   }
 
   @Override

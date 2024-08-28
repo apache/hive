@@ -88,7 +88,8 @@ public class HiveVectorizedReader {
     Schema requiredSchema = readSchema;
 
     if (!task.deletes().isEmpty()) {
-      deleteFilter = new HiveDeleteFilter(table.io(), task, table.schema(), prepareSchemaForDeleteFilter(readSchema));
+      deleteFilter = new HiveDeleteFilter(table.io(), task, table.schema(), prepareSchemaForDeleteFilter(readSchema),
+          context.getConfiguration());
       requiredSchema = deleteFilter.requiredSchema();
       // TODO: take requiredSchema and adjust readColumnIds below accordingly for equality delete cases
       // and remove below limitation

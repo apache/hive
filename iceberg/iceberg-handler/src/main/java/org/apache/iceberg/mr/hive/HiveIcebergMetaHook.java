@@ -105,7 +105,6 @@ import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.hive.CachedClientPool;
-import org.apache.iceberg.hive.HiveOperationsBase;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.hive.MetastoreLock;
@@ -1068,23 +1067,29 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
           hmsTable.getParameters().put("current-snapshot-id", String.valueOf(snapshot.snapshotId()));
         }
         String formatVersion = String.valueOf(((BaseTable) tbl).operations().current().formatVersion());
-        // If it is not the default format version, then set it in the table properties.
-        if (!"1".equals(formatVersion)) {
-          hmsTable.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
-        }
+        hmsTable.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
         // Set the serde info
         hmsTable.getSd().setInputFormat(HiveIcebergInputFormat.class.getName());
         hmsTable.getSd().setOutputFormat(HiveIcebergOutputFormat.class.getName());
         hmsTable.getSd().getSerdeInfo().setSerializationLib(HiveIcebergSerDe.class.getName());
         String storageHandler = hmsTable.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE);
         // Check if META_TABLE_STORAGE is not present or is not an instance of ICEBERG_STORAGE_HANDLER
-        if (storageHandler == null || !HiveOperationsBase.isHiveIcebergStorageHandler(storageHandler)) {
+        if (storageHandler == null || !isHiveIcebergStorageHandler(storageHandler)) {
           hmsTable.getParameters()
               .put(hive_metastoreConstants.META_TABLE_STORAGE, HiveTableOperations.HIVE_ICEBERG_STORAGE_HANDLER);
         }
       } catch (NoSuchTableException | NotFoundException ex) {
         // If the table doesn't exist, ignore throwing exception from here
       }
+    }
+  }
+
+  private static boolean isHiveIcebergStorageHandler(String storageHandler) {
+    try {
+      Class<?> storageHandlerClass = Class.forName(storageHandler);
+      return Class.forName(HIVE_ICEBERG_STORAGE_HANDLER).isAssignableFrom(storageHandlerClass);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException("Error checking storage handler class", e);
     }
   }
 

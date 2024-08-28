@@ -21,7 +21,6 @@ package org.apache.iceberg.mr.mapreduce;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -44,7 +43,9 @@ import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.avro.Avro;
 import org.apache.iceberg.common.DynMethods;
+import org.apache.iceberg.data.CachingDeleteLoader;
 import org.apache.iceberg.data.DeleteFilter;
+import org.apache.iceberg.data.DeleteLoader;
 import org.apache.iceberg.data.GenericDeleteFilter;
 import org.apache.iceberg.data.IdentityPartitionConverters;
 import org.apache.iceberg.data.avro.DataReader;
@@ -62,6 +63,7 @@ import org.apache.iceberg.mr.hive.IcebergAcidUtil;
 import org.apache.iceberg.orc.ORC;
 import org.apache.iceberg.parquet.Parquet;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
+import org.apache.iceberg.relocated.com.google.common.collect.Iterables;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.TypeUtil;
 import org.apache.iceberg.types.Types;
@@ -89,7 +91,7 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
     }
   }
 
-  private Iterator<FileScanTask> tasks;
+  private Iterable<FileScanTask> tasks;
   private CloseableIterator<T> currentIterator;
   private T current;
 
@@ -98,31 +100,28 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
     // For now IcebergInputFormat does its own split planning and does not accept FileSplit instances
     super.initialize(split, newContext);
     CombinedScanTask task = ((IcebergSplit) split).task();
-    this.tasks = task.files().iterator();
+    this.tasks = task.files();
     this.currentIterator = nextTask();
   }
 
   private CloseableIterator<T> nextTask() {
-    CloseableIterator<T> closeableIterator = open(tasks.next(), getExpectedSchema()).iterator();
-    if (!isFetchVirtualColumns() || Utilities.getIsVectorized(getConf())) {
+    CloseableIterator<T> closeableIterator = CloseableIterable.concat(
+        Iterables.transform(tasks, task -> open(task, expectedSchema))).iterator();
+    if (!isFetchVirtualColumns() || Utilities.getIsVectorized(conf)) {
       return closeableIterator;
     }
-    return new IcebergAcidUtil.VirtualColumnAwareIterator<T>(closeableIterator, getExpectedSchema(), getConf());
+    return new IcebergAcidUtil.VirtualColumnAwareIterator<>(closeableIterator,
+        expectedSchema, conf, table);
   }
 
   @Override
   public boolean nextKeyValue() throws IOException {
-    while (true) {
-      if (currentIterator.hasNext()) {
-        current = currentIterator.next();
-        return true;
-      } else if (tasks.hasNext()) {
-        currentIterator.close();
-        this.currentIterator = nextTask();
-      } else {
-        currentIterator.close();
-        return false;
-      }
+    if (currentIterator.hasNext()) {
+      current = currentIterator.next();
+      return true;
+    } else {
+      currentIterator.close();
+      return false;
     }
   }
 
@@ -148,24 +147,24 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
     Expression residual = HiveIcebergInputFormat.residualForTask(task, getContext().getConfiguration());
 
     // TODO: We have to take care of the EncryptionManager when LLAP and vectorization is used
-    CloseableIterable<T> iterator = HIVE_VECTORIZED_READER_BUILDER.invoke(getTable(), path, task,
+    CloseableIterable<T> iterator = HIVE_VECTORIZED_READER_BUILDER.invoke(table, path, task,
         idToConstant, getContext(), residual, readSchema);
 
     return applyResidualFiltering(iterator, residual, readSchema);
   }
 
-  private CloseableIterable<T> openGeneric(FileScanTask task, Schema readSchema) {
+  private CloseableIterable openGeneric(FileScanTask task, Schema readSchema) {
     if (task.isDataTask()) {
       // When querying metadata tables, the currentTask is a DataTask and the data has to
       // be fetched from the task instead of reading it from files.
       IcebergInternalRecordWrapper wrapper =
-          new IcebergInternalRecordWrapper(getTable().schema().asStruct(), readSchema.asStruct());
-      return (CloseableIterable) CloseableIterable.transform(((DataTask) task).rows(), row -> wrapper.wrap(row));
+          new IcebergInternalRecordWrapper(table.schema().asStruct(), readSchema.asStruct());
+      return CloseableIterable.transform(((DataTask) task).rows(), wrapper::wrap);
     }
 
     DataFile file = task.file();
-    InputFile inputFile = getTable().encryption().decrypt(EncryptedFiles.encryptedInput(
-        getTable().io().newInputFile(file.path().toString()),
+    InputFile inputFile = table.encryption().decrypt(EncryptedFiles.encryptedInput(
+        table.io().newInputFile(file.path().toString()),
         file.keyMetadata()));
 
     CloseableIterable<T> iterable;
@@ -196,7 +195,12 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
       case HIVE:
         return openVectorized(currentTask, readSchema);
       case GENERIC:
-        DeleteFilter deletes = new GenericDeleteFilter(getTable().io(), currentTask, getTable().schema(), readSchema);
+        DeleteFilter deletes = new GenericDeleteFilter(table.io(), currentTask, table.schema(), readSchema) {
+          @Override
+          protected DeleteLoader newDeleteLoader() {
+              return new CachingDeleteLoader(this::loadInputFile, conf);
+          }
+        };
         Schema requiredSchema = deletes.requiredSchema();
         return deletes.filter(openGeneric(currentTask, requiredSchema));
       default:
@@ -276,13 +280,13 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
   private Map<Integer, ?> constantsMap(FileScanTask task, BiFunction<Type, Object, Object> converter) {
     PartitionSpec spec = task.spec();
     Set<Integer> idColumns = spec.identitySourceIds();
-    Schema partitionSchema = TypeUtil.select(getExpectedSchema(), idColumns);
+    Schema partitionSchema = TypeUtil.select(expectedSchema, idColumns);
     boolean projectsIdentityPartitionColumns = !partitionSchema.columns().isEmpty();
-    if (getExpectedSchema().findField(MetadataColumns.PARTITION_COLUMN_ID) != null) {
-      Types.StructType partitionType = Partitioning.partitionType(getTable());
+    if (expectedSchema.findField(MetadataColumns.PARTITION_COLUMN_ID) != null) {
+      Types.StructType partitionType = Partitioning.partitionType(table);
       return PartitionUtil.constantsMap(task, partitionType, converter);
     } else if (projectsIdentityPartitionColumns) {
-      Types.StructType partitionType = Partitioning.partitionType(getTable());
+      Types.StructType partitionType = Partitioning.partitionType(table);
       return PartitionUtil.constantsMap(task, partitionType, converter);
     } else {
       return Collections.emptyMap();

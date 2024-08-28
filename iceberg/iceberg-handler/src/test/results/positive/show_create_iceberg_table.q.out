@@ -41,7 +41,101 @@ TBLPROPERTIES (
   'snapshot-count'='0', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
+  'uuid'='#Masked#', 
+  'write.delete.mode'='merge-on-read', 
+  'write.merge.mode'='merge-on-read', 
+  'write.update.mode'='merge-on-read')
+PREHOOK: query: DROP TABLE IF EXISTS ice_tv1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS ice_tv1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE EXTERNAL TABLE ice_tv1 (i int, s string, ts timestamp, d date) STORED BY ICEBERG TBLPROPERTIES('format-version'='1')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_tv1
+POSTHOOK: query: CREATE EXTERNAL TABLE ice_tv1 (i int, s string, ts timestamp, d date) STORED BY ICEBERG TBLPROPERTIES('format-version'='1')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_tv1
+PREHOOK: query: SHOW CREATE TABLE ice_tv1
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@ice_tv1
+POSTHOOK: query: SHOW CREATE TABLE ice_tv1
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@ice_tv1
+CREATE EXTERNAL TABLE `ice_tv1`(
+  `i` int, 
+  `s` string, 
+  `ts` timestamp, 
+  `d` date)
+ROW FORMAT SERDE 
+  'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
+STORED BY 
+  'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' 
+
+LOCATION
+  'hdfs://### HDFS PATH ###'
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"i","required":false,"type":"int"},{"id":2,"name":"s","required":false,"type":"string"},{"id":3,"name":"ts","required":false,"type":"timestamp"},{"id":4,"name":"d","required":false,"type":"date"}]}', 
+  'format-version'='1', 
+  'iceberg.orc.files.only'='false', 
+  'metadata_location'='hdfs://### HDFS PATH ###', 
+  'parquet.compression'='zstd', 
+  'serialization.format'='1', 
+  'snapshot-count'='0', 
+  'table_type'='ICEBERG', 
+#### A masked pattern was here ####
   'uuid'='#Masked#')
+PREHOOK: query: DROP TABLE IF EXISTS ice_tv2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS ice_tv2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE EXTERNAL TABLE ice_tv2 (i int, s string, ts timestamp, d date) STORED BY ICEBERG TBLPROPERTIES('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_tv2
+POSTHOOK: query: CREATE EXTERNAL TABLE ice_tv2 (i int, s string, ts timestamp, d date) STORED BY ICEBERG TBLPROPERTIES('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_tv2
+PREHOOK: query: SHOW CREATE TABLE ice_tv2
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@ice_tv2
+POSTHOOK: query: SHOW CREATE TABLE ice_tv2
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@ice_tv2
+CREATE EXTERNAL TABLE `ice_tv2`(
+  `i` int, 
+  `s` string, 
+  `ts` timestamp, 
+  `d` date)
+ROW FORMAT SERDE 
+  'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
+STORED BY 
+  'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' 
+
+LOCATION
+  'hdfs://### HDFS PATH ###'
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"i","required":false,"type":"int"},{"id":2,"name":"s","required":false,"type":"string"},{"id":3,"name":"ts","required":false,"type":"timestamp"},{"id":4,"name":"d","required":false,"type":"date"}]}', 
+  'format-version'='2', 
+  'iceberg.orc.files.only'='false', 
+  'metadata_location'='hdfs://### HDFS PATH ###', 
+  'parquet.compression'='zstd', 
+  'serialization.format'='1', 
+  'snapshot-count'='0', 
+  'table_type'='ICEBERG', 
+#### A masked pattern was here ####
+  'uuid'='#Masked#', 
+  'write.delete.mode'='merge-on-read', 
+  'write.merge.mode'='merge-on-read', 
+  'write.update.mode'='merge-on-read')
 PREHOOK: query: DROP TABLE IF EXISTS ice_t_transform
 PREHOOK: type: DROPTABLE
 PREHOOK: Output: database:default
@@ -97,7 +191,10 @@ TBLPROPERTIES (
   'snapshot-count'='0', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
-  'uuid'='#Masked#')
+  'uuid'='#Masked#', 
+  'write.delete.mode'='merge-on-read', 
+  'write.merge.mode'='merge-on-read', 
+  'write.update.mode'='merge-on-read')
 PREHOOK: query: DROP TABLE IF EXISTS ice_t_transform_prop
 PREHOOK: type: DROPTABLE
 PREHOOK: Output: database:default
@@ -154,7 +251,10 @@ TBLPROPERTIES (
   'snapshot-count'='0', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
-  'uuid'='#Masked#')
+  'uuid'='#Masked#', 
+  'write.delete.mode'='merge-on-read', 
+  'write.merge.mode'='merge-on-read', 
+  'write.update.mode'='merge-on-read')
 PREHOOK: query: DROP TABLE IF EXISTS ice_t_identity_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Output: database:default
@@ -199,7 +299,10 @@ TBLPROPERTIES (
   'snapshot-count'='0', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
-  'uuid'='#Masked#')
+  'uuid'='#Masked#', 
+  'write.delete.mode'='merge-on-read', 
+  'write.merge.mode'='merge-on-read', 
+  'write.update.mode'='merge-on-read')
 PREHOOK: query: DROP TABLE IF EXISTS ice_data
 PREHOOK: type: DROPTABLE
 PREHOOK: Output: database:default
@@ -253,7 +356,10 @@ TBLPROPERTIES (
   'snapshot-count'='1', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
-  'uuid'='#Masked#')
+  'uuid'='#Masked#', 
+  'write.delete.mode'='merge-on-read', 
+  'write.merge.mode'='merge-on-read', 
+  'write.update.mode'='merge-on-read')
 PREHOOK: query: DROP TABLE IF EXISTS ice_noHive
 PREHOOK: type: DROPTABLE
 PREHOOK: Output: database:default
@@ -295,7 +401,10 @@ TBLPROPERTIES (
   'snapshot-count'='0', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
-  'uuid'='#Masked#')
+  'uuid'='#Masked#', 
+  'write.delete.mode'='merge-on-read', 
+  'write.merge.mode'='merge-on-read', 
+  'write.update.mode'='merge-on-read')
 PREHOOK: query: INSERT INTO ice_noHive VALUES (1, 'ABC'),(2, 'CCC'),(3, 'DBD')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

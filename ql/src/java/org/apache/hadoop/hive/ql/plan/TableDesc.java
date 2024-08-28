@@ -260,4 +260,12 @@ public class TableDesc implements Serializable, Cloneable {
         + ", outputFileFormatClass=" + outputFileFormatClass + ", properties="
         + properties + ", jobProperties=" + jobProperties + "]";
   }
+
+  public void setProperty(String key, String value) {
+    properties.put(key, value);
+  }
+
+  public String getProperty(String key) {
+    return properties.getProperty(key);
+  }
 }

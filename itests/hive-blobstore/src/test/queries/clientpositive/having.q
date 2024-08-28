@@ -1,4 +1,5 @@
 -- Test HAVING clause
+set hive.cbo.fallback.strategy=NEVER;
 
 DROP TABLE having_blobstore_test;
 CREATE TABLE having_blobstore_test(a int, b int, c string)

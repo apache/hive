@@ -305,9 +305,8 @@ public class Vectorizer implements PhysicalPlanResolver {
         VirtualColumn.PARTITION_SPEC_ID, 
         VirtualColumn.PARTITION_HASH, 
         VirtualColumn.FILE_PATH, 
-        VirtualColumn.ROW_POSITION
-      );
-
+        VirtualColumn.ROW_POSITION,
+        VirtualColumn.PARTITION_PROJECTION);
   private HiveConf hiveConf;
 
   private enum VECTORIZABLE_UDAF {
