@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.metastore.metrics;
 
 import com.codahale.metrics.Metric;
-import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections4.MapUtils;
 
 import java.util.HashMap;
 import java.util.Map;
