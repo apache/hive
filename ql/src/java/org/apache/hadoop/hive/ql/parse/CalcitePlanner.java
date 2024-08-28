@@ -4636,9 +4636,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
                     unescapeIdentifier(expr.getChild(0).getChild(0).getText().toLowerCase()),
                     expr, columnList, excludedColumns, inputRR, starRR, pos,
                     outputRR, qb.getAliases(), true);
-          } else if (Boolean.TRUE.equals(
-              ParseUtils.containsTokenOfType(expr, HiveParser.TOK_FUNCTIONDI, HiveParser.TOK_WINDOWSPEC).getKey()
-          ) &&
+          } else if (
+              Boolean.TRUE.equals(ParseUtils.containsTokenOfType(expr, HiveParser.TOK_FUNCTIONDI).getKey()) && 
+              Boolean.FALSE.equals(ParseUtils.containsTokenOfType(expr, HiveParser.TOK_WINDOWSPEC).getKey()) &&
               !(srcRel instanceof HiveAggregate ||
               (srcRel.getInputs().size() == 1 && srcRel.getInput(0) instanceof HiveAggregate))) {
             // Likely a malformed query eg, select hash(distinct c1) from t1
