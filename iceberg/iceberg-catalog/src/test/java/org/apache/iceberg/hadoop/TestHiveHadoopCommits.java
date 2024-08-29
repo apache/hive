@@ -631,10 +631,10 @@ class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
 
     assertThat(unexpectedException.get()).isNull();
     assertThat(dirtyCommitFile.get()).isNotNull();
-    assertThat(dirtyCommitFile.get().exists()).isTrue();
+    assertThat(dirtyCommitFile.get()).exists();
     long ttl = 30L * 3600 * 24 * 1000;
     assertThat(dirtyCommitFile.get().setLastModified(System.currentTimeMillis() - ttl)).isTrue();
     table.newFastAppend().appendFile(FILE_A).commit();
-    assertThat(dirtyCommitFile.get().exists()).isFalse();
+    assertThat(dirtyCommitFile.get()).doesNotExist();
   }
 }
