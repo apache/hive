@@ -407,7 +407,7 @@ public class HadoopTableOperations implements TableOperations {
   }
 
   @VisibleForTesting
-  void writeVersionHint(FileSystem fs, Integer versionToWrite) throws Exception {
+  void writeVersionHint(FileSystem fs, Integer versionToWrite) throws IOException {
     Path versionHintFile = versionHintFile();
     Path tempVersionHintFile = metadataPath(UUID.randomUUID() + "-version-hint.temp");
     try {

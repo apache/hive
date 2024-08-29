@@ -47,7 +47,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 
-public class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
+class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
 
   @Test
   void testCommitFailedBeforeChangeVersionHint() {
@@ -556,7 +556,6 @@ public class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
         countDownLatch2.await();
         for (; commitTimes.get() < maxCommitTimes; commitTimes.incrementAndGet()) {
           table.newFastAppend().appendFile(FILE_A).commit();
-          TimeUnit.SECONDS.sleep(1);
           countDownLatch.countDown();
         }
       } catch (Exception e) {
