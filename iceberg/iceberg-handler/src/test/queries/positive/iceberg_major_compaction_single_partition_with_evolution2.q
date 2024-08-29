@@ -70,3 +70,4 @@ alter table ice_orc partition(b=1) compact 'major' and wait;
 
 select * from ice_orc;
 describe formatted ice_orc;
+show compactions;

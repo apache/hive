@@ -43,6 +43,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.SerializationUtils;
@@ -149,14 +150,11 @@ import org.apache.iceberg.FindFiles;
 import org.apache.iceberg.GenericBlobMetadata;
 import org.apache.iceberg.GenericStatisticsFile;
 import org.apache.iceberg.ManifestFile;
-import org.apache.iceberg.MetadataTableType;
-import org.apache.iceberg.MetadataTableUtils;
 import org.apache.iceberg.NullOrder;
 import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
-import org.apache.iceberg.PartitionsTable;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SerializableTable;
@@ -206,7 +204,6 @@ import org.apache.iceberg.util.ByteBuffers;
 import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.SerializationUtil;
 import org.apache.iceberg.util.SnapshotUtil;
-import org.apache.iceberg.util.StructProjection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -392,10 +389,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     ExprNodeDesc pushedPredicate = exprNodeDesc.clone();
 
     List<ExprNodeDesc> subExprNodes = pushedPredicate.getChildren();
+    Set<String> skipList = Stream.of(VirtualColumn.FILE_PATH, VirtualColumn.PARTITION_SPEC_ID,
+            VirtualColumn.PARTITION_HASH)
+        .map(VirtualColumn::getName).collect(Collectors.toSet());
+
     if (subExprNodes.removeIf(nodeDesc -> nodeDesc.getCols() != null &&
-        (nodeDesc.getCols().contains(VirtualColumn.FILE_PATH.getName()) ||
-            nodeDesc.getCols().contains(VirtualColumn.PARTITION_SPEC_ID.getName()) ||
-            nodeDesc.getCols().contains(VirtualColumn.PARTITION_HASH.getName())))) {
+        nodeDesc.getCols().stream().anyMatch(skipList::contains))) {
       if (subExprNodes.size() == 1) {
         pushedPredicate = subExprNodes.get(0);
       } else if (subExprNodes.isEmpty()) {
@@ -2071,35 +2070,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public List<Partition> getPartitionsByExpr(org.apache.hadoop.hive.ql.metadata.Table hmsTable, ExprNodeDesc desc)
       throws SemanticException {
-    Table icebergTable = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    PartitionSpec pSpec = icebergTable.spec();
-    PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
-            .createMetadataTableInstance(icebergTable, MetadataTableType.PARTITIONS);
-    SearchArgument sarg = ConvertAstToSearchArg.create(conf, (ExprNodeGenericFuncDesc) desc);
-    Expression expression = HiveIcebergFilterFactory.generateFilterExpression(sarg);
-    Set<PartitionData> partitionList = Sets.newHashSet();
-    ResidualEvaluator resEval = ResidualEvaluator.of(pSpec, expression, false);
-    try (CloseableIterable<FileScanTask> fileScanTasks = partitionsTable.newScan().planFiles()) {
-      fileScanTasks.forEach(task ->
-          partitionList.addAll(Sets.newHashSet(CloseableIterable.transform(task.asDataTask().rows(), row -> {
-            StructProjection data = row.get(IcebergTableUtil.PART_IDX, StructProjection.class);
-            return IcebergTableUtil.toPartitionData(data, pSpec.partitionType());
-          })).stream()
-             .filter(partitionData -> resEval.residualFor(partitionData).isEquivalentTo(Expressions.alwaysTrue()))
-             .collect(Collectors.toSet())));
-
-
-      return partitionList.stream()
-        .map(partitionData -> new DummyPartition(hmsTable, pSpec.partitionToPath(partitionData)))
-        .collect(Collectors.toList());
-    } catch (IOException e) {
-      throw new SemanticException(String.format("Error while fetching the partitions due to: %s", e));
-    }
+    return getPartitionsByExpr(hmsTable, desc, true);
   }
 
   @Override
-  public List<Partition> getPartitionsWithFilter(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
-      ExprNodeDesc filter, boolean currentSpec) {
+  public List<Partition> getPartitionsByExpr(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      ExprNodeDesc filter, boolean latestSpecOnly) throws SemanticException {
     SearchArgument sarg = ConvertAstToSearchArg.create(conf, (ExprNodeGenericFuncDesc) filter);
     Expression exp = HiveIcebergFilterFactory.generateFilterExpression(sarg);
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
@@ -2112,7 +2088,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       tasks.forEach(task -> {
         DataFile file = task.file();
         PartitionSpec spec = task.spec();
-        if ((currentSpec && file.specId() == tableSpecId) || (!currentSpec && file.specId() != tableSpecId)) {
+        if ((latestSpecOnly && file.specId() == tableSpecId) || (!latestSpecOnly && file.specId() != tableSpecId)) {
           PartitionData partitionData = IcebergTableUtil.toPartitionData(task.partition(), spec.partitionType());
           String partName = spec.partitionToPath(partitionData);
           Map<String, String> partSpecMap = Maps.newLinkedHashMap();
@@ -2123,15 +2099,15 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
           }
         }
       });
-    } catch (IOException ioe) {
-      LOG.warn("Failed to close task iterable", ioe);
+    } catch (IOException e) {
+      throw new SemanticException(String.format("Error while fetching the partitions due to: %s", e));
     }
     partitions.sort(Comparator.comparing(Partition::getName));
     return partitions;
   }
 
   @Override
-  public boolean isFilterMatching(org.apache.hadoop.hive.ql.metadata.Table hmsTable, ExprNodeDesc filter) {
+  public boolean hasDataMatchingFilterExpr(org.apache.hadoop.hive.ql.metadata.Table hmsTable, ExprNodeDesc filter) {
     SearchArgument sarg = ConvertAstToSearchArg.create(conf, (ExprNodeGenericFuncDesc) filter);
     Expression exp = HiveIcebergFilterFactory.generateFilterExpression(sarg);
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
