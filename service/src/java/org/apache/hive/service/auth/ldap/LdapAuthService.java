@@ -75,7 +75,7 @@ public class LdapAuthService extends HttpAuthService {
         authProvider.Authenticate(clientUserName, getPassword(request));
 
         String cookieToken = HttpAuthUtils.createCookieToken(clientUserName);
-        Cookie hs2Cookie = signAndcreateCookie(cookieToken);
+        Cookie hs2Cookie = signAndCreateCookie(cookieToken);
 
         response.addCookie(hs2Cookie);
       }

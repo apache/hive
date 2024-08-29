@@ -53,7 +53,7 @@ public class HttpAuthService {
     this.isCookieSecure = isCookieSecure;
   }
 
-  public Cookie signAndcreateCookie(String cookieToken) {
+  public Cookie signAndCreateCookie(String cookieToken) {
     return createCookie(signer.signCookie(cookieToken));
   }
 

@@ -255,7 +255,7 @@ public class ThriftHttpServlet extends TServlet {
       if (requireNewCookie &&
           !authType.isEnabled(HiveAuthConstants.AuthTypes.NOSASL)) {
         String cookieToken = HttpAuthUtils.createCookieToken(clientUserName);
-        Cookie hs2Cookie = httpAuthService.signAndcreateCookie(cookieToken);
+        Cookie hs2Cookie = httpAuthService.signAndCreateCookie(cookieToken);
 
         if (isHttpOnlyCookie) {
           response.setHeader("SET-COOKIE", httpAuthService.getHttpOnlyCookieHeader(hs2Cookie));
