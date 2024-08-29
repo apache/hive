@@ -59,7 +59,7 @@ public class HiveHadoopTableTestBase {
   Table table = null;
 
   @BeforeEach
-  public void setupTable() throws Exception {
+  public void setupTable() {
     this.tableLocation = tableDir.toURI().toString();
     this.metadataDir = new File(tableDir, "metadata");
     this.versionHintFile = new File(metadataDir, "version-hint.text");

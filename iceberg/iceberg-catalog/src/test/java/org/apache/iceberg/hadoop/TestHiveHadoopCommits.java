@@ -50,7 +50,7 @@ import static org.mockito.Mockito.spy;
 public class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
 
   @Test
-  public void testCommitFailedBeforeChangeVersionHint() throws IOException {
+  void testCommitFailedBeforeChangeVersionHint() {
     table.newFastAppend().appendFile(FILE_A).commit();
     BaseTable baseTable = (BaseTable) table;
     HadoopTableOperations tableOperations = (HadoopTableOperations) baseTable.operations();
@@ -81,7 +81,7 @@ public class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
   }
 
   @Test
-  public void testCommitFailedAndCheckFailed() throws IOException {
+  void testCommitFailedAndCheckFailed() throws IOException {
     table.newFastAppend().appendFile(FILE_A).commit();
     BaseTable baseTable = (BaseTable) table;
     HadoopTableOperations tableOperations = (HadoopTableOperations) baseTable.operations();
@@ -110,7 +110,7 @@ public class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
   }
 
   @Test
-  public void testCommitFailedAndRenameNotSuccess() throws IOException {
+  void testCommitFailedAndRenameNotSuccess() throws IOException {
     table.newFastAppend().appendFile(FILE_A).commit();
     BaseTable baseTable = (BaseTable) table;
     HadoopTableOperations tableOperations = (HadoopTableOperations) baseTable.operations();
@@ -126,7 +126,7 @@ public class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
   }
 
   @Test
-  public void testCommitFailedButActualSuccess() throws IOException {
+  void testCommitFailedButActualSuccess() throws IOException {
     table.newFastAppend().appendFile(FILE_A).commit();
     BaseTable baseTable = (BaseTable) table;
     HadoopTableOperations tableOperations = (HadoopTableOperations) baseTable.operations();
@@ -169,7 +169,7 @@ public class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
   }
 
   @Test
-  public void testCommitFailedAfterChangeVersionHintRepeatCommit() {
+  void testCommitFailedAfterChangeVersionHintRepeatCommit() {
     // Submit a new file to test the functionality.
     table.newFastAppend().appendFile(FILE_A).commit();
     BaseTable baseTable = (BaseTable) table;
@@ -203,7 +203,7 @@ public class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
   }
 
   @Test
-  public void testTwoClientCommitSameVersion() throws InterruptedException {
+  void testTwoClientCommitSameVersion() throws InterruptedException {
     // In the linux environment, the JDK FileSystem interface implementation class is
     // java.io.UnixFileSystem.
     // Its behavior follows the posix protocol, which causes rename operations to overwrite the
@@ -238,7 +238,7 @@ public class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
           String dstPathStr = dst.getAbsolutePath();
           String cmd = String.format("mv -n %s  %s", srcPathStr, dstPathStr);
           Process process = Runtime.getRuntime().exec(cmd);
-          assertThat(process.waitFor()).isEqualTo(0);
+          assertThat(process.waitFor()).isZero();
           return dst.exists() && !src.exists();
         }).when(spyOps).renameMetaDataFile(any(), any(), any());
         TableMetadata metadataV1 = spyOps.current();
@@ -271,7 +271,7 @@ public class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
           String dstPathStr = dst.getAbsolutePath();
           String cmd = String.format("mv -n %s  %s", srcPathStr, dstPathStr);
           Process process = Runtime.getRuntime().exec(cmd);
-          assertThat(process.waitFor()).isEqualTo(0);
+          assertThat(process.waitFor()).isZero();
           return dst.exists() && !src.exists();
         }).when(spyOps).renameMetaDataFile(any(), any(), any());
         TableMetadata metadataV1 = spyOps.current();
@@ -299,7 +299,7 @@ public class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
   }
 
   @Test
-  public void testConcurrentCommitAndRejectCommitAlreadyExistsVersion()
+  void testConcurrentCommitAndRejectCommitAlreadyExistsVersion()
         throws InterruptedException {
     table.newFastAppend().appendFile(FILE_A).commit();
     ExecutorService executorService = Executors.newFixedThreadPool(8);
@@ -332,7 +332,6 @@ public class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
         countDownLatch2.await();
         for (; commitTimes.get() < maxCommitTimes; commitTimes.incrementAndGet()) {
           table.newFastAppend().appendFile(FILE_A).commit();
-          TimeUnit.SECONDS.sleep(1);
           countDownLatch.countDown();
         }
       } catch (Exception e) {
@@ -348,7 +347,7 @@ public class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
   }
 
   @Test
-  public void testRejectCommitAlreadyExistsVersionWithUsingObjectStore()
+  void testRejectCommitAlreadyExistsVersionWithUsingObjectStore()
         throws InterruptedException {
     // Since java.io.UnixFileSystem.rename overwrites existing files and we currently share the same
     // memory locks. So we can use the local file system to simulate the use of object storage.
@@ -383,7 +382,6 @@ public class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
         countDownLatch2.await();
         for (; commitTimes.get() < maxCommitTimes; commitTimes.incrementAndGet()) {
           table.newFastAppend().appendFile(FILE_A).commit();
-          TimeUnit.SECONDS.sleep(1);
           countDownLatch.countDown();
         }
       } catch (Exception e) {
@@ -399,7 +397,7 @@ public class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
   }
 
   @Test
-  public void testConcurrentCommitAndRejectTooOldCommit() throws InterruptedException {
+  void testConcurrentCommitAndRejectTooOldCommit() throws InterruptedException {
     // Too-old-commit: commitVersion < currentMaxVersion - METADATA_PREVIOUS_VERSIONS_MAX
     table.newFastAppend().appendFile(FILE_A).commit();
     table.updateProperties().set(TableProperties.METADATA_PREVIOUS_VERSIONS_MAX, "2").commit();
@@ -459,7 +457,7 @@ public class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
   }
 
   @Test
-  public void testRejectTooOldCommitWithUsingObjectStore() throws InterruptedException {
+  void testRejectTooOldCommitWithUsingObjectStore() throws InterruptedException {
     // Since java.io.UnixFileSystem.rename overwrites existing files and we currently share the same
     // memory locks. So we can use the local file system to simulate the use of object storage.
     table.updateProperties().set(TableProperties.OBJECT_STORE_ENABLED, "true").commit();
@@ -502,7 +500,6 @@ public class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
         for (; commitTimes.get() < maxCommitTimes; commitTimes.incrementAndGet()) {
           table.newFastAppend().appendFile(FILE_A).commit();
           countDownLatch.countDown();
-          TimeUnit.SECONDS.sleep(1);
         }
       } catch (Exception e) {
         throw new RuntimeException(e);
@@ -517,7 +514,7 @@ public class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
   }
 
   @Test
-  public void testConcurrentCommitAndRejectDirtyCommit() throws InterruptedException {
+  void testConcurrentCommitAndRejectDirtyCommit() throws InterruptedException {
     // At the end of the commit, if we realize that it is a dirty commit, we should fail the commit.
     table.newFastAppend().appendFile(FILE_A).commit();
     table.updateProperties().set(TableProperties.METADATA_PREVIOUS_VERSIONS_MAX, "2").commit();
@@ -576,7 +573,7 @@ public class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
   }
 
   @Test
-  public void testCleanTooOldDirtyCommit() throws InterruptedException {
+  void testCleanTooOldDirtyCommit() throws InterruptedException {
     // If there are dirty commits in the metadata for some reason, we need to clean them up.
     table.newFastAppend().appendFile(FILE_A).commit();
     table.updateProperties().set(TableProperties.METADATA_PREVIOUS_VERSIONS_MAX, "2").commit();
@@ -621,7 +618,6 @@ public class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
         countDownLatch2.await();
         for (; commitTimes.get() < maxCommitTimes; commitTimes.incrementAndGet()) {
           table.newFastAppend().appendFile(FILE_A).commit();
-          TimeUnit.SECONDS.sleep(1);
           countDownLatch.countDown();
         }
       } catch (Exception e) {
@@ -636,10 +632,10 @@ public class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
 
     assertThat(unexpectedException.get()).isNull();
     assertThat(dirtyCommitFile.get()).isNotNull();
-    assertThat(dirtyCommitFile.get().exists()).isEqualTo(true);
+    assertThat(dirtyCommitFile.get().exists()).isTrue();
     long ttl = 30L * 3600 * 24 * 1000;
     assertThat(dirtyCommitFile.get().setLastModified(System.currentTimeMillis() - ttl)).isTrue();
     table.newFastAppend().appendFile(FILE_A).commit();
-    assertThat(dirtyCommitFile.get().exists()).isEqualTo(false);
+    assertThat(dirtyCommitFile.get().exists()).isFalse();
   }
 }

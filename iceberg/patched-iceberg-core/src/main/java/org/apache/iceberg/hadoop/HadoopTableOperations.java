@@ -78,7 +78,7 @@ public class HadoopTableOperations implements TableOperations {
   private final Path location;
   private final FileIO fileIO;
   private final LockManager lockManager;
-  private volatile TableMetadata currentMetadata = null;
+  private TableMetadata currentMetadata = null;
   private volatile Integer version = null;
   private volatile boolean shouldRefresh = true;
 
@@ -177,8 +177,6 @@ public class HadoopTableOperations implements TableOperations {
           metadata.propertyAsInt(
                 TableProperties.METADATA_PREVIOUS_VERSIONS_MAX,
                 TableProperties.METADATA_PREVIOUS_VERSIONS_MAX_DEFAULT);
-    // todo:Currently, if the user is using an object store, we assume that he must be using the
-    //  global locking service. But we should support add some other conditions in future.
     boolean supportGlobalLocking = useObjectStore;
     try {
       tryLock(tempMetadataFile, metadataRoot());
@@ -276,9 +274,6 @@ public class HadoopTableOperations implements TableOperations {
     long now = System.currentTimeMillis();
     // We only clean up dirty commits that are some time old. This ensures that other clients can
     // find out as soon as possible if their current commit is dirty.
-
-    // todo:Currently, dirty commits from seven days ago are deleted by default.
-    //  There is no need to configure this for now.
     long ttl = 3600L * 24 * 1000 * 7;
     for (FileStatus file : files) {
       long modificationTime = file.getModificationTime();
@@ -471,7 +466,7 @@ public class HadoopTableOperations implements TableOperations {
       }
       return maxVersion;
     } catch (Exception e) {
-      throw new RuntimeException(e);
+      throw new RuntimeIOException(new IOException(e));
     }
   }
 
