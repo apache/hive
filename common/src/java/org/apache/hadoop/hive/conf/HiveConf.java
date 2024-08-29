@@ -2013,7 +2013,7 @@ public class HiveConf extends Configuration {
     HIVE_MAP_AGGR_HASH_MIN_REDUCTION_LOWER_BOUND("hive.map.aggr.hash.min.reduction.lower.bound", (float) 0.4,
         "Lower bound of Hash aggregate reduction filter. See also: hive.map.aggr.hash.min.reduction"),
     HIVE_MAP_AGGR_HASH_FLUSH_SIZE_PERCENT("hive.map.aggr.hash.flush.size.percent", (float) 0.1,
-        "Whether percentage of the map side group aggregation hash tables to flush.　\n" +
+        "Percentage of hash table entries to flush in map-side group aggregation.\n" +
         "Flushes the specified percentage in map-side group aggregation hash table."),
     HIVE_MAP_AGGR_HASH_MIN_REDUCTION_STATS_ADJUST("hive.map.aggr.hash.min.reduction.stats", true,
         "Whether the value for hive.map.aggr.hash.min.reduction should be set statically using stats estimates. \n" +
