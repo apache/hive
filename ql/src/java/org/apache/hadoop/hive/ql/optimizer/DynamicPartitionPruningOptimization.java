@@ -502,6 +502,9 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
     float minReductionHashAggrLowerBound =
         HiveConf.getFloatVar(parseContext.getConf(),
             ConfVars.HIVE_MAP_AGGR_HASH_MIN_REDUCTION_LOWER_BOUND);
+    float hashAggrFlushPercent =
+        HiveConf.getFloatVar(parseContext.getConf(),
+            ConfVars.HIVE_MAP_AGGR_HASH_FLUSH_SIZE_PERCENT);
 
     List<ExprNodeDesc> groupByExprs = new ArrayList<ExprNodeDesc>();
     ExprNodeDesc groupByExpr =
@@ -511,7 +514,8 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
     GroupByDesc groupBy =
         new GroupByDesc(GroupByDesc.Mode.HASH, outputNames, groupByExprs,
             new ArrayList<AggregationDesc>(), false, groupByMemoryUsage, memoryThreshold,
-            minReductionHashAggr, minReductionHashAggrLowerBound, null, false, -1, true);
+            minReductionHashAggr, minReductionHashAggrLowerBound,
+            hashAggrFlushPercent, null, false, -1, true);
 
     List<ColumnInfo> groupbyColInfos = new ArrayList<ColumnInfo>();
     groupbyColInfos.add(new ColumnInfo(outputNames.get(0), key.getTypeInfo(), "", false));
@@ -623,6 +627,9 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
     float minReductionHashAggrLowerBound =
         HiveConf.getFloatVar(parseContext.getConf(),
             ConfVars.HIVE_MAP_AGGR_HASH_MIN_REDUCTION_LOWER_BOUND);
+    float hashAggrFlushPercent =
+        HiveConf.getFloatVar(parseContext.getConf(),
+            ConfVars.HIVE_MAP_AGGR_HASH_FLUSH_SIZE_PERCENT);
 
     // Add min/max and bloom filter aggregations
     List<ObjectInspector> aggFnOIs = new ArrayList<ObjectInspector>();
@@ -673,7 +680,7 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
     GroupByDesc groupBy = new GroupByDesc(GroupByDesc.Mode.HASH,
         gbOutputNames, new ArrayList<ExprNodeDesc>(), aggs, false,
         groupByMemoryUsage, memoryThreshold, minReductionHashAggr, minReductionHashAggrLowerBound,
-            null, false, -1, false);
+            hashAggrFlushPercent, null, false, -1, false);
 
     List<ColumnInfo> groupbyColInfos = new ArrayList<ColumnInfo>();
     groupbyColInfos.add(new ColumnInfo(gbOutputNames.get(0), key.getTypeInfo(), "", false));
@@ -771,7 +778,7 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
     GroupByDesc groupByDescFinal = new GroupByDesc(GroupByDesc.Mode.FINAL,
             gbOutputNames, new ArrayList<ExprNodeDesc>(), aggsFinal, false,
             groupByMemoryUsage, memoryThreshold, minReductionHashAggr, minReductionHashAggrLowerBound,
-            null, false, 0, false);
+            hashAggrFlushPercent, null, false, 0, false);
     GroupByOperator groupByOpFinal = (GroupByOperator)OperatorFactory.getAndMakeChild(
             groupByDescFinal, new RowSchema(rsOp.getSchema()), rsOp);
     groupByOpFinal.setColumnExprMap(new HashMap<String, ExprNodeDesc>());
