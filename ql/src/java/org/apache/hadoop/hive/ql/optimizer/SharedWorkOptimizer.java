@@ -1195,7 +1195,7 @@ public class SharedWorkOptimizer extends Transform {
       Operator<?> op = dppsOp1.get(i);
       if (op instanceof ReduceSinkOperator) {
         Set<Operator<?>> ascendants =
-            findAscendantWorkOperators(pctx, optimizerCache, op);
+            findAscendantWorkOperators(optimizerCache, op);
         if (ascendants.contains(tsOp2)) {
           // This should not happen, we cannot merge
           return false;
@@ -1206,7 +1206,7 @@ public class SharedWorkOptimizer extends Transform {
       Operator<?> op = dppsOp2.get(i);
       if (op instanceof ReduceSinkOperator) {
         Set<Operator<?>> ascendants =
-            findAscendantWorkOperators(pctx, optimizerCache, op);
+            findAscendantWorkOperators(optimizerCache, op);
         if (ascendants.contains(tsOp1)) {
           // This should not happen, we cannot merge
           return false;
@@ -1633,8 +1633,7 @@ public class SharedWorkOptimizer extends Transform {
         Collection<Operator<?>> c = optimizerCache.tableScanToDPPSource
             .get((TableScanOperator) op);
         for (Operator<?> dppSource : c) {
-          Set<Operator<?>> ascendants =
-              findAscendantWorkOperators(pctx, optimizerCache, dppSource);
+          Set<Operator<?>> ascendants = findAscendantWorkOperators(optimizerCache, dppSource);
           if (!Collections.disjoint(ascendants, discardedOps)) {
             // Remove branch
             removeBranch(dppSource, dppBranches, ops);
@@ -1963,33 +1962,24 @@ public class SharedWorkOptimizer extends Transform {
     return set;
   }
 
-  private static Set<Operator<?>> findAscendantWorkOperators(ParseContext pctx,
-          SharedWorkOptimizerCache optimizerCache, Operator<?> start) {
-    // Find operators in work
-    Set<Operator<?>> workOps = findWorkOperators(optimizerCache, start);
-    // Gather input works operators
-    Set<Operator<?>> result = new HashSet<Operator<?>>();
-    Set<Operator<?>> set;
-    while (!workOps.isEmpty()) {
-      set = new HashSet<Operator<?>>();
-      for (Operator<?> op : workOps) {
-        if (op.getParentOperators() != null) {
-          for (Operator<?> parent : op.getParentOperators()) {
-            if (parent instanceof ReduceSinkOperator) {
-              set.addAll(findWorkOperators(optimizerCache, parent));
-            }
-          }
-        } else if (op instanceof TableScanOperator) {
-          // Check for DPP and semijoin DPP
-          for (Operator<?> parent : optimizerCache.tableScanToDPPSource.get((TableScanOperator) op)) {
-            set.addAll(findWorkOperators(optimizerCache, parent));
-          }
+  private static Set<Operator<?>> findAscendantWorkOperators(SharedWorkOptimizerCache optimizerCache,
+      Operator<?> start) {
+    Set<Operator<?>> visited = new HashSet<>();
+    visited.add(start);
+
+    List<Operator<?>> remaining = new ArrayList<>(start.getParentOperators());
+    while (!remaining.isEmpty()) {
+      Operator<?> op = remaining.remove(0);
+      if (!visited.contains(op)) {
+        visited.add(op);
+        remaining.addAll(op.getParentOperators());
+        if (op instanceof TableScanOperator) {
+          remaining.addAll(optimizerCache.tableScanToDPPSource.get((TableScanOperator) op));
         }
       }
-      workOps = set;
-      result.addAll(set);
     }
-    return result;
+
+    return visited;
   }
 
   private static Set<Operator<?>> findChildWorkOperators(ParseContext pctx,
