@@ -2046,6 +2046,10 @@ public class HiveConf extends Configuration {
         "assumption that the original group by will reduce the data size."),
     HIVE_GROUPBY_LIMIT_EXTRASTEP("hive.groupby.limit.extrastep", true, "This parameter decides if Hive should \n" +
         "create new MR job for sorting final output"),
+    HIVE_OPTIMIZE_GROUPING_SET_THRESHOLD("hive.optimize.grouping.set.threshold", 1_000_000_000L,
+        "If # of estimated rows emitted by GroupBy operator with GroupingSet is larger than the configured value, " +
+        "then the optimizer inserts an extra shuffle to partitioning input data.\n" +
+        "Setting a negative number disables the optimization."),
 
     // Max file num and size used to do a single copy (after that, distcp is used)
     HIVE_EXEC_COPYFILE_MAXNUMFILES("hive.exec.copyfile.maxnumfiles", 1L,
