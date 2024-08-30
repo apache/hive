@@ -242,7 +242,7 @@ public class TezCompiler extends TaskCompiler {
     semijoinRemovalBasedTransformations(procCtx);
 
     perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
-    if(procCtx.conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_MERGE_ADJACENT_UNION_DISTINCT)) {
+    if (procCtx.conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_MERGE_ADJACENT_UNION_DISTINCT)) {
       new UnionDistinctMerger().transform(procCtx.parseContext);
     }
     perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run adjacent union distinct merger");
