@@ -86,6 +86,8 @@ public class IcebergSplit extends InputSplit implements IcebergSplitContainer {
     return locations;
   }
 
+  // TODO: We should move to Util.blockLocations once the following PR is merged and shipped
+  // https://github.com/apache/iceberg/pull/11053
   private static String[] blockLocations(ScanTaskGroup<FileScanTask> task, Configuration conf) {
     final Set<String> locationSets = Sets.newHashSet();
     task.tasks().forEach(fileScanTask -> {
