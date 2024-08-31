@@ -24,7 +24,7 @@ import java.util.Optional;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.CustomBucketFunction;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.SettableDeferredJavaObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -38,24 +38,6 @@ import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 
 public class IcebergBucketFunction implements CustomBucketFunction {
-  private static final class SettableDeferredObject implements DeferredObject {
-    private Object value;
-
-    @Override
-    public void prepare(int i) {
-      throw new UnsupportedOperationException("Not supported");
-    }
-
-    @Override
-    public Object get() {
-      return value;
-    }
-
-    void set(Object object) {
-      this.value = object;
-    }
-  }
-
   private static final long serialVersionUID = 1L;
 
   private final List<String> sourceColumnNames;
@@ -63,7 +45,7 @@ public class IcebergBucketFunction implements CustomBucketFunction {
 
   private transient List<GenericUDFIcebergBucket> bucketUdfs;
   private transient List<IntObjectInspector> bucketIdInspectors;
-  private transient SettableDeferredObject[] deferredObjects;
+  private transient SettableDeferredJavaObject[] deferredObjects;
 
   public IcebergBucketFunction(List<String> sourceColumnNames, List<Integer> numBuckets) {
     Objects.requireNonNull(sourceColumnNames);
@@ -121,8 +103,8 @@ public class IcebergBucketFunction implements CustomBucketFunction {
       }
       bucketUdfs.add(udf);
     }
-    deferredObjects = new SettableDeferredObject[1];
-    deferredObjects[0] = new SettableDeferredObject();
+    deferredObjects = new SettableDeferredJavaObject[1];
+    deferredObjects[0] = new SettableDeferredJavaObject();
 
     Preconditions.checkState(bucketIdInspectors.size() == numBuckets.size());
     Preconditions.checkState(bucketUdfs.size() == numBuckets.size());
