@@ -294,9 +294,11 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
             conf.getOutputKeyColumnNames(), numDistributionKeys, rowInspector);
         valueObjectInspector = initEvaluatorsAndReturnStruct(valueEval,
             conf.getOutputValueColumnNames(), rowInspector);
-        partitionHashFunc = conf.getPartitionFunction(initEvaluators(partitionEval, rowInspector));
+        final ObjectInspector[] partitionObjectInspectors = initEvaluators(partitionEval, rowInspector);
+        partitionHashFunc = conf.getPartitionFunction(partitionObjectInspectors);
         if (bucketEval != null) {
-          bucketHashFunc = conf.getPartitionFunction(initEvaluators(bucketEval, rowInspector));
+          final ObjectInspector[] bucketObjectInspectors = initEvaluators(bucketEval, rowInspector);
+          bucketHashFunc = conf.getPartitionFunction(bucketObjectInspectors);
         }
         int numKeys = numDistinctExprs > 0 ? numDistinctExprs : 1;
         int keyLen = numDistinctExprs > 0 ? numDistributionKeys + 1 : numDistributionKeys;
