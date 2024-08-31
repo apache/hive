@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.io.PartitionAwareSplit;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.StructLike;
+import org.apache.iceberg.mr.hive.plan.IcebergBucketFunction;
 import org.apache.iceberg.mr.mapreduce.IcebergSplit;
 import org.apache.iceberg.mr.mapreduce.IcebergSplitContainer;
 import org.apache.iceberg.relocated.com.google.common.primitives.Longs;

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.iceberg.mr.hive;
+package org.apache.iceberg.mr.hive.plan;
 
 import java.util.List;
 import java.util.Objects;
@@ -153,7 +153,7 @@ public class IcebergBucketFunction implements CustomBucketFunction {
     return getHashCode(bucketIds);
   }
 
-  static int getHashCode(int[] bucketIds) {
+  public static int getHashCode(int[] bucketIds) {
     int hashCode = 0;
     for (int bucketId : bucketIds) {
       hashCode = 31 * hashCode + bucketId;
