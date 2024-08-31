@@ -211,16 +211,16 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     Path tableLocation = new Path(conf.get(InputFormatConfig.TABLE_LOCATION));
 
     String[] groupingPartitionColumns = conf.getStrings(InputFormatConfig.GROUPING_PARTITION_COLUMNS);
-    generateInputSplits(scan, table, groupingPartitionColumns, task -> {
+    generateInputSplits(scan, table, groupingPartitionColumns, taskGroup -> {
       if (applyResidual && (model == InputFormatConfig.InMemoryDataModel.HIVE ||
           model == InputFormatConfig.InMemoryDataModel.PIG)) {
         // TODO: We do not support residual evaluation for HIVE and PIG in memory data model yet
-        checkResiduals(task);
+        checkResiduals(taskGroup);
       }
       if (allowDataFilesWithinTableLocationOnly) {
-        validateFileLocations(task, tableLocation);
+        validateFileLocations(taskGroup, tableLocation);
       }
-      splits.add(new IcebergSplit(conf, task));
+      splits.add(new IcebergSplit(conf, taskGroup));
     });
 
     // If enabled, do not serialize FileIO hadoop config to decrease split size

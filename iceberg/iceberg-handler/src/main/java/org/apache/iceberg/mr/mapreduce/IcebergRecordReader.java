@@ -99,7 +99,7 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
   public void initialize(InputSplit split, TaskAttemptContext newContext) {
     // For now IcebergInputFormat does its own split planning and does not accept FileSplit instances
     super.initialize(split, newContext);
-    ScanTaskGroup<FileScanTask> task = ((IcebergSplit) split).task();
+    ScanTaskGroup<FileScanTask> task = ((IcebergSplit) split).taskGroup();
     this.tasks = task.tasks();
     this.currentIterator = nextTask();
   }

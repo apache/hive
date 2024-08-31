@@ -44,7 +44,7 @@ public class IcebergSplit extends InputSplit implements IcebergSplitContainer {
 
   public static final String[] ANYWHERE = new String[]{"*"};
 
-  private ScanTaskGroup<FileScanTask> task;
+  private ScanTaskGroup<FileScanTask> taskGroup;
 
   private transient String[] locations;
   private transient Configuration conf;
@@ -53,13 +53,13 @@ public class IcebergSplit extends InputSplit implements IcebergSplitContainer {
   public IcebergSplit() {
   }
 
-  IcebergSplit(Configuration conf, ScanTaskGroup<FileScanTask> task) {
-    this.task = task;
+  IcebergSplit(Configuration conf, ScanTaskGroup<FileScanTask> taskGroup) {
+    this.taskGroup = taskGroup;
     this.conf = conf;
   }
 
-  public ScanTaskGroup<FileScanTask> task() {
-    return task;
+  public ScanTaskGroup<FileScanTask> taskGroup() {
+    return taskGroup;
   }
 
   @Override
@@ -69,7 +69,7 @@ public class IcebergSplit extends InputSplit implements IcebergSplitContainer {
 
   @Override
   public long getLength() {
-    return task.tasks().stream().mapToLong(FileScanTask::length).sum();
+    return taskGroup.tasks().stream().mapToLong(FileScanTask::length).sum();
   }
 
   @Override
@@ -78,7 +78,7 @@ public class IcebergSplit extends InputSplit implements IcebergSplitContainer {
     // getLocations() won't be accurate when called on worker nodes and will always return "*"
     if (locations == null && conf != null) {
       boolean localityPreferred = conf.getBoolean(InputFormatConfig.LOCALITY, false);
-      locations = localityPreferred ? blockLocations(task, conf) : ANYWHERE;
+      locations = localityPreferred ? blockLocations(taskGroup, conf) : ANYWHERE;
     } else {
       locations = ANYWHERE;
     }
@@ -105,7 +105,7 @@ public class IcebergSplit extends InputSplit implements IcebergSplitContainer {
 
   @Override
   public void write(DataOutput out) throws IOException {
-    byte[] data = SerializationUtil.serializeToBytes(this.task);
+    byte[] data = SerializationUtil.serializeToBytes(this.taskGroup);
     out.writeInt(data.length);
     out.write(data);
   }
@@ -114,6 +114,6 @@ public class IcebergSplit extends InputSplit implements IcebergSplitContainer {
   public void readFields(DataInput in) throws IOException {
     byte[] data = new byte[in.readInt()];
     in.readFully(data);
-    this.task = SerializationUtil.deserializeFromBytes(data);
+    this.taskGroup = SerializationUtil.deserializeFromBytes(data);
   }
 }

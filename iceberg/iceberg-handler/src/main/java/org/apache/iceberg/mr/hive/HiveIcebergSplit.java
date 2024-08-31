@@ -83,7 +83,7 @@ public class HiveIcebergSplit extends FileSplit
 
   @Override
   public byte[] getBytesForHash() {
-    Collection<FileScanTask> fileScanTasks = innerSplit.task().tasks();
+    Collection<FileScanTask> fileScanTasks = innerSplit.taskGroup().tasks();
 
     try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
       for (FileScanTask task : fileScanTasks) {
@@ -98,7 +98,7 @@ public class HiveIcebergSplit extends FileSplit
 
   @Override
   public OptionalInt getBucketHashCode() {
-    final StructLike key = innerSplit.task().groupingKey();
+    final StructLike key = innerSplit.taskGroup().groupingKey();
     if (key.size() == 0) {
       return OptionalInt.empty();
     }
