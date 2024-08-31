@@ -25,6 +25,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.OptionalInt;
+import java.util.stream.IntStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.tez.HashableInputSplit;
 import org.apache.hadoop.hive.ql.io.PartitionAwareSplit;
@@ -101,11 +102,10 @@ public class HiveIcebergSplit extends FileSplit
     if (key.size() == 0) {
       return OptionalInt.empty();
     }
-    final int numBucketKeys = key.size();
-    final int[] bucketIds = new int[numBucketKeys];
-    for (int i = 0; i < numBucketKeys; i++) {
-      bucketIds[i] = key.get(i, Integer.class);
-    }
+    final int[] bucketIds = IntStream
+        .range(0, key.size())
+        .map(i -> key.get(i, Integer.class))
+        .toArray();
     return OptionalInt.of(IcebergBucketFunction.getHashCode(bucketIds));
   }
 

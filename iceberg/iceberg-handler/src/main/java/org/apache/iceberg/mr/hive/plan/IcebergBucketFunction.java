@@ -135,7 +135,7 @@ public class IcebergBucketFunction implements CustomBucketFunction {
 
   @Override
   public int getNumBuckets() {
-    return numBuckets.stream().reduce(1, (a, b) -> a * b);
+    return numBuckets.stream().reduce(1, Math::multiplyExact);
   }
 
   @Override
