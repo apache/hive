@@ -214,6 +214,13 @@ public class TezCompiler extends TaskCompiler {
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Sorted dynamic partition optimization");
     }
 
+    perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+    if (procCtx.conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_MERGE_ADJACENT_UNION_DISTINCT)) {
+      // This should be run before ReduceSinkDeDuplication in order not to merge irrelevant GroupBy operators.
+      new UnionDistinctMerger().transform(procCtx.parseContext);
+    }
+    perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run adjacent union distinct merger");
+
     if(HiveConf.getBoolVar(procCtx.conf, HiveConf.ConfVars.HIVE_OPT_REDUCE_DEDUPLICATION)) {
       perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
       // Dynamic sort partition adds an extra RS therefore need to de-dup
@@ -240,12 +247,6 @@ public class TezCompiler extends TaskCompiler {
     perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run reduce sink after join algorithm selection");
 
     semijoinRemovalBasedTransformations(procCtx);
-
-    perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
-    if (procCtx.conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_MERGE_ADJACENT_UNION_DISTINCT)) {
-      new UnionDistinctMerger().transform(procCtx.parseContext);
-    }
-    perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run adjacent union distinct merger");
 
     perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
     if (procCtx.conf.getBoolVar(ConfVars.HIVE_SHARED_WORK_OPTIMIZATION)) {
