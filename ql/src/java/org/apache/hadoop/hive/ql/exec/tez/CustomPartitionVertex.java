@@ -359,7 +359,7 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
           diEvent.setTargetIndex(task);
           taskEvents.add(diEvent);
         }
-        numSplitsForTask[task] = numSplitsForTask[task] + count;
+        numSplitsForTask[task] += count;
       }
     }
 
@@ -537,7 +537,7 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
       Map<String, Set<FileSplit>> pathFileSplitsMap) {
 
     boolean isSMBJoin = numInputsAffectingRootInputSpecUpdate != 1;
-    boolean isMainWork = (mainWorkName.isEmpty()) || (inputName.compareTo(mainWorkName) == 0);
+    boolean isMainWork = mainWorkName.isEmpty() || inputName.compareTo(mainWorkName) == 0;
     Preconditions.checkState(
         (isMainWork || (isSMBJoin && inputToBucketMap != null &&  inputToBucketMap.containsKey(inputName))),
         "CustomPartitionVertex.inputToBucketMap is not defined for " + inputName);
@@ -554,23 +554,14 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
       // The accepted file names are such as 000000_0, 000001_0_copy_1.
       String bucketIdStr = Utilities.getBucketFileNameFromPathSubString(entry.getKey());
       int bucketId = Utilities.getBucketIdFromFile(bucketIdStr);
-      if (bucketId == -1) {
+      if (bucketId < 0) {
         fallback = true;
         LOG.info("Fallback to using older sort based logic to assign buckets to splits.");
         bucketToSplitMap.clear();
         break;
       }
 
-      // Utilities.getBucketIdFromFile() returns negative value only if it fails to retrieve bucketID.
-      Preconditions.checkState(bucketId >= 0);
-
-      if (bucketId >= inputBucketSize) {
-        int newBucketId = bucketId % inputBucketSize;
-        LOG.info("The bucketID " + bucketId + " for file " + entry.getKey() + " is not acceptable. " +
-            "The bucket size of input " + inputName + " is " + inputBucketSize + ". " +
-            "Use " + newBucketId + " instead.");
-        bucketId = newBucketId;
-      }
+      bucketId %= inputBucketSize;
 
       for (FileSplit fsplit : entry.getValue()) {
         bucketToSplitMap.put(bucketId, fsplit);
@@ -586,7 +577,7 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
         for (FileSplit fsplit : entry.getValue()) {
           bucketToSplitMap.put(bucketId, fsplit);
         }
-        curSplitIndex = curSplitIndex + 1;
+        curSplitIndex++;
       }
     }
 
