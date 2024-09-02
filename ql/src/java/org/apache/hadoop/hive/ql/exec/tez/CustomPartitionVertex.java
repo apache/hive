@@ -539,8 +539,8 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
     boolean isSMBJoin = numInputsAffectingRootInputSpecUpdate != 1;
     boolean isMainWork = mainWorkName.isEmpty() || inputName.compareTo(mainWorkName) == 0;
     Preconditions.checkState(
-        (isMainWork || (isSMBJoin && inputToBucketMap != null &&  inputToBucketMap.containsKey(inputName))),
-        "CustomPartitionVertex.inputToBucketMap is not defined for " + inputName);
+        isMainWork || isSMBJoin && inputToBucketMap != null && inputToBucketMap.containsKey(inputName),
+        "CustomPartitionVertex.inputToBucketMap is not defined for {}", inputName);
     int inputBucketSize = isMainWork ? numBuckets : inputToBucketMap.get(inputName);
 
     Multimap<Integer, InputSplit> bucketToSplitMap = ArrayListMultimap.create();
@@ -561,11 +561,10 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
         break;
       }
 
+      // Make sure the bucketId is at max the numBuckets
       bucketId %= inputBucketSize;
 
-      for (FileSplit fsplit : entry.getValue()) {
-        bucketToSplitMap.put(bucketId, fsplit);
-      }
+      bucketToSplitMap.putAll(bucketId, entry.getValue());
     }
 
     if (fallback) {
@@ -574,9 +573,7 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
       int curSplitIndex = 0;
       for (Map.Entry<String, Set<FileSplit>> entry : pathFileSplitsMap.entrySet()) {
         int bucketId = curSplitIndex % inputBucketSize;
-        for (FileSplit fsplit : entry.getValue()) {
-          bucketToSplitMap.put(bucketId, fsplit);
-        }
+        bucketToSplitMap.putAll(bucketId, entry.getValue());
         curSplitIndex++;
       }
     }
