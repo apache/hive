@@ -100,6 +100,7 @@ public abstract class GenericUDF implements Closeable {
 
     @Override
     public void prepare(int version) throws HiveException {
+      // This implementation doesn't need to be prepared
     }
 
     @Override
@@ -116,6 +117,7 @@ public abstract class GenericUDF implements Closeable {
 
     @Override
     public void prepare(int version) throws HiveException {
+      // This implementation doesn't need to be prepared
     }
 
     @Override
