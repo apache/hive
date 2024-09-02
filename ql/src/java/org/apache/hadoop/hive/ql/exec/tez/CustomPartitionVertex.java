@@ -578,7 +578,7 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
       }
     }
 
-    if (isSMBJoin && !isMainWork && numBuckets != inputBucketSize) {
+    if (isSMBJoin && numBuckets != inputBucketSize) {
       // This is just for SMB join use-case. The numBuckets would be equal to that of the big table
       // and the small table could have different number of buckets. In this case, we want to send the
       // data from the right buckets to the big table side. For e.g. Big table has 6 buckets and small
