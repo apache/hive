@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -38,6 +37,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,10 +47,26 @@ import java.util.Stack;
 public class UnionDistinctMerger extends Transform {
   private static final Logger LOG = LoggerFactory.getLogger(UnionDistinctMerger.class);
 
-  private static class UnionMergeProcessor implements SemanticNodeProcessor {
+  private static class UnionMergeContext implements NodeProcessorCtx {
+    public final ParseContext pCtx;
+
+    public UnionMergeContext(ParseContext pCtx) {
+      this.pCtx = pCtx;
+    }
+  }
+
+  private class UnionMergeProcessor implements SemanticNodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
+      UnionMergeContext context = (UnionMergeContext) procCtx;
+      Collection<Operator> allOps = context.pCtx.getAllOps();
+      for (int i = 1; i <= 8; i ++) {
+        if (!allOps.contains(stack.get(stack.size() - i))) {
+          return null;
+        }
+      }
+
       UnionOperator upperUnionOperator = (UnionOperator) stack.get(stack.size() - 8);
       GroupByOperator upperMiddleGroupByOperator = (GroupByOperator) stack.get(stack.size() - 7);
       ReduceSinkOperator upperReduceSinkOperator = (ReduceSinkOperator) stack.get(stack.size() - 6);
@@ -64,19 +81,43 @@ public class UnionDistinctMerger extends Transform {
           upperMiddleGroupByOperator.getChildOperators().size() == 1 &&
           upperReduceSinkOperator.getChildOperators().size() == 1 &&
           upperFinalGroupByOperator.getChildOperators().size() == 1) {
-        LOG.info("Detect duplicate UNION-DISTINCT GBY patterns. Remove the first one.");
+        LOG.info("Detect duplicate UNION-DISTINCT GBY patterns. Remove the later one.");
 
         lowerUnionOperator.removeParent(upperFinalGroupByOperator);
-        for (Operator<?> upperUnionParent: upperUnionOperator.getParentOperators()) {
-          upperUnionParent.replaceChild(upperUnionOperator, lowerUnionOperator);
-          lowerUnionOperator.getParentOperators().add(upperUnionParent);
+        for (Operator<?> lowerUnionParent: lowerUnionOperator.getParentOperators()) {
+          lowerUnionParent.replaceChild(lowerUnionOperator, upperUnionOperator);
+          upperUnionOperator.getParentOperators().add(lowerUnionParent);
         }
-        upperUnionOperator.setParentOperators(new ArrayList<>());
+        lowerUnionOperator.setParentOperators(new ArrayList<>());
 
-        lowerUnionOperator.getConf().setNumInputs(lowerUnionOperator.getNumParent());
+        for (Operator<?> lowerFinalGroupByChild: lowerFinalGroupByOperator.getChildOperators()) {
+          lowerFinalGroupByChild.replaceParent(lowerFinalGroupByOperator, upperFinalGroupByOperator);
+          upperFinalGroupByOperator.getChildOperators().add(lowerFinalGroupByChild);
+        }
+
+        upperUnionOperator.getConf().setNumInputs(upperUnionOperator.getNumParent());
       }
 
       return null;
+    }
+  }
+
+  private static class NoSkipGraphWalker extends DefaultGraphWalker {
+    public NoSkipGraphWalker(SemanticDispatcher disp) {
+      super(disp);
+    }
+
+    public void startWalking(Collection<Node> startNodes,
+        HashMap<Node, Object> nodeOutput) throws SemanticException {
+      toWalk.addAll(startNodes);
+      while (toWalk.size() > 0) {
+        Node nd = toWalk.remove(0);
+        walk(nd);
+        // We need to revisit GroupBy operator for every distinct operator path.
+        // GraphWalker uses retMap to determine if an operator has been visited.
+        // Clearing it after each walk() ensures that we visit GroupBy operator in every possible path.
+        retMap.clear();
+      }
     }
   }
 
@@ -94,8 +135,8 @@ public class UnionDistinctMerger extends Transform {
 
     testRules.put(new RuleRegExp("AdjacentDistinctUnion", pattern.toString()), new UnionMergeProcessor());
 
-    SemanticDispatcher disp = new DefaultRuleDispatcher(null, testRules, null);
-    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, testRules, new UnionMergeContext(pCtx));
+    SemanticGraphWalker ogw = new NoSkipGraphWalker(disp);
 
     List<Node> topNodes = new ArrayList<>();
     topNodes.addAll(pCtx.getTopOps().values());
