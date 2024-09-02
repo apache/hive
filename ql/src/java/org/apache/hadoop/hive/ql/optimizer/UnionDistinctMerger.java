@@ -81,7 +81,7 @@ public class UnionDistinctMerger extends Transform {
           upperMiddleGroupByOperator.getChildOperators().size() == 1 &&
           upperReduceSinkOperator.getChildOperators().size() == 1 &&
           upperFinalGroupByOperator.getChildOperators().size() == 1) {
-        LOG.info("Detect duplicate UNION-DISTINCT GBY patterns. Remove the later one.");
+        LOG.info("Detect duplicate UNION-DISTINCT GBY patterns. Remove the latter one.");
 
         lowerUnionOperator.removeParent(upperFinalGroupByOperator);
         for (Operator<?> lowerUnionParent: lowerUnionOperator.getParentOperators()) {
