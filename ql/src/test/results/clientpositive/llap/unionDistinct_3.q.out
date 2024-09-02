@@ -934,7 +934,7 @@ STAGE PLANS:
                       key expressions: _col0 (type: string), _col1 (type: bigint)
                       null sort order: zz
                       sort order: ++
-                      Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
+                      Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 4 
             Execution mode: vectorized, llap
@@ -983,7 +983,7 @@ STAGE PLANS:
                       key expressions: _col0 (type: string), _col1 (type: bigint)
                       null sort order: zz
                       sort order: ++
-                      Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
+                      Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 8 
             Execution mode: vectorized, llap
@@ -1007,7 +1007,7 @@ STAGE PLANS:
                       key expressions: _col0 (type: string), _col1 (type: bigint)
                       null sort order: zz
                       sort order: ++
-                      Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
+                      Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
         Union 3 
             Vertex: Union 3
@@ -1277,7 +1277,7 @@ STAGE PLANS:
                         key expressions: _col0 (type: string), _col1 (type: string)
                         null sort order: zz
                         sort order: ++
-                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                        Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 19 Data size: 5168 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1300,7 +1300,7 @@ STAGE PLANS:
                         key expressions: _col0 (type: string), _col1 (type: string)
                         null sort order: zz
                         sort order: ++
-                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                        Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 19 Data size: 5168 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1326,7 +1326,7 @@ STAGE PLANS:
                       key expressions: _col0 (type: string), _col1 (type: string)
                       null sort order: zz
                       sort order: ++
-                      Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                      Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 19 Data size: 5168 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 4 
             Execution mode: vectorized, llap
@@ -1380,24 +1380,23 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
-	4
+	7
 128	1
+146	1
 150	1
 213	1
 224	1
 238	1
+255	1
 273	1
 278	1
-401	1
-406	1
-98	1
-tst1	1
-	3
-146	1
-255	1
 311	1
 369	1
+401	1
+406	1
 66	1
+98	1
+tst1	1
 PREHOOK: query: EXPLAIN
 SELECT count(1) FROM (
   SELECT key, value FROM src UNION DISTINCT
