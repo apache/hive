@@ -124,6 +124,7 @@ final class HiveGBOpConvUtil {
     float                             memoryThreshold;
     float                             minReductionHashAggr;
     float                             minReductionHashAggrLowerBound;
+    float                             hashAggrFlushPercent;
 
     private HIVEGBPHYSICALMODE        gbPhysicalPipelineMode;
 
@@ -834,7 +835,7 @@ final class HiveGBOpConvUtil {
     Operator rsGBOp2 = OperatorFactory.getAndMakeChild(new GroupByDesc(GroupByDesc.Mode.FINAL,
         outputColNames, gbKeys, aggregations, false, gbInfo.groupByMemoryUsage,
         gbInfo.memoryThreshold, gbInfo.minReductionHashAggr, gbInfo.minReductionHashAggrLowerBound,
-        null, false, groupingSetsPosition, gbInfo.containsDistinctAggr),
+        gbInfo.hashAggrFlushPercent, null, false, groupingSetsPosition, gbInfo.containsDistinctAggr),
         new RowSchema(colInfoLst), rs);
 
     rsGBOp2.setColumnExprMap(colExprMap);
@@ -973,7 +974,7 @@ final class HiveGBOpConvUtil {
         && !(gbInfo.gbPhysicalPipelineMode == HIVEGBPHYSICALMODE.MAP_SIDE_GB_SKEW_GBKEYS_OR_DIST_UDAF_PRESENT);
     Operator rsGBOp = OperatorFactory.getAndMakeChild(new GroupByDesc(gbMode, outputColNames,
         gbKeys, aggregations, gbInfo.groupByMemoryUsage, gbInfo.memoryThreshold,
-        gbInfo.minReductionHashAggr, gbInfo.minReductionHashAggrLowerBound,
+        gbInfo.minReductionHashAggr, gbInfo.minReductionHashAggrLowerBound, gbInfo.hashAggrFlushPercent,
         gbInfo.grpSets, includeGrpSetInGBDesc, groupingSetsColPosition, gbInfo.containsDistinctAggr),
         new RowSchema(colInfoLst), rs);
 
@@ -1116,7 +1117,7 @@ final class HiveGBOpConvUtil {
 
     Operator rsGB1 = OperatorFactory.getAndMakeChild(new GroupByDesc(gbMode, outputColNames,
         gbKeys, aggregations, false, gbInfo.groupByMemoryUsage, gbInfo.minReductionHashAggrLowerBound,
-        gbInfo.memoryThreshold, gbInfo.minReductionHashAggr, null,
+        gbInfo.hashAggrFlushPercent, gbInfo.memoryThreshold, gbInfo.minReductionHashAggr, null,
         false, -1, numDistinctUDFs > 0), new RowSchema(colInfoLst), rs);
     rsGB1.setColumnExprMap(colExprMap);
 
@@ -1213,7 +1214,7 @@ final class HiveGBOpConvUtil {
     Operator gbOp = OperatorFactory.getAndMakeChild(new GroupByDesc(GroupByDesc.Mode.HASH,
         outputColNames, gbKeys, aggregations, false, gbAttrs.groupByMemoryUsage,
         gbAttrs.memoryThreshold, gbAttrs.minReductionHashAggr, gbAttrs.minReductionHashAggrLowerBound,
-        gbAttrs.grpSets, inclGrpID, groupingSetsPosition,
+        gbAttrs.hashAggrFlushPercent, gbAttrs.grpSets, inclGrpID, groupingSetsPosition,
         gbAttrs.containsDistinctAggr), new RowSchema(colInfoLst), inputOpAf.inputs.get(0));
 
     // 5. Setup Expr Col Map
