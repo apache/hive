@@ -74,10 +74,12 @@ abstract class HiveIcebergWriterBase implements HiveIcebergWriter {
           .suppressFailureWhenFinished()
           .onFailure((file, exception) -> LOG.debug("Failed on to remove file {} on abort", file, exception))
           .run(file -> io.deleteFile(file.path().toString()));
+      LOG.info("HiveIcebergWriter is closed with abort");
     }
 
-    LOG.info("HiveIcebergWriter is closed with abort={}. Created {} data files and {} delete files", abort,
+    LOG.info("Created {} data files and {} delete files",
         result.dataFiles().size(), result.deleteFiles().size());
+    LOG.debug(result.toString());
   }
 
   protected PartitionKey partition(Record row, int specId) {

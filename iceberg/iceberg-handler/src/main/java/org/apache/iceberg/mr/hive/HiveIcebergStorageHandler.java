@@ -2160,14 +2160,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public List<FileStatus> getMergeTaskInputFiles(Properties properties) throws IOException {
-    String tableName = properties.getProperty(Catalogs.NAME);
-    String snapshotRef = properties.getProperty(Catalogs.SNAPSHOT_REF);
-    Configuration configuration = SessionState.getSessionConf();
-    List<JobContext> originalContextList = HiveIcebergOutputCommitter
-            .generateJobContext(configuration, tableName, snapshotRef);
-    List<JobContext> jobContextList = originalContextList.stream()
-            .map(TezUtil::enrichContextWithVertexId)
-            .collect(Collectors.toList());
+    List<JobContext> jobContextList = IcebergMergeTaskProperties.getJobContexts(properties);
     if (jobContextList.isEmpty()) {
       return Collections.emptyList();
     }

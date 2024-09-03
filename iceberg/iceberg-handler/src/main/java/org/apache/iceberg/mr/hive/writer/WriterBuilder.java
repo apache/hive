@@ -106,7 +106,7 @@ public class WriterBuilder {
     OutputFileFactory deleteFileFactory = OutputFileFactory.builderFor(table, partitionId, taskId)
         .format(context.deleteFileFormat())
         .operationId(operationId)
-        .suffix("deletes")
+        .suffix("pos-deletes")
         .build();
 
     HiveFileWriterFactory writerFactory = HiveFileWriterFactory.builderFor(table)

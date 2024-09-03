@@ -353,7 +353,7 @@ public class IcebergTableUtil {
   }
 
   public static boolean isFanoutEnabled(Map<String, String> props) {
-    return PropertyUtil.propertyAsBoolean(props, "write.fanout.enabled", true);
+    return PropertyUtil.propertyAsBoolean(props, InputFormatConfig.WRITE_FANOUT_ENABLED, true);
   }
 
   public static void performMetadataDelete(Table icebergTable, String branchName, SearchArgument sarg) {

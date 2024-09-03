@@ -45,14 +45,7 @@ public class IcebergMergeTaskProperties implements MergeTaskProperties {
 
   @Override
   public Properties getSplitProperties() throws IOException {
-    String tableName = properties.getProperty(Catalogs.NAME);
-    String snapshotRef = properties.getProperty(Catalogs.SNAPSHOT_REF);
-    Configuration configuration = SessionState.getSessionConf();
-    List<JobContext> originalContextList = HiveIcebergOutputCommitter
-        .generateJobContext(configuration, tableName, snapshotRef);
-    List<JobContext> jobContextList = originalContextList.stream()
-            .map(TezUtil::enrichContextWithVertexId)
-            .collect(Collectors.toList());
+    List<JobContext> jobContextList = getJobContexts(properties);
     if (jobContextList.isEmpty()) {
       return null;
     }
@@ -61,5 +54,16 @@ public class IcebergMergeTaskProperties implements MergeTaskProperties {
     contentFiles.forEach(contentFile ->
         pathToContentFile.put(new Path(String.valueOf(contentFile.path())), contentFile));
     return pathToContentFile;
+  }
+
+  static List<JobContext> getJobContexts(Properties properties) {
+    String tableName = properties.getProperty(Catalogs.NAME);
+    String snapshotRef = properties.getProperty(Catalogs.SNAPSHOT_REF);
+    Configuration configuration = SessionState.getSessionConf();
+
+    return HiveIcebergOutputCommitter.generateJobContext(configuration, tableName, snapshotRef)
+      .stream()
+      .map(TezUtil::enrichContextWithVertexId)
+      .collect(Collectors.toList());
   }
 }
