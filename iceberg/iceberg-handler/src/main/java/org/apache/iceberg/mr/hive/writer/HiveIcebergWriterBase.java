@@ -74,7 +74,7 @@ abstract class HiveIcebergWriterBase implements HiveIcebergWriter {
           .suppressFailureWhenFinished()
           .onFailure((file, exception) -> LOG.debug("Failed on to remove file {} on abort", file, exception))
           .run(file -> io.deleteFile(file.path().toString()));
-      LOG.info("HiveIcebergWriter is closed with abort");
+      LOG.warn("HiveIcebergWriter is closed with abort");
     }
 
     LOG.info("Created {} data files and {} delete files",
