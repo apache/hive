@@ -22,7 +22,6 @@ import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hive.service.auth.HttpAuthService;
 import org.apache.hive.service.auth.HttpAuthUtils;
 import org.apache.hive.service.auth.PasswdAuthenticationProvider;
-import org.apache.hive.service.auth.ldap.LdapAuthService;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.CookieStore;
@@ -30,7 +29,6 @@ import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.eclipse.jetty.http.HttpHeader;
@@ -50,7 +48,7 @@ public class TestHS2HttpServerLDAP {
   private static HiveServer2 hiveServer2;
   private static Integer webUIPort;
   private static final String HOST = "localhost";
-  private static String metastorePasswd = "693efe9fa425ad21886d73a0fa3fbc70"; //random md5
+  private static final String METASTORE_PASSWD = "693efe9fa425ad21886d73a0fa3fbc70"; //random md5
   private static final String VALID_USER = "validUser";
   private static final String VALID_PASS = "validPass";
   private static final String INVALID_USER = "invalidUser";
@@ -64,7 +62,7 @@ public class TestHS2HttpServerLDAP {
     hiveConf.setBoolVar(ConfVars.HIVE_IN_TEST, true);
     hiveConf.set(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname, webUIPort.toString());
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_WEBUI_ENABLE_LDAP, true);
-    hiveConf.set(ConfVars.METASTORE_PWD.varname, metastorePasswd);
+    hiveConf.set(ConfVars.METASTORE_PWD.varname, METASTORE_PASSWD);
     hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     PasswdAuthenticationProvider authenticationProvider = new DummyLdapAuthenticationProviderImpl();
@@ -96,13 +94,12 @@ public class TestHS2HttpServerLDAP {
   }
 
   @Test
-  public void testInvalidCredentiaWithInAuthorizationHeader() throws Exception {
+  public void testInvalidCredentialsWithInAuthorizationHeader() throws Exception {
     CloseableHttpClient httpclient = null;
     try {
       CookieStore httpCookieStore = new BasicCookieStore();
       HttpClientBuilder builder = HttpClientBuilder.create().setDefaultCookieStore(httpCookieStore);
       httpclient = builder.build();
-      httpclient = HttpClients.createDefault();
 
       HttpGet httpGet = new HttpGet("http://" + HOST + ":" + webUIPort + "/jmx");
       String authB64Code = B64Code.encode(INVALID_USER + ":" + INVALID_PASS, StringUtil.__ISO_8859_1);
@@ -125,7 +122,6 @@ public class TestHS2HttpServerLDAP {
       HttpClientBuilder builder = HttpClientBuilder.create().setDefaultCookieStore(httpCookieStore);
       httpclient = builder.build();
 
-      httpclient = HttpClients.createDefault();
       HttpParams params = new BasicHttpParams();
       params.setParameter(HttpAuthService.USERNAME_REQUEST_PARAM_NAME, VALID_USER);
       params.setParameter(HttpAuthService.PASSWORD_REQUEST_PARAM_NAME, VALID_PASS);
@@ -150,7 +146,6 @@ public class TestHS2HttpServerLDAP {
       HttpClientBuilder builder = HttpClientBuilder.create().setDefaultCookieStore(httpCookieStore);
       httpclient = builder.build();
 
-      httpclient = HttpClients.createDefault();
       HttpParams params = new BasicHttpParams();
       params.setParameter(HttpAuthService.USERNAME_REQUEST_PARAM_NAME, INVALID_USER);
       params.setParameter(HttpAuthService.PASSWORD_REQUEST_PARAM_NAME, INVALID_PASS);
@@ -169,7 +164,7 @@ public class TestHS2HttpServerLDAP {
 
   public static boolean isAuthorized(List<Cookie> cookies) {
     Optional<Cookie> cookie = cookies.stream()
-        .filter(c -> c.getName().equals(LdapAuthService.HIVE_SERVER2_WEBUI_AUTH_COOKIE_NAME))
+        .filter(c -> c.getName().equals(HttpAuthService.HIVE_SERVER2_WEBUI_AUTH_COOKIE_NAME))
         .findAny();
     
     if (!cookie.isPresent()) {
@@ -183,14 +178,15 @@ public class TestHS2HttpServerLDAP {
     return userName.equals(VALID_USER);
   }
   
-  @AfterClass public static void afterTests() {
+  @AfterClass 
+  public static void afterTests() {
     hiveServer2.stop();
   }
   
   public static class DummyLdapAuthenticationProviderImpl implements PasswdAuthenticationProvider {
     @Override
     public void Authenticate(String user, String password) throws AuthenticationException {
-      if (!user.equals(VALID_USER) && password.equals(VALID_PASS))
+      if (!(user.equals(VALID_USER) && password.equals(VALID_PASS)))
         throw new AuthenticationException();
     }
   }

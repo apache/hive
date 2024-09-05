@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.shims.HadoopShims.KerberosNameShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hive.service.ServiceException;
 import org.apache.hive.service.auth.AuthType;
 import org.apache.hive.service.auth.AuthenticationProviderFactory;
 import org.apache.hive.service.auth.AuthenticationProviderFactory.AuthMethods;
@@ -287,9 +288,9 @@ public class ThriftHttpServlet extends TServlet {
       } else {
         try {
           LOG.error("Login attempt is failed for user : " +
-              httpAuthService.getUsername(request) + ". Error Messsage :" + e.getMessage());
+              httpAuthService.getUsername(request) + ". Error Message :" + e.getMessage());
         } catch (Exception ex) {
-          // Ignore Exception
+          throw new ServiceException(ex);
         }
       }
       response.getWriter().println("Authentication Error: " + e.getMessage());
@@ -522,7 +523,7 @@ public class ThriftHttpServlet extends TServlet {
           try {
             LOG.error("Login attempt is failed for user : " +
                 getPrincipalWithoutRealmAndHost(gssContext.getSrcName().toString()) +
-                ". Error Messsage :" + e.getMessage());
+                ". Error Message :" + e.getMessage());
           } catch (Exception ex) {
             // Ignore Exception
           }

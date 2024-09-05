@@ -35,6 +35,7 @@ public class HttpAuthService {
   public static final String USERNAME_REQUEST_PARAM_NAME = "username";
   public static final String PASSWORD_REQUEST_PARAM_NAME = "password";
   private static final SecureRandom RAN = new SecureRandom();
+  public static final String HIVE_SERVER2_WEBUI_AUTH_COOKIE_NAME = "hive.server2.webui.auth";
   private final CookieSigner signer;
   private final String cookieDomain;
   private final String cookiePath;
@@ -110,7 +111,7 @@ public class HttpAuthService {
     String currName;
     String currValue;
 
-    // Following is the main loop which iterates through all the cookies send by the client.
+    // Following is the main loop which iterates through all the cookies sent by the client.
     // The HS2 generated cookies are of the format hive.server2.auth=<value>
     // A cookie which is identified as a hiveserver2 generated cookie is validated
     // by calling signer.verifyAndExtract(). If the validation passes, send the

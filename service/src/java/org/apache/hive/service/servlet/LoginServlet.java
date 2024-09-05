@@ -36,7 +36,7 @@ public class LoginServlet extends HttpServlet {
 
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) {
-    ldapAuthService.authorize(request, response);
+    ldapAuthService.authenticate(request, response);
     RequestDispatcher dispatcher = request.getRequestDispatcher(HiveServer2.HS2_WEBUI_ROOT_URI);
     PrintWriter out = null;
     try {

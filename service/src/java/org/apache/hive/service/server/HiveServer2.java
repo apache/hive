@@ -151,6 +151,7 @@ import javax.servlet.jsp.JspFactory;
 public class HiveServer2 extends CompositeService {
   private static final Logger LOG = LoggerFactory.getLogger(HiveServer2.class);
   public static final String INSTANCE_URI_CONFIG = "hive.server2.instance.uri";
+  public static final String HS2_WEBUI_ROOT_URI = "/hiveserver2.jsp";
   private static final int SHUTDOWN_TIME = 60;
 
   private static CountDownLatch zkDeleteSignal;
@@ -181,7 +182,6 @@ public class HiveServer2 extends CompositeService {
   private ZooKeeperHiveHelper zooKeeperHelper = null;
   private ScheduledQueryExecutionService scheduledQueryService;
   private ServiceContext serviceContext;
-  public static final String HS2_WEBUI_ROOT_URI = "/hiveserver2.jsp";
 
   public HiveServer2() {
     super(HiveServer2.class.getSimpleName());
@@ -469,10 +469,12 @@ public class HiveServer2 extends CompositeService {
           webServer.addServlet("query_page", "/query_page.html", QueryProfileServlet.class);
           webServer.addServlet("api", "/api/*", QueriesRESTfulAPIServlet.class);
           if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_ENABLE_LDAP)) {
-            if (passwdAuthenticationProvider == null)
+            if (passwdAuthenticationProvider == null) {
               ldapAuthService = new LdapAuthService(hiveConf);
-            else
+            }
+            else {
               ldapAuthService = new LdapAuthService(hiveConf, passwdAuthenticationProvider);
+            }
             webServer.addServlet("login", "/login", new ServletHolder(new LoginServlet(ldapAuthService)));
             webServer.addFilter("ldap", new FilterHolder(new LDAPAuthenticationFilter(ldapAuthService))); 
           }

@@ -32,13 +32,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/**
- * This Java filter demonstrates how to intercept the request
- * and transform the response to implement authentication feature.
- * for the website's back-end.
- *
- * @author www.codejava.net
- */
 public class LDAPAuthenticationFilter implements Filter {
 
   private static final String LOGIN_FORM_URI = "loginForm.jsp";
@@ -57,14 +50,15 @@ public class LDAPAuthenticationFilter implements Filter {
 
     boolean isLoginFormRequest = requestURI.endsWith(LOGIN_FORM_URI);
     boolean isLoginServletRequest = requestURI.endsWith(LOGIN_SERVLET_URI);
-    boolean isLoggedIn = ldapAuthService.authorize(httpRequest, (HttpServletResponse) response);
+    boolean isLoggedIn = ldapAuthService.authenticate(httpRequest, (HttpServletResponse) response);
 
     if (isLoggedIn && (isLoginFormRequest || isLoginServletRequest)) {
       // User is already logged in, and is trying to login again; forward to the main homepage
       RequestDispatcher dispatcher = request.getRequestDispatcher(HiveServer2.HS2_WEBUI_ROOT_URI);
       dispatcher.forward(request, response);
     } else if (isLoggedIn || isLoginFormRequest || isLoginServletRequest) {
-      // Continues the filter chain
+      // User is either already logged in or this is a request for the login page or processing of a login attempt, 
+      // in all these cases allow to continue the request as is without changes 
       chain.doFilter(request, response);
     } else {
       // User is not logged in, so authentication is required; forwards to the login page

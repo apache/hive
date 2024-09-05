@@ -17,7 +17,6 @@
 
 package org.apache.hive.service.auth.ldap;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.service.ServiceException;
 import org.apache.hive.service.auth.AuthenticationProviderFactory;
@@ -37,7 +36,6 @@ import java.util.concurrent.TimeUnit;
 
 public class LdapAuthService extends HttpAuthService {
   private static final Logger LOG = LoggerFactory.getLogger(LdapAuthService.class);
-  public static final String HIVE_SERVER2_WEBUI_AUTH_COOKIE_NAME = "hive.server2.webui.auth";
   private final PasswdAuthenticationProvider authProvider;
   
   public LdapAuthService(HiveConf hiveConf) {
@@ -56,7 +54,6 @@ public class LdapAuthService extends HttpAuthService {
     }
   }
 
-  @VisibleForTesting
   public LdapAuthService(HiveConf hiveConf, PasswdAuthenticationProvider provider) {
     super(
         hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_HTTP_COOKIE_DOMAIN),
@@ -67,7 +64,7 @@ public class LdapAuthService extends HttpAuthService {
     this.authProvider = provider;
   }
   
-  public boolean authorize(HttpServletRequest request, HttpServletResponse response) {
+  public boolean authenticate(HttpServletRequest request, HttpServletResponse response) {
     try {
       String clientUserName = validateCookie(request);
       if (clientUserName == null) {
@@ -80,7 +77,7 @@ public class LdapAuthService extends HttpAuthService {
         response.addCookie(hs2Cookie);
       }
     } catch (HttpAuthenticationException | AuthenticationException | UnsupportedEncodingException e) {
-      LOG.error("Error in authorizing HTTP request", e);
+      LOG.error("Error in authenticating HTTP request", e);
       return false;
     }
     return true;
