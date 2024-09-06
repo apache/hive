@@ -927,8 +927,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
     boolean isSupportedType = (qb.getIsQuery())
         || qb.isCTAS() || qb.isMaterializedView() || cboCtx.type == PreCboCtx.Type.INSERT
         || cboCtx.type == PreCboCtx.Type.MULTI_INSERT;
-    boolean noBadTokens = HiveCalciteUtil.validateASTForUnsupportedTokens(ast);
-    boolean result = isSupportedRoot && isSupportedType && noBadTokens;
+    Pair<Boolean, String> unsupportedFeatures = HiveCalciteUtil.unsupportedFeaturesPresentInASTorQB(ast, qb);
+    boolean result = isSupportedRoot && isSupportedType && Boolean.FALSE.equals(unsupportedFeatures.getKey());
 
     String msg = "";
     if (!result) {
@@ -939,11 +939,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         msg += "is not a query with at least one source table "
             + " or there is a subquery without a source table, or CTAS, or insert; ";
       }
-      if (!noBadTokens) {
-        msg += "has unsupported tokens; ";
-      }
-      if (msg.isEmpty()) {
-        msg += "has some unspecified limitations; ";
+      if (Boolean.TRUE.equals(unsupportedFeatures.getKey())) {
+        msg += "has unsupported feature [" + unsupportedFeatures.getValue() + "]; ";
       }
       msg = msg.substring(0, msg.length() - 2);
       if (needToLogMessage) {
@@ -4639,11 +4636,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
                     unescapeIdentifier(expr.getChild(0).getChild(0).getText().toLowerCase()),
                     expr, columnList, excludedColumns, inputRR, starRR, pos,
                     outputRR, qb.getAliases(), true);
-          } else if (ParseUtils.containsTokenOfType(expr, HiveParser.TOK_FUNCTIONDI) &&
-              !ParseUtils.containsTokenOfType(expr, HiveParser.TOK_WINDOWSPEC) &&
+          } else if (
+              Boolean.TRUE.equals(ParseUtils.containsTokenOfType(expr, HiveParser.TOK_FUNCTIONDI).getKey()) && 
+              Boolean.FALSE.equals(ParseUtils.containsTokenOfType(expr, HiveParser.TOK_WINDOWSPEC).getKey()) &&
               !(srcRel instanceof HiveAggregate ||
               (srcRel.getInputs().size() == 1 && srcRel.getInput(0) instanceof HiveAggregate))) {
-            // Likely a malformed query eg, select hash(distinct c1) from t1;
+            // Likely a malformed query eg, select hash(distinct c1) from t1
             throw new CalciteSemanticException("Distinct without an aggregation.",
                     UnsupportedFeature.Distinct_without_an_aggregation);
           } else {
