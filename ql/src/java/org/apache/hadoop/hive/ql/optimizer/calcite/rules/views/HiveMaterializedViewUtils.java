@@ -566,8 +566,8 @@ public class HiveMaterializedViewUtils {
     hiveTable.setMaterializedTable(true);
     RelOptHiveTable optTable =
         new RelOptHiveTable(null, cluster.getTypeFactory(), fullName, body.getRowType(), hiveTable, columns,
-            Collections.emptyList(), Collections.emptyList(), new HiveConf(), Hive.getThreadLocal(),
-            new QueryTables(true), new HashMap<>(), new HashMap<>(), new AtomicInteger());
+            Collections.emptyList(), Collections.emptyList(), new HiveConf(), new QueryTables(true), new HashMap<>(),
+            new HashMap<>(), new AtomicInteger());
     optTable.setRowCount(cluster.getMetadataQuery().getRowCount(body));
     final TableScan scan =
         new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable, viewName, null, false, false);
