@@ -85,7 +85,7 @@ import org.apache.druid.query.timeseries.TimeseriesResultValue;
 import org.apache.druid.query.topn.TopNResultValue;
 import org.junit.rules.ExpectedException;
 
-/**Z
+/**
  * Basic tests for Druid SerDe. The examples are taken from Druid 0.9.1.1
  * documentation.
  */
