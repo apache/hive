@@ -83,7 +83,6 @@ import org.apache.iceberg.mr.hive.writer.WriterRegistry;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
-import org.apache.iceberg.relocated.com.google.common.collect.Iterables;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Multimap;
@@ -138,6 +137,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     JobConf jobConf = context.getJobConf();
     Set<Path> mergedPaths = getCombinedLocations(jobConf);
     Set<String> outputs = HiveIcebergStorageHandler.outputTables(context.getJobConf());
+
     Map<String, List<HiveIcebergWriter>> writers = Optional.ofNullable(WriterRegistry.writers(attemptID))
         .orElseGet(() -> {
           LOG.info("CommitTask found no writers for output tables: {}, attemptID: {}", outputs, attemptID);
@@ -162,6 +162,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
                 List<DeleteFile> deleteFiles = Lists.newArrayList();
                 List<DataFile> replacedDataFiles = Lists.newArrayList();
                 Set<CharSequence> referencedDataFiles = Sets.newHashSet();
+
                 for (HiveIcebergWriter writer : writers.get(output)) {
                   FilesForCommit files = writer.files();
                   dataFiles.addAll(files.dataFiles());
@@ -169,8 +170,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
                   replacedDataFiles.addAll(files.replacedDataFiles());
                   referencedDataFiles.addAll(files.referencedDataFiles());
                 }
-                createFileForCommit(new FilesForCommit(dataFiles, deleteFiles, replacedDataFiles, referencedDataFiles,
-                                mergedPaths),
+                createFileForCommit(
+                    new FilesForCommit(dataFiles, deleteFiles, replacedDataFiles, referencedDataFiles, mergedPaths),
                     fileForCommitLocation, table.io());
               } else {
                 LOG.info("CommitTask found no writer for specific table: {}, attemptID: {}", output, attemptID);
@@ -263,6 +264,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         .map(TezUtil::enrichContextWithVertexId)
         .collect(Collectors.toList());
     Multimap<OutputTable, JobContext> outputs = collectOutputs(jobContextList);
+    JobConf jobConf = jobContextList.get(0).getJobConf();
     long startTime = System.currentTimeMillis();
 
     String ids = jobContextList.stream()
@@ -270,8 +272,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     LOG.info("Committing job(s) {} has started", ids);
 
     Collection<String> jobLocations = new ConcurrentLinkedQueue<>();
-    ExecutorService fileExecutor = fileExecutor(jobContextList.get(0).getJobConf());
-    ExecutorService tableExecutor = tableExecutor(jobContextList.get(0).getJobConf(), outputs.size());
+    ExecutorService fileExecutor = fileExecutor(jobConf);
+    ExecutorService tableExecutor = tableExecutor(jobConf, outputs.keySet().size());
     try {
       // Commits the changes for the output tables in parallel
       Tasks.foreach(outputs.keySet())
@@ -281,14 +283,14 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           .run(output -> {
             final Collection<JobContext> jobContexts = outputs.get(output);
             final Table table = output.table;
-            Iterables.addAll(jobLocations, Iterables.transform(jobContexts, jobContext ->
-                generateJobLocation(table.location(), jobContext.getJobConf(), jobContext.getJobID()))
+            jobContexts.forEach(jobContext -> jobLocations.add(
+                generateJobLocation(table.location(), jobConf, jobContext.getJobID()))
             );
             commitTable(table.io(), fileExecutor, output, jobContexts, operation);
           });
 
       // Cleanup any merge input files.
-      cleanMergeTaskInputFiles(jobContextList, tableExecutor);
+      cleanMergeTaskInputFiles(jobContextList, fileExecutor);
     } finally {
       fileExecutor.shutdown();
       if (tableExecutor != null) {
@@ -316,7 +318,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           String catalogName = HiveIcebergStorageHandler.catalogName(jobContext.getJobConf(), output);
           outputs.put(new OutputTable(catalogName, output, table), jobContext);
         } else {
-          LOG.info("CommitJob found no table object in QueryState or conf for: {}. Skipping job commit.", output);
+          LOG.info("Found no table object in QueryState or conf for: {}. Skipping job commit.", output);
         }
       }
     }
@@ -905,7 +907,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
   }
 
   private void cleanMergeTaskInputFiles(List<JobContext> jobContexts,
-                                        ExecutorService tableExecutor) throws IOException {
+                                        ExecutorService fileExecutor) throws IOException {
     // Merge task has merged several files into one. Hence we need to remove the stale files.
     // At this stage the file is written and task-committed, but the old files are still present.
     for (JobContext jobContext : jobContexts) {
@@ -917,7 +919,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           if (mergedPaths != null) {
             Tasks.foreach(mergedPaths)
                     .retry(3)
-                    .executeWith(tableExecutor)
+                    .executeWith(fileExecutor)
                     .run(path -> {
                       FileSystem fs = path.getFileSystem(jobConf);
                       if (fs.exists(path)) {

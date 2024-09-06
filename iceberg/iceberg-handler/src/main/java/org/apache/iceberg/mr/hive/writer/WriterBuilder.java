@@ -113,7 +113,9 @@ public class WriterBuilder {
         .dataFileFormat(context.dataFileFormat())
         .dataSchema(table.schema())
         .deleteFileFormat(context.deleteFileFormat())
-        .positionDeleteRowSchema(context.skipRowData() ? null : table.schema())
+        .positionDeleteRowSchema(context.skipRowData() || !context.inputOrdered() ?
+            // SortingPositionOnlyDeleteWriter doesn't support rawData in delete schema
+            null : table.schema())
         .build();
 
     HiveIcebergWriter writer;
