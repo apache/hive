@@ -183,6 +183,20 @@ public class HiveServer2 extends CompositeService {
   private ScheduledQueryExecutionService scheduledQueryService;
   private ServiceContext serviceContext;
 
+  public enum WebUIAuthMethod {
+    NONE, LDAP
+  }
+
+  public static WebUIAuthMethod getWebUIAuthMethod(String method) {
+    String m = StringUtils.defaultString(method).toLowerCase();
+    switch (m) {
+      case "ldap":
+        return WebUIAuthMethod.LDAP;
+      default:
+        return WebUIAuthMethod.NONE;
+    }
+  }
+
   public HiveServer2() {
     super(HiveServer2.class.getSimpleName());
     HiveConf.setLoadHiveServer2Config(true);
@@ -468,15 +482,21 @@ public class HiveServer2 extends CompositeService {
           webServer = builder.build();
           webServer.addServlet("query_page", "/query_page.html", QueryProfileServlet.class);
           webServer.addServlet("api", "/api/*", QueriesRESTfulAPIServlet.class);
-          if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_ENABLE_LDAP)) {
-            if (passwdAuthenticationProvider == null) {
-              ldapAuthService = new LdapAuthService(hiveConf);
-            }
-            else {
-              ldapAuthService = new LdapAuthService(hiveConf, passwdAuthenticationProvider);
-            }
-            webServer.addServlet("login", "/login", new ServletHolder(new LoginServlet(ldapAuthService)));
-            webServer.addFilter("ldap", new FilterHolder(new LDAPAuthenticationFilter(ldapAuthService))); 
+
+          String webUIAuthMethodConfig = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_AUTH_METHOD);
+          WebUIAuthMethod webUIAuthMethod = getWebUIAuthMethod(webUIAuthMethodConfig);
+              
+          switch (webUIAuthMethod) {
+            case LDAP:
+              if (passwdAuthenticationProvider == null) {
+                ldapAuthService = new LdapAuthService(hiveConf);
+              }
+              else {
+                ldapAuthService = new LdapAuthService(hiveConf, passwdAuthenticationProvider);
+              }
+              webServer.addServlet("login", "/login", new ServletHolder(new LoginServlet(ldapAuthService)));
+              webServer.addFilter("ldap", new FilterHolder(new LDAPAuthenticationFilter(ldapAuthService)));
+              break;
           }
         }
       }

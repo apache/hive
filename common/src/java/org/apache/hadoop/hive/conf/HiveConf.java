@@ -4014,8 +4014,11 @@ public class HiveConf extends Configuration {
         "Domain for the HS2 generated cookies"),
     HIVE_SERVER2_WEBUI_HTTP_COOKIE_PATH("hive.server2.ui.http.cookie.path", null,
         "Path for the HS2 generated cookies"),
-    HIVE_SERVER2_WEBUI_ENABLE_LDAP("hive.server2.webui.enable.ldap", false,
-        "Whether to enable LDAP\n"),
+    HIVE_SERVER2_WEBUI_AUTH_METHOD("hive.server2.webui.auth.method", "NONE",
+        new StringSet("NONE", "LDAP"),
+        "HS2 WebUI authentication method available to clients to be set at session level.\n" +
+            "  NONE: No authentication\n" +
+            "  LDAP" ),
     HIVE_SERVER2_SHOW_OPERATION_DRILLDOWN_LINK("hive.server2.show.operation.drilldown.link", false,
         "Whether to show the operation's drilldown link to thrift client.\n"),
 
