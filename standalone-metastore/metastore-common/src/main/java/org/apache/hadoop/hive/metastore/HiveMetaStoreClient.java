@@ -430,7 +430,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
    * Swaps the first element of the metastoreUris array with a random element from the
    * remainder of the array.
    */
-  @SuppressFBWarnings(value ="DMI_RANDOM_USED_ONLY_ONCE", justification = "intended_to_do")
+  @SuppressFBWarnings(value ="DMI_RANDOM_USED_ONLY_ONCE", justification = "HIVE-23613: intended_TO_DO")
   private void promoteRandomMetaStoreURI() {
     if (metastoreUris.length <= 1) {
       return;
@@ -443,13 +443,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @VisibleForTesting
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "HIVE-23613: intended_TO_DO")
   public TTransport getTTransport() {
     return transport;
   }
 
   @VisibleForTesting
-  @SuppressFBWarnings(value = "MS_EXPOSE_REP", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "MS_EXPOSE_REP", justification = "HIVE-23613: intended_TO_DO")
   public static AtomicInteger getConnCount() {
     return connCount;
   }

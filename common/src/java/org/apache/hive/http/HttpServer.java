@@ -255,7 +255,7 @@ public class HttpServer {
       return this;
     }
 
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
     public Builder setPAMAuthenticator(PamAuthenticator pamAuthenticator){
       this.pamAuthenticator = pamAuthenticator;
       return this;

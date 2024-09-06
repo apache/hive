@@ -30,7 +30,7 @@ import org.apache.thrift.transport.TTransportException;
  public class TFilterTransport extends TTransport {
    protected final TTransport wrapped;
 
-  @SuppressFBWarnings(value="EI_EXPOSE_REP2", justification = "intended_to_do")
+  @SuppressFBWarnings(value="EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
    public TFilterTransport(TTransport wrapped) {
      this.wrapped = wrapped;
    }

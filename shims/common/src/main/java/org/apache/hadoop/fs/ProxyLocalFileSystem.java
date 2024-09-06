@@ -120,7 +120,7 @@ public class ProxyLocalFileSystem extends FilterFileSystem {
     private MD5Hash md5;
     private String algorithmName;
 
-    @SuppressFBWarnings(value="EI_EXPOSE_REP2", justification = "intended_to_do")
+    @SuppressFBWarnings(value="EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
     public PFileChecksum(MD5Hash md5, String algorithmName) {
       this.md5 = md5;
       this.algorithmName = algorithmName;

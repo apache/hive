@@ -46,7 +46,7 @@ public class MetricsFactory {
   /**
    * Returns static Metrics instance, null if not initialized or closed.
    */
-  @SuppressFBWarnings(value = "MS_EXPOSE_REP", justification="intended_to_do")
+  @SuppressFBWarnings(value = "MS_EXPOSE_REP", justification="HIVE-23613: intended_TO_DO")
   public static Metrics getInstance() {
     return metrics;
   }

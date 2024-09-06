@@ -135,7 +135,7 @@ public class IntervalDayTimeColumnVector extends ColumnVector {
    * @param elementNum
    * @return
    */
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "HIVE-23613: intended_TO_DO")
   public HiveIntervalDayTime asScratchIntervalDayTime(int elementNum) {
     scratchIntervalDayTime.set(totalSeconds[elementNum], nanos[elementNum]);
     return scratchIntervalDayTime;
@@ -145,7 +145,7 @@ public class IntervalDayTimeColumnVector extends ColumnVector {
    * Return the scratch HiveIntervalDayTime (contents undefined).
    * @return
    */
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "HIVE-23613: intended_TO_DO")
   public HiveIntervalDayTime getScratchIntervalDayTime() {
     return scratchIntervalDayTime;
   }
@@ -416,7 +416,7 @@ public class IntervalDayTimeColumnVector extends ColumnVector {
    * Supports keeping a TimestampWritable object without having to import that definition...
    * @return
    */
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "HIVE-23613: intended_TO_DO")
   public Writable getScratchWritable() {
     return scratchWritable;
   }
@@ -425,7 +425,7 @@ public class IntervalDayTimeColumnVector extends ColumnVector {
    * Set the convenience writable object stored by this column vector
    * @param scratchWritable
    */
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
   public void setScratchWritable(Writable scratchWritable) {
     this.scratchWritable = scratchWritable;
   }

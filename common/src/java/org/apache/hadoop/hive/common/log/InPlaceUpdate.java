@@ -52,7 +52,7 @@ public class InPlaceUpdate {
   private int lines = 0;
   private PrintStream out;
 
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
   public InPlaceUpdate(PrintStream out) {
     this.out = out;
   }

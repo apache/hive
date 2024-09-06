@@ -52,7 +52,7 @@ public class WebHCatJTShim23 implements WebHCatJTShim {
   /**
    * Create a connection to the Job Tracker.
    */
-  @SuppressFBWarnings(value="EI_EXPOSE_REP2", justification = "intended_to_do")
+  @SuppressFBWarnings(value="EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
   public WebHCatJTShim23(final Configuration conf, final UserGroupInformation ugi)
           throws IOException {
     try {

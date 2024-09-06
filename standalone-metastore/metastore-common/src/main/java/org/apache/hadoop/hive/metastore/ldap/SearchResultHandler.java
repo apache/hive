@@ -43,7 +43,7 @@ public final class SearchResultHandler {
    * Constructs a search result handler object for the provided search results.
    * @param searchResults directory service search results
    */
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
   public SearchResultHandler(Collection<NamingEnumeration<SearchResult>> searchResults) {
     this.searchResults = searchResults;
   }

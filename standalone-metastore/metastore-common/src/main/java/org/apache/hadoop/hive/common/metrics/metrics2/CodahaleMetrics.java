@@ -144,7 +144,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     }
   }
 
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
   public CodahaleMetrics(Configuration conf) {
     this.conf = conf;
     //Codahale artifacts are lazily-created.

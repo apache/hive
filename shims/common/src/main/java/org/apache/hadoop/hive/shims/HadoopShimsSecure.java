@@ -186,7 +186,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
      * A generic RecordReader that can hand out different recordReaders
      * for each chunk in the CombineFileSplit.
      */
-    @SuppressFBWarnings(value="EI_EXPOSE_REP2", justification = "intended_to_do")
+    @SuppressFBWarnings(value="EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
     public CombineFileRecordReader(JobConf job, CombineFileSplit split,
         Reporter reporter,
         Class<RecordReader<K, V>> rrClass)

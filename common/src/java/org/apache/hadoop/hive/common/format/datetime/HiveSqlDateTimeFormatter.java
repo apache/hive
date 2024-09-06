@@ -521,7 +521,7 @@ public class HiveSqlDateTimeFormatter implements Serializable {
       this(tokenType, null, null, string, string.length(), false);
     }
 
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
     public Token(TokenType tokenType, TemporalField temporalField, TemporalUnit temporalUnit,
         String string, int length, boolean fillMode) {
       this.type = tokenType;

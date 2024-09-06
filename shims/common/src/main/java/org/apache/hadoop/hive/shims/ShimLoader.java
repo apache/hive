@@ -75,7 +75,7 @@ public abstract class ShimLoader {
    * Factory method to get an instance of HadoopShims based on the
    * version of Hadoop on the classpath.
    */
-  @SuppressFBWarnings(value="MS_EXPOSE_REP", justification = "intended_to_do")
+  @SuppressFBWarnings(value="MS_EXPOSE_REP", justification = "HIVE-23613: intended_TO_DO")
   public static HadoopShims getHadoopShims() {
     if (hadoopShims == null) {
       synchronized (ShimLoader.class) {

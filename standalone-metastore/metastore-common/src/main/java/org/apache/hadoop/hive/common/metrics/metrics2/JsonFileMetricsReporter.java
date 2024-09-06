@@ -94,7 +94,7 @@ public class JsonFileMetricsReporter implements CodahaleReporter, Runnable {
   // Directory where path resides
   private final Path metricsDir;
 
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
   public JsonFileMetricsReporter(MetricRegistry registry, Configuration conf) {
     this.metricRegistry = registry;
     this.jsonWriter =

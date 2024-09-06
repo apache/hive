@@ -33,7 +33,7 @@ public class JmxMetricsReporter implements CodahaleReporter {
   private final Configuration conf;
   private final JmxReporter jmxReporter;
 
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
   public JmxMetricsReporter(MetricRegistry registry, Configuration conf) {
     this.registry = registry;
     this.conf = conf;

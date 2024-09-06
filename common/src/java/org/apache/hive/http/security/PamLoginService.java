@@ -60,13 +60,13 @@ public class PamLoginService extends AbstractLifeCycle implements LoginService {
   }
 
   @Override
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "HIVE-23613: intended_TO_DO")
   public IdentityService getIdentityService() {
     return identityService;
   }
 
   @Override
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
   public void setIdentityService(IdentityService identityService) {
     if (isRunning())
       throw new IllegalStateException("Running");

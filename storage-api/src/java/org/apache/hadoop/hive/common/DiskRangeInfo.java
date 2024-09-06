@@ -41,7 +41,7 @@ public class DiskRangeInfo {
     this.totalLength = indexBaseOffset;
   }
 
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
   public void addDiskRange(DiskRangeList diskRange) {
     if (tail == null) {
       head = tail = diskRange;
@@ -51,7 +51,7 @@ public class DiskRangeInfo {
     totalLength += diskRange.getLength();
   }
 
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "HIVE-23613: intended_TO_DO")
   public DiskRangeList getDiskRanges() {
     return head;
   }

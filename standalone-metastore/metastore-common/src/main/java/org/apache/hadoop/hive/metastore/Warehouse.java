@@ -87,7 +87,7 @@ public class Warehouse {
   private boolean storageAuthCheck = false;
   private ReplChangeManager cm = null;
 
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
   public Warehouse(Configuration conf) throws MetaException {
     this.conf = conf;
     whRootString = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE);

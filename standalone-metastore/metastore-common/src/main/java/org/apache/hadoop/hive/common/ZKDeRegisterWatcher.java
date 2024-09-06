@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.common.util.SuppressFBWarnings;
  */
 public class ZKDeRegisterWatcher implements Watcher {
   private ZooKeeperHiveHelper zooKeeperHiveHelper;
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP2",justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2",justification = "HIVE-23613: intended_TO_DO")
   public ZKDeRegisterWatcher(ZooKeeperHiveHelper zooKeeperHiveHelper) {
     this.zooKeeperHiveHelper = zooKeeperHiveHelper;
   }

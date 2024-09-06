@@ -97,7 +97,7 @@ public class JavaUtils {
    * @param <T> the type of the class to be returned
    * @return an object of the requested type
    */
-  @SuppressFBWarnings(value = "REFLC_REFLECTION_MAY_INCREASE_ACCESSIBILITY_OF_CLASS", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "REFLC_REFLECTION_MAY_INCREASE_ACCESSIBILITY_OF_CLASS", justification = "HIVE-23613: intended_TO_DO")
   public static <T> T newInstance(Class<T> theClass) {
     try {
       return theClass.newInstance();

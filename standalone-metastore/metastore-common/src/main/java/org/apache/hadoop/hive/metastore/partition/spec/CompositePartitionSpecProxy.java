@@ -108,7 +108,7 @@ public class CompositePartitionSpecProxy extends PartitionSpecProxy {
     private int index = -1; // Index into partitionSpecs.
     private PartitionIterator iterator = null;
 
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
     public Iterator(CompositePartitionSpecProxy composite) {
       this.composite = composite;
       this.partitionSpecProxies = composite.partitionSpecProxies;
@@ -247,7 +247,7 @@ public class CompositePartitionSpecProxy extends PartitionSpecProxy {
   }
 
   @Override
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "HIVE-23613: intended_TO_DO")
   public List<PartitionSpec> toPartitionSpec() {
     return partitionSpecs;
   }
