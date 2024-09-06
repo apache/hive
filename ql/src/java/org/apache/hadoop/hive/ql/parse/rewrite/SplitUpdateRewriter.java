@@ -107,8 +107,7 @@ public class SplitUpdateRewriter implements Rewriter<UpdateStatement> {
     sqlGenerator.appendInsertBranch(null, insertValues);
     sqlGenerator.appendInsertBranch(null, deleteValues);
 
-    List<String> sortKeys = sqlGenerator.getSortKeys();
-    sqlGenerator.appendSortBy(sortKeys);
+    sqlGenerator.appendSortKeys();
 
     ParseUtils.ReparseResult rr = ParseUtils.parseRewrittenQuery(context, sqlGenerator.toString());
     Context rewrittenCtx = rr.rewrittenCtx;

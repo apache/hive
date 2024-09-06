@@ -1221,10 +1221,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public List<FieldSchema> acidSortColumns(org.apache.hadoop.hive.ql.metadata.Table table, Operation operation) {
+  public List<FieldSchema> acidSortColumns(org.apache.hadoop.hive.ql.metadata.Table table, Operation operation,
+      boolean emptyOrdering) {
     switch (operation) {
       case DELETE:
-        return IcebergTableUtil.isFanoutEnabled(table.getParameters()) ?
+        return IcebergTableUtil.isFanoutEnabled(table.getParameters()) && emptyOrdering ?
             EMPTY_ORDERING : POSITION_DELETE_ORDERING;
       default:
         // For update operations we use the same sort order defined by

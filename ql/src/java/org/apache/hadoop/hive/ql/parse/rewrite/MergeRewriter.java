@@ -218,7 +218,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
       addWhereClauseOfUpdate(
           onClauseAsString, updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), sqlGenerator);
 
-      sqlGenerator.appendSortBy(sqlGenerator.getSortKeys());
+      sqlGenerator.appendSortKeys();
     }
 
     protected void addValues(Table targetTable, String targetAlias, Map<String, String> newValues,

@@ -492,6 +492,11 @@ public interface HiveStorageHandler extends Configurable {
    * @return the list of columns that should be used as sort columns in the rewritten ACID query
    */
   default List<FieldSchema> acidSortColumns(org.apache.hadoop.hive.ql.metadata.Table table, Operation operation) {
+    return acidSortColumns(table, operation, false);
+  }
+
+  default List<FieldSchema> acidSortColumns(org.apache.hadoop.hive.ql.metadata.Table table, Operation operation, 
+      boolean emptyOrdering) {
     return Collections.emptyList();
   }
 

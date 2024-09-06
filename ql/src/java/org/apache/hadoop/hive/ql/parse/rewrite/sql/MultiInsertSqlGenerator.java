@@ -61,17 +61,17 @@ public abstract class MultiInsertSqlGenerator {
   }
 
   public abstract void appendAcidSelectColumns(Context.Operation operation);
-
-  public void appendAcidSelectColumnsForDeletedRecords(Context.Operation operation) {
-    appendAcidSelectColumnsForDeletedRecords(operation, true);
-  }
   
   public void appendAcidSelectColumnsForDeletedRecords(Context.Operation operation, boolean skipPrefix) {
     throw new UnsupportedOperationException();
   }
 
   public abstract List<String> getDeleteValues(Context.Operation operation);
-  public abstract List<String> getSortKeys();
+  protected abstract List<String> getSortKeys(boolean emptyOrdering);
+  
+  public List<String> getSortKeys() {
+    return getSortKeys(false);
+  }
 
   public String qualify(String columnName) {
     if (isBlank(subQueryAlias)) {
@@ -123,7 +123,7 @@ public abstract class MultiInsertSqlGenerator {
     queryStr.append(")");
   }
 
-  public void appendSortBy(List<String> keys) {
+  private void appendSortBy(List<String> keys) {
     if (keys.isEmpty()) {
       return;
     }
@@ -133,7 +133,7 @@ public abstract class MultiInsertSqlGenerator {
   }
 
   public void appendSortKeys() {
-    appendSortBy(getSortKeys());
+    appendSortBy(getSortKeys(true));
   }
 
   public MultiInsertSqlGenerator append(String sqlTextFragment) {
