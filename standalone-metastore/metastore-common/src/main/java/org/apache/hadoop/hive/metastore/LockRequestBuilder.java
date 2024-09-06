@@ -57,7 +57,7 @@ public class LockRequestBuilder {
    * Get the constructed LockRequest.
    * @return lock request
    */
-  @SuppressFBWarnings(value="EI_EXPOSE_REP", justification = "intended_to_do")
+  @SuppressFBWarnings(value="EI_EXPOSE_REP", justification = "HIVE-23613: intended_TO_DO")
   public LockRequest build() {
     if (!userSet) {
       throw new RuntimeException("Cannot build a lock without giving a user");

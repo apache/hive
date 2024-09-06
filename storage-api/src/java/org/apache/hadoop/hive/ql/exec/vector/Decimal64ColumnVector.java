@@ -156,7 +156,7 @@ public class Decimal64ColumnVector extends LongColumnVector implements IDecimalC
    * Return a convenience writable object stored by this column vector.
    * @return
    */
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "HIVE-23613: intended_TO_DO")
   public HiveDecimalWritable getScratchWritable() {
     return scratchHiveDecWritable;
   }

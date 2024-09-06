@@ -101,7 +101,7 @@ public class ReplChangeManager {
     public FileInfo(FileSystem srcFs, Path sourcePath, String subDir) {
       this(srcFs, sourcePath, null, null, true, subDir);
     }
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
     public FileInfo(FileSystem srcFs, Path sourcePath, Path cmPath,
                     String checkSum, boolean useSourcePath, String subDir) {
       this.srcFs = srcFs;
@@ -112,7 +112,7 @@ public class ReplChangeManager {
       this.subDir = subDir;
       this.copyDone = false;
     }
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "HIVE-23613: intended_TO_DO")
     public FileSystem getSrcFs() {
       return srcFs;
     }
@@ -478,7 +478,7 @@ public class ReplChangeManager {
     private long secRetain;
     private Configuration conf;
 
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
     public CMClearer(long secRetain, Configuration conf) {
       this.encryptionZones = encryptionZoneToCmrootMapping;
       this.secRetain = secRetain;

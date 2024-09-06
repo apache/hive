@@ -34,7 +34,7 @@ public class Metrics2Reporter implements CodahaleReporter {
   private final Configuration conf;
   private final HadoopMetrics2Reporter reporter;
 
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
   public Metrics2Reporter(MetricRegistry registry, Configuration conf) {
     this.conf = conf;
     String applicationName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METRICS_HADOOP2_COMPONENT_NAME);

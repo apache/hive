@@ -1477,7 +1477,7 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
    *
    * @return the unscaled value of this {@code Decimal128}.
    */
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "HIVE-23613: intended_TO_DO")
   public UnsignedInt128 getUnscaledValue() {
     return unscaledValue;
   }
@@ -1967,7 +1967,7 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
   /**
    * This setter is only for de-serialization, should not be used otherwise.
    */
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
   public void setUnscaledValue(UnsignedInt128 unscaledValue) {
     this.unscaledValue = unscaledValue;
   }

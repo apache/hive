@@ -41,12 +41,12 @@ public class TUGIContainingTransport extends TFilterTransport {
     super(wrapped);
   }
 
-  @SuppressFBWarnings(value="EI_EXPOSE_REP", justification = "intended_to_do")
+  @SuppressFBWarnings(value="EI_EXPOSE_REP", justification = "HIVE-23613: intended_TO_DO")
   public UserGroupInformation getClientUGI(){
     return ugi;
   }
 
-  @SuppressFBWarnings(value="EI_EXPOSE_REP2", justification = "intended_to_do")
+  @SuppressFBWarnings(value="EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
   public void setClientUGI(UserGroupInformation ugi){
     this.ugi = ugi;
   }

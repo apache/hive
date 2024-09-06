@@ -247,7 +247,7 @@ public class DiskRangeList extends DiskRange {
   public static class CreateHelper {
     private DiskRangeList tail = null, head;
 
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "HIVE-23613: intended_TO_DO")
     public DiskRangeList getTail() {
       return tail;
     }
@@ -266,7 +266,7 @@ public class DiskRangeList extends DiskRange {
       }
     }
 
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "HIVE-23613: intended_TO_DO")
     public DiskRangeList get() {
       return head;
     }

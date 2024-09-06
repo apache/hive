@@ -39,7 +39,7 @@ public class PartitionSpecWithSharedSDProxy extends PartitionSpecProxy {
 
   private PartitionSpec partitionSpec;
 
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
   public PartitionSpecWithSharedSDProxy(PartitionSpec partitionSpec) throws MetaException {
     assert partitionSpec.isSetSharedSDPartitionSpec();
     if (partitionSpec.getSharedSDPartitionSpec().getSd() == null) {

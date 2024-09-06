@@ -70,7 +70,7 @@ public abstract class FileMetadataHandler {
    * @param expressionProxy Expression proxy to access ql stuff.
    * @param store Storage interface to manipulate the metadata.
    */
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
   public void configure(
       Configuration conf, PartitionExpressionProxy expressionProxy, MetadataStore store) {
     this.conf = conf;

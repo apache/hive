@@ -66,7 +66,7 @@ public class MaterializationSnapshot {
     this.tableSnapshots = null;
   }
 
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
   public MaterializationSnapshot(Map<String, SnapshotContext> tableSnapshots) {
     this.validTxnList = null;
     this.tableSnapshots = tableSnapshots;
@@ -106,7 +106,7 @@ public class MaterializationSnapshot {
    * @return {@link Map} of snapshotIds where the key is the fully qualified name of the table and the
    * values is the {@link String} representation of snapshotId or null if all tables are native ACID
    */
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "HIVE-23613: intended_TO_DO")
   public Map<String, SnapshotContext> getTableSnapshots() {
     return tableSnapshots;
   }

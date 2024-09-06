@@ -62,12 +62,12 @@ public class EncodedColumnBatch<BatchKey> {
       return i;
     }
 
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "HIVE-23613: intended_TO_DO")
     public List<MemoryBuffer> getCacheBuffers() {
       return cacheBuffers;
     }
 
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
     public void setCacheBuffers(List<MemoryBuffer> cacheBuffers) {
       this.cacheBuffers = cacheBuffers;
     }

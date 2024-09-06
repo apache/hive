@@ -51,7 +51,7 @@ public class LogRedirector implements Runnable {
     this.logger = logger;
   }
 
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
   public LogRedirector(InputStream in, Logger logger, List<String> errLogs,
                        LogSourceCallback callback) {
     this.in = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));

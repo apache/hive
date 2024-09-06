@@ -40,7 +40,7 @@ public final class Query {
    * @param filter search filter
    * @param controls search controls
    */
-  @SuppressFBWarnings(value="EI_EXPOSE_REP2", justification = "intended_to_do")
+  @SuppressFBWarnings(value="EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
   public Query(String filter, SearchControls controls) {
     this.filter = filter;
     this.controls = controls;
@@ -58,7 +58,7 @@ public final class Query {
    * Returns search controls.
    * @return search controls
    */
-  @SuppressFBWarnings(value="EI_EXPOSE_REP", justification = "intended_to_do")
+  @SuppressFBWarnings(value="EI_EXPOSE_REP", justification = "HIVE-23613: intended_TO_DO")
   public SearchControls getControls() {
     return controls;
   }

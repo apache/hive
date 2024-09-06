@@ -38,7 +38,7 @@ import org.apache.thrift.transport.TTransportException;
  public class TUGIAssumingTransport extends TFilterTransport {
    protected UserGroupInformation ugi;
 
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
    public TUGIAssumingTransport(TTransport wrapped, UserGroupInformation ugi) {
      super(wrapped);
      this.ugi = ugi;

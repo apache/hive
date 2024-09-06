@@ -29,7 +29,7 @@ public class ShellCmdExecutor {
   private PrintStream out;
   private PrintStream err;
 
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
   public ShellCmdExecutor(String cmd, PrintStream out, PrintStream err) {
     this.cmd = cmd;
     this.out = out;

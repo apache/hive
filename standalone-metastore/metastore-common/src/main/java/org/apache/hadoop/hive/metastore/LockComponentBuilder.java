@@ -67,7 +67,7 @@ public class LockComponentBuilder {
    * Set the lock to be shared_read.
    * @return reference to this builder
    */
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "HIVE-23613: intended_TO_DO")
   public LockComponentBuilder setSharedRead() {
     component.setType(LockType.SHARED_READ);
     return this;
@@ -122,7 +122,7 @@ public class LockComponentBuilder {
    * Get the constructed lock component.
    * @return lock component.
    */
- @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
+ @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "HIVE-23613: intended_TO_DO")
   public LockComponent build() {
     LockLevel level = LockLevel.DB;
     if (tableNameSet) level = LockLevel.TABLE;

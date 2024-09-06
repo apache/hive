@@ -212,7 +212,7 @@ public static class HadoopFileStatus {
     this.aclStatus = aclStatus;
   }
 
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "HIVE-23613: intended_TO_DO")
   public FileStatus getFileStatus() {
     return fileStatus;
   }
