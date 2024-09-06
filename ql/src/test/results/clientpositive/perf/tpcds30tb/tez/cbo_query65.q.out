@@ -1,4 +1,5 @@
-CTE Suggestion 0:HiveAggregate(group=[{0, 1}], agg#0=[sum($2)])
+CTE Suggestion:
+HiveAggregate(group=[{0, 1}], agg#0=[sum($2)])
   HiveJoin(condition=[=($3, $4)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(ss_item_sk=[$1], ss_store_sk=[$6], ss_sales_price=[$12], ss_sold_date_sk=[$22])
       HiveFilter(condition=[AND(IS NOT NULL($22), IS NOT NULL($6))])

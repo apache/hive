@@ -1,4 +1,5 @@
-CTE Suggestion 0:HiveAggregate(group=[{5, 6, 8, 9, 11, 12}], agg#0=[sum($2)])
+CTE Suggestion:
+HiveAggregate(group=[{5, 6, 8, 9, 11, 12}], agg#0=[sum($2)])
   HiveJoin(condition=[=($0, $10)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveJoin(condition=[=($1, $7)], joinType=[inner], algorithm=[none], cost=[not available])
       HiveJoin(condition=[=($3, $4)], joinType=[inner], algorithm=[none], cost=[not available])
@@ -15,7 +16,8 @@ CTE Suggestion 0:HiveAggregate(group=[{5, 6, 8, 9, 11, 12}], agg#0=[sum($2)])
       HiveFilter(condition=[AND(IS NOT NULL($12), IS NOT NULL($8))])
         HiveTableScan(table=[[default, item]], table:alias=[item])
 
-CTE Suggestion 1:HiveFilter(condition=[IS NOT NULL($5)])
+CTE Suggestion:
+HiveFilter(condition=[IS NOT NULL($5)])
   HiveProject((tok_table_or_col i_category)=[$5], (tok_table_or_col i_brand)=[$4], (tok_table_or_col s_store_name)=[$2], (tok_table_or_col s_company_name)=[$3], (tok_function sum (tok_table_or_col ss_sales_price))=[$6], rank_window_1=[rank() OVER (PARTITION BY $5, $4, $2, $3 ORDER BY $0 NULLS LAST, $1 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)])
     HiveAggregate(group=[{5, 6, 8, 9, 11, 12}], agg#0=[sum($2)])
       HiveJoin(condition=[=($0, $10)], joinType=[inner], algorithm=[none], cost=[not available])

@@ -21,13 +21,11 @@ import org.apache.calcite.plan.hep.HepPlanner;
 import org.apache.calcite.plan.hep.HepProgram;
 import org.apache.calcite.plan.hep.HepProgramBuilder;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.CommonRelSubExprRegisterRule;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -50,13 +48,7 @@ public class CommonTableExpressionIdentitySuggester implements CommonTableExpres
     HepPlanner planner = new HepPlanner(ruleProgram, Contexts.of(localRegistry));
     planner.setRoot(input);
     planner.findBestExp();
-    RelMetadataQuery mq = input.getCluster().getMetadataQuery();
-    Comparator<RelNode> rowCountCmp = Comparator.comparing(mq::getRowCount).reversed();
-    Comparator<RelNode> rowSizeCmp = Comparator.comparing(mq::getAverageRowSize).reversed();
-    // Criterion based sorting to ensure deterministic ordering of results.
-    return localRegistry.entries()
-        .sorted(Comparator.comparing(HiveCalciteUtil::countNodes).thenComparing(rowCountCmp).thenComparing(rowSizeCmp))
-        .collect(Collectors.toList());
+    return localRegistry.entries().collect(Collectors.toList());
   }
 
 }

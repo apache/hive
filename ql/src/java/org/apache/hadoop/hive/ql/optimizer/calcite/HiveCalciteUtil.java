@@ -1354,18 +1354,6 @@ public class HiveCalciteUtil {
     return rexTableInputRefs;
   }
 
-  public static long countNodes(RelNode root) {
-    long[] count = new long[] { 0 };
-    root.accept(new RelHomogeneousShuttle() {
-      @Override
-      public RelNode visit(final RelNode other) {
-        count[0]++;
-        return super.visit(other);
-      }
-    });
-    return count[0];
-  }
-
   public static RelNode stripHepVertices(RelNode rel) {
     if (rel instanceof HepRelVertex) {
       rel = ((HepRelVertex) rel).getCurrentRel();

@@ -35,9 +35,9 @@ public class CommonTableExpressionPrintSuggester implements CommonTableExpressio
   @Override
   public List<RelNode> suggest(final RelNode input, final Configuration configuration) {
     List<RelNode> result = internal.suggest(input, configuration);
-    for (int i = 0; i < result.size(); i++) {
-      SessionState.getConsole().printInfo("CTE Suggestion " + i + ":" + RelOptUtil.toString(result.get(i)), false);
-    }
+    // Ensure CTEs are printed deterministically to avoid test flakiness
+    result.stream().map(RelOptUtil::toString).sorted()
+        .forEach(cte -> SessionState.getConsole().printInfo("CTE Suggestion:\n" + cte, false));
     return result;
   }
 

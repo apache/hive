@@ -1,4 +1,5 @@
-CTE Suggestion 0:HiveJoin(condition=[AND(=($1, $7), =($2, $16))], joinType=[inner], algorithm=[none], cost=[not available])
+CTE Suggestion:
+HiveJoin(condition=[AND(=($1, $7), =($2, $16))], joinType=[inner], algorithm=[none], cost=[not available])
   HiveJoin(condition=[AND(=($3, $6), =($0, $5))], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(ss_item_sk=[$1], ss_customer_sk=[$2], ss_store_sk=[$6], ss_ticket_number=[$8], ss_sales_price=[$12])
       HiveFilter(condition=[AND(IS NOT NULL($6), IS NOT NULL($2))])

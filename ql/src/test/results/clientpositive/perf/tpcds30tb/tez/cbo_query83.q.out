@@ -1,8 +1,5 @@
-CTE Suggestion 0:HiveProject(d_date_sk=[$0], d_date=[$2])
-  HiveFilter(condition=[IS NOT NULL($2)])
-    HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-
-CTE Suggestion 1:HiveProject(d_date=[$0])
+CTE Suggestion:
+HiveProject(d_date=[$0])
   HiveSemiJoin(condition=[=($1, $2)], joinType=[semi])
     HiveProject(d_date=[$2], d_week_seq=[$4])
       HiveFilter(condition=[AND(IS NOT NULL($4), IS NOT NULL($2))])
@@ -10,6 +7,11 @@ CTE Suggestion 1:HiveProject(d_date=[$0])
     HiveProject(d_week_seq=[$4])
       HiveFilter(condition=[AND(IN($2, 1998-01-02:DATE, 1998-10-15:DATE, 1998-11-10:DATE), IS NOT NULL($4))])
         HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+
+CTE Suggestion:
+HiveProject(d_date_sk=[$0], d_date=[$2])
+  HiveFilter(condition=[IS NOT NULL($2)])
+    HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
 
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])

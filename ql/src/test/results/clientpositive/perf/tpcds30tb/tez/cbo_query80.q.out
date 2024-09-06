@@ -1,12 +1,15 @@
-CTE Suggestion 0:HiveProject(i_item_sk=[$0])
-  HiveFilter(condition=[>($5, 50:DECIMAL(2, 0))])
-    HiveTableScan(table=[[default, item]], table:alias=[item])
-
-CTE Suggestion 1:HiveProject(d_date_sk=[$0])
+CTE Suggestion:
+HiveProject(d_date_sk=[$0])
   HiveFilter(condition=[BETWEEN(false, CAST($2):TIMESTAMP(9), 1998-08-04 00:00:00:TIMESTAMP(9), 1998-09-03 00:00:00:TIMESTAMP(9))])
     HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
 
-CTE Suggestion 2:HiveProject(p_promo_sk=[$0])
+CTE Suggestion:
+HiveProject(i_item_sk=[$0])
+  HiveFilter(condition=[>($5, 50:DECIMAL(2, 0))])
+    HiveTableScan(table=[[default, item]], table:alias=[item])
+
+CTE Suggestion:
+HiveProject(p_promo_sk=[$0])
   HiveFilter(condition=[=($11, _UTF-16LE'N')])
     HiveTableScan(table=[[default, promotion]], table:alias=[promotion])
 

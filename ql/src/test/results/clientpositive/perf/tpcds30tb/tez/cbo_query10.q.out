@@ -1,4 +1,5 @@
-CTE Suggestion 0:HiveProject(d_date_sk=[$0])
+CTE Suggestion:
+HiveProject(d_date_sk=[$0])
   HiveFilter(condition=[AND(=($6, 2002), BETWEEN(false, $8, 4, 7))])
     HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
 
