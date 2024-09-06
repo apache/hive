@@ -320,7 +320,8 @@ public class StringGroupConcatColCol extends VectorExpression {
       /*
        * Do careful maintenance of the outputColVector.noNulls flag.
        */
-
+      // propagate not nulls flag.
+      outV.noNulls = true;
       // perform data operation
       if (inV1.isRepeating && inV2.isRepeating) {
 
