@@ -490,8 +490,7 @@ public class HiveServer2 extends CompositeService {
             case LDAP:
               if (passwdAuthenticationProvider == null) {
                 ldapAuthService = new LdapAuthService(hiveConf);
-              }
-              else {
+              } else {
                 ldapAuthService = new LdapAuthService(hiveConf, passwdAuthenticationProvider);
               }
               webServer.addServlet("login", "/login", new ServletHolder(new LoginServlet(ldapAuthService)));

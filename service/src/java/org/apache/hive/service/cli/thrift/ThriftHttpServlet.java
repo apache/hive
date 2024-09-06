@@ -290,7 +290,7 @@ public class ThriftHttpServlet extends TServlet {
           LOG.error("Login attempt is failed for user : " +
               httpAuthService.getUsername(request) + ". Error Message :" + e.getMessage());
         } catch (Exception ex) {
-          throw new ServiceException(ex);
+          // Failed logging an exception message, ignoring exception, but response status is set to 401/unauthorized  
         }
       }
       response.getWriter().println("Authentication Error: " + e.getMessage());
