@@ -58,6 +58,7 @@ import java.util.stream.IntStream;
 /**
  * Test Transactional Writer.
  */
+@Ignore("HIVE-28348: TransactionalKafkaWriterTest hangs in precommit")
 public class TransactionalKafkaWriterTest {
 
   private static final String TOPIC = "TOPIC_TEST";

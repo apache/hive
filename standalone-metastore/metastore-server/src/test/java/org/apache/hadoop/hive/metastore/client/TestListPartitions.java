@@ -203,6 +203,22 @@ public class TestListPartitions extends MetaStoreClientTest {
     return new ReturnTable(t, testValues);
   }
 
+  private ReturnTable createTableNParts(IMetaStoreClient client, boolean authOn, int nParts)
+      throws Exception {
+    Table t = createTestTable(client, DB_NAME, TABLE_NAME, Lists.newArrayList("yyyy", "mm", "dd"),
+            authOn);
+    List<List<String>> testValues = new ArrayList<>(nParts);
+    for (int i = 0; i < nParts; i++) {
+      testValues.add(Lists.newArrayList("2017", "01", String.valueOf(i)));
+    }
+
+    for(List<String> vals : testValues) {
+      addPartition(client, t, vals);
+    }
+
+    return new ReturnTable(t, testValues);
+  }
+
   protected ReturnTable createTable4PartColsParts(IMetaStoreClient client) throws
           Exception {
     return createTable4PartColsPartsGeneric(client, false);
@@ -324,7 +340,7 @@ public class TestListPartitions extends MetaStoreClientTest {
   @Test(expected = MetaException.class)
   @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testListPartitionsAllHighMaxParts() throws Exception {
-    createTable3PartCols1Part(client);
+    createTableNParts(client, false, 101);
     List<Partition> partitions = client.listPartitions(DB_NAME, TABLE_NAME, (short)101);
     assertTrue(partitions.isEmpty());
   }
@@ -496,7 +512,7 @@ public class TestListPartitions extends MetaStoreClientTest {
   @Test(expected = MetaException.class)
   @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testListPartitionSpecsHighMaxParts() throws Exception {
-    createTable4PartColsParts(client);
+    createTableNParts(client, false, 101);
     client.listPartitionSpecs(DB_NAME, TABLE_NAME, 101);
   }
 
@@ -562,7 +578,7 @@ public class TestListPartitions extends MetaStoreClientTest {
   @Test(expected = MetaException.class)
   @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testListPartitionsWithAuthHighMaxParts() throws Exception {
-    createTable4PartColsParts(client);
+    createTableNParts(client, false, 101);
     client.listPartitionsWithAuthInfo(DB_NAME, TABLE_NAME, (short)101, "", Lists.newArrayList());
   }
 
@@ -754,7 +770,7 @@ public class TestListPartitions extends MetaStoreClientTest {
   @Test(expected = MetaException.class)
   @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testListPartitionsWithAuthByValuesHighMaxParts() throws Exception {
-    createTable4PartColsParts(client);
+    createTableNParts(client, false, 101);
     client.listPartitionsWithAuthInfo(DB_NAME, TABLE_NAME, Lists
             .newArrayList("2017"), (short) 101, "", Lists.newArrayList());
   }
@@ -982,7 +998,7 @@ public class TestListPartitions extends MetaStoreClientTest {
   @Test(expected = MetaException.class)
   @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testListPartitionsByFilterHighMaxParts() throws Exception {
-    createTable4PartColsParts(client);
+    createTableNParts(client, false, 101);
     client.listPartitionsByFilter(DB_NAME, TABLE_NAME, "yyyy=\"2017\"", (short)101);
   }
 
@@ -1095,7 +1111,7 @@ public class TestListPartitions extends MetaStoreClientTest {
   @Test(expected = MetaException.class)
   @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testListPartitionSpecsByFilterHighMaxParts() throws Exception {
-    createTable4PartColsParts(client);
+    createTableNParts(client, false, 101);
     client.listPartitionSpecsByFilter(DB_NAME, TABLE_NAME, "yyyy=\"2017\"", 101);
   }
 

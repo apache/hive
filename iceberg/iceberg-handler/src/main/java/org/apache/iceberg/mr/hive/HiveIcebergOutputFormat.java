@@ -76,8 +76,9 @@ public class HiveIcebergOutputFormat<T> implements OutputFormat<NullWritable, Co
         .tableName(tableName)
         .attemptID(taskAttemptID)
         .poolSize(poolSize)
-        .operation(HiveCustomStorageHandlerUtils.getWriteOperation(jc, tableName))
-        .isFanoutEnabled(!HiveCustomStorageHandlerUtils.getWriteOperationIsSorted(jc, tableName))
+        .operation(HiveCustomStorageHandlerUtils.getWriteOperation(jc::get, tableName))
+        .isFanoutEnabled(!HiveCustomStorageHandlerUtils.getWriteOperationIsSorted(jc::get, tableName))
+        .isMergeTask(HiveCustomStorageHandlerUtils.isMergeTaskEnabled(jc::get, tableName))
         .build();
   }
 

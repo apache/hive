@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableConstantIntObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
@@ -130,7 +131,7 @@ public class GenericUDFIcebergBucket extends GenericUDF {
             decimalTypeInfo.getScale());
 
         converter = new PrimitiveObjectInspectorConverter.HiveDecimalConverter(argumentOI,
-            PrimitiveObjectInspectorFactory.writableHiveDecimalObjectInspector);
+            new WritableHiveDecimalObjectInspector(decimalTypeInfo));
         Function<Object, Integer> bigDecimalTransform = Transforms.bucket(numBuckets).bind(decimalIcebergType);
         evaluator = arg -> {
           HiveDecimalWritable val = (HiveDecimalWritable) converter.convert(arg.get());

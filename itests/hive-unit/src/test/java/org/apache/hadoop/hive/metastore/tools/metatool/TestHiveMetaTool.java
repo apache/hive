@@ -37,6 +37,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -91,7 +92,7 @@ public class TestHiveMetaTool {
       os = new ByteArrayOutputStream();
       System.setOut(new PrintStream(os));
 
-      hiveConf = new HiveConf(HiveMetaTool.class);
+      hiveConf = new HiveConfForTest(HiveMetaTool.class);
       client = new HiveMetaStoreClient(hiveConf);
 
       createDatabase();

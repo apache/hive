@@ -19,6 +19,7 @@ package org.apache.hive.jdbc;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.withSettings;
 
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -39,7 +40,7 @@ public class TestHiveStatement {
    */
   @Test
   public void testSetFetchSize() throws SQLException {
-    final HiveConnection connection = mock(HiveConnection.class);
+    final HiveConnection connection = mock(HiveConnection.class, withSettings().useConstructor());
     final Iface iface = mock(Iface.class);
     final TSessionHandle handle = mock(TSessionHandle.class);
 
@@ -63,10 +64,11 @@ public class TestHiveStatement {
 
     // No hint specified and no default value passed in through the constructor,
     // so it falls-back to the configuration default value
+    int fetchSize = HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.defaultIntVal;
+    connection.fetchSize = fetchSize;
     try (HiveStatement stmt = new HiveStatement(connection, iface, handle)) {
       stmt.setFetchSize(0);
-      assertEquals(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.defaultIntVal,
-          stmt.getFetchSize());
+      assertEquals(fetchSize, stmt.getFetchSize());
     }
   }
 
@@ -83,10 +85,7 @@ public class TestHiveStatement {
     final Iface iface = mock(Iface.class);
     final TSessionHandle handle = mock(TSessionHandle.class);
 
-    // No hint specified and no default value passed in through the constructor,
-    // so it falls-back to a value 1000
-    try (HiveStatement stmt = new HiveStatement(connection, iface, handle, false, 0, 10)) {
-      stmt.setFetchSize(0);
+    try (HiveStatement stmt = new HiveStatement(connection, iface, handle, false, 10)) {
       assertEquals(10, stmt.getFetchSize());
     }
   }
@@ -106,7 +105,7 @@ public class TestHiveStatement {
     final Iface iface = mock(Iface.class);
     final TSessionHandle handle = mock(TSessionHandle.class);
 
-    try (HiveStatement stmt = new HiveStatement(connection, iface, handle, false, 4, 1000)) {
+    try (HiveStatement stmt = new HiveStatement(connection, iface, handle, false, 4)) {
       assertEquals(4, stmt.getFetchSize());
     }
   }
@@ -121,7 +120,7 @@ public class TestHiveStatement {
    */
   @Test(expected = SQLException.class)
   public void testSetFetchSizeNegativeValue() throws SQLException {
-    final HiveConnection connection = mock(HiveConnection.class);
+    final HiveConnection connection = mock(HiveConnection.class, withSettings().useConstructor());
     final Iface iface = mock(Iface.class);
     final TSessionHandle handle = mock(TSessionHandle.class);
 
@@ -132,7 +131,7 @@ public class TestHiveStatement {
 
   @Test(expected = SQLFeatureNotSupportedException.class)
   public void testaddBatch() throws SQLException {
-    final HiveConnection connection = mock(HiveConnection.class);
+    final HiveConnection connection = mock(HiveConnection.class, withSettings().useConstructor());
     final Iface iface = mock(Iface.class);
     final TSessionHandle handle = mock(TSessionHandle.class);
 

@@ -16,7 +16,14 @@
  * limitations under the License.
  */
 
+def discardDaysToKeep = '365'
+def discardNumToKeep = '' // Unlimited
+if (env.BRANCH_NAME != 'master') {
+  discardDaysToKeep = '60'
+  discardNumToKeep = '5'
+}
 properties([
+    buildDiscarder(logRotator(daysToKeepStr: discardDaysToKeep, numToKeepStr: discardNumToKeep)),
     // max 5 build/branch/day
     rateLimitBuilds(throttle: [count: 5, durationName: 'day', userBoost: true]),
     // do not run multiple testruns on the same branch
@@ -88,7 +95,7 @@ export MAVEN_OPTS="-Xmx2g"
 export -n HIVE_CONF_DIR
 cp $SETTINGS .git/settings.xml
 OPTS=" -s $PWD/.git/settings.xml -B -Dtest.groups= "
-OPTS+=" -Pitests,qsplits,dist,errorProne,iceberg"
+OPTS+=" -Pitests,qsplits,dist,errorProne"
 OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
 OPTS+=" -Dmaven.repo.local=$PWD/.git/m2"
 git config extra.mavenOpts "$OPTS"
@@ -307,14 +314,14 @@ time docker rm -f dev_$dbType || true
 set -e
 dev-support/nightly
 '''
-            buildHive("install -Dtest=noMatches -Pdist -Piceberg -pl packaging -am")
+            buildHive("install -Dtest=noMatches -Pdist -pl packaging -am")
         }
         stage('Verify') {
             sh '''#!/bin/bash
 set -e
 tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
 '''
-            buildHive("install -Dtest=noMatches -Pdist,iceberg -f apache-hive-*-nightly-*/pom.xml")
+            buildHive("install -Dtest=noMatches -Pdist -f apache-hive-*-nightly-*/pom.xml")
         }
       }
   }
@@ -369,8 +376,6 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
                   RENAME_TMP=`echo \$a | sed s/TEST-//g`
                   mv \${RENAME_TMP/.xml/-output.txt} \${RENAME_TMP/.xml/-output-save.txt}
                 done
-                # removes all stdout and err for passed tests
-                xmlstarlet ed -L -d 'testsuite/testcase/system-out[count(../failure)=0]' -d 'testsuite/testcase/system-err[count(../failure)=0]' `find . -name 'TEST*xml' -path '*/surefire-reports/*'`
                 # remove all output.txt files
                 find . -name '*output.txt' -path '*/surefire-reports/*' -exec unlink "{}" \\;
               """

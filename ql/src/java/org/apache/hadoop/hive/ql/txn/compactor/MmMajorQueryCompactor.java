@@ -50,7 +50,7 @@ final class MmMajorQueryCompactor extends QueryCompactor {
     ValidWriteIdList writeIds = context.getValidWriteIdList();
 
     // Set up the session for driver.
-    HiveConf driverConf = new HiveConf(hiveConf);
+    HiveConf driverConf = setUpDriverSession(hiveConf);
 
     // Note: we could skip creating the table and just add table type stuff directly to the
     //       "insert overwrite directory" command if there were no bucketing or list bucketing.
@@ -62,33 +62,28 @@ final class MmMajorQueryCompactor extends QueryCompactor {
         resultBaseDir.toString());
     List<String> compactionQueries = getCompactionQueries(table, context.getPartition(), tmpTableName);
     List<String> dropQueries = getDropQueries(tmpTableName);
-    runCompactionQueries(driverConf, tmpTableName, storageDescriptor, writeIds, context.getCompactionInfo(),
-        Lists.newArrayList(resultBaseDir), createTableQueries, compactionQueries, dropQueries,
-            table.getParameters());
+    runCompactionQueries(driverConf, tmpTableName, context.getCompactionInfo(), Lists.newArrayList(resultBaseDir), 
+        createTableQueries, compactionQueries, dropQueries, table.getParameters());
     return true;
   }
 
   /**
    * Note: similar logic to the main committer; however, no ORC versions and stuff like that.
-   * @param dest The final directory; basically a SD directory. Not the actual base/delta.
-   * @param compactorTxnId txn that the compactor started
    */
   @Override
-  protected void commitCompaction(String dest, String tmpTableName, HiveConf conf,
-      ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException, HiveException {
+  protected void commitCompaction(String tmpTableName, HiveConf conf) throws IOException, HiveException {
     Util.cleanupEmptyTableDir(conf, tmpTableName);
   }
 
   private List<String> getCreateQueries(String tmpTableName, Table table,
       StorageDescriptor storageDescriptor, String baseLocation) {
     return Lists.newArrayList(
-        new CompactionQueryBuilder(
-            CompactionType.MAJOR,
-            CompactionQueryBuilder.Operation.CREATE,
-            true,
-            tmpTableName)
-            .setSourceTab(table)
+        new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
+            CompactionType.MAJOR, true)
+            .setOperation(CompactionQueryBuilder.Operation.CREATE)
+            .setResultTableName(tmpTableName)
             .setStorageDescriptor(storageDescriptor)
+            .setSourceTab(table)
             .setLocation(baseLocation)
             .build()
     );
@@ -96,11 +91,10 @@ final class MmMajorQueryCompactor extends QueryCompactor {
 
   private List<String> getCompactionQueries(Table t, Partition p, String tmpName) {
     return Lists.newArrayList(
-        new CompactionQueryBuilder(
-            CompactionType.MAJOR,
-            CompactionQueryBuilder.Operation.INSERT,
-            true,
-            tmpName)
+        new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
+            CompactionType.MAJOR, true)
+            .setOperation(CompactionQueryBuilder.Operation.INSERT)
+            .setResultTableName(tmpName)
             .setSourceTab(t)
             .setSourcePartition(p)
             .build()
@@ -109,10 +103,10 @@ final class MmMajorQueryCompactor extends QueryCompactor {
 
   private List<String> getDropQueries(String tmpTableName) {
     return Lists.newArrayList(
-        new CompactionQueryBuilder(
-            CompactionType.MAJOR,
-            CompactionQueryBuilder.Operation.DROP,
-            true,
-            tmpTableName).build());
+        new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
+            CompactionType.MAJOR, true)
+            .setOperation(CompactionQueryBuilder.Operation.DROP)
+            .setResultTableName(tmpTableName)
+            .build());
   }
 }

@@ -16,3 +16,6 @@ PRINT 'Integer decrement';
 c := 3;
 c := c - 1;
 PRINT c;
+
+PRINT NVL(null - 3, 'Correct');
+PRINT NVL(null + 3, 'Correct');

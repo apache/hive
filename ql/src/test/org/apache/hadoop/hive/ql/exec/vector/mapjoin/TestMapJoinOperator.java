@@ -197,7 +197,7 @@ public class TestMapJoinOperator {
       VectorMapJoinVariation vectorMapJoinVariation,
       MapJoinPlanVariation mapJoinPlanVariation) throws Exception {
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = getHiveConf();
 
     if (!addLongHiveConfVariation(hiveConfVariation, hiveConf)) {
       return true;
@@ -275,7 +275,7 @@ public class TestMapJoinOperator {
       VectorMapJoinVariation vectorMapJoinVariation,
       MapJoinPlanVariation mapJoinPlanVariation) throws Exception {
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = getHiveConf();
 
     if (!addLongHiveConfVariation(hiveConfVariation, hiveConf)) {
       return true;
@@ -354,7 +354,7 @@ public class TestMapJoinOperator {
       VectorMapJoinVariation vectorMapJoinVariation,
       MapJoinPlanVariation mapJoinPlanVariation) throws Exception {
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = getHiveConf();
 
     if (!addLongHiveConfVariation(hiveConfVariation, hiveConf)) {
       return true;
@@ -432,7 +432,7 @@ public class TestMapJoinOperator {
       VectorMapJoinVariation vectorMapJoinVariation,
       MapJoinPlanVariation mapJoinPlanVariation) throws Exception {
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = getHiveConf();
 
     if (!addLongHiveConfVariation(hiveConfVariation, hiveConf)) {
       return true;
@@ -510,7 +510,7 @@ public class TestMapJoinOperator {
       VectorMapJoinVariation vectorMapJoinVariation,
       MapJoinPlanVariation mapJoinPlanVariation) throws Exception {
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = getHiveConf();
 
     if (!addLongHiveConfVariation(hiveConfVariation, hiveConf)) {
       return true;
@@ -589,7 +589,7 @@ public class TestMapJoinOperator {
       VectorMapJoinVariation vectorMapJoinVariation,
       MapJoinPlanVariation mapJoinPlanVariation) throws Exception {
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = getHiveConf();
 
     if (!addLongHiveConfVariation(hiveConfVariation, hiveConf)) {
       return true;
@@ -669,7 +669,7 @@ public class TestMapJoinOperator {
       VectorMapJoinVariation vectorMapJoinVariation,
       MapJoinPlanVariation mapJoinPlanVariation) throws Exception {
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = getHiveConf();
 
     if (!addLongHiveConfVariation(hiveConfVariation, hiveConf)) {
       return true;
@@ -746,7 +746,7 @@ public class TestMapJoinOperator {
       VectorMapJoinVariation vectorMapJoinVariation,
       MapJoinPlanVariation mapJoinPlanVariation) throws Exception {
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = getHiveConf();
 
     if (!addLongHiveConfVariation(hiveConfVariation, hiveConf)) {
       return true;
@@ -825,7 +825,7 @@ public class TestMapJoinOperator {
       VectorMapJoinVariation vectorMapJoinVariation,
       MapJoinPlanVariation mapJoinPlanVariation) throws Exception {
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = getHiveConf();
 
     if (!addLongHiveConfVariation(hiveConfVariation, hiveConf)) {
       return true;
@@ -927,7 +927,7 @@ public class TestMapJoinOperator {
 
     int rowCount = 10;
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = getHiveConf();
 
     if (!addNonLongHiveConfVariation(hiveConfVariation, hiveConf)) {
       return true;
@@ -1006,7 +1006,7 @@ public class TestMapJoinOperator {
 
     int rowCount = 10;
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = getHiveConf();
 
     if (!addNonLongHiveConfVariation(hiveConfVariation, hiveConf)) {
       return true;
@@ -1087,7 +1087,7 @@ public class TestMapJoinOperator {
 
     int rowCount = 10;
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = getHiveConf();
 
     if (!addNonLongHiveConfVariation(hiveConfVariation, hiveConf)) {
       return true;
@@ -1169,7 +1169,7 @@ public class TestMapJoinOperator {
 
     int rowCount = 10;
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = getHiveConf();
 
     if (!addNonLongHiveConfVariation(hiveConfVariation, hiveConf)) {
       return true;
@@ -1250,7 +1250,7 @@ public class TestMapJoinOperator {
 
     int rowCount = 10;
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = getHiveConf();
 
     if (!addNonLongHiveConfVariation(hiveConfVariation, hiveConf)) {
       return true;
@@ -1330,7 +1330,7 @@ public class TestMapJoinOperator {
 
     int rowCount = 10;
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = getHiveConf();
 
     if (!addNonLongHiveConfVariation(hiveConfVariation, hiveConf)) {
       return true;
@@ -1416,7 +1416,7 @@ public class TestMapJoinOperator {
 
     int rowCount = 10;
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = getHiveConf();
 
     if (!addNonLongHiveConfVariation(hiveConfVariation, hiveConf)) {
       return true;
@@ -2053,5 +2053,12 @@ public class TestMapJoinOperator {
           " for implementation " + mapJoinImplementation +
           " variation " + testDesc.vectorMapJoinVariation + option);
     }
+  }
+
+  private HiveConf getHiveConf() {
+    HiveConf hiveConf = new HiveConf();
+    // TODO: HIVE-28033: TestMapJoinOperator to run on Tez
+    hiveConf.set(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname, "mr");
+    return hiveConf;
   }
 }

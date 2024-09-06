@@ -186,7 +186,7 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	bucketing_version   	2                   
 	numFiles            	2                   
-	totalSize           	194                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

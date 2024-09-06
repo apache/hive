@@ -96,6 +96,8 @@ public class TestHiveIcebergDeleteWriter extends HiveIcebergWriterTestBase {
       deleteRecord.setField(MetadataColumns.PARTITION_COLUMN_NAME, partitionKey);
       deleteRecord.setField(MetadataColumns.FILE_PATH.name(), record.getField(MetadataColumns.FILE_PATH.name()));
       deleteRecord.setField(MetadataColumns.ROW_POSITION.name(), record.getField(MetadataColumns.ROW_POSITION.name()));
+      deleteRecord.setField(IcebergAcidUtil.PARTITION_PROJECTION.name(),
+          IcebergAcidUtil.getSerializedPartitionKey(partitionKey, table.spec()));
 
       SCHEMA.columns().forEach(field -> deleteRecord.setField(field.name(), record.getField(field.name())));
       deleteRecords.add(deleteRecord);

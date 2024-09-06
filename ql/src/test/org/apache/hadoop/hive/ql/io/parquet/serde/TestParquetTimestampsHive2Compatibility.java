@@ -22,8 +22,11 @@ import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import com.google.common.base.Strings;
 
 import java.time.ZoneId;
 import java.util.Calendar;
@@ -31,6 +34,7 @@ import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
@@ -95,6 +99,69 @@ class TestParquetTimestampsHive2Compatibility {
     } finally {
       TimeZone.setDefault(original);
     }
+  }
+
+  /**
+   * Tests that timestamps written using Hive2 APIs on julian leap years are read correctly by Hive4 APIs when legacy
+   * conversion is on.
+   */
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("generateTimestampsAndZoneIds")
+  void testWriteHive2ReadHive4UsingLegacyConversionWithJulianLeapYears(String timestampString, String zoneId) {
+    TimeZone original = TimeZone.getDefault();
+    try {
+      TimeZone.setDefault(TimeZone.getTimeZone(zoneId));
+      NanoTime nt = writeHive2(timestampString);
+      Timestamp ts = readHive4(nt, zoneId, true);
+      assertEquals(timestampString, ts.toString());
+    } finally {
+      TimeZone.setDefault(original);
+    }
+  }
+
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("generateTimestampsAndZoneIds28thFeb")
+  void testWriteHive2ReadHive4UsingLegacyConversionWithJulianLeapYearsFor28thFeb(String timestampString,
+      String zoneId) {
+    TimeZone original = TimeZone.getDefault();
+    try {
+      TimeZone.setDefault(TimeZone.getTimeZone(zoneId));
+      NanoTime nt = writeHive2(timestampString);
+      Timestamp ts = readHive4(nt, zoneId, true);
+      assertEquals(timestampString, ts.toString());
+    } finally {
+      TimeZone.setDefault(original);
+    }
+  }
+
+  @ParameterizedTest(name = " - From: Zone {0}, timestamp: {2}, To: Zone:{1}, expected Timestamp {3}")
+  @MethodSource("julianLeapYearEdgeCases")
+  void testWriteHive2ReadHive4UsingLegacyConversionWithJulianLeapYearsEdgeCase(String fromZoneId, String toZoneId,
+      String timestampString, String expected) {
+    TimeZone original = TimeZone.getDefault();
+    try {
+      TimeZone.setDefault(TimeZone.getTimeZone(fromZoneId));
+      NanoTime nt = writeHive2(timestampString);
+      Timestamp ts = readHive4(nt, toZoneId, true);
+      assertEquals(expected, ts.toString());
+    } finally {
+      TimeZone.setDefault(original);
+    }
+  }
+
+  private static Stream<Arguments> julianLeapYearEdgeCases() {
+    return Stream.of(Arguments.of("GMT-12:00", "GMT+14:00", "0200-02-27 22:00:00.000000001",
+            "0200-03-01 00:00:00.000000001"),
+        Arguments.of("GMT+14:00", "GMT-12:00", "0200-03-01 00:00:00.000000001",
+            "0200-02-27 22:00:00.000000001"),
+        Arguments.of("GMT+14:00", "GMT-12:00", "0200-03-02 00:00:00.000000001",
+            "0200-02-28 22:00:00.000000001"),
+        Arguments.of("GMT-12:00", "GMT+14:00", "0200-03-02 00:00:00.000000001",
+            "0200-03-03 02:00:00.000000001"),
+        Arguments.of("GMT-12:00", "GMT+12:00", "0200-02-28 00:00:00.000000001", "0200-03-01 00:00:00.000000001"),
+        Arguments.of("GMT+12:00", "GMT-12:00", "0200-03-01 00:00:00.000000001", "0200-02-28 00:00:00.000000001"),
+        Arguments.of("Asia/Singapore", "Asia/Singapore", "0200-03-01 00:00:00.000000001",
+            "0200-03-01 00:00:00.000000001"));
   }
 
   /**
@@ -176,6 +243,33 @@ class TestParquetTimestampsHive2Compatibility {
     // gracefully. It is expected that these do not work well when legacy APIs are in use. 
     .filter(s -> !s.startsWith("1582-10"))
     .limit(3000), Stream.of("9999-12-31 23:59:59.999"));
+  }
+
+  /** Generates timestamps for different timezone. Here we are testing UTC+14 : Pacific/Kiritimati ,
+   *  UTC-12 : Etc/GMT+12 along with few other zones
+   */
+  private static Stream<Arguments> generateTimestampsAndZoneIds() {
+    return generateJulianLeapYearTimestamps().flatMap(
+        timestampString -> Stream.of("Asia/Singapore", "Pacific/Kiritimati", "Etc/GMT+12", "Pacific/Niue")
+            .map(zoneId -> Arguments.of(timestampString, zoneId)));
+  }
+
+  private static Stream<Arguments> generateTimestampsAndZoneIds28thFeb() {
+    return generateJulianLeapYearTimestamps28thFeb().flatMap(
+        timestampString -> Stream.of("Asia/Singapore", "Pacific/Kiritimati", "Etc/GMT+12", "Pacific/Niue")
+            .map(zoneId -> Arguments.of(timestampString, zoneId)));
+  }
+
+  private static Stream<String> generateJulianLeapYearTimestamps() {
+    return IntStream.range(1, 100)
+    .mapToObj(value -> Strings.padStart(String.valueOf(value * 100), 4, '0'))
+    .map(value -> value + "-03-01 00:00:00.000000001");
+  }
+
+  private static Stream<String> generateJulianLeapYearTimestamps28thFeb() {
+    return IntStream.range(1, 100)
+    .mapToObj(value -> Strings.padStart(String.valueOf(value * 100), 4, '0'))
+    .map(value -> value + "-02-28 00:00:00.000000001");
   }
 
   private static int digits(int number) {

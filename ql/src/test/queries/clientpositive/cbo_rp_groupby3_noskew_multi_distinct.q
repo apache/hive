@@ -38,3 +38,25 @@ INSERT OVERWRITE TABLE dest1_n123 SELECT
 
 SELECT dest1_n123.* FROM dest1_n123;
 
+
+CREATE TABLE test (col1 INT, col2 INT);
+INSERT INTO test VALUES (1, 100), (2, 200), (2, 200), (3, 300);
+
+EXPLAIN
+SELECT
+  SUM(DISTINCT col1),
+  COUNT(DISTINCT col1),
+  SUM(col2), -- This has to refer to the key for `SUM(DISTINCT col2)`
+  MAX(DISTINCT col1),
+  SUM(DISTINCT col2),
+  MIN(DISTINCT col1)
+FROM test;
+
+SELECT
+  SUM(DISTINCT col1),
+  COUNT(DISTINCT col1),
+  SUM(col2), -- This has to refer to the key for `SUM(DISTINCT col2)`
+  MAX(DISTINCT col1),
+  SUM(DISTINCT col2),
+  MIN(DISTINCT col1)
+FROM test;

@@ -995,7 +995,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     //this should fail because txn aborted due to timeout
     CommandProcessorException e = runStatementOnDriverNegative("delete from " + Table.ACIDTBL + " where a = 5");
     Assert.assertTrue("Actual: " + e.getMessage(),
-        e.getMessage().contains("Transaction manager has aborted the transaction txnid:1"));
+        e.getMessage().contains("Transaction manager has aborted the transaction txnid:5"));
 
     //now test that we don't timeout locks we should not
     //heartbeater should be running in the background every 1/2 second
@@ -1019,7 +1019,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       }
     }
     Assert.assertNotNull(txnInfo);
-    Assert.assertEquals(16, txnInfo.getId());
+    Assert.assertEquals(6, txnInfo.getId());
     Assert.assertEquals(TxnState.OPEN, txnInfo.getState());
     String s = TestTxnDbUtil
         .queryToString(hiveConf, "select TXN_STARTED, TXN_LAST_HEARTBEAT from TXNS where TXN_ID = " + txnInfo.getId(), false);
@@ -1446,10 +1446,10 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     query = "select ROW__ID, a, b" + (isVectorized ? "" : ", INPUT__FILE__NAME") + " from "
         + Table.NONACIDORCTBL + " order by ROW__ID";
     String[][] expected2 = new String[][] {
-        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2", "nonacidorctbl/base_10000001_v0000021/bucket_00001"},
-        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t0\t12", "nonacidorctbl/base_10000001_v0000021/bucket_00001"},
-        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t1\t5", "nonacidorctbl/base_10000001_v0000021/bucket_00001"},
-        {"{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t1\t17", "nonacidorctbl/base_10000001_v0000021/bucket_00001"}
+        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2", "nonacidorctbl/base_10000001_v0000010/bucket_00001"},
+        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t0\t12", "nonacidorctbl/base_10000001_v0000010/bucket_00001"},
+        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t1\t5", "nonacidorctbl/base_10000001_v0000010/bucket_00001"},
+        {"{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t1\t17", "nonacidorctbl/base_10000001_v0000010/bucket_00001"}
     };
     checkResult(expected2, query, isVectorized, "after major compact", LOG);
     //make sure they are the same before and after compaction
@@ -2102,7 +2102,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
 
   @Test
   public void testIsRawFormatFile() throws Exception {
-    dropTable(new String[]{"file_formats"});
+    dropTables("file_formats");
     
     runStatementOnDriver("CREATE TABLE `file_formats`(`id` int, `name` string) " +
       " ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' " +
@@ -2580,7 +2580,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
 
   @Test
   public void testFetchTaskCachingWithConversion() throws Exception {
-    dropTable(new String[]{"fetch_task_table"});
+    dropTables("fetch_task_table");
     List actualRes = new ArrayList<>();
     runStatementOnDriver("create table fetch_task_table (a INT, b INT) stored as orc" +
             " tblproperties ('transactional'='true')");

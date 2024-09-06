@@ -1,0 +1,599 @@
+PREHOOK: query: create table list_bucketing_dynamic_part_n2 (key String, value String) 
+    partitioned by (ds String, hr String) 
+    skewed by (key, value) on (('484','val_484'),('51','val_14'),('103','val_103'))
+    stored as DIRECTORIES
+    STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@list_bucketing_dynamic_part_n2
+POSTHOOK: query: create table list_bucketing_dynamic_part_n2 (key String, value String) 
+    partitioned by (ds String, hr String) 
+    skewed by (key, value) on (('484','val_484'),('51','val_14'),('103','val_103'))
+    stored as DIRECTORIES
+    STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@list_bucketing_dynamic_part_n2
+PREHOOK: query: explain extended
+insert overwrite table list_bucketing_dynamic_part_n2 partition (ds = '2008-04-08', hr)
+select key, value, if(key % 100 == 0, 'a1', 'b1') from srcpart where ds = '2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@list_bucketing_dynamic_part_n2@ds=2008-04-08
+POSTHOOK: query: explain extended
+insert overwrite table list_bucketing_dynamic_part_n2 partition (ds = '2008-04-08', hr)
+select key, value, if(key % 100 == 0, 'a1', 'b1') from srcpart where ds = '2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+OPTIMIZED SQL: SELECT `key`, `value`, CAST(CASE WHEN CAST(`key` AS DOUBLE) % 100 = 0 THEN 'a1' ELSE 'b1' END AS STRING) AS `_o__c2`
+FROM `default`.`srcpart`
+WHERE `ds` = '2008-04-08'
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  filterExpr: (ds = '2008-04-08') (type: boolean)
+                  Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Select Operator
+                    expressions: key (type: string), value (type: string), if(((UDFToDouble(key) % 100.0D) = 0.0D), 'a1', 'b1') (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 1000 Data size: 264000 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      bucketingVersion: 2
+                      compressed: false
+                      GlobalTableId: 1
+#### A masked pattern was here ####
+                      NumFilesPerFileSink: 1
+                      Static Partition Specification: ds=2008-04-08/
+                      Statistics: Num rows: 1000 Data size: 264000 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                      table:
+                          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                          properties:
+                            bucketing_version 2
+                            column.name.delimiter ,
+                            columns key,value
+                            columns.comments 
+                            columns.types string:string
+#### A masked pattern was here ####
+                            name default.list_bucketing_dynamic_part_n2
+                            partition_columns ds/hr
+                            partition_columns.types string:string
+                            serialization.format 1
+                            serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                          serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                          name: default.list_bucketing_dynamic_part_n2
+                      TotalFiles: 1
+                      GatherStats: true
+                      MultiFileSpray: false
+                    Select Operator
+                      expressions: _col0 (type: string), _col1 (type: string), '2008-04-08' (type: string), _col2 (type: string)
+                      outputColumnNames: key, value, ds, hr
+                      Statistics: Num rows: 1000 Data size: 358000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector_hll(key), max(length(value)), avg(COALESCE(length(value),0)), count(value), compute_bit_vector_hll(value)
+                        keys: ds (type: string), hr (type: string)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                        Statistics: Num rows: 1 Data size: 652 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          key expressions: _col0 (type: string), _col1 (type: string)
+                          null sort order: zz
+                          numBuckets: -1
+                          sort order: ++
+                          Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                          Statistics: Num rows: 1 Data size: 652 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          value expressions: _col2 (type: int), _col3 (type: struct<count:bigint,sum:double,input:int>), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: binary), _col7 (type: int), _col8 (type: struct<count:bigint,sum:double,input:int>), _col9 (type: bigint), _col10 (type: binary)
+                          auto parallelism: true
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=11
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                    hr 11
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+#### A masked pattern was here ####
+                Partition
+                  base file name: hr=12
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                    hr 12
+                  properties:
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    partition_columns ds/hr
+                    partition_columns.types string:string
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 'default','default'
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      partition_columns ds/hr
+                      partition_columns.types string:string
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
+            Truncated Path -> Alias:
+              /srcpart/ds=2008-04-08/hr=11 [srcpart]
+              /srcpart/ds=2008-04-08/hr=12 [srcpart]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                Statistics: Num rows: 1 Data size: 516 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col2,0)) (type: bigint), COALESCE(_col3,0) (type: double), (_col4 - _col5) (type: bigint), COALESCE(ndv_compute_bit_vector(_col6),0) (type: bigint), _col6 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col7,0)) (type: bigint), COALESCE(_col8,0) (type: double), (_col4 - _col9) (type: bigint), COALESCE(ndv_compute_bit_vector(_col10),0) (type: bigint), _col10 (type: binary), _col0 (type: string), _col1 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                  Statistics: Num rows: 1 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    bucketingVersion: 2
+                    compressed: false
+                    GlobalTableId: 0
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 1 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          bucketing_version -1
+                          columns _col0,_col1,_col2,_col3,_col4,_col5,_col6,_col7,_col8,_col9,_col10,_col11,_col12,_col13
+                          columns.types string:bigint:double:bigint:bigint:binary:string:bigint:double:bigint:bigint:binary:string:string
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 2008-04-08
+            hr 
+          replace: true
+#### A masked pattern was here ####
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns key,value
+                columns.comments 
+                columns.types string:string
+#### A masked pattern was here ####
+                name default.list_bucketing_dynamic_part_n2
+                partition_columns ds/hr
+                partition_columns.types string:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.list_bucketing_dynamic_part_n2
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+#### A masked pattern was here ####
+      Column Stats Desc:
+          Columns: key, value
+          Column Types: string, string
+          Table: default.list_bucketing_dynamic_part_n2
+          Is Table Level Stats: false
+
+PREHOOK: query: insert overwrite table list_bucketing_dynamic_part_n2 partition (ds = '2008-04-08', hr)
+select key, value, if(key % 100 == 0, 'a1', 'b1') from srcpart where ds = '2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@list_bucketing_dynamic_part_n2@ds=2008-04-08
+POSTHOOK: query: insert overwrite table list_bucketing_dynamic_part_n2 partition (ds = '2008-04-08', hr)
+select key, value, if(key % 100 == 0, 'a1', 'b1') from srcpart where ds = '2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=a1
+POSTHOOK: Output: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=b1
+POSTHOOK: Lineage: list_bucketing_dynamic_part_n2 PARTITION(ds=2008-04-08,hr=a1).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: list_bucketing_dynamic_part_n2 PARTITION(ds=2008-04-08,hr=a1).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: list_bucketing_dynamic_part_n2 PARTITION(ds=2008-04-08,hr=b1).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: list_bucketing_dynamic_part_n2 PARTITION(ds=2008-04-08,hr=b1).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: show partitions list_bucketing_dynamic_part_n2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@list_bucketing_dynamic_part_n2
+POSTHOOK: query: show partitions list_bucketing_dynamic_part_n2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@list_bucketing_dynamic_part_n2
+ds=2008-04-08/hr=a1
+ds=2008-04-08/hr=b1
+PREHOOK: query: desc formatted list_bucketing_dynamic_part_n2 partition (ds='2008-04-08', hr='a1')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@list_bucketing_dynamic_part_n2
+POSTHOOK: query: desc formatted list_bucketing_dynamic_part_n2 partition (ds='2008-04-08', hr='a1')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@list_bucketing_dynamic_part_n2
+# col_name            	data_type           	comment             
+key                 	string              	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+hr                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-08, a1]    	 
+Database:           	default             	 
+Table:              	list_bucketing_dynamic_part_n2	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	numFiles            	2                   
+	numRows             	16                  
+	rawDataSize         	2816                
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Stored As SubDirectories:	Yes                 	 
+Skewed Columns:     	[key, value]        	 
+Skewed Values:      	[[103, val_103], [484, val_484], [51, val_14]]	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted list_bucketing_dynamic_part_n2 partition (ds='2008-04-08', hr='b1')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@list_bucketing_dynamic_part_n2
+POSTHOOK: query: desc formatted list_bucketing_dynamic_part_n2 partition (ds='2008-04-08', hr='b1')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@list_bucketing_dynamic_part_n2
+# col_name            	data_type           	comment             
+key                 	string              	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+hr                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-08, b1]    	 
+Database:           	default             	 
+Table:              	list_bucketing_dynamic_part_n2	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	numFiles            	6                   
+	numRows             	984                 
+	rawDataSize         	173196              
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Stored As SubDirectories:	Yes                 	 
+Skewed Columns:     	[key, value]        	 
+Skewed Values:      	[[103, val_103], [484, val_484], [51, val_14]]	 
+#### A masked pattern was here ####
+Skewed Value to Truncated Path:	{[103, val_103]=/list_bucketing_dynamic_part_n2/ds=2008-04-08/hr=b1/key=103/value=val_103, [484, val_484]=/list_bucketing_dynamic_part_n2/ds=2008-04-08/hr=b1/key=484/value=val_484}	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table list_bucketing_dynamic_part_n2 partition (ds='2008-04-08', hr='b1') concatenate
+PREHOOK: type: ALTER_PARTITION_MERGE
+PREHOOK: Input: default@list_bucketing_dynamic_part_n2
+PREHOOK: Output: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=b1
+POSTHOOK: query: alter table list_bucketing_dynamic_part_n2 partition (ds='2008-04-08', hr='b1') concatenate
+POSTHOOK: type: ALTER_PARTITION_MERGE
+POSTHOOK: Input: default@list_bucketing_dynamic_part_n2
+POSTHOOK: Output: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=b1
+PREHOOK: query: desc formatted list_bucketing_dynamic_part_n2 partition (ds='2008-04-08', hr='b1')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@list_bucketing_dynamic_part_n2
+POSTHOOK: query: desc formatted list_bucketing_dynamic_part_n2 partition (ds='2008-04-08', hr='b1')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@list_bucketing_dynamic_part_n2
+# col_name            	data_type           	comment             
+key                 	string              	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+hr                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-08, b1]    	 
+Database:           	default             	 
+Table:              	list_bucketing_dynamic_part_n2	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	3                   
+	numRows             	984                 
+	rawDataSize         	173196              
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Stored As SubDirectories:	Yes                 	 
+Skewed Columns:     	[key, value]        	 
+Skewed Values:      	[[103, val_103], [484, val_484], [51, val_14]]	 
+#### A masked pattern was here ####
+Skewed Value to Truncated Path:	{[103, val_103]=/list_bucketing_dynamic_part_n2/ds=2008-04-08/hr=b1/key=103/value=val_103, [484, val_484]=/list_bucketing_dynamic_part_n2/ds=2008-04-08/hr=b1/key=484/value=val_484}	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select count(1) from srcpart where ds = '2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from srcpart where ds = '2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+#### A masked pattern was here ####
+1000
+PREHOOK: query: select count(*) from list_bucketing_dynamic_part_n2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@list_bucketing_dynamic_part_n2
+PREHOOK: Input: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=a1
+PREHOOK: Input: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=b1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from list_bucketing_dynamic_part_n2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@list_bucketing_dynamic_part_n2
+POSTHOOK: Input: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=a1
+POSTHOOK: Input: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=b1
+#### A masked pattern was here ####
+1000
+PREHOOK: query: explain extended
+select * from list_bucketing_dynamic_part_n2 where key = '484' and value = 'val_484'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@list_bucketing_dynamic_part_n2
+PREHOOK: Input: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=a1
+PREHOOK: Input: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=b1
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended
+select * from list_bucketing_dynamic_part_n2 where key = '484' and value = 'val_484'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@list_bucketing_dynamic_part_n2
+POSTHOOK: Input: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=a1
+POSTHOOK: Input: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=b1
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `key`, CAST('val_484' AS STRING) AS `value`, `ds`, `hr`
+FROM `default`.`list_bucketing_dynamic_part_n2`
+WHERE `key` = '484' AND `value` = 'val_484'
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Partition Description:
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              ds 2008-04-08
+              hr a1
+            properties:
+              column.name.delimiter ,
+              columns key,value
+              columns.types string:string
+#### A masked pattern was here ####
+              name default.list_bucketing_dynamic_part_n2
+              partition_columns ds/hr
+              partition_columns.types string:string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns key,value
+                columns.comments 
+                columns.types string:string
+#### A masked pattern was here ####
+                name default.list_bucketing_dynamic_part_n2
+                partition_columns ds/hr
+                partition_columns.types string:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.list_bucketing_dynamic_part_n2
+            name: default.list_bucketing_dynamic_part_n2
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              ds 2008-04-08
+              hr b1
+            properties:
+              column.name.delimiter ,
+              columns key,value
+              columns.types string:string
+#### A masked pattern was here ####
+              name default.list_bucketing_dynamic_part_n2
+              partition_columns ds/hr
+              partition_columns.types string:string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns key,value
+                columns.comments 
+                columns.types string:string
+#### A masked pattern was here ####
+                name default.list_bucketing_dynamic_part_n2
+                partition_columns ds/hr
+                partition_columns.types string:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.list_bucketing_dynamic_part_n2
+            name: default.list_bucketing_dynamic_part_n2
+      Processor Tree:
+        TableScan
+          alias: list_bucketing_dynamic_part_n2
+          filterExpr: ((key = '484') and (value = 'val_484')) (type: boolean)
+          GatherStats: false
+          Filter Operator
+            isSamplingPred: false
+            predicate: ((key = '484') and (value = 'val_484')) (type: boolean)
+            Select Operator
+              expressions: '484' (type: string), 'val_484' (type: string), ds (type: string), hr (type: string)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              ListSink
+
+PREHOOK: query: select * from list_bucketing_dynamic_part_n2 where key = '484' and value = 'val_484'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@list_bucketing_dynamic_part_n2
+PREHOOK: Input: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=a1
+PREHOOK: Input: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=b1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from list_bucketing_dynamic_part_n2 where key = '484' and value = 'val_484'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@list_bucketing_dynamic_part_n2
+POSTHOOK: Input: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=a1
+POSTHOOK: Input: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=b1
+#### A masked pattern was here ####
+484	val_484	2008-04-08	b1
+484	val_484	2008-04-08	b1
+PREHOOK: query: select * from srcpart where ds = '2008-04-08' and key = '484' and value = 'val_484' order by hr
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: select * from srcpart where ds = '2008-04-08' and key = '484' and value = 'val_484' order by hr
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+484	val_484	2008-04-08	11
+484	val_484	2008-04-08	12
+PREHOOK: query: drop table list_bucketing_dynamic_part_n2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@list_bucketing_dynamic_part_n2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@list_bucketing_dynamic_part_n2
+POSTHOOK: query: drop table list_bucketing_dynamic_part_n2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@list_bucketing_dynamic_part_n2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@list_bucketing_dynamic_part_n2

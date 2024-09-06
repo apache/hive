@@ -30,6 +30,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -51,7 +52,7 @@ public class TestClearDanglingScratchDir {
   @BeforeClass
   static public void oneTimeSetup() throws Exception {
     m_dfs = new MiniDFSCluster.Builder(new Configuration()).numDataNodes(1).format(true).build();
-    conf = new HiveConf();
+    conf = new HiveConfForTest(TestClearDanglingScratchDir.class);
     conf.set(HiveConf.ConfVars.HIVE_SCRATCH_DIR_LOCK.toString(), "true");
     conf.set(HiveConf.ConfVars.METASTORE_AUTO_CREATE_ALL.toString(), "true");
     LoggerFactory.getLogger("SessionState");
@@ -145,7 +146,7 @@ public class TestClearDanglingScratchDir {
    */
   @Test
   public void testLocalDanglingFilesCleaning() throws Exception {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = new HiveConfForTest(getClass());
     conf.set("fs.default.name", "file:///");
     String tmpDir = System.getProperty("test.tmp.dir");
     conf.set("hive.exec.scratchdir", tmpDir + "/hive-27317-hdfsscratchdir");

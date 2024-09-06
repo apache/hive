@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.security.authorization;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.*;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -33,6 +34,8 @@ public class HiveCustomStorageHandlerUtils {
     public static final String WRITE_OPERATION_CONFIG_PREFIX = "file.sink.write.operation.";
 
     public static final String WRITE_OPERATION_IS_SORTED = "file.sink.write.operation.sorted.";
+
+    public static final String MERGE_TASK_ENABLED = "file.sink.merge.task.enabled.";
 
     public static String getTablePropsForCustomStorageHandler(Map<String, String> tableProperties) {
         StringBuilder properties = new StringBuilder();
@@ -57,12 +60,8 @@ public class HiveCustomStorageHandlerUtils {
         return tblProps;
     }
 
-    public static Context.Operation getWriteOperation(Configuration conf, String tableName) {
-        if (conf == null || tableName == null) {
-            return null;
-        }
-
-        String operation = conf.get(WRITE_OPERATION_CONFIG_PREFIX + tableName);
+    public static Context.Operation getWriteOperation(UnaryOperator<String> ops, String tableName) {
+        String operation = ops.apply(WRITE_OPERATION_CONFIG_PREFIX + tableName);
         return operation == null ? null : Context.Operation.valueOf(operation);
     }
 
@@ -82,12 +81,21 @@ public class HiveCustomStorageHandlerUtils {
         conf.set(WRITE_OPERATION_IS_SORTED + tableName, Boolean.toString(isSorted));
     }
 
-    public static boolean getWriteOperationIsSorted(Configuration conf, String tableName) {
+    public static boolean getWriteOperationIsSorted(UnaryOperator<String> ops, String tableName) {
+        String operation = ops.apply(WRITE_OPERATION_IS_SORTED + tableName);
+        return Boolean.parseBoolean(operation);
+    }
+
+    public static void setMergeTaskEnabled(Configuration conf, String tableName, boolean isMerge) {
         if (conf == null || tableName == null) {
-            return false;
+            return;
         }
 
-        String isSortedString = conf.get(WRITE_OPERATION_IS_SORTED + tableName);
-        return Boolean.parseBoolean(isSortedString);
+        conf.set(MERGE_TASK_ENABLED + tableName, Boolean.toString(isMerge));
+    }
+
+    public static boolean isMergeTaskEnabled(UnaryOperator<String> ops, String tableName) {
+        String operation = ops.apply(MERGE_TASK_ENABLED + tableName);
+        return Boolean.parseBoolean(operation);
     }
 }

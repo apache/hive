@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql;
 import static org.junit.Assert.*;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.reexec.ReExecDriver;
@@ -34,8 +35,7 @@ public class TestCreateUdfEntities {
 
   @Before
   public void setUp() throws Exception {
-
-    HiveConf conf = new HiveConf(IDriver.class);
+    HiveConf conf = new HiveConfForTest(getClass());
     SessionState.start(conf);
     driver = DriverFactory.newDriver(conf);
   }

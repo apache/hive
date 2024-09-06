@@ -20,6 +20,7 @@
 package org.apache.iceberg.hive;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -119,7 +120,8 @@ public class TestHiveSchemaUtil {
   public void testNotSupportedTypes() {
     for (FieldSchema notSupportedField : getNotSupportedFieldSchemas()) {
       assertThatThrownBy(
-          () -> HiveSchemaUtil.convert(Lists.newArrayList(Arrays.asList(notSupportedField))))
+          () -> HiveSchemaUtil.convert(
+              Lists.newArrayList(Collections.singletonList(notSupportedField))))
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessageStartingWith("Unsupported Hive type");
     }
@@ -164,7 +166,7 @@ public class TestHiveSchemaUtil {
         Arrays.asList("customer_id", "first_name"),
         Arrays.asList(TypeInfoUtils.getTypeInfoFromTypeString(serdeConstants.BIGINT_TYPE_NAME),
             TypeInfoUtils.getTypeInfoFromTypeString(serdeConstants.STRING_TYPE_NAME)),
-        Arrays.asList("customer comment"));
+        Collections.singletonList("customer comment"));
 
     assertThat(schema.asStruct()).isEqualTo(expected.asStruct());
   }

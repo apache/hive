@@ -22,7 +22,7 @@ POSTHOOK: query: select * from legacy_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@legacy_table
 #### A masked pattern was here ####
-2018-12-31 16:30:30.111111111
+2019-01-01 08:30:30.111111111
 PREHOOK: query: create table new_table (t timestamp) stored as parquet
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -48,3 +48,38 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@new_table
 #### A masked pattern was here ####
 2019-01-01 00:30:30.111111111
+PREHOOK: query: CREATE EXTERNAL TABLE `TEST_SGT1`(`currtime` timestamp) ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe' STORED AS
+INPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@TEST_SGT1
+POSTHOOK: query: CREATE EXTERNAL TABLE `TEST_SGT1`(`currtime` timestamp) ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe' STORED AS
+INPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TEST_SGT1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/legacyLeapYearInSingaporeTZ' INTO TABLE TEST_SGT1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@test_sgt1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/legacyLeapYearInSingaporeTZ' INTO TABLE TEST_SGT1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@test_sgt1
+PREHOOK: query: SELECT * FROM TEST_SGT1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_sgt1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM TEST_SGT1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_sgt1
+#### A masked pattern was here ####
+0500-03-01 00:00:00
+0600-03-01 00:00:00
+0700-03-01 00:00:00
+0200-03-01 00:00:00
+0400-03-01 00:00:00
+0800-03-02 00:00:00
+0800-03-03 00:00:00

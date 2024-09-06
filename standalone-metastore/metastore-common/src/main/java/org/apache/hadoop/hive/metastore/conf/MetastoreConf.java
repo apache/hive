@@ -1052,7 +1052,7 @@ public class MetastoreConf {
                 "get_partitions_by_names, \n" +
                 "get_partitions_with_auth, \n" +
                 "get_partitions_by_filter, \n" +
-                "get_partitions_spec_by_filter, \n" +
+                "get_partitions_spec_by_expr, \n" +
                 "get_partitions_by_expr,\n" +
                 "get_partitions_ps,\n" +
                 "get_partitions_ps_with_auth.\n" +

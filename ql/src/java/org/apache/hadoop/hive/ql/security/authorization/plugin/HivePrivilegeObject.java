@@ -179,6 +179,12 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
     this(HivePrivilegeObjectType.TABLE_OR_VIEW, dbname, objectName, null, columns, null);
   }
 
+  public HivePrivilegeObject(String dbname, String objectName, List<String> columns,
+      String ownerName, PrincipalType ownerType) {
+    this(HivePrivilegeObjectType.TABLE_OR_VIEW, dbname, objectName, null, columns,
+        HivePrivObjectActionType.OTHER, null, null, ownerName, ownerType);
+  }
+
   public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName, List<String> partKeys,
       List<String> columns, HivePrivObjectActionType actionType, List<String> commandParams, String className) {
     this(type, dbname, objectName, partKeys, columns, actionType, commandParams, className, null, null);

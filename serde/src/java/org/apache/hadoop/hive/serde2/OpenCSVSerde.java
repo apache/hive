@@ -39,8 +39,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
-import au.com.bytecode.opencsv.CSVReader;
-import au.com.bytecode.opencsv.CSVWriter;
+import com.opencsv.CSVParserBuilder;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
+import com.opencsv.CSVWriter;
 
 /**
  * OpenCSVSerde use opencsv to deserialize CSV format.
@@ -179,15 +181,17 @@ public final class OpenCSVSerde extends AbstractEncodingAwareSerDe {
     // CSVReader will throw an exception if any of separator, quote, or escape is the same, but
     // the CSV format specifies that the escape character and quote char are the same... very weird
     if (CSVWriter.DEFAULT_ESCAPE_CHARACTER == escape) {
-      return new CSVReader(reader, separator, quote);
+      return new CSVReaderBuilder(reader).withCSVParser(
+          new CSVParserBuilder().withSeparator(separator).withQuoteChar(quote).build()).build();
     } else {
-      return new CSVReader(reader, separator, quote, escape);
+      return new CSVReaderBuilder(reader).withCSVParser(
+          new CSVParserBuilder().withSeparator(separator).withQuoteChar(quote).withEscapeChar(escape).build()).build();
     }
   }
 
   private CSVWriter newWriter(final Writer writer, char separator, char quote, char escape) {
     if (CSVWriter.DEFAULT_ESCAPE_CHARACTER == escape) {
-      return new CSVWriter(writer, separator, quote, "");
+      return new CSVWriter(writer, separator, quote, '"', "");
     } else {
       return new CSVWriter(writer, separator, quote, escape, "");
     }

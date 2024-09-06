@@ -44,12 +44,12 @@ import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
-import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.CanAggregateDistinct;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlAverageAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlCountAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlMinMaxAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumAggFunction;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumEmptyIsZeroAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlVarianceAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveConcat;
@@ -607,6 +607,13 @@ public class SqlFunctionConverter {
       switch (hiveUdfName.toLowerCase()) {
       case "sum":
         calciteAggFn = new HiveSqlSumAggFunction(
+            isDistinct,
+            udfInfo.returnTypeInference,
+            udfInfo.operandTypeInference,
+            udfInfo.operandTypeChecker);
+        break;
+      case "$sum0":
+        calciteAggFn = new HiveSqlSumEmptyIsZeroAggFunction(
             isDistinct,
             udfInfo.returnTypeInference,
             udfInfo.operandTypeInference,

@@ -23,8 +23,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.ServiceContext;
 import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -64,6 +66,7 @@ public class StartMiniHS2Cluster {
     HiveConf conf = new HiveConf();
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_RPC_QUERY_PLAN, true);
+    conf.set(Constants.CLUSTER_ID_HIVE_CONF_PROP, ServiceContext.findClusterId());
 
     for (; idx < confFiles.length; ++idx) {
       String confFile = confFiles[idx];

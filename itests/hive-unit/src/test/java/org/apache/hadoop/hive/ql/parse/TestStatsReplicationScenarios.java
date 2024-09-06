@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
@@ -92,7 +93,7 @@ public class TestStatsReplicationScenarios {
                                        Map<String, String> replicaOverrides, Class clazz,
                                        boolean autogather, AcidTableKind acidTableKind)
       throws Exception {
-    conf = new HiveConf(clazz);
+    conf = new HiveConfForTest(TestStatsReplicationScenarios.class);
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =

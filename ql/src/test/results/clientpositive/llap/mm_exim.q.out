@@ -338,7 +338,7 @@ Table Parameters:
 	numFiles            	3                   
 	numRows             	6                   
 	rawDataSize         	37                  
-	totalSize           	43                  
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	insert_only         
 #### A masked pattern was here ####
@@ -420,7 +420,7 @@ Table Parameters:
 	numPartitions       	3                   
 	numRows             	6                   
 	rawDataSize         	13                  
-	totalSize           	19                  
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	insert_only         
 #### A masked pattern was here ####
@@ -694,7 +694,7 @@ Table Parameters:
 	numFiles            	3                   
 	numRows             	6                   
 	rawDataSize         	37                  
-	totalSize           	43                  
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

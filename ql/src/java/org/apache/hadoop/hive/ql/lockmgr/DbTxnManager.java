@@ -24,7 +24,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -211,10 +210,10 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
 
   @Override
   void setHiveConf(HiveConf conf) {
-    super.setHiveConf(conf);
     if (!conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY)) {
       throw new RuntimeException(ErrorMsg.DBTXNMGR_REQUIRES_CONCURRENCY.getMsg());
     }
+    super.setHiveConf(conf);
   }
 
   @Override
@@ -318,7 +317,6 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       throw new LockException(null, ErrorMsg.OP_NOT_ALLOWED_IN_TXN, queryPlan.getOperationName(),
         JavaUtils.txnIdToString(getCurrentTxnId()), queryPlan.getQueryId());
     }
-
   }
   /**
    * Ensures that the current SQL statement is appropriate for the current state of the
@@ -330,7 +328,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
    * @throws LockException
    */
   private void verifyState(QueryPlan queryPlan) throws LockException {
-    if(!isTxnOpen()) {
+    if(!isTxnOpen() && queryPlan.hasAcidResources()) {
       throw new LockException("No transaction context for operation: " + queryPlan.getOperationName() +
         " for " + getQueryIdWaterMark(queryPlan));
     }
@@ -344,9 +342,6 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
         break;
       case COMMIT:
       case ROLLBACK:
-        if(!isTxnOpen()) {
-          throw new LockException(null, ErrorMsg.OP_NOT_ALLOWED_WITHOUT_TXN, queryPlan.getOperationName());
-        }
         if(!isExplicitTransaction) {
           throw new LockException(null, ErrorMsg.OP_NOT_ALLOWED_IN_IMPLICIT_TXN, queryPlan.getOperationName());
         }
@@ -408,7 +403,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       .filter(input -> !input.isDummy() && AcidUtils.isTransactionalTable(input.getTable()))
       .map(input -> input.getTable().getFullyQualifiedName())
       .distinct()
-      .collect(Collectors.toMap(Function.identity(), table -> getMinOpenWriteId(txnWriteIds, table)));
+      .collect(Collectors.toMap(Function.identity(), txnWriteIds::getMinOpenWriteId));
 
     if (!writeIds.isEmpty()) {
       try {
@@ -417,12 +412,6 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
         throw new RuntimeException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
       }
     }
-  }
-
-  private Long getMinOpenWriteId(ValidTxnWriteIdList txnWriteIds, String table) {
-    ValidWriteIdList tableValidWriteIdList = txnWriteIds.getTableValidWriteIdList(table);
-    Long minOpenWriteId = tableValidWriteIdList.getMinOpenWriteId();
-    return minOpenWriteId != null ? minOpenWriteId : tableValidWriteIdList.getHighWatermark() + 1;
   }
 
   /**
@@ -873,7 +862,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     }
     else if(!isExplicitTransaction) {
       assert numStatements == 1 : "numStatements=" + numStatements + " in implicit txn";
-      if (queryPlan.hasAcidResourcesInQuery()) {
+      if (queryPlan.hasAcidReadWrite()) {
         //1st and only stmt in implicit txn and uses acid resource
         return true;
       }

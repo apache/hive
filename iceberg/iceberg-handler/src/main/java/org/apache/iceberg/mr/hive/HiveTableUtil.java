@@ -302,7 +302,7 @@ public class HiveTableUtil {
 
   static JobConf getPartJobConf(Configuration confs, org.apache.hadoop.hive.ql.metadata.Table tbl) {
     JobConf job = new JobConf(confs);
-    job.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, Constants.ICEBERG_PARTITION_TABLE_SCHEMA);
+    job.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, Constants.ICEBERG_PARTITION_COLUMNS);
     job.set(InputFormatConfig.TABLE_LOCATION, tbl.getPath().toString());
     job.set(InputFormatConfig.TABLE_IDENTIFIER, tbl.getFullyQualifiedName() + ".partitions");
     HiveConf.setVar(job, HiveConf.ConfVars.HIVE_FETCH_OUTPUT_SERDE, Constants.DELIMITED_JSON_SERDE);

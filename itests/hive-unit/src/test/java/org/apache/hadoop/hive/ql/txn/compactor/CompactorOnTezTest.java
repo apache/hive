@@ -58,6 +58,7 @@ import java.util.regex.Pattern;
 
 import static org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtil.executeStatementOnDriverAndReturnResults;
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriver;
+import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.dropTables;
 
 /**
  * Superclass for Test[Crud|Mm]CompactorOnTez, for setup and helper classes.
@@ -252,7 +253,8 @@ public abstract class CompactorOnTezTest {
       if (dbName != null) {
         tblName = dbName + "." + tblName;
       }
-      executeStatementOnDriver("drop table if exists " + tblName, driver);
+      dropTables(driver, tblName);
+      
       StringBuilder query = new StringBuilder();
       query.append("create table ").append(tblName).append(" (a string, b int)");
       if (isPartitioned) {
@@ -376,8 +378,8 @@ public abstract class CompactorOnTezTest {
         tblName = dbName + "." + tblName;
         tempTblName = dbName + "." + tempTblName;
       }
-
-      executeStatementOnDriver("drop table if exists " + tblName, driver);
+      dropTables(driver, tblName);
+      
       StringBuilder query = new StringBuilder();
       query.append("create table ").append(tblName).append(" (a string, b string, c string)");
       query.append(" stored as orc");
@@ -533,7 +535,7 @@ public abstract class CompactorOnTezTest {
           actualFileName = m.group(2);
         }
 
-        if (expectedFileName == null || actualFileName == null || !expectedFileName.equals(actualFileName)) {
+        if (expectedFileName == null || !expectedFileName.equals(actualFileName)) {
           return false;
         }
       }

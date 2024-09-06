@@ -150,7 +150,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
       String alias, String concatQbIDAlias, RelDataType newRowtype, boolean useQBIdInDigest, boolean insideView,
       HiveTableScanTrait tableScanTrait) {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), table);
-    assert getConvention() == HiveRelNode.CONVENTION;
+    assert getTraitSet().containsIfApplicable(HiveRelNode.CONVENTION);
     this.tblAlias = alias;
     this.concatQbIDAlias = concatQbIDAlias;
     this.hiveTableScanRowType = newRowtype;

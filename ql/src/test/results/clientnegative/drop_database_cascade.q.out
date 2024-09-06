@@ -52,11 +52,13 @@ PREHOOK: query: DROP DATABASE TEST_database CASCADE
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:test_database
 PREHOOK: Output: database:test_database
+PREHOOK: Output: test_database.test_func
 PREHOOK: Output: test_database@test_table
 POSTHOOK: query: DROP DATABASE TEST_database CASCADE
 POSTHOOK: type: DROPDATABASE
 POSTHOOK: Input: database:test_database
 POSTHOOK: Output: database:test_database
+POSTHOOK: Output: test_database.test_func
 POSTHOOK: Output: test_database@test_table
 PREHOOK: query: describe test_table
 PREHOOK: type: DESCTABLE

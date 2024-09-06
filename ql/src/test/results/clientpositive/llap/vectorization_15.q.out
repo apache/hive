@@ -107,9 +107,9 @@ STAGE PLANS:
                           selectExpressions: DoubleColMultiplyDoubleColumn(col 4:double, col 4:double)(children: col 4:float, col 4:float) -> 14:double, CastLongToDouble(col 0:tinyint) -> 15:double, DoubleColMultiplyDoubleColumn(col 16:double, col 17:double)(children: CastLongToDouble(col 0:tinyint) -> 16:double, CastLongToDouble(col 0:tinyint) -> 17:double) -> 18:double, CastLongToDouble(col 2:int) -> 19:double, DoubleColMultiplyDoubleColumn(col 20:double, col 21:double)(children: CastLongToDouble(col 2:int) -> 20:double, CastLongToDouble(col 2:int) -> 21:double) -> 22:double
                       Statistics: Num rows: 12288 Data size: 2367002 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        aggregations: sum(_col8), sum(_col7), count(_col0), min(_col2), sum(_col10), sum(_col9), count(_col4), sum(_col12), sum(_col11), count(_col5)
+                        aggregations: sum(_col8), sum(_col7), count(_col7), min(_col2), sum(_col10), sum(_col9), count(_col9), sum(_col12), sum(_col11), count(_col11)
                         Group By Vectorization:
-                            aggregators: VectorUDAFSumDouble(col 14:double) -> double, VectorUDAFSumDouble(col 4:double) -> double, VectorUDAFCount(col 4:float) -> bigint, VectorUDAFMinDouble(col 5:double) -> double, VectorUDAFSumDouble(col 18:double) -> double, VectorUDAFSumDouble(col 15:double) -> double, VectorUDAFCount(col 0:tinyint) -> bigint, VectorUDAFSumDouble(col 22:double) -> double, VectorUDAFSumDouble(col 19:double) -> double, VectorUDAFCount(col 2:int) -> bigint
+                            aggregators: VectorUDAFSumDouble(col 14:double) -> double, VectorUDAFSumDouble(col 4:double) -> double, VectorUDAFCount(col 4:double) -> bigint, VectorUDAFMinDouble(col 5:double) -> double, VectorUDAFSumDouble(col 18:double) -> double, VectorUDAFSumDouble(col 15:double) -> double, VectorUDAFCount(col 15:double) -> bigint, VectorUDAFSumDouble(col 22:double) -> double, VectorUDAFSumDouble(col 19:double) -> double, VectorUDAFCount(col 19:double) -> bigint
                             className: VectorGroupByOperator
                             groupByMode: HASH
                             keyExpressions: col 4:float, col 10:boolean, col 5:double, col 6:string, col 0:tinyint, col 2:int, col 8:timestamp

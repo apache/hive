@@ -251,16 +251,16 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: sum(_col0), count(_col0), sum(_col2), sum(_col1)
+                      aggregations: sum(_col0), count(_col0), sum(_col2), sum(_col1), count(_col1)
                       minReductionHashAggr: 0.99
                       mode: hash
-                      outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         null sort order: 
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: double), _col3 (type: double)
+                        Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: double), _col3 (type: double), _col4 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -282,12 +282,12 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Group By Operator
-                aggregations: sum(VALUE._col0), count(VALUE._col1), sum(VALUE._col2), sum(VALUE._col3)
+                aggregations: sum(VALUE._col0), count(VALUE._col1), sum(VALUE._col2), sum(VALUE._col3), count(VALUE._col4)
                 mode: mergepartial
-                outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: (UDFToDouble(_col0) / _col1) (type: double), ((_col2 - ((_col3 * _col3) / _col1)) / _col1) (type: double), ((_col2 - ((_col3 * _col3) / _col1)) / _col1) (type: double), ((_col2 - ((_col3 * _col3) / _col1)) / if((_col1 = 1L), null, (_col1 - 1))) (type: double), power(((_col2 - ((_col3 * _col3) / _col1)) / _col1), 0.5) (type: double), power(((_col2 - ((_col3 * _col3) / _col1)) / _col1), 0.5) (type: double), power(((_col2 - ((_col3 * _col3) / _col1)) / _col1), 0.5) (type: double), power(((_col2 - ((_col3 * _col3) / _col1)) / if((_col1 = 1L), null, (_col1 - 1))), 0.5) (type: double)
+                  expressions: (UDFToDouble(_col0) / _col1) (type: double), ((_col2 - ((_col3 * _col3) / _col4)) / _col4) (type: double), ((_col2 - ((_col3 * _col3) / _col4)) / _col4) (type: double), ((_col2 - ((_col3 * _col3) / _col4)) / if((_col4 = 1L), null, (_col4 - 1))) (type: double), power(((_col2 - ((_col3 * _col3) / _col4)) / _col4), 0.5) (type: double), power(((_col2 - ((_col3 * _col3) / _col4)) / _col4), 0.5) (type: double), power(((_col2 - ((_col3 * _col3) / _col4)) / _col4), 0.5) (type: double), power(((_col2 - ((_col3 * _col3) / _col4)) / if((_col4 = 1L), null, (_col4 - 1))), 0.5) (type: double)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
                   Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -586,16 +586,16 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 12288 Data size: 73392 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: sum(_col0), count(_col0), sum(_col2), sum(_col1)
+                      aggregations: sum(_col0), count(_col0), sum(_col2), sum(_col1), count(_col1)
                       minReductionHashAggr: 0.99
                       mode: hash
-                      outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         null sort order: 
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: double), _col3 (type: double)
+                        Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: double), _col3 (type: double), _col4 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -617,12 +617,12 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Group By Operator
-                aggregations: sum(VALUE._col0), count(VALUE._col1), sum(VALUE._col2), sum(VALUE._col3)
+                aggregations: sum(VALUE._col0), count(VALUE._col1), sum(VALUE._col2), sum(VALUE._col3), count(VALUE._col4)
                 mode: mergepartial
-                outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: (UDFToDouble(_col0) / _col1) (type: double), ((_col2 - ((_col3 * _col3) / _col1)) / _col1) (type: double), ((_col2 - ((_col3 * _col3) / _col1)) / _col1) (type: double), ((_col2 - ((_col3 * _col3) / _col1)) / if((_col1 = 1L), null, (_col1 - 1))) (type: double), power(((_col2 - ((_col3 * _col3) / _col1)) / _col1), 0.5) (type: double), power(((_col2 - ((_col3 * _col3) / _col1)) / _col1), 0.5) (type: double), power(((_col2 - ((_col3 * _col3) / _col1)) / _col1), 0.5) (type: double), power(((_col2 - ((_col3 * _col3) / _col1)) / if((_col1 = 1L), null, (_col1 - 1))), 0.5) (type: double)
+                  expressions: (UDFToDouble(_col0) / _col1) (type: double), ((_col2 - ((_col3 * _col3) / _col4)) / _col4) (type: double), ((_col2 - ((_col3 * _col3) / _col4)) / _col4) (type: double), ((_col2 - ((_col3 * _col3) / _col4)) / if((_col4 = 1L), null, (_col4 - 1))) (type: double), power(((_col2 - ((_col3 * _col3) / _col4)) / _col4), 0.5) (type: double), power(((_col2 - ((_col3 * _col3) / _col4)) / _col4), 0.5) (type: double), power(((_col2 - ((_col3 * _col3) / _col4)) / _col4), 0.5) (type: double), power(((_col2 - ((_col3 * _col3) / _col4)) / if((_col4 = 1L), null, (_col4 - 1))), 0.5) (type: double)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
                   Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -921,16 +921,16 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: sum(_col0), count(_col0), sum(_col2), sum(_col1)
+                      aggregations: sum(_col0), count(_col0), sum(_col2), sum(_col1), count(_col1)
                       minReductionHashAggr: 0.99
                       mode: hash
-                      outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         null sort order: 
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: double), _col1 (type: bigint), _col2 (type: double), _col3 (type: double)
+                        Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: double), _col1 (type: bigint), _col2 (type: double), _col3 (type: double), _col4 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -952,12 +952,12 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Group By Operator
-                aggregations: sum(VALUE._col0), count(VALUE._col1), sum(VALUE._col2), sum(VALUE._col3)
+                aggregations: sum(VALUE._col0), count(VALUE._col1), sum(VALUE._col2), sum(VALUE._col3), count(VALUE._col4)
                 mode: mergepartial
-                outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: (_col0 / _col1) (type: double), ((_col2 - ((_col3 * _col3) / _col1)) / _col1) (type: double), ((_col2 - ((_col3 * _col3) / _col1)) / _col1) (type: double), ((_col2 - ((_col3 * _col3) / _col1)) / if((_col1 = 1L), null, (_col1 - 1))) (type: double), power(((_col2 - ((_col3 * _col3) / _col1)) / _col1), 0.5) (type: double), power(((_col2 - ((_col3 * _col3) / _col1)) / _col1), 0.5) (type: double), power(((_col2 - ((_col3 * _col3) / _col1)) / _col1), 0.5) (type: double), power(((_col2 - ((_col3 * _col3) / _col1)) / if((_col1 = 1L), null, (_col1 - 1))), 0.5) (type: double)
+                  expressions: (_col0 / _col1) (type: double), ((_col2 - ((_col3 * _col3) / _col4)) / _col4) (type: double), ((_col2 - ((_col3 * _col3) / _col4)) / _col4) (type: double), ((_col2 - ((_col3 * _col3) / _col4)) / if((_col4 = 1L), null, (_col4 - 1))) (type: double), power(((_col2 - ((_col3 * _col3) / _col4)) / _col4), 0.5) (type: double), power(((_col2 - ((_col3 * _col3) / _col4)) / _col4), 0.5) (type: double), power(((_col2 - ((_col3 * _col3) / _col4)) / _col4), 0.5) (type: double), power(((_col2 - ((_col3 * _col3) / _col4)) / if((_col4 = 1L), null, (_col4 - 1))), 0.5) (type: double)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
                   Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -1104,18 +1104,18 @@ STAGE PLANS:
                           selectExpressions: CastLongToDouble(col 3:bigint) -> 16:double, DoubleColMultiplyDoubleColumn(col 17:double, col 18:double)(children: CastLongToDouble(col 3:bigint) -> 17:double, CastLongToDouble(col 3:bigint) -> 18:double) -> 19:double
                       Statistics: Num rows: 12288 Data size: 1210980 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        aggregations: sum(_col0), count(_col0), sum(_col4), sum(_col3), count(), sum(_col1), min(_col2)
+                        aggregations: sum(_col0), count(_col0), sum(_col4), sum(_col3), count(_col3), count(), sum(_col1), min(_col2)
                         Group By Vectorization:
-                            aggregators: VectorUDAFSumLong(col 3:bigint) -> bigint, VectorUDAFCount(col 3:bigint) -> bigint, VectorUDAFSumDouble(col 19:double) -> double, VectorUDAFSumDouble(col 16:double) -> double, VectorUDAFCountStar(*) -> bigint, VectorUDAFSumDouble(col 4:float) -> double, VectorUDAFMinLong(col 0:tinyint) -> tinyint
+                            aggregators: VectorUDAFSumLong(col 3:bigint) -> bigint, VectorUDAFCount(col 3:bigint) -> bigint, VectorUDAFSumDouble(col 19:double) -> double, VectorUDAFSumDouble(col 16:double) -> double, VectorUDAFCount(col 16:double) -> bigint, VectorUDAFCountStar(*) -> bigint, VectorUDAFSumDouble(col 4:float) -> double, VectorUDAFMinLong(col 0:tinyint) -> tinyint
                             className: VectorGroupByOperator
                             groupByMode: HASH
                             native: false
                             vectorProcessingMode: HASH
-                            projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6]
+                            projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7]
                         minReductionHashAggr: 0.99
                         mode: hash
-                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                        Statistics: Num rows: 1 Data size: 52 Basic stats: COMPLETE Column stats: COMPLETE
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                        Statistics: Num rows: 1 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           null sort order: 
                           sort order: 
@@ -1123,9 +1123,9 @@ STAGE PLANS:
                               className: VectorReduceSinkEmptyKeyOperator
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                              valueColumns: 0:bigint, 1:bigint, 2:double, 3:double, 4:bigint, 5:double, 6:tinyint
-                          Statistics: Num rows: 1 Data size: 52 Basic stats: COMPLETE Column stats: COMPLETE
-                          value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: double), _col3 (type: double), _col4 (type: bigint), _col5 (type: double), _col6 (type: tinyint)
+                              valueColumns: 0:bigint, 1:bigint, 2:double, 3:double, 4:bigint, 5:bigint, 6:double, 7:tinyint
+                          Statistics: Num rows: 1 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: double), _col3 (type: double), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: double), _col7 (type: tinyint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -1154,31 +1154,31 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
-                    dataColumnCount: 7
-                    dataColumns: VALUE._col0:bigint, VALUE._col1:bigint, VALUE._col2:double, VALUE._col3:double, VALUE._col4:bigint, VALUE._col5:double, VALUE._col6:tinyint
+                    dataColumnCount: 8
+                    dataColumns: VALUE._col0:bigint, VALUE._col1:bigint, VALUE._col2:double, VALUE._col3:double, VALUE._col4:bigint, VALUE._col5:bigint, VALUE._col6:double, VALUE._col7:tinyint
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
               Group By Operator
-                aggregations: sum(VALUE._col0), count(VALUE._col1), sum(VALUE._col2), sum(VALUE._col3), count(VALUE._col4), sum(VALUE._col5), min(VALUE._col6)
+                aggregations: sum(VALUE._col0), count(VALUE._col1), sum(VALUE._col2), sum(VALUE._col3), count(VALUE._col4), count(VALUE._col5), sum(VALUE._col6), min(VALUE._col7)
                 Group By Vectorization:
-                    aggregators: VectorUDAFSumLong(col 0:bigint) -> bigint, VectorUDAFCountMerge(col 1:bigint) -> bigint, VectorUDAFSumDouble(col 2:double) -> double, VectorUDAFSumDouble(col 3:double) -> double, VectorUDAFCountMerge(col 4:bigint) -> bigint, VectorUDAFSumDouble(col 5:double) -> double, VectorUDAFMinLong(col 6:tinyint) -> tinyint
+                    aggregators: VectorUDAFSumLong(col 0:bigint) -> bigint, VectorUDAFCountMerge(col 1:bigint) -> bigint, VectorUDAFSumDouble(col 2:double) -> double, VectorUDAFSumDouble(col 3:double) -> double, VectorUDAFCountMerge(col 4:bigint) -> bigint, VectorUDAFCountMerge(col 5:bigint) -> bigint, VectorUDAFSumDouble(col 6:double) -> double, VectorUDAFMinLong(col 7:tinyint) -> tinyint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6]
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7]
                 mode: mergepartial
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                Statistics: Num rows: 1 Data size: 52 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                Statistics: Num rows: 1 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: (UDFToDouble(_col0) / _col1) (type: double), (- (UDFToDouble(_col0) / _col1)) (type: double), (-6432.0D + (UDFToDouble(_col0) / _col1)) (type: double), power(((_col2 - ((_col3 * _col3) / _col1)) / _col1), 0.5) (type: double), (- (-6432.0D + (UDFToDouble(_col0) / _col1))) (type: double), ((- (-6432.0D + (UDFToDouble(_col0) / _col1))) + (-6432.0D + (UDFToDouble(_col0) / _col1))) (type: double), ((_col2 - ((_col3 * _col3) / _col1)) / if((_col1 = 1L), null, (_col1 - 1))) (type: double), (- (-6432.0D + (UDFToDouble(_col0) / _col1))) (type: double), (-6432.0D + (- (-6432.0D + (UDFToDouble(_col0) / _col1)))) (type: double), (- (-6432.0D + (UDFToDouble(_col0) / _col1))) (type: double), ((- (-6432.0D + (UDFToDouble(_col0) / _col1))) / (- (-6432.0D + (UDFToDouble(_col0) / _col1)))) (type: double), _col4 (type: bigint), _col5 (type: double), (((_col2 - ((_col3 * _col3) / _col1)) / if((_col1 = 1L), null, (_col1 - 1))) % power(((_col2 - ((_col3 * _col3) / _col1)) / _col1), 0.5)) (type: double), (- ((_col2 - ((_col3 * _col3) / _col1)) / if((_col1 = 1L), null, (_col1 - 1)))) (type: double), ((- (-6432.0D + (UDFToDouble(_col0) / _col1))) * (- (UDFToDouble(_col0) / _col1))) (type: double), _col6 (type: tinyint), (- _col6) (type: tinyint)
+                  expressions: (UDFToDouble(_col0) / _col1) (type: double), (- (UDFToDouble(_col0) / _col1)) (type: double), (-6432.0D + (UDFToDouble(_col0) / _col1)) (type: double), power(((_col2 - ((_col3 * _col3) / _col4)) / _col4), 0.5) (type: double), (- (-6432.0D + (UDFToDouble(_col0) / _col1))) (type: double), ((- (-6432.0D + (UDFToDouble(_col0) / _col1))) + (-6432.0D + (UDFToDouble(_col0) / _col1))) (type: double), ((_col2 - ((_col3 * _col3) / _col4)) / if((_col4 = 1L), null, (_col4 - 1))) (type: double), (- (-6432.0D + (UDFToDouble(_col0) / _col1))) (type: double), (-6432.0D + (- (-6432.0D + (UDFToDouble(_col0) / _col1)))) (type: double), (- (-6432.0D + (UDFToDouble(_col0) / _col1))) (type: double), ((- (-6432.0D + (UDFToDouble(_col0) / _col1))) / (- (-6432.0D + (UDFToDouble(_col0) / _col1)))) (type: double), _col5 (type: bigint), _col6 (type: double), (((_col2 - ((_col3 * _col3) / _col4)) / if((_col4 = 1L), null, (_col4 - 1))) % power(((_col2 - ((_col3 * _col3) / _col4)) / _col4), 0.5)) (type: double), (- ((_col2 - ((_col3 * _col3) / _col4)) / if((_col4 = 1L), null, (_col4 - 1)))) (type: double), ((- (-6432.0D + (UDFToDouble(_col0) / _col1))) * (- (UDFToDouble(_col0) / _col1))) (type: double), _col7 (type: tinyint), (- _col7) (type: tinyint)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumnNums: [8, 11, 14, 19, 23, 31, 38, 42, 47, 51, 60, 4, 5, 73, 81, 89, 6, 90]
-                      selectExpressions: DoubleColDivideLongColumn(col 7:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 7:double) -> 8:double, DoubleColUnaryMinus(col 10:double)(children: DoubleColDivideLongColumn(col 9:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 9:double) -> 10:double) -> 11:double, DoubleScalarAddDoubleColumn(val -6432.0, col 13:double)(children: DoubleColDivideLongColumn(col 12:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 12:double) -> 13:double) -> 14:double, FuncPowerDoubleToDouble(col 18:double)(children: DoubleColDivideLongColumn(col 17:double, col 1:bigint)(children: DoubleColSubtractDoubleColumn(col 2:double, col 16:double)(children: DoubleColDivideLongColumn(col 15:double, col 1:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 15:double) -> 16:double) -> 17:double) -> 18:double) -> 19:double, DoubleColUnaryMinus(col 22:double)(children: DoubleScalarAddDoubleColumn(val -6432.0, col 21:double)(children: DoubleColDivideLongColumn(col 20:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 20:double) -> 21:double) -> 22:double) -> 23:double, DoubleColAddDoubleColumn(col 27:double, col 30:double)(children: DoubleColUnaryMinus(col 26:double)(children: DoubleScalarAddDoubleColumn(val -6432.0, col 25:double)(children: DoubleColDivideLongColumn(col 24:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 24:double) -> 25:double) -> 26:double) -> 27:double, DoubleScalarAddDoubleColumn(val -6432.0, col 29:double)(children: DoubleColDivideLongColumn(col 28:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 28:double) -> 29:double) -> 30:double) -> 31:double, DoubleColDivideLongColumn(col 34:double, col 37:bigint)(children: DoubleColSubtractDoubleColumn(col 2:double, col 33:double)(children: DoubleColDivideLongColumn(col 32:double, col 1:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 32:double) -> 33:double) -> 34:double, IfExprNullCondExpr(col 35:boolean, null, col 36:bigint)(children: LongColEqualLongScalar(col 1:bigint, val 1) -> 35:boolean, LongColSubtractLongScalar(col 1:bigint, val 1) -> 36:bigint) -> 37:bigint) -> 38:double, DoubleColUnaryMinus(col 41:double)(children: DoubleScalarAddDoubleColumn(val -6432.0, col 40:double)(children: DoubleColDivideLongColumn(col 39:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 39:double) -> 40:double) -> 41:double) -> 42:double, DoubleScalarAddDoubleColumn(val -6432.0, col 46:double)(children: DoubleColUnaryMinus(col 45:double)(children: DoubleScalarAddDoubleColumn(val -6432.0, col 44:double)(children: DoubleColDivideLongColumn(col 43:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 43:double) -> 44:double) -> 45:double) -> 46:double) -> 47:double, DoubleColUnaryMinus(col 50:double)(children: DoubleScalarAddDoubleColumn(val -6432.0, col 49:double)(children: DoubleColDivideLongColumn(col 48:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 48:double) -> 49:double) -> 50:double) -> 51:double, DoubleColDivideDoubleColumn(col 55:double, col 59:double)(children: DoubleColUnaryMinus(col 54:double)(children: DoubleScalarAddDoubleColumn(val -6432.0, col 53:double)(children: DoubleColDivideLongColumn(col 52:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 52:double) -> 53:double) -> 54:double) -> 55:double, DoubleColUnaryMinus(col 58:double)(children: DoubleScalarAddDoubleColumn(val -6432.0, col 57:double)(children: DoubleColDivideLongColumn(col 56:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 56:double) -> 57:double) -> 58:double) -> 59:double) -> 60:double, DoubleColModuloDoubleColumn(col 67:double, col 72:double)(children: DoubleColDivideLongColumn(col 63:double, col 66:bigint)(children: DoubleColSubtractDoubleColumn(col 2:double, col 62:double)(children: DoubleColDivideLongColumn(col 61:double, col 1:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 61:double) -> 62:double) -> 63:double, IfExprNullCondExpr(col 64:boolean, null, col 65:bigint)(children: LongColEqualLongScalar(col 1:bigint, val 1) -> 64:boolean, LongColSubtractLongScalar(col 1:bigint, val 1) -> 65:bigint) -> 66:bigint) -> 67:double, FuncPowerDoubleToDouble(col 71:double)(children: DoubleColDivideLongColumn(col 70:double, col 1:bigint)(children: DoubleColSubtractDoubleColumn(col 2:double, col 69:double)(children: DoubleColDivideLongColumn(col 68:double, col 1:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 68:double) -> 69:double) -> 70:double) -> 71:double) -> 72:double) -> 73:double, DoubleColUnaryMinus(col 80:double)(children: DoubleColDivideLongColumn(col 76:double, col 79:bigint)(children: DoubleColSubtractDoubleColumn(col 2:double, col 75:double)(children: DoubleColDivideLongColumn(col 74:double, col 1:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 74:double) -> 75:double) -> 76:double, IfExprNullCondExpr(col 77:boolean, null, col 78:bigint)(children: LongColEqualLongScalar(col 1:bigint, val 1) -> 77:boolean, LongColSubtractLongScalar(col 1:bigint, val 1) -> 78:bigint) -> 79:bigint) -> 80:double) -> 81:double, DoubleColMultiplyDoubleColumn(col 85:double, col 88:double)(children: DoubleColUnaryMinus(col 84:double)(children: DoubleScalarAddDoubleColumn(val -6432.0, col 83:double)(children: DoubleColDivideLongColumn(col 82:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 82:double) -> 83:double) -> 84:double) -> 85:double, DoubleColUnaryMinus(col 87:double)(children: DoubleColDivideLongColumn(col 86:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 86:double) -> 87:double) -> 88:double) -> 89:double, LongColUnaryMinus(col 6:tinyint) -> 90:tinyint
+                      projectedOutputColumnNums: [9, 12, 15, 20, 24, 32, 39, 43, 48, 52, 61, 5, 6, 74, 82, 90, 7, 91]
+                      selectExpressions: DoubleColDivideLongColumn(col 8:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 8:double) -> 9:double, DoubleColUnaryMinus(col 11:double)(children: DoubleColDivideLongColumn(col 10:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 10:double) -> 11:double) -> 12:double, DoubleScalarAddDoubleColumn(val -6432.0, col 14:double)(children: DoubleColDivideLongColumn(col 13:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 13:double) -> 14:double) -> 15:double, FuncPowerDoubleToDouble(col 19:double)(children: DoubleColDivideLongColumn(col 18:double, col 4:bigint)(children: DoubleColSubtractDoubleColumn(col 2:double, col 17:double)(children: DoubleColDivideLongColumn(col 16:double, col 4:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 16:double) -> 17:double) -> 18:double) -> 19:double) -> 20:double, DoubleColUnaryMinus(col 23:double)(children: DoubleScalarAddDoubleColumn(val -6432.0, col 22:double)(children: DoubleColDivideLongColumn(col 21:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 21:double) -> 22:double) -> 23:double) -> 24:double, DoubleColAddDoubleColumn(col 28:double, col 31:double)(children: DoubleColUnaryMinus(col 27:double)(children: DoubleScalarAddDoubleColumn(val -6432.0, col 26:double)(children: DoubleColDivideLongColumn(col 25:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 25:double) -> 26:double) -> 27:double) -> 28:double, DoubleScalarAddDoubleColumn(val -6432.0, col 30:double)(children: DoubleColDivideLongColumn(col 29:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 29:double) -> 30:double) -> 31:double) -> 32:double, DoubleColDivideLongColumn(col 35:double, col 38:bigint)(children: DoubleColSubtractDoubleColumn(col 2:double, col 34:double)(children: DoubleColDivideLongColumn(col 33:double, col 4:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 33:double) -> 34:double) -> 35:double, IfExprNullCondExpr(col 36:boolean, null, col 37:bigint)(children: LongColEqualLongScalar(col 4:bigint, val 1) -> 36:boolean, LongColSubtractLongScalar(col 4:bigint, val 1) -> 37:bigint) -> 38:bigint) -> 39:double, DoubleColUnaryMinus(col 42:double)(children: DoubleScalarAddDoubleColumn(val -6432.0, col 41:double)(children: DoubleColDivideLongColumn(col 40:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 40:double) -> 41:double) -> 42:double) -> 43:double, DoubleScalarAddDoubleColumn(val -6432.0, col 47:double)(children: DoubleColUnaryMinus(col 46:double)(children: DoubleScalarAddDoubleColumn(val -6432.0, col 45:double)(children: DoubleColDivideLongColumn(col 44:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 44:double) -> 45:double) -> 46:double) -> 47:double) -> 48:double, DoubleColUnaryMinus(col 51:double)(children: DoubleScalarAddDoubleColumn(val -6432.0, col 50:double)(children: DoubleColDivideLongColumn(col 49:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 49:double) -> 50:double) -> 51:double) -> 52:double, DoubleColDivideDoubleColumn(col 56:double, col 60:double)(children: DoubleColUnaryMinus(col 55:double)(children: DoubleScalarAddDoubleColumn(val -6432.0, col 54:double)(children: DoubleColDivideLongColumn(col 53:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 53:double) -> 54:double) -> 55:double) -> 56:double, DoubleColUnaryMinus(col 59:double)(children: DoubleScalarAddDoubleColumn(val -6432.0, col 58:double)(children: DoubleColDivideLongColumn(col 57:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 57:double) -> 58:double) -> 59:double) -> 60:double) -> 61:double, DoubleColModuloDoubleColumn(col 68:double, col 73:double)(children: DoubleColDivideLongColumn(col 64:double, col 67:bigint)(children: DoubleColSubtractDoubleColumn(col 2:double, col 63:double)(children: DoubleColDivideLongColumn(col 62:double, col 4:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 62:double) -> 63:double) -> 64:double, IfExprNullCondExpr(col 65:boolean, null, col 66:bigint)(children: LongColEqualLongScalar(col 4:bigint, val 1) -> 65:boolean, LongColSubtractLongScalar(col 4:bigint, val 1) -> 66:bigint) -> 67:bigint) -> 68:double, FuncPowerDoubleToDouble(col 72:double)(children: DoubleColDivideLongColumn(col 71:double, col 4:bigint)(children: DoubleColSubtractDoubleColumn(col 2:double, col 70:double)(children: DoubleColDivideLongColumn(col 69:double, col 4:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 69:double) -> 70:double) -> 71:double) -> 72:double) -> 73:double) -> 74:double, DoubleColUnaryMinus(col 81:double)(children: DoubleColDivideLongColumn(col 77:double, col 80:bigint)(children: DoubleColSubtractDoubleColumn(col 2:double, col 76:double)(children: DoubleColDivideLongColumn(col 75:double, col 4:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 75:double) -> 76:double) -> 77:double, IfExprNullCondExpr(col 78:boolean, null, col 79:bigint)(children: LongColEqualLongScalar(col 4:bigint, val 1) -> 78:boolean, LongColSubtractLongScalar(col 4:bigint, val 1) -> 79:bigint) -> 80:bigint) -> 81:double) -> 82:double, DoubleColMultiplyDoubleColumn(col 86:double, col 89:double)(children: DoubleColUnaryMinus(col 85:double)(children: DoubleScalarAddDoubleColumn(val -6432.0, col 84:double)(children: DoubleColDivideLongColumn(col 83:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 83:double) -> 84:double) -> 85:double) -> 86:double, DoubleColUnaryMinus(col 88:double)(children: DoubleColDivideLongColumn(col 87:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 87:double) -> 88:double) -> 89:double) -> 90:double, LongColUnaryMinus(col 7:tinyint) -> 91:tinyint
                   Statistics: Num rows: 1 Data size: 136 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false

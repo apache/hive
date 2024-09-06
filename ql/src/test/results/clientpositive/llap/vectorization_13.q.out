@@ -121,9 +121,9 @@ STAGE PLANS:
                             selectExpressions: DoubleColMultiplyDoubleColumn(col 4:double, col 4:double)(children: col 4:float, col 4:float) -> 14:double, CastLongToDouble(col 0:tinyint) -> 15:double, DoubleColMultiplyDoubleColumn(col 17:double, col 18:double)(children: CastLongToDouble(col 0:tinyint) -> 17:double, CastLongToDouble(col 0:tinyint) -> 18:double) -> 19:double
                         Statistics: Num rows: 1386 Data size: 200984 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
-                          aggregations: max(_col1), sum(_col3), sum(_col6), sum(_col5), count(_col3), sum(_col8), sum(_col7), count(_col1), max(_col3), min(_col1)
+                          aggregations: max(_col1), sum(_col3), sum(_col6), sum(_col5), count(_col5), sum(_col8), sum(_col7), count(_col7), max(_col3), min(_col1)
                           Group By Vectorization:
-                              aggregators: VectorUDAFMaxLong(col 0:tinyint) -> tinyint, VectorUDAFSumDouble(col 4:float) -> double, VectorUDAFSumDouble(col 14:double) -> double, VectorUDAFSumDouble(col 4:double) -> double, VectorUDAFCount(col 4:float) -> bigint, VectorUDAFSumDouble(col 19:double) -> double, VectorUDAFSumDouble(col 15:double) -> double, VectorUDAFCount(col 0:tinyint) -> bigint, VectorUDAFMaxDouble(col 4:float) -> float, VectorUDAFMinLong(col 0:tinyint) -> tinyint
+                              aggregators: VectorUDAFMaxLong(col 0:tinyint) -> tinyint, VectorUDAFSumDouble(col 4:float) -> double, VectorUDAFSumDouble(col 14:double) -> double, VectorUDAFSumDouble(col 4:double) -> double, VectorUDAFCount(col 4:double) -> bigint, VectorUDAFSumDouble(col 19:double) -> double, VectorUDAFSumDouble(col 15:double) -> double, VectorUDAFCount(col 15:double) -> bigint, VectorUDAFMaxDouble(col 4:float) -> float, VectorUDAFMinLong(col 0:tinyint) -> tinyint
                               className: VectorGroupByOperator
                               groupByMode: HASH
                               keyExpressions: col 10:boolean, col 0:tinyint, col 8:timestamp, col 4:float, col 6:string
@@ -501,9 +501,9 @@ STAGE PLANS:
                             selectExpressions: DoubleColMultiplyDoubleColumn(col 4:double, col 4:double)(children: col 4:float, col 4:float) -> 14:double, CastLongToDouble(col 0:tinyint) -> 15:double, DoubleColMultiplyDoubleColumn(col 17:double, col 18:double)(children: CastLongToDouble(col 0:tinyint) -> 17:double, CastLongToDouble(col 0:tinyint) -> 18:double) -> 19:double
                         Statistics: Num rows: 1386 Data size: 200984 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
-                          aggregations: max(_col1), sum(_col3), sum(_col6), sum(_col5), count(_col3), sum(_col8), sum(_col7), count(_col1), max(_col3), min(_col1)
+                          aggregations: max(_col1), sum(_col3), sum(_col6), sum(_col5), count(_col5), sum(_col8), sum(_col7), count(_col7), max(_col3), min(_col1)
                           Group By Vectorization:
-                              aggregators: VectorUDAFMaxLong(col 0:tinyint) -> tinyint, VectorUDAFSumDouble(col 4:float) -> double, VectorUDAFSumDouble(col 14:double) -> double, VectorUDAFSumDouble(col 4:double) -> double, VectorUDAFCount(col 4:float) -> bigint, VectorUDAFSumDouble(col 19:double) -> double, VectorUDAFSumDouble(col 15:double) -> double, VectorUDAFCount(col 0:tinyint) -> bigint, VectorUDAFMaxDouble(col 4:float) -> float, VectorUDAFMinLong(col 0:tinyint) -> tinyint
+                              aggregators: VectorUDAFMaxLong(col 0:tinyint) -> tinyint, VectorUDAFSumDouble(col 4:float) -> double, VectorUDAFSumDouble(col 14:double) -> double, VectorUDAFSumDouble(col 4:double) -> double, VectorUDAFCount(col 4:double) -> bigint, VectorUDAFSumDouble(col 19:double) -> double, VectorUDAFSumDouble(col 15:double) -> double, VectorUDAFCount(col 15:double) -> bigint, VectorUDAFMaxDouble(col 4:float) -> float, VectorUDAFMinLong(col 0:tinyint) -> tinyint
                               className: VectorGroupByOperator
                               groupByMode: HASH
                               keyExpressions: col 10:boolean, col 0:tinyint, col 8:timestamp, col 4:float, col 6:string

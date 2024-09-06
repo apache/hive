@@ -157,7 +157,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
 
     try {
       mvTable = db.getTable(tableName.getDb(), tableName.getTable());
-      Boolean outdated = db.isOutdatedMaterializedView(getTxnMgr(), mvTable);
+      Boolean outdated = db.isOutdatedMaterializedView(queryState::getValidTxnList, getTxnMgr(), mvTable);
       if (outdated != null && !outdated) {
         String msg = String.format("Materialized view %s.%s is up to date. Skipping rebuild.",
                 tableName.getDb(), tableName.getTable());
@@ -255,7 +255,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
         // we pass 'true' for the forceMVContentsUpToDate parameter, as we cannot allow the
         // materialization contents to be stale for a rebuild if we want to use it.
         materialization = db.getMaterializedViewForRebuild(
-                mvTable.getDbName(), mvTable.getTableName(), tablesUsedQuery, getTxnMgr());
+            mvTable.getDbName(), mvTable.getTableName(), tablesUsedQuery, queryState::getValidTxnList, getTxnMgr());
         if (materialization == null) {
           // There is no materialization, we can return the original plan
           return calcitePreMVRewritingPlan;

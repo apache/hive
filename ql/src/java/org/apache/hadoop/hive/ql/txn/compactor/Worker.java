@@ -28,10 +28,6 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
-import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
-import org.apache.hadoop.hive.metastore.txn.entities.TxnStatus;
-import org.apache.hadoop.hive.ql.io.AcidDirectory;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.txn.compactor.service.CompactionService;
 import org.apache.hadoop.hive.ql.txn.compactor.service.CompactionExecutorFactory;
@@ -41,13 +37,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -185,7 +178,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     CompactionInfo ci = null;
     Table table = null;
     CompactionService compactionService = null;
-    boolean compactionResult = false;
+    boolean success = false;
 
     // If an exception is thrown in the try-with-resources block below, msc is closed and nulled, so a new instance
     // is need to be obtained here.
@@ -249,7 +242,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       compactionService = CompactionExecutorFactory.createExecutor(conf, msc, compactorFactory, table, collectGenericStats, collectMrStats);
 
       try {
-        compactionResult = compactionService.compact(table, ci);
+        success = compactionService.compact(table, ci);
       } catch (Throwable e) {
         LOG.error("Caught exception while trying to compact " + ci +
             ". Marking failed to avoid repeated failures", e);
@@ -292,12 +285,11 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       }
     }
 
-    if (Optional.ofNullable(compactionService).map(CompactionService::isComputeStats).orElse(false)) {
+    if (success && compactionService.computeStats()) {
       statsUpdater.gatherStats(ci, conf, CompactorUtil.runJobAsSelf(ci.runAs) ? ci.runAs : table.getOwner(),
           CompactorUtil.getCompactorJobQueueName(conf, ci, table), msc);
     }
-
-    return compactionResult;
+    return success;
   }
 
   private void markFailed(CompactionInfo ci, String errorMessage) {
@@ -305,7 +297,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       LOG.warn("CompactionInfo client was null. Could not mark failed");
       return;
     }
-    if (ci != null && StringUtils.isNotBlank(errorMessage)) {
+    if (StringUtils.isNotBlank(errorMessage)) {
       ci.errorMessage = errorMessage;
     }
     if (msc == null) {

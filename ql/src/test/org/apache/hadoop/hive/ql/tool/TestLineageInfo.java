@@ -17,12 +17,12 @@
  */
 
 package org.apache.hadoop.hive.ql.tool;
-
 import static org.junit.Assert.fail;
 
 import java.util.TreeSet;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.tools.LineageInfo;
@@ -40,7 +40,7 @@ public class TestLineageInfo {
 
   @Before
   public void before() {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = new HiveConfForTest(getClass());
     SessionState.start(conf);
     ctx = new Context(conf);
   }

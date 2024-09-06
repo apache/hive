@@ -387,7 +387,7 @@ Table Parameters:
 	numRows             	0                   
 	rawDataSize         	0                   
 	rewriting.time.window	5min                
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -431,7 +431,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -476,7 +476,7 @@ Table Parameters:
 	numRows             	0                   
 	rawDataSize         	0                   
 	rewriting.time.window	-1min               
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -572,7 +572,7 @@ Table Parameters:
 	numRows             	0                   
 	rawDataSize         	0                   
 	rewriting.time.window	0min                
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

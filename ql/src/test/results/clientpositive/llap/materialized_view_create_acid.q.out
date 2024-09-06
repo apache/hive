@@ -55,7 +55,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	0                   
-	totalSize           	#Masked#                 
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####

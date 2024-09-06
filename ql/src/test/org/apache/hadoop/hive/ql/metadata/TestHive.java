@@ -90,8 +90,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
-import org.junit.BeforeClass;
 import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -105,8 +105,15 @@ public class TestHive {
   @BeforeClass
   public static void setUp() throws Exception {
 
-    hiveConf = new HiveConf(TestHive.class);
+    hiveConf = getNewConf(null);
     hm = setUpImpl(hiveConf);
+  }
+
+  private static HiveConf getNewConf(HiveConf oldConf) {
+    HiveConf conf = oldConf == null ? new HiveConf(TestHive.class) : new HiveConf(oldConf, TestHive.class);
+    //TODO: HIVE-28289: TestHive/TestHiveRemote to run on Tez
+    conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
+    return conf;
   }
 
   private static Hive setUpImpl(HiveConf hiveConf) throws Exception {
@@ -469,14 +476,16 @@ public class TestHive {
 
   @Test
   public void testWmNamespaceHandling() throws Throwable {
-    HiveConf hiveConf = new HiveConf(this.getClass());
+    HiveConf hiveConf = getNewConf(null);
     Hive hm = setUpImpl(hiveConf);
     // TODO: threadlocals... Why is all this Hive client stuff like that?!!
     final AtomicReference<Hive> hm2r = new AtomicReference<>();
     Thread pointlessThread = new Thread(new Runnable() {
       @Override
       public void run() {
-        HiveConf hiveConf2 = new HiveConf(this.getClass());
+        HiveConf hiveConf2 = getNewConf(null);
+        //TODO: HIVE-28289: TestHive/TestHiveRemote to run on Tez
+        hiveConf2.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
         hiveConf2.setVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE, "hm2");
         try {
           hm2r.set(setUpImpl(hiveConf2));
@@ -638,8 +647,8 @@ public class TestHive {
                                                  .put("ds", "20141216")
                                                  .put("hr", "12")
                                                  .build();
-
-      int trashSizeBeforeDrop = getTrashContents().length;
+      FileStatus[] trashContentsBeforeDrop = getTrashContents();
+      int trashSizeBeforeDrop = trashContentsBeforeDrop.length;
 
       Table table = createPartitionedTable(dbName, tableName);
       hm.createPartition(table, partitionSpec);
@@ -672,11 +681,12 @@ public class TestHive {
                                            .purgeData(false)
                       );
 
-      int trashSizeWithoutPurge = getTrashContents().length;
+      FileStatus[] trashContentsWithoutPurge = getTrashContents();
+      int trashSizeWithoutPurge = trashContentsWithoutPurge.length;
 
-      assertEquals("After dropPartitions(noPurge), data should've gone to trash!",
-                  trashSizeBeforeDrop, trashSizeWithoutPurge);
-
+      assertEquals("After dropPartitions(noPurge), data should've gone to trash, contents before drop: "
+          + Arrays.asList(trashContentsBeforeDrop) + ", contents without purge: " + Arrays.asList(trashContentsWithoutPurge)
+          + "!", trashSizeBeforeDrop, trashSizeWithoutPurge);
     }
     catch (Exception e) {
       fail("Unexpected exception: " + StringUtils.stringifyException(e));
@@ -973,7 +983,7 @@ public class TestHive {
     Hive newHiveObj;
 
     //if HiveConf has not changed, same object should be returned
-    HiveConf newHconf = new HiveConf(hiveConf);
+    HiveConf newHconf = getNewConf(hiveConf);
     newHiveObj = Hive.get(newHconf);
     assertTrue(prevHiveObj == newHiveObj);
 
@@ -985,7 +995,7 @@ public class TestHive {
     prevHiveObj = Hive.get();
     prevHiveObj.getDatabaseCurrent();
     //change value of a metavar config param in new hive conf
-    newHconf = new HiveConf(hiveConf);
+    newHconf = getNewConf(hiveConf);
     newHconf.setIntVar(ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES,
         newHconf.getIntVar(ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES) + 1);
     newHiveObj = Hive.get(newHconf);

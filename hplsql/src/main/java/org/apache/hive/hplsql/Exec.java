@@ -914,7 +914,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
   /**
    * Parse command line arguments
    */
-  boolean parseArguments(String[] args) {
+  public boolean parseArguments(String[] args) {
     boolean parsed = arguments.parse(args);
     if (parsed && arguments.hasVersionOption()) {
       console.printError(VERSION);
@@ -1028,9 +1028,13 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
    * Output information about unhandled exceptions
    */
   public void printExceptions() {
+    List<Signal> userDefinedSignals = new ArrayList<>();
     while (!signals.empty()) {
       Signal sig = signals.pop();
-      if (sig.type == Signal.Type.VALIDATION) {
+      // if signal type is user defined then don't handle here
+      if (sig.type == Signal.Type.USERDEFINED) {
+        userDefinedSignals.add(sig);
+      } else if (sig.type == Signal.Type.VALIDATION) {
         error(((HplValidationException)sig.exception).getCtx(), sig.exception.getMessage());
       } else if (sig.type == Signal.Type.SQLEXCEPTION) {
         console.printError("Unhandled exception in HPL/SQL");
@@ -1043,6 +1047,10 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
       } else {
         trace(null, "Signal: " + sig.type);
       }
+    }
+    // if there are any user defined signals then push them back to signals stack to handle them later.
+    for (int i = userDefinedSignals.size() - 1; i >= 0; i--) {
+      exec.signals.push(userDefinedSignals.get(i));
     }
   } 
   
@@ -1627,7 +1635,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
    */
   @Override 
   public Integer visitAssignment_stmt_single_item(HplsqlParser.Assignment_stmt_single_itemContext ctx) { 
-    String name = ctx.ident().getText();
+    String name = ctx.qident().getText();
     visit(ctx.expr());    
     Var var = setVariable(name);
     StringBuilder assignments = new StringBuilder();
@@ -1888,7 +1896,8 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
       }
     }
     sql.append(")");
-    exec.stackPush(sql);
+    Var var = new Var(Type.SQL_STRING, sql);
+    exec.stackPush(var);
   }
 
   /**
@@ -1923,7 +1932,8 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
     sql.append(", \"");
     sql.append(getStoredProcedure(name.toUpperCase()));
     sql.append("\")");
-    exec.stackPush(sql);
+    Var var = new Var(Type.HPL_SQL_UDF, sql);
+    exec.stackPush(var);
     exec.registerUdf();
     return true;
   }
@@ -1949,7 +1959,8 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
    */
   @Override 
   public Integer visitExpr_agg_window_func(HplsqlParser.Expr_agg_window_funcContext ctx) {
-    exec.stackPush(Exec.getFormattedText(ctx));
+    Var var = new Var(Type.SQL_STRING, (Object) Exec.getFormattedText(ctx));
+    exec.stackPush(var);
     return 0; 
   }
   
@@ -2543,7 +2554,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
           exec.stackPush(var);
         }
       } else {
-        exec.stackPush(new Var(ident, Var.Type.STRING, var.toSqlString()));
+        exec.stackPush(new Var(ident, Type.VARIABLE, var.toSqlString()));
       }
     } else {
       if (exec.buildSql || exec.inCallStmt) {
@@ -2562,13 +2573,8 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
    * Single quoted string literal 
    */
   @Override 
-  public Integer visitSingle_quotedString(HplsqlParser.Single_quotedStringContext ctx) { 
-    if (exec.buildSql) {
-      exec.stackPush(ctx.getText());
-    }
-    else {
-      exec.stackPush(Utils.unquoteString(ctx.getText()));
-    }
+  public Integer visitSingle_quotedString(HplsqlParser.Single_quotedStringContext ctx) {
+    exec.stackPush(Utils.unquoteString(ctx.getText()));
     return 0;
   }
   

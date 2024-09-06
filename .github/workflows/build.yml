@@ -24,6 +24,9 @@ on:
     branches:
       - 'master'
 
+env:
+  DEVELOCITY_ACCESS_KEY: ${{ secrets.GE_ACCESS_TOKEN }}
+
 jobs:
   macos-jdk8:
     name: 'macOS (JDK 8)'

@@ -59,6 +59,7 @@ public enum VirtualColumn {
   FILE_PATH("FILE__PATH", TypeInfoFactory.stringTypeInfo),
   ROW_POSITION("ROW__POSITION", TypeInfoFactory.longTypeInfo),
   SNAPSHOT_ID("SNAPSHOT__ID", TypeInfoFactory.longTypeInfo),
+  PARTITION_PROJECTION("PARTITION__PROJECTION", TypeInfoFactory.stringTypeInfo),
 
   /**
    * GROUPINGID is used with GROUP BY GROUPINGS SETS, ROLLUP and CUBE.
@@ -72,7 +73,8 @@ public enum VirtualColumn {
   public static final ImmutableSet<String> VIRTUAL_COLUMN_NAMES =
       ImmutableSet.of(FILENAME.getName(), BLOCKOFFSET.getName(), ROWOFFSET.getName(),
           RAWDATASIZE.getName(), GROUPINGID.getName(), ROWID.getName(), ROWISDELETED.getName(),
-          PARTITION_SPEC_ID.getName(), PARTITION_HASH.getName(), FILE_PATH.getName(), ROW_POSITION.getName());
+          PARTITION_SPEC_ID.getName(), PARTITION_HASH.getName(), FILE_PATH.getName(), ROW_POSITION.getName(),
+          PARTITION_PROJECTION.getName());
 
   public static final ImmutableMap<String, VirtualColumn> VIRTUAL_COLUMN_NAME_MAP =
        new ImmutableMap.Builder<String, VirtualColumn>().putAll(getColumnNameMap()).build();

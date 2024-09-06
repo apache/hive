@@ -23,8 +23,8 @@ import java.io.IOException;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.iceberg.mr.mapreduce.IcebergSplit;
 
 @SuppressWarnings("checkstyle:VisibilityModifier")
 public abstract class AbstractMapredIcebergRecordReader<T> implements RecordReader<Void, T> {
@@ -32,7 +32,7 @@ public abstract class AbstractMapredIcebergRecordReader<T> implements RecordRead
   protected final org.apache.hadoop.mapreduce.RecordReader<Void, ?> innerReader;
 
   public AbstractMapredIcebergRecordReader(org.apache.iceberg.mr.mapreduce.IcebergInputFormat<?> mapreduceInputFormat,
-      IcebergSplit split, JobConf job, Reporter reporter) throws IOException {
+      InputSplit split, JobConf job, Reporter reporter) throws IOException {
     TaskAttemptContext context = MapredIcebergInputFormat.newTaskAttemptContext(job, reporter);
 
     try {

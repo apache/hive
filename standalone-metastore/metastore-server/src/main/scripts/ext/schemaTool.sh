@@ -18,7 +18,7 @@ export SERVICE_LIST="${SERVICE_LIST}${THISSERVICE} "
 
 schemaTool() {
   METASTORE_OPTS=''
-  CLASS=org.apache.hadoop.hive.metastore.tools.MetastoreSchemaTool
+  CLASS=org.apache.hadoop.hive.metastore.tools.schematool.MetastoreSchemaTool
   if $cygwin; then
     METASTORE_LIB=`cygpath -w "$METASTORE_LIB"`
   fi

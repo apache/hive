@@ -19,12 +19,27 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.SetMultimap;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.lib.CostLessRuleDispatcher;
+import org.apache.hadoop.hive.ql.lib.ExpressionWalker;
+import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.Quotation;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.UnparseTranslator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -300,6 +315,52 @@ public final class HiveUtils {
 
   public static String unparseIdentifier(String identifier) {
     return unparseIdentifier(identifier, Quotation.BACKTICKS);
+  }
+
+  public static UnparseTranslator collectUnescapeIdentifierTranslations(ASTNode node)
+      throws SemanticException {
+    UnparseTranslator unparseTranslator = new UnparseTranslator(Quotation.BACKTICKS);
+    unparseTranslator.enable();
+
+    SetMultimap<Integer, SemanticNodeProcessor> astNodeToProcessor = HashMultimap.create();
+    astNodeToProcessor.put(HiveParser.TOK_TABLE_OR_COL, new ColumnExprProcessor());
+    astNodeToProcessor.put(HiveParser.DOT, new ColumnExprProcessor());
+    NodeProcessorCtx nodeProcessorCtx = new QuotedIdExpressionContext(unparseTranslator);
+
+    CostLessRuleDispatcher costLessRuleDispatcher = new CostLessRuleDispatcher(
+        (nd, stack, procCtx, nodeOutputs) -> null, astNodeToProcessor, nodeProcessorCtx);
+    SemanticGraphWalker walker = new ExpressionWalker(costLessRuleDispatcher);
+    walker.startWalking(Collections.singletonList(node), null);
+    return unparseTranslator;
+  }
+
+  static class ColumnExprProcessor implements SemanticNodeProcessor {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+        throws SemanticException {
+      UnparseTranslator unparseTranslator = ((QuotedIdExpressionContext)procCtx).getUnparseTranslator();
+      ASTNode tokTableOrColNode = (ASTNode) nd;
+      for (int i = 0; i < tokTableOrColNode.getChildCount(); ++i) {
+        ASTNode child = (ASTNode) tokTableOrColNode.getChild(i);
+        if (child.getType() == HiveParser.Identifier) {
+          unparseTranslator.addIdentifierTranslation(child);
+        }
+      }
+      return null;
+    }
+  }
+
+  static class QuotedIdExpressionContext implements NodeProcessorCtx {
+    private final UnparseTranslator unparseTranslator;
+
+    public QuotedIdExpressionContext(UnparseTranslator unparseTranslator) {
+      this.unparseTranslator = unparseTranslator;
+    }
+
+    public UnparseTranslator getUnparseTranslator() {
+      return unparseTranslator;
+    }
   }
 
   public static HiveStorageHandler getStorageHandler(

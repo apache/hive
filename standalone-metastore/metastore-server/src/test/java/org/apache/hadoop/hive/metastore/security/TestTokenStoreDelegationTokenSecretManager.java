@@ -41,24 +41,17 @@ import java.util.concurrent.TimeUnit;
   private final Configuration conf = MetastoreConf.newMetastoreConf();
 
   private TokenStoreDelegationTokenSecretManager createTokenMgr(DelegationTokenStore tokenStore,
-      long renewSecs) {
-    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.DELEGATION_TOKEN_RENEW_INTERVAL,
-        renewSecs, TimeUnit.SECONDS);
+      long renewSecs, long gcTime, long maxLifeTime) {
     long secretKeyInterval =
-        MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.DELEGATION_KEY_UPDATE_INTERVAL,
-            TimeUnit.MILLISECONDS);
-    long tokenMaxLifetime =
-        MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.DELEGATION_TOKEN_MAX_LIFETIME,
-            TimeUnit.MILLISECONDS);
-    long tokenRenewInterval =
-        MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.DELEGATION_TOKEN_RENEW_INTERVAL,
-            TimeUnit.MILLISECONDS);
-    long tokenGcInterval =
-        MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.DELEGATION_TOKEN_GC_INTERVAL,
-            TimeUnit.MILLISECONDS);
+            MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.DELEGATION_KEY_UPDATE_INTERVAL,
+                    TimeUnit.MILLISECONDS);
+    long tokenMaxLifetime = maxLifeTime * 1000;
+    long tokenRenewInterval = renewSecs * 1000;
+    long tokenGcInterval = gcTime * 1000;
     return new TokenStoreDelegationTokenSecretManager(secretKeyInterval, tokenMaxLifetime,
         tokenRenewInterval, tokenGcInterval, tokenStore);
   }
+
 
   private DelegationTokenIdentifier getID(String tokenStr) throws IOException {
     DelegationTokenIdentifier id = new DelegationTokenIdentifier();
@@ -74,7 +67,9 @@ import java.util.concurrent.TimeUnit;
   @Test public void testRenewal() throws IOException, InterruptedException {
     DelegationTokenStore tokenStore = new MemoryTokenStore();
     // Have a long renewal to ensure that Thread.sleep does not overshoot the initial validity
-    TokenStoreDelegationTokenSecretManager mgr = createTokenMgr(tokenStore, 3600);
+    TokenStoreDelegationTokenSecretManager mgr = createTokenMgr(tokenStore, 3600, MetastoreConf.getTimeVar(
+            conf, MetastoreConf.ConfVars.DELEGATION_TOKEN_GC_INTERVAL, TimeUnit.SECONDS), MetastoreConf.getTimeVar(conf,
+            MetastoreConf.ConfVars.DELEGATION_TOKEN_MAX_LIFETIME, TimeUnit.SECONDS));
     try {
       mgr.startThreads();
       String tokenStr =
@@ -97,9 +92,9 @@ import java.util.concurrent.TimeUnit;
     }
   }
 
-  @Test public void testExpiry() throws IOException, InterruptedException {
+  @Test public void testTokenRenewalAndRemoval() throws IOException, InterruptedException {
     DelegationTokenStore tokenStore = new MemoryTokenStore();
-    TokenStoreDelegationTokenSecretManager mgr = createTokenMgr(tokenStore, 1);
+    TokenStoreDelegationTokenSecretManager mgr = createTokenMgr(tokenStore, 2, 1, 8);
     try {
       mgr.startThreads();
       String tokenStr =
@@ -107,11 +102,15 @@ import java.util.concurrent.TimeUnit;
               UserGroupInformation.getCurrentUser().getShortUserName());
       DelegationTokenIdentifier id = getID(tokenStr);
       Assert.assertNotNull(mgr.verifyDelegationToken(tokenStr));
-      // Sleep for the renewal duration
-      Thread.sleep(1000);
-      SecretManager.InvalidToken ex = Assert.assertThrows(SecretManager.InvalidToken.class,
-          () -> mgr.verifyDelegationToken(tokenStr));
-      Assert.assertTrue(ex.getMessage(), ex.getMessage().contains("has expired"));
+
+      long initialExpiry = tokenStore.getToken(id).getRenewDate();
+      Thread.sleep(5000);
+      // Token should automatically get renewed by the Thread as the current time is > renew time.
+      Assert.assertTrue(tokenStore.getToken(id).getRenewDate() > initialExpiry);
+
+      Thread.sleep(5000);
+      //Expiry thread will remove the token as it has crossed the maxLifeTime.
+      Assert.assertEquals(tokenStore.getAllDelegationTokenIdentifiers().size(), 0);
     } finally {
       mgr.stopThreads();
     }

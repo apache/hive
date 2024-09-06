@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreClientWithLocalCache;
@@ -72,7 +73,7 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
 
   static void internalBeforeClassSetup(Map<String, String> overrides, Class clazz)
       throws Exception {
-    conf = new HiveConf(clazz);
+    conf = new HiveConfForTest(TestReplicationScenariosIncrementalLoadAcidTables.class);
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =

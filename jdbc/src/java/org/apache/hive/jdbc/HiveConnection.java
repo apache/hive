@@ -175,8 +175,7 @@ public class HiveConnection implements java.sql.Connection {
   private final List<TProtocolVersion> supportedProtocols = new LinkedList<TProtocolVersion>();
   private int loginTimeout = 0;
   private TProtocolVersion protocol;
-  private final int initFetchSize;
-  private int defaultFetchSize;
+  int fetchSize;
   private String initFile = null;
   private String wmPool = null, wmApp = null;
   private Properties clientInfo;
@@ -278,7 +277,7 @@ public class HiveConnection implements java.sql.Connection {
   public HiveConnection() {
     sessConfMap = null;
     isEmbeddedMode = true;
-    initFetchSize = 0;
+    fetchSize = 50;
   }
 
   public HiveConnection(String uri, Properties info) throws SQLException {
@@ -319,8 +318,6 @@ public class HiveConnection implements java.sql.Connection {
     }
     port = connParams.getPort();
     isEmbeddedMode = connParams.isEmbeddedMode();
-
-    initFetchSize = Integer.parseInt(sessConfMap.getOrDefault(JdbcConnectionParams.FETCH_SIZE, "0"));
 
     if (sessConfMap.containsKey(JdbcConnectionParams.INIT_FILE)) {
       initFile = sessConfMap.get(JdbcConnectionParams.INIT_FILE);
@@ -1250,17 +1247,17 @@ public class HiveConnection implements java.sql.Connection {
     protocol = openResp.getServerProtocolVersion();
     sessHandle = openResp.getSessionHandle();
 
-    final String serverFetchSizeString =
-        openResp.getConfiguration().get(ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.varname);
-    if (serverFetchSizeString == null) {
-      throw new IllegalStateException("Server returned a null default fetch size. Check that "
-          + ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.varname + " is configured correctly.");
-    }
-
-    this.defaultFetchSize = Integer.parseInt(serverFetchSizeString);
-    if (this.defaultFetchSize <= 0) {
+    ConfVars confVars = ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE;
+    int serverFetchSize = Optional.ofNullable(openResp.getConfiguration().get(confVars.varname))
+        .map(size -> Integer.parseInt(size))
+        .orElse(confVars.defaultIntVal);
+    if (serverFetchSize <= 0) {
       throw new IllegalStateException("Default fetch size must be greater than 0");
     }
+    this.fetchSize = Optional.ofNullable(sessConfMap.get(JdbcConnectionParams.FETCH_SIZE))
+        .map(size -> Integer.parseInt(size))
+        .filter(v -> v > 0)
+        .orElse(serverFetchSize);
   }
 
   /**
@@ -1577,7 +1574,7 @@ public class HiveConnection implements java.sql.Connection {
     if (isClosed) {
       throw new SQLException("Can't create Statement, connection is closed");
     }
-    return new HiveStatement(this, client, sessHandle, false, initFetchSize, defaultFetchSize);
+    return new HiveStatement(this, client, sessHandle, false, fetchSize);
   }
 
   /*
@@ -1600,8 +1597,7 @@ public class HiveConnection implements java.sql.Connection {
     if (isClosed) {
       throw new SQLException("Connection is closed");
     }
-    return new HiveStatement(this, client, sessHandle, resultSetType == ResultSet.TYPE_SCROLL_INSENSITIVE,
-        initFetchSize, defaultFetchSize);
+    return new HiveStatement(this, client, sessHandle, resultSetType == ResultSet.TYPE_SCROLL_INSENSITIVE, fetchSize);
   }
 
   /*

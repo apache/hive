@@ -269,6 +269,8 @@ public class TestDbNotificationListener
   @BeforeClass
   public static void connectToMetastore() throws Exception {
     HiveConf conf = new HiveConf();
+    //TODO: HIVE-27998: hcatalog tests on Tez
+    conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
     conf.setVar(HiveConf.ConfVars.METASTORE_TRANSACTIONAL_EVENT_LISTENERS,
         DbNotificationListener.class.getName());
     conf.setVar(HiveConf.ConfVars.METASTORE_EVENT_LISTENERS, MockMetaStoreEventListener.class.getName());
@@ -341,6 +343,8 @@ public class TestDbNotificationListener
     String dbLocationUri = testTempDir;
     String dbDescription = "no description";
     Database db = new Database(dbName, dbDescription, dbLocationUri, emptyParameters);
+    db.setOwnerName("test_user");
+    db.setCreateTime(startTime);
     msClient.createDatabase(db);
 
     // Read notification from metastore

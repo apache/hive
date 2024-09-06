@@ -51,14 +51,14 @@ class RenderStrategy {
     private long lastPrintTime = 0L;
     private String lastReport = null;
 
-    BaseUpdateFunction(TezJobMonitor monitor) {
+    BaseUpdateFunction(TezJobMonitor monitor, PerfLogger perfLogger) {
       this.monitor = monitor;
       print_interval = HiveConf.getTimeVar(
           monitor.getHiveConf(),
           HiveConf.ConfVars.HIVE_LOG_INCREMENTAL_PLAN_PROGRESS_INTERVAL,
           TimeUnit.MILLISECONDS
       );
-      perfLogger = SessionState.getPerfLogger();
+      this.perfLogger = perfLogger;
     }
 
     @Override
@@ -155,8 +155,8 @@ class RenderStrategy {
         SessionState.get().getConf().getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_INPLACE_PROGRESS);
     private final ZoneId localTimeZone = SessionState.get().getConf().getLocalTimeZone();
 
-    LogToFileFunction(TezJobMonitor monitor) {
-      super(monitor);
+    LogToFileFunction(TezJobMonitor monitor, PerfLogger perfLogger) {
+      super(monitor, perfLogger);
     }
 
     @Override
@@ -186,8 +186,8 @@ class RenderStrategy {
      */
     private final InPlaceUpdate inPlaceUpdate;
 
-    InPlaceUpdateFunction(TezJobMonitor monitor) {
-      super(monitor);
+    InPlaceUpdateFunction(TezJobMonitor monitor, PerfLogger perfLogger) {
+      super(monitor, perfLogger);
       inPlaceUpdate = new InPlaceUpdate(SessionState.LogHelper.getInfoStream());
     }
 

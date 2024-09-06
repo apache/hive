@@ -101,7 +101,7 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
               break;
             case PARTITION_HASH:
               value = IcebergAcidUtil.computeHash(
-                  (StructProjection) idToConstant.get(MetadataColumns.PARTITION_COLUMN_ID));
+                      (StructProjection) idToConstant.get(MetadataColumns.PARTITION_COLUMN_ID));
               vrbCtx.addPartitionColsToBatch(batch.cols[idx], value, idx);
               break;
             case FILE_PATH:
@@ -122,6 +122,12 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
               Arrays.fill(lcv.isNull, false);
               lcv.isRepeating = false;
               System.arraycopy(value, 0, lcv.vector, 0, batch.size);
+              break;
+            case PARTITION_PROJECTION:
+              bcv = (BytesColumnVector) batch.cols[idx];
+              bcv.noNulls = false;
+              bcv.isNull[0] = true;
+              bcv.isRepeating = true;
               break;
           }
         }

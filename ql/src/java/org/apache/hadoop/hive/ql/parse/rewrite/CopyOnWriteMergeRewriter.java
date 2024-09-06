@@ -154,18 +154,17 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       }
       List<String> values = sqlGenerator.getDeleteValues(Context.Operation.MERGE);
       
-      if (insertClause.getColumnListText() != null) {
-        String[] columnNames = insertClause.getColumnListText()
-            .substring(1, insertClause.getColumnListText().length() - 1).split(",");
-        String[] columnValues = insertClause.getValuesClause().split(",");
+      if (insertClause.getColumnList() != null) {
+        List<String> columnNames = insertClause.getColumnList();
+        List<String> columnValues = insertClause.getValuesClause();
         
-        Map<String, String> columnMap = IntStream.range(0, columnNames.length).boxed().collect(
-            Collectors.toMap(i -> ParseUtils.stripIdentifierQuotes(columnNames[i].trim()), i -> columnValues[i]));
+        Map<String, String> columnMap = IntStream.range(0, columnNames.size()).boxed().collect(
+            Collectors.toMap(columnNames::get, columnValues::get));
         for (FieldSchema col : mergeStatement.getTargetTable().getAllCols()) {
           values.add(columnMap.getOrDefault(col.getName(), "null"));
         }
       } else {
-        values.add(insertClause.getValuesClause());
+        values.addAll(insertClause.getValuesClause());
       }
       sqlGenerator.append(StringUtils.join(values, ","));
       sqlGenerator.append("\nFROM " + mergeStatement.getSourceName());

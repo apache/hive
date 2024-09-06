@@ -85,9 +85,9 @@ STAGE PLANS:
                           selectExpressions: CastLongToDouble(col 0:tinyint) -> 15:double, DoubleColMultiplyDoubleColumn(col 16:double, col 17:double)(children: CastLongToDouble(col 0:tinyint) -> 16:double, CastLongToDouble(col 0:tinyint) -> 17:double) -> 18:double, DoubleColMultiplyDoubleColumn(col 5:double, col 5:double) -> 19:double
                       Statistics: Num rows: 12288 Data size: 330276 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        aggregations: sum(_col5), sum(_col4), count(_col0), sum(_col1), max(_col0), max(_col2), sum(_col6), sum(_col3), count(_col3), count(_col2)
+                        aggregations: sum(_col5), sum(_col4), count(_col4), sum(_col1), max(_col0), max(_col2), sum(_col6), sum(_col3), count(_col3), count(_col2)
                         Group By Vectorization:
-                            aggregators: VectorUDAFSumDouble(col 18:double) -> double, VectorUDAFSumDouble(col 15:double) -> double, VectorUDAFCount(col 0:tinyint) -> bigint, VectorUDAFSumDouble(col 4:float) -> double, VectorUDAFMaxLong(col 0:tinyint) -> tinyint, VectorUDAFMaxLong(col 2:int) -> int, VectorUDAFSumDouble(col 19:double) -> double, VectorUDAFSumDouble(col 5:double) -> double, VectorUDAFCount(col 5:double) -> bigint, VectorUDAFCount(col 2:int) -> bigint
+                            aggregators: VectorUDAFSumDouble(col 18:double) -> double, VectorUDAFSumDouble(col 15:double) -> double, VectorUDAFCount(col 15:double) -> bigint, VectorUDAFSumDouble(col 4:float) -> double, VectorUDAFMaxLong(col 0:tinyint) -> tinyint, VectorUDAFMaxLong(col 2:int) -> int, VectorUDAFSumDouble(col 19:double) -> double, VectorUDAFSumDouble(col 5:double) -> double, VectorUDAFCount(col 5:double) -> bigint, VectorUDAFCount(col 2:int) -> bigint
                             className: VectorGroupByOperator
                             groupByMode: HASH
                             native: false

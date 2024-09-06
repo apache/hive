@@ -27,11 +27,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.CheckResult;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreChecker;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -80,16 +80,17 @@ public class TestHiveMetaStoreChecker {
   @Before
   public void setUp() throws Exception {
     hive = Hive.get();
-    hive.getConf().set(MetastoreConf.ConfVars.FS_HANDLER_THREADS_COUNT.getVarname(), "15");
-    hive.getConf().set(MetastoreConf.ConfVars.MSCK_PATH_VALIDATION.getVarname(), "throw");
-    msc = new HiveMetaStoreClient(hive.getConf());
-    checker = new HiveMetaStoreChecker(msc, hive.getConf());
+    HiveConf conf = new HiveConfForTest(hive.getConf(), getClass());
+    conf.set(MetastoreConf.ConfVars.FS_HANDLER_THREADS_COUNT.getVarname(), "15");
+    conf.set(MetastoreConf.ConfVars.MSCK_PATH_VALIDATION.getVarname(), "throw");
+    msc = new HiveMetaStoreClient(conf);
+    checker = new HiveMetaStoreChecker(msc, conf);
 
-    hive.getConf().setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
+    conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    HiveConf.setBoolVar(hive.getConf(), HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    SessionState ss = SessionState.start(hive.getConf());
-    ss.initTxnMgr(hive.getConf());
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
+    SessionState ss = SessionState.start(conf);
+    ss.initTxnMgr(conf);
 
     partCols = new ArrayList<>();
     partCols.add(new FieldSchema(partDateName, serdeConstants.STRING_TYPE_NAME, ""));

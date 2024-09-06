@@ -23,7 +23,7 @@ class CreateDataConnectorRequest
     static public $_TSPEC = array(
         1 => array(
             'var' => 'connector',
-            'isRequired' => false,
+            'isRequired' => true,
             'type' => TType::STRUCT,
             'class' => '\metastore\DataConnector',
         ),

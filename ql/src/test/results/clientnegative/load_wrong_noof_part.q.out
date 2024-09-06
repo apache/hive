@@ -6,4 +6,4 @@ POSTHOOK: query: CREATE TABLE loadpart1(a STRING, b STRING) PARTITIONED BY (ds S
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@loadpart1
-FAILED: SemanticException [Error 10006]: Line 2:82 Partition not found ''2009-05-05''
+FAILED: SemanticException [Error 10006]: Line 2:81 Partition not found ''2009-05-05''

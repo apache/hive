@@ -38,6 +38,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -97,7 +98,7 @@ public class TestHiveAuthorizerCheckInvocation {
 
   @BeforeClass
   public static void beforeTest() throws Exception {
-    conf = new HiveConf();
+    conf = new HiveConfForTest(TestHiveAuthorizerCheckInvocation.class);
 
     // Turn on mocked authorization
     conf.setVar(ConfVars.HIVE_AUTHORIZATION_MANAGER, MockedHiveAuthorizerFactory.class.getName());
@@ -677,6 +678,33 @@ public class TestHiveAuthorizerCheckInvocation {
     HivePrivilegeObject tableObj = inputs.get(0);
     assertEquals("input type", HivePrivilegeObjectType.TABLE_OR_VIEW, tableObj.getType());
     assertTrue("table name", viewName.equalsIgnoreCase(tableObj.getObjectName()));
+  }
+
+  @Test
+  public void DropDatabaseCascade() throws Exception {
+    String dbName = "dropDatabase";
+    reset(mockedAuthorizer);
+    driver.run("create database " + dbName);
+    final String tableName1 = "drop_tbl1", tableName2 = "drop_tbl2", funcName = "testdropfunc";
+    driver.run("create table " + dbName + "." + tableName1 + "(eid int, yoj int)");
+    driver.run("create table " + dbName + "." + tableName2 + "(eid int, name string)");
+    driver.run("create function " + dbName + "." + funcName + " as 'org.apache.hadoop.hive.ql.udf.UDFRand'");
+    reset(mockedAuthorizer);
+    int status = driver.compile("DROP DATABASE " + dbName + " CASCADE", true);
+    assertEquals(0, status);
+    Pair<List<HivePrivilegeObject>, List<HivePrivilegeObject>> io = getHivePrivilegeObjectInputs();
+    List<HivePrivilegeObject> inputs = io.getLeft();
+    assertEquals(1, inputs.size()); // database object
+    List<HivePrivilegeObject> outputs = io.getRight();
+    assertEquals(4, outputs.size()); //  2 tables, 1 function and 1 db
+    HivePrivilegeObject privilegeObject = outputs.get(0);
+    assertEquals("input type", HivePrivilegeObjectType.TABLE_OR_VIEW, privilegeObject.getType());
+    privilegeObject = outputs.get(1);
+    assertEquals("input type", HivePrivilegeObjectType.TABLE_OR_VIEW, privilegeObject.getType());
+    privilegeObject = outputs.get(2);
+    assertEquals("input type", HivePrivilegeObjectType.FUNCTION, privilegeObject.getType());
+    privilegeObject = outputs.get(3);
+    assertEquals("input type", HivePrivilegeObjectType.DATABASE, privilegeObject.getType());
   }
 
   /**

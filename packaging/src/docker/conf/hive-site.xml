@@ -53,10 +53,6 @@
         <value>true</value>
     </property>
     <property>
-        <name>hive.execution.engine</name>
-        <value>tez</value>
-    </property>
-    <property>
         <name>hive.metastore.warehouse.dir</name>
         <value>/opt/hive/data/warehouse</value>
     </property>

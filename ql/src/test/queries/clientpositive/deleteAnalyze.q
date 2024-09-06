@@ -1,4 +1,3 @@
---! qt:replace:/(totalSize\s+)(\S+|\s+|.+)/$1#Masked#/
 set hive.stats.autogather=true;
 set hive.explain.user=true;
 

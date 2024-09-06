@@ -534,12 +534,10 @@ public final class ParseUtils {
     return sb.toString();
   }
 
-  public static CBOPlan parseQuery(HiveConf conf, String viewQuery)
+  public static CBOPlan parseQuery(Context ctx, String viewQuery)
       throws SemanticException, ParseException {
-    final Context ctx = new Context(conf);
-    ctx.setIsLoadingMaterializedView(true);
     final ASTNode ast = parse(viewQuery, ctx);
-    final CalcitePlanner analyzer = getAnalyzer(conf, ctx);
+    final CalcitePlanner analyzer = getAnalyzer((HiveConf) ctx.getConf(), ctx);
     RelNode logicalPlan = analyzer.genLogicalPlan(ast);
     return new CBOPlan(
         ast, logicalPlan, analyzer.getMaterializationValidationResult().getSupportedRewriteAlgorithms());

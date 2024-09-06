@@ -140,8 +140,8 @@ assignment_stmt_item :
      ;
 
 assignment_stmt_single_item : 
-       ident T_COLON? T_EQUAL expr
-     | T_OPEN_P ident T_CLOSE_P T_COLON? T_EQUAL expr
+       qident T_COLON? T_EQUAL expr
+     | T_OPEN_P qident T_CLOSE_P T_COLON? T_EQUAL expr
      ;
 
 assignment_stmt_collection_item :
@@ -1049,8 +1049,8 @@ expr :
      | expr_case
      | expr_cursor_attribute
      | expr_agg_window_func
-     | expr_func
      | expr_spec_func
+     | expr_func
      | expr_atom    
      ;
 

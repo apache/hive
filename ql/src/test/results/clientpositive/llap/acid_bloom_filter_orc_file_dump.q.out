@@ -182,7 +182,7 @@ Stripes:
       Entry 0: numHashFunctions: 6 bitCount: 81472 popCount: 6 loadFactor: 0.0001 expectedFpp: 1.5953551E-25
       Stripe level merge: numHashFunctions: 6 bitCount: 81472 popCount: 6 loadFactor: 0.0001 expectedFpp: 1.5953551E-25
 
-File length: 1217 bytes
+File length: #Masked# bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 
@@ -299,7 +299,7 @@ Stripes:
       Entry 0: numHashFunctions: 6 bitCount: 81472 popCount: 6 loadFactor: 0.0001 expectedFpp: 1.5953551E-25
       Stripe level merge: numHashFunctions: 6 bitCount: 81472 popCount: 6 loadFactor: 0.0001 expectedFpp: 1.5953551E-25
 
-File length: 1211 bytes
+File length: #Masked# bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 

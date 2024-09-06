@@ -1,4 +1,5 @@
 --! qt:dataset:src
+set hive.cbo.fallback.strategy=NEVER;
 create table t_n33(category int, live int, comments int);
 insert into table t_n33 select key, 0, 2 from src tablesample(3 rows);
 

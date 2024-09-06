@@ -27,7 +27,7 @@ numFiles	0
 numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
-totalSize	0
+totalSize	#Masked#
 #### A masked pattern was here ####
 FAILED: SemanticException [Error 10215]: Please use the following syntax if not sure whether the property existed or not:
 ALTER TABLE tableName UNSET TBLPROPERTIES IF EXISTS (key1, key2, ...)

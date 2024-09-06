@@ -107,18 +107,17 @@ public class QueryPlan implements Serializable {
 
   private String queryId;
   private org.apache.hadoop.hive.ql.plan.api.Query query;
-  private final Map<String, Map<String, Long>> counters =
-      new ConcurrentHashMap<String, Map<String, Long>>();
-  private final Set<String> done = Collections.newSetFromMap(new
-      ConcurrentHashMap<String, Boolean>());
-  private final Set<String> started = Collections.newSetFromMap(new
-      ConcurrentHashMap<String, Boolean>());
+  
+  private final Map<String, Map<String, Long>> counters = new ConcurrentHashMap<>();
+  private final Set<String> done = Collections.newSetFromMap(new ConcurrentHashMap<>());
+  private final Set<String> started = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
   private QueryProperties queryProperties;
 
   private transient Long queryStartTime;
   private final HiveOperation operation;
-  private final boolean acidResourcesInQuery;
+  private final boolean hasAcidReadWrite;
+  private final boolean hasAcidResources;
   private final Set<FileSinkDesc> acidSinks; // Note: both full-ACID and insert-only sinks.
   private final WriteEntity acidAnalyzeTable;
   private final DDLDescWithWriteId acidDdlDesc;
@@ -133,7 +132,8 @@ public class QueryPlan implements Serializable {
   protected QueryPlan(HiveOperation command) {
     this.reducerTimeStatsPerJobList = new ArrayList<>();
     this.operation = command;
-    this.acidResourcesInQuery = false;
+    this.hasAcidReadWrite = false;
+    this.hasAcidResources = false;
     this.acidSinks = Collections.emptySet();
     this.acidDdlDesc = null;
     this.acidAnalyzeTable = null;
@@ -165,7 +165,8 @@ public class QueryPlan implements Serializable {
     this.autoCommitValue = sem.getAutoCommitValue();
     this.resultSchema = resultSchema;
     // TODO: all this ACID stuff should be in some sub-object
-    this.acidResourcesInQuery = sem.hasTransactionalInQuery();
+    this.hasAcidReadWrite = sem.hasAcidReadWrite();
+    this.hasAcidResources = sem.hasAcidResources();
     this.acidSinks = sem.getAcidFileSinks();
     this.acidDdlDesc = sem.getAcidDdlDesc();
     this.acidAnalyzeTable = sem.getAcidAnalyzeTable();
@@ -176,8 +177,12 @@ public class QueryPlan implements Serializable {
   /**
    * @return true if any acid resources are read/written
    */
-  public boolean hasAcidResourcesInQuery() {
-    return acidResourcesInQuery;
+  public boolean hasAcidReadWrite() {
+    return hasAcidReadWrite;
+  }
+
+  public boolean hasAcidResources() {
+    return hasAcidResources;
   }
 
   public WriteEntity getAcidAnalyzeTable() {

@@ -33,7 +33,6 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.google.common.base.Preconditions;
 import org.antlr.runtime.TokenRewriteStream;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.tuple.Pair;
@@ -256,16 +255,23 @@ public class Context {
   public enum RewritePolicy {
 
     DEFAULT,
-    ALL_PARTITIONS;
+    PARTITION,
+    FULL_TABLE;
 
     public static RewritePolicy fromString(String rewritePolicy) {
-      Preconditions.checkArgument(null != rewritePolicy, "Invalid rewrite policy: null");
+      if (rewritePolicy == null) {
+        return DEFAULT;
+      }
 
       try {
         return valueOf(rewritePolicy.toUpperCase(Locale.ENGLISH));
       } catch (IllegalArgumentException var2) {
         throw new IllegalArgumentException(String.format("Invalid rewrite policy: %s", rewritePolicy), var2);
       }
+    }
+
+    public static RewritePolicy get(HiveConf conf) {
+      return fromString(conf.get(HiveConf.ConfVars.REWRITE_POLICY.varname));
     }
   }
   private String getMatchedText(ASTNode n) {
@@ -674,7 +680,7 @@ public class Context {
    *
    */
   public Path getMRScratchDir() {
-    return getMRScratchDir(!isExplainSkipExecution());
+    return getMRScratchDir(!isExplainSkipExecution() && !isLoadingMaterializedView());
   }
 
   /**
@@ -850,7 +856,9 @@ public class Context {
   }
 
   public Path getMRTmpPath(URI uri) {
-    return new Path(getStagingDir(new Path(uri), !isExplainSkipExecution()), MR_PREFIX + nextPathId());
+    return new Path(getStagingDir(new Path(uri),
+        !isExplainSkipExecution() && !isLoadingMaterializedView()),
+        MR_PREFIX + nextPathId());
   }
 
   public Path getMRTmpPath(boolean mkDir) {

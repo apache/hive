@@ -21,7 +21,9 @@ package org.apache.hadoop.hive.ql;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
@@ -61,6 +63,11 @@ public class QueryState {
   private HiveTxnManager txnManager;
 
   /**
+   * validTxnList supplier
+   */
+  private Supplier<String> validTxnList;
+
+  /**
    * Holds the number of rows affected for insert queries.
    */
   private long numModifiedRows = 0;
@@ -94,6 +101,7 @@ public class QueryState {
    */
   private QueryState(HiveConf conf) {
     this.queryConf = conf;
+    this.validTxnList = () -> conf.get(ValidTxnList.VALID_TXNS_KEY);
   }
 
   // Get the query id stored in query specific config.
@@ -163,6 +171,14 @@ public class QueryState {
     this.txnManager = txnManager;
   }
 
+  public String getValidTxnList() {
+    return validTxnList.get();
+  }
+  
+  public void setValidTxnList(Supplier<String> validTxnList) {
+    this.validTxnList = validTxnList;
+  }
+
   public long getNumModifiedRows() {
     return numModifiedRows;
   }
@@ -227,6 +243,7 @@ public class QueryState {
     private boolean isolated = true;
     private boolean generateNewQueryId = false;
     private HiveConf hiveConf = null;
+    private Supplier<String> validTxnList;
     private LineageState lineageState = null;
 
     /**
@@ -277,6 +294,11 @@ public class QueryState {
      */
     public Builder withHiveConf(HiveConf hiveConf) {
       this.hiveConf = hiveConf;
+      return this;
+    }
+    
+    public Builder withValidTxnList(Supplier<String> validTxnList) {
+      this.validTxnList = validTxnList;
       return this;
     }
 
@@ -340,6 +362,9 @@ public class QueryState {
       QueryState queryState = new QueryState(queryConf);
       if (lineageState != null) {
         queryState.setLineageState(lineageState);
+      }
+      if (validTxnList != null) {
+        queryState.setValidTxnList(validTxnList);
       }
       return queryState;
     }

@@ -200,6 +200,13 @@ public class TestCatalogs extends MetaStoreClientTest {
     client.dropCatalog("noSuchCatalog");
   }
 
+  @Test
+  public void dropNonExistentCatalogIfExists() throws TException {
+    client.dropCatalog("noSuchCatalog", true);
+    Assert.assertTrue("dropCatalog completed without throwing an exception", true);
+  }
+
+
   @Test(expected = MetaException.class)
   public void dropHiveCatalog() throws TException {
     client.dropCatalog(Warehouse.DEFAULT_CATALOG_NAME);

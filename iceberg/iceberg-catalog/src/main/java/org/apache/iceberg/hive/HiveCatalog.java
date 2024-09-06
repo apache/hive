@@ -222,7 +222,7 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
 
     try {
       Table table = clients.run(client -> client.getTable(fromDatabase, fromName));
-      HiveTableOperations.validateTableIsIceberg(table, fullTableName(name, from));
+      HiveOperationsBase.validateTableIsIceberg(table, fullTableName(name, from));
 
       table.setDbName(toDatabase);
       table.setTableName(to.name());
@@ -237,8 +237,13 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
     } catch (NoSuchObjectException e) {
       throw new NoSuchTableException("Table does not exist: %s", from);
 
-    } catch (AlreadyExistsException e) {
-      throw new org.apache.iceberg.exceptions.AlreadyExistsException("Table already exists: %s", to);
+    } catch (InvalidOperationException e) {
+      if (e.getMessage() != null && e.getMessage().contains(String.format("new table %s already exists", to))) {
+        throw new org.apache.iceberg.exceptions.AlreadyExistsException(
+            "Table already exists: %s", to);
+      } else {
+        throw new RuntimeException("Failed to rename " + from + " to " + to, e);
+      }
 
     } catch (TException e) {
       throw new RuntimeException("Failed to rename " + from + " to " + to, e);
@@ -271,8 +276,8 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
       LOG.info("Created namespace: {}", namespace);
 
     } catch (AlreadyExistsException e) {
-      throw new org.apache.iceberg.exceptions.AlreadyExistsException(e, "Namespace '%s' already exists!",
-            namespace);
+      throw new org.apache.iceberg.exceptions.AlreadyExistsException(
+          e, "Namespace already exists: %s", namespace);
 
     } catch (TException e) {
       throw new RuntimeException("Failed to create namespace " + namespace + " in Hive Metastore", e);
@@ -475,6 +480,9 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
         return String.format("%s/%s", databaseData.getLocationUri(), tableIdentifier.name());
       }
 
+    } catch (NoSuchObjectException e) {
+      throw new NoSuchNamespaceException(
+          e, "Namespace does not exist: %s", tableIdentifier.namespace().levels()[0]);
     } catch (TException e) {
       throw new RuntimeException(String.format("Metastore operation failed for %s", tableIdentifier), e);
 

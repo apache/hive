@@ -1,46 +1,40 @@
 Ln:1 UPDATE
-Ln:1 SET c1 = 'TRIM(c1)'
-Ln:1 UPDATE tab T SET c1 = TRIM(c1) WHERE T.c2 = 'A'
+Ln:1 UPDATE tab T SET (c1) = TRIM(c1) WHERE T.c2 = 'A'
 Ln:3 UPDATE
-Ln:4 SET c1 = 'TRIM(c1)'
 Ln:3 UPDATE tab T
   SET c1 = TRIM(c1)
   WHERE T.c2 = 'A'
 Ln:7 UPDATE
-Ln:7 SET c1 = '''0011'''
 Ln:7 UPDATE tab SET c1 = '0011' WHERE c1 = '0021'
 Ln:9 UPDATE
-Ln:9 SET c1 = 'TRIM(c1)'
-Ln:9 SET c3 = 'TRIM(c3)'
 Ln:9 UPDATE tab T SET c1 = TRIM(c1), c3 = TRIM(c3) WHERE T.col2 = 'A'
 Ln:11 UPDATE
-Ln:12 SET c1 = TRIM(c1)
-Ln:12 SET c3 = TRIM(c3)
 Ln:11 UPDATE tab T
   SET (c1, c3) = (TRIM(c1), TRIM(c3))
   WHERE T.col2 = 'A'
 Ln:15 UPDATE
 Ln:15 UPDATE tab T
        SET (c1, c2, c3, c4) =
-           (SELECT c1, c2, TRIM(c3), c4
+           (SELECT c1,
+                   c2,
+                   TRIM(c3),
+                   c4
               FROM tab2 C
              WHERE C.c1 = T.c1)
      WHERE T.c2 = 'A'
 Ln:25 UPDATE
-Ln:26 SET c1 = '(SELECT c1 FROM tab2 C WHERE C.c1 = T.c1)'
 Ln:25 UPDATE tab T
-       SET c1 = (SELECT c1 FROM tab2 C WHERE C.c1 = T.c1)
+       SET (c1) =
+           (SELECT c1 FROM tab2 C WHERE C.c1 = T.c1)
      WHERE T.c2 = 'a'
 Ln:30 UPDATE
-Ln:31 SET c1 = '(SELECT c1 FROM tab2 C WHERE C.c1 = T.c1)'
 Ln:30 UPDATE tab T
-       SET c1 = (SELECT c1 FROM tab2 C WHERE C.c1 = T.c1)
+       SET c1 =
+           (SELECT c1 FROM tab2 C WHERE C.c1 = T.c1)
      WHERE T.c2 = 'a'
 Ln:35 DECLARE var1 STRING
 Ln:36 SET var1 = 'var1_value'
 Ln:37 UPDATE
-Ln:37 SET c2 = '''update_value'''
-Ln:37 UPDATE tab SET c2 = 'update_value' WHERE c1 = 'var1_value'
+Ln:37 UPDATE tab SET c2 = 'update_value' WHERE c1 = var1
 Ln:38 UPDATE
-Ln:38 SET c2 = '''var1_value'''
-Ln:38 UPDATE tab SET c2 = 'var1_value' WHERE c1 = 'var1_value'
+Ln:38 UPDATE tab SET c2 = var1 WHERE c1 = 'var1_value'

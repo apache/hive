@@ -70,6 +70,7 @@ import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.ql.ServiceContext;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager;
@@ -171,6 +172,7 @@ public class HiveServer2 extends CompositeService {
   private SettableFuture<Boolean> notLeaderTestFuture = SettableFuture.create();
   private ZooKeeperHiveHelper zooKeeperHelper = null;
   private ScheduledQueryExecutionService scheduledQueryService;
+  private ServiceContext serviceContext;
 
   public HiveServer2() {
     super(HiveServer2.class.getSimpleName());
@@ -239,6 +241,10 @@ public class HiveServer2 extends CompositeService {
     }
 
     super.init(hiveConf);
+    this.serviceContext = new ServiceContext(() -> thriftCLIService.getServerIPAddress().getCanonicalHostName(),
+        () -> thriftCLIService.getPortNumber());
+    serviceContext.setClusterIdInConf(hiveConf);
+
     // Set host name in conf
     try {
       hiveConf.set(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST.varname, getServerHost());

@@ -61,23 +61,18 @@ public class GenericUDAFMkCollectionEvaluator extends GenericUDAFEvaluator
       throws HiveException {
     super.init(m, parameters);
     // init output object inspectors
-    // The output of a partial aggregation is a list
-    if (m == Mode.PARTIAL1) {
+    if (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE) {
+      // T => List[T]
       inputOI = parameters[0];
       return ObjectInspectorFactory.getStandardListObjectInspector(
           ObjectInspectorUtils.getStandardObjectInspector(inputOI));
     } else {
-      if (!(parameters[0] instanceof ListObjectInspector)) {
-        //no map aggregation.
-        inputOI = ObjectInspectorUtils.getStandardObjectInspector(parameters[0]);
-        return ObjectInspectorFactory.getStandardListObjectInspector(inputOI);
-      } else {
-        internalMergeOI = (ListObjectInspector) parameters[0];
-        inputOI = internalMergeOI.getListElementObjectInspector();
-        loi = (StandardListObjectInspector)
-            ObjectInspectorUtils.getStandardObjectInspector(internalMergeOI);
-        return loi;
-      }
+      // List[T] => List[T]
+      internalMergeOI = (ListObjectInspector) parameters[0];
+      inputOI = internalMergeOI.getListElementObjectInspector();
+      loi = (StandardListObjectInspector)
+          ObjectInspectorUtils.getStandardObjectInspector(internalMergeOI);
+      return loi;
     }
   }
 

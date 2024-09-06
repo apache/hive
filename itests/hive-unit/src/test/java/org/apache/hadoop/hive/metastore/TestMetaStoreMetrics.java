@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
@@ -41,7 +42,7 @@ public class TestMetaStoreMetrics {
 
   @BeforeClass
   public static void before() throws Exception {
-    hiveConf = new HiveConf(TestMetaStoreMetrics.class);
+    hiveConf = new HiveConfForTest(TestMetaStoreMetrics.class);
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES, 3);
     hiveConf.setBoolVar(HiveConf.ConfVars.METASTORE_METRICS, true);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);

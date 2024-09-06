@@ -20,7 +20,10 @@
 package org.apache.iceberg.hive;
 
 import java.nio.file.Path;
+import java.util.concurrent.TimeUnit;
 import org.apache.iceberg.AppendFiles;
+import org.apache.iceberg.CatalogProperties;
+import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
 import org.apache.iceberg.PartitionSpec;
@@ -36,8 +39,10 @@ import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Types;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -47,8 +52,9 @@ import static org.apache.iceberg.types.Types.NestedField.required;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class HiveCreateReplaceTableTest extends HiveMetastoreTest {
+public class HiveCreateReplaceTableTest {
 
+  private static final String DB_NAME = "hivedb";
   private static final String TABLE_NAME = "tbl";
   private static final TableIdentifier TABLE_IDENTIFIER = TableIdentifier.of(DB_NAME, TABLE_NAME);
   private static final Schema SCHEMA = new Schema(
@@ -63,6 +69,25 @@ public class HiveCreateReplaceTableTest extends HiveMetastoreTest {
   private Path temp;
 
   private String tableLocation;
+
+  @RegisterExtension
+  private static final HiveMetastoreExtension HIVE_METASTORE_EXTENSION =
+      HiveMetastoreExtension.builder().withDatabase(DB_NAME).build();
+
+  private static HiveCatalog catalog;
+
+  @BeforeAll
+  public static void initCatalog() {
+    catalog =
+        (HiveCatalog)
+            CatalogUtil.loadCatalog(
+                HiveCatalog.class.getName(),
+                CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE,
+                ImmutableMap.of(
+                    CatalogProperties.CLIENT_POOL_CACHE_EVICTION_INTERVAL_MS,
+                    String.valueOf(TimeUnit.SECONDS.toMillis(10))),
+                HIVE_METASTORE_EXTENSION.hiveConf());
+  }
 
   @BeforeEach
   public void createTableLocation() {

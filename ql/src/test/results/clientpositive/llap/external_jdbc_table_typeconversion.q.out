@@ -102,20 +102,35 @@ POSTHOOK: Input: default@jdbc_type_conversion_table1
 3	4000	120.0	25.4	hello	2.718	2017-06-05	2011-11-10 18:00:08
 8	3000	180.0	35.8	world	3.142	2014-03-03	2016-07-04 13:00:00
 4	8000	120.4	31.3	ccc	NULL	2014-03-04	2018-07-08 11:00:00
+PREHOOK: query: SELECT * FROM jdbc_type_conversion_table1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@jdbc_type_conversion_table1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM jdbc_type_conversion_table1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@jdbc_type_conversion_table1
+#### A masked pattern was here ####
+1	1000	20.0	40.0	aaa	3.142	2010-01-01	2018-01-01 12:00:00
+5	9000	NULL	10.0	bbb	2.718	2018-01-01	2010-06-01 14:00:00
+3	4000	120.0	25.4	hello	2.718	2017-06-05	2011-11-10 18:00:08
+8	3000	180.0	35.8	world	3.142	2014-03-03	2016-07-04 13:00:00
+4	8000	120.4	31.3	ccc	NULL	2014-03-04	2018-07-08 11:00:00
 PREHOOK: query: FROM src
 SELECT
 #### A masked pattern was here ####
-'CREATE TABLE EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE, "chkey" VARCHAR(20), "dekey" DECIMAL(6,4), "dtkey" DATE, "tkey" TIMESTAMP)' ),
+'CREATE TABLE EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE, "chkey" VARCHAR(20), "dekey" DECIMAL(6,4), "dtkey" DATE, "tkey" TIMESTAMP, "mixkey" VARCHAR(50))' ),
 #### A masked pattern was here ####
-'INSERT INTO EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey") VALUES (?,?,?,?,?,?,?,?)','1','1000','20.0','40.0','aaa','3.1415','2010-01-01','2018-01-01 12:00:00.000000000'),
+'INSERT INTO EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey", "mixkey") VALUES (?,?,?,?,?,?,?,?,?)','1','1000','20.0','40.0','aaa','3.1415','2010-01-01','2018-01-01 12:00:00.000000000','10'),
 #### A masked pattern was here ####
-'INSERT INTO EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey") VALUES (?,?,?,?,?,?,?,?)','5','9000',null,'10.0','bbb','2.7182','2018-01-01','2010-06-01 14:00:00.000000000'),
+'INSERT INTO EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey", "mixkey") VALUES (?,?,?,?,?,?,?,?,?)','5','9000',null,'10.0','bbb','2.7182','2018-01-01','2010-06-01 14:00:00.000000000','100000000000'),
 #### A masked pattern was here ####
-'INSERT INTO EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey") VALUES (?,?,?,?,?,?,?,?)','3','4000','120.0','25.4','hello','2.7182','2017-06-05','2011-11-10 18:00:08.000000000'),
+'INSERT INTO EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey", "mixkey") VALUES (?,?,?,?,?,?,?,?,?)','3','4000','120.0','25.4','hello','2.7182','2017-06-05','2011-11-10 18:00:08.000000000','10.582'),
 #### A masked pattern was here ####
-'INSERT INTO EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey") VALUES (?,?,?,?,?,?,?,?)','8','3000','180.0','35.8','world','3.1415','2014-03-03','2016-07-04 13:00:00.000000000'),
+'INSERT INTO EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey", "mixkey") VALUES (?,?,?,?,?,?,?,?,?)','8','3000','180.0','35.8','world','3.1415','2014-03-03','2016-07-04 13:00:00.000000000','2024-03-03'),
 #### A masked pattern was here ####
-'INSERT INTO EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey") VALUES (?,?,?,?,?,?,?,?)','4','8000','120.4','31.3','ccc',null,'2014-03-04','2018-07-08 11:00:00.000000000')
+'INSERT INTO EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey", "mixkey") VALUES (?,?,?,?,?,?,?,?,?)','4','8000','120.4','31.3','ccc',null,'2014-03-04','2018-07-08 11:00:00.000000000','2018-07-08 11:00:00.000000000'),
+#### A masked pattern was here ####
+'INSERT INTO EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey", "mixkey") VALUES (?,?,?,?,?,?,?,?,?)','6','6000','80.4','5.3','ddd',null,'2024-05-31','2024-05-31 13:22:34.000000123','ddd')
 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -123,23 +138,25 @@ PREHOOK: Input: default@src
 POSTHOOK: query: FROM src
 SELECT
 #### A masked pattern was here ####
-'CREATE TABLE EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE, "chkey" VARCHAR(20), "dekey" DECIMAL(6,4), "dtkey" DATE, "tkey" TIMESTAMP)' ),
+'CREATE TABLE EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE, "chkey" VARCHAR(20), "dekey" DECIMAL(6,4), "dtkey" DATE, "tkey" TIMESTAMP, "mixkey" VARCHAR(50))' ),
 #### A masked pattern was here ####
-'INSERT INTO EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey") VALUES (?,?,?,?,?,?,?,?)','1','1000','20.0','40.0','aaa','3.1415','2010-01-01','2018-01-01 12:00:00.000000000'),
+'INSERT INTO EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey", "mixkey") VALUES (?,?,?,?,?,?,?,?,?)','1','1000','20.0','40.0','aaa','3.1415','2010-01-01','2018-01-01 12:00:00.000000000','10'),
 #### A masked pattern was here ####
-'INSERT INTO EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey") VALUES (?,?,?,?,?,?,?,?)','5','9000',null,'10.0','bbb','2.7182','2018-01-01','2010-06-01 14:00:00.000000000'),
+'INSERT INTO EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey", "mixkey") VALUES (?,?,?,?,?,?,?,?,?)','5','9000',null,'10.0','bbb','2.7182','2018-01-01','2010-06-01 14:00:00.000000000','100000000000'),
 #### A masked pattern was here ####
-'INSERT INTO EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey") VALUES (?,?,?,?,?,?,?,?)','3','4000','120.0','25.4','hello','2.7182','2017-06-05','2011-11-10 18:00:08.000000000'),
+'INSERT INTO EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey", "mixkey") VALUES (?,?,?,?,?,?,?,?,?)','3','4000','120.0','25.4','hello','2.7182','2017-06-05','2011-11-10 18:00:08.000000000','10.582'),
 #### A masked pattern was here ####
-'INSERT INTO EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey") VALUES (?,?,?,?,?,?,?,?)','8','3000','180.0','35.8','world','3.1415','2014-03-03','2016-07-04 13:00:00.000000000'),
+'INSERT INTO EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey", "mixkey") VALUES (?,?,?,?,?,?,?,?,?)','8','3000','180.0','35.8','world','3.1415','2014-03-03','2016-07-04 13:00:00.000000000','2024-03-03'),
 #### A masked pattern was here ####
-'INSERT INTO EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey") VALUES (?,?,?,?,?,?,?,?)','4','8000','120.4','31.3','ccc',null,'2014-03-04','2018-07-08 11:00:00.000000000')
+'INSERT INTO EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey", "mixkey") VALUES (?,?,?,?,?,?,?,?,?)','4','8000','120.4','31.3','ccc',null,'2014-03-04','2018-07-08 11:00:00.000000000','2018-07-08 11:00:00.000000000'),
+#### A masked pattern was here ####
+'INSERT INTO EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey", "mixkey") VALUES (?,?,?,?,?,?,?,?,?)','6','6000','80.4','5.3','ddd',null,'2024-05-31','2024-05-31 13:22:34.000000123','ddd')
 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-0	0	0	0	0	0
-PREHOOK: query: CREATE EXTERNAL TABLE jdbc_type_conversion_table2
+0	0	0	0	0	0	0
+PREHOOK: query: CREATE EXTERNAL TABLE jdbc_string_conversion_table
 (
  ikey string,
  bkey string,
@@ -148,7 +165,8 @@ PREHOOK: query: CREATE EXTERNAL TABLE jdbc_type_conversion_table2
  chkey string,
  dekey string,
  dtkey string,
- tkey string 
+ tkey string,
+ mixkey string 
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -162,8 +180,8 @@ TBLPROPERTIES (
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@jdbc_type_conversion_table2
-POSTHOOK: query: CREATE EXTERNAL TABLE jdbc_type_conversion_table2
+PREHOOK: Output: default@jdbc_string_conversion_table
+POSTHOOK: query: CREATE EXTERNAL TABLE jdbc_string_conversion_table
 (
  ikey string,
  bkey string,
@@ -172,7 +190,8 @@ POSTHOOK: query: CREATE EXTERNAL TABLE jdbc_type_conversion_table2
  chkey string,
  dekey string,
  dtkey string,
- tkey string 
+ tkey string,
+ mixkey string 
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -186,51 +205,46 @@ TBLPROPERTIES (
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@jdbc_type_conversion_table2
-PREHOOK: query: SELECT * FROM jdbc_type_conversion_table2
+POSTHOOK: Output: default@jdbc_string_conversion_table
+PREHOOK: query: SELECT * FROM jdbc_string_conversion_table
 PREHOOK: type: QUERY
-PREHOOK: Input: default@jdbc_type_conversion_table2
+PREHOOK: Input: default@jdbc_string_conversion_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM jdbc_type_conversion_table2
+POSTHOOK: query: SELECT * FROM jdbc_string_conversion_table
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@jdbc_type_conversion_table2
+POSTHOOK: Input: default@jdbc_string_conversion_table
 #### A masked pattern was here ####
-1	1000	20.0	40.0	aaa	3.1415	2010-01-01	2018-01-01 12:00:00.0
-5	9000	NULL	10.0	bbb	2.7182	2018-01-01	2010-06-01 14:00:00.0
-3	4000	120.0	25.4	hello	2.7182	2017-06-05	2011-11-10 18:00:08.0
-8	3000	180.0	35.8	world	3.1415	2014-03-03	2016-07-04 13:00:00.0
-4	8000	120.4	31.3	ccc	NULL	2014-03-04	2018-07-08 11:00:00.0
-PREHOOK: query: FROM src
-SELECT
-#### A masked pattern was here ####
-'CREATE TABLE EXTERNAL_JDBC_TYPE_CONVERSION_TABLE3 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE, "chkey" VARCHAR(20), "dekey" DECIMAL(6,4), "dtkey" DATE, "tkey" TIMESTAMP)' ),
-#### A masked pattern was here ####
-'INSERT INTO EXTERNAL_JDBC_TYPE_CONVERSION_TABLE3 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey") VALUES (?,?,?,?,?,?,?,?)','1','1000','20.0','40.0','aaa','3.1415','2010-01-01','2018-01-01 12:00:00.000000000')
-limit 1
+1	1000	20.0	40.0	aaa	3.1415	2010-01-01	2018-01-01 12:00:00.0	10
+5	9000	NULL	10.0	bbb	2.7182	2018-01-01	2010-06-01 14:00:00.0	100000000000
+3	4000	120.0	25.4	hello	2.7182	2017-06-05	2011-11-10 18:00:08.0	10.582
+8	3000	180.0	35.8	world	3.1415	2014-03-03	2016-07-04 13:00:00.0	2024-03-03
+4	8000	120.4	31.3	ccc	NULL	2014-03-04	2018-07-08 11:00:00.0	2018-07-08 11:00:00.000000000
+6	6000	80.4	5.3	ddd	NULL	2024-05-31	2024-05-31 13:22:34.000000123	ddd
+PREHOOK: query: SELECT * FROM jdbc_string_conversion_table
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
+PREHOOK: Input: default@jdbc_string_conversion_table
 #### A masked pattern was here ####
-POSTHOOK: query: FROM src
-SELECT
-#### A masked pattern was here ####
-'CREATE TABLE EXTERNAL_JDBC_TYPE_CONVERSION_TABLE3 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE, "chkey" VARCHAR(20), "dekey" DECIMAL(6,4), "dtkey" DATE, "tkey" TIMESTAMP)' ),
-#### A masked pattern was here ####
-'INSERT INTO EXTERNAL_JDBC_TYPE_CONVERSION_TABLE3 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey") VALUES (?,?,?,?,?,?,?,?)','1','1000','20.0','40.0','aaa','3.1415','2010-01-01','2018-01-01 12:00:00.000000000')
-limit 1
+POSTHOOK: query: SELECT * FROM jdbc_string_conversion_table
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
+POSTHOOK: Input: default@jdbc_string_conversion_table
 #### A masked pattern was here ####
-0	0
-PREHOOK: query: CREATE EXTERNAL TABLE jdbc_type_conversion_table3
+1	1000	20.0	40.0	aaa	3.1415	2010-01-01	2018-01-01 12:00:00.0	10
+5	9000	NULL	10.0	bbb	2.7182	2018-01-01	2010-06-01 14:00:00.0	100000000000
+3	4000	120.0	25.4	hello	2.7182	2017-06-05	2011-11-10 18:00:08.0	10.582
+8	3000	180.0	35.8	world	3.1415	2014-03-03	2016-07-04 13:00:00.0	2024-03-03
+4	8000	120.4	31.3	ccc	NULL	2014-03-04	2018-07-08 11:00:00.0	2018-07-08 11:00:00.000000000
+6	6000	80.4	5.3	ddd	NULL	2024-05-31	2024-05-31 13:22:34.000000123	ddd
+PREHOOK: query: CREATE EXTERNAL TABLE jdbc_int_conversion_table
 (
- ikey double,
- bkey decimal(5,1),
+ ikey int,
+ bkey int,
  fkey int,
  dkey int,
- chkey double,
- dekey decimal(6,4),
- dtkey decimal(16,2),
- tkey decimal(16,2)
+ chkey int,
+ dekey int,
+ dtkey int,
+ tkey int,
+ mixkey int
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -239,22 +253,23 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user",
                 "hive.sql.dbcp.password" = "passwd",
-                "hive.sql.table" = "EXTERNAL_JDBC_TYPE_CONVERSION_TABLE3",
+                "hive.sql.table" = "EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2",
                 "hive.sql.dbcp.maxActive" = "1"
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@jdbc_type_conversion_table3
-POSTHOOK: query: CREATE EXTERNAL TABLE jdbc_type_conversion_table3
+PREHOOK: Output: default@jdbc_int_conversion_table
+POSTHOOK: query: CREATE EXTERNAL TABLE jdbc_int_conversion_table
 (
- ikey double,
- bkey decimal(5,1),
+ ikey int,
+ bkey int,
  fkey int,
  dkey int,
- chkey double,
- dekey decimal(6,4),
- dtkey decimal(16,2),
- tkey decimal(16,2)
+ chkey int,
+ dekey int,
+ dtkey int,
+ tkey int,
+ mixkey int
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -263,18 +278,583 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user",
                 "hive.sql.dbcp.password" = "passwd",
-                "hive.sql.table" = "EXTERNAL_JDBC_TYPE_CONVERSION_TABLE3",
+                "hive.sql.table" = "EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2",
                 "hive.sql.dbcp.maxActive" = "1"
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@jdbc_type_conversion_table3
-PREHOOK: query: SELECT * FROM jdbc_type_conversion_table3
+POSTHOOK: Output: default@jdbc_int_conversion_table
+PREHOOK: query: SELECT * FROM jdbc_int_conversion_table
 PREHOOK: type: QUERY
-PREHOOK: Input: default@jdbc_type_conversion_table3
+PREHOOK: Input: default@jdbc_int_conversion_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM jdbc_type_conversion_table3
+POSTHOOK: query: SELECT * FROM jdbc_int_conversion_table
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@jdbc_type_conversion_table3
+POSTHOOK: Input: default@jdbc_int_conversion_table
 #### A masked pattern was here ####
-1.0	1000.0	20	40	NULL	3.1415	NULL	NULL
+1	1000	20	40	NULL	3	NULL	NULL	10
+5	9000	NULL	10	NULL	2	NULL	NULL	NULL
+3	4000	120	25	NULL	2	NULL	NULL	NULL
+8	3000	180	35	NULL	3	NULL	NULL	NULL
+4	8000	120	31	NULL	NULL	NULL	NULL	NULL
+6	6000	80	5	NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT * FROM jdbc_int_conversion_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@jdbc_int_conversion_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM jdbc_int_conversion_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@jdbc_int_conversion_table
+#### A masked pattern was here ####
+1	1000	20	40	NULL	3	NULL	NULL	10
+5	9000	NULL	10	NULL	2	NULL	NULL	NULL
+3	4000	120	25	NULL	2	NULL	NULL	NULL
+8	3000	180	35	NULL	3	NULL	NULL	NULL
+4	8000	120	31	NULL	NULL	NULL	NULL	NULL
+6	6000	80	5	NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: CREATE EXTERNAL TABLE jdbc_bigint_conversion_table
+(
+ ikey bigint,
+ bkey bigint,
+ fkey bigint,
+ dkey bigint,
+ chkey bigint,
+ dekey bigint,
+ dtkey bigint,
+ tkey bigint,
+ mixkey bigint
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "user",
+                "hive.sql.dbcp.password" = "passwd",
+                "hive.sql.table" = "EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2",
+                "hive.sql.dbcp.maxActive" = "1"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@jdbc_bigint_conversion_table
+POSTHOOK: query: CREATE EXTERNAL TABLE jdbc_bigint_conversion_table
+(
+ ikey bigint,
+ bkey bigint,
+ fkey bigint,
+ dkey bigint,
+ chkey bigint,
+ dekey bigint,
+ dtkey bigint,
+ tkey bigint,
+ mixkey bigint
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "user",
+                "hive.sql.dbcp.password" = "passwd",
+                "hive.sql.table" = "EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2",
+                "hive.sql.dbcp.maxActive" = "1"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@jdbc_bigint_conversion_table
+PREHOOK: query: SELECT * FROM jdbc_bigint_conversion_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@jdbc_bigint_conversion_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM jdbc_bigint_conversion_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@jdbc_bigint_conversion_table
+#### A masked pattern was here ####
+1	1000	20	40	NULL	3	NULL	NULL	10
+5	9000	NULL	10	NULL	2	NULL	NULL	100000000000
+3	4000	120	25	NULL	2	NULL	NULL	NULL
+8	3000	180	35	NULL	3	NULL	NULL	NULL
+4	8000	120	31	NULL	NULL	NULL	NULL	NULL
+6	6000	80	5	NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT * FROM jdbc_bigint_conversion_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@jdbc_bigint_conversion_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM jdbc_bigint_conversion_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@jdbc_bigint_conversion_table
+#### A masked pattern was here ####
+1	1000	20	40	NULL	3	NULL	NULL	10
+5	9000	NULL	10	NULL	2	NULL	NULL	100000000000
+3	4000	120	25	NULL	2	NULL	NULL	NULL
+8	3000	180	35	NULL	3	NULL	NULL	NULL
+4	8000	120	31	NULL	NULL	NULL	NULL	NULL
+6	6000	80	5	NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: CREATE EXTERNAL TABLE jdbc_double_conversion_table
+(
+ ikey double,
+ bkey double,
+ fkey double,
+ dkey double,
+ chkey double,
+ dekey double,
+ dtkey double,
+ tkey double,
+ mixkey double
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "user",
+                "hive.sql.dbcp.password" = "passwd",
+                "hive.sql.table" = "EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2",
+                "hive.sql.dbcp.maxActive" = "1"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@jdbc_double_conversion_table
+POSTHOOK: query: CREATE EXTERNAL TABLE jdbc_double_conversion_table
+(
+ ikey double,
+ bkey double,
+ fkey double,
+ dkey double,
+ chkey double,
+ dekey double,
+ dtkey double,
+ tkey double,
+ mixkey double
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "user",
+                "hive.sql.dbcp.password" = "passwd",
+                "hive.sql.table" = "EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2",
+                "hive.sql.dbcp.maxActive" = "1"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@jdbc_double_conversion_table
+PREHOOK: query: SELECT * FROM jdbc_double_conversion_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@jdbc_double_conversion_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM jdbc_double_conversion_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@jdbc_double_conversion_table
+#### A masked pattern was here ####
+1.0	1000.0	20.0	40.0	NULL	3.1415	NULL	NULL	10.0
+5.0	9000.0	NULL	10.0	NULL	2.7182	NULL	NULL	1.0E11
+3.0	4000.0	120.0	25.4	NULL	2.7182	NULL	NULL	10.582
+8.0	3000.0	180.0	35.8	NULL	3.1415	NULL	NULL	NULL
+4.0	8000.0	120.4000015258789	31.3	NULL	NULL	NULL	NULL	NULL
+6.0	6000.0	80.4000015258789	5.3	NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT * FROM jdbc_double_conversion_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@jdbc_double_conversion_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM jdbc_double_conversion_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@jdbc_double_conversion_table
+#### A masked pattern was here ####
+1.0	1000.0	20.0	40.0	NULL	3.1415	NULL	NULL	10.0
+5.0	9000.0	NULL	10.0	NULL	2.7182	NULL	NULL	1.0E11
+3.0	4000.0	120.0	25.4	NULL	2.7182	NULL	NULL	10.582
+8.0	3000.0	180.0	35.8	NULL	3.1415	NULL	NULL	NULL
+4.0	8000.0	120.4000015258789	31.3	NULL	NULL	NULL	NULL	NULL
+6.0	6000.0	80.4000015258789	5.3	NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: CREATE EXTERNAL TABLE jdbc_decimal5_1_conversion_table
+(
+    ikey decimal(5,1),
+    bkey decimal(5,1),
+    fkey decimal(5,1),
+    dkey decimal(5,1),
+    chkey decimal(5,1),
+    dekey decimal(5,1),
+    dtkey decimal(5,1),
+    tkey decimal(5,1),
+    mixkey decimal(5,1)
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "user",
+                "hive.sql.dbcp.password" = "passwd",
+                "hive.sql.table" = "EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2",
+                "hive.sql.dbcp.maxActive" = "1"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@jdbc_decimal5_1_conversion_table
+POSTHOOK: query: CREATE EXTERNAL TABLE jdbc_decimal5_1_conversion_table
+(
+    ikey decimal(5,1),
+    bkey decimal(5,1),
+    fkey decimal(5,1),
+    dkey decimal(5,1),
+    chkey decimal(5,1),
+    dekey decimal(5,1),
+    dtkey decimal(5,1),
+    tkey decimal(5,1),
+    mixkey decimal(5,1)
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "user",
+                "hive.sql.dbcp.password" = "passwd",
+                "hive.sql.table" = "EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2",
+                "hive.sql.dbcp.maxActive" = "1"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@jdbc_decimal5_1_conversion_table
+PREHOOK: query: SELECT * FROM jdbc_decimal5_1_conversion_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@jdbc_decimal5_1_conversion_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM jdbc_decimal5_1_conversion_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@jdbc_decimal5_1_conversion_table
+#### A masked pattern was here ####
+1.0	1000.0	20.0	40.0	NULL	3.1	NULL	NULL	10.0
+5.0	9000.0	NULL	10.0	NULL	2.7	NULL	NULL	    
+3.0	4000.0	120.0	25.4	NULL	2.7	NULL	NULL	10.6
+8.0	3000.0	180.0	35.8	NULL	3.1	NULL	NULL	NULL
+4.0	8000.0	120.4	31.3	NULL	NULL	NULL	NULL	NULL
+6.0	6000.0	80.4	5.3	NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT * FROM jdbc_decimal5_1_conversion_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@jdbc_decimal5_1_conversion_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM jdbc_decimal5_1_conversion_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@jdbc_decimal5_1_conversion_table
+#### A masked pattern was here ####
+1.0	1000.0	20.0	40.0	NULL	3.1	NULL	NULL	10.0
+5.0	9000.0	NULL	10.0	NULL	2.7	NULL	NULL	    
+3.0	4000.0	120.0	25.4	NULL	2.7	NULL	NULL	10.6
+8.0	3000.0	180.0	35.8	NULL	3.1	NULL	NULL	NULL
+4.0	8000.0	120.4	31.3	NULL	NULL	NULL	NULL	NULL
+6.0	6000.0	80.4	5.3	NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: CREATE EXTERNAL TABLE jdbc_decimal6_4_conversion_table
+(
+    ikey decimal(6,4),
+    bkey decimal(6,4),
+    fkey decimal(6,4),
+    dkey decimal(6,4),
+    chkey decimal(6,4),
+    dekey decimal(6,4),
+    dtkey decimal(6,4),
+    tkey decimal(6,4),
+    mixkey decimal(6,4)
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "user",
+                "hive.sql.dbcp.password" = "passwd",
+                "hive.sql.table" = "EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2",
+                "hive.sql.dbcp.maxActive" = "1"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@jdbc_decimal6_4_conversion_table
+POSTHOOK: query: CREATE EXTERNAL TABLE jdbc_decimal6_4_conversion_table
+(
+    ikey decimal(6,4),
+    bkey decimal(6,4),
+    fkey decimal(6,4),
+    dkey decimal(6,4),
+    chkey decimal(6,4),
+    dekey decimal(6,4),
+    dtkey decimal(6,4),
+    tkey decimal(6,4),
+    mixkey decimal(6,4)
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "user",
+                "hive.sql.dbcp.password" = "passwd",
+                "hive.sql.table" = "EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2",
+                "hive.sql.dbcp.maxActive" = "1"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@jdbc_decimal6_4_conversion_table
+PREHOOK: query: SELECT * FROM jdbc_decimal6_4_conversion_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@jdbc_decimal6_4_conversion_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM jdbc_decimal6_4_conversion_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@jdbc_decimal6_4_conversion_table
+#### A masked pattern was here ####
+1.0000	    	20.0000	40.0000	NULL	3.1415	NULL	NULL	10.0000
+5.0000	    	NULL	10.0000	NULL	2.7182	NULL	NULL	    
+3.0000	    	    	25.4000	NULL	2.7182	NULL	NULL	10.5820
+8.0000	    	    	35.8000	NULL	3.1415	NULL	NULL	NULL
+4.0000	    	    	31.3000	NULL	NULL	NULL	NULL	NULL
+6.0000	    	80.4000	5.3000	NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT * FROM jdbc_decimal6_4_conversion_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@jdbc_decimal6_4_conversion_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM jdbc_decimal6_4_conversion_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@jdbc_decimal6_4_conversion_table
+#### A masked pattern was here ####
+1.0000	    	20.0000	40.0000	NULL	3.1415	NULL	NULL	10.0000
+5.0000	    	NULL	10.0000	NULL	2.7182	NULL	NULL	    
+3.0000	    	    	25.4000	NULL	2.7182	NULL	NULL	10.5820
+8.0000	    	    	35.8000	NULL	3.1415	NULL	NULL	NULL
+4.0000	    	    	31.3000	NULL	NULL	NULL	NULL	NULL
+6.0000	    	80.4000	5.3000	NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: CREATE EXTERNAL TABLE jdbc_decimal16_2_conversion_table
+(
+ ikey decimal(16,2),
+ bkey decimal(16,2),
+ fkey decimal(16,2),
+ dkey decimal(16,2),
+ chkey decimal(16,2),
+ dekey decimal(16,2),
+ dtkey decimal(16,2),
+ tkey decimal(16,2),
+ mixkey decimal(16,2)
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "user",
+                "hive.sql.dbcp.password" = "passwd",
+                "hive.sql.table" = "EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2",
+                "hive.sql.dbcp.maxActive" = "1"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@jdbc_decimal16_2_conversion_table
+POSTHOOK: query: CREATE EXTERNAL TABLE jdbc_decimal16_2_conversion_table
+(
+ ikey decimal(16,2),
+ bkey decimal(16,2),
+ fkey decimal(16,2),
+ dkey decimal(16,2),
+ chkey decimal(16,2),
+ dekey decimal(16,2),
+ dtkey decimal(16,2),
+ tkey decimal(16,2),
+ mixkey decimal(16,2)
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "user",
+                "hive.sql.dbcp.password" = "passwd",
+                "hive.sql.table" = "EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2",
+                "hive.sql.dbcp.maxActive" = "1"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@jdbc_decimal16_2_conversion_table
+PREHOOK: query: SELECT * FROM jdbc_decimal16_2_conversion_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@jdbc_decimal16_2_conversion_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM jdbc_decimal16_2_conversion_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@jdbc_decimal16_2_conversion_table
+#### A masked pattern was here ####
+1.00	1000.00	20.00	40.00	NULL	3.14	NULL	NULL	10.00
+5.00	9000.00	NULL	10.00	NULL	2.72	NULL	NULL	100000000000.00
+3.00	4000.00	120.00	25.40	NULL	2.72	NULL	NULL	10.58
+8.00	3000.00	180.00	35.80	NULL	3.14	NULL	NULL	NULL
+4.00	8000.00	120.40	31.30	NULL	NULL	NULL	NULL	NULL
+6.00	6000.00	80.40	5.30	NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT * FROM jdbc_decimal16_2_conversion_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@jdbc_decimal16_2_conversion_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM jdbc_decimal16_2_conversion_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@jdbc_decimal16_2_conversion_table
+#### A masked pattern was here ####
+1.00	1000.00	20.00	40.00	NULL	3.14	NULL	NULL	10.00
+5.00	9000.00	NULL	10.00	NULL	2.72	NULL	NULL	100000000000.00
+3.00	4000.00	120.00	25.40	NULL	2.72	NULL	NULL	10.58
+8.00	3000.00	180.00	35.80	NULL	3.14	NULL	NULL	NULL
+4.00	8000.00	120.40	31.30	NULL	NULL	NULL	NULL	NULL
+6.00	6000.00	80.40	5.30	NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: CREATE EXTERNAL TABLE jdbc_date_conversion_table
+(
+    ikey date,
+    bkey date,
+    fkey date,
+    dkey date,
+    chkey date,
+    dekey date,
+    dtkey date,
+    tkey date,
+    mixkey date
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "user",
+                "hive.sql.dbcp.password" = "passwd",
+                "hive.sql.table" = "EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2",
+                "hive.sql.dbcp.maxActive" = "1"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@jdbc_date_conversion_table
+POSTHOOK: query: CREATE EXTERNAL TABLE jdbc_date_conversion_table
+(
+    ikey date,
+    bkey date,
+    fkey date,
+    dkey date,
+    chkey date,
+    dekey date,
+    dtkey date,
+    tkey date,
+    mixkey date
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "user",
+                "hive.sql.dbcp.password" = "passwd",
+                "hive.sql.table" = "EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2",
+                "hive.sql.dbcp.maxActive" = "1"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@jdbc_date_conversion_table
+PREHOOK: query: SELECT * FROM jdbc_date_conversion_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@jdbc_date_conversion_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM jdbc_date_conversion_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@jdbc_date_conversion_table
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL	NULL	2010-01-01	2018-01-01	NULL
+NULL	NULL	NULL	NULL	NULL	NULL	2018-01-01	2010-06-01	NULL
+NULL	NULL	NULL	NULL	NULL	NULL	2017-06-05	2011-11-10	NULL
+NULL	NULL	NULL	NULL	NULL	NULL	2014-03-03	2016-07-04	2024-03-03
+NULL	NULL	NULL	NULL	NULL	NULL	2014-03-04	2018-07-08	2018-07-08
+NULL	NULL	NULL	NULL	NULL	NULL	2024-05-31	2024-05-31	NULL
+PREHOOK: query: SELECT * FROM jdbc_date_conversion_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@jdbc_date_conversion_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM jdbc_date_conversion_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@jdbc_date_conversion_table
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL	NULL	2010-01-01	2018-01-01	NULL
+NULL	NULL	NULL	NULL	NULL	NULL	2018-01-01	2010-06-01	NULL
+NULL	NULL	NULL	NULL	NULL	NULL	2017-06-05	2011-11-10	NULL
+NULL	NULL	NULL	NULL	NULL	NULL	2014-03-03	2016-07-04	2024-03-03
+NULL	NULL	NULL	NULL	NULL	NULL	2014-03-04	2018-07-08	2018-07-08
+NULL	NULL	NULL	NULL	NULL	NULL	2024-05-31	2024-05-31	NULL
+PREHOOK: query: CREATE EXTERNAL TABLE jdbc_timestamp_conversion_table
+(
+    ikey timestamp,
+    bkey timestamp,
+    fkey timestamp,
+    dkey timestamp,
+    chkey timestamp,
+    dekey timestamp,
+    dtkey timestamp,
+    tkey timestamp,
+    mixkey timestamp
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "user",
+                "hive.sql.dbcp.password" = "passwd",
+                "hive.sql.table" = "EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2",
+                "hive.sql.dbcp.maxActive" = "1"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@jdbc_timestamp_conversion_table
+POSTHOOK: query: CREATE EXTERNAL TABLE jdbc_timestamp_conversion_table
+(
+    ikey timestamp,
+    bkey timestamp,
+    fkey timestamp,
+    dkey timestamp,
+    chkey timestamp,
+    dekey timestamp,
+    dtkey timestamp,
+    tkey timestamp,
+    mixkey timestamp
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "user",
+                "hive.sql.dbcp.password" = "passwd",
+                "hive.sql.table" = "EXTERNAL_JDBC_TYPE_CONVERSION_TABLE2",
+                "hive.sql.dbcp.maxActive" = "1"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@jdbc_timestamp_conversion_table
+PREHOOK: query: SELECT * FROM jdbc_timestamp_conversion_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@jdbc_timestamp_conversion_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM jdbc_timestamp_conversion_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@jdbc_timestamp_conversion_table
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL	NULL	2010-01-01 00:00:00	2018-01-01 12:00:00	NULL
+NULL	NULL	NULL	NULL	NULL	NULL	2018-01-01 00:00:00	2010-06-01 14:00:00	NULL
+NULL	NULL	NULL	NULL	NULL	NULL	2017-06-05 00:00:00	2011-11-10 18:00:08	NULL
+NULL	NULL	NULL	NULL	NULL	NULL	2014-03-03 00:00:00	2016-07-04 13:00:00	NULL
+NULL	NULL	NULL	NULL	NULL	NULL	2014-03-04 00:00:00	2018-07-08 11:00:00	2018-07-08 11:00:00
+NULL	NULL	NULL	NULL	NULL	NULL	2024-05-31 00:00:00	2024-05-31 13:22:34.000000123	NULL
+PREHOOK: query: SELECT * FROM jdbc_timestamp_conversion_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@jdbc_timestamp_conversion_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM jdbc_timestamp_conversion_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@jdbc_timestamp_conversion_table
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL	NULL	2010-01-01 00:00:00	2018-01-01 12:00:00	NULL
+NULL	NULL	NULL	NULL	NULL	NULL	2018-01-01 00:00:00	2010-06-01 14:00:00	NULL
+NULL	NULL	NULL	NULL	NULL	NULL	2017-06-05 00:00:00	2011-11-10 18:00:08	NULL
+NULL	NULL	NULL	NULL	NULL	NULL	2014-03-03 00:00:00	2016-07-04 13:00:00	NULL
+NULL	NULL	NULL	NULL	NULL	NULL	2014-03-04 00:00:00	2018-07-08 11:00:00	2018-07-08 11:00:00
+NULL	NULL	NULL	NULL	NULL	NULL	2024-05-31 00:00:00	2024-05-31 13:22:34.000000123	NULL

@@ -1,0 +1,344 @@
+PREHOOK: query: create table orc_source(key string) stored by iceberg stored as orc tblproperties('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_source
+POSTHOOK: query: create table orc_source(key string) stored by iceberg stored as orc tblproperties('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_source
+PREHOOK: query: insert overwrite table orc_source select key from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@orc_source
+POSTHOOK: query: insert overwrite table orc_source select key from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@orc_source
+PREHOOK: query: insert into table orc_source select key from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@orc_source
+POSTHOOK: query: insert into table orc_source select key from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@orc_source
+PREHOOK: query: insert into table orc_source select key from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@orc_source
+POSTHOOK: query: insert into table orc_source select key from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@orc_source
+PREHOOK: query: insert into table orc_source select key from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@orc_source
+POSTHOOK: query: insert into table orc_source select key from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@orc_source
+PREHOOK: query: select count(*) from orc_source
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_source
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from orc_source
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_source
+#### A masked pattern was here ####
+2000
+PREHOOK: query: select count(distinct(file_path)) from default.orc_source.files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_source
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct(file_path)) from default.orc_source.files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_source
+#### A masked pattern was here ####
+4
+PREHOOK: query: delete from orc_source where key in (select key from src)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_source
+PREHOOK: Input: default@src
+PREHOOK: Output: default@orc_source
+POSTHOOK: query: delete from orc_source where key in (select key from src)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_source
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@orc_source
+PREHOOK: query: select count(*) from orc_source
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_source
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from orc_source
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_source
+#### A masked pattern was here ####
+0
+PREHOOK: query: select count(distinct(file_path)) from default.orc_source.files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_source
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct(file_path)) from default.orc_source.files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_source
+#### A masked pattern was here ####
+5
+PREHOOK: query: create table parquet_source(key string) stored by iceberg stored as parquet tblproperties('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_source
+POSTHOOK: query: create table parquet_source(key string) stored by iceberg stored as parquet tblproperties('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_source
+PREHOOK: query: insert overwrite table parquet_source select key from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@parquet_source
+POSTHOOK: query: insert overwrite table parquet_source select key from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@parquet_source
+PREHOOK: query: insert into table parquet_source select key from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@parquet_source
+POSTHOOK: query: insert into table parquet_source select key from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@parquet_source
+PREHOOK: query: insert into table parquet_source select key from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@parquet_source
+POSTHOOK: query: insert into table parquet_source select key from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@parquet_source
+PREHOOK: query: insert into table parquet_source select key from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@parquet_source
+POSTHOOK: query: insert into table parquet_source select key from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@parquet_source
+PREHOOK: query: select count(*) from parquet_source
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_source
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from parquet_source
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_source
+#### A masked pattern was here ####
+2000
+PREHOOK: query: select count(distinct(file_path)) from default.parquet_source.files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_source
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct(file_path)) from default.parquet_source.files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_source
+#### A masked pattern was here ####
+4
+PREHOOK: query: delete from parquet_source where key in (select key from src)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_source
+PREHOOK: Input: default@src
+PREHOOK: Output: default@parquet_source
+POSTHOOK: query: delete from parquet_source where key in (select key from src)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_source
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@parquet_source
+PREHOOK: query: select count(distinct(file_path)) from default.parquet_source.files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_source
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct(file_path)) from default.parquet_source.files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_source
+#### A masked pattern was here ####
+5
+PREHOOK: query: select count(*) from parquet_source
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_source
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from parquet_source
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_source
+#### A masked pattern was here ####
+0
+PREHOOK: query: create table avro_source(key string) stored by iceberg stored as avro tblproperties('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@avro_source
+POSTHOOK: query: create table avro_source(key string) stored by iceberg stored as avro tblproperties('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@avro_source
+PREHOOK: query: insert overwrite table avro_source select key from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@avro_source
+POSTHOOK: query: insert overwrite table avro_source select key from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@avro_source
+PREHOOK: query: insert into table avro_source select key from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@avro_source
+POSTHOOK: query: insert into table avro_source select key from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@avro_source
+PREHOOK: query: insert into table avro_source select key from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@avro_source
+POSTHOOK: query: insert into table avro_source select key from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@avro_source
+PREHOOK: query: insert into table avro_source select key from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@avro_source
+POSTHOOK: query: insert into table avro_source select key from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@avro_source
+PREHOOK: query: select count(*) from avro_source
+PREHOOK: type: QUERY
+PREHOOK: Input: default@avro_source
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from avro_source
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@avro_source
+#### A masked pattern was here ####
+2000
+PREHOOK: query: select count(distinct(file_path)) from default.avro_source.files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@avro_source
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct(file_path)) from default.avro_source.files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@avro_source
+#### A masked pattern was here ####
+4
+PREHOOK: query: delete from avro_source where key in (select key from src)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@avro_source
+PREHOOK: Input: default@src
+PREHOOK: Output: default@avro_source
+POSTHOOK: query: delete from avro_source where key in (select key from src)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@avro_source
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@avro_source
+PREHOOK: query: select count(distinct(file_path)) from default.avro_source.files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@avro_source
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct(file_path)) from default.avro_source.files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@avro_source
+#### A masked pattern was here ####
+5
+PREHOOK: query: select count(*) from avro_source
+PREHOOK: type: QUERY
+PREHOOK: Input: default@avro_source
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from avro_source
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@avro_source
+#### A masked pattern was here ####
+0
+PREHOOK: query: create table orc_part_source(key string) partitioned by spec(key) stored by iceberg stored as orc tblproperties('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_part_source
+POSTHOOK: query: create table orc_part_source(key string) partitioned by spec(key) stored by iceberg stored as orc tblproperties('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_part_source
+PREHOOK: query: insert overwrite table orc_part_source select key from src order by key limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@orc_part_source
+POSTHOOK: query: insert overwrite table orc_part_source select key from src order by key limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@orc_part_source
+PREHOOK: query: insert into table orc_part_source select key from src order by key limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@orc_part_source
+POSTHOOK: query: insert into table orc_part_source select key from src order by key limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@orc_part_source
+PREHOOK: query: insert into table orc_part_source select key from src order by key limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@orc_part_source
+POSTHOOK: query: insert into table orc_part_source select key from src order by key limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@orc_part_source
+PREHOOK: query: insert into table orc_part_source select key from src order by key limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@orc_part_source
+POSTHOOK: query: insert into table orc_part_source select key from src order by key limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@orc_part_source
+PREHOOK: query: select count(*) from orc_part_source
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_part_source
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from orc_part_source
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_part_source
+#### A masked pattern was here ####
+400
+PREHOOK: query: select count(distinct(file_path)) from default.orc_part_source.files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_part_source
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct(file_path)) from default.orc_part_source.files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_part_source
+#### A masked pattern was here ####
+244
+PREHOOK: query: delete from orc_part_source where key in (select key from src)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_part_source
+PREHOOK: Input: default@src
+PREHOOK: Output: default@orc_part_source
+POSTHOOK: query: delete from orc_part_source where key in (select key from src)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_part_source
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@orc_part_source
+PREHOOK: query: select count(*) from orc_part_source
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_part_source
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from orc_part_source
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_part_source
+#### A masked pattern was here ####
+0
+PREHOOK: query: select count(distinct(file_path)) from default.orc_part_source.files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_part_source
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct(file_path)) from default.orc_part_source.files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_part_source
+#### A masked pattern was here ####
+305

@@ -21,9 +21,9 @@ package org.apache.hive.service.cli.operation;
 import com.google.common.collect.ImmutableMap;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookContext;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookWithParseHooks;
-import org.apache.hadoop.hive.ql.hooks.TestQueryHooks;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import org.apache.hive.service.cli.HandleIdentifier;
@@ -48,7 +48,7 @@ public class TestQueryLifeTimeHooksWithSQLOperation {
 
   @Test
   public void testQueryInfoInHookContext() throws IllegalAccessException, ClassNotFoundException, InstantiationException, HiveSQLException {
-    HiveConf conf = new HiveConf(TestQueryHooks.class);
+    HiveConf conf = new HiveConfForTest(getClass());
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
             "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");

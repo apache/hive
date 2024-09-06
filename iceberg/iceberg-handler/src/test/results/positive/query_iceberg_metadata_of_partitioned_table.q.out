@@ -400,6 +400,10 @@ hdfs://### HDFS PATH ###
 hdfs://### HDFS PATH ###
 hdfs://### HDFS PATH ###
 hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
 PREHOOK: query: select file from default.ice_meta_3.metadata_log_entries
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_meta_3
@@ -689,6 +693,10 @@ POSTHOOK: query: select file from default.ice_meta_2.metadata_log_entries
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
 hdfs://### HDFS PATH ###
 hdfs://### HDFS PATH ###
 hdfs://### HDFS PATH ###

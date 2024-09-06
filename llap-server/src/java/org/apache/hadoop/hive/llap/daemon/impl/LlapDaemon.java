@@ -39,6 +39,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JvmPauseMonitor;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.UgiFactory;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.DaemonId;
@@ -73,6 +74,7 @@ import org.apache.hadoop.hive.llap.security.LlapUgiFactoryFactory;
 import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 import org.apache.hadoop.hive.llap.security.SecretManager;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
+import org.apache.hadoop.hive.ql.ServiceContext;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -619,6 +621,8 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       long ioMemoryBytes = LlapDaemonInfo.INSTANCE.getCacheSize();
       boolean isDirectCache = LlapDaemonInfo.INSTANCE.isDirectCache();
       boolean isLlapIo = LlapDaemonInfo.INSTANCE.isLlapIo();
+
+      daemonConf.set(Constants.CLUSTER_ID_HIVE_CONF_PROP, ServiceContext.findClusterId());
 
       LlapDaemon.initializeLogging(daemonConf);
       llapDaemon =

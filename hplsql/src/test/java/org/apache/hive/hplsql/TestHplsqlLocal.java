@@ -65,8 +65,23 @@ public class TestHplsqlLocal {
   }
 
   @Test
+  public void testCast() throws Exception {
+    run("cast");
+  }
+
+  @Test
+  public void testCast2() throws Exception {
+    run("cast2");
+  }
+
+  @Test
   public void testChar() throws Exception {
     run("char");
+  }
+
+  @Test
+  public void testCoalesce() throws Exception {
+    run("coalesce");
   }
 
   @Test
@@ -260,6 +275,11 @@ public class TestHplsqlLocal {
   }
 
   @Test
+  public void testInstr() throws Exception {
+    run("instr");
+  }
+
+  @Test
   public void testInterval() throws Exception {
     run("interval");
   }
@@ -275,13 +295,28 @@ public class TestHplsqlLocal {
   }
 
   @Test
+  public void testLength() throws Exception {
+    run("length");
+  }
+
+  @Test
   public void testLen() throws Exception {
     run("len");
   }
 
   @Test
+  public void testLower() throws Exception {
+    run("lower");
+  }
+
+  @Test
   public void testMultDiv() throws Exception {
     run("mult_div");
+  }
+
+  @Test
+  public void testNvl() throws Exception {
+    run("nvl");
   }
 
   @Test
@@ -292,6 +327,11 @@ public class TestHplsqlLocal {
   @Test
   public void testPrint() throws Exception {
     run("print");
+  }
+
+  @Test
+  public void testReplace() throws Exception {
+    run("replace");
   }
   
   @Test
@@ -325,6 +365,11 @@ public class TestHplsqlLocal {
   }
 
   @Test
+  public void testTimestamp() throws Exception {
+    run("timestamp");
+  }
+
+  @Test
   public void testToChar() throws Exception {
     run("to_char");
   }
@@ -332,6 +377,11 @@ public class TestHplsqlLocal {
   @Test
   public void testToTimestamp() throws Exception {
     run("to_timestamp");
+  }
+
+  @Test
+  public void testTrim() throws Exception {
+    run("trim");
   }
 
   @Test

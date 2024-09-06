@@ -58,11 +58,15 @@ public class BenchmarkUtils {
 
   // Create a simple table with a single column and single partition
   static void createPartitionedTable(HMSClient client, String dbName, String tableName) {
+    createPartitionedTable(client, dbName, tableName, createSchema(Collections.singletonList("date")));
+  }
+
+  static void createPartitionedTable(HMSClient client, String dbName, String tableName, List<FieldSchema> partitionKeys) {
     throwingSupplierWrapper(() -> client.createTable(
         new Util.TableBuilder(dbName, tableName)
             .withType(TableType.MANAGED_TABLE)
             .withColumns(createSchema(Collections.singletonList("name:string")))
-            .withPartitionKeys(createSchema(Collections.singletonList("date")))
+            .withPartitionKeys(partitionKeys)
             .build()));
   }
 

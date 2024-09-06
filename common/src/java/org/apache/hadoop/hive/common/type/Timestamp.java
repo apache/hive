@@ -191,10 +191,15 @@ public class Timestamp implements Comparable<Timestamp> {
       try {
         localDateTime = LocalDateTime.parse(s);
       } catch (DateTimeException e2) {
-        throw new IllegalArgumentException("Cannot create timestamp, parsing error " + s);
+        throw new IllegalArgumentException("Cannot create timestamp, parsing error " + s, e);
       }
     }
     return new Timestamp(localDateTime);
+  }
+
+  public Timestamp minusDays(long days) {
+    localDateTime = localDateTime.minusDays(days);
+    return this;
   }
 
   public static Timestamp getTimestampFromTime(String s) {

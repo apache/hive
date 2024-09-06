@@ -48,7 +48,7 @@ final class RebalanceQueryCompactor extends QueryCompactor {
     ValidWriteIdList writeIds = context.getValidWriteIdList();
 
     // Set up the session for driver.
-    HiveConf conf = new HiveConf(hiveConf);
+    HiveConf conf = setUpDriverSession(hiveConf);
 
     String tmpTableName = getTempTableName(table);
     Path tmpTablePath = QueryCompactor.Util.getCompactionResultDir(storageDescriptor, writeIds,
@@ -66,18 +66,16 @@ final class RebalanceQueryCompactor extends QueryCompactor {
     List<String> compactionQueries = getCompactionQueries(table, context.getPartition(), tmpTableName, numBuckets,
         context.getCompactionInfo().orderByClause);
     List<String> dropQueries = getDropQueries(tmpTableName);
-    runCompactionQueries(conf, tmpTableName, storageDescriptor, writeIds, context.getCompactionInfo(),
-        Lists.newArrayList(tmpTablePath), createQueries, compactionQueries, dropQueries,
-        table.getParameters());
+    runCompactionQueries(conf, tmpTableName, context.getCompactionInfo(), Lists.newArrayList(tmpTablePath), 
+        createQueries, compactionQueries, dropQueries, table.getParameters());
     return true;
   }
 
   private List<String> getCreateQueries(String fullName, Table t, String tmpTableLocation) {
-    return Lists.newArrayList(new CompactionQueryBuilder(
-        CompactionType.REBALANCE,
-        CompactionQueryBuilder.Operation.CREATE,
-        false,
-        fullName)
+    return Lists.newArrayList(new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
+        CompactionType.REBALANCE, false)
+        .setOperation(CompactionQueryBuilder.Operation.CREATE)
+        .setResultTableName(fullName)
         .setSourceTab(t)
         .setLocation(tmpTableLocation)
         .build());
@@ -85,24 +83,23 @@ final class RebalanceQueryCompactor extends QueryCompactor {
 
   private List<String> getCompactionQueries(Table t, Partition p, String tmpName, int numberOfBuckets, String orderByClause) {
     return Lists.newArrayList(
-        new CompactionQueryBuilder(
-            CompactionType.REBALANCE,
-            CompactionQueryBuilder.Operation.INSERT,
-            false,
-            tmpName)
-            .setSourceTab(t)
-            .setSourcePartition(p)
+        new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
+            CompactionType.REBALANCE, false)
+            .setOperation(CompactionQueryBuilder.Operation.INSERT)
+            .setResultTableName(tmpName)
             .setNumberOfBuckets(numberOfBuckets)
             .setOrderByClause(orderByClause)
+            .setSourceTab(t)
+            .setSourcePartition(p)
             .build());
   }
 
   private List<String> getDropQueries(String tmpTableName) {
     return Lists.newArrayList(
-        new CompactionQueryBuilder(
-            CompactionType.REBALANCE,
-            CompactionQueryBuilder.Operation.DROP,
-            false,
-            tmpTableName).build());
+        new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
+            CompactionType.REBALANCE, false)
+            .setOperation(CompactionQueryBuilder.Operation.DROP)
+            .setResultTableName(tmpTableName)
+            .build());
   }
 }

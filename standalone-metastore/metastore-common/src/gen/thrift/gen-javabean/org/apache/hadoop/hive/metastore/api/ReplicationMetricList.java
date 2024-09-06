@@ -329,14 +329,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // REPLICATION_METRIC_LIST
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1520 = iprot.readListBegin();
-                struct.replicationMetricList = new java.util.ArrayList<ReplicationMetrics>(_list1520.size);
-                @org.apache.thrift.annotation.Nullable ReplicationMetrics _elem1521;
-                for (int _i1522 = 0; _i1522 < _list1520.size; ++_i1522)
+                org.apache.thrift.protocol.TList _list1552 = iprot.readListBegin();
+                struct.replicationMetricList = new java.util.ArrayList<ReplicationMetrics>(_list1552.size);
+                @org.apache.thrift.annotation.Nullable ReplicationMetrics _elem1553;
+                for (int _i1554 = 0; _i1554 < _list1552.size; ++_i1554)
                 {
-                  _elem1521 = new ReplicationMetrics();
-                  _elem1521.read(iprot);
-                  struct.replicationMetricList.add(_elem1521);
+                  _elem1553 = new ReplicationMetrics();
+                  _elem1553.read(iprot);
+                  struct.replicationMetricList.add(_elem1553);
                 }
                 iprot.readListEnd();
               }
@@ -362,9 +362,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(REPLICATION_METRIC_LIST_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.replicationMetricList.size()));
-          for (ReplicationMetrics _iter1523 : struct.replicationMetricList)
+          for (ReplicationMetrics _iter1555 : struct.replicationMetricList)
           {
-            _iter1523.write(oprot);
+            _iter1555.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -389,9 +389,9 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.replicationMetricList.size());
-        for (ReplicationMetrics _iter1524 : struct.replicationMetricList)
+        for (ReplicationMetrics _iter1556 : struct.replicationMetricList)
         {
-          _iter1524.write(oprot);
+          _iter1556.write(oprot);
         }
       }
     }
@@ -400,14 +400,14 @@ package org.apache.hadoop.hive.metastore.api;
     public void read(org.apache.thrift.protocol.TProtocol prot, ReplicationMetricList struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list1525 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-        struct.replicationMetricList = new java.util.ArrayList<ReplicationMetrics>(_list1525.size);
-        @org.apache.thrift.annotation.Nullable ReplicationMetrics _elem1526;
-        for (int _i1527 = 0; _i1527 < _list1525.size; ++_i1527)
+        org.apache.thrift.protocol.TList _list1557 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+        struct.replicationMetricList = new java.util.ArrayList<ReplicationMetrics>(_list1557.size);
+        @org.apache.thrift.annotation.Nullable ReplicationMetrics _elem1558;
+        for (int _i1559 = 0; _i1559 < _list1557.size; ++_i1559)
         {
-          _elem1526 = new ReplicationMetrics();
-          _elem1526.read(iprot);
-          struct.replicationMetricList.add(_elem1526);
+          _elem1558 = new ReplicationMetrics();
+          _elem1558.read(iprot);
+          struct.replicationMetricList.add(_elem1558);
         }
       }
       struct.setReplicationMetricListIsSet(true);

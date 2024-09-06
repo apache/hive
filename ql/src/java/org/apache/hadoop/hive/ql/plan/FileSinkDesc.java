@@ -108,7 +108,6 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   private transient Table table;
   private Path destPath;
   private boolean isHiveServerQuery;
-  private Long mmWriteId;
   private boolean isMerge;
   private boolean isMmCtas;
 
@@ -143,7 +142,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
    */
   public FileSinkDesc(final Path dirName, final TableDesc tableInfo, final boolean compressed, final int destTableId,
       final boolean multiFileSpray, final boolean canBeMerged, final int numFiles, final int totalFiles,
-      final List<ExprNodeDesc> partitionCols, final DynamicPartitionCtx dpCtx, Path destPath, Long mmWriteId,
+      final List<ExprNodeDesc> partitionCols, final DynamicPartitionCtx dpCtx, Path destPath,
       boolean isMmCtas, boolean isInsertOverwrite, boolean isQuery, boolean isCTASorCM, boolean isDirectInsert,
       AcidUtils.Operation acidOperation, boolean deleteOfSplitUpdate) {
     this.dirName = dirName;
@@ -158,7 +157,6 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
     this.dpCtx = dpCtx;
     this.dpSortState = DPSortState.NONE;
     this.destPath = destPath;
-    this.mmWriteId = mmWriteId;
     this.isMmCtas = isMmCtas;
     this.isInsertOverwrite = isInsertOverwrite;
     this.isQuery = isQuery;
@@ -186,7 +184,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   @Override
   public Object clone() throws CloneNotSupportedException {
     FileSinkDesc ret = new FileSinkDesc(dirName, tableInfo, compressed, destTableId, multiFileSpray, canBeMerged,
-        numFiles, totalFiles, partitionCols, dpCtx, destPath, mmWriteId, isMmCtas, isInsertOverwrite, isQuery,
+        numFiles, totalFiles, partitionCols, dpCtx, destPath, isMmCtas, isInsertOverwrite, isQuery,
         isCTASorCM, isDirectInsert, acidOperation, deleteOfSplitUpdate);
     ret.setCompressCodec(compressCodec);
     ret.setCompressType(compressType);
@@ -662,10 +660,6 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
 
   public void setStatsTmpDir(String statsCollectionTempDir) {
     this.statsTmpDir = statsCollectionTempDir;
-  }
-
-  public void setMmWriteId(Long mmWriteId) {
-    this.mmWriteId = mmWriteId;
   }
 
   public void setIsMerge(boolean b) {

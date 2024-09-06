@@ -75,6 +75,7 @@ alterTableStatementSuffix
     | alterStatementSuffixSetOwner
     | alterStatementSuffixSetPartSpec
     | alterStatementSuffixExecute
+    | (KW_CREATE KW_OR KW_REPLACE KW_TAG) => alterStatementSuffixCreateOrReplaceTag
     | alterStatementSuffixCreateBranch
     | alterStatementSuffixDropBranch
     | alterStatementSuffixCreateTag
@@ -82,6 +83,7 @@ alterTableStatementSuffix
     | alterStatementSuffixConvert
     | alterStatementSuffixRenameBranch
     | alterStatementSuffixReplaceBranch
+    | alterStatementSuffixReplaceTag
     ;
 
 alterTblPartitionStatementSuffix[boolean partition]
@@ -102,13 +104,13 @@ alterTblPartitionStatementSuffix[boolean partition]
   | alterStatementSuffixAddCol
   | alterStatementSuffixUpdateColumns
   ;
-    
+
 optimizeTableStatementSuffix
 @init { gParent.pushMsg("optimize table statement suffix", state); }
 @after { gParent.popMsg(state); }
     : optimizeTblRewriteDataSuffix
     ;
-    
+
 optimizeTblRewriteDataSuffix
 @init { gParent.msgs.push("compaction request"); }
 @after { gParent.msgs.pop(); }
@@ -518,7 +520,14 @@ alterStatementSuffixReplaceBranch
 @init { gParent.pushMsg("alter table replace branch", state); }
 @after { gParent.popMsg(state); }
     : KW_REPLACE KW_BRANCH sourceBranch=Identifier KW_AS KW_OF ((KW_SYSTEM_VERSION snapshotId=Number) | (KW_BRANCH branch=identifier)) refRetain? retentionOfSnapshots?
-    -> ^(TOK_ALTERTABLE_REPLACE_BRANCH $sourceBranch KW_SYSTEM_VERSION?  $snapshotId? $branch? refRetain? retentionOfSnapshots?)
+    -> ^(TOK_ALTERTABLE_REPLACE_SNAPSHOTREF KW_BRANCH $sourceBranch KW_SYSTEM_VERSION?  $snapshotId? $branch? refRetain? retentionOfSnapshots?)
+    ;
+
+alterStatementSuffixReplaceTag
+@init { gParent.pushMsg("alter table replace tag", state); }
+@after { gParent.popMsg(state); }
+    : KW_REPLACE KW_TAG sourceBranch=Identifier KW_AS KW_OF KW_SYSTEM_VERSION snapshotId=Number refRetain?
+    -> ^(TOK_ALTERTABLE_REPLACE_SNAPSHOTREF KW_TAG $sourceBranch $snapshotId refRetain?)
     ;
 
 alterStatementSuffixDropBranch
@@ -531,8 +540,10 @@ alterStatementSuffixDropBranch
 alterStatementSuffixCreateBranch
 @init { gParent.pushMsg("alter table create branch", state); }
 @after { gParent.popMsg(state); }
-    : KW_CREATE KW_BRANCH branchName=identifier snapshotIdOfRef? refRetain? retentionOfSnapshots?
-    -> ^(TOK_ALTERTABLE_CREATE_BRANCH $branchName snapshotIdOfRef? refRetain? retentionOfSnapshots?)
+    : KW_CREATE KW_BRANCH ifNotExists? branchName=identifier snapshotIdOfRef? refRetain? retentionOfSnapshots?
+    -> ^(TOK_ALTERTABLE_CREATE_BRANCH $branchName ifNotExists? snapshotIdOfRef? refRetain? retentionOfSnapshots?)
+    | KW_CREATE KW_OR KW_REPLACE KW_BRANCH branchName=identifier snapshotIdOfRef? refRetain? retentionOfSnapshots?
+    -> ^(TOK_ALTERTABLE_CREATE_BRANCH $branchName KW_REPLACE snapshotIdOfRef? refRetain? retentionOfSnapshots?)
     ;
 
 snapshotIdOfRef
@@ -572,9 +583,16 @@ alterStatementSuffixDropTag
 alterStatementSuffixCreateTag
 @init { gParent.pushMsg("alter table create tag", state); }
 @after { gParent.popMsg(state); }
-    : KW_CREATE KW_TAG tagName=identifier snapshotIdOfRef? refRetain?
-    -> ^(TOK_ALTERTABLE_CREATE_TAG $tagName snapshotIdOfRef? refRetain?)
+    : KW_CREATE KW_TAG ifNotExists? tagName=identifier snapshotIdOfRef? refRetain?
+    -> ^(TOK_ALTERTABLE_CREATE_TAG $tagName ifNotExists? snapshotIdOfRef? refRetain?)
     ;
+
+alterStatementSuffixCreateOrReplaceTag
+@init { gParent.pushMsg("alter table create tag", state); }
+@after { gParent.popMsg(state); }
+     : KW_CREATE KW_OR KW_REPLACE KW_TAG tagName=identifier snapshotIdOfRef? refRetain?
+     -> ^(TOK_ALTERTABLE_CREATE_TAG $tagName KW_REPLACE snapshotIdOfRef? refRetain?)
+     ;
 
 fileFormat
 @init { gParent.pushMsg("file format specification", state); }

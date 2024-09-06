@@ -5,7 +5,6 @@
 --! qt:replace:/owner:(\S*)/#Masked#/
 --! qt:replace:/skewedColValueLocationMaps:(\S*)/#Masked#/
 --! qt:replace:/transient_lastDdlTime=(\d+)/#Masked#/
---! qt:replace:/totalSize=(\d+)/#Masked#/
 --! qt:replace:/rawDataSize=(\d+)/#Masked#/
 --! qt:replace:/writeId:(\d+)/#Masked#/
 --! qt:replace:/bucketing_version=(\d+)/#Masked#/

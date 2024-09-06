@@ -438,9 +438,15 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   @Override
   public List<String> listPartitionNames(String catName, String dbName, String tblName, String defaultPartName,
-      byte[] exprBytes, String order, short maxParts) throws MetaException, NoSuchObjectException {
+      byte[] exprBytes, String order, int maxParts) throws MetaException, NoSuchObjectException {
     return objectStore.listPartitionNames(catName, dbName, tblName,
         defaultPartName, exprBytes, order, maxParts);
+  }
+
+  @Override
+  public List<String> listPartitionNamesByFilter(String catName, String dbName, String tblName,
+      GetPartitionsArgs args) throws MetaException, NoSuchObjectException {
+    return objectStore.listPartitionNamesByFilter(catName, dbName, tblName, args);
   }
 
   @Override
@@ -1014,6 +1020,12 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public <T> List<T> getFunctionsRequest(String catName, String dbName,
+      String pattern, boolean isReturnNames) throws MetaException {
+    return objectStore.getFunctionsRequest(catName, dbName, pattern, isReturnNames);
+  }
+
+  @Override
   public AggrStats get_aggr_stats_for(String catName, String dbName,
       String tblName, List<String> partNames, List<String> colNames, String engine)
       throws MetaException {
@@ -1574,7 +1586,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   @Override
   public MTable ensureGetMTable(String catName, String dbName, String tblName) throws NoSuchObjectException {
-      return objectStore.ensureGetMTable(catName, dbName, catName);
+      return objectStore.ensureGetMTable(catName, dbName, tblName);
   }
     
   @Override

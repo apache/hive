@@ -265,6 +265,7 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int
 #### A masked pattern was here ####
+                    file.sink.merge.task.enabled.default.table1 true
                     location ### test.blobstore.path ###/table1
                     name default.table1
                     serialization.format 1
@@ -357,6 +358,7 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int
 #### A masked pattern was here ####
+                    file.sink.merge.task.enabled.default.table1 true
                     location ### test.blobstore.path ###/table1
                     name default.table1
                     serialization.format 1

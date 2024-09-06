@@ -38,17 +38,15 @@ public class HBaseQTestUtil extends QTestUtil {
   /** A handle to this harness's cluster */
   private final Connection conn;
 
-  public HBaseQTestUtil(
-    String outDir, String logDir, MiniClusterType miniMr, HBaseTestSetup setup,
-    String initScript, String cleanupScript)
-    throws Exception {
+  public HBaseQTestUtil(String outDir, String logDir, MiniClusterType miniMr, HBaseTestSetup setup, String hiveConfDir,
+      String initScript, String cleanupScript) throws Exception {
 
     super(
         QTestArguments.QTestArgumentsBuilder.instance()
           .withOutDir(outDir)
           .withLogDir(logDir)
           .withClusterType(miniMr)
-          .withConfDir(null)
+          .withConfDir(hiveConfDir)
           .withInitScript(initScript)
           .withCleanupScript(cleanupScript)
           .withLlapIo(false)

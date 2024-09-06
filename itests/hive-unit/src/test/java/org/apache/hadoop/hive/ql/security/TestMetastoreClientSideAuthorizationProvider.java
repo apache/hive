@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.security;
 import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
@@ -54,7 +55,7 @@ public class TestMetastoreClientSideAuthorizationProvider {
 
         int port = MetaStoreTestUtils.startMetaStoreWithRetry();
 
-        clientHiveConf = new HiveConf(this.getClass());
+        clientHiveConf = new HiveConfForTest(this.getClass());
 
         // Turn on client-side authorization
         clientHiveConf.setBoolVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED,true);

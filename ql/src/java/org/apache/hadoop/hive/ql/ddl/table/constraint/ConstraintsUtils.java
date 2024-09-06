@@ -19,13 +19,9 @@
 package org.apache.hadoop.hive.ql.ddl.table.constraint;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.SetMultimap;
 import org.antlr.runtime.TokenRewriteStream;
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.conf.Configuration;
@@ -40,17 +36,11 @@ import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
-import org.apache.hadoop.hive.ql.lib.CostLessRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.ExpressionWalker;
-import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
-import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
-import org.apache.hadoop.hive.ql.parse.Quotation;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
@@ -255,7 +245,7 @@ public final class ConstraintsUtils {
         // try to get default value only if this is DEFAULT constraint
         checkOrDefaultValue = getDefaultValue(grandChild, typeChildForDefault, tokenRewriteStream);
       } else if (childType == HiveParser.TOK_CHECK_CONSTRAINT) {
-        UnparseTranslator unparseTranslator = collectUnescapeIdentifierTranslations(grandChild);
+        UnparseTranslator unparseTranslator = HiveUtils.collectUnescapeIdentifierTranslations(grandChild);
         unparseTranslator.applyTranslations(tokenRewriteStream, CHECK_CONSTRAINT_PROGRAM);
         checkOrDefaultValue = tokenRewriteStream.toString(CHECK_CONSTRAINT_PROGRAM, grandChild.getTokenStartIndex(),
             grandChild.getTokenStopIndex());
@@ -296,52 +286,6 @@ public final class ConstraintsUtils {
     }
 
     return constraintInfos;
-  }
-
-  static class ConstraintExpressionContext implements NodeProcessorCtx {
-    private UnparseTranslator unparseTranslator;
-
-    public ConstraintExpressionContext(UnparseTranslator unparseTranslator) {
-      this.unparseTranslator = unparseTranslator;
-    }
-
-    public UnparseTranslator getUnparseTranslator() {
-      return unparseTranslator;
-    }
-  }
-
-  private static UnparseTranslator collectUnescapeIdentifierTranslations(ASTNode node)
-      throws SemanticException {
-    UnparseTranslator unparseTranslator = new UnparseTranslator(Quotation.BACKTICKS);
-    unparseTranslator.enable();
-
-    SetMultimap<Integer, SemanticNodeProcessor> astNodeToProcessor = HashMultimap.create();
-    astNodeToProcessor.put(HiveParser.TOK_TABLE_OR_COL, new ColumnExprProcessor());
-    astNodeToProcessor.put(HiveParser.DOT, new ColumnExprProcessor());
-    NodeProcessorCtx nodeProcessorCtx = new ConstraintExpressionContext(unparseTranslator);
-
-    CostLessRuleDispatcher costLessRuleDispatcher = new CostLessRuleDispatcher(
-        (nd, stack, procCtx, nodeOutputs) -> null, astNodeToProcessor, nodeProcessorCtx);
-    SemanticGraphWalker walker = new ExpressionWalker(costLessRuleDispatcher);
-    walker.startWalking(Collections.singletonList(node), null);
-    return unparseTranslator;
-  }
-
-  static class ColumnExprProcessor implements SemanticNodeProcessor {
-
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
-        throws SemanticException {
-      UnparseTranslator unparseTranslator = ((ConstraintExpressionContext)procCtx).getUnparseTranslator();
-      ASTNode tokTableOrColNode = (ASTNode) nd;
-      for (int i = 0; i < tokTableOrColNode.getChildCount(); ++i) {
-        ASTNode child = (ASTNode) tokTableOrColNode.getChild(i);
-        if (child.getType() == HiveParser.Identifier) {
-          unparseTranslator.addIdentifierTranslation(child);
-        }
-      }
-      return null;
-    }
   }
 
   private static final int DEFAULT_MAX_LEN = 255;

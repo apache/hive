@@ -75,6 +75,7 @@ public abstract class ExecuteStatementOperation extends Operation {
                 parentSession.getMetaStoreClient(),
                 new HiveHplSqlSessionState(SessionState.get())
         );
+        setHiveVariables(parentSession, interpreter);
         interpreter.init();
         registerUdf();
         SessionState.get().addDynamicVar(interpreter);
@@ -95,6 +96,20 @@ public abstract class ExecuteStatementOperation extends Operation {
       return new SQLOperation(parentSession, statement, confOverlay, runAsync, queryTimeout, hplSqlMode());
     }
     return new HiveCommandOperation(parentSession, cleanStatement, processor, confOverlay);
+  }
+
+  private static void setHiveVariables(HiveSession parentSession, Exec interpreter) {
+    Map<String, String> hiveVars = parentSession.getSessionState().getHiveVariables();
+    if (hiveVars.size() > 0) {
+      String[] hiveVarArray = new String[hiveVars.size() * 2];
+      int i = 0;
+      for (Map.Entry<String, String> entry : hiveVars.entrySet()) {
+        hiveVarArray[i] = "--hivevar";
+        hiveVarArray[i+1] = entry.getKey() + "=" + entry.getValue();
+        i = i + 2;
+      }
+      interpreter.parseArguments(hiveVarArray);
+    }
   }
 
   private static void registerUdf() throws HiveSQLException {

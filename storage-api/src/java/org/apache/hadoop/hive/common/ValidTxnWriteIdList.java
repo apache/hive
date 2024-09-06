@@ -63,6 +63,12 @@ public class ValidTxnWriteIdList {
     return null;
   }
 
+  public Long getMinOpenWriteId(String table) {
+    ValidWriteIdList tableValidWriteIdList = getTableValidWriteIdList(table);
+    Long minOpenWriteId = tableValidWriteIdList.getMinOpenWriteId();
+    return minOpenWriteId != null ? minOpenWriteId : tableValidWriteIdList.getHighWatermark() + 1;
+  }
+
   public boolean isEmpty() {
     return tablesValidWriteIdList.isEmpty();
   }

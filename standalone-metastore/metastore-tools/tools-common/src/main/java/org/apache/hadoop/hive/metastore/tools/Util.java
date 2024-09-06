@@ -596,6 +596,26 @@ public final class Util {
   }
 
   /**
+   * Create multiple partition objects with list of partition values.
+   *
+   * @param table
+   * @param parameters
+   * @param values list of partition values
+   * @return list of created partitions
+   */
+  static List<Partition> createManyPartitions(@NotNull Table table,
+                                              @Nullable Map<String, String> parameters,
+                                              @NotNull List<List<String>> values) {
+    return values.stream()
+        .map(vals ->
+            new PartitionBuilder(table)
+                .withParameters(parameters)
+                .withValues(vals)
+                .build())
+        .collect(Collectors.toList());
+  }
+
+  /**
    * Add many partitions in one HMS call
    *
    * @param client      HMS Client
@@ -646,6 +666,18 @@ public final class Util {
                                            int npartitions) {
     throwingSupplierWrapper(() ->
             addManyPartitions(client, dbName, tableName, parameters, arguments, npartitions));
+  }
+
+  static void addManyPartitionsNoException(@NotNull HMSClient client,
+                                           @NotNull String dbName,
+                                           @NotNull String tableName,
+                                           @Nullable Map<String, String> parameters,
+                                           List<List<String>> values) {
+    throwingSupplierWrapper(() -> {
+      Table table = client.getTable(dbName, tableName);
+      client.addPartitions(createManyPartitions(table, parameters, values));
+      return null;
+    });
   }
 
   static void updateManyPartitionsStatsNoException(@NotNull HMSClient client,

@@ -372,4 +372,25 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
     String ctas = "CREATE TABLE target STORED BY ICEBERG STORED AS orc AS SELECT * FROM source";
     shell.executeStatement(ctas);
   }
+
+  @Test
+  public void testCTASAndCTLTWithAuth() {
+    shell.setHiveSessionValue("hive.security.authorization.enabled", true);
+    shell.setHiveSessionValue("hive.security.authorization.manager",
+            "org.apache.iceberg.mr.hive.CustomTestHiveAuthorizerFactory");
+    shell.setHiveSessionValue("hive.security.authorization.tables.on.storagehandlers", true);
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    String query = String.format("CREATE EXTERNAL TABLE customers (" +
+                    "customer_id BIGINT," +
+                    "first_name STRING, " +
+                    "last_name STRING," +
+                    "primary key (customer_id, first_name) disable novalidate) " +
+                    "STORED BY ICEBERG %s TBLPROPERTIES ('%s'='%s')",
+            testTables.locationForCreateTableSQL(identifier),
+            InputFormatConfig.CATALOG_NAME,
+            testTables.catalogName());
+    shell.executeStatement(query);
+    shell.executeStatement("create table target_ctas stored by iceberg stored as orc as select * from customers");
+    shell.executeStatement("create table target_ctlt like customers stored by iceberg");
+  }
 }

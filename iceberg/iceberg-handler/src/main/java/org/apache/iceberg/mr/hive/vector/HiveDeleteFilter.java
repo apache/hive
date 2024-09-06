@@ -22,12 +22,15 @@ package org.apache.iceberg.mr.hive.vector;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.NoSuchElementException;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.StructLike;
+import org.apache.iceberg.data.CachingDeleteLoader;
 import org.apache.iceberg.data.DeleteFilter;
+import org.apache.iceberg.data.DeleteLoader;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.CloseableIterator;
 import org.apache.iceberg.io.FileIO;
@@ -40,11 +43,19 @@ public class HiveDeleteFilter extends DeleteFilter<HiveRow> {
 
   private final FileIO io;
   private final HiveStructLike asStructLike;
+  private final Configuration conf;
 
-  public HiveDeleteFilter(FileIO io, FileScanTask task, Schema tableSchema, Schema requestedSchema) {
+  public HiveDeleteFilter(FileIO io, FileScanTask task, Schema tableSchema, Schema requestedSchema,
+                          Configuration conf) {
     super((task.file()).path().toString(), task.deletes(), tableSchema, requestedSchema);
     this.io = io;
     this.asStructLike = new HiveStructLike(this.requiredSchema().asStruct());
+    this.conf = conf;
+  }
+
+  @Override
+  protected DeleteLoader newDeleteLoader() {
+    return new CachingDeleteLoader(this::loadInputFile, conf);
   }
 
   @Override

@@ -17,6 +17,7 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -72,7 +73,7 @@ public class TestVectorUDFUnixTimeStampString {
 
   @Test
   public void testEvaluate() throws HiveException, InterruptedException, CharacterCodingException {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = new HiveConfForTest(getClass());
     conf.setVar(HiveConf.ConfVars.HIVE_DATETIME_FORMATTER, formatter);
     conf.setVar(HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE, zone);
     SessionState state = SessionState.start(conf);

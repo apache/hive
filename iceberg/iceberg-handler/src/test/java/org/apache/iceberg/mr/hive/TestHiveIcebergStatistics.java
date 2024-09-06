@@ -38,7 +38,6 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
 
-import static org.apache.iceberg.mr.hive.HiveIcebergStorageHandler.STATS;
 
 /**
  * Tests verifying correct statistics generation behaviour on Iceberg tables triggered by: ANALYZE queries, inserts,
@@ -275,7 +274,9 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     shell.executeStatement(insert);
 
     table.refresh();
-    Path tblColPath = new Path(table.location() + STATS + table.currentSnapshot().snapshotId());
+
+    Path tblColPath = IcebergTableUtil.getColStatsPath(table).orElse(null);
+    Assert.assertNotNull(tblColPath);
     // Check that if colPath is created correctly
     Assert.assertTrue(tblColPath.getFileSystem(shell.getHiveConf()).exists(tblColPath));
     List<Object[]> result = shell.executeStatement("SELECT * FROM customers");

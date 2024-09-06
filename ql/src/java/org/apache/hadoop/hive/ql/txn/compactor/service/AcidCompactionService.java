@@ -17,10 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor.service;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -184,12 +186,19 @@ public class AcidCompactionService extends CompactionService {
        * multi-stmt txn. {@link Driver#setCompactionWriteIds(ValidWriteIdList, long)} */
       compactionTxn.open(ci);
 
-      ValidTxnList validTxnList = msc.getValidTxns(compactionTxn.getTxnId());
+      final ValidTxnList validTxnList = msc.getValidTxns(compactionTxn.getTxnId());
       //with this ValidWriteIdList is capped at whatever HWM validTxnList has
       tblValidWriteIds = TxnUtils.createValidCompactWriteIdList(msc.getValidWriteIds(
           Collections.singletonList(fullTableName), validTxnList.writeToString()).get(0));
       LOG.debug("ValidCompactWriteIdList: " + tblValidWriteIds.writeToString());
       conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
+
+      final ValidTxnWriteIdList txnWriteIds = new ValidTxnWriteIdList(compactionTxn.getTxnId());
+      txnWriteIds.addTableValidWriteIdList(tblValidWriteIds);
+      conf.set(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY, txnWriteIds.toString());
+
+      msc.addWriteIdsToMinHistory(compactionTxn.getTxnId(),
+          ImmutableMap.of(fullTableName, txnWriteIds.getMinOpenWriteId(fullTableName)));
 
       ci.highestWriteId = tblValidWriteIds.getHighWatermark();
       //this writes TXN_COMPONENTS to ensure that if compactorTxnId fails, we keep metadata about

@@ -25,6 +25,8 @@ import java.util.concurrent.TimeUnit;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
@@ -208,5 +210,48 @@ public class TestHiveIcebergTagOperation extends HiveIcebergStorageHandlerWithEn
       }
       Assert.assertTrue(e.getMessage().contains("Tag does not exist: test_tag_1"));
     }
+  }
+
+  @Test
+  public void testReplaceTag() {
+    TableIdentifier identifier = TableIdentifier.of("default", "testReplaceTag");
+    shell.executeStatement(
+        String.format("CREATE EXTERNAL TABLE %s (id INT) STORED BY iceberg  %s %s",
+            identifier.name(),
+            testTables.locationForCreateTableSQL(identifier),
+            testTables.propertiesForCreateTableSQL(ImmutableMap.of())));
+
+    shell.executeStatement(String.format("INSERT INTO TABLE %s VALUES(1),(2),(3),(4)", identifier.name()));
+
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
+    icebergTable.refresh();
+    long id1 = icebergTable.currentSnapshot().snapshotId();
+    // Create a branch
+    shell.executeStatement(String.format("ALTER TABLE %s create tag tag1", identifier.name()));
+    // Make one new insert to the main branch
+    shell.executeStatement(String.format("INSERT INTO TABLE %s VALUES(5),(6)", identifier.name()));
+    icebergTable.refresh();
+    long id2 = icebergTable.currentSnapshot().snapshotId();
+
+    // Make another insert so that the commit isn't the last commit on the branch
+    shell.executeStatement(String.format("INSERT INTO TABLE %s VALUES(7),(8)", identifier.name()));
+
+    // Validate the original count on branch before replace
+    List<Object[]> result =
+        shell.executeStatement("SELECT COUNT(*) FROM default.testReplaceTag.tag_tag1");
+    Assert.assertEquals(4L, result.get(0)[0]);
+    // Perform replace tag with snapshot id.
+    shell.executeStatement(
+        String.format("ALTER TABLE %s replace tag tag1 as of system_version %s", identifier.name(), id2));
+    result = shell.executeStatement("SELECT COUNT(*) FROM default.testReplaceTag.tag_tag1");
+    Assert.assertEquals(6L, result.get(0)[0]);
+
+    // Perform replace tag with retain
+    shell.executeStatement(
+        String.format("ALTER TABLE %s replace tag tag1 as of system_version %s retain 2 days", identifier.name(), id1));
+    result = shell.executeStatement("SELECT COUNT(*) FROM default.testReplaceTag.tag_tag1");
+    Assert.assertEquals(4L, result.get(0)[0]);
+    icebergTable.refresh();
+    Assert.assertEquals(TimeUnit.DAYS.toMillis(2), icebergTable.refs().get("tag1").maxRefAgeMs().longValue());
   }
 }

@@ -507,16 +507,22 @@ public abstract class TestHiveMetaStore {
 
   private static Partition makePartitionObject(String dbName, String tblName,
       List<String> ptnVals, Table tbl, String ptnLocationSuffix) throws MetaException {
-    Partition part4 = new Partition();
-    part4.setDbName(dbName);
-    part4.setTableName(tblName);
-    part4.setValues(ptnVals);
-    part4.setParameters(new HashMap<>());
-    part4.setSd(tbl.getSd().deepCopy());
-    part4.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo().deepCopy());
-    part4.getSd().setLocation(tbl.getSd().getLocation() + ptnLocationSuffix);
-    MetaStoreServerUtils.updatePartitionStatsFast(part4, tbl, warehouse, false, false, null, true);
-    return part4;
+    String absoluteLocation = tbl.getSd().getLocation() + ptnLocationSuffix;
+    return makePartitionObjectWithAbsoluteLocation(dbName, tblName, ptnVals, tbl, absoluteLocation);
+  }
+
+  private static Partition makePartitionObjectWithAbsoluteLocation(String dbName, String tblName,
+      List<String> ptnVals, Table tbl, String absolutePartitionLocation) throws MetaException {
+    Partition part = new Partition();
+    part.setDbName(dbName);
+    part.setTableName(tblName);
+    part.setValues(ptnVals);
+    part.setParameters(new HashMap<>());
+    part.setSd(tbl.getSd().deepCopy());
+    part.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo().deepCopy());
+    part.getSd().setLocation(absolutePartitionLocation);
+    MetaStoreServerUtils.updatePartitionStatsFast(part, tbl, warehouse, false, false, null, true);
+    return part;
   }
 
   @Test
@@ -2685,16 +2691,7 @@ public abstract class TestHiveMetaStore {
 
   private void add_partition(HiveMetaStoreClient client, Table table,
       List<String> vals, String location) throws TException {
-
-    Partition part = new Partition();
-    part.setDbName(table.getDbName());
-    part.setTableName(table.getTableName());
-    part.setValues(vals);
-    part.setParameters(new HashMap<>());
-    part.setSd(table.getSd().deepCopy());
-    part.getSd().setSerdeInfo(table.getSd().getSerdeInfo());
-    part.getSd().setLocation(table.getSd().getLocation() + location);
-
+    Partition part = makePartitionObject(table.getDbName(), table.getTableName(), vals, table, location);
     client.add_partition(part);
   }
 
@@ -3269,6 +3266,69 @@ public abstract class TestHiveMetaStore {
 
     // Cleanup
     client.dropDatabase(dbName, true, true, true);
+  }
+
+  @Test
+  public void testDropDatabaseWithCustomPartitionPath() throws Exception {
+    String dbName = "dropdb";
+    String tblName1 = "droptbl1";
+    String tblName2 = "droptbl2";
+    String tblName3 = "droptbl3";
+
+    // A new client to support drop these 3 tables in one batch
+    Configuration newConf = MetastoreConf.newMetastoreConf(new Configuration(conf));
+    MetastoreConf.setLongVar(newConf, ConfVars.BATCH_RETRIEVE_MAX, 3);
+    IMetaStoreClient client = RetryingMetaStoreClient.getProxy(newConf, getHookLoader(), HiveMetaStoreClient.class.getName());
+
+    // Setup
+    silentDropDatabase(dbName);
+    new DatabaseBuilder()
+        .setName(dbName)
+        .create(client, conf);
+
+    new TableBuilder()
+        .setDbName(dbName)
+        .setTableName(tblName1)
+        .addCol("c1", ColumnType.STRING_TYPE_NAME)
+        .addPartCol("p1", ColumnType.STRING_TYPE_NAME)
+        .create(client, conf);
+
+    new TableBuilder()
+        .setDbName(dbName)
+        .setTableName(tblName2)
+        .addCol("c1", ColumnType.STRING_TYPE_NAME)
+        .addPartCol("p1", ColumnType.STRING_TYPE_NAME)
+        .create(client, conf);
+
+    new TableBuilder()
+        .setDbName(dbName)
+        .setTableName(tblName3)
+        .addCol("c1", ColumnType.STRING_TYPE_NAME)
+        .create(client, conf);
+
+    Path rootPath = warehouse.getWhRoot();
+    Path path1 = new Path(rootPath, tblName1);
+    Table tbl1 = client.getTable(dbName, tblName1);
+    Table tbl2 = client.getTable(dbName, tblName2);
+    Table tbl3 = client.getTable(dbName, tblName3);
+    List<String> vals = Lists.newArrayList("p1");
+
+    // partition1 whose path does not belong to table1
+    Partition part1 = makePartitionObjectWithAbsoluteLocation(dbName, tblName1, vals, tbl1, path1.toString());
+    client.add_partition(part1);
+
+    // partition2 whose path belongs to table2
+    Partition part2 = makePartitionObject(dbName, tblName2, vals, tbl2, "/part2");
+    client.add_partition(part2);
+
+    client.dropDatabase(dbName, true, true, true);
+    FileSystem fs = FileSystem.get(path1.toUri(), conf);
+    assertFalse(fs.exists(new Path(tbl1.getSd().getLocation())));
+    assertFalse(fs.exists(new Path(tbl2.getSd().getLocation())));
+    assertFalse(fs.exists(new Path(tbl3.getSd().getLocation())));
+    assertFalse(fs.exists(path1));
+
+    client.close();
   }
 
   @Test

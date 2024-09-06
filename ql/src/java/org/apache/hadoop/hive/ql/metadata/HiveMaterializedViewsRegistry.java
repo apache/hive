@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
@@ -227,7 +228,7 @@ public final class HiveMaterializedViewsRegistry {
     }
     final CBOPlan plan;
     try {
-      plan = ParseUtils.parseQuery(conf, viewQuery);
+      plan = ParseUtils.parseQuery(createContext(conf), viewQuery);
     } catch (Exception e) {
       LOG.warn("Materialized view " + materializedViewTable.getCompleteName() +
           " ignored; error parsing original query; " + e);
@@ -362,6 +363,13 @@ public final class HiveMaterializedViewsRegistry {
     return materializedViewsCache.get(ast);
   }
 
+  private Context createContext(HiveConf conf) {
+    Context ctx = new Context(conf);
+    ctx.setIsLoadingMaterializedView(true);
+    ctx.setHDFSCleanup(true);
+    return ctx;
+  }
+
   public boolean isEmpty() {
     return materializedViewsCache.isEmpty();
   }
@@ -468,7 +476,7 @@ public final class HiveMaterializedViewsRegistry {
       // for materialized views.
       RelOptHiveTable optTable = new RelOptHiveTable(null, cluster.getTypeFactory(), fullyQualifiedTabName,
           rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
-          conf, null, new QueryTables(true), new HashMap<>(), new HashMap<>(), new AtomicInteger());
+          conf, new QueryTables(true), new HashMap<>(), new HashMap<>(), new AtomicInteger());
       DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
           dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
           intervals, null, null);
@@ -483,7 +491,7 @@ public final class HiveMaterializedViewsRegistry {
       // for materialized views.
       RelOptHiveTable optTable = new RelOptHiveTable(null, cluster.getTypeFactory(), fullyQualifiedTabName,
           rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
-          conf, null, new QueryTables(true), new HashMap<>(), new HashMap<>(), new AtomicInteger());
+          conf, new QueryTables(true), new HashMap<>(), new HashMap<>(), new AtomicInteger());
       tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
           viewTable.getTableName(), null, false, false);
     }

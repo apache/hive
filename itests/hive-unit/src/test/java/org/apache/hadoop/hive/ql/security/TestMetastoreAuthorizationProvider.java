@@ -27,6 +27,7 @@ import java.util.Collections;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -82,7 +83,7 @@ public class TestMetastoreAuthorizationProvider {
   }
 
   protected HiveConf createHiveConf() throws Exception {
-    return new HiveConf(this.getClass());
+    return new HiveConfForTest(getClass());
   }
 
   protected String getProxyUserName() {
@@ -91,9 +92,6 @@ public class TestMetastoreAuthorizationProvider {
 
   @Before
   public void setUp() throws Exception {
-
-
-
     // Turn on metastore-side authorization
     System.setProperty(HiveConf.ConfVars.METASTORE_PRE_EVENT_LISTENERS.varname,
         AuthorizationPreEventListener.class.getName());

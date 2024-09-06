@@ -28,6 +28,7 @@ import org.junit.Assert;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
@@ -138,7 +139,7 @@ public class TestHs2Hooks {
    */
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = new HiveConfForTest(TestHs2Hooks.class);
     hiveConf.setVar(ConfVars.PRE_EXEC_HOOKS,
         PreExecHook.class.getName());
     hiveConf.setVar(ConfVars.POST_EXEC_HOOKS,

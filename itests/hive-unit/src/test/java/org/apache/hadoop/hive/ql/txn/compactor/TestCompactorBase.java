@@ -81,6 +81,8 @@ class TestCompactorBase {
     }
 
     HiveConf hiveConf = new HiveConf(this.getClass());
+    // this test is mr specific, for Tez-based compaction look at CompactorOnTezTest
+    hiveConf.set(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname, "mr");
     hiveConf.setVar(HiveConf.ConfVars.PRE_EXEC_HOOKS, "");
     hiveConf.setVar(HiveConf.ConfVars.POST_EXEC_HOOKS, "");
     hiveConf.setVar(HiveConf.ConfVars.METASTORE_WAREHOUSE, TEST_WAREHOUSE_DIR);
@@ -98,6 +100,7 @@ class TestCompactorBase {
     conf = hiveConf;
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_MM_ALLOW_ORIGINALS, true);
     HiveConf.setTimeVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD, 0, TimeUnit.MILLISECONDS);
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_EXTERNALTABLE_PURGE_DEFAULT, true);
     msClient = new HiveMetaStoreClient(conf);
     driver = DriverFactory.newDriver(hiveConf);
     SessionState.start(new CliSessionState(hiveConf));
@@ -168,6 +171,21 @@ class TestCompactorBase {
     driver.run(cmd);
   }
 
+  void dropTables(String... tables) throws Exception {
+    dropTables(driver, tables);
+  }
+  
+  static void dropTables(IDriver driver, String... tables) throws Exception {
+    HiveConf queryConf = driver.getQueryState().getConf();
+    SessionState.get().initTxnMgr(queryConf);
+    
+    queryConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
+    for (String table : tables) {
+      executeStatementOnDriver("drop table if exists " + table, driver);
+    }
+    queryConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
+  }
+  
   private void createTestDataFile(String filename, String[] lines) throws IOException {
     FileWriter writer = null;
     try {

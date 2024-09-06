@@ -949,6 +949,8 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
         if (!alw.hasRows()) {
           alw.addRow(dummyObj[i]);
           hasNulls = true;
+        } else if (alw.isSingleRow() && alw.rowIter().first() == dummyObj[i]) {
+          hasNulls = true;
         } else if (condn[i].getPreserved()) {
           preserve = true;
         }

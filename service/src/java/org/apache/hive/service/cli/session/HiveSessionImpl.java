@@ -18,6 +18,7 @@
 
 package org.apache.hive.service.cli.session;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.io.BufferedReader;
 import java.io.File;
@@ -209,7 +210,7 @@ public class HiveSessionImpl implements HiveSession {
       FileInputStream initStream = null;
       BufferedReader bufferedReader = null;
       initStream = new FileInputStream(fileName);
-      bufferedReader = new BufferedReader(new InputStreamReader(initStream));
+      bufferedReader = new BufferedReader(new InputStreamReader(initStream, StandardCharsets.UTF_8));
       return bufferedReader;
     }
 

@@ -310,7 +310,9 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
 
     long markedBytes = dataCache.markBuffersForProactiveEviction(predicate, isInstantDeallocation);
     markedBytes += fileMetadataCache.markBuffersForProactiveEviction(predicate, isInstantDeallocation);
-    markedBytes += serdeCache.markBuffersForProactiveEviction(predicate, isInstantDeallocation);
+    if (serdeCache != null) {
+      markedBytes += serdeCache.markBuffersForProactiveEviction(predicate, isInstantDeallocation);
+    }
 
     // Signal mark phase of proactive eviction was done
     if (markedBytes > 0) {

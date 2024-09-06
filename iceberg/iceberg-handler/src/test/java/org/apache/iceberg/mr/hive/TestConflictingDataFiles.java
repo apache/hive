@@ -20,8 +20,10 @@
 
 package org.apache.iceberg.mr.hive;
 
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.iceberg.FileFormat;
@@ -29,6 +31,7 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.exceptions.ValidationException;
+import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.relocated.com.google.common.base.Throwables;
 import org.apache.iceberg.util.Tasks;
@@ -37,22 +40,34 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.MockedStatic;
 
 import static org.apache.iceberg.mr.hive.HiveIcebergStorageHandlerTestUtils.init;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.mockStatic;
 
 public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngineBase {
 
   private final String storageHandlerStub = "'org.apache.iceberg.mr.hive.HiveIcebergStorageHandlerStub'";
 
   @Before
-  public void setUpTables() {
+  public void setUpTables() throws NoSuchMethodException {
     PartitionSpec spec =
         PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA).identity("last_name")
             .bucket("customer_id", 16).build();
 
-    // create and insert an initial batch of records
-    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec, fileFormat,
-        HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2, Collections.emptyMap(), storageHandlerStub);
+    Method method = HiveTableOperations.class.getDeclaredMethod("setStorageHandler", Map.class, Boolean.TYPE);
+    method.setAccessible(true);
+
+    try (MockedStatic<HiveTableOperations> tableOps = mockStatic(HiveTableOperations.class, CALLS_REAL_METHODS)) {
+      tableOps.when(() -> method.invoke(null, anyMap(), eq(true)))
+          .thenAnswer(invocation -> null);
+      // create and insert an initial batch of records
+      testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec, fileFormat,
+          HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2, Collections.emptyMap(), storageHandlerStub);
+    }
     // insert one more batch so that we have multiple data files within the same partition
     shell.executeStatement(testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
         TableIdentifier.of("default", "customers"), false));
