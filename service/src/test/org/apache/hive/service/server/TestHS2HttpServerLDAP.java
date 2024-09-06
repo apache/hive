@@ -185,7 +185,7 @@ public class TestHS2HttpServerLDAP {
   
   public static class DummyLdapAuthenticationProviderImpl implements PasswdAuthenticationProvider {
     @Override
-    public void Authenticate(String user, String password) throws AuthenticationException {
+    public void authenticate(String user, String password) throws AuthenticationException {
       if (!(user.equals(VALID_USER) && password.equals(VALID_PASS)))
         throw new AuthenticationException();
     }

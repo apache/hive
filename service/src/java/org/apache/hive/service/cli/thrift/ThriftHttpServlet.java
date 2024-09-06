@@ -417,7 +417,7 @@ public class ThriftHttpServlet extends TServlet {
         AuthMethods authMethod = AuthMethods.getValidAuthMethod(authType);
         PasswdAuthenticationProvider provider =
             AuthenticationProviderFactory.getAuthenticationProvider(authMethod, hiveConf);
-        provider.Authenticate(userName, httpAuthService.getPassword(request));
+        provider.authenticate(userName, httpAuthService.getPassword(request));
       } catch (Exception e) {
         throw new HttpAuthenticationException(e);
       }
