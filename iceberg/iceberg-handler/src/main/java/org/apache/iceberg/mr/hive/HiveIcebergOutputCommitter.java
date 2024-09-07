@@ -35,6 +35,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -271,9 +272,10 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         .map(jobContext -> jobContext.getJobID().toString()).collect(Collectors.joining(","));
     LOG.info("Committing job(s) {} has started", ids);
 
-    Collection<String> jobLocations = new ConcurrentLinkedQueue<>();
     ExecutorService fileExecutor = fileExecutor(jobConf);
     ExecutorService tableExecutor = tableExecutor(jobConf, outputs.keySet().size());
+
+    Collection<String> jobLocations = new ConcurrentLinkedQueue<>();
     try {
       // Commits the changes for the output tables in parallel
       Tasks.foreach(outputs.keySet())
@@ -342,41 +344,41 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         .map(TezUtil::enrichContextWithVertexId)
         .collect(Collectors.toList());
     Multimap<OutputTable, JobContext> outputs = collectOutputs(jobContextList);
+    JobConf jobConf = jobContextList.get(0).getJobConf();
 
     String ids = jobContextList.stream()
         .map(jobContext -> jobContext.getJobID().toString()).collect(Collectors.joining(","));
     LOG.info("Job(s) {} are aborted. Data file cleaning started", ids);
 
-    Collection<String> jobLocations = new ConcurrentLinkedQueue<>();
+    ExecutorService fileExecutor = fileExecutor(jobConf);
+    ExecutorService tableExecutor = tableExecutor(jobConf, outputs.keySet().size());
 
-    ExecutorService fileExecutor = fileExecutor(jobContextList.get(0).getJobConf());
-    ExecutorService tableExecutor = tableExecutor(jobContextList.get(0).getJobConf(), outputs.size());
+    Collection<String> jobLocations = new ConcurrentLinkedQueue<>();
     try {
       // Cleans up the changes for the output tables in parallel
-      Tasks.foreach(outputs.entries())
+      Tasks.foreach(outputs.keySet())
           .suppressFailureWhenFinished()
           .executeWith(tableExecutor)
           .onFailure((output, exc) -> LOG.warn("Failed cleanup table {} on abort job", output, exc))
           .run(output -> {
-            JobContext jobContext = output.getValue();
-            JobConf jobConf = jobContext.getJobConf();
-            LOG.info("Cleaning job for jobID: {}, table: {}", jobContext.getJobID(), output);
-
-            Table table = output.getKey().table;
-            String jobLocation = generateJobLocation(table.location(), jobConf, jobContext.getJobID());
-            jobLocations.add(jobLocation);
-            // list jobLocation to get number of forCommit files
-            // we do this because map/reduce num in jobConf is unreliable and we have no access to vertex status info
-            int numTasks = listForCommits(jobConf, jobLocation).size();
-            FilesForCommit results = collectResults(numTasks, fileExecutor, table.location(), jobContext,
-                table.io(), false);
-            // Check if we have files already written and remove data and delta files if there are any
-            Tasks.foreach(results.allFiles())
-                .retry(3)
-                .suppressFailureWhenFinished()
-                .executeWith(fileExecutor)
-                .onFailure((file, exc) -> LOG.warn("Failed to remove data file {} on abort job", file.path(), exc))
-                .run(file -> table.io().deleteFile(file.path().toString()));
+            for (JobContext jobContext : outputs.get(output)) {
+              LOG.info("Cleaning job for jobID: {}, table: {}", jobContext.getJobID(), output);
+              Table table = output.table;
+              String jobLocation = generateJobLocation(table.location(), jobConf, jobContext.getJobID());
+              jobLocations.add(jobLocation);
+              // list jobLocation to get number of forCommit files
+              // we do this because map/reduce num in jobConf is unreliable and we have no access to vertex status info
+              int numTasks = listForCommits(jobConf, jobLocation).size();
+              FilesForCommit results = collectResults(numTasks, fileExecutor, table.location(), jobContext,
+                  table.io(), false);
+              // Check if we have files already written and remove data and delta files if there are any
+              Tasks.foreach(results.allFiles())
+                  .retry(3)
+                  .suppressFailureWhenFinished()
+                  .executeWith(fileExecutor)
+                  .onFailure((file, exc) -> LOG.warn("Failed to remove data file {} on abort job", file.path(), exc))
+                  .run(file -> table.io().deleteFile(file.path().toString()));
+            }
           }, IOException.class);
     } finally {
       fileExecutor.shutdown();
@@ -816,39 +818,40 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    */
   public List<FileStatus> getOutputFiles(List<JobContext> jobContexts) throws IOException {
     Multimap<OutputTable, JobContext> outputs = collectOutputs(jobContexts);
-    ExecutorService fileExecutor = fileExecutor(jobContexts.get(0).getJobConf());
-    ExecutorService tableExecutor = tableExecutor(jobContexts.get(0).getJobConf(), outputs.size());
+    JobConf jobConf = jobContexts.get(0).getJobConf();
+
+    ExecutorService fileExecutor = fileExecutor(jobConf);
+    ExecutorService tableExecutor = tableExecutor(jobConf, outputs.keySet().size());
+
     Map<Path, List<FileStatus>> parentDirToDataFile = Maps.newConcurrentMap();
     Map<Path, List<FileStatus>> parentDirToDeleteFile = Maps.newConcurrentMap();
     try {
-      Tasks.foreach(outputs.entries())
+      Tasks.foreach(outputs.keySet())
           .suppressFailureWhenFinished()
           .executeWith(tableExecutor)
           .onFailure((output, exc) -> LOG.warn("Failed to retrieve merge input file for the table {}", output, exc))
           .run(output -> {
-            JobContext jobContext = output.getValue();
-            JobConf jobConf = jobContext.getJobConf();
-            LOG.info("Cleaning job for jobID: {}, table: {}", jobContext.getJobID(), output);
-
-            Table table = output.getKey().table;
-            FileSystem fileSystem = new Path(table.location()).getFileSystem(jobConf);
-            String jobLocation = generateJobLocation(table.location(), jobConf, jobContext.getJobID());
-            // list jobLocation to get number of forCommit files
-            // we do this because map/reduce num in jobConf is unreliable
-            // and we have no access to vertex status info
-            int numTasks = listForCommits(jobConf, jobLocation).size();
-            FilesForCommit results = collectResults(numTasks, fileExecutor, table.location(), jobContext,
-                    table.io(), false);
-            for (DataFile dataFile : results.dataFiles()) {
-              Path filePath = new Path(dataFile.path().toString());
-              FileStatus fileStatus = fileSystem.getFileStatus(filePath);
-              parentDirToDataFile.computeIfAbsent(filePath.getParent(), k -> Lists.newArrayList()).add(fileStatus);
-            }
-            for (DeleteFile deleteFile : results.deleteFiles()) {
-              Path filePath = new Path(deleteFile.path().toString());
-              FileStatus fileStatus = fileSystem.getFileStatus(filePath);
-              parentDirToDeleteFile.computeIfAbsent(filePath.getParent(),
-                k -> Lists.newArrayList()).add(fileStatus);
+            for (JobContext jobContext : outputs.get(output)) {
+              LOG.info("Cleaning job for jobID: {}, table: {}", jobContext.getJobID(), output);
+              Table table = output.table;
+              FileSystem fileSystem = new Path(table.location()).getFileSystem(jobConf);
+              String jobLocation = generateJobLocation(table.location(), jobConf, jobContext.getJobID());
+              // list jobLocation to get number of forCommit files
+              // we do this because map/reduce num in jobConf is unreliable
+              // and we have no access to vertex status info
+              int numTasks = listForCommits(jobConf, jobLocation).size();
+              FilesForCommit results = collectResults(numTasks, fileExecutor, table.location(), jobContext,
+                  table.io(), false);
+              for (DataFile dataFile : results.dataFiles()) {
+                Path filePath = new Path(dataFile.path().toString());
+                parentDirToDataFile.computeIfAbsent(filePath.getParent(), k -> Lists.newArrayList())
+                    .add(fileSystem.getFileStatus(filePath));
+              }
+              for (DeleteFile deleteFile : results.deleteFiles()) {
+                Path filePath = new Path(deleteFile.path().toString());
+                parentDirToDeleteFile.computeIfAbsent(filePath.getParent(), k -> Lists.newArrayList())
+                    .add(fileSystem.getFileStatus(filePath));
+              }
             }
           }, IOException.class);
     } finally {
@@ -857,12 +860,11 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         tableExecutor.shutdown();
       }
     }
-    List<FileStatus> dataFiles = Lists.newArrayList();
-    dataFiles.addAll(parentDirToDataFile.values().stream()
-        .flatMap(List::stream).collect(Collectors.toList()));
-    dataFiles.addAll(parentDirToDeleteFile.values().stream()
-        .flatMap(List::stream).collect(Collectors.toList()));
-    return dataFiles;
+    return Stream.concat(
+        parentDirToDataFile.values().stream(),
+        parentDirToDeleteFile.values().stream())
+      .flatMap(List::stream)
+      .collect(Collectors.toList());
   }
 
   /**
@@ -873,29 +875,31 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    */
   public List<ContentFile> getOutputContentFiles(List<JobContext> jobContexts) throws IOException {
     Multimap<OutputTable, JobContext> outputs = collectOutputs(jobContexts);
-    ExecutorService fileExecutor = fileExecutor(jobContexts.get(0).getJobConf());
-    ExecutorService tableExecutor = tableExecutor(jobContexts.get(0).getJobConf(), outputs.size());
+    JobConf jobConf = jobContexts.get(0).getJobConf();
+
+    ExecutorService fileExecutor = fileExecutor(jobConf);
+    ExecutorService tableExecutor = tableExecutor(jobConf, outputs.keySet().size());
+
     Collection<ContentFile> files = new ConcurrentLinkedQueue<>();
     try {
-      Tasks.foreach(outputs.entries())
+      Tasks.foreach(outputs.keySet())
           .suppressFailureWhenFinished()
           .executeWith(tableExecutor)
           .onFailure((output, exc) -> LOG.warn("Failed to retrieve merge input file for the table {}", output, exc))
           .run(output -> {
-            JobContext jobContext = output.getValue();
-            JobConf jobConf = jobContext.getJobConf();
-            LOG.info("Cleaning job for jobID: {}, table: {}", jobContext.getJobID(), output);
-
-            Table table = output.getKey().table;
-            String jobLocation = generateJobLocation(table.location(), jobConf, jobContext.getJobID());
-            // list jobLocation to get number of forCommit files
-            // we do this because map/reduce num in jobConf is unreliable
-            // and we have no access to vertex status info
-            int numTasks = listForCommits(jobConf, jobLocation).size();
-            FilesForCommit results = collectResults(numTasks, fileExecutor, table.location(), jobContext,
-                    table.io(), false);
-            files.addAll(results.dataFiles());
-            files.addAll(results.deleteFiles());
+            for (JobContext jobContext : outputs.get(output)) {
+              LOG.info("Cleaning job for jobID: {}, table: {}", jobContext.getJobID(), output);
+              Table table = output.table;
+              String jobLocation = generateJobLocation(table.location(), jobConf, jobContext.getJobID());
+              // list jobLocation to get number of forCommit files
+              // we do this because map/reduce num in jobConf is unreliable
+              // and we have no access to vertex status info
+              int numTasks = listForCommits(jobConf, jobLocation).size();
+              FilesForCommit results = collectResults(numTasks, fileExecutor, table.location(), jobContext,
+                  table.io(), false);
+              files.addAll(results.dataFiles());
+              files.addAll(results.deleteFiles());
+            }
           }, IOException.class);
     } finally {
       fileExecutor.shutdown();
@@ -906,30 +910,25 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     return Lists.newArrayList(files);
   }
 
-  private void cleanMergeTaskInputFiles(List<JobContext> jobContexts,
-                                        ExecutorService fileExecutor) throws IOException {
+  private void cleanMergeTaskInputFiles(List<JobContext> jobContexts, ExecutorService fileExecutor) throws IOException {
     // Merge task has merged several files into one. Hence we need to remove the stale files.
     // At this stage the file is written and task-committed, but the old files are still present.
-    for (JobContext jobContext : jobContexts) {
-      JobConf jobConf = jobContext.getJobConf();
-      if (jobConf.getInputFormat().getClass().isAssignableFrom(CombineHiveInputFormat.class)) {
-        MapWork mrwork = Utilities.getMapWork(jobConf);
-        if (mrwork != null) {
-          List<Path> mergedPaths = mrwork.getInputPaths();
-          if (mergedPaths != null) {
-            Tasks.foreach(mergedPaths)
-                    .retry(3)
-                    .executeWith(fileExecutor)
-                    .run(path -> {
-                      FileSystem fs = path.getFileSystem(jobConf);
-                      if (fs.exists(path)) {
-                        fs.delete(path, true);
-                      }
-                    }, IOException.class);
+    Stream<Path> mergedPaths = jobContexts.stream()
+        .map(JobContext::getJobConf)
+        .filter(jobConf -> jobConf.getInputFormat().getClass().isAssignableFrom(CombineHiveInputFormat.class))
+        .map(Utilities::getMapWork).filter(Objects::nonNull)
+        .map(MapWork::getInputPaths).filter(Objects::nonNull)
+        .flatMap(List::stream);
+
+    Tasks.foreach(mergedPaths)
+        .retry(3)
+        .executeWith(fileExecutor)
+        .run(path -> {
+          FileSystem fs = path.getFileSystem(jobContexts.get(0).getJobConf());
+          if (fs.exists(path)) {
+            fs.delete(path, true);
           }
-        }
-      }
-    }
+        }, IOException.class);
   }
 
   /**
@@ -939,8 +938,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * @param branchName the name of the branch
    * @return The generated Optional JobContext list or empty if not presents.
    */
-  static List<JobContext> generateJobContext(Configuration configuration, String tableName,
-                                             String branchName) {
+  static List<JobContext> generateJobContext(Configuration configuration, String tableName, String branchName) {
     JobConf jobConf = new JobConf(configuration);
     Optional<Map<String, SessionStateUtil.CommitInfo>> commitInfoMap =
             SessionStateUtil.getCommitInfo(jobConf, tableName);
