@@ -95,7 +95,7 @@ import static org.mockito.Mockito.when;
  * Run all the tests from abstract of {@link CatalogTests} with few specific tests related to HIVE.
  */
 public class TestHiveCatalog extends CatalogTests<HiveCatalog> {
-  private static ImmutableMap meta = ImmutableMap.of(
+  private static final ImmutableMap meta = ImmutableMap.of(
       "owner", "apache",
       "group", "iceberg",
       "comment", "iceberg  hiveCatalog test");
