@@ -484,6 +484,14 @@ public class IcebergTableUtil {
         .stream()).distinct().collect(Collectors.toList());
   }
 
+  /**
+   * Returns a Map of PartitionData as the keys and partition spec ids as the values
+   * @param icebergTable Iceberg table
+   * @param partSpecMap Partition Spec used as the criteria for filtering
+   * @param allowPartialSpec When true, must return partitions which match partSpecMap exactly, otherwise partially
+   * @param latestSpecOnly When true, returns partitions with the latest partition spec only, otherwise with any specs
+   * @return Map of PartitionData and partition spec found based on the specified constraints
+   */
   public static Map<PartitionData, Integer> getPartitionInfo(Table icebergTable, Map<String, String> partSpecMap,
       boolean allowPartialSpec, boolean latestSpecOnly) throws SemanticException, IOException {
     Expression expression = IcebergTableUtil.generateExpressionFromPartitionSpec(icebergTable, partSpecMap);

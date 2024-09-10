@@ -93,4 +93,4 @@ alter table ice_orc PARTITION (dept_id=2, city='Paris') COMPACT 'major' and wait
 
 select * from ice_orc;
 describe formatted ice_orc;
-show compactions;
+show compactions order by 'partition';

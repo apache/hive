@@ -1,4 +1,4 @@
-PREHOOK: query: CREATE TABLE x (name VARCHAR(50), age TINYINT, num_clicks BIGINT) 
+ PREHOOK: query: CREATE TABLE x (name VARCHAR(50), age TINYINT, num_clicks BIGINT) 
 stored by iceberg stored as orc 
 TBLPROPERTIES ('external.table.purge'='true','format-version'='2')
 PREHOOK: type: CREATETABLE

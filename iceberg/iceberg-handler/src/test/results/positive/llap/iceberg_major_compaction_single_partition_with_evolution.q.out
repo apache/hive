@@ -639,12 +639,12 @@ InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat
 OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
 Compressed:         	No                  	 
 Sort Columns:       	[]                  	 
-PREHOOK: query: show compactions
+PREHOOK: query: show compactions order by 'partition'
 PREHOOK: type: SHOW COMPACTIONS
-POSTHOOK: query: show compactions
+POSTHOOK: query: show compactions order by 'partition'
 POSTHOOK: type: SHOW COMPACTIONS
 CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
-#Masked#	default	ice_orc	dept_id=1/city=London/registration_date=2024-03-11	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
-#Masked#	default	ice_orc	dept_id=2/city=Paris/registration_date=2024-02-16	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
 #Masked#	default	ice_orc	dept_id=1/city=London	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	ice_orc	dept_id=1/city=London/registration_date=2024-03-11	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
 #Masked#	default	ice_orc	dept_id=2/city=Paris	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	ice_orc	dept_id=2/city=Paris/registration_date=2024-02-16	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 

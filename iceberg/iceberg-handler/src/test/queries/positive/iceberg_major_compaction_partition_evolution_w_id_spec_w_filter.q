@@ -71,4 +71,4 @@ alter table ice_orc COMPACT 'major' and wait where team_id=10 or first_name in (
 
 select * from ice_orc;
 describe formatted ice_orc;
-show compactions;
+show compactions order by 'partition';

@@ -28,7 +28,6 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -2080,7 +2079,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     Expression exp = HiveIcebergFilterFactory.generateFilterExpression(sarg);
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     int tableSpecId = table.spec().specId();
-    List<Partition> partitions = Lists.newArrayList();
+    Set<Partition> partitions = Sets.newHashSet();
 
     TableScan scan = table.newScan().filter(exp).caseSensitive(false).includeColumnStats().ignoreResiduals();
 
@@ -2094,16 +2093,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
           Map<String, String> partSpecMap = Maps.newLinkedHashMap();
           Warehouse.makeSpecFromName(partSpecMap, new Path(partName), null);
           DummyPartition partition = new DummyPartition(hmsTable, partName, partSpecMap);
-          if (!partitions.contains(partition)) {
-            partitions.add(partition);
-          }
+          partitions.add(partition);
         }
       });
     } catch (IOException e) {
       throw new SemanticException(String.format("Error while fetching the partitions due to: %s", e));
     }
-    partitions.sort(Comparator.comparing(Partition::getName));
-    return partitions;
+    return Lists.newArrayList(partitions);
   }
 
   @Override

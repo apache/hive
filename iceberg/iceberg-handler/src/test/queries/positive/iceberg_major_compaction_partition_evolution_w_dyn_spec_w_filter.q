@@ -82,4 +82,4 @@ where (event_src in ('BBB_1', 'BBB_2') and event_time < '2024-09-01 00:00:00') o
 select * from ice_orc;
 describe formatted ice_orc;
 
-show compactions;
+show compactions order by 'partition';
