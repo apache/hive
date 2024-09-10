@@ -74,6 +74,27 @@ public class TestOptimisticRetry extends HiveIcebergStorageHandlerWithEngineBase
 
   }
 
+  @Test
+  public void testConcurrentOverwriteAndUpdate() {
+    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2,
+        formatVersion);
+    String[] sql =
+        new String[] {"INSERT OVERWRITE table customers SELECT * FROM customers where last_name='Taylor'",
+            "UPDATE customers SET first_name='Changed' WHERE  last_name='Taylor'"};
+
+    // The query shouldn't throw exception but rather retry & commit.
+    Tasks.range(2).executeWith(Executors.newFixedThreadPool(2)).run(i -> {
+      TestUtilPhaser.getInstance().getPhaser().register();
+      init(shell, testTables, temp, executionEngine);
+      HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
+      HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
+      HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES, RETRY_STRATEGIES);
+      shell.executeStatement(sql[i]);
+      shell.closeSession();
+    });
+  }
+
 
   @Test
   public void testNonOverlappingConcurrent2Updates() {

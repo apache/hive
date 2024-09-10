@@ -32,7 +32,6 @@ public class ReExecuteOnWriteConflictPlugin implements IReExecutionPlugin {
   private static final Logger LOG = LoggerFactory.getLogger(ReExecuteOnWriteConflictPlugin.class);
   private static boolean retryPossible;
 
-  private static final Pattern writeConflictErrorPattern = Pattern.compile("^Found.*conflicting.*files(.*)");
   private static final String validationException = "org.apache.iceberg.exceptions.ValidationException";
 
   private static final class LocalHook implements ExecuteWithHookContext {
@@ -44,8 +43,7 @@ public class ReExecuteOnWriteConflictPlugin implements IReExecutionPlugin {
         if (exception != null && exception.getMessage() != null) {
           Throwable cause = Throwables.getRootCause(exception);
 
-          if (cause.getClass().getName().equals(validationException) &&
-              cause.getMessage().matches(writeConflictErrorPattern.pattern())) {
+          if (cause.getClass().getName().equals(validationException)) {
             retryPossible = true;
             LOG.info("Retrying query due to write conflict.");
           }
