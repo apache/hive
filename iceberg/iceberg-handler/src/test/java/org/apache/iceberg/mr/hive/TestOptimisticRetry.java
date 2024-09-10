@@ -76,6 +76,7 @@ public class TestOptimisticRetry extends HiveIcebergStorageHandlerWithEngineBase
 
   @Test
   public void testConcurrentOverwriteAndUpdate() {
+    TestUtilPhaser.getInstance();
     testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2,
         formatVersion);
@@ -93,6 +94,7 @@ public class TestOptimisticRetry extends HiveIcebergStorageHandlerWithEngineBase
       shell.executeStatement(sql[i]);
       shell.closeSession();
     });
+    TestUtilPhaser.destroyInstance();
   }
 
 
