@@ -172,7 +172,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSortLimitR
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveEmptySingleRules;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JdbcAggregateProjectMergeRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAggregateProjectMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializationRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelDistribution;
@@ -2297,7 +2297,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         rules.add(JDBCFilterJoinRule.INSTANCE);
         rules.add(JDBCFilterPushDownRule.INSTANCE);
         rules.add(JDBCProjectPushDownRule.INSTANCE);
-        rules.add(JdbcAggregateProjectMergeRule.INSTANCE);
+        rules.add(JDBCAggregateProjectMergeRule.INSTANCE);
         if (!conf.getBoolVar(ConfVars.HIVE_ENABLE_JDBC_SAFE_PUSHDOWN)) {
           rules.add(JDBCJoinPushDownRule.INSTANCE);
           rules.add(JDBCUnionPushDownRule.INSTANCE);

@@ -18,12 +18,8 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc;
 
 import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcAggregate;
 import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcProject;
-import org.apache.calcite.plan.RelOptRuleCall;
-import org.apache.calcite.rel.core.Aggregate;
-import org.apache.calcite.rel.core.AggregateCall;
-import org.apache.calcite.rel.rules.AggregateProjectMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateProjectMergeRule;
 
 /**
  * Planner rule that recognizes a {@link JdbcAggregate}
@@ -36,24 +32,11 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
  * <p>In some cases, this rule has the effect of trimming: the aggregate will
  * use fewer columns than the project did.
  */
-public class JdbcAggregateProjectMergeRule extends AggregateProjectMergeRule {
-  public static final JdbcAggregateProjectMergeRule INSTANCE = 
-      new JdbcAggregateProjectMergeRule();
+public class JDBCAggregateProjectMergeRule extends HiveAggregateProjectMergeRule {
+  public static final JDBCAggregateProjectMergeRule INSTANCE = 
+      new JDBCAggregateProjectMergeRule();
   
-  private JdbcAggregateProjectMergeRule() {
+  private JDBCAggregateProjectMergeRule() {
     super(JdbcAggregate.class, JdbcProject.class, HiveRelFactories.HIVE_BUILDER);
-  }
-
-  @Override
-  public boolean matches(RelOptRuleCall call) {
-    final Aggregate aggregate = call.rel(0);
-    // Rule cannot be applied if there are GroupingId because it will change the
-    // value as the position will be changed.
-    for (AggregateCall aggCall : aggregate.getAggCallList()) {
-      if (aggCall.getAggregation().equals(HiveGroupingID.INSTANCE)) {
-        return false;
-      }
-    }
-    return super.matches(call);
   }
 }
