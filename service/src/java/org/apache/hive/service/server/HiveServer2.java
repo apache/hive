@@ -105,6 +105,8 @@ import org.apache.hive.http.security.PamAuthenticator;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.ServiceException;
 import org.apache.hive.service.auth.AuthType;
+import org.apache.hive.service.auth.PasswdAuthenticationProvider;
+import org.apache.hive.service.auth.ldap.LdapAuthService;
 import org.apache.hive.service.auth.saml.HiveSaml2Client;
 import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -114,6 +116,8 @@ import org.apache.hive.service.cli.thrift.ThriftCLIService;
 import org.apache.hive.service.cli.thrift.ThriftHttpCLIService;
 import org.apache.hive.service.servlet.HS2LeadershipStatus;
 import org.apache.hive.service.servlet.HS2Peers;
+import org.apache.hive.service.servlet.LDAPAuthenticationFilter;
+import org.apache.hive.service.servlet.LoginServlet;
 import org.apache.hive.service.servlet.QueriesRESTfulAPIServlet;
 import org.apache.hive.service.servlet.QueryProfileServlet;
 import org.apache.http.StatusLine;
@@ -128,6 +132,8 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooDefs.Perms;
 import org.apache.zookeeper.data.ACL;
+import org.eclipse.jetty.servlet.FilterHolder;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -145,6 +151,7 @@ import javax.servlet.jsp.JspFactory;
 public class HiveServer2 extends CompositeService {
   private static final Logger LOG = LoggerFactory.getLogger(HiveServer2.class);
   public static final String INSTANCE_URI_CONFIG = "hive.server2.instance.uri";
+  public static final String HS2_WEBUI_ROOT_URI = "/hiveserver2.jsp";
   private static final int SHUTDOWN_TIME = 60;
 
   private static CountDownLatch zkDeleteSignal;
@@ -157,6 +164,8 @@ public class HiveServer2 extends CompositeService {
   private TezSessionPoolManager tezSessionPoolManager;
   private WorkloadManager wm;
   private PamAuthenticator pamAuthenticator;
+  private PasswdAuthenticationProvider passwdAuthenticationProvider;
+  private LdapAuthService ldapAuthService;
   private Map<String, String> confsToPublish = new HashMap<String, String>();
   private String serviceUri;
   private boolean serviceDiscovery;
@@ -174,6 +183,20 @@ public class HiveServer2 extends CompositeService {
   private ScheduledQueryExecutionService scheduledQueryService;
   private ServiceContext serviceContext;
 
+  public enum WebUIAuthMethod {
+    NONE, LDAP
+  }
+
+  public static WebUIAuthMethod getWebUIAuthMethod(String method) {
+    String m = StringUtils.defaultString(method).toLowerCase();
+    switch (m) {
+      case "ldap":
+        return WebUIAuthMethod.LDAP;
+      default:
+        return WebUIAuthMethod.NONE;
+    }
+  }
+
   public HiveServer2() {
     super(HiveServer2.class.getSimpleName());
     HiveConf.setLoadHiveServer2Config(true);
@@ -184,6 +207,13 @@ public class HiveServer2 extends CompositeService {
     super(HiveServer2.class.getSimpleName());
     HiveConf.setLoadHiveServer2Config(true);
     this.pamAuthenticator = pamAuthenticator;
+  }
+
+  @VisibleForTesting
+  public HiveServer2(PasswdAuthenticationProvider passwdAuthenticationProvider) {
+    super(HiveServer2.class.getSimpleName());
+    HiveConf.setLoadHiveServer2Config(true);
+    this.passwdAuthenticationProvider = passwdAuthenticationProvider;
   }
 
   @VisibleForTesting
@@ -212,6 +242,10 @@ public class HiveServer2 extends CompositeService {
 
   private void resetNotLeaderTestFuture() {
     notLeaderTestFuture = SettableFuture.create();
+  }
+
+  public LdapAuthService getLdapAuthService() {
+    return ldapAuthService;
   }
 
   @Override
@@ -443,11 +477,26 @@ public class HiveServer2 extends CompositeService {
           }
           builder.addServlet("llap", LlapServlet.class);
           builder.addServlet("jdbcjar", JdbcJarDownloadServlet.class);
-          builder.setContextRootRewriteTarget("/hiveserver2.jsp");
+          builder.setContextRootRewriteTarget(HS2_WEBUI_ROOT_URI);
 
           webServer = builder.build();
           webServer.addServlet("query_page", "/query_page.html", QueryProfileServlet.class);
           webServer.addServlet("api", "/api/*", QueriesRESTfulAPIServlet.class);
+
+          String webUIAuthMethodConfig = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_AUTH_METHOD);
+          WebUIAuthMethod webUIAuthMethod = getWebUIAuthMethod(webUIAuthMethodConfig);
+              
+          switch (webUIAuthMethod) {
+            case LDAP:
+              if (passwdAuthenticationProvider == null) {
+                ldapAuthService = new LdapAuthService(hiveConf);
+              } else {
+                ldapAuthService = new LdapAuthService(hiveConf, passwdAuthenticationProvider);
+              }
+              webServer.addServlet("login", "/login", new ServletHolder(new LoginServlet(ldapAuthService)));
+              webServer.addFilter("ldap", new FilterHolder(new LDAPAuthenticationFilter(ldapAuthService)));
+              break;
+          }
         }
       }
     } catch (IOException ie) {
