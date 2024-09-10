@@ -2128,5 +2128,16 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>derby-test</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.derby</groupId>
+          <artifactId>derby</artifactId>
+          <version>10.14.2.0</version>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+    </profile>
   </profiles>
 </project>

@@ -288,7 +288,7 @@ fi
             loadWS();
         }
         stage('init-metastore') {
-           withEnv(["dbType=$dbType"]) {
+           withEnv(["dbType=$dbType","MAVEN_OPTS=-P derby-test"]) {
              sh '''#!/bin/bash -e
 set -x
 echo 127.0.0.1 dev_$dbType | sudo tee -a /etc/hosts

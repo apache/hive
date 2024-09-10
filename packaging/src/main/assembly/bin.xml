@@ -49,6 +49,7 @@
         <exclude>commons-configuration:commons-configuration</exclude>
         <exclude>org.apache.hive:hive-jdbc:*:standalone</exclude>
         <exclude>org.apache.hive:hive-contrib</exclude>
+        <exclude>org.apache.derby:derby</exclude>
       </excludes>
     </dependencySet>
     <dependencySet>
