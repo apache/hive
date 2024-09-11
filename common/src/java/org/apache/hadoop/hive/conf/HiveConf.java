@@ -5795,7 +5795,7 @@ public class HiveConf extends Configuration {
     REWRITE_POLICY("hive.rewrite.data.policy", "DEFAULT", 
         "Defines the rewrite policy, the valid values are those defined in RewritePolicy enum"),
 
-    HIVE_OTEL_METRICS_FREQUENCY_SECONDS("hive.otel.metrics.frequency.seconds", "10s",
+    HIVE_OTEL_METRICS_FREQUENCY_SECONDS("hive.otel.metrics.frequency.seconds", "0s",
         new TimeValidator(TimeUnit.SECONDS),
         "Frequency at which the OTEL Metrics are refreshed, A value of 0 or less disable the feature");
 
