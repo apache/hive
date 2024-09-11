@@ -34,7 +34,6 @@ import io.opentelemetry.sdk.internal.AttributesMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.hadoop.hive.ql.QueryDisplay;
 import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hive.service.cli.operation.OperationManager;
@@ -112,12 +111,12 @@ public class OTELExporter extends Thread {
   private void addTaskAttributes(AttributesMap attributes, QueryDisplay.TaskDisplay taskDisplay) {
     attributes.put(AttributeKey.stringKey("TaskId"), taskDisplay.getTaskId());
     attributes.put(AttributeKey.stringKey("Name"), taskDisplay.getName());
-    attributes.put(AttributeKey.stringKey("TaskType"), taskDisplay.getTaskType());
+    attributes.put(AttributeKey.stringKey("TaskType"), taskDisplay.getTaskType().toString());
     attributes.put(AttributeKey.longKey("Status"), taskDisplay.getStatus());
     attributes.put(AttributeKey.longKey("StatusMessage"), taskDisplay.getStatusMessage());
     attributes.put(AttributeKey.stringKey("ExternalHandle"), taskDisplay.getExternalHandle());
     attributes.put(AttributeKey.stringKey("ErrorMsg"), taskDisplay.getErrorMsg());
-    attributes.put(AttributeKey.longKey("ReturnValue"), taskDisplay.getReturnValue());
+    attributes.put(AttributeKey.longKey("ReturnValue"), taskDisplay.getReturnValue().longValue());
     attributes.put(AttributeKey.longKey("BeginTime"), taskDisplay.getBeginTime());
     attributes.put(AttributeKey.longKey("ElapsedTime"), taskDisplay.getElapsedTime());
     attributes.put(AttributeKey.longKey("EndTime"), taskDisplay.getEndTime());
