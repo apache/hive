@@ -811,7 +811,7 @@ public interface HiveStorageHandler extends Configurable {
    * @param filter Iceberg filter expression
    * @return List of Partitions {@link org.apache.hadoop.hive.ql.metadata.Partition}
    */
-  default List<Partition> getPartitionsByExpr(org.apache.hadoop.hive.ql.metadata.Table hmsTable, ExprNodeDesc desc)
+  default List<Partition> getPartitionsByExpr(org.apache.hadoop.hive.ql.metadata.Table hmsTable, ExprNodeDesc filter)
           throws SemanticException {
     throw new UnsupportedOperationException("Storage handler does not support getting partitions by expression " +
             "for a table.");

@@ -88,8 +88,13 @@ public class DummyPartition extends Partition {
   public boolean equals(Object obj) {
     if (obj instanceof DummyPartition) {
       DummyPartition o = (DummyPartition) obj;
-      return Objects.equals(partSpec, o.partSpec);
+      return Objects.equals(name, o.name) && Objects.equals(partSpec, o.partSpec);
     }
     return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(name) + Objects.hashCode(partSpec);
   }
 }

@@ -2067,9 +2067,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public List<Partition> getPartitionsByExpr(org.apache.hadoop.hive.ql.metadata.Table hmsTable, ExprNodeDesc desc)
+  public List<Partition> getPartitionsByExpr(org.apache.hadoop.hive.ql.metadata.Table hmsTable, ExprNodeDesc filter)
       throws SemanticException {
-    return getPartitionsByExpr(hmsTable, desc, true);
+    return getPartitionsByExpr(hmsTable, filter, true);
   }
 
   @Override
@@ -2099,7 +2099,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     } catch (IOException e) {
       throw new SemanticException(String.format("Error while fetching the partitions due to: %s", e));
     }
-    return Lists.newArrayList(partitions);
+    return ImmutableList.copyOf(partitions);
   }
 
   @Override
