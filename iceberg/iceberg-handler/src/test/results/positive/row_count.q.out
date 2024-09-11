@@ -102,7 +102,7 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"orderid\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"quantity\",\"required\":false,\"type\":\"int\"},{\"id\":3,\"name\":\"itemid\",\"required\":false,\"type\":\"int\"},{\"id\":4,\"name\":\"tradets\",\"required\":false,\"type\":\"timestamp\"},{\"id\":5,\"name\":\"p1\",\"required\":false,\"type\":\"string\"},{\"id\":6,\"name\":\"p2\",\"required\":false,\"type\":\"string\"}]}
 	current-snapshot-id 	#SnapshotId#
-	current-snapshot-summary	{\"added-data-files\":\"10\",\"added-records\":\"21\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"10\",\"total-records\":\"21\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"10\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-summary	{\"added-data-files\":\"10\",\"added-records\":\"21\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"10\",\"total-records\":\"21\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"10\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"p1\",\"transform\":\"identity\",\"source-id\":5,\"field-id\":1000},{\"name\":\"p2\",\"transform\":\"identity\",\"source-id\":6,\"field-id\":1001}]}
 	format-version      	2                   
@@ -187,7 +187,7 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"orderid\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"quantity\",\"required\":false,\"type\":\"int\"},{\"id\":3,\"name\":\"itemid\",\"required\":false,\"type\":\"int\"},{\"id\":4,\"name\":\"tradets\",\"required\":false,\"type\":\"timestamp\"},{\"id\":5,\"name\":\"p1\",\"required\":false,\"type\":\"string\"},{\"id\":6,\"name\":\"p2\",\"required\":false,\"type\":\"string\"}]}
 	current-snapshot-id 	#SnapshotId#
-	current-snapshot-summary	{\"added-position-delete-files\":\"5\",\"added-delete-files\":\"5\",\"added-files-size\":\"#Masked#\",\"added-position-deletes\":\"6\",\"changed-partition-count\":\"5\",\"total-records\":\"21\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"10\",\"total-delete-files\":\"9\",\"total-position-deletes\":\"10\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-summary	{\"added-position-delete-files\":\"5\",\"added-delete-files\":\"5\",\"added-files-size\":\"#Masked#\",\"added-position-deletes\":\"6\",\"changed-partition-count\":\"5\",\"total-records\":\"21\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"10\",\"total-delete-files\":\"9\",\"total-position-deletes\":\"10\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"p1\",\"transform\":\"identity\",\"source-id\":5,\"field-id\":1000},{\"name\":\"p2\",\"transform\":\"identity\",\"source-id\":6,\"field-id\":1001}]}
 	format-version      	2                   
@@ -241,8 +241,8 @@ Stage-0
           PARTITION_ONLY_SHUFFLE [RS_9]
             Group By Operator [GBY_8] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
-              Select Operator [SEL_7] (rows=11 width=15###)
-                TableScan [TS_0] (rows=11 width=15###)
+              Select Operator [SEL_7] (rows=11 width=14970)
+                TableScan [TS_0] (rows=11 width=14970)
                   default@llap_orders,llap_orders,Tbl:COMPLETE,Col:COMPLETE
 
 PREHOOK: query: explain insert into  llap_orders select * from llap_orders limit 100000

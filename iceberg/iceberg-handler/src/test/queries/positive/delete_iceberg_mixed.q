@@ -4,6 +4,8 @@
 --! qt:replace:/("added-files-size":")\d+/$1#FileSize#/
 --! qt:replace:/("total-files-size":")\d+/$1#FileSize#/
 --! qt:replace:/("removed-files-size":")\d+/$1#FileSize#/
+-- Mask iceberg version
+--! qt:replace:/(\S\"iceberg-version\\\":\\\")(\w+\s\w+\s\d+\.\d+\.\d+\s\(\w+\s\w+\))(\\\")/$1#Masked#$3/
 
 -- create an unpartitioned table with skip delete data set to false
 set hive.cbo.fallback.strategy=NEVER;

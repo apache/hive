@@ -3,6 +3,8 @@
 --! qt:replace:/("file_size_in_bytes":)\d+/$1#Masked#/
 --! qt:replace:/("total-files-size":)\d+/$1#Masked#/
 --! qt:replace:/((ORC|PARQUET|AVRO)\s+\d+\s+)\d+/$1#Masked#/
+-- Mask iceberg version
+--! qt:replace:/("iceberg-version":")(\w+\s\w+\s\d+\.\d+\.\d+\s\(\w+\s\w+\))/$1#Masked#/
 
 set tez.mrreader.config.update.properties=hive.io.file.readcolumn.names,hive.io.file.readcolumn.ids;
 set hive.query.results.cache.enabled=false;

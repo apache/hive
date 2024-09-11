@@ -4,6 +4,8 @@
 --! qt:replace:/('current-snapshot-id'=')\d+/$1#SnapshotId#/
 -- Mask current-snapshot-timestamp-ms
 --! qt:replace:/('current-snapshot-timestamp-ms'=')\d+/$1#Masked#/
+-- Mask iceberg version
+--! qt:replace:/("iceberg-version":")(\w+\s\w+\s\d+\.\d+\.\d+\s\(\w+\s\w+\))/$1#Masked#/
 
 DROP TABLE IF EXISTS ice_t;
 CREATE EXTERNAL TABLE ice_t (i int, s string, ts timestamp, d date) STORED BY ICEBERG;
