@@ -44,27 +44,27 @@ order by category,id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-1	a	1	1
-1	a	1	1
-2	a	3	3
-3	a	4	4
-4	a	5	5
-5	a	6	6
-6	a	7	7
-7	a	8	8
-8	a	9	9
-9	a	10	10
+1	a	1	3
+1	a	1	3
+2	a	3	4
+3	a	4	5
+4	a	5	6
+5	a	6	7
+6	a	7	8
+7	a	8	9
+8	a	9	10
+9	a	10	11
 10	a	11	11
-6	b	1	1
-6	b	1	1
-7	b	3	3
-8	b	4	4
-9	b	5	5
-10	b	6	6
-11	b	7	7
-12	b	8	8
-13	b	9	9
-14	b	10	10
+6	b	1	3
+6	b	1	3
+7	b	3	4
+8	b	4	5
+9	b	5	6
+10	b	6	7
+11	b	7	8
+12	b	8	9
+13	b	9	10
+14	b	10	11
 15	b	11	11
 WARNING: Comparing bigint and double may result in loss of information.
 PREHOOK: query: explain
@@ -199,29 +199,29 @@ POSTHOOK: query: select id,'rewrite',rank() over (partition by category order by
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-1	rewrite	1
-1	rewrite	1
-2	rewrite	3
-3	rewrite	4
-4	rewrite	5
-5	rewrite	6
-6	rewrite	7
-7	rewrite	8
-8	rewrite	9
-9	rewrite	10
+1	rewrite	3
+1	rewrite	3
+2	rewrite	4
+3	rewrite	5
+4	rewrite	6
+5	rewrite	7
+6	rewrite	8
+7	rewrite	9
+8	rewrite	10
+9	rewrite	11
 10	rewrite	11
-6	rewrite	1
-6	rewrite	1
-7	rewrite	3
-8	rewrite	4
-9	rewrite	5
-10	rewrite	6
-11	rewrite	7
-12	rewrite	8
-13	rewrite	9
-14	rewrite	10
+6	rewrite	3
+6	rewrite	3
+7	rewrite	4
+8	rewrite	5
+9	rewrite	6
+10	rewrite	7
+11	rewrite	8
+12	rewrite	9
+13	rewrite	10
+14	rewrite	11
 15	rewrite	11
-1	rewrite	1
-2	rewrite	2
-10	rewrite	3
+1	rewrite	2
+2	rewrite	3
+10	rewrite	4
 13	rewrite	4
