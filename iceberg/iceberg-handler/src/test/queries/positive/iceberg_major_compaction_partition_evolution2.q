@@ -45,11 +45,11 @@ delete from ice_orc where last_name in ('ln7', 'ln8');
 
 select * from ice_orc;
 describe formatted ice_orc;
-show compactions;
+show compactions order by 'partition';
 
 alter table ice_orc COMPACT 'major' and wait;
 
 select * from ice_orc;
 describe formatted ice_orc;
-show compactions;
+show compactions order by 'partition';
 

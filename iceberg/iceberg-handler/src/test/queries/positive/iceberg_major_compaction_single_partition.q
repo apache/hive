@@ -59,11 +59,11 @@ alter table ice_orc_wo_evo PARTITION (dept_id=1, city='London', registration_dat
 
 select * from ice_orc_wo_evo;
 describe formatted ice_orc_wo_evo;
-show compactions;
+show compactions order by 'partition';
 
 explain alter table ice_orc_wo_evo PARTITION (dept_id=2, city='Paris', registration_date='2024-02-16') COMPACT 'major' and wait;
 alter table ice_orc_wo_evo PARTITION (dept_id=2, city='Paris', registration_date='2024-02-16') COMPACT 'major' and wait;
 
 select * from ice_orc_wo_evo;
 describe formatted ice_orc_wo_evo;
-show compactions;
+show compactions order by 'partition';

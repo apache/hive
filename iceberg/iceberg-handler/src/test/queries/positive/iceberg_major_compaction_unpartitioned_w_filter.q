@@ -11,6 +11,7 @@
 --! qt:replace:/(\S\"total-files-size\\\":\\\")(\d+)(\\\")/$1#Masked#$3/
 -- Mask current-snapshot-timestamp-ms
 --! qt:replace:/(\s+current-snapshot-timestamp-ms\s+)\S+(\s*)/$1#Masked#$2/
+-- Mask the enqueue time which is based on current time
 --! qt:replace:/(MAJOR\s+succeeded\s+)[a-zA-Z0-9\-\.\s+]+(\s+manual)/$1#Masked#$2/
 -- Mask compaction id as they will be allocated in parallel threads
 --! qt:replace:/^[0-9]/#Masked#/
@@ -25,42 +26,33 @@ create table ice_orc (
     first_name string, 
     last_name string
  )
-partitioned by (dept_id bigint)
 stored by iceberg stored as orc 
 tblproperties ('format-version'='2');
 
-insert into ice_orc (first_name, last_name, dept_id) VALUES ('fn1','ln1', 1);
-insert into ice_orc (first_name, last_name, dept_id) VALUES ('fn2','ln2', 1);
-insert into ice_orc (first_name, last_name, dept_id) VALUES ('fn3','ln3', 1);
-insert into ice_orc (first_name, last_name, dept_id) VALUES ('fn4','ln4', 1);
-
-alter table ice_orc add columns (address string);
-
-insert into ice_orc (first_name, last_name, address, dept_id) VALUES ('fn5','ln5', 'addr_5', 2);
-insert into ice_orc (first_name, last_name, address, dept_id) VALUES ('fn6','ln6', 'addr_6', 2);
-insert into ice_orc (first_name, last_name, address, dept_id) VALUES ('fn7','ln7', 'addr_7', 2);
-insert into ice_orc (first_name, last_name, address, dept_id) VALUES ('fn8','ln8', 'addr_8', 2);
+insert into ice_orc VALUES ('fn1','ln1');
+insert into ice_orc VALUES ('fn2','ln2');
+insert into ice_orc VALUES ('fn3','ln3');
+insert into ice_orc VALUES ('fn4','ln4');
+insert into ice_orc VALUES ('fn5','ln5');
+insert into ice_orc VALUES ('fn6','ln6');
+insert into ice_orc VALUES ('fn7','ln7');
 
 update ice_orc set last_name = 'ln1a' where first_name='fn1';
 update ice_orc set last_name = 'ln2a' where first_name='fn2';
 update ice_orc set last_name = 'ln3a' where first_name='fn3';
 update ice_orc set last_name = 'ln4a' where first_name='fn4';
+update ice_orc set last_name = 'ln5a' where first_name='fn5';
+update ice_orc set last_name = 'ln6a' where first_name='fn6';
+update ice_orc set last_name = 'ln7a' where first_name='fn7';
 
-alter table ice_orc change first_name fname string;
-
-update ice_orc set last_name = 'ln5a' where fname='fn5';
-update ice_orc set last_name = 'ln6a' where fname='fn6';
-update ice_orc set last_name = 'ln7a' where fname='fn7';
-update ice_orc set last_name = 'ln8a' where fname='fn8';
-
-delete from ice_orc where fname in ('fn1', 'fn3', 'fn7');
+delete from ice_orc where last_name in ('ln5a', 'ln6a', 'ln7a');
 
 select * from ice_orc;
 describe formatted ice_orc;
 
-explain alter table ice_orc COMPACT 'major' and wait;
-alter table ice_orc COMPACT 'major' and wait;
+explain alter table ice_orc COMPACT 'major' and wait where last_name in ('ln1a', 'ln2a');
+alter table ice_orc COMPACT 'major' and wait where last_name in ('ln1a', 'ln2a');
 
 select * from ice_orc;
 describe formatted ice_orc;
-show compactions order by 'partition';
+show compactions;

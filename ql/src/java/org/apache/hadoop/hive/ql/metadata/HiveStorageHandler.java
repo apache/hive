@@ -804,10 +804,30 @@ public interface HiveStorageHandler extends Configurable {
             "for a table.");
   }
 
-  default List<Partition> getPartitionsByExpr(org.apache.hadoop.hive.ql.metadata.Table hmsTable, ExprNodeDesc desc)
+  /**
+   * Returns a list of partitions with the latest partition spec which contain any files whose content falls under 
+   * the provided filter condition.
+   * @param hmsTable {@link org.apache.hadoop.hive.ql.metadata.Table} table metadata stored in Hive Metastore
+   * @param filter Iceberg filter expression
+   * @return List of Partitions {@link org.apache.hadoop.hive.ql.metadata.Partition}
+   */
+  default List<Partition> getPartitionsByExpr(org.apache.hadoop.hive.ql.metadata.Table hmsTable, ExprNodeDesc filter)
           throws SemanticException {
     throw new UnsupportedOperationException("Storage handler does not support getting partitions by expression " +
             "for a table.");
+  }
+
+  /**
+   * Returns a list of partitions which contain any files whose content falls under the provided filter condition.
+   * @param hmsTable {@link org.apache.hadoop.hive.ql.metadata.Table} table metadata stored in Hive Metastore
+   * @param filter Iceberg filter expression
+   * @param latestSpecOnly When true, returns partitions with the latest partition spec, else with the older specs only.
+   * @return List of Partitions {@link org.apache.hadoop.hive.ql.metadata.Partition}
+   */
+  default List<Partition> getPartitionsByExpr(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+                                              ExprNodeDesc filter, boolean latestSpecOnly) throws SemanticException {
+    throw new UnsupportedOperationException("Storage handler does not support getting partitions " +
+        "by generic expressions");
   }
 
   /**
@@ -836,7 +856,7 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
-   * Returns a list of partitions based on table and partial partition specification.
+   * Returns a list of partitions with the latest partition spec based on table and partial partition specification.
    * @param table {@link org.apache.hadoop.hive.ql.metadata.Table} table metadata stored in Hive Metastore
    * @param partitionSpec Map of Strings {@link java.util.Map} partition specification
    * @return List of Partitions {@link org.apache.hadoop.hive.ql.metadata.Partition}
@@ -851,7 +871,7 @@ public interface HiveStorageHandler extends Configurable {
    * Returns a list of partitions based on table and partial partition specification.
    * @param table {@link org.apache.hadoop.hive.ql.metadata.Table} table metadata stored in Hive Metastore
    * @param partitionSpec Map of Strings {@link java.util.Map} partition specification
-   * @param latestSpecOnly Specifies if to return only partitions for the latest partition spec
+   * @param latestSpecOnly When true, returns partitions with the latest partition spec, else with older specs
    * @return List of Partitions {@link org.apache.hadoop.hive.ql.metadata.Partition}
    * @throws SemanticException {@link org.apache.hadoop.hive.ql.parse.SemanticException}
    */
@@ -867,6 +887,16 @@ public interface HiveStorageHandler extends Configurable {
   default boolean hasUndergonePartitionEvolution(org.apache.hadoop.hive.ql.metadata.Table table) {
     throw new UnsupportedOperationException("Storage handler does not support checking if table " +
         "undergone partition evolution.");
+  }
+
+  /**
+   * Returns true if the table contain any records matching the filter expression, false otherwise
+   * @param hmsTable {@link org.apache.hadoop.hive.ql.metadata.Table} table metadata stored in Hive Metastore
+   * @param filter Iceberg filter expression
+   * @return boolean 
+   */
+  default boolean hasDataMatchingFilterExpr(org.apache.hadoop.hive.ql.metadata.Table hmsTable, ExprNodeDesc filter) {
+    throw new UnsupportedOperationException("Storage handler does not support checking if filter has any match");
   }
 
   default boolean supportsMergeFiles() {

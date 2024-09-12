@@ -31,34 +31,43 @@ partitioned by (company_id bigint)
 stored by iceberg stored as orc 
 tblproperties ('format-version'='2');
 
-insert into ice_orc VALUES ('fn1','ln1', 1, 10, 100);
-insert into ice_orc VALUES ('fn2','ln2', 1, 10, 100);
-insert into ice_orc VALUES ('fn3','ln3', 1, 11, 100);
+insert into ice_orc VALUES 
+    ('fn1','ln1', 1, 10, 100), 
+    ('fn2','ln2', 1, 10, 100);
+insert into ice_orc VALUES 
+    ('fn3','ln3', 2, 11, 100),
+    ('fn4','ln4', 2, 11, 100);
+insert into ice_orc VALUES 
+    ('fn5','ln5', 3, 12, 100),
+    ('fn6','ln6', 3, 12, 100);
+insert into ice_orc VALUES 
+    ('fn7','ln7', 4, 13, 100),
+    ('fn8','ln8', 4, 13, 100);
+    
 alter table ice_orc set partition spec(company_id, dept_id);
-insert into ice_orc VALUES ('fn4','ln4', 1, 11, 100);
-insert into ice_orc VALUES ('fn5','ln5', 2, 20, 100);
-insert into ice_orc VALUES ('fn6','ln6', 2, 20, 100);
-alter table ice_orc set partition spec(company_id, dept_id, team_id);
-insert into ice_orc VALUES ('fn7','ln7', 2, 21, 100);
-insert into ice_orc VALUES ('fn8','ln8', 2, 21, 100);
 
-update ice_orc set last_name = 'ln1a' where first_name='fn1';
-update ice_orc set last_name = 'ln2a' where first_name='fn2';
-update ice_orc set last_name = 'ln3a' where first_name='fn3';
-update ice_orc set last_name = 'ln4a' where first_name='fn4';
-alter table ice_orc set partition spec(company_id, dept_id);
-update ice_orc set last_name = 'ln5a' where first_name='fn5';
-update ice_orc set last_name = 'ln6a' where first_name='fn6';
-update ice_orc set last_name = 'ln7a' where first_name='fn7';
-update ice_orc set last_name = 'ln8a' where first_name='fn8';
+insert into ice_orc VALUES 
+    ('fn9', 'ln9',  1, 10, 100),
+    ('fn10','ln10', 1, 10, 100);
+insert into ice_orc VALUES 
+    ('fn11','ln11', 2, 11, 100),
+    ('fn12','ln12', 2, 11, 100);
+insert into ice_orc VALUES 
+    ('fn13','ln13', 3, 12, 100),
+    ('fn14','ln14', 3, 12, 100);
+insert into ice_orc VALUES 
+    ('fn15','ln15', 4, 13, 100),
+    ('fn16','ln16', 4, 13, 100);
 
-delete from ice_orc where last_name in ('ln1a', 'ln8a');
+delete from ice_orc where last_name in ('ln1', 'ln9');
+delete from ice_orc where last_name in ('ln3', 'ln11');
+delete from ice_orc where last_name in ('ln5', 'ln13');
 
 select * from ice_orc;
 describe formatted ice_orc;
 
-explain alter table ice_orc COMPACT 'major' and wait;
-alter table ice_orc COMPACT 'major' and wait;
+explain alter table ice_orc COMPACT 'major' and wait where team_id=10 or first_name in ('fn3', 'fn11') or last_name in ('ln7', 'ln15');
+alter table ice_orc COMPACT 'major' and wait where team_id=10 or first_name in ('fn3', 'fn11') or last_name in ('ln7', 'ln15');
 
 select * from ice_orc;
 describe formatted ice_orc;
