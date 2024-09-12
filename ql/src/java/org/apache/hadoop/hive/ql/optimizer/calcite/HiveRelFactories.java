@@ -92,8 +92,7 @@ public class HiveRelFactories {
   public static final SetOpFactory HIVE_SET_OP_FACTORY =
           new HiveSetOpFactoryImpl();
 
-  public static final RelFactories.SpoolFactory HIVE_SPOOL_FACTORY =
-      (input, readType, writeType, table) -> new HiveTableSpool(input, readType, writeType, table);
+  public static final RelFactories.SpoolFactory HIVE_SPOOL_FACTORY = HiveTableSpool::new;
 
   public static final RelBuilderFactory HIVE_BUILDER =
       HiveRelBuilder.proto(

@@ -2144,20 +2144,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
         return basePlan;
       }
       HiveRelMetadataQuery mq = (HiveRelMetadataQuery) basePlan.getCluster().getMetadataQuery();
-      final boolean checkFullAggregate = conf.getBoolVar(ConfVars.HIVE_CTE_MATERIALIZE_FULL_AGGREGATE_ONLY);
       List<RelOptMaterialization> cteMVs = new ArrayList<>();
       for (int i = 0; i < ctes.size(); i++) {
         final RelNode cte = ctes.get(i);
-        ImmutableBitSet cteOutputColumns = ImmutableBitSet.range(cte.getRowType().getFieldCount());
-        if (checkFullAggregate && !Boolean.TRUE.equals(mq.areColumnsAggregated(cte, cteOutputColumns))) {
-          LOG.debug("Skipping CTE {} cause its not a full aggregate.", cte);
-          continue;
+        if (isMaterializableCte(mq, cte)) {
+          cteMVs.add(HiveMaterializedViewUtils.createCTEMaterialization("cte_suggestion_" + i, cte, conf));
         }
-        if (HiveSqlTypeUtil.containsSqlType(cte.getRowType(), SqlTypeName.NULL)) {
-          LOG.debug("Skipping CTE {} cause it contains untyped nulls", cte);
-          continue;
-        }
-        cteMVs.add(HiveMaterializedViewUtils.createCTEMaterialization("cte_suggestion_" + i, cte, conf));
       }
       final RelNode ctePlan = rewriteUsingViews(planner, basePlan, mdProvider, executorProvider, cteMVs);
       Map<List<String>, Integer> tableOccurrences = RelOptUtil.findAllTables(ctePlan).stream()
@@ -2175,6 +2167,23 @@ public class CalcitePlanner extends SemanticAnalyzer {
       } else {
         return spoolPlan;
       }
+    }
+
+    /**
+     * @return whether the specified cte fulfills all preconditions for materialization.
+     */
+    private boolean isMaterializableCte(HiveRelMetadataQuery mq, RelNode cte) {
+      final boolean checkFullAggregate = conf.getBoolVar(ConfVars.HIVE_CTE_MATERIALIZE_FULL_AGGREGATE_ONLY);
+      ImmutableBitSet cteOutputColumns = ImmutableBitSet.range(cte.getRowType().getFieldCount());
+      if (checkFullAggregate && !Boolean.TRUE.equals(mq.areColumnsAggregated(cte, cteOutputColumns))) {
+        LOG.debug("Skipping CTE {} cause its not a full aggregate.", cte);
+        return false;
+      }
+      if (HiveSqlTypeUtil.containsSqlType(cte.getRowType(), SqlTypeName.NULL)) {
+        LOG.debug("Skipping CTE {} cause it contains untyped nulls", cte);
+        return false;
+      }
+      return true;
     }
 
     private boolean isMaterializedViewRewritingByTextEnabled() {

@@ -41,7 +41,9 @@ public class TableScanToSpoolRule extends RelOptRule {
     super(operand(TableScan.class, none()));
     this.referenceThreshold = referenceThreshold;
     this.tableOccurrences = tableOccurrences;
-    assert referenceThreshold > 0;
+    if (referenceThreshold <= 0) {
+      throw new IllegalArgumentException("Invalid reference threshold:" + referenceThreshold);
+    }
   }
 
   @Override

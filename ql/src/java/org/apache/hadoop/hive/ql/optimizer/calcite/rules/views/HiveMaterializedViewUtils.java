@@ -73,6 +73,7 @@ import org.apache.hadoop.hive.common.MaterializationSnapshot;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.MaterializedViewMetadata;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteCteException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
@@ -560,7 +561,7 @@ public class HiveMaterializedViewUtils {
       // Setting a location avoids a NPE when fetching statistics
       metaTable.getSd().setLocation(SessionState.generateTempTableLocation(conf));
     } catch (MetaException e) {
-      throw new RuntimeException(e);
+      throw new CalciteCteException("Failed to create temporary location", e);
     }
     Table hiveTable = new Table(metaTable);
     hiveTable.setMaterializedTable(true);

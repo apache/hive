@@ -19,10 +19,15 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.conf.HiveConf;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 
 @InterfaceAudience.Private
 public final class CommonTableExpressionSuggesterFactory {
+
+  private CommonTableExpressionSuggesterFactory() {
+    throw new IllegalStateException("Must not instantiate");
+  }
 
   public static CommonTableExpressionSuggester create(HiveConf configuration) {
     String suggestName = configuration.getVar(HiveConf.ConfVars.HIVE_CTE_SUGGESTER_CLASS);
@@ -32,12 +37,12 @@ public final class CommonTableExpressionSuggesterFactory {
     try {
       Class<?> suggesterClass = Class.forName(suggestName);
       if (CommonTableExpressionSuggester.class.isAssignableFrom(suggesterClass)) {
-        return (CommonTableExpressionSuggester) suggesterClass.newInstance();
+        return (CommonTableExpressionSuggester) suggesterClass.getDeclaredConstructor().newInstance();
       }
       throw new IllegalArgumentException(
           suggesterClass.getSimpleName() + " must implement " + CommonTableExpressionSuggester.class.getSimpleName());
-    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-      throw new RuntimeException(e);
+    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+      throw new CalciteCteException("Failed to instantiate suggester from class: " + suggestName, e);
     }
   }
 }

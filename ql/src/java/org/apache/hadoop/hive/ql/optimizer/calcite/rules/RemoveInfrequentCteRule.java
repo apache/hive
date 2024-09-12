@@ -37,7 +37,9 @@ public class RemoveInfrequentCteRule extends RelOptRule {
     super(operand(TableScan.class, none()));
     this.tableOccurrences = tableOccurrences;
     this.referenceThreshold = referenceThreshold;
-    assert referenceThreshold > 0;
+    if (referenceThreshold <= 0) {
+      throw new IllegalArgumentException("Invalid reference threshold:" + referenceThreshold);
+    }
   }
 
   @Override

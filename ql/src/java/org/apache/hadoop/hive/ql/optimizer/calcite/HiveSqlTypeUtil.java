@@ -22,8 +22,11 @@ import org.apache.calcite.sql.type.SqlTypeName;
 
 import java.util.Objects;
 
-public class HiveSqlTypeUtil {
+public final class HiveSqlTypeUtil {
 
+  private HiveSqlTypeUtil() {
+    throw new IllegalStateException("Must not instantiate.");
+  }
   /**
    * Returns whether the type contains the specified type name. If the type is a struct, map, or collection then
    * containment is applied recursively on the respective parts (fields, component, key, value).
