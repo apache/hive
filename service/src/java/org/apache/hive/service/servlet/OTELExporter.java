@@ -18,16 +18,15 @@
 
 package org.apache.hive.service.servlet;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.LongGauge;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.internal.AttributesMap;
@@ -45,16 +44,17 @@ public class OTELExporter extends Thread {
   private static final Logger LOG = LoggerFactory.getLogger(OTELExporter.class);
   private final Tracer tracer;
   private final OperationManager operationManager;
-  private final Map<String, Span> liveSpans;
+  private final LongGauge liveQueryGauge;
   private Set<String> historicalQueryId;
   private final long frequency;
 
   public OTELExporter(OpenTelemetry openTelemetry, SessionManager sessionManager, long frequency) {
     this.tracer = openTelemetry.getTracer(INSTRUMENTATION_NAME);
     this.operationManager = sessionManager.getOperationManager();
-    this.liveSpans = new HashMap<>();
     this.historicalQueryId = new HashSet<>();
     this.frequency = frequency;
+    liveQueryGauge = openTelemetry.getMeter(INSTRUMENTATION_NAME).gaugeBuilder("LiveQueries")
+        .setDescription("Number of Live Queries").ofLongs().build();
   }
 
   @Override
@@ -75,40 +75,27 @@ public class OTELExporter extends Thread {
 
     LOG.debug("Found {} liveQueries and {} historicalQueries", liveQueries.size(), historicalQueries.size());
 
-    for (QueryInfo lQuery : liveQueries) {
-      // If we created a Span for the live query already, in that case reuse the existing span rather than creating a new one
-      Span existingSpan = liveSpans.get(lQuery.getQueryDisplay().getQueryId());
-      if (existingSpan != null) {
-        existingSpan.setAllAttributes(getAttributes(lQuery));
-      } else {
-        Span span = tracer.spanBuilder("LiveQuery" + lQuery.getQueryDisplay().getQueryId())
-            .setStartTimestamp(lQuery.getBeginTime(), TimeUnit.MILLISECONDS).startSpan()
-            .setAllAttributes(getAttributes(lQuery));
-        liveSpans.put(lQuery.getQueryDisplay().getQueryId(), span);
-      }
-    }
-
+    liveQueryGauge.set(liveQueries.size());
     HashSet<String> currentHistoricalQueries = new HashSet<>();
     for (QueryInfo hQuery : historicalQueries) {
       currentHistoricalQueries.add(hQuery.getQueryDisplay().getQueryId());
-      Span querySpan = liveSpans.remove(hQuery.getQueryDisplay().getQueryId());
 
-      // If the query moved from live to historical, change to it Historical & reuse the Span
-      if (querySpan != null) {
-        LOG.debug("Updated query {} from live to historical", hQuery.getQueryDisplay().getQueryId());
-        querySpan.updateName("HistoricalQuery: " + hQuery.getQueryDisplay().getQueryId());
-        querySpan.setAllAttributes(getAttributes(hQuery));
-        querySpan.end(hQuery.getEndTime(), TimeUnit.MILLISECONDS);
-      } else if (!historicalQueryId.contains(hQuery.getQueryDisplay().getQueryId())) {
-        Span span = tracer.spanBuilder("HistoricalQuery: " + hQuery.getQueryDisplay().getQueryId()).startSpan()
+      if (!historicalQueryId.contains(hQuery.getQueryDisplay().getQueryId())) {
+        Span span = tracer.spanBuilder(hQuery.getQueryDisplay().getQueryId()).startSpan()
             .setAllAttributes(getAttributes(hQuery));
+
+        for (QueryDisplay.TaskDisplay taskDisplay : hQuery.getQueryDisplay().getTaskDisplays()) {
+          span.addEvent(taskDisplay.getName(), getTaskAttributes(taskDisplay), taskDisplay.getBeginTime(),
+              TimeUnit.MILLISECONDS);
+        }
         span.end(hQuery.getEndTime(), TimeUnit.MILLISECONDS);
       }
     }
     historicalQueryId = currentHistoricalQueries;
   }
 
-  private void addTaskAttributes(AttributesMap attributes, QueryDisplay.TaskDisplay taskDisplay) {
+  private AttributesMap getTaskAttributes(QueryDisplay.TaskDisplay taskDisplay) {
+    AttributesMap attributes = AttributesMap.create(Long.MAX_VALUE, Integer.MAX_VALUE);
     attributes.put(AttributeKey.stringKey("TaskId"), taskDisplay.getTaskId());
     attributes.put(AttributeKey.stringKey("Name"), taskDisplay.getName());
     attributes.put(AttributeKey.stringKey("TaskType"), taskDisplay.getTaskType().toString());
@@ -120,6 +107,7 @@ public class OTELExporter extends Thread {
     attributes.put(AttributeKey.longKey("BeginTime"), taskDisplay.getBeginTime());
     attributes.put(AttributeKey.longKey("ElapsedTime"), taskDisplay.getElapsedTime());
     attributes.put(AttributeKey.longKey("EndTime"), taskDisplay.getEndTime());
+    return attributes;
   }
 
   public Attributes getAttributes(QueryInfo queryInfo) {
@@ -136,11 +124,6 @@ public class OTELExporter extends Thread {
     attributes.put(AttributeKey.stringKey("QueryId"), queryInfo.getQueryDisplay().getQueryId());
     attributes.put(AttributeKey.longKey("QueryStartTime"), queryInfo.getQueryDisplay().getQueryStartTime());
     attributes.put(AttributeKey.stringKey("QueryString"), queryInfo.getQueryDisplay().getQueryString());
-
-    for (QueryDisplay.TaskDisplay taskDisplay : queryInfo.getQueryDisplay().getTaskDisplays()) {
-      addTaskAttributes(attributes, taskDisplay);
-    }
-
     attributes.put(AttributeKey.longKey("Running"), queryInfo.getRuntime());
     attributes.put(AttributeKey.stringKey("State"), queryInfo.getState());
     attributes.put(AttributeKey.stringKey("SessionId"), queryInfo.getSessionId());
