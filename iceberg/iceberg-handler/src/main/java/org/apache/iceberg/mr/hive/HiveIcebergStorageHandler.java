@@ -114,7 +114,6 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.MergeTaskProperties;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.reexec.ReCompileException;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -172,6 +171,7 @@ import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.TableScan;
 import org.apache.iceberg.actions.DeleteOrphanFiles;
 import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.exceptions.ValidationException;
 import org.apache.iceberg.expressions.Evaluator;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.ExpressionUtil;
@@ -1462,9 +1462,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         return;
       }
       TableMetadata newMetadata = ((BaseTable) table).operations().refresh();
-      if (!Objects.equals(newMetadata.metadataFileLocation(), currentMetadata.metadataFileLocation())) {
-        throw new ReCompileException("Current snapshot is outdated");
-      }
+      ValidationException.check(
+          Objects.equals(newMetadata.metadataFileLocation(), currentMetadata.metadataFileLocation()),
+          "Table snapshot is outdated: %s", tableDesc.getTableName()
+      );
     }
   }
 

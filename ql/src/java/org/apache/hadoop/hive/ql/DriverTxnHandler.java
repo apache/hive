@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -64,6 +65,7 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
+import org.apache.hadoop.hive.ql.reexec.ReCompileException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.util.StringUtils;
@@ -420,6 +422,18 @@ class DriverTxnHandler {
    * on the table over which the lock is required.
    */
   boolean isValidTxnListState() throws LockException {
+    try {
+      context.getLoadTableOutputMap().forEach(
+        (ltd, we) -> {
+          HiveStorageHandler handler = we.getTable().getStorageHandler();
+          if (handler != null) {
+            handler.validateCurrentSnapshot(ltd.getTable());
+          }
+        });
+    } catch (Exception e) {
+      LOG.warn(e.getMessage());
+      return false;
+    }
     // 1) Get valid txn list.
     String txnString = driverContext.getConf().get(ValidTxnList.VALID_TXNS_KEY);
     if (txnString == null) {
