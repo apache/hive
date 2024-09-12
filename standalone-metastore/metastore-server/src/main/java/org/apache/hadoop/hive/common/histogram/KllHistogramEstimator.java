@@ -30,11 +30,11 @@ public class KllHistogramEstimator {
   private final KllFloatsSketch kll;
 
   KllHistogramEstimator() {
-    this.kll = new KllFloatsSketch();
+    this.kll = KllFloatsSketch.newHeapInstance();
   }
 
   KllHistogramEstimator(int k) {
-    this.kll = new KllFloatsSketch(k);
+    this.kll = KllFloatsSketch.newHeapInstance(k);
   }
 
   KllHistogramEstimator(KllFloatsSketch kll) {

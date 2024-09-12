@@ -229,7 +229,7 @@ public class TestPartitionStat extends MetaStoreClientTest {
     hll.addLong(2);
     hll.addLong(3);
 
-    KllFloatsSketch kll = new KllFloatsSketch();
+    KllFloatsSketch kll = KllFloatsSketch.newHeapInstance();
     kll.update(1);
     kll.update(2);
     kll.update(3);
@@ -246,7 +246,7 @@ public class TestPartitionStat extends MetaStoreClientTest {
     hll.addLong(2);
     hll.addLong(4);
 
-    KllFloatsSketch kll = new KllFloatsSketch();
+    KllFloatsSketch kll = KllFloatsSketch.newHeapInstance();
     kll.update(1);
     kll.update(2);
     kll.update(5);
@@ -261,7 +261,7 @@ public class TestPartitionStat extends MetaStoreClientTest {
     hll.addLong(3);
     hll.addLong(4);
 
-    kll = new KllFloatsSketch();
+    kll = KllFloatsSketch.newHeapInstance();
     kll.update(1);
     kll.update(3);
     kll.update(5);
