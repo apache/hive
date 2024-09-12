@@ -643,8 +643,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   /**
-   * No need for exclusive locks when writing, since Iceberg tables use optimistic concurrency when writing
-   * and only lock the table during the commit operation.
+   * Iceberg's optimistic concurrency control fails to provide means for IOW and Insert operations isolation.
+   * Use `hive.txn.ext.locking.enabled` config to create Hive locks in order to guarantee data consistency.
    */
   @Override
   public LockType getLockType(WriteEntity writeEntity) {

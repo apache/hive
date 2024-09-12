@@ -47,13 +47,14 @@ import org.mockito.MockedStatic;
 
 import static org.apache.iceberg.mr.hive.HiveIcebergStorageHandlerTestUtils.init;
 import static org.apache.iceberg.types.Types.NestedField.required;
-import static org.assertj.core.util.Strings.quote;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mockStatic;
 
 public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngineBase {
+
+  private final String storageHandlerStub = "'org.apache.iceberg.mr.hive.HiveIcebergStorageHandlerStub'";
 
   @Before
   public void setUpTables() throws NoSuchMethodException {
@@ -68,9 +69,9 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
       tableOps.when(() -> method.invoke(null, anyMap(), eq(true)))
           .thenAnswer(invocation -> null);
       // create and insert an initial batch of records
-      testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec, fileFormat,
-          HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2, Collections.emptyMap(),
-          quote(HiveIcebergStorageHandlerStub.class.getName()));
+      testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec,
+          fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2, Collections.emptyMap(),
+          storageHandlerStub);
     }
     // insert one more batch so that we have multiple data files within the same partition
     shell.executeStatement(testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
@@ -267,6 +268,8 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
 
   @Test
   public void testConcurrentInsertAndInsertOverwrite() {
+    Assume.assumeTrue(formatVersion == 2);
+
     Schema schema = new Schema(
         required(1, "i", Types.IntegerType.get()),
         required(2, "p", Types.IntegerType.get())
@@ -283,8 +286,7 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
           .add(40, 40)
           .add(30, 30)
           .build(),
-        2, Collections.emptyMap(),
-        quote(HiveIcebergStorageHandler.class.getName()));
+        formatVersion);
 
     String[] singleFilterQuery = new String[] { "INSERT INTO ice_t SELECT i*100, p*100 FROM ice_t",
         "INSERT OVERWRITE TABLE ice_t SELECT i+1, p+1 FROM ice_t" };
@@ -304,7 +306,8 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
       HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED, true);
       shell.getHiveConf().setBoolean(ConfigProperties.LOCK_HIVE_ENABLED, false);
 
-      HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES, RETRY_STRATEGIES);
+      HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
+          RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT);
       shell.executeStatement(singleFilterQuery[i]);
       shell.closeSession();
     });

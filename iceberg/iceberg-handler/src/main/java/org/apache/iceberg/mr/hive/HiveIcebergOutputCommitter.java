@@ -526,6 +526,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * Creates and commits an Iceberg change with the provided data and delete files.
    * If there are no delete files then an Iceberg 'append' is created, otherwise Iceberg 'overwrite' is created.
    * @param table      The table we are changing
+   * @param snapshotId The snapshot id of the table to use for validation
    * @param startTime  The start time of the commit - used only for logging
    * @param results    The object containing the new files we would like to add to the table
    * @param filterExpr Filter expression for conflict detection filter
@@ -590,11 +591,11 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * Creates and commits an Iceberg compaction change with the provided data files.
    * Either full table or a selected partition contents is replaced with compacted files.
    *
-   * @param table             The table we are changing
-   * @param snapshotId        The snapshot id of the table to use for validation
-   * @param startTime         The start time of the commit - used only for logging
-   * @param results           The object containing the new files
-   * @param partitionPath     The path of the compacted partition
+   * @param table         The table we are changing
+   * @param snapshotId    The snapshot id of the table to use for validation
+   * @param startTime     The start time of the commit - used only for logging
+   * @param results       The object containing the new files
+   * @param partitionPath The path of the compacted partition
    */
   private void commitCompaction(Table table, Long snapshotId, long startTime, FilesForCommit results,
       String partitionPath) {
@@ -622,9 +623,10 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * For partitioned tables the relevant partitions are replaced with the new data files. Table remains unchanged
    * unless data files are provided.
    *
-   * @param table         The table we are changing
-   * @param startTime     The start time of the commit - used only for logging
-   * @param results       The object containing the new files
+   * @param table      The table we are changing
+   * @param snapshotId The snapshot id of the table to use for validation
+   * @param startTime  The start time of the commit - used only for logging
+   * @param results    The object containing the new files
    */
   private void commitOverwrite(Table table, String branchName, Long snapshotId, long startTime,
       FilesForCommit results) {
