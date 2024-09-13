@@ -55,7 +55,7 @@ alter table ice_orc COMPACT 'major' and wait;
 
 select * from ice_orc;
 describe formatted ice_orc;
-show compactions;
+show compactions order by 'partition';
 
 -- Starting second set of inserts/updates/deletes and calling compaction at the end
 -- to check that subsequent compaction works
@@ -88,4 +88,4 @@ alter table ice_orc COMPACT 'major' and wait;
 
 select * from ice_orc;
 describe formatted ice_orc;
-show compactions;
+show compactions order by 'partition';

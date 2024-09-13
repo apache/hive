@@ -55,11 +55,11 @@ public final class IcebergMergeRecordReader<T> extends AbstractIcebergRecordRead
   }
 
   private CloseableIterator<T> nextTask() {
-    CloseableIterator<T> closeableIterator = openGeneric(mergeSplit.getContentFile(), getTable().schema()).iterator();
+    CloseableIterator<T> closeableIterator = openGeneric(mergeSplit.getContentFile(), table.schema()).iterator();
     if (mergeSplit.getContentFile() instanceof DeleteFile) {
-      Schema deleteSchema = IcebergAcidUtil.createSerdeSchemaForDelete(getTable().schema().columns());
+      Schema deleteSchema = IcebergAcidUtil.createSerdeSchemaForDelete(table.schema().columns());
       return new IcebergAcidUtil.MergeTaskVirtualColumnAwareIterator<>(closeableIterator,
-          deleteSchema, getConf(), mergeSplit.getContentFile(), getTable());
+          deleteSchema, conf, mergeSplit.getContentFile(), table);
     } else {
       return closeableIterator;
     }
@@ -95,8 +95,8 @@ public final class IcebergMergeRecordReader<T> extends AbstractIcebergRecordRead
     } else if (contentFile instanceof DeleteFile) {
       schema = new Schema(MetadataColumns.DELETE_FILE_PATH, MetadataColumns.DELETE_FILE_POS);
     }
-    InputFile inputFile = getTable().encryption().decrypt(EncryptedFiles.encryptedInput(
-            getTable().io().newInputFile(contentFile.path().toString()),
+    InputFile inputFile = table.encryption().decrypt(EncryptedFiles.encryptedInput(
+            table.io().newInputFile(contentFile.path().toString()),
             contentFile.keyMetadata()));
     CloseableIterable<T> iterable;
     switch (contentFile.format()) {

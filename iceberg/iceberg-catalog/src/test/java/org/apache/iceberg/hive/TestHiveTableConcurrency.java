@@ -103,6 +103,6 @@ public class TestHiveTableConcurrency extends HiveTableBaseTest {
 
     executorService.shutdown();
     assertThat(executorService.awaitTermination(3, TimeUnit.MINUTES)).as("Timeout").isTrue();
-    assertThat(icebergTable.currentSnapshot().allManifests(icebergTable.io())).hasSize(20);
+    assertThat(icebergTable.snapshots()).hasSize(7);
   }
 }

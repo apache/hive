@@ -119,7 +119,7 @@ jobs:
         run: echo "TEZ_VERSION=$(mvn -f "pom.xml" -q help:evaluate -Dexpression=tez.version -DforceStdout)" >> $GITHUB_ENV
 
       - name: Build project
-        run: mvn clean package -DskipTests -Pitests,iceberg -Pdist
+        run: mvn clean package -DskipTests -Pitests -Pdist
 
       - name: Check for hive tar.gz
         run: ls ./packaging/target/

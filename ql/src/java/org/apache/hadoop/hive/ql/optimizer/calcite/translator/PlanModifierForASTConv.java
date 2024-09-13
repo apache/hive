@@ -23,6 +23,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.calcite.adapter.druid.DruidQuery;
+import org.apache.calcite.adapter.jdbc.JdbcConvention;
+import org.apache.calcite.adapter.jdbc.JdbcRel;
+import org.apache.calcite.adapter.jdbc.JdbcRules;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.plan.volcano.RelSubset;
@@ -266,8 +269,12 @@ public class PlanModifierForASTConv {
   private static RelNode introduceDerivedTable(final RelNode rel) {
     List<RexNode> projectList = HiveCalciteUtil.getProjsFromBelowAsInputRef(rel);
 
-    HiveProject select = HiveProject.create(rel.getCluster(), rel, projectList,
+    RelNode select = HiveProject.create(rel.getCluster(), rel, projectList,
         rel.getRowType(), Collections.emptyList());
+    
+    if (rel instanceof JdbcRel) {
+      select = JdbcRules.JdbcProjectRule.create((JdbcConvention) rel.getConvention()).convert(select);
+    }
 
     return select;
   }

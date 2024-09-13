@@ -95,7 +95,7 @@ export MAVEN_OPTS="-Xmx2g"
 export -n HIVE_CONF_DIR
 cp $SETTINGS .git/settings.xml
 OPTS=" -s $PWD/.git/settings.xml -B -Dtest.groups= "
-OPTS+=" -Pitests,qsplits,dist,errorProne,iceberg"
+OPTS+=" -Pitests,qsplits,dist,errorProne"
 OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
 OPTS+=" -Dmaven.repo.local=$PWD/.git/m2"
 git config extra.mavenOpts "$OPTS"
@@ -314,14 +314,14 @@ time docker rm -f dev_$dbType || true
 set -e
 dev-support/nightly
 '''
-            buildHive("install -Dtest=noMatches -Pdist -Piceberg -pl packaging -am")
+            buildHive("install -Dtest=noMatches -Pdist -pl packaging -am")
         }
         stage('Verify') {
             sh '''#!/bin/bash
 set -e
 tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
 '''
-            buildHive("install -Dtest=noMatches -Pdist,iceberg -f apache-hive-*-nightly-*/pom.xml")
+            buildHive("install -Dtest=noMatches -Pdist -f apache-hive-*-nightly-*/pom.xml")
         }
       }
   }

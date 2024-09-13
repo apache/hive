@@ -847,6 +847,10 @@ class AlterDatabaseRequest;
 
 class DropDatabaseRequest;
 
+class GetFunctionsRequest;
+
+class GetFunctionsResponse;
+
 class CmRecycleRequest;
 
 class CmRecycleResponse;
@@ -14759,6 +14763,127 @@ class DropDatabaseRequest : public virtual ::apache::thrift::TBase {
 void swap(DropDatabaseRequest &a, DropDatabaseRequest &b);
 
 std::ostream& operator<<(std::ostream& out, const DropDatabaseRequest& obj);
+
+typedef struct _GetFunctionsRequest__isset {
+  _GetFunctionsRequest__isset() : catalogName(false), pattern(false), returnNames(true) {}
+  bool catalogName :1;
+  bool pattern :1;
+  bool returnNames :1;
+} _GetFunctionsRequest__isset;
+
+class GetFunctionsRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  GetFunctionsRequest(const GetFunctionsRequest&);
+  GetFunctionsRequest& operator=(const GetFunctionsRequest&);
+  GetFunctionsRequest() noexcept
+                      : dbName(),
+                        catalogName(),
+                        pattern(),
+                        returnNames(true) {
+  }
+
+  virtual ~GetFunctionsRequest() noexcept;
+  std::string dbName;
+  std::string catalogName;
+  std::string pattern;
+  bool returnNames;
+
+  _GetFunctionsRequest__isset __isset;
+
+  void __set_dbName(const std::string& val);
+
+  void __set_catalogName(const std::string& val);
+
+  void __set_pattern(const std::string& val);
+
+  void __set_returnNames(const bool val);
+
+  bool operator == (const GetFunctionsRequest & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (__isset.catalogName != rhs.__isset.catalogName)
+      return false;
+    else if (__isset.catalogName && !(catalogName == rhs.catalogName))
+      return false;
+    if (__isset.pattern != rhs.__isset.pattern)
+      return false;
+    else if (__isset.pattern && !(pattern == rhs.pattern))
+      return false;
+    if (__isset.returnNames != rhs.__isset.returnNames)
+      return false;
+    else if (__isset.returnNames && !(returnNames == rhs.returnNames))
+      return false;
+    return true;
+  }
+  bool operator != (const GetFunctionsRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetFunctionsRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetFunctionsRequest &a, GetFunctionsRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const GetFunctionsRequest& obj);
+
+typedef struct _GetFunctionsResponse__isset {
+  _GetFunctionsResponse__isset() : function_names(false), functions(false) {}
+  bool function_names :1;
+  bool functions :1;
+} _GetFunctionsResponse__isset;
+
+class GetFunctionsResponse : public virtual ::apache::thrift::TBase {
+ public:
+
+  GetFunctionsResponse(const GetFunctionsResponse&);
+  GetFunctionsResponse& operator=(const GetFunctionsResponse&);
+  GetFunctionsResponse() noexcept {
+  }
+
+  virtual ~GetFunctionsResponse() noexcept;
+  std::vector<std::string>  function_names;
+  std::vector<Function>  functions;
+
+  _GetFunctionsResponse__isset __isset;
+
+  void __set_function_names(const std::vector<std::string> & val);
+
+  void __set_functions(const std::vector<Function> & val);
+
+  bool operator == (const GetFunctionsResponse & rhs) const
+  {
+    if (__isset.function_names != rhs.__isset.function_names)
+      return false;
+    else if (__isset.function_names && !(function_names == rhs.function_names))
+      return false;
+    if (__isset.functions != rhs.__isset.functions)
+      return false;
+    else if (__isset.functions && !(functions == rhs.functions))
+      return false;
+    return true;
+  }
+  bool operator != (const GetFunctionsResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetFunctionsResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetFunctionsResponse &a, GetFunctionsResponse &b);
+
+std::ostream& operator<<(std::ostream& out, const GetFunctionsResponse& obj);
 
 
 class CmRecycleRequest : public virtual ::apache::thrift::TBase {

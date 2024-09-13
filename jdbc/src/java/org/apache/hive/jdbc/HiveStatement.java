@@ -20,7 +20,6 @@ package org.apache.hive.jdbc;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.jdbc.logs.InPlaceUpdateStream;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
@@ -70,8 +69,6 @@ public class HiveStatement implements java.sql.Statement {
   private static final Logger LOG = LoggerFactory.getLogger(HiveStatement.class);
 
   public static final String QUERY_CANCELLED_MESSAGE = "Query was cancelled.";
-  private static final int DEFAULT_FETCH_SIZE =
-      HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.defaultIntVal;
 
   private final HiveConnection connection;
   private TCLIService.Iface client;
@@ -79,7 +76,6 @@ public class HiveStatement implements java.sql.Statement {
   private final TSessionHandle sessHandle;
   Map<String, String> sessConf = new HashMap<>();
   private int fetchSize;
-  private final int defaultFetchSize;
   private final boolean isScrollableResultset;
   private boolean isOperationComplete = false;
   private boolean closeOnResultSetCompletion = false;
@@ -130,22 +126,20 @@ public class HiveStatement implements java.sql.Statement {
 
   public HiveStatement(HiveConnection connection, TCLIService.Iface client,
       TSessionHandle sessHandle) {
-    this(connection, client, sessHandle, false, 0, DEFAULT_FETCH_SIZE);
+    this(connection, client, sessHandle, false, connection.fetchSize);
   }
 
   public HiveStatement(HiveConnection connection, TCLIService.Iface client, TSessionHandle sessHandle,
-      boolean isScrollableResultset, int initFetchSize, int defaultFetchSize) {
+      boolean isScrollableResultset, int fetchSize) {
     this.connection = Objects.requireNonNull(connection);
     this.client = Objects.requireNonNull(client);
     this.sessHandle = Objects.requireNonNull(sessHandle);
 
-    if (initFetchSize < 0 || defaultFetchSize <= 0) {
+    if ((this.fetchSize = fetchSize) <= 0) {
       throw new IllegalArgumentException();
     }
 
     this.isScrollableResultset = isScrollableResultset;
-    this.defaultFetchSize = defaultFetchSize;
-    this.fetchSize = (initFetchSize == 0) ? defaultFetchSize : initFetchSize;
     this.inPlaceUpdateStream = Optional.empty();
     this.stmtHandle = Optional.empty();
   }
@@ -676,7 +670,7 @@ public class HiveStatement implements java.sql.Statement {
     if (rows > 0) {
       this.fetchSize = rows;
     } else if (rows == 0) {
-      this.fetchSize = this.defaultFetchSize;
+      this.fetchSize = connection.fetchSize;
     } else {
       throw new SQLException("Fetch size must be greater or equal to 0");
     }
