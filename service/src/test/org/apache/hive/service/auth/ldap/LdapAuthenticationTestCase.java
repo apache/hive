@@ -42,7 +42,7 @@ public final class LdapAuthenticationTestCase {
 
   public void assertAuthenticatePasses(Credentials credentials) {
     try {
-      ldapProvider.Authenticate(credentials.getUser(), credentials.getPassword());
+      ldapProvider.authenticate(credentials.getUser(), credentials.getPassword());
     } catch (AuthenticationException e) {
       String message = String.format("Authentication failed for user '%s' with password '%s'",
           credentials.getUser(), credentials.getPassword());
@@ -60,7 +60,7 @@ public final class LdapAuthenticationTestCase {
 
   public void assertAuthenticateFails(String user, String password) {
     try {
-      ldapProvider.Authenticate(user, password);
+      ldapProvider.authenticate(user, password);
       Assert.fail(String.format("Expected authentication to fail for %s", user));
     } catch (AuthenticationException expected) {
       Assert.assertNotNull("Expected authentication exception", expected);
