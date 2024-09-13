@@ -52,7 +52,7 @@ jobs:
         post_comment: 0
     - name: store-comment
       if: failure()
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         retention-days: 1
         name: "check-spelling-comment-${{ github.run_id }}"
