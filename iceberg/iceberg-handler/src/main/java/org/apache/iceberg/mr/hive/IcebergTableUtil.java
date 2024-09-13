@@ -409,9 +409,9 @@ public class IcebergTableUtil {
         CloseableIterable.filter(fileScanTasks, t -> {
           DataFile file = t.asFileScanTask().file();
           return !table.spec().isPartitioned() ||
-              (partitionPath == null && file.specId() != table.spec().specId()) ||
-              (partitionPath != null &&
-                  table.specs().get(file.specId()).partitionToPath(file.partition()).equals(partitionPath));
+              partitionPath == null && file.specId() != table.spec().specId() ||
+              partitionPath != null &&
+                  table.specs().get(file.specId()).partitionToPath(file.partition()).equals(partitionPath);
         });
     return Lists.newArrayList(CloseableIterable.transform(filteredFileScanTasks, t -> t.file()));
   }
@@ -432,9 +432,9 @@ public class IcebergTableUtil {
         CloseableIterable.filter(deletesScanTasks, t -> {
           DeleteFile file = ((PositionDeletesScanTask) t).file();
           return !table.spec().isPartitioned() ||
-              (partitionPath == null && file.specId() != table.spec().specId()) ||
-              (partitionPath != null &&
-                  table.specs().get(file.specId()).partitionToPath(file.partition()).equals(partitionPath));
+              partitionPath == null && file.specId() != table.spec().specId() ||
+              partitionPath != null &&
+                  table.specs().get(file.specId()).partitionToPath(file.partition()).equals(partitionPath);
         });
     return Lists.newArrayList(CloseableIterable.transform(filteredDeletesScanTasks,
         t -> ((PositionDeletesScanTask) t).file()));

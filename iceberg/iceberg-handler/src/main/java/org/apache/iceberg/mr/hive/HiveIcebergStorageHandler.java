@@ -542,15 +542,15 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         puffinWriter.finish();
 
         statisticsFile =
-          new GenericStatisticsFile(
-            snapshotId,
-            statsPath,
-            puffinWriter.fileSize(),
-            puffinWriter.footerSize(),
-            puffinWriter.writtenBlobsMetadata().stream()
-              .map(GenericBlobMetadata::from)
-              .collect(ImmutableList.toImmutableList())
-          );
+            new GenericStatisticsFile(
+                snapshotId,
+                statsPath,
+                puffinWriter.fileSize(),
+                puffinWriter.footerSize(),
+                puffinWriter.writtenBlobsMetadata().stream()
+                    .map(GenericBlobMetadata::from)
+                    .collect(ImmutableList.toImmutableList())
+            );
       } catch (IOException e) {
         LOG.warn("Unable to write stats to puffin file {}", e.getMessage());
         return false;
@@ -1543,7 +1543,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    * for example in Parquet (in Parquet files Time type is an int64 with 'time' logical annotation).
    * @param tableProps iceberg table properties
    * @param tableSchema iceberg table schema
-   * @return
+   * @return true if having time type column
    */
   private static boolean hasOrcTimeInSchema(Properties tableProps, Schema tableSchema) {
     if (!FileFormat.ORC.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT))) {
@@ -1558,7 +1558,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    * check {@link VectorizedParquetRecordReader#checkListColumnSupport} for details on nested types under lists
    * @param tableProps iceberg table properties
    * @param tableSchema iceberg table schema
-   * @return
+   * @return true if having nested types
    */
   private static boolean hasParquetNestedTypeWithinListOrMap(Properties tableProps, Schema tableSchema) {
     if (!FileFormat.PARQUET.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT))) {
@@ -1740,16 +1740,16 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   /**
    * Check the operation type of all snapshots which are newer than the specified. The specified snapshot is excluded.
-   * @deprecated
-   * <br>Use {@link HiveStorageHandler#getSnapshotContexts(
-   * org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since)}
-   * and check {@link SnapshotContext.WriteOperationType#APPEND}.equals({@link SnapshotContext#getOperation()}).
-   *
    * @param hmsTable table metadata stored in Hive Metastore
    * @param since the snapshot preceding the oldest snapshot which should be checked.
    *              The value null means all should be checked.
    * @return null if table is empty, true if all snapshots are {@link SnapshotContext.WriteOperationType#APPEND}s,
    * false otherwise.
+   *
+   * @deprecated
+   * <br>Use {@link HiveStorageHandler#getSnapshotContexts(
+   * org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since)}
+   * and check {@link SnapshotContext.WriteOperationType#APPEND}.equals({@link SnapshotContext#getOperation()}).
    */
   @Deprecated
   @Override
