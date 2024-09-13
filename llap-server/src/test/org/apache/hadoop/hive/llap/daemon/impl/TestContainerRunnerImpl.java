@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
 import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
-import org.apache.hadoop.hive.llap.security.LlapUgiFactoryFactory;
+import org.apache.hadoop.hive.llap.security.LlapUgiHelper;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
 import org.apache.hadoop.io.Text;
@@ -45,7 +45,6 @@ import java.io.File;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.mockito.Mockito.mock;
@@ -118,7 +117,7 @@ public class TestContainerRunnerImpl {
         daemonConf, HiveConf.ConfVars.LLAP_DAEMON_RPC_PORT));
     containerRunner = new ContainerRunnerImpl(daemonConf, numExecutors,
         this.shufflePort, srvAddress, executorMemoryPerInstance, metrics,
-        amReporter, queryTracker, executorService, daemonId, LlapUgiFactoryFactory
+        amReporter, queryTracker, executorService, daemonId, LlapUgiHelper
         .createFsUgiFactory(daemonConf), socketFactory);
 
     ShuffleHandler.initializeAndStart(daemonConf);

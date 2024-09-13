@@ -40,7 +40,7 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.UgiFactory;
+import org.apache.hadoop.hive.llap.LlapUgiManager;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.DaemonId;
@@ -132,7 +132,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   private final LlapSignerImpl signer;
   private final String clusterId;
   private final DaemonId daemonId;
-  private final UgiFactory fsUgiFactory;
+  private final LlapUgiManager fsUgiFactory;
   private final SocketFactory socketFactory;
   private final boolean execUseFQDN;
 
@@ -140,7 +140,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
       AtomicReference<InetSocketAddress> localAddress,
       long totalMemoryAvailableBytes, LlapDaemonExecutorMetrics metrics,
       AMReporter amReporter, QueryTracker queryTracker, Scheduler<TaskRunnerCallable> executorService,
-      DaemonId daemonId, UgiFactory fsUgiFactory,
+      DaemonId daemonId, LlapUgiManager fsUgiFactory,
       SocketFactory socketFactory) {
     super("ContainerRunnerImpl");
     Preconditions.checkState(numExecutors > 0,
@@ -293,7 +293,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
       // Lazy create conf object, as it gets expensive in this codepath.
       Supplier<Configuration> callableConf = () -> new Configuration(getConfig());
       UserGroupInformation fsTaskUgi =
-          fsUgiFactory.createUgi(queryIdentifier.toShortString(), vertex.getUser(), credentials);
+          fsUgiFactory.createUgi(queryIdentifier, vertex.getUser(), credentials);
       boolean isGuaranteed = request.hasIsGuaranteed() && request.getIsGuaranteed();
 
       // enable the printing of (per daemon) LLAP task queue/run times via LLAP_TASK_TIME_SUMMARY
@@ -489,7 +489,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
           fragmentInfo.getFragmentIdentifierString());
         executorService.killFragment(fragmentInfo.getFragmentIdentifierString());
       }
-      fsUgiFactory.closeFileSystemsForQuery(queryIdentifier.toShortString());
+      fsUgiFactory.closeFileSystemsForQuery(queryIdentifier);
       amReporter.queryComplete(queryIdentifier);
     }
     return QueryCompleteResponseProto.getDefaultInstance();

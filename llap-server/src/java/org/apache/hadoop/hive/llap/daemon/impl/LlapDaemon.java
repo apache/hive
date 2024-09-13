@@ -38,7 +38,7 @@ import javax.net.SocketFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JvmPauseMonitor;
 import org.apache.hadoop.hive.common.LogUtils;
-import org.apache.hadoop.hive.common.UgiFactory;
+import org.apache.hadoop.hive.llap.LlapUgiManager;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -70,8 +70,7 @@ import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.security.LlapExtClientJwtHelper;
-import org.apache.hadoop.hive.llap.security.LlapUgiFactoryFactory;
-import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
+import org.apache.hadoop.hive.llap.security.LlapUgiHelper;
 import org.apache.hadoop.hive.llap.security.SecretManager;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
 import org.apache.hadoop.hive.ql.ServiceContext;
@@ -83,7 +82,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge.UdfWhitelistChecke
 import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.service.CompositeService;
 import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.util.StringUtils;
@@ -336,9 +334,9 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     this.server = new LlapProtocolServerImpl(secretManager, numHandlers, this, srvAddress, mngAddress, srvPort,
         externalClientsRpcPort, mngPort, daemonId, metrics).withTokenManager(this.llapTokenManager);
 
-    UgiFactory fsUgiFactory = null;
+    LlapUgiManager fsUgiFactory = null;
     try {
-      fsUgiFactory = LlapUgiFactoryFactory.createFsUgiFactory(daemonConf);
+      fsUgiFactory = LlapUgiHelper.createFsUgiFactory(daemonConf);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

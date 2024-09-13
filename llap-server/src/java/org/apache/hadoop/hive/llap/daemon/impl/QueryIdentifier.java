@@ -68,8 +68,4 @@ public final class QueryIdentifier {
         ", dagIdentifier=" + dagIdentifier +
         '}';
   }
-
-  public String toShortString() {
-    return String.format("%s_%d", appIdentifier, dagIdentifier);
-  }
 }

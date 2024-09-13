@@ -12,23 +12,22 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.common;
+package org.apache.hadoop.hive.llap;
 
-import java.io.IOException;
-
+import org.apache.hadoop.hive.llap.daemon.impl.QueryIdentifier;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 
-public interface UgiFactory {
+public interface LlapUgiManager {
   /*
    * Creates a UserGroupInformation instance for a user with credentials in a scope of a specific query.
    * Subclasses might implement a cache for taking care of reusing an existing ugi for the same query if possible.
    */
-  UserGroupInformation createUgi(String queryIdentifier, String user, Credentials credentials) throws IOException;
+  UserGroupInformation createUgi(QueryIdentifier queryIdentifier, String user, Credentials credentials);
 
   /*
    * Closes all filesystems for a specific query.
    * In LLAP daemons for the same dag user and credentials, this call typically closes a single FileSystem instance.
    */
-  void closeFileSystemsForQuery(String queryIdentifier);
+  void closeFileSystemsForQuery(QueryIdentifier queryIdentifier);
 }
