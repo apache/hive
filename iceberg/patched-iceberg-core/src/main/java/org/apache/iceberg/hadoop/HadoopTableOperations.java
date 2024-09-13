@@ -278,7 +278,7 @@ public class HadoopTableOperations implements TableOperations {
     for (FileStatus file : files) {
       long modificationTime = file.getModificationTime();
       Path path = file.getPath();
-      if ((currentMaxVersion - version(path.getName()) > previousVersionsMax) &&
+      if (currentMaxVersion - version(path.getName()) > previousVersionsMax &&
             (now - modificationTime) > ttl) {
         dirtyCommits.add(path);
       }

@@ -2087,7 +2087,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       tasks.forEach(task -> {
         DataFile file = task.file();
         PartitionSpec spec = task.spec();
-        if ((latestSpecOnly && file.specId() == tableSpecId) || (!latestSpecOnly && file.specId() != tableSpecId)) {
+        if (latestSpecOnly && file.specId() == tableSpecId || !latestSpecOnly && file.specId() != tableSpecId) {
           PartitionData partitionData = IcebergTableUtil.toPartitionData(task.partition(), spec.partitionType());
           String partName = spec.partitionToPath(partitionData);
           Map<String, String> partSpecMap = Maps.newLinkedHashMap();
