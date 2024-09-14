@@ -869,7 +869,7 @@
     <dependency>
       <groupId>org.roaringbitmap</groupId>
       <artifactId>RoaringBitmap</artifactId>
-      <version>0.9.22</version>
+      <version>${roaringbit.version}</version>
     </dependency>
   </dependencies>
   <profiles>
@@ -1105,7 +1105,6 @@
                   <include>org.apache.calcite.avatica:avatica</include>
                   <include>com.esri.geometry:esri-geometry-api</include>
                   <include>org.roaringbitmap:RoaringBitmap</include>
-                  <include>org.roaringbitmap:shims</include>
                   <include>com.github.luben:zstd-jni</include>
                 </includes>
               </artifactSet>
