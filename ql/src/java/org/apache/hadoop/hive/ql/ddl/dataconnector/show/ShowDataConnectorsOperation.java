@@ -45,7 +45,7 @@ public class ShowDataConnectorsOperation extends DDLOperation<ShowDataConnectors
     List<String> connectors = context.getDb().getAllDataConnectorNames();
     if (desc.getPattern() != null) {
       LOG.debug("pattern: {}", desc.getPattern());
-      Pattern pattern = Pattern.compile(UDFLike.likePatternToRegExp(desc.getPattern(), true), Pattern.CASE_INSENSITIVE);
+      Pattern pattern = Pattern.compile(UDFLike.likePatternToRegExp(desc.getPattern()), Pattern.CASE_INSENSITIVE);
       connectors = connectors.stream().filter(name -> pattern.matcher(name).matches()).collect(Collectors.toList());
     }
 

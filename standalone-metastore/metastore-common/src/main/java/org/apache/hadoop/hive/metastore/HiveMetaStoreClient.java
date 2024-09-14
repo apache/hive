@@ -2929,7 +2929,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       // We need unify the pattern definition, see HIVE-28297 for details.
       String[] patterns = tablePattern.split("\\|");
       for (String pattern : patterns) {
-        pattern = "(?i)" + pattern.replaceAll("\\.\\*", "\\*").replaceAll("\\*", ".*");
+        pattern = "(?i)" + pattern.replaceAll("(?<!\\.)\\*", ".*");
         String filter = String.format("%s like \"%s\"", hive_metastoreConstants.HIVE_FILTER_FIELD_TABLE_NAME, pattern);
         tables.addAll(listTableNamesByFilter(catName, dbName, filter, (short) -1));
       }

@@ -61,7 +61,11 @@ public class UDFLike extends UDF {
   public UDFLike() {
   }
 
-  public static String likePatternToRegExp(String likePattern, boolean quote) {
+  public static String likePatternToRegExp(String likePattern) {
+    return likePatternToRegExp(likePattern, true);
+  }
+
+  public static String likePatternToRegExp(String likePattern, boolean literalize) {
     if (likePattern == null) {
       return null;
     }
@@ -80,9 +84,9 @@ public class UDFLike extends UDF {
       if (n == '_') {
         sb.append(".");
       } else if (n == '%') {
-        sb.append(".*");
+        sb.append(".*?");
       } else {
-        sb.append(quote ? Pattern.quote(Character.toString(n)) : n);
+        sb.append(literalize ? Pattern.quote(Character.toString(n)) : n);
       }
     }
     return sb.toString();
@@ -187,7 +191,7 @@ public class UDFLike extends UDF {
 
       parseSimplePattern(strLikePattern);
       if (type == PatternType.COMPLEX) {
-        p = Pattern.compile(likePatternToRegExp(strLikePattern, true), Pattern.DOTALL);
+        p = Pattern.compile(likePatternToRegExp(strLikePattern), Pattern.DOTALL);
       }
     }
 

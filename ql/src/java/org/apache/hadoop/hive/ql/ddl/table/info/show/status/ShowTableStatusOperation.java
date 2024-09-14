@@ -63,7 +63,7 @@ public class ShowTableStatusOperation extends DDLOperation<ShowTableStatusDesc> 
       LOG.debug("pattern: {}", desc.getPattern());
       List<String> tableNames = context.getDb().getTablesForDb(desc.getDbName(), null);
       if (desc.getPattern() != null) {
-        Pattern pattern = Pattern.compile(UDFLike.likePatternToRegExp(desc.getPattern(), true), Pattern.CASE_INSENSITIVE);
+        Pattern pattern = Pattern.compile(UDFLike.likePatternToRegExp(desc.getPattern()), Pattern.CASE_INSENSITIVE);
         tableNames = tableNames.stream()
             .filter(name -> pattern.matcher(name).matches())
             .collect(Collectors.toList());
