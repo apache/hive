@@ -25,6 +25,7 @@ import java.io.DataOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.hadoop.fs.Path;
@@ -58,7 +59,7 @@ public class ShowTablesOperation extends DDLOperation<ShowTablesDesc> {
   }
 
   private void showTables() throws HiveException {
-    String pattern = UDFLike.likePatternToRegExp(desc.getPattern(), false);
+    String pattern = UDFLike.likePatternToRegExp(desc.getPattern(), false, true);
     List<String> tableNames = new ArrayList<>(
         context.getDb().getTablesByType(desc.getDbName(), pattern, desc.getTypeFilter()));
     Collections.sort(tableNames);
@@ -73,8 +74,8 @@ public class ShowTablesOperation extends DDLOperation<ShowTablesDesc> {
   }
 
   private void showTablesExtended() throws HiveException {
-    TreeMap<String, String> tableNameToType = new TreeMap<>();
-    String pattern = UDFLike.likePatternToRegExp(desc.getPattern(), false);
+    Map<String, String> tableNameToType = new TreeMap<>();
+    String pattern = UDFLike.likePatternToRegExp(desc.getPattern(), false, true);
     TableType typeFilter = desc.getTypeFilter();
     TableType[] tableTypes = typeFilter == null ? TableType.values() : new TableType[]{typeFilter};
     for (TableType tableType : tableTypes) {

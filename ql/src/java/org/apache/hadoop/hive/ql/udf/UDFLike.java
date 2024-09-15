@@ -62,10 +62,10 @@ public class UDFLike extends UDF {
   }
 
   public static String likePatternToRegExp(String likePattern) {
-    return likePatternToRegExp(likePattern, true);
+    return likePatternToRegExp(likePattern, true, false);
   }
 
-  public static String likePatternToRegExp(String likePattern, boolean literalize) {
+  public static String likePatternToRegExp(String likePattern, boolean literalize, boolean greedyMatch) {
     if (likePattern == null) {
       return null;
     }
@@ -84,7 +84,7 @@ public class UDFLike extends UDF {
       if (n == '_') {
         sb.append(".");
       } else if (n == '%') {
-        sb.append(".*?");
+        sb.append(greedyMatch ? ".*" : ".*?");
       } else {
         sb.append(literalize ? Pattern.quote(Character.toString(n)) : n);
       }

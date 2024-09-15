@@ -46,7 +46,7 @@ public class ShowViewsOperation extends DDLOperation<ShowViewsDesc> {
       throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, desc.getDbName());
     }
 
-    String pattern = UDFLike.likePatternToRegExp(desc.getPattern(), false);
+    String pattern = UDFLike.likePatternToRegExp(desc.getPattern(), false, true);
     List<String> viewNames = context.getDb().getTablesByType(desc.getDbName(), pattern, TableType.VIRTUAL_VIEW);
     Collections.sort(viewNames);
     LOG.debug("Found {} view(s) matching the SHOW VIEWS statement.", viewNames.size());

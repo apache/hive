@@ -52,7 +52,7 @@ public abstract class ShowTablesFormatter {
 
   public abstract void showTables(DataOutputStream out, List<String> tables) throws HiveException;
 
-  abstract void showTablesExtended(DataOutputStream out, TreeMap<String, String> tableNameToType) throws HiveException;
+  abstract void showTablesExtended(DataOutputStream out, Map<String, String> tableNameToType) throws HiveException;
 
   // ------ Implementations ------
 
@@ -63,7 +63,7 @@ public abstract class ShowTablesFormatter {
     }
 
     @Override
-    void showTablesExtended(DataOutputStream out, TreeMap<String, String> tableNameToType) throws HiveException {
+    void showTablesExtended(DataOutputStream out, Map<String, String> tableNameToType) throws HiveException {
       if (tableNameToType.isEmpty()) {
         return;
       }
@@ -97,7 +97,7 @@ public abstract class ShowTablesFormatter {
     }
 
     @Override
-    void showTablesExtended(DataOutputStream out, TreeMap<String, String> tableNameToType) throws HiveException {
+    void showTablesExtended(DataOutputStream out, Map<String, String> tableNameToType) throws HiveException {
       if (tableNameToType.isEmpty()) {
         return;
       }
