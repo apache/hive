@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.llap.daemon.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -25,8 +26,6 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.hive.llap.counters.LlapWmCounters;
 import org.apache.hadoop.hive.llap.counters.WmFragmentCounters;
 import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
 import org.apache.hadoop.hive.llap.daemon.HistoryLogger;
@@ -178,6 +177,8 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     this.tezHadoopShim = tezHadoopShim;
     this.initialEvent = initialEvent;
     this.fsTaskUgi = fsTaskUgi;
+    Preconditions.checkArgument(fsTaskUgi != null,
+        "fsTaskUgi must not be null, this implies a problem somewhere in LlapUgiManager");
     this.completionListener = completionListener;
     this.socketFactory = socketFactory;
     this.isGuaranteed = isGuaranteed;

@@ -23,13 +23,14 @@ import org.apache.hadoop.security.UserGroupInformation;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LlapUgiManager {
   private static final Logger LOG = LoggerFactory.getLogger(LlapUgiManager.class);
-  private final ConcurrentHashMap<QueryIdentifier, UserGroupInformation> ugis = new ConcurrentHashMap<>();
+  private final ConcurrentMap<QueryIdentifier, UserGroupInformation> ugis = new ConcurrentHashMap<>();
   private final LlapUgiFactory ugiFactory;
 
   private LlapUgiManager(Configuration conf) {
@@ -55,7 +56,7 @@ public class LlapUgiManager {
    * The most performant way would be to use a single UGI for the same user in the daemon, but that's not possible,
    * because the credentials can theoretically change across queries.
    */
-  public UserGroupInformation getUgi(QueryIdentifier queryIdentifier, String user, Credentials credentials) {
+  public UserGroupInformation getOrCreateUgi(QueryIdentifier queryIdentifier, String user, Credentials credentials) {
     return ugis.computeIfAbsent(queryIdentifier,
         k -> {
           try {

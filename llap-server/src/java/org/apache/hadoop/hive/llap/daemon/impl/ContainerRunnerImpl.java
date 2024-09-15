@@ -293,7 +293,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
       // Lazy create conf object, as it gets expensive in this codepath.
       Supplier<Configuration> callableConf = () -> new Configuration(getConfig());
       UserGroupInformation fsTaskUgi =
-          llapUgiManager.getUgi(queryIdentifier, vertex.getUser(), credentials);
+          llapUgiManager.getOrCreateUgi(queryIdentifier, vertex.getUser(), credentials);
       boolean isGuaranteed = request.hasIsGuaranteed() && request.getIsGuaranteed();
 
       // enable the printing of (per daemon) LLAP task queue/run times via LLAP_TASK_TIME_SUMMARY
