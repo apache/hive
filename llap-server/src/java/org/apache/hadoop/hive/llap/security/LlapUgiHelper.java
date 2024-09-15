@@ -15,86 +15,39 @@
 package org.apache.hadoop.hive.llap.security;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.HashMap;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.hive.llap.LlapUgiManager;
+import org.apache.hadoop.hive.llap.LlapUgiFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapUtil;
-import org.apache.hadoop.hive.llap.daemon.impl.QueryIdentifier;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class LlapUgiHelper {
-  private static final Logger LOG = LoggerFactory.getLogger(LlapUgiHelper.class);
-
   private static final HadoopShims SHIMS = ShimLoader.getHadoopShims();
 
-  /**
-   * This class implements abstract logic for maintaining a single ugi for a specific user in a query.
-   * Subclasses implement createNewUgiInternal for creating a new ugi object when needed.
-   */
-  private static abstract class AbstractLlapLlapUgiManager implements LlapUgiManager {
-    Map<QueryIdentifier, UserGroupInformation> ugis = new HashMap<>();
-
-    /**
-     * Creates an ugi for tasks in the same query and merges the credentials.
-     * This is valid to be done once per query: no vertex-level ugi and credentials are needed, both of them
-     * are the same within the same query.
-     * Regarding vertex user: LlapTaskCommunicator has a single "user" field,
-     * which is passed into the SignableVertexSpec.
-     * Regarding credentials: LlapTaskCommunicator creates SubmitWorkRequestProto instances,
-     * into which dag-level credentials are passed.
-     * The most performant way would be to use a single UGI for the same user in the daemon, but that's not possible,
-     * because the credentials can theoretically change across queries.
-     */
-    @Override
-    public UserGroupInformation createUgi(QueryIdentifier queryIdentifier, String user, Credentials credentials) {
-      return ugis.computeIfAbsent(queryIdentifier, k -> {
-        try {
-          UserGroupInformation ugi = createNewUgiInternal(user);
-          ugi.addCredentials(credentials);
-          LOG.info("Created ugi {} for queryIdentifier '{}', current ugis #: {}", ugi,
-              queryIdentifier, ugis.size());
-          return ugi;
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
-      });
+  public static LlapUgiFactory createLlapUgiFactory(Configuration conf) throws IOException {
+    String fsKeytab = HiveConf.getVar(conf, ConfVars.LLAP_FS_KERBEROS_KEYTAB_FILE),
+        fsPrincipal = HiveConf.getVar(conf, ConfVars.LLAP_FS_KERBEROS_PRINCIPAL);
+    boolean hasFsKeytab = fsKeytab != null && !fsKeytab.isEmpty(),
+        hasFsPrincipal = fsPrincipal != null && !fsPrincipal.isEmpty();
+    if (hasFsKeytab != hasFsPrincipal) {
+      throw new IOException("Inconsistent FS keytab settings " + fsKeytab + "; " + fsPrincipal);
     }
-
-    @Override
-    public void closeFileSystemsForQuery(QueryIdentifier queryIdentifier) {
-      LOG.debug("Closing all FileSystems for queryIdentifier '{}'", queryIdentifier);
-      try {
-        FileSystem.closeAllForUGI(ugis.get(queryIdentifier));
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-      ugis.remove(queryIdentifier);
-    }
-
-    protected abstract UserGroupInformation createNewUgiInternal(String user)
-        throws IOException;
+    return hasFsKeytab ? new KerberosLlapUgiFactory(fsKeytab, fsPrincipal) : new NoopLlapUgiFactory();
   }
 
-  private static class KerberosLlapUgiManager extends AbstractLlapLlapUgiManager implements LlapUgiManager {
+  private static class KerberosLlapUgiFactory implements LlapUgiFactory {
     private final UserGroupInformation baseUgi;
 
-    public KerberosLlapUgiManager(String keytab, String principal) throws IOException {
+    public KerberosLlapUgiFactory(String keytab, String principal) throws IOException {
       baseUgi = LlapUtil.loginWithKerberos(principal, keytab);
     }
 
     @Override
-    protected UserGroupInformation createNewUgiInternal(String user)
-    throws IOException {
+    public UserGroupInformation createUgi(String user) throws IOException {
       // Make sure the UGI is current.
       baseUgi.checkTGTAndReloginFromKeytab();
       // TODO: the only reason this is done this way is because we want unique Subject-s so that
@@ -104,24 +57,12 @@ public class LlapUgiHelper {
     }
   }
 
-  private static class NoopLlapUgiManager extends AbstractLlapLlapUgiManager implements LlapUgiManager {
+  private static class NoopLlapUgiFactory implements LlapUgiFactory {
     @Override
-    protected UserGroupInformation createNewUgiInternal(String user)
-        throws IOException {
+    public UserGroupInformation createUgi(String user) throws IOException {
       // create clone in order to have a unique subject (== unique ugi) per query,
       // otherwise closeFileSystemsForQuery will close a FileSystem used by another query
       return SHIMS.cloneUgi(UserGroupInformation.createRemoteUser(user));
     }
-  }
-
-  public static LlapUgiManager createFsUgiFactory(Configuration conf) throws IOException {
-    String fsKeytab = HiveConf.getVar(conf, ConfVars.LLAP_FS_KERBEROS_KEYTAB_FILE),
-        fsPrincipal = HiveConf.getVar(conf, ConfVars.LLAP_FS_KERBEROS_PRINCIPAL);
-    boolean hasFsKeytab = fsKeytab != null && !fsKeytab.isEmpty(),
-        hasFsPrincipal = fsPrincipal != null && !fsPrincipal.isEmpty();
-    if (hasFsKeytab != hasFsPrincipal) {
-      throw new IOException("Inconsistent FS keytab settings " + fsKeytab + "; " + fsPrincipal);
-    }
-    return hasFsKeytab ? new KerberosLlapUgiManager(fsKeytab, fsPrincipal) : new NoopLlapUgiManager();
   }
 }

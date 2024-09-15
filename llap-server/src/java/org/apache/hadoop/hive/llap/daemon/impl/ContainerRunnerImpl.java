@@ -132,7 +132,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   private final LlapSignerImpl signer;
   private final String clusterId;
   private final DaemonId daemonId;
-  private final LlapUgiManager fsUgiFactory;
+  private final LlapUgiManager llapUgiManager;
   private final SocketFactory socketFactory;
   private final boolean execUseFQDN;
 
@@ -140,7 +140,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
       AtomicReference<InetSocketAddress> localAddress,
       long totalMemoryAvailableBytes, LlapDaemonExecutorMetrics metrics,
       AMReporter amReporter, QueryTracker queryTracker, Scheduler<TaskRunnerCallable> executorService,
-      DaemonId daemonId, LlapUgiManager fsUgiFactory,
+      DaemonId daemonId, LlapUgiManager llapUgiManager,
       SocketFactory socketFactory) {
     super("ContainerRunnerImpl");
     Preconditions.checkState(numExecutors > 0,
@@ -151,7 +151,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     this.amReporter = amReporter;
     this.signer = UserGroupInformation.isSecurityEnabled()
         ? new LlapSignerImpl(conf, daemonId.getClusterString()) : null;
-    this.fsUgiFactory = fsUgiFactory;
+    this.llapUgiManager = llapUgiManager;
     this.socketFactory = socketFactory;
 
     this.clusterId = daemonId.getClusterString();
@@ -293,7 +293,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
       // Lazy create conf object, as it gets expensive in this codepath.
       Supplier<Configuration> callableConf = () -> new Configuration(getConfig());
       UserGroupInformation fsTaskUgi =
-          fsUgiFactory.createUgi(queryIdentifier, vertex.getUser(), credentials);
+          llapUgiManager.getUgi(queryIdentifier, vertex.getUser(), credentials);
       boolean isGuaranteed = request.hasIsGuaranteed() && request.getIsGuaranteed();
 
       // enable the printing of (per daemon) LLAP task queue/run times via LLAP_TASK_TIME_SUMMARY
@@ -489,7 +489,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
           fragmentInfo.getFragmentIdentifierString());
         executorService.killFragment(fragmentInfo.getFragmentIdentifierString());
       }
-      fsUgiFactory.closeFileSystemsForQuery(queryIdentifier);
+      llapUgiManager.closeAllForUgi(queryIdentifier);
       amReporter.queryComplete(queryIdentifier);
     }
     return QueryCompleteResponseProto.getDefaultInstance();

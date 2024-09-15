@@ -70,7 +70,6 @@ import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.security.LlapExtClientJwtHelper;
-import org.apache.hadoop.hive.llap.security.LlapUgiHelper;
 import org.apache.hadoop.hive.llap.security.SecretManager;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
 import org.apache.hadoop.hive.ql.ServiceContext;
@@ -334,12 +333,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     this.server = new LlapProtocolServerImpl(secretManager, numHandlers, this, srvAddress, mngAddress, srvPort,
         externalClientsRpcPort, mngPort, daemonId, metrics).withTokenManager(this.llapTokenManager);
 
-    LlapUgiManager fsUgiFactory = null;
-    try {
-      fsUgiFactory = LlapUgiHelper.createFsUgiFactory(daemonConf);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    LlapUgiManager llapUgiManager = LlapUgiManager.getInstance(daemonConf);
 
     QueryTracker queryTracker = new QueryTracker(daemonConf, localDirs,
         daemonId.getClusterString());
@@ -355,7 +349,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
     this.containerRunner = new ContainerRunnerImpl(daemonConf, numExecutors,
         this.shufflePort, srvAddress, executorMemoryPerInstance, metrics,
-        amReporter, queryTracker, executorService, daemonId, fsUgiFactory, socketFactory);
+        amReporter, queryTracker, executorService, daemonId, llapUgiManager, socketFactory);
     addIfService(containerRunner);
 
     // Not adding the registry as a service, since we need to control when it is initialized - conf used to pickup properties.

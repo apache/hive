@@ -18,6 +18,7 @@ import com.google.common.primitives.Ints;
 import com.google.protobuf.ByteString;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.DaemonId;
+import org.apache.hadoop.hive.llap.LlapUgiManager;
 import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.LlapDaemonTestUtils;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.RegisterDagRequestProto;
@@ -27,7 +28,6 @@ import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
 import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
-import org.apache.hadoop.hive.llap.security.LlapUgiHelper;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
 import org.apache.hadoop.io.Text;
@@ -117,8 +117,7 @@ public class TestContainerRunnerImpl {
         daemonConf, HiveConf.ConfVars.LLAP_DAEMON_RPC_PORT));
     containerRunner = new ContainerRunnerImpl(daemonConf, numExecutors,
         this.shufflePort, srvAddress, executorMemoryPerInstance, metrics,
-        amReporter, queryTracker, executorService, daemonId, LlapUgiHelper
-        .createFsUgiFactory(daemonConf), socketFactory);
+        amReporter, queryTracker, executorService, daemonId, LlapUgiManager.getInstance(daemonConf), socketFactory);
 
     ShuffleHandler.initializeAndStart(daemonConf);
 
