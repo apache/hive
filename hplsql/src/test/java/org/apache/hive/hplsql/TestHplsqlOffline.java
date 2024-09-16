@@ -27,7 +27,7 @@ import org.junit.Test;
  */
 public class TestHplsqlOffline {
 
-    @Test
+  @Test
   public void testCreateTable() throws Exception {
     run("create_table");
   }
@@ -36,17 +36,17 @@ public class TestHplsqlOffline {
   public void testCreateTableDb2() throws Exception {
     run("create_table_db2");
   }
-  
+
   @Test
   public void testCreateTableMssql() throws Exception {
     run("create_table_mssql");
   }
-  
+
   @Test
   public void testCreateTableMssql2() throws Exception {
     run("create_table_mssql2");
   }
-  
+
   @Test
   public void testCreateTableMysql() throws Exception {
     run("create_table_mysql");
@@ -56,27 +56,27 @@ public class TestHplsqlOffline {
   public void testCreateTableOra() throws Exception {
     run("create_table_ora");
   }
-  
+
   @Test
   public void testCreateTableOra2() throws Exception {
     run("create_table_ora2");
   }
-  
+
   @Test
   public void testCreateTablePg() throws Exception {
     run("create_table_pg");
   }
-  
+
   @Test
   public void testCreateTableTd() throws Exception {
     run("create_table_td");
   }
-  
+
   @Test
   public void testDeleteAll() throws Exception {
     run("delete_all");
   }
-  
+
   @Test
   public void testInsertMysql() throws Exception {
     run("insert_mysql");
@@ -86,17 +86,17 @@ public class TestHplsqlOffline {
   public void testSelect() throws Exception {
     run("select");
   }
-  
+
   @Test
   public void testSelectDb2() throws Exception {
     run("select_db2");
   }
-  
+
   @Test
   public void testSelectTeradata() throws Exception {
     run("select_teradata");
   }
-  
+
   @Test
   public void testUpdate() throws Exception {
     run("update");

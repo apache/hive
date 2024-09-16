@@ -27,7 +27,7 @@ import org.junit.Test;
  */
 public class TestHplsqlLocal {
 
-    @Test
+  @Test
   public void testAdd() throws Exception {
     run("add");
   }
