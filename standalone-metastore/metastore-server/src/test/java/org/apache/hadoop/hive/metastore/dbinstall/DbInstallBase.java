@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.dbinstall;
 
+import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.DatabaseRule;
@@ -29,22 +30,27 @@ public abstract class DbInstallBase {
   private static final String FIRST_VERSION = "1.2.0";
 
   @Test
-  public void install() {
-    Assert.assertEquals(0, getRule().createUser());
-    Assert.assertEquals(0, getRule().installLatest());
+  public void install() throws HiveMetaException, ParseException {
+    try {
+      getRule().createUser();
+      getRule().installLatest();
+    } catch (Exception e) {
+      Assert.fail(e.toString());
+    }
   }
 
   @Test
-  public void upgrade() throws HiveMetaException {
-    Assert.assertEquals(0, getRule().createUser());
-    Assert.assertEquals(0, getRule().installAVersion(FIRST_VERSION));
-    Assert.assertEquals(0, getRule().upgradeToLatest());
-    Assert.assertEquals(0, getRule().validateSchema());
+  public void upgrade() throws HiveMetaException, ParseException {
+    try {
+      getRule().createUser();
+      getRule().installAVersion(FIRST_VERSION);
+      getRule().upgradeToLatest();
+      getRule().validateSchema();
+    } catch (Exception e) {
+      Assert.fail(e.toString());
+    }
   }
 
   protected abstract DatabaseRule getRule();
 
-  protected String[] buildArray(String... strs) {
-    return strs;
-  }
 }

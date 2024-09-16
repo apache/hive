@@ -1,4 +1,7 @@
--- Upgrade MetaStore schema from 4.0.0-alpha-2 to 4.0.0-beta-1
+--liquibase formatted sql
+
+--changeset Gates:11 labels:4.0.0-beta-1 dbms:derby
+--comment: Upgrade MetaStore schema from 4.0.0-alpha-2 to 4.0.0-beta-1
 
 -- HIVE-26221
 ALTER TABLE "APP"."TAB_COL_STATS" ADD HISTOGRAM BLOB;

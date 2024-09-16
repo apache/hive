@@ -1438,8 +1438,6 @@ public interface RawStore extends Configurable {
 
   String getMetaStoreSchemaVersion() throws  MetaException;
 
-  abstract void setMetaStoreSchemaVersion(String version, String comment) throws MetaException;
-
   /**
    * Drop a list of partitions.
    * @param catName catalog name.

@@ -1,4 +1,8 @@
--- Upgrade MetaStore schema from 2.3.0 to 3.0.0
+--liquibase formatted sql
+
+--changeset Gates:6 labels:3.0.0 dbms:derby
+--comment: Upgrade MetaStore schema from 2.3.0 to 3.0.0
+
 --RUN '041-HIVE-16556.derby.sql';
 CREATE TABLE "APP"."METASTORE_DB_PROPERTIES" ("PROPERTY_KEY" VARCHAR(255) NOT NULL, "PROPERTY_VALUE" VARCHAR(1000) NOT NULL, "DESCRIPTION" VARCHAR(1000));
 
@@ -14,6 +18,7 @@ SET PARAM_KEY='collection.delim'
 WHERE PARAM_KEY='colelction.delim';
 --RUN '044-HIVE-16997.derby.sql';
 ALTER TABLE "APP"."PART_COL_STATS" ADD COLUMN "BIT_VECTOR" BLOB;
+ALTER TABLE "APP"."TAB_COL_STATS" ADD COLUMN "BIT_VECTOR" BLOB;
 --RUN '045-HIVE-16886.derby.sql';
 INSERT INTO "APP"."NOTIFICATION_SEQUENCE" ("NNI_ID", "NEXT_EVENT_ID") SELECT * FROM (VALUES (1,1)) tmp_table WHERE NOT EXISTS ( SELECT "NEXT_EVENT_ID" FROM "APP"."NOTIFICATION_SEQUENCE");
 --RUN '046-HIVE-17566.derby.sql';

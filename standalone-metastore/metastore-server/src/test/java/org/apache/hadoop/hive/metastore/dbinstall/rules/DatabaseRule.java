@@ -17,6 +17,15 @@
  */
 package org.apache.hadoop.hive.metastore.dbinstall.rules;
 
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.metastore.HiveMetaException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.SchemaToolTestUtil;
+import org.junit.rules.ExternalResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -24,12 +33,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.hive.metastore.tools.schematool.MetastoreSchemaTool;
-import org.junit.rules.ExternalResource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Abstract JUnit TestRule for different RDMBS types.
@@ -106,10 +109,6 @@ public abstract class DatabaseRule extends ExternalResource {
    */
   public abstract boolean isContainerReady(ProcessResults pr);
 
-  protected String[] buildArray(String... strs) {
-    return strs;
-  }
-
   public static class ProcessResults {
     final String stdout;
     final String stderr;
@@ -145,7 +144,6 @@ public abstract class DatabaseRule extends ExternalResource {
           String.format("Container initialization failed within %d seconds. Please check the hive logs.",
               MAX_STARTUP_WAIT / 1000));
     }
-    MetastoreSchemaTool.setHomeDirForTesting();
   }
 
   @Override
@@ -222,7 +220,7 @@ public abstract class DatabaseRule extends ExternalResource {
   }
 
   private String[] buildRmCmd() {
-    return buildArray(
+    return SchemaToolTestUtil.buildArray(
         "docker",
         "rm",
         "-f",
@@ -232,7 +230,7 @@ public abstract class DatabaseRule extends ExternalResource {
   }
 
   private String[] buildLogCmd() {
-    return buildArray(
+    return SchemaToolTestUtil.buildArray(
         "docker",
         "logs",
         getDockerContainerName()
@@ -243,8 +241,9 @@ public abstract class DatabaseRule extends ExternalResource {
     return HIVE_USER;
   }
 
-  public int createUser() {
-    return new MetastoreSchemaTool().setVerbose(verbose).run(buildArray(
+  public void createUser() throws HiveMetaException, ParseException {
+    SchemaToolTestUtil.executeCommand(MetastoreConf.newMetastoreConf(), SchemaToolTestUtil.buildArray(
+        verbose ? "-verbose" : null,
         "-createUser",
         "-dbType",
         getDbType(),
@@ -265,8 +264,9 @@ public abstract class DatabaseRule extends ExternalResource {
     ));
   }
 
-  public int installLatest() {
-    return new MetastoreSchemaTool().setVerbose(verbose).run(buildArray(
+  public void installLatest() throws HiveMetaException, ParseException {
+    SchemaToolTestUtil.executeCommand(MetastoreConf.newMetastoreConf(), SchemaToolTestUtil.buildArray(
+        verbose ? "-verbose" : null,
         "-initSchema",
         "-dbType",
         getDbType(),
@@ -282,8 +282,9 @@ public abstract class DatabaseRule extends ExternalResource {
     ));
   }
 
-  public int installAVersion(String version) {
-    return new MetastoreSchemaTool().setVerbose(verbose).run(buildArray(
+  public void installAVersion(String version) throws HiveMetaException, ParseException {
+    SchemaToolTestUtil.executeCommand( MetastoreConf.newMetastoreConf(), SchemaToolTestUtil.buildArray(
+        verbose ? "-verbose" : null,
         "-initSchemaTo",
         version,
         "-dbType",
@@ -299,8 +300,9 @@ public abstract class DatabaseRule extends ExternalResource {
     ));
   }
 
-  public int upgradeToLatest() {
-    return new MetastoreSchemaTool().setVerbose(verbose).run(buildArray(
+  public void upgradeToLatest() throws HiveMetaException, ParseException {
+    SchemaToolTestUtil.executeCommand(MetastoreConf.newMetastoreConf(), SchemaToolTestUtil.buildArray(
+        verbose ? "-verbose" : null,
         "-upgradeSchema",
         "-dbType",
         getDbType(),
@@ -315,13 +317,14 @@ public abstract class DatabaseRule extends ExternalResource {
     ));
   }
 
-  public void install() {
+  public void install() throws HiveMetaException, ParseException {
     createUser();
     installLatest();
   }
 
-  public int validateSchema() {
-    return new MetastoreSchemaTool().setVerbose(verbose).run(buildArray(
+  public void validateSchema() throws HiveMetaException, ParseException {
+    SchemaToolTestUtil.executeCommand(MetastoreConf.newMetastoreConf(), SchemaToolTestUtil.buildArray(
+        verbose ? "-verbose" : null,
         "-validate",
         "-dbType",
         getDbType(),
@@ -335,4 +338,5 @@ public abstract class DatabaseRule extends ExternalResource {
         getJdbcDriver()
     ));
   }
+
 }

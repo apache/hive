@@ -1,3 +1,8 @@
+--liquibase formatted sql
+
+--changeset Hariappan:8 labels:3.2.0 dbms:mssql
+--comment: Upgrade MetaStore schema from 3.1.0 to 3.2.0
+
 SELECT 'Upgrading MetaStore schema from 3.1.0 to 3.2.0' AS MESSAGE;
 
 -- HIVE-19267
@@ -23,7 +28,7 @@ INSERT INTO SEQUENCE_TABLE (SEQUENCE_NAME, NEXT_VAL) VALUES ('org.apache.hadoop.
 -- and then change the datatype. We wrap the code to drop the default constraint in a stored procedure to avoid
 -- code duplicate. We create temporary stored procedures since we do not need them during normal
 -- metastore operation.
-CREATE PROCEDURE #DROP_DEFAULT_CONSTRAINT @TBL_NAME sysname, @COL_NAME sysname
+CREATE OR ALTER PROCEDURE #DROP_DEFAULT_CONSTRAINT @TBL_NAME sysname, @COL_NAME sysname
 AS
 BEGIN
 	DECLARE @constraintname sysname
@@ -41,7 +46,7 @@ BEGIN
 END;
 
 -- Similarly for primary key constraint
-CREATE PROCEDURE #DROP_PRIMARY_KEY_CONSTRAINT @TBL_NAME sysname
+CREATE OR ALTER PROCEDURE #DROP_PRIMARY_KEY_CONSTRAINT @TBL_NAME sysname
 AS
 BEGIN
 	DECLARE @constraintname sysname

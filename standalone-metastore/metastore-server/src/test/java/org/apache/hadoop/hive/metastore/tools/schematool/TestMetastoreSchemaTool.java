@@ -17,9 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.tools.schematool;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,37 +34,36 @@ import static org.junit.Assert.assertTrue;
 @Category(MetastoreUnitTest.class)
 public class TestMetastoreSchemaTool {
 
-  private String scriptFile = System.getProperty("java.io.tmpdir") + File.separator + "someScript.sql";
+  private static final String scriptFile = System.getProperty("java.io.tmpdir") + File.separator + "someScript.sql";
+  private static final String password = "reallySimplePassword";
+
   @Mock
-  private Configuration conf;
-  private MetastoreSchemaTool.CommandBuilder builder;
-  private String password = "reallySimplePassword";
+  private CommandBuilder builder;
 
   @Before
   public void setup() throws IOException {
-    conf = MetastoreConf.newMetastoreConf();
     File file = new File(scriptFile);
     if (!file.exists()) {
       file.createNewFile();
     }
-    builder =
-        new MetastoreSchemaTool.CommandBuilder(conf, null, null, "testUser", password, scriptFile)
-            .setVerbose(false);
+    builder = new CommandBuilder(new HiveSchemaHelper.MetaStoreConnectionInfo(
+            "testUser", password, null, null, true,  null),
+        null).setVerbose(false);
   }
 
   @After
-  public void globalAssert() throws IOException {
+  public void globalAssert() {
     new File(scriptFile).delete();
   }
 
   @Test
   public void shouldReturnStrippedPassword() throws IOException {
-    assertFalse(builder.buildToLog().contains(password));
+    assertFalse(builder.buildToLog(scriptFile).contains(password));
   }
 
   @Test
-  public void shouldReturnActualPassword() throws IOException {
-    String[] strings = builder.buildToRun();
+  public void shouldReturnActualPassword() {
+    String[] strings = builder.buildToRun(scriptFile);
     assertTrue(Arrays.asList(strings).contains(password));
   }
 }

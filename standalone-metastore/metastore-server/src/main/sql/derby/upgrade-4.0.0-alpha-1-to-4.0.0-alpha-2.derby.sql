@@ -1,4 +1,7 @@
--- Upgrade MetaStore schema from 4.0.0-alpha-1 to 4.0.0-alpha-2
+--liquibase formatted sql
+
+--changeset Gates:10 labels:4.0.0-alpha-2 dbms:derby
+--comment: Upgrade MetaStore schema from 4.0.0-alpha-1 to 4.0.0-alpha-2
 
 -- HIVE-26280
 ALTER TABLE COMPLETED_COMPACTIONS ADD CC_NEXT_TXN_ID bigint;

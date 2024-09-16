@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore.dbinstall.rules;
 
+import org.apache.hadoop.hive.metastore.utils.SchemaToolTestUtil;
+
 /**
  * JUnit TestRule for Oracle.
  */
@@ -29,7 +31,7 @@ public class Oracle extends DatabaseRule {
 
   @Override
   public String[] getDockerAdditionalArgs() {
-    return buildArray(
+    return SchemaToolTestUtil.buildArray(
         "-p",
         "1521:1521",
         "-d",

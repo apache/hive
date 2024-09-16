@@ -106,6 +106,10 @@ information_schema	transactions			hive_test_user	USER	DELETE	true	-1	hive_test_u
 information_schema	transactions			hive_test_user	USER	INSERT	true	-1	hive_test_user
 information_schema	transactions			hive_test_user	USER	SELECT	true	-1	hive_test_user
 information_schema	transactions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+information_schema	version			hive_test_user	USER	DELETE	true	-1	hive_test_user
+information_schema	version			hive_test_user	USER	INSERT	true	-1	hive_test_user
+information_schema	version			hive_test_user	USER	SELECT	true	-1	hive_test_user
+information_schema	version			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 information_schema	views			hive_test_user	USER	DELETE	true	-1	hive_test_user
 information_schema	views			hive_test_user	USER	INSERT	true	-1	hive_test_user
 information_schema	views			hive_test_user	USER	SELECT	true	-1	hive_test_user

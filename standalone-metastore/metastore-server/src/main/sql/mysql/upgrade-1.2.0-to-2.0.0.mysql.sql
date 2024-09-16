@@ -1,3 +1,8 @@
+-- liquibase formatted sql
+
+-- changeset Gates:2 labels:2.0.0 dbms:mysql
+-- comment: Upgrade MetaStore schema from 1.2.0 to 2.0.0
+
 SELECT 'Upgrading MetaStore schema from 1.2.0 to 2.0.0' AS MESSAGE;
 -- SOURCE 021-HIVE-7018.mysql.sql;
 ALTER TABLE `TBLS` DROP FOREIGN KEY `TBLS_FK3`;
