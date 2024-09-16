@@ -67,6 +67,7 @@ import org.apache.hadoop.hive.metastore.api.PartitionsSpecByExprResult;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.metastore.api.WMPoolSchedulingPolicy;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -1334,5 +1335,9 @@ public class MetaStoreUtils {
       }
     }
     return httpPath;
+  }
+
+  public static boolean isDatabaseRemote(Database db) {
+    return db != null && db.getType() == DatabaseType.REMOTE;
   }
 }

@@ -2247,19 +2247,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       if (mtables == null || mtables.isEmpty()) {
-        Database tempDB = null;
-        NoSuchObjectException ex = null;
-        try {
-          tempDB = getDatabase(catName, db);
-        } catch(NoSuchObjectException nsoe) {
-          ex = nsoe;
-        }
-
-        if (tempDB == null) {
-          final String errorMessage = (ex == null ? "" : (": " + ex.getMessage()));
-          throw new UnknownDBException("Could not find database " + DatabaseName.getQualified(catName, db) +
-                  errorMessage);
-        }
+        ensureGetDatabase(catName, db);
       } else {
         for (Iterator iter = mtables.iterator(); iter.hasNext(); ) {
           Table tbl = convertToTable((MTable) iter.next());
@@ -4944,6 +4932,14 @@ public class ObjectStore implements RawStore, Configurable {
     return convertToTable(ensureGetMTable(catName, dbName, tblName));
   }
 
+  private Database ensureGetDatabase(String catName, String dbName) throws UnknownDBException {
+    try {
+      return getDatabase(catName, dbName);
+    } catch (NoSuchObjectException nsoe) {
+      throw new UnknownDBException("Could not find database " + DatabaseName.getQualified(catName, dbName));
+    }
+  }
+
   /**
    * Makes a JDO query filter string.
    * Makes a JDO query filter string for tables or partitions.
@@ -5044,7 +5040,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<String> listTableNamesByFilter(String catName, String dbName, String filter,
-                                             short maxTables) throws MetaException {
+                                             short maxTables) throws MetaException, UnknownDBException {
     boolean success = false;
     Query query = null;
     List<String> tableNames = new ArrayList<>();
@@ -5053,6 +5049,9 @@ public class ObjectStore implements RawStore, Configurable {
       LOG.debug("Executing listTableNamesByFilter");
       catName = normalizeIdentifier(catName);
       dbName = normalizeIdentifier(dbName);
+
+      ensureGetDatabase(catName, dbName);
+
       Map<String, Object> params = new HashMap<>();
       String queryFilterString = makeQueryFilterString(catName, dbName, null, filter, params);
       query = pm.newQuery(MTable.class);
