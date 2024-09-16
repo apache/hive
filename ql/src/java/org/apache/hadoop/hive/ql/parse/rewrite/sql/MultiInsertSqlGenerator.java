@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Deque;
+import java.util.function.Function;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -119,7 +120,7 @@ public abstract class MultiInsertSqlGenerator {
       return;
     }
     queryStr.append(" partition (");
-    appendCols(partCols);
+    appendCols(partCols, FieldSchema::getName);
     queryStr.append(")");
   }
 
@@ -155,22 +156,22 @@ public abstract class MultiInsertSqlGenerator {
       return;
     }
     queryStr.append(',');
-    appendCols(targetTable.getPartCols(), alias, null);
+    appendCols(targetTable.getPartCols(), alias, null, FieldSchema::getName);
   }
 
   public void appendAllColsOfTargetTable(String prefix) {
-    appendCols(targetTable.getAllCols(), null, prefix);
+    appendCols(targetTable.getAllCols(), null, prefix, FieldSchema::getName);
   }
   
   public void appendAllColsOfTargetTable() {
-    appendCols(targetTable.getAllCols());
+    appendCols(targetTable.getAllCols(), FieldSchema::getName);
+  }
+  
+  public <T> void appendCols(List<T> columns, Function<T, String> func) {
+    appendCols(columns, null, null, func);
   }
 
-  public void appendCols(List<FieldSchema> columns) {
-    appendCols(columns, null, null);
-  }
-
-  public void appendCols(List<FieldSchema> columns, String alias, String prefix) {
+  public <T> void appendCols(List<T> columns, String alias, String prefix, Function<T, String> func) {
     if (columns == null) {
       return;
     }
@@ -181,7 +182,7 @@ public abstract class MultiInsertSqlGenerator {
     }
 
     boolean first = true;
-    for (FieldSchema fschema : columns) {
+    for (T fschema : columns) {
       if (first) {
         first = false;
       } else {
@@ -191,11 +192,11 @@ public abstract class MultiInsertSqlGenerator {
       if (quotedAlias != null) {
         queryStr.append(quotedAlias).append('.');
       }
-      queryStr.append(HiveUtils.unparseIdentifier(fschema.getName(), this.conf));
+      queryStr.append(HiveUtils.unparseIdentifier(func.apply(fschema), this.conf));
       
       if (isNotBlank(prefix)) {
         queryStr.append(" AS ");
-        String prefixedIdentifier = HiveUtils.unparseIdentifier(prefix + fschema.getName(), this.conf);
+        String prefixedIdentifier = HiveUtils.unparseIdentifier(prefix + func.apply(fschema), this.conf);
         queryStr.append(prefixedIdentifier);
       }
     }
