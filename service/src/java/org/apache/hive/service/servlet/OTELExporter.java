@@ -115,10 +115,19 @@ public class OTELExporter extends Thread {
         Span rootspan = tracer.spanBuilder(queryID + " - live")
                 .startSpan();
         List<String> completedTasks = new ArrayList<>();
+        Context parentContext = Context.current().with(rootspan);
+        Span initSpan = tracer.spanBuilder(queryID + " - live").setParent(parentContext).startSpan()
+                .setAttribute("queryID", lQuery.getQueryDisplay().getQueryId())
+                .setAttribute("queryString", lQuery.getQueryDisplay().getQueryString())
+                .setAttribute("Begin Time", lQuery.getBeginTime());
+        if(lQuery.getQueryDisplay().getErrorMessage() != null){
+          initSpan.setAttribute("Error Message", lQuery.getQueryDisplay().getErrorMessage());
+        }
+        initSpan.end();
         for (QueryDisplay.TaskDisplay task : lQuery.getQueryDisplay().getTaskDisplays()) {
           if (task.getReturnValue() != null) {
             completedTasks.add(task.getTaskId());
-            Context parentContext = Context.current().with(rootspan);
+            parentContext = Context.current().with(rootspan);
             Span currSpan = tracer.spanBuilder(queryID + " - " + task.getTaskId() + " - live").setParent(parentContext).setAllAttributes(addTaskAttributes(task))
                     .setStartTimestamp(task.getBeginTime(), TimeUnit.MILLISECONDS).startSpan();
 
@@ -174,8 +183,17 @@ public class OTELExporter extends Thread {
         historicalQueryId.add(hQuery.getQueryDisplay().getQueryId());
         Span rootSpan = tracer.spanBuilder(hQuery.getQueryDisplay().getQueryId() + " - completed")
                 .startSpan();
+        Context parentContext = Context.current().with(rootSpan);
+        Span initSpan = tracer.spanBuilder(hQuery.getQueryDisplay().getQueryId() + " - completed").setParent(parentContext).startSpan()
+                .setAttribute("queryID", hQuery.getQueryDisplay().getQueryId())
+                .setAttribute("queryString", hQuery.getQueryDisplay().getQueryString())
+                .setAttribute("Begin Time", hQuery.getBeginTime());
+        if(hQuery.getQueryDisplay().getErrorMessage() != null){
+          initSpan.setAttribute("Error Message", hQuery.getQueryDisplay().getErrorMessage());
+        }
+        initSpan.end();
         for (QueryDisplay.TaskDisplay task : hQuery.getQueryDisplay().getTaskDisplays()) {
-          Context parentContext = Context.current().with(rootSpan);
+          parentContext = Context.current().with(rootSpan);
           Span currSpan = tracer.spanBuilder(hQuery.getQueryDisplay().getQueryId()+ " - " + task.getTaskId() + " - completed").setParent(parentContext).setAllAttributes(addTaskAttributes(task))
                   .setStartTimestamp(task.getBeginTime(), TimeUnit.MILLISECONDS).startSpan();
           currSpan.end(task.getEndTime(), TimeUnit.MILLISECONDS);
@@ -191,7 +209,6 @@ public class OTELExporter extends Thread {
     attributes.put(AttributeKey.stringKey("queryId"), query.getQueryDisplay().getQueryId());
     attributes.put(AttributeKey.stringKey("QueryString"), query.getQueryDisplay().getQueryString());
     attributes.put(AttributeKey.longKey("QueryStartTime"), query.getQueryDisplay().getQueryStartTime());
-    attributes.put(AttributeKey.longKey("Begin Time"), query.getBeginTime());
     attributes.put(AttributeKey.longKey("End Time"), query.getEndTime());
     attributes.put(AttributeKey.stringKey("Operation Id"), query.getOperationId());
     attributes.put(AttributeKey.stringKey("Operation Log Location"), query.getOperationLogLocation());
