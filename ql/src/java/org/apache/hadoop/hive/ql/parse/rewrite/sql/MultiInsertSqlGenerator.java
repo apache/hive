@@ -167,11 +167,11 @@ public abstract class MultiInsertSqlGenerator {
     appendCols(targetTable.getAllCols(), FieldSchema::getName);
   }
   
-  public <T> void appendCols(List<T> columns, Function<T, String> func) {
-    appendCols(columns, null, null, func);
+  public <T> void appendCols(List<T> columns, Function<T, String> stringConverter) {
+    appendCols(columns, null, null, stringConverter);
   }
 
-  public <T> void appendCols(List<T> columns, String alias, String prefix, Function<T, String> func) {
+  public <T> void appendCols(List<T> columns, String alias, String prefix, Function<T, String> stringConverter) {
     if (columns == null) {
       return;
     }
@@ -192,11 +192,11 @@ public abstract class MultiInsertSqlGenerator {
       if (quotedAlias != null) {
         queryStr.append(quotedAlias).append('.');
       }
-      queryStr.append(HiveUtils.unparseIdentifier(func.apply(fschema), this.conf));
+      queryStr.append(HiveUtils.unparseIdentifier(stringConverter.apply(fschema), this.conf));
       
       if (isNotBlank(prefix)) {
         queryStr.append(" AS ");
-        String prefixedIdentifier = HiveUtils.unparseIdentifier(prefix + func.apply(fschema), this.conf);
+        String prefixedIdentifier = HiveUtils.unparseIdentifier(prefix + stringConverter.apply(fschema), this.conf);
         queryStr.append(prefixedIdentifier);
       }
     }
