@@ -24,6 +24,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
+import javax.management.Query;
+
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
@@ -53,6 +55,7 @@ import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.queryhistory.QueryHistoryService;
 import org.apache.hadoop.hive.ql.reexec.ReCompileException;
 import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -70,7 +73,6 @@ import com.google.common.base.Strings;
  * Compiles and executes HQL commands.
  */
 public class Driver implements IDriver {
-
   private static final String CLASS_NAME = Driver.class.getName();
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private static final LogHelper CONSOLE = new LogHelper(LOG);
@@ -94,7 +96,7 @@ public class Driver implements IDriver {
 
   // Pass lineageState when a driver instantiates another Driver to run or compile another query
   public Driver(HiveConf conf, Context ctx, LineageState lineageState) {
-    this(QueryState.getNewQueryState(conf, lineageState), null);
+    this(QueryState.getNewQueryState(conf, lineageState), QueryInfo.getFromConf(conf));
     context = ctx;
   }
 
@@ -558,11 +560,7 @@ public class Driver implements IDriver {
     // query info is created by SQLOperation which will have start time of the operation. When JDBC Statement is not
     // used queryInfo will be null, in which case we take creation of Driver instance as query start time (which is also
     // the time when query display object is created)
-    if (driverContext.getQueryInfo() != null) {
-      queryStartTime = driverContext.getQueryInfo().getBeginTime();
-    } else {
-      queryStartTime = driverContext.getQueryDisplay().getQueryStartTime();
-    }
+    queryStartTime = driverContext.getQueryStartTime();
     WmContext wmContext = new WmContext(queryStartTime, queryId);
     context.setWmContext(wmContext);
   }
@@ -755,6 +753,13 @@ public class Driver implements IDriver {
   // is called to stop the query if it is running, clean query results, and release resources.
   @Override
   public void close() {
+    if (driverContext.getConf().getBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_SERVICE_ENABLED)) {
+      if (driverState.isClosed() || driverState.isDestroyed()){
+        LOG.warn("Driver instance {} already closed or destroyed, prevent handling query history", this);
+      } else{
+        QueryHistoryService.handle(driverContext);
+      }
+    }
     driverState.lock();
     try {
       releaseTaskQueue();

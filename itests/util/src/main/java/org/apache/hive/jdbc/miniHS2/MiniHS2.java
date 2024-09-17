@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.queryhistory.persist.IcebergPersistorForTest;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniDFSShim;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniMrShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -89,6 +90,15 @@ public class MiniHS2 extends AbstractHiveService {
   private boolean createTransactionalTables;
   private int hmsPort = 0;
 
+  public void setupQueryHistory() {
+    // Query History Service (with a default iceberg table) needs locks and HIVE_LOCKS table to be present,
+    // so this is to use the IcebergPersistorForTest class to keep MiniHS2-based unit tests working flawlessly
+    getHiveConf().setVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_SERVICE_PERSISTOR_CLASS,
+        IcebergPersistorForTest.class.getName());
+    // for testing purposes, we can persist the query history record almost immediately
+    getHiveConf().setIntVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_SERVICE_PERSIST_MAX_BATCH_SIZE, 1);
+  }
+
   public enum MiniClusterType {
     MR,
     TEZ,
@@ -113,6 +123,7 @@ public class MiniHS2 extends AbstractHiveService {
     private String metastoreServerPrincipal;
     private String metastoreServerKeyTab;
     private int dataNodes = DEFAULT_DATANODE_COUNT; // default number of datanodes for miniHS2
+    private boolean useQueryHistory = false;
 
     public Builder() {
     }
@@ -123,6 +134,11 @@ public class MiniHS2 extends AbstractHiveService {
     }
     public Builder withMiniTez() {
       this.miniClusterType = MiniClusterType.TEZ;
+      return this;
+    }
+
+    public Builder withClusterType(MiniClusterType miniClusterType) {
+      this.miniClusterType = miniClusterType;
       return this;
     }
 
@@ -144,7 +160,16 @@ public class MiniHS2 extends AbstractHiveService {
     }
 
     public Builder withRemoteMetastore() {
-      this.isMetastoreRemote = true;
+      return withRemoteMetastore(true);
+    }
+
+    public Builder withRemoteMetastore(boolean isMetastoreRemote) {
+      this.isMetastoreRemote = isMetastoreRemote;
+      return this;
+    }
+
+    public Builder withPortsFromConf(boolean usePortsFromConf) {
+      this.usePortsFromConf = usePortsFromConf;
       return this;
     }
 
@@ -190,6 +215,11 @@ public class MiniHS2 extends AbstractHiveService {
       return this;
     }
 
+    public Builder withQueryHistory(boolean useQueryHistory){
+      this.useQueryHistory = useQueryHistory;
+      return this;
+    }
+
     public MiniHS2 build() throws Exception {
       if (miniClusterType == MiniClusterType.MR && useMiniKdc) {
         throw new IOException("Can't create secure miniMr ... yet");
@@ -207,6 +237,9 @@ public class MiniHS2 extends AbstractHiveService {
       } else {
         hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, HS2_BINARY_MODE);
       }
+
+      hiveConf.setBoolVar(ConfVars.HIVE_QUERY_HISTORY_SERVICE_ENABLED, useQueryHistory);
+
       return new MiniHS2(hiveConf, miniClusterType, useMiniKdc, serverPrincipal, serverKeytab,
           isMetastoreRemote, createTransactionalTables, usePortsFromConf, authType, isHA, cleanupLocalDirOnStartup,
           isMetastoreSecure, metastoreServerPrincipal, metastoreServerKeyTab, dataNodes);
@@ -385,6 +418,10 @@ public class MiniHS2 extends AbstractHiveService {
     for (Map.Entry<String, String> entry : confOverlay.entrySet()) {
       setConfProperty(entry.getKey(), entry.getValue());
     }
+
+    // setup Query History service here, this will take care of unit tests that use the MiniHS2.Builder or the
+    // constructor directly
+    setupQueryHistory();
 
     Exception hs2Exception = null;
     boolean hs2Started = false;

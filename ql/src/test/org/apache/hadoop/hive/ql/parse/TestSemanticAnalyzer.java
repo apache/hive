@@ -17,10 +17,16 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,11 +38,15 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.security.HadoopDefaultAuthenticator;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -46,8 +56,11 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.stubbing.Answer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TestSemanticAnalyzer {
+  private static final Logger LOG = LoggerFactory.getLogger(TestSemanticAnalyzer.class.getName());
 
   private static Hive db;
   private static HiveConf conf;
@@ -64,15 +77,46 @@ public class TestSemanticAnalyzer {
     createKeyValueTable("table1");
     createKeyValueTable("table2");
     createKeyValueTable("table3");
+    createPartitionedTable("table_part");
+    createAcidTable("table_acid");
   }
 
   private static void createKeyValueTable(String tableName) throws Exception {
+    Table table = createSimpleTableWithColumns(tableName);
+    db.createTable(table);
+  }
+
+  private static void createAcidTable(String tableAcid) throws HiveException {
+    Table table = createSimpleTableWithColumns(tableAcid);
+    table.setProperty("transactional", "true");
+    // The table must be stored using an ACID compliant format (such as ORC)
+    setOrc(table);
+    db.createTable(table);
+  }
+
+  private static void createPartitionedTable(String tablePart) throws HiveException {
+    Table table = createSimpleTableWithColumns(tablePart);
+
+    List<FieldSchema> partitionColumns = new ArrayList<>();
+    partitionColumns.add(new FieldSchema("part_col", "string", "Partition column description"));
+    table.setPartCols(partitionColumns);
+
+    db.createTable(table);
+  }
+
+  private static void setOrc(Table table) throws HiveException {
+    table.setInputFormatClass("org.apache.hadoop.hive.ql.io.orc.OrcInputFormat");
+    table.setOutputFormatClass("org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat");
+    table.setSerializationLib("org.apache.hadoop.hive.ql.io.orc.OrcSerde");
+  }
+
+  private static Table createSimpleTableWithColumns(String tableName) {
     Table table = new Table("default", tableName);
     List<FieldSchema> columns = new ArrayList<>();
     columns.add(new FieldSchema("key", "string", "First column"));
     columns.add(new FieldSchema("value", "int", "Second column"));
     table.setFields(columns); // Set columns
-    db.createTable(table);
+    return table;
   }
 
   @AfterClass
@@ -235,7 +279,7 @@ public class TestSemanticAnalyzer {
     analyzer.analyze(astNode, ctx);
 
     // this is a soft assertion, and doesn't reflect the goal of this unit test,
-    Assert.assertEquals("genFileSinkPlan is supposed to be called once during semantic analysis",
+    assertEquals("genFileSinkPlan is supposed to be called once during semantic analysis",
         1, capturedValues.size());
     FileSinkOperator operator = (FileSinkOperator) capturedValues.get(0);
     String finalPath = operator.getConf().getDestPath().toUri().toString();
@@ -247,5 +291,60 @@ public class TestSemanticAnalyzer {
       assertFalse(String.format("Final path %s is in cache folder (%s), which is unexpected",
           finalPath, cacheDirPath), finalPath.contains(cacheDirPath));
     }
+  }
+
+  @Test
+  public void testQueryTypes() throws Exception {
+    // QUERY
+    checkQueryType("SELECT key FROM table1", "QUERY");
+    checkQueryType("SELECT key FROM table_non_existing", "QUERY");
+    checkQueryType("SELECT a.value, b.value FROM table1 a JOIN table2 b ON a.key = b.key", "QUERY");
+
+    // STATS
+    checkQueryType("ANALYZE TABLE table1 COMPUTE STATISTICS", "STATS");
+    checkQueryType("ANALYZE TABLE table1 COMPUTE STATISTICS FOR COLUMNS", "STATS");
+
+    // DML
+    checkQueryType("INSERT INTO table1 VALUES ('1', 1)", "DML");
+    checkQueryType("INSERT OVERWRITE TABLE table1 SELECT * FROM table2", "DML");
+    checkQueryType("UPDATE table_acid SET value = 2 WHERE key = '1'", "DML");
+    checkQueryType("DELETE FROM table_acid WHERE key = '1'", "DML");
+    checkQueryType("MERGE INTO table_acid AS target USING table1 AS source ON source.key = target.key " +
+        "WHEN MATCHED THEN UPDATE SET key = 3 WHEN NOT MATCHED THEN INSERT VALUES ('3', 4)", "DML");
+
+    // DDL
+    checkQueryType("CREATE EXTERNAL TABLE test_part(id int) PARTITIONED BY(dt string) STORED AS ORC", "DDL");
+    checkQueryType("ALTER TABLE table_part ADD PARTITION (part_col='3')", "DDL");
+    checkQueryType("DROP TABLE table1", "DDL");
+    checkQueryType("CREATE TABLE target AS SELECT * FROM table1", "DDL");
+  }
+
+  private void checkQueryType(String query, String expectedQueryType) throws Exception {
+    SessionState.start(new SessionState(conf));
+    Context ctx = new Context(conf);
+    ASTNode astNode = ParseUtils.parse(query, ctx);
+    QueryState queryState = new QueryState.Builder().withHiveConf(conf).build();
+    HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID, "test_query_id");
+    SessionState.get().addQueryState("test_query_id", queryState);
+    // RewriteSemanticAnalyzer needs a txn manager that supportsAcid()
+    HiveTxnManager txnManager = mock(DbTxnManager.class);
+    when(txnManager.supportsAcid()).thenReturn(true);
+    queryState.setTxnManager(txnManager);
+
+    BaseSemanticAnalyzer analyzer = spy(SemanticAnalyzerFactory.get(queryState, astNode));
+
+    analyzer.initCtx(ctx);
+    try {
+      analyzer.analyze(astNode, ctx);
+    } catch (SemanticException e) {
+      LOG.info("Ignoring semantic exception because the inner state of the Semantic Analyzer still can and will be " +
+          "asserted in this unit test.", e);
+    }
+
+    DriverContext driverContext = new DriverContext(mock(QueryState.class), null, null, mock(DbTxnManager.class));
+    driverContext.setQueryType(analyzer, astNode);
+
+    assertEquals(String.format("Expected query type for query '%s' is '%s', seen '%s'", query, expectedQueryType,
+        driverContext.getQueryType()), expectedQueryType, driverContext.getQueryType());
   }
 }

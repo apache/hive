@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -234,6 +235,10 @@ public class QB {
 
   public Set<String> getTabAliases() {
     return aliasToTabs.keySet();
+  }
+
+  public Collection<String> getTableAliasValues() {
+    return aliasToTabs.values();
   }
 
   public List<String> getAliases() {
@@ -505,5 +510,16 @@ public class QB {
     // Insert this map into the stats
     aliasToSubqExpr.put(alias, qbexpr);
     addAlias(alias);
+  }
+
+  public void iterate(QBVisitor qbVisitor) {
+    // handle this QB
+    qbVisitor.visit(this);
+    for (QBExpr qbExpr : aliasToSubq.values()) {
+      // handle all subQ QBs
+      if (qbExpr.getQB() != null){
+        qbExpr.getQB().iterate(qbVisitor);
+      }
+    }
   }
 }

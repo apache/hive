@@ -1176,6 +1176,9 @@ public class SessionState implements ISessionAuthState{
     protected Logger LOG;
     protected boolean isSilent;
 
+    private final StringBuilder summary = new StringBuilder();
+    private boolean collectSummary;
+
     public LogHelper(Logger LOG) {
       this(LOG, false);
     }
@@ -1320,6 +1323,10 @@ public class SessionState implements ISessionAuthState{
       if (!isSilent) {
         getInfoStream().println(info);
       }
+      if (collectSummary){
+        summary.append(info);
+        summary.append("\n");
+      }
       LOG.info(info + StringUtils.defaultString(detail));
     }
 
@@ -1384,7 +1391,25 @@ public class SessionState implements ISessionAuthState{
       if(!getIsSilent() || getIsQtestLogging()) {
         getErrStream().println(error);
       }
+      if (collectSummary){
+        summary.append(error);
+        summary.append("\n");
+      }
       LOG.error(error + StringUtils.defaultString(detail));
+    }
+
+    public String getSummary() {
+      return summary.toString();
+    }
+
+    public void startSummary() {
+      summary.setLength(0);
+      summary.append("\n");
+      collectSummary = true;
+    }
+
+    public void endSummary() {
+      collectSummary = false;
     }
   }
 

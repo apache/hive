@@ -5740,6 +5740,26 @@ public class HiveConf extends Configuration {
             + "a background update happens periodically to report the actual state of the query"),
     HIVE_SCHEDULED_QUERIES_CREATE_AS_ENABLED("hive.scheduled.queries.create.as.enabled", true,
         "This option sets the default behaviour of newly created scheduled queries."),
+    HIVE_QUERY_HISTORY_SERVICE_ENABLED("hive.query.history.service.enabled", true,
+        "Whether to start QueryHistoryService in HS2"),
+    HIVE_QUERY_HISTORY_SERVICE_EXPLAIN_PLAN_ENABLED("hive.query.history.service.explain.plan.enabled", true,
+        "Whether to collect and store explain plan in the query history. Default is true."),
+    HIVE_QUERY_HISTORY_SERVICE_EXEC_SUMMARY_ENABLED("hive.query.history.service.exec.summary.enabled", true,
+        "Whether to collect and store execution summary in the query history. Default is true."),
+    HIVE_QUERY_HISTORY_SERVICE_PERSIST_MAX_BATCH_SIZE("hive.query.history.service.persist.max.batch.size", 200,
+        "The maximum amount of records held in memory " +
+            "before query history service persists them to the target table. " +
+            "A small value (like 1-5) will lead to more real-time behavior with the price of small files. " +
+            "Set this to 0 to wait for the records to be persisted synchronously (not recommended in production)."),
+    HIVE_QUERY_HISTORY_SERVICE_PERSIST_MAX_MEMORY_BYTES("hive.query.history.service.persist.max.memory.bytes",
+        100 * 1024 * 1024, // 100MB
+        "The maximum size in bytes the query history queue can grow in the memory before query history service " +
+            "persists them to the target table." +
+            "Set this to 0 to disable this check (not recommended in production in order to keep HS2's heap under " +
+            "control)"),
+    HIVE_QUERY_HISTORY_SERVICE_PERSISTOR_CLASS("hive.query.history.service.persistor.class",
+        "org.apache.hadoop.hive.ql.queryhistory.persist.IcebergPersistor",
+        "The class implementing QueryHistoryPersistor to be used for persisting QueryHistoryRecord instances"),
     HIVE_SECURITY_AUTHORIZATION_SCHEDULED_QUERIES_SUPPORTED("hive.security.authorization.scheduled.queries.supported",
         false,
         "Enable this if the configured authorizer is able to handle scheduled query related calls."),

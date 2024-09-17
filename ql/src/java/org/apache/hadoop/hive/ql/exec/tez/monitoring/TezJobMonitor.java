@@ -435,7 +435,9 @@ public class TezJobMonitor {
 
   private void printSummary(boolean success, Map<String, Progress> progressMap) {
     if (isProfilingEnabled() && success && progressMap != null) {
-
+      if (shouldCollectSummaryString()){
+        console.startSummary();
+      }
       double duration = (System.currentTimeMillis() - this.executionStartTime) / 1000.0;
       console.printInfo("Status: DAG finished successfully in " + String.format("%.2f seconds", duration));
       console.printInfo("DAG ID: " + this.dagClient.getDagIdentifierString());
@@ -456,6 +458,18 @@ public class TezJobMonitor {
 
       console.printInfo("");
     }
+  }
+
+  public void endSummary() {
+    console.endSummary();
+  }
+
+  /**
+   * Collecting execution summary might be a bit expensive, only do it if needed for query history.
+   */
+  private boolean shouldCollectSummaryString() {
+    return hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_SERVICE_ENABLED) &&
+        hiveConf.getBoolVar(ConfVars.HIVE_QUERY_HISTORY_SERVICE_EXEC_SUMMARY_ENABLED);
   }
 
   private static boolean hasInterruptedException(Throwable e) {
@@ -512,5 +526,13 @@ public class TezJobMonitor {
           ExceptionUtils.getStackTrace(e));
     }
     return TezProgressMonitor.NULL;
+  }
+
+  public String getSummary() {
+    return console.getSummary();
+  }
+
+  public void printInfo(String info) {
+    console.printInfo(info);
   }
 }

@@ -85,6 +85,7 @@ import org.apache.hadoop.hive.ql.metadata.events.NotificationEventPoll;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.repl.metric.MetricSink;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
+import org.apache.hadoop.hive.ql.queryhistory.QueryHistoryService;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionService;
 import org.apache.hadoop.hive.ql.security.authorization.HiveMetastoreAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.PolicyProviderContainer;
@@ -189,6 +190,7 @@ public class HiveServer2 extends CompositeService {
   private ScheduledQueryExecutionService scheduledQueryService;
   private ServiceContext serviceContext;
   private OTELExporter otelExporter;
+  private QueryHistoryService queryHistoryService;
 
   public enum WebUIAuthMethod {
     NONE, LDAP
@@ -323,6 +325,10 @@ public class HiveServer2 extends CompositeService {
 
     if (hiveConf.getBoolVar(ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_ENABLED)) {
       scheduledQueryService = ScheduledQueryExecutionService.startScheduledQueryExecutorService(hiveConf);
+    }
+
+    if (hiveConf.getBoolVar(ConfVars.HIVE_QUERY_HISTORY_SERVICE_ENABLED)) {
+      queryHistoryService = QueryHistoryService.start(hiveConf, serviceContext);
     }
 
     // Setup cache if enabled.
@@ -1039,6 +1045,14 @@ public class HiveServer2 extends CompositeService {
         scheduledQueryService.close();
       } catch (Exception e) {
         LOG.error("Error stopping schq", e);
+      }
+    }
+    if (queryHistoryService != null) {
+      try {
+        LOG.info("Calling QueryHistoryService.close from HiveServer2.stop");
+        queryHistoryService.stop();
+      } catch (Exception e) {
+        LOG.error("Error stopping queryHistoryService", e);
       }
     }
     //Shutdown metric collection

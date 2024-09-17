@@ -19,6 +19,11 @@
 package org.apache.hadoop.hive.ql;
 
 
+import org.apache.hadoop.hive.ql.parse.QB;
+
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  *
  * QueryProperties.
@@ -38,6 +43,7 @@ public class QueryProperties {
   boolean noScanAnalyzeCommand;
   boolean analyzeRewrite;
   boolean ctas;
+  boolean isInsert;
   int outerQueryLimit;
 
   boolean hasJoin = false;
@@ -73,6 +79,9 @@ public class QueryProperties {
   // True if this statement creates or replaces a materialized view
   private boolean isMaterializedView;
   private boolean isView;
+
+  // set of queried tables, aliases are resolved to real table names
+  private Set<String> tablesQueried = new HashSet<>();
 
   public boolean isQuery() {
     return query;
@@ -301,6 +310,14 @@ public class QueryProperties {
     return this.filterWithSubQuery;
   }
 
+  public boolean isInsert() {
+    return isInsert;
+  }
+
+  public void setInsert(final boolean insert) {
+    isInsert = insert;
+  }
+
   /**
    * True indicates this statement create or replaces a materialized view, not that it is a query
    * against a materialized view.
@@ -319,6 +336,10 @@ public class QueryProperties {
 
   public void setView(boolean view) {
     isView = view;
+  }
+
+  public Set<String> getTablesQueried() {
+    return tablesQueried;
   }
 
   public void clear() {
@@ -355,6 +376,16 @@ public class QueryProperties {
 
     multiDestQuery = false;
     filterWithSubQuery = false;
+
+    tablesQueried.clear();
   }
 
+  /**
+   * This method extracts all query related information from the root QB from its state available after semantic
+   * analysis.
+   * @param qb the root QB of the analyzer
+   */
+  public void extractInfoFromQueryBlock(QB qb) {
+    qb.iterate(qbIt -> tablesQueried.addAll(qbIt.getTableAliasValues()));
+  }
 }

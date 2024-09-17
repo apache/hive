@@ -330,6 +330,13 @@ public abstract class BaseSemanticAnalyzer {
     initCtx(ctx);
     init(true);
     analyzeInternal(ast);
+    setQueryPropertiesAfterAnalyze();
+  }
+
+  private void setQueryPropertiesAfterAnalyze() {
+    if (queryProperties != null && getQB() != null){
+      queryProperties.extractInfoFromQueryBlock(getQB());
+    }
   }
 
   public void validate() throws SemanticException {
@@ -2092,4 +2099,7 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
+  public QB getQB(){
+    return null;
+  }
 }

@@ -224,6 +224,7 @@ public class Compiler {
       sem.analyze(tree, context);
     } finally {
       sem.endAnalysis();
+      driverContext.setQueryType(sem, tree);
     }
 
     if (executeHooks) {
@@ -450,7 +451,8 @@ public class Compiler {
 
   private void explainOutput(BaseSemanticAnalyzer sem, QueryPlan plan) throws IOException {
     if (driverContext.getConf().getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT) ||
-        driverContext.getConf().getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT)) {
+        driverContext.getConf().getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT) ||
+        driverContext.isQueryHistoryExplainEnabled()) {
       String explainOutput = ExplainTask.getExplainOutput(sem, plan, tree, queryState,
           context, driverContext.getConf());
       if (explainOutput != null) {
@@ -464,6 +466,9 @@ public class Compiler {
         if (driverContext.getConf().isWebUiQueryInfoCacheEnabled() &&
             driverContext.getConf().getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT)) {
           driverContext.getQueryDisplay().setExplainPlan(explainOutput);
+        }
+        if (driverContext.isQueryHistoryExplainEnabled()){
+          driverContext.setExplainPlan(explainOutput);
         }
       }
     }

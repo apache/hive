@@ -142,6 +142,7 @@ import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapred.TaskAttemptContext;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.DataFile;
@@ -930,6 +931,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public void storageHandlerCommit(Properties commitProperties, Operation operation)
         throws HiveException {
+    storageHandlerCommit(commitProperties, operation, null);
+  }
+
+  @Override
+  public void storageHandlerCommit(Properties commitProperties, Operation operation, TaskAttemptContext context)
+      throws HiveException {
     String tableName = commitProperties.getProperty(Catalogs.NAME);
     String location = commitProperties.getProperty(Catalogs.LOCATION);
     String snapshotRef = commitProperties.getProperty(Catalogs.SNAPSHOT_REF);
@@ -944,6 +951,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
     HiveIcebergOutputCommitter committer = getOutputCommitter();
     try {
+      if (context != null) {
+        committer.commitTask(context);
+      }
       committer.commitJobs(jobContextList, operation);
     } catch (Throwable e) {
       String ids = jobContextList
@@ -961,6 +971,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
           "Error committing job: " + ids + " for table: " + tableName, e);
     }
   }
+
 
   public HiveIcebergOutputCommitter getOutputCommitter() {
     return new HiveIcebergOutputCommitter();
