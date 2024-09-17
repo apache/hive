@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.parse.rewrite.sql;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 
@@ -60,18 +60,14 @@ public abstract class MultiInsertSqlGenerator {
     return targetTableFullName;
   }
 
-  public abstract void appendAcidSelectColumns(Context.Operation operation);
+  public abstract void appendAcidSelectColumns(Operation operation);
   
-  public void appendAcidSelectColumnsForDeletedRecords(Context.Operation operation, boolean skipPrefix) {
+  public void appendAcidSelectColumnsForDeletedRecords(Operation operation, boolean skipPrefix) {
     throw new UnsupportedOperationException();
   }
 
-  public abstract List<String> getDeleteValues(Context.Operation operation);
-  protected abstract List<String> getSortKeys(boolean emptyOrdering);
-  
-  public List<String> getSortKeys() {
-    return getSortKeys(false);
-  }
+  public abstract List<String> getDeleteValues(Operation operation);
+  public abstract List<String> getSortKeys(Operation operation);
 
   public String qualify(String columnName) {
     if (isBlank(subQueryAlias)) {
@@ -96,7 +92,7 @@ public abstract class MultiInsertSqlGenerator {
   }
 
   public void appendDeleteBranch(String hintStr) {
-    List<String> deleteValues = getDeleteValues(Context.Operation.DELETE);
+    List<String> deleteValues = getDeleteValues(Operation.DELETE);
     appendInsertBranch(hintStr, deleteValues);
   }
 
@@ -133,7 +129,7 @@ public abstract class MultiInsertSqlGenerator {
   }
 
   public void appendSortKeys() {
-    appendSortBy(getSortKeys(true));
+    appendSortBy(getSortKeys(Operation.DELETE));
   }
 
   public MultiInsertSqlGenerator append(String sqlTextFragment) {

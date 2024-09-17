@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
@@ -103,7 +104,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
                             MultiInsertSqlGenerator sqlGenerator) {
     sqlGenerator.append("FROM\n");
     sqlGenerator.append("(SELECT ");
-    sqlGenerator.appendAcidSelectColumns(Context.Operation.MERGE);
+    sqlGenerator.appendAcidSelectColumns(Operation.MERGE);
     sqlGenerator.appendAllColsOfTargetTable();
     sqlGenerator.append(" FROM ").appendTargetTableName().append(") ");
     sqlGenerator.appendSubQueryAlias();
@@ -120,7 +121,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
     //this is a tmp table and thus Session scoped and acid requires SQL statement to be serial in a
     // given session, i.e. the name can be fixed across all invocations
     String tableName = "merge_tmp_table";
-    List<String> sortKeys = sqlGenerator.getSortKeys();
+    List<String> sortKeys = sqlGenerator.getSortKeys(Operation.MERGE);
     sqlGenerator.append("INSERT INTO ").append(tableName)
         .append("\n  SELECT cardinality_violation(")
         .append(StringUtils.join(sortKeys, ","));
@@ -158,7 +159,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
   }
 
   protected void setOperation(Context context) {
-    context.setOperation(Context.Operation.MERGE);
+    context.setOperation(Operation.MERGE);
   }
 
   protected static class MergeWhenClauseSqlGenerator implements MergeStatement.MergeSqlGenerator {
@@ -210,7 +211,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
       sqlGenerator.append("    -- update clause").append("\n");
       List<String> valuesAndAcidSortKeys = new ArrayList<>(
           targetTable.getCols().size() + targetTable.getPartCols().size() + 1);
-      valuesAndAcidSortKeys.addAll(sqlGenerator.getSortKeys());
+      valuesAndAcidSortKeys.addAll(sqlGenerator.getSortKeys(Operation.MERGE));
       addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), valuesAndAcidSortKeys);
       sqlGenerator.appendInsertBranch(hintStr, valuesAndAcidSortKeys);
       hintStr = null;

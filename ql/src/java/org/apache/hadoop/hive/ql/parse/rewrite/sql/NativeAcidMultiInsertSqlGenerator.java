@@ -54,7 +54,7 @@ public class NativeAcidMultiInsertSqlGenerator extends MultiInsertSqlGenerator {
   }
 
   @Override
-  protected List<String> getSortKeys(boolean emptyOrdering) {
+  public List<String> getSortKeys(Operation operation) {
     return singletonList(qualify("ROW__ID"));
   }
 }

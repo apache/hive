@@ -71,18 +71,16 @@ public class NonNativeAcidMultiInsertSqlGenerator extends MultiInsertSqlGenerato
 
   @Override
   public List<String> getDeleteValues(Operation operation) {
-    List<FieldSchema> acidSelectColumns = targetTable.getStorageHandler().acidSelectColumns(targetTable, operation);
-    List<String> deleteValues = new ArrayList<>(acidSelectColumns.size());
-    for (FieldSchema fieldSchema : acidSelectColumns) {
-      String prefixedIdentifier = HiveUtils.unparseIdentifier(deletePrefix + fieldSchema.getName(), this.conf);
-      deleteValues.add(qualify(prefixedIdentifier));
-    }
-    return deleteValues;
+    return targetTable.getStorageHandler().acidSelectColumns(targetTable, operation)
+        .stream()
+        .map(fieldSchema -> qualify(
+            HiveUtils.unparseIdentifier(deletePrefix + fieldSchema.getName(), this.conf)))
+        .collect(Collectors.toList());
   }
 
   @Override
-  protected List<String> getSortKeys(boolean emptyOrdering) {
-    return targetTable.getStorageHandler().acidSortColumns(targetTable, Operation.DELETE, emptyOrdering)
+  public List<String> getSortKeys(Operation operation) {
+    return targetTable.getStorageHandler().acidSortColumns(targetTable, operation)
         .stream()
         .map(fieldSchema -> qualify(
             HiveUtils.unparseIdentifier(deletePrefix + fieldSchema.getName(), this.conf)))
