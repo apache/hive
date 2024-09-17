@@ -135,10 +135,10 @@ public class TestHiveSplitGenerator {
           ((InputDataInformationEvent) generateEvents(conf, splits, splitGenerator).get(1)).getSerializedPath();
       Assert.fail("HiveSplitGeneratorSerializerException should fail");
     } catch (Exception e) {
-      // outermost exception is the RuntimeException that wraps anything comes from splitSerialize.close()
+      // outermost exception is the RuntimeException that wraps anything comes from splitSerializer.close()
       Assert.assertEquals(RuntimeException.class, e.getClass());
 
-      // wrapperRuntimeException wraps anything thrown from splitSerialize.writeSplit()
+      // wrapperRuntimeException wraps anything thrown from splitSerializer.writeSplit()
       Throwable wrapperRuntimeException = e.getCause();
       Assert.assertEquals(RuntimeException.class, wrapperRuntimeException.getClass());
 
