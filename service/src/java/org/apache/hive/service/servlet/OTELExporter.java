@@ -79,129 +79,108 @@ public class OTELExporter extends Thread {
     LOG.debug("Found {} liveQueries and {} historicalQueries", liveQueries.size(), historicalQueries.size());
 
     for (QueryInfo lQuery: liveQueries){
-
-      while (lQuery.getQueryDisplay() == null) {
-        try {
-          Thread.sleep(500);
-        } catch (InterruptedException e) {
-          throw new RuntimeException(e);
-        }
+      if(lQuery.getQueryDisplay() == null){
+        continue;
       }
-
       String queryID = lQuery.getQueryDisplay().getQueryId();
+      Span rootspan = queryIdToSpanMap.get(queryID);
 
       //In case of live query previously encountered in past loops
-      if(queryIdToSpanMap.containsKey(queryID)){
-        Span rootspan = queryIdToSpanMap.get(queryID);
-
+      if (rootspan != null) {
         for (QueryDisplay.TaskDisplay task : lQuery.getQueryDisplay().getTaskDisplays()) {
-          if(task.getReturnValue() != null && (queryIdToTasksMap.get(queryID) == null || !queryIdToTasksMap.get(queryID).contains(task.getTaskId()))){
+          if (task.getReturnValue() != null && task.getEndTime() != null && !queryIdToTasksMap.get(queryID).contains(task.getTaskId())) {
             queryIdToTasksMap.get(queryID).add(task.getTaskId());
             Context parentContext = Context.current().with(rootspan);
-            Span currSpan = tracer.spanBuilder(queryID+ " - " + task.getTaskId() + " - live").setParent(parentContext).setAllAttributes(addTaskAttributes(task))
-                    .setStartTimestamp(task.getBeginTime(), TimeUnit.MILLISECONDS).startSpan();
-            while (task.getEndTime() == null){
-              try {
-                Thread.sleep(500);
-              } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-              }
-            }
-            currSpan.end(task.getEndTime(), TimeUnit.MILLISECONDS);
+            tracer.spanBuilder(queryID+ " - " + task.getTaskId() + " - live")
+                    .setParent(parentContext).setAllAttributes(addTaskAttributes(task))
+                    .setStartTimestamp(task.getBeginTime(), TimeUnit.MILLISECONDS).startSpan()
+                    .end(task.getEndTime(), TimeUnit.MILLISECONDS);
           }
         }
       } else {
-        // In case of live queries being seen for first time
-        Span rootspan = tracer.spanBuilder(queryID + " - live")
+        // In case of live queries being seen for first time and has initialized its queryDisplay
+        rootspan = tracer.spanBuilder(queryID + " - live")
                 .startSpan();
         List<String> completedTasks = new ArrayList<>();
         Context parentContext = Context.current().with(rootspan);
+
         Span initSpan = tracer.spanBuilder(queryID + " - live").setParent(parentContext).startSpan()
                 .setAttribute("queryID", lQuery.getQueryDisplay().getQueryId())
                 .setAttribute("queryString", lQuery.getQueryDisplay().getQueryString())
                 .setAttribute("Begin Time", lQuery.getBeginTime());
-        if(lQuery.getQueryDisplay().getErrorMessage() != null){
+        if (lQuery.getQueryDisplay().getErrorMessage() != null) {
           initSpan.setAttribute("Error Message", lQuery.getQueryDisplay().getErrorMessage());
         }
         initSpan.end();
+
         for (QueryDisplay.TaskDisplay task : lQuery.getQueryDisplay().getTaskDisplays()) {
-          if (task.getReturnValue() != null) {
+          if (task.getReturnValue() != null && task.getEndTime() != null) {
             completedTasks.add(task.getTaskId());
             parentContext = Context.current().with(rootspan);
-            Span currSpan = tracer.spanBuilder(queryID + " - " + task.getTaskId() + " - live").setParent(parentContext).setAllAttributes(addTaskAttributes(task))
-                    .setStartTimestamp(task.getBeginTime(), TimeUnit.MILLISECONDS).startSpan();
-
-            while (task.getEndTime() == null) {
-              try {
-                Thread.sleep(500);
-              } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-              }
-            }
-            currSpan.end(task.getEndTime(), TimeUnit.MILLISECONDS);
+            tracer.spanBuilder(queryID + " - " + task.getTaskId() + " - live")
+                    .setParent(parentContext).setAllAttributes(addTaskAttributes(task))
+                    .setStartTimestamp(task.getBeginTime(), TimeUnit.MILLISECONDS).startSpan()
+                    .end(task.getEndTime(), TimeUnit.MILLISECONDS);
           }
         }
-
-        if(rootspan != null){
-          queryIdToSpanMap.put(queryID,rootspan);
-          queryIdToTasksMap.put(queryID,completedTasks);
-        }
-
+        queryIdToSpanMap.put(queryID,rootspan);
+        queryIdToTasksMap.put(queryID,completedTasks);
       }
     }
 
-
+    List<String> historicalQueryIDs = new ArrayList<>();
     for (QueryInfo hQuery : historicalQueries) {
+      String hQueryId = hQuery.getQueryDisplay().getQueryId();
+      historicalQueryIDs.add(hQueryId);
+      Span rootspan = queryIdToSpanMap.get(hQueryId);
 
       //For queries that were live till last loop but have ended before start of this loop
-      if(queryIdToSpanMap.containsKey(hQuery.getQueryDisplay().getQueryId())){
-        String hQueryId = hQuery.getQueryDisplay().getQueryId();
-        Span rootspan = queryIdToSpanMap.get(hQueryId);
+      if (rootspan != null) {
         for (QueryDisplay.TaskDisplay task : hQuery.getQueryDisplay().getTaskDisplays()) {
-          if(queryIdToTasksMap.get(hQueryId) == null || !queryIdToTasksMap.get(hQueryId).contains(task.getTaskId())){
+          if (!queryIdToTasksMap.get(hQueryId).contains(task.getTaskId())) {
             queryIdToTasksMap.get(hQueryId).add(task.getTaskId());
             Context parentContext = Context.current().with(rootspan);
-            Span currSpan = tracer.spanBuilder(hQueryId+ " - " + task.getTaskId() + " - completed").setParent(parentContext).setAllAttributes(addTaskAttributes(task))
-                    .setStartTimestamp(task.getBeginTime(), TimeUnit.MILLISECONDS).startSpan();
-            currSpan.end(task.getEndTime(), TimeUnit.MILLISECONDS);
+            tracer.spanBuilder(hQueryId+ " - " + task.getTaskId() + " - completed")
+                    .setParent(parentContext).setAllAttributes(addTaskAttributes(task))
+                    .setStartTimestamp(task.getBeginTime(), TimeUnit.MILLISECONDS).startSpan()
+                    .end(task.getEndTime(), TimeUnit.MILLISECONDS);
           }
         }
 
         //Update the rootSpan name & attributes before ending it
-        queryIdToSpanMap.get(hQueryId).updateName(hQueryId + " - completed");
-        queryIdToSpanMap.get(hQueryId).setAllAttributes(addQueryAttributes(hQuery));
-        queryIdToSpanMap.get(hQueryId).end();
-
+        rootspan.updateName(hQueryId + " - completed").setAllAttributes(addQueryAttributes(hQuery)).end();
         queryIdToSpanMap.remove(hQueryId);
         queryIdToTasksMap.remove(hQueryId);
 
         historicalQueryId.add(hQueryId);
       }
 
-      //For queries that were already either before OTEL service started or in between OTEL loops
-      if (!historicalQueryId.contains(hQuery.getQueryDisplay().getQueryId())) {
-        historicalQueryId.add(hQuery.getQueryDisplay().getQueryId());
-        Span rootSpan = tracer.spanBuilder(hQuery.getQueryDisplay().getQueryId() + " - completed")
+      //For queries that already ended either before OTEL service started or in between OTEL loops
+      if (historicalQueryId.add(hQuery.getQueryDisplay().getQueryId())) {
+        rootspan = tracer.spanBuilder(hQuery.getQueryDisplay().getQueryId() + " - completed")
                 .startSpan();
-        Context parentContext = Context.current().with(rootSpan);
+        Context parentContext = Context.current().with(rootspan);
+
         Span initSpan = tracer.spanBuilder(hQuery.getQueryDisplay().getQueryId() + " - completed").setParent(parentContext).startSpan()
                 .setAttribute("queryID", hQuery.getQueryDisplay().getQueryId())
                 .setAttribute("queryString", hQuery.getQueryDisplay().getQueryString())
                 .setAttribute("Begin Time", hQuery.getBeginTime());
-        if(hQuery.getQueryDisplay().getErrorMessage() != null){
+        if (hQuery.getQueryDisplay().getErrorMessage() != null) {
           initSpan.setAttribute("Error Message", hQuery.getQueryDisplay().getErrorMessage());
         }
         initSpan.end();
-        for (QueryDisplay.TaskDisplay task : hQuery.getQueryDisplay().getTaskDisplays()) {
-          parentContext = Context.current().with(rootSpan);
-          Span currSpan = tracer.spanBuilder(hQuery.getQueryDisplay().getQueryId()+ " - " + task.getTaskId() + " - completed").setParent(parentContext).setAllAttributes(addTaskAttributes(task))
-                  .setStartTimestamp(task.getBeginTime(), TimeUnit.MILLISECONDS).startSpan();
-          currSpan.end(task.getEndTime(), TimeUnit.MILLISECONDS);
-        }
-        rootSpan.setAllAttributes(addQueryAttributes(hQuery)).end();
-      }
 
+        for (QueryDisplay.TaskDisplay task : hQuery.getQueryDisplay().getTaskDisplays()) {
+          parentContext = Context.current().with(rootspan);
+          tracer.spanBuilder(hQuery.getQueryDisplay().getQueryId()+ " - " + task.getTaskId() + " - completed")
+                  .setParent(parentContext).setAllAttributes(addTaskAttributes(task))
+                  .setStartTimestamp(task.getBeginTime(), TimeUnit.MILLISECONDS).startSpan()
+                  .end(task.getEndTime(), TimeUnit.MILLISECONDS);
+        }
+        rootspan.setAllAttributes(addQueryAttributes(hQuery)).end();
+      }
     }
+    historicalQueryId.retainAll(historicalQueryIDs);
   }
 
   private AttributesMap addQueryAttributes(QueryInfo query){
@@ -228,14 +207,14 @@ public class OTELExporter extends Thread {
     AttributesMap attributes = AttributesMap.create(Long.MAX_VALUE, Integer.MAX_VALUE);
     attributes.put(AttributeKey.stringKey("TaskId"), taskDisplay.getTaskId());
     attributes.put(AttributeKey.stringKey("Name"), taskDisplay.getName());
-    if(taskDisplay.getTaskType() != null){
+    if (taskDisplay.getTaskType() != null) {
       attributes.put(AttributeKey.stringKey("TaskType"), taskDisplay.getTaskType().toString());
     }
     attributes.put(AttributeKey.stringKey("Status"), taskDisplay.getStatus());
     attributes.put(AttributeKey.stringKey("StatusMessage"), taskDisplay.getStatusMessage());
     attributes.put(AttributeKey.stringKey("ExternalHandle"), taskDisplay.getExternalHandle());
     attributes.put(AttributeKey.stringKey("ErrorMsg"), taskDisplay.getErrorMsg());
-    if(taskDisplay.getReturnValue() != null ){
+    if (taskDisplay.getReturnValue() != null) {
       attributes.put(AttributeKey.longKey("ReturnValue"), taskDisplay.getReturnValue().longValue());
     }
     attributes.put(AttributeKey.longKey("BeginTime"), taskDisplay.getBeginTime());
