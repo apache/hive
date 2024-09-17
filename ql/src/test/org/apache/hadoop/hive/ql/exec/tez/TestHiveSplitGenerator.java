@@ -20,13 +20,11 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.HiveSplitGenerator.SplitSerializer;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
@@ -198,14 +196,13 @@ public class TestHiveSplitGenerator {
 
     DataSourceDescriptor dataSource = MRInput.createConfigBuilder(conf, HiveInputFormat.class).build();
     UserPayload userPayload = dataSource.getInputDescriptor().getUserPayload();
-    InputInitializerContext inputInitializerContext = new InputInitializerContextForTest(userPayload, conf);
-    return inputInitializerContext;
+    return new InputInitializerContextForTest(userPayload, conf);
   }
 
   public static class HiveSplitGeneratorSerializerException extends HiveSplitGenerator {
     private static final String EXCEPTION_MESSAGE = "Cannot write file to path";
-    private AtomicBoolean split0Finished = new AtomicBoolean(false);
-    private AtomicBoolean split2Finished = new AtomicBoolean(false);
+    private final AtomicBoolean split0Finished = new AtomicBoolean(false);
+    private final AtomicBoolean split2Finished = new AtomicBoolean(false);
 
     class SplitSerializerWithException extends SplitSerializer {
       SplitSerializerWithException() throws IOException {
@@ -223,30 +220,34 @@ public class TestHiveSplitGenerator {
             throw new RuntimeException(e);
           }
         }
-        InputDataInformationEvent event = super.write(count, mrSplit);
-        return event;
+        return super.write(count, mrSplit);
       }
 
       @Override
       void writeSplit(int count, MRSplitProto mrSplit, Path filePath) throws IOException {
         // first split write takes longer time, started before the failing task
         // current implementation of the waitFor doesn't cancel it
+        LOG.info("Write split #{}", count);
         if (count == 0) {
           try {
             Thread.sleep(1000);
             split0Finished.set(true);
+            LOG.info("Split #0 finished");
           } catch (InterruptedException e) {
+            LOG.info("Split #0 catches InterruptedException, this is not supposed to happen");
             throw new IOException(e);
           }
         }
         // writing second split fails
         if (count == 1) {
+          LOG.info("Split #1 is about to throw exception");
           throw new IOException(EXCEPTION_MESSAGE + ": " + filePath);
         }
 
         // we're not supposed to reach this due to anyTaskFailed check
         if (count == 2) {
           split2Finished.set(true);
+          LOG.info("Split #2 finished");
         }
       }
     }
