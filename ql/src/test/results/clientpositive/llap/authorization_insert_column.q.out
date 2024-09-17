@@ -38,7 +38,7 @@ PREHOOK: query: SHOW TABLES IN test_insert_col_db
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:test_insert_col_db
 filterListCmdObjects
-HIVE PRIVILEGE OBJECT { objectName: test_basic_table type: TABLE_OR_VIEW actionType: OTHER dbName: test_insert_col_db OWNER: hive_test_user OWNERTYPE: USER}
+HIVE PRIVILEGE OBJECT { objectName: test_basic_table type: TABLE_OR_VIEW actionType: OTHER dbName: test_insert_col_db}
 POSTHOOK: query: SHOW TABLES IN test_insert_col_db
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:test_insert_col_db
@@ -195,7 +195,7 @@ PREHOOK: query: SHOW TABLES IN test_insert_col_db
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:test_insert_col_db
 filterListCmdObjects
-HIVE PRIVILEGE OBJECT { objectName: test_partitioned_table type: TABLE_OR_VIEW actionType: OTHER dbName: test_insert_col_db OWNER: hive_test_user OWNERTYPE: USER}
+HIVE PRIVILEGE OBJECT { objectName: test_partitioned_table type: TABLE_OR_VIEW actionType: OTHER dbName: test_insert_col_db}
 POSTHOOK: query: SHOW TABLES IN test_insert_col_db
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:test_insert_col_db
@@ -353,7 +353,7 @@ PREHOOK: query: SHOW TABLES IN test_insert_col_db
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:test_insert_col_db
 filterListCmdObjects
-HIVE PRIVILEGE OBJECT { objectName: test_acid_table type: TABLE_OR_VIEW actionType: OTHER dbName: test_insert_col_db OWNER: hive_test_user OWNERTYPE: USER}
+HIVE PRIVILEGE OBJECT { objectName: test_acid_table type: TABLE_OR_VIEW actionType: OTHER dbName: test_insert_col_db}
 POSTHOOK: query: SHOW TABLES IN test_insert_col_db
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:test_insert_col_db
@@ -503,7 +503,7 @@ PREHOOK: query: SHOW TABLES IN test_insert_col_db
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:test_insert_col_db
 filterListCmdObjects
-HIVE PRIVILEGE OBJECT { objectName: test_restricted_column_table type: TABLE_OR_VIEW actionType: OTHER dbName: test_insert_col_db OWNER: hive_test_user OWNERTYPE: USER}
+HIVE PRIVILEGE OBJECT { objectName: test_restricted_column_table type: TABLE_OR_VIEW actionType: OTHER dbName: test_insert_col_db}
 POSTHOOK: query: SHOW TABLES IN test_insert_col_db
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:test_insert_col_db
