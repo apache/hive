@@ -92,7 +92,7 @@ public class TestAcidOnTez {
   public TestName testName = new TestName();
   private HiveConf hiveConf;
   private IDriver d;
-  private static enum Table {
+  private enum Table {
     ACIDTBL("acidTbl"),
     ACIDTBLPART("acidTblPart"),
     ACIDNOBUCKET("acidNoBucket"),
@@ -166,7 +166,8 @@ public class TestAcidOnTez {
   }
 
   private void dropTables() throws Exception {
-    for(Table t : Table.values()) {
+    runStatementOnDriver("drop table if exists T");
+    for (Table t : Table.values()) {
       runStatementOnDriver("drop table if exists " + t);
     }
   }
@@ -544,7 +545,7 @@ public class TestAcidOnTez {
     //check we have right delete delta files after minor compaction
     status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
       (Table.ACIDNOBUCKET).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
-    String[] expectedDelDelta2 = { "delete_delta_0000002_0000002_0000", "delete_delta_0000003_0000003_0000", "delete_delta_0000001_0000003_v0000015"};
+    String[] expectedDelDelta2 = { "delete_delta_0000002_0000002_0000", "delete_delta_0000003_0000003_0000", "delete_delta_0000001_0000003_v0000014"};
     for(FileStatus stat : status) {
       for(int i = 0; i < expectedDelDelta2.length; i++) {
         if(expectedDelDelta2[i] != null && stat.getPath().toString().endsWith(expectedDelDelta2[i])) {
@@ -569,7 +570,7 @@ public class TestAcidOnTez {
     for(int i = 0; i < expected2.length; i++) {
       Assert.assertTrue("Actual line " + i + " bc: " + rs.get(i), rs.get(i).startsWith(expected2[i][0]));
       //everything is now in base/
-      Assert.assertTrue("Actual line(file) " + i + " bc: " + rs.get(i), rs.get(i).endsWith("base_0000003_v0000019/bucket_00000"));
+      Assert.assertTrue("Actual line(file) " + i + " bc: " + rs.get(i), rs.get(i).endsWith("base_0000003_v0000017/bucket_00000"));
     }
   }
   /**
@@ -582,7 +583,6 @@ public class TestAcidOnTez {
   @Test
   public void testInsertWithRemoveUnion() throws Exception {
     int[][] values = {{1,2},{3,4},{5,6},{7,8},{9,10}};
-    runStatementOnDriver("drop table if exists T", hiveConf);
     runStatementOnDriver("create table T (a int, b int) stored as ORC  TBLPROPERTIES ('transactional'='false')", hiveConf);
     /*
 ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/hive-unit/target/tmp/org.apache.hadoop.hive.ql.TestAcidOnTez-1505502329802/warehouse/t/.hive-staging_hive_2017-09-15_12-07-33_224_7717909516029836949-1/
@@ -630,15 +630,15 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
     }
     String[][] expected2 = {
        {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
-           "warehouse/t/base_-9223372036854775808_v0000013/bucket_00000"},
+          "warehouse/t/base_-9223372036854775808_v0000011/bucket_00000"},
       {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":1}\t3\t4",
-          "warehouse/t/base_-9223372036854775808_v0000013/bucket_00000"},
+          "warehouse/t/base_-9223372036854775808_v0000011/bucket_00000"},
       {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":2}\t5\t6",
-          "warehouse/t/base_-9223372036854775808_v0000013/bucket_00000"},
+          "warehouse/t/base_-9223372036854775808_v0000011/bucket_00000"},
       {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":3}\t7\t8",
-          "warehouse/t/base_-9223372036854775808_v0000013/bucket_00000"},
+          "warehouse/t/base_-9223372036854775808_v0000011/bucket_00000"},
       {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":4}\t9\t10",
-          "warehouse/t/base_-9223372036854775808_v0000013/bucket_00000"}
+          "warehouse/t/base_-9223372036854775808_v0000011/bucket_00000"}
     };
     Assert.assertEquals("Unexpected row count after major compact", expected2.length, rs.size());
     for(int i = 0; i < expected2.length; i++) {
@@ -655,7 +655,6 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
    */
   @Test
   public void testAcidInsertWithRemoveUnion() throws Exception {
-    runStatementOnDriver("drop table if exists T", hiveConf);
     runStatementOnDriver("create table T (a int, b int) stored as ORC  TBLPROPERTIES ('transactional'='true')", hiveConf);
     /*On Tez, below (T is transactional), we get the following layout
 ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/hive-unit/target/tmp/org.apache.hadoop.hive.ql.TestAcidOnTez-1505500035574/warehouse/t/.hive-staging_hive_2017-09-15_11-28-33_960_9111484239090506828-1/
@@ -698,13 +697,13 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
       Assert.assertTrue("Actual line(file) " + i + " ac: " + rs.get(i), rs.get(i).endsWith(expected2[i][1]));
     }
   }
+  
   @Test
   public void testBucketedAcidInsertWithRemoveUnion() throws Exception {
     int[][] values = {{1,2},{2,4},{5,6},{6,8},{9,10}};
     runStatementOnDriver("delete from " + Table.ACIDTBL, hiveConf);
     //make sure both buckets are not empty
     runStatementOnDriver("insert into " + Table.ACIDTBL + makeValuesClause(values), hiveConf);
-    runStatementOnDriver("drop table if exists T", hiveConf);
     /*
     With bucketed target table Union All is not removed
 

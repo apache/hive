@@ -21,6 +21,7 @@ package org.apache.hive.streaming;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.LockRequestBuilder;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -435,18 +436,25 @@ public class TransactionBatch extends AbstractStreamingTransaction {
     }
   }
 
-  private static LockRequest createLockRequest(final HiveStreamingConnection connection,
+  private static LockRequest createLockRequest(final HiveStreamingConnection conn,
       String partNameForLock, String user, long txnId, String agentInfo) {
     LockRequestBuilder requestBuilder = new LockRequestBuilder(agentInfo);
     requestBuilder.setUser(user);
     requestBuilder.setTransactionId(txnId);
 
     LockComponentBuilder lockCompBuilder = new LockComponentBuilder()
-        .setDbName(connection.getDatabase())
-        .setTableName(connection.getTable().getTableName())
+        .setDbName(conn.getDatabase())
+        .setTableName(conn.getTable().getTableName())
         .setSharedRead()
         .setOperationType(DataOperationType.INSERT);
-    if (connection.isDynamicPartitioning()) {
+
+    boolean isLocklessReadsEnabled = conn.getConf().getBoolVar(HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
+    boolean sharedWrite = !conn.getConf().getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK);
+
+    if (sharedWrite || isLocklessReadsEnabled) {
+      lockCompBuilder.setSharedWrite();
+    }
+    if (conn.isDynamicPartitioning()) {
       lockCompBuilder.setIsDynamicPartitionWrite(true);
     }
     if (partNameForLock != null && !partNameForLock.isEmpty()) {
