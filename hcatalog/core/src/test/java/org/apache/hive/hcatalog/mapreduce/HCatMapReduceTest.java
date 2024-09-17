@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -282,7 +283,7 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
   Job runMRCreate(Map<String, String> partitionValues, List<HCatFieldSchema> partitionColumns,
       List<HCatRecord> records, int writeCount, boolean assertWrite) throws Exception {
     return runMRCreate(partitionValues, partitionColumns, records, writeCount, assertWrite,
-        true, new HashMap<String, String>());
+        true, Collections.emptyMap());
   }
 
   /**

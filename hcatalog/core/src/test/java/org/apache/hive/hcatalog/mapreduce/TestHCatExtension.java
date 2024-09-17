@@ -38,6 +38,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TestHCatExtension extends HCatMapReduceTest {
     private static List<HCatRecord> writeRecords;
@@ -93,7 +94,7 @@ public class TestHCatExtension extends HCatMapReduceTest {
 
     @Test
     public void testHCatExtension() throws Exception {
-        HashMap<String, String> properties = new HashMap<String, String>();
+        Map<String, String> properties = new HashMap<String, String>();
         properties.put(HiveConf.ConfVars.OUTPUT_FILE_EXTENSION.varname, ".test");
         generateWriteRecords(NUM_RECORDS, NUM_TOP_PARTITIONS, 0);
         runMRCreate(null, dataColumns, writeRecords.subList(0,NUM_RECORDS/2), NUM_RECORDS/2,
