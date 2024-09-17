@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists import_auth_t1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists import_auth_t1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table import_auth_t1 ( dep_id int comment "department id") stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

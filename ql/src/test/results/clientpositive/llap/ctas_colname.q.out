@@ -162,7 +162,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	20                  
 	rawDataSize         	620                 
-	totalSize           	640                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -380,7 +380,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	25                  
 	rawDataSize         	242                 
-	totalSize           	267                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -623,7 +623,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	20                  
 	rawDataSize         	268                 
-	totalSize           	288                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -806,7 +806,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	25                  
 	rawDataSize         	309                 
-	totalSize           	334                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1018,7 +1018,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	309                 
 	rawDataSize         	3891                
-	totalSize           	4200                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1514,7 +1514,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	5                   
 	rawDataSize         	45                  
-	totalSize           	50                  
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1711,7 +1711,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	5                   
 	rawDataSize         	35                  
-	totalSize           	40                  
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

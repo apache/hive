@@ -29,9 +29,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.StatObjectConverter;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -44,7 +44,6 @@ import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.ddl.table.info.desc.formatter.DescTableFormatter;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -118,7 +117,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
 
   private Table getTable() throws HiveException {
     Table table = context.getDb().getTable(desc.getTableName().getDb(), desc.getTableName().getTable(),
-        desc.getTableName().getMetaTable(), false, false, false);
+        desc.getTableName().getTableMetaRef(), false, false, false);
     if (table == null) {
       throw new HiveException(ErrorMsg.INVALID_TABLE, desc.getDbTableName());
     }
@@ -209,15 +208,16 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
         table.setParameters(tableProps);
       } else {
         cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer, context.getConf()));
-        colStats.addAll(
-            context.getDb().getTableColumnStatistics(tableName.getDb().toLowerCase(),
-                tableName.getTable().toLowerCase(), colNames, false));
+        if (table.isNonNative() && table.getStorageHandler().canProvideColStatistics(table)) {
+          colStats.addAll(table.getStorageHandler().getColStatistics(table));
+        } else {
+          colStats.addAll(context.getDb().getTableColumnStatistics(tableName.getDb().toLowerCase(),
+              tableName.getTable().toLowerCase(), colNames, false));
+        }
       }
     } else {
       List<String> partitions = new ArrayList<String>();
-      // The partition name is converted to lowercase before generating the stats. So we should use the same
-      // lower case name to get the stats.
-      String partName = HMSHandler.lowerCaseConvertPartName(part.getName());
+      String partName = part.getName();
       partitions.add(partName);
       cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer, context.getConf()));
       Map<String, List<ColumnStatisticsObj>> partitionColumnStatistics = context.getDb().getPartitionColumnStatistics(
@@ -244,8 +244,8 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
     StatObjectConverter.fillColumnStatisticsData(partCol.getType(), data, r == null ? null : r.minValue,
         r == null ? null : r.maxValue, r == null ? null : r.minValue, r == null ? null : r.maxValue,
         r == null ? null : r.minValue.toString(), r == null ? null : r.maxValue.toString(),
-        cs.getNumNulls(), cs.getCountDistint(), null, cs.getAvgColLen(), cs.getAvgColLen(),
-        cs.getNumTrues(), cs.getNumFalses());
+        cs.getNumNulls(), cs.getCountDistint(), null, null, cs.getAvgColLen(),
+        cs.getAvgColLen(), cs.getNumTrues(), cs.getNumFalses());
     ColumnStatisticsObj cso = new ColumnStatisticsObj(partCol.getName(), partCol.getType(), data);
     colStats.add(cso);
     StatsSetupConst.setColumnStatsState(tableProps, colNames);
@@ -296,10 +296,11 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
   private void handleMaterializedView(Table table) throws HiveException {
     if (table.isMaterializedView()) {
       table.setOutdatedForRewriting(context.getDb().isOutdatedMaterializedView(
-              table,
-              table.getMVMetadata().getSourceTableNames(),
-              false,
-              SessionState.get().getTxnMgr()));
+          table,
+          table.getMVMetadata().getSourceTableNames(),
+          false,
+          () -> context.getConf().get(ValidTxnList.VALID_TXNS_KEY),
+          SessionState.get().getTxnMgr()));
     }
   }
 }

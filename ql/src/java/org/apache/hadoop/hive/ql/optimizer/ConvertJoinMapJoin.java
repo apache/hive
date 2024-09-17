@@ -30,7 +30,6 @@ import java.util.Stack;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
@@ -51,6 +50,7 @@ import org.apache.hadoop.hive.ql.exec.TezDummyStoreOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.physical.LlapClusterStateForCompile;
 import org.apache.hadoop.hive.ql.parse.GenTezUtils;
 import org.apache.hadoop.hive.ql.parse.OptimizeTezProcContext;
@@ -68,6 +68,7 @@ import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OpTraits;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
@@ -82,6 +83,8 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.math.DoubleMath;
+
+import static org.apache.hadoop.hive.ql.exec.OperatorUtils.hasMoreOperatorsThan;
 
 /**
  * ConvertJoinMapJoin is an optimization that replaces a common join
@@ -111,7 +114,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
 
     OptimizeTezProcContext context = (OptimizeTezProcContext) procCtx;
 
-    hashTableLoadFactor = context.conf.getFloatVar(ConfVars.HIVEHASHTABLELOADFACTOR);
+    hashTableLoadFactor = context.conf.getFloatVar(ConfVars.HIVE_HASHTABLE_LOAD_FACTOR);
     fastHashTableAvailable = context.conf.getBoolVar(ConfVars.HIVE_VECTORIZATION_MAPJOIN_NATIVE_FAST_HASHTABLE_ENABLED);
 
     JoinOperator joinOp = (JoinOperator) nd;
@@ -131,7 +134,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
 
 
     TezBucketJoinProcCtx tezBucketJoinProcCtx = new TezBucketJoinProcCtx(context.conf);
-    boolean hiveConvertJoin = context.conf.getBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN) &
+    boolean hiveConvertJoin = context.conf.getBoolVar(HiveConf.ConfVars.HIVE_CONVERT_JOIN) &
             !context.parseContext.getDisableMapJoin();
     if (!hiveConvertJoin) {
       // we are just converting to a common merge join operator. The shuffle
@@ -249,7 +252,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
                           TezBucketJoinProcCtx tezBucketJoinProcCtx,
                           LlapClusterStateForCompile llapInfo,
                           MapJoinConversion mapJoinConversion, int numBuckets) throws SemanticException {
-    if (!context.conf.getBoolVar(HiveConf.ConfVars.HIVEDYNAMICPARTITIONHASHJOIN)
+    if (!context.conf.getBoolVar(HiveConf.ConfVars.HIVE_DYNAMIC_PARTITION_HASHJOIN)
             && numBuckets > 1) {
       // DPHJ is disabled, only attempt BMJ or mapjoin
       return convertJoinBucketMapJoin(joinOp, context, mapJoinConversion, tezBucketJoinProcCtx);
@@ -404,7 +407,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
   public MemoryMonitorInfo getMemoryMonitorInfo(
                                                 final HiveConf conf,
                                                 LlapClusterStateForCompile llapInfo) {
-    long maxSize = conf.getLongVar(HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
+    long maxSize = conf.getLongVar(HiveConf.ConfVars.HIVE_CONVERT_JOIN_NOCONDITIONAL_TASK_THRESHOLD);
     final double overSubscriptionFactor = conf.getFloatVar(ConfVars.LLAP_MAPJOIN_MEMORY_OVERSUBSCRIBE_FACTOR);
     final int maxSlotsPerQuery = getMaxSlotsPerQuery(conf, llapInfo);
     final long memoryCheckInterval = conf.getLongVar(ConfVars.LLAP_MAPJOIN_MEMORY_MONITOR_CHECK_INTERVAL);
@@ -659,15 +662,16 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
       // Prepare updated partition columns for small table(s).
       // Get the positions of bucketed columns
 
-      int i = 0;
+      int bigTableExprPos = 0;
       Map<String, ExprNodeDesc> colExprMap = bigTableRS.getColumnExprMap();
       for (ExprNodeDesc bigTableExpr : bigTablePartitionCols) {
         // It is guaranteed there is only 1 list within listBucketCols.
         for (String colName : listBucketCols.get(0)) {
           if (colExprMap.get(colName).isSame(bigTableExpr)) {
-            positions.add(i++);
+            positions.add(bigTableExprPos);
           }
         }
+        bigTableExprPos = bigTableExprPos + 1;
       }
     }
 
@@ -721,7 +725,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
 
 
   /**
-   * Preserves additional informations about the operator.
+   * Preserves additional information about the operator.
    *
    * When an operator is replaced by a new one; some of the information of the old have to be retained.
    */
@@ -750,10 +754,25 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
         context.conf.getBoolVar(HiveConf.ConfVars.HIVE_DISABLE_UNSAFE_EXTERNALTABLE_OPERATIONS);
     StringBuilder sb = new StringBuilder();
     for (Operator<?> parentOp : joinOp.getParentOperators()) {
-      if (shouldCheckExternalTables && hasExternalTableAncestor(parentOp, sb)) {
-        LOG.debug("External table {} found in join - disabling SMB join.", sb.toString());
+      if (shouldCheckExternalTables && !canTableUseStats(parentOp, sb)) {
+        LOG.debug("External table {} found in join and also could not provide statistics - disabling SMB join.", sb);
         return false;
       }
+      // GBY operators buffers one record. These are processed when ReduceRecordSources flushes the operator tree
+      // when end of record stream reached. If the tree has more than two GBY operators CommonMergeJoinOperator can
+      // not process all buffered records.
+      // HIVE-27788
+      if (parentOp.getParentOperators() != null) {
+        // Parent operator is RS and hasMoreOperatorsThan traverses until the next RS, so we start from grandparent
+        for (Operator<?> grandParent : parentOp.getParentOperators()) {
+          if (hasMoreOperatorsThan(grandParent, GroupByOperator.class, 1)) {
+            LOG.info("We cannot convert to SMB join " +
+                "because one of the join branches has more than one Group by operators in the same reducer.");
+            return false;
+          }
+        }
+      }
+
       // each side better have 0 or more RS. if either side is unbalanced, cannot convert.
       // This is a workaround for now. Right fix would be to refactor code in the
       // MapRecordProcessor and ReduceRecordProcessor with respect to the sources.
@@ -831,14 +850,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
       // Check if the parent is coming from a table scan, if so, what is the version of it.
       assert parentOp.getParentOperators() != null && parentOp.getParentOperators().size() == 1;
-      Operator<?> op = parentOp;
-      while (op != null && !(op instanceof TableScanOperator || op instanceof ReduceSinkOperator
-          || op instanceof CommonJoinOperator)) {
-        // If op has parents it is guaranteed to be 1.
-        List<Operator<?>> parents = op.getParentOperators();
-        Preconditions.checkState(parents.size() == 0 || parents.size() == 1);
-        op = parents.size() == 1 ? parents.get(0) : null;
-      }
+      Operator<?> op = OperatorUtils.findSourceOperatorInSameBranch(parentOp);
 
       if (op instanceof TableScanOperator) {
         int localVersion = ((TableScanOperator) op).getConf().getTableMetadata().getBucketingVersion();
@@ -847,6 +859,28 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
         } else if (bucketingVersion != localVersion) {
           // versions dont match, return false.
           LOG.debug("SMB Join can't be performed due to bucketing version mismatch");
+          return false;
+        }
+      }
+    }
+
+    /* As SMB replaces last RS op from the joining branches and the JOIN op with MERGEJOIN, we need to ensure
+     * the RS before these RS, in both branches, are partitioning using same hash generator. It
+     * differs depending on ReducerTraits.UNIFORM i.e. ReduceSinkOperator#computeMurmurHash or
+     * ReduceSinkOperator#computeHashCode, leading to different code for same value. Skip SMB join in such cases.
+     */
+    Boolean prevRsHasUniformTrait = null;
+    for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
+      // Assertion of mandatory single parent is already being done in bucket version check earlier
+      Operator<?> op = OperatorUtils.findSourceOperatorInSameBranch(parentOp.getParentOperators().get(0));
+
+      if (op instanceof ReduceSinkOperator) {
+        boolean hasUniformTrait = ((ReduceSinkOperator) op).getConf()
+                .getReducerTraits().contains(ReduceSinkDesc.ReducerTraits.UNIFORM);
+        if (prevRsHasUniformTrait == null) {
+          prevRsHasUniformTrait = hasUniformTrait;
+        } else if (prevRsHasUniformTrait != hasUniformTrait) {
+          LOG.debug("SMB Join can't be performed due to partition hash generator mismatch across join branches");
           return false;
         }
       }
@@ -897,8 +931,9 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     if (shouldCheckExternalTables) {
       StringBuilder sb = new StringBuilder();
       for (Operator<?> parentOp : joinOp.getParentOperators()) {
-        if (hasExternalTableAncestor(parentOp, sb)) {
-          LOG.debug("External table {} found in join - disabling bucket map join.", sb.toString());
+        if (!canTableUseStats(parentOp, sb)) {
+          LOG.debug("External table {} found in join and also could not provide statistics - " +
+              "disabling bucket map join.", sb);
           return false;
         }
       }
@@ -1220,7 +1255,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
         if (i != bigTablePosition) {
           Statistics parentStats = joinOp.getParentOperators().get(i).getStatistics();
           if (parentStats.getNumRows() >
-            HiveConf.getIntVar(context.conf, HiveConf.ConfVars.XPRODSMALLTABLEROWSTHRESHOLD)) {
+            HiveConf.getIntVar(context.conf, HiveConf.ConfVars.XPROD_SMALL_TABLE_ROWS_THRESHOLD)) {
             // if any of smaller side is estimated to generate more than
             // threshold rows we would disable mapjoin
             return null;
@@ -1309,7 +1344,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     }
     MapJoinDesc mapJoinDesc = mapJoinOp.getConf();
     mapJoinDesc.setHybridHashJoin(HiveConf.getBoolVar(context.conf,
-        HiveConf.ConfVars.HIVEUSEHYBRIDGRACEHASHJOIN));
+        HiveConf.ConfVars.HIVE_USE_HYBRIDGRACE_HASHJOIN));
     List<ExprNodeDesc> joinExprs = mapJoinDesc.getKeys().values().iterator().next();
     if (joinExprs.size() == 0) {  // In case of cross join, we disable hybrid grace hash join
       mapJoinDesc.setHybridHashJoin(false);
@@ -1540,9 +1575,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
         LOG.info("Selected dynamic partitioned hash join");
         MapJoinDesc mapJoinDesc = mapJoinOp.getConf();
         mapJoinDesc.setDynamicPartitionHashJoin(true);
-        if (mapJoinConversion.getIsFullOuterJoin()) {
-          FullOuterMapJoinOptimization.removeFilterMap(mapJoinDesc);
-        }
+
         // Set OpTraits for dynamically partitioned hash join:
         // bucketColNames: Re-use previous joinOp's bucketColNames. Parent operators should be
         //   reduce sink, which should have bucket columns based on the join keys.
@@ -1568,8 +1601,8 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
 
   private void fallbackToReduceSideJoin(JoinOperator joinOp, OptimizeTezProcContext context)
       throws SemanticException {
-    if (context.conf.getBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN) &&
-        context.conf.getBoolVar(HiveConf.ConfVars.HIVEDYNAMICPARTITIONHASHJOIN)) {
+    if (context.conf.getBoolVar(HiveConf.ConfVars.HIVE_CONVERT_JOIN) &&
+        context.conf.getBoolVar(HiveConf.ConfVars.HIVE_DYNAMIC_PARTITION_HASHJOIN)) {
       if (convertJoinDynamicPartitionedHashJoin(joinOp, context)) {
         return;
       }
@@ -1600,7 +1633,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
   private boolean checkNumberOfEntriesForHashTable(JoinOperator joinOp, int position,
           OptimizeTezProcContext context) {
     long max = HiveConf.getLongVar(context.parseContext.getConf(),
-            HiveConf.ConfVars.HIVECONVERTJOINMAXENTRIESHASHTABLE);
+            HiveConf.ConfVars.HIVE_CONVERT_JOIN_MAX_ENTRIES_HASHTABLE);
     if (max < 1) {
       // Max is disabled, we can safely return true
       return true;
@@ -1635,7 +1668,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
   private boolean checkShuffleSizeForLargeTable(JoinOperator joinOp, int position,
           OptimizeTezProcContext context) {
     long max = HiveConf.getLongVar(context.parseContext.getConf(),
-            HiveConf.ConfVars.HIVECONVERTJOINMAXSHUFFLESIZE);
+            HiveConf.ConfVars.HIVE_CONVERT_JOIN_MAX_SHUFFLE_SIZE);
     if (max < 1) {
       // Max is disabled, we can safely return false
       return false;
@@ -1685,16 +1718,16 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     return Math.min(Math.round(v), numRows);
   }
 
-  private static boolean hasExternalTableAncestor(Operator op, StringBuilder sb) {
-    boolean result = false;
+  private static boolean canTableUseStats(Operator op, StringBuilder sb) {
     Operator ancestor = OperatorUtils.findSingleOperatorUpstream(op, TableScanOperator.class);
     if (ancestor != null) {
       TableScanOperator ts = (TableScanOperator) ancestor;
-      if (MetaStoreUtils.isExternalTable(ts.getConf().getTableMetadata().getTTable())) {
+      Boolean canUseStats = StatsUtils.checkCanProvideStats(new Table(ts.getConf().getTableMetadata().getTTable()));
+      if (!canUseStats) {
         sb.append(ts.getConf().getTableMetadata().getFullyQualifiedName());
-        return true;
+        return false;
       }
     }
-    return result;
+    return true;
   }
 }

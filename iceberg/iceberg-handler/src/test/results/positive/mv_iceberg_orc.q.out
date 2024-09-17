@@ -1,11 +1,15 @@
 PREHOOK: query: drop table if exists tbl_ice
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tbl_ice
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists tbl_ice_v2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tbl_ice_v2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table tbl_ice(a int, b string, c int) stored by iceberg stored as orc tblproperties ('format-version'='1')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -30,14 +34,14 @@ POSTHOOK: query: insert into tbl_ice_v2 values (1, 'one v2', 50), (4, 'four v2',
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_ice_v2
-PREHOOK: query: create materialized view mat1 as
+PREHOOK: query: create materialized view mat1 disable rewrite as
 select tbl_ice.b, tbl_ice.c, tbl_ice_v2.e from tbl_ice join tbl_ice_v2 on tbl_ice.a=tbl_ice_v2.d where tbl_ice.c > 52
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@tbl_ice
 PREHOOK: Input: default@tbl_ice_v2
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mat1
-POSTHOOK: query: create materialized view mat1 as
+POSTHOOK: query: create materialized view mat1 disable rewrite as
 select tbl_ice.b, tbl_ice.c, tbl_ice_v2.e from tbl_ice join tbl_ice_v2 on tbl_ice.a=tbl_ice_v2.d where tbl_ice.c > 52
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@tbl_ice
@@ -55,6 +59,14 @@ POSTHOOK: query: select * from mat1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mat1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: alter materialized view mat1 enable rewrite
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+PREHOOK: Input: default@mat1
+PREHOOK: Output: default@mat1
+POSTHOOK: query: alter materialized view mat1 enable rewrite
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+POSTHOOK: Input: default@mat1
+POSTHOOK: Output: default@mat1
 PREHOOK: query: explain cbo
 select tbl_ice.b, tbl_ice.c, tbl_ice_v2.e from tbl_ice join tbl_ice_v2 on tbl_ice.a=tbl_ice_v2.d where tbl_ice.c > 52
 PREHOOK: type: QUERY

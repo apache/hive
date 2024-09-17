@@ -81,14 +81,6 @@
 </property>
 
 <property>
-  <name>hive.metastore.metadb.dir</name>
-  <value>file://${build.dir}/test/data/metadb/</value>
-  <description>
-  Required by metastore server or if the uris argument below is not supplied
-  </description>
-</property>
-
-<property>
   <name>test.log.dir</name>
   <value>${build.dir}/test/logs</value>
   <description></description>

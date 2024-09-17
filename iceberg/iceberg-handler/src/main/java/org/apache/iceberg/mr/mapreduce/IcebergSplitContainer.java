@@ -19,7 +19,9 @@
 
 package org.apache.iceberg.mr.mapreduce;
 
-public interface IcebergSplitContainer {
+import org.apache.hadoop.mapred.InputSplit;
+
+public interface IcebergSplitContainer extends InputSplit {
 
   IcebergSplit icebergSplit();
 

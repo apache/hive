@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hive.service.Service;
 import org.apache.hive.service.cli.OperationHandle;
@@ -62,7 +63,7 @@ public abstract class ThriftCLIServiceTest {
     // Find a free port
     port = MetaStoreTestUtils.findFreePort();
     hiveServer2 = new HiveServer2();
-    hiveConf = new HiveConf();
+    hiveConf = new HiveConfForTest(ThriftCLIServiceTest.class);
   }
 
   /**

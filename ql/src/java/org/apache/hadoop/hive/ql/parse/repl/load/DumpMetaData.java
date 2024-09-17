@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
@@ -193,9 +194,31 @@ public class DumpMetaData {
     return DUMP_METADATA;
   }
 
+  public boolean isBootstrapDump() throws SemanticException {
+    initializeIfNot();
+    return (this.dumpType == DumpType.BOOTSTRAP);
+  }
+
   public boolean isIncrementalDump() throws SemanticException {
     initializeIfNot();
     return (this.dumpType == DumpType.INCREMENTAL);
+  }
+
+  public boolean isPreOptimizedBootstrapDump() throws SemanticException {
+    initializeIfNot();
+    return (this.dumpType == DumpType.PRE_OPTIMIZED_BOOTSTRAP);
+  }
+
+  public boolean isOptimizedBootstrapDump() throws SemanticException {
+    initializeIfNot();
+    return (this.dumpType == DumpType.OPTIMIZED_BOOTSTRAP);
+  }
+
+  public void setOptimizedBootstrapToDumpMetadataFile(long executionId) throws SemanticException {
+
+    assert (this.getDumpType() == DumpType.PRE_OPTIMIZED_BOOTSTRAP);
+    this.setDump(DumpType.OPTIMIZED_BOOTSTRAP, -1L, -1L, null, executionId, false);
+    this.write(true);
   }
 
   private void initializeIfNot() throws SemanticException {

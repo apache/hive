@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.optimizer.correlation;
 
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVECONVERTJOIN;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASK;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_CONVERT_JOIN;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_CONVERT_JOIN_NOCONDITIONALTASK;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -73,10 +73,10 @@ public class ReduceSinkDeDuplication extends Transform {
     ReduceSinkDeduplicateProcCtx cppCtx = new ReduceSinkDeduplicateProcCtx(pGraphContext);
 
     // for auto convert map-joins, it not safe to dedup in here (todo)
-    boolean mergeJoins = !pctx.getConf().getBoolVar(HIVECONVERTJOIN) &&
-        !pctx.getConf().getBoolVar(HIVECONVERTJOINNOCONDITIONALTASK) &&
+    boolean mergeJoins = !pctx.getConf().getBoolVar(HIVE_CONVERT_JOIN) &&
+        !pctx.getConf().getBoolVar(HIVE_CONVERT_JOIN_NOCONDITIONALTASK) &&
         !pctx.getConf().getBoolVar(ConfVars.HIVE_CONVERT_JOIN_BUCKET_MAPJOIN_TEZ) &&
-        !pctx.getConf().getBoolVar(ConfVars.HIVEDYNAMICPARTITIONHASHJOIN);
+        !pctx.getConf().getBoolVar(ConfVars.HIVE_DYNAMIC_PARTITION_HASHJOIN);
 
     // If multiple rules can be matched with same cost, last rule will be choosen as a processor
     // see DefaultRuleDispatcher#dispatch()
@@ -329,7 +329,7 @@ public class ReduceSinkDeDuplication extends Transform {
               start, ReduceSinkOperator.class, dedupCtx.trustScript());
       if (pRS != null && ReduceSinkDeDuplicationUtils
           .merge(dedupCtx.getPctx().getConf(), cRS, pRS, dedupCtx.minReducer())) {
-        if (dedupCtx.getPctx().getConf().getBoolVar(HiveConf.ConfVars.HIVEGROUPBYSKEW)) {
+        if (dedupCtx.getPctx().getConf().getBoolVar(HiveConf.ConfVars.HIVE_GROUPBY_SKEW)) {
           return false;
         }
         CorrelationUtilities.removeReduceSinkForGroupBy(cRS, cGBY, dedupCtx.getPctx(), dedupCtx);

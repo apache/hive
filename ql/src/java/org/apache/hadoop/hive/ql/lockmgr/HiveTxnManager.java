@@ -365,6 +365,10 @@ public interface HiveTxnManager {
   LockResponse acquireMaterializationRebuildLock(String dbName, String tableName, long txnId)
       throws LockException;
 
+ /**
+  * Checks if there is a conflicting transaction
+  * @return latest txnId in conflict
+  */ 
  long getLatestTxnIdInConflict() throws LockException;
 
  /**
@@ -372,4 +376,9 @@ public interface HiveTxnManager {
   * @return
   */
  String getQueryid();
+
+ /**
+  * Persists txnWriteId hwm list into a backend DB to identify obsolete directories eligible for cleanup
+  */
+ void addWriteIdsToMinHistory(QueryPlan plan, ValidTxnWriteIdList txnWriteIds);
 }

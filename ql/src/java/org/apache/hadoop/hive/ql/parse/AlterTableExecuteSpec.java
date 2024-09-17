@@ -19,6 +19,11 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
+
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+
+import java.util.Arrays;
 
 /**
  * Execute operation specification. It stores the type of the operation and its parameters.
@@ -33,7 +38,12 @@ public class AlterTableExecuteSpec<T> {
 
   public enum ExecuteOperationType {
     ROLLBACK,
-    EXPIRE_SNAPSHOT
+    EXPIRE_SNAPSHOT,
+    SET_CURRENT_SNAPSHOT,
+    FAST_FORWARD,
+    CHERRY_PICK,
+    DELETE_METADATA,
+    DELETE_ORPHAN_FILES;
   }
 
   private final ExecuteOperationType operationType;
@@ -101,13 +111,184 @@ public class AlterTableExecuteSpec<T> {
    * </ul>
    */
   public static class ExpireSnapshotsSpec {
-    private final long timestampMillis;
+    private long timestampMillis = -1L;
+    private String[] idsToExpire = null;
+
+    private long fromTimestampMillis = -1L;
+
+    private int numRetainLast = -1;
 
     public ExpireSnapshotsSpec(long timestampMillis) {
       this.timestampMillis = timestampMillis;
     }
 
+    public ExpireSnapshotsSpec(String ids) {
+      this.idsToExpire = ids.split(",");
+    }
+
+    public ExpireSnapshotsSpec(long fromTimestampMillis, long toTimestampMillis) {
+      this.fromTimestampMillis = fromTimestampMillis;
+      this.timestampMillis = toTimestampMillis;
+    }
+
+    public ExpireSnapshotsSpec(int numRetainLast) {
+      this.numRetainLast = numRetainLast;
+    }
+
     public Long getTimestampMillis() {
+      return timestampMillis;
+    }
+
+    public Long getFromTimestampMillis() {
+      return fromTimestampMillis;
+    }
+
+    public String[] getIdsToExpire() {
+      return idsToExpire;
+    }
+
+    public int getNumRetainLast() {
+      return numRetainLast;
+    }
+
+    public boolean isExpireByIds() {
+      return idsToExpire != null;
+    }
+
+    public boolean isExpireByTimestampRange() {
+      return timestampMillis != -1 && fromTimestampMillis != -1;
+    }
+
+    public boolean isExpireByRetainLast() {
+      return numRetainLast != -1;
+    }
+
+    @Override
+    public String toString() {
+      MoreObjects.ToStringHelper stringHelper = MoreObjects.toStringHelper(this);
+      if (isExpireByTimestampRange()) {
+        stringHelper.add("fromTimestampMillis", fromTimestampMillis).add("toTimestampMillis", timestampMillis);
+      } else if (isExpireByIds()) {
+        stringHelper.add("idsToExpire", Arrays.toString(idsToExpire));
+      } else if (isExpireByRetainLast()) {
+        stringHelper.add("numRetainLast", numRetainLast);
+      } else {
+        stringHelper.add("timestampMillis", timestampMillis);
+      }
+      return stringHelper.toString();
+    }
+  }
+
+  /**
+   * Value object class, that stores the set snapshot version operation specific parameters
+   * <ul>
+   *   <li>snapshot Id: it should be a valid snapshot version or a SnapshotRef name</li>
+   * </ul>
+   */
+  public static class SetCurrentSnapshotSpec {
+    private final String snapshotIdOrRefName;
+
+    public SetCurrentSnapshotSpec(String snapshotIdOrRefName) {
+      this.snapshotIdOrRefName = snapshotIdOrRefName;
+    }
+
+    public String getSnapshotIdOrRefName() {
+      return snapshotIdOrRefName;
+    }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(this).add("snapshotIdOrRefName", snapshotIdOrRefName).toString();
+    }
+  }
+
+    /**
+   * Value object class, that stores the fast-forward operation specific parameters.
+   * <ul>
+   *   <li>source branch: the branch which needs to be fast-forwarded</li>
+     * <li>target branch: the branch to which the source branch needs to be fast-forwarded</li>
+   * </ul>
+   */
+  public static class FastForwardSpec {
+    private final String sourceBranch;
+    private final String targetBranch;
+
+    public FastForwardSpec(String sourceBranch, String targetBranch) {
+      this.sourceBranch = sourceBranch;
+      this.targetBranch = targetBranch;
+    }
+
+    public String getSourceBranch() {
+      return sourceBranch;
+    }
+
+    public String getTargetBranch() {
+      return targetBranch;
+    }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(this).add("sourceBranch", sourceBranch)
+          .add("targetBranch", targetBranch).toString();
+    }
+  }
+
+  /**
+   * Value object class, that stores the cherry-pick operation specific parameters.
+   * <ul>
+   *   <li>snapshotId: the snapshotId which needs to be cherry-picked</li>
+   * </ul>
+   */
+  public static class CherryPickSpec {
+    private final long snapshotId;
+
+    public CherryPickSpec(long snapshotId) {
+      this.snapshotId = snapshotId;
+    }
+
+    public long getSnapshotId() {
+      return snapshotId;
+    }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(this).add("snapshotId", snapshotId).toString();
+    }
+  }
+
+  public static class DeleteMetadataSpec {
+    private final String branchName;
+    private final SearchArgument sarg;
+
+    public DeleteMetadataSpec(String branchName, SearchArgument sarg) {
+      this.branchName = branchName;
+      this.sarg = sarg;
+    }
+
+    public String getBranchName() {
+      return branchName;
+    }
+
+    public SearchArgument getSarg() {
+      return sarg;
+    }
+  }
+
+  /**
+   * Value object class, that stores the delete orphan files operation specific parameters.
+   * <ul>
+   *   <li>timestampMillis: the time before which files should be considered to be deleted</li>
+   * </ul>
+   */
+  public static class DeleteOrphanFilesDesc {
+    private final long timestampMillis;
+
+    public DeleteOrphanFilesDesc(long timestampMillis) {
+      Preconditions.checkArgument(timestampMillis >= 0, "TimeStamp Millis shouldn't be negative");
+      this.timestampMillis = timestampMillis;
+    }
+
+    public long getTimestampMillis() {
       return timestampMillis;
     }
 

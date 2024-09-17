@@ -39,8 +39,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
-import au.com.bytecode.opencsv.CSVReader;
-import au.com.bytecode.opencsv.CSVWriter;
+import com.opencsv.CSVParserBuilder;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
+import com.opencsv.CSVWriter;
 
 /**
  * OpenCSVSerde use opencsv to deserialize CSV format.
@@ -49,9 +51,9 @@ import au.com.bytecode.opencsv.CSVWriter;
  *
  */
 @SerDeSpec(schemaProps = {
-    serdeConstants.LIST_COLUMNS,
+    serdeConstants.LIST_COLUMNS, serdeConstants.SERIALIZATION_ENCODING,
     OpenCSVSerde.SEPARATORCHAR, OpenCSVSerde.QUOTECHAR, OpenCSVSerde.ESCAPECHAR})
-public final class OpenCSVSerde extends AbstractSerDe {
+public final class OpenCSVSerde extends AbstractEncodingAwareSerDe {
 
   private ObjectInspector inspector;
   private String[] outputFields;
@@ -103,7 +105,7 @@ public final class OpenCSVSerde extends AbstractSerDe {
   }
 
   @Override
-  public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
+  public Writable doSerialize(Object obj, ObjectInspector objInspector) throws SerDeException {
     final StructObjectInspector outputRowOI = (StructObjectInspector) objInspector;
     final List<? extends StructField> outputFieldRefs = outputRowOI.getAllStructFieldRefs();
 
@@ -144,7 +146,7 @@ public final class OpenCSVSerde extends AbstractSerDe {
   }
 
   @Override
-  public Object deserialize(final Writable blob) throws SerDeException {
+  public Object doDeserialize(final Writable blob) throws SerDeException {
     Text rowText = (Text) blob;
 
     CSVReader csv = null;
@@ -179,15 +181,17 @@ public final class OpenCSVSerde extends AbstractSerDe {
     // CSVReader will throw an exception if any of separator, quote, or escape is the same, but
     // the CSV format specifies that the escape character and quote char are the same... very weird
     if (CSVWriter.DEFAULT_ESCAPE_CHARACTER == escape) {
-      return new CSVReader(reader, separator, quote);
+      return new CSVReaderBuilder(reader).withCSVParser(
+          new CSVParserBuilder().withSeparator(separator).withQuoteChar(quote).build()).build();
     } else {
-      return new CSVReader(reader, separator, quote, escape);
+      return new CSVReaderBuilder(reader).withCSVParser(
+          new CSVParserBuilder().withSeparator(separator).withQuoteChar(quote).withEscapeChar(escape).build()).build();
     }
   }
 
   private CSVWriter newWriter(final Writer writer, char separator, char quote, char escape) {
     if (CSVWriter.DEFAULT_ESCAPE_CHARACTER == escape) {
-      return new CSVWriter(writer, separator, quote, "");
+      return new CSVWriter(writer, separator, quote, '"', "");
     } else {
       return new CSVWriter(writer, separator, quote, escape, "");
     }
@@ -201,5 +205,15 @@ public final class OpenCSVSerde extends AbstractSerDe {
   @Override
   public Class<? extends Writable> getSerializedClass() {
     return Text.class;
+  }
+
+  protected Text transformFromUTF8(Writable blob) {
+    Text text = (Text)blob;
+    return SerDeUtils.transformTextFromUTF8(text, this.charset);
+  }
+
+  protected Text transformToUTF8(Writable blob) {
+    Text text = (Text) blob;
+    return SerDeUtils.transformTextToUTF8(text, this.charset);
   }
 }

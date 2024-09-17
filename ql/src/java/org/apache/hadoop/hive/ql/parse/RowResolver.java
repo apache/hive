@@ -81,7 +81,10 @@ public class RowResolver implements Serializable{
   public void putExpression(ASTNode node, ColumnInfo colInfo) {
     String treeAsString = node.toStringTree();
     expressionMap.put(treeAsString, node);
-    put("", treeAsString, colInfo);
+    if (!putInternal("", treeAsString, colInfo)) {
+      return;
+    }
+    colInfo.setAlias(treeAsString);
   }
 
   /**
@@ -100,17 +103,40 @@ public class RowResolver implements Serializable{
     return expressionMap.get(node.toStringTree());
   }
 
-  public void put(String tab_alias, String col_alias, ColumnInfo colInfo) {
-    if (!addMappingOnly(tab_alias, col_alias, colInfo)) {
+  public void put(String tabAlias, String colAlias, ColumnInfo colInfo) {
+    if (!putInternal(tabAlias, colAlias, colInfo)) {
+      return;
+    }
+    if (colAlias != null) {
+      colInfo.setAlias(colAlias.toLowerCase());
+    }
+  }
+
+  private boolean putInternal(String tabAlias, String colAlias, ColumnInfo colInfo) {
+    if (!addMappingOnly(tabAlias, colAlias, colInfo)) {
       //Make sure that the table alias and column alias are stored
       //in the column info
-      if (tab_alias != null) {
-        colInfo.setTabAlias(tab_alias.toLowerCase());
-      }
-      if (col_alias != null) {
-        colInfo.setAlias(col_alias.toLowerCase());
+      if (tabAlias != null) {
+        colInfo.setTabAlias(tabAlias.toLowerCase());
       }
       rowSchema.getSignature().add(colInfo);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Puts a resolver entry corresponding to the expression and its
+   * column alias which is used for alias recognition in the latter constructs
+   * @param exprToColumnAlias
+   *          The map containing the expression to alias mapping
+   * @throws SemanticException
+   */
+  public void putAll(Map<ASTNode, String> exprToColumnAlias) throws SemanticException {
+    for (ASTNode astNode : exprToColumnAlias.keySet()) {
+      if (getExpression(astNode) != null) {
+        put("", exprToColumnAlias.get(astNode), getExpression(astNode));
+      }
     }
   }
 
@@ -298,6 +324,24 @@ public class RowResolver implements Serializable{
     return rslvMap.keySet();
   }
 
+  /**
+   * Get alias of the last table containing  column columnName
+   *
+   * @param columnName column
+   * @return table alias or null
+   */
+  public String getTableAliasContainingColumn(String columnName) {
+    String result = null;
+
+    for (Map.Entry<String, Map<String, ColumnInfo>> entry: this.rslvMap.entrySet()) {
+      if (entry.getValue().containsKey(columnName)) {
+        result = entry.getKey();
+      }
+    }
+
+    return result;
+  }
+
   public String[] reverseLookup(String internalName) {
     return invRslvMap.get(internalName);
   }
@@ -481,11 +525,16 @@ public class RowResolver implements Serializable{
   public RowResolver duplicate() {
     RowResolver resolver = new RowResolver();
     resolver.rowSchema = new RowSchema(rowSchema);
-    resolver.rslvMap.putAll(rslvMap);
+    for (Map.Entry<String, Map<String, ColumnInfo>> entry : rslvMap.entrySet()) {
+      resolver.rslvMap.put(entry.getKey(), new LinkedHashMap<>(entry.getValue()));
+    }
     resolver.invRslvMap.putAll(invRslvMap);
     resolver.altInvRslvMap.putAll(altInvRslvMap);
     resolver.expressionMap.putAll(expressionMap);
     resolver.isExprResolver = isExprResolver;
+    for (Map.Entry<String, Map<String, String>> entry : ambiguousColumns.entrySet()) {
+      resolver.ambiguousColumns.put(entry.getKey(), new LinkedHashMap<>(entry.getValue()));
+    }
     resolver.ambiguousColumns.putAll(ambiguousColumns);
     resolver.checkForAmbiguity = checkForAmbiguity;
     return resolver;

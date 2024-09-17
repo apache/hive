@@ -260,64 +260,80 @@ POSTHOOK: Input: default@tmanaged
 PREHOOK: query: drop table t1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1
 POSTHOOK: query: drop table t1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
 PREHOOK: query: drop table t2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t2
 POSTHOOK: query: drop table t2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2
 PREHOOK: query: drop table t3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t3
 POSTHOOK: query: drop table t3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t3
 PREHOOK: query: drop table t1_ctas
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_ctas
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_ctas
 POSTHOOK: query: drop table t1_ctas
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_ctas
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_ctas
 PREHOOK: query: drop table t2_ctas
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t2_ctas
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t2_ctas
 POSTHOOK: query: drop table t2_ctas
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t2_ctas
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2_ctas
 PREHOOK: query: drop table t3_ctas
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t3_ctas
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t3_ctas
 POSTHOOK: query: drop table t3_ctas
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t3_ctas
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t3_ctas
 PREHOOK: query: drop table texternal
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@texternal
+PREHOOK: Output: database:default
 PREHOOK: Output: default@texternal
 POSTHOOK: query: drop table texternal
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@texternal
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@texternal
 PREHOOK: query: drop table tmanaged
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmanaged
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tmanaged
 POSTHOOK: query: drop table tmanaged
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tmanaged
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmanaged

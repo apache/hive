@@ -196,8 +196,10 @@ POSTHOOK: Input: default@hbase_ppd_keyrange
 PREHOOK: query: drop table  hbase_ppd_keyrange
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbase_ppd_keyrange
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_ppd_keyrange
 POSTHOOK: query: drop table  hbase_ppd_keyrange
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_ppd_keyrange
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_ppd_keyrange

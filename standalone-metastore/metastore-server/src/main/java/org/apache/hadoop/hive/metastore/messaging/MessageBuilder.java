@@ -66,6 +66,7 @@ import org.apache.hadoop.hive.metastore.messaging.json.JSONAllocWriteIdMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONAlterCatalogMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONAlterDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONAlterPartitionMessage;
+import org.apache.hadoop.hive.metastore.messaging.json.JSONAlterPartitionsMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONAlterTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONCommitCompactionMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONCommitTxnMessage;
@@ -85,6 +86,7 @@ import org.apache.hadoop.hive.metastore.messaging.json.JSONUpdateTableColumnStat
 import org.apache.hadoop.hive.metastore.messaging.json.JSONUpdatePartitionColumnStatMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONDeleteTableColumnStatMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONDeletePartitionColumnStatMessage;
+import org.apache.hadoop.hive.metastore.messaging.json.JSONReloadMessage;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TDeserializer;
@@ -101,6 +103,7 @@ public class MessageBuilder {
 
   public static final String ADD_PARTITION_EVENT = "ADD_PARTITION";
   public static final String ALTER_PARTITION_EVENT = "ALTER_PARTITION";
+  public static final String ALTER_PARTITIONS_EVENT = "ALTER_PARTITIONS";
   public static final String DROP_PARTITION_EVENT = "DROP_PARTITION";
   public static final String CREATE_TABLE_EVENT = "CREATE_TABLE";
   public static final String ALTER_TABLE_EVENT = "ALTER_TABLE";
@@ -142,6 +145,8 @@ public class MessageBuilder {
   public static final String CREATE_DATACONNECTOR_EVENT = "CREATE_DATACONNECTOR";
   public static final String ALTER_DATACONNECTOR_EVENT = "ALTER_DATACONNECTOR";
   public static final String DROP_DATACONNECTOR_EVENT = "DROP_DATACONNECTOR";
+  public static final String RELOAD_EVENT = "RELOAD";
+  public static final String CONFIG_CHANGE_EVENT = "CONFIG_CHANGE_EVENT";
 
   protected static final Configuration conf = MetastoreConf.newMetastoreConf();
 
@@ -218,6 +223,12 @@ public class MessageBuilder {
       Partition after, boolean isTruncateOp, Long writeId) {
     return new JSONAlterPartitionMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL,
         table, before, after, isTruncateOp, writeId, now());
+  }
+
+  public AlterPartitionsMessage buildAlterPartitionsMessage(Table table, List<Partition> after,
+      boolean isTruncateOp, Long writeId) {
+    return new JSONAlterPartitionsMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL,
+        table, after, isTruncateOp, writeId, now());
   }
 
   public DropPartitionMessage buildDropPartitionMessage(Table table,
@@ -339,6 +350,12 @@ public class MessageBuilder {
 
   public CommitCompactionMessage buildCommitCompactionMessage(CommitCompactionEvent event) {
     return new JSONCommitCompactionMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, now(), event);
+  }
+
+  public ReloadMessage buildReloadMessage(Table tableObj, Partition partObj,
+                                          boolean refreshEvent) {
+    return new JSONReloadMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL,
+            tableObj, partObj, refreshEvent, now());
   }
 
   private long now() {

@@ -17,10 +17,8 @@ default
 test_db
 PREHOOK: query: CREATE DATABASE IF NOT EXISTS test_db
 PREHOOK: type: CREATEDATABASE
-PREHOOK: Output: database:test_db
 POSTHOOK: query: CREATE DATABASE IF NOT EXISTS test_db
 POSTHOOK: type: CREATEDATABASE
-POSTHOOK: Output: database:test_db
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
@@ -201,10 +199,12 @@ POSTHOOK: Input: test_db@test_table_n2
 PREHOOK: query: DROP TABLE test_table_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: test_db@test_table_n2
+PREHOOK: Output: database:test_db
 PREHOOK: Output: test_db@test_table_n2
 POSTHOOK: query: DROP TABLE test_table_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: test_db@test_table_n2
+POSTHOOK: Output: database:test_db
 POSTHOOK: Output: test_db@test_table_n2
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
@@ -301,26 +301,32 @@ POSTHOOK: Input: database:test_db
 PREHOOK: query: DROP TABLE src
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: test_db@src
+PREHOOK: Output: database:test_db
 PREHOOK: Output: test_db@src
 POSTHOOK: query: DROP TABLE src
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: test_db@src
+POSTHOOK: Output: database:test_db
 POSTHOOK: Output: test_db@src
 PREHOOK: query: DROP TABLE test_table_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: test_db@test_table_n2
+PREHOOK: Output: database:test_db
 PREHOOK: Output: test_db@test_table_n2
 POSTHOOK: query: DROP TABLE test_table_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: test_db@test_table_n2
+POSTHOOK: Output: database:test_db
 POSTHOOK: Output: test_db@test_table_n2
 PREHOOK: query: DROP TABLE test_table_like
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: test_db@test_table_like
+PREHOOK: Output: database:test_db
 PREHOOK: Output: test_db@test_table_like
 POSTHOOK: query: DROP TABLE test_table_like
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: test_db@test_table_like
+POSTHOOK: Output: database:test_db
 POSTHOOK: Output: test_db@test_table_like
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES

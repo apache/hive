@@ -50,7 +50,6 @@
       </excludes>
 
       <includes>
-        <include>.arcconfig</include>
         <include>.checkstyle</include>
         <include>.gitattributes</include>
         <include>.gitignore</include>
@@ -110,7 +109,6 @@
         <include>standalone-metastore/pom.xml</include>
         <include>streaming/**/*</include>
         <include>testutils/**/*</include>
-        <include>upgrade-acid/**/*</include>
         <include>vector-code-gen/**/*</include>
         <include>kudu-handler/**/*</include>
         <include>parser/**/*</include>

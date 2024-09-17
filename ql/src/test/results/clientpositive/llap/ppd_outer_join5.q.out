@@ -432,32 +432,40 @@ STAGE PLANS:
 PREHOOK: query: drop table t1_n98
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n98
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_n98
 POSTHOOK: query: drop table t1_n98
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_n98
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n98
 PREHOOK: query: drop table t2_n61
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t2_n61
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t2_n61
 POSTHOOK: query: drop table t2_n61
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t2_n61
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2_n61
 PREHOOK: query: drop table t3_n23
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t3_n23
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t3_n23
 POSTHOOK: query: drop table t3_n23
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t3_n23
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t3_n23
 PREHOOK: query: drop table t4_n12
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t4_n12
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t4_n12
 POSTHOOK: query: drop table t4_n12
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t4_n12
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t4_n12

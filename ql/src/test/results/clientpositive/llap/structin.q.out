@@ -219,8 +219,10 @@ s4	{"f1":"100","f2":"200","f3":"300"}	02-02-2020
 PREHOOK: query: DROP TABLE test_struct
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_struct
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_struct
 POSTHOOK: query: DROP TABLE test_struct
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_struct
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_struct

@@ -22,7 +22,6 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.util.LinkedHashSet;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -36,6 +35,7 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -214,6 +214,7 @@ public class QTestUtil {
     System.setProperty("hive.query.max.length", "100Mb");
 
     conf = new HiveConf(IDriver.class);
+    setCustomConfs(conf, testArgs.getCustomConfs());
     setMetaStoreProperties();
 
     final String scriptsDir = getScriptsDir(conf);
@@ -241,6 +242,10 @@ public class QTestUtil {
 
     savedConf = new HiveConf(conf);
 
+  }
+
+  private void setCustomConfs(HiveConf conf, Map<ConfVars,String> customConfigValueMap) {
+    customConfigValueMap.entrySet().forEach(item-> conf.set(item.getKey().varname, item.getValue()));
   }
 
   private void logClassPath() {
@@ -363,7 +368,7 @@ public class QTestUtil {
           continue;
         }
         db.dropTable(dbName, tblName, true, true, fsType == FsType.ENCRYPTED_HDFS);
-        HiveMaterializedViewsRegistry.get().dropMaterializedView(tblObj);
+        HiveMaterializedViewsRegistry.get().dropMaterializedView(tblObj.getDbName(), tblObj.getTableName());
       }
     }
 
@@ -564,7 +569,7 @@ public class QTestUtil {
 
     sem = new SemanticAnalyzer(new QueryState.Builder().withHiveConf(conf).build());
 
-    testWarehouse = conf.getVar(HiveConf.ConfVars.METASTOREWAREHOUSE);
+    testWarehouse = conf.getVar(HiveConf.ConfVars.METASTORE_WAREHOUSE);
 
     db = Hive.get(conf);
     pd = new ParseDriver();
@@ -744,7 +749,7 @@ public class QTestUtil {
    * if you want to use another hive cmd after the failure to sanity check the state of the system.
    */
   private boolean ignoreErrors() {
-    return conf.getBoolVar(HiveConf.ConfVars.CLIIGNOREERRORS);
+    return conf.getBoolVar(HiveConf.ConfVars.CLI_IGNORE_ERRORS);
   }
 
   boolean isHiveCommand(String command) {
@@ -769,7 +774,7 @@ public class QTestUtil {
     //replace ${hiveconf:hive.metastore.warehouse.dir} with actual dir if existed.
     //we only want the absolute path, so remove the header, such as hdfs://localhost:57145
     String wareHouseDir =
-        SessionState.get().getConf().getVar(ConfVars.METASTOREWAREHOUSE).replaceAll("^[a-zA-Z]+://.*?:\\d+", "");
+        SessionState.get().getConf().getVar(ConfVars.METASTORE_WAREHOUSE).replaceAll("^[a-zA-Z]+://.*?:\\d+", "");
     commandArgs = commandArgs.replaceAll("\\$\\{hiveconf:hive\\.metastore\\.warehouse\\.dir\\}", wareHouseDir);
 
     if (SessionState.get() != null) {

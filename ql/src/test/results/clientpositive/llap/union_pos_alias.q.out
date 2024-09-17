@@ -185,8 +185,10 @@ tst2	500
 tst3	500
 PREHOOK: query: drop table src_10
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table src_10
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table src_10 as select * from src order by key, value limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -321,10 +323,12 @@ test	val_104
 PREHOOK: query: drop table src_10
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_10
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_10
 POSTHOOK: query: drop table src_10
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_10
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_10
 PREHOOK: query: drop view v_n8
 PREHOOK: type: DROPVIEW

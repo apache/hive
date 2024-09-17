@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
@@ -88,7 +89,7 @@ public class OptimisedBootstrapUtils {
    * @return true, if the database has repl.target.for property set.
    * @throws HiveException
    */
-  public static boolean isFailover(String dbName, Hive hive) throws HiveException {
+  public static boolean isDbTargetOfFailover(String dbName, Hive hive) throws HiveException {
     Database database = hive.getDatabase(dbName);
     return database != null ? MetaStoreUtils.isTargetOfReplication(database) : false;
   }
@@ -258,9 +259,10 @@ public class OptimisedBootstrapUtils {
     Path filePath = new Path(currentDumpPath, EVENT_ACK_FILE);
     Utils.writeOutput(dbEventId + FILE_ENTRY_SEPARATOR + targetDbEventId, filePath, conf);
     LOG.info("Created event_ack file at {} with source eventId {} and target eventId {}", filePath, dbEventId,
-        targetDbEventId);
+            targetDbEventId);
     work.setResultValues(Arrays.asList(currentDumpPath.toUri().toString(), String.valueOf(lastReplId)));
-    dmd.setDump(DumpType.INCREMENTAL, work.eventFrom, lastReplId, cmRoot, -1L, false);
+    long executionId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
+    dmd.setDump(DumpType.PRE_OPTIMIZED_BOOTSTRAP, work.eventFrom, lastReplId, cmRoot, executionId, false);
     dmd.write(true);
     return lastReplId;
   }

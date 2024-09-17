@@ -477,7 +477,7 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
           SMBJoinDesc smbJoinDesc = smbOp.getConf();
           int posBigTable = smbJoinDesc.getPosBigTable();
 
-          // join keys dont match the bucketing keys
+          // join keys don't match the bucketing keys
           List<ExprNodeDesc> keysBigTable = smbJoinDesc.getKeys().get((byte) posBigTable);
           if (keysBigTable.size() != bucketPositions.size()) {
             return null;
@@ -621,8 +621,8 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
             if (selectDesc.getColList().size() < bucketPositions.size()
                 || selectDesc.getColList().size() != fsOp.getSchema().getSignature().size()) {
               // Some columns in select are pruned. This may happen if those are constants.
-              // TODO: the best solution is to hook the operator before fs with the select operator. 
-              // See smb_mapjoin_20.q for more details. 
+              // TODO: the best solution is to hook the operator before fs with the select operator.
+              // See smb_mapjoin_20.q for more details.
               return null;
             }
             // Only columns can be selected for both sorted and bucketed positions

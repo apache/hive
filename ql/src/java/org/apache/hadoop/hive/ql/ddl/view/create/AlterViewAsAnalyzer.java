@@ -63,7 +63,7 @@ public class AlterViewAsAnalyzer extends AbstractCreateViewAnalyzer {
     schema = new ArrayList<FieldSchema>(analyzer.getResultSchema());
     ParseUtils.validateColumnNameUniqueness(
         analyzer.getOriginalResultSchema() == null ? schema : analyzer.getOriginalResultSchema());
-
+    setColumnAccessInfo(analyzer.getColumnAccessInfo());
     String expandedText = ctx.getTokenRewriteStream().toString(select.getTokenStartIndex(), select.getTokenStopIndex());
 
     AlterViewAsDesc desc = new AlterViewAsDesc(fqViewName, schema, originalText, expandedText);

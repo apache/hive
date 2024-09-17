@@ -140,7 +140,6 @@ class SchemaToolTaskValidate extends SchemaToolTask {
         .put("MPartition", Pair.of("PARTITIONS", "PART_ID"))
         .put("MPartitionColumnStatistics", Pair.of("PART_COL_STATS", "CS_ID"))
         .put("MFunction", Pair.of("FUNCS", "FUNC_ID"))
-        .put("MIndex", Pair.of("IDXS", "INDEX_ID"))
         .put("MStringList", Pair.of("SKEWED_STRING_LIST", "STRING_LIST_ID"))
         .build();
 

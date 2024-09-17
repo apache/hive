@@ -42,8 +42,10 @@ POSTHOOK: Input: default@src
 12.1238	0
 PREHOOK: query: DROP TABLE sampletable
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE sampletable
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE sampletable(c DOUBLE, d INT)
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','
@@ -332,40 +334,50 @@ POSTHOOK: Input: default@sampletable4
 PREHOOK: query: DROP TABLE sampletable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@sampletable
+PREHOOK: Output: database:default
 PREHOOK: Output: default@sampletable
 POSTHOOK: query: DROP TABLE sampletable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@sampletable
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sampletable
 PREHOOK: query: DROP TABLE sampletable1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@sampletable1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@sampletable1
 POSTHOOK: query: DROP TABLE sampletable1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@sampletable1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sampletable1
 PREHOOK: query: DROP TABLE sampletable2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@sampletable2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@sampletable2
 POSTHOOK: query: DROP TABLE sampletable2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@sampletable2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sampletable2
 PREHOOK: query: DROP TABLE sampletable3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@sampletable3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@sampletable3
 POSTHOOK: query: DROP TABLE sampletable3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@sampletable3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sampletable3
 PREHOOK: query: DROP TABLE sampletable4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@sampletable4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@sampletable4
 POSTHOOK: query: DROP TABLE sampletable4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@sampletable4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sampletable4

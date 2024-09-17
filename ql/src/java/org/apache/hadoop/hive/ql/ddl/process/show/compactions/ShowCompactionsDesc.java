@@ -45,10 +45,12 @@ public class ShowCompactionsDesc implements DDLDesc, Serializable {
     private final String compactionType;
     private final String compactionStatus;
     private final Map<String, String> partSpec;
+    private final short limit;
+    private final String orderBy;
 
 
     public ShowCompactionsDesc(Path resFile, long compactionId, String dbName, String tbName, String poolName, String compactionType,
-                               String compactionStatus, Map<String, String> partSpec) {
+                               String compactionStatus, Map<String, String> partSpec, short limit, String orderBy) {
         this.resFile = resFile.toString();
         this.compactionId = compactionId;
         this.poolName = poolName;
@@ -57,6 +59,8 @@ public class ShowCompactionsDesc implements DDLDesc, Serializable {
         this.compactionType = compactionType;
         this.compactionStatus = compactionStatus;
         this.partSpec = partSpec;
+        this.limit = limit;
+        this.orderBy = orderBy;
     }
 
     public String getResFile() {
@@ -92,6 +96,16 @@ public class ShowCompactionsDesc implements DDLDesc, Serializable {
     @Explain(displayName = "partSpec", explainLevels = {Level.USER, Level.DEFAULT, Level.EXTENDED})
     public Map<String, String> getPartSpec() {
         return partSpec;
+    }
+
+    @Explain(displayName = "limit", explainLevels = {Level.USER, Level.DEFAULT, Level.EXTENDED})
+    public short getLimit() {
+        return limit;
+    }
+
+    @Explain(displayName = "orderBy", explainLevels = {Level.USER, Level.DEFAULT, Level.EXTENDED})
+    public String getOrderBy() {
+        return orderBy;
     }
 
 

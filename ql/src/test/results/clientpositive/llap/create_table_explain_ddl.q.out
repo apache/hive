@@ -29,7 +29,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.alter1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`alter1` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -93,7 +93,7 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
   'c'='3', 
 #### A masked pattern was here ####
-ALTER TABLE default.alter1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`alter1` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -158,7 +158,7 @@ TBLPROPERTIES (
   'c'='4', 
   'd'='3', 
 #### A masked pattern was here ####
-ALTER TABLE default.alter1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`alter1` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -223,7 +223,7 @@ TBLPROPERTIES (
   'c'='4', 
   'd'='3', 
 #### A masked pattern was here ####
-ALTER TABLE default.alter1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`alter1` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -288,7 +288,7 @@ TBLPROPERTIES (
   'c'='4', 
   'd'='3', 
 #### A masked pattern was here ####
-ALTER TABLE default.alter1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`alter1` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -355,7 +355,7 @@ TBLPROPERTIES (
   'c'='4', 
   'd'='3', 
 #### A masked pattern was here ####
-ALTER TABLE default.alter1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`alter1` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -423,7 +423,7 @@ TBLPROPERTIES (
   'c'='4', 
   'd'='3', 
 #### A masked pattern was here ####
-ALTER TABLE default.alter1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`alter1` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -457,10 +457,12 @@ STAGE PLANS:
 PREHOOK: query: drop table alter1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alter1
 POSTHOOK: query: drop table alter1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter1
 PREHOOK: query: CREATE DATABASE alter1_db
 PREHOOK: type: CREATEDATABASE
@@ -490,7 +492,7 @@ POSTHOOK: query: explain ddl select * from alter1_db.alter1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: alter1_db@alter1
 #### A masked pattern was here ####
-CREATE DATABASE IF NOT EXISTS alter1_db;
+CREATE DATABASE IF NOT EXISTS `alter1_db`;
 CREATE TABLE `alter1_db`.`alter1`(
   `a` int, 
   `b` int)
@@ -505,7 +507,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE alter1_db.alter1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `alter1_db`.`alter1` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -552,7 +554,7 @@ POSTHOOK: query: explain ddl select * from alter1_db.alter1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: alter1_db@alter1
 #### A masked pattern was here ####
-CREATE DATABASE IF NOT EXISTS alter1_db;
+CREATE DATABASE IF NOT EXISTS `alter1_db`;
 CREATE TABLE `alter1_db`.`alter1`(
   `a` int, 
   `b` int)
@@ -569,7 +571,7 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
   'c'='3', 
 #### A masked pattern was here ####
-ALTER TABLE alter1_db.alter1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `alter1_db`.`alter1` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -616,7 +618,7 @@ POSTHOOK: query: explain ddl select * from alter1_db.alter1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: alter1_db@alter1
 #### A masked pattern was here ####
-CREATE DATABASE IF NOT EXISTS alter1_db;
+CREATE DATABASE IF NOT EXISTS `alter1_db`;
 CREATE TABLE `alter1_db`.`alter1`(
   `a` int, 
   `b` int)
@@ -634,7 +636,7 @@ TBLPROPERTIES (
   'c'='4', 
   'd'='3', 
 #### A masked pattern was here ####
-ALTER TABLE alter1_db.alter1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `alter1_db`.`alter1` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -681,7 +683,7 @@ POSTHOOK: query: explain ddl select * from alter1_db.alter1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: alter1_db@alter1
 #### A masked pattern was here ####
-CREATE DATABASE IF NOT EXISTS alter1_db;
+CREATE DATABASE IF NOT EXISTS `alter1_db`;
 CREATE EXTERNAL TABLE `alter1_db`.`alter1`(
   `a` int, 
   `b` int)
@@ -699,7 +701,7 @@ TBLPROPERTIES (
   'c'='4', 
   'd'='3', 
 #### A masked pattern was here ####
-ALTER TABLE alter1_db.alter1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `alter1_db`.`alter1` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -746,7 +748,7 @@ POSTHOOK: query: explain ddl select * from alter1_db.alter1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: alter1_db@alter1
 #### A masked pattern was here ####
-CREATE DATABASE IF NOT EXISTS alter1_db;
+CREATE DATABASE IF NOT EXISTS `alter1_db`;
 CREATE TABLE `alter1_db`.`alter1`(
   `a` int, 
   `b` int)
@@ -764,7 +766,7 @@ TBLPROPERTIES (
   'c'='4', 
   'd'='3', 
 #### A masked pattern was here ####
-ALTER TABLE alter1_db.alter1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `alter1_db`.`alter1` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -811,7 +813,7 @@ POSTHOOK: query: explain ddl select * from alter1_db.alter1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: alter1_db@alter1
 #### A masked pattern was here ####
-CREATE DATABASE IF NOT EXISTS alter1_db;
+CREATE DATABASE IF NOT EXISTS `alter1_db`;
 CREATE TABLE `alter1_db`.`alter1`(
   `a` int, 
   `b` int)
@@ -831,7 +833,7 @@ TBLPROPERTIES (
   'c'='4', 
   'd'='3', 
 #### A masked pattern was here ####
-ALTER TABLE alter1_db.alter1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `alter1_db`.`alter1` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -878,7 +880,7 @@ POSTHOOK: query: explain ddl select * from alter1_db.alter1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: alter1_db@alter1
 #### A masked pattern was here ####
-CREATE DATABASE IF NOT EXISTS alter1_db;
+CREATE DATABASE IF NOT EXISTS `alter1_db`;
 CREATE TABLE `alter1_db`.`alter1`(
   `a` int, 
   `b` int)
@@ -899,7 +901,7 @@ TBLPROPERTIES (
   'c'='4', 
   'd'='3', 
 #### A masked pattern was here ####
-ALTER TABLE alter1_db.alter1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `alter1_db`.`alter1` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -934,10 +936,12 @@ PREHOOK: query: DROP TABLE alter1_db.alter1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: alter1_db@alter1
 PREHOOK: Output: alter1_db@alter1
+PREHOOK: Output: database:alter1_db
 POSTHOOK: query: DROP TABLE alter1_db.alter1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: alter1_db@alter1
 POSTHOOK: Output: alter1_db@alter1
+POSTHOOK: Output: database:alter1_db
 PREHOOK: query: DROP DATABASE alter1_db
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:alter1_db
@@ -979,7 +983,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.alter2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`alter2` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -1052,9 +1056,9 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.alter2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.alter2 ADD IF NOT EXISTS PARTITION (insertdate='2008-01-01');
-ALTER TABLE default.alter2 PARTITION (insertdate='2008-01-01') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`alter2` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`alter2` ADD IF NOT EXISTS PARTITION (`insertdate`='2008-01-01');
+ALTER TABLE `default`.`alter2` PARTITION (`insertdate`='2008-01-01') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 EXPLAIN select * from alter2;
@@ -1129,11 +1133,11 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.alter2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.alter2 ADD IF NOT EXISTS PARTITION (insertdate='2008-01-01');
-ALTER TABLE default.alter2 PARTITION (insertdate='2008-01-01') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.alter2 ADD IF NOT EXISTS PARTITION (insertdate='2008-01-02');
-ALTER TABLE default.alter2 PARTITION (insertdate='2008-01-02') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`alter2` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`alter2` ADD IF NOT EXISTS PARTITION (`insertdate`='2008-01-01');
+ALTER TABLE `default`.`alter2` PARTITION (`insertdate`='2008-01-01') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`alter2` ADD IF NOT EXISTS PARTITION (`insertdate`='2008-01-02');
+ALTER TABLE `default`.`alter2` PARTITION (`insertdate`='2008-01-02') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 EXPLAIN select * from alter2;
@@ -1174,10 +1178,12 @@ insertdate=2008-01-02
 PREHOOK: query: drop table alter2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alter2
 POSTHOOK: query: drop table alter2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter2
 PREHOOK: query: create external table alter2(a int, b int) partitioned by (insertdate string)
 PREHOOK: type: CREATETABLE
@@ -1212,7 +1218,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.alter2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`alter2` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -1285,9 +1291,9 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.alter2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.alter2 ADD IF NOT EXISTS PARTITION (insertdate='2008-01-01');
-ALTER TABLE default.alter2 PARTITION (insertdate='2008-01-01') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`alter2` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`alter2` ADD IF NOT EXISTS PARTITION (`insertdate`='2008-01-01');
+ALTER TABLE `default`.`alter2` PARTITION (`insertdate`='2008-01-01') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 EXPLAIN select * from alter2;
@@ -1362,11 +1368,11 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.alter2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.alter2 ADD IF NOT EXISTS PARTITION (insertdate='2008-01-01');
-ALTER TABLE default.alter2 PARTITION (insertdate='2008-01-01') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.alter2 ADD IF NOT EXISTS PARTITION (insertdate='2008-01-02');
-ALTER TABLE default.alter2 PARTITION (insertdate='2008-01-02') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`alter2` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`alter2` ADD IF NOT EXISTS PARTITION (`insertdate`='2008-01-01');
+ALTER TABLE `default`.`alter2` PARTITION (`insertdate`='2008-01-01') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`alter2` ADD IF NOT EXISTS PARTITION (`insertdate`='2008-01-02');
+ALTER TABLE `default`.`alter2` PARTITION (`insertdate`='2008-01-02') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 EXPLAIN select * from alter2;
@@ -1407,10 +1413,12 @@ insertdate=2008-01-02
 PREHOOK: query: DROP TABLE alter2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alter2
 POSTHOOK: query: DROP TABLE alter2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter2
 PREHOOK: query: SHOW TABLES LIKE "alter*"
 PREHOOK: type: SHOWTABLES
@@ -1452,7 +1460,7 @@ POSTHOOK: query: explain ddl select * from alter2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: alter2_db@alter2
 #### A masked pattern was here ####
-CREATE DATABASE IF NOT EXISTS alter2_db;
+CREATE DATABASE IF NOT EXISTS `alter2_db`;
 CREATE TABLE `alter2_db`.`alter2`(
   `a` int, 
   `b` int)
@@ -1469,7 +1477,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE alter2_db.alter2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `alter2_db`.`alter2` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -1525,7 +1533,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: alter2_db@alter2
 POSTHOOK: Input: alter2_db@alter2@insertdate=2008-01-01
 #### A masked pattern was here ####
-CREATE DATABASE IF NOT EXISTS alter2_db;
+CREATE DATABASE IF NOT EXISTS `alter2_db`;
 CREATE TABLE `alter2_db`.`alter2`(
   `a` int, 
   `b` int)
@@ -1542,9 +1550,9 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE alter2_db.alter2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE alter2_db.alter2 ADD IF NOT EXISTS PARTITION (insertdate='2008-01-01');
-ALTER TABLE alter2_db.alter2 PARTITION (insertdate='2008-01-01') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `alter2_db`.`alter2` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `alter2_db`.`alter2` ADD IF NOT EXISTS PARTITION (`insertdate`='2008-01-01');
+ALTER TABLE `alter2_db`.`alter2` PARTITION (`insertdate`='2008-01-01') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 EXPLAIN select * from alter2;
@@ -1602,7 +1610,7 @@ POSTHOOK: Input: alter2_db@alter2
 POSTHOOK: Input: alter2_db@alter2@insertdate=2008-01-01
 POSTHOOK: Input: alter2_db@alter2@insertdate=2008-01-02
 #### A masked pattern was here ####
-CREATE DATABASE IF NOT EXISTS alter2_db;
+CREATE DATABASE IF NOT EXISTS `alter2_db`;
 CREATE TABLE `alter2_db`.`alter2`(
   `a` int, 
   `b` int)
@@ -1619,11 +1627,11 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE alter2_db.alter2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE alter2_db.alter2 ADD IF NOT EXISTS PARTITION (insertdate='2008-01-01');
-ALTER TABLE alter2_db.alter2 PARTITION (insertdate='2008-01-01') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE alter2_db.alter2 ADD IF NOT EXISTS PARTITION (insertdate='2008-01-02');
-ALTER TABLE alter2_db.alter2 PARTITION (insertdate='2008-01-02') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `alter2_db`.`alter2` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `alter2_db`.`alter2` ADD IF NOT EXISTS PARTITION (`insertdate`='2008-01-01');
+ALTER TABLE `alter2_db`.`alter2` PARTITION (`insertdate`='2008-01-01') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `alter2_db`.`alter2` ADD IF NOT EXISTS PARTITION (`insertdate`='2008-01-02');
+ALTER TABLE `alter2_db`.`alter2` PARTITION (`insertdate`='2008-01-02') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 EXPLAIN select * from alter2;
@@ -1665,10 +1673,12 @@ PREHOOK: query: DROP TABLE alter2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: alter2_db@alter2
 PREHOOK: Output: alter2_db@alter2
+PREHOOK: Output: database:alter2_db
 POSTHOOK: query: DROP TABLE alter2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: alter2_db@alter2
 POSTHOOK: Output: alter2_db@alter2
+POSTHOOK: Output: database:alter2_db
 PREHOOK: query: CREATE EXTERNAL TABLE alter2(a int, b int) PARTITIONED BY (insertdate string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: alter2_db@alter2
@@ -1685,7 +1695,7 @@ POSTHOOK: query: explain ddl select * from alter2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: alter2_db@alter2
 #### A masked pattern was here ####
-CREATE DATABASE IF NOT EXISTS alter2_db;
+CREATE DATABASE IF NOT EXISTS `alter2_db`;
 CREATE EXTERNAL TABLE `alter2_db`.`alter2`(
   `a` int, 
   `b` int)
@@ -1702,7 +1712,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE alter2_db.alter2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `alter2_db`.`alter2` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -1758,7 +1768,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: alter2_db@alter2
 POSTHOOK: Input: alter2_db@alter2@insertdate=2008-01-01
 #### A masked pattern was here ####
-CREATE DATABASE IF NOT EXISTS alter2_db;
+CREATE DATABASE IF NOT EXISTS `alter2_db`;
 CREATE EXTERNAL TABLE `alter2_db`.`alter2`(
   `a` int, 
   `b` int)
@@ -1775,9 +1785,9 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE alter2_db.alter2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE alter2_db.alter2 ADD IF NOT EXISTS PARTITION (insertdate='2008-01-01');
-ALTER TABLE alter2_db.alter2 PARTITION (insertdate='2008-01-01') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `alter2_db`.`alter2` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `alter2_db`.`alter2` ADD IF NOT EXISTS PARTITION (`insertdate`='2008-01-01');
+ALTER TABLE `alter2_db`.`alter2` PARTITION (`insertdate`='2008-01-01') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 EXPLAIN select * from alter2;
@@ -1835,7 +1845,7 @@ POSTHOOK: Input: alter2_db@alter2
 POSTHOOK: Input: alter2_db@alter2@insertdate=2008-01-01
 POSTHOOK: Input: alter2_db@alter2@insertdate=2008-01-02
 #### A masked pattern was here ####
-CREATE DATABASE IF NOT EXISTS alter2_db;
+CREATE DATABASE IF NOT EXISTS `alter2_db`;
 CREATE EXTERNAL TABLE `alter2_db`.`alter2`(
   `a` int, 
   `b` int)
@@ -1852,11 +1862,11 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE alter2_db.alter2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE alter2_db.alter2 ADD IF NOT EXISTS PARTITION (insertdate='2008-01-01');
-ALTER TABLE alter2_db.alter2 PARTITION (insertdate='2008-01-01') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE alter2_db.alter2 ADD IF NOT EXISTS PARTITION (insertdate='2008-01-02');
-ALTER TABLE alter2_db.alter2 PARTITION (insertdate='2008-01-02') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `alter2_db`.`alter2` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `alter2_db`.`alter2` ADD IF NOT EXISTS PARTITION (`insertdate`='2008-01-01');
+ALTER TABLE `alter2_db`.`alter2` PARTITION (`insertdate`='2008-01-01') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `alter2_db`.`alter2` ADD IF NOT EXISTS PARTITION (`insertdate`='2008-01-02');
+ALTER TABLE `alter2_db`.`alter2` PARTITION (`insertdate`='2008-01-02') UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 EXPLAIN select * from alter2;
@@ -1898,10 +1908,12 @@ PREHOOK: query: DROP TABLE alter2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: alter2_db@alter2
 PREHOOK: Output: alter2_db@alter2
+PREHOOK: Output: database:alter2_db
 POSTHOOK: query: DROP TABLE alter2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: alter2_db@alter2
 POSTHOOK: Output: alter2_db@alter2
+POSTHOOK: Output: database:alter2_db
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default

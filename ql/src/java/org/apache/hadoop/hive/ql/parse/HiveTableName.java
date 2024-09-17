@@ -38,7 +38,7 @@ public final class HiveTableName extends TableName {
    * @throws SemanticException
    */
   public static TableName of(Table table) throws SemanticException {
-    return ofNullable(table.getTableName(), table.getDbName());
+    return ofNullable(table.getTableName(), table.getDbName(), table.getSnapshotRef());
   }
 
   /**
@@ -95,11 +95,15 @@ public final class HiveTableName extends TableName {
    */
   // to be @Deprecated
   public static TableName ofNullable(String dbTableName, String defaultDb) throws SemanticException {
+    return ofNullable(dbTableName, defaultDb, null);
+  }
+
+  public static TableName ofNullable(String dbTableName, String defaultDb, String tableMetaRef) throws SemanticException {
     if (dbTableName == null) {
       return new TableName(null, null, null);
     } else {
       try {
-        return fromString(dbTableName, SessionState.get().getCurrentCatalog(), defaultDb);
+        return fromString(dbTableName, SessionState.get().getCurrentCatalog(), defaultDb, tableMetaRef);
       } catch (IllegalArgumentException e) {
         throw new SemanticException(e);
       }

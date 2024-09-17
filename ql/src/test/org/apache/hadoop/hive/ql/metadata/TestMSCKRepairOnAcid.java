@@ -507,4 +507,19 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
 
     runStatementOnDriver("drop table if exists " + acidTblMsck);
   }
+
+  @Test
+  public void testInvalidPartitionNameErrorMessage() throws Exception {
+    runStatementOnDriver("drop table if exists " + acidTblPartMsck);
+    runStatementOnDriver("create table " + acidTblPartMsck
+            + " (a int, b int) partitioned by (p string) clustered by (a) into 2 buckets"
+            + " stored as orc TBLPROPERTIES ('transactional'='true')");
+    FileSystem fs = FileSystem.get(hiveConf);
+    fs.mkdirs(new Path(getWarehouseDir(), acidTblPartMsck+ "/part"));
+    try {
+      runStatementOnDriver("msck repair table " + acidTblPartMsck);
+    } catch (Exception e){
+      Assert.assertEquals("Error message did not match",true,e.getMessage().contains("Invalid partition name"));
+    }
+  }
 }

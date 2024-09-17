@@ -24,10 +24,12 @@ NULL	35
 PREHOOK: query: drop table temp_table_external
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@temp_table_external
+PREHOOK: Output: database:default
 PREHOOK: Output: default@temp_table_external
 POSTHOOK: query: drop table temp_table_external
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@temp_table_external
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@temp_table_external
 Found 1 items
 -rw-r--r--   3 ### USER ### ### GROUP ###         16 ### HDFS DATE ### hdfs://### HDFS PATH ###

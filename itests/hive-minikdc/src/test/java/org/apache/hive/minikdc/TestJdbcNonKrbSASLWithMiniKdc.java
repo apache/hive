@@ -42,7 +42,7 @@ public class TestJdbcNonKrbSASLWithMiniKdc extends TestJdbcWithMiniKdc{
 
   public static class CustomAuthenticator implements PasswdAuthenticationProvider {
     @Override
-    public void Authenticate(String user, String password) throws AuthenticationException {
+    public void authenticate(String user, String password) throws AuthenticationException {
       if (!(SASL_NONKRB_USER1.equals(user) && SASL_NONKRB_PWD.equals(password)) &&
           !(SASL_NONKRB_USER2.equals(user) && SASL_NONKRB_PWD.equals(password))) {
         throw new AuthenticationException("Authentication failed");

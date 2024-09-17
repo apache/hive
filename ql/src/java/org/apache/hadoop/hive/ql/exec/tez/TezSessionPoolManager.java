@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import org.apache.hadoop.hive.ql.exec.tez.TezSessionState.HiveResources;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -278,7 +276,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
     // TODO Session re-use completely disabled for doAs=true. Always launches a new session.
     boolean nonDefaultUser = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
 
-    boolean jobNameSet = !HiveConf.getVar(conf, ConfVars.HIVETEZJOBNAME).equals("HIVE-%s");
+    boolean jobNameSet = !HiveConf.getVar(conf, ConfVars.HIVE_TEZ_JOB_NAME).equals("HIVE-%s");
 
     /*
      * if the user has specified a queue name themselves or job name is set, we create a new
@@ -288,7 +286,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
      */
     if (nonDefaultUser || !hasInitialSessions || hasQueue || jobNameSet) {
       LOG.info("QueueName: {} nonDefaultUser: {} defaultQueuePool: {} hasInitialSessions: {}" +
-                      " jobNameSet: ", queueName, nonDefaultUser, defaultSessionPool,
+                      " jobNameSet: {}.", queueName, nonDefaultUser, defaultSessionPool,
               hasInitialSessions, jobNameSet);
       return getNewSessionState(conf, queueName, doOpen);
     }

@@ -44,10 +44,12 @@ POSTHOOK: Input: default@ext_non_part
 PREHOOK: query: drop table ext_non_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ext_non_part
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ext_non_part
 POSTHOOK: query: drop table ext_non_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ext_non_part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ext_non_part
 PREHOOK: query: CREATE TABLE int_non_part (col string) STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
@@ -87,10 +89,12 @@ POSTHOOK: Input: default@int_non_part
 PREHOOK: query: drop table int_non_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@int_non_part
+PREHOOK: Output: database:default
 PREHOOK: Output: default@int_non_part
 POSTHOOK: query: drop table int_non_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@int_non_part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@int_non_part
 PREHOOK: query: CREATE TABLE int_non_part (col string)
 PREHOOK: type: CREATETABLE
@@ -130,10 +134,12 @@ POSTHOOK: Input: default@int_non_part
 PREHOOK: query: drop table int_non_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@int_non_part
+PREHOOK: Output: database:default
 PREHOOK: Output: default@int_non_part
 POSTHOOK: query: drop table int_non_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@int_non_part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@int_non_part
 PREHOOK: query: CREATE TABLE int_buck (col string)
 CLUSTERED BY (col) INTO 4 BUCKETS
@@ -192,18 +198,22 @@ POSTHOOK: Input: default@int_buck
 PREHOOK: query: drop table int_buck
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@int_buck
+PREHOOK: Output: database:default
 PREHOOK: Output: default@int_buck
 POSTHOOK: query: drop table int_buck
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@int_buck
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@int_buck
 PREHOOK: query: drop table b
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@b
+PREHOOK: Output: database:default
 PREHOOK: Output: default@b
 POSTHOOK: query: drop table b
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@b
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@b
 PREHOOK: query: CREATE EXTERNAL TABLE ext_part (col string) partitioned by (par string)
 PREHOOK: type: CREATETABLE
@@ -322,18 +332,22 @@ POSTHOOK: Lineage: ext_part PARTITION(par=1).col SIMPLE [(b)b.FieldSchema(name:p
 PREHOOK: query: drop table ext_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ext_part
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ext_part
 POSTHOOK: query: drop table ext_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ext_part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ext_part
 PREHOOK: query: drop table b
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@b
+PREHOOK: Output: database:default
 PREHOOK: Output: default@b
 POSTHOOK: query: drop table b
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@b
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@b
 PREHOOK: query: CREATE TABLE int_part (col string) partitioned by (par string)
 PREHOOK: type: CREATETABLE
@@ -480,16 +494,20 @@ second	2
 PREHOOK: query: drop table int_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@int_part
+PREHOOK: Output: database:default
 PREHOOK: Output: default@int_part
 POSTHOOK: query: drop table int_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@int_part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@int_part
 PREHOOK: query: drop table b
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@b
+PREHOOK: Output: database:default
 PREHOOK: Output: default@b
 POSTHOOK: query: drop table b
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@b
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@b

@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists acid_ivot_stage_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists acid_ivot_stage_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table acid_ivot_stage_n0(
     ctinyint TINYINT,
     csmallint SMALLINT,

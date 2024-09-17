@@ -6,12 +6,16 @@ POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:test
 PREHOOK: query: drop table if exists test.test_orc_src
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:test
 POSTHOOK: query: drop table if exists test.test_orc_src
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:test
 PREHOOK: query: drop table if exists test.test_orc_src2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:test
 POSTHOOK: query: drop table if exists test.test_orc_src2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:test
 PREHOOK: query: create table test.test_orc_src (a int, b int, c int) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:test

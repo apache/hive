@@ -72,10 +72,12 @@ public class JdbcSerDe extends AbstractSerDe {
       throws SerDeException {
     log.trace("Initializing the JdbcSerDe");
     super.initialize(configuration, tableProperties, partitionProperties);
+    DatabaseAccessor dbAccessor = null;
     try {
       if (properties.containsKey(JdbcStorageConfig.DATABASE_TYPE.getPropertyName())) {
         Configuration tableConfig = JdbcStorageConfigManager.convertPropertiesToConfiguration(properties);
-        DatabaseAccessor dbAccessor = DatabaseAccessorFactory.getAccessor(tableConfig);
+
+        dbAccessor = DatabaseAccessorFactory.getAccessor(tableConfig);
         // Extract column names and types from properties
         List<TypeInfo> hiveColumnTypesList;
         if (properties.containsKey(Constants.JDBC_TABLE) && properties.containsKey(Constants.JDBC_QUERY)) {
@@ -131,7 +133,12 @@ public class JdbcSerDe extends AbstractSerDe {
         row = new ArrayList<>(hiveColumnNames.length);
       }
     } catch (Exception e) {
-      throw new SerDeException("Caught exception while initializing the SqlSerDe", e);
+      throw new SerDeException("Caught exception while initializing the SqlSerDe: " + e.getMessage(), e);
+    } finally {
+      try (AutoCloseable closeable = dbAccessor) {
+      } catch (Exception e) {
+        // ignore this
+      }
     }
 
     if (log.isDebugEnabled()) {

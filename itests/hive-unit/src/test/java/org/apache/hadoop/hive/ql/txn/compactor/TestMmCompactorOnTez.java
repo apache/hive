@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriver;
+import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactorBase.dropTables;
 
 /**
  * Test functionality of MmMinorQueryCompactor.
@@ -75,7 +76,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     Table table = msClient.getTable(dbName, tableName);
     FileSystem fs = FileSystem.get(conf);
     // Insert test data into test table
-    testDataProvider.insertMmTestData(tableName);
+    testDataProvider.insertOnlyTestData(tableName);
     // Get all data before compaction is run
     List<String> expectedData = testDataProvider.getAllData(tableName);
     // Verify deltas
@@ -85,11 +86,11 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null));
 
     if (isTez(conf)) {
-      conf.setVar(HiveConf.ConfVars.PREEXECHOOKS, HiveProtoLoggingHook.class.getName());
+      conf.setVar(HiveConf.ConfVars.PRE_EXEC_HOOKS, HiveProtoLoggingHook.class.getName());
     }
     // Run a compaction
     CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MINOR, true);
-    conf.setVar(HiveConf.ConfVars.PREEXECHOOKS, StringUtils.EMPTY);
+    conf.setVar(HiveConf.ConfVars.PRE_EXEC_HOOKS, StringUtils.EMPTY);
 
     CompactorTestUtil.runCleaner(conf);
     verifySuccessulTxn(1);
@@ -97,7 +98,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     List<String> actualDeltasAfterComp =
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null);
     Assert.assertEquals("Delta directories does not match after compaction",
-        Collections.singletonList("delta_0000001_0000003_v0000007"), actualDeltasAfterComp);
+        Collections.singletonList("delta_0000001_0000003_v0000006"), actualDeltasAfterComp);
     // Verify bucket files in delta dirs
     List<String> expectedBucketFiles = Collections.singletonList("000000_0");
     Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFiles,
@@ -107,7 +108,9 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     testDataProvider.dropTable(tableName);
 
     if (isTez(conf)) {
-      ProtoMessageReader<HiveHookEvents.HiveHookEventProto> reader = TestHiveProtoLoggingHook.getTestReader(conf, tmpFolder);
+      List<ProtoMessageReader<HiveHookEvents.HiveHookEventProto>> readers = TestHiveProtoLoggingHook.getTestReader(conf, tmpFolder);
+      Assert.assertEquals(1, readers.size());
+      ProtoMessageReader<HiveHookEvents.HiveHookEventProto> reader = readers.get(0);
       HiveHookEvents.HiveHookEventProto event = reader.readEvent();
       while (ExecutionMode.TEZ != ExecutionMode.valueOf(event.getExecutionMode())) {
         event = reader.readEvent();
@@ -121,7 +124,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     String dbName = "default";
     String tableName = "testMmMinorCompaction";
     // expected name of the delta dir that will be created with minor compaction
-    String newDeltaName = "delta_0000001_0000003_v0000007";
+    String newDeltaName = "delta_0000001_0000003_v0000006";
     // Create test table
     TestDataProvider testDataProvider = new TestDataProvider();
     testDataProvider.createMmTable(tableName, false, true);
@@ -130,7 +133,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     Table table = metaStoreClient.getTable(dbName, tableName);
     FileSystem fs = FileSystem.get(conf);
     // Insert test data into test table
-    testDataProvider.insertMmTestData(tableName);
+    testDataProvider.insertOnlyTestData(tableName);
     // Get all data before compaction is run
     List<String> expectedData = testDataProvider.getAllData(tableName);
     // Verify deltas
@@ -172,7 +175,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     Table table = metaStoreClient.getTable(dbName, tableName);
     FileSystem fs = FileSystem.get(conf);
     // Insert test data into test table
-    dataProvider.insertMmTestDataPartitioned(tableName);
+    dataProvider.insertOnlyTestDataPartitioned(tableName);
     // Get all data before compaction is run
     List<String> expectedData = dataProvider.getAllData(tableName);
     // Verify deltas
@@ -193,7 +196,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     List<String> actualDeltasAfterCompPartToday =
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, partitionToday);
     Assert.assertEquals("Delta directories does not match after compaction",
-        Collections.singletonList("delta_0000001_0000003_v0000007"),
+        Collections.singletonList("delta_0000001_0000003_v0000006"),
         actualDeltasAfterCompPartToday);
     // Verify bucket files in delta dirs
     List<String> expectedBucketFiles = Collections.singletonList("000000_0");
@@ -244,7 +247,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     Table table = metaStoreClient.getTable(dbName, tableName);
     FileSystem fs = FileSystem.get(conf);
     // Insert test data into test table
-    dataProvider.insertMmTestDataPartitioned(tableName);
+    dataProvider.insertOnlyTestDataPartitioned(tableName);
     // Get all data before compaction is run
     List<String> expectedData = dataProvider.getAllData(tableName);
     // Verify deltas
@@ -265,7 +268,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     List<String> actualDeltasAfterCompPartToday =
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, partitionToday);
     Assert.assertEquals("Delta directories does not match after compaction",
-        Collections.singletonList("delta_0000001_0000003_v0000007"),
+        Collections.singletonList("delta_0000001_0000003_v0000006"),
         actualDeltasAfterCompPartToday);
     // Verify bucket files in delta dirs
     List<String> expectedBucketFiles = Arrays.asList("000000_0", "000001_0");
@@ -288,7 +291,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     Table table = metaStoreClient.getTable(dbName, tableName);
     FileSystem fs = FileSystem.get(conf);
     // Insert test data into test table
-    dataProvider.insertMmTestData(tableName, 10);
+    dataProvider.insertOnlyTestData(tableName, 10);
     // Get all data before compaction is run
     List<String> expectedData = dataProvider.getAllData(tableName);
     Collections.sort(expectedData);
@@ -307,7 +310,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     // Verify delta directories after compaction
     List<String> actualDeltasAfterComp =
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null);
-    Assert.assertEquals(Collections.singletonList("delta_0000001_0000010_v0000014"),
+    Assert.assertEquals(Collections.singletonList("delta_0000001_0000010_v0000013"),
         actualDeltasAfterComp);
     // Verify bucket file in delta dir
     List<String> expectedBucketFile = Collections.singletonList("000000_0");
@@ -329,19 +332,19 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     Table table = metaStoreClient.getTable(dbName, tableName);
     FileSystem fs = FileSystem.get(conf);
     // Insert test data into test table
-    dataProvider.insertMmTestData(tableName);
+    dataProvider.insertOnlyTestData(tableName);
     // Run a compaction
     CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MINOR, true);
     CompactorTestUtil.runCleaner(conf);
     verifySuccessulTxn(1);
     // Insert test data into test table
-    dataProvider.insertMmTestData(tableName);
+    dataProvider.insertOnlyTestData(tableName);
     // Run a compaction
     CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MINOR, true);
     CompactorTestUtil.runCleaner(conf);
     verifySuccessulTxn(2);
     // Insert test data into test table
-    dataProvider.insertMmTestData(tableName);
+    dataProvider.insertOnlyTestData(tableName);
     // Run a compaction
     CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MINOR, true);
     CompactorTestUtil.runCleaner(conf);
@@ -350,7 +353,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     List<String> actualDeltasAfterComp =
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null);
     Assert.assertEquals("Delta directories does not match after compaction",
-        Collections.singletonList("delta_0000001_0000009_v0000026"), actualDeltasAfterComp);
+        Collections.singletonList("delta_0000001_0000009_v0000015"), actualDeltasAfterComp);
 
   }
 
@@ -365,7 +368,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     Table table = metaStoreClient.getTable(dbName, tableName);
     FileSystem fs = FileSystem.get(conf);
     // Insert test data into test table
-    dataProvider.insertMmTestData(tableName);
+    dataProvider.insertOnlyTestData(tableName);
     // Get all data before compaction is run
     List<String> expectedData = dataProvider.getAllData(tableName);
     Collections.sort(expectedData);
@@ -375,12 +378,12 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     verifySuccessulTxn(1);
     // Verify delta directories after compaction
     Assert.assertEquals("Delta directories does not match after minor compaction",
-        Collections.singletonList("delta_0000001_0000003_v0000007"),
+        Collections.singletonList("delta_0000001_0000003_v0000006"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null));
     verifyAllContents(tableName, dataProvider, expectedData);
     List<String> actualData;
     // Insert a second round of test data into test table; update expectedData
-    dataProvider.insertMmTestData(tableName);
+    dataProvider.insertOnlyTestData(tableName);
     expectedData = dataProvider.getAllData(tableName);
     // Run a compaction
     CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MAJOR, true);
@@ -388,7 +391,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     verifySuccessulTxn(2);
     // Verify base directory after compaction
     Assert.assertEquals("Base directory does not match after major compaction",
-        Collections.singletonList("base_0000006_v0000019"),
+        Collections.singletonList("base_0000006_v0000013"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, null));
     actualData = dataProvider.getAllData(tableName);
     Assert.assertEquals(expectedData, actualData);
@@ -405,7 +408,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     Table table = metaStoreClient.getTable(dbName, tableName);
     FileSystem fs = FileSystem.get(conf);
     // Insert test data into test table
-    dataProvider.insertMmTestData(tableName);
+    dataProvider.insertOnlyTestData(tableName);
     // Get all data before compaction is run
     List<String> expectedData = dataProvider.getAllData(tableName);
     Collections.sort(expectedData);
@@ -415,11 +418,11 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     verifySuccessulTxn(1);
     // Verify base directory after compaction
     Assert.assertEquals("Base directory does not match after major compaction",
-        Collections.singletonList("base_0000003_v0000007"),
+        Collections.singletonList("base_0000003_v0000006"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, null));
     verifyAllContents(tableName, dataProvider, expectedData);
     // Insert test data into test table
-    dataProvider.insertMmTestData(tableName);
+    dataProvider.insertOnlyTestData(tableName);
     expectedData = dataProvider.getAllData(tableName);
     Collections.sort(expectedData);
     // Run a compaction
@@ -428,10 +431,10 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     verifySuccessulTxn(2);
     // Verify base/delta directories after compaction
     Assert.assertEquals("Base directory does not match after major compaction",
-        Collections.singletonList("base_0000003_v0000007"),
+        Collections.singletonList("base_0000003_v0000006"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, null));
     Assert.assertEquals("Delta directories does not match after minor compaction",
-        Collections.singletonList("delta_0000004_0000006_v0000017"),
+        Collections.singletonList("delta_0000004_0000006_v0000013"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null));
     verifyAllContents(tableName, dataProvider, expectedData);
   }
@@ -439,7 +442,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
   @Test public void testMmMinorCompactionWithSchemaEvolutionAndBuckets() throws Exception {
     String dbName = "default";
     String tblName = "testMmMinorCompactionWithSchemaEvolutionAndBuckets";
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(driver, tblName);
     executeStatementOnDriver("create transactional table " + tblName
         + " (a int, b int) partitioned by(ds string) clustered by (a) into 2 buckets"
         + " stored as ORC TBLPROPERTIES('bucketing_version'='2', 'transactional'='true',"
@@ -472,18 +475,18 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     verifySuccessulTxn(2);
     verifyAllContents(tblName, dataProvider, expectedData);
     // Clean up
-    executeStatementOnDriver("drop table " + tblName, driver);
+    dropTables(driver, tblName);
   }
 
   @Test public void testMmMinorCompactionWithSchemaEvolutionNoBucketsMultipleReducers()
       throws Exception {
     HiveConf hiveConf = new HiveConf(conf);
-    hiveConf.setIntVar(HiveConf.ConfVars.MAXREDUCERS, 2);
-    hiveConf.setIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS, 2);
+    hiveConf.setIntVar(HiveConf.ConfVars.MAX_REDUCERS, 2);
+    hiveConf.setIntVar(HiveConf.ConfVars.HADOOP_NUM_REDUCERS, 2);
     driver = DriverFactory.newDriver(hiveConf);
     String dbName = "default";
     String tblName = "testMmMinorCompactionWithSchemaEvolutionNoBucketsMultipleReducers";
-    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    dropTables(driver, tblName);
     executeStatementOnDriver(
         "create transactional table " + tblName + " (a int, b int) partitioned by(ds string)"
             + " stored as ORC TBLPROPERTIES('transactional'='true',"
@@ -513,7 +516,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
 
     verifyAllContents(tblName, dataProvider, expectedData);
     // Clean up
-    executeStatementOnDriver("drop table " + tblName, driver);
+    dropTables(driver, tblName);
   }
 
   @Test public void testMinorMmCompactionRemovesAbortedDirs()
@@ -528,7 +531,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     Table table = metaStoreClient.getTable(dbName, tableName);
     FileSystem fs = FileSystem.get(conf);
     // Insert test data into test table
-    testDataProvider.insertMmTestData(tableName);
+    testDataProvider.insertOnlyTestData(tableName);
     // Get all data before compaction is run. Expected data is 2 x MmTestData insertion
     List<String> expectedData = new ArrayList<>();
     List<String> oneMmTestDataInsertion = testDataProvider.getAllData(tableName);
@@ -537,7 +540,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     Collections.sort(expectedData);
     // Insert an aborted directory (txns 4-6)
     rollbackAllTxns(true, driver);
-    testDataProvider.insertMmTestData(tableName);
+    testDataProvider.insertOnlyTestData(tableName);
     rollbackAllTxns(false, driver);
     // Check that delta dirs 4-6 exist
     List<String> actualDeltasAfterComp =
@@ -547,7 +550,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
             "delta_0000003_0000003_0000", "delta_0000004_0000004_0000",
             "delta_0000005_0000005_0000", "delta_0000006_0000006_0000"), actualDeltasAfterComp);
     // Insert another round of test data (txns 7-9)
-    testDataProvider.insertMmTestData(tableName);
+    testDataProvider.insertOnlyTestData(tableName);
     verifyAllContents(tableName, testDataProvider, expectedData);
     // Run a minor compaction
     CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MINOR, true);
@@ -555,17 +558,17 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     verifySuccessulTxn(1);
     // Verify delta directories after compaction
     Assert.assertEquals("Delta directories does not match after minor compaction",
-        Collections.singletonList("delta_0000001_0000009_v0000014"),
+        Collections.singletonList("delta_0000001_0000009_v0000013"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null));
     verifyAllContents(tableName, testDataProvider, expectedData);
   }
 
   @Test public void testMmMajorCompactionDb() throws Exception {
-    testMmCompactionDb(CompactionType.MAJOR, "base_0000003_v0000009");
+    testMmCompactionDb(CompactionType.MAJOR, "base_0000003_v0000007");
   }
 
   @Test public void testMmMinorCompactionDb() throws Exception {
-    testMmCompactionDb(CompactionType.MINOR, "delta_0000001_0000003_v0000009");
+    testMmCompactionDb(CompactionType.MINOR, "delta_0000001_0000003_v0000007");
   }
 
   /**
@@ -583,7 +586,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     Table table = metaStoreClient.getTable(dbName, tableName);
     FileSystem fs = FileSystem.get(conf);
     // Insert test data into test table
-    dataProvider.insertMmTestData(dbName, tableName);
+    dataProvider.insertOnlyTestData(dbName, tableName);
     // Get all data before compaction is run
     List<String> expectedData = dataProvider.getAllData(dbName, tableName, false);
     Collections.sort(expectedData);
@@ -636,7 +639,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
    * Set to true to cause all transactions to be rolled back, until set back to false.
    */
   private static void rollbackAllTxns(boolean val, IDriver driver) {
-    driver.getConf().setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, val);
+    driver.getConf().setBoolVar(HiveConf.ConfVars.HIVE_TEST_MODE_ROLLBACK_TXN, val);
   }
 
   private boolean isTez(HiveConf conf){

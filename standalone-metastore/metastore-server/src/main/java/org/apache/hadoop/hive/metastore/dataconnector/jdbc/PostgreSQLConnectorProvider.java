@@ -35,21 +35,6 @@ public class PostgreSQLConnectorProvider extends AbstractJDBCConnectorProvider {
     super(dbName, dataConn, DRIVER_CLASS);
   }
 
-  @Override protected ResultSet fetchTableMetadata(String tableName) throws MetaException {
-    ResultSet rs = null;
-    try {
-      rs = getConnection().getMetaData().getTables(scoped_db, null, null, new String[] { "TABLE" });
-    } catch (SQLException sqle) {
-      LOG.warn("Could not retrieve table names from remote datasource, cause:" + sqle.getMessage());
-      throw new MetaException("Could not retrieve table names from remote datasource, cause:" + sqle.getMessage());
-    }
-    return rs;
-  }
-
-  @Override protected ResultSet fetchTableNames() throws MetaException {
-    return null;
-  }
-
   @Override protected String getCatalogName() {
     return scoped_db;
   }
@@ -69,10 +54,23 @@ public class PostgreSQLConnectorProvider extends AbstractJDBCConnectorProvider {
     switch (dbDataType.toLowerCase())
     {
     case "bpchar":
+    case "character":
       mappedType = ColumnType.CHAR_TYPE_NAME + wrapSize(size);
+      break;
+    case "int2":
+      mappedType = ColumnType.SMALLINT_TYPE_NAME;
+      break;
+    case "int4":
+      mappedType = ColumnType.INT_TYPE_NAME;
       break;
     case "int8":
       mappedType = ColumnType.BIGINT_TYPE_NAME;
+      break;
+    case "float4":
+      mappedType = ColumnType.FLOAT_TYPE_NAME;
+      break;
+    case "float8":
+      mappedType = ColumnType.DOUBLE_TYPE_NAME;
       break;
     default:
       mappedType = ColumnType.VOID_TYPE_NAME;

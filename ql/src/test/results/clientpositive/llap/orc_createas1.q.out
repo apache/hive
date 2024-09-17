@@ -1,15 +1,21 @@
 PREHOOK: query: DROP TABLE orc_createas1a
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orc_createas1a
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE orc_createas1b
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orc_createas1b
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE orc_createas1c
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orc_createas1c
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE orc_createas1a (key INT, value STRING)
     PARTITIONED BY (ds string)
 PREHOOK: type: CREATETABLE
@@ -424,24 +430,30 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DROP TABLE orc_createas1a
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_createas1a
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_createas1a
 POSTHOOK: query: DROP TABLE orc_createas1a
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_createas1a
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_createas1a
 PREHOOK: query: DROP TABLE orc_createas1b
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_createas1b
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_createas1b
 POSTHOOK: query: DROP TABLE orc_createas1b
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_createas1b
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_createas1b
 PREHOOK: query: DROP TABLE orc_createas1c
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_createas1c
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_createas1c
 POSTHOOK: query: DROP TABLE orc_createas1c
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_createas1c
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_createas1c

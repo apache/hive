@@ -55,7 +55,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	0                   
-	totalSize           	926                 
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -76,5 +76,5 @@ Rewrite Enabled:    	No
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_n4	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_n4	:1:9223372036854775807::	 

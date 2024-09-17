@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE txt_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE txt_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE part_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE part_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE txt_table (id int, value string, year string, month string, day string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -98,16 +102,20 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DROP TABLE txt_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@txt_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@txt_table
 POSTHOOK: query: DROP TABLE txt_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@txt_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@txt_table
 PREHOOK: query: DROP TABLE part_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@part_table
 POSTHOOK: query: DROP TABLE part_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_table

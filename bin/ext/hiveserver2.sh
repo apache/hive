@@ -28,6 +28,7 @@ before_start() {
   if [ -f $HIVESERVER2_PID ]; then
     if kill -0 $(cat $HIVESERVER2_PID) >/dev/null 2>&1; then
       echo "HiveServer2 running as process $(cat $HIVESERVER2_PID).  Stop it first."
+      ps $(cat $HIVESERVER2_PID)
       exit 1
     fi
   fi
@@ -54,7 +55,7 @@ hiveserver2() {
     commands=$(exec $HADOOP jar $JAR $CLASS -H | grep -v '-hiveconf' | awk '{print $1}')
     start_hiveserver2='Y'
     for i in "$@"; do
-      if [ $(echo "${commands[@]}" | grep -we "$i") != "" ]; then
+      if [ "$(echo "${commands[@]}" | grep -we $i)" != "" ]; then
         start_hiveserver2='N'
         break
       fi

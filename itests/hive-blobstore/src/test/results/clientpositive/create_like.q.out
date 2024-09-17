@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE blobstore_partitioned_source_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE blobstore_partitioned_source_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE blobstore_partitioned_source_table (
   a int, b int, c string
 )
@@ -72,8 +74,10 @@ POSTHOOK: Output: default@blobstore_partitioned_source_table
 POSTHOOK: Output: default@blobstore_partitioned_source_table@dt=20110925/hour=2
 PREHOOK: query: DROP TABLE like_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE like_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 PREHOOK: Input: ### test.blobstore.path ###/create_like/data
@@ -161,10 +165,12 @@ POSTHOOK: Input: default@like_table@dt=20110925/hour=2
 PREHOOK: query: DROP TABLE like_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@like_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@like_table
 POSTHOOK: query: DROP TABLE like_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@like_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@like_table
 PREHOOK: query: SELECT * FROM blobstore_partitioned_source_table
 PREHOOK: type: QUERY

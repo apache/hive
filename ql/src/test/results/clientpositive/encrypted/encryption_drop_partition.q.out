@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS encrypted_table_dp
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS encrypted_table_dp
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 PREHOOK: Input: hdfs://### HDFS PATH ###
@@ -91,10 +93,12 @@ POSTHOOK: Input: default@encrypted_ext_table_dp
 PREHOOK: query: DROP TABLE encrypted_ext_table_dp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@encrypted_ext_table_dp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@encrypted_ext_table_dp
 POSTHOOK: query: DROP TABLE encrypted_ext_table_dp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@encrypted_ext_table_dp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@encrypted_ext_table_dp
 PREHOOK: query: SELECT * FROM encrypted_table_dp
 PREHOOK: type: QUERY
@@ -163,8 +167,10 @@ POSTHOOK: Output: default@encrypted_table_dp@p=2014-09-24
 PREHOOK: query: DROP TABLE encrypted_table_dp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@encrypted_table_dp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@encrypted_table_dp
 POSTHOOK: query: DROP TABLE encrypted_table_dp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@encrypted_table_dp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@encrypted_table_dp

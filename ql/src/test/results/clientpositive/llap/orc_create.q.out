@@ -1,27 +1,39 @@
 PREHOOK: query: DROP TABLE orc_create
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orc_create
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE orc_create_complex_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orc_create_complex_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE orc_create_staging_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orc_create_staging_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE orc_create_people_staging
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orc_create_people_staging
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE orc_create_people
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orc_create_people
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE if exists orc_create_cprl
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE if exists orc_create_cprl
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE orc_create_staging_n1 (
   str STRING,
   mp  MAP<STRING,STRING>,
@@ -70,7 +82,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -125,7 +137,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -141,10 +153,12 @@ Storage Desc Params:
 PREHOOK: query: DROP TABLE orc_create
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create
 POSTHOOK: query: DROP TABLE orc_create
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create
 PREHOOK: query: CREATE TABLE orc_create (key INT, value STRING)
    PARTITIONED BY (ds string)
@@ -183,7 +197,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -232,7 +246,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -248,10 +262,12 @@ Storage Desc Params:
 PREHOOK: query: DROP TABLE orc_create
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create
 POSTHOOK: query: DROP TABLE orc_create
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create
 PREHOOK: query: CREATE TABLE orc_create (key INT, value STRING)
    PARTITIONED BY (ds string)
@@ -290,7 +306,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -345,7 +361,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -743,48 +759,60 @@ POSTHOOK: Input: default@orc_create_cprl@cdate=2015-02-03
 PREHOOK: query: DROP TABLE orc_create
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create
 POSTHOOK: query: DROP TABLE orc_create
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create
 PREHOOK: query: DROP TABLE orc_create_complex_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create_complex_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_complex_n1
 POSTHOOK: query: DROP TABLE orc_create_complex_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_complex_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create_complex_n1
 PREHOOK: query: DROP TABLE orc_create_staging_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create_staging_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_staging_n1
 POSTHOOK: query: DROP TABLE orc_create_staging_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_staging_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create_staging_n1
 PREHOOK: query: DROP TABLE orc_create_people_staging
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create_people_staging
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people_staging
 POSTHOOK: query: DROP TABLE orc_create_people_staging
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people_staging
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create_people_staging
 PREHOOK: query: DROP TABLE orc_create_people
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create_people
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people
 POSTHOOK: query: DROP TABLE orc_create_people
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create_people
 PREHOOK: query: DROP TABLE orc_create_cprl
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create_cprl
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_cprl
 POSTHOOK: query: DROP TABLE orc_create_cprl
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_cprl
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create_cprl

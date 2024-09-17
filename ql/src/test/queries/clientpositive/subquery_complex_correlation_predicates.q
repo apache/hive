@@ -1,5 +1,7 @@
 -- Test cases with subqueries having complex correlation predicates. 
 
+set hive.auto.convert.anti.join=true;
+
 -- HIVE-24957: Wrong results when subquery has COALESCE in correlation predicate
 create table author
 (
@@ -76,3 +78,18 @@ where not exists
           (select a_authorkey
            from author a
            where coalesce(b.b_authorkey, 400) = coalesce(a.a_authorkey, 400));
+    
+-- HIVE-27801: Exists subquery rewrite results in a wrong plan              
+drop table if exists store_sales;       
+create table store_sales (promo_sk int, sales_price int, list_price int);
+                   
+insert into store_sales values (1, 20, 15), (1, 15, 20), (1, 10, 15);
+
+explain cbo
+select * from store_sales A where exists( 
+select 1 from store_sales B 
+    where A.promo_sk = B.promo_sk and A.sales_price > B.list_price and A.sales_price < B.sales_price);  
+            
+select * from store_sales A where exists( 
+select 1 from store_sales B 
+    where A.promo_sk = B.promo_sk and A.sales_price > B.list_price and A.sales_price < B.sales_price);            

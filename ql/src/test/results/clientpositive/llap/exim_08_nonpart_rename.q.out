@@ -30,10 +30,12 @@ POSTHOOK: Input: default@exim_department_n9
 PREHOOK: query: drop table exim_department_n9
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@exim_department_n9
+PREHOOK: Output: database:default
 PREHOOK: Output: default@exim_department_n9
 POSTHOOK: query: drop table exim_department_n9
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@exim_department_n9
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@exim_department_n9
 PREHOOK: query: create database importer
 PREHOOK: type: CREATEDATABASE
@@ -105,18 +107,22 @@ POSTHOOK: Input: importer@exim_imported_dept
 PREHOOK: query: drop table exim_imported_dept
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: importer@exim_imported_dept
+PREHOOK: Output: database:importer
 PREHOOK: Output: importer@exim_imported_dept
 POSTHOOK: query: drop table exim_imported_dept
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: importer@exim_imported_dept
+POSTHOOK: Output: database:importer
 POSTHOOK: Output: importer@exim_imported_dept
 PREHOOK: query: drop table exim_department_n9
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: importer@exim_department_n9
+PREHOOK: Output: database:importer
 PREHOOK: Output: importer@exim_department_n9
 POSTHOOK: query: drop table exim_department_n9
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: importer@exim_department_n9
+POSTHOOK: Output: database:importer
 POSTHOOK: Output: importer@exim_department_n9
 #### A masked pattern was here ####
 PREHOOK: query: drop database importer

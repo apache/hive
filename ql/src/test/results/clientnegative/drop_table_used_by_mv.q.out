@@ -33,6 +33,7 @@ POSTHOOK: Lineage: mv1.value SIMPLE [(mytable)mytable.FieldSchema(name:value, ty
 PREHOOK: query: drop table mytable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@mytable
+PREHOOK: Output: database:default
 PREHOOK: Output: default@mytable
 FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. MetaException(message:Cannot drop table as it is used in the following materialized views [default.mv1]
 )

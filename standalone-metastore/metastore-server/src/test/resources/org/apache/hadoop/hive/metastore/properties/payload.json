@@ -1,0 +1,25 @@
+
+{
+  "Database-name": "SampleDB",
+  "Table-name": "${table}",
+  "Compaction": {
+    "num-delta-files": "${delta}",
+    "target-size": "${g}G",
+    "sort-spec": ["c1", "c2", "c3"],
+    "compression": "snappy"
+  },
+  "Expire-snapshot": {
+    "older-than": "6 months",
+    "num-snapshots": 5
+  },
+  "Rebuild-stats": {
+    "num-inserts": "10M",
+    "num-updates": "15M",
+    "num-deletes": "10M"
+  },
+  "Refresh-MV": {
+    "num-inserts": "5M",
+    "num-updates": "2M",
+    "num-deletes": "5M"
+  }
+}

@@ -652,9 +652,9 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
         newTable.setTableType(TableType.EXTERNAL_TABLE.toString());
         params.remove(TABLE_IS_TRANSACTIONAL);
         params.remove(TABLE_TRANSACTIONAL_PROPERTIES);
-        params.put("EXTERNAL", "TRUE");
+        params.put(HiveMetaHook.EXTERNAL, "TRUE");
         params.put(EXTERNAL_TABLE_PURGE, "TRUE");
-        params.put("TRANSLATED_TO_EXTERNAL", "TRUE");
+        params.put(HiveMetaHook.TRANSLATED_TO_EXTERNAL, "TRUE");
         newTable.setParameters(params);
         LOG.info("Modified table params are:" + params.toString());
 
@@ -772,7 +772,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       return hmsHandler.get_database_core(oldTable.getCatName(), oldTable.getDbName());
     } catch (NoSuchObjectException e) {
       throw new MetaException(
-          "Database " + oldTable.getTableName() + " for table " + oldTable.getTableName() + " could not be found");
+          "Database " + oldTable.getDbName() + " for table " + oldTable.getTableName() + " could not be found");
     }
   }
 
@@ -782,8 +782,8 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
 
   private boolean isTranslatedToExternalTable(Table table) {
     Map<String, String> p = table.getParameters();
-    return p != null && MetaStoreUtils.isPropertyTrue(p, "EXTERNAL")
-        && MetaStoreUtils.isPropertyTrue(p, "TRANSLATED_TO_EXTERNAL") && table.getSd() != null
+    return p != null && MetaStoreUtils.isPropertyTrue(p, HiveMetaHook.EXTERNAL)
+        && MetaStoreUtils.isPropertyTrue(p, HiveMetaHook.TRANSLATED_TO_EXTERNAL) && table.getSd() != null
         && table.getSd().isSetLocation();
   }
 
@@ -895,7 +895,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     try {
       db = hmsHandler.get_database_core(table.getCatName(), table.getDbName());
     } catch (NoSuchObjectException e) {
-      throw new MetaException("Database " + table.getTableName() + " for table " + table.getTableName() + " could not be found");
+      throw new MetaException("Database " + table.getDbName() + " for table " + table.getTableName() + " could not be found");
     }
 
     if (TableType.MANAGED_TABLE.name().equals(table.getTableType())) {

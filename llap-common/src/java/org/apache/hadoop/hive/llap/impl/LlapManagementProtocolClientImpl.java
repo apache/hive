@@ -40,6 +40,8 @@ public class LlapManagementProtocolClientImpl implements LlapManagementProtocolP
   private final RetryPolicy retryPolicy;
   private final SocketFactory socketFactory;
   LlapManagementProtocolPB proxy;
+  private UserGroupInformation ugi;
+  private boolean ugiChanged = false;
 
 
   public LlapManagementProtocolClientImpl(Configuration conf, String hostname, int port,
@@ -56,17 +58,18 @@ public class LlapManagementProtocolClientImpl implements LlapManagementProtocolP
   }
 
   public LlapManagementProtocolPB getProxy() throws IOException {
-    if (proxy == null) {
+    if (proxy == null || ugiChanged) {
       proxy = createProxy();
+      ugiChanged = false;
     }
     return proxy;
   }
 
-  public LlapManagementProtocolPB createProxy() throws IOException {
+  private LlapManagementProtocolPB createProxy() throws IOException {
     RPC.setProtocolEngine(conf, LlapManagementProtocolPB.class, ProtobufRpcEngine.class);
     ProtocolProxy<LlapManagementProtocolPB> proxy =
         RPC.getProtocolProxy(LlapManagementProtocolPB.class, 0, serverAddr,
-            UserGroupInformation.getCurrentUser(), conf, socketFactory, 0, retryPolicy);
+            ugi == null ? UserGroupInformation.getCurrentUser() : ugi, conf, socketFactory, 0, retryPolicy);
     return proxy.getProxy();
   }
 
@@ -131,4 +134,13 @@ public class LlapManagementProtocolClientImpl implements LlapManagementProtocolP
     }
   }
 
+  /**
+   * Sets an UserGroupInformation instance to be used with this client (a new ugi might be for a new token).
+   * The field ugiChanged is for telling that e.g. new proxies have to be created.
+   */
+  public LlapManagementProtocolClientImpl withUgi(UserGroupInformation ugi) {
+    this.ugi = ugi;
+    this.ugiChanged = true;
+    return this;
+  }
 }

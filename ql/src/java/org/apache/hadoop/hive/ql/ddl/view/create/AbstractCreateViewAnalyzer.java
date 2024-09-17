@@ -54,14 +54,16 @@ public abstract class AbstractCreateViewAnalyzer extends BaseSemanticAnalyzer {
   }
 
   protected SemanticAnalyzer analyzeQuery(ASTNode select, String fqViewName) throws SemanticException {
-    QueryState innerQueryState = new QueryState.Builder().withHiveConf(conf).build();
+    QueryState innerQueryState = new QueryState.Builder().withHiveConf(conf)
+      .withValidTxnList(queryState::getValidTxnList)
+      .build();
     innerQueryState.getConf().setBoolVar(HiveConf.ConfVars.HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES, false);
 
     SemanticAnalyzer analyzer = (SemanticAnalyzer) SemanticAnalyzerFactory.get(innerQueryState, select);
     ctx.setEnableUnparse(true);
     analyzer.forViewCreation(fqViewName);
     analyzer.analyze(select, ctx);
-    analyzer.executeUnparseTranlations();
+    analyzer.executeUnParseTranslations();
 
     queryState.setLineageState(innerQueryState.getLineageState());
     queryState.getLineageState().mapDirToOp(new Path(fqViewName), analyzer.getSinkOp());

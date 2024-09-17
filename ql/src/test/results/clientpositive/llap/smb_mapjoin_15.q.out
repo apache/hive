@@ -268,18 +268,22 @@ POSTHOOK: Input: default@test_table2_n4
 PREHOOK: query: DROP TABLE test_table1_n4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_table1_n4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_table1_n4
 POSTHOOK: query: DROP TABLE test_table1_n4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_table1_n4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table1_n4
 PREHOOK: query: DROP TABLE test_table2_n4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_table2_n4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_table2_n4
 POSTHOOK: query: DROP TABLE test_table2_n4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_table2_n4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table2_n4
 PREHOOK: query: CREATE TABLE test_table1_n4 (key INT, key2 INT, value STRING) CLUSTERED BY (key) SORTED BY (key ASC, key2 ASC, value ASC) INTO 16 BUCKETS
 PREHOOK: type: CREATETABLE
@@ -1115,16 +1119,20 @@ POSTHOOK: Input: default@test_table2_n4
 PREHOOK: query: DROP TABLE test_table1_n4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_table1_n4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_table1_n4
 POSTHOOK: query: DROP TABLE test_table1_n4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_table1_n4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table1_n4
 PREHOOK: query: DROP TABLE test_table2_n4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_table2_n4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_table2_n4
 POSTHOOK: query: DROP TABLE test_table2_n4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_table2_n4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table2_n4

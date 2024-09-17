@@ -21,7 +21,7 @@ package org.apache.hive.service.cli.operation;
 import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.hooks.TestQueryHooks;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.processors.DfsProcessor;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -36,7 +36,7 @@ public class TestCommandWithSpace {
     @Test
     public void testCommandWithPrefixSpace() throws IllegalAccessException, ClassNotFoundException, InstantiationException, HiveSQLException {
         String query = " dfs -ls /";
-        HiveConf conf = new HiveConf();
+        HiveConf conf = new HiveConfForTest(getClass());
         conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
         conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
                 "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");

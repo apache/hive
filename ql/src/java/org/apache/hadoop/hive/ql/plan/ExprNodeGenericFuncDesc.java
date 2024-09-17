@@ -23,31 +23,24 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.collections.Bag;
-import org.apache.commons.collections.bag.TreeBag;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableSortedMultiset;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFMacro;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
@@ -69,7 +62,7 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
    * exactly what we want.
    */
   private GenericUDF genericUDF;
-  private List<ExprNodeDesc> chidren;
+  private List<ExprNodeDesc> children;
   private transient String funcText;
   /**
    * This class uses a writableObjectInspector rather than a TypeInfo to store
@@ -101,7 +94,7 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
         ObjectInspectorUtils.getWritableObjectInspector(oi);
     assert (genericUDF != null);
     this.genericUDF = genericUDF;
-    this.chidren = children;
+    this.children = children;
     this.funcText = funcText;
   }
 
@@ -118,6 +111,9 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
 
   @Override
   public ObjectInspector getWritableObjectInspector() {
+    if (writableObjectInspector == null) {
+      writableObjectInspector = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(typeInfo);
+    }
     return writableObjectInspector;
   }
 
@@ -130,12 +126,12 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
   }
 
   public void setChildren(List<ExprNodeDesc> children) {
-    chidren = children;
+    this.children = children;
   }
 
   @Override
   public List<ExprNodeDesc> getChildren() {
-    return chidren;
+    return children;
   }
 
   @Override
@@ -151,12 +147,12 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
       sb.append(" ");
     }
     sb.append("(");
-    if (chidren != null) {
-      for (int i = 0; i < chidren.size(); i++) {
+    if (children != null) {
+      for (int i = 0; i < children.size(); i++) {
         if (i > 0) {
           sb.append(", ");
         }
-        sb.append(chidren.get(i));
+        sb.append(children.get(i));
       }
     }
     sb.append(")");
@@ -166,9 +162,9 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
   @Override
   public String getExprString() {
     // Get the children expr strings
-    String[] childrenExprStrings = new String[chidren.size()];
+    String[] childrenExprStrings = new String[children.size()];
     for (int i = 0; i < childrenExprStrings.length; i++) {
-      childrenExprStrings[i] = chidren.get(i).getExprString();
+      childrenExprStrings[i] = children.get(i).getExprString();
     }
 
     return genericUDF.getDisplayString(childrenExprStrings);
@@ -180,9 +176,9 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
       UDFType udfType = genericUDF.getClass().getAnnotation(UDFType.class);
       if (udfType.commutative()) {
         // Get the sorted children expr strings
-        String[] childrenExprStrings = new String[chidren.size()];
+        String[] childrenExprStrings = new String[children.size()];
         for (int i = 0; i < childrenExprStrings.length; i++) {
-          childrenExprStrings[i] = chidren.get(i).getExprString();
+          childrenExprStrings[i] = children.get(i).getExprString();
         }
         return genericUDF.getDisplayString(
             ImmutableSortedMultiset.copyOf(childrenExprStrings).toArray(new String[childrenExprStrings.length]));
@@ -194,10 +190,10 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
   @Override
   public List<String> getCols() {
     List<String> colList = new ArrayList<String>();
-    if (chidren != null) {
+    if (children != null) {
       int pos = 0;
-      while (pos < chidren.size()) {
-        List<String> colCh = chidren.get(pos).getCols();
+      while (pos < children.size()) {
+        List<String> colCh = children.get(pos).getCols();
         colList = Utilities.mergeUniqElems(colList, colCh);
         pos++;
       }
@@ -208,8 +204,8 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
 
   @Override
   public ExprNodeDesc clone() {
-    List<ExprNodeDesc> cloneCh = new ArrayList<ExprNodeDesc>(chidren.size());
-    for (ExprNodeDesc ch : chidren) {
+    List<ExprNodeDesc> cloneCh = new ArrayList<ExprNodeDesc>(children.size());
+    for (ExprNodeDesc ch : children) {
       cloneCh.add(ch.clone());
     }
     ExprNodeGenericFuncDesc clone = new ExprNodeGenericFuncDesc(typeInfo,
@@ -297,12 +293,12 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
       }
     }
 
-    if (chidren.size() != dest.getChildren().size()) {
+    if (children.size() != dest.getChildren().size()) {
       return false;
     }
 
-    for (int pos = 0; pos < chidren.size(); pos++) {
-      if (!chidren.get(pos).isSame(dest.getChildren().get(pos))) {
+    for (int pos = 0; pos < children.size(); pos++) {
+      if (!children.get(pos).isSame(dest.getChildren().get(pos))) {
         return false;
       }
     }
@@ -315,7 +311,7 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
     int superHashCode = super.hashCode();
     HashCodeBuilder builder = new HashCodeBuilder();
     builder.appendSuper(superHashCode);
-    builder.append(chidren);
+    builder.append(children);
     return builder.toHashCode();
   }
 

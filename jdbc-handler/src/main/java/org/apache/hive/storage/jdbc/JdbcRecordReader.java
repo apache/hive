@@ -110,9 +110,13 @@ public class JdbcRecordReader implements RecordReader<LongWritable, MapWritable>
     if (iterator != null) {
       iterator.close();
     }
-    if (dbAccessor != null) {
-      dbAccessor = null;
+
+    try (DatabaseAccessor accessor = dbAccessor) {
+    } catch (Exception e) {
+      LOGGER.debug("Caught exception while trying to close DatabaseAccessor: "
+          + e.getMessage(), e);
     }
+    dbAccessor = null;
   }
 
 

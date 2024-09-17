@@ -95,6 +95,7 @@ public class ReduceRecordSource implements RecordSource {
 
   private VectorDeserializeRow<LazyBinaryDeserializeRead> valueLazyBinaryDeserializeToRow;
 
+  private VectorizedRowBatchCtx batchContext;
   private VectorizedRowBatch batch;
 
   // number of columns pertaining to keys in a vectorized row batch
@@ -178,6 +179,7 @@ public class ReduceRecordSource implements RecordSource {
 
         rowObjectInspector = Utilities.constructVectorizedReduceRowOI(keyStructInspector,
             valueStructInspectors);
+        this.batchContext = batchContext;
         batch = batchContext.createVectorizedRowBatch();
 
         // Setup vectorized deserialization for the key and value.
@@ -421,6 +423,9 @@ public class ReduceRecordSource implements RecordSource {
   private void processVectorGroup(BytesWritable keyWritable,
           Iterable<Object> values, byte tag) throws HiveException, IOException {
 
+    if (reducer.batchNeedsClone()) {
+      batch = batchContext.createVectorizedRowBatch();
+    }
     Preconditions.checkState(batch.size == 0);
 
     // Deserialize key into vector row columns.
@@ -496,7 +501,10 @@ public class ReduceRecordSource implements RecordSource {
         }
         reducer.process(batch, tag);
       }
-      batch.reset();
+      // reset only when we reuse the batch
+      if (!reducer.batchNeedsClone()) {
+        batch.reset();
+      }
     } catch (Exception e) {
       String rowString = null;
       try {

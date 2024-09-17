@@ -84,9 +84,9 @@ public class LlapProtocolServerImpl extends AbstractService
   private final SecretManager secretManager;
   private String clusterUser = null;
   private boolean isRestrictedToClusterUser = false;
-  private final DaemonId daemonId;
   private final LlapDaemonExecutorMetrics executorMetrics;
   private TokenRequiresSigning isSigningRequiredConfig = TokenRequiresSigning.TRUE;
+  private LlapTokenManager llapTokenManager = new DummyTokenManager();
 
   public LlapProtocolServerImpl(SecretManager secretManager, int numHandlers,
       ContainerRunner containerRunner, AtomicReference<InetSocketAddress> srvAddress,
@@ -102,7 +102,6 @@ public class LlapProtocolServerImpl extends AbstractService
     this.mngAddress = mngAddress;
     this.externalClientsRpcPort = externalClientsRpcPort;
     this.mngPort = mngPort;
-    this.daemonId = daemonId;
     this.executorMetrics = executorMetrics;
     LOG.info("Creating: " + LlapProtocolServerImpl.class.getSimpleName() +
         " with port configured to: " + srvPort);
@@ -292,8 +291,7 @@ public class LlapProtocolServerImpl extends AbstractService
       callingUser = UserGroupInformation.getCurrentUser();
       // Determine if the user would need to sign fragments.
       boolean isSigningRequired = determineIfSigningIsRequired(callingUser);
-      token = secretManager.createLlapToken(
-          request.hasAppId() ? request.getAppId() : null, null, isSigningRequired);
+      token = llapTokenManager.getToken(request, isSigningRequired);
     } catch (IOException e) {
       throw new ServiceException(e);
     }
@@ -394,5 +392,10 @@ public class LlapProtocolServerImpl extends AbstractService
     case EXCEPT_OWNER: return !clusterUser.equals(callingUser.getShortUserName());
     default: throw new AssertionError("Unknown value " + isSigningRequiredConfig);
     }
+  }
+
+  public LlapProtocolServerImpl withTokenManager(LlapTokenManager llapTokenManager) {
+    this.llapTokenManager = llapTokenManager;
+    return this;
   }
 }

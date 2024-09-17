@@ -22,12 +22,14 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.ql.parse.repl.CopyUtils;
 import org.apache.hadoop.hive.shims.Utils;
 import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
+import org.apache.hadoop.hive.common.DataCopyStatistics;
 import org.junit.rules.TestName;
 
 import org.slf4j.Logger;
@@ -71,7 +73,7 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
 
   static void internalBeforeClassSetup(Map<String, String> overrides, Class clazz)
       throws Exception {
-    conf = new HiveConf(clazz);
+    conf = new HiveConfForTest(TestReplicationScenariosIncrementalLoadAcidTables.class);
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =
@@ -279,13 +281,15 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
     Path tablePath = new Path(primary.getTable(primaryDbName, tableName).getSd().getLocation());
     Path tablePath_dupe = new Path(primary.getTable(primaryDbName, tableName).getSd().getLocation() + "_dupe");
     FileSystem fs = tablePath.getFileSystem(conf);
-    FileUtils.copy(fs, tablePath, fs, tablePath_dupe, false, false, conf);
+    DataCopyStatistics copyStatistics = new DataCopyStatistics();
+    FileUtils.copy(fs, tablePath, fs, tablePath_dupe, false, false, conf, copyStatistics);
 
     // Drop the table.
     primary.run("drop table " + primaryDbName + "." + tableName);
 
     // Copy back the data to original location, so that copy happens from original location, not the CM location.
-    FileUtils.copy(fs, tablePath_dupe, fs, tablePath, false, false, conf);
+    copyStatistics = new DataCopyStatistics();
+    FileUtils.copy(fs, tablePath_dupe, fs, tablePath, false, false, conf, copyStatistics);
 
     // Add a util to delete the original source at the time of source checksum verification.
     CopyUtils.testCallable = () -> {

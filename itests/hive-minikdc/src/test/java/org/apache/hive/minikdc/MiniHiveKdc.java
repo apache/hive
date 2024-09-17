@@ -238,10 +238,13 @@ public class MiniHiveKdc {
     String hiveMetastoreKeytab = miniHiveKdc.getKeyTabFile(
         miniHiveKdc.getServicePrincipalForUser(MiniHiveKdc.HIVE_METASTORE_SERVICE_PRINCIPAL));
 
-    return new MiniHS2.Builder().withTransactionalTables(false).withConf(hiveConf)
+    MiniHS2.Builder b = new MiniHS2.Builder().withTransactionalTables(false).withConf(hiveConf)
         .withSecureRemoteMetastore(hiveMetastorePrincipal, hiveMetastoreKeytab).
-            withMiniKdc(hivePrincipal, hiveKeytab).withAuthenticationType(authenticationType)
-        .build();
+            withMiniKdc(hivePrincipal, hiveKeytab).withAuthenticationType(authenticationType);
+    if(HiveServer2.isHttpTransportMode(hiveConf)){
+      b.withHTTPTransport();
+    }
+    return b.build();
   }
 
   /**

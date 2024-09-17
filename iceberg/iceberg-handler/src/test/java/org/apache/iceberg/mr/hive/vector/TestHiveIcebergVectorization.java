@@ -19,12 +19,15 @@
 
 package org.apache.iceberg.mr.hive.vector;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -53,6 +56,7 @@ import org.apache.iceberg.mr.hive.HiveIcebergStorageHandlerWithEngineBase;
 import org.apache.iceberg.mr.hive.TestTables;
 import org.apache.iceberg.mr.hive.serde.objectinspector.IcebergObjectInspector;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Types;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -107,7 +111,8 @@ public class TestHiveIcebergVectorization extends HiveIcebergStorageHandlerWithE
     RecordReader<NullWritable, VectorizedRowBatch> internalVectorizedRecordReader =
         inputFormat.getRecordReader(new FileSplit(dataFilePath, 0L, Long.MAX_VALUE, new String[]{}), jobConf,
             new MockReporter());
-    HiveBatchIterator hiveBatchIterator = new HiveBatchIterator(internalVectorizedRecordReader, jobConf, null, null);
+    HiveBatchIterator hiveBatchIterator = new HiveBatchIterator(
+        internalVectorizedRecordReader, jobConf, null, null, null);
 
     // Expected to be one batch exactly
     HiveBatchContext hiveBatchContext = hiveBatchIterator.next();
@@ -134,7 +139,19 @@ public class TestHiveIcebergVectorization extends HiveIcebergStorageHandlerWithE
    * Tests HiveDeleteFilter implementation correctly filtering rows from VRBs.
    */
   @Test
+  public void testHiveDeleteFilterWithEmptyBatches() {
+    Map<String, String> props = Maps.newHashMap();
+    props.put("parquet.block.size", "8192");
+    props.put("parquet.page.row.count.limit", "20");
+    testVectorizedReadWithDeleteFilter(props);
+  }
+
+  @Test
   public void testHiveDeleteFilter() {
+    testVectorizedReadWithDeleteFilter(Collections.emptyMap());
+  }
+
+  private void testVectorizedReadWithDeleteFilter(Map<String, String> props) {
     // The Avro "vectorized" case should actually serve as compareTo scenario to non-vectorized reading, because
     // there's no vectorization for Avro and it falls back to the non-vectorized implementation
     Assume.assumeTrue(isVectorized && testTableType == TestTables.TestTableType.HIVE_CATALOG);
@@ -155,8 +172,8 @@ public class TestHiveIcebergVectorization extends HiveIcebergStorageHandlerWithE
     for (int i = 0; i < records.size(); ++i) {
       records.get(i).setField("customer_id", (long) i);
     }
-    testTables.createTable(shell, "vectordelete", schema,
-        PartitionSpec.unpartitioned(), fileFormat, records, 2);
+
+    testTables.createTable(shell, "vectordelete", schema, PartitionSpec.unpartitioned(), fileFormat, records, 2, props);
 
     // Delete every odd row until 6000
     shell.executeStatement("DELETE FROM vectordelete WHERE customer_id % 2 = 1 and customer_id < 6000");
@@ -188,6 +205,55 @@ public class TestHiveIcebergVectorization extends HiveIcebergStorageHandlerWithE
     validation.apply(1501);
   }
 
+  @Test
+  public void testHiveDeleteFilterWithFilteredParquetBlock() {
+    Assume.assumeTrue(
+        isVectorized && testTableType == TestTables.TestTableType.HIVE_CATALOG && fileFormat == FileFormat.PARQUET);
+
+    Schema schema = new Schema(
+        optional(1, "customer_id", Types.LongType.get()),
+        optional(2, "customer_age", Types.IntegerType.get()),
+        optional(3, "date_col", Types.DateType.get())
+    );
+
+    // Generate 10600 records so that we end up with multiple batches to work with during the read.
+    List<Record> records = TestHelper.generateRandomRecords(schema, 10600, 0L);
+
+    // Fill id and date column with deterministic values
+    for (int i = 0; i < records.size(); ++i) {
+      records.get(i).setField("customer_id", (long) i);
+      if (i % 3 == 0) {
+        records.get(i).setField("date_col", Date.valueOf("2022-04-28"));
+      } else if (i % 3 == 1) {
+        records.get(i).setField("date_col", Date.valueOf("2022-04-29"));
+      } else {
+        records.get(i).setField("date_col", Date.valueOf("2022-04-30"));
+      }
+    }
+    Map<String, String> props = Maps.newHashMap();
+    props.put("parquet.block.size", "8192");
+    testTables.createTable(shell, "vectordelete", schema, PartitionSpec.unpartitioned(), fileFormat, records, 2, props);
+
+    // Check there is some rows before we do an update
+    List<Object[]> results = shell.executeStatement("select * from vectordelete where date_col=date'2022-04-29'");
+
+    Assert.assertNotEquals(0, results.size());
+
+    // Capture the number of entries with both column, to validate after update value
+    List<Object[]> postUpdateResult = shell.executeStatement(
+        "select * from vectordelete where date_col=date'2022-04-29' OR date_col=date'2022-04-30'");
+
+    Assert.assertNotEquals(0, postUpdateResult.size());
+
+    // Do an update on the column, and check if the count is 0, since we changed the value for that column
+    shell.executeStatement("update vectordelete set date_col=date'2022-04-30' where date_col=date'2022-04-29'");
+    results = shell.executeStatement("select * from vectordelete where date_col=date'2022-04-29'");
+    Assert.assertEquals(0, results.size());
+
+    results = shell.executeStatement("select * from vectordelete where date_col=date'2022-04-30'");
+    Assert.assertEquals(postUpdateResult.size(), results.size());
+  }
+
   /**
    * Creates a mock vectorized ORC read job for a particular data file and a read schema (projecting on all columns)
    * @param schema readSchema
@@ -195,7 +261,7 @@ public class TestHiveIcebergVectorization extends HiveIcebergStorageHandlerWithE
    * @return JobConf instance
    * @throws HiveException any failure during job creation
    */
-  private JobConf prepareMockJob(Schema schema, Path dataFilePath) throws HiveException {
+  static JobConf prepareMockJob(Schema schema, Path dataFilePath) throws HiveException {
     StructObjectInspector oi = (StructObjectInspector) IcebergObjectInspector.create(schema);
     String hiveColumnNames = String.join(",", oi.getAllStructFieldRefs().stream()
         .map(sf -> sf.getFieldName()).collect(Collectors.toList()));
@@ -221,6 +287,7 @@ public class TestHiveIcebergVectorization extends HiveIcebergStorageHandlerWithE
     rbCtx.init(oi, new String[0]);
     mapWork.setVectorMode(true);
     mapWork.setVectorizedRowBatchCtx(rbCtx);
+    mapWork.deriveLlap(conf, false);
     Utilities.setMapWork(vectorJob, mapWork);
     return vectorJob;
   }

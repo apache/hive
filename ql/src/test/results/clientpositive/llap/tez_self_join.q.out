@@ -1,11 +1,15 @@
 PREHOOK: query: drop table if exists tez_self_join1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tez_self_join1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists tez_self_join2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tez_self_join2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table tez_self_join1(id1 int, id2 string, id3 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -212,16 +216,20 @@ ab	ab
 PREHOOK: query: drop table tez_self_join1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tez_self_join1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tez_self_join1
 POSTHOOK: query: drop table tez_self_join1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tez_self_join1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tez_self_join1
 PREHOOK: query: drop table tez_self_join2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tez_self_join2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tez_self_join2
 POSTHOOK: query: drop table tez_self_join2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tez_self_join2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tez_self_join2

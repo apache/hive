@@ -120,11 +120,11 @@ public abstract class AbstractAlterTablePropertiesAnalyzer extends AbstractAlter
   }
 
   private boolean hasConstraintsEnabled(String tableName) throws SemanticException{
-    NotNullConstraint notNullConstriant = null;
+    NotNullConstraint notNullConstraint = null;
     DefaultConstraint defaultConstraint = null;
     try {
       // retrieve enabled NOT NULL constraint from metastore
-      notNullConstriant = Hive.get().getEnabledNotNullConstraints(db.getDatabaseCurrent().getName(), tableName);
+      notNullConstraint = Hive.get().getEnabledNotNullConstraints(db.getDatabaseCurrent().getName(), tableName);
       defaultConstraint = Hive.get().getEnabledDefaultConstraints(db.getDatabaseCurrent().getName(), tableName);
     } catch (Exception e) {
       if (e instanceof SemanticException) {
@@ -134,7 +134,7 @@ public abstract class AbstractAlterTablePropertiesAnalyzer extends AbstractAlter
       }
     }
     return
-        (notNullConstriant != null && !notNullConstriant.getNotNullConstraints().isEmpty()) ||
+        (notNullConstraint != null && !notNullConstraint.getNotNullConstraints().isEmpty()) ||
         (defaultConstraint != null && !defaultConstraint.getDefaultConstraints().isEmpty());
   }
 

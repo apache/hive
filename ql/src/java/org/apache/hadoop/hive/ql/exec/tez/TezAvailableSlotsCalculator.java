@@ -20,11 +20,15 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.tez.runtime.api.InputInitializerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Default implementation of AvailableSlotsCalculator which relies on available capacity of the cluster
  */
 public class TezAvailableSlotsCalculator implements AvailableSlotsCalculator {
+  private static final Logger LOG = LoggerFactory.getLogger(TezAvailableSlotsCalculator.class);
+
     private InputInitializerContext inputInitializerContext;
     @Override
     public void initialize(Configuration conf, HiveSplitGenerator splitGenerator) {
@@ -39,6 +43,9 @@ public class TezAvailableSlotsCalculator implements AvailableSlotsCalculator {
         }
         int totalResource = inputInitializerContext.getTotalAvailableResource().getMemory();
         int taskResource = inputInitializerContext.getVertexTaskResource().getMemory();
-        return totalResource / taskResource;
+        int availableSlots = totalResource / taskResource;;
+        LOG.debug("totalResource: {}mb / taskResource: {}mb =  availableSlots: {}", totalResource, taskResource,
+            availableSlots);
+        return availableSlots;
     }
 }

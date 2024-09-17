@@ -98,11 +98,16 @@ public class Constants {
 
   public static final String ORC_INPUT_FORMAT = "org.apache.hadoop.hive.ql.io.orc.OrcInputFormat";
   public static final String ORC_OUTPUT_FORMAT = "org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat";
-
-
+  
   public static final Pattern COMPACTION_POOLS_PATTERN = Pattern.compile("hive\\.compactor\\.worker\\.(.*)\\.threads");
   public static final String HIVE_COMPACTOR_WORKER_POOL = "hive.compactor.worker.pool";
 
   public static final String HTTP_HEADER_REQUEST_TRACK = "X-Request-ID";
   public static final String TIME_POSTFIX_REQUEST_TRACK = "_TIME";
+  public static final String DELIMITED_JSON_SERDE = "org.apache.hadoop.hive.serde2.DelimitedJSONSerDe";
+
+  public static final String CLUSTER_ID_ENV_VAR_NAME = "HIVE_CLUSTER_ID";
+  public static final String CLUSTER_ID_CLI_OPT_NAME = "hive.cluster.id";
+  public static final String CLUSTER_ID_HIVE_CONF_PROP = "hive.cluster.id";
+  public static final String ICEBERG_PARTITION_COLUMNS = "partition,spec_id";
 }

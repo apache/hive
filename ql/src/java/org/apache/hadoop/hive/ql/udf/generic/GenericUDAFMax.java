@@ -168,10 +168,10 @@ public class GenericUDAFMax extends AbstractGenericUDAFResolver {
    * the ith step o/p the front of the queue as the max for the ith entry.
    *
    * Here we modify the algorithm: 1. to handle window's that are of the form
-   * (i-p, i+f), where p is numPreceding,f = numFollowing - we start outputing
+   * (i-p, i+f), where p is numPreceding,f = numFollowing - we start outputting
    * rows only after receiving f rows. - the formula for 'influence range' of an
    * idx accounts for the following rows. 2. optimize for the case when
-   * numPreceding is Unbounded. In this case only 1 max needs to be tarcked at
+   * numPreceding is Unbounded. In this case only 1 max needs to be tracked at
    * any given time.
    */
   static class MaxStreamingFixedWindow extends

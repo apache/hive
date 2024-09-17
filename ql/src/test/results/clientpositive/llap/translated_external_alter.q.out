@@ -14,3 +14,51 @@ POSTHOOK: query: alter table  casesEnsitivE set tblproperties('some'='one')
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@casesensitive
 POSTHOOK: Output: default@casesensitive
+PREHOOK: query: alter table ` default`.` caseSensitive ` add columns(i int)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@casesensitive
+PREHOOK: Output: default@casesensitive
+POSTHOOK: query: alter table ` default`.` caseSensitive ` add columns(i int)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@casesensitive
+POSTHOOK: Output: default@casesensitive
+PREHOOK: query: describe formatted caseSensitive
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@casesensitive
+POSTHOOK: query: describe formatted caseSensitive
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@casesensitive
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+i                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\"}}
+	EXTERNAL            	TRUE                
+	TRANSLATED_TO_EXTERNAL	TRUE                
+	bucketing_version   	2                   
+	external.table.purge	TRUE                
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	some                	one                 
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

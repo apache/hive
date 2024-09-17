@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -107,7 +106,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   private static final String CBO_INFO_JSON_LABEL = "cboInfo";
   private static final String CBO_PLAN_JSON_LABEL = "CBOPlan";
   private static final String CBO_PLAN_TEXT_LABEL = "CBO PLAN:";
-  private final Set<Operator<?>> visitedOps = new HashSet<Operator<?>>();
+  private final Map<Operator<?>, Integer> operatorVisits = new HashMap<>();
   private boolean isLogical = false;
 
   /*
@@ -276,7 +275,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return getJSONPlan(
             out, tasks, fetchTask, jsonOutput, isExtended,
             appendTaskType, cboInfo, cboPlan, optimizedSQL,
-            conf.getVar(ConfVars.HIVESTAGEIDREARRANGE));
+            conf.getVar(ConfVars.HIVE_STAGE_ID_REARRANGE));
   }
 
   public JSONObject getJSONPlan(PrintStream out, List<Task<?>> tasks, Task<?> fetchTask,
@@ -456,7 +455,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   public void addCreateTableStatement(Table table, List<String> tableCreateStmt , DDLPlanUtils ddlPlanUtils) {
     tableCreateStmt.add(ddlPlanUtils.getCreateTableCommand(table, false) + ";");
   }
-  
+
   public void addPKandBasicStats(Table tbl, List<String> basicDef, DDLPlanUtils ddlPlanUtils){
     String primaryKeyStmt = ddlPlanUtils.getAlterTableStmtPrimaryKeyConstraint(tbl.getPrimaryKeyInfo());
     if (primaryKeyStmt != null) {
@@ -465,9 +464,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     basicDef.add(ddlPlanUtils.getAlterTableStmtTableStatsBasic(tbl));
   }
 
-  public void addConstraints(Table tbl, List<String> constraints, Set<String> allTableNames,
-      DDLPlanUtils ddlPlanUtils){
-    constraints.addAll(ddlPlanUtils.populateConstraints(tbl, allTableNames));
+  public void addConstraints(Table tbl, List<String> constraints, DDLPlanUtils ddlPlanUtils){
+    constraints.addAll(ddlPlanUtils.populateConstraints(tbl));
   }
 
   public void addStats(Table table,List<String> alterTableStmt ,Map<String, List<Partition>> tablePartitionsMap,
@@ -525,7 +523,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       } else {
         addCreateTableStatement(table, tableCreateStmt, ddlPlanUtils);
         addPKandBasicStats(table, tableBasicDef, ddlPlanUtils);
-        addConstraints(table, alterTableStmt, tableMap.keySet(), ddlPlanUtils);
+        addConstraints(table, alterTableStmt, ddlPlanUtils);
         addStats(table, alterTableStmt, tablePartitionsMap, ddlPlanUtils);
       }
     }
@@ -794,7 +792,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   /**
    * Retruns a map which have either primitive or string keys.
    *
-   * This is neccessary to discard object level comparators which may sort the objects based on some non-trivial logic.
+   * This is necessary to discard object level comparators which may sort the objects based on some non-trivial logic.
    *
    * @param mp
    * @return
@@ -952,7 +950,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   JSONObject outputPlan(Object work, PrintStream out,
       boolean extended, boolean jsonOutput, int indent, String appendToHeader) throws Exception {
     return outputPlan(work, out, extended, jsonOutput, indent, appendToHeader,
-            queryState.getConf().getBoolVar(ConfVars.HIVE_IN_TEST));
+              queryState != null && queryState.getConf().getBoolVar(ConfVars.HIVE_IN_TEST));
   }
 
   public JSONObject outputPlan(Object work, PrintStream out,
@@ -1004,6 +1002,12 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     if (work instanceof Operator) {
       Operator<? extends OperatorDesc> operator =
         (Operator<? extends OperatorDesc>) work;
+      final int visitCnt = operatorVisits.merge(operator, 1, Integer::sum);
+      final int limit = conf.getIntVar(ConfVars.HIVE_EXPLAIN_NODE_VISIT_LIMIT);
+      if (visitCnt == limit) {
+        throw new IllegalStateException(
+            operator + " reached " + ConfVars.HIVE_EXPLAIN_NODE_VISIT_LIMIT.varname + "(" + limit + ")");
+      }
       if (operator.getConf() != null) {
         String appender = isLogical ? " (" + operator.getOperatorId() + ")" : "";
         JSONObject jsonOut = outputPlan(operator.getConf(), out, extended,
@@ -1024,15 +1028,12 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         }
       }
 
-      if (!visitedOps.contains(operator) || !isLogical) {
-        visitedOps.add(operator);
-        if (operator.getChildOperators() != null) {
-          int cindent = jsonOutput ? 0 : indent + 2;
-          for (Operator<? extends OperatorDesc> op : operator.getChildOperators()) {
-            JSONObject jsonOut = outputPlan(op, out, extended, jsonOutput, cindent, "", inTest);
-            if (jsonOutput) {
-              ((JSONObject)json.get(JSONObject.getNames(json)[0])).accumulate("children", jsonOut);
-            }
+      if ((visitCnt == 1 || !isLogical) && operator.getChildOperators() != null) {
+        int cindent = jsonOutput ? 0 : indent + 2;
+        for (Operator<? extends OperatorDesc> op : operator.getChildOperators()) {
+          JSONObject jsonOut = outputPlan(op, out, extended, jsonOutput, cindent, "", inTest);
+          if (jsonOutput) {
+            ((JSONObject) json.get(JSONObject.getNames(json)[0])).accumulate("children", jsonOut);
           }
         }
       }

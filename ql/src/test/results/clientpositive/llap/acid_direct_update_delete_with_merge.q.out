@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE IF EXISTS transactions
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS transactions
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS merge_source
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS merge_source
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE transactions (id int, value string, last_update_user string) PARTITIONED BY (tran_date string) CLUSTERED BY (id) into 5 buckets  STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -147,16 +151,20 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DROP TABLE IF EXISTS transactions
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@transactions
+PREHOOK: Output: database:default
 PREHOOK: Output: default@transactions
 POSTHOOK: query: DROP TABLE IF EXISTS transactions
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@transactions
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@transactions
 PREHOOK: query: DROP TABLE IF EXISTS merge_source
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@merge_source
+PREHOOK: Output: database:default
 PREHOOK: Output: default@merge_source
 POSTHOOK: query: DROP TABLE IF EXISTS merge_source
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@merge_source
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@merge_source

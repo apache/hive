@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
@@ -68,9 +69,9 @@ public class CompactionPoolOnTezTest extends CompactorOnTezTest {
   @Test
   public void testAlterTableCompactCommandRespectsPoolName() throws Exception {
     Map<String, String> properties = new HashMap<>();
-    properties.put("hive.compactor.worker.pool", "pool1");
+    properties.put(Constants.HIVE_COMPACTOR_WORKER_POOL, "pool1");
     provider.createFullAcidTable(null, DEFAULT_TABLE_NAME, false, false, properties);
-    provider.insertTestData(DEFAULT_TABLE_NAME);
+    provider.insertTestData(DEFAULT_TABLE_NAME, false);
 
     executeStatementOnDriver("ALTER TABLE " + DEFAULT_TABLE_NAME + " COMPACT 'major' POOL 'pool2'", driver);
 
@@ -91,9 +92,9 @@ public class CompactionPoolOnTezTest extends CompactorOnTezTest {
   @Test
   public void testInitiatorRespectsTableLevelPoolName() throws Exception {
     Map<String, String> properties = new HashMap<>();
-    properties.put("hive.compactor.worker.pool", "pool1");
+    properties.put(Constants.HIVE_COMPACTOR_WORKER_POOL, "pool1");
     provider.createFullAcidTable(null, DEFAULT_TABLE_NAME, false, false, properties);
-    provider.insertTestData(DEFAULT_TABLE_NAME);
+    provider.insertTestData(DEFAULT_TABLE_NAME, false);
 
     TxnCommandsBaseForTests.runInitiator(conf);
 
@@ -103,7 +104,7 @@ public class CompactionPoolOnTezTest extends CompactorOnTezTest {
   @Test
   public void testInitiatorHandlesEmptyPoolName() throws Exception {
     provider.createFullAcidTable(null, DEFAULT_TABLE_NAME, false, false);
-    provider.insertTestData(DEFAULT_TABLE_NAME);
+    provider.insertTestData(DEFAULT_TABLE_NAME, false);
 
     TxnCommandsBaseForTests.runInitiator(conf);
 
@@ -114,7 +115,7 @@ public class CompactionPoolOnTezTest extends CompactorOnTezTest {
   public void testInitiatorRespectsTableLevelPoolNameOverDbLevel() throws Exception {
     provider.createDb(NON_DEFAULT_DB_NAME, "db_pool");
     Map<String, String> properties = new HashMap<>();
-    properties.put("hive.compactor.worker.pool", "table_pool");
+    properties.put(Constants.HIVE_COMPACTOR_WORKER_POOL, "table_pool");
     provider.createFullAcidTable(NON_DEFAULT_DB_NAME, DEFAULT_TABLE_NAME, false, false, properties);
     provider.insertTestData(NON_DEFAULT_DB_NAME, DEFAULT_TABLE_NAME);
 
@@ -126,11 +127,11 @@ public class CompactionPoolOnTezTest extends CompactorOnTezTest {
   @Test
   public void testShowCompactionsContainsPoolName() throws Exception {
     Map<String, String> properties = new HashMap<>();
-    properties.put("hive.compactor.worker.pool", "pool1");
+    properties.put(Constants.HIVE_COMPACTOR_WORKER_POOL, "pool1");
     provider.createFullAcidTable(null, DEFAULT_TABLE_NAME, false, false, properties);
-    provider.insertTestData(DEFAULT_TABLE_NAME);
+    provider.insertTestData(DEFAULT_TABLE_NAME, false);
     provider.createFullAcidTable(null, "table2", false, false);
-    provider.insertTestData("table2");
+    provider.insertTestData("table2", false);
 
     TxnCommandsBaseForTests.runInitiator(conf);
 
@@ -139,7 +140,7 @@ public class CompactionPoolOnTezTest extends CompactorOnTezTest {
     driver.getResults(results);
     Assert.assertEquals(3, results.size());
     Assert.assertEquals("CompactionId\tDatabase\tTable\tPartition\tType\tState\tWorker host\tWorker\tEnqueue Time\tStart Time\tDuration(ms)" +
-       "\tHadoopJobId\tError message\tInitiator host\tInitiator\tPool name\tTxnId\tNext TxnId\tCommit Time\tHighest WriteID", results.get(0));
+       "\tHadoopJobId\tError message\tInitiator host\tInitiator\tPool name\tTxnId\tNext TxnId\tCommit Time\tHighest WriteId", results.get(0));
     Pattern p = Pattern.compile("(1|2)\tdefault\t(compaction_test|table2)\t --- \tMAJOR\tinitiated.*(pool1|default).*");
     for(int i = 1; i < results.size(); i++) {
       Assert.assertTrue(p.matcher(results.get(i).toString()).matches());
@@ -150,12 +151,12 @@ public class CompactionPoolOnTezTest extends CompactorOnTezTest {
   @Test
   public void testShowCompactionsRespectPoolName() throws Exception {
     Map<String, String> properties = new HashMap<>();
-    properties.put("hive.compactor.worker.pool", "pool1");
+    properties.put(Constants.HIVE_COMPACTOR_WORKER_POOL, "pool1");
     provider.createFullAcidTable(null, DEFAULT_TABLE_NAME, false, false, properties);
-    provider.insertTestData(DEFAULT_TABLE_NAME);
-    properties.put("hive.compactor.worker.pool", "pool2");
+    provider.insertTestData(DEFAULT_TABLE_NAME, false);
+    properties.put(Constants.HIVE_COMPACTOR_WORKER_POOL, "pool2");
     provider.createFullAcidTable(null, "table2", false, false, properties);
-    provider.insertTestData("table2");
+    provider.insertTestData("table2", false);
 
     TxnCommandsBaseForTests.runInitiator(conf);
 
@@ -164,7 +165,7 @@ public class CompactionPoolOnTezTest extends CompactorOnTezTest {
     driver.getResults(results);
     Assert.assertEquals(2, results.size());
     Assert.assertEquals("CompactionId\tDatabase\tTable\tPartition\tType\tState\tWorker host\tWorker\tEnqueue Time\tStart Time\tDuration(ms)" +
-       "\tHadoopJobId\tError message\tInitiator host\tInitiator\tPool name\tTxnId\tNext TxnId\tCommit Time\tHighest WriteID",
+       "\tHadoopJobId\tError message\tInitiator host\tInitiator\tPool name\tTxnId\tNext TxnId\tCommit Time\tHighest WriteId",
         results.get(0));
     Pattern p = Pattern.compile("1|2\tdefault\tcompaction_test\t --- \tMAJOR\tinitiated.*pool1.*");
     Assert.assertTrue(p.matcher(results.get(1).toString()).matches());

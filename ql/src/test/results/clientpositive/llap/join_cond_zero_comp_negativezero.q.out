@@ -1,0 +1,90 @@
+PREHOOK: query: DROP TABLE IF EXISTS selfjoin1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS selfjoin1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS t1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS t1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS t2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS t2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE selfjoin1(c1 int, c2 double)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@selfjoin1
+POSTHOOK: query: CREATE TABLE selfjoin1(c1 int, c2 double)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@selfjoin1
+PREHOOK: query: INSERT INTO selfjoin1 VALUES(0, '-0')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@selfjoin1
+POSTHOOK: query: INSERT INTO selfjoin1 VALUES(0, '-0')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@selfjoin1
+POSTHOOK: Lineage: selfjoin1.c1 SCRIPT []
+POSTHOOK: Lineage: selfjoin1.c2 SCRIPT []
+PREHOOK: query: SELECT * FROM selfjoin1 sj1, selfjoin1 sj2 WHERE sj1.c1 = sj2.c2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@selfjoin1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM selfjoin1 sj1, selfjoin1 sj2 WHERE sj1.c1 = sj2.c2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@selfjoin1
+#### A masked pattern was here ####
+0	-0.0	0	-0.0
+PREHOOK: query: CREATE TABLE t0(c0 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t0
+POSTHOOK: query: CREATE TABLE t0(c0 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t0
+PREHOOK: query: CREATE TABLE t1(c0 double)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: CREATE TABLE t1(c0 double)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: INSERT INTO t0 VALUES(0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t0
+POSTHOOK: query: INSERT INTO t0 VALUES(0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t0
+POSTHOOK: Lineage: t0.c0 SCRIPT []
+PREHOOK: query: INSERT INTO t1 VALUES('-0')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: INSERT INTO t1 VALUES('-0')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.c0 SCRIPT []
+PREHOOK: query: SELECT * FROM t0, t1 WHERE t0.c0 = t1.c0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t0
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t0, t1 WHERE t0.c0 = t1.c0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t0
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+0	-0.0

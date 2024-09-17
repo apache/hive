@@ -140,11 +140,11 @@ STAGE PLANS:
                           minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 1 Data size: 448 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 480 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
                             null sort order: 
                             sort order: 
-                            Statistics: Num rows: 1 Data size: 448 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 1 Data size: 480 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: decimal(26,12)), _col1 (type: decimal(26,12)), _col2 (type: binary)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -213,11 +213,11 @@ STAGE PLANS:
                 aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, 1, expectedEntries=1)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 448 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 480 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   null sort order: 
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 448 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 480 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: decimal(26,12)), _col1 (type: decimal(26,12)), _col2 (type: binary)
         Reducer 2 
             Execution mode: llap
@@ -321,11 +321,11 @@ STAGE PLANS:
                         minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           null sort order: 
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: timestamp), _col1 (type: timestamp), _col2 (type: binary)
         Reducer 9 
             Execution mode: vectorized, llap
@@ -334,11 +334,11 @@ STAGE PLANS:
                 aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, 1, expectedEntries=1)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   null sort order: 
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: timestamp), _col1 (type: timestamp), _col2 (type: binary)
 
   Stage: Stage-0
@@ -350,18 +350,22 @@ STAGE PLANS:
 PREHOOK: query: drop table table_1_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_1_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table_1_n2
 POSTHOOK: query: drop table table_1_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_1_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_1_n2
 PREHOOK: query: drop table table_18_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_18_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table_18_n2
 POSTHOOK: query: drop table table_18_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_18_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_18_n2
 PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n20(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -634,11 +638,11 @@ STAGE PLANS:
                         minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           null sort order: 
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
         Reducer 3 
             Execution mode: llap
@@ -683,11 +687,11 @@ STAGE PLANS:
                 aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, 1, expectedEntries=153)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   null sort order: 
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
 
   Stage: Stage-0

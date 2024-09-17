@@ -21,9 +21,11 @@ package org.apache.hive.streaming;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.LockRequestBuilder;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
@@ -33,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
+import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.thrift.TException;
@@ -366,7 +369,9 @@ public class TransactionBatch extends AbstractStreamingTransaction {
                 ? 1 : 0), 0);
         for (currentTxnIndex = minOpenTxnIndex;
              currentTxnIndex < txnToWriteIds.size(); currentTxnIndex++) {
-          conn.getMSC().rollbackTxn(txnToWriteIds.get(currentTxnIndex).getTxnId());
+          AbortTxnRequest abortTxnRequest = new AbortTxnRequest(txnToWriteIds.get(currentTxnIndex).getTxnId());
+          abortTxnRequest.setErrorCode(TxnErrorMsg.ABORT_ROLLBACK.getErrorCode());
+          conn.getMSC().rollbackTxn(abortTxnRequest);
           txnStatus[currentTxnIndex] = HiveStreamingConnection.TxnState.ABORTED;
         }
         currentTxnIndex--; //since the loop left it == txnToWriteIds.size()
@@ -381,7 +386,9 @@ public class TransactionBatch extends AbstractStreamingTransaction {
         }
         long currTxnId = getCurrentTxnId();
         if (currTxnId > 0) {
-          conn.getMSC().rollbackTxn(currTxnId);
+          AbortTxnRequest abortTxnRequest = new AbortTxnRequest(currTxnId);
+          abortTxnRequest.setErrorCode(TxnErrorMsg.ABORT_ROLLBACK.getErrorCode());
+          conn.getMSC().rollbackTxn(abortTxnRequest);
           txnStatus[currentTxnIndex] = HiveStreamingConnection.TxnState.ABORTED;
         }
       }
@@ -429,18 +436,25 @@ public class TransactionBatch extends AbstractStreamingTransaction {
     }
   }
 
-  private static LockRequest createLockRequest(final HiveStreamingConnection connection,
+  private static LockRequest createLockRequest(final HiveStreamingConnection conn,
       String partNameForLock, String user, long txnId, String agentInfo) {
     LockRequestBuilder requestBuilder = new LockRequestBuilder(agentInfo);
     requestBuilder.setUser(user);
     requestBuilder.setTransactionId(txnId);
 
     LockComponentBuilder lockCompBuilder = new LockComponentBuilder()
-        .setDbName(connection.getDatabase())
-        .setTableName(connection.getTable().getTableName())
+        .setDbName(conn.getDatabase())
+        .setTableName(conn.getTable().getTableName())
         .setSharedRead()
         .setOperationType(DataOperationType.INSERT);
-    if (connection.isDynamicPartitioning()) {
+
+    boolean isLocklessReadsEnabled = conn.getConf().getBoolVar(HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
+    boolean sharedWrite = !conn.getConf().getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK);
+
+    if (sharedWrite || isLocklessReadsEnabled) {
+      lockCompBuilder.setSharedWrite();
+    }
+    if (conn.isDynamicPartitioning()) {
       lockCompBuilder.setIsDynamicPartitionWrite(true);
     }
     if (partNameForLock != null && !partNameForLock.isEmpty()) {

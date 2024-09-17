@@ -10,12 +10,16 @@ ds=2008-04-09/hr=11
 ds=2008-04-09/hr=12
 PREHOOK: query: drop table nzhang_part1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table nzhang_part1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table nzhang_part2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table nzhang_part2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists nzhang_part1 like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -2332,7 +2336,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -2370,7 +2374,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -2408,7 +2412,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -2446,7 +2450,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -2487,7 +2491,7 @@ Table Parameters:
 	numPartitions       	2                   
 	numRows             	1000                
 	rawDataSize         	10624               
-	totalSize           	11624               
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -2528,7 +2532,7 @@ Table Parameters:
 	numPartitions       	2                   
 	numRows             	1000                
 	rawDataSize         	10624               
-	totalSize           	11624               
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -2544,16 +2548,20 @@ Storage Desc Params:
 PREHOOK: query: drop table nzhang_part1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@nzhang_part1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@nzhang_part1
 POSTHOOK: query: drop table nzhang_part1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@nzhang_part1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_part1
 PREHOOK: query: drop table nzhang_part2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@nzhang_part2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@nzhang_part2
 POSTHOOK: query: drop table nzhang_part2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@nzhang_part2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_part2

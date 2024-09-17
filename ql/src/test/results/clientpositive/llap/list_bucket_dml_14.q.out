@@ -234,7 +234,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	500                 
 	rawDataSize         	5312                
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -324,8 +324,10 @@ POSTHOOK: Input: default@list_bucketing
 PREHOOK: query: drop table list_bucketing
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@list_bucketing
+PREHOOK: Output: database:default
 PREHOOK: Output: default@list_bucketing
 POSTHOOK: query: drop table list_bucketing
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@list_bucketing
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@list_bucketing

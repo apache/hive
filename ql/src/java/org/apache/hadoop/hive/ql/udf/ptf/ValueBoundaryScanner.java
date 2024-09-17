@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.plan.ptf.BoundaryDef;
 import org.apache.hadoop.hive.ql.plan.ptf.OrderDef;
 import org.apache.hadoop.hive.ql.plan.ptf.OrderExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -757,27 +758,27 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
   public static SingleValueBoundaryScanner getBoundaryScanner(BoundaryDef start, BoundaryDef end,
       boolean nullsLast, OrderExpressionDef exprDef, String typeString) throws HiveException {
     switch (typeString) {
-    case "int":
-    case "bigint":
-    case "smallint":
-    case "tinyint":
+    case serdeConstants.INT_TYPE_NAME:
+    case serdeConstants.BIGINT_TYPE_NAME:
+    case serdeConstants.SMALLINT_TYPE_NAME:
+    case serdeConstants.TINYINT_TYPE_NAME:
       return new LongPrimitiveValueBoundaryScanner(start, end, exprDef, nullsLast);
-    case "timestamp":
+    case serdeConstants.TIMESTAMP_TYPE_NAME:
       return new TimestampPrimitiveValueBoundaryScanner(start, end, exprDef, nullsLast);
-    case "double":
-    case "float":
+    case serdeConstants.DOUBLE_TYPE_NAME:
+    case serdeConstants.FLOAT_TYPE_NAME:
       return new DoublePrimitiveValueBoundaryScanner(start, end, exprDef, nullsLast);
-    case "date":
+    case serdeConstants.DATE_TYPE_NAME:
       return new DatePrimitiveValueBoundaryScanner(start, end, exprDef, nullsLast);
-    case "string":
+    case serdeConstants.STRING_TYPE_NAME:
       return new StringPrimitiveValueBoundaryScanner(start, end, exprDef, nullsLast);
-    case "boolean":
+    case serdeConstants.BOOLEAN_TYPE_NAME:
       return new BooleanPrimitiveValueBoundaryScanner(start, end, exprDef, nullsLast);
     default:
       // The following types includes scale/precision: "decimal(10,4), char(10) and varchar(15)"
-      if (typeString.startsWith("char") || typeString.startsWith("varchar")) {
+      if (typeString.startsWith(serdeConstants.CHAR_TYPE_NAME) || typeString.startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
         return new StringPrimitiveValueBoundaryScanner(start, end, exprDef, nullsLast);
-      } else if (typeString.startsWith("decimal")) {
+      } else if (typeString.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
         return new HiveDecimalPrimitiveValueBoundaryScanner(start, end, exprDef, nullsLast);
       }
       throw new HiveException(String

@@ -130,6 +130,6 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
   
   @Override
   public boolean hasTransactionalInQuery() {
-    return isMmExport; // Full ACID export goes thru UpdateDelete analyzer.
+    return isMmExport; // Full ACID export goes through UpdateDelete analyzer.
   }
 }

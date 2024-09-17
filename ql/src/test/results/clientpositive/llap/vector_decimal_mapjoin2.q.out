@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS salary
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS salary
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE salary(pay_date TIMESTAMP,employee_id INT,department_id INT,currency_id INT,salary_paid DECIMAL(10,4),overtime_paid DECIMAL(10,4),vacation_accrued DOUBLE,vacation_used DOUBLE)
 row format delimited fields terminated by '\011'
 location '../../data/files/salary'
@@ -18,8 +20,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@salary
 PREHOOK: query: DROP TABLE IF EXISTS employee_closure
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS employee_closure
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE employee_closure(employee_id INT,supervisor_id INT,distance INT)
 row format delimited fields terminated by '\011'
 location '../../data/files/employee_closure'

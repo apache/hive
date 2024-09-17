@@ -30,10 +30,12 @@ POSTHOOK: Input: default@exim_department_n2
 PREHOOK: query: drop table exim_department_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@exim_department_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@exim_department_n2
 POSTHOOK: query: drop table exim_department_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@exim_department_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@exim_department_n2
 PREHOOK: query: create database importer
 PREHOOK: type: CREATEDATABASE
@@ -94,10 +96,12 @@ POSTHOOK: Input: importer@exim_department_n2
 PREHOOK: query: drop table exim_department_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: importer@exim_department_n2
+PREHOOK: Output: database:importer
 PREHOOK: Output: importer@exim_department_n2
 POSTHOOK: query: drop table exim_department_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: importer@exim_department_n2
+POSTHOOK: Output: database:importer
 POSTHOOK: Output: importer@exim_department_n2
 PREHOOK: query: drop database importer
 PREHOOK: type: DROPDATABASE

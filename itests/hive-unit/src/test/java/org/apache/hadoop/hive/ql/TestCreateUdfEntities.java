@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql;
 import static org.junit.Assert.*;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.reexec.ReExecDriver;
@@ -34,8 +35,7 @@ public class TestCreateUdfEntities {
 
   @Before
   public void setUp() throws Exception {
-
-    HiveConf conf = new HiveConf(IDriver.class);
+    HiveConf conf = new HiveConfForTest(getClass());
     SessionState.start(conf);
     driver = DriverFactory.newDriver(conf);
   }
@@ -53,16 +53,13 @@ public class TestCreateUdfEntities {
         "'org.apache.hadoop.hive.ql.udf.generic.GenericUDFPrintf'  using file '" + "file:///tmp/udf1.jar'", true);
     assertEquals(0, rc);
     WriteEntity outputEntities[] = driver.getPlan().getOutputs().toArray(new WriteEntity[] {});
-    assertEquals(outputEntities.length, 3);
+    assertEquals(outputEntities.length, 2);
 
-    assertEquals(Entity.Type.DATABASE, outputEntities[0].getType());
-    assertEquals("default", outputEntities[0].getDatabase().getName());
+    assertEquals(Entity.Type.FUNCTION, outputEntities[0].getType());
+    assertEquals(funcName, outputEntities[0].getFunction().getFunctionName());
 
-    assertEquals(Entity.Type.FUNCTION, outputEntities[1].getType());
-    assertEquals(funcName, outputEntities[1].getFunctionName());
-
-    assertEquals(Entity.Type.LOCAL_DIR, outputEntities[2].getType());
-    assertEquals("file:///tmp/udf1.jar", outputEntities[2].getLocation().toString());
+    assertEquals(Entity.Type.LOCAL_DIR, outputEntities[1].getType());
+    assertEquals("file:///tmp/udf1.jar", outputEntities[1].getLocation().toString());
   }
 
   @Test
@@ -71,16 +68,13 @@ public class TestCreateUdfEntities {
         "'org.apache.hadoop.hive.ql.udf.generic.GenericUDFPrintf'  using file '" + "hdfs:///tmp/udf1.jar'", true);
     assertEquals(0, rc);
     WriteEntity outputEntities[] = driver.getPlan().getOutputs().toArray(new WriteEntity[] {});
-    assertEquals(outputEntities.length, 3);
+    assertEquals(outputEntities.length, 2);
 
-    assertEquals(Entity.Type.DATABASE, outputEntities[0].getType());
-    assertEquals("default", outputEntities[0].getDatabase().getName());
+    assertEquals(Entity.Type.FUNCTION, outputEntities[0].getType());
+    assertEquals(funcName, outputEntities[0].getFunction().getFunctionName());
 
-    assertEquals(Entity.Type.FUNCTION, outputEntities[1].getType());
-    assertEquals(funcName, outputEntities[1].getFunctionName());
-
-    assertEquals(Entity.Type.DFS_DIR, outputEntities[2].getType());
-    assertEquals("hdfs:///tmp/udf1.jar", outputEntities[2].getLocation().toString());
+    assertEquals(Entity.Type.DFS_DIR, outputEntities[1].getType());
+    assertEquals("hdfs:///tmp/udf1.jar", outputEntities[1].getLocation().toString());
   }
 
 }

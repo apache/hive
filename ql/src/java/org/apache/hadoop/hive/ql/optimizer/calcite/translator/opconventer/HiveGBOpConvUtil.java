@@ -124,6 +124,7 @@ final class HiveGBOpConvUtil {
     float                             memoryThreshold;
     float                             minReductionHashAggr;
     float                             minReductionHashAggrLowerBound;
+    float                             hashAggrFlushPercent;
 
     private HIVEGBPHYSICALMODE        gbPhysicalPipelineMode;
 
@@ -133,8 +134,8 @@ final class HiveGBOpConvUtil {
   private static HIVEGBPHYSICALMODE getAggOPMode(HiveConf hc, GBInfo gbInfo) {
     HIVEGBPHYSICALMODE gbPhysicalPipelineMode = HIVEGBPHYSICALMODE.MAP_SIDE_GB_NO_SKEW_NO_ADD_MR_JOB;
 
-    if (hc.getBoolVar(HiveConf.ConfVars.HIVEMAPSIDEAGGREGATE)) {
-      if (!hc.getBoolVar(HiveConf.ConfVars.HIVEGROUPBYSKEW)) {
+    if (hc.getBoolVar(HiveConf.ConfVars.HIVE_MAPSIDE_AGGREGATE)) {
+      if (!hc.getBoolVar(HiveConf.ConfVars.HIVE_GROUPBY_SKEW)) {
         if (!gbInfo.grpSetRqrAdditionalMRJob) {
           gbPhysicalPipelineMode = HIVEGBPHYSICALMODE.MAP_SIDE_GB_NO_SKEW_NO_ADD_MR_JOB;
         } else {
@@ -148,7 +149,7 @@ final class HiveGBOpConvUtil {
         }
       }
     } else {
-      if (!hc.getBoolVar(HiveConf.ConfVars.HIVEGROUPBYSKEW)) {
+      if (!hc.getBoolVar(HiveConf.ConfVars.HIVE_GROUPBY_SKEW)) {
         gbPhysicalPipelineMode = HIVEGBPHYSICALMODE.NO_MAP_SIDE_GB_NO_SKEW;
       } else {
         gbPhysicalPipelineMode = HIVEGBPHYSICALMODE.NO_MAP_SIDE_GB_SKEW;
@@ -158,7 +159,7 @@ final class HiveGBOpConvUtil {
     return gbPhysicalPipelineMode;
   }
 
-  // For each of the GB op in the logical GB this should be called seperately;
+  // For each of the GB op in the logical GB this should be called separately;
   // otherwise GBevaluator and expr nodes may get shared among multiple GB ops
   private static GBInfo getGBInfo(HiveAggregate aggRel, OpAttr inputOpAf, HiveConf hc) throws SemanticException {
     GBInfo gbInfo = new GBInfo();
@@ -283,11 +284,11 @@ final class HiveGBOpConvUtil {
     }
 
     // 4. Gather GB Memory threshold
-    gbInfo.groupByMemoryUsage = HiveConf.getFloatVar(hc, HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY);
-    gbInfo.memoryThreshold = HiveConf.getFloatVar(hc, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
-    gbInfo.minReductionHashAggr = HiveConf.getFloatVar(hc, HiveConf.ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
+    gbInfo.groupByMemoryUsage = HiveConf.getFloatVar(hc, HiveConf.ConfVars.HIVE_MAP_AGGR_HASH_MEMORY);
+    gbInfo.memoryThreshold = HiveConf.getFloatVar(hc, HiveConf.ConfVars.HIVE_MAP_AGGR_MEMORY_THRESHOLD);
+    gbInfo.minReductionHashAggr = HiveConf.getFloatVar(hc, HiveConf.ConfVars.HIVE_MAP_AGGR_HASH_MIN_REDUCTION);
     gbInfo.minReductionHashAggrLowerBound =
-            HiveConf.getFloatVar(hc, HiveConf.ConfVars.HIVEMAPAGGRHASHMINREDUCTIONLOWERBOUND);
+            HiveConf.getFloatVar(hc, HiveConf.ConfVars.HIVE_MAP_AGGR_HASH_MIN_REDUCTION_LOWER_BOUND);
 
     // 5. Gather GB Physical pipeline (based on user config & Grping Sets size)
     gbInfo.gbPhysicalPipelineMode = getAggOPMode(hc, gbInfo);
@@ -834,7 +835,7 @@ final class HiveGBOpConvUtil {
     Operator rsGBOp2 = OperatorFactory.getAndMakeChild(new GroupByDesc(GroupByDesc.Mode.FINAL,
         outputColNames, gbKeys, aggregations, false, gbInfo.groupByMemoryUsage,
         gbInfo.memoryThreshold, gbInfo.minReductionHashAggr, gbInfo.minReductionHashAggrLowerBound,
-        null, false, groupingSetsPosition, gbInfo.containsDistinctAggr),
+        gbInfo.hashAggrFlushPercent, null, false, groupingSetsPosition, gbInfo.containsDistinctAggr),
         new RowSchema(colInfoLst), rs);
 
     rsGBOp2.setColumnExprMap(colExprMap);
@@ -973,7 +974,7 @@ final class HiveGBOpConvUtil {
         && !(gbInfo.gbPhysicalPipelineMode == HIVEGBPHYSICALMODE.MAP_SIDE_GB_SKEW_GBKEYS_OR_DIST_UDAF_PRESENT);
     Operator rsGBOp = OperatorFactory.getAndMakeChild(new GroupByDesc(gbMode, outputColNames,
         gbKeys, aggregations, gbInfo.groupByMemoryUsage, gbInfo.memoryThreshold,
-        gbInfo.minReductionHashAggr, gbInfo.minReductionHashAggrLowerBound,
+        gbInfo.minReductionHashAggr, gbInfo.minReductionHashAggrLowerBound, gbInfo.hashAggrFlushPercent,
         gbInfo.grpSets, includeGrpSetInGBDesc, groupingSetsColPosition, gbInfo.containsDistinctAggr),
         new RowSchema(colInfoLst), rs);
 
@@ -1028,32 +1029,65 @@ final class HiveGBOpConvUtil {
     List<ExprNodeDesc> reduceValues = rs.getConf().getValueCols();
     ArrayList<AggregationDesc> aggregations = new ArrayList<AggregationDesc>();
     int udafColStartPosInOriginalGB = gbInfo.gbKeys.size();
+
+    final List<List<ColumnInfo>> paramColInfoTable = new ArrayList<>(gbInfo.udafAttrs.size());
+    final List<List<String>> distinctColumnNameTable = new ArrayList<>(gbInfo.udafAttrs.size());
+    final Map<ColumnInfo, String> distinctColumnMapping = new HashMap<>();
+    for (int i = 0; i < gbInfo.udafAttrs.size(); i++) {
+      final UDAFAttrs udafAttr = gbInfo.udafAttrs.get(i);
+      final List<ColumnInfo> paramColInfo = new ArrayList<>(udafAttr.udafParams.size());
+      final List<String> distinctColNames = new ArrayList<>(udafAttr.udafParams.size());
+
+      for (int j = 0; j < udafAttr.udafParams.size(); j++) {
+        final int argPos = getColInfoPos(udafAttr.udafParams.get(j), gbInfo);
+        final ColumnInfo rsUDAFParamColInfo = rsColInfoLst.get(argPos);
+        paramColInfo.add(rsUDAFParamColInfo);
+
+        final String distinctColumnName;
+        if (udafAttr.isDistinctUDAF && lastReduceKeyColName != null) {
+          distinctColumnName = Utilities.ReduceField.KEY.name() + "." + lastReduceKeyColName
+                  + ":" + numDistinctUDFs + "." + SemanticAnalyzer.getColumnInternalName(j);
+          distinctColumnMapping.putIfAbsent(rsUDAFParamColInfo, distinctColumnName);
+        } else {
+          distinctColumnName = null;
+        }
+        distinctColNames.add(distinctColumnName);
+      }
+
+      paramColInfoTable.add(paramColInfo);
+      distinctColumnNameTable.add(distinctColNames);
+
+      if(udafAttr.isDistinctUDAF) {
+        numDistinctUDFs++;
+      }
+    }
+
     // the positions in rsColInfoLst are as follows
     // --grpkey--,--distkey--,--values--
     // but distUDAF may be before/after some non-distUDAF,
     // i.e., their positions can be mixed.
     // so for all UDAF we first check to see if it is groupby key, if not is it distinct key
     // if not it should be value
-    Map<Integer, List<ExprNodeDesc>> indexToParameter = new TreeMap<>();
-    for (int i = 0; i < gbInfo.udafAttrs.size(); i++) {
-      UDAFAttrs udafAttr = gbInfo.udafAttrs.get(i);
-      ArrayList<ExprNodeDesc> aggParameters = new ArrayList<ExprNodeDesc>();
+    final Map<Integer, List<ExprNodeDesc>> indexToParameter = new TreeMap<>();
+    for (int i = 0; i < paramColInfoTable.size(); i++) {
+      final ArrayList<ExprNodeDesc> aggParameters = new ArrayList<>();
 
-      ColumnInfo rsUDAFParamColInfo;
-      ExprNodeDesc udafParam;
-      ExprNodeDesc constantPropDistinctUDAFParam;
-      for (int j = 0; j < udafAttr.udafParams.size(); j++) {
-        int argPos = getColInfoPos(udafAttr.udafParams.get(j), gbInfo);
-        rsUDAFParamColInfo = rsColInfoLst.get(argPos);
-        String rsUDAFParamName = rsUDAFParamColInfo.getInternalName();
+      for (int j = 0; j < paramColInfoTable.get(i).size(); j++) {
+        final ColumnInfo rsUDAFParamColInfo = paramColInfoTable.get(i).get(j);
 
-        if (udafAttr.isDistinctUDAF && lastReduceKeyColName != null) {
-          rsUDAFParamName = Utilities.ReduceField.KEY.name() + "." + lastReduceKeyColName
-                  + ":" + numDistinctUDFs + "." + SemanticAnalyzer.getColumnInternalName(j);
+        final String rsUDAFParamName;
+        if (distinctColumnNameTable.get(i).get(j) != null) {
+          rsUDAFParamName = distinctColumnNameTable.get(i).get(j);
+        } else if (distinctColumnMapping.containsKey(rsUDAFParamColInfo)) {
+          // This UDAF is not labeled with DISTINCT, but it refers to a DISTINCT key.
+          // The original internal name could be already obsolete as any DISTINCT keys are renamed.
+          rsUDAFParamName = distinctColumnMapping.get(rsUDAFParamColInfo);
+        } else {
+          rsUDAFParamName = rsUDAFParamColInfo.getInternalName();
         }
-        udafParam = new ExprNodeColumnDesc(rsUDAFParamColInfo.getType(), rsUDAFParamName,
+        ExprNodeDesc udafParam = new ExprNodeColumnDesc(rsUDAFParamColInfo.getType(), rsUDAFParamName,
                 rsUDAFParamColInfo.getTabAlias(), rsUDAFParamColInfo.getIsVirtualCol());
-        constantPropDistinctUDAFParam = SemanticAnalyzer
+        final ExprNodeDesc constantPropDistinctUDAFParam = SemanticAnalyzer
                 .isConstantParameterInAggregationParameters(rsUDAFParamColInfo.getInternalName(),
                         reduceValues);
         if (constantPropDistinctUDAFParam != null) {
@@ -1062,10 +1096,8 @@ final class HiveGBOpConvUtil {
         aggParameters.add(udafParam);
       }
       indexToParameter.put(i, aggParameters);
-      if(udafAttr.isDistinctUDAF) {
-        numDistinctUDFs++;
-      }
     }
+
     for(Map.Entry<Integer, List<ExprNodeDesc>> e : indexToParameter.entrySet()){
       UDAFAttrs udafAttr = gbInfo.udafAttrs.get(e.getKey());
       Mode udafMode = SemanticAnalyzer.groupByDescModeToUDAFMode(gbMode, udafAttr.isDistinctUDAF);
@@ -1085,7 +1117,7 @@ final class HiveGBOpConvUtil {
 
     Operator rsGB1 = OperatorFactory.getAndMakeChild(new GroupByDesc(gbMode, outputColNames,
         gbKeys, aggregations, false, gbInfo.groupByMemoryUsage, gbInfo.minReductionHashAggrLowerBound,
-        gbInfo.memoryThreshold, gbInfo.minReductionHashAggr, null,
+        gbInfo.hashAggrFlushPercent, gbInfo.memoryThreshold, gbInfo.minReductionHashAggr, null,
         false, -1, numDistinctUDFs > 0), new RowSchema(colInfoLst), rs);
     rsGB1.setColumnExprMap(colExprMap);
 
@@ -1182,7 +1214,7 @@ final class HiveGBOpConvUtil {
     Operator gbOp = OperatorFactory.getAndMakeChild(new GroupByDesc(GroupByDesc.Mode.HASH,
         outputColNames, gbKeys, aggregations, false, gbAttrs.groupByMemoryUsage,
         gbAttrs.memoryThreshold, gbAttrs.minReductionHashAggr, gbAttrs.minReductionHashAggrLowerBound,
-        gbAttrs.grpSets, inclGrpID, groupingSetsPosition,
+        gbAttrs.hashAggrFlushPercent, gbAttrs.grpSets, inclGrpID, groupingSetsPosition,
         gbAttrs.containsDistinctAggr), new RowSchema(colInfoLst), inputOpAf.inputs.get(0));
 
     // 5. Setup Expr Col Map

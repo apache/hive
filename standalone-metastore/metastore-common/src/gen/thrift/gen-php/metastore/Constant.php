@@ -26,6 +26,8 @@ final class Constant extends \Thrift\Type\TConstant
     static protected $HIVE_FILTER_FIELD_OWNER;
     static protected $HIVE_FILTER_FIELD_PARAMS;
     static protected $HIVE_FILTER_FIELD_LAST_ACCESS;
+    static protected $HIVE_FILTER_FIELD_TABLE_NAME;
+    static protected $HIVE_FILTER_FIELD_TABLE_TYPE;
     static protected $IS_ARCHIVED;
     static protected $ORIGINAL_LOCATION;
     static protected $IS_IMMUTABLE;
@@ -45,7 +47,7 @@ final class Constant extends \Thrift\Type\TConstant
     static protected $FILE_OUTPUT_FORMAT;
     static protected $META_TABLE_STORAGE;
     static protected $TABLE_IS_TRANSACTIONAL;
-    static protected $TABLE_NO_AUTO_COMPACT;
+    static protected $NO_AUTO_COMPACT;
     static protected $TABLE_TRANSACTIONAL_PROPERTIES;
     static protected $TABLE_BUCKETING_VERSION;
     static protected $DRUID_CONFIG_PREFIX;
@@ -58,6 +60,8 @@ final class Constant extends \Thrift\Type\TConstant
     static protected $DEFAULT_TABLE_TYPE;
     static protected $TXN_ID;
     static protected $WRITE_ID;
+    static protected $EXPECTED_PARAMETER_KEY;
+    static protected $EXPECTED_PARAMETER_VALUE;
 
     protected static function init_DDL_TIME()
     {
@@ -97,6 +101,16 @@ final class Constant extends \Thrift\Type\TConstant
     protected static function init_HIVE_FILTER_FIELD_LAST_ACCESS()
     {
         return "hive_filter_field_last_access__";
+    }
+
+    protected static function init_HIVE_FILTER_FIELD_TABLE_NAME()
+    {
+        return "hive_filter_field_tableName__";
+    }
+
+    protected static function init_HIVE_FILTER_FIELD_TABLE_TYPE()
+    {
+        return "hive_filter_field_tableType__";
     }
 
     protected static function init_IS_ARCHIVED()
@@ -194,7 +208,7 @@ final class Constant extends \Thrift\Type\TConstant
         return "transactional";
     }
 
-    protected static function init_TABLE_NO_AUTO_COMPACT()
+    protected static function init_NO_AUTO_COMPACT()
     {
         return "no_auto_compaction";
     }
@@ -257,5 +271,15 @@ final class Constant extends \Thrift\Type\TConstant
     protected static function init_WRITE_ID()
     {
         return "writeId";
+    }
+
+    protected static function init_EXPECTED_PARAMETER_KEY()
+    {
+        return "expected_parameter_key";
+    }
+
+    protected static function init_EXPECTED_PARAMETER_VALUE()
+    {
+        return "expected_parameter_value";
     }
 }

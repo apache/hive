@@ -68,9 +68,11 @@ POSTHOOK: Input: default@table_external
 PREHOOK: query: drop table table_external
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_external
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table_external
 POSTHOOK: query: drop table table_external
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_external
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_external
 #### A masked pattern was here ####

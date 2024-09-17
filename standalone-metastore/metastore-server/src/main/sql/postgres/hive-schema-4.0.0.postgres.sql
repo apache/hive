@@ -142,35 +142,6 @@ CREATE TABLE "GLOBAL_PRIVS" (
     "AUTHORIZER" character varying(128) DEFAULT NULL::character varying
 );
 
-
---
--- Name: IDXS; Type: TABLE; Schema: public; Owner: hiveuser; Tablespace:
---
-
-CREATE TABLE "IDXS" (
-    "INDEX_ID" bigint NOT NULL,
-    "CREATE_TIME" bigint NOT NULL,
-    "DEFERRED_REBUILD" boolean NOT NULL,
-    "INDEX_HANDLER_CLASS" character varying(4000) DEFAULT NULL::character varying,
-    "INDEX_NAME" character varying(128) DEFAULT NULL::character varying,
-    "INDEX_TBL_ID" bigint,
-    "LAST_ACCESS_TIME" bigint NOT NULL,
-    "ORIG_TBL_ID" bigint,
-    "SD_ID" bigint
-);
-
-
---
--- Name: INDEX_PARAMS; Type: TABLE; Schema: public; Owner: hiveuser; Tablespace:
---
-
-CREATE TABLE "INDEX_PARAMS" (
-    "INDEX_ID" bigint NOT NULL,
-    "PARAM_KEY" character varying(256) NOT NULL,
-    "PARAM_VALUE" character varying(4000) DEFAULT NULL::character varying
-);
-
-
 --
 -- Name: NUCLEUS_TABLES; Type: TABLE; Schema: public; Owner: hiveuser; Tablespace:
 --
@@ -580,7 +551,8 @@ CREATE TABLE "TAB_COL_STATS" (
  "NUM_TRUES" bigint,
  "NUM_FALSES" bigint,
  "LAST_ANALYZED" bigint NOT NULL,
- "ENGINE" character varying(128) NOT NULL
+ "ENGINE" character varying(128) NOT NULL,
+ "HISTOGRAM" bytea
 );
 
 --
@@ -619,7 +591,8 @@ CREATE TABLE "PART_COL_STATS" (
  "NUM_TRUES" bigint,
  "NUM_FALSES" bigint,
  "LAST_ANALYZED" bigint NOT NULL,
- "ENGINE" character varying(128) NOT NULL
+ "ENGINE" character varying(128) NOT NULL,
+ "HISTOGRAM" bytea
 );
 
 --
@@ -698,7 +671,8 @@ CREATE TABLE "METASTORE_DB_PROPERTIES"
 (
   "PROPERTY_KEY" VARCHAR(255) NOT NULL,
   "PROPERTY_VALUE" VARCHAR(1000) NOT NULL,
-  "DESCRIPTION" VARCHAR(1000)
+  "DESCRIPTION" VARCHAR(1000),
+  "PROPERTYCONTENT" bytea
 );
 
 
@@ -828,22 +802,6 @@ ALTER TABLE ONLY "GLOBAL_PRIVS"
 
 ALTER TABLE ONLY "GLOBAL_PRIVS"
     ADD CONSTRAINT "GLOBAL_PRIVS_pkey" PRIMARY KEY ("USER_GRANT_ID");
-
-
---
--- Name: IDXS_pkey; Type: CONSTRAINT; Schema: public; Owner: hiveuser; Tablespace:
---
-
-ALTER TABLE ONLY "IDXS"
-    ADD CONSTRAINT "IDXS_pkey" PRIMARY KEY ("INDEX_ID");
-
-
---
--- Name: INDEX_PARAMS_pkey; Type: CONSTRAINT; Schema: public; Owner: hiveuser; Tablespace:
---
-
-ALTER TABLE ONLY "INDEX_PARAMS"
-    ADD CONSTRAINT "INDEX_PARAMS_pkey" PRIMARY KEY ("INDEX_ID", "PARAM_KEY");
 
 
 --
@@ -1063,20 +1021,13 @@ ALTER TABLE ONLY "TAB_COL_STATS" ADD CONSTRAINT "TAB_COL_STATS_pkey" PRIMARY KEY
 --
 ALTER TABLE ONLY "PART_COL_STATS" ADD CONSTRAINT "PART_COL_STATS_pkey" PRIMARY KEY("CS_ID");
 
---
--- Name: UNIQUEINDEX; Type: CONSTRAINT; Schema: public; Owner: hiveuser; Tablespace:
---
-
-ALTER TABLE ONLY "IDXS"
-    ADD CONSTRAINT "UNIQUEINDEX" UNIQUE ("INDEX_NAME", "ORIG_TBL_ID");
-
 
 --
 -- Name: UNIQUEPARTITION; Type: CONSTRAINT; Schema: public; Owner: hiveuser; Tablespace:
 --
 
 ALTER TABLE ONLY "PARTITIONS"
-    ADD CONSTRAINT "UNIQUEPARTITION" UNIQUE ("PART_NAME", "TBL_ID");
+    ADD CONSTRAINT "UNIQUEPARTITION" UNIQUE ("TBL_ID", "PART_NAME");
 
 
 --
@@ -1171,34 +1122,6 @@ CREATE INDEX "DC_PRIVS_N49" ON "DC_PRIVS" USING btree ("NAME");
 
 
 --
--- Name: IDXS_N49; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
---
-
-CREATE INDEX "IDXS_N49" ON "IDXS" USING btree ("ORIG_TBL_ID");
-
-
---
--- Name: IDXS_N50; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
---
-
-CREATE INDEX "IDXS_N50" ON "IDXS" USING btree ("INDEX_TBL_ID");
-
-
---
--- Name: IDXS_N51; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
---
-
-CREATE INDEX "IDXS_N51" ON "IDXS" USING btree ("SD_ID");
-
-
---
--- Name: INDEX_PARAMS_N49; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
---
-
-CREATE INDEX "INDEX_PARAMS_N49" ON "INDEX_PARAMS" USING btree ("INDEX_ID");
-
-
---
 -- Name: PARTITIONCOLUMNPRIVILEGEINDEX; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
 --
 
@@ -1210,13 +1133,6 @@ CREATE INDEX "PARTITIONCOLUMNPRIVILEGEINDEX" ON "PART_COL_PRIVS" USING btree ("A
 --
 
 CREATE INDEX "PARTITIONEVENTINDEX" ON "PARTITION_EVENTS" USING btree ("PARTITION_NAME");
-
-
---
--- Name: PARTITIONS_N49; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
---
-
-CREATE INDEX "PARTITIONS_N49" ON "PARTITIONS" USING btree ("TBL_ID");
 
 
 --
@@ -1272,7 +1188,7 @@ CREATE INDEX "PART_PRIVS_N49" ON "PART_PRIVS" USING btree ("PART_ID");
 -- Name: PCS_STATS_IDX; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
 --
 
-CREATE INDEX "PCS_STATS_IDX" ON "PART_COL_STATS" USING btree ("CAT_NAME", "DB_NAME","TABLE_NAME","COLUMN_NAME","PARTITION_NAME");
+CREATE INDEX "PCS_STATS_IDX" ON "PART_COL_STATS" USING btree ("DB_NAME","TABLE_NAME","COLUMN_NAME","PARTITION_NAME","CAT_NAME");
 
 
 --
@@ -1360,7 +1276,7 @@ CREATE INDEX "TBL_COL_PRIVS_N49" ON "TBL_COL_PRIVS" USING btree ("TBL_ID");
 -- Name: TAB_COL_STATS_IDX; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
 --
 
-CREATE INDEX "TAB_COL_STATS_IDX" ON "TAB_COL_STATS" USING btree ("CAT_NAME", "DB_NAME","TABLE_NAME","COLUMN_NAME");
+CREATE INDEX "TAB_COL_STATS_IDX" ON "TAB_COL_STATS" USING btree ("DB_NAME","TABLE_NAME","COLUMN_NAME","CAT_NAME");
 
 --
 -- Name: TBL_PRIVS_N49; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
@@ -1460,38 +1376,6 @@ ALTER TABLE ONLY "DATABASE_PARAMS"
 
 ALTER TABLE ONLY "DB_PRIVS"
     ADD CONSTRAINT "DB_PRIVS_DB_ID_fkey" FOREIGN KEY ("DB_ID") REFERENCES "DBS"("DB_ID") DEFERRABLE;
-
-
---
--- Name: IDXS_INDEX_TBL_ID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hiveuser
---
-
-ALTER TABLE ONLY "IDXS"
-    ADD CONSTRAINT "IDXS_INDEX_TBL_ID_fkey" FOREIGN KEY ("INDEX_TBL_ID") REFERENCES "TBLS"("TBL_ID") DEFERRABLE;
-
-
---
--- Name: IDXS_ORIG_TBL_ID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hiveuser
---
-
-ALTER TABLE ONLY "IDXS"
-    ADD CONSTRAINT "IDXS_ORIG_TBL_ID_fkey" FOREIGN KEY ("ORIG_TBL_ID") REFERENCES "TBLS"("TBL_ID") DEFERRABLE;
-
-
---
--- Name: IDXS_SD_ID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hiveuser
---
-
-ALTER TABLE ONLY "IDXS"
-    ADD CONSTRAINT "IDXS_SD_ID_fkey" FOREIGN KEY ("SD_ID") REFERENCES "SDS"("SD_ID") DEFERRABLE;
-
-
---
--- Name: INDEX_PARAMS_INDEX_ID_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hiveuser
---
-
-ALTER TABLE ONLY "INDEX_PARAMS"
-    ADD CONSTRAINT "INDEX_PARAMS_INDEX_ID_fkey" FOREIGN KEY ("INDEX_ID") REFERENCES "IDXS"("INDEX_ID") DEFERRABLE;
 
 
 --
@@ -1811,7 +1695,9 @@ CREATE TABLE "COMPACTION_QUEUE" (
   "CQ_WORKER_VERSION" varchar(128),
   "CQ_CLEANER_START" bigint,
   "CQ_RETRY_RETENTION" bigint not null default 0,
-  "CQ_POOL_NAME" varchar(128)
+  "CQ_POOL_NAME" varchar(128),
+  "CQ_NUMBER_OF_BUCKETS" integer,
+  "CQ_ORDER_BY" varchar(4000)
 );
 
 CREATE TABLE "NEXT_COMPACTION_QUEUE_ID" (
@@ -1842,7 +1728,9 @@ CREATE TABLE "COMPLETED_COMPACTIONS" (
   "CC_INITIATOR_ID" varchar(128),
   "CC_INITIATOR_VERSION" varchar(128),
   "CC_WORKER_VERSION" varchar(128),
-  "CC_POOL_NAME" varchar(128)
+  "CC_POOL_NAME" varchar(128),
+  "CC_NUMBER_OF_BUCKETS" integer,
+  "CC_ORDER_BY" varchar(4000)
 );
 
 CREATE INDEX "COMPLETED_COMPACTIONS_RES" ON "COMPLETED_COMPACTIONS" ("CC_DATABASE","CC_TABLE","CC_PARTITION");
@@ -1890,6 +1778,13 @@ CREATE TABLE "NEXT_WRITE_ID" (
 );
 
 CREATE UNIQUE INDEX "NEXT_WRITE_ID_IDX" ON "NEXT_WRITE_ID" ("NWI_DATABASE", "NWI_TABLE");
+
+CREATE TABLE "MIN_HISTORY_WRITE_ID" (
+  "MH_TXNID" bigint NOT NULL REFERENCES "TXNS" ("TXN_ID"),
+  "MH_DATABASE" varchar(128) NOT NULL,
+  "MH_TABLE" varchar(256) NOT NULL,
+  "MH_WRITEID" bigint NOT NULL
+);
 
 CREATE TABLE "MIN_HISTORY_LEVEL" (
   "MHL_TXNID" bigint NOT NULL,

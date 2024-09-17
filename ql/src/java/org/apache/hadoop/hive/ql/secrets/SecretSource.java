@@ -24,7 +24,7 @@ import java.net.URI;
 /**
  * Interface representing source of a secret using an uri.
  * The URI scheme is used to match an URI to an implementation scheme. The implementations are discovered and loaded
- * using java service loader. Currenty there isn't a way to initialize or reset a SecretSource after construction.
+ * using java service loader. Currently, there isn't a way to initialize or reset a SecretSource after construction.
  *
  * The secret source is expected to be thread-safe.
  */

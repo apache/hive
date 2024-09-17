@@ -54,7 +54,7 @@ public abstract class MessageFactory {
                                      + HCAT_MESSAGE_FORMAT,
                                      DEFAULT_MESSAGE_FACTORY_IMPL);
 
-  protected static final String HCAT_SERVER_URL = hiveConf.get(HiveConf.ConfVars.METASTOREURIS.name(), "");
+  protected static final String HCAT_SERVER_URL = hiveConf.get(HiveConf.ConfVars.METASTORE_URIS.name(), "");
   protected static final String HCAT_SERVICE_PRINCIPAL = hiveConf.get(HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL.name(), "");
 
   /**

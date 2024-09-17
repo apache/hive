@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -58,6 +59,9 @@ import com.google.common.collect.ImmutableList;
  * Utilities for constraints.
  */
 public final class ConstraintsUtils {
+
+  public static final String CHECK_CONSTRAINT_PROGRAM = "CHECK_CONSTRAINT_PROGRAM";
+
   private ConstraintsUtils() {
     throw new UnsupportedOperationException("ConstraintsUtils should not be instantiated!");
   }
@@ -241,7 +245,9 @@ public final class ConstraintsUtils {
         // try to get default value only if this is DEFAULT constraint
         checkOrDefaultValue = getDefaultValue(grandChild, typeChildForDefault, tokenRewriteStream);
       } else if (childType == HiveParser.TOK_CHECK_CONSTRAINT) {
-        checkOrDefaultValue = tokenRewriteStream.toOriginalString(grandChild.getTokenStartIndex(),
+        UnparseTranslator unparseTranslator = HiveUtils.collectUnescapeIdentifierTranslations(grandChild);
+        unparseTranslator.applyTranslations(tokenRewriteStream, CHECK_CONSTRAINT_PROGRAM);
+        checkOrDefaultValue = tokenRewriteStream.toString(CHECK_CONSTRAINT_PROGRAM, grandChild.getTokenStartIndex(),
             grandChild.getTokenStopIndex());
       }
     }

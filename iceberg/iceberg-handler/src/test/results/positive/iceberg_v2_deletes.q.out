@@ -14,7 +14,7 @@ PREHOOK: Input: default@ice01
 POSTHOOK: query: show create table ice01
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@ice01
-CREATE TABLE `ice01`(
+CREATE EXTERNAL TABLE `ice01`(
   `id` int)
 ROW FORMAT SERDE 
   'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
@@ -25,12 +25,14 @@ LOCATION
   'hdfs://### HDFS PATH ###'
 TBLPROPERTIES (
   'bucketing_version'='2', 
-  'engine.hive.enabled'='true', 
+  'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"id","required":false,"type":"int"}]}', 
   'format-version'='2', 
   'iceberg.delete.skiprowdata'='false', 
   'iceberg.orc.files.only'='true', 
   'metadata_location'='hdfs://### HDFS PATH ###', 
+  'parquet.compression'='zstd', 
   'serialization.format'='1', 
+  'snapshot-count'='0', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
   'uuid'='#Masked#', 
@@ -120,7 +122,7 @@ PREHOOK: Input: default@ice01
 POSTHOOK: query: show create table ice01
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@ice01
-CREATE TABLE `ice01`(
+CREATE EXTERNAL TABLE `ice01`(
   `id` int)
 ROW FORMAT SERDE 
   'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
@@ -131,14 +133,19 @@ LOCATION
   'hdfs://### HDFS PATH ###'
 TBLPROPERTIES (
   'bucketing_version'='2', 
-  'engine.hive.enabled'='true', 
+  'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"id","required":false,"type":"int"}]}', 
+  'current-snapshot-id'='#Masked#', 
+  'current-snapshot-summary'='{"added-position-delete-files":"1","added-delete-files":"1","added-files-size":"#Masked#","added-position-deletes":"1","changed-partition-count":"1","total-records":"8","total-files-size":"#Masked#","total-data-files":"2","total-delete-files":"2","total-position-deletes":"3","total-equality-deletes":"0"}', 
+  'current-snapshot-timestamp-ms'='#Masked#', 
   'format-version'='2', 
   'iceberg.delete.skiprowdata'='true', 
   'iceberg.orc.files.only'='true', 
 #### A masked pattern was here ####
   'metadata_location'='hdfs://### HDFS PATH ###', 
+  'parquet.compression'='zstd', 
   'previous_metadata_location'='hdfs://### HDFS PATH ###', 
   'serialization.format'='1', 
+  'snapshot-count'='4', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
   'uuid'='#Masked#', 
@@ -258,11 +265,11 @@ PREHOOK: Input: default@icepart01
 POSTHOOK: query: show create table icepart01
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@icepart01
-CREATE TABLE `icepart01`(
+CREATE EXTERNAL TABLE `icepart01`(
   `id` int, 
   `part` int)
 PARTITIONED BY SPEC ( 
-part)
+`part`)
 ROW FORMAT SERDE 
   'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
 STORED BY 
@@ -272,14 +279,20 @@ LOCATION
   'hdfs://### HDFS PATH ###'
 TBLPROPERTIES (
   'bucketing_version'='2', 
-  'engine.hive.enabled'='true', 
+  'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"id","required":false,"type":"int"},{"id":2,"name":"part","required":false,"type":"int"}]}', 
+  'current-snapshot-id'='#Masked#', 
+  'current-snapshot-summary'='{"added-position-delete-files":"1","added-delete-files":"1","added-files-size":"#Masked#","added-position-deletes":"1","changed-partition-count":"1","total-records":"8","total-files-size":"#Masked#","total-data-files":"4","total-delete-files":"3","total-position-deletes":"3","total-equality-deletes":"0"}', 
+  'current-snapshot-timestamp-ms'='#Masked#', 
+  'default-partition-spec'='{"spec-id":0,"fields":[{"name":"part","transform":"identity","source-id":2,"field-id":1000}]}', 
   'format-version'='2', 
   'iceberg.delete.skiprowdata'='true', 
   'iceberg.orc.files.only'='true', 
 #### A masked pattern was here ####
   'metadata_location'='hdfs://### HDFS PATH ###', 
+  'parquet.compression'='zstd', 
   'previous_metadata_location'='hdfs://### HDFS PATH ###', 
   'serialization.format'='1', 
+  'snapshot-count'='4', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
   'uuid'='#Masked#', 
@@ -310,16 +323,20 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table ice01
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ice01
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ice01
 POSTHOOK: query: drop table ice01
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ice01
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice01
 PREHOOK: query: drop table icepart01
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@icepart01
+PREHOOK: Output: database:default
 PREHOOK: Output: default@icepart01
 POSTHOOK: query: drop table icepart01
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@icepart01
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@icepart01

@@ -1,15 +1,21 @@
 PREHOOK: query: drop table pcr_t1_n2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table pcr_t1_n2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table pcr_t2_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table pcr_t2_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table pcr_t3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table pcr_t3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table pcr_t1_n2 (key int, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -2925,20 +2931,26 @@ POSTHOOK: Input: default@pcr_t2_n0
 PREHOOK: query: drop table pcr_t1_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@pcr_t1_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@pcr_t1_n2
 POSTHOOK: query: drop table pcr_t1_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@pcr_t1_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@pcr_t1_n2
 PREHOOK: query: drop table pcr_t2_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@pcr_t2_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@pcr_t2_n0
 POSTHOOK: query: drop table pcr_t2_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@pcr_t2_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@pcr_t2_n0
 PREHOOK: query: drop table pcr_t3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table pcr_t3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default

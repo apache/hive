@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE blobstore_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE blobstore_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE blobstore_table (cnt INT)
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE

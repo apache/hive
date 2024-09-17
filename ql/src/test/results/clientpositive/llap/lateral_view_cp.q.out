@@ -1,7 +1,9 @@
 PREHOOK: query: drop table array_valued_src
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table array_valued_src
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table array_valued_src (key string, value array<string>)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -52,12 +54,16 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 4 
@@ -69,13 +75,17 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 475 Data size: 951428 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
+                    Select Operator
+                      expressions: key (type: string), value (type: array<string>)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 475 Data size: 951428 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: value (type: array<string>)
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 475 Data size: 951428 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: array<string>)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -85,12 +95,12 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 key (type: string)
-                  1 key (type: string)
-                outputColumnNames: _col7
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col2
                 Statistics: Num rows: 550 Data size: 47850 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col7 (type: array<string>)
+                  expressions: _col2 (type: array<string>)
                   outputColumnNames: _col1
                   Statistics: Num rows: 550 Data size: 47850 Basic stats: COMPLETE Column stats: NONE
                   Lateral View Forward

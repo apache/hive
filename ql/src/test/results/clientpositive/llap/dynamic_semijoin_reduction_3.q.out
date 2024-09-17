@@ -88,11 +88,11 @@ STAGE PLANS:
                         minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           null sort order: 
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -302,11 +302,11 @@ STAGE PLANS:
                 aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, 1, expectedEntries=1)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   null sort order: 
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
 
   Stage: Stage-6
@@ -462,11 +462,11 @@ STAGE PLANS:
                         minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           null sort order: 
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -552,11 +552,11 @@ STAGE PLANS:
                 aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, 1, expectedEntries=1)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   null sort order: 
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
 
   Stage: Stage-2
@@ -979,16 +979,22 @@ POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:type2_scd_helper
 PREHOOK: query: drop table if exists customer
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:type2_scd_helper
 POSTHOOK: query: drop table if exists customer
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:type2_scd_helper
 PREHOOK: query: drop table if exists customer_updates
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:type2_scd_helper
 POSTHOOK: query: drop table if exists customer_updates
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:type2_scd_helper
 PREHOOK: query: drop table if exists new_customer_stage
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:type2_scd_helper
 POSTHOOK: query: drop table if exists new_customer_stage
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:type2_scd_helper
 PREHOOK: query: create table customer (
 source_pk int,
 sk string,
@@ -1081,8 +1087,10 @@ POSTHOOK: Lineage: new_customer_stage.source_pk SCRIPT []
 POSTHOOK: Lineage: new_customer_stage.state SCRIPT []
 PREHOOK: query: drop table if exists scd_types
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:type2_scd_helper
 POSTHOOK: query: drop table if exists scd_types
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:type2_scd_helper
 PREHOOK: query: create table scd_types (
 type int,
 invalid_key int
@@ -1200,28 +1208,36 @@ POSTHOOK: Input: type2_scd_helper@customer
 PREHOOK: query: drop table customer
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: type2_scd_helper@customer
+PREHOOK: Output: database:type2_scd_helper
 PREHOOK: Output: type2_scd_helper@customer
 POSTHOOK: query: drop table customer
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: type2_scd_helper@customer
+POSTHOOK: Output: database:type2_scd_helper
 POSTHOOK: Output: type2_scd_helper@customer
 PREHOOK: query: drop table customer_updates
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:type2_scd_helper
 POSTHOOK: query: drop table customer_updates
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:type2_scd_helper
 PREHOOK: query: drop table new_customer_stage
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: type2_scd_helper@new_customer_stage
+PREHOOK: Output: database:type2_scd_helper
 PREHOOK: Output: type2_scd_helper@new_customer_stage
 POSTHOOK: query: drop table new_customer_stage
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: type2_scd_helper@new_customer_stage
+POSTHOOK: Output: database:type2_scd_helper
 POSTHOOK: Output: type2_scd_helper@new_customer_stage
 PREHOOK: query: drop table scd_types
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: type2_scd_helper@scd_types
+PREHOOK: Output: database:type2_scd_helper
 PREHOOK: Output: type2_scd_helper@scd_types
 POSTHOOK: query: drop table scd_types
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: type2_scd_helper@scd_types
+POSTHOOK: Output: database:type2_scd_helper
 POSTHOOK: Output: type2_scd_helper@scd_types

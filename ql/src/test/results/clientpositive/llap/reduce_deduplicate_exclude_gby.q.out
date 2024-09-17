@@ -17,8 +17,10 @@ POSTHOOK: Input: default@t1_n32
 PREHOOK: query: drop table t1_n32
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n32
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_n32
 POSTHOOK: query: drop table t1_n32
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_n32
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n32

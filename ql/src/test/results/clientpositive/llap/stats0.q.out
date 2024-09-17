@@ -1407,18 +1407,22 @@ ds                  	string
 PREHOOK: query: drop table stats_non_partitioned
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats_non_partitioned
+PREHOOK: Output: database:default
 PREHOOK: Output: default@stats_non_partitioned
 POSTHOOK: query: drop table stats_non_partitioned
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@stats_non_partitioned
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_non_partitioned
 PREHOOK: query: drop table stats_partitioned
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats_partitioned
+PREHOOK: Output: database:default
 PREHOOK: Output: default@stats_partitioned
 POSTHOOK: query: drop table stats_partitioned
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@stats_partitioned
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_partitioned
 PREHOOK: query: CREATE TABLE stats_non_partitioned (key string, value string)
 PREHOOK: type: CREATETABLE

@@ -18,13 +18,16 @@
 
 package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 
-import org.apache.calcite.sql.fun.SqlAbstractTimeFunction;
-import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.sql.SqlFunction;
+import org.apache.calcite.sql.SqlFunctionCategory;
+import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.type.ReturnTypes;
 
-public class HiveDateSubSqlOperator extends SqlAbstractTimeFunction {
-  public static final HiveDateSubSqlOperator INSTANCE = new HiveDateSubSqlOperator();
+public final class HiveDateSubSqlOperator {
+  public static final SqlFunction INSTANCE =
+      new SqlFunction("DATE_SUB", SqlKind.OTHER_FUNCTION, ReturnTypes.DATE_NULLABLE, null, null,
+          SqlFunctionCategory.TIMEDATE);
 
-  protected HiveDateSubSqlOperator() {
-    super("DATE_SUB", SqlTypeName.DATE);
+  private HiveDateSubSqlOperator() {
   }
 }

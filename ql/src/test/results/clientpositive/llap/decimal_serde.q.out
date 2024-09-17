@@ -1,19 +1,27 @@
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_TEXT
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_TEXT
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_RC
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_RC
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_LAZY_COL
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_LAZY_COL
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_SEQUENCE
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_SEQUENCE
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE DECIMAL_TEXT (key decimal, value int) 
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
@@ -120,7 +128,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	38                  
 	rawDataSize         	157                 
-	totalSize           	278                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -173,7 +181,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	38                  
 	rawDataSize         	157                 
-	totalSize           	278                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -259,32 +267,40 @@ NULL	0
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_TEXT
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_text
+PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_text
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_TEXT
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_text
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_text
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_RC
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_rc
+PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_rc
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_RC
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_rc
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_rc
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_LAZY_COL
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_lazy_col
+PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_lazy_col
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_LAZY_COL
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_lazy_col
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_lazy_col
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_SEQUENCE
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_sequence
+PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_sequence
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_SEQUENCE
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_sequence
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_sequence

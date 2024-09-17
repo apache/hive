@@ -693,8 +693,10 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 98	2
 PREHOOK: query: DROP TABLE arc
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE arc
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE table arc(`dt_from` string, `dt_to` string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -705,8 +707,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@arc
 PREHOOK: query: DROP TABLE loc1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE loc1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE table loc1(`dt_from` string, `dt_to` string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

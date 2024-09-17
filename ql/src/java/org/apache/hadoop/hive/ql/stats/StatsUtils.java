@@ -605,7 +605,7 @@ public class StatsUtils {
     partCS.setAvgColLen(StatsUtils.getAvgColLenOf(conf,
         ci.getObjectInspector(), partCS.getColumnType()));
     partCS.setRange(getRangePartitionColumn(partList, ci.getInternalName(),
-        ci.getType().getTypeName(), conf.getVar(ConfVars.DEFAULTPARTITIONNAME)));
+        ci.getType().getTypeName(), conf.getVar(ConfVars.DEFAULT_PARTITION_NAME)));
     return partCS;
   }
 
@@ -864,24 +864,28 @@ public class StatsUtils {
       cs.setAvgColLen(JavaDataModel.get().primitive1());
       cs.setRange(csd.getLongStats().getLowValue(), csd.getLongStats().getHighValue());
       cs.setBitVectors(csd.getLongStats().getBitVectors());
+      cs.setHistogram(csd.getLongStats().getHistogram());
     } else if (colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME)) {
       cs.setCountDistint(csd.getLongStats().getNumDVs());
       cs.setNumNulls(csd.getLongStats().getNumNulls());
       cs.setAvgColLen(JavaDataModel.get().primitive2());
       cs.setRange(csd.getLongStats().getLowValue(), csd.getLongStats().getHighValue());
       cs.setBitVectors(csd.getLongStats().getBitVectors());
+      cs.setHistogram(csd.getLongStats().getHistogram());
     } else if (colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)) {
       cs.setCountDistint(csd.getDoubleStats().getNumDVs());
       cs.setNumNulls(csd.getDoubleStats().getNumNulls());
       cs.setAvgColLen(JavaDataModel.get().primitive1());
       cs.setRange(csd.getDoubleStats().getLowValue(), csd.getDoubleStats().getHighValue());
       cs.setBitVectors(csd.getDoubleStats().getBitVectors());
+      cs.setHistogram(csd.getDoubleStats().getHistogram());
     } else if (colTypeLowerCase.equals(serdeConstants.DOUBLE_TYPE_NAME)) {
       cs.setCountDistint(csd.getDoubleStats().getNumDVs());
       cs.setNumNulls(csd.getDoubleStats().getNumNulls());
       cs.setAvgColLen(JavaDataModel.get().primitive2());
       cs.setRange(csd.getDoubleStats().getLowValue(), csd.getDoubleStats().getHighValue());
       cs.setBitVectors(csd.getDoubleStats().getBitVectors());
+      cs.setHistogram(csd.getDoubleStats().getHistogram());
     } else if (colTypeLowerCase.equals(serdeConstants.STRING_TYPE_NAME)
         || colTypeLowerCase.startsWith(serdeConstants.CHAR_TYPE_NAME)
         || colTypeLowerCase.startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
@@ -910,6 +914,7 @@ public class StatsUtils {
       Long highVal = (csd.getTimestampStats().getHighValue() != null) ? csd.getTimestampStats().getHighValue()
           .getSecondsSinceEpoch() : null;
       cs.setRange(lowVal, highVal);
+      cs.setHistogram(csd.getTimestampStats().getHistogram());
     } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfTimestamp());
     } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
@@ -930,6 +935,7 @@ public class StatsUtils {
         }
       }
       cs.setBitVectors(csd.getDecimalStats().getBitVectors());
+      cs.setHistogram(csd.getDecimalStats().getHistogram());
     } else if (colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfDate());
       cs.setNumNulls(csd.getDateStats().getNumNulls());
@@ -939,6 +945,7 @@ public class StatsUtils {
           .getDaysSinceEpoch() : null;
       cs.setRange(lowVal, highVal);
       cs.setBitVectors(csd.getDateStats().getBitVectors());
+      cs.setHistogram(csd.getDateStats().getHistogram());
     } else {
       // Columns statistics for complex datatypes are not supported yet
       return null;
@@ -1062,8 +1069,12 @@ public class StatsUtils {
     }
     if (fetchColStats && !colStatsToRetrieve.isEmpty()) {
       try {
-        List<ColumnStatisticsObj> colStat = Hive.get().getTableColumnStatistics(
-            dbName, tabName, colStatsToRetrieve, false);
+        List<ColumnStatisticsObj> colStat;
+        if (table.isNonNative() && table.getStorageHandler().canProvideColStatistics(table)) {
+          colStat = table.getStorageHandler().getColStatistics(table);
+        } else {
+          colStat = Hive.get().getTableColumnStatistics(dbName, tabName, colStatsToRetrieve, false);
+        }
         stats = convertColStats(colStat, tabName);
       } catch (HiveException e) {
         LOG.error("Failed to retrieve table statistics: ", e);
@@ -2023,16 +2034,22 @@ public class StatsUtils {
     return null;
   }
 
+  public static boolean checkCanProvideStats(Table table) {
+    if (MetaStoreUtils.isExternalTable(table.getTTable())) {
+      if (MetaStoreUtils.isNonNativeTable(table.getTTable()) && table.getStorageHandler().canProvideBasicStatistics()) {
+        return true;
+      }
+      return false;
+    }
+    return true;
+  }
+
   /**
    * Are the basic stats for the table up-to-date for query planning.
    * Can run additional checks compared to the version in StatsSetupConst.
    */
   public static boolean areBasicStatsUptoDateForQueryAnswering(Table table, Map<String, String> params) {
-    // HIVE-19332: external tables should not be considered to have up-to-date stats.
-    if (MetaStoreUtils.isExternalTable(table.getTTable())) {
-      return false;
-    }
-    return StatsSetupConst.areBasicStatsUptoDate(params);
+    return checkCanProvideStats(table) == true ? StatsSetupConst.areBasicStatsUptoDate(params) : false;
   }
 
   /**
@@ -2040,11 +2057,7 @@ public class StatsUtils {
    * Can run additional checks compared to the version in StatsSetupConst.
    */
   public static boolean areColumnStatsUptoDateForQueryAnswering(Table table, Map<String, String> params, String colName) {
-    // HIVE-19332: external tables should not be considered to have up-to-date stats.
-    if (MetaStoreUtils.isExternalTable(table.getTTable())) {
-      return false;
-    }
-    return StatsSetupConst.areColumnStatsUptoDate(params, colName);
+    return checkCanProvideStats(table) == true ? StatsSetupConst.areColumnStatsUptoDate(params, colName) : false;
   }
 
   /**

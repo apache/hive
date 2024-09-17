@@ -35,6 +35,16 @@ public interface DirSearch extends Closeable {
   String findUserDn(String user) throws NamingException;
 
   /**
+   * Finds user's distinguished name.
+   * @param user username
+   * @param userSearchFilter Generic LDAP Search filter for ex: (&amp;(uid={0})(objectClass=person))
+   * @param baseDn LDAP BaseDN for user searches for ex: dc=apache,dc=org
+   * @return DN for the specific user if exists, null otherwise
+   * @throws NamingException
+   */
+  String findUserDn(String user, String userSearchFilter, String baseDn) throws NamingException;
+
+  /**
    * Finds group's distinguished name.
    * @param group group name or unique identifier
    * @return DN for the specified group name
@@ -66,4 +76,15 @@ public interface DirSearch extends Closeable {
    * @throws NamingException
    */
   List<String> executeCustomQuery(String query) throws NamingException;
+
+  /**
+   * Executes an arbitrary query.
+   * @param user user RDN or username. This will be substituted for {0} in group search
+   * @param userDn userDn DN for the username. This will be substituted for {1} in group search
+   * @param filter filter is the group filter query ex: (&amp;(memberUid={0})(&amp;(CN=group1)(objectClass=posixGroup)))
+   * @param groupBaseDn BaseDN for group searches. ex: "ou=groups,dc=apache,dc=org"
+   * @return list of names that match the group filter aka groups that the user belongs to, if any.
+   * @throws NamingException
+   */
+  List<String> executeUserAndGroupFilterQuery(String user, String userDn, String filter, String groupBaseDn) throws NamingException;
 }

@@ -254,6 +254,10 @@ public final class FunctionRegistry {
 
   public static final String BLOOM_FILTER_FUNCTION = "bloom_filter";
   public static final String WINDOWING_TABLE_FUNCTION = "windowingtablefunction";
+
+  public static final String ARRAY_FUNC_NAME = "array";
+  public static final String INLINE_FUNC_NAME = "inline";
+
   private static final String NOOP_TABLE_FUNCTION = "noop";
   private static final String NOOP_MAP_TABLE_FUNCTION = "noopwithmap";
   private static final String NOOP_STREAMING_TABLE_FUNCTION = "noopstreaming";
@@ -482,6 +486,9 @@ public final class FunctionRegistry {
     system.registerGenericUDF("!", GenericUDFOPNot.class);
     system.registerGenericUDF("between", GenericUDFBetween.class);
     system.registerGenericUDF("in_bloom_filter", GenericUDFInBloomFilter.class);
+    system.registerGenericUDF("toMap", GenericUDFToMap.class);
+    system.registerGenericUDF("toArray", GenericUDFToArray.class);
+    system.registerGenericUDF("toStruct", GenericUDFToStruct.class);
 
     // Utility UDFs
     system.registerUDF("version", UDFVersion.class, false);
@@ -556,7 +563,6 @@ public final class FunctionRegistry {
     system.registerGenericUDAF("ngrams", new GenericUDAFnGrams());
     system.registerGenericUDAF("context_ngrams", new GenericUDAFContextNGrams());
 
-    system.registerGenericUDAF("compute_stats", new GenericUDAFComputeStats());
     system.registerGenericUDF("ndv_compute_bit_vector", GenericUDFNDVComputeBitVector.class);
     system.registerGenericUDAF("compute_bit_vector_hll", new GenericUDAFComputeBitVectorHLL());
     system.registerGenericUDAF("compute_bit_vector_fm", new GenericUDAFComputeBitVectorFMSketch());
@@ -575,7 +581,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("java_method", GenericUDFReflect.class);
     system.registerGenericUDF("exception_in_vertex_udf", GenericUDFExceptionInVertex.class);
 
-    system.registerGenericUDF("array", GenericUDFArray.class);
+    system.registerGenericUDF(ARRAY_FUNC_NAME, GenericUDFArray.class);
     system.registerGenericUDF("assert_true", GenericUDFAssertTrue.class);
     system.registerGenericUDF("assert_true_oom", GenericUDFAssertTrueOOM.class);
     system.registerGenericUDF("map", GenericUDFMap.class);
@@ -602,6 +608,16 @@ public final class FunctionRegistry {
     system.registerGenericUDF("array_contains", GenericUDFArrayContains.class);
     system.registerGenericUDF("array_min", GenericUDFArrayMin.class);
     system.registerGenericUDF("array_max", GenericUDFArrayMax.class);
+    system.registerGenericUDF("array_distinct", GenericUDFArrayDistinct.class);
+    system.registerGenericUDF("array_join", GenericUDFArrayJoin.class);
+    system.registerGenericUDF("array_slice", GenericUDFArraySlice.class);
+    system.registerGenericUDF("array_except", GenericUDFArrayExcept.class);
+    system.registerGenericUDF("array_intersect", GenericUDFArrayIntersect.class);
+    system.registerGenericUDF("array_union", GenericUDFArrayUnion.class);
+    system.registerGenericUDF("array_remove", GenericUDFArrayRemove.class);
+    system.registerGenericUDF("array_position", GenericUDFArrayPosition.class);
+    system.registerGenericUDF("array_append", GenericUDFArrayAppend.class);
+    system.registerGenericUDF("array_compact", GenericUDFArrayCompact.class);
     system.registerGenericUDF("deserialize", GenericUDFDeserialize.class);
     system.registerGenericUDF("sentences", GenericUDFSentences.class);
     system.registerGenericUDF("map_keys", GenericUDFMapKeys.class);
@@ -612,6 +628,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("least", GenericUDFLeast.class);
     system.registerGenericUDF("cardinality_violation", GenericUDFCardinalityViolation.class);
     system.registerGenericUDF("width_bucket", GenericUDFWidthBucket.class);
+    system.registerGenericUDF("typeof", GenericUDFTypeOf.class);
 
     system.registerGenericUDF("from_utc_timestamp", GenericUDFFromUtcTimestamp.class);
     system.registerGenericUDF("to_utc_timestamp", GenericUDFToUtcTimestamp.class);
@@ -631,7 +648,7 @@ public final class FunctionRegistry {
     // Generic UDTF's
     system.registerGenericUDTF("explode", GenericUDTFExplode.class);
     system.registerGenericUDTF("replicate_rows", GenericUDTFReplicateRows.class);
-    system.registerGenericUDTF("inline", GenericUDTFInline.class);
+    system.registerGenericUDTF(INLINE_FUNC_NAME, GenericUDTFInline.class);
     system.registerGenericUDTF("json_tuple", GenericUDTFJSONTuple.class);
     system.registerGenericUDTF("parse_url_tuple", GenericUDTFParseUrlTuple.class);
     system.registerGenericUDTF("posexplode", GenericUDTFPosExplode.class);
@@ -768,7 +785,17 @@ public final class FunctionRegistry {
 
     try {
       system.registerGenericUDF("iceberg_bucket",
-          (Class<? extends GenericUDF>) Class.forName("org.apache.iceberg.mr.hive.GenericUDFIcebergBucket"));
+          (Class<? extends GenericUDF>) Class.forName("org.apache.iceberg.mr.hive.udf.GenericUDFIcebergBucket"));
+      system.registerGenericUDF("iceberg_truncate",
+          (Class<? extends GenericUDF>) Class.forName("org.apache.iceberg.mr.hive.udf.GenericUDFIcebergTruncate"));
+      system.registerGenericUDF("iceberg_year",
+          (Class<? extends GenericUDF>) Class.forName("org.apache.iceberg.mr.hive.udf.GenericUDFIcebergYear"));
+      system.registerGenericUDF("iceberg_month",
+          (Class<? extends GenericUDF>) Class.forName("org.apache.iceberg.mr.hive.udf.GenericUDFIcebergMonth"));
+      system.registerGenericUDF("iceberg_day",
+          (Class<? extends GenericUDF>) Class.forName("org.apache.iceberg.mr.hive.udf.GenericUDFIcebergDay"));
+      system.registerGenericUDF("iceberg_hour",
+          (Class<? extends GenericUDF>) Class.forName("org.apache.iceberg.mr.hive.udf.GenericUDFIcebergHour"));
     } catch (ClassNotFoundException e) {
       LOG.warn("iceberg_bucket function could not be registered");
     }

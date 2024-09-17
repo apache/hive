@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE s3log
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE s3log
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE s3log
 ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.s3.S3LogDeserializer'
 STORED AS TEXTFILE
@@ -65,8 +67,10 @@ POSTHOOK: Input: default@s3log
 PREHOOK: query: DROP TABLE s3log
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@s3log
+PREHOOK: Output: database:default
 PREHOOK: Output: default@s3log
 POSTHOOK: query: DROP TABLE s3log
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@s3log
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@s3log

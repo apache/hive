@@ -18,15 +18,22 @@
 
 package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 
-import org.apache.calcite.sql.fun.SqlAbstractTimeFunction;
-import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.sql.SqlFunction;
+import org.apache.calcite.sql.SqlFunctionCategory;
+import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.type.OperandTypes;
+import org.apache.calcite.sql.type.ReturnTypes;
 
 /**
  * Sql UNIX_TIMESTAMP calcite operator.
  */
-public class HiveToUnixTimestampSqlOperator extends SqlAbstractTimeFunction {
-  public static final HiveToUnixTimestampSqlOperator INSTANCE = new HiveToUnixTimestampSqlOperator();
-  protected HiveToUnixTimestampSqlOperator() {
-    super("UNIX_TIMESTAMP", SqlTypeName.BIGINT);
+public final class HiveToUnixTimestampSqlOperator {
+  public static final SqlFunction INSTANCE =
+      new SqlFunction("UNIX_TIMESTAMP", SqlKind.OTHER_FUNCTION, ReturnTypes.BIGINT, null,
+          OperandTypes.or(OperandTypes.NILADIC,
+              OperandTypes.or(OperandTypes.STRING, OperandTypes.TIMESTAMP, OperandTypes.DATE),
+              OperandTypes.STRING_STRING), SqlFunctionCategory.NUMERIC);
+
+  private HiveToUnixTimestampSqlOperator() {
   }
 }

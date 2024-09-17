@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS source
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS source
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP MATERIALIZED VIEW IF EXISTS test_orc_cmv
 PREHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: query: DROP MATERIALIZED VIEW IF EXISTS test_orc_cmv
@@ -310,8 +312,10 @@ POSTHOOK: Output: default@test_textfile_mmcmv
 PREHOOK: query: DROP TABLE IF EXISTS source
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@source
+PREHOOK: Output: database:default
 PREHOOK: Output: default@source
 POSTHOOK: query: DROP TABLE IF EXISTS source
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@source
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@source

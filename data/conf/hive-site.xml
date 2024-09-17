@@ -20,21 +20,9 @@
 <configuration>
 
   <property>
-    <name>hive.metastore.client.cache.maxSize</name>
-    <value>10Mb</value>
-    <description>Max size for hive metastore client local cache</description>
-  </property>
-
-  <property>
     <name>hive.metastore.client.cache.enabled</name>
     <value>true</value>
     <description>This property enables a Caffeiene Cache for Metastore client</description>
-  </property>
-
-  <property>
-    <name>hive.metastore.client.cache.recordStats</name>
-    <value>true</value>
-    <description>This property enables recording metastore client cache stats in DEBUG logs</description>
   </property>
 
 <property>
@@ -122,14 +110,6 @@
   <name>hive.metastore.warehouse.dir</name>
   <value>${test.warehouse.dir}</value>
   <description></description>
-</property>
-
-<property>
-  <name>hive.metastore.metadb.dir</name>
-  <value>file://${test.tmp.dir}/metadb/</value>
-  <description>
-  Required by metastore server or if the uris argument below is not supplied
-  </description>
 </property>
 
 <property>
@@ -227,16 +207,6 @@
 </property>
 
 <property>
-  <name>hive.mapjoin.max.gc.time.percentage</name>
-  <value>0.99</value>
-  <description>
-  Maximum percentage of wallclock time that the JVM can spend in GC.
-  If this limit is exceeded, the local task will abort by itself.
-  Tests may run in very stressed environment, so this number is set very high to avoid false negatives.
-  </description>
-</property>
-
-<property>
   <name>hive.input.format</name>
   <value>org.apache.hadoop.hive.ql.io.CombineHiveInputFormat</value>
   <description>The default input format, if it is not specified, the system assigns it. It is set to HiveInputFormat for hadoop versions 17, 18 and 19, whereas it is set to CombineHiveInputFormat for hadoop 20. The user can always overwrite it - if there is a bug in CombineHiveInputFormat, it can always be manually set to HiveInputFormat. </description>
@@ -246,11 +216,6 @@
   <name>hive.default.rcfile.serde</name>
   <value>org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe</value>
   <description>The default SerDe hive will use for the rcfile format</description>
-</property>
-
-<property>
-  <name>hive.stats.key.prefix.reserve.length</name>
-  <value>0</value>
 </property>
 
 <property>
@@ -311,27 +276,6 @@
 </property>
 
 <property>
-  <name>hive.llap.io.cache.orc.size</name>
-  <value>8388608</value>
-</property>
-
-<property>
-  <name>hive.llap.io.cache.orc.arena.size</name>
-  <value>8388608</value>
-</property>
-
-<property>
-  <name>hive.llap.io.cache.orc.alloc.max</name>
-  <value>2097152</value>
-</property>
-
-
-<property>
-  <name>hive.llap.io.cache.orc.alloc.min</name>
-  <value>32768</value>
-</property>
-
-<property>
   <name>hive.llap.cache.allow.synthetic.fileid</name>
   <value>true</value>
 </property>
@@ -383,11 +327,6 @@
 </property>
 
 <property>
-  <name>hive.strict.timestamp.conversion</name>
-  <value>false</value>
-</property>
-
-<property>
   <name>hive.cbo.fallback.strategy</name>
   <value>TEST</value>
 </property>
@@ -424,5 +363,10 @@
   <property>
     <name>hive.async.cleanup.service.thread.count</name>
     <value>4</value>
+  </property>
+
+  <property>
+    <name>hive.tez.exec.print.summary</name>
+    <value>true</value>
   </property>
 </configuration>

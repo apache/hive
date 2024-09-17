@@ -87,7 +87,7 @@ public class TestReplicationMetricUpdateOnFailure {
   public void testReplDumpFailure() throws Exception {
     String dumpDir = TEST_PATH + Path.SEPARATOR + testName.getMethodName();
     IncrementalDumpMetricCollector metricCollector =
-            new IncrementalDumpMetricCollector(null, TEST_PATH, conf);
+            new IncrementalDumpMetricCollector(null, TEST_PATH, conf, 0L);
     ReplDumpWork replDumpWork = Mockito.mock(ReplDumpWork.class);
     Mockito.when(replDumpWork.getCurrentDumpPath()).thenReturn(new Path(dumpDir));
     Mockito.when(replDumpWork.getMetricCollector()).thenReturn(metricCollector);
@@ -109,7 +109,7 @@ public class TestReplicationMetricUpdateOnFailure {
     String dumpDir = TEST_PATH + Path.SEPARATOR + testName.getMethodName();
     MetricCollector.getInstance().deinit();
     BootstrapDumpMetricCollector metricCollector =
-            new BootstrapDumpMetricCollector(null, TEST_PATH, conf);
+            new BootstrapDumpMetricCollector(null, TEST_PATH, conf, 0L);
     ReplDumpWork replDumpWork = Mockito.mock(ReplDumpWork.class);
     Mockito.when(replDumpWork.getMetricCollector()).thenReturn(metricCollector);
     Mockito.when(replDumpWork.getCurrentDumpPath()).thenReturn(new Path(dumpDir));
@@ -128,7 +128,7 @@ public class TestReplicationMetricUpdateOnFailure {
     String dumpDir = TEST_PATH + Path.SEPARATOR + testName.getMethodName();
     MetricCollector.getInstance().deinit();
     IncrementalDumpMetricCollector metricCollector =
-            new IncrementalDumpMetricCollector(null, TEST_PATH, conf);
+            new IncrementalDumpMetricCollector(null, TEST_PATH, conf, 0L);
     ReplDumpWork replDumpWork = Mockito.mock(ReplDumpWork.class);
     Mockito.when(replDumpWork.getCurrentDumpPath()).thenReturn(new Path(dumpDir));
     Mockito.when(replDumpWork.getMetricCollector()).thenReturn(metricCollector);

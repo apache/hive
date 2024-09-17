@@ -18,8 +18,9 @@
 package org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -35,6 +36,8 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionC
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactory;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
@@ -53,14 +56,64 @@ import com.google.common.collect.Lists;
 public class SQLStdHiveAuthorizationValidatorForTest extends SQLStdHiveAuthorizationValidator {
 
   final String BYPASS_OBJTYPES_KEY = "test.hive.authz.sstd.validator.bypassObjTypes";
+  final String OUTPUT_PRIV_OBJS= "test.hive.authz.sstd.validator.outputPrivObjs";
   Set<HivePrivilegeObject.HivePrivilegeObjectType> bypassObjectTypes;
+  boolean shouldOutputObjs;
 
   public SQLStdHiveAuthorizationValidatorForTest(HiveMetastoreClientFactory metastoreClientFactory,
       HiveConf conf, HiveAuthenticationProvider authenticator,
       SQLStdHiveAccessControllerWrapper privController, HiveAuthzSessionContext ctx)
       throws HiveAuthzPluginException {
     super(metastoreClientFactory, conf, authenticator, privController, ctx);
+    shouldOutputObjs = conf.getBoolean(OUTPUT_PRIV_OBJS, false);
     setupBypass(conf.get(BYPASS_OBJTYPES_KEY,""));
+  }
+
+  static private <T> void addIfNotNull(StringBuilder sb, String fieldName, T field) {
+    if (field == null) return;
+    sb.append(" " + fieldName + " " + field);
+  }
+
+  private String privilegeObjectToStringForTest(HivePrivilegeObject privObj) {
+    StringBuilder sb = new StringBuilder("HIVE PRIVILEGE OBJECT {");
+    addIfNotNull(sb, "objectName:", privObj.getObjectName());
+    addIfNotNull(sb, "type:", privObj.getType());
+    addIfNotNull(sb, "actionType:", privObj.getActionType());
+    addIfNotNull(sb, "dbName:", privObj.getDbname());
+    // these two are all caps to prevent these being masked, since the word [Oo]wner is masked by qtests
+    addIfNotNull(sb, "OWNER:", privObj.getOwnerName());
+    addIfNotNull(sb, "OWNERTYPE:", privObj.getOwnerType());
+    addIfNotNull(sb, "columns:", privObj.getColumns());
+    addIfNotNull(sb, "partKeys", privObj.getPartKeys());
+    addIfNotNull(sb, "commandKeys", privObj.getCommandParams());;
+    sb.append("}");
+    return sb.toString();
+  }
+
+  private void outputHivePrivilegeObjects(String prefix, List<HivePrivilegeObject> privilegeObjects) {
+    if (!shouldOutputObjs) return;
+
+    List<String> privStrs = new ArrayList<>(privilegeObjects.size());
+    for (HivePrivilegeObject privilege : privilegeObjects) {
+      privStrs.add(privilegeObjectToStringForTest(privilege));
+    }
+
+    if (privStrs.isEmpty()) return;
+
+    // Sort to make test output stable
+    Collections.sort(privStrs);
+
+    LogHelper console = SessionState.getConsole();
+    console.printInfo(prefix, false);
+    for (String privStr : privStrs) {
+      console.printInfo(privStr, false);
+    }
+  }
+
+  @Override
+  public List<HivePrivilegeObject> filterListCmdObjects(List<HivePrivilegeObject> listObjs, HiveAuthzContext context) {
+    outputHivePrivilegeObjects("filterListCmdObjects", listObjs);
+    return super.filterListCmdObjects(listObjs, context);
   }
 
   private void setupBypass(String bypassObjectTypesConf){
@@ -95,6 +148,8 @@ public class SQLStdHiveAuthorizationValidatorForTest extends SQLStdHiveAuthoriza
   public void checkPrivileges(HiveOperationType hiveOpType, List<HivePrivilegeObject> inputHObjs,
       List<HivePrivilegeObject> outputHObjs, HiveAuthzContext context) throws HiveAuthzPluginException,
       HiveAccessControlException {
+    outputHivePrivilegeObjects("inputHObjs:", inputHObjs);
+    outputHivePrivilegeObjects("outputHObjs:", outputHObjs);
     switch (hiveOpType) {
     case DFS:
     case SET:
@@ -106,6 +161,7 @@ public class SQLStdHiveAuthorizationValidatorForTest extends SQLStdHiveAuthoriza
 
   }
 
+  @Override
   public boolean needTransform() {
     // In the future, we can add checking for username, groupname, etc based on
     // HiveAuthenticationProvider. For example,
@@ -115,8 +171,10 @@ public class SQLStdHiveAuthorizationValidatorForTest extends SQLStdHiveAuthoriza
 
   // Please take a look at the instructions in HiveAuthorizer.java before
   // implementing applyRowFilterAndColumnMasking
+  @Override
   public List<HivePrivilegeObject> applyRowFilterAndColumnMasking(HiveAuthzContext context,
       List<HivePrivilegeObject> privObjs) throws SemanticException {
+    outputHivePrivilegeObjects("applyRowFilterAndColumnMasking:", privObjs);
     List<HivePrivilegeObject> needRewritePrivObjs = new ArrayList<>(); 
     for (HivePrivilegeObject privObj : privObjs) {
       if (privObj.getObjectName().equals("masking_test") || privObj.getObjectName().startsWith("masking_test_n")) {
@@ -158,5 +216,4 @@ public class SQLStdHiveAuthorizationValidatorForTest extends SQLStdHiveAuthoriza
     }
     return needRewritePrivObjs;
   }
-
 }

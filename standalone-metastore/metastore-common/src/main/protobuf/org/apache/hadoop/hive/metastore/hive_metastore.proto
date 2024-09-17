@@ -365,6 +365,7 @@ message DoubleColumnStatsData {
   int64 num_nulls = 3;
   int64 num_dvs = 4;
   bytes bit_vectors = 5;
+  bytes histogram = 6;
 }
 
 message LongColumnStatsData {
@@ -373,6 +374,7 @@ message LongColumnStatsData {
   int64 num_nulls = 3;
   int64 num_dvs = 4;
   bytes bit_vectors = 5;
+  bytes histogram = 6;
 }
 
 message StringColumnStatsData {
@@ -401,6 +403,7 @@ message DecimalColumnStatsData {
   int64 num_nulls = 3;
   int64 num_dvs = 4;
   bytes bit_vectors = 5;
+  bytes histogram = 6;
 }
 
 message Date {
@@ -413,6 +416,7 @@ message DateColumnStatsData {
   int64 num_nulls = 3;
   int64 num_dvs = 4;
   bytes bit_vectors = 5;
+  bytes histogram = 6;
 }
 
 message TimestampColumnStatsData {
@@ -421,6 +425,7 @@ message TimestampColumnStatsData {
   int64 num_nulls = 3;
   int64 num_dvs = 4;
   bytes bit_vectors = 5;
+  bytes histogram = 6;
 }
 
 message ColumnStatisticsData {
@@ -1961,6 +1966,7 @@ message AbortTxnRequest {
   int64 txnid = 1;
   string repl_policy = 2;
   TxnType txn_type = 3;
+  optional int64 errorCode = 4;
 }
 
 message AbortTxnResponse {
@@ -1968,6 +1974,7 @@ message AbortTxnResponse {
 
 message AbortTxnsRequest {
   repeated int64 txn_ids = 1;
+  optional int64 errorCode = 2;
 }
 
 message AbortTxnsResponse {
@@ -2108,6 +2115,8 @@ enum CompactionType {
   COMPACTION_TYPE_UNSPECIFIED = 0;
   COMPACTION_TYPE_MINOR = 1;
   COMPACTION_TYPE_MAJOR = 2;
+  COMPACTION_TYPE_REBALANCE = 3;
+  COMPACTION_TYPE_ABORT_TXN_CLEANUP = 4;
 }
 
 enum DataOperationType {
@@ -2452,6 +2461,7 @@ message FireEventRequestData {
   oneof fireEventRequestData {
     InsertEventRequestData insert_data = 1;
     InsertEventRequestDataList insert_datas = 2;
+    bool refresh_event = 3;
   }
 }
 
@@ -2462,6 +2472,7 @@ message FireListenerEventRequest {
   string table_name = 4;
   repeated string partition_vals = 5;
   string cat_name = 6;
+  map<string, string> tblParams = 7;
 }
 
 message FireListenerEventResponse {

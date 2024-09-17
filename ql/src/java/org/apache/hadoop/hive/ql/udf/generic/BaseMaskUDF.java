@@ -98,8 +98,8 @@ public abstract class BaseMaskUDF extends GenericUDF {
  */
 abstract class AbstractTransformer {
   /**
-   * Initialzie the transformer object
-   * @param arguments arguments given to GenericUDF.initialzie()
+   * Initialize the transformer object
+   * @param arguments arguments given to GenericUDF.initialize()
    * @param startIdx index into array, from which the transformer should read values
    */
   abstract void init(ObjectInspector[] arguments, int startIdx);

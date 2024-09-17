@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsResponse;
 import org.apache.hadoop.hive.metastore.api.PartitionSpecWithSharedSD;
@@ -105,6 +106,7 @@ import org.junit.Test;
 
 import com.google.common.collect.Lists;
 
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.convertToGetPartitionsByNamesRequest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -149,6 +151,7 @@ public abstract class TestHiveMetaStore {
     MetastoreConf.setLongVar(conf, ConfVars.BATCH_RETRIEVE_MAX, 2);
     MetastoreConf.setLongVar(conf, ConfVars.LIMIT_PARTITION_REQUEST, DEFAULT_LIMIT_PARTITION_REQUEST);
     MetastoreConf.setVar(conf, ConfVars.STORAGE_SCHEMA_READER_IMPL, "no.such.class");
+    MetastoreConf.setBoolVar(conf, ConfVars.INTEGER_JDO_PUSHDOWN, true);
   }
 
   protected void initConf() {
@@ -504,16 +507,22 @@ public abstract class TestHiveMetaStore {
 
   private static Partition makePartitionObject(String dbName, String tblName,
       List<String> ptnVals, Table tbl, String ptnLocationSuffix) throws MetaException {
-    Partition part4 = new Partition();
-    part4.setDbName(dbName);
-    part4.setTableName(tblName);
-    part4.setValues(ptnVals);
-    part4.setParameters(new HashMap<>());
-    part4.setSd(tbl.getSd().deepCopy());
-    part4.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo().deepCopy());
-    part4.getSd().setLocation(tbl.getSd().getLocation() + ptnLocationSuffix);
-    MetaStoreServerUtils.updatePartitionStatsFast(part4, tbl, warehouse, false, false, null, true);
-    return part4;
+    String absoluteLocation = tbl.getSd().getLocation() + ptnLocationSuffix;
+    return makePartitionObjectWithAbsoluteLocation(dbName, tblName, ptnVals, tbl, absoluteLocation);
+  }
+
+  private static Partition makePartitionObjectWithAbsoluteLocation(String dbName, String tblName,
+      List<String> ptnVals, Table tbl, String absolutePartitionLocation) throws MetaException {
+    Partition part = new Partition();
+    part.setDbName(dbName);
+    part.setTableName(tblName);
+    part.setValues(ptnVals);
+    part.setParameters(new HashMap<>());
+    part.setSd(tbl.getSd().deepCopy());
+    part.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo().deepCopy());
+    part.getSd().setLocation(absolutePartitionLocation);
+    MetaStoreServerUtils.updatePartitionStatsFast(part, tbl, warehouse, false, false, null, true);
+    return part;
   }
 
   @Test
@@ -1132,6 +1141,52 @@ public abstract class TestHiveMetaStore {
       System.err.println("testRenamePartition() failed.");
       throw e;
     }
+  }
+
+  @Test(expected = InvalidObjectException.class)
+  public void testDropTableFetchPartitions() throws Throwable {
+    String dbName = "fetchPartitionsDb";
+    String tblName = "fetchPartitionsTbl";
+    List<String> vals = new ArrayList<>(2);
+    vals.add("2011-07-11");
+    vals.add("8");
+    client.dropTable(dbName, tblName);
+    silentDropDatabase(dbName);
+    new DatabaseBuilder()
+            .setName(dbName)
+            .setDescription("Drop table Fetch partition Test database")
+            .create(client, conf);
+
+    Table tbl = new TableBuilder()
+            .setDbName(dbName)
+            .setTableName(tblName)
+            .addCol("name", ColumnType.STRING_TYPE_NAME)
+            .addCol("income", ColumnType.INT_TYPE_NAME)
+            .addPartCol("ds", ColumnType.STRING_TYPE_NAME)
+            .addPartCol("hr", ColumnType.INT_TYPE_NAME)
+            .create(client, conf);
+
+    if (isThriftClient) {
+      // the createTable() above does not update the location in the 'tbl'
+      // object when the client is a thrift client and the code below relies
+      // on the location being present in the 'tbl' object - so get the table
+      // from the metastore
+      tbl = client.getTable(dbName, tblName);
+    }
+
+    Partition part = new Partition();
+    part.setDbName(dbName);
+    part.setTableName(tblName);
+    part.setValues(vals);
+    part.setParameters(new HashMap<>());
+    part.setSd(tbl.getSd().deepCopy());
+    part.getSd().setLocation(tbl.getSd().getLocation() + "/part1");
+
+    client.add_partition(part);
+
+    GetPartitionsByNamesRequest req = convertToGetPartitionsByNamesRequest(dbName, tblName, vals);
+    client.dropTable(dbName, tblName, true, false);
+    List<Partition> partitionsList = client.getPartitionsByNames(req).getPartitions();
   }
 
   @Test
@@ -2298,18 +2353,19 @@ public abstract class TestHiveMetaStore {
         .addCol("c1", ColumnType.STRING_TYPE_NAME)
         .addCol("c2", ColumnType.INT_TYPE_NAME)
         .addPartCol("p1", ColumnType.STRING_TYPE_NAME)
-        .addPartCol("p2", ColumnType.STRING_TYPE_NAME)
+        .addPartCol("p2", "varchar(20)")
         .addPartCol("p3", ColumnType.INT_TYPE_NAME)
+        .addPartCol("p4", "char(20)")
         .create(client, conf);
 
     tbl = client.getTable(dbName, tblName);
 
-    add_partition(client, tbl, Lists.newArrayList("p11", "p21", "31"), "part1");
-    add_partition(client, tbl, Lists.newArrayList("p11", "p22", "32"), "part2");
-    add_partition(client, tbl, Lists.newArrayList("p12", "p21", "31"), "part3");
-    add_partition(client, tbl, Lists.newArrayList("p12", "p23", "32"), "part4");
-    add_partition(client, tbl, Lists.newArrayList("p13", "p24", "31"), "part5");
-    add_partition(client, tbl, Lists.newArrayList("p13", "p25", "-33"), "part6");
+    add_partition(client, tbl, Lists.newArrayList("p11", "p21", "31", "p41"), "part1");
+    add_partition(client, tbl, Lists.newArrayList("p11", "p22", "32", "p42"), "part2");
+    add_partition(client, tbl, Lists.newArrayList("p12", "p21", "31", "p43"), "part3");
+    add_partition(client, tbl, Lists.newArrayList("p12", "p23", "32", "p43"), "part4");
+    add_partition(client, tbl, Lists.newArrayList("p13", "p24", "31", "p44"), "part5");
+    add_partition(client, tbl, Lists.newArrayList("p13", "p25", "-33", "p45"), "part6");
 
     // Test equals operator for strings and integers.
     checkFilter(client, dbName, tblName, "p1 = \"p11\"", 2);
@@ -2326,6 +2382,8 @@ public abstract class TestHiveMetaStore {
     checkFilter(client, dbName, tblName, "p1 = \"p11\" or p1=\"p12\"", 4);
     checkFilter(client, dbName, tblName, "p1 = \"p11\" and p3 = 31", 1);
     checkFilter(client, dbName, tblName, "p3 = -33 or p1 = \"p12\"", 3);
+    checkFilter(client, dbName, tblName, "p1 = \"p11\" and p4 = \"p41\"", 1);
+    checkFilter(client, dbName, tblName, "p1 = \"p12\" and p4 = \"p43\"", 2);
 
     // Test not-equals operator for strings and integers.
     checkFilter(client, dbName, tblName, "p1 != \"p11\"", 4);
@@ -2341,6 +2399,8 @@ public abstract class TestHiveMetaStore {
     checkFilter(client, dbName, tblName, "p3 != -33 or p1 != \"p13\"", 5);
     checkFilter(client, dbName, tblName, "p1 != \"p11\" and p3 = 31", 2);
     checkFilter(client, dbName, tblName, "p3 != 31 and p1 = \"p12\"", 1);
+    checkFilter(client, dbName, tblName, "p1 != \"p11\" and p4 != \"p43\"", 2);
+    checkFilter(client, dbName, tblName, "p3 != 31 and p4 = \"p43\"", 1);
 
     // Test reverse order.
     checkFilter(client, dbName, tblName, "31 != p3 and p1 = \"p12\"", 1);
@@ -2357,6 +2417,8 @@ public abstract class TestHiveMetaStore {
        "p1=\"p12\" and (p2=\"p27\" Or p2=\"p21\")", 1);
     checkFilter(client, dbName, tblName,
        "p1=\"p12\" and p2=\"p27\" Or p2=\"p21\"", 2);
+    checkFilter(client, dbName, tblName,
+        "p1=\"p11\" and (p4=\"p41\" or p4=\"p42\")", 2);
 
     // Test gt/lt/lte/gte/like for strings.
     checkFilter(client, dbName, tblName, "p1 > \"p12\"", 2);
@@ -2365,6 +2427,7 @@ public abstract class TestHiveMetaStore {
     checkFilter(client, dbName, tblName, "p1 <= \"p12\"", 4);
     checkFilter(client, dbName, tblName, "p1 like \"p1%\"", 6);
     checkFilter(client, dbName, tblName, "p2 like \"p%3\"", 1);
+    checkFilter(client, dbName, tblName, "p4 like \"p4%\"", 6);
 
     // Test gt/lt/lte/gte for numbers.
     checkFilter(client, dbName, tblName, "p3 < 0", 1);
@@ -2387,6 +2450,17 @@ public abstract class TestHiveMetaStore {
     checkFilter(client, dbName, tblName, "p3 between 1 and 3 or p3 not between 1 and 3", 6);
     checkFilter(client, dbName, tblName,
         "p3 between 31 and 32 and p1 between \"p12\" and \"p14\"", 3);
+    checkFilter(client, dbName, tblName, "p4 between \"p41\" and \"p44\"", 5);
+
+    // Test in
+    checkFilter(client, dbName, tblName, "(p1) in (\"p11\", \"p12\")", 4);
+    checkFilter(client, dbName, tblName, "(p2) in (\"p21\", \"p25\")", 3);
+    checkFilter(client, dbName, tblName, "(p3) not in (31, 33)", 3);
+    checkFilter(client, dbName, tblName, "(p4) not in ('p43', 'p44')", 3);
+
+    // Test multi-in
+    checkFilter(client, dbName, tblName, "(struct (p1, p2)) in (const struct ('p11', 'p22'), const struct ('p12', 'p22'))", 1);
+    checkFilter(client, dbName, tblName, "(struct (p1, p3)) not in (struct ('p11', 31), struct ('p12', 33))", 5);
 
     //Test for setting the maximum partition count
     List<Partition> partitions = client.listPartitionsByFilter(dbName,
@@ -2605,7 +2679,6 @@ public abstract class TestHiveMetaStore {
     client.dropDatabase(dbName);
   }
 
-
   private void checkFilter(HiveMetaStoreClient client, String dbName,
         String tblName, String filter, int expectedCount) throws TException {
     LOG.debug("Testing filter: " + filter);
@@ -2618,16 +2691,7 @@ public abstract class TestHiveMetaStore {
 
   private void add_partition(HiveMetaStoreClient client, Table table,
       List<String> vals, String location) throws TException {
-
-    Partition part = new Partition();
-    part.setDbName(table.getDbName());
-    part.setTableName(table.getTableName());
-    part.setValues(vals);
-    part.setParameters(new HashMap<>());
-    part.setSd(table.getSd().deepCopy());
-    part.getSd().setSerdeInfo(table.getSd().getSerdeInfo());
-    part.getSd().setLocation(table.getSd().getLocation() + location);
-
+    Partition part = makePartitionObject(table.getDbName(), table.getTableName(), vals, table, location);
     client.add_partition(part);
   }
 
@@ -3202,6 +3266,69 @@ public abstract class TestHiveMetaStore {
 
     // Cleanup
     client.dropDatabase(dbName, true, true, true);
+  }
+
+  @Test
+  public void testDropDatabaseWithCustomPartitionPath() throws Exception {
+    String dbName = "dropdb";
+    String tblName1 = "droptbl1";
+    String tblName2 = "droptbl2";
+    String tblName3 = "droptbl3";
+
+    // A new client to support drop these 3 tables in one batch
+    Configuration newConf = MetastoreConf.newMetastoreConf(new Configuration(conf));
+    MetastoreConf.setLongVar(newConf, ConfVars.BATCH_RETRIEVE_MAX, 3);
+    IMetaStoreClient client = RetryingMetaStoreClient.getProxy(newConf, getHookLoader(), HiveMetaStoreClient.class.getName());
+
+    // Setup
+    silentDropDatabase(dbName);
+    new DatabaseBuilder()
+        .setName(dbName)
+        .create(client, conf);
+
+    new TableBuilder()
+        .setDbName(dbName)
+        .setTableName(tblName1)
+        .addCol("c1", ColumnType.STRING_TYPE_NAME)
+        .addPartCol("p1", ColumnType.STRING_TYPE_NAME)
+        .create(client, conf);
+
+    new TableBuilder()
+        .setDbName(dbName)
+        .setTableName(tblName2)
+        .addCol("c1", ColumnType.STRING_TYPE_NAME)
+        .addPartCol("p1", ColumnType.STRING_TYPE_NAME)
+        .create(client, conf);
+
+    new TableBuilder()
+        .setDbName(dbName)
+        .setTableName(tblName3)
+        .addCol("c1", ColumnType.STRING_TYPE_NAME)
+        .create(client, conf);
+
+    Path rootPath = warehouse.getWhRoot();
+    Path path1 = new Path(rootPath, tblName1);
+    Table tbl1 = client.getTable(dbName, tblName1);
+    Table tbl2 = client.getTable(dbName, tblName2);
+    Table tbl3 = client.getTable(dbName, tblName3);
+    List<String> vals = Lists.newArrayList("p1");
+
+    // partition1 whose path does not belong to table1
+    Partition part1 = makePartitionObjectWithAbsoluteLocation(dbName, tblName1, vals, tbl1, path1.toString());
+    client.add_partition(part1);
+
+    // partition2 whose path belongs to table2
+    Partition part2 = makePartitionObject(dbName, tblName2, vals, tbl2, "/part2");
+    client.add_partition(part2);
+
+    client.dropDatabase(dbName, true, true, true);
+    FileSystem fs = FileSystem.get(path1.toUri(), conf);
+    assertFalse(fs.exists(new Path(tbl1.getSd().getLocation())));
+    assertFalse(fs.exists(new Path(tbl2.getSd().getLocation())));
+    assertFalse(fs.exists(new Path(tbl3.getSd().getLocation())));
+    assertFalse(fs.exists(path1));
+
+    client.close();
   }
 
   @Test

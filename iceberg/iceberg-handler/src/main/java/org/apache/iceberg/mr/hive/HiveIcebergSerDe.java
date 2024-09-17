@@ -44,9 +44,13 @@ import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.TableMetadata;
+import org.apache.iceberg.TableMetadataParser;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.hadoop.HadoopFileIO;
 import org.apache.iceberg.hive.HiveSchemaUtil;
+import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.serde.objectinspector.IcebergObjectInspector;
@@ -108,12 +112,26 @@ public class HiveIcebergSerDe extends AbstractSerDe {
         // During table creation we might not have the schema information from the Iceberg table, nor from the HMS
         // table. In this case we have to generate the schema using the serdeProperties which contains the info
         // provided in the CREATE TABLE query.
-        boolean autoConversion = configuration.getBoolean(InputFormatConfig.SCHEMA_AUTO_CONVERSION, false);
-        // If we can not load the table try the provided hive schema
-        this.tableSchema = hiveSchemaOrThrow(e, autoConversion);
-        // This is only for table creation, it is ok to have an empty partition column list
-        this.partitionColumns = ImmutableList.of();
 
+        if (serDeProperties.get("metadata_location") != null) {
+          // If metadata location is provided, extract the schema details from it.
+          try (FileIO fileIO = new HadoopFileIO(configuration)) {
+            TableMetadata metadata = TableMetadataParser.read(fileIO, serDeProperties.getProperty("metadata_location"));
+            this.tableSchema = metadata.schema();
+            this.partitionColumns =
+                metadata.spec().fields().stream().map(PartitionField::name).collect(Collectors.toList());
+            // Validate no schema is provided via create command
+            if (!getColumnNames().isEmpty() || !getPartitionColumnNames().isEmpty()) {
+              throw new SerDeException("Column names can not be provided along with metadata location.");
+            }
+          }
+        } else {
+          boolean autoConversion = configuration.getBoolean(InputFormatConfig.SCHEMA_AUTO_CONVERSION, false);
+          // If we can not load the table try the provided hive schema
+          this.tableSchema = hiveSchemaOrThrow(e, autoConversion);
+          // This is only for table creation, it is ok to have an empty partition column list
+          this.partitionColumns = ImmutableList.of();
+        }
         if (e instanceof NoSuchTableException &&
             HiveTableUtil.isCtas(serDeProperties) &&
             !Catalogs.hiveCatalog(configuration, serDeProperties)) {
@@ -128,8 +146,8 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     // Currently ClusteredWriter is used which requires that records are ordered by partition keys.
     // Here we ensure that SortedDynPartitionOptimizer will kick in and do the sorting.
     // TODO: remove once we have both Fanout and ClusteredWriter available: HIVE-25948
-    HiveConf.setIntVar(configuration, HiveConf.ConfVars.HIVEOPTSORTDYNAMICPARTITIONTHRESHOLD, 1);
-    HiveConf.setVar(configuration, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
+    HiveConf.setIntVar(configuration, HiveConf.ConfVars.HIVE_OPT_SORT_DYNAMIC_PARTITION_THRESHOLD, 1);
+    HiveConf.setVar(configuration, HiveConf.ConfVars.DYNAMIC_PARTITIONING_MODE, "nonstrict");
     try {
       this.inspector = IcebergObjectInspector.create(projectedSchema);
     } catch (Exception e) {
@@ -139,19 +157,8 @@ public class HiveIcebergSerDe extends AbstractSerDe {
 
   private static Schema projectedSchema(Configuration configuration, String tableName, Schema tableSchema,
       Map<String, String> jobConfs) {
-    Context.Operation operation = HiveCustomStorageHandlerUtils.getWriteOperation(configuration, tableName);
-    if (operation != null) {
-      switch (operation) {
-        case DELETE:
-          return IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns());
-        case UPDATE:
-          return IcebergAcidUtil.createSerdeSchemaForUpdate(tableSchema.columns());
-        case OTHER:
-          return tableSchema;
-        default:
-          throw new IllegalArgumentException("Unsupported operation " + operation);
-      }
-    } else {
+    Context.Operation operation = HiveCustomStorageHandlerUtils.getWriteOperation(configuration::get, tableName);
+    if (operation == null) {
       jobConfs.put(InputFormatConfig.CASE_SENSITIVE, "false");
       String[] selectedColumns = ColumnProjectionUtils.getReadColumnNames(configuration);
       // When same table is joined multiple times, it is possible some selected columns are duplicated,
@@ -167,6 +174,19 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       } else {
         return projectedSchema;
       }
+    }
+    if (IcebergTableUtil.isCopyOnWriteMode(operation, configuration::get)) {
+      return IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns());
+    }
+    switch (operation) {
+      case DELETE:
+        return IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns());
+      case UPDATE:
+        return IcebergAcidUtil.createSerdeSchemaForUpdate(tableSchema.columns());
+      case OTHER:
+        return tableSchema;
+      default:
+        throw new IllegalArgumentException("Unsupported operation " + operation);
     }
   }
 

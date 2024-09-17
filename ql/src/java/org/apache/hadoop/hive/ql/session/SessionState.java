@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.session;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.shims.HadoopShims.USER_ID;
 
 import java.io.Closeable;
 import java.io.File;
@@ -254,8 +255,8 @@ public class SessionState implements ISessionAuthState{
 
   private String currentCatalog;
 
-  private final String CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER =
-      "hive.internal.ss.authz.settings.applied.marker";
+  private static final String CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER =
+      "_hive.ss.authz.settings.applied.marker";
 
   private String userIpAddress;
 
@@ -334,6 +335,12 @@ public class SessionState implements ISessionAuthState{
   private Hive hiveDb;
   private final Map<String, QueryState> queryStateMap = new HashMap<>();
 
+  /**
+   * Marker flag to indicate that the current SessionState (and Driver) instance is used for executing compaction queries only.
+   * It is required to exclude compaction related queries from all Ranger policies that would otherwise apply.
+   */
+  private boolean compaction = false;
+
   public QueryState getQueryState(String queryId) {
     return queryStateMap.get(queryId);
   }
@@ -384,7 +391,7 @@ public class SessionState implements ISessionAuthState{
 
   public boolean getIsSilent() {
     if(sessionConf != null) {
-      return sessionConf.getBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT);
+      return sessionConf.getBoolVar(HiveConf.ConfVars.HIVE_SESSION_SILENT);
     } else {
       return isSilent;
     }
@@ -400,7 +407,7 @@ public class SessionState implements ISessionAuthState{
 
   public void setIsSilent(boolean isSilent) {
     if(sessionConf != null) {
-      sessionConf.setBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT, isSilent);
+      sessionConf.setBoolVar(HiveConf.ConfVars.HIVE_SESSION_SILENT, isSilent);
     }
     this.isSilent = isSilent;
   }
@@ -433,6 +440,14 @@ public class SessionState implements ISessionAuthState{
     this.isHiveServerQuery = isHiveServerQuery;
   }
 
+  public boolean isCompaction() {
+    return compaction;
+  }
+
+  public void setCompaction(boolean compaction) {
+    this.compaction = compaction;
+  }
+
   public SessionState(HiveConf conf) {
     this(conf, null);
   }
@@ -448,13 +463,13 @@ public class SessionState implements ISessionAuthState{
     if (LOG.isDebugEnabled()) {
       LOG.debug("SessionState user: " + userName);
     }
-    isSilent = conf.getBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT);
+    isSilent = conf.getBoolVar(HiveConf.ConfVars.HIVE_SESSION_SILENT);
     resourceMaps = new ResourceMaps();
     // Must be deterministic order map for consistent q-test output across Java versions
     overriddenConfigurations = new LinkedHashMap<String, String>();
     // if there isn't already a session name, go ahead and create it.
-    if (StringUtils.isEmpty(conf.getVar(HiveConf.ConfVars.HIVESESSIONID))) {
-      conf.setVar(HiveConf.ConfVars.HIVESESSIONID, makeSessionId());
+    if (StringUtils.isEmpty(conf.getVar(HiveConf.ConfVars.HIVE_SESSION_ID))) {
+      conf.setVar(HiveConf.ConfVars.HIVE_SESSION_ID, makeSessionId());
       getConsole().printInfo("Hive Session ID = " + getSessionId());
     }
     // Using system classloader as the parent. Using thread context
@@ -470,7 +485,7 @@ public class SessionState implements ISessionAuthState{
     killQuery = new NullKillQuery();
     this.cleanupService = cleanupService;
 
-    ShimLoader.getHadoopShims().setHadoopSessionContext(getSessionId());
+    ShimLoader.getHadoopShims().setHadoopSessionContext(String.format(USER_ID, getSessionId(), userName));
   }
 
   public Map<String, String> getHiveVariables() {
@@ -485,7 +500,7 @@ public class SessionState implements ISessionAuthState{
   }
 
   public String getSessionId() {
-    return (sessionConf.getVar(HiveConf.ConfVars.HIVESESSIONID));
+    return (sessionConf.getVar(HiveConf.ConfVars.HIVE_SESSION_ID));
   }
 
   public void updateThreadName() {
@@ -718,7 +733,9 @@ public class SessionState implements ISessionAuthState{
     }
 
     String engine = HiveConf.getVar(startSs.getConf(), HiveConf.ConfVars.HIVE_EXECUTION_ENGINE);
-    if (!engine.equals("tez") || startSs.isHiveServerQuery) {
+
+    if (!engine.equals("tez") || startSs.isHiveServerQuery
+            || !HiveConf.getBoolVar(startSs.getConf(), ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION)) {
       return;
     }
 
@@ -766,14 +783,14 @@ public class SessionState implements ISessionAuthState{
     HiveConf conf = getConf();
     Path rootHDFSDirPath = createRootHDFSDir(conf);
     // Now create session specific dirs
-    String scratchDirPermission = HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIRPERMISSION);
+    String scratchDirPermission = HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCH_DIR_PERMISSION);
     Path path;
     // 1. HDFS scratch dir
     path = new Path(rootHDFSDirPath, userName);
     hdfsScratchDirURIString = path.toUri().toString();
     createPath(conf, path, scratchDirPermission, false, false);
     // 2. Local scratch dir
-    path = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.LOCALSCRATCHDIR));
+    path = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.LOCAL_SCRATCH_DIR));
     createPath(conf, path, scratchDirPermission, true, false);
     // 3. Download resources dir
     path = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR));
@@ -797,7 +814,7 @@ public class SessionState implements ISessionAuthState{
       hdfsSessionPathLockFile = fs.create(new Path(hdfsSessionPath, LOCK_FILE_NAME), true);
     }
     // 6. Local session path
-    localSessionPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.LOCALSCRATCHDIR), sessionId);
+    localSessionPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.LOCAL_SCRATCH_DIR), sessionId);
     createPath(conf, localSessionPath, scratchDirPermission, true, true);
     conf.set(LOCAL_SESSION_PATH_KEY, localSessionPath.toUri().toString());
     // 7. HDFS temp table space
@@ -822,7 +839,7 @@ public class SessionState implements ISessionAuthState{
    * @throws IOException
    */
   private Path createRootHDFSDir(HiveConf conf) throws IOException {
-    Path rootHDFSDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR));
+    Path rootHDFSDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCH_DIR));
     Utilities.ensurePathIsWritable(rootHDFSDirPath, conf);
     return rootHDFSDirPath;
   }
@@ -1062,8 +1079,8 @@ public class SessionState implements ISessionAuthState{
    * @throws IOException
    */
   private static File createTempFile(HiveConf conf) throws IOException {
-    String lScratchDir = HiveConf.getVar(conf, HiveConf.ConfVars.LOCALSCRATCHDIR);
-    String sessionID = conf.getVar(HiveConf.ConfVars.HIVESESSIONID);
+    String lScratchDir = HiveConf.getVar(conf, HiveConf.ConfVars.LOCAL_SCRATCH_DIR);
+    String sessionID = conf.getVar(HiveConf.ConfVars.HIVE_SESSION_ID);
 
     return FileUtils.createTempFile(lScratchDir, sessionID, ".pipeout");
   }
@@ -1091,7 +1108,7 @@ public class SessionState implements ISessionAuthState{
   public static Registry getRegistryForWrite() {
     Registry registry = getRegistry();
     if (registry == null) {
-      throw new RuntimeException("Function registery for session is not initialized");
+      throw new RuntimeException("Function registry for session is not initialized");
     }
     return registry;
   }
@@ -1307,6 +1324,45 @@ public class SessionState implements ISessionAuthState{
     }
 
     /**
+     * Logs warn into the log file, and if the LogHelper is not silent then into the HiveServer2 or
+     * HiveCli info stream too.
+     * BeeLine uses the operation log file to show the logs to the user, so depending on the
+     * BeeLine settings it could be shown to the user.
+     * @param warn The log message
+     */
+    public void printWarn(String warn) {
+      printWarn(warn, null);
+    }
+
+    /**
+     * Logs warn into the log file, and if the LogHelper is not silent then into the HiveServer2 or
+     * HiveCli info stream too. Handles an extra detail which will not be printed if null.
+     * BeeLine uses the operation log file to show the logs to the user, so depending on the
+     * BeeLine settings it could be shown to the user.
+     * @param warn The log message
+     * @param detail Extra detail to log which will be not printed if null
+     */
+    public void printWarn(String warn, String detail) {
+      printWarn(warn, detail, getIsSilent());
+    }
+
+    /**
+     * Logs warn into the log file, and if not silent then into the HiveServer2 or HiveCli info
+     * stream too. Handles an extra detail which will not be printed if null.
+     * BeeLine uses the operation log file to show the logs to the user, so depending on the
+     * BeeLine settings it could be shown to the user.
+     * @param warn The log message
+     * @param detail Extra detail to log which will be not printed if null
+     * @param isSilent If true then the message will not be printed to the info stream
+     */
+    public void printWarn(String warn, String detail, boolean isSilent) {
+      if (!isSilent) {
+        getInfoStream().println(warn);
+      }
+      LOG.warn(warn + StringUtils.defaultString(detail));
+    }
+
+    /**
      * Logs an error into the log file, and into the HiveServer2 or HiveCli error stream too.
      * BeeLine uses the operation log file to show the logs to the user, so depending on the
      * BeeLine settings it could be shown to the user.
@@ -1408,10 +1464,10 @@ public class SessionState implements ISessionAuthState{
   public void loadReloadableAuxJars() throws IOException {
     LOG.info("Reloading auxiliary JAR files");
 
-    final String renewableJarPath = sessionConf.getVar(ConfVars.HIVERELOADABLEJARS);
+    final String renewableJarPath = sessionConf.getVar(ConfVars.HIVE_RELOADABLE_JARS);
     // do nothing if this property is not specified or empty
     if (StringUtils.isBlank(renewableJarPath)) {
-      LOG.warn("Configuration {} not specified", ConfVars.HIVERELOADABLEJARS);
+      LOG.warn("Configuration {} not specified", ConfVars.HIVE_RELOADABLE_JARS);
       return;
     }
 
@@ -2059,7 +2115,7 @@ public class SessionState implements ISessionAuthState{
     // Provide a facility to set current timestamp during tests
     if (sessionConf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
       String overrideTimestampString =
-          HiveConf.getVar(sessionConf, HiveConf.ConfVars.HIVETESTCURRENTTIMESTAMP, (String)null);
+          HiveConf.getVar(sessionConf, HiveConf.ConfVars.HIVE_TEST_CURRENT_TIMESTAMP, (String)null);
       if (overrideTimestampString != null && overrideTimestampString.length() > 0) {
         TimestampTZ zonedDateTime = TimestampTZUtil.convert(
             Timestamp.valueOf(overrideTimestampString), sessionConf.getLocalTimeZone());

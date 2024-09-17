@@ -231,7 +231,7 @@ public class TestTaskLogProcessor {
     String solution = eas.getSolution();
     assertNotNull(solution);
     assertTrue(solution.length() > 0);
-    String confName = HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY.toString();
+    String confName = HiveConf.ConfVars.HIVE_MAP_AGGR_HASH_MEMORY.toString();
     assertTrue(solution.contains(confName));
   }
   

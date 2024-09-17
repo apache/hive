@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.Collections;
 import java.util.List;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -76,6 +77,12 @@ public interface FunctionHelper {
    */
   AggregateInfo getWindowAggregateFunctionInfo(boolean isDistinct, boolean isAllColumns,
       String aggregateName, List<RexNode> aggregateParameters)
+      throws SemanticException;
+
+  /**
+   * Returns RexCall for UDTF from the appropriate function registry based on given parameters
+   */
+  RexCall getUDTFFunction(String functionName, List<RexNode> operands)
       throws SemanticException;
 
   /**

@@ -18,6 +18,7 @@
 
 package org.apache.hive.service.cli.session;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.io.BufferedReader;
 import java.io.File;
@@ -139,7 +140,7 @@ public class HiveSessionImpl implements HiveSession {
     this.operationLock = serverConf.getBoolVar(
         ConfVars.HIVE_SERVER2_PARALLEL_OPS_IN_SESSION) ? null : new Semaphore(1);
     // Set an explicit session name to control the download directory name
-    sessionConf.set(ConfVars.HIVESESSIONID.varname,
+    sessionConf.set(ConfVars.HIVE_SESSION_ID.varname,
         this.sessionHandle.getHandleIdentifier().toString());
     // Use thrift transportable formatter
     sessionConf.set(SerDeUtils.LIST_SINK_OUTPUT_FORMATTER, ThriftFormatter.class.getName());
@@ -209,7 +210,7 @@ public class HiveSessionImpl implements HiveSession {
       FileInputStream initStream = null;
       BufferedReader bufferedReader = null;
       initStream = new FileInputStream(fileName);
-      bufferedReader = new BufferedReader(new InputStreamReader(initStream));
+      bufferedReader = new BufferedReader(new InputStreamReader(initStream, StandardCharsets.UTF_8));
       return bufferedReader;
     }
 
@@ -401,11 +402,11 @@ public class HiveSessionImpl implements HiveSession {
     // set the thread name with the logging prefix.
     sessionState.updateThreadName();
 
-    try {
-      setSessionHive();
-    } catch (HiveSQLException e) {
-      throw new RuntimeException(e);
-    }
+    // If Hive.get() is being shared across different sessions,
+    // sessionHive and Hive.get() may be different, in such case,
+    // the risk of deadlock on HiveMetaStoreClient#SynchronizedHandler can happen.
+    // Refresh the thread-local Hive to avoid the deadlock.
+    Hive.set(sessionHive);
   }
 
   /**
@@ -432,6 +433,18 @@ public class HiveSessionImpl implements HiveSession {
       sessionState.resetThreadName();
     }
 
+    // We have already set the thread-local Hive belonging to the current session,
+    // if the thread-local Hive has been changed/updated after running the operation,
+    // the Hive after should belong to the same session, and we should update the sessionHive.
+    // The thread-local hive would be recreated only when the underlying
+    // HiveMetaStoreClient is incompatible with the newest session conf.
+    Hive localHive = Hive.getThreadLocal();
+    if (localHive != null && localHive != sessionHive) {
+      // The previous sessionHive would be GC'ed finally, or should we force close it?
+      sessionHive = localHive;
+      sessionHive.setAllowClose(false);
+    }
+
     SessionState.detachSession();
     if (ThreadWithGarbageCleanup.currentThread() instanceof ThreadWithGarbageCleanup) {
       ThreadWithGarbageCleanup currentThread =
@@ -456,7 +469,7 @@ public class HiveSessionImpl implements HiveSession {
 
   @Override
   public HiveConf getHiveConf() {
-    sessionConf.setVar(HiveConf.ConfVars.HIVEFETCHOUTPUTSERDE, FETCH_WORK_SERDE_CLASS);
+    sessionConf.setVar(HiveConf.ConfVars.HIVE_FETCH_OUTPUT_SERDE, FETCH_WORK_SERDE_CLASS);
     return sessionConf;
   }
 

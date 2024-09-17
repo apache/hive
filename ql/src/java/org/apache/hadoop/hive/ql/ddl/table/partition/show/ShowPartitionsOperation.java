@@ -54,12 +54,13 @@ public class ShowPartitionsOperation extends DDLOperation<ShowPartitionsDesc> {
   @Override
   public int execute() throws HiveException {
     Table tbl = context.getDb().getTable(desc.getTabName());
-    if (!tbl.isPartitioned()) {
-      throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, desc.getTabName());
-    }
-
     List<String> parts;
-    if (desc.getCond() != null || desc.getOrder() != null) {
+    if (tbl.isNonNative() && tbl.getStorageHandler().supportsPartitionTransform()) {
+      parts = tbl.getStorageHandler().showPartitions(context, tbl);
+    } else if (!tbl.isPartitioned()) {
+      context.getTask().setException(new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, desc.getTabName()));
+      return ErrorMsg.TABLE_NOT_PARTITIONED.getErrorCode();
+    } else if (desc.getCond() != null || desc.getOrder() != null) {
       parts = getPartitionNames(tbl);
     } else if (desc.getPartSpec() != null) {
       parts = context.getDb().getPartitionNames(tbl.getDbName(), tbl.getTableName(),
@@ -116,4 +117,6 @@ public class ShowPartitionsOperation extends DDLOperation<ShowPartitionsDesc> {
         desc.getOrder(), desc.getLimit());
     return partNames;
   }
+
 }
+

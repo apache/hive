@@ -1,0 +1,107 @@
+PREHOOK: query: explain cbo
+select cast(null as map<int, string>), cast(null as array<map<int, string>>), cast(null as int), cast(null as struct<f1:array<map<int, string>>, f2:struct<a:double, b:string>>)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select cast(null as map<int, string>), cast(null as array<map<int, string>>), cast(null as int), cast(null as struct<f1:array<map<int, string>>, f2:struct<a:double, b:string>>)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+Explain
+CBO PLAN:
+HiveProject(_o__c0=[null:(INTEGER, VARCHAR(2147483647) CHARACTER SET "UTF-16LE") MAP], _o__c1=[null:(INTEGER, VARCHAR(2147483647) CHARACTER SET "UTF-16LE") MAP ARRAY], _o__c2=[null:INTEGER], _o__c3=[null:RecordType((INTEGER, VARCHAR(2147483647) CHARACTER SET "UTF-16LE") MAP ARRAY f1, RecordType(DOUBLE a, VARCHAR(2147483647) CHARACTER SET "UTF-16LE" b) f2)])
+  HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+
+PREHOOK: query: explain
+select cast(null as map<int, string>), cast(null as array<map<int, string>>), cast(null as int), cast(null as struct<f1:array<map<int, string>>, f2:struct<a:double, b:string>>)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select cast(null as map<int, string>), cast(null as array<map<int, string>>), cast(null as int), cast(null as struct<f1:array<map<int, string>>, f2:struct<a:double, b:string>>)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+Explain
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: Const map<int,string> null (type: map<int,string>), Const array<map<int,string>> null (type: array<map<int,string>>), null (type: int), null (type: struct<f1:array<map<int,string>>,f2:struct<a:double,b:string>>)
+            outputColumnNames: _col0, _col1, _col2, _col3
+            ListSink
+
+PREHOOK: query: select cast(null as map<int, string>), cast(null as array<map<int, string>>), cast(null as int), cast(null as struct<f1:array<map<int, string>>, f2:struct<a:double, b:string>>)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(null as map<int, string>), cast(null as array<map<int, string>>), cast(null as int), cast(null as struct<f1:array<map<int, string>>, f2:struct<a:double, b:string>>)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+_c0	_c1	_c2	_c3
+NULL	NULL	NULL	NULL
+PREHOOK: query: create table t1 as
+select cast(null as map<int, string>), cast(null as array<map<int, string>>), cast(null as int), cast(null as struct<f1:array<map<int, string>>, f2:struct<a:double, b:string>>)
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1 as
+select cast(null as map<int, string>), cast(null as array<map<int, string>>), cast(null as int), cast(null as struct<f1:array<map<int, string>>, f2:struct<a:double, b:string>>)
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1._c0 SIMPLE []
+POSTHOOK: Lineage: t1._c1 SIMPLE []
+POSTHOOK: Lineage: t1._c2 SIMPLE []
+POSTHOOK: Lineage: t1._c3 SIMPLE []
+_c0	_c1	_c2	_c3
+PREHOOK: query: describe formatted t1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1
+POSTHOOK: query: describe formatted t1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1
+col_name	data_type	comment
+# col_name            	data_type           	comment             
+_c0                 	map<int,string>     	                    
+_c1                 	array<map<int,string>>	                    
+_c2                 	int                 	                    
+_c3                 	struct<f1:array<map<int,string>>,f2:struct<a:double,b:string>>	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	11                  
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

@@ -1,0 +1,62 @@
+PREHOOK: query: drop table if exists binary_cast_insert
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists binary_cast_insert
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table binary_cast_insert (b binary)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@binary_cast_insert
+POSTHOOK: query: create table binary_cast_insert (b binary)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@binary_cast_insert
+PREHOOK: query: insert into table binary_cast_insert values (cast("a" as binary))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@binary_cast_insert
+POSTHOOK: query: insert into table binary_cast_insert values (cast("a" as binary))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@binary_cast_insert
+POSTHOOK: Lineage: binary_cast_insert.b SCRIPT []
+PREHOOK: query: insert into table binary_cast_insert values (cast("hello" as binary))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@binary_cast_insert
+POSTHOOK: query: insert into table binary_cast_insert values (cast("hello" as binary))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@binary_cast_insert
+POSTHOOK: Lineage: binary_cast_insert.b SCRIPT []
+PREHOOK: query: insert into table binary_cast_insert values (cast(cast("hello" as char(10)) as binary))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@binary_cast_insert
+POSTHOOK: query: insert into table binary_cast_insert values (cast(cast("hello" as char(10)) as binary))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@binary_cast_insert
+POSTHOOK: Lineage: binary_cast_insert.b SCRIPT []
+PREHOOK: query: insert into table binary_cast_insert values (cast(cast("hello" as varchar(10)) as binary))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@binary_cast_insert
+POSTHOOK: query: insert into table binary_cast_insert values (cast(cast("hello" as varchar(10)) as binary))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@binary_cast_insert
+POSTHOOK: Lineage: binary_cast_insert.b SCRIPT []
+PREHOOK: query: select * from binary_cast_insert
+PREHOOK: type: QUERY
+PREHOOK: Input: default@binary_cast_insert
+#### A masked pattern was here ####
+POSTHOOK: query: select * from binary_cast_insert
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@binary_cast_insert
+#### A masked pattern was here ####
+a
+hello
+hello     
+hello

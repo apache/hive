@@ -85,10 +85,12 @@ c=__HIVE_DEFAULT_PARTITION__
 PREHOOK: query: drop table ptestfilter_n2_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ptestfilter_n2_temp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ptestfilter_n2_temp
 POSTHOOK: query: drop table ptestfilter_n2_temp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ptestfilter_n2_temp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ptestfilter_n2_temp
 PREHOOK: query: create temporary table ptestfilter_n2_temp (a string, b int) partitioned by (c string, d int)
 PREHOOK: type: CREATETABLE
@@ -233,8 +235,10 @@ c=__HIVE_DEFAULT_PARTITION__/d=3
 PREHOOK: query: drop table ptestfilter_n2_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ptestfilter_n2_temp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ptestfilter_n2_temp
 POSTHOOK: query: drop table ptestfilter_n2_temp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ptestfilter_n2_temp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ptestfilter_n2_temp

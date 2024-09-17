@@ -1,35 +1,51 @@
 PREHOOK: query: DROP TABLE IF EXISTS repairtable_n7_1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n7_1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS repairtable_n7_2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n7_2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS repairtable_n7_3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n7_3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS repairtable_n7_4
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n7_4
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS repairtable_n7_5
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n7_5
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS repairtable_n7_6
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n7_6
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS repairtable_n7_7
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n7_7
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS repairtable_n7_8
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n7_8
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
@@ -329,64 +345,80 @@ p1=01
 PREHOOK: query: DROP TABLE repairtable_n7_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@repairtable_n7_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@repairtable_n7_1
 POSTHOOK: query: DROP TABLE repairtable_n7_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@repairtable_n7_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@repairtable_n7_1
 PREHOOK: query: DROP TABLE repairtable_n7_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@repairtable_n7_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@repairtable_n7_2
 POSTHOOK: query: DROP TABLE repairtable_n7_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@repairtable_n7_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@repairtable_n7_2
 PREHOOK: query: DROP TABLE repairtable_n7_3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@repairtable_n7_3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@repairtable_n7_3
 POSTHOOK: query: DROP TABLE repairtable_n7_3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@repairtable_n7_3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@repairtable_n7_3
 PREHOOK: query: DROP TABLE repairtable_n7_4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@repairtable_n7_4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@repairtable_n7_4
 POSTHOOK: query: DROP TABLE repairtable_n7_4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@repairtable_n7_4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@repairtable_n7_4
 PREHOOK: query: DROP TABLE repairtable_n7_5
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@repairtable_n7_5
+PREHOOK: Output: database:default
 PREHOOK: Output: default@repairtable_n7_5
 POSTHOOK: query: DROP TABLE repairtable_n7_5
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@repairtable_n7_5
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@repairtable_n7_5
 PREHOOK: query: DROP TABLE repairtable_n7_6
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@repairtable_n7_6
+PREHOOK: Output: database:default
 PREHOOK: Output: default@repairtable_n7_6
 POSTHOOK: query: DROP TABLE repairtable_n7_6
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@repairtable_n7_6
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@repairtable_n7_6
 PREHOOK: query: DROP TABLE repairtable_n7_7
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@repairtable_n7_7
+PREHOOK: Output: database:default
 PREHOOK: Output: default@repairtable_n7_7
 POSTHOOK: query: DROP TABLE repairtable_n7_7
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@repairtable_n7_7
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@repairtable_n7_7
 PREHOOK: query: DROP TABLE repairtable_n7_8
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@repairtable_n7_8
+PREHOOK: Output: database:default
 PREHOOK: Output: default@repairtable_n7_8
 POSTHOOK: query: DROP TABLE repairtable_n7_8
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@repairtable_n7_8
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@repairtable_n7_8

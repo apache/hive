@@ -22,6 +22,8 @@ import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeSystemImpl;
 import org.apache.calcite.sql.type.SqlTypeName;
 
+import static org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum.SUM_RESULT_PRECISION_INCREASE;
+
 public class HiveTypeSystemImpl extends RelDataTypeSystemImpl {
   // TODO: This should come from type system; Currently there is no definition
   // in type system for this.
@@ -178,10 +180,11 @@ public class HiveTypeSystemImpl extends RelDataTypeSystemImpl {
         // In Hive, SUM aggregate on decimal column will add 10 to compute
         // the output precision; see
         // GenericUDAFSum.GenericUDAFSumHiveDecimal#getOutputDecimalTypeInfoForSum
-        return typeFactory.createSqlType(
-            SqlTypeName.DECIMAL,
-            Math.min(MAX_DECIMAL_PRECISION, argumentType.getPrecision() + 10),
-            argumentType.getScale());
+        return typeFactory.createTypeWithNullability(
+            typeFactory.createSqlType(
+                SqlTypeName.DECIMAL,
+                Math.min(MAX_DECIMAL_PRECISION, argumentType.getPrecision() + SUM_RESULT_PRECISION_INCREASE),
+                argumentType.getScale()), argumentType.isNullable());
     }
     return argumentType;
   }

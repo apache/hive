@@ -16,6 +16,7 @@
  */
 package org.apache.hadoop.hive.metastore.columnstats;
 
+import org.apache.datasketches.kll.KllFloatsSketch;
 import org.apache.hadoop.hive.common.ndv.fm.FMSketch;
 import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
 import org.apache.hadoop.hive.metastore.StatisticsTestUtils;
@@ -46,6 +47,7 @@ public class ColStatsBuilder<T> {
   private Long numNulls;
   private Long numDVs;
   private byte[] bitVector;
+  private byte[] kll;
 
   public ColStatsBuilder(Class<T> type) {
     this.type = type;
@@ -103,6 +105,12 @@ public class ColStatsBuilder<T> {
     return this;
   }
 
+  public ColStatsBuilder<T> hll(double... values) {
+    HyperLogLog hll = StatisticsTestUtils.createHll(values);
+    this.bitVector = hll.serialize();
+    return this;
+  }
+
   public ColStatsBuilder<T> fmSketch(long... values) {
     FMSketch fm = StatisticsTestUtils.createFMSketch(values);
     this.bitVector = fm.serialize();
@@ -112,6 +120,18 @@ public class ColStatsBuilder<T> {
   public ColStatsBuilder<T> fmSketch(String... values) {
     FMSketch fm = StatisticsTestUtils.createFMSketch(values);
     this.bitVector = fm.serialize();
+    return this;
+  }
+
+  public ColStatsBuilder<T> kll(long... values) {
+    KllFloatsSketch kll = StatisticsTestUtils.createKll(values);
+    this.kll = kll.toByteArray();
+    return this;
+  }
+
+  public ColStatsBuilder<T> kll(double... values) {
+    KllFloatsSketch kll = StatisticsTestUtils.createKll(values);
+    this.kll = kll.toByteArray();
     return this;
   }
 
@@ -150,6 +170,9 @@ public class ColStatsBuilder<T> {
       }
       if (bitVector != null) {
         clazz.getMethod("setBitVectors", byte[].class).invoke(data, bitVector);
+      }
+      if (kll != null) {
+        clazz.getMethod("setHistogram", byte[].class).invoke(data, kll);
       }
       if (avgColLen != null) {
         clazz.getMethod("setAvgColLen", double.class).invoke(data, avgColLen);

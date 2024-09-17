@@ -30,7 +30,7 @@ insert into table ice_meta_3 partition (b='three', c='Wednesday') values (6), (7
 insert into table ice_meta_3 partition (b='four', c='Thursday') values (9);
 insert into table ice_meta_3 partition (b='four', c='Saturday') values (12), (13), (14);
 insert into table ice_meta_3 partition (b='four', c='Sunday') values (15);
-alter table ice_meta_3 set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler');
+alter table ice_meta_3 convert to iceberg;
 select * from ice_meta_3;
 
 
@@ -44,11 +44,23 @@ select summary from default.ice_meta_3.snapshots;
 select summary['changed-partition-count'] from default.ice_meta_2.snapshots;
 select partition_spec_id, partition_summaries from default.ice_meta_2.manifests;
 select partition_spec_id, partition_summaries[1].upper_bound from default.ice_meta_3.manifests;
-select * from default.ice_meta_2.partitions;
-select * from default.ice_meta_3.partitions;
+select `partition` from default.ice_meta_2.partitions;
+select `partition` from default.ice_meta_3.partitions;
 select `partition` from default.ice_meta_2.partitions where `partition`.b='four';
-select * from default.ice_meta_3.partitions where `partition`.b='two' and `partition`.c='Tuesday';
+select `partition` from default.ice_meta_3.partitions where `partition`.b='two' and `partition`.c='Tuesday';
 select partition_summaries from default.ice_meta_3.manifests where partition_summaries[1].upper_bound='Wednesday';
+select file_format, spec_id from default.ice_meta_2.data_files;
+select file_format, spec_id from default.ice_meta_3.data_files;
+select content, upper_bounds from default.ice_meta_2.delete_files;
+select content, upper_bounds from default.ice_meta_3.delete_files;
+select file from default.ice_meta_2.metadata_log_entries;
+select file from default.ice_meta_3.metadata_log_entries;
+select name, type from default.ice_meta_2.refs;
+select name, type from default.ice_meta_3.refs;
+select content, file_format from default.ice_meta_2.all_delete_files;
+select content, file_format from default.ice_meta_3.all_delete_files;
+select file_format, value_counts from default.ice_meta_2.all_files;
+select file_format, value_counts from default.ice_meta_3.all_files;
 
 
 set hive.fetch.task.conversion=more;
@@ -63,11 +75,23 @@ select summary from default.ice_meta_3.snapshots;
 select summary['changed-partition-count'] from default.ice_meta_2.snapshots;
 select partition_spec_id, partition_summaries from default.ice_meta_2.manifests;
 select partition_spec_id, partition_summaries[1].upper_bound from default.ice_meta_3.manifests;
-select * from default.ice_meta_2.partitions;
-select * from default.ice_meta_3.partitions;
+select `partition` from default.ice_meta_2.partitions;
+select `partition` from default.ice_meta_3.partitions;
 select `partition` from default.ice_meta_2.partitions where `partition`.b='four';
-select * from default.ice_meta_3.partitions where `partition`.b='two' and `partition`.c='Tuesday';
+select `partition` from default.ice_meta_3.partitions where `partition`.b='two' and `partition`.c='Tuesday';
 select partition_summaries from default.ice_meta_3.manifests where partition_summaries[1].upper_bound='Wednesday';
+select file_format, spec_id from default.ice_meta_2.data_files;
+select file_format, spec_id from default.ice_meta_3.data_files;
+select content, upper_bounds from default.ice_meta_2.delete_files;
+select content, upper_bounds from default.ice_meta_3.delete_files;
+select file from default.ice_meta_2.metadata_log_entries;
+select file from default.ice_meta_3.metadata_log_entries;
+select name, type from default.ice_meta_2.refs;
+select name, type from default.ice_meta_3.refs;
+select content, file_format from default.ice_meta_2.all_delete_files;
+select content, file_format from default.ice_meta_3.all_delete_files;
+select file_format, value_counts from default.ice_meta_2.all_files;
+select file_format, value_counts from default.ice_meta_3.all_files;
 
 
 drop table ice_meta_2;
@@ -84,4 +108,4 @@ INSERT INTO partevv VALUES (2, '2022-04-29 16:32:02', '2022-04-29 16:32:02');
 ALTER TABLE partevv SET PARTITION SPEC (day(ts));
 INSERT INTO partevv VALUES (100, '2022-04-29 16:32:03', '2022-04-29 16:32:03');
 
-select * from default.partevv.partitions;
+select `partition` from default.partevv.partitions;

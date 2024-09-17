@@ -41,6 +41,7 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
@@ -258,33 +259,34 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   static {
     StringBuilder patternBuilder = new StringBuilder();
-    patternBuilder.append("int");
-    patternBuilder.append("|smallint");
-    patternBuilder.append("|tinyint");
-    patternBuilder.append("|bigint");
-    patternBuilder.append("|integer");
-    patternBuilder.append("|long");
-    patternBuilder.append("|short");
-    patternBuilder.append("|timestamp");
-    patternBuilder.append("|" + serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME);
-    patternBuilder.append("|" + serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
-    patternBuilder.append("|boolean");
-    patternBuilder.append("|binary");
-    patternBuilder.append("|string");
-    patternBuilder.append("|byte");
-    patternBuilder.append("|float");
-    patternBuilder.append("|double");
-    patternBuilder.append("|date");
-    patternBuilder.append("|void");
+    patternBuilder.append(serdeConstants.INT_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.SMALLINT_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.TINYINT_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.BIGINT_TYPE_NAME);
+    patternBuilder.append("|").append("integer");
+    patternBuilder.append("|").append("long");
+    patternBuilder.append("|").append("short");
+    patternBuilder.append("|").append(serdeConstants.TIMESTAMP_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.BOOLEAN_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.BINARY_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.STRING_TYPE_NAME);
+    patternBuilder.append("|").append("byte");
+    patternBuilder.append("|").append(serdeConstants.FLOAT_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.DOUBLE_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.DATE_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.VOID_TYPE_NAME);
 
-    // Decimal types can be specified with different precision and scales e.g. decimal(10,5),
-    // as opposed to other data types which can be represented by constant strings.
-    // The regex matches only the "decimal" prefix of the type.
-    patternBuilder.append("|decimal.*");
+    /** Decimal types can be specified with different precision and scales e.g. decimal(10,5),
+     * as opposed to other data types which can be represented by constant strings.
+     * The regex matches only the {@link serdeConstants#DECIMAL_TYPE_NAME} prefix of the type.
+     */
+    patternBuilder.append("|").append(serdeConstants.DECIMAL_TYPE_NAME).append(".*");
 
     // CHAR and VARCHAR types can be specified with maximum length.
-    patternBuilder.append("|char.*");
-    patternBuilder.append("|varchar.*");
+    patternBuilder.append("|").append(serdeConstants.CHAR_TYPE_NAME).append(".*");
+    patternBuilder.append("|").append(serdeConstants.VARCHAR_TYPE_NAME).append(".*");
 
     supportedDataTypesPattern = Pattern.compile(patternBuilder.toString());
   }
@@ -296,9 +298,15 @@ public class Vectorizer implements PhysicalPlanResolver {
       .collect(Collectors.toSet());
 
   // The set of virtual columns that vectorized readers *MAY* support.
-  public static final ImmutableSet<VirtualColumn> vectorizableVirtualColumns =
-      ImmutableSet.of(VirtualColumn.ROWID, VirtualColumn.ROWISDELETED);
-
+  public static final ImmutableSet<VirtualColumn> vectorizableVirtualColumns = 
+      ImmutableSet.of(
+        VirtualColumn.ROWID, 
+        VirtualColumn.ROWISDELETED,
+        VirtualColumn.PARTITION_SPEC_ID, 
+        VirtualColumn.PARTITION_HASH, 
+        VirtualColumn.FILE_PATH, 
+        VirtualColumn.ROW_POSITION,
+        VirtualColumn.PARTITION_PROJECTION);
   private HiveConf hiveConf;
 
   private enum VECTORIZABLE_UDAF {
@@ -1895,7 +1903,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         if (isPartitionRowConversion && isLlapIoEnabled) {
           enabledConditionsNotMetList.add(
               "Could not enable vectorization. " +
-              "LLAP I/O is enabled wbich automatically deserializes into " +
+              "LLAP I/O is enabled which automatically deserializes into " +
               "VECTORIZED_INPUT_FILE_FORMAT. " +
               "A partition requires data type conversion and that is not supported");
 
@@ -1990,7 +1998,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         supportRemovedReasons.add(removeString);
       }
 
-      // Now rememember what is supported for this query and any support that was
+      // Now remember what is supported for this query and any support that was
       // removed.
       vectorTaskColumnInfo.setSupportSetInUse(supportSet);
       vectorTaskColumnInfo.setSupportRemovedReasons(supportRemovedReasons);
@@ -3247,7 +3255,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     type = type.toLowerCase();
     boolean result = supportedDataTypesPattern.matcher(type).matches();
     if (result && !allowVoidProjection &&
-        mode == VectorExpressionDescriptor.Mode.PROJECTION && type.equals("void")) {
+        mode == VectorExpressionDescriptor.Mode.PROJECTION && type.equals(serdeConstants.VOID_TYPE_NAME)) {
       return false;
     }
 
@@ -3275,7 +3283,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     type = type.toLowerCase();
     boolean result = supportedDataTypesPattern.matcher(type).matches();
     if (result && !allowVoidProjection &&
-        mode == VectorExpressionDescriptor.Mode.PROJECTION && type.equals("void")) {
+        mode == VectorExpressionDescriptor.Mode.PROJECTION && type.equals(serdeConstants.VOID_TYPE_NAME)) {
       return "Vectorizing data type void not supported when mode = PROJECTION";
     }
 
@@ -3904,7 +3912,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     vectorMapJoinInfo.setBigTableFilterExpressions(bigTableFilterExpressions);
 
     boolean useOptimizedTable =
-        HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE);
+        HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_MAPJOIN_USE_OPTIMIZED_TABLE);
 
     // Remember the condition variables for EXPLAIN regardless of whether we specialize or not.
     vectorDesc.setVectorMapJoinInfo(vectorMapJoinInfo);
@@ -4377,6 +4385,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     return false;
   }
 
+  @VisibleForTesting
   public static Operator<? extends OperatorDesc> vectorizeFilterOperator(
       Operator<? extends OperatorDesc> filterOp, VectorizationContext vContext,
       VectorFilterDesc vectorFilterDesc)
@@ -4397,9 +4406,10 @@ public class Vectorizer implements PhysicalPlanResolver {
         vContext, vectorFilterDesc);
   }
 
-  private static Operator<? extends OperatorDesc> vectorizeTopNKeyOperator(
-      Operator<? extends OperatorDesc> topNKeyOperator, VectorizationContext vContext,
-      VectorTopNKeyDesc vectorTopNKeyDesc) throws HiveException {
+  @VisibleForTesting
+  public static Operator<? extends OperatorDesc> vectorizeTopNKeyOperator(
+          Operator<? extends OperatorDesc> topNKeyOperator, VectorizationContext vContext,
+          VectorTopNKeyDesc vectorTopNKeyDesc) throws HiveException {
 
     TopNKeyDesc topNKeyDesc = (TopNKeyDesc) topNKeyOperator.getConf();
     VectorExpression[] keyExpressions = getVectorExpressions(vContext, topNKeyDesc.getKeyColumns());
@@ -5320,7 +5330,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
                 // TEMPORARY Until Native Vector Map Join with Hybrid passes tests...
                 // HiveConf.setBoolVar(physicalContext.getConf(),
-                //    HiveConf.ConfVars.HIVEUSEHYBRIDGRACEHASHJOIN, false);
+                //    HiveConf.ConfVars.HIVE_USE_HYBRIDGRACE_HASHJOIN, false);
 
                 vectorOp = specializeMapJoinOperator(op, vContext, desc, vectorMapJoinDesc);
                 isNative = true;

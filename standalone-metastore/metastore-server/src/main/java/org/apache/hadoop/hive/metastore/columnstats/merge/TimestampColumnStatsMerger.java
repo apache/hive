@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore.columnstats.merge;
 import static org.apache.hadoop.hive.metastore.columnstats.ColumnsStatsUtils.timestampInspectorFromStats;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.hadoop.hive.common.histogram.KllHistogramEstimator;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Timestamp;
@@ -30,7 +31,10 @@ import com.google.common.base.MoreObjects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TimestampColumnStatsMerger extends ColumnStatsMerger {
+import java.util.Arrays;
+import java.util.List;
+
+public class TimestampColumnStatsMerger extends ColumnStatsMerger<Timestamp> {
 
   private static final Logger LOG = LoggerFactory.getLogger(TimestampColumnStatsMerger.class);
 
@@ -41,60 +45,57 @@ public class TimestampColumnStatsMerger extends ColumnStatsMerger {
     TimestampColumnStatsDataInspector aggregateData = timestampInspectorFromStats(aggregateColStats);
     TimestampColumnStatsDataInspector newData = timestampInspectorFromStats(newColStats);
 
-    setLowValue(aggregateData, newData);
-    setHighValue(aggregateData, newData);
-
-    aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
-    if (aggregateData.getNdvEstimator() == null || newData.getNdvEstimator() == null) {
-      aggregateData.setNumDVs(Math.max(aggregateData.getNumDVs(), newData.getNumDVs()));
-    } else {
-      NumDistinctValueEstimator oldEst = aggregateData.getNdvEstimator();
-      NumDistinctValueEstimator newEst = newData.getNdvEstimator();
-      final long ndv;
-      if (oldEst.canMerge(newEst)) {
-        oldEst.mergeEstimators(newEst);
-        ndv = oldEst.estimateNumDistinctValues();
-        aggregateData.setNdvEstimator(oldEst);
-      } else {
-        ndv = Math.max(aggregateData.getNumDVs(), newData.getNumDVs());
-      }
-      LOG.debug("Use bitvector to merge column {}'s ndvs of {} and {} to be {}", aggregateColStats.getColName(),
-          aggregateData.getNumDVs(), newData.getNumDVs(), ndv);
-      aggregateData.setNumDVs(ndv);
+    Timestamp lowValue = mergeLowValue(getLowValue(aggregateData), getLowValue(newData));
+    if (lowValue != null) {
+      aggregateData.setLowValue(lowValue);
     }
+    Timestamp highValue = mergeHighValue(getHighValue(aggregateData), getHighValue(newData));
+    if (highValue != null) {
+      aggregateData.setHighValue(highValue);
+    }
+    aggregateData.setNumNulls(mergeNumNulls(aggregateData.getNumNulls(), newData.getNumNulls()));
+
+    NumDistinctValueEstimator oldNDVEst = aggregateData.getNdvEstimator();
+    NumDistinctValueEstimator newNDVEst = newData.getNdvEstimator();
+    List<NumDistinctValueEstimator> ndvEstimatorsList = Arrays.asList(oldNDVEst, newNDVEst);
+    aggregateData.setNumDVs(mergeNumDistinctValueEstimator(aggregateColStats.getColName(),
+        ndvEstimatorsList, aggregateData.getNumDVs(), newData.getNumDVs()));
+    aggregateData.setNdvEstimator(ndvEstimatorsList.get(0));
+
+    KllHistogramEstimator oldKllEst = aggregateData.getHistogramEstimator();
+    KllHistogramEstimator newKllEst = newData.getHistogramEstimator();
+    aggregateData.setHistogramEstimator(mergeHistogramEstimator(aggregateColStats.getColName(), oldKllEst, newKllEst));
 
     aggregateColStats.getStatsData().setTimestampStats(aggregateData);
   }
 
-  public void setLowValue(TimestampColumnStatsDataInspector aggregateData, TimestampColumnStatsDataInspector newData) {
-    final Timestamp aggregateLowValue = aggregateData.getLowValue();
-    final Timestamp newLowValue = newData.getLowValue();
-
-    final Timestamp mergedLowValue;
-    if (!aggregateData.isSetLowValue() && !newData.isSetLowValue()) {
-      return;
-    } else if (aggregateData.isSetLowValue() && newData.isSetLowValue()) {
-      mergedLowValue = ObjectUtils.min(newLowValue, aggregateLowValue);
-    } else {
-      mergedLowValue = MoreObjects.firstNonNull(aggregateLowValue, newLowValue);
-    }
-
-    aggregateData.setLowValue(mergedLowValue);
+  public Timestamp getLowValue(TimestampColumnStatsDataInspector data) {
+    return data.isSetLowValue() ? data.getLowValue() : null;
   }
 
-  public void setHighValue(TimestampColumnStatsDataInspector aggregateData, TimestampColumnStatsDataInspector newData) {
-    final Timestamp aggregateHighValue = aggregateData.getHighValue();
-    final Timestamp newHighValue = newData.getHighValue();
+  public Timestamp getHighValue(TimestampColumnStatsDataInspector data) {
+    return data.isSetHighValue() ? data.getHighValue() : null;
+  }
 
-    final Timestamp mergedHighValue;
-    if (!aggregateData.isSetHighValue() && !newData.isSetHighValue()) {
-      return;
-    } else if (aggregateData.isSetHighValue() && newData.isSetHighValue()) {
-      mergedHighValue = ObjectUtils.max(aggregateHighValue, newHighValue);
-    } else {
-      mergedHighValue = MoreObjects.firstNonNull(aggregateHighValue, newHighValue);
+  @Override
+  public Timestamp mergeLowValue(Timestamp oldValue, Timestamp newValue) {
+    if (oldValue != null && newValue != null) {
+      return ObjectUtils.min(oldValue, newValue);
     }
+    if (oldValue != null || newValue != null) {
+      return MoreObjects.firstNonNull(oldValue, newValue);
+    }
+    return null;
+  }
 
-    aggregateData.setHighValue(mergedHighValue);
+  @Override
+  public Timestamp mergeHighValue(Timestamp oldValue, Timestamp newValue) {
+    if (oldValue != null && newValue != null) {
+      return ObjectUtils.max(oldValue, newValue);
+    }
+    if (oldValue != null || newValue != null) {
+      return MoreObjects.firstNonNull(oldValue, newValue);
+    }
+    return null;
   }
 }

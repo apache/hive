@@ -23,18 +23,21 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HMSMetricsListener;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.orc.TestVectorizedOrcAcidRowBatchReader;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
-import org.apache.hadoop.hive.ql.txn.compactor.CompactorMR;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorFactory;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorPipeline;
+import org.apache.hadoop.hive.ql.txn.compactor.MRCompactor;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
 import org.junit.Assert;
 import org.junit.Test;
@@ -51,7 +54,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager2.swapTxnManager;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 public class TestTxnCommands3 extends TxnCommandsBaseForTests {
   static final private Logger LOG = LoggerFactory.getLogger(TestTxnCommands3.class);
@@ -159,7 +163,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
   private void testDeleteEventPruning() throws Exception {
     HiveConf.setBoolVar(hiveConf,
         HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
-    dropTable(new String[] {"T"});
+    dropTables("T");
     runStatementOnDriver(
         "create transactional table T(a int, b int) stored as orc");
     runStatementOnDriver("insert into T values(1,2),(4,5)");
@@ -307,7 +311,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
   @Test
   public void testCleaner2() throws Exception {
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID, true);
-    dropTable(new String[] {"T"});
+    dropTables("T");
     //note: transaction names T1, T2, etc below, are logical, the actual txnid will be different
     runStatementOnDriver("create table T (a int, b int) stored as orc");
     runStatementOnDriver("insert into T values(0,2)");//makes delta_1_1 in T1
@@ -346,7 +350,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
      ├── delta_0000001_0000001_0000
      │   ├── _orc_acid_version
      │   └── bucket_00000
-     ├── delta_0000001_0000002_v0000020
+     ├── delta_0000001_0000002_v0000009
      │   ├── _orc_acid_version
      │   └── bucket_00000
      └── delta_0000002_0000002_0000
@@ -358,7 +362,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
         FileUtils.HIDDEN_FILES_PATH_FILTER);
 
     String[] expectedList = new String[] {
-        "/t/delta_0000001_0000002_v0000020",
+        "/t/delta_0000001_0000002_v0000009",
         "/t/delta_0000001_0000001_0000",
         "/t/delta_0000002_0000002_0000",
     };
@@ -366,7 +370,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
 
 
     /*
-    T3 is still running and cannot see anything compactor produces with v0000019 suffix
+    T3 is still running and cannot see anything compactor produces with v0000009 suffix
     so it may be reading delta_1_1 & delta_2_2 and so cleaner cannot delete any files
      at this point*/
     runCleaner(hiveConf);
@@ -385,14 +389,14 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     runStatementOnDriver("alter table T compact 'minor'");
     runWorker(hiveConf);
     /*
-    at this point delta_0000001_0000003_v0000022 is visible to everyone
-    so cleaner removes all files shadowed by it (which is everything in this case)
+    at this point delta_0000001_0000003_v0000012 is visible to everyone
+    so cleaner removes all files shadowed by it
     */
     runCleaner(hiveConf);
     runCleaner(hiveConf);
 
     expectedList = new String[] {
-        "/t/delta_0000001_0000003_v0000022"
+        "/t/delta_0000001_0000003_v0000012"
     };
     actualList = fs.listStatus(new Path(warehousePath + "/t"),
         FileUtils.HIDDEN_FILES_PATH_FILTER);
@@ -415,14 +419,14 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
   @Test
   public void testCompactionAbort() throws Exception {
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID, true);
-    dropTable(new String[] {"T"});
+    dropTables("T");
     //note: transaction names T1, T2, etc below, are logical, the actual txnid will be different
     runStatementOnDriver("create table T (a int, b int) stored as orc");
     runStatementOnDriver("insert into T values(0,2)");//makes delta_1_1 in T1
     runStatementOnDriver("insert into T values(1,4)");//makes delta_2_2 in T2
 
     //create failed compaction attempt so that compactor txn is aborted
-    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION, true);
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_TEST_MODE_FAIL_COMPACTION, true);
     runStatementOnDriver("alter table T compact 'minor'");
     runWorker(hiveConf);
 
@@ -452,7 +456,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from TXN_COMPONENTS where TC_WRITEID=" + highestCompactWriteId));
     //now make a successful compactor run so that next Cleaner run actually cleans
-    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION, false);
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_TEST_MODE_FAIL_COMPACTION, false);
     runStatementOnDriver("alter table T compact 'minor'");
     runWorker(hiveConf);
 
@@ -474,7 +478,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
   public void testMajorCompactionAbortLeftoverFiles() throws Exception {
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID, true);
 
-    dropTable(new String[] {"T"});
+    dropTables("T");
     //note: transaction names T1, T2, etc below, are logical, the actual txnid will be different
     runStatementOnDriver("create table T (a int, b int) stored as orc");
     runStatementOnDriver("insert into T values(0,2)"); //makes delta_1_1 in T1
@@ -482,18 +486,20 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
 
     runStatementOnDriver("alter table T compact 'minor'");
     //create failed compaction attempt so that compactor txn is aborted
-    CompactorMR compactorMr = Mockito.spy(new CompactorMR());
+    MRCompactor mrCompactor = Mockito.spy(new MRCompactor(HiveMetaStoreUtils.getHiveMetastoreClient(hiveConf)));
 
     Mockito.doAnswer((Answer<Void>) invocationOnMock -> {
       invocationOnMock.callRealMethod();
       throw new RuntimeException(
         "Will cause CompactorMR to fail all opening txn and creating directories for compaction.");
-    }).when(compactorMr).run(any(), any(), any(), any(), any(), any(), any(), any(), any());
+    }).when(mrCompactor).run(any());
 
-    Worker worker = Mockito.spy(new Worker());
+    CompactorFactory mockedFactory = Mockito.mock(CompactorFactory.class);
+    when(mockedFactory.getCompactorPipeline(any(), any(), any(), any())).thenReturn(new CompactorPipeline(mrCompactor));
+
+    Worker worker = Mockito.spy(new Worker(mockedFactory));
     worker.setConf(hiveConf);
     worker.init(new AtomicBoolean(true));
-    Mockito.doReturn(compactorMr).when(worker).getMrCompactor();
     worker.run();
 
     TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
@@ -528,7 +534,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
   public void testMinorCompactionAbortLeftoverFiles() throws Exception {
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID, true);
 
-    dropTable(new String[] {"T"});
+    dropTables("T");
     //note: transaction names T1, T2, etc below, are logical, the actual txnid will be different
     runStatementOnDriver("create table T (a int, b int) stored as orc");
     runStatementOnDriver("insert into T values(0,2)"); //makes delta_1_1 in T1
@@ -537,18 +543,20 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
 
     runStatementOnDriver("alter table T compact 'minor'");
     //create failed compaction attempt so that compactor txn is aborted
-    CompactorMR compactorMr = Mockito.spy(new CompactorMR());
+    MRCompactor mrCompactor = Mockito.spy(new MRCompactor(HiveMetaStoreUtils.getHiveMetastoreClient(hiveConf)));
 
     Mockito.doAnswer((Answer<Void>) invocationOnMock -> {
       invocationOnMock.callRealMethod();
       throw new RuntimeException(
         "Will cause CompactorMR to fail all opening txn and creating directories for compaction.");
-    }).when(compactorMr).run(any(), any(), any(), any(), any(), any(), any(), any(), any());
+    }).when(mrCompactor).run(any());
 
-    Worker worker = Mockito.spy(new Worker());
+    CompactorFactory mockedFactory = Mockito.mock(CompactorFactory.class);
+    when(mockedFactory.getCompactorPipeline(any(), any(), any(), any())).thenReturn(new CompactorPipeline(mrCompactor));
+
+    Worker worker = Mockito.spy(new Worker(mockedFactory));
     worker.setConf(hiveConf);
     worker.init(new AtomicBoolean(true));
-    Mockito.doReturn(compactorMr).when(worker).getMrCompactor();
     worker.run();
 
     TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);

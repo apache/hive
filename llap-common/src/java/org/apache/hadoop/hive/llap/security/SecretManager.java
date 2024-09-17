@@ -32,7 +32,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapUtil;
-import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -165,13 +164,20 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
 
   private static LlapZkConf createLlapZkConf(
       Configuration conf, String llapPrincipal, String llapKeytab, String clusterId) {
-     // Override the default delegation token lifetime for LLAP.
-     // Also set all the necessary ZK settings to defaults and LLAP configs, if not set.
-     final Configuration zkConf = new Configuration(conf);
+    // Override the default delegation token lifetime for LLAP.
+    // Also set all the necessary ZK settings to defaults and LLAP configs, if not set.
+    final Configuration zkConf = new Configuration(conf);
     long tokenLifetime = HiveConf.getTimeVar(
         conf, ConfVars.LLAP_DELEGATION_TOKEN_LIFETIME, TimeUnit.SECONDS);
     zkConf.setLong(DelegationTokenManager.MAX_LIFETIME, tokenLifetime);
-    zkConf.setLong(DelegationTokenManager.RENEW_INTERVAL, tokenLifetime);
+
+    long tokenRenewInterval = HiveConf.getTimeVar(
+        conf, ConfVars.LLAP_DELEGATION_TOKEN_RENEW_INTERVAL, TimeUnit.SECONDS);
+    zkConf.setLong(DelegationTokenManager.RENEW_INTERVAL, tokenRenewInterval);
+
+    LOG.info("SecretManager ZkConf created: tokenLifetime {}, tokenRenewInterval: {}", tokenLifetime,
+        tokenRenewInterval);
+
     try {
       zkConf.set(ZK_DTSM_ZK_KERBEROS_PRINCIPAL,
           SecurityUtil.getServerPrincipal(llapPrincipal, "0.0.0.0"));
@@ -248,7 +254,6 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
     }
     LlapTokenIdentifier llapId = new LlapTokenIdentifier(
         new Text(user), renewer, realUser, clusterId, appId, isSignatureRequired);
-    // TODO: note that the token is not renewable right now and will last for 2 weeks by default.
     Token<LlapTokenIdentifier> token = new Token<LlapTokenIdentifier>(llapId, this);
     LOG.info("Created LLAP token {}", token);
     return token;

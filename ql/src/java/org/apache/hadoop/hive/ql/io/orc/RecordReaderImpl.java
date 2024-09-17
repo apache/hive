@@ -165,7 +165,9 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
   public void close() throws IOException {
     super.close();
     // free the memory for the column vectors
-    batch.cols = null;
+    if (batch != null) {
+      batch.cols = null;
+    }
   }
 
   /* Routines for stubbing into Writables */

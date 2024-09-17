@@ -118,7 +118,7 @@ public class TestHiveIcebergSelects extends HiveIcebergStorageHandlerWithEngineB
   public void testJoinTablesSupportedTypes() throws IOException {
     for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
       Type type = SUPPORTED_TYPES.get(i);
-      if ((type == Types.TimestampType.withZone()) && isVectorized && fileFormat == FileFormat.ORC) {
+      if (type == Types.TimestampType.withZone() && isVectorized && fileFormat == FileFormat.ORC) {
         // ORC/TIMESTAMP_INSTANT is not supported vectorized types for Hive
         continue;
       }
@@ -145,7 +145,7 @@ public class TestHiveIcebergSelects extends HiveIcebergStorageHandlerWithEngineB
   public void testSelectDistinctFromTable() throws IOException {
     for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
       Type type = SUPPORTED_TYPES.get(i);
-      if ((type == Types.TimestampType.withZone()) &&
+      if (type == Types.TimestampType.withZone() &&
           isVectorized && fileFormat == FileFormat.ORC) {
         // ORC/TIMESTAMP_INSTANT is not supported vectorized types for Hive
         continue;

@@ -24,6 +24,9 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringUpper;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.stats.estimator.StatEstimator;
+import org.apache.hadoop.hive.ql.stats.estimator.StatEstimatorProvider;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -34,6 +37,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
+import java.util.List;
+import java.util.Optional;
+
 /**
  * UDFUpper.
  *
@@ -43,7 +49,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
     extended = "Example:\n"
     + "  > SELECT _FUNC_('Facebook') FROM src LIMIT 1;\n" + "  'FACEBOOK'")
 @VectorizedExpressions({StringUpper.class})
-public class GenericUDFUpper extends GenericUDF {
+public class GenericUDFUpper extends GenericUDF implements StatEstimatorProvider {
   private transient PrimitiveObjectInspector argumentOI;
   private transient StringConverter stringConverter;
   private transient PrimitiveCategory returnType = PrimitiveCategory.STRING;
@@ -108,6 +114,16 @@ public class GenericUDFUpper extends GenericUDF {
   @Override
   public String getDisplayString(String[] children) {
     return getStandardDisplayString("upper", children);
+  }
+
+  @Override
+  public StatEstimator getStatEstimator() {
+    return new StatEstimator() {
+      @Override
+      public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
+        return Optional.of(argStats.get(0).clone());
+      }
+    };
   }
 
 }

@@ -30,12 +30,14 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
+import org.apache.hadoop.util.Time;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.MockedStatic;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,12 +52,10 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({ PrimaryToReplicaResourceFunction.class, FileSystem.class, ReplCopyTask.class,
-                    System.class })
+@RunWith(MockitoJUnitRunner.class)
 public class TestPrimaryToReplicaResourceFunction {
 
   private PrimaryToReplicaResourceFunction function;
@@ -66,6 +66,8 @@ public class TestPrimaryToReplicaResourceFunction {
   private Function functionObj;
   @Mock
   private FileSystem mockFs;
+
+  MockedStatic<Time> timeMockedStatic;
   private static Logger logger =
       LoggerFactory.getLogger(TestPrimaryToReplicaResourceFunction.class);
 
@@ -76,20 +78,29 @@ public class TestPrimaryToReplicaResourceFunction {
         new Context("primaryDb", null, null, null, hiveConf, null, null, logger);
     when(hiveConf.getVar(HiveConf.ConfVars.REPL_FUNCTIONS_ROOT_DIR))
         .thenReturn("/someBasePath/withADir/");
+    timeMockedStatic = mockStatic(Time.class);
+    timeMockedStatic.when(Time::monotonicNowNanos).thenReturn(0L);
     function = new PrimaryToReplicaResourceFunction(context, metadata, "replicaDbName");
+  }
+
+  @After
+  public void tearDown() {
+    timeMockedStatic.close();
   }
 
   @Test
   public void createDestinationPath() throws IOException, SemanticException, URISyntaxException {
-    mockStatic(FileSystem.class);
-    when(FileSystem.get(any(Configuration.class))).thenReturn(mockFs);
-    when(FileSystem.get(any(URI.class), any(Configuration.class))).thenReturn(mockFs);
+    MockedStatic<FileSystem> fileSystemMockedStatic = mockStatic(FileSystem.class);
+    MockedStatic<ReplCopyTask> ignoredReplCopyTaskMockedStatic = mockStatic(ReplCopyTask.class);
+    MockedStatic<CreateFunctionHandler> createFunctionHandlerMockedStatic = mockStatic(CreateFunctionHandler.class);
+
+    fileSystemMockedStatic.when(() -> FileSystem.get(any(Configuration.class))).thenReturn(mockFs);
+    fileSystemMockedStatic.when(() -> FileSystem.get(any(URI.class), any(Configuration.class))).thenReturn(mockFs);
+
     when(mockFs.getScheme()).thenReturn("hdfs");
     when(mockFs.getUri()).thenReturn(new URI("hdfs", "somehost:9000", null, null, null));
-    mockStatic(System.class);
-//    when(System.nanoTime()).thenReturn(Long.MAX_VALUE);
+
     when(functionObj.getFunctionName()).thenReturn("someFunctionName");
-    mockStatic(ReplCopyTask.class);
     Task mock = mock(Task.class);
     when(ReplCopyTask.getLoadCopyTask(any(ReplicationSpec.class), any(Path.class), any(Path.class),
         any(HiveConf.class), any(), any())).thenReturn(mock);

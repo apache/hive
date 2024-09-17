@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.FileFormat;
@@ -49,7 +50,7 @@ import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hadoop.HadoopCatalog;
 import org.apache.iceberg.hadoop.HadoopTables;
 import org.apache.iceberg.hive.HiveCatalog;
-import org.apache.iceberg.hive.MetastoreUtil;
+import org.apache.iceberg.hive.HiveVersion;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.TestCatalogs;
@@ -337,6 +338,28 @@ public abstract class TestTables {
    */
   public Table createTable(TestHiveShell shell, String tableName, Schema schema, PartitionSpec spec,
       FileFormat fileFormat, List<Record> records, Integer formatVersion, Map<String, String> tblProperties) {
+    return createTable(shell, tableName, schema, spec, fileFormat, records, formatVersion, tblProperties,
+        HiveMetaHook.ICEBERG);
+  }
+
+  /**
+   * Creates a partitioned Hive test table using Hive SQL. The table will be in the 'default' database.
+   * The table will be populated with the provided List of {@link Record}s using a Hive insert statement.
+   * @param shell The HiveShell used for Hive table creation
+   * @param tableName The name of the test table
+   * @param schema The schema used for the table creation
+   * @param spec The partition specification for the table
+   * @param fileFormat The file format used for writing the data
+   * @param records The records with which the table is populated
+   * @param formatVersion The version of the spec the table should use (format-version)
+   * @param tblProperties Additional table properties
+   * @param storageHandler Storage Handler to be used
+   * @return The created table
+   * @throws IOException If there is an error writing data
+   */
+  public Table createTable(TestHiveShell shell, String tableName, Schema schema, PartitionSpec spec,
+      FileFormat fileFormat, List<Record> records, Integer formatVersion, Map<String, String> tblProperties,
+      String storageHandler) {
     TableIdentifier identifier = TableIdentifier.of("default", tableName);
     String tblProps = propertiesForCreateTableSQL(ImmutableMap.<String, String>builder().putAll(tblProperties)
         .put(TableProperties.DEFAULT_FILE_FORMAT, fileFormat.toString())
@@ -345,7 +368,8 @@ public abstract class TestTables {
         .put(TableProperties.FORMAT_VERSION, Integer.toString(formatVersion))
         .build());
     shell.executeStatement("CREATE EXTERNAL TABLE " + identifier +
-        " STORED BY ICEBERG " + locationForCreateTableSQL(identifier) + tblProps);
+        " STORED BY " + storageHandler + " " +
+        locationForCreateTableSQL(identifier) + tblProps);
 
     if (records != null && !records.isEmpty()) {
       String query = getInsertQuery(records, identifier, false);
@@ -506,7 +530,7 @@ public abstract class TestTables {
     private final String warehouseLocation;
 
     CustomCatalogTestTables(Configuration conf, TemporaryFolder temp, String catalogName) throws IOException {
-      this(conf, temp, (MetastoreUtil.hive3PresentOnClasspath() ? "file:" : "") +
+      this(conf, temp, (HiveVersion.min(HiveVersion.HIVE_3) ? "file:" : "") +
           temp.newFolder("custom", "warehouse").toString(), catalogName);
     }
 
@@ -537,7 +561,7 @@ public abstract class TestTables {
     private final String warehouseLocation;
 
     HadoopCatalogTestTables(Configuration conf, TemporaryFolder temp, String catalogName) throws IOException {
-      this(conf, temp, (MetastoreUtil.hive3PresentOnClasspath() ? "file:" : "") +
+      this(conf, temp, (HiveVersion.min(HiveVersion.HIVE_3) ? "file:" : "") +
           temp.newFolder("hadoop", "warehouse").toString(), catalogName);
     }
 

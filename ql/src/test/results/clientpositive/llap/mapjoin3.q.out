@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS test_1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS test_1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE test_1 
 ( 
 member BIGINT 
@@ -22,8 +24,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_1
 PREHOOK: query: DROP TABLE IF EXISTS test_2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS test_2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE test_2 
 ( 
 member BIGINT 

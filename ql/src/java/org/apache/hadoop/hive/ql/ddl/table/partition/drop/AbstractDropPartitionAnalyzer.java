@@ -85,7 +85,7 @@ abstract class AbstractDropPartitionAnalyzer extends AbstractAlterTableAnalyzer 
         // We just return in that case, no drop needed.
         return;
         // TODO : the contains message check is fragile, we should refactor SemanticException to be
-        // queriable for error code, and not simply have a message
+        // queryable for error code, and not simply have a message
         // NOTE : IF_EXISTS might also want to invoke this, but there's a good possibility
         // that IF_EXISTS is stricter about table existence, and applies only to the ptn.
         // Therefore, ignoring IF_EXISTS here.
@@ -108,9 +108,9 @@ abstract class AbstractDropPartitionAnalyzer extends AbstractAlterTableAnalyzer 
     boolean dropPartUseBase = HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_DROP_PARTITION_USE_BASE)
         || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED)
       && AcidUtils.isTransactionalTable(table);
-    
+
     addTableDropPartsOutputs(table, partitionSpecs.values(), !ifExists, dropPartUseBase);
-    
+
     AlterTableDropPartitionDesc desc =
         new AlterTableDropPartitionDesc(tableName, partitionSpecs, mustPurge, replicationSpec, !dropPartUseBase, table);
 
@@ -131,7 +131,7 @@ abstract class AbstractDropPartitionAnalyzer extends AbstractAlterTableAnalyzer 
       boolean throwIfNonExistent, boolean  dropPartUseBase) throws SemanticException {
     WriteType writeType =
         dropPartUseBase ? WriteType.DDL_EXCL_WRITE : WriteType.DDL_EXCLUSIVE;
-    
+
     for (List<ExprNodeGenericFuncDesc> specs : partitionSpecs) {
       for (ExprNodeGenericFuncDesc partitionSpec : specs) {
         List<Partition> parts = new ArrayList<>();

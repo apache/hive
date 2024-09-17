@@ -1661,32 +1661,40 @@ POSTHOOK: Input: default@empty
 PREHOOK: query: DROP TABLE even
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@even
+PREHOOK: Output: database:default
 PREHOOK: Output: default@even
 POSTHOOK: query: DROP TABLE even
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@even
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@even
 PREHOOK: query: DROP TABLE odd
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@odd
+PREHOOK: Output: database:default
 PREHOOK: Output: default@odd
 POSTHOOK: query: DROP TABLE odd
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@odd
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@odd
 PREHOOK: query: DROP TABLE tmp_src
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmp_src
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp_src
 POSTHOOK: query: DROP TABLE tmp_src
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tmp_src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_src
 PREHOOK: query: DROP TABLE tmp_src_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmp_src_part
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp_src_part
 POSTHOOK: query: DROP TABLE tmp_src_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tmp_src_part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_src_part

@@ -21,10 +21,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table etp_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@etp_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@etp_1
 POSTHOOK: query: drop table etp_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@etp_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@etp_1
 PREHOOK: query: create external table etp_1 (c1 string, c2 string) stored as textfile location 'hdfs://### HDFS PATH ###'
 PREHOOK: type: CREATETABLE
@@ -57,10 +59,12 @@ POSTHOOK: Output: default@etp_1
 PREHOOK: query: drop table etp_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@etp_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@etp_1
 POSTHOOK: query: drop table etp_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@etp_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@etp_1
 PREHOOK: query: create external table etp_1 (c1 string, c2 string) stored as textfile location 'hdfs://### HDFS PATH ###'
 PREHOOK: type: CREATETABLE
@@ -85,10 +89,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table etp_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@etp_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@etp_1
 POSTHOOK: query: drop table etp_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@etp_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@etp_1
 PREHOOK: query: create external table etp_1 (c1 string, c2 string) stored as textfile location 'hdfs://### HDFS PATH ###' tblproperties ('external.table.purge'='false')
 PREHOOK: type: CREATETABLE
@@ -134,10 +140,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table etp_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@etp_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@etp_1
 POSTHOOK: query: drop table etp_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@etp_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@etp_1
 PREHOOK: query: create external table etp_1 (c1 string, c2 string) stored as textfile location 'hdfs://### HDFS PATH ###'
 PREHOOK: type: CREATETABLE
@@ -183,10 +191,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table etp_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@etp_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@etp_1
 POSTHOOK: query: drop table etp_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@etp_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@etp_1
 PREHOOK: query: create external table etp_1 (c1 string, c2 string) stored as textfile location 'hdfs://### HDFS PATH ###'
 PREHOOK: type: CREATETABLE
@@ -211,10 +221,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table etp_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@etp_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@etp_1
 POSTHOOK: query: drop table etp_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@etp_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@etp_1
 PREHOOK: query: create external table etp_2 (c1 string, c2 string) partitioned by (p1 string) stored as textfile location 'hdfs://### HDFS PATH ###'
 PREHOOK: type: CREATETABLE
@@ -286,10 +298,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table etp_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@etp_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@etp_2
 POSTHOOK: query: drop table etp_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@etp_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@etp_2
 PREHOOK: query: create external table etp_2 (c1 string, c2 string) partitioned by (p1 string) stored as textfile location 'hdfs://### HDFS PATH ###'
 PREHOOK: type: CREATETABLE
@@ -369,10 +383,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table etp_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@etp_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@etp_2
 POSTHOOK: query: drop table etp_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@etp_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@etp_2
 PREHOOK: query: create external table etp_2 (c1 string, c2 string) partitioned by (p1 string) stored as textfile location 'hdfs://### HDFS PATH ###'
 PREHOOK: type: CREATETABLE
@@ -415,10 +431,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table etp_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@etp_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@etp_2
 POSTHOOK: query: drop table etp_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@etp_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@etp_2
 PREHOOK: query: create external table etp_2 (c1 string, c2 string) partitioned by (p1 string) stored as textfile location 'hdfs://### HDFS PATH ###' tblproperties ('external.table.purge'='false')
 PREHOOK: type: CREATETABLE
@@ -484,10 +502,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table etp_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@etp_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@etp_2
 POSTHOOK: query: drop table etp_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@etp_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@etp_2
 PREHOOK: query: create external table etp_2 (c1 string, c2 string) partitioned by (p1 string) stored as textfile location 'hdfs://### HDFS PATH ###'
 PREHOOK: type: CREATETABLE
@@ -582,10 +602,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table etp_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@etp_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@etp_2
 POSTHOOK: query: drop table etp_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@etp_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@etp_2
 PREHOOK: query: create external table etp_2 (c1 string, c2 string) partitioned by (p1 string) stored as textfile location 'hdfs://### HDFS PATH ###'
 PREHOOK: type: CREATETABLE
@@ -628,8 +650,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table etp_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@etp_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@etp_2
 POSTHOOK: query: drop table etp_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@etp_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@etp_2

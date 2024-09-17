@@ -66,7 +66,7 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
     Table oldTable = context.getDb().getTable(desc.getDbTableName());
     List<Partition> partitions = getPartitions(oldTable, desc.getPartitionSpec(), context);
 
-    // Don't change the table object returned by the metastore, as we'll mess with it's caches.
+    // Don't change the table object returned by the metastore, as we'll mess with its caches.
     Table table = oldTable.copy();
 
     environmentContext = initializeEnvironmentContext(oldTable, desc.getEnvironmentContext());
@@ -91,7 +91,7 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
         partitions = new ArrayList<Partition>();
         Partition part = context.getDb().getPartition(tbl, partSpec, false);
         if (part == null) {
-          // User provided a fully specified partition spec but it doesn't exist, fail.
+          // User provided a fully specified partition spec, but it doesn't exist, fail.
           throw new HiveException(ErrorMsg.INVALID_PARTITION,
                 StringUtils.join(partSpec.keySet(), ',') + " for table " + tbl.getTableName());
 
@@ -109,7 +109,7 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
 
   private EnvironmentContext initializeEnvironmentContext(Table table, EnvironmentContext environmentContext) {
     EnvironmentContext result = environmentContext == null ? new EnvironmentContext() : environmentContext;
-    // do not need update stats in alter table/partition operations
+    // do not need to update stats in alter table/partition operations
     if (result.getProperties() == null ||
         result.getProperties().get(StatsSetupConst.DO_NOT_UPDATE_STATS) == null) {
       result.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
@@ -132,7 +132,7 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
       throws HiveException {
     if (partitions == null) {
       updateModifiedParameters(table.getTTable().getParameters(), context.getConf());
-      table.checkValidity(context.getConf());
+      checkValidity(table, context);
     } else {
       for (Partition partition : partitions) {
         updateModifiedParameters(partition.getParameters(), context.getConf());
@@ -226,6 +226,10 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
       context.getWork().getInputs().add(new ReadEntity(oldTable));
       DDLUtils.addIfAbsentByName(new WriteEntity(table, WriteEntity.WriteType.DDL_NO_LOCK), context);
     }
+  }
+
+  protected void checkValidity(Table table, DDLOperationContext context) throws HiveException {
+    table.checkValidity(context.getConf());
   }
 
   private static void updateModifiedParameters(Map<String, String> params, HiveConf conf) throws HiveException {

@@ -61,6 +61,22 @@ public class TestDateParser {
   }
 
   @Test
+  public void testParseDateFromTimestampWithCommonTimeDelimiter() {
+    for (String d : new String[] { "T", " ", "-", ".", "_", "" }) {
+      String ts = "2023-08-03" + d + "01:02:03";
+      assertEquals("Parsing " + ts, Date.of(2023, 8, 3), DateParser.parseDate(ts));
+    }
+  }
+
+  @Test
+  public void testParseDateFromValidDateLiteralWithTrailingDigits() {
+    assertEquals(Date.of(2023, 8, 8), DateParser.parseDate("2023-08-0800"));
+    // The result may seem unexpected but for many "08-08-20" is a valid date so there is no reason to reject
+    // "08-08-2023" and return null unless in the future Hive becomes stricter in terms of parsing dates.
+    assertEquals(Date.of(8, 8, 20), DateParser.parseDate("08-08-2023"));
+  }
+
+  @Test
   public void testInvalidCases() throws Exception {
     checkInvalidCase("2001");
     checkInvalidCase("2001-01");

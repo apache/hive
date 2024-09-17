@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS decimal_part
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS decimal_part
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE decimal_part (id DECIMAL(4,0), foo VARCHAR(10))
     PARTITIONED BY (nr_bank DECIMAL(4,0))
 STORED AS ORC TBLPROPERTIES ('orc.compress'='ZLIB')

@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLDescWithTableProperties;
 import org.apache.hadoop.hive.ql.ddl.DDLTask;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
@@ -101,7 +102,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * TaskCompiler is a the base class for classes that compile
+ * TaskCompiler is the base class for classes that compile
  * operator pipelines into tasks.
  */
 public abstract class TaskCompiler {
@@ -141,6 +142,14 @@ public abstract class TaskCompiler {
       try {
         directInsert =
             HiveUtils.getStorageHandler(conf, pCtx.getCreateTable().getStorageHandler()).directInsert();
+      } catch (HiveException e) {
+        throw new SemanticException("Failed to load storage handler:  " + e.getMessage());
+      }
+    }
+    if (pCtx.getCreateViewDesc() != null && pCtx.getCreateViewDesc().getStorageHandler() != null) {
+      try {
+        directInsert =
+                HiveUtils.getStorageHandler(conf, pCtx.getCreateViewDesc().getStorageHandler()).directInsert();
       } catch (HiveException e) {
         throw new SemanticException("Failed to load storage handler:  " + e.getMessage());
       }
@@ -253,7 +262,7 @@ public abstract class TaskCompiler {
       // For the FetchTask, the limit optimization requires we fetch all the rows
       // in memory and count how many rows we get. It's not practical if the
       // limit factor is too big
-      int fetchLimit = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVELIMITOPTMAXFETCH);
+      int fetchLimit = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_LIMIT_OPT_MAX_FETCH);
       if (globalLimitCtx.isEnable() && globalLimitCtx.getGlobalLimit() > fetchLimit) {
         LOG.info("For FetchTask, LIMIT " + globalLimitCtx.getGlobalLimit() + " > " + fetchLimit
             + ". Doesn't qualify limit optimization.");
@@ -262,7 +271,7 @@ public abstract class TaskCompiler {
       }
       if (outerQueryLimit == 0) {
         // Believe it or not, some tools do generate queries with limit 0 and than expect
-        // query to run quickly. Lets meet their requirement.
+        // query to run quickly. Let's meet their requirement.
         LOG.info("Limit 0. No query execution needed.");
         return;
       }
@@ -304,15 +313,24 @@ public abstract class TaskCompiler {
     }
 
     if (directInsert) {
-      Task<?> crtTask = null;
       if (pCtx.getCreateTable() != null) {
         CreateTableDesc crtTblDesc = pCtx.getCreateTable();
         crtTblDesc.validate(conf);
-        crtTask = TaskFactory.get(new DDLWork(inputs, outputs, crtTblDesc));
-      }
-      if (crtTask != null) {
+        Task<?> crtTask = TaskFactory.get(new DDLWork(inputs, outputs, crtTblDesc));
         for (Task<?> rootTask : rootTasks) {
           crtTask.addDependentTask(rootTask);
+          rootTasks.clear();
+          rootTasks.add(crtTask);
+        }
+      } else if (pCtx.getCreateViewDesc() != null) {
+        CreateMaterializedViewDesc createMaterializedViewDesc = pCtx.getCreateViewDesc();
+        Task<?> crtTask = TaskFactory.get(new DDLWork(inputs, outputs, createMaterializedViewDesc));
+        MaterializedViewUpdateDesc materializedViewUpdateDesc = new MaterializedViewUpdateDesc(
+                createMaterializedViewDesc.getViewName(), createMaterializedViewDesc.isRewriteEnabled(), false, false);
+        Task<?> updateTask = TaskFactory.get(new DDLWork(inputs, outputs, materializedViewUpdateDesc));
+        crtTask.addDependentTask(updateTask);
+        for (Task<?> rootTask : rootTasks) {
+          updateTask.addDependentTask(rootTask);
           rootTasks.clear();
           rootTasks.add(crtTask);
         }
@@ -475,22 +493,15 @@ public abstract class TaskCompiler {
 
   private void setLoadFileLocation(
       final ParseContext pCtx, LoadFileDesc lfd) throws SemanticException {
-    // CTAS; make the movetask's destination directory the table's destination.
-    Long txnId = null;
+    // CTAS; make the move task's destination directory the table's destination.
+    DDLDescWithTableProperties ddlDesc = pCtx.getQueryProperties().isCTAS() ?
+        pCtx.getCreateTable() : pCtx.getCreateViewDesc();
+
+    FileSinkDesc dataSink = ddlDesc.getAndUnsetWriter();
+    Long txnId = ddlDesc.getInitialWriteId();
+    String loc = ddlDesc.getLocation();
     int stmtId = 0; // CTAS or CMV cannot be part of multi-txn stmt
-    FileSinkDesc dataSink = null;
-    String loc = null;
-    if (pCtx.getQueryProperties().isCTAS()) {
-      CreateTableDesc ctd = pCtx.getCreateTable();
-      dataSink = ctd.getAndUnsetWriter();
-      txnId = ctd.getInitialWriteId();
-      loc = ctd.getLocation();
-    } else {
-      CreateMaterializedViewDesc cmv = pCtx.getCreateViewDesc();
-      dataSink = cmv.getAndUnsetWriter();
-      txnId = cmv.getInitialWriteId();
-      loc = cmv.getLocation();
-    }
+    
     Path location = (loc == null) ? getDefaultCtasOrCMVLocation(pCtx) : new Path(loc);
     if (pCtx.getQueryProperties().isCTAS()) {
       CreateTableDesc ctd = pCtx.getCreateTable();
@@ -499,7 +510,9 @@ public abstract class TaskCompiler {
       }
       try {
         Table table = ctd.toTable(conf);
-        table = db.getTranslateTableDryrun(table.getTTable());
+        if (!ctd.isMaterialization()) {
+          table = db.getTranslateTableDryrun(table.getTTable());
+        }
         org.apache.hadoop.hive.metastore.api.Table tTable = table.getTTable();
         if (tTable.getSd() != null && tTable.getSd().getLocation() != null) {
           location = new Path(tTable.getSd().getLocation());
@@ -734,7 +747,7 @@ public abstract class TaskCompiler {
   protected abstract void setInputFormat(Task<?> rootTask);
 
   /*
-   * Called to generate the taks tree from the parse context/operator tree
+   * Called to generate the tasks tree from the parse context/operator tree
    */
   protected abstract void generateTaskTree(List<Task<?>> rootTasks, ParseContext pCtx,
       List<Task<MoveWork>> mvTask, Set<ReadEntity> inputs, Set<WriteEntity> outputs) throws SemanticException;
@@ -745,12 +758,12 @@ public abstract class TaskCompiler {
   protected void runDynPartitionSortOptimizations(ParseContext parseContext, HiveConf hConf) throws SemanticException {
     // run Sorted dynamic partition optimization
 
-    if(HiveConf.getBoolVar(hConf, HiveConf.ConfVars.DYNAMICPARTITIONING) &&
-        HiveConf.getVar(hConf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE).equals("nonstrict") &&
-        !HiveConf.getBoolVar(hConf, HiveConf.ConfVars.HIVEOPTLISTBUCKETING)) {
+    if(HiveConf.getBoolVar(hConf, HiveConf.ConfVars.DYNAMIC_PARTITIONING) &&
+        HiveConf.getVar(hConf, HiveConf.ConfVars.DYNAMIC_PARTITIONING_MODE).equals("nonstrict") &&
+        !HiveConf.getBoolVar(hConf, HiveConf.ConfVars.HIVE_OPT_LIST_BUCKETING)) {
       new SortedDynPartitionOptimizer().transform(parseContext);
 
-      if(HiveConf.getBoolVar(hConf, HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATION)) {
+      if(HiveConf.getBoolVar(hConf, HiveConf.ConfVars.HIVE_OPT_REDUCE_DEDUPLICATION)) {
         // Dynamic sort partition adds an extra RS therefore need to de-dup
         new ReduceSinkDeDuplication().transform(parseContext);
         // there is an issue with dedup logic wherein SELECT is created with wrong columns

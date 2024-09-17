@@ -320,7 +320,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	16                  
 	rawDataSize         	136                 
-	totalSize           	235                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -361,7 +361,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	984                 
 	rawDataSize         	9488                
-	totalSize           	10416               
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -685,7 +685,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	16                  
 	rawDataSize         	136                 
-	totalSize           	235                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -726,7 +726,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	984                 
 	rawDataSize         	9488                
-	totalSize           	10416               
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -901,8 +901,10 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: query: drop table list_bucketing_dynamic_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@list_bucketing_dynamic_part
+PREHOOK: Output: database:default
 PREHOOK: Output: default@list_bucketing_dynamic_part
 POSTHOOK: query: drop table list_bucketing_dynamic_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@list_bucketing_dynamic_part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@list_bucketing_dynamic_part

@@ -1,7 +1,9 @@
 PREHOOK: query: drop table a_n13
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table a_n13
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table a_n13 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -32,7 +34,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -48,10 +50,12 @@ Storage Desc Params:
 PREHOOK: query: drop table a_n13
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@a_n13
+PREHOOK: Output: database:default
 PREHOOK: Output: default@a_n13
 POSTHOOK: query: drop table a_n13
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@a_n13
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@a_n13
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -82,7 +86,7 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	bucketing_version   	2                   
 	numFiles            	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -98,10 +102,12 @@ Storage Desc Params:
 PREHOOK: query: drop table a_n13
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@a_n13
+PREHOOK: Output: database:default
 PREHOOK: Output: default@a_n13
 POSTHOOK: query: drop table a_n13
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@a_n13
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@a_n13
 PREHOOK: query: create table a_n13 (key STRING COMMENT 'default', value STRING COMMENT 'default')
 PARTITIONED BY (ds STRING, hr STRING)
@@ -143,7 +149,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -159,10 +165,12 @@ Storage Desc Params:
 PREHOOK: query: drop table a_n13
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@a_n13
+PREHOOK: Output: database:default
 PREHOOK: Output: default@a_n13
 POSTHOOK: query: drop table a_n13
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@a_n13
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@a_n13
 PREHOOK: query: create table a_n13 like srcpart
 PREHOOK: type: CREATETABLE
@@ -200,7 +208,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

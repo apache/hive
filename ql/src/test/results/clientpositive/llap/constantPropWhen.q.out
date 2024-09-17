@@ -1,7 +1,9 @@
 PREHOOK: query: drop table test_1_n4
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table test_1_n4
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_1_n4 (id int, id2 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

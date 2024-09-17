@@ -43,10 +43,6 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hive.iceberg.org.apache.orc.OrcConf;
-import org.apache.hive.iceberg.org.apache.parquet.format.converter.ParquetMetadataConverter;
-import org.apache.hive.iceberg.org.apache.parquet.hadoop.ParquetFileReader;
-import org.apache.hive.iceberg.org.apache.parquet.hadoop.metadata.ParquetMetadata;
-import org.apache.hive.iceberg.org.apache.parquet.schema.MessageType;
 import org.apache.iceberg.FileContent;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.FileScanTask;
@@ -58,6 +54,7 @@ import org.apache.iceberg.Table;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.CloseableIterator;
+import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.HiveIcebergInputFormat;
 import org.apache.iceberg.mr.mapred.MapredIcebergInputFormat;
 import org.apache.iceberg.orc.VectorizedReadUtils;
@@ -67,6 +64,10 @@ import org.apache.iceberg.parquet.TypeWithSchemaVisitor;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Types;
 import org.apache.orc.impl.OrcTail;
+import org.apache.parquet.format.converter.ParquetMetadataConverter;
+import org.apache.parquet.hadoop.ParquetFileReader;
+import org.apache.parquet.hadoop.metadata.ParquetMetadata;
+import org.apache.parquet.schema.MessageType;
 
 /**
  * Utility class to create vectorized readers for Hive.
@@ -87,7 +88,8 @@ public class HiveVectorizedReader {
     Schema requiredSchema = readSchema;
 
     if (!task.deletes().isEmpty()) {
-      deleteFilter = new HiveDeleteFilter(table.io(), task, table.schema(), prepareSchemaForDeleteFilter(readSchema));
+      deleteFilter = new HiveDeleteFilter(table.io(), task, table.schema(), prepareSchemaForDeleteFilter(readSchema),
+          context.getConfiguration());
       requiredSchema = deleteFilter.requiredSchema();
       // TODO: take requiredSchema and adjust readColumnIds below accordingly for equality delete cases
       // and remove below limitation
@@ -166,7 +168,7 @@ public class HiveVectorizedReader {
       }
 
       CloseableIterable<HiveBatchContext> vrbIterable =
-          createVectorizedRowBatchIterable(recordReader, job, partitionColIndices, partitionValues);
+          createVectorizedRowBatchIterable(recordReader, job, partitionColIndices, partitionValues, idToConstant);
 
       return deleteFilter != null ? deleteFilter.filterBatch(vrbIterable) : vrbIterable;
 
@@ -195,7 +197,7 @@ public class HiveVectorizedReader {
     // If LLAP enabled, try to retrieve an LLAP record reader - this might yield to null in some special cases
     // TODO: add support for reading files with positional deletes with LLAP (LLAP would need to provide file row num)
     if (HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon()) &&
-        LlapProxy.getIo() != null && task.deletes().isEmpty()) {
+        LlapProxy.getIo() != null && task.deletes().isEmpty() && !InputFormatConfig.fetchVirtualColumns(job)) {
       boolean isDisableVectorization =
           job.getBoolean(HiveIcebergInputFormat.getVectorizationConfName(tableName), false);
       if (isDisableVectorization) {
@@ -222,7 +224,7 @@ public class HiveVectorizedReader {
 
     MemoryBufferOrBuffers footerData = null;
     if (HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon()) &&
-        LlapProxy.getIo() != null) {
+        LlapProxy.getIo() != null && LlapProxy.getIo().usingLowLevelCache()) {
       LlapProxy.getIo().initCacheOnlyInputFormat(inputFormat);
       footerData = LlapProxy.getIo().getParquetFooterBuffersFromCache(path, job, fileId);
     }
@@ -230,6 +232,7 @@ public class HiveVectorizedReader {
     ParquetMetadata parquetMetadata = footerData != null ?
         ParquetFileReader.readFooter(new ParquetFooterInputFromCache(footerData), ParquetMetadataConverter.NO_FILTER) :
         ParquetFileReader.readFooter(job, path);
+    inputFormat.setMetadata(parquetMetadata);
 
     MessageType fileSchema = parquetMetadata.getFileMetaData().getSchema();
     MessageType typeWithIds = null;
@@ -251,10 +254,10 @@ public class HiveVectorizedReader {
 
   private static CloseableIterable<HiveBatchContext> createVectorizedRowBatchIterable(
       RecordReader<NullWritable, VectorizedRowBatch> hiveRecordReader, JobConf job, int[] partitionColIndices,
-      Object[] partitionValues) {
+      Object[] partitionValues, Map<Integer, ?> idToConstant) {
 
     HiveBatchIterator iterator =
-        new HiveBatchIterator(hiveRecordReader, job, partitionColIndices, partitionValues);
+        new HiveBatchIterator(hiveRecordReader, job, partitionColIndices, partitionValues, idToConstant);
 
     return new CloseableIterable<HiveBatchContext>() {
 

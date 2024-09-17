@@ -254,8 +254,10 @@ POSTHOOK: Input: default@testpartbucket@ds=hello/hr=world
 PREHOOK: query: drop table testpartbucket
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testpartbucket
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testpartbucket
 POSTHOOK: query: drop table testpartbucket
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testpartbucket
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testpartbucket

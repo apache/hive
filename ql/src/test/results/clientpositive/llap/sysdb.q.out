@@ -124,6 +124,10 @@ information_schema	compactions			hive_test_user	USER	DELETE	true	-1	hive_test_us
 information_schema	compactions			hive_test_user	USER	INSERT	true	-1	hive_test_user
 information_schema	compactions			hive_test_user	USER	SELECT	true	-1	hive_test_user
 information_schema	compactions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+information_schema	locks			hive_test_user	USER	DELETE	true	-1	hive_test_user
+information_schema	locks			hive_test_user	USER	INSERT	true	-1	hive_test_user
+information_schema	locks			hive_test_user	USER	SELECT	true	-1	hive_test_user
+information_schema	locks			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 information_schema	scheduled_executions			hive_test_user	USER	DELETE	true	-1	hive_test_user
 information_schema	scheduled_executions			hive_test_user	USER	INSERT	true	-1	hive_test_user
 information_schema	scheduled_executions			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -144,6 +148,10 @@ information_schema	tables			hive_test_user	USER	DELETE	true	-1	hive_test_user
 information_schema	tables			hive_test_user	USER	INSERT	true	-1	hive_test_user
 information_schema	tables			hive_test_user	USER	SELECT	true	-1	hive_test_user
 information_schema	tables			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+information_schema	transactions			hive_test_user	USER	DELETE	true	-1	hive_test_user
+information_schema	transactions			hive_test_user	USER	INSERT	true	-1	hive_test_user
+information_schema	transactions			hive_test_user	USER	SELECT	true	-1	hive_test_user
+information_schema	transactions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 information_schema	views			hive_test_user	USER	DELETE	true	-1	hive_test_user
 information_schema	views			hive_test_user	USER	INSERT	true	-1	hive_test_user
 information_schema	views			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -256,6 +264,10 @@ sys	partitions			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	partitions			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	partitions			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	partitions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	replication_failover_failback_metrics			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	replication_failover_failback_metrics			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	replication_failover_failback_metrics			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	replication_failover_failback_metrics			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	replication_metrics			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	replication_metrics			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	replication_metrics			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -488,6 +500,7 @@ compaction_queue	cq_id
 compaction_queue	cq_initiator_id
 compaction_queue	cq_initiator_version
 compaction_queue	cq_next_txn_id
+compaction_queue	cq_number_of_buckets
 compaction_queue	cq_partition
 compaction_queue	cq_pool_name
 compaction_queue	cq_run_as
@@ -526,6 +539,8 @@ compactions	c_initiator_version
 compactions	c_initiator_version
 compactions	c_next_txn_id
 compactions	c_next_txn_id
+compactions	c_number_of_buckets
+compactions	c_number_of_buckets
 compactions	c_partition
 compactions	c_partition
 compactions	c_pool_name
@@ -561,6 +576,7 @@ completed_compactions	cc_id
 completed_compactions	cc_initiator_id
 completed_compactions	cc_initiator_version
 completed_compactions	cc_next_txn_id
+completed_compactions	cc_number_of_buckets
 completed_compactions	cc_partition
 completed_compactions	cc_pool_name
 completed_compactions	cc_run_as
@@ -638,20 +654,36 @@ key_constraints	parent_tbl_id
 key_constraints	position
 key_constraints	update_rule
 locks	acquired_at
+locks	acquired_at
+locks	agent_info
 locks	agent_info
 locks	blockedby_ext_id
+locks	blockedby_ext_id
+locks	blockedby_int_id
 locks	blockedby_int_id
 locks	db
+locks	db
+locks	heartbeat_count
 locks	heartbeat_count
 locks	host
+locks	host
+locks	last_heartbeat
 locks	last_heartbeat
 locks	lock_ext_id
+locks	lock_ext_id
+locks	lock_int_id
 locks	lock_int_id
 locks	lock_state
+locks	lock_state
+locks	lock_type
 locks	lock_type
 locks	partition
+locks	partition
+locks	table
 locks	table
 locks	txnid
+locks	txnid
+locks	user
 locks	user
 min_history_level	mhl_min_open_txnid
 min_history_level	mhl_txnid
@@ -703,7 +735,6 @@ part_col_stats	big_decimal_low_value
 part_col_stats	column_name
 part_col_stats	column_type
 part_col_stats	cs_id
-part_col_stats	db_name
 part_col_stats	double_high_value
 part_col_stats	double_low_value
 part_col_stats	engine
@@ -716,8 +747,6 @@ part_col_stats	num_falses
 part_col_stats	num_nulls
 part_col_stats	num_trues
 part_col_stats	part_id
-part_col_stats	partition_name
-part_col_stats	table_name
 part_privs	authorizer
 part_privs	create_time
 part_privs	grant_option
@@ -752,6 +781,9 @@ partitions	part_id
 partitions	part_name
 partitions	sd_id
 partitions	tbl_id
+replication_failover_failback_metrics	db_name
+replication_failover_failback_metrics	db_repl_metrics_name
+replication_failover_failback_metrics	db_repl_metrics_value
 replication_metrics	dump_execution_id
 replication_metrics	metadata
 replication_metrics	policy_name
@@ -872,7 +904,6 @@ tab_col_stats	big_decimal_low_value
 tab_col_stats	column_name
 tab_col_stats	column_type
 tab_col_stats	cs_id
-tab_col_stats	db_name
 tab_col_stats	double_high_value
 tab_col_stats	double_low_value
 tab_col_stats	engine
@@ -884,7 +915,6 @@ tab_col_stats	num_distincts
 tab_col_stats	num_falses
 tab_col_stats	num_nulls
 tab_col_stats	num_trues
-tab_col_stats	table_name
 tab_col_stats	tbl_id
 table_params	param_key
 table_params	param_value
@@ -950,19 +980,34 @@ tbls	tbl_type
 tbls	view_expanded_text
 tbls	view_original_text
 transactions	agent_info
+transactions	agent_info
+transactions	heartbeat_count
 transactions	heartbeat_count
 transactions	host
+transactions	host
+transactions	last_heartbeat
 transactions	last_heartbeat
 transactions	meta_info
+transactions	meta_info
+transactions	started
 transactions	started
 transactions	state
+transactions	state
+transactions	tc_database
 transactions	tc_database
 transactions	tc_operation_type
+transactions	tc_operation_type
+transactions	tc_partition
 transactions	tc_partition
 transactions	tc_table
+transactions	tc_table
+transactions	tc_writeid
 transactions	tc_writeid
 transactions	txn_id
+transactions	txn_id
 transactions	type
+transactions	type
+transactions	user
 transactions	user
 txn_components	tc_database
 txn_components	tc_operation_type
@@ -1029,8 +1074,8 @@ POSTHOOK: Input: sys@columns_v2
 #### A masked pattern was here ####
 a	decimal(10,2)	0
 acquired_at	string	9
+acquired_at	string	9
 action_expression	string	4
-active_execution_id	bigint	8
 active_execution_id	bigint	8
 PREHOOK: query: select param_key, param_value from database_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
@@ -1263,7 +1308,7 @@ POSTHOOK: query: select count(*) from sds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sds
 #### A masked pattern was here ####
-76
+79
 PREHOOK: query: select param_key, param_value from sd_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@sd_params
@@ -1396,13 +1441,17 @@ hive_test_user	hive_test_user
 hive_test_user	hive_test_user
 hive_test_user	hive_test_user
 hive_test_user	hive_test_user
-PREHOOK: query: select table_name, column_name, num_nulls, num_distincts from tab_col_stats order by table_name, column_name limit 10
+PREHOOK: query: select tbls.tbl_name, column_name, num_nulls, num_distincts from tab_col_stats inner join tbls on tab_col_stats.tbl_id=tbls.tbl_id join dbs on tbls.db_id=dbs.db_id order by tbls.tbl_name, column_name limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: sys@dbs
 PREHOOK: Input: sys@tab_col_stats
+PREHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-POSTHOOK: query: select table_name, column_name, num_nulls, num_distincts from tab_col_stats order by table_name, column_name limit 10
+POSTHOOK: query: select tbls.tbl_name, column_name, num_nulls, num_distincts from tab_col_stats inner join tbls on tab_col_stats.tbl_id=tbls.tbl_id join dbs on tbls.db_id=dbs.db_id order by tbls.tbl_name, column_name limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@tab_col_stats
+POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
 part	p_brand	0	16
 part	p_comment	0	25
@@ -1414,13 +1463,17 @@ part	p_retailprice	0	25
 part	p_size	0	21
 part	p_type	0	24
 src	key	0	316
-PREHOOK: query: select table_name, partition_name, column_name, num_nulls, num_distincts from part_col_stats order by table_name, partition_name, column_name limit 10
+PREHOOK: query: select tbls.tbl_name, partitions.part_name, column_name, num_nulls, num_distincts from part_col_stats inner join partitions on part_col_stats.part_id=partitions.part_id inner join tbls on partitions.tbl_id=tbls.tbl_id order by tbls.tbl_name, partitions.part_name, column_name limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@part_col_stats
+PREHOOK: Input: sys@partitions
+PREHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-POSTHOOK: query: select table_name, partition_name, column_name, num_nulls, num_distincts from part_col_stats order by table_name, partition_name, column_name limit 10
+POSTHOOK: query: select tbls.tbl_name, partitions.part_name, column_name, num_nulls, num_distincts from part_col_stats inner join partitions on part_col_stats.part_id=partitions.part_id inner join tbls on partitions.tbl_id=tbls.tbl_id order by tbls.tbl_name, partitions.part_name, column_name limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@part_col_stats
+POSTHOOK: Input: sys@partitions
+POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
 PREHOOK: query: select schema_version from version order by schema_version limit 5
 PREHOOK: type: QUERY
@@ -1432,7 +1485,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: sys@version
 #### A masked pattern was here ####
-4.0.0
+4.1.0
 PREHOOK: query: select func_name, func_type from funcs order by func_name, func_type limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@funcs
@@ -1486,8 +1539,6 @@ POSTHOOK: query: describe sys.tab_col_stats
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: sys@tab_col_stats
 cs_id               	bigint              	from deserializer   
-db_name             	string              	from deserializer   
-table_name          	string              	from deserializer   
 column_name         	string              	from deserializer   
 column_type         	string              	from deserializer   
 tbl_id              	bigint              	from deserializer   
@@ -1590,8 +1641,16 @@ POSTHOOK: Input: sys@compaction_queue
 POSTHOOK: Input: sys@compactions
 POSTHOOK: Input: sys@completed_compactions
 #### A masked pattern was here ####
-1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-SNAPSHOT	NULL	default	NULL
-2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-SNAPSHOT	NULL	default	NULL
+1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.1.0-SNAPSHOT	NULL	default	NULL	NULL
+2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.1.0-SNAPSHOT	NULL	default	NULL	NULL
+PREHOOK: query: select MHL_TXNID,MHL_MIN_OPEN_TXNID from MIN_HISTORY_LEVEL
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@min_history_level
+#### A masked pattern was here ####
+POSTHOOK: query: select MHL_TXNID,MHL_MIN_OPEN_TXNID from MIN_HISTORY_LEVEL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@min_history_level
+#### A masked pattern was here ####
 PREHOOK: query: use INFORMATION_SCHEMA
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:information_schema
@@ -1638,11 +1697,13 @@ default	default	srcbucket	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	information_schema	column_privileges	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	information_schema	columns	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	information_schema	compactions	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	information_schema	locks	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	information_schema	scheduled_executions	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	information_schema	scheduled_queries	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	information_schema	schemata	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	information_schema	table_privileges	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	information_schema	tables	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	information_schema	transactions	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	information_schema	views	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	sys	bucketing_cols	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	cds	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
@@ -1671,6 +1732,7 @@ default	sys	partition_keys	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	partition_params	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	partition_stats_view	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	sys	partitions	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	replication_failover_failback_metrics	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	sys	replication_metrics	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	sys	replication_metrics_orig	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	role_map	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
@@ -1787,15 +1849,18 @@ POSTHOOK: Input: sys@tbls
 information_schema	column_privileges
 information_schema	columns
 information_schema	compactions
+information_schema	locks
 information_schema	scheduled_executions
 information_schema	scheduled_queries
 information_schema	schemata
 information_schema	table_privileges
 information_schema	tables
+information_schema	transactions
 information_schema	views
 sys	compactions
 sys	locks
 sys	partition_stats_view
+sys	replication_failover_failback_metrics
 sys	replication_metrics
 sys	table_stats_view
 sys	transactions
@@ -1820,5 +1885,43 @@ POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-SNAPSHOT	NULL	default	NULL
-2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-SNAPSHOT	NULL	default	NULL
+1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.1.0-SNAPSHOT	NULL	default	NULL	NULL
+2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.1.0-SNAPSHOT	NULL	default	NULL	NULL
+PREHOOK: query: select TXN_ID, STATE, AGENT_INFO, META_INFO, HEARTBEAT_COUNT, TYPE, TC_DATABASE, TC_TABLE, TC_PARTITION, TC_OPERATION_TYPE, TC_WRITEID from TRANSACTIONS
+PREHOOK: type: QUERY
+PREHOOK: Input: information_schema@transactions
+PREHOOK: Input: sys@dbs
+PREHOOK: Input: sys@tbl_privs
+PREHOOK: Input: sys@tbls
+PREHOOK: Input: sys@transactions
+PREHOOK: Input: sys@txn_components
+PREHOOK: Input: sys@txns
+#### A masked pattern was here ####
+POSTHOOK: query: select TXN_ID, STATE, AGENT_INFO, META_INFO, HEARTBEAT_COUNT, TYPE, TC_DATABASE, TC_TABLE, TC_PARTITION, TC_OPERATION_TYPE, TC_WRITEID from TRANSACTIONS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: information_schema@transactions
+POSTHOOK: Input: sys@dbs
+POSTHOOK: Input: sys@tbl_privs
+POSTHOOK: Input: sys@tbls
+POSTHOOK: Input: sys@transactions
+POSTHOOK: Input: sys@txn_components
+POSTHOOK: Input: sys@txns
+#### A masked pattern was here ####
+PREHOOK: query: select * from LOCKS
+PREHOOK: type: QUERY
+PREHOOK: Input: information_schema@locks
+PREHOOK: Input: sys@dbs
+PREHOOK: Input: sys@hive_locks
+PREHOOK: Input: sys@locks
+PREHOOK: Input: sys@tbl_privs
+PREHOOK: Input: sys@tbls
+#### A masked pattern was here ####
+POSTHOOK: query: select * from LOCKS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: information_schema@locks
+POSTHOOK: Input: sys@dbs
+POSTHOOK: Input: sys@hive_locks
+POSTHOOK: Input: sys@locks
+POSTHOOK: Input: sys@tbl_privs
+POSTHOOK: Input: sys@tbls
+#### A masked pattern was here ####

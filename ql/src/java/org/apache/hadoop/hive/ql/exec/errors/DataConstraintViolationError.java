@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.exec.errors;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 
 /**
- * Error class, thrown when arguments's constraints violate.
+ * Error class, thrown when argument's constraints violate.
  */
 public class DataConstraintViolationError extends Error {
 

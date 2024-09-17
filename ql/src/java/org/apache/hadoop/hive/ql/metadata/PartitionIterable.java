@@ -51,7 +51,7 @@ public class PartitionIterable implements Iterable<Partition> {
     return new Iterator<Partition>(){
 
       private boolean initialized = false;
-      private Iterator<Partition> ptnsIterator = null;
+      private Iterator<Partition> partitionIterator = null;
 
       private Iterator<String> partitionNamesIter = null;
       private Iterator<Partition> batchIter = null;
@@ -59,7 +59,7 @@ public class PartitionIterable implements Iterable<Partition> {
       private void initialize(){
         if(!initialized){
           if (currType == Type.LIST_PROVIDED){
-            ptnsIterator = ptnsProvided.iterator();
+            partitionIterator = ptnsProvided.iterator();
           } else {
             partitionNamesIter = partitionNames.iterator();
           }
@@ -71,7 +71,7 @@ public class PartitionIterable implements Iterable<Partition> {
       public boolean hasNext() {
         initialize();
         if (currType == Type.LIST_PROVIDED){
-          return ptnsIterator.hasNext();
+          return partitionIterator.hasNext();
         } else {
           return ((batchIter != null) && batchIter.hasNext()) || partitionNamesIter.hasNext();
         }
@@ -81,7 +81,7 @@ public class PartitionIterable implements Iterable<Partition> {
       public Partition next() {
         initialize();
         if (currType == Type.LIST_PROVIDED){
-          return ptnsIterator.next();
+          return partitionIterator.next();
         }
 
         if ((batchIter == null) || !batchIter.hasNext()){
@@ -99,7 +99,11 @@ public class PartitionIterable implements Iterable<Partition> {
           batchCounter++;
         }
         try {
-          batchIter = db.getPartitionsByNames(table, nameBatch, getColStats).iterator();
+          if (isAuthRequired) {
+            batchIter = db.getPartitionsAuthByNames(table, nameBatch, userName, groupNames).iterator();
+          } else {
+            batchIter = db.getPartitionsByNames(table, nameBatch, getColStats).iterator();
+          }
         } catch (HiveException e) {
           throw new RuntimeException(e);
         }
@@ -130,6 +134,9 @@ public class PartitionIterable implements Iterable<Partition> {
   private List<String> partitionNames = null;
   private int batchSize;
   private boolean getColStats = false;
+  private boolean isAuthRequired = false;
+  private String userName;
+  private List<String> groupNames;
 
   /**
    * Dummy constructor, which simply acts as an iterator on an already-present
@@ -150,18 +157,37 @@ public class PartitionIterable implements Iterable<Partition> {
     this(db, table, partialPartitionSpec, batchSize, false);
   }
 
+  public PartitionIterable(Hive db, Table table, Map<String, String> partialPartitionSpec,
+       int batchSize, boolean isAuthRequired, String userName,
+       List<String> groupNames) throws HiveException {
+    this(db, table, partialPartitionSpec, batchSize, false, isAuthRequired, userName, groupNames);
+  }
+
+
   /**
    * Primary constructor that fetches all partitions in a given table, given
    * a Hive object and a table object, and a partial partition spec.
    */
   public PartitionIterable(Hive db, Table table, Map<String, String> partialPartitionSpec,
                            int batchSize, boolean getColStats) throws HiveException {
+    this(db, table, partialPartitionSpec, batchSize, getColStats, false, null, null);
+  }
+
+  private PartitionIterable(Hive db, Table table, Map<String, String> partialPartitionSpec,
+       int batchSize, boolean getColStats, boolean isAuthRequired, String userName,
+       List<String> groupNames) throws HiveException {
+    if (batchSize < 1) {
+      throw new HiveException("Invalid batch size for partition iterable. Please use a batch size greater than 0");
+    }
     this.currType = Type.LAZY_FETCH_PARTITIONS;
     this.db = db;
     this.table = table;
     this.partialPartitionSpec = partialPartitionSpec;
     this.batchSize = batchSize;
     this.getColStats = getColStats;
+    this.isAuthRequired = isAuthRequired;
+    this.userName = userName;
+    this.groupNames = groupNames;
 
     if (this.partialPartitionSpec == null){
       partitionNames = db.getPartitionNames(

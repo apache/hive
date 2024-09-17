@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.ql.ddl.DDLTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.junit.Test;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -70,19 +69,19 @@ public class TestConditionalResolverCommonJoin {
     ctx.setAliasToKnownSize(aliasToKnownSize);
 
     HiveConf conf = new HiveConf();
-    conf.setLongVar(HiveConf.ConfVars.HIVESMALLTABLESFILESIZE, 4096);
+    conf.setLongVar(HiveConf.ConfVars.HIVE_SMALL_TABLES_FILESIZE, 4096);
 
     // alias3 only can be selected
     Task resolved = resolver.resolveMapJoinTask(ctx, conf);
     Assert.assertEquals("alias3", resolved.getId());
 
-    conf.setLongVar(HiveConf.ConfVars.HIVESMALLTABLESFILESIZE, 65536);
+    conf.setLongVar(HiveConf.ConfVars.HIVE_SMALL_TABLES_FILESIZE, 65536);
 
-    // alias1, alias2, alias3 all can be selected but overriden by biggest one (alias3)
+    // alias1, alias2, alias3 all can be selected but Overridden by biggest one (alias3)
     resolved = resolver.resolveMapJoinTask(ctx, conf);
     Assert.assertEquals("alias3", resolved.getId());
 
-    conf.setLongVar(HiveConf.ConfVars.HIVESMALLTABLESFILESIZE, 2048);
+    conf.setLongVar(HiveConf.ConfVars.HIVE_SMALL_TABLES_FILESIZE, 2048);
 
     // not selected
     resolved = resolver.resolveMapJoinTask(ctx, conf);

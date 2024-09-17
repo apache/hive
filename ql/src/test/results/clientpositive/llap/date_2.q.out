@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists date_2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists date_2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table date_2 (
   ORIGIN_CITY_NAME string,
   DEST_CITY_NAME string,
@@ -343,8 +345,10 @@ POSTHOOK: Input: default@date_2
 PREHOOK: query: drop table date_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@date_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@date_2
 POSTHOOK: query: drop table date_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@date_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_2

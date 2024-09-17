@@ -609,8 +609,10 @@ POSTHOOK: Output: default@partition_mv_4
 PREHOOK: query: DROP TABLE src_txn_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_txn_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_txn_2
 POSTHOOK: query: DROP TABLE src_txn_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_txn_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_txn_2

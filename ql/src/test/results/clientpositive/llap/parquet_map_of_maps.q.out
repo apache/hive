@@ -43,16 +43,20 @@ POSTHOOK: Input: default@parquet_map_of_maps_copy
 PREHOOK: query: DROP TABLE parquet_map_of_maps
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@parquet_map_of_maps
+PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_map_of_maps
 POSTHOOK: query: DROP TABLE parquet_map_of_maps
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@parquet_map_of_maps
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_map_of_maps
 PREHOOK: query: DROP TABLE parquet_map_of_maps_copy
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@parquet_map_of_maps_copy
+PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_map_of_maps_copy
 POSTHOOK: query: DROP TABLE parquet_map_of_maps_copy
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@parquet_map_of_maps_copy
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_map_of_maps_copy

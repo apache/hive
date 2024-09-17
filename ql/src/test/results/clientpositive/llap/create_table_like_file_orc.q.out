@@ -127,18 +127,22 @@ binary_type         	binary              	Inferred from Orc file.
 PREHOOK: query: DROP TABLE test_all_orc_types
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_all_orc_types
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_all_orc_types
 POSTHOOK: query: DROP TABLE test_all_orc_types
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_all_orc_types
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_all_orc_types
 PREHOOK: query: DROP TABLE like_test_all_orc_types
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@like_test_all_orc_types
+PREHOOK: Output: database:default
 PREHOOK: Output: default@like_test_all_orc_types
 POSTHOOK: query: DROP TABLE like_test_all_orc_types
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@like_test_all_orc_types
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@like_test_all_orc_types
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -211,10 +215,12 @@ POSTHOOK: Input: default@like_test_orc_array
 PREHOOK: query: DROP TABLE like_test_orc_array
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@like_test_orc_array
+PREHOOK: Output: database:default
 PREHOOK: Output: default@like_test_orc_array
 POSTHOOK: query: DROP TABLE like_test_orc_array
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@like_test_orc_array
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@like_test_orc_array
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -299,10 +305,12 @@ POSTHOOK: Input: default@like_test_orc_map
 PREHOOK: query: DROP TABLE like_test_orc_map
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@like_test_orc_map
+PREHOOK: Output: database:default
 PREHOOK: Output: default@like_test_orc_map
 POSTHOOK: query: DROP TABLE like_test_orc_map
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@like_test_orc_map
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@like_test_orc_map
 PREHOOK: query: CREATE TABLE src_tbl (key STRING, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -377,10 +385,12 @@ POSTHOOK: Input: default@like_test_orc_union
 PREHOOK: query: DROP TABLE like_test_orc_union
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@like_test_orc_union
+PREHOOK: Output: database:default
 PREHOOK: Output: default@like_test_orc_union
 POSTHOOK: query: DROP TABLE like_test_orc_union
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@like_test_orc_union
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@like_test_orc_union
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -453,10 +463,12 @@ POSTHOOK: Input: default@like_test_complex_orc_struct
 PREHOOK: query: DROP TABLE like_test_complex_orc_struct
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@like_test_complex_orc_struct
+PREHOOK: Output: database:default
 PREHOOK: Output: default@like_test_complex_orc_struct
 POSTHOOK: query: DROP TABLE like_test_complex_orc_struct
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@like_test_complex_orc_struct
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@like_test_complex_orc_struct
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -529,10 +541,12 @@ POSTHOOK: Input: default@like_test_orc_complex_complex
 PREHOOK: query: DROP TABLE like_test_orc_complex_complex
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@like_test_orc_complex_complex
+PREHOOK: Output: database:default
 PREHOOK: Output: default@like_test_orc_complex_complex
 POSTHOOK: query: DROP TABLE like_test_orc_complex_complex
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@like_test_orc_complex_complex
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@like_test_orc_complex_complex
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -608,8 +622,10 @@ POSTHOOK: Input: default@like_test_orc_partitioning@year=1984/month=1
 PREHOOK: query: DROP TABLE like_test_orc_partitioning
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@like_test_orc_partitioning
+PREHOOK: Output: database:default
 PREHOOK: Output: default@like_test_orc_partitioning
 POSTHOOK: query: DROP TABLE like_test_orc_partitioning
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@like_test_orc_partitioning
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@like_test_orc_partitioning

@@ -62,6 +62,13 @@ public class UDFLike extends UDF {
   }
 
   public static String likePatternToRegExp(String likePattern) {
+    return likePatternToRegExp(likePattern, true, false);
+  }
+
+  public static String likePatternToRegExp(String likePattern, boolean literalize, boolean greedyMatch) {
+    if (likePattern == null) {
+      return null;
+    }
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < likePattern.length(); i++) {
       // Make a special case for "\\_" and "\\%"
@@ -77,9 +84,9 @@ public class UDFLike extends UDF {
       if (n == '_') {
         sb.append(".");
       } else if (n == '%') {
-        sb.append(".*?");
+        sb.append(greedyMatch ? ".*" : ".*?");
       } else {
-        sb.append(Pattern.quote(Character.toString(n)));
+        sb.append(literalize ? Pattern.quote(Character.toString(n)) : n);
       }
     }
     return sb.toString();

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.signature;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
 
@@ -52,7 +53,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -90,9 +90,9 @@ public class TestRelSignature {
     final RelOptCluster optCluster = RelOptCluster.create(planner, rexBuilder);
     RelDataType rowTypeMock = typeFactory.createStructType(MyRecord.class);
     LogicalTableScan tableScan = LogicalTableScan.create(optCluster, tableMock, Collections.emptyList());
-    doReturn(tableScan).when(tableMock).toRel(ArgumentMatchers.any());
+    doReturn(tableScan).when(tableMock).toRel(any());
     doReturn(rowTypeMock).when(tableMock).getRowType();
-    doReturn(tableMock).when(schemaMock).getTableForMember(Matchers.any());
+    doReturn(tableMock).when(schemaMock).getTableForMember(any());
     lenient().doReturn(hiveTableMDMock).when(tableMock).getHiveTableMD();
 
     builder = HiveRelFactories.HIVE_BUILDER.create(optCluster, schemaMock);

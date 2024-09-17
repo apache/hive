@@ -51,6 +51,7 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.FileUtils;
 
 import com.google.common.base.Strings;
@@ -66,7 +67,6 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.RemoteIterator;
@@ -92,7 +92,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.txn.CompactionState;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionState;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -493,7 +493,7 @@ public class AcidUtils {
    * @return true, if the parameters contains {@link AcidUtils#COMPACTOR_TABLE_PROPERTY}
    */
   public static boolean isCompactionTable(Map<String, String> parameters) {
-    return Boolean.parseBoolean(parameters.get(COMPACTOR_TABLE_PROPERTY));
+    return StringUtils.isNotBlank(parameters.get(COMPACTOR_TABLE_PROPERTY));
   }
 
   /**
@@ -1417,6 +1417,13 @@ public class AcidUtils {
     return directory;
   }
 
+  public static AcidDirectory getAcidState(StorageDescriptor sd, ValidWriteIdList writeIds, HiveConf conf)
+      throws IOException {
+    Path location = new Path(sd.getLocation());
+    FileSystem fs = location.getFileSystem(conf);
+    return getAcidState(fs, location, conf, writeIds, Ref.from(false), false);
+  }
+
   private static void findBestWorkingDeltas(ValidWriteIdList writeIdList, AcidDirectory directory) {
     Collections.sort(directory.getCurrentDirectories());
     //so now, 'current directories' should be sorted like delta_5_20 delta_5_10 delta_11_20 delta_51_60 for example
@@ -1510,13 +1517,13 @@ public class AcidUtils {
         if (baseFileFilter.accept(fPath) ||
                 deltaFileFilter.accept(fPath) ||
                 deleteEventDeltaDirFilter.accept(fPath)) {
-          addToSnapshoot(dirToSnapshots, fPath);
+          addToSnapshot(dirToSnapshots, fPath);
         } else {
           if (fStatus.isDirectory()) {
             stack.push(FileUtils.listStatusIterator(fs, fPath, acidHiddenFileFilter));
           } else {
             // Found an original file
-            HdfsDirSnapshot hdfsDirSnapshot = addToSnapshoot(dirToSnapshots, fPath.getParent());
+            HdfsDirSnapshot hdfsDirSnapshot = addToSnapshot(dirToSnapshots, fPath.getParent());
             hdfsDirSnapshot.addFile(fStatus);
           }
         }
@@ -1525,7 +1532,7 @@ public class AcidUtils {
     return dirToSnapshots;
   }
 
-  private static HdfsDirSnapshot addToSnapshoot(Map<Path, HdfsDirSnapshot> dirToSnapshots, Path fPath) {
+  private static HdfsDirSnapshot addToSnapshot(Map<Path, HdfsDirSnapshot> dirToSnapshots, Path fPath) {
     HdfsDirSnapshot dirSnapshot = dirToSnapshots.get(fPath);
     if (dirSnapshot == null) {
       dirSnapshot = new HdfsDirSnapshotImpl(fPath);
@@ -1537,32 +1544,36 @@ public class AcidUtils {
   public static Map<Path, HdfsDirSnapshot> getHdfsDirSnapshots(final FileSystem fs, final Path path)
       throws IOException {
     Map<Path, HdfsDirSnapshot> dirToSnapshots = new HashMap<>();
-    RemoteIterator<LocatedFileStatus> itr = FileUtils.listFiles(fs, path, true, acidHiddenFileFilter);
-    while (itr.hasNext()) {
-      FileStatus fStatus = itr.next();
-      Path fPath = fStatus.getPath();
-      if (fStatus.isDirectory() && acidTempDirFilter.accept(fPath)) {
-        addToSnapshoot(dirToSnapshots, fPath);
-      } else {
-        Path parentDirPath = fPath.getParent();
-        if (acidTempDirFilter.accept(parentDirPath)) {
-          while (isChildOfDelta(parentDirPath, path)) {
-            // Some cases there are other directory layers between the delta and the datafiles
-            // (export-import mm table, insert with union all to mm table, skewed tables).
-            // But it does not matter for the AcidState, we just need the deltas and the data files
-            // So build the snapshot with the files inside the delta directory
-            parentDirPath = parentDirPath.getParent();
-          }
-          HdfsDirSnapshot dirSnapshot = addToSnapshoot(dirToSnapshots, parentDirPath);
-          // We're not filtering out the metadata file and acid format file,
-          // as they represent parts of a valid snapshot
-          // We're not using the cached values downstream, but we can potentially optimize more in a follow-up task
-          if (fStatus.getPath().toString().contains(MetaDataFile.METADATA_FILE)) {
-            dirSnapshot.addMetadataFile(fStatus);
-          } else if (fStatus.getPath().toString().contains(OrcAcidVersion.ACID_FORMAT)) {
-            dirSnapshot.addOrcAcidFormatFile(fStatus);
-          } else {
-            dirSnapshot.addFile(fStatus);
+    Deque<RemoteIterator<FileStatus>> stack = new ArrayDeque<>();
+    stack.push(FileUtils.listStatusIterator(fs, path, acidHiddenFileFilter));
+    while (!stack.isEmpty()) {
+      RemoteIterator<FileStatus> itr = stack.pop();
+      while (itr.hasNext()) {
+        FileStatus fStatus = itr.next();
+        Path fPath = fStatus.getPath();
+        if (fStatus.isDirectory()) {
+          stack.push(FileUtils.listStatusIterator(fs, fPath, acidHiddenFileFilter));
+        } else {
+          Path parentDirPath = fPath.getParent();
+          if (acidTempDirFilter.accept(parentDirPath)) {
+            while (isChildOfDelta(parentDirPath, path)) {
+              // Some cases there are other directory layers between the delta and the datafiles
+              // (export-import mm table, insert with union all to mm table, skewed tables).
+              // But it does not matter for the AcidState, we just need the deltas and the data files
+              // So build the snapshot with the files inside the delta directory
+              parentDirPath = parentDirPath.getParent();
+            }
+            HdfsDirSnapshot dirSnapshot = addToSnapshot(dirToSnapshots, parentDirPath);
+            // We're not filtering out the metadata file and acid format file,
+            // as they represent parts of a valid snapshot
+            // We're not using the cached values downstream, but we can potentially optimize more in a follow-up task
+            if (fStatus.getPath().toString().contains(MetaDataFile.METADATA_FILE)) {
+              dirSnapshot.addMetadataFile(fStatus);
+            } else if (fStatus.getPath().toString().contains(OrcAcidVersion.ACID_FORMAT)) {
+              dirSnapshot.addOrcAcidFormatFile(fStatus);
+            } else {
+              dirSnapshot.addFile(fStatus);
+            }
           }
         }
       }
@@ -1741,8 +1752,8 @@ public class AcidUtils {
       sb.append("Path: " + dirPath);
       sb.append("; ");
       sb.append("Files: { ");
-      for (FileStatus fstatus : files) {
-        sb.append(fstatus);
+      for (FileStatus fStatus : files) {
+        sb.append(fStatus);
         sb.append(", ");
       }
       sb.append(" }");
@@ -2188,7 +2199,7 @@ public class AcidUtils {
   public static boolean isInsertOnlyTable(Table table) {
     return isTransactionalTable(table) && getAcidOperationalProperties(table).isInsertOnly();
   }
-  
+
   public static boolean isInsertOnlyTable(Properties params) {
     return isInsertOnlyTable(Maps.fromProperties(params));
   }
@@ -2247,17 +2258,17 @@ public class AcidUtils {
   public static boolean canBeMadeAcid(String fullTableName, StorageDescriptor sd) {
     return isAcidInputOutputFormat(fullTableName, sd) && sd.getSortColsSize() <= 0;
   }
-  
+
   private static boolean isAcidInputOutputFormat(String fullTableName, StorageDescriptor sd) {
     if (sd.getInputFormat() == null || sd.getOutputFormat() == null) {
       return false;
     }
     try {
       return Class.forName(Constants.ORC_INPUT_FORMAT)
-                  .isAssignableFrom(Class.forName(sd.getInputFormat())) 
+                  .isAssignableFrom(Class.forName(sd.getInputFormat()))
             && Class.forName(Constants.ORC_OUTPUT_FORMAT)
                   .isAssignableFrom(Class.forName(sd.getOutputFormat()));
-    
+
     } catch (ClassNotFoundException e) {
       //if a table is using some custom I/O format and it's not in the classpath, we won't mark
       //the table for Acid, but today OrcInput/OutputFormat is the only Acid format
@@ -2277,8 +2288,7 @@ public class AcidUtils {
    */
   public static ValidTxnWriteIdList getValidTxnWriteIdList(Configuration conf) {
     String txnString = conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
-    ValidTxnWriteIdList validTxnList = new ValidTxnWriteIdList(txnString);
-    return validTxnList;
+    return new ValidTxnWriteIdList(txnString);
   }
 
   /**
@@ -2434,15 +2444,12 @@ public class AcidUtils {
     if (sessionTxnMgr == null) {
       return null;
     }
-    ValidWriteIdList validWriteIdList = null;
-    ValidTxnWriteIdList validTxnWriteIdList = null;
-
     String validTxnList = conf.get(ValidTxnList.VALID_TXNS_KEY);
     List<String> tablesInput = new ArrayList<>();
     String fullTableName = getFullTableName(dbName, tableName);
     tablesInput.add(fullTableName);
 
-    validTxnWriteIdList = sessionTxnMgr.getValidWriteIds(tablesInput, validTxnList);
+    ValidTxnWriteIdList validTxnWriteIdList = sessionTxnMgr.getValidWriteIds(tablesInput, validTxnList);
     return validTxnWriteIdList != null ?
         validTxnWriteIdList.getTableValidWriteIdList(fullTableName) : null;
   }
@@ -2607,7 +2614,7 @@ public class AcidUtils {
      */
     public static final int ORC_ACID_VERSION = 2;
     /**
-     * Inlucde current acid version in file footer.
+     * Include current acid version in file footer.
      * @param writer - file written
      */
     public static void setAcidVersionInDataFile(Writer writer) {
@@ -2892,7 +2899,7 @@ public class AcidUtils {
     boolean isLocklessReadsEnabled = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
     boolean skipReadLock = !conf.getBoolVar(ConfVars.HIVE_TXN_READ_LOCKS);
     boolean skipNonAcidReadLock = !conf.getBoolVar(ConfVars.HIVE_TXN_NONACID_READ_LOCKS);
-    
+
     boolean sharedWrite = !conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK);
     boolean isExternalEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED);
     boolean isMerge = operation == Context.Operation.MERGE;
@@ -2962,7 +2969,7 @@ public class AcidUtils {
     // overwrite) than we need a shared.  If it's update or delete then we
     // need a SHARED_WRITE.
     for (WriteEntity output : outputs) {
-      if (output.getType() == Entity.Type.DFS_DIR || output.getType() == Entity.Type.LOCAL_DIR 
+      if (output.getType() == Entity.Type.DFS_DIR || output.getType() == Entity.Type.LOCAL_DIR
           || !AcidUtils.needsLock(output, isExternalEnabled)) {
         // We don't lock files or directories. We also skip locking temp tables.
         continue;
@@ -3013,7 +3020,7 @@ public class AcidUtils {
         compBuilder.setExclWrite();
         compBuilder.setOperationType(DataOperationType.NO_TXN);
         break;
-        
+
       case CTAS:
         assert t != null;
         if (AcidUtils.isTransactionalTable(t)) {
@@ -3024,53 +3031,43 @@ public class AcidUtils {
           compBuilder.setOperationType(DataOperationType.NO_TXN);
         }
         break;
-        
+
       case INSERT_OVERWRITE:
         assert t != null;
         if (AcidUtils.isTransactionalTable(t)) {
-          if (conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK) && !sharedWrite 
-              && !isLocklessReadsEnabled) {
+          if (conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK) && !sharedWrite
+                  && !isLocklessReadsEnabled) {
             compBuilder.setExclusive();
           } else {
             compBuilder.setExclWrite();
           }
+          compBuilder.setOperationType(DataOperationType.UPDATE);
+        } else if (MetaStoreUtils.isNonNativeTable(t.getTTable())) {
+          compBuilder.setLock(getLockTypeFromStorageHandler(output, t));
           compBuilder.setOperationType(DataOperationType.UPDATE);
         } else {
           compBuilder.setExclusive();
           compBuilder.setOperationType(DataOperationType.NO_TXN);
         }
         break;
-      
+
       case INSERT:
         assert t != null;
         if (AcidUtils.isTransactionalTable(t)) {
           boolean isExclMergeInsert = conf.getBoolVar(ConfVars.TXN_MERGE_INSERT_X_LOCK) && isMerge;
           compBuilder.setSharedRead();
 
-          if (sharedWrite) {
+          if (sharedWrite || !isExclMergeInsert && isLocklessReadsEnabled) {
             compBuilder.setSharedWrite();
-          } else {
-            if (isExclMergeInsert) {
-              compBuilder.setExclWrite();
-              
-            } else if (isLocklessReadsEnabled) {
-              compBuilder.setSharedWrite();
-            }
+          } else if (isExclMergeInsert) {
+            compBuilder.setExclWrite();
           }
           if (isExclMergeInsert) {
             compBuilder.setOperationType(DataOperationType.UPDATE);
             break;
           }
         } else if (MetaStoreUtils.isNonNativeTable(t.getTTable())) {
-          final HiveStorageHandler storageHandler = Preconditions.checkNotNull(t.getStorageHandler(),
-              "Thought all the non native tables have an instance of storage handler");
-          LockType lockType = storageHandler.getLockType(output);
-          if (null == LockType.findByValue(lockType.getValue())) {
-            throw new IllegalArgumentException(String
-                .format("Lock type [%s] for Database.Table [%s.%s] is unknown", lockType, t.getDbName(),
-                    t.getTableName()));
-          }
-          compBuilder.setLock(lockType);
+          compBuilder.setLock(getLockTypeFromStorageHandler(output, t));
         } else {
           if (conf.getBoolVar(HiveConf.ConfVars.HIVE_TXN_STRICT_LOCKING_MODE)) {
             compBuilder.setExclusive();
@@ -3080,7 +3077,7 @@ public class AcidUtils {
         }
         compBuilder.setOperationType(DataOperationType.INSERT);
         break;
-      
+
       case DDL_SHARED:
         compBuilder.setSharedRead();
         if (output.isTxnAnalyze()) {
@@ -3097,6 +3094,8 @@ public class AcidUtils {
         assert t != null;
         if (AcidUtils.isTransactionalTable(t) && sharedWrite) {
           compBuilder.setSharedWrite();
+        } else if (MetaStoreUtils.isNonNativeTable(t.getTTable())) {
+          compBuilder.setLock(getLockTypeFromStorageHandler(output, t));
         } else {
           compBuilder.setExclWrite();
         }
@@ -3121,11 +3120,22 @@ public class AcidUtils {
     }
     return lockComponents;
   }
-  
+
+  private static LockType getLockTypeFromStorageHandler(WriteEntity output, Table t) {
+    final HiveStorageHandler storageHandler = Preconditions.checkNotNull(t.getStorageHandler(),
+        "Non-native tables must have an instance of storage handler.");
+    LockType lockType = storageHandler.getLockType(output);
+    if (null == lockType) {
+      throw new IllegalArgumentException(
+              String.format("Lock type for Database.Table [%s.%s] is null", t.getDbName(), t.getTableName()));
+    }
+    return lockType;
+  }
+
   public static boolean isExclusiveCTASEnabled(Configuration conf) {
     return HiveConf.getBoolVar(conf, ConfVars.TXN_CTAS_X_LOCK);
   }
-  
+
   public static boolean isExclusiveCTAS(Set<WriteEntity> outputs, HiveConf conf) {
     return outputs.stream().anyMatch(we -> we.getWriteType().equals(WriteType.CTAS) && isExclusiveCTASEnabled(conf));
   }
@@ -3201,17 +3211,13 @@ public class AcidUtils {
     if (tree.getToken().getType() == HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REBUILD) {
       return TxnType.MATER_VIEW_REBUILD;
     }
-    // check if compaction request
-    if (tree.getFirstChildWithType(HiveParser.TOK_ALTERTABLE_COMPACT) != null){
-      return TxnType.COMPACTION;
-    }
     // check if soft delete txn
     if (isSoftDeleteTxn(conf, tree))  {
       return TxnType.SOFT_DELETE;
     }
     return TxnType.DEFAULT;
   }
-  
+
   private static boolean isReadOnlyTxn(ASTNode tree) {
     final ASTSearcher astSearcher = new ASTSearcher();
     return READ_TXN_TOKENS.contains(tree.getToken().getType())
@@ -3220,7 +3226,7 @@ public class AcidUtils {
           new int[]{HiveParser.TOK_INSERT, HiveParser.TOK_TAB})
       .noneMatch(pattern -> astSearcher.simpleBreadthFirstSearch(tree, pattern) != null));
   }
-  
+
   private static boolean isSoftDeleteTxn(Configuration conf, ASTNode tree) {
     boolean locklessReadsEnabled = HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
 
@@ -3366,9 +3372,9 @@ public class AcidUtils {
     }
   }
 
-  public static boolean isNonNativeAcidTable(Table table, boolean isWriteOperation) {
+  public static boolean isNonNativeAcidTable(Table table) {
     return table != null && table.getStorageHandler() != null &&
-        table.getStorageHandler().supportsAcidOperations(table, isWriteOperation) != HiveStorageHandler.AcidSupportType.NONE;
+        table.getStorageHandler().supportsAcidOperations() != HiveStorageHandler.AcidSupportType.NONE;
   }
 
   /**
@@ -3381,7 +3387,7 @@ public class AcidUtils {
     if (isTransactionalTable(table)) {
       return Lists.newArrayList(VirtualColumn.ROWID);
     } else {
-      if (isNonNativeAcidTable(table, false)) {
+      if (isNonNativeAcidTable(table)) {
         return table.getStorageHandler().acidVirtualColumns();
       }
     }
@@ -3390,7 +3396,7 @@ public class AcidUtils {
 
   public static boolean acidTableWithoutTransactions(Table table) {
     return table != null && table.getStorageHandler() != null &&
-        table.getStorageHandler().supportsAcidOperations(table, true) ==
+        table.getStorageHandler().supportsAcidOperations() ==
             HiveStorageHandler.AcidSupportType.WITHOUT_TRANSACTIONS;
   }
 

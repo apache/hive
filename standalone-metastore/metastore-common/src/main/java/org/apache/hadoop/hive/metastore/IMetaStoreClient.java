@@ -29,6 +29,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
@@ -43,7 +44,7 @@ import org.apache.thrift.TException;
  */
 @InterfaceAudience.Public
 @InterfaceStability.Evolving
-public interface IMetaStoreClient {
+public interface IMetaStoreClient extends AutoCloseable {
 
   /**
    * Returns whether current client is compatible with conf argument or not
@@ -141,6 +142,15 @@ public interface IMetaStoreClient {
    */
   void dropCatalog(String catName)
       throws NoSuchObjectException, InvalidOperationException, MetaException, TException;
+
+  /**
+   * Drop a catalog.  Catalogs must be empty to be dropped, there is no cascade for dropping a
+   * catalog.
+   * @param catName name of the catalog to drop
+   * @param ifExists if true, do not throw an error if the catalog does not exist.
+   * @throws TException general thrift exception.
+   */
+  void dropCatalog(String catName, boolean ifExists) throws TException;
 
   /**
    * Get the names of all databases in the default catalog that match the given pattern.
@@ -555,7 +565,10 @@ public interface IMetaStoreClient {
    * @throws MetaException Failure in the RDBMS or storage
    * @throws TException Thrift transport exception
    */
+  @Deprecated
   void truncateTable(String dbName, String tableName, List<String> partNames) throws MetaException, TException;
+
+  void truncateTable(TableName table, List<String> partNames) throws TException;
 
   void truncateTable(String dbName, String tableName, List<String> partNames,
       String validWriteIds, long writeId) throws TException;
@@ -574,6 +587,7 @@ public interface IMetaStoreClient {
    * @throws MetaException Failure in the RDBMS or storage
    * @throws TException Thrift transport exception
    */
+  @Deprecated
   void truncateTable(String catName, String dbName, String tableName, List<String> partNames)
       throws MetaException, TException;
 
@@ -780,7 +794,6 @@ public interface IMetaStoreClient {
    */
   List<Table> getTables(String catName, String dbName, List<String> tableNames, GetProjectionsSpec projectionsSpec)
           throws MetaException, InvalidOperationException, UnknownDBException, TException;
-
   /**
    * Get tables as objects (rather than just fetching their names).  This is more expensive and
    * should only be used if you actually need all the information about the tables.
@@ -3000,9 +3013,17 @@ public interface IMetaStoreClient {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
+  @Deprecated
   List<String> getFunctions(String dbName, String pattern)
       throws MetaException, TException;
 
+  /**
+   * Get all functions matching a pattern
+   * @param functionRequest function request.
+   * @throws TException thrift transport error
+   */
+  GetFunctionsResponse getFunctionsRequest(GetFunctionsRequest functionRequest)
+      throws TException;
   /**
    * Get all functions matching a pattern
    * @param catName catalog name.
@@ -3011,6 +3032,7 @@ public interface IMetaStoreClient {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
+  @Deprecated
   List<String> getFunctions(String catName, String dbName, String pattern)
       throws MetaException, TException;
 
@@ -3078,6 +3100,13 @@ public interface IMetaStoreClient {
   List<TableValidWriteIds> getValidWriteIds(List<String> tablesList, String validTxnList)
           throws TException;
 
+  /**
+   * Persists minOpenWriteId list to identify obsolete directories eligible for cleanup
+   * @param txnId transaction identifier
+   * @param writeIds list of minOpenWriteId
+   */
+  void addWriteIdsToMinHistory(long txnId, Map<String, Long> writeIds) throws TException;
+    
   /**
    * Initiate a transaction.
    * @param user User who is opening this transaction.  This is the Hive user,
@@ -3149,6 +3178,18 @@ public interface IMetaStoreClient {
    * @throws TException
    */
   void rollbackTxn(long txnid) throws NoSuchTxnException, TException;
+
+  /**
+   * Rollback a transaction.  This will also unlock any locks associated with
+   * this transaction.
+   * @param abortTxnRequest AbortTxnRequest object containing transaction id and
+   * error codes.
+   * @throws NoSuchTxnException if the requested transaction does not exist.
+   * Note that this can result from the transaction having timed out and been
+   * deleted.
+   * @throws TException
+   */
+  void rollbackTxn(AbortTxnRequest abortTxnRequest) throws NoSuchTxnException, TException;
 
   /**
    * Rollback a transaction.  This will also unlock any locks associated with
@@ -3226,6 +3267,14 @@ public interface IMetaStoreClient {
    * @throws TException
    */
   void abortTxns(List<Long> txnids) throws TException;
+
+  /**
+   * Abort a list of transactions with additional information of
+   * errorcodes as defined in TxnErrorMsg.java.
+   * @param abortTxnsRequest Information containing txnIds and error codes
+   * @throws TException
+   */
+  void abortTxns(AbortTxnsRequest abortTxnsRequest) throws TException;
 
   /**
    * Allocate a per table write ID and associate it with the given transaction.
@@ -3561,6 +3610,11 @@ public interface IMetaStoreClient {
    */
   void insertTable(Table table, boolean overwrite) throws MetaException;
 
+  /**
+   * Checks if there is a conflicting transaction
+   * @param txnId
+   * @return latest txnId in conflict
+   */
   long getLatestTxnIdInConflict(long txnId) throws TException;
 
   /**
@@ -4358,4 +4412,30 @@ public interface IMetaStoreClient {
    * @throws TException
    */
   List<WriteEventInfo> getAllWriteEventInfo(GetAllWriteEventInfoRequest request) throws TException;
+
+  AbortCompactResponse abortCompactions(AbortCompactionRequest request) throws TException;
+
+  /**
+   * Sets properties.
+   * @param nameSpace the property store namespace
+   * @param properties a map keyed by property path mapped to property values
+   * @return true if successful, false otherwise
+   * @throws TException
+   */
+  default boolean setProperties(String nameSpace, Map<String, String> properties) throws TException {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Gets properties.
+   * @param nameSpace the property store namespace.
+   * @param mapPrefix the map prefix (ala starts-with) to select maps
+   * @param mapPredicate predicate expression on properties to further reduce the selected maps
+   * @param selection the list of properties to return, null for all
+   * @return a map keyed by property map path to maps keyed by property name mapped to property values
+   * @throws TException
+   */
+  default Map<String, Map<String, String>> getProperties(String nameSpace, String mapPrefix, String mapPredicate, String... selection) throws TException {
+    throw new UnsupportedOperationException();
+  };
 }

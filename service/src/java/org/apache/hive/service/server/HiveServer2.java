@@ -19,6 +19,8 @@
 package org.apache.hive.service.server;
 
 import com.google.common.base.Joiner;
+
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,6 +42,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.curator.framework.CuratorFramework;
@@ -49,7 +52,6 @@ import org.apache.curator.framework.api.CuratorEvent;
 import org.apache.curator.framework.api.CuratorEventType;
 import org.apache.curator.framework.recipes.leader.LeaderLatch;
 import org.apache.curator.framework.recipes.leader.LeaderLatchListener;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JvmPauseMonitor;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
@@ -68,6 +70,7 @@ import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.ql.ServiceContext;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager;
@@ -101,8 +104,10 @@ import org.apache.hive.http.LlapServlet;
 import org.apache.hive.http.security.PamAuthenticator;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.ServiceException;
+import org.apache.hive.service.auth.AuthType;
+import org.apache.hive.service.auth.PasswdAuthenticationProvider;
+import org.apache.hive.service.auth.ldap.LdapAuthService;
 import org.apache.hive.service.auth.saml.HiveSaml2Client;
-import org.apache.hive.service.auth.saml.HiveSamlUtils;
 import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.session.HiveSession;
@@ -111,6 +116,8 @@ import org.apache.hive.service.cli.thrift.ThriftCLIService;
 import org.apache.hive.service.cli.thrift.ThriftHttpCLIService;
 import org.apache.hive.service.servlet.HS2LeadershipStatus;
 import org.apache.hive.service.servlet.HS2Peers;
+import org.apache.hive.service.servlet.LDAPAuthenticationFilter;
+import org.apache.hive.service.servlet.LoginServlet;
 import org.apache.hive.service.servlet.QueriesRESTfulAPIServlet;
 import org.apache.hive.service.servlet.QueryProfileServlet;
 import org.apache.http.StatusLine;
@@ -125,6 +132,8 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooDefs.Perms;
 import org.apache.zookeeper.data.ACL;
+import org.eclipse.jetty.servlet.FilterHolder;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -133,6 +142,8 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import javax.servlet.jsp.JspFactory;
+
 /**
  * HiveServer2.
  *
@@ -140,6 +151,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 public class HiveServer2 extends CompositeService {
   private static final Logger LOG = LoggerFactory.getLogger(HiveServer2.class);
   public static final String INSTANCE_URI_CONFIG = "hive.server2.instance.uri";
+  public static final String HS2_WEBUI_ROOT_URI = "/hiveserver2.jsp";
   private static final int SHUTDOWN_TIME = 60;
 
   private static CountDownLatch zkDeleteSignal;
@@ -152,6 +164,8 @@ public class HiveServer2 extends CompositeService {
   private TezSessionPoolManager tezSessionPoolManager;
   private WorkloadManager wm;
   private PamAuthenticator pamAuthenticator;
+  private PasswdAuthenticationProvider passwdAuthenticationProvider;
+  private LdapAuthService ldapAuthService;
   private Map<String, String> confsToPublish = new HashMap<String, String>();
   private String serviceUri;
   private boolean serviceDiscovery;
@@ -167,6 +181,21 @@ public class HiveServer2 extends CompositeService {
   private SettableFuture<Boolean> notLeaderTestFuture = SettableFuture.create();
   private ZooKeeperHiveHelper zooKeeperHelper = null;
   private ScheduledQueryExecutionService scheduledQueryService;
+  private ServiceContext serviceContext;
+
+  public enum WebUIAuthMethod {
+    NONE, LDAP
+  }
+
+  public static WebUIAuthMethod getWebUIAuthMethod(String method) {
+    String m = StringUtils.defaultString(method).toLowerCase();
+    switch (m) {
+      case "ldap":
+        return WebUIAuthMethod.LDAP;
+      default:
+        return WebUIAuthMethod.NONE;
+    }
+  }
 
   public HiveServer2() {
     super(HiveServer2.class.getSimpleName());
@@ -178,6 +207,13 @@ public class HiveServer2 extends CompositeService {
     super(HiveServer2.class.getSimpleName());
     HiveConf.setLoadHiveServer2Config(true);
     this.pamAuthenticator = pamAuthenticator;
+  }
+
+  @VisibleForTesting
+  public HiveServer2(PasswdAuthenticationProvider passwdAuthenticationProvider) {
+    super(HiveServer2.class.getSimpleName());
+    HiveConf.setLoadHiveServer2Config(true);
+    this.passwdAuthenticationProvider = passwdAuthenticationProvider;
   }
 
   @VisibleForTesting
@@ -208,6 +244,10 @@ public class HiveServer2 extends CompositeService {
     notLeaderTestFuture = SettableFuture.create();
   }
 
+  public LdapAuthService getLdapAuthService() {
+    return ldapAuthService;
+  }
+
   @Override
   public synchronized void init(HiveConf hiveConf) {
     //Initialize metrics first, as some metrics are for initialization stuff.
@@ -235,6 +275,10 @@ public class HiveServer2 extends CompositeService {
     }
 
     super.init(hiveConf);
+    this.serviceContext = new ServiceContext(() -> thriftCLIService.getServerIPAddress().getCanonicalHostName(),
+        () -> thriftCLIService.getPortNumber());
+    serviceContext.setClusterIdInConf(hiveConf);
+
     // Set host name in conf
     try {
       hiveConf.set(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST.varname, getServerHost());
@@ -340,6 +384,10 @@ public class HiveServer2 extends CompositeService {
           LOG.info("Web UI is disabled since port is set to " + webUIPort);
         } else {
           LOG.info("Starting Web UI on port "+ webUIPort);
+          if (JspFactory.getDefaultFactory() == null) {
+            // Set the default JspFactory to avoid NPE while opening the home page
+            JspFactory.setDefaultFactory(new org.apache.jasper.runtime.JspFactoryImpl());
+          }
           HttpServer.Builder builder = new HttpServer.Builder("hiveserver2");
           builder.setPort(webUIPort).setConf(hiveConf);
           builder.setHost(webHost);
@@ -429,11 +477,26 @@ public class HiveServer2 extends CompositeService {
           }
           builder.addServlet("llap", LlapServlet.class);
           builder.addServlet("jdbcjar", JdbcJarDownloadServlet.class);
-          builder.setContextRootRewriteTarget("/hiveserver2.jsp");
+          builder.setContextRootRewriteTarget(HS2_WEBUI_ROOT_URI);
 
           webServer = builder.build();
           webServer.addServlet("query_page", "/query_page.html", QueryProfileServlet.class);
           webServer.addServlet("api", "/api/*", QueriesRESTfulAPIServlet.class);
+
+          String webUIAuthMethodConfig = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_AUTH_METHOD);
+          WebUIAuthMethod webUIAuthMethod = getWebUIAuthMethod(webUIAuthMethodConfig);
+              
+          switch (webUIAuthMethod) {
+            case LDAP:
+              if (passwdAuthenticationProvider == null) {
+                ldapAuthService = new LdapAuthService(hiveConf);
+              } else {
+                ldapAuthService = new LdapAuthService(hiveConf, passwdAuthenticationProvider);
+              }
+              webServer.addServlet("login", "/login", new ServletHolder(new LoginServlet(ldapAuthService)));
+              webServer.addFilter("ldap", new FilterHolder(new LDAPAuthenticationFilter(ldapAuthService)));
+              break;
+          }
         }
       }
     } catch (IOException ie) {
@@ -487,14 +550,6 @@ public class HiveServer2 extends CompositeService {
       transportMode = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE);
     }
     if (transportMode != null && (transportMode.equalsIgnoreCase(HiveServer2TransportMode.all.toString()))) {
-      return true;
-    }
-    return false;
-  }
-
-  public static boolean isKerberosAuthMode(Configuration hiveConf) {
-    String authMode = hiveConf.get(ConfVars.HIVE_SERVER2_AUTHENTICATION.varname);
-    if (authMode != null && (authMode.equalsIgnoreCase("KERBEROS"))) {
       return true;
     }
     return false;
@@ -564,7 +619,7 @@ public class HiveServer2 extends CompositeService {
     // Auth specific confs
     confsToPublish.put(ConfVars.HIVE_SERVER2_AUTHENTICATION.varname,
         hiveConf.getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION));
-    if (isKerberosAuthMode(hiveConf)) {
+    if (AuthType.isKerberosAuthMode(hiveConf)) {
       confsToPublish.put(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL.varname,
           hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL));
     }
@@ -663,7 +718,7 @@ public class HiveServer2 extends CompositeService {
     if ((thriftCLIService == null) || (thriftCLIService.getServerIPAddress() == null)) {
       throw new Exception("Unable to get the server address; it hasn't been initialized yet.");
     }
-    return thriftCLIService.getServerIPAddress().getHostName() + ":"
+    return thriftCLIService.getServerIPAddress().getCanonicalHostName() + ":"
         + thriftCLIService.getPortNumber();
   }
 
@@ -671,7 +726,7 @@ public class HiveServer2 extends CompositeService {
     if ((thriftCLIService == null) || (thriftCLIService.getServerIPAddress() == null)) {
       throw new Exception("Unable to get the server address; it hasn't been initialized yet.");
     }
-    return thriftCLIService.getServerIPAddress().getHostName();
+    return thriftCLIService.getServerIPAddress().getCanonicalHostName();
   }
 
   @Override
@@ -917,6 +972,13 @@ public class HiveServer2 extends CompositeService {
         LOG.error("Error removing znode for this HiveServer2 instance from ZooKeeper.", e);
       }
     }
+    String pidDir = StringUtils.defaultIfEmpty(System.getenv("HIVESERVER2_PID_DIR"),
+        System.getenv("HIVE_CONF_DIR"));
+    if (StringUtils.isNotEmpty(pidDir)) {
+      File pidFile = new File(pidDir, "hiveserver2.pid");
+      LOG.info("Deleting the tmp HiveServer2 pid file: {}", pidFile);
+      FileUtils.deleteQuietly(pidFile);
+    }
     super.decommission();
   }
 
@@ -1002,8 +1064,7 @@ public class HiveServer2 extends CompositeService {
     if (zKClientForPrivSync != null) {
       zKClientForPrivSync.close();
     }
-    if (hiveConf != null && HiveSamlUtils
-        .isSamlAuthMode(hiveConf.getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION))) {
+    if (hiveConf != null && AuthType.isSamlAuthMode(hiveConf)) {
       // this is mostly for testing purposes to make sure that SAML client is
       // reinitialized after a HS2 is restarted.
       HiveSaml2Client.shutdown();
@@ -1036,7 +1097,7 @@ public class HiveServer2 extends CompositeService {
           .daemon(true)
           .build());
       executor.scheduleAtFixedRate(new ClearDanglingScratchDir(false, false, false,
-          HiveConf.getVar(hiveConf, HiveConf.ConfVars.SCRATCHDIR), hiveConf), initialWaitInSec,
+          HiveConf.getVar(hiveConf, HiveConf.ConfVars.SCRATCH_DIR), hiveConf), initialWaitInSec,
           HiveConf.getTimeVar(hiveConf, ConfVars.HIVE_SERVER2_CLEAR_DANGLING_SCRATCH_DIR_INTERVAL,
           TimeUnit.SECONDS), TimeUnit.SECONDS);
     }

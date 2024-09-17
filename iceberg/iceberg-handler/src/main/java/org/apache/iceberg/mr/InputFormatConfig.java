@@ -42,6 +42,7 @@ public class InputFormatConfig {
   public static final String IN_MEMORY_DATA_MODEL = "iceberg.mr.in.memory.data.model";
   public static final String READ_SCHEMA = "iceberg.mr.read.schema";
   public static final String SNAPSHOT_ID = "iceberg.mr.snapshot.id";
+  public static final String SNAPSHOT_ID_INTERVAL_FROM = "iceberg.mr.snapshot.id.interval.from";
   public static final String SPLIT_SIZE = "iceberg.mr.split.size";
   public static final String SCHEMA_AUTO_CONVERSION = "iceberg.mr.schema.auto.conversion";
   public static final String TABLE_IDENTIFIER = "iceberg.mr.table.identifier";
@@ -52,29 +53,6 @@ public class InputFormatConfig {
   public static final String TABLE_CATALOG_PREFIX = "iceberg.mr.table.catalog.";
   public static final String LOCALITY = "iceberg.mr.locality";
 
-  /**
-   * @deprecated please use {@link #catalogPropertyConfigKey(String, String)}
-   * with config key {@link org.apache.iceberg.CatalogUtil#ICEBERG_CATALOG_TYPE} to specify the type of a catalog.
-   */
-  @Deprecated
-  public static final String CATALOG = "iceberg.mr.catalog";
-
-  /**
-   * @deprecated please use {@link #catalogPropertyConfigKey(String, String)}
-   * with config key {@link org.apache.iceberg.CatalogProperties#WAREHOUSE_LOCATION}
-   * to specify the warehouse location of a catalog.
-   */
-  @Deprecated
-  public static final String HADOOP_CATALOG_WAREHOUSE_LOCATION = "iceberg.mr.catalog.hadoop.warehouse.location";
-
-  /**
-   * @deprecated please use {@link #catalogPropertyConfigKey(String, String)}
-   * with config key {@link org.apache.iceberg.CatalogProperties#CATALOG_IMPL}
-   * to specify the implementation of a catalog.
-   */
-  @Deprecated
-  public static final String CATALOG_LOADER_CLASS = "iceberg.mr.catalog.loader.class";
-
   public static final String CTAS_TABLE_NAME = "iceberg.mr.ctas.table.name";
   public static final String SELECTED_COLUMNS = "iceberg.mr.selected.columns";
   public static final String FETCH_VIRTUAL_COLUMNS = "iceberg.mr.fetch.virtual.columns";
@@ -84,12 +62,12 @@ public class InputFormatConfig {
   public static final boolean CONFIG_SERIALIZATION_DISABLED_DEFAULT = true;
   public static final String OPERATION_TYPE_PREFIX = "iceberg.mr.operation.type.";
   public static final String OUTPUT_TABLES = "iceberg.mr.output.tables";
+  public static final String OUTPUT_TABLE_SNAPSHOT_REF = "iceberg.mr.output.table.snapshot.ref";
   public static final String COMMIT_TABLE_THREAD_POOL_SIZE = "iceberg.mr.commit.table.thread.pool.size";
   public static final int COMMIT_TABLE_THREAD_POOL_SIZE_DEFAULT = 10;
   public static final String COMMIT_FILE_THREAD_POOL_SIZE = "iceberg.mr.commit.file.thread.pool.size";
   public static final int COMMIT_FILE_THREAD_POOL_SIZE_DEFAULT = 10;
   public static final String WRITE_TARGET_FILE_SIZE = "iceberg.mr.write.target.file.size";
-  public static final String IS_OVERWRITE = "iceberg.mr.write.is.overwrite";
 
   public static final String CASE_SENSITIVE = "iceberg.mr.case.sensitive";
   public static final boolean CASE_SENSITIVE_DEFAULT = true;
@@ -106,6 +84,8 @@ public class InputFormatConfig {
   public static final String CATALOG_TYPE_TEMPLATE = "iceberg.catalog.%s.type";
   public static final String CATALOG_WAREHOUSE_TEMPLATE = "iceberg.catalog.%s.warehouse";
   public static final String CATALOG_CLASS_TEMPLATE = "iceberg.catalog.%s.catalog-impl";
+  public static final String CATALOG_DEFAULT_CONFIG_PREFIX = "iceberg.catalog-default.";
+  public static final String QUERY_FILTERS = "iceberg.query.filters";
 
   public enum InMemoryDataModel {
     PIG,

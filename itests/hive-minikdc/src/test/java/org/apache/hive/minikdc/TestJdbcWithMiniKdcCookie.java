@@ -81,7 +81,7 @@ public class TestJdbcWithMiniKdcCookie {
     hiveConf.setTimeVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_COOKIE_MAX_AGE,
         1, TimeUnit.SECONDS);
     hiveConf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    hiveConf.setBoolVar(ConfVars.HIVEFETCHTASKCACHING, false);
+    hiveConf.setBoolVar(ConfVars.HIVE_FETCH_TASK_CACHING, false);
 
     miniHS2 = MiniHiveKdc.getMiniHS2WithKerb(miniHiveKdc, hiveConf);
     miniHS2.start(new HashMap<String, String>());

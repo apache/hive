@@ -611,8 +611,10 @@ POSTHOOK: Input: default@src
 3	three	1
 PREHOOK: query: drop table lazy_array_map
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table lazy_array_map
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table lazy_array_map (map_col map<int,string>, array_col array<string>)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

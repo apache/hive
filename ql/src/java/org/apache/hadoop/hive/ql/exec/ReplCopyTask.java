@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.hadoop.hive.common.DataCopyStatistics;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -53,7 +54,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
 
   private static transient final Logger LOG = LoggerFactory.getLogger(ReplCopyTask.class);
 
-  public ReplCopyTask(){
+  public ReplCopyTask() {
     super();
   }
 
@@ -88,10 +89,16 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       if (ReplChangeManager.isCMFileUri(fromPath)) {
         String[] result = ReplChangeManager.decodeFileUri(fromPath.toString());
         ReplChangeManager.FileInfo sourceInfo = ReplChangeManager
-            .getFileInfo(new Path(result[0]), result[1], result[2], result[3], conf);
+          .getFileInfo(new Path(result[0]), result[1], result[2], result[3], conf);
+        DataCopyStatistics copyStatistics = new DataCopyStatistics();
         if (FileUtils.copy(
-            sourceInfo.getSrcFs(), sourceInfo.getSourcePath(),
-            dstFs, toPath, false, false, conf)) {
+          sourceInfo.getSrcFs(), sourceInfo.getSourcePath(),
+          dstFs, toPath, false, false, conf, copyStatistics)) {
+          // increment total bytes replicated count
+          if (work.getMetricCollector() != null) {
+            work.getMetricCollector().incrementSizeOfDataReplicated(copyStatistics.getBytesCopied());
+            LOG.debug("ReplCopyTask copied {} bytes", copyStatistics.getBytesCopied());
+          }
           return 0;
         } else {
           console.printError("Failed to copy: '" + fromPath.toString() + "to: '" + toPath.toString()
@@ -159,6 +166,12 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       // This is needed to avoid having duplicate files in target if same event is applied twice
       // where the first event refers to source path and  second event refers to CM path
       copyUtils.renameFileCopiedFromCmPath(toPath, dstFs, srcFiles);
+
+      // increment total bytes replicated count
+      if (work.getMetricCollector() != null) {
+        work.getMetricCollector().incrementSizeOfDataReplicated(copyUtils.getTotalBytesCopied());
+        LOG.debug("ReplCopyTask copied {} bytes", copyUtils.getTotalBytesCopied());
+      }
       return 0;
     } catch (Exception e) {
       LOG.error("Failed to execute", e);
@@ -225,7 +238,6 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
   public String getName() {
     return "REPL_COPY";
   }
-
 
   public static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
                                         HiveConf conf, boolean isAutoPurge, boolean needRecycle,

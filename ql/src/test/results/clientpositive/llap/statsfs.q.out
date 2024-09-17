@@ -64,7 +64,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -101,7 +101,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -117,10 +117,12 @@ Storage Desc Params:
 PREHOOK: query: drop table t1_n120
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n120
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_n120
 POSTHOOK: query: drop table t1_n120
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_n120
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n120
 PREHOOK: query: create table t1_n120 (key string, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
@@ -174,7 +176,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -211,7 +213,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -227,10 +229,12 @@ Storage Desc Params:
 PREHOOK: query: drop table t1_n120
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n120
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_n120
 POSTHOOK: query: drop table t1_n120
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_n120
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n120
 PREHOOK: query: create table t1_n120 (key string, value string)
 PREHOOK: type: CREATETABLE
@@ -278,7 +282,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -294,10 +298,12 @@ Storage Desc Params:
 PREHOOK: query: drop table t1_n120
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n120
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_n120
 POSTHOOK: query: drop table t1_n120
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_n120
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n120
 PREHOOK: query: create table t1_n120 (key string, value string)
 PREHOOK: type: CREATETABLE
@@ -339,7 +345,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -355,10 +361,12 @@ Storage Desc Params:
 PREHOOK: query: drop table t1_n120
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n120
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_n120
 POSTHOOK: query: drop table t1_n120
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_n120
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n120
 PREHOOK: query: create table t1_n120 (key string, value string) partitioned by (ds string, hr string)
 PREHOOK: type: CREATETABLE
@@ -421,7 +429,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -459,7 +467,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -475,8 +483,10 @@ Storage Desc Params:
 PREHOOK: query: drop table t1_n120
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n120
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_n120
 POSTHOOK: query: drop table t1_n120
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_n120
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n120

@@ -16,6 +16,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules.views;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.math.BigDecimal;
@@ -26,12 +27,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.interpreter.BindableConvention;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptMaterialization;
+import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.hep.HepPlanner;
 import org.apache.calcite.plan.hep.HepProgramBuilder;
@@ -106,8 +109,8 @@ public class HiveMaterializedViewUtils {
    * materialized view definition uses external tables.
    */
   public static Boolean isOutdatedMaterializedView(
-          String validTxnsList, HiveTxnManager txnMgr, Hive db,
-          Set<TableName> tablesUsed, Table materializedViewTable) throws HiveException {
+      Supplier<String> validTxnsList, HiveTxnManager txnMgr, Hive db,
+      Set<TableName> tablesUsed, Table materializedViewTable) throws HiveException {
 
     MaterializedViewMetadata mvMetadata = materializedViewTable.getMVMetadata();
     MaterializationSnapshot snapshot = mvMetadata.getSnapshot();
@@ -115,19 +118,24 @@ public class HiveMaterializedViewUtils {
     if (snapshot != null && snapshot.getTableSnapshots() != null && !snapshot.getTableSnapshots().isEmpty()) {
       return isOutdatedMaterializedView(snapshot, db, tablesUsed, materializedViewTable);
     }
-
+    String txnString = validTxnsList.get();
+    if (txnString == null) {
+      return null;
+    }
     String materializationTxnList = snapshot != null ? snapshot.getValidTxnList() : null;
+    
     return isOutdatedMaterializedView(
-        materializationTxnList, validTxnsList, txnMgr, tablesUsed, materializedViewTable);
+        materializationTxnList, txnString, txnMgr, tablesUsed, materializedViewTable);
   }
 
   private static Boolean isOutdatedMaterializedView(
-      String materializationTxnList, String validTxnsList, HiveTxnManager txnMgr,
-      Set<TableName> tablesUsed, Table materializedViewTable) throws LockException {
+    String materializationTxnList, String validTxnsList, HiveTxnManager txnMgr,
+    Set<TableName> tablesUsed, Table materializedViewTable) throws LockException {
     List<String> tablesUsedNames = tablesUsed.stream()
         .map(tableName -> TableName.getDbTable(tableName.getDb(), tableName.getTable()))
         .collect(Collectors.toList());
-    ValidTxnWriteIdList currentTxnWriteIds = txnMgr.getValidWriteIds(tablesUsedNames, validTxnsList);
+    ValidTxnWriteIdList currentTxnWriteIds = txnMgr.getValidWriteIds(tablesUsedNames,
+        validTxnsList);
     if (currentTxnWriteIds == null) {
       LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
               " ignored for rewriting as we could not obtain current txn ids");
@@ -233,21 +241,30 @@ public class HiveMaterializedViewUtils {
    * its invalidation.
    */
   public static HiveRelOptMaterialization augmentMaterializationWithTimeInformation(
-      HiveRelOptMaterialization materialization, String validTxnsList,
+      HiveRelOptMaterialization materialization, Supplier<String> validTxnsList,
       MaterializationSnapshot snapshot) throws LockException {
 
+    RelNode modifiedQueryRel;
     if (snapshot != null && snapshot.getTableSnapshots() != null && !snapshot.getTableSnapshots().isEmpty()) {
-      // Not supported yet for Iceberg tables
-      return materialization;
+      modifiedQueryRel = applyRule(
+              materialization.queryRel, HiveAugmentSnapshotMaterializationRule.with(snapshot.getTableSnapshots()));
+    } else {
+      String materializationTxnList = snapshot != null ? snapshot.getValidTxnList() : null;
+      modifiedQueryRel = augmentMaterializationWithTimeInformation(
+              materialization, validTxnsList, new ValidTxnWriteIdList(materializationTxnList));
     }
 
-    String materializationTxnList = snapshot != null ? snapshot.getValidTxnList() : null;
-    return augmentMaterializationWithTimeInformation(
-        materialization, validTxnsList, new ValidTxnWriteIdList(materializationTxnList));
+    return new HiveRelOptMaterialization(materialization.tableRel, modifiedQueryRel,
+            null, materialization.qualifiedTableName, materialization.getScope(), materialization.getRebuildMode(),
+            materialization.getAst());
   }
 
-  private static HiveRelOptMaterialization augmentMaterializationWithTimeInformation(
-      HiveRelOptMaterialization materialization, String validTxnsList,
+  /**
+   * Method to enrich the materialization query contained in the input with
+   * its invalidation when materialization has native acid source tables.
+   */
+  private static RelNode augmentMaterializationWithTimeInformation(
+      HiveRelOptMaterialization materialization, Supplier<String>  validTxnsList,
       ValidTxnWriteIdList materializationTxnList) throws LockException {
     // Extract tables used by the query which will in turn be used to generate
     // the corresponding txn write ids
@@ -263,18 +280,25 @@ public class HiveMaterializedViewUtils {
       }
     }.go(materialization.queryRel);
     ValidTxnWriteIdList currentTxnList =
-        SessionState.get().getTxnMgr().getValidWriteIds(tablesUsed, validTxnsList);
+        SessionState.get().getTxnMgr().getValidWriteIds(tablesUsed, validTxnsList.get());
     // Augment
     final RexBuilder rexBuilder = materialization.queryRel.getCluster().getRexBuilder();
-    final HepProgramBuilder augmentMaterializationProgram = new HepProgramBuilder()
-        .addRuleInstance(new HiveAugmentMaterializationRule(rexBuilder, currentTxnList, materializationTxnList));
-    final HepPlanner augmentMaterializationPlanner = new HepPlanner(
-        augmentMaterializationProgram.build());
-    augmentMaterializationPlanner.setRoot(materialization.queryRel);
-    final RelNode modifiedQueryRel = augmentMaterializationPlanner.findBestExp();
-    return new HiveRelOptMaterialization(materialization.tableRel, modifiedQueryRel,
-        null, materialization.qualifiedTableName, materialization.getScope(), materialization.getRebuildMode(),
-            materialization.getAst());
+    return applyRule(
+            materialization.queryRel, new HiveAugmentMaterializationRule(rexBuilder, currentTxnList, materializationTxnList));
+  }
+
+  /**
+   * Method to apply a rule to a query plan.
+   */
+  @VisibleForTesting
+  static RelNode applyRule(
+          RelNode basePlan, RelOptRule relOptRule) {
+    final HepProgramBuilder programBuilder = new HepProgramBuilder();
+    programBuilder.addRuleInstance(relOptRule);
+    final HepPlanner planner = new HepPlanner(
+        programBuilder.build());
+    planner.setRoot(basePlan);
+    return planner.findBestExp();
   }
 
   /**

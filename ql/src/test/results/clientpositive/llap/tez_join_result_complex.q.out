@@ -116,8 +116,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@ct_events_clean
 PREHOOK: query: drop table if exists ct_events1_test
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists ct_events1_test
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: explain extended
 create table ct_events1_test
 as select  a.*,
@@ -1095,10 +1097,12 @@ POSTHOOK: Input: default@ct_events1_test
 PREHOOK: query: drop table if exists ct_events1_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ct_events1_test
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ct_events1_test
 POSTHOOK: query: drop table if exists ct_events1_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ct_events1_test
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ct_events1_test
 PREHOOK: query: explain extended
 create table ct_events1_test

@@ -97,18 +97,22 @@ POSTHOOK: Input: default@sent_tmp2
 PREHOOK: query: DROP TABLE sent_tmp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@sent_tmp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@sent_tmp
 POSTHOOK: query: DROP TABLE sent_tmp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@sent_tmp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sent_tmp
 PREHOOK: query: DROP TABLE sent_tmp2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@sent_tmp2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@sent_tmp2
 POSTHOOK: query: DROP TABLE sent_tmp2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@sent_tmp2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sent_tmp2
 PREHOOK: query: CREATE TABLE sent_tmp (val array<string>)
 PREHOOK: type: CREATETABLE

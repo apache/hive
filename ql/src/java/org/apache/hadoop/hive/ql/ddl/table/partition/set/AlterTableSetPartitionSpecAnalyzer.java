@@ -56,11 +56,8 @@ public class AlterTableSetPartitionSpecAnalyzer extends AbstractAlterTableAnalyz
     inputs.add(new ReadEntity(table));
     List<TransformSpec> partitionTransformSpec =
         PartitionTransform.getPartitionTransformSpec(command);
-    if (!SessionStateUtil.addResource(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC,
-        partitionTransformSpec)) {
-      throw new SemanticException("Query state attached to Session state must be not null. " +
-          "Partition transform metadata cannot be saved.");
-    }
+    SessionStateUtil.addResourceOrThrow(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC,
+            partitionTransformSpec);
 
     AlterTableSetPartitionSpecDesc desc = new AlterTableSetPartitionSpecDesc(tableName, partitionSpec);
 

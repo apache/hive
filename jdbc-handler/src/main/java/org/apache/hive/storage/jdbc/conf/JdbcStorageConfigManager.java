@@ -192,11 +192,11 @@ public class JdbcStorageConfigManager {
   }
 
   private static String getMetastoreDatabaseType(HiveConf conf) {
-    return conf.getVar(HiveConf.ConfVars.METASTOREDBTYPE);
+    return conf.getVar(HiveConf.ConfVars.METASTORE_DB_TYPE);
   }
 
   private static String getMetastoreConnectionURL(HiveConf conf) {
-    return conf.getVar(HiveConf.ConfVars.METASTORECONNECTURLKEY);
+    return conf.getVar(HiveConf.ConfVars.METASTORE_CONNECT_URL_KEY);
   }
 
   private static String getMetastoreDriver(HiveConf conf) {
@@ -209,6 +209,6 @@ public class JdbcStorageConfigManager {
 
   private static String getMetastoreJdbcPasswd(HiveConf conf) throws IOException {
     return ShimLoader.getHadoopShims().getPassword(conf,
-        HiveConf.ConfVars.METASTOREPWD.varname);
+        HiveConf.ConfVars.METASTORE_PWD.varname);
   }
 }

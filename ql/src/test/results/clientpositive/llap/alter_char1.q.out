@@ -152,10 +152,12 @@ PREHOOK: query: drop table ac.alter_char_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: ac@alter_char_1
 PREHOOK: Output: ac@alter_char_1
+PREHOOK: Output: database:ac
 POSTHOOK: query: drop table ac.alter_char_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: ac@alter_char_1
 POSTHOOK: Output: ac@alter_char_1
+POSTHOOK: Output: database:ac
 PREHOOK: query: drop database ac
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:ac

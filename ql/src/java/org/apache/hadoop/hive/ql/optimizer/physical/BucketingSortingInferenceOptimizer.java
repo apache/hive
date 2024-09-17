@@ -53,7 +53,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  *
  * For each map reduce task, attempts to infer bucketing and sorting metadata for the outputs.
  *
- * Currently only map reduce tasks which produce final output have there output metadata inferred,
+ * Currently, only map reduce tasks which produce final output have there output metadata inferred,
  * but it can be extended to intermediate tasks as well.
  *
  * This should be run as the last physical optimizer, as other physical optimizers may invalidate

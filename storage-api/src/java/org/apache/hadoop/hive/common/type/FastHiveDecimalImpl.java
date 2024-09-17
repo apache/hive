@@ -443,6 +443,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
           }
           break;
         }
+        haveInteger = true;
         digitValue = work - BYTE_DIGIT_ZERO;
         if (digitNum == 0) {
 

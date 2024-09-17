@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_5_txt
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_5_txt
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_5
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_5
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE DECIMAL_5_txt(key decimal(10,5), value int)
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
@@ -266,16 +270,20 @@ NULL
 PREHOOK: query: DROP TABLE DECIMAL_5_txt
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_5_txt
+PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_5_txt
 POSTHOOK: query: DROP TABLE DECIMAL_5_txt
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_5_txt
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_5_txt
 PREHOOK: query: DROP TABLE DECIMAL_5
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_5
+PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_5
 POSTHOOK: query: DROP TABLE DECIMAL_5
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_5
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_5

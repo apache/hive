@@ -1,7 +1,7 @@
 CBO PLAN:
 HiveProject(i_category=[$0], i_class=[$1], i_brand=[$2], s_store_name=[$3], s_company_name=[$4], d_moy=[$5], sum_sales=[$6], avg_monthly_sales=[$7])
   HiveSortLimit(sort0=[$8], sort1=[$3], dir0=[ASC], dir1=[ASC], fetch=[100])
-    HiveProject(i_category=[$0], i_class=[$1], i_brand=[$2], s_store_name=[$3], s_company_name=[$4], d_moy=[$5], sum_sales=[$6], avg_monthly_sales=[$7], (- (tok_table_or_col sum_sales) (tok_table_or_col avg_monthly_sales))=[-($6, $7)])
+    HiveProject(i_category=[$0], i_class=[$1], i_brand=[$2], s_store_name=[$3], s_company_name=[$4], d_moy=[$5], sum_sales=[$6], avg_monthly_sales=[$7], (- (tok_table_or_col sum_sales) (tok_table_or_col avg_monthly_sales))1=[-($6, $7)])
       HiveFilter(condition=[CASE(<>($7, 0:DECIMAL(1, 0)), >(/(ABS(-($6, $7)), $7), 0.1:DECIMAL(1, 1)), false)])
         HiveProject((tok_table_or_col i_category)=[$2], (tok_table_or_col i_class)=[$1], (tok_table_or_col i_brand)=[$0], (tok_table_or_col s_store_name)=[$4], (tok_table_or_col s_company_name)=[$5], (tok_table_or_col d_moy)=[$3], (tok_function sum (tok_table_or_col ss_sales_price))=[$6], avg_window_0=[avg($6) OVER (PARTITION BY $2, $0, $4, $5 ORDER BY $2 NULLS FIRST, $0 NULLS FIRST, $4 NULLS FIRST, $5 NULLS FIRST RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)])
           HiveProject(i_brand=[$0], i_class=[$1], i_category=[$2], d_moy=[$3], s_store_name=[$4], s_company_name=[$5], $f6=[$6])

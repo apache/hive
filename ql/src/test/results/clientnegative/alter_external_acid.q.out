@@ -6,8 +6,7 @@ POSTHOOK: query: create external table acid_external (a int, b varchar(128)) clu
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid_external
-PREHOOK: query: alter table acid_external set TBLPROPERTIES ('transactional'='true')
-PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: query: alter table acid_external convert to Acid
+PREHOOK: type: ALTERTABLE_CONVERT
 PREHOOK: Input: default@acid_external
-PREHOOK: Output: default@acid_external
 FAILED: Execution Error, return code 40013 from org.apache.hadoop.hive.ql.ddl.DDLTask. Unable to alter table. default.acid_external cannot be declared transactional because it's an external table

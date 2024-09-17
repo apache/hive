@@ -1,5 +1,7 @@
 PREHOOK: query: drop table test_props
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table test_props
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 FAILED: SemanticException Cannot specify transactional_properties without transactional

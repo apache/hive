@@ -16,13 +16,20 @@
  * limitations under the License.
  */
 
+def discardDaysToKeep = '365'
+def discardNumToKeep = '' // Unlimited
+if (env.BRANCH_NAME != 'master') {
+  discardDaysToKeep = '60'
+  discardNumToKeep = '5'
+}
 properties([
+    buildDiscarder(logRotator(daysToKeepStr: discardDaysToKeep, numToKeepStr: discardNumToKeep)),
     // max 5 build/branch/day
     rateLimitBuilds(throttle: [count: 5, durationName: 'day', userBoost: true]),
     // do not run multiple testruns on the same branch
     disableConcurrentBuilds(),
     parameters([
-        string(name: 'SPLIT', defaultValue: '20', description: 'Number of buckets to split tests into.'),
+        string(name: 'SPLIT', defaultValue: '22', description: 'Number of buckets to split tests into.'),
         string(name: 'OPTS', defaultValue: '', description: 'additional maven opts'),
     ])
 ])
@@ -67,7 +74,7 @@ setPrLabel("PENDING");
 
 def executorNode(run) {
   hdbPodTemplate {
-    timeout(time: 6, unit: 'HOURS') {
+    timeout(time: 12, unit: 'HOURS') {
       node(POD_LABEL) {
         container('hdb') {
           run()
@@ -88,7 +95,7 @@ export MAVEN_OPTS="-Xmx2g"
 export -n HIVE_CONF_DIR
 cp $SETTINGS .git/settings.xml
 OPTS=" -s $PWD/.git/settings.xml -B -Dtest.groups= "
-OPTS+=" -Pitests,qsplits,dist,errorProne,iceberg"
+OPTS+=" -Pitests,qsplits,dist,errorProne"
 OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
 OPTS+=" -Dmaven.repo.local=$PWD/.git/m2"
 git config extra.mavenOpts "$OPTS"
@@ -112,7 +119,7 @@ def sonarAnalysis(args) {
       """+args+" -DskipTests -Dit.skipTests -Dmaven.javadoc.skip"
 
       sh """#!/bin/bash -e
-      sw java 11 && . /etc/profile.d/java.sh
+      sw java 17 && . /etc/profile.d/java.sh
       export MAVEN_OPTS=-Xmx5G
       """+mvnCmd
   }
@@ -121,7 +128,7 @@ def sonarAnalysis(args) {
 def hdbPodTemplate(closure) {
   podTemplate(
   containers: [
-    containerTemplate(name: 'hdb', image: 'kgyrtkirk/hive-dev-box:executor', ttyEnabled: true, command: 'tini -- cat',
+    containerTemplate(name: 'hdb', image: 'wecharyu/hive-dev-box:executor', ttyEnabled: true, command: 'tini -- cat',
         alwaysPullImage: true,
         resourceRequestCpu: '1800m',
         resourceLimitCpu: '8000m',
@@ -272,7 +279,7 @@ fi
   }
 
   def branches = [:]
-  for (def d in ['derby','postgres',/*'mysql',*/'oracle']) {
+  for (def d in ['derby','postgres',/*'mysql','oracle'*/]) {
     def dbType=d
     def splitName = "init@$dbType"
     branches[splitName] = {
@@ -287,7 +294,6 @@ set -x
 echo 127.0.0.1 dev_$dbType | sudo tee -a /etc/hosts
 . /etc/profile.d/confs.sh
 sw hive-dev $PWD
-ping -c2 dev_$dbType
 export DOCKER_NETWORK=host
 export DBNAME=metastore
 reinit_metastore $dbType
@@ -315,7 +321,7 @@ dev-support/nightly
 set -e
 tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
 '''
-            buildHive("install -Dtest=noMatches -Pdist,iceberg -f apache-hive-*-nightly-*/pom.xml")
+            buildHive("install -Dtest=noMatches -Pdist -f apache-hive-*-nightly-*/pom.xml")
         }
       }
   }
@@ -364,8 +370,12 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
           stage('PostProcess') {
             try {
               sh """#!/bin/bash -e
-                # removes all stdout and err for passed tests
-                xmlstarlet ed -L -d 'testsuite/testcase/system-out[count(../failure)=0]' -d 'testsuite/testcase/system-err[count(../failure)=0]' `find . -name 'TEST*xml' -path '*/surefire-reports/*'`
+                FAILED_FILES=`find . -name "TEST*xml" -exec grep -l "<failure" {} \\; 2>/dev/null | head -n 10`
+                for a in \$FAILED_FILES
+                do
+                  RENAME_TMP=`echo \$a | sed s/TEST-//g`
+                  mv \${RENAME_TMP/.xml/-output.txt} \${RENAME_TMP/.xml/-output-save.txt}
+                done
                 # remove all output.txt files
                 find . -name '*output.txt' -path '*/surefire-reports/*' -exec unlink "{}" \\;
               """

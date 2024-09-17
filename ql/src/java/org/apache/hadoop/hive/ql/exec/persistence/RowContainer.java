@@ -295,7 +295,7 @@ public class RowContainer<ROW extends List<Object>>
   }
 
   private final ArrayList<Object> row = new ArrayList<Object>(2);
-  
+
   private void spillBlock(ROW[] block, int length) throws HiveException {
     try {
       if (tmpFile == null) {
@@ -405,7 +405,7 @@ public class RowContainer<ROW extends List<Object>>
     }
   }
 
-  public void copyToDFSDirecory(FileSystem destFs, Path destPath) throws IOException, HiveException {
+  public void copyToDFSDirectory(FileSystem destFs, Path destPath) throws IOException, HiveException {
     if (addCursor > 0) {
       this.spillBlock(this.currentWriteBlock, addCursor);
     }

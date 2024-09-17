@@ -327,7 +327,7 @@ castExpression
     LPAREN
           expression
           KW_AS
-          toType=primitiveType
+          toType=type
           (fmt=KW_FORMAT StringLiteral)?
     RPAREN
     // simple cast
@@ -406,6 +406,13 @@ timeQualifiers
     | KW_HOUR -> Identifier["hour"]
     | KW_MINUTE -> Identifier["minute"]
     | KW_SECOND -> Identifier["second"]
+    ;
+
+timeUnitQualifiers
+    :
+    KW_DAY -> Identifier["days"]
+    | KW_HOUR -> Identifier["hours"]
+    | KW_MINUTE -> Identifier["minutes"]
     ;
 
 constant
@@ -976,7 +983,11 @@ nonReserved
     | KW_SPEC
     | KW_SYSTEM_TIME | KW_SYSTEM_VERSION
     | KW_EXPIRE_SNAPSHOTS
-    | KW_ID
+    | KW_SET_CURRENT_SNAPSHOT
+    | KW_BRANCH | KW_SNAPSHOTS | KW_RETAIN | KW_RETENTION
+    | KW_TAG
+    | KW_FAST_FORWARD
+    | KW_OPTIMIZE
 ;
 
 //The following SQL2011 reserved keywords are used as function name only, but not as identifiers.

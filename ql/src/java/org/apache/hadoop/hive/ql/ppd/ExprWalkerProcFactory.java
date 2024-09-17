@@ -405,7 +405,7 @@ public final class ExprWalkerProcFactory {
               exprInfo.convertedExpr : expr);
       return;
     } else if (!FunctionRegistry.isOpAnd(expr) &&
-        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_PPD_REMOVE_DUPLICATE_FILTERS)) {
       ctx.addNonFinalCandidate(exprInfo != null ? exprInfo.alias : null, expr);
     }
   }

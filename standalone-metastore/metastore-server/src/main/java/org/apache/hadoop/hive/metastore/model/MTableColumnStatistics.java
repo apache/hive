@@ -33,9 +33,6 @@ package org.apache.hadoop.hive.metastore.model;
 public class MTableColumnStatistics {
 
   private MTable table;
-  private String catName;
-  private String dbName;
-  private String tableName;
   private String colName;
   private String colType;
   private String engine;
@@ -49,6 +46,7 @@ public class MTableColumnStatistics {
   private Long numNulls;
   private Long numDVs;
   private byte[] bitVector = new byte[] { 'H', 'L' };
+  private byte[] histogram = new byte[] {};
   private Double avgColLen;
   private Long maxColLen;
   private Long numTrues;
@@ -63,14 +61,6 @@ public class MTableColumnStatistics {
 
   public void setTable(MTable table) {
     this.table = table;
-  }
-
-  public String getTableName() {
-    return tableName;
-  }
-
-  public void setTableName(String tableName) {
-    this.tableName = tableName;
   }
 
   public String getColName() {
@@ -145,49 +135,38 @@ public class MTableColumnStatistics {
     this.lastAnalyzed = lastAnalyzed;
   }
 
-  public String getDbName() {
-    return dbName;
-  }
-
-  public void setDbName(String dbName) {
-    this.dbName = dbName;
-  }
-
-  public String getCatName() {
-    return catName;
-  }
-
-  public void setCatName(String catName) {
-    this.catName = catName;
-  }
-
   public void setBooleanStats(Long numTrues, Long numFalses, Long numNulls) {
     this.numTrues = numTrues;
     this.numFalses = numFalses;
     this.numNulls = numNulls;
   }
 
-  public void setLongStats(Long numNulls, Long numNDVs, byte[] bitVector, Long lowValue, Long highValue) {
+  public void setLongStats(Long numNulls, Long numNDVs, byte[] bitVector, byte [] histogram,
+      Long lowValue, Long highValue) {
     this.numNulls = numNulls;
     this.numDVs = numNDVs;
     setBitVector(bitVector);
+    setHistogram(histogram);
     this.longLowValue = lowValue;
     this.longHighValue = highValue;
   }
 
-  public void setDoubleStats(Long numNulls, Long numNDVs, byte[] bitVector, Double lowValue, Double highValue) {
+  public void setDoubleStats(Long numNulls, Long numNDVs, byte[] bitVector, byte [] histogram,
+      Double lowValue, Double highValue) {
     this.numNulls = numNulls;
     this.numDVs = numNDVs;
     setBitVector(bitVector);
+    setHistogram(histogram);
     this.doubleLowValue = lowValue;
     this.doubleHighValue = highValue;
   }
 
-  public void setDecimalStats(
-      Long numNulls, Long numNDVs, byte[] bitVector, String lowValue, String highValue) {
+  public void setDecimalStats(Long numNulls, Long numNDVs, byte[] bitVector, byte [] histogram,
+      String lowValue, String highValue) {
     this.numNulls = numNulls;
     this.numDVs = numNDVs;
     setBitVector(bitVector);
+    setHistogram(histogram);
     this.decimalLowValue = lowValue;
     this.decimalHighValue = highValue;
   }
@@ -206,18 +185,20 @@ public class MTableColumnStatistics {
     this.avgColLen = avgColLen;
   }
 
-  public void setDateStats(Long numNulls, Long numNDVs, byte[] bitVector, Long lowValue, Long highValue) {
+  public void setDateStats(Long numNulls, Long numNDVs, byte[] bitVector, byte [] histogram, Long lowValue, Long highValue) {
     this.numNulls = numNulls;
     this.numDVs = numNDVs;
     setBitVector(bitVector);
+    setHistogram(histogram);
     this.longLowValue = lowValue;
     this.longHighValue = highValue;
   }
 
-  public void setTimestampStats(Long numNulls, Long numNDVs, byte[] bitVector, Long lowValue, Long highValue) {
+  public void setTimestampStats(Long numNulls, Long numNDVs, byte[] bitVector, byte [] histogram, Long lowValue, Long highValue) {
     this.numNulls = numNulls;
     this.numDVs = numNDVs;
     setBitVector(bitVector);
+    setHistogram(histogram);
     this.longLowValue = lowValue;
     this.longHighValue = highValue;
   }
@@ -286,6 +267,21 @@ public class MTableColumnStatistics {
     // instead set empty bit vector with header.
     // https://issues.apache.org/jira/browse/HIVE-17836
     this.bitVector = (bitVector == null ? new byte[] { 'H', 'L' } : bitVector);
+  }
+
+  public byte[] getHistogram() {
+    // workaround for DN bug in persisting nulls in pg bytea column instead set empty histogram.
+    // https://issues.apache.org/jira/browse/HIVE-17836
+    if (histogram != null && histogram.length == 0) {
+      return null;
+    }
+    return histogram;
+  }
+
+  public void setHistogram(byte[] histogram) {
+    // workaround for DN bug in persisting nulls in pg bytea column instead set empty histogram.
+    // https://issues.apache.org/jira/browse/HIVE-17836
+    this.histogram = (histogram == null ? new byte[] { } : histogram);
   }
 
   public String getEngine() {

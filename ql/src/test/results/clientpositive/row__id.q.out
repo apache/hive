@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists hello_acid
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists hello_acid
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table hello_acid (key int, value int)
 partitioned by (load_date date)
 clustered by(key) into 3 buckets
@@ -72,25 +74,25 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hello_acid
-            Statistics: Num rows: 3 Data size: 19944 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 #Masked# Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: ROW__ID.writeid (type: bigint)
               outputColumnNames: _col0
-              Statistics: Num rows: 3 Data size: 19944 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 #Masked# Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: bigint)
                 null sort order: z
                 sort order: +
-                Statistics: Num rows: 3 Data size: 19944 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 #Masked# Basic stats: COMPLETE Column stats: NONE
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: bigint)
           outputColumnNames: _col0
-          Statistics: Num rows: 3 Data size: 19944 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 3 #Masked# Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 3 Data size: 19944 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 #Masked# Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -146,17 +148,17 @@ STAGE PLANS:
           TableScan
             alias: hello_acid
             filterExpr: (ROW__ID.writeid = 3L) (type: boolean)
-            Statistics: Num rows: 3 Data size: 19944 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 #Masked# Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (ROW__ID.writeid = 3L) (type: boolean)
-              Statistics: Num rows: 1 Data size: 6648 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 #Masked# Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ROW__ID.writeid (type: bigint)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 6648 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 #Masked# Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 6648 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 #Masked# Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

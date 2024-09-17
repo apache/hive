@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE IF EXISTS avro_table_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS avro_table_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS parquet_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS parquet_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE avro_table_n0 (avreau_col_1 map<string,string>) STORED AS AVRO
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -49,16 +53,20 @@ POSTHOOK: Input: default@parquet_table
 PREHOOK: query: DROP TABLE avro_table_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@avro_table_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@avro_table_n0
 POSTHOOK: query: DROP TABLE avro_table_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@avro_table_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@avro_table_n0
 PREHOOK: query: DROP TABLE parquet_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@parquet_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_table
 POSTHOOK: query: DROP TABLE parquet_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@parquet_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_table

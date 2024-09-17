@@ -78,7 +78,7 @@ public class ParseDriver {
 
     @Override
     public Object dupTree(Object t, Object parent) {
-      // Overriden to copy start index / end index, that is needed through optimization,
+      // Overridden to copy start index / end index, that is needed through optimization,
       // e.g., for masking/filtering
       ASTNode astNode = (ASTNode) t;
       ASTNode astNodeCopy = (ASTNode) super.dupTree(t, parent);
@@ -122,7 +122,7 @@ public class ParseDriver {
     try {
       r = parser.statement();
     } catch (RecognitionException e) {
-      throw new ParseException(parser.errors);
+      throw new ParseException(parser.errors, e);
     }
 
     if (lexer.getErrors().size() == 0 && parser.errors.size() == 0) {
@@ -152,7 +152,7 @@ public class ParseDriver {
     try {
       r = parser.hint();
     } catch (RecognitionException e) {
-      throw new ParseException(parser.errors);
+      throw new ParseException(parser.errors, e);
     }
 
     if (lexer.getErrors().size() == 0 && parser.errors.size() == 0) {
@@ -191,7 +191,7 @@ public class ParseDriver {
     try {
       r = parser.selectClause();
     } catch (RecognitionException e) {
-      throw new ParseException(parser.errors);
+      throw new ParseException(parser.errors, e);
     }
 
     if (lexer.getErrors().size() == 0 && parser.errors.size() == 0) {
@@ -215,7 +215,7 @@ public class ParseDriver {
     try {
       r = parser.expression();
     } catch (RecognitionException e) {
-      throw new ParseException(parser.errors);
+      throw new ParseException(parser.errors, e);
     }
 
     if (lexer.getErrors().size() == 0 && parser.errors.size() == 0) {
@@ -238,7 +238,7 @@ public class ParseDriver {
     try {
       r = parser.triggerExpressionStandalone();
     } catch (RecognitionException e) {
-      throw new ParseException(parser.errors);
+      throw new ParseException(parser.errors, e);
     }
     if (lexer.getErrors().size() != 0) {
       throw new ParseException(lexer.getErrors());
@@ -258,7 +258,7 @@ public class ParseDriver {
     try {
       r = parser.triggerActionExpressionStandalone();
     } catch (RecognitionException e) {
-      throw new ParseException(parser.errors);
+      throw new ParseException(parser.errors, e);
     }
     if (lexer.getErrors().size() != 0) {
       throw new ParseException(lexer.getErrors());

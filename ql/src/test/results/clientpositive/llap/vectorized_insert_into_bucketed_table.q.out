@@ -140,8 +140,10 @@ POSTHOOK: Input: default@foo
 PREHOOK: query: drop table foo
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@foo
+PREHOOK: Output: database:default
 PREHOOK: Output: default@foo
 POSTHOOK: query: drop table foo
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@foo
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@foo

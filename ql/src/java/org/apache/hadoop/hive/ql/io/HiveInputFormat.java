@@ -52,7 +52,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
-import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -554,7 +553,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         } else {
           // if the input is Compressed OR not text we have no way of splitting them!
           // In that case RecordReader should take care of header/footer skipping!
-          HiveConf.setLongVar(conf, ConfVars.MAPREDMINSPLITSIZE, Long.MAX_VALUE);
+          HiveConf.setLongVar(conf, ConfVars.MAPRED_MIN_SPLIT_SIZE, Long.MAX_VALUE);
         }
       }
     }
@@ -987,13 +986,20 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     if (scanDesc.getAsOfTimestamp() != null) {
       ZoneId timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() :
           SessionState.get().getConf().getLocalTimeZone();
-      TimestampTZ time = TimestampTZUtil.parse(PlanUtils.stripQuotes(scanDesc.getAsOfTimestamp()), timeZone);
-
+      TimestampTZ time = TimestampTZUtil.parse(scanDesc.getAsOfTimestamp(), timeZone);
       jobConf.set(TableScanDesc.AS_OF_TIMESTAMP, Long.toString(time.toEpochMilli()));
     }
 
     if (scanDesc.getAsOfVersion() != null) {
       jobConf.set(TableScanDesc.AS_OF_VERSION, scanDesc.getAsOfVersion());
+    }
+
+    if (scanDesc.getVersionIntervalFrom() != null) {
+      jobConf.set(TableScanDesc.FROM_VERSION, scanDesc.getVersionIntervalFrom());
+    }
+
+    if (scanDesc.getSnapshotRef() != null) {
+      jobConf.set(TableScanDesc.SNAPSHOT_REF, scanDesc.getSnapshotRef());
     }
   }
 

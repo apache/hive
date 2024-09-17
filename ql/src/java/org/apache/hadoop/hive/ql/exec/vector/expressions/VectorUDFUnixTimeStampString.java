@@ -18,22 +18,13 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import java.time.ZoneId;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.type.Timestamp;
-import org.apache.hadoop.hive.common.type.TimestampTZ;
-import org.apache.hadoop.hive.common.type.TimestampTZUtil;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.udf.generic.InstantFormatter;
 import org.apache.hadoop.io.Text;
 
 import java.nio.charset.CharacterCodingException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatterBuilder;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
 
 /**
  * Return Unix Timestamp.
@@ -43,7 +34,7 @@ public final class VectorUDFUnixTimeStampString extends VectorUDFTimestampFieldS
 
   private static final long serialVersionUID = 1L;
 
-  private transient ZoneId timeZone;
+  private transient InstantFormatter formatter;
 
   public VectorUDFUnixTimeStampString(int colNum, int outputColumnNum) {
     super(colNum, outputColumnNum, -1, -1);
@@ -56,22 +47,16 @@ public final class VectorUDFUnixTimeStampString extends VectorUDFTimestampFieldS
   @Override
   public void transientInit(Configuration conf) throws HiveException {
     super.transientInit(conf);
-    if (timeZone == null) {
-      String timeZoneStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE);
-      timeZone = TimestampTZUtil.parseTimeZone(timeZoneStr);
+    if (formatter == null) {
+      formatter = InstantFormatter.ofConfiguration(conf);
     }
   }
 
   @Override
   protected long getField(byte[] bytes, int start, int length) throws ParseException {
-
     try {
-      Timestamp timestamp = Timestamp.valueOf(Text.decode(bytes, start, length));
-      TimestampTZ timestampTZ = TimestampTZUtil.convert(timestamp,timeZone);
-      return timestampTZ.getEpochSecond();
-    } catch (CharacterCodingException e) {
-      throw new ParseException(e.getMessage(), 0);
-    } catch (IllegalArgumentException e){
+      return formatter.parse(Text.decode(bytes, start, length)).getEpochSecond();
+    } catch (CharacterCodingException | RuntimeException e) {
       throw new ParseException(e.getMessage(), 0);
     }
   }

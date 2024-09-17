@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS encrypted_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS encrypted_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP DATABASE IF EXISTS encrypted_db
 PREHOOK: type: DROPDATABASE
 POSTHOOK: query: DROP DATABASE IF EXISTS encrypted_db
@@ -39,10 +41,12 @@ POSTHOOK: Lineage: encrypted_table.value SIMPLE [(src)src.FieldSchema(name:value
 PREHOOK: query: DROP TABLE encrypted_db.encrypted_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: encrypted_db@encrypted_table
+PREHOOK: Output: database:encrypted_db
 PREHOOK: Output: encrypted_db@encrypted_table
 POSTHOOK: query: DROP TABLE encrypted_db.encrypted_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: encrypted_db@encrypted_table
+POSTHOOK: Output: database:encrypted_db
 POSTHOOK: Output: encrypted_db@encrypted_table
 PREHOOK: query: DROP DATABASE encrypted_db
 PREHOOK: type: DROPDATABASE

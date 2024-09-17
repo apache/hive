@@ -28,8 +28,9 @@ FROM DECIMAL_UDF2_n0 WHERE key = 10;
 SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
 FROM DECIMAL_UDF2_n0 WHERE key = 10;
 
+-- Round to avoid decimal precision difference due to JDK-4477961
 SELECT SUM(HASH(*))
-FROM (SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
+FROM (SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), round(radians(key),12)
 FROM DECIMAL_UDF2_n0) q;
 
 EXPLAIN VECTORIZATION DETAIL
@@ -61,8 +62,9 @@ FROM DECIMAL_UDF2_txt WHERE key = 10;
 SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
 FROM DECIMAL_UDF2_txt WHERE key = 10;
 
+-- Round to avoid decimal precision difference due to JDK-4477961
 SELECT SUM(HASH(*))
-FROM (SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
+FROM (SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), round(radians(key), 12)
 FROM DECIMAL_UDF2_txt) q;
 
 EXPLAIN VECTORIZATION DETAIL

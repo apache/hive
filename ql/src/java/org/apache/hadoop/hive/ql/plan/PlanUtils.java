@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_LOCATION;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hive.common.util.HiveStringUtils.quoteComments;
 
@@ -88,6 +90,7 @@ import org.apache.hadoop.mapred.TextInputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_COMMENTS;
 /**
  * PlanUtils.
  *
@@ -355,6 +358,9 @@ public final class PlanUtils {
         properties.setProperty(
                 org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE,
                 crtTblDesc.getStorageHandler());
+        if (isNotBlank(crtTblDesc.getLocation())) {
+          properties.setProperty(META_TABLE_LOCATION, crtTblDesc.getLocation());
+        }
       }
 
       if (crtTblDesc.getCollItemDelim() != null) {
@@ -452,6 +458,9 @@ public final class PlanUtils {
         properties.setProperty(
                 org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE,
                 crtViewDesc.getStorageHandler());
+        if (isNotBlank(crtViewDesc.getLocation())) {
+          ret.getProperties().setProperty(META_TABLE_LOCATION, crtViewDesc.getLocation());
+        }
       }
 
       if (crtViewDesc.getViewName() != null) {
@@ -535,9 +544,9 @@ public final class PlanUtils {
               serdeConstants.SERIALIZATION_LIB, BinarySortableSerDe.class.getName()));
     } else {
       return new TableDesc(SequenceFileInputFormat.class,
-          SequenceFileOutputFormat.class, Utilities.makeProperties("columns",
+          SequenceFileOutputFormat.class, Utilities.makeProperties(serdeConstants.LIST_COLUMNS,
               MetaStoreUtils.getColumnNamesFromFieldSchema(fieldSchemas),
-              "columns.types", MetaStoreUtils
+              serdeConstants.LIST_COLUMN_TYPES, MetaStoreUtils
               .getColumnTypesFromFieldSchema(fieldSchemas),
               serdeConstants.ESCAPE_CHAR, "\\",
               serdeConstants.SERIALIZATION_LIB,LazyBinarySerDe.class.getName()));
@@ -1018,7 +1027,7 @@ public final class PlanUtils {
    * @return
    */
   public static String removePrefixFromWarehouseConfig(String origiKey) {
-    String prefix = SessionState.get().getConf().getVar(HiveConf.ConfVars.METASTOREWAREHOUSE);
+    String prefix = SessionState.get().getConf().getVar(HiveConf.ConfVars.METASTORE_WAREHOUSE);
     if ((prefix != null) && (prefix.length() > 0)) {
       //Local file system is using pfile:/// {@link ProxyLocalFileSystem}
       prefix = prefix.replace("pfile:///", "pfile:/");
@@ -1230,11 +1239,11 @@ public final class PlanUtils {
   static Map<Object, Object> getPropertiesForExplain(Properties properties) {
     if (properties != null) {
       Map<Object, Object> clone = null;
-      String value = properties.getProperty("columns.comments");
+      String value = properties.getProperty(LIST_COLUMN_COMMENTS);
       if (value != null) {
         // should copy properties first
         clone = new HashMap<>(properties);
-        clone.put("columns.comments", quoteComments(value));
+        clone.put(LIST_COLUMN_COMMENTS, quoteComments(value));
       }
       value = properties.getProperty(StatsSetupConst.NUM_ERASURE_CODED_FILES);
       if ("0".equals(value)) {

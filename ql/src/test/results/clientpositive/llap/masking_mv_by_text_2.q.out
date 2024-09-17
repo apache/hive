@@ -119,8 +119,10 @@ POSTHOOK: Output: default@masking_test_view_n_mv_masked
 PREHOOK: query: drop table `masking_test_n_mv`
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@masking_test_n_mv
+PREHOOK: Output: database:default
 PREHOOK: Output: default@masking_test_n_mv
 POSTHOOK: query: drop table `masking_test_n_mv`
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@masking_test_n_mv
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@masking_test_n_mv

@@ -25,7 +25,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -47,6 +46,7 @@ import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION
 public class TestReplicationOnHDFSEncryptedZones {
   private static String jksFile = System.getProperty("java.io.tmpdir") + "/test.jks";
   private static String jksFile2 = System.getProperty("java.io.tmpdir") + "/test2.jks";
+
   @Rule
   public final TestName testName = new TestName();
 
@@ -61,7 +61,8 @@ public class TestReplicationOnHDFSEncryptedZones {
     System.setProperty("jceks.key.serialFilter", "java.lang.Enum;java.security.KeyRep;" +
         "java.security.KeyRep$Type;javax.crypto.spec.SecretKeySpec;" +
         "org.apache.hadoop.crypto.key.JavaKeyStoreProvider$KeyMetadata;!*");
-    conf = new Configuration();
+    conf = getNewConf();
+    conf.set(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname, "mr");
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     conf.set("hadoop.security.key.provider.path", "jceks://file" + jksFile);
@@ -100,7 +101,7 @@ public class TestReplicationOnHDFSEncryptedZones {
   @Test
   public void targetAndSourceHaveDifferentEncryptionZoneKeys() throws Throwable {
     String replicaBaseDir = Files.createTempDirectory("replica").toFile().getAbsolutePath();
-    Configuration replicaConf = new Configuration();
+    Configuration replicaConf = getNewConf();
     replicaConf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, replicaBaseDir);
     replicaConf.set("dfs.client.use.datanode.hostname", "true");
     replicaConf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
@@ -119,7 +120,7 @@ public class TestReplicationOnHDFSEncryptedZones {
           put(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname, "false");
           put(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname,
               UserGroupInformation.getCurrentUser().getUserName());
-          put(HiveConf.ConfVars.REPLDIR.varname, primary.repldDir);
+          put(HiveConf.ConfVars.REPL_DIR.varname, primary.repldDir);
         }}, "test_key123");
 
     //read should pass without raw-byte distcp
@@ -145,7 +146,7 @@ public class TestReplicationOnHDFSEncryptedZones {
   @Test
   public void targetAndSourceHaveSameEncryptionZoneKeys() throws Throwable {
     String replicaBaseDir = Files.createTempDirectory("replica2").toFile().getAbsolutePath();
-    Configuration replicaConf = new Configuration();
+    Configuration replicaConf = getNewConf();
     replicaConf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, replicaBaseDir);
     replicaConf.set("dfs.client.use.datanode.hostname", "true");
     replicaConf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
@@ -162,7 +163,7 @@ public class TestReplicationOnHDFSEncryptedZones {
           put(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname, "false");
           put(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname,
               UserGroupInformation.getCurrentUser().getUserName());
-          put(HiveConf.ConfVars.REPLDIR.varname, primary.repldDir);
+          put(HiveConf.ConfVars.REPL_DIR.varname, primary.repldDir);
         }}, "test_key");
 
     List<String> dumpWithClause = Arrays.asList(
@@ -191,5 +192,12 @@ public class TestReplicationOnHDFSEncryptedZones {
         .verifyResult(tuple.lastReplicationId)
         .run("select value from encrypted_table")
         .verifyResults(new String[] { "value1", "value2" });
+  }
+
+  private static Configuration getNewConf() {
+    Configuration conf = new Configuration();
+    //TODO: HIVE-28044: Replication tests to run on Tez
+    conf.set(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname, "mr");
+    return conf;
   }
 }

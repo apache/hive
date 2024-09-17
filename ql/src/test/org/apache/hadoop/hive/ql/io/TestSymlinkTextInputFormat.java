@@ -111,7 +111,6 @@ public class TestSymlinkTextInputFormat {
   @Test
   public void testCombine() throws Exception {
     JobConf newJob = new JobConf(job);
-    FileSystem fs = dataDir1.getFileSystem(newJob);
 
     Path dir1_file1 = new Path(dataDir1, "combinefile1_1");
     writeTextFile(dir1_file1,
@@ -132,6 +131,8 @@ public class TestSymlinkTextInputFormat {
 
 
     HiveConf hiveConf = new HiveConf(TestSymlinkTextInputFormat.class);
+    // TODO: HIVE-28032: TestSymlinkTextInputFormat.testCombine to run on Tez
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
     hiveConf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");

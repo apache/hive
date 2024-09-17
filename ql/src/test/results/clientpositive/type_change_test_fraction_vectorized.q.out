@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists testAltCol_n3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists testAltCol_n3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table testAltCol_n3
 (cId            TINYINT,
  cFloat         FLOAT,
@@ -552,8 +554,10 @@ POSTHOOK: Input: default@testaltcol_n3
 19	-12345678.900000000000000000	-1.2300000000000000000000000000000000000	-34567890.12000000	-2.34
 PREHOOK: query: drop table if exists testAltColT_n3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists testAltColT_n3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table testAltColT_n3 stored as textfile as select * from testAltCol_n3
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@testaltcol_n3
@@ -2273,15 +2277,19 @@ POSTHOOK: Input: default@testaltcolt_n3
 PREHOOK: query: drop table if exists testAltColT_n3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testaltcolt_n3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testaltcolt_n3
 POSTHOOK: query: drop table if exists testAltColT_n3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testaltcolt_n3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testaltcolt_n3
 PREHOOK: query: drop table if exists testAltColSF_n3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists testAltColSF_n3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table testAltColSF_n3 stored as sequencefile as select * from testAltCol_n3
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@testaltcol_n3
@@ -4001,15 +4009,19 @@ POSTHOOK: Input: default@testaltcolsf_n3
 PREHOOK: query: drop table if exists testAltColSF_n3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testaltcolsf_n3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testaltcolsf_n3
 POSTHOOK: query: drop table if exists testAltColSF_n3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testaltcolsf_n3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testaltcolsf_n3
 PREHOOK: query: drop table if exists testAltColRCF_n3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists testAltColRCF_n3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table testAltColRCF_n3 stored as rcfile as select * from testAltCol_n3
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@testaltcol_n3
@@ -5729,15 +5741,19 @@ POSTHOOK: Input: default@testaltcolrcf_n3
 PREHOOK: query: drop table if exists testAltColRCF_n3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testaltcolrcf_n3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testaltcolrcf_n3
 POSTHOOK: query: drop table if exists testAltColRCF_n3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testaltcolrcf_n3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testaltcolrcf_n3
 PREHOOK: query: drop table if exists testAltColORC_n3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists testAltColORC_n3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table testAltColORC_n3 stored as orc as select * from testAltCol_n3
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@testaltcol_n3
@@ -6997,15 +7013,19 @@ POSTHOOK: Input: default@testaltcolorc_n3
 PREHOOK: query: drop table if exists testAltColORC_n3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testaltcolorc_n3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testaltcolorc_n3
 POSTHOOK: query: drop table if exists testAltColORC_n3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testaltcolorc_n3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testaltcolorc_n3
 PREHOOK: query: drop table if exists testAltColPDE_n3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists testAltColPDE_n3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table testAltColPDE_n3 stored as parquet as select * from testAltCol_n3
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@testaltcol_n3
@@ -8725,15 +8745,19 @@ POSTHOOK: Input: default@testaltcolpde_n3
 PREHOOK: query: drop table if exists testAltColPDE_n3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testaltcolpde_n3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testaltcolpde_n3
 POSTHOOK: query: drop table if exists testAltColPDE_n3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testaltcolpde_n3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testaltcolpde_n3
 PREHOOK: query: drop table if exists testAltColPDD_n3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists testAltColPDD_n3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table testAltColPDD_n3 stored as parquet tblproperties ("parquet.enable.dictionary"="false") as
 select * from testAltCol_n3
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -10455,8 +10479,10 @@ POSTHOOK: Input: default@testaltcolpdd_n3
 PREHOOK: query: drop table if exists testAltColPDD_n3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testaltcolpdd_n3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testaltcolpdd_n3
 POSTHOOK: query: drop table if exists testAltColPDD_n3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testaltcolpdd_n3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testaltcolpdd_n3

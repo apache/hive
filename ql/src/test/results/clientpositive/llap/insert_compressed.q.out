@@ -1,7 +1,9 @@
 PREHOOK: query: drop table insert_compressed
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table insert_compressed
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table insert_compressed (key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -70,8 +72,10 @@ POSTHOOK: Input: default@insert_compressed
 PREHOOK: query: drop table insert_compressed
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@insert_compressed
+PREHOOK: Output: database:default
 PREHOOK: Output: default@insert_compressed
 POSTHOOK: query: drop table insert_compressed
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@insert_compressed
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert_compressed

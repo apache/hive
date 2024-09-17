@@ -1,5 +1,7 @@
 PREHOOK: query: drop table if exists orc_table_with_null
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists orc_table_with_null
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 FAILED: SemanticException [Error 10305]: CREATE-TABLE-AS-SELECT creates a VOID type, please use CAST to specify the type, near field:  _c1

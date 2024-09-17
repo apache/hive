@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists hb_target
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists hb_target
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table hb_target(key int, val string)
 stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 with serdeproperties ('hbase.columns.mapping' = ':key,cf:val')
@@ -27,10 +29,12 @@ POSTHOOK: Output: default@hb_target
 PREHOOK: query: drop table hb_target
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hb_target
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hb_target
 POSTHOOK: query: drop table hb_target
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hb_target
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hb_target
 #### A masked pattern was here ####
 PREHOOK: query: create external table hb_target(key int, val string)
@@ -67,9 +71,11 @@ POSTHOOK: Output: default@hb_target
 PREHOOK: query: drop table hb_target
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hb_target
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hb_target
 POSTHOOK: query: drop table hb_target
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hb_target
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hb_target
 #### A masked pattern was here ####

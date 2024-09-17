@@ -111,14 +111,6 @@
 </property>
 
 <property>
-  <name>hive.metastore.metadb.dir</name>
-  <value>file://${test.tmp.dir}/metadb/</value>
-  <description>
-  Required by metastore server or if the uris argument below is not supplied
-  </description>
-</property>
-
-<property>
   <name>test.log.dir</name>
   <value>${test.tmp.dir}/log/</value>
   <description></description>
@@ -229,12 +221,6 @@
 </property>
 
 <property>
-  <name>hive.execution.engine</name>
-  <value>tez</value>
-  <description>Whether to use MR or Tez</description>
-</property>
-
-<property>
   <name>tez.am.node-blacklisting.enabled</name>
   <value>false</value>
 </property>
@@ -271,6 +257,11 @@
 <property>
   <name>tez.am.launch.cmd-opts</name>
   <value> -Dlog4j.configurationFile=tez-container-log4j2.properties -Dtez.container.log.level=INFO -Dtez.container.root.logger=CLA </value>
+</property>
+
+<property>
+  <name>hive.tez.exec.print.summary</name>
+  <value>true</value>
 </property>
 
 <property>

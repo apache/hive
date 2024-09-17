@@ -467,10 +467,12 @@ POSTHOOK: Input: default@test1_n10
 PREHOOK: query: drop table test1_n10
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test1_n10
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test1_n10
 POSTHOOK: query: drop table test1_n10
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test1_n10
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test1_n10
 PREHOOK: query: create table test_src_n0(key string, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE

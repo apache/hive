@@ -40,7 +40,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	10                  
 	rawDataSize         	94                  
-	totalSize           	185                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -100,7 +100,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	10                  
 	rawDataSize         	94                  
-	totalSize           	150                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -170,7 +170,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	10                  
 	rawDataSize         	94                  
-	totalSize           	75                  
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -230,7 +230,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	10                  
 	rawDataSize         	94                  
-	totalSize           	75                  
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -302,7 +302,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	10                  
 	rawDataSize         	94                  
-	totalSize           	185                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -363,7 +363,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	10                  
 	rawDataSize         	94                  
-	totalSize           	150                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -424,7 +424,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	10                  
 	rawDataSize         	94                  
-	totalSize           	75                  
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -497,7 +497,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	10                  
 	rawDataSize         	94                  
-	totalSize           	185                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -561,7 +561,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	10                  
 	rawDataSize         	94                  
-	totalSize           	150                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

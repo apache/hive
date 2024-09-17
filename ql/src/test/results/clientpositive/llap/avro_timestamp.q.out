@@ -1,15 +1,21 @@
 PREHOOK: query: DROP TABLE avro_timestamp_staging
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE avro_timestamp_staging
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE avro_timestamp
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE avro_timestamp
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE avro_timestamp_casts
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE avro_timestamp_casts
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE avro_timestamp_staging (d timestamp, m1 map<string, timestamp>, l1 array<timestamp>)
    ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
    COLLECTION ITEMS TERMINATED BY ',' MAP KEYS TERMINATED BY ':'

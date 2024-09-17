@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.process.abort;
 
+import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -32,7 +33,7 @@ public class AbortTransactionsOperation extends DDLOperation<AbortTransactionsDe
 
   @Override
   public int execute() throws HiveException {
-    context.getDb().abortTransactions(desc.getTransactionIds());
+    context.getDb().abortTransactions(desc.getTransactionIds(), TxnErrorMsg.ABORT_QUERY.getErrorCode());
     return 0;
   }
 }

@@ -40,12 +40,21 @@ import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.test.appender.ListAppender;
 import org.apache.thrift.TException;
 import org.hamcrest.core.IsNot;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -78,6 +87,8 @@ public class TestMetaStoreServerUtils {
 
   private static final String DB_NAME = "db1";
   private static final String TABLE_NAME = "tbl1";
+  private static ListAppender listAppender;
+  public static final String STATS_CALC_CALL_LOG_MSG_FORMAT = "Calling updateTableStatsSlow for table {0}.{1}.{2}";
 
   private final Map<String, String> paramsWithStats = ImmutableMap.of(
       NUM_FILES, "1",
@@ -93,6 +104,34 @@ public class TestMetaStoreServerUtils {
     } catch (TException e) {
       e.printStackTrace();
     }
+  }
+
+  @BeforeClass
+  public static void initLoggerAppender() {
+    LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
+    org.apache.logging.log4j.core.config.Configuration configuration = loggerContext.getConfiguration();
+    LoggerConfig rootLoggerConfig = configuration.getLoggerConfig("");
+    listAppender = new ListAppender("testAppender");
+    rootLoggerConfig.addAppender(listAppender, Level.ALL, null);
+  }
+
+  @Before
+  public void startLoggerAppender() {
+    listAppender.start();
+  }
+
+  @After
+  public void stopLoggerAppender() {
+    listAppender.stop();
+    listAppender.clear();
+  }
+
+  private boolean messageWasLogged(String message){
+    return listAppender.getEvents()
+            .stream()
+            .map(x -> x.getMessage().getFormattedMessage())
+            .collect(Collectors.toList())
+            .contains(message);
   }
 
   @Test
@@ -292,6 +331,71 @@ public class TestMetaStoreServerUtils {
         .build(null);
     MetaStoreServerUtils.updateTableStatsSlow(db, tbl2, wh, false, false, null);
     verify(wh, never()).getFileStatusesForUnpartitionedTable(db, tbl2);
+  }
+  
+  /**
+   * Verify that updateTableStatsForCreateTable() does not invoke calculation of table statistics when
+   * <ol>
+   *   <li>Stats auto source in envContext is set to false</li>
+   * </ol>
+   */
+  @Test
+  public void testUpdateTableStatsForCreateTableDoesNotInvokeStatsCalc() throws TException {
+    // DO_NOT_UPDATE_STATS in env context is set to true => doesn't invoke stats calculation
+    Map<String, String> params = new HashMap<>(paramsWithStats);
+    Warehouse wh = mock(Warehouse.class);
+
+    Table tbl = new TableBuilder()
+            .setDbName(DB_NAME)
+            .setTableName(TABLE_NAME)
+            .addCol("id", "int")
+            .setTableParams(params)
+            .build(null);     
+
+    EnvironmentContext env = new EnvironmentContext();
+    env.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
+
+    MetaStoreServerUtils.updateTableStatsForCreateTable(wh, db, tbl, env,
+            MetastoreConf.newMetastoreConf(), new Path("/tmp/0"), false);
+
+    assertFalse(messageWasLogged(MessageFormat.format(
+            STATS_CALC_CALL_LOG_MSG_FORMAT, tbl.getCatName(), tbl.getDbName(), tbl.getTableName())));
+  }
+
+  /**
+   * Verify that updateTableStatsForCreateTable() invokes calculation of table statistics when
+   * <ol>
+   *   <li>Stats auto source in envContext is not set</li>
+   *   <li>Stats auto source in envContext is set to true</li>
+   * </ol>
+   */
+  @Test
+  public void testUpdateTableStatsForCreateTableInvokeStatsCalc() throws TException {
+    // DO_NOT_UPDATE_STATS in env context is not defined => invoke stats calculation
+    Map<String, String> params = new HashMap<>(paramsWithStats);
+    Warehouse wh = mock(Warehouse.class);
+
+    Table tbl = new TableBuilder()
+            .setDbName(DB_NAME)
+            .setTableName(TABLE_NAME)
+            .addCol("id", "int")
+            .setTableParams(params)
+            .build(null);
+
+    MetaStoreServerUtils.updateTableStatsForCreateTable(wh, db, tbl, null,
+            MetastoreConf.newMetastoreConf(), new Path("/tmp/0"), false);
+
+    assertTrue(messageWasLogged(MessageFormat.format(
+            STATS_CALC_CALL_LOG_MSG_FORMAT, tbl.getCatName(), tbl.getDbName(), tbl.getTableName())));
+
+    // DO_NOT_UPDATE_STATS in env context is set to false => invoke stats calculation
+    EnvironmentContext env = new EnvironmentContext();
+    env.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.FALSE);
+
+    MetaStoreServerUtils.updateTableStatsForCreateTable(wh, db, tbl, env,
+            MetastoreConf.newMetastoreConf(), new Path("/tmp/0"), false);
+    assertTrue(messageWasLogged(MessageFormat.format(
+            STATS_CALC_CALL_LOG_MSG_FORMAT, tbl.getCatName(), tbl.getDbName(), tbl.getTableName())));
   }
 
   @Test

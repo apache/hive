@@ -132,13 +132,13 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     int bucketSize;
 
     // For backwards compatibility reasons we honor the older
-    // HIVEMAPJOINBUCKETCACHESIZE if set different from default.
+    // HIVE_MAPJOIN_BUCKET_CACHE_SIZE if set different from default.
     // By hive 0.13 we should remove this code.
-    int oldVar = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEMAPJOINBUCKETCACHESIZE);
+    int oldVar = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVE_MAPJOIN_BUCKET_CACHE_SIZE);
     if (oldVar != 100) {
       bucketSize = oldVar;
     } else {
-      bucketSize = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVESMBJOINCACHEROWS);
+      bucketSize = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVE_SMBJOIN_CACHE_ROWS);
     }
 
     for (byte pos = 0; pos < order.length; pos++) {

@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
-import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Project;
@@ -28,12 +27,14 @@ import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.core.RelFactories.FilterFactory;
 import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
 import org.apache.calcite.rel.core.TableScan;
+import org.apache.calcite.rel.rules.ProjectMergeRule;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 
 import java.util.Collections;
@@ -44,22 +45,25 @@ public class HiveFilterProjectTSTransposeRule extends RelOptRule {
   public final static HiveFilterProjectTSTransposeRule INSTANCE =
       new HiveFilterProjectTSTransposeRule(
           Filter.class, HiveRelFactories.HIVE_FILTER_FACTORY, HiveProject.class,
-          HiveRelFactories.HIVE_PROJECT_FACTORY, TableScan.class);
+          HiveRelFactories.HIVE_PROJECT_FACTORY, TableScan.class, ProjectMergeRule.DEFAULT_BLOAT);
 
   public final static  HiveFilterProjectTSTransposeRule INSTANCE_DRUID =
       new HiveFilterProjectTSTransposeRule(
           Filter.class, HiveRelFactories.HIVE_FILTER_FACTORY, HiveProject.class,
-          HiveRelFactories.HIVE_PROJECT_FACTORY, DruidQuery.class);
+          HiveRelFactories.HIVE_PROJECT_FACTORY, DruidQuery.class, ProjectMergeRule.DEFAULT_BLOAT);
 
   private final RelFactories.FilterFactory  filterFactory;
   private final RelFactories.ProjectFactory projectFactory;
+  private final int bloat;
 
   private HiveFilterProjectTSTransposeRule(Class<? extends Filter> filterClass,
       FilterFactory filterFactory, Class<? extends Project> projectClass,
-      ProjectFactory projectFactory, Class<? extends RelNode> tsClass) {
+      ProjectFactory projectFactory, Class<? extends RelNode> tsClass,
+      int bloat) {
     super(operand(filterClass, operand(projectClass, operand(tsClass, none()))));
     this.filterFactory = filterFactory;
     this.projectFactory = projectFactory;
+    this.bloat = bloat;
   }
 
   @Override
@@ -104,7 +108,10 @@ public class HiveFilterProjectTSTransposeRule extends RelOptRule {
     }
 
     // convert the filter to one that references the child of the project
-    RexNode newCondition = RelOptUtil.pushPastProject(filter.getCondition(), project);
+    RexNode newCondition = HiveRelOptUtil.pushPastProjectUnlessBloat(filter.getCondition(), project, bloat);
+    if (newCondition == null) {
+      return;
+    }
 
     // Remove cast of BOOLEAN NOT NULL to BOOLEAN or vice versa. Filter accepts
     // nullable and not-nullable conditions, but a CAST might get in the way of

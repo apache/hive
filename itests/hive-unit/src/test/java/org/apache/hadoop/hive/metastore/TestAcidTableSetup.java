@@ -91,7 +91,7 @@ public class TestAcidTableSetup {
       client.createTable(t);
       fail("Expected exception");
     } catch (MetaException e) {
-      assertEquals("'transactional' property of TBLPROPERTIES may only have value 'true': acidDb.acidTable",
+      assertEquals("'transactional' property of TBLPROPERTIES may only have value 'true': aciddb.acidtable",
           e.getMessage());
     }
 
@@ -108,7 +108,7 @@ public class TestAcidTableSetup {
       client.createTable(t);
       fail("Expected exception");
     } catch (MetaException e) {
-      assertEquals("'transactional' property of TBLPROPERTIES may only have value 'true': acidDb.acidTable",
+      assertEquals("'transactional' property of TBLPROPERTIES may only have value 'true': aciddb.acidtable",
           e.getMessage());
     }
 
@@ -125,7 +125,7 @@ public class TestAcidTableSetup {
       client.createTable(t);
       fail("Expected exception");
     } catch (MetaException e) {
-      assertEquals("The table must be stored using an ACID compliant format (such as ORC): acidDb.acidTable",
+      assertEquals("The table must be stored using an ACID compliant format (such as ORC): aciddb.acidtable",
           e.getMessage());
     }
 
@@ -145,7 +145,7 @@ public class TestAcidTableSetup {
       client.createTable(t);
       fail("Expected exception");
     } catch (MetaException e) {
-      assertEquals("The table must be stored using an ACID compliant format (such as ORC): acidDb.acidTable",
+      assertEquals("The table must be stored using an ACID compliant format (such as ORC): aciddb.acidtable",
           e.getMessage());
     }
 
@@ -197,7 +197,7 @@ public class TestAcidTableSetup {
       client.alter_table(dbName, tblName, t);
       fail("Expected exception");
     } catch (MetaException e) {
-      assertEquals("The table must be stored using an ACID compliant format (such as ORC): acidDb.acidTable1",
+      assertEquals("The table must be stored using an ACID compliant format (such as ORC): aciddb.acidtable1",
           e.getMessage());
     }
 

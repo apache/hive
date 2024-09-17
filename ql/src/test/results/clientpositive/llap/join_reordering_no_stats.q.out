@@ -765,32 +765,40 @@ STAGE PLANS:
 PREHOOK: query: drop table Employee_Part_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@employee_part_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@employee_part_n1
 POSTHOOK: query: drop table Employee_Part_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@employee_part_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@employee_part_n1
 PREHOOK: query: drop table supplier_nostats
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@supplier_nostats
+PREHOOK: Output: database:default
 PREHOOK: Output: default@supplier_nostats
 POSTHOOK: query: drop table supplier_nostats
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@supplier_nostats
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@supplier_nostats
 PREHOOK: query: drop table lineitem_nostats
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@lineitem_nostats
+PREHOOK: Output: database:default
 PREHOOK: Output: default@lineitem_nostats
 POSTHOOK: query: drop table lineitem_nostats
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@lineitem_nostats
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@lineitem_nostats
 PREHOOK: query: drop table part_nostats
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_nostats
+PREHOOK: Output: database:default
 PREHOOK: Output: default@part_nostats
 POSTHOOK: query: drop table part_nostats
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_nostats
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_nostats

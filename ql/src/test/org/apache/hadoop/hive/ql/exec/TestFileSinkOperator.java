@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.junit.After;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -76,17 +77,21 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Tests for {@link org.apache.hadoop.hive.ql.exec.FileSinkOperator}
  */
 public class TestFileSinkOperator {
   private static String PARTCOL_NAME = "partval";
+  private static final String tmpPrefix = "-tmp.";
   static final private Logger LOG = LoggerFactory.getLogger(TestFileSinkOperator.class.getName());
 
   private static File tmpdir;
@@ -162,6 +167,109 @@ public class TestFileSinkOperator {
     confirmOutput(DataFormat.WITH_PARTITION_VALUE);
   }
 
+  @Test
+  public void testNonAcidRemoveDuplicate() throws Exception {
+    setBasePath("writeDuplicate");
+    setupData(DataFormat.WITH_PARTITION_VALUE);
+
+    FileSinkDesc desc = (FileSinkDesc) getFileSink(AcidUtils.Operation.NOT_ACID, true, 0).getConf().clone();
+    Path linkedDir = desc.getDirName();
+    desc.setLinkedFileSink(true);
+    desc.setDirName(new Path(linkedDir, AbstractFileMergeOperator.UNION_SUDBIR_PREFIX + "0"));
+    JobConf jobConf = new JobConf(jc);
+    jobConf.set("hive.execution.engine", "tez");
+    jobConf.set("mapred.task.id", "000000_0");
+    FileSinkOperator op1 = (FileSinkOperator)OperatorFactory.get(new CompilationOpContext(), FileSinkDesc.class);
+    op1.setConf(desc);
+    op1.initialize(jobConf, new ObjectInspector[]{inspector});
+
+    JobConf jobConf2 = new JobConf(jobConf);
+    jobConf2.set("mapred.task.id", "000000_1");
+    FileSinkOperator op2 = (FileSinkOperator)OperatorFactory.get(
+        new CompilationOpContext(), FileSinkDesc.class);
+    op2.setConf(desc);
+    op2.initialize(jobConf2, new ObjectInspector[]{inspector});
+
+    // Another sub-query in union
+    JobConf jobConf3 = new JobConf(jobConf);
+    jobConf3.set("mapred.task.id", "000001_0");
+    FileSinkOperator op3 = (FileSinkOperator)OperatorFactory.get(
+        new CompilationOpContext(), FileSinkDesc.class);
+    FileSinkDesc sinkDesc = (FileSinkDesc) desc.clone();
+    sinkDesc.setDirName(new Path(linkedDir, AbstractFileMergeOperator.UNION_SUDBIR_PREFIX + "1"));
+    op3.setConf(sinkDesc);
+    op3.initialize(jobConf3, new ObjectInspector[]{inspector});
+
+    JobConf jobConf4 = new JobConf(jobConf);
+    jobConf4.set("mapred.task.id", "000001_1");
+    FileSinkOperator op4 = (FileSinkOperator)OperatorFactory.get(
+        new CompilationOpContext(), FileSinkDesc.class);
+    op4.setConf(sinkDesc);
+    op4.initialize(jobConf4, new ObjectInspector[]{inspector});
+
+    for (Object r : rows) {
+      op1.process(r, 0);
+      op2.process(r, 0);
+      op3.process(r, 0);
+      op4.process(r, 0);
+    }
+
+    op1.close(false);
+    // Assume op2 also ends successfully, this happens in different containers
+    op2.close(false);
+    op3.close(false);
+    op4.close(false);
+
+    Path[] paths = findFilesInPath(linkedDir);
+              // = findFilesInBasePath() # use findFilesInBasePath before the fix
+    Set<String> fileNames = Arrays.stream(paths)
+        .filter(path -> path.getParent().toString().endsWith("partval=Monday/HIVE_UNION_SUBDIR_0"))
+        .map(path -> path.getName())
+        .collect(Collectors.toSet());
+    Assert.assertEquals("Two result files are expected", 2, fileNames.size());
+    Assert.assertTrue("000000_1 file is expected", fileNames.contains("000000_1"));
+    Assert.assertTrue("000000_0 file is expected", fileNames.contains("000000_0"));
+
+    fileNames = Arrays.stream(paths)
+        .filter(path -> path.getParent().toString().endsWith("partval=Monday/HIVE_UNION_SUBDIR_1"))
+        .map(path -> path.getName())
+        .collect(Collectors.toSet());
+    Assert.assertEquals("Two result files are expected", 2, fileNames.size());
+    Assert.assertTrue("000001_0 file is expected", fileNames.contains("000001_0"));
+    Assert.assertTrue("000001_1 file is expected", fileNames.contains("000001_1"));
+
+    // Close op3 first to see if it can deduplicate the result under HIVE_UNION_SUBDIR_0
+    op3.jobCloseOp(jobConf, true);
+    // This happens in HiveServer2 when the job is finished, the job will call
+    // jobCloseOp to end his operators. For the FileSinkOperator, a deduplication on the
+    // output files may happen so that only one output file is left for each yarn task.
+    op1.jobCloseOp(jobConf, true);
+    List<Path> resultFiles = new ArrayList<Path>();
+    String linkedDirPath = linkedDir.toUri().getPath();
+    recurseOnPath(linkedDir, linkedDir.getFileSystem(jc), resultFiles);
+    List<Path> mondays = resultFiles.stream()
+        .filter(path -> path.getParent().toUri().getPath()
+            .equals(linkedDirPath + "/partval=Monday/HIVE_UNION_SUBDIR_0"))
+        .collect(Collectors.toList());
+    Assert.assertEquals("Only 1 file should be here after cleaning", 1, mondays.size());
+    Assert.assertEquals("000000_1 file is expected", "000000_1", mondays.get(0).getName());
+
+    List<Path> subdir1 = resultFiles.stream()
+        .filter(path -> path.getParent().getName().equals("HIVE_UNION_SUBDIR_1")).sorted()
+        .collect(Collectors.toList());
+    Assert.assertEquals("Two partitions expected", 2, subdir1.size());
+    Path monday = subdir1.get(0), tuesday = subdir1.get(1);
+    Assert.assertEquals("Only 1 file left under the partition after deduplication", monday.toUri().getPath(),
+        linkedDirPath + "/partval=Monday/HIVE_UNION_SUBDIR_1/000001_1");
+    Assert.assertEquals("Only 1 file left under the partition after deduplication", tuesday.toUri().getPath(),
+        linkedDirPath + "/partval=Tuesday/HIVE_UNION_SUBDIR_1/000001_1");
+
+    // Confirm the output
+    confirmOutput(DataFormat.WITH_PARTITION_VALUE, resultFiles.stream()
+        .filter(p -> p.getParent().getName().equals("HIVE_UNION_SUBDIR_0")).sorted()
+        .collect(Collectors.toList()).toArray(new Path[0]));
+    confirmOutput(DataFormat.WITH_PARTITION_VALUE, subdir1.toArray(new Path[0]));
+  }
 
   @Test
   public void testInsertDynamicPartitioning() throws Exception {
@@ -205,7 +313,17 @@ public class TestFileSinkOperator {
         TFSOStatsPublisher.class.getName());
     jc.set(HiveConf.ConfVars.HIVE_STATS_DEFAULT_AGGREGATOR.varname,
         TFSOStatsAggregator.class.getName());
-    jc.set(HiveConf.ConfVars.HIVESTATSDBCLASS.varname, "custom");
+    jc.set(HiveConf.ConfVars.HIVE_STATS_DBCLASS.varname, "custom");
+  }
+
+  @After
+  public void afterTest() throws Exception {
+    Path parent = basePath.getParent();
+    String last = basePath.getName();
+    FileSystem fs = basePath.getFileSystem(jc);
+    fs.delete(basePath, true);
+    fs.delete(new Path(parent, "_tmp." + last), true);
+    fs.delete(new Path(parent, "_task_tmp." + last), true);
   }
 
   private void setBasePath(String testName) {
@@ -286,10 +404,11 @@ public class TestFileSinkOperator {
       DynamicPartitionCtx dpCtx = new DynamicPartitionCtx(partColMap, "Sunday", 100);
       //todo: does this need the finalDestination?
       desc = new FileSinkDesc(basePath, tableDesc, false, 1, false,
-          false, 1, 1, partCols, dpCtx, null, null, false, false, false, false, false, writeType, false);
+          false, 1, 1, partCols, dpCtx, null, false, false, false, false, false, writeType, false);
     } else {
       desc = new FileSinkDesc(basePath, tableDesc, false);
     }
+    desc.setStatsAggPrefix(basePath.toString());
     desc.setWriteType(writeType);
     desc.setGatherStats(true);
     if (writeId > 0) {
@@ -313,7 +432,10 @@ public class TestFileSinkOperator {
   }
 
   private void confirmOutput(DataFormat rType) throws IOException, SerDeException, CloneNotSupportedException {
-    Path[] paths = findFilesInBasePath();
+    confirmOutput(rType, findFilesInBasePath());
+  }
+
+  private void confirmOutput(DataFormat rType, Path[] paths) throws IOException, SerDeException, CloneNotSupportedException {
     TFSOInputFormat input = new TFSOInputFormat(rType);
     FileInputFormat.setInputPaths(jc, paths);
 
@@ -341,10 +463,17 @@ public class TestFileSinkOperator {
   private Path[] findFilesInBasePath() throws IOException {
     Path parent = basePath.getParent();
     String last = basePath.getName();
-    Path tmpPath = new Path(parent, "_tmp." + last);
+    Path tmpPath = new Path(parent, tmpPrefix + last);
     FileSystem fs = basePath.getFileSystem(jc);
     List<Path> paths = new ArrayList<Path>();
     recurseOnPath(tmpPath, fs, paths);
+    return paths.toArray(new Path[paths.size()]);
+  }
+
+  private Path[] findFilesInPath(Path path) throws IOException {
+    FileSystem fs = path.getFileSystem(jc);
+    List<Path> paths = new ArrayList<Path>();
+    recurseOnPath(path, fs, paths);
     return paths.toArray(new Path[paths.size()]);
   }
 

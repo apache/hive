@@ -181,6 +181,8 @@ public class PartitionPruner extends Transform {
     String key = tab.getFullyQualifiedName() + ";";
     if (tab.getMetaTable() != null) {
       key = tab.getFullyQualifiedName() + "." + tab.getMetaTable() + ";";
+    } else if (tab.getSnapshotRef() != null) {
+      key = tab.getFullyQualifiedName() + "." + tab.getSnapshotRef() + ";";
     }
 
     if (!tab.isPartitioned()) {
@@ -505,7 +507,7 @@ public class PartitionPruner extends Transform {
     List<String> partNames = Hive.get().getPartitionNames(
         tab.getDbName(), tab.getTableName(), (short) -1);
 
-    String defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME);
+    String defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
     List<String> partCols = extractPartColNames(tab);
     List<PrimitiveTypeInfo> partColTypeInfos = extractPartColTypes(tab);
 

@@ -45,6 +45,8 @@ import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
+import org.apache.hadoop.hive.ql.ddl.DDLOperation;
+import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableOperation;
 import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableSetPropertiesDesc;
 import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -69,6 +71,7 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.metric.IncrementalDumpMetricCol
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.BootstrapLoadMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.IncrementalLoadMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metadata;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -158,6 +161,8 @@ public class ReplUtils {
 
   // Service name for atlas.
   public static final String REPL_ATLAS_SERVICE = "atlas";
+  public static final String INC_EVENTS_BATCH = "events_batch_%d";
+
   /**
    * Bootstrap REPL LOAD operation type on the examined object based on ckpt state.
    */
@@ -347,6 +352,14 @@ public class ReplUtils {
     return errorCode;
   }
 
+  public static boolean shouldIgnoreOnError(DDLOperation<?> ddlOperation, Throwable e) {
+    return ReplUtils.isCreateOperation(ddlOperation) && e.getMessage().contains("java.lang.NumberFormatException");
+  }
+
+  public static boolean isCreateOperation(DDLOperation<?> ddlOperation) {
+    return ddlOperation instanceof CreateTableOperation;
+  }
+
   private static String getMetricStageName(String stageName, ReplicationMetricCollector metricCollector) {
     if( stageName == "REPL_DUMP" || stageName == "REPL_LOAD" || stageName == "ATLAS_DUMP" || stageName == "ATLAS_LOAD"
             || stageName == "RANGER_DUMP" || stageName == "RANGER_LOAD" || stageName == "RANGER_DENY"){
@@ -466,7 +479,7 @@ public class ReplUtils {
   }
 
   public static Path getEncodedDumpRootPath(HiveConf conf, String dbname) throws UnsupportedEncodingException {
-    return new Path(conf.getVar(HiveConf.ConfVars.REPLDIR),
+    return new Path(conf.getVar(HiveConf.ConfVars.REPL_DIR),
       Base64.getEncoder().encodeToString(dbname
         .getBytes(StandardCharsets.UTF_8.name())));
   }
@@ -532,11 +545,20 @@ public class ReplUtils {
     }
   }
 
+  /**
+   * Used to report status of replication stage which is skipped or has some error
+   * @param stageName Name of replication stage
+   * @param status Status skipped or FAILED etc
+   * @param errorLogPath path of error log file
+   * @param conf handle configuration parameter
+   * @param dbName name of database
+   * @param replicationType type of replication incremental, bootstrap, etc
+   * @throws SemanticException
+   */
   public static void reportStatusInReplicationMetrics(String stageName, Status status, String errorLogPath,
-                                                      HiveConf conf)
+                                                      HiveConf conf, String dbName, Metadata.ReplicationType replicationType)
           throws SemanticException {
-    ReplicationMetricCollector metricCollector =
-            new ReplicationMetricCollector(null, null, null, 0, conf) {};
+    ReplicationMetricCollector metricCollector = new ReplicationMetricCollector(dbName, replicationType, null, 0, conf) {};
     metricCollector.reportStageStart(stageName, new HashMap<>());
     metricCollector.reportStageEnd(stageName, status, errorLogPath);
   }

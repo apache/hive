@@ -310,7 +310,7 @@ public class LlapCacheAwareFs extends FileSystem {
                     arrayOffset + offsetFromReadStart + extraDiskDataOffset,
                     smallSize, bb, cacheRanges, largeBufCount, chunkFrom + extraOffsetInChunk);
                 extraDiskDataOffset += smallSize;
-                extraOffsetInChunk += smallSize; // Not strictly necessary, noone will look at it.
+                extraOffsetInChunk += smallSize; // Not strictly necessary, no one will look at it.
                 if (newCacheData == null) {
                   newCacheData = smallBuffer;
                 } else {

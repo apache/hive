@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.parse.repl.ReplState.LogTag;
 /**
  * BootstrapDumpLogger.
  *
- * Repllogger for bootstrap dump.
+ * ReplLogger for bootstrap dump.
  **/
 public class BootstrapDumpLogger extends ReplLogger<String> {
   private String dbName;

@@ -49,11 +49,11 @@ public class HookContext {
 
   static public enum HookType {
 
-    PRE_EXEC_HOOK(HiveConf.ConfVars.PREEXECHOOKS, ExecuteWithHookContext.class,
+    PRE_EXEC_HOOK(HiveConf.ConfVars.PRE_EXEC_HOOKS, ExecuteWithHookContext.class,
         "Pre-execution hooks to be invoked for each statement"),
-    POST_EXEC_HOOK(HiveConf.ConfVars.POSTEXECHOOKS, ExecuteWithHookContext.class,
+    POST_EXEC_HOOK(HiveConf.ConfVars.POST_EXEC_HOOKS, ExecuteWithHookContext.class,
         "Post-execution hooks to be invoked for each statement"),
-    ON_FAILURE_HOOK(HiveConf.ConfVars.ONFAILUREHOOKS, ExecuteWithHookContext.class,
+    ON_FAILURE_HOOK(HiveConf.ConfVars.ON_FAILURE_HOOKS, ExecuteWithHookContext.class,
         "On-failure hooks to be invoked for each statement"),
     QUERY_LIFETIME_HOOKS(HiveConf.ConfVars.HIVE_QUERY_LIFETIME_HOOKS, QueryLifeTimeHook.class,
       "Hooks that will be triggered before/after query compilation and before/after query execution"),
@@ -61,8 +61,8 @@ public class HookContext {
       "Hooks that invoked before/after Hive performs its own semantic analysis on a statement"),
     DRIVER_RUN_HOOKS(HiveConf.ConfVars.HIVE_DRIVER_RUN_HOOKS, HiveDriverRunHook.class,
       "Hooks that Will be run at the beginning and end of Driver.run"),
-    QUERY_REDACTOR_HOOKS(HiveConf.ConfVars.QUERYREDACTORHOOKS, Redactor.class,
-      "Hooks to be invoked for each query which can tranform the query before it's placed in the job.xml file"),
+    QUERY_REDACTOR_HOOKS(HiveConf.ConfVars.QUERY_REDACTOR_HOOKS, Redactor.class,
+      "Hooks to be invoked for each query which can transform the query before it's placed in the job.xml file"),
     // The HiveSessionHook.class cannot access, use Hook.class instead
     HIVE_SERVER2_SESSION_HOOK(HiveConf.ConfVars.HIVE_SERVER2_SESSION_HOOK, Hook.class,
       "Hooks to be executed when session manager starts a new session");
