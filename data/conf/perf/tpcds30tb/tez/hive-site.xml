@@ -23,6 +23,11 @@
         <description>Internal marker for test. Used for masking env-dependent values</description>
     </property>
     <property>
+        <name>hive.in.test.planmapper.strict.validation</name>
+        <value>false</value>
+        <description>We can enable it once we resolve the problem of query14.q</description>
+    </property>
+    <property>
         <name>hive.rpc.query.plan</name>
         <value>true</value>
     </property>

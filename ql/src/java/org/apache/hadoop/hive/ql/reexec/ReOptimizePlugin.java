@@ -102,6 +102,14 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
 
   @Override
   public boolean shouldReExecuteAfterCompile(int executionNum, PlanMapper oldPlanMapper, PlanMapper newPlanMapper) {
+    if (oldPlanMapper.isBroken() || newPlanMapper.isBroken()) {
+      LOG.warn(
+          "Giving up a re-execution. The old plan mapper is {}, and the new one is {}",
+          oldPlanMapper.isBroken() ? "broken" : "not broken",
+          newPlanMapper.isBroken() ? "broken" : "not broken");
+      return false;
+    }
+
     boolean planDidChange = !planEquals(oldPlanMapper, newPlanMapper);
     LOG.info("planDidChange: {}", planDidChange);
     return planDidChange;
