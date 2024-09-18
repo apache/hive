@@ -2143,12 +2143,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   private void handleInsertStatementSpecPhase1(ASTNode ast, QBParseInfo qbp, Phase1Ctx ctx_1) throws SemanticException {
     ASTNode tabColName = (ASTNode)ast.getChild(1);
-    if(ast.getType() == HiveParser.TOK_INSERT_INTO && tabColName != null && tabColName.getType() == HiveParser.TOK_TABCOLNAME) {
+    boolean hasSpecificColumns = tabColName != null && tabColName.getType() == HiveParser.TOK_TABCOLNAME;
+    if(ast.getType() == HiveParser.TOK_INSERT_INTO) {
       //we have "insert into foo(a,b)..."; parser will enforce that 1+ columns are listed if TOK_TABCOLNAME is present
       String fullTableName = getUnescapedName((ASTNode) ast.getChild(0).getChild(0),
           SessionState.get().getCurrentDatabase());
-      List<String> targetColumnNames = processTableColumnNames(tabColName, fullTableName);
-      qbp.setDestSchemaForClause(ctx_1.dest, targetColumnNames);
+      List<String> targetColumnNames = hasSpecificColumns ? processTableColumnNames(tabColName, fullTableName) : new ArrayList<>();
+      if (hasSpecificColumns) {
+        qbp.setDestSchemaForClause(ctx_1.dest, targetColumnNames);
+      }
       Table targetTable;
       try {
         targetTable = getTableObjectByName(fullTableName);
@@ -2160,6 +2163,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(generateErrorMessage(ast,
             "Unable to access metadata for table " + fullTableName));
       }
+      ColumnAccessInfo cai = new ColumnAccessInfo();
+      if (!hasSpecificColumns) {
+        for (FieldSchema col : targetTable.getCols()) {
+          targetColumnNames.add(col.getName());
+        }
+      }
+      String completeTableName = targetTable.getCompleteName();
+      for (String colName : targetColumnNames) {
+        cai.add(completeTableName, colName);
+      }
+      setUpdateColumnAccessInfo(cai);
       Set<String> targetColumns = new HashSet<>(targetColumnNames);
       for(FieldSchema f : targetTable.getCols()) {
         //parser only allows foo(a,b), not foo(foo.a, foo.b)
