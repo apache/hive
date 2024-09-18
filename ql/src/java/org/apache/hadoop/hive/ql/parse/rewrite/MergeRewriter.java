@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -179,7 +180,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
       sqlGenerator.append("INSERT INTO ").append(mergeStatement.getTargetName());
       if (insertClause.getColumnList() != null) {
         sqlGenerator.append(" (");
-        sqlGenerator.append(String.join(",", insertClause.getColumnList()));
+        sqlGenerator.appendCols(insertClause.getColumnList(), Function.identity());
         sqlGenerator.append(')');
       }
 

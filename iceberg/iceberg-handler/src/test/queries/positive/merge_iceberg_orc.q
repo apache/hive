@@ -1,7 +1,7 @@
 -- SORT_QUERY_RESULTS
 set hive.explain.user=false;
 
-create external table target_ice(a int, b string, c int) stored by iceberg stored as orc tblproperties ('format-version'='2');
+create external table target_ice(a int, b string, c int) stored by iceberg stored as orc tblproperties ('format-version'='2', 'write.merge.mode'='merge-on-read');
 create table source(a int, b string, c int);
 
 insert into target_ice values (1, 'one', 50), (2, 'two', 51), (111, 'one', 55), (333, 'two', 56);
@@ -20,3 +20,9 @@ when matched then update set b = 'Merged', c = t.c + 10
 when not matched then insert values (src.a, src.b, src.c);
 
 select * from target_ice;
+
+create external table target_ice2(a int, `date` string, c int) stored by iceberg stored as orc tblproperties ('format-version'='2', 'write.merge.mode'='merge-on-read');
+-- reserved keywords
+explain
+merge into target_ice2 as t using source src ON t.a = src.a
+when not matched then insert (a, `date`) values (src.a, concat(src.b, '-merge'));
