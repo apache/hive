@@ -24,32 +24,57 @@ import static org.hamcrest.core.Is.is;
 
 public class TestParseOptimizeTable {
   ParseDriver parseDriver = new ParseDriver();
-  private static final String EXPECTED_WHERE_FILTER = "\n" + 
-      "nil\n" + 
-      "   TOK_ALTERTABLE\n" + 
-      "      TOK_TABNAME\n" + 
-      "         tbl0\n" + 
-      "      TOK_ALTERTABLE_COMPACT\n" + 
-      "         'MAJOR'\n" + 
-      "         TOK_BLOCKING\n" + 
-      "         TOK_WHERE\n" + 
-      "            and\n" + 
-      "               TOK_FUNCTION\n" + 
-      "                  in\n" + 
-      "                  TOK_TABLE_OR_COL\n" + 
-      "                     col01\n" + 
-      "                  'A'\n" + 
-      "                  'B'\n" + 
-      "               <\n" + 
-      "                  TOK_TABLE_OR_COL\n" + 
-      "                     col02\n" + 
-      "                  '2024-09-17 00:00:00'\n" + 
-      "   <EOF>\n";    
+  
   @Test
   public void testOptimizeTableWithWhere() throws Exception {
+
+    String EXPECTED_WHERE_FILTER = "\n" +
+        "nil\n" +
+        "   TOK_ALTERTABLE\n" +
+        "      TOK_TABNAME\n" +
+        "         tbl0\n" +
+        "      TOK_ALTERTABLE_COMPACT\n" +
+        "         'MAJOR'\n" +
+        "         TOK_BLOCKING\n" +
+        "         TOK_WHERE\n" +
+        "            and\n" +
+        "               TOK_FUNCTION\n" +
+        "                  in\n" +
+        "                  TOK_TABLE_OR_COL\n" +
+        "                     col01\n" +
+        "                  'A'\n" +
+        "                  'B'\n" +
+        "               <\n" +
+        "                  TOK_TABLE_OR_COL\n" +
+        "                     col02\n" +
+        "                  '2024-09-17 00:00:00'\n" +
+        "   <EOF>\n";
 
     ASTNode tree = parseDriver.parse(
         " optimize table tbl0 rewrite data where (col01 in ('A', 'B') and col02 < '2024-09-17 00:00:00')", null).getTree();
     assertThat(tree.dump(), is(EXPECTED_WHERE_FILTER));
+  }
+
+  @Test
+  public void testOptimizeTableWithOrderBy() throws Exception {
+
+    String EXPECTED_ORDER_BY = "\n" +
+        "nil\n" +
+        "   TOK_ALTERTABLE\n" +
+        "      TOK_TABNAME\n" +
+        "         tbl0\n" +
+        "      TOK_ALTERTABLE_COMPACT\n" +
+        "         'MAJOR'\n" +
+        "         TOK_BLOCKING\n" +
+        "         TOK_ORDERBY\n" +
+        "            TOK_TABSORTCOLNAMEDESC\n" +
+        "               TOK_NULLS_FIRST\n" +
+        "                  TOK_TABLE_OR_COL\n" +
+        "                     col01\n" +
+        "   <EOF>\n";
+    
+    ASTNode tree = parseDriver.parse(
+        " optimize table tbl0 rewrite data order by col01 desc", null).getTree();
+    assertThat(tree.dump(), is(EXPECTED_ORDER_BY));
   }
 }
