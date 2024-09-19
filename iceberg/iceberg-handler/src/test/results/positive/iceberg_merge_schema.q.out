@@ -216,14 +216,14 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [6, 7, 8, 9, 10, 11, 1, 2, 3, 4, 5]
-                          selectExpressions: ConstantVectorExpression(val 1090969) -> 11:bigint
+                          projectedOutputColumnNums: [6, 7, 8, 9, 10, 11, 1, 2, 3, 4, 5, 12]
+                          selectExpressions: ConstantVectorExpression(val 1090969) -> 11:bigint, ConstantVectorExpression(val 1) -> 12:boolean
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkStringOperator
                             keyColumns: 4:string
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumns: 6:int, 7:bigint, 8:string, 9:bigint, 10:string, 11:bigint, 1:string, 2:string, 3:int, 5:string
+                            valueColumns: 6:int, 7:bigint, 8:string, 9:bigint, 10:string, 11:bigint, 1:string, 2:string, 3:int, 5:string, 12:boolean
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
@@ -258,7 +258,7 @@ STAGE PLANS:
                     dataColumns: skey:bigint, hierarchy_number:string, hierarchy_name:string, language_id:int, hierarchy_display:string, orderby:string
                     neededVirtualColumns: #Masked#
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint]
+                    scratchColumnTypeNames: [bigint, bigint]
         Reducer 2 
             MergeJoin Vectorization:
                 enabled: false
@@ -305,8 +305,36 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+<<<<<<< HEAD
                 reduceColumnNullOrder: zzzz
                 reduceColumnSortOrder: ++++
+=======
+                reduceColumnNullOrder: zzzzz
+                reduceColumnSortOrder: +++++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 11
+                    dataColumns: KEY.reducesinkkey0:int, KEY.reducesinkkey1:bigint, KEY.reducesinkkey2:string, KEY.reducesinkkey3:bigint, KEY.reducesinkkey4:string, VALUE._col0:bigint, VALUE._col1:string, VALUE._col2:string, VALUE._col3:int, VALUE._col4:string, VALUE._col5:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+        Reducer 7 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                reduceColumnNullOrder: zzzzz
+                reduceColumnSortOrder: +++++
+>>>>>>> f7ae7daa2c (update q.out files)
                 allNative: false
                 usesVectorUDFAdaptor: true
                 vectorized: true

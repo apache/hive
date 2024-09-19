@@ -1896,13 +1896,14 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [4, 2, 3, 0, 1]
+                          projectedOutputColumnNums: [4, 2, 3, 0, 1, 6]
+                          selectExpressions: ConstantVectorExpression(val 1) -> 6:boolean
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
                             keyColumns: 2:string, 3:string, 0:string, 1:string
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumns: 4:struct<writeid:bigint,bucketid:int,rowid:bigint>
+                            valueColumns: 4:struct<writeid:bigint,bucketid:int,rowid:bigint>, 6:boolean
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
             Map Vectorization:
@@ -1921,7 +1922,7 @@ STAGE PLANS:
                     neededVirtualColumns: [ROWID]
                     partitionColumnCount: 2
                     partitionColumns: ds:string, hr:string
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [bigint]
         Map 6 
             Map Operator Tree:
                   TableScan Vectorization:
@@ -2800,13 +2801,14 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [4, 2, 3, 0, 1]
+                          projectedOutputColumnNums: [4, 2, 3, 0, 1, 6]
+                          selectExpressions: ConstantVectorExpression(val 1) -> 6:boolean
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
                             keyColumns: 2:string, 3:string, 0:string, 1:string
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumns: 4:struct<writeid:bigint,bucketid:int,rowid:bigint>
+                            valueColumns: 4:struct<writeid:bigint,bucketid:int,rowid:bigint>, 6:boolean
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
             Map Vectorization:
@@ -2825,7 +2827,7 @@ STAGE PLANS:
                     neededVirtualColumns: [ROWID]
                     partitionColumnCount: 2
                     partitionColumns: ds:string, hr:string
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [bigint]
         Map 8 
             Map Operator Tree:
                   TableScan Vectorization:

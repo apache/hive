@@ -130,14 +130,14 @@ PREHOOK: Input: default@transactions
 PREHOOK: Input: default@transactions@tran_date=20170410
 PREHOOK: Input: default@transactions@tran_date=20170413
 PREHOOK: Input: default@transactions@tran_date=20170415
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM transactions
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@transactions
 POSTHOOK: Input: default@transactions@tran_date=20170410
 POSTHOOK: Input: default@transactions@tran_date=20170413
 POSTHOOK: Input: default@transactions@tran_date=20170415
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	value_01	creation	20170410
 10	value_10	creation	20170413
 11	value_11	merge_insert	20170415
