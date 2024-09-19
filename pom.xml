@@ -60,6 +60,7 @@
     <module>packaging</module>
     <module>standalone-metastore</module>
     <module>kafka-handler</module>
+    <module>iceberg</module>
   </modules>
   <properties>
     <standalone-metastore.version>4.1.0-SNAPSHOT</standalone-metastore.version>
@@ -195,11 +196,12 @@
     <plexus.version>1.5.6</plexus.version>
     <protobuf.version>3.24.4</protobuf.version>
     <rat.version>0.16.1</rat.version>
+    <roaringbit.version>1.0.1</roaringbit.version>
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.30</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
     <storage-api.version>4.1.0-SNAPSHOT</storage-api.version>
-    <tez.version>0.10.3</tez.version>
+    <tez.version>0.10.4</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
     <snappy.version>1.1.10.4</snappy.version>
@@ -217,7 +219,7 @@
     <re2j.version>1.2</re2j.version>
     <rs-api.version>2.0.1</rs-api.version>
     <json-path.version>2.9.0</json-path.version>
-    <janino.version>3.0.11</janino.version>
+    <janino.version>3.1.12</janino.version>
     <datasketches.version>1.2.0</datasketches.version>
     <spotbugs.version>4.0.3</spotbugs.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
@@ -2097,12 +2099,6 @@
       <id>itests</id>
       <modules>
         <module>itests</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>iceberg</id>
-      <modules>
-        <module>iceberg</module>
       </modules>
     </profile>
     <profile>

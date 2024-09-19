@@ -3384,7 +3384,7 @@ class MetaStoreDirectSql {
     String statement = TxnUtils.createUpdatePreparedStmt(
         "\"TABLE_PARAMS\"",
         ImmutableList.of("\"PARAM_VALUE\""),
-        ImmutableList.of("\"TBL_ID\"", "\"PARAM_KEY\"", "\"PARAM_VALUE\""));
+        ImmutableList.of("\"TBL_ID\"", "\"PARAM_KEY\"", dbType.toVarChar("\"PARAM_VALUE\"")));
     Query query = pm.newQuery("javax.jdo.query.SQL", statement);
     return (long) query.executeWithArray(newValue, table.getId(), key, expectedValue);
   }

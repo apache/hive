@@ -41,6 +41,12 @@
       <artifactId>httpclient</artifactId>
       <version>${httpcomponents.client.version}</version>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-codec</groupId>
+          <artifactId>commons-codec</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.orc</groupId>

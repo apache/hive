@@ -42,6 +42,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.SerializationUtils;
@@ -148,14 +149,11 @@ import org.apache.iceberg.FindFiles;
 import org.apache.iceberg.GenericBlobMetadata;
 import org.apache.iceberg.GenericStatisticsFile;
 import org.apache.iceberg.ManifestFile;
-import org.apache.iceberg.MetadataTableType;
-import org.apache.iceberg.MetadataTableUtils;
 import org.apache.iceberg.NullOrder;
 import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
-import org.apache.iceberg.PartitionsTable;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SerializableTable;
@@ -166,10 +164,12 @@ import org.apache.iceberg.SortField;
 import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.StatisticsFile;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.TableScan;
 import org.apache.iceberg.actions.DeleteOrphanFiles;
 import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.exceptions.ValidationException;
 import org.apache.iceberg.expressions.Evaluator;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.ExpressionUtil;
@@ -177,6 +177,7 @@ import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.expressions.Projections;
 import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.expressions.StrictMetricsEvaluator;
+import org.apache.iceberg.hadoop.ConfigProperties;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.io.CloseableIterable;
@@ -205,7 +206,6 @@ import org.apache.iceberg.util.ByteBuffers;
 import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.SerializationUtil;
 import org.apache.iceberg.util.SnapshotUtil;
-import org.apache.iceberg.util.StructProjection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -391,9 +391,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     ExprNodeDesc pushedPredicate = exprNodeDesc.clone();
 
     List<ExprNodeDesc> subExprNodes = pushedPredicate.getChildren();
+    Set<String> skipList = Stream.of(VirtualColumn.FILE_PATH, VirtualColumn.PARTITION_SPEC_ID,
+            VirtualColumn.PARTITION_HASH)
+        .map(VirtualColumn::getName).collect(Collectors.toSet());
+
     if (subExprNodes.removeIf(nodeDesc -> nodeDesc.getCols() != null &&
-        (nodeDesc.getCols().contains(VirtualColumn.FILE_PATH.getName()) ||
-            nodeDesc.getCols().contains(VirtualColumn.PARTITION_SPEC_ID.getName())))) {
+        nodeDesc.getCols().stream().anyMatch(skipList::contains))) {
       if (subExprNodes.size() == 1) {
         pushedPredicate = subExprNodes.get(0);
       } else if (subExprNodes.isEmpty()) {
@@ -542,15 +545,15 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         puffinWriter.finish();
 
         statisticsFile =
-          new GenericStatisticsFile(
-            snapshotId,
-            statsPath,
-            puffinWriter.fileSize(),
-            puffinWriter.footerSize(),
-            puffinWriter.writtenBlobsMetadata().stream()
-              .map(GenericBlobMetadata::from)
-              .collect(ImmutableList.toImmutableList())
-          );
+            new GenericStatisticsFile(
+                snapshotId,
+                statsPath,
+                puffinWriter.fileSize(),
+                puffinWriter.footerSize(),
+                puffinWriter.writtenBlobsMetadata().stream()
+                    .map(GenericBlobMetadata::from)
+                    .collect(ImmutableList.toImmutableList())
+            );
       } catch (IOException e) {
         LOG.warn("Unable to write stats to puffin file {}", e.getMessage());
         return false;
@@ -640,12 +643,15 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   /**
-   * No need for exclusive locks when writing, since Iceberg tables use optimistic concurrency when writing
-   * and only lock the table during the commit operation.
+   * Iceberg's optimistic concurrency control fails to provide means for IOW and Insert operations isolation.
+   * Use `hive.txn.ext.locking.enabled` config to create Hive locks in order to guarantee data consistency.
    */
   @Override
   public LockType getLockType(WriteEntity writeEntity) {
-    return LockType.SHARED_READ;
+    if (WriteEntity.WriteType.INSERT_OVERWRITE == writeEntity.getWriteType()) {
+      return LockType.EXCL_WRITE;
+    }
+    return LockType.SHARED_WRITE;
   }
 
   @Override
@@ -1443,6 +1449,26 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     map.remove("columns.comments");
   }
 
+  @Override
+  public void validateCurrentSnapshot(TableDesc tableDesc) {
+    if (conf.getBoolean(ConfigProperties.LOCK_HIVE_ENABLED, TableProperties.HIVE_LOCK_ENABLED_DEFAULT) ||
+        !HiveConf.getBoolVar(conf, ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED)) {
+      return;
+    }
+    Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
+    if (table.currentSnapshot() != null || table instanceof BaseTable) {
+      TableMetadata currentMetadata = ((BaseTable) table).operations().current();
+      if (currentMetadata.propertyAsBoolean(TableProperties.HIVE_LOCK_ENABLED, false)) {
+        return;
+      }
+      TableMetadata newMetadata = ((BaseTable) table).operations().refresh();
+      ValidationException.check(
+          Objects.equals(newMetadata.metadataFileLocation(), currentMetadata.metadataFileLocation()),
+          "Table snapshot is outdated: %s", tableDesc.getTableName()
+      );
+    }
+  }
+
   /**
    * Recursively replaces the ExprNodeDynamicListDesc nodes by a dummy ExprNodeConstantDesc so we can test if we can
    * convert the predicate to an Iceberg predicate when pruning the partitions later. Also collects the column names
@@ -1543,7 +1569,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    * for example in Parquet (in Parquet files Time type is an int64 with 'time' logical annotation).
    * @param tableProps iceberg table properties
    * @param tableSchema iceberg table schema
-   * @return
+   * @return true if having time type column
    */
   private static boolean hasOrcTimeInSchema(Properties tableProps, Schema tableSchema) {
     if (!FileFormat.ORC.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT))) {
@@ -1558,7 +1584,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    * check {@link VectorizedParquetRecordReader#checkListColumnSupport} for details on nested types under lists
    * @param tableProps iceberg table properties
    * @param tableSchema iceberg table schema
-   * @return
+   * @return true if having nested types
    */
   private static boolean hasParquetNestedTypeWithinListOrMap(Properties tableProps, Schema tableSchema) {
     if (!FileFormat.PARQUET.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT))) {
@@ -1740,16 +1766,16 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   /**
    * Check the operation type of all snapshots which are newer than the specified. The specified snapshot is excluded.
-   * @deprecated
-   * <br>Use {@link HiveStorageHandler#getSnapshotContexts(
-   * org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since)}
-   * and check {@link SnapshotContext.WriteOperationType#APPEND}.equals({@link SnapshotContext#getOperation()}).
-   *
    * @param hmsTable table metadata stored in Hive Metastore
    * @param since the snapshot preceding the oldest snapshot which should be checked.
    *              The value null means all should be checked.
    * @return null if table is empty, true if all snapshots are {@link SnapshotContext.WriteOperationType#APPEND}s,
    * false otherwise.
+   *
+   * @deprecated
+   * <br>Use {@link HiveStorageHandler#getSnapshotContexts(
+   * org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since)}
+   * and check {@link SnapshotContext.WriteOperationType#APPEND}.equals({@link SnapshotContext#getOperation()}).
    */
   @Deprecated
   @Override
@@ -2067,32 +2093,55 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public List<Partition> getPartitionsByExpr(org.apache.hadoop.hive.ql.metadata.Table hmsTable, ExprNodeDesc desc)
+  public List<Partition> getPartitionsByExpr(org.apache.hadoop.hive.ql.metadata.Table hmsTable, ExprNodeDesc filter)
       throws SemanticException {
-    Table icebergTable = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    PartitionSpec pSpec = icebergTable.spec();
-    PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
-            .createMetadataTableInstance(icebergTable, MetadataTableType.PARTITIONS);
-    SearchArgument sarg = ConvertAstToSearchArg.create(conf, (ExprNodeGenericFuncDesc) desc);
-    Expression expression = HiveIcebergFilterFactory.generateFilterExpression(sarg);
-    Set<PartitionData> partitionList = Sets.newHashSet();
-    ResidualEvaluator resEval = ResidualEvaluator.of(pSpec, expression, false);
-    try (CloseableIterable<FileScanTask> fileScanTasks = partitionsTable.newScan().planFiles()) {
-      fileScanTasks.forEach(task ->
-          partitionList.addAll(Sets.newHashSet(CloseableIterable.transform(task.asDataTask().rows(), row -> {
-            StructProjection data = row.get(IcebergTableUtil.PART_IDX, StructProjection.class);
-            return IcebergTableUtil.toPartitionData(data, pSpec.partitionType());
-          })).stream()
-             .filter(partitionData -> resEval.residualFor(partitionData).isEquivalentTo(Expressions.alwaysTrue()))
-             .collect(Collectors.toSet())));
+    return getPartitionsByExpr(hmsTable, filter, true);
+  }
 
+  @Override
+  public List<Partition> getPartitionsByExpr(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      ExprNodeDesc filter, boolean latestSpecOnly) throws SemanticException {
+    SearchArgument sarg = ConvertAstToSearchArg.create(conf, (ExprNodeGenericFuncDesc) filter);
+    Expression exp = HiveIcebergFilterFactory.generateFilterExpression(sarg);
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    int tableSpecId = table.spec().specId();
+    Set<Partition> partitions = Sets.newHashSet();
 
-      return partitionList.stream()
-        .map(partitionData -> new DummyPartition(hmsTable, pSpec.partitionToPath(partitionData)))
-        .collect(Collectors.toList());
+    TableScan scan = table.newScan().filter(exp).caseSensitive(false).includeColumnStats().ignoreResiduals();
+
+    try (CloseableIterable<FileScanTask> tasks = scan.planFiles()) {
+      tasks.forEach(task -> {
+        DataFile file = task.file();
+        PartitionSpec spec = task.spec();
+        if (latestSpecOnly && file.specId() == tableSpecId || !latestSpecOnly && file.specId() != tableSpecId) {
+          PartitionData partitionData = IcebergTableUtil.toPartitionData(task.partition(), spec.partitionType());
+          String partName = spec.partitionToPath(partitionData);
+          Map<String, String> partSpecMap = Maps.newLinkedHashMap();
+          Warehouse.makeSpecFromName(partSpecMap, new Path(partName), null);
+          DummyPartition partition = new DummyPartition(hmsTable, partName, partSpecMap);
+          partitions.add(partition);
+        }
+      });
     } catch (IOException e) {
       throw new SemanticException(String.format("Error while fetching the partitions due to: %s", e));
     }
+    return ImmutableList.copyOf(partitions);
+  }
+
+  @Override
+  public boolean hasDataMatchingFilterExpr(org.apache.hadoop.hive.ql.metadata.Table hmsTable, ExprNodeDesc filter) {
+    SearchArgument sarg = ConvertAstToSearchArg.create(conf, (ExprNodeGenericFuncDesc) filter);
+    Expression exp = HiveIcebergFilterFactory.generateFilterExpression(sarg);
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    TableScan scan = table.newScan().filter(exp).caseSensitive(false).includeColumnStats().ignoreResiduals();
+    boolean result = false;
+
+    try (CloseableIterable<FileScanTask> tasks = scan.planFiles()) {
+      result = tasks.iterator().hasNext();
+    } catch (IOException ioe) {
+      LOG.warn("Failed to close task iterable", ioe);
+    }
+    return result;
   }
 
   @Override

@@ -72,6 +72,7 @@ import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.relocated.com.google.common.collect.FluentIterable;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Conversions;
@@ -408,9 +409,9 @@ public class IcebergTableUtil {
         CloseableIterable.filter(fileScanTasks, t -> {
           DataFile file = t.asFileScanTask().file();
           return !table.spec().isPartitioned() ||
-              (partitionPath == null && file.specId() != table.spec().specId()) ||
-              (partitionPath != null &&
-                  table.specs().get(file.specId()).partitionToPath(file.partition()).equals(partitionPath));
+              partitionPath == null && file.specId() != table.spec().specId() ||
+              partitionPath != null &&
+                  table.specs().get(file.specId()).partitionToPath(file.partition()).equals(partitionPath);
         });
     return Lists.newArrayList(CloseableIterable.transform(filteredFileScanTasks, t -> t.file()));
   }
@@ -431,9 +432,9 @@ public class IcebergTableUtil {
         CloseableIterable.filter(deletesScanTasks, t -> {
           DeleteFile file = ((PositionDeletesScanTask) t).file();
           return !table.spec().isPartitioned() ||
-              (partitionPath == null && file.specId() != table.spec().specId()) ||
-              (partitionPath != null &&
-                  table.specs().get(file.specId()).partitionToPath(file.partition()).equals(partitionPath));
+              partitionPath == null && file.specId() != table.spec().specId() ||
+              partitionPath != null &&
+                  table.specs().get(file.specId()).partitionToPath(file.partition()).equals(partitionPath);
         });
     return Lists.newArrayList(CloseableIterable.transform(filteredDeletesScanTasks,
         t -> ((PositionDeletesScanTask) t).file()));
@@ -483,6 +484,14 @@ public class IcebergTableUtil {
         .stream()).distinct().collect(Collectors.toList());
   }
 
+  /**
+   * Returns a Map of PartitionData as the keys and partition spec ids as the values
+   * @param icebergTable Iceberg table
+   * @param partSpecMap Partition Spec used as the criteria for filtering
+   * @param allowPartialSpec When true, must return partitions which match partSpecMap exactly, otherwise partially
+   * @param latestSpecOnly When true, returns partitions with the latest partition spec only, otherwise with any specs
+   * @return Map of PartitionData and partition spec found based on the specified constraints
+   */
   public static Map<PartitionData, Integer> getPartitionInfo(Table icebergTable, Map<String, String> partSpecMap,
       boolean allowPartialSpec, boolean latestSpecOnly) throws SemanticException, IOException {
     Expression expression = IcebergTableUtil.generateExpressionFromPartitionSpec(icebergTable, partSpecMap);
@@ -509,6 +518,26 @@ public class IcebergTableUtil {
     }
 
     return result;
+  }
+
+  public static long getPartitionHash(Table icebergTable, String partitionPath) throws IOException {
+    PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
+        .createMetadataTableInstance(icebergTable, MetadataTableType.PARTITIONS);
+    try (CloseableIterable<FileScanTask> fileScanTasks = partitionsTable.newScan().planFiles()) {
+      return FluentIterable.from(fileScanTasks)
+          .transformAndConcat(task -> task.asDataTask().rows())
+          .transform(row -> {
+            StructProjection data = row.get(IcebergTableUtil.PART_IDX, StructProjection.class);
+            PartitionSpec spec = icebergTable.specs().get(row.get(IcebergTableUtil.SPEC_IDX, Integer.class));
+            PartitionData partitionData = IcebergTableUtil.toPartitionData(data,
+                Partitioning.partitionType(icebergTable), spec.partitionType());
+            String path = spec.partitionToPath(partitionData);
+            return Maps.immutableEntry(path, data);
+          })
+          .filter(e -> e.getKey().equals(partitionPath))
+          .transform(e -> IcebergAcidUtil.computeHash(e.getValue()))
+          .get(0);
+    }
   }
 
   public static List<String> getPartitionNames(Table icebergTable, Map<String, String> partitionSpec,

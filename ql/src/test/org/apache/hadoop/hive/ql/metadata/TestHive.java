@@ -23,6 +23,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -442,6 +443,7 @@ public class TestHive {
       hm.createTable(tbl2);
 
       List<String> fts = hm.getTablesForDb(dbName, ".*");
+      Collections.sort(fts);
       assertEquals(ts, fts);
       assertEquals(2, fts.size());
 

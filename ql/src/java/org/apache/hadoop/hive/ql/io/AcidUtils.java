@@ -3057,15 +3057,10 @@ public class AcidUtils {
           boolean isExclMergeInsert = conf.getBoolVar(ConfVars.TXN_MERGE_INSERT_X_LOCK) && isMerge;
           compBuilder.setSharedRead();
 
-          if (sharedWrite) {
+          if (sharedWrite || !isExclMergeInsert && isLocklessReadsEnabled) {
             compBuilder.setSharedWrite();
-          } else {
-            if (isExclMergeInsert) {
-              compBuilder.setExclWrite();
-
-            } else if (isLocklessReadsEnabled) {
-              compBuilder.setSharedWrite();
-            }
+          } else if (isExclMergeInsert) {
+            compBuilder.setExclWrite();
           }
           if (isExclMergeInsert) {
             compBuilder.setOperationType(DataOperationType.UPDATE);

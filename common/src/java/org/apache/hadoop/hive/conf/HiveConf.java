@@ -4017,6 +4017,18 @@ public class HiveConf extends Configuration {
             "Whether to enable xframe\n"),
     HIVE_SERVER2_WEBUI_XFRAME_VALUE("hive.server2.webui.xframe.value", "SAMEORIGIN",
             "Configuration to allow the user to set the x_frame-options value\n"),
+    HIVE_SERVER2_WEBUI_HTTP_COOKIE_MAX_AGE("hive.server2.ui.http.cookie.max.age", "86400s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Maximum age in seconds for server side cookie used by HS2 in HTTP mode."),
+    HIVE_SERVER2_WEBUI_HTTP_COOKIE_DOMAIN("hive.server2.ui.http.cookie.domain", null,
+        "Domain for the HS2 generated cookies"),
+    HIVE_SERVER2_WEBUI_HTTP_COOKIE_PATH("hive.server2.ui.http.cookie.path", null,
+        "Path for the HS2 generated cookies"),
+    HIVE_SERVER2_WEBUI_AUTH_METHOD("hive.server2.webui.auth.method", "NONE",
+        new StringSet("NONE", "LDAP"),
+        "HS2 WebUI authentication method available to clients to be set at session level.\n" +
+            "  NONE: No authentication\n" +
+            "  LDAP" ),
     HIVE_SERVER2_SHOW_OPERATION_DRILLDOWN_LINK("hive.server2.show.operation.drilldown.link", false,
         "Whether to show the operation's drilldown link to thrift client.\n"),
 
@@ -4766,6 +4778,13 @@ public class HiveConf extends Configuration {
         "Class to use for calculating available slots during split generation"),
     HIVE_TEZ_GENERATE_CONSISTENT_SPLITS("hive.tez.input.generate.consistent.splits", true,
         "Whether to generate consistent split locations when generating splits in the AM"),
+    HIVE_TEZ_INPUT_FS_SERIALIZATION_THRESHOLD("hive.tez.input.fs.serialization.threshold", 268435456,
+        "When the cummulative size of the splits is larger than this (in bytes), HiveSplitGenerator"
+            + " will start to serialize splits to tez scratchdir instead of being sent as RPC payloads directly."
+            + " Default is 256MB."
+            + "-1 disables this feature."),
+    HIVE_TEZ_INPUT_FS_SERIALIZATION_THREADS("hive.tez.input.fs.serialization.threads", 8,
+        "Number of threads used for serializing split payloads to filesystem."),
     HIVE_PREWARM_ENABLED("hive.prewarm.enabled", false, "Enables container prewarm for Tez(Hadoop 2 only)"),
     HIVE_PREWARM_NUM_CONTAINERS("hive.prewarm.numcontainers", 10, "Controls the number of containers to prewarm for Tez (Hadoop 2 only)"),
     HIVE_STAGE_ID_REARRANGE("hive.stageid.rearrange", "none", new StringSet("none", "idonly", "traverse", "execution"), ""),

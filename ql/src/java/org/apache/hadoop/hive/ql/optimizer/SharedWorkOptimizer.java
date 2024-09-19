@@ -1617,7 +1617,7 @@ public class SharedWorkOptimizer extends Transform {
             .get((TableScanOperator) op);
         for (Operator<?> dppSource : c) {
           // Remove the branches
-          removeBranch(dppSource, dppBranches, ops);
+          removeBranch(dppSource, dppBranches, ops, optimizerCache);
         }
       }
     }
@@ -1637,7 +1637,7 @@ public class SharedWorkOptimizer extends Transform {
               findAscendantWorkOperators(pctx, optimizerCache, dppSource);
           if (!Collections.disjoint(ascendants, discardedOps)) {
             // Remove branch
-            removeBranch(dppSource, dppBranches, ops);
+            removeBranch(dppSource, dppBranches, ops, optimizerCache);
           }
         }
       }
@@ -1646,7 +1646,7 @@ public class SharedWorkOptimizer extends Transform {
   }
 
   private static void removeBranch(Operator<?> currentOp, Set<Operator<?>> branchesOps,
-          Set<Operator<?>> discardableOps) {
+          Set<Operator<?>> discardableOps, SharedWorkOptimizerCache optimizerCache) {
     if (currentOp.getNumChild() > 1) {
       for (Operator<?> childOp : currentOp.getChildOperators()) {
         if (!branchesOps.contains(childOp) && !discardableOps.contains(childOp)) {
@@ -1655,9 +1655,16 @@ public class SharedWorkOptimizer extends Transform {
       }
     }
     branchesOps.add(currentOp);
-    if (currentOp.getParentOperators() != null) {
+    if (currentOp.getParentOperators() != null && currentOp.getParentOperators().size() > 0) {
       for (Operator<?> parentOp : currentOp.getParentOperators()) {
-        removeBranch(parentOp, branchesOps, discardableOps);
+        removeBranch(parentOp, branchesOps, discardableOps, optimizerCache);
+      }
+    } else if (currentOp instanceof TableScanOperator) {
+      Collection<Operator<?>> c = optimizerCache.tableScanToDPPSource
+              .get((TableScanOperator) currentOp);
+      for (Operator<?> dppSource : c) {
+        // Remove the branches
+        removeBranch(dppSource, branchesOps, discardableOps, optimizerCache);
       }
     }
   }

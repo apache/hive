@@ -12,11 +12,34 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.common;
+.login-form {
+    width: 340px;
+    margin: 50px auto;
+}
 
-import java.io.IOException;
-import org.apache.hadoop.security.UserGroupInformation;
+.login-form form {
+    margin-bottom: 15px;
+    background: #f7f7f7;
+    box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+    padding: 30px;
+}
 
-public interface UgiFactory {
-  UserGroupInformation createUgi() throws IOException;
+.login-form h2 {
+    color: black;
+    margin: 0 0 15px;
+}
+
+.form-control, .btn {
+    min-height: 38px;
+    border-radius: 2px;
+}
+
+.btn {
+    background-color: #337AB7;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.login-form-hide {
+    display: none;
 }

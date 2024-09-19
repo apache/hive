@@ -1595,7 +1595,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     try {
       ms.openTransaction();
       db = ms.getDatabase(req.getCatalogName(), req.getName());
-      if (db.getType() == DatabaseType.REMOTE) {
+      if (MetaStoreUtils.isDatabaseRemote(db)) {
         success = drop_remote_database_core(ms, db);
         return;
       }
@@ -2334,7 +2334,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
 
     Database db = get_database_core(tbl.getCatName(), tbl.getDbName());
-    if (db != null && db.getType().equals(DatabaseType.REMOTE)) {
+    if (MetaStoreUtils.isDatabaseRemote(db)) {
       // HIVE-24425: Create table in REMOTE db should fail
       throw new MetaException("Create table in REMOTE database " + db.getName() + " is not allowed");
     }
@@ -2985,7 +2985,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
       // HIVE-25282: Drop/Alter table in REMOTE db should fail
       db = ms.getDatabase(catName, dbname);
-      if (db.getType() == DatabaseType.REMOTE) {
+      if (MetaStoreUtils.isDatabaseRemote(db)) {
         throw new MetaException("Drop table in REMOTE database " + db.getName() + " is not allowed");
       }
       isReplicated = isDbReplicationTarget(db);
@@ -3758,15 +3758,13 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       db = get_database_core(catName, dbName);
     } catch (Exception e) { /* appears exception is not thrown currently if db doesnt exist */ }
 
-    if (db != null) {
-      if (db.getType().equals(DatabaseType.REMOTE)) {
-        t = DataConnectorProviderFactory.getDataConnectorProvider(db).getTable(tblName);
-        if (t == null) {
-          throw new NoSuchObjectException(TableName.getQualified(catName, dbName, tblName) + " table not found");
-        }
-        t.setDbName(dbName);
-        return t;
+    if (MetaStoreUtils.isDatabaseRemote(db)) {
+      t = DataConnectorProviderFactory.getDataConnectorProvider(db).getTable(tblName);
+      if (t == null) {
+        throw new NoSuchObjectException(TableName.getQualified(catName, dbName, tblName) + " table not found");
       }
+      t.setDbName(dbName);
+      return t;
     }
 
     try {
@@ -5210,13 +5208,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     try {
       String[] parsedDbName = parseDbName(name, conf);
       Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
-      if (db != null && db.getType() != null && db.getType() == DatabaseType.REMOTE) {
-        return true;
-      }
+      return MetaStoreUtils.isDatabaseRemote(db);
     } catch (Exception e) {
       return false;
     }
-    return false;
   }
 
   private void deleteParentRecursive(Path parent, int depth, boolean mustPurge, boolean needRecycle)
@@ -6261,7 +6256,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     // HIVE-25282: Drop/Alter table in REMOTE db should fail
     try {
       Database db = get_database_core(catName, dbname);
-      if (db != null && db.getType().equals(DatabaseType.REMOTE)) {
+      if (MetaStoreUtils.isDatabaseRemote(db)) {
         throw new MetaException("Alter table in REMOTE database " + db.getName() + " is not allowed");
       }
     } catch (NoSuchObjectException e) {
@@ -6379,10 +6374,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Database db = null;
     try {
       db = get_database_core(catName, dbname);
-      if (db != null) {
-        if (db.getType().equals(DatabaseType.REMOTE)) {
-          return DataConnectorProviderFactory.getDataConnectorProvider(db).getTableNames();
-        }
+      if (MetaStoreUtils.isDatabaseRemote(db)) {
+        return DataConnectorProviderFactory.getDataConnectorProvider(db).getTableNames();
       }
     } catch (Exception e) { /* ignore */ }
 
@@ -8732,7 +8725,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         throw new NoSuchObjectException("The database " + func.getDbName() + " does not exist");
       }
 
-      if (db.getType() == DatabaseType.REMOTE) {
+      if (MetaStoreUtils.isDatabaseRemote(db)) {
         throw new MetaException("Operation create_function not support for REMOTE database");
       }
 

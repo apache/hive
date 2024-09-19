@@ -6,6 +6,7 @@ set hive.map.aggr=false;
 
 set hive.strict.checks.bucketing=false;
 set hive.explain.user=true;
+set hive.cbo.fallback.strategy=NEVER;
 
 explain analyze
 SELECT x.key, z.value, y.value

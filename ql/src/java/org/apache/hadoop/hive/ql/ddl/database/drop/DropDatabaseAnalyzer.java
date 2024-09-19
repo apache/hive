@@ -116,7 +116,7 @@ public class DropDatabaseAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @Override
-  public boolean hasAcidResources() {
+  public boolean isRequiresOpenTransaction() {
     // check DB tags once supported (i.e. ICEBERG_ONLY, ACID_ONLY, EXTERNAL_ONLY)
     return true;
   }

@@ -24,16 +24,15 @@ import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import java.io.DataOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.udf.UDFLike;
 
 /**
@@ -60,12 +59,9 @@ public class ShowTablesOperation extends DDLOperation<ShowTablesDesc> {
   }
 
   private void showTables() throws HiveException {
+    String pattern = UDFLike.likePatternToRegExp(desc.getPattern(), false, true);
     List<String> tableNames = new ArrayList<>(
-        context.getDb().getTablesByType(desc.getDbName(), null, desc.getTypeFilter()));
-    if (desc.getPattern() != null) {
-      Pattern pattern = Pattern.compile(UDFLike.likePatternToRegExp(desc.getPattern()), Pattern.CASE_INSENSITIVE);
-      tableNames = tableNames.stream().filter(name -> pattern.matcher(name).matches()).collect(Collectors.toList());
-    }
+        context.getDb().getTablesByType(desc.getDbName(), pattern, desc.getTypeFilter()));
     Collections.sort(tableNames);
     LOG.debug("Found {} table(s) matching the SHOW TABLES statement.", tableNames.size());
 
@@ -78,20 +74,19 @@ public class ShowTablesOperation extends DDLOperation<ShowTablesDesc> {
   }
 
   private void showTablesExtended() throws HiveException {
-    List<Table> tableObjects = new ArrayList<>();
-    tableObjects.addAll(context.getDb().getTableObjects(desc.getDbName(), null, desc.getTypeFilter()));
-    if (desc.getPattern() != null) {
-      Pattern pattern = Pattern.compile(UDFLike.likePatternToRegExp(desc.getPattern()), Pattern.CASE_INSENSITIVE);
-      tableObjects = tableObjects.stream()
-          .filter(object -> pattern.matcher(object.getTableName()).matches())
-          .collect(Collectors.toList());
+    Map<String, String> tableNameToType = new TreeMap<>();
+    String pattern = UDFLike.likePatternToRegExp(desc.getPattern(), false, true);
+    TableType typeFilter = desc.getTypeFilter();
+    TableType[] tableTypes = typeFilter == null ? TableType.values() : new TableType[]{typeFilter};
+    for (TableType tableType : tableTypes) {
+      List<String> tables = context.getDb().getTablesByType(desc.getDbName(), pattern, tableType);
+      tables.forEach(name -> tableNameToType.put(name, tableType.toString()));
     }
-    Collections.sort(tableObjects, Comparator.comparing(Table::getTableName));
-    LOG.debug("Found {} table(s) matching the SHOW EXTENDED TABLES statement.", tableObjects.size());
+    LOG.debug("Found {} table(s) matching the SHOW EXTENDED TABLES statement.", tableNameToType.size());
 
     try (DataOutputStream os = ShowUtils.getOutputStream(new Path(desc.getResFile()), context)) {
       ShowTablesFormatter formatter = ShowTablesFormatter.getFormatter(context.getConf());
-      formatter.showTablesExtended(os, tableObjects);
+      formatter.showTablesExtended(os, tableNameToType);
     } catch (Exception e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "in database " + desc.getDbName());
     }

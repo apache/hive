@@ -21,16 +21,11 @@ package org.apache.iceberg.mr.hive.compaction;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context.RewritePolicy;
 import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -41,10 +36,7 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorContext;
 import org.apache.hadoop.hive.ql.txn.compactor.QueryCompactor;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hive.iceberg.org.apache.orc.storage.common.TableName;
-import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.mr.hive.IcebergTableUtil;
 import org.slf4j.Logger;
@@ -87,42 +79,16 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
         throw new HiveException(ErrorMsg.COMPACTION_NO_PARTITION);
       }
     } else {
-      Map<String, String> partSpecMap = new LinkedHashMap<>();
-      Warehouse.makeSpecFromName(partSpecMap, new Path(partSpec), null);
-      Map<PartitionData, Integer> partitionInfo = IcebergTableUtil
-          .getPartitionInfo(icebergTable, partSpecMap, false, false);
-      Optional<Integer> specId = partitionInfo.values().stream().findFirst();
-
-      if (!specId.isPresent()) {
-        throw new HiveException(ErrorMsg.INVALID_PARTITION_SPEC);
-      }
-
-      if (partitionInfo.size() > 1) {
-        throw new HiveException(ErrorMsg.TOO_MANY_COMPACTION_PARTITIONS);
-      }
-
+      long partitionHash = IcebergTableUtil.getPartitionHash(icebergTable, partSpec);
       HiveConf.setVar(conf, ConfVars.REWRITE_POLICY, RewritePolicy.PARTITION.name());
       conf.set(IcebergCompactionService.PARTITION_PATH, new Path(partSpec).toString());
 
-      List<FieldSchema> partitionKeys = IcebergTableUtil.getPartitionKeys(icebergTable, specId.get());
-      List<String> partValues = partitionKeys.stream().map(
-          fs -> String.join("=", HiveUtils.unparseIdentifier(fs.getName()),
-              TypeInfoUtils.convertStringToLiteralForSQL(partSpecMap.get(fs.getName()),
-                  ((PrimitiveTypeInfo) TypeInfoUtils.getTypeInfoFromTypeString(fs.getType())).getPrimitiveCategory())
-          )
-      ).collect(Collectors.toList());
+      Map<String, String> partSpecMap = new LinkedHashMap<>();
+      Warehouse.makeSpecFromName(partSpecMap, new Path(partSpec), null);
 
-      String queryFields = table.getCols().stream()
-          .map(FieldSchema::getName)
-          .filter(col -> !partSpecMap.containsKey(col))
-          .collect(Collectors.joining(","));
-
-      compactionQuery = String.format("insert overwrite table %1$s partition(%2$s) " +
-              "select %4$s from %1$s where %3$s and %6$s = %5$d",
-          compactTableName,
-          StringUtils.join(partValues, ","),
-          StringUtils.join(partValues, " and "),
-          queryFields, specId.get(), VirtualColumn.PARTITION_SPEC_ID.getName());
+      compactionQuery = String.format("insert overwrite table %1$s select * from %1$s where %2$s=%3$d " +
+              "and %4$s is not null", compactTableName, VirtualColumn.PARTITION_HASH.getName(), partitionHash,
+          VirtualColumn.FILE_PATH.getName());
     }
 
     SessionState sessionState = setupQueryCompactionSession(conf, context.getCompactionInfo(), tblProperties);

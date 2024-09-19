@@ -253,12 +253,11 @@ public class TestTablesList extends MetaStoreClientTest {
                           || tableNames.contains(testTables[3].getTableName()));
   }
 
-  @Test
+  @Test(expected = UnknownDBException.class)
   public void testListTableNamesByFilterCheckNoSuchDatabase() throws Exception {
     // No such database
-    List<String> tableNames = client.listTableNamesByFilter("no_such_database",
+    client.listTableNamesByFilter("no_such_database",
         hive_metastoreConstants.HIVE_FILTER_FIELD_LAST_ACCESS + ">2000", (short)-1);
-    Assert.assertEquals("Found tables", 0, tableNames.size());
   }
 
   @Test(expected = UnknownDBException.class)
