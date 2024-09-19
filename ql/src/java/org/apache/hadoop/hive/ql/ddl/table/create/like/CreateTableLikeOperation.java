@@ -18,8 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.create.like;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -154,6 +153,15 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     tbl.getParameters().clear();
     if (desc.getTblProps() != null) {
       tbl.setParameters(desc.getTblProps());
+    }
+    String paramsStr = HiveConf.getVar(context.getConf(), HiveConf.ConfVars.DDL_CTL_PARAMETERS_WHITELIST);
+    if (paramsStr != null) {
+        Set<String> retainer = new HashSet<String>(Arrays.asList(paramsStr.split(",")));
+        for (String key : retainer) {
+            if (originalProperties.containsKey(key)) {
+                tbl.getParameters().put(key, originalProperties.get(key));
+            }
+        }
     }
     HiveStorageHandler storageHandler = tbl.getStorageHandler();
     if (storageHandler != null) {
