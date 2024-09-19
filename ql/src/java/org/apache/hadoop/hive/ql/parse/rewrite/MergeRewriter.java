@@ -107,7 +107,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
     sqlGenerator.append("(SELECT ");
     sqlGenerator.appendAcidSelectColumns(Operation.MERGE);
     sqlGenerator.appendAllColsOfTargetTable();
-    sqlGenerator.append(" FROM ").appendTargetTableName().append(") ");
+    sqlGenerator.append(", true AS targetRecordExists FROM ").appendTargetTableName().append(") ");
     sqlGenerator.appendSubQueryAlias();
     sqlGenerator.append('\n');
     sqlGenerator.indent().append(hasWhenNotMatchedClause ? "RIGHT OUTER JOIN" : "INNER JOIN").append("\n");
@@ -193,7 +193,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
       }
 
       sqlGenerator.append(String.join(", ", insertClause.getValuesClause()));
-      sqlGenerator.append("\n   WHERE ").append(insertClause.getPredicate());
+      sqlGenerator.append("\n   WHERE targetRecordExists IS NULL ");
 
       if (insertClause.getExtraPredicate() != null) {
         //we have WHEN NOT MATCHED AND <boolean expr> THEN INSERT
@@ -252,7 +252,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
     
     protected void addWhereClauseOfUpdate(String onClauseAsString, String extraPredicate, String deleteExtraPredicate,
                                           MultiInsertSqlGenerator sqlGenerator, UnaryOperator<String> columnRefsFunc) {
-      StringBuilder whereClause = new StringBuilder(onClauseAsString);
+      StringBuilder whereClause = new StringBuilder("targetRecordExists");
       if (extraPredicate != null) {
         //we have WHEN MATCHED AND <boolean expr> THEN DELETE
         whereClause.append(" AND ").append(extraPredicate);
@@ -275,7 +275,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
                                          String hintStr, MultiInsertSqlGenerator sqlGenerator) {
       sqlGenerator.appendDeleteBranch(hintStr);
 
-      sqlGenerator.indent().append("WHERE ").append(onClauseAsString);
+      sqlGenerator.indent().append("WHERE targetRecordExists ");
       if (extraPredicate != null) {
         //we have WHEN MATCHED AND <boolean expr> THEN DELETE
         sqlGenerator.append(" AND ").append(extraPredicate);
