@@ -258,7 +258,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
         whereClause.append(" AND ").append(extraPredicate);
       }
       if (deleteExtraPredicate != null) {
-        whereClause.append(" AND NOT(").append(deleteExtraPredicate).append(")");
+        whereClause.append(" AND (NOT(").append(deleteExtraPredicate).append(") OR (").append(deleteExtraPredicate).append(") IS NULL)");
       }
       sqlGenerator.indent().append("WHERE ");
       sqlGenerator.append(columnRefsFunc.apply(whereClause.toString()));
@@ -281,7 +281,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
         sqlGenerator.append(" AND ").append(extraPredicate);
       }
       if (updateExtraPredicate != null) {
-        sqlGenerator.append(" AND NOT(").append(updateExtraPredicate).append(")");
+        sqlGenerator.append(" AND (NOT(").append(updateExtraPredicate).append(") OR (").append(updateExtraPredicate).append(") IS NULL)");
       }
       sqlGenerator.append("\n").indent();
       sqlGenerator.appendSortKeys();
