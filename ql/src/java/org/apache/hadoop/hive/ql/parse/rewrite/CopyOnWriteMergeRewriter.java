@@ -116,7 +116,8 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
     sqlGenerator.append(targetAlias);
     sqlGenerator.append('\n');
     sqlGenerator.indent().append(hasWhenNotMatchedInsertClause ? "FULL OUTER JOIN" : "LEFT OUTER JOIN").append("\n");
-    sqlGenerator.indent().append(sourceAlias);
+    sqlGenerator.indent().append("(SELECT *, true sourceRecordExists FROM");
+    sqlGenerator.append(sourceAlias).append(") ").append(sourceName);
     sqlGenerator.append('\n');
     sqlGenerator.indent().append("ON ").append(onClauseAsString);
     sqlGenerator.append('\n');
@@ -172,7 +173,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       sqlGenerator.append("\n   WHERE ");
       
       StringBuilder whereClause = new StringBuilder();
-      whereClause.append(TARGET_PREFIX).append("targetRecordExists ");
+      whereClause.append(TARGET_PREFIX).append("targetRecordExists IS NULL ");
       
       if (insertClause.getExtraPredicate() != null) {
         //we have WHEN NOT MATCHED AND <boolean expr> THEN INSERT
@@ -207,7 +208,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       addWhereClauseOfUpdate(
           onClauseAsString, updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), sqlGenerator,
           columnRefsFunc);
-      sqlGenerator.append("\n");
+      sqlGenerator.append(" AND sourceRecordExists\n");
     }
     
     @Override
@@ -235,17 +236,29 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       }
       sqlGenerator.append(StringUtils.join(deleteValues, ","));
       sqlGenerator.append("\nFROM " + sourceName);
-      sqlGenerator.indent().append("WHERE NOT ").append(TARGET_PREFIX).append("targetRecordExists ");
+      sqlGenerator.indent().append("WHERE ");
 
-      String filePathCol = HiveUtils.unparseIdentifier(TARGET_PREFIX + VirtualColumn.FILE_PATH.getName(), conf);
+
+      // ( NOT(t__targetRecordExists and t__sourceRecordExists or t__targetRecordExists is null) OR (t__targetRecordExists and t__sourceRecordExists or t__targetRecordExists is null) IS NULL )
+      StringBuilder flagPredicate = new StringBuilder();
+      flagPredicate.append(TARGET_PREFIX).append("targetRecordExists");
+      flagPredicate.append(" AND sourceRecordExists");
+      StringBuilder whereClause = new StringBuilder("(");
+      whereClause.append(flagPredicate);
+      whereClause.append(" OR ");
+      whereClause.append(TARGET_PREFIX).append("targetRecordExists is null)");
 
       if (isNotBlank(extraPredicate)) {
         //we have WHEN MATCHED AND <boolean expr> THEN DELETE
-        sqlGenerator.append("\n").indent();
-        sqlGenerator.append("AND ( NOT(%s) OR (%s) IS NULL )".replace("%s", columnRefsFunc.apply(
-            extraPredicate)));
+        whereClause.append(" AND ").append(extraPredicate);
       }
-      
+      String whereClauseStr = columnRefsFunc.apply(whereClause.toString());
+
+      sqlGenerator.append("\n").indent();
+      sqlGenerator.append("( NOT(%s) OR (%s) IS NULL )".replace("%s", columnRefsFunc.apply(
+          whereClause.toString())));
+
+      String filePathCol = HiveUtils.unparseIdentifier(TARGET_PREFIX + VirtualColumn.FILE_PATH.getName(), conf);
       sqlGenerator.append("\n").indent();
       // Add the file path filter that matches the delete condition.
       sqlGenerator.append("AND ").append(filePathCol);
@@ -253,8 +266,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       sqlGenerator.append("\nunion all");
       sqlGenerator.append("\nselect * from t");
 
-      cowWithClauseBuilder.appendWith(
-          sqlGenerator, sourceName, filePathCol, columnRefsFunc.apply(onClauseAsString), false);
+      cowWithClauseBuilder.appendWith(sqlGenerator, sourceName, filePathCol, flagPredicate.toString(), false);
     }
   }
 }
