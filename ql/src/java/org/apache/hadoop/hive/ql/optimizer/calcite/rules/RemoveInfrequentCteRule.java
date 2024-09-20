@@ -17,35 +17,28 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import org.apache.calcite.plan.RelOptMaterialization;
-import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
+import org.apache.calcite.plan.RelRule;
 import org.apache.calcite.rel.core.TableScan;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * Rule that removes CTEs from the plan by expanding the respective TableScans.
  * <p>The rule assumes that all materializations registered in the planner refer to CTEs.</p>
  */
-public class RemoveInfrequentCteRule extends RelOptRule {
+public class RemoveInfrequentCteRule extends RelRule<CteRuleConfig> {
 
-  private final int referenceThreshold;
-  private final Map<List<String>, Integer> tableOccurrences;
-
-  public RemoveInfrequentCteRule(Map<List<String>, Integer> tableOccurrences, int referenceThreshold) {
-    super(operand(TableScan.class, none()));
-    this.tableOccurrences = tableOccurrences;
-    this.referenceThreshold = referenceThreshold;
-    if (referenceThreshold <= 0) {
-      throw new IllegalArgumentException("Invalid reference threshold:" + referenceThreshold);
+  public RemoveInfrequentCteRule(CteRuleConfig config) {
+    super(config);
+    if (config.referenceThreshold() <= 0) {
+      throw new IllegalArgumentException("Invalid reference threshold:" + config.referenceThreshold());
     }
   }
 
   @Override
   public boolean matches(final RelOptRuleCall call) {
     TableScan scan = call.rel(0);
-    return tableOccurrences.getOrDefault(scan.getTable().getQualifiedName(), 0) <= referenceThreshold;
+    return config.getTableOccurrences().getOrDefault(scan.getTable().getQualifiedName(), 0)
+        <= config.referenceThreshold();
   }
 
   @Override

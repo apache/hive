@@ -63,6 +63,7 @@ import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptSchema;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelOptUtil;
+import org.apache.calcite.plan.RelRule;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.plan.hep.HepMatchOrder;
 import org.apache.calcite.plan.hep.HepPlanner;
@@ -174,6 +175,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQue
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveSqlTypeUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RuleEventLogger;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.CteRuleConfig;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSortLimitRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveEmptySingleRules;
@@ -2155,11 +2157,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
       Map<List<String>, Integer> tableOccurrences = RelOptUtil.findAllTables(ctePlan).stream()
           .map(RelOptTable::getQualifiedName)
           .collect(Collectors.toMap(Function.identity(), v -> 1, Integer::sum));
+      CteRuleConfig cteConfig = CteRuleConfig.DEFAULT
+          .withReferenceThreshold(referenceThreshold)
+          .withTableOccurrences(tableOccurrences);
       HepProgram spoolProgram = HepProgram.builder()
           // Use some defined match order ensuring consistent introduction of spool operators; avoids plan flakiness
           .addMatchOrder(HepMatchOrder.DEPTH_FIRST)
-          .addRuleInstance(new TableScanToSpoolRule(tableOccurrences, referenceThreshold))
-          .addRuleInstance(new RemoveInfrequentCteRule(tableOccurrences, referenceThreshold))
+          .addRuleInstance(new TableScanToSpoolRule(cteConfig))
+          .addRuleInstance(new RemoveInfrequentCteRule(cteConfig))
           .build();
       final RelNode spoolPlan = executeProgram(ctePlan, spoolProgram, mdProvider, executorProvider, cteMVs, true);
       if (ctePlan.getRelDigest().equals(spoolPlan.getRelDigest())) {

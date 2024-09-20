@@ -17,32 +17,27 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import org.apache.calcite.plan.RelOptMaterialization;
-import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
+import org.apache.calcite.plan.RelRule;
 import org.apache.calcite.prepare.RelOptTableImpl;
 import org.apache.calcite.rel.core.Spool;
 import org.apache.calcite.rel.core.TableScan;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories.HIVE_SPOOL_FACTORY;
 
-public class TableScanToSpoolRule extends RelOptRule {
+public class TableScanToSpoolRule extends RelRule<CteRuleConfig> {
   /**
    * Track created spools to avoid introducing more than one.
    */
   private final Set<String> spools = new HashSet<>();
-  private final int referenceThreshold;
-  private final Map<List<String>, Integer> tableOccurrences;
-  public TableScanToSpoolRule(Map<List<String>, Integer> tableOccurrences, int referenceThreshold) {
-    super(operand(TableScan.class, none()));
-    this.referenceThreshold = referenceThreshold;
-    this.tableOccurrences = tableOccurrences;
-    if (referenceThreshold <= 0) {
-      throw new IllegalArgumentException("Invalid reference threshold:" + referenceThreshold);
+  public TableScanToSpoolRule(CteRuleConfig config) {
+    super(config);
+    if (config.referenceThreshold() <= 0) {
+      throw new IllegalArgumentException("Invalid reference threshold:" + config.referenceThreshold());
     }
   }
 
@@ -53,7 +48,7 @@ public class TableScanToSpoolRule extends RelOptRule {
     if (spools.contains(tableName.toString())) {
       return false;
     }
-    return tableOccurrences.getOrDefault(tableName, 0) > referenceThreshold;
+    return config.getTableOccurrences().getOrDefault(tableName, 0) > config.referenceThreshold();
   }
 
   @Override
