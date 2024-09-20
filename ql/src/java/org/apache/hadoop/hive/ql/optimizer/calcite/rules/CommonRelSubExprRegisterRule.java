@@ -18,7 +18,6 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import org.apache.calcite.plan.CommonRelSubExprRule;
 import org.apache.calcite.plan.RelOptRuleCall;
-import org.apache.calcite.plan.RelOptRuleOperand;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.Filter;
@@ -32,21 +31,23 @@ import com.google.common.collect.Multimap;
 
 import java.util.function.Predicate;
 
+import static org.apache.calcite.plan.RelRule.Config.EMPTY;
+
 /**
  * Rule for saving relational expressions that appear more than once in a query tree to the planner context.
  */
 public final class CommonRelSubExprRegisterRule extends CommonRelSubExprRule {
-  public static final CommonRelSubExprRegisterRule JOIN =
-      new CommonRelSubExprRegisterRule(operandJ(Join.class, null, j -> JoinRelType.INNER == j.getJoinType(), any()));
+  public static final CommonRelSubExprRegisterRule JOIN = new CommonRelSubExprRegisterRule(
+      o -> o.operand(Join.class).predicate(j -> JoinRelType.INNER == j.getJoinType()).anyInputs());
   public static final CommonRelSubExprRegisterRule AGGREGATE =
-      new CommonRelSubExprRegisterRule(operand(Aggregate.class, any()));
+      new CommonRelSubExprRegisterRule(o -> o.operand(Aggregate.class).anyInputs());
   public static final CommonRelSubExprRegisterRule FILTER =
-      new CommonRelSubExprRegisterRule(operand(Filter.class, any()));
-  public static final CommonRelSubExprRegisterRule PROJECT =
-      new CommonRelSubExprRegisterRule(operandJ(Project.class, null, new InterestingRelNodePredicate(), any()));
+      new CommonRelSubExprRegisterRule(o -> o.operand(Filter.class).anyInputs());
+  public static final CommonRelSubExprRegisterRule PROJECT = new CommonRelSubExprRegisterRule(
+      o -> o.operand(Project.class).predicate(new InterestingRelNodePredicate()).anyInputs());
 
-  private CommonRelSubExprRegisterRule(RelOptRuleOperand operand) {
-    super(operand);
+  private CommonRelSubExprRegisterRule(OperandTransform operands) {
+    super(EMPTY.withOperandSupplier(operands).as(Config.class));
   }
 
   @Override
