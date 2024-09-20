@@ -29,6 +29,7 @@ when matched then update set b = 'Merged', c = t.c + 10
 when not matched then insert values (src.a, concat(src.b, '-merge new'), src.c);
 
 select * from target_ice;
+select * from source;
 
 -- update all 
 explain

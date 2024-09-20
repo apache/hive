@@ -252,13 +252,15 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
     
     protected void addWhereClauseOfUpdate(String onClauseAsString, String extraPredicate, String deleteExtraPredicate,
                                           MultiInsertSqlGenerator sqlGenerator, UnaryOperator<String> columnRefsFunc) {
-      StringBuilder whereClause = new StringBuilder("targetRecordExists");
+      StringBuilder whereClause = new StringBuilder(mergeStatement.getTargetAlias());
+      whereClause.append(".targetRecordExists");
       if (extraPredicate != null) {
         //we have WHEN MATCHED AND <boolean expr> THEN DELETE
         whereClause.append(" AND ").append(extraPredicate);
       }
       if (deleteExtraPredicate != null) {
-        whereClause.append(" AND (NOT(").append(deleteExtraPredicate).append(") OR (").append(deleteExtraPredicate).append(") IS NULL)");
+        whereClause.append(" AND (NOT(").append(deleteExtraPredicate).append(") OR (")
+            .append(deleteExtraPredicate).append(") IS NULL)");
       }
       sqlGenerator.indent().append("WHERE ");
       sqlGenerator.append(columnRefsFunc.apply(whereClause.toString()));
@@ -275,13 +277,14 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
                                          String hintStr, MultiInsertSqlGenerator sqlGenerator) {
       sqlGenerator.appendDeleteBranch(hintStr);
 
-      sqlGenerator.indent().append("WHERE targetRecordExists ");
+      sqlGenerator.indent().append("WHERE ").append(mergeStatement.getTargetAlias()).append(".targetRecordExists ");
       if (extraPredicate != null) {
         //we have WHEN MATCHED AND <boolean expr> THEN DELETE
         sqlGenerator.append(" AND ").append(extraPredicate);
       }
       if (updateExtraPredicate != null) {
-        sqlGenerator.append(" AND (NOT(").append(updateExtraPredicate).append(") OR (").append(updateExtraPredicate).append(") IS NULL)");
+        sqlGenerator.append(" AND (NOT(").append(updateExtraPredicate).append(") OR (")
+            .append(updateExtraPredicate).append(") IS NULL)");
       }
       sqlGenerator.append("\n").indent();
       sqlGenerator.appendSortKeys();

@@ -111,6 +111,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
     sqlGenerator.append("(SELECT ");
     sqlGenerator.appendAcidSelectColumns(Context.Operation.MERGE);
     sqlGenerator.appendAllColsOfTargetTable(TARGET_PREFIX);
+    sqlGenerator.append(", true AS ").append(TARGET_PREFIX).append("targetRecordExists");
     sqlGenerator.append(" FROM ").appendTargetTableName().append(") ");
     sqlGenerator.append(targetAlias);
     sqlGenerator.append('\n');
@@ -170,7 +171,8 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       sqlGenerator.append("\nFROM " + mergeStatement.getSourceName());
       sqlGenerator.append("\n   WHERE ");
       
-      StringBuilder whereClause = new StringBuilder(insertClause.getPredicate());
+      StringBuilder whereClause = new StringBuilder();
+      whereClause.append(TARGET_PREFIX).append("targetRecordExists ");
       
       if (insertClause.getExtraPredicate() != null) {
         //we have WHEN NOT MATCHED AND <boolean expr> THEN INSERT
@@ -233,22 +235,16 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       }
       sqlGenerator.append(StringUtils.join(deleteValues, ","));
       sqlGenerator.append("\nFROM " + sourceName);
-      sqlGenerator.indent().append("WHERE ");
+      sqlGenerator.indent().append("WHERE NOT ").append(TARGET_PREFIX).append("targetRecordExists ");
 
-      StringBuilder whereClause = new StringBuilder(onClauseAsString);
-      if (isNotBlank(extraPredicate)) {
-        //we have WHEN MATCHED AND <boolean expr> THEN DELETE
-        whereClause.append(" AND ").append(extraPredicate);
-      }
-      String whereClauseStr = columnRefsFunc.apply(whereClause.toString());
       String filePathCol = HiveUtils.unparseIdentifier(TARGET_PREFIX + VirtualColumn.FILE_PATH.getName(), conf);
 
-      if (isNotBlank(onClausePredicate)) {
-        whereClause.append(" OR ").append(onClausePredicate);
+      if (isNotBlank(extraPredicate)) {
+        //we have WHEN MATCHED AND <boolean expr> THEN DELETE
+        sqlGenerator.append("\n").indent();
+        sqlGenerator.append("AND ( NOT(%s) OR (%s) IS NULL )".replace("%s", columnRefsFunc.apply(
+            extraPredicate)));
       }
-      sqlGenerator.append("\n").indent();
-      sqlGenerator.append("( NOT(%s) OR (%s) IS NULL )".replace("%s", columnRefsFunc.apply(
-          whereClause.toString())));
       
       sqlGenerator.append("\n").indent();
       // Add the file path filter that matches the delete condition.
@@ -257,7 +253,8 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       sqlGenerator.append("\nunion all");
       sqlGenerator.append("\nselect * from t");
 
-      cowWithClauseBuilder.appendWith(sqlGenerator, sourceName, filePathCol, whereClauseStr, false);
+      cowWithClauseBuilder.appendWith(
+          sqlGenerator, sourceName, filePathCol, columnRefsFunc.apply(onClauseAsString), false);
     }
   }
 }
