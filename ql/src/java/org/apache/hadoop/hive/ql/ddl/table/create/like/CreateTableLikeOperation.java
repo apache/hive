@@ -156,12 +156,12 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     }
     String paramsStr = HiveConf.getVar(context.getConf(), HiveConf.ConfVars.DDL_CTL_PARAMETERS_WHITELIST);
     if (paramsStr != null) {
-        Set<String> retainer = new HashSet<String>(Arrays.asList(paramsStr.split(",")));
-        for (String key : retainer) {
-            if (originalProperties.containsKey(key)) {
-                tbl.getParameters().put(key, originalProperties.get(key));
-            }
+      Set<String> retainer = new HashSet<String>(Arrays.asList(paramsStr.split(",")));
+      for (String key : retainer) {
+        if (originalProperties.containsKey(key)) {
+          tbl.getParameters().put(key, originalProperties.get(key));
         }
+      }
     }
     HiveStorageHandler storageHandler = tbl.getStorageHandler();
     if (storageHandler != null) {
