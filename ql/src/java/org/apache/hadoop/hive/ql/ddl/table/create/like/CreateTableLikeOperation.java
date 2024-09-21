@@ -18,7 +18,11 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.create.like;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
