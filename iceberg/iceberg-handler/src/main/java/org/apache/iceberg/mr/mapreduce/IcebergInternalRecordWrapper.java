@@ -142,9 +142,7 @@ public class IcebergInternalRecordWrapper implements Record, StructLike {
   private static Function<Object, Object> converter(Type type) {
     switch (type.typeId()) {
       case TIMESTAMP:
-        return timestamp -> ((Types.TimestampType) type).shouldAdjustToUTC() ?
-            DateTimeUtil.timestamptzFromMicros((Long) timestamp) :
-            DateTimeUtil.timestampFromMicros((Long) timestamp);
+        return timestamp -> DateTimeUtil.timestamptzFromMicros((Long) timestamp);
       case DATE:
         return date -> DateTimeUtil.dateFromDays((Integer) date);
       case STRUCT:
