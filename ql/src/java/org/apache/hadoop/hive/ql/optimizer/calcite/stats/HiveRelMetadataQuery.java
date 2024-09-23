@@ -21,6 +21,8 @@ import org.apache.calcite.rel.metadata.JaninoRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.util.ImmutableBitSet;
 
+import javax.annotation.Nullable;
+
 public class HiveRelMetadataQuery extends RelMetadataQuery {
   private AggregatedColumns.Handler aggOriginHandler; 
   
@@ -37,6 +39,7 @@ public class HiveRelMetadataQuery extends RelMetadataQuery {
    * @return whether the specified columns originate from aggregate functions or null if there is not enough information
    * to infer the origin function.
    */
+  @Nullable
   public Boolean areColumnsAggregated(RelNode input, ImmutableBitSet columns) {
     for (;;) {
       try {

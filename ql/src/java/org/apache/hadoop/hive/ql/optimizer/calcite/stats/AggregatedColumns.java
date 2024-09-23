@@ -23,6 +23,8 @@ import org.apache.calcite.rel.metadata.MetadataHandler;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.util.ImmutableBitSet;
 
+import javax.annotation.Nullable;
+
 /**
  * Metadata about whether a set of columns originates from aggregation functions.
  */
@@ -38,9 +40,11 @@ public interface AggregatedColumns extends Metadata {
    * @return whether the specified columns originate from aggregate functions or null if there is not enough information
    * to infer the origin function.
    */
+  @Nullable
   Boolean areColumnsAggregated(final ImmutableBitSet columns);
 
   interface Handler extends MetadataHandler<AggregatedColumns> {
+    @Nullable
     Boolean areColumnsAggregated(RelNode r, RelMetadataQuery mq, final ImmutableBitSet columns);
   }
 }

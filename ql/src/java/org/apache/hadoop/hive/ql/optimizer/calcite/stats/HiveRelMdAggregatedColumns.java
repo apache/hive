@@ -31,11 +31,13 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.ImmutableBitSet;
 
+import javax.annotation.Nullable;
+
 public class HiveRelMdAggregatedColumns implements MetadataHandler<AggregatedColumns> {
   public static final RelMetadataProvider SOURCE =
       ReflectiveRelMetadataProvider.reflectiveSource(new HiveRelMdAggregatedColumns(),
           MetadataMethod.AGGREGATED_COLUMNS.method());
-
+  @Nullable
   public Boolean areColumnsAggregated(Project rel, RelMetadataQuery mq, ImmutableBitSet columns) {
     ImmutableBitSet.Builder iRefs = ImmutableBitSet.builder();
     for (int bit : columns) {
@@ -48,25 +50,25 @@ public class HiveRelMdAggregatedColumns implements MetadataHandler<AggregatedCol
     }
     return ((HiveRelMetadataQuery) mq).areColumnsAggregated(rel.getInput(), iRefs.build());
   }
-
+  @Nullable
   public Boolean areColumnsAggregated(Aggregate aggregate, RelMetadataQuery mq, ImmutableBitSet columns) {
     ImmutableBitSet aggColumns =
         ImmutableBitSet.range(aggregate.getGroupCount(), aggregate.getGroupCount() + aggregate.getAggCallList().size());
     return aggColumns.equals(columns);
   }
-
+  @Nullable
   public Boolean areColumnsAggregated(Filter rel, RelMetadataQuery mq, ImmutableBitSet columns) {
     return ((HiveRelMetadataQuery) mq).areColumnsAggregated(rel.getInput(), columns);
   }
-
+  @Nullable
   public Boolean areColumnsAggregated(HepRelVertex rel, RelMetadataQuery mq, ImmutableBitSet columns) {
     return ((HiveRelMetadataQuery) mq).areColumnsAggregated(rel.getCurrentRel(), columns);
   }
-
+  @Nullable
   public Boolean areColumnsAggregated(RelSubset rel, RelMetadataQuery mq, ImmutableBitSet columns) {
     return ((HiveRelMetadataQuery) mq).areColumnsAggregated(rel.getOriginal(), columns);
   }
-
+  @Nullable
   public Boolean areColumnsAggregated(RelNode rel, RelMetadataQuery mq, ImmutableBitSet columns) {
     return null;
   }
