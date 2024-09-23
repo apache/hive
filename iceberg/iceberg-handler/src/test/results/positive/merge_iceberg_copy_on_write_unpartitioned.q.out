@@ -839,20 +839,6 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 333	two	56
 4	four-merge new	53
 5	five-merge new	54
-PREHOOK: query: select * from source
-PREHOOK: type: QUERY
-PREHOOK: Input: default@source
-PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from source
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@source
-POSTHOOK: Output: hdfs://### HDFS PATH ###
-1	one	50
-111	one	55
-2	two	51
-3	three	52
-4	four	53
-5	five	54
 PREHOOK: query: explain
 merge into target_ice as t using source src ON t.a = src.a
 when matched then update set b = 'Merged', c = t.c - 10
