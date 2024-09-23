@@ -158,12 +158,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer<MergeStatemen
       switch (getWhenClauseOperation(whenClause).getType()) {
       case HiveParser.TOK_INSERT:
         numInsertClauses++;
-
-        OnClauseAnalyzer oca = new OnClauseAnalyzer(onClause, targetTable, targetAlias,
-          conf, onClauseAsText);
-        oca.analyze();
-        
-        mergeStatementBuilder.addWhenClause(handleInsert(whenClause, oca.getPredicate(), targetTable));
+        mergeStatementBuilder.addWhenClause(handleInsert(whenClause, targetTable));
         break;
       case HiveParser.TOK_UPDATE:
         numWhenMatchedUpdateClauses++;
@@ -330,8 +325,8 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer<MergeStatemen
    * Generates the Insert leg of the multi-insert SQL to represent WHEN NOT MATCHED THEN INSERT clause.
    * @throws SemanticException
    */
-  private MergeStatement.InsertClause handleInsert(ASTNode whenNotMatchedClause, String onClausePredicate,
-                                                   Table targetTable) throws SemanticException {
+  private MergeStatement.InsertClause handleInsert(
+      ASTNode whenNotMatchedClause, Table targetTable) throws SemanticException {
     
     ASTNode whenClauseOperation = getWhenClauseOperation(whenNotMatchedClause);
     assert whenNotMatchedClause.getType() == HiveParser.TOK_NOT_MATCHED;
@@ -392,146 +387,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer<MergeStatemen
     }
 
     String extraPredicate = getWhenClausePredicate(whenNotMatchedClause);
-    return new MergeStatement.InsertClause(columnNames, values, onClausePredicate, extraPredicate);
-  }
-
-  /**
-   * Suppose the input Merge statement has ON target.a = source.b and c = d.  Assume, that 'c' is from
-   * target table and 'd' is from source expression.  In order to properly
-   * generate the Insert for WHEN NOT MATCHED THEN INSERT, we need to make sure that the Where
-   * clause of this Insert contains "target.a is null and target.c is null"  This ensures that this
-   * Insert leg does not receive any rows that are processed by Insert corresponding to
-   * WHEN MATCHED THEN ... clauses.  (Implicit in this is a mini resolver that figures out if an
-   * unqualified column is part of the target table.  We can get away with this simple logic because
-   * we know that target is always a table (as opposed to some derived table).
-   * The job of this class is to generate this predicate.
-   *
-   * Note that is this predicate cannot simply be NOT(on-clause-expr).  IF on-clause-expr evaluates
-   * to Unknown, it will be treated as False in the WHEN MATCHED Inserts but NOT(Unknown) = Unknown,
-   * and so it will be False for WHEN NOT MATCHED Insert...
-   */
-  private static final class OnClauseAnalyzer {
-    private final ASTNode onClause;
-    private final Map<String, List<String>> table2column = new HashMap<>();
-    private final List<String> unresolvedColumns = new ArrayList<>();
-    private final List<FieldSchema> allTargetTableColumns = new ArrayList<>();
-    private final Set<String> tableNamesFound = new HashSet<>();
-    private final String targetTableNameInSourceQuery;
-    private final HiveConf conf;
-    private final String onClauseAsString;
-
-    /**
-     * @param targetTableNameInSourceQuery alias or simple name
-     */
-    OnClauseAnalyzer(ASTNode onClause, Table targetTable, String targetTableNameInSourceQuery,
-                     HiveConf conf, String onClauseAsString) {
-      this.onClause = onClause;
-      allTargetTableColumns.addAll(targetTable.getCols());
-      allTargetTableColumns.addAll(targetTable.getPartCols());
-      this.targetTableNameInSourceQuery = unescapeIdentifier(targetTableNameInSourceQuery);
-      this.conf = conf;
-      this.onClauseAsString = onClauseAsString;
-    }
-
-    /**
-     * Finds all columns and groups by table ref (if there is one).
-     */
-    private void visit(ASTNode n) {
-      if (n.getType() == HiveParser.TOK_TABLE_OR_COL) {
-        ASTNode parent = (ASTNode) n.getParent();
-        if (parent != null && parent.getType() == HiveParser.DOT) {
-          //the ref must be a table, so look for column name as right child of DOT
-          if (parent.getParent() != null && parent.getParent().getType() == HiveParser.DOT) {
-            //I don't think this can happen... but just in case
-            throw new IllegalArgumentException("Found unexpected db.table.col reference in " + onClauseAsString);
-          }
-          addColumn2Table(n.getChild(0).getText(), parent.getChild(1).getText());
-        } else {
-          //must be just a column name
-          unresolvedColumns.add(n.getChild(0).getText());
-        }
-      }
-      if (n.getChildCount() == 0) {
-        return;
-      }
-      for (Node child : n.getChildren()) {
-        visit((ASTNode)child);
-      }
-    }
-
-    private void analyze() {
-      visit(onClause);
-      if (tableNamesFound.size() > 2) {
-        throw new IllegalArgumentException("Found > 2 table refs in ON clause.  Found " +
-          tableNamesFound + " in " + onClauseAsString);
-      }
-      handleUnresolvedColumns();
-      if (tableNamesFound.size() > 2) {
-        throw new IllegalArgumentException("Found > 2 table refs in ON clause (incl unresolved).  " +
-          "Found " + tableNamesFound + " in " + onClauseAsString);
-      }
-    }
-
-    /**
-     * Find those that belong to target table.
-     */
-    private void handleUnresolvedColumns() {
-      if (unresolvedColumns.isEmpty()) {
-        return;
-      }
-      for (String c : unresolvedColumns) {
-        for (FieldSchema fs : allTargetTableColumns) {
-          if (c.equalsIgnoreCase(fs.getName())) {
-            //c belongs to target table; strictly speaking there maybe an ambiguous ref but
-            //this will be caught later when multi-insert is parsed
-            addColumn2Table(targetTableNameInSourceQuery.toLowerCase(), c);
-            break;
-          }
-        }
-      }
-    }
-
-    private void addColumn2Table(String tableName, String columnName) {
-      tableName = tableName.toLowerCase(); //normalize name for mapping
-      tableNamesFound.add(tableName);
-      List<String> cols = table2column.get(tableName);
-      if (cols == null) {
-        cols = new ArrayList<>();
-        table2column.put(tableName, cols);
-      }
-      //we want to preserve 'columnName' as it was in original input query so that rewrite
-      //looks as much as possible like original query
-      cols.add(columnName);
-    }
-
-    /**
-     * Now generate the predicate for Where clause.
-     */
-    private String getPredicate() {
-      //normilize table name for mapping
-      List<String> targetCols = table2column.get(targetTableNameInSourceQuery.toLowerCase());
-      if (targetCols == null) {
-        /*e.g. ON source.t=1
-        * this is not strictly speaking invalid but it does ensure that all columns from target
-        * table are all NULL for every row.  This would make any WHEN MATCHED clause invalid since
-        * we don't have a ROW__ID.  The WHEN NOT MATCHED could be meaningful but it's just data from
-        * source satisfying source.t=1...  not worth the effort to support this*/
-        throw new IllegalArgumentException(ErrorMsg.INVALID_TABLE_IN_ON_CLAUSE_OF_MERGE
-          .format(targetTableNameInSourceQuery, onClauseAsString));
-      }
-      StringBuilder sb = new StringBuilder();
-      for (String col : targetCols) {
-        if (sb.length() > 0) {
-          sb.append(" AND ");
-        }
-        //but preserve table name in SQL
-        sb.append(HiveUtils.unparseIdentifier(targetTableNameInSourceQuery, conf))
-          .append(".")
-          .append(HiveUtils.unparseIdentifier(col, conf))
-          .append(" IS NULL");
-      }
-      return sb.toString();
-    }
+    return new MergeStatement.InsertClause(columnNames, values, extraPredicate);
   }
 
   @Override

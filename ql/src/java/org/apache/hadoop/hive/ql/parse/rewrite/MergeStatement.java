@@ -182,12 +182,10 @@ public class MergeStatement {
   public static class InsertClause extends WhenClause {
     private final List<String> columnList;
     private final List<String> valuesClause;
-    private final String predicate;
 
 
-    public InsertClause(List<String> columnList, List<String> valuesClause, String predicate, String extraPredicate) {
+    public InsertClause(List<String> columnList, List<String> valuesClause, String extraPredicate) {
       super(extraPredicate);
-      this.predicate = predicate;
       this.columnList = columnList;
       this.valuesClause = valuesClause;
     }
@@ -198,10 +196,6 @@ public class MergeStatement {
 
     public List<String> getValuesClause() {
       return valuesClause;
-    }
-
-    public String getPredicate() {
-      return predicate;
     }
 
     @Override
