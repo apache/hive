@@ -207,7 +207,6 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
     public void appendWhenMatchedUpdateClause(MergeStatement.UpdateClause updateClause) {
       Table targetTable = mergeStatement.getTargetTable();
       String targetAlias = mergeStatement.getTargetAlias();
-      String onClauseAsString = mergeStatement.getOnClauseAsText();
 
       sqlGenerator.append("    -- update clause").append("\n");
       List<String> valuesAndAcidSortKeys = new ArrayList<>(
@@ -217,8 +216,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
       sqlGenerator.appendInsertBranch(hintStr, valuesAndAcidSortKeys);
       hintStr = null;
 
-      addWhereClauseOfUpdate(
-          onClauseAsString, updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), sqlGenerator);
+      addWhereClauseOfUpdate(updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), sqlGenerator);
 
       sqlGenerator.appendSortKeys();
     }
@@ -245,12 +243,12 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
       return newValue;
     }
 
-    protected void addWhereClauseOfUpdate(String onClauseAsString, String extraPredicate, String deleteExtraPredicate,
+    protected void addWhereClauseOfUpdate(String extraPredicate, String deleteExtraPredicate,
                                           MultiInsertSqlGenerator sqlGenerator) {
-      addWhereClauseOfUpdate(onClauseAsString, extraPredicate, deleteExtraPredicate, sqlGenerator, UnaryOperator.identity());
+      addWhereClauseOfUpdate(extraPredicate, deleteExtraPredicate, sqlGenerator, UnaryOperator.identity());
     }
     
-    protected void addWhereClauseOfUpdate(String onClauseAsString, String extraPredicate, String deleteExtraPredicate,
+    protected void addWhereClauseOfUpdate(String extraPredicate, String deleteExtraPredicate,
                                           MultiInsertSqlGenerator sqlGenerator, UnaryOperator<String> columnRefsFunc) {
       StringBuilder whereClause = new StringBuilder(mergeStatement.getTargetAlias());
       whereClause.append(".targetRecordExists");
@@ -268,12 +266,12 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
 
     @Override
     public void appendWhenMatchedDeleteClause(MergeStatement.DeleteClause deleteClause) {
-      handleWhenMatchedDelete(mergeStatement.getOnClauseAsText(),
+      handleWhenMatchedDelete(
           deleteClause.getExtraPredicate(), deleteClause.getUpdateExtraPredicate(), hintStr, sqlGenerator);
       hintStr = null;
     }
 
-    protected void handleWhenMatchedDelete(String onClauseAsString, String extraPredicate, String updateExtraPredicate,
+    protected void handleWhenMatchedDelete(String extraPredicate, String updateExtraPredicate,
                                          String hintStr, MultiInsertSqlGenerator sqlGenerator) {
       sqlGenerator.appendDeleteBranch(hintStr);
 

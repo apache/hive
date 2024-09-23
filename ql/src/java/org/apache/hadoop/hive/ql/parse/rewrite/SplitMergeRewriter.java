@@ -52,7 +52,6 @@ public class SplitMergeRewriter extends MergeRewriter {
     public void appendWhenMatchedUpdateClause(MergeStatement.UpdateClause updateClause) {
       Table targetTable = mergeStatement.getTargetTable();
       String targetAlias = mergeStatement.getTargetAlias();
-      String onClauseAsString = mergeStatement.getOnClauseAsText();
 
       sqlGenerator.append("    -- update clause (insert part)\n");
       List<String> values = new ArrayList<>(targetTable.getCols().size() + targetTable.getPartCols().size());
@@ -60,13 +59,12 @@ public class SplitMergeRewriter extends MergeRewriter {
       sqlGenerator.appendInsertBranch(hintStr, values);
       hintStr = null;
 
-      addWhereClauseOfUpdate(
-          onClauseAsString, updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), sqlGenerator);
+      addWhereClauseOfUpdate(updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), sqlGenerator);
 
       sqlGenerator.append("\n");
 
       sqlGenerator.append("    -- update clause (delete part)\n");
-      handleWhenMatchedDelete(onClauseAsString,
+      handleWhenMatchedDelete(
           updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), hintStr, sqlGenerator);
     }
   }

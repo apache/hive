@@ -206,8 +206,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       sqlGenerator.append("\nFROM " + mergeStatement.getSourceName());
 
       addWhereClauseOfUpdate(
-          onClauseAsString, updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), sqlGenerator,
-          columnRefsFunc);
+          updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), sqlGenerator, columnRefsFunc);
       sqlGenerator.append(" AND sourceRecordExists\n");
     }
     
@@ -217,11 +216,10 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
     }
 
     @Override
-    protected void handleWhenMatchedDelete(String onClauseAsString, String extraPredicate, String updateExtraPredicate,
+    protected void handleWhenMatchedDelete(String extraPredicate, String updateExtraPredicate,
                                          String hintStr, MultiInsertSqlGenerator sqlGenerator) {
       String targetAlias = mergeStatement.getTargetAlias();
       String sourceName = mergeStatement.getSourceName();
-      String onClausePredicate = mergeStatement.getOnClausePredicate();
 
       UnaryOperator<String> columnRefsFunc = value -> replaceColumnRefsWithTargetPrefix(targetAlias, value);
       List<String> deleteValues = sqlGenerator.getDeleteValues(Context.Operation.DELETE);
@@ -252,8 +250,6 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
         //we have WHEN MATCHED AND <boolean expr> THEN DELETE
         whereClause.append(" AND ").append(extraPredicate);
       }
-      String whereClauseStr = columnRefsFunc.apply(whereClause.toString());
-
       sqlGenerator.append("\n").indent();
       sqlGenerator.append("( NOT(%s) OR (%s) IS NULL )".replace("%s", columnRefsFunc.apply(
           whereClause.toString())));

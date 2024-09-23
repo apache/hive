@@ -163,9 +163,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer<MergeStatemen
           conf, onClauseAsText);
         oca.analyze();
         
-        mergeStatementBuilder.addWhenClause(
-            handleInsert(whenClause, oca.getPredicate(), targetTable))
-          .onClausePredicate(oca.getPredicate());
+        mergeStatementBuilder.addWhenClause(handleInsert(whenClause, oca.getPredicate(), targetTable));
         break;
       case HiveParser.TOK_UPDATE:
         numWhenMatchedUpdateClauses++;
