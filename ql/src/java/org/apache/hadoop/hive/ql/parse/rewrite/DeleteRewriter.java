@@ -50,7 +50,7 @@ public class DeleteRewriter implements Rewriter<DeleteStatement> {
     sqlGenerator.append(" from ");
     sqlGenerator.append(sqlGenerator.getTargetTableFullName());
 
-    sqlGenerator.appendSortBy(sqlGenerator.getSortKeys());
+    sqlGenerator.appendSortKeys();
 
     ParseUtils.ReparseResult rr = ParseUtils.parseRewrittenQuery(context, sqlGenerator.toString());
     Context rewrittenCtx = rr.rewrittenCtx;
