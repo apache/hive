@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hive.common.util.SuppressFBWarnings;
 
 /**
 
@@ -155,6 +156,7 @@ public class Decimal64ColumnVector extends LongColumnVector implements IDecimalC
    * Return a convenience writable object stored by this column vector.
    * @return
    */
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
   public HiveDecimalWritable getScratchWritable() {
     return scratchHiveDecWritable;
   }

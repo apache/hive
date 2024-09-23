@@ -39,6 +39,7 @@ import org.apache.hadoop.fs.permission.AclStatus;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 
+import org.apache.hadoop.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -211,6 +212,7 @@ public static class HadoopFileStatus {
     this.aclStatus = aclStatus;
   }
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
   public FileStatus getFileStatus() {
     return fileStatus;
   }

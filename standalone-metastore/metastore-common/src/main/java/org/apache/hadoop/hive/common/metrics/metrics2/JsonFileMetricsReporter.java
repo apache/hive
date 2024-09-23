@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.util.SuppressFBWarnings;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,6 +94,7 @@ public class JsonFileMetricsReporter implements CodahaleReporter, Runnable {
   // Directory where path resides
   private final Path metricsDir;
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
   public JsonFileMetricsReporter(MetricRegistry registry, Configuration conf) {
     this.metricRegistry = registry;
     this.jsonWriter =

@@ -66,6 +66,10 @@
           <groupId>io.netty</groupId>
           <artifactId>*</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-client-api</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -91,14 +95,17 @@
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
       <artifactId>metrics-core</artifactId>
+      <version>3.2.4</version>
     </dependency>
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
       <artifactId>metrics-jvm</artifactId>
+      <version>3.2.4</version>
     </dependency>
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
       <artifactId>metrics-json</artifactId>
+      <version>3.2.4</version>
     </dependency>
     <dependency>
       <groupId>javolution</groupId>
@@ -433,13 +440,13 @@
           <plugin>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-maven-plugin</artifactId>
-            <version>4.0.0</version>
+            <version>4.5.0.0</version>
             <dependencies>
               <!-- Specify the version of spotbugs -->
               <dependency>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs</artifactId>
-                <version>4.0.3</version>
+                <version>${spotbugs.version}</version>
               </dependency>
             </dependencies>
             <configuration>
@@ -447,6 +454,7 @@
               <maxHeap>2048</maxHeap>
               <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
               <excludeFilterFile>${basedir}/${standalone.metastore.path.to.root}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
+              <timeout>60000000</timeout>
             </configuration>
           </plugin>
         </plugins>
@@ -456,12 +464,13 @@
           <plugin>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-maven-plugin</artifactId>
-            <version>4.0.0</version>
+            <version>4.5.0.0</version>
             <configuration>
               <fork>true</fork>
               <maxHeap>2048</maxHeap>
               <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
               <excludeFilterFile>${basedir}/${standalone.metastore.path.to.root}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
+              <timeout>60000000</timeout>
             </configuration>
           </plugin>
         </plugins>

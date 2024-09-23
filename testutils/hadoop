@@ -29,7 +29,8 @@ bin=`cd "$bin"; pwd`
 export MALLOC_ARENA_MAX=${MALLOC_ARENA_MAX:-4}
 
 JAVA=$JAVA_HOME/bin/java
-JAVA_HEAP_MAX=-Xmx1000m 
+JAVA_HEAP_MAX=-Xmx1000m
+JAVA17_ADDITIONAL_ARGS=" --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED"
 
 # check envvars which might override default args
 if [ "$HADOOP_HEAPSIZE" != "" ]; then
@@ -70,6 +71,9 @@ HADOOP_OPTS="$HADOOP_OPTS -Dhadoop.policy.file=$HADOOP_POLICYFILE"
 
 # Disable ipv6 as it can cause issues
 HADOOP_OPTS="$HADOOP_OPTS -Djava.net.preferIPv4Stack=true"
+
+# Additional arguments for JAVA 17
+HADOOP_OPTS="$HADOOP_OPTS $JAVA17_ADDITIONAL_ARGS"
 
 COMMAND=$1
 # the core commands

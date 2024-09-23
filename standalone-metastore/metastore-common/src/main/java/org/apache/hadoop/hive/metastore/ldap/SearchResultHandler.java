@@ -24,6 +24,8 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.SearchResult;
+
+import org.apache.hadoop.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +43,7 @@ public final class SearchResultHandler {
    * Constructs a search result handler object for the provided search results.
    * @param searchResults directory service search results
    */
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
   public SearchResultHandler(Collection<NamingEnumeration<SearchResult>> searchResults) {
     this.searchResults = searchResults;
   }

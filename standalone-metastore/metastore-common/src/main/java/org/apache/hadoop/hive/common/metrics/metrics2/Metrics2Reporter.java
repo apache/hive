@@ -22,6 +22,7 @@ import com.github.joshelser.dropwizard.metrics.hadoop.HadoopMetrics2Reporter;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.util.SuppressFBWarnings;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
 
@@ -33,6 +34,7 @@ public class Metrics2Reporter implements CodahaleReporter {
   private final Configuration conf;
   private final HadoopMetrics2Reporter reporter;
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
   public Metrics2Reporter(MetricRegistry registry, Configuration conf) {
     this.conf = conf;
     String applicationName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METRICS_HADOOP2_COMPONENT_NAME);

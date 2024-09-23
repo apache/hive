@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.hadoop.hive.common.util.SuppressFBWarnings;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.thrift.TException;
 
@@ -95,6 +96,7 @@ public class TableIterable implements Iterable<Table> {
    * Primary constructor that fetches all tables in a given msc, given a Hive
    * object,a db name and a table name list.
    */
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
   public TableIterable(IMetaStoreClient msc, String dbname, List<String> tableNames, int batchSize)
       throws TException {
     this.msc = msc;
@@ -104,6 +106,7 @@ public class TableIterable implements Iterable<Table> {
     this.batchSize = batchSize;
   }
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
   public TableIterable(IMetaStoreClient msc, String catName, String dbname, List<String>
           tableNames, int batchSize) throws TException {
     this.msc = msc;

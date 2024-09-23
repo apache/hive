@@ -38,6 +38,7 @@ import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.protocol.SnapshotException;
+import org.apache.hadoop.hive.common.util.SuppressFBWarnings;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -632,6 +633,7 @@ public class FileUtils {
     }
 
     @Override
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
     public LocatedFileStatus next() throws IOException {
       if (!hasNext()) {
         throw new NoSuchElementException();

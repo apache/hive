@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.common.util.SuppressFBWarnings;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
@@ -56,6 +57,7 @@ public class LockRequestBuilder {
    * Get the constructed LockRequest.
    * @return lock request
    */
+  @SuppressFBWarnings(value="EI_EXPOSE_REP", justification = "intended_to_do")
   public LockRequest build() {
     if (!userSet) {
       throw new RuntimeException("Cannot build a lock without giving a user");

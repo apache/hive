@@ -46,6 +46,7 @@ import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hive.common.repl.ReplConst;
+import org.apache.hadoop.hive.common.util.SuppressFBWarnings;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -100,6 +101,7 @@ public class ReplChangeManager {
     public FileInfo(FileSystem srcFs, Path sourcePath, String subDir) {
       this(srcFs, sourcePath, null, null, true, subDir);
     }
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
     public FileInfo(FileSystem srcFs, Path sourcePath, Path cmPath,
                     String checkSum, boolean useSourcePath, String subDir) {
       this.srcFs = srcFs;
@@ -110,6 +112,7 @@ public class ReplChangeManager {
       this.subDir = subDir;
       this.copyDone = false;
     }
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended_to_do")
     public FileSystem getSrcFs() {
       return srcFs;
     }
@@ -475,6 +478,7 @@ public class ReplChangeManager {
     private long secRetain;
     private Configuration conf;
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended_to_do")
     public CMClearer(long secRetain, Configuration conf) {
       this.encryptionZones = encryptionZoneToCmrootMapping;
       this.secRetain = secRetain;
