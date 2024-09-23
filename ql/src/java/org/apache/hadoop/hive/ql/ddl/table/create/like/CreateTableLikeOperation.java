@@ -162,7 +162,7 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     if (paramsStr != null) {
       Set<String> retainer = new HashSet<String>(Arrays.asList(paramsStr.split(",")));
       for (String key : retainer) {
-        if (originalProperties.containsKey(key)) {
+        if (originalProperties.containsKey(key) && !tbl.getParameters().containsKey(key)) {
           tbl.getParameters().put(key, originalProperties.get(key));
         }
       }
