@@ -31,6 +31,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 
@@ -251,5 +253,17 @@ public class TestHiveConf {
     FileUtils.copyFile(fileBakHiveSite, fileHiveSite);
     f2.delete();
     fileBakHiveSite.delete();
+  }
+
+  @Test
+  public void testGetMatchingEntries() {
+    HiveConf conf = new HiveConf();
+    conf.setInt("hive.compactor.worker.iceberg.threads", 4);
+
+    List<Map.Entry<String, String>> entries = conf.getMatchingEntries(Constants.COMPACTION_POOLS_PATTERN);
+    
+    Assert.assertEquals(entries.size(), 1);
+    Assert.assertEquals(entries.get(0).getKey(), "hive.compactor.worker.iceberg.threads");
+    Assert.assertEquals(entries.get(0).getValue(), "iceberg");
   }
 }

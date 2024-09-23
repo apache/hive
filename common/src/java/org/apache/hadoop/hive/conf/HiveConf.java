@@ -7247,7 +7247,7 @@ public class HiveConf extends Configuration {
     for (Map.Entry<String, String> entry : this) {
       Matcher matcher = regex.matcher(entry.getKey());
       if (matcher.matches()) {
-        matchingEntries.add(new AbstractMap.SimpleEntry<>(entry.getKey(), matcher.group(0)));
+        matchingEntries.add(new AbstractMap.SimpleEntry<>(entry.getKey(), matcher.group(1)));
       }
     }
     return matchingEntries;
