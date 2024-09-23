@@ -52,8 +52,8 @@ delete from ice_orc where last_name in ('ln1a', 'ln2a', 'ln7a');
 select * from ice_orc;
 describe formatted ice_orc;
 
-explain alter table ice_orc COMPACT 'major' and wait;
-alter table ice_orc COMPACT 'major' and wait;
+explain alter table ice_orc COMPACT 'major' and wait pool 'iceberg';
+alter table ice_orc COMPACT 'major' and wait pool 'iceberg';
 
 select * from ice_orc;
 describe formatted ice_orc;
@@ -85,8 +85,8 @@ delete from ice_orc where last_name in ('ln11a', 'ln12a', 'ln17a', 'ln18a');
 select * from ice_orc;
 describe formatted ice_orc;
 
-explain alter table ice_orc COMPACT 'major' and wait;
-alter table ice_orc COMPACT 'major' and wait;
+explain alter table ice_orc COMPACT 'major' and wait pool 'iceberg';
+alter table ice_orc COMPACT 'major' and wait pool 'iceberg';
 
 select * from ice_orc;
 describe formatted ice_orc;

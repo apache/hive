@@ -56,6 +56,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.StringableMap;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.shims.HadoopShims;
@@ -564,5 +565,17 @@ public class CompactorUtil {
       }
     }
     return poolConf;
+  }
+
+  public static String getCompactPoolName(HiveConf conf, org.apache.hadoop.hive.ql.metadata.Table table) 
+      throws Exception {
+    String poolName;
+    Map<String, String> params = table.getParameters();
+    poolName = params == null ? null : params.get(Constants.HIVE_COMPACTOR_WORKER_POOL);
+    if (StringUtils.isBlank(poolName)) {
+      params = CompactorUtil.resolveDatabase(conf, table.getDbName()).getParameters();
+      poolName = params == null ? null : params.get(Constants.HIVE_COMPACTOR_WORKER_POOL);
+    } 
+    return poolName;
   }
 }

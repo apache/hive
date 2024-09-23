@@ -88,7 +88,8 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
     CompactionRequest compactionRequest = new CompactionRequest(table.getDbName(), table.getTableName(),
         compactionTypeStr2ThriftType(desc.getCompactionType()));
 
-    compactionRequest.setPoolName(desc.getPoolName());
+    compactionRequest.setPoolName(desc.getPoolName() != null ? desc.getPoolName() : 
+        CompactorUtil.getCompactPoolName(context.getConf(), table));
     compactionRequest.setProperties(desc.getProperties());
     compactionRequest.setInitiatorId(JavaUtils.hostname() + "-" + HiveMetaStoreClient.MANUALLY_INITIATED_COMPACTION);
     compactionRequest.setInitiatorVersion(HiveMetaStoreClient.class.getPackage().getImplementationVersion());

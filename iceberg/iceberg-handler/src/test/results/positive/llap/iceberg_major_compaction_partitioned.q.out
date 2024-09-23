@@ -220,11 +220,11 @@ InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat
 OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
 Compressed:         	No                  	 
 Sort Columns:       	[]                  	 
-PREHOOK: query: explain alter table ice_orc COMPACT 'major' and wait
+PREHOOK: query: explain alter table ice_orc COMPACT 'major' and wait pool 'iceberg'
 PREHOOK: type: ALTERTABLE_COMPACT
 PREHOOK: Input: default@ice_orc
 PREHOOK: Output: default@ice_orc
-POSTHOOK: query: explain alter table ice_orc COMPACT 'major' and wait
+POSTHOOK: query: explain alter table ice_orc COMPACT 'major' and wait pool 'iceberg'
 POSTHOOK: type: ALTERTABLE_COMPACT
 POSTHOOK: Input: default@ice_orc
 POSTHOOK: Output: default@ice_orc
@@ -237,14 +237,15 @@ STAGE PLANS:
       compaction type: major
       table name: default.ice_orc
       numberOfBuckets: 0
+      pool: iceberg
       table name: default.ice_orc
       blocking: true
 
-PREHOOK: query: alter table ice_orc COMPACT 'major' and wait
+PREHOOK: query: alter table ice_orc COMPACT 'major' and wait pool 'iceberg'
 PREHOOK: type: ALTERTABLE_COMPACT
 PREHOOK: Input: default@ice_orc
 PREHOOK: Output: default@ice_orc
-POSTHOOK: query: alter table ice_orc COMPACT 'major' and wait
+POSTHOOK: query: alter table ice_orc COMPACT 'major' and wait pool 'iceberg'
 POSTHOOK: type: ALTERTABLE_COMPACT
 POSTHOOK: Input: default@ice_orc
 POSTHOOK: Output: default@ice_orc
@@ -321,8 +322,8 @@ PREHOOK: type: SHOW COMPACTIONS
 POSTHOOK: query: show compactions order by 'partition'
 POSTHOOK: type: SHOW COMPACTIONS
 CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
-#Masked#	default	ice_orc	dept_id=1	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
-#Masked#	default	ice_orc	dept_id=2	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	ice_orc	dept_id=1	MAJOR	succeeded	#Masked#	manual	iceberg	0	0	0	 --- 
+#Masked#	default	ice_orc	dept_id=2	MAJOR	succeeded	#Masked#	manual	iceberg	0	0	0	 --- 
 PREHOOK: query: insert into ice_orc VALUES ('fn11','ln11', 1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -547,11 +548,11 @@ InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat
 OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
 Compressed:         	No                  	 
 Sort Columns:       	[]                  	 
-PREHOOK: query: explain alter table ice_orc COMPACT 'major' and wait
+PREHOOK: query: explain alter table ice_orc COMPACT 'major' and wait pool 'iceberg'
 PREHOOK: type: ALTERTABLE_COMPACT
 PREHOOK: Input: default@ice_orc
 PREHOOK: Output: default@ice_orc
-POSTHOOK: query: explain alter table ice_orc COMPACT 'major' and wait
+POSTHOOK: query: explain alter table ice_orc COMPACT 'major' and wait pool 'iceberg'
 POSTHOOK: type: ALTERTABLE_COMPACT
 POSTHOOK: Input: default@ice_orc
 POSTHOOK: Output: default@ice_orc
@@ -564,14 +565,15 @@ STAGE PLANS:
       compaction type: major
       table name: default.ice_orc
       numberOfBuckets: 0
+      pool: iceberg
       table name: default.ice_orc
       blocking: true
 
-PREHOOK: query: alter table ice_orc COMPACT 'major' and wait
+PREHOOK: query: alter table ice_orc COMPACT 'major' and wait pool 'iceberg'
 PREHOOK: type: ALTERTABLE_COMPACT
 PREHOOK: Input: default@ice_orc
 PREHOOK: Output: default@ice_orc
-POSTHOOK: query: alter table ice_orc COMPACT 'major' and wait
+POSTHOOK: query: alter table ice_orc COMPACT 'major' and wait pool 'iceberg'
 POSTHOOK: type: ALTERTABLE_COMPACT
 POSTHOOK: Input: default@ice_orc
 POSTHOOK: Output: default@ice_orc
@@ -652,7 +654,7 @@ PREHOOK: type: SHOW COMPACTIONS
 POSTHOOK: query: show compactions order by 'partition'
 POSTHOOK: type: SHOW COMPACTIONS
 CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
-#Masked#	default	ice_orc	dept_id=1	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
-#Masked#	default	ice_orc	dept_id=1	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
-#Masked#	default	ice_orc	dept_id=2	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
-#Masked#	default	ice_orc	dept_id=2	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	ice_orc	dept_id=1	MAJOR	succeeded	#Masked#	manual	iceberg	0	0	0	 --- 
+#Masked#	default	ice_orc	dept_id=1	MAJOR	succeeded	#Masked#	manual	iceberg	0	0	0	 --- 
+#Masked#	default	ice_orc	dept_id=2	MAJOR	succeeded	#Masked#	manual	iceberg	0	0	0	 --- 
+#Masked#	default	ice_orc	dept_id=2	MAJOR	succeeded	#Masked#	manual	iceberg	0	0	0	 --- 

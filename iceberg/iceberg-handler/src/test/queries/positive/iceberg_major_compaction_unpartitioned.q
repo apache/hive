@@ -52,10 +52,10 @@ delete from ice_orc where last_name in ('ln5a', 'ln6a', 'ln7a');
 select * from ice_orc;
 describe formatted ice_orc;
 
-explain alter table ice_orc COMPACT 'major' and wait;
-explain optimize table ice_orc rewrite data;
+explain alter table ice_orc COMPACT 'major' and wait pool 'iceberg';
+explain optimize table ice_orc rewrite data pool 'iceberg';
 
-alter table ice_orc COMPACT 'major' and wait;
+alter table ice_orc COMPACT 'major' and wait pool 'iceberg';
 
 select * from ice_orc;
 describe formatted ice_orc;

@@ -41,6 +41,8 @@ public class TestIcebergLlapLocalCompactorCliDriver {
 
   static CliAdapter adapter = new CliConfigs.IcebergLlapLocalCompactorCliConfig().getCliAdapter();
   private static final AtomicBoolean stop = new AtomicBoolean();
+  private static final String defaultPoolName = null;
+  private static final String icebergPoolName = "iceberg";
   private static Worker worker;
 
   @Parameters(name ="{0}")
@@ -50,8 +52,14 @@ public class TestIcebergLlapLocalCompactorCliDriver {
 
   @BeforeClass
   public static void setup() throws Exception {
+    setupWorker(defaultPoolName);
+    setupWorker(icebergPoolName);
+  }
+  
+  private static void setupWorker(String poolName) throws Exception {
     worker = new Worker();
     worker.setConf(SessionState.get().getConf());
+    worker.setPoolName(poolName);
     stop.set(false);
     worker.init(stop);
     worker.start();
@@ -78,6 +86,7 @@ public class TestIcebergLlapLocalCompactorCliDriver {
 
   @Test
   public void testCliDriver() throws Exception {
+    adapter.setUp();
     adapter.runTest(name, qfile);
   }
 }
