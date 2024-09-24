@@ -98,18 +98,20 @@ public class OTELExporter extends Thread {
         }
       } else {
         // In case of live queries being seen for first time and has initialized its queryDisplay
-        rootspan = tracer.spanBuilder(queryID + " - live").startSpan();
+        rootspan = tracer.spanBuilder(queryID + " - live")
+                .setStartTimestamp(lQuery.getBeginTime(), TimeUnit.MILLISECONDS).startSpan();
         Set<String> completedTasks = new HashSet<>();
         Context parentContext = Context.current().with(rootspan);
 
-        Span initSpan = tracer.spanBuilder(queryID + " - live").setParent(parentContext).startSpan()
+        Span initSpan = tracer.spanBuilder(queryID + " - live").setParent(parentContext)
+                .setStartTimestamp(lQuery.getBeginTime(), TimeUnit.MILLISECONDS).startSpan()
                 .setAttribute("QueryId", queryID)
                 .setAttribute("QueryString", lQuery.getQueryDisplay().getQueryString())
-                .setAttribute("BeginTime", lQuery.getBeginTime());
+                .setAttribute("UserName", lQuery.getUserName());
         if (lQuery.getQueryDisplay().getErrorMessage() != null) {
           initSpan.setAttribute("ErrorMessage", lQuery.getQueryDisplay().getErrorMessage());
         }
-        initSpan.end();
+        initSpan.end(lQuery.getBeginTime(), TimeUnit.MILLISECONDS);
 
         for (QueryDisplay.TaskDisplay task : lQuery.getQueryDisplay().getTaskDisplays()) {
           if (task.getReturnValue() != null && task.getEndTime() != null) {
@@ -121,12 +123,13 @@ public class OTELExporter extends Thread {
                     .end(task.getEndTime(), TimeUnit.MILLISECONDS);
           }
         }
-        queryIdToSpanMap.put(queryID,rootspan);
-        queryIdToTasksMap.put(queryID,completedTasks);
+        
+        queryIdToSpanMap.put(queryID, rootspan);
+        queryIdToTasksMap.put(queryID, completedTasks);
       }
     }
 
-    List<String> historicalQueryIDs = new ArrayList<>();
+    Set<String> historicalQueryIDs = new HashSet<>();
     for (QueryInfo hQuery : historicalQueries) {
       String hQueryId = hQuery.getQueryDisplay().getQueryId();
       historicalQueryIDs.add(hQueryId);
@@ -146,24 +149,26 @@ public class OTELExporter extends Thread {
         }
 
         //Update the rootSpan name & attributes before ending it
-        rootspan.updateName(hQueryId + " - completed").setAllAttributes(addQueryAttributes(hQuery)).end();
+        rootspan.updateName(hQueryId + " - completed").setAllAttributes(addQueryAttributes(hQuery))
+                .end(hQuery.getEndTime(), TimeUnit.MILLISECONDS);
         historicalQueryId.add(hQueryId);
       }
 
       //For queries that already ended either before OTEL service started or in between OTEL loops
       if (historicalQueryId.add(hQueryId)) {
-        rootspan = tracer.spanBuilder(hQueryId + " - completed").startSpan();
+        rootspan = tracer.spanBuilder(hQueryId + " - completed")
+                .setStartTimestamp(hQuery.getBeginTime(), TimeUnit.MILLISECONDS).startSpan();
         Context parentContext = Context.current().with(rootspan);
 
-        Span initSpan = tracer.spanBuilder(hQueryId + " - completed")
-                .setParent(parentContext).startSpan()
+        Span initSpan = tracer.spanBuilder(hQueryId + " - completed").setParent(parentContext)
+                .setStartTimestamp(hQuery.getBeginTime(), TimeUnit.MILLISECONDS).startSpan()
                 .setAttribute("QueryId", hQueryId)
                 .setAttribute("QueryString", hQuery.getQueryDisplay().getQueryString())
-                .setAttribute("BeginTime", hQuery.getBeginTime());
+                .setAttribute("UserName", hQuery.getUserName());
         if (hQuery.getQueryDisplay().getErrorMessage() != null) {
           initSpan.setAttribute("ErrorMessage", hQuery.getQueryDisplay().getErrorMessage());
         }
-        initSpan.end();
+        initSpan.end(hQuery.getBeginTime(), TimeUnit.MILLISECONDS);
 
         for (QueryDisplay.TaskDisplay task : hQuery.getQueryDisplay().getTaskDisplays()) {
           parentContext = Context.current().with(rootspan);
@@ -172,16 +177,17 @@ public class OTELExporter extends Thread {
                   .setStartTimestamp(task.getBeginTime(), TimeUnit.MILLISECONDS).startSpan()
                   .end(task.getEndTime(), TimeUnit.MILLISECONDS);
         }
-        rootspan.setAllAttributes(addQueryAttributes(hQuery)).end();
+        
+        rootspan.setAllAttributes(addQueryAttributes(hQuery)).end(hQuery.getEndTime(), TimeUnit.MILLISECONDS);
       }
     }
+    
     historicalQueryId.retainAll(historicalQueryIDs);
   }
 
   private AttributesMap addQueryAttributes(QueryInfo query){
     AttributesMap attributes = AttributesMap.create(Long.MAX_VALUE, Integer.MAX_VALUE);
     attributes.put(AttributeKey.stringKey("QueryId"), query.getQueryDisplay().getQueryId());
-    attributes.put(AttributeKey.stringKey("QueryString"), query.getQueryDisplay().getQueryString());
     attributes.put(AttributeKey.longKey("QueryStartTime"), query.getQueryDisplay().getQueryStartTime());
     attributes.put(AttributeKey.longKey("EndTime"), query.getEndTime());
     attributes.put(AttributeKey.stringKey("OperationId"), query.getOperationId());
