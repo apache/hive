@@ -429,6 +429,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   private void open() throws MetaException {
     isConnected = false;
     TTransportException tte = null;
+    IOException ioException = null;
     boolean useSSL = MetastoreConf.getBoolVar(conf, ConfVars.USE_SSL);
     boolean useSasl = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_SASL);
     boolean useFramedTransport = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_FRAMED_TRANSPORT);
@@ -456,6 +457,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                   trustStorePath, trustStorePassword );
               LOG.info("Opened an SSL connection to metastore, current connections: " + connCount.incrementAndGet());
             } catch(IOException e) {
+              ioException = e;
               throw new IllegalArgumentException(e);
             } catch(TTransportException e) {
               tte = e;
@@ -495,6 +497,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                     transport, MetaStoreUtils.getMetaStoreSaslProperties(conf, useSSL));
               }
             } catch (IOException ioe) {
+              ioException = ioe;
               LOG.error("Couldn't create client transport", ioe);
               throw new MetaException(ioe.toString());
             }
@@ -561,8 +564,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
 
     if (!isConnected) {
+      Throwable exceptionToUse = (ioException != null) ? ioException : tte;
       throw new MetaException("Could not connect to meta store using any of the URIs provided." +
-        " Most recent failure: " + StringUtils.stringifyException(tte));
+        " Most recent failure: " + exceptionToUse.getCause());
     }
 
     snapshotActiveConf();
