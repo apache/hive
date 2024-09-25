@@ -305,36 +305,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
-<<<<<<< HEAD
                 reduceColumnNullOrder: zzzz
                 reduceColumnSortOrder: ++++
-=======
-                reduceColumnNullOrder: zzzzz
-                reduceColumnSortOrder: +++++
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 11
-                    dataColumns: KEY.reducesinkkey0:int, KEY.reducesinkkey1:bigint, KEY.reducesinkkey2:string, KEY.reducesinkkey3:bigint, KEY.reducesinkkey4:string, VALUE._col0:bigint, VALUE._col1:string, VALUE._col2:string, VALUE._col3:int, VALUE._col4:string, VALUE._col5:string
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
-            Reduce Operator Tree:
-                Select Vectorization:
-                    className: VectorSelectOperator
-                    native: true
-                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-                  File Sink Vectorization:
-                      className: VectorFileSinkOperator
-                      native: false
-        Reducer 7 
-            Execution mode: vectorized
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
-                reduceColumnNullOrder: zzzzz
-                reduceColumnSortOrder: +++++
->>>>>>> f7ae7daa2c (update q.out files)
                 allNative: false
                 usesVectorUDFAdaptor: true
                 vectorized: true
