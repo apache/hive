@@ -114,8 +114,8 @@ optimizeTableStatementSuffix
 optimizeTblRewriteDataSuffix
 @init { gParent.msgs.push("compaction request"); }
 @after { gParent.msgs.pop(); }
-    : KW_REWRITE KW_DATA
-    -> ^(TOK_ALTERTABLE_COMPACT Identifier["'MAJOR'"] TOK_BLOCKING)
+    : KW_REWRITE KW_DATA whereClause?
+    -> ^(TOK_ALTERTABLE_COMPACT Identifier["'MAJOR'"] TOK_BLOCKING whereClause?)
     ;
 
 alterStatementPartitionKeyType
