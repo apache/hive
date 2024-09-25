@@ -1,304 +1,107 @@
-Release Notes - Hive - Version 4.0.0
+Release Notes - Hive - Version 4.0.1
 
 ** Sub-task
-    * [HIVE-26455] - Remove PowerMockito from hive-exec
-    * [HIVE-26621] - TPC-DS query 2 fails with java.lang.RuntimeException: cannot find field _col0 from []
-    * [HIVE-27006] - ParallelEdgeFixer inserts misconfigured operator and does not connect it in Tez DAG
-    * [HIVE-27031] - Iceberg: Implement Copy-On-Write for Delete queries
-    * [HIVE-27269] - VectorizedMapJoin returns wrong result for TPC-DS query 97
-    * [HIVE-27277] - Set up github actions workflow to build and push docker image to docker hub
-    * [HIVE-27322] - Iceberg: metadata location overrides can cause data breach - custom location to AuthZ
-    * [HIVE-27399] - Add lateral view support for CBO
-    * [HIVE-27523] - Implement array_union UDF in Hive
-    * [HIVE-27597] - Implement JDBC Connector for HiveServer 
-    * [HIVE-27630] - Iceberg: Fast forward branch
-    * [HIVE-27654] - Iceberg: Cherry-Pick commit to a branch
-    * [HIVE-27670] - Failed to build the image locally on Apple silicon
-    * [HIVE-27701] - Remove PowerMock from llap-client and upgrade mockito to 4.11
-    * [HIVE-27702] - Remove PowerMock from beeline and upgrade mockito to 4.11
-    * [HIVE-27704] - Remove PowerMock from jdbc-handler and upgrade mockito to 4.11
-    * [HIVE-27705] - Remove PowerMock from service (hive-service) and upgrade mockito to 4.11
-    * [HIVE-27711] - Allow creating a branch from tag name
-    * [HIVE-27714] - Iceberg: metadata location overrides can cause data breach - handling default locations 
-    * [HIVE-27716] - Precommit: Save log files for first 10 failures
-    * [HIVE-27736] - Remove PowerMock from itests-jmh and upgrade mockito
-    * [HIVE-27783] - Iceberg: Implement Copy-On-Write for Update queries
-    * [HIVE-27794] - Iceberg: Implement Copy-On-Write for Merge queries
-    * [HIVE-27880] - Iceberg: Support creating a branch on an empty table
-    * [HIVE-27926] - Iceberg: Allow restricting Iceberg data file reads to table location
-    * [HIVE-27955] - Missing Postgres driver when start services from Docker compose
-    * [HIVE-28016] - Iceberg: NULL column values handling in COW mode
+    * [HIVE-28254] - CBO (Calcite Return Path): Multiple DISTINCT leads to wrong results
+    * [HIVE-28349] - SHOW TABLES with invalid connector, giving 0 results, instead of failing
+    * [HIVE-28350] - Drop remote database succeeds but fails while deleting data under
 
 
 
 ** Bug
-    * [HIVE-17350] - metrics errors when retrying HS2 startup
-    * [HIVE-21213] - Acid table bootstrap replication needs to handle directory created by compaction with txn id
-    * [HIVE-21520] - Query "Submit plan" time reported is incorrect
-    * [HIVE-22961] - Drop function in Hive should not send request for drop database to Ranger plugin. 
-    * [HIVE-24219] - Disable flaky TestStreaming
-    * [HIVE-24606] - Multi-stage materialized CTEs can lose intermediate data
-    * [HIVE-24730] - Shims classes override values from hive-site.xml and tez-site.xml silently
-    * [HIVE-24771] - Fix hang of TransactionalKafkaWriterTest 
-    * [HIVE-25803] - URL Mapping appends default Fs scheme even for LOCAL DIRECTORY ops
-    * [HIVE-26713] - StringExpr ArrayIndexOutOfBoundsException with LIKE '%xxx%'
-    * [HIVE-26818] - Beeline module misses transitive dependencies due to shading
-    * [HIVE-26828] - Fix OOM for hybridgrace_hashjoin_2.q
-    * [HIVE-26837] - CTLT with hive.create.as.external.legacy as true creates managed table instead of external table
-    * [HIVE-26961] - Fix improper replication metric count when hive.repl.filter.transactions is set to true.
-    * [HIVE-27093] - Fix NPE in initialize() of Partition class
-    * [HIVE-27113] - Increasing default for hive.thrift.client.max.message.size to 2 GB
-    * [HIVE-27114] - Provide a configurable filter for removing useless properties in Partition objects from listPartitions HMS Calls
-    * [HIVE-27138] - MapJoinOperator throws NPE when computing OuterJoin with filter expressions on small table
-    * [HIVE-27161] - MetaException when executing CTAS query in Druid storage handler
-    * [HIVE-27240] - NPE on Hive Hook Proto Log Writer
-    * [HIVE-27304] - Exclude CTAS condition while forming storage handler url permissions in HS2 authorizer.
-    * [HIVE-27324] - Hive query with NOT IN condition is giving incorrect results when the sub query table contains the null value.
-    * [HIVE-27428] - CTAS fails with SemanticException when join subquery has complex type column and false filter predicate
-    * [HIVE-27446] - Exception when rebuild materialized view incrementally in presence of delete operations
-    * [HIVE-27463] - Non-daemon thread prevents HMS from exiting when failed to start thrift server
-    * [HIVE-27487] - NPE in Hive JDBC storage handler
-    * [HIVE-27489] - HPL/SQL does not support table aliases on column names in loops
-    * [HIVE-27490] - HPL/SQL says it support default value for parameters but not considering them when no value is passed
-    * [HIVE-27492] - HPL/SQL built-in functions like sysdate not working
-    * [HIVE-27536] - Merge task must be invoked after optimisation for external CTAS queries
-    * [HIVE-27539] - Drop renamed external table fails when hive.metastore.try.direct.sql.ddl is disabled
-    * [HIVE-27555] - Upgrade issues with Kudu table on backend db
-    * [HIVE-27562] - Iceberg: Fetching virtual columns failing
-    * [HIVE-27566] - Fix some yarn cluster options for tests
-    * [HIVE-27582] - Do not cache HBase table input format in FetchOperator
-    * [HIVE-27631] - Fix CCE when set fs.hdfs.impl other than DistributedFileSystem
-    * [HIVE-27632] - ClassCast Exception in Vectorization converting decimal64 to decimal
-    * [HIVE-27642] - StartMiniHS2Cluster fails to run due to missing JDBC driver with Postgres
-    * [HIVE-27643] - Exclude compaction queries from ranger policies
-    * [HIVE-27648] - CREATE TABLE with CHECK constraint fails with SemanticException
-    * [HIVE-27649] - Support ORDER BY clause in subqueries with set operators
-    * [HIVE-27650] - Oracle init-db is flaky
-    * [HIVE-27651] - Upgrade hbase version
-    * [HIVE-27657] - Change hive.fetch.task.conversion.threshold default value
-    * [HIVE-27658] - Error resolving join keys during conversion to dynamic partition hashjoin
-    * [HIVE-27662] - Incorrect parsing of nested complex types containing map during vectorized text processing
-    * [HIVE-27667] - Fix get partitions with max_parts
-    * [HIVE-27675] - Support keystore/truststore types for hive to zookeeper integration points
-    * [HIVE-27679] - Ranger Yarn Queue policies are not applying correctly, rework done for HIVE-26352
-    * [HIVE-27682] - AlterTableAlterPartitionOperation cannot change the type if the column has default partition
-    * [HIVE-27695] - Intermittent OOM when running TestMiniTezCliDriver
-    * [HIVE-27713] - Iceberg: metadata location overrides can cause data breach
-    * [HIVE-27728] - Changed behavior for alter table rename partition from legacy tables
-    * [HIVE-27730] - Bump org.xerial.snappy:snappy-java from 1.1.10.1 to 1.1.10.4
-    * [HIVE-27733] - Intermittent ConcurrentModificationException in HiveServer2
-    * [HIVE-27738] - SchemaTool picks incorrect schema script after 4.0.0-beta-1 release
-    * [HIVE-27749] - SchemaTool initSchema fails on Mariadb 10.2
-    * [HIVE-27760] - WHERE condition on DATE type partitioning column leads to wrong results 
-    * [HIVE-27764] - Authentication does not work behind Knox gateway because the "WWW-Authenticate: Negotiate" response header is missing
-    * [HIVE-27772] - UNIX_TIMESTAMP should return NULL when date fields are out of bounds
-    * [HIVE-27775] - DirectSQL and JDO results are different when fetching partitions by timestamp in DST shift
-    * [HIVE-27777] - CBO fails on multi insert overwrites with common group expression
-    * [HIVE-27778] - Alter table command gives error after computer stats is run with Impala
-    * [HIVE-27797] - Transactions that got timed out are not getting logged as 'ABORTED' in NOTIFICATION_LOG
-    * [HIVE-27798] - Correct configuration item in hive-site.xml in docker.
-    * [HIVE-27801] - Exists subquery rewrite results in a wrong plan
-    * [HIVE-27804] - Implement batching in getPartition calls which returns partition list along with auth info
-    * [HIVE-27846] - Tests under hive-unit module are not running
-    * [HIVE-27849] - Replication tests using ivy fail after the upgrade to 2.5.2
-    * [HIVE-27857] - Do not check write permission while dropping external table or partition
-    * [HIVE-27862] - Map propertyContent to a wrong column in package.jdo
-    * [HIVE-27865] - HMS in http mode shuts down silently with no errors
-    * [HIVE-27866] - JDBC: HttpRequestInterceptorBase should not add an empty "Cookie:" header to the request if no custom cookies have been specified
-    * [HIVE-27867] - Incremental materialized view throws NPE whew Iceberg source table is empty
-    * [HIVE-27876] - Incorrect query results on tables with ClusterBy & SortBy
-    * [HIVE-27885] - Cast decimal from string with space without digits before dot returns NULL
-    * [HIVE-27890] - Tez Progress bar is not displayed in Beeline upon setting session level execution engine to Tez
-    * [HIVE-27892] - Hive "insert overwrite table" for multiple partition table issue
-    * [HIVE-27893] - Add a range validator in hive.metastore.batch.retrieve.max to only have values greater than 0
-    * [HIVE-27914] - Fix the missing partitions judgement in drop_partitions_req
-    * [HIVE-27916] - Increase tez.am.resource.memory.mb for TestIcebergCliDrver to 512MB
-    * [HIVE-27924] - Incremental rebuild goes wrong when inserts and deletes overlap between the source tables
-    * [HIVE-27930] - Insert/Load overwrite table partition does not clean up directory before overwriting
-    * [HIVE-27938] - Iceberg: Fix java.lang.ClassCastException during vectorized reads on partition columns 
-    * [HIVE-27942] - Missing aux jar errors during LLAP launch 
-    * [HIVE-27943] - NPE in VectorMapJoinCommonOperator.setUpHashTable when running query with join on date
-    * [HIVE-27948] - Wrong results when using materialized views with non-deterministic/dynamic functions
-    * [HIVE-27950] - STACK UDTF returns wrong results when # of argument is not a multiple of N
-    * [HIVE-27951] - hcatalog dynamic partitioning fails with partition already exist error when exist parent partitions path
-    * [HIVE-27952] - Hive fails to create SslContextFactory when KeyStore has multiple certificates
-    * [HIVE-27960] - Invalid function error when using custom udaf
-    * [HIVE-27962] - Iceberg: Runtime predicate pushdown doesn't work
-    * [HIVE-27963] - Build failure when license-maven-plugin downloads bsd-license.php
-    * [HIVE-27966] - Disable flaky testFetchResultsOfLogWithOrientation
-    * [HIVE-27967] - Iceberg: Fix dynamic runtime filtering
-    * [HIVE-27974] - Fix flaky test - TestReplicationMetricCollector.testSuccessStageFailure
-    * [HIVE-27988] - Do not convert FullOuterJoin with filter to MapJoin
-    * [HIVE-27989] - Wrong database name in MetaException from MetastoreDefaultTransformer.java
-    * [HIVE-27993] - Netty4 ShuffleHandler: should use 1 boss thread
-    * [HIVE-27999] - Run Sonar analysis using Java 17
-    * [HIVE-28000] -  Hive QL : "not in" clause gives incorrect results when type coercion cannot take place.
-    * [HIVE-28004] - DELETE on ACID table failed with NoClassDefFoundError: com/sun/tools/javac/util/List
-    * [HIVE-28009] - Shared work optimizer ignores schema merge setting in case of virtual column difference
-    * [HIVE-28013] - No space left on device when running precommit tests
-    * [HIVE-28017] - Add generated protobuf code
-    * [HIVE-28021] - Iceberg: Attempting to create a table with a percent symbol fails
-    * [HIVE-28048] - Hive cannot run ORDER BY queries on Iceberg tables partitioned by decimal columns
-    * [HIVE-28050] - Disable Incremental non aggregated materialized view rebuild in presence of delete operations
-    * [HIVE-28052] - Iceberg: Major QB Compaction fails with ClassNotFoundException: org.springframework.core.ErrorCoded
-    * [HIVE-28053] - Incorrect shading configuration for beeline jar-with-dependencies
-    * [HIVE-28054] - SemanticException for join condition in subquery
-    * [HIVE-28057] - Iceberg: Branches with non-lowercase characters can't be accessed
-    * [HIVE-28058] - Iceberg Drop Branch is case insesitive
-    * [HIVE-28065] - Upgrade Bouncy castle to bcprov-jdk18on 1.77
-    * [HIVE-28073] - Upgrade jackson version to 2.16.1
-    * [HIVE-28076] - Selecting data from a bucketed table with decimal column type throwing NPE.
-    * [HIVE-28084] - Iceberg: COW fix for Merge operation
-    * [HIVE-28102] - Iceberg: Invoke validateDataFilesExist for RowDelta operations
-    * [HIVE-28108] - After setting UpdateInputAccessTimeHook query fail Table Not Found. when use 'with xxx as ...'
-    * [HIVE-28111] - FSCountersSummary is only printed when LLAP IO is enabled
-    * [HIVE-28123] - Add Generated Protobuf code for 3.24.4 Upgrade
+    * [HIVE-23964] - SemanticException in query 30 while generating logical plan
+    * [HIVE-26018] - The result of UNIQUEJOIN on Hive on Tez is inconsistent with that of MR
+    * [HIVE-26339] - Vectorized LIKE UDF optimization
+    * [HIVE-27357] - Map-side SMB Join returns incorrect result when it 2 tables have different bucket size
+    * [HIVE-27498] - Support custom delimiter in SkippingTextInputFormat
+    * [HIVE-27653] - Iceberg: Add conflictDetectionFilter to validate concurrently added data and delete files
+    * [HIVE-27847] -  Prevent query Failures on Numeric <-> Timestamp
+    * [HIVE-27995] - Fix inconsistent behavior of LOAD DATA command for partitioned and non-partitioned tables
+    * [HIVE-28006] - Materialized view with aggregate function incorrectly shows it allows incremental rebuild
+    * [HIVE-28042] - DigestMD5 token expired or does not exist error while opening a new connection to HMS
+    * [HIVE-28082] - HiveAggregateReduceFunctionsRule could generate an inconsistent result
+    * [HIVE-28098] - Fails to copy empty column statistics of materialized CTE
+    * [HIVE-28121] - Use direct SQL for transactional altering table parameter
+    * [HIVE-28129] - Execute statement doesnot report the correct query string information
+    * [HIVE-28143] - After HIVE-27492 fix, some HPLSQL built-in functions like trim, lower are not working when used in insert statement.
+    * [HIVE-28161] - Incorrect Copyright years in META-INF/NOTICE files
+    * [HIVE-28166] - Iceberg: Truncate on branch operates on the main table
+    * [HIVE-28167] - Full table deletion fails when converting to truncate for Iceberg and ACID tables
+    * [HIVE-28173] - Issues with staging dirs with materialized views on HDFS encrypted table
+    * [HIVE-28190] - Materialized view rebuild lock heart-beating is broken
+    * [HIVE-28202] - Incorrect projected column size after ORC upgrade to v1.6.7 
+    * [HIVE-28207] - NullPointerException is thrown when checking column uniqueness
+    * [HIVE-28214] - HPLSQL not using the hive variables passed through beeline using --hivevar option
+    * [HIVE-28215] - Signalling CONDITION HANDLER is not working in HPLSQL.
+    * [HIVE-28217] - The default jdbc port does not take effect
+    * [HIVE-28225] - Iceberg: Delete on entire table fails on COW mode
+    * [HIVE-28239] - Fix bug on HMSHandler#checkLimitNumberOfPartitions
+    * [HIVE-28247] - Execute immediate 'select count(*) from tbl' throwing ClassCastException in hplsql mode.
+    * [HIVE-28253] - Unable to set the value for hplsql.onerror in hplsql mode.
+    * [HIVE-28260] - CreateTableEvent wrongly skips authorizing DFS_URI for managed table 
+    * [HIVE-28262] - Single column use MultiDelimitSerDe parse column error
+    * [HIVE-28264] - OOM/slow compilation when query contains SELECT clauses with nested expressions
+    * [HIVE-28266] - Iceberg: select count(*) from data_files metadata tables gives wrong result
+    * [HIVE-28270] - Fix missing partition paths  bug on drop_database
+    * [HIVE-28271] - DirectSql fails for AlterPartitions
+    * [HIVE-28278] - Iceberg: Stats: IllegalStateException Invalid file: file length 0
+    * [HIVE-28282] - Merging into iceberg table fails with copy on write when values clause has a function call
+    * [HIVE-28285] - Exception when querying JDBC tables with Hive/DB column types mismatch
+    * [HIVE-28287] - Attempt make the scratch directory writable before failing
+    * [HIVE-28291] - Fix Partition spec is incorrect in getPartitionsByFilter RPC
+    * [HIVE-28300] - ALTER TABLE CONCATENATE on a List Bucketing Table fails when using Tez.
+    * [HIVE-28305] - ProfileServlet: add html to output formats and prepare for profiler 3.0
+    * [HIVE-28307] - Fast return when database exists and IF NOT EXISTS clause is enabled
+    * [HIVE-28309] - Task Execution Summary duration is not displayed
+    * [HIVE-28325] - Lack of "owner" in HivePrivilegeObject causes Ranger slowness at compilation time
+    * [HIVE-28326] - Enabling hive.stageid.rearrange causes NullPointerException
+    * [HIVE-28327] - Missing null-check in TruncDateFromTimestamp
+    * [HIVE-28334] - Support queries with function expression in the prepare execute workflow
+    * [HIVE-28337] - Process timestamps at UTC timezone instead of local timezone in MetaStoreUtils
+    * [HIVE-28338] - Client connection count is not correct in HiveMetaStore#close
+    * [HIVE-28347] - Make a UDAF 'collect_set' work with complex types, even when map-side aggregation is disabled.
+    * [HIVE-28353] - Iceberg: Reading *Files Metadata table files if the column is of TIMESTAMP type
+    * [HIVE-28355] - Fix intermittent failure of TestHplSqlViaBeeLine#testUNIX_TIMESTAMPHplSQLFunction
+    * [HIVE-28360] - Upgrade jersey to version 1.19.4,
+    * [HIVE-28368] - Iceberg: Unable to read PARTITIONS Metadata table
+    * [HIVE-28369] - LLAP proactive eviction fails with NullPointerException
+    * [HIVE-28431] - Fix RexLiteral to ExprNode conversion if the literal is an empty string
+    * [HIVE-28436] - Incorrect syntax in Hive schema file for table MIN_HISTORY_LEVEL
+    * [HIVE-28439] - Iceberg: Bucket partition transform with DECIMAL can throw NPE
+    * [HIVE-28451] - JDBC: TableName matcher fix in GenericJdbcDatabaseAccessor#addBoundaryToQuery
+    * [HIVE-28456] - ObjectStore updatePartitionColumnStatisticsInBatch can cause connection starvation 
+    * [HIVE-28480] - Disable SMB on partition hash generator mismatch across join branches in previous RS
+    * [HIVE-28482] - Iceberg: CTAS, CTLT query failure while fetching URI for authorization
+    * [HIVE-28483] - CAST string to date should return null when format is invalid
+    * [HIVE-28484] - SharedWorkOptimizer leaves residual unused operator tree that send DPP events to unknown operators
+    * [HIVE-28487] - Outdated MetastoreSchemaTool class reference in schemaTool.sh
+    * [HIVE-28515] - Iceberg: Concurrent queries fail during commit with ValidationException
 
 
-** New Feature
-    * [HIVE-26222] - Native GeoSpatial Support in Hive
-    * [HIVE-26435] - Add method for collecting HMS meta summary
-    * [HIVE-27850] - Iceberg: Major QB Compaction
-    * [HIVE-27980] - Hive Iceberg Compaction: add support for OPTIMIZE TABLE syntax
 
 
 ** Improvement
-    * [HIVE-21100] - Allow flattening of table subdirectories resulted when using TEZ engine and UNION clause
-    * [HIVE-23558] - Remove compute_stats UDAF
-    * [HIVE-24815] - Remove "IDXS" Table from Metastore Schema
-    * [HIVE-25576] - Configurable datetime formatter for unix_timestamp, from_unixtime
-    * [HIVE-25972] - HIVE_VECTORIZATION_USE_ROW_DESERIALIZE in hiveconf.java imply default value is false，in fact the default value is 'true'
-    * [HIVE-26445] - Use tez.local.mode.without.network for qtests
-    * [HIVE-26630] - Introduce copy-on-write DML implementations for Iceberg tables
-    * [HIVE-26666] - Filter out compactions by id to minimise  expense of db operations
-    * [HIVE-27022] - Split removeDuplicateCompletedTxnComponents away from AcidHouseKeeper and onto a separate timer
-    * [HIVE-27023] - Add setting to disable hive session being started during Hive Cli startup
-    * [HIVE-27182] - tez_union_with_udf.q with TestMiniTezCliDriver is flaky
-    * [HIVE-27309] - Large number of partitions and small files causes OOM in query coordinator
-    * [HIVE-27346] - Getting exception for wildcard (*) search for database and table name
-    * [HIVE-27396] - Use -strict argument for Thrift code generation to prevent compatibility issues
-    * [HIVE-27405] - Throw out the detail error Invalid partition name to the clients
-    * [HIVE-27406] - CompactionTxnHandler cleanup
-    * [HIVE-27461] - HiveMetaStoreAuthorizer should log the root cause of checkPrivileges
-    * [HIVE-27481] - TxnHandler cleanup
-    * [HIVE-27516] - Add programatically added DAG scoped properties to DAG Configuration
-    * [HIVE-27525] - Ease the write permissions on external table during create table operation
-    * [HIVE-27530] - Implement direct SQL for alter partitions to improve performance
-    * [HIVE-27554] - Validate URL used by SSO workflow for JDBC connection
-    * [HIVE-27563] - Add typeof UDF
-    * [HIVE-27564] - Add log for ZooKeeperTokenStore
-    * [HIVE-27575] - MASK_HASH UDF generate a log per row
-    * [HIVE-27578] - Refactor genJoinRelNode to use genAllRexNode instead of genAllExprNodeDesc
-    * [HIVE-27585] - Upgrade kryo serialization lib to latest version
-    * [HIVE-27586] - Parse dates from strings ignoring trailing (potentialy) invalid chars
-    * [HIVE-27593] - Iceberg: Keep iceberg properties in sync with hms properties
-    * [HIVE-27595] - Improve efficiency in the filtering hooks
-    * [HIVE-27599] - ConvertAstToSearchArg improvement with output and typo in comments
-    * [HIVE-27600] - Reduce filesystem calls in OrcFileMergeOperator
-    * [HIVE-27627] - Iceberg: Insert into/overwrite partition support
-    * [HIVE-27633] - HMS: MTable to Table process reduces view related SQL
-    * [HIVE-27645] - Clean test cases by refactoring assertFalse(equals()) using assertNotEquals & @Test(excepted) using assertThrows
-    * [HIVE-27646] - Iceberg: Retry query when concurrent write queries fail due to conflicting writes
-    * [HIVE-27656] - Upgrade jansi.version to 2.4.0 
-    * [HIVE-27661] - Auth mode inferred from the Authorization header
-    * [HIVE-27664] - AlterTableSetLocationAnalyzer threw a confusing exception "Cannot connect to namenode"
-    * [HIVE-27665] - Change Filter Parser on HMS to allow backticks
-    * [HIVE-27672] - Iceberg: Truncate partition support
-    * [HIVE-27673] - Configurable datetime formatter for date_format
-    * [HIVE-27686] - Use ORC 1.8.5.
-    * [HIVE-27690] - Handle casting NULL literal to complex type
-    * [HIVE-27692] - Explore removing the always task from embedded HMS
-    * [HIVE-27694] - Include HiveIcebergSerDe in default list of serdes using HMS
-    * [HIVE-27696] - Docker build from source should include iceberg profile
-    * [HIVE-27723] - Prevent localizing the same original file more than once if symlinks are present
-    * [HIVE-27729] - Iceberg: Check Iceberg type in AlterTableExecuteAnalyzer
-    * [HIVE-27731] - Perform metadata delete when only static filters are present
-    * [HIVE-27752] - Remove DagUtils duplicate class
-    * [HIVE-27755] - Quote identifiers in SQL emitted by SchemaTool for MySQL
-    * [HIVE-27757] - Upgrade hadoop to 3.3.6
-    * [HIVE-27762] - Don't fall back to jdo query in ObjectStore if direct sql throws unrecoverable exception
-    * [HIVE-27771] - Iceberg: Allow expire snapshot by time range
-    * [HIVE-27779] - Iceberg: Drop partition support
-    * [HIVE-27780] - Implement direct SQL for get_all_functions
-    * [HIVE-27786] - Iceberg: Eliminate engine.hive.enabled table property
-    * [HIVE-27789] - Iceberg: Add a way to expire snapshots with retain last
-    * [HIVE-27793] - Iceberg: Support setting current snapshot with SnapshotRef
-    * [HIVE-27799] - Bump org.apache.zookeeper:zookeeper from 3.7.1 to 3.7.2
-    * [HIVE-27802] - Simplify TestTezSessionState.testSymlinkedLocalFilesAreLocalizedOnce
-    * [HIVE-27803] - Bump org.apache.avro:avro from 1.11.1 to 1.11.3
-    * [HIVE-27819] - Iceberg: Upgrade iceberg version to 1.4.2
-    * [HIVE-27825] - Better error message for an empty quoted identifier
-    * [HIVE-27826] - Upgrade to Parquet 1.13.1
-    * [HIVE-27827] - Improve performance of direct SQL implement for getPartitionsByFilter
-    * [HIVE-27828] - Iceberg integration: enable copy on write update when split update is on
-    * [HIVE-27845] - Upgrade protobuf to 3.24.4 to fix CVEs
-    * [HIVE-27856] - Change the default value of hive.optimize.cte.materialize.threshold to -1
-    * [HIVE-27864] - Update plugin for SBOM generation to 2.7.10
-    * [HIVE-27869] - Iceberg: Select on HadoopTable fails at HiveIcebergStorageHandler#canProvideColStats
-    * [HIVE-27871] - Fix some formatting problems is YarnQueueHelper
-    * [HIVE-27877] - Bump org.apache.avro:avro from 1.11.1 to 1.11.3 
-    * [HIVE-27889] - Bump org.apache.santuario:xmlsec from 2.3.0 to 2.3.4
-    * [HIVE-27894] - Enhance HMS Handler Logs for all 'get_partition' functions.
-    * [HIVE-27896] - Remove common-lang usage
-    * [HIVE-27903] - Iceberg: Implement Expire Snapshot with default table properties
-    * [HIVE-27905] - Some GenericUDFs wrongly cast ObjectInspectors
-    * [HIVE-27906] - Iceberg: Implement Delete Orphan Files
-    * [HIVE-27911] - Drop database query failing with Invalid ACL Exception
-    * [HIVE-27912] - Include Iceberg module in nightly builds
-    * [HIVE-27918] - Iceberg: Push transforms for clustering during table writes
-    * [HIVE-27919] - Constant reduction in CBO does not work for FROM_UNIXTIME, DATE_ADD, DATE_SUB, TO_UNIX_TIMESTAMP
-    * [HIVE-27925] - HiveConf: unify ConfVars enum and use underscore for better readability 
-    * [HIVE-27934] - Fix incorrect description about the execution framework in README.md
-    * [HIVE-27935] - Add qtest for Avro invalid schema and field names
-    * [HIVE-27936] - Disable flaky test testBootstrapAcidTablesDuringIncrementalWithConcurrentWrites
-    * [HIVE-27937] - Clarifying comments and xml configs around tez container size
-    * [HIVE-27958] - Refactor DirectSqlUpdatePart class
-    * [HIVE-27961] - Beeline will print duplicate stats info when hive.tez.exec.print.summary is true
-    * [HIVE-27969] - Add verbose logging for schematool and metastore service for Docker container
-    * [HIVE-27977] - Fix ordering flakiness in TestHplSqlViaBeeLine
-    * [HIVE-27978] - Tests in hive-unit module are not running again
-    * [HIVE-27979] - HMS alter_partitions log adds table name
-    * [HIVE-27984] - Support backward compatibility of hms thrift struct about column stats
-    * [HIVE-27991] - Utilise FanoutWriters when inserting records in an Iceberg table when the records are unsorted
-    * [HIVE-27992] - Upgrade to tez 0.10.3
-    * [HIVE-27994] - Optimize renaming the partitioned table
-    * [HIVE-28008] - ParquetFileReader is not closed in ParquetHiveSerDe.readSchema
-    * [HIVE-28015] - Iceberg: Add identifier-field-ids support in Hive
-    * [HIVE-28036] - Move checkLock method to TestTxnDbUtil
-    * [HIVE-28038] - Disable fallback to jdo for DeadlineException
-    * [HIVE-28046] - reuse SERDE constants in hive-exec module
-    * [HIVE-28051] - LLAP: cleanup local folders on startup and periodically
-    * [HIVE-28056] - Bump com.jayway.jsonpath:json-path from 2.8.0 to 2.9.0
-    * [HIVE-28064] - Add cause to ParseException for diagnosability purposes
-    * [HIVE-28071] - Sync jetty version across modules
-    * [HIVE-28078] - TestTxnDbUtil should generate csv files when we query the metastore database
-    * [HIVE-28080] - Propagate statistics from a source table to the materialized CTE
-    * [HIVE-28081] - Code refine on ClearDanglingScratchDir::removeLocalTmpFiles
-    * [HIVE-28083] - Enable HMS client/query cache for EXPLAIN queries
-    * [HIVE-28090] - correct desc of `hive.metastore.disallow.incompatible.col.type.changes`
-    * [HIVE-28093] - Re-execute DAG in case of NoCurrentDAGException
+    * [HIVE-19741] - Update documentation to reflect list of reserved words
+    * [HIVE-26537] - Deprecate older APIs in the HMS
+    * [HIVE-28028] - Remove duplicated proto reader/writer classes introduced in HIVE-19288
+    * [HIVE-28062] - Optimize get_partitions_by_names in direct sql
+    * [HIVE-28119] - Iceberg: Allow insert clause with a column list in Merge query not_matched condition
+    * [HIVE-28134] - Improve SecureCmdDoAs
+    * [HIVE-28196] - Preserve column stats when applying UDF upper/lower.
+    * [HIVE-28200] - Improve get_partitions_by_filter/expr when partition limit enabled
+    * [HIVE-28205] - Implement direct sql for get_partitions_ps_with_auth api
+    * [HIVE-28315] - Missing classes while using hive jdbc standalone jar
+    * [HIVE-28352] - Schematool fails to upgradeSchema on dbType=hive
+    * [HIVE-28399] - Improve the fetch size in HiveConnection
+    * [HIVE-28428] -  Map hash aggregation performance degradation
+    * [HIVE-28434] - Upgrade to tez 0.10.4
 
-** Test
-    * [HIVE-27431] - Clean invalid properties in test module
-    * [HIVE-27556] - Add Unit Test for KafkaStorageHandlerInfo
-    * [HIVE-27745] - Add unit test to ensure short version is inline with full version
-    * [HIVE-27747] - Generalize TestSchemaToolForMetastore to run on every supported DBMS
-    * [HIVE-28001] - Fix the flaky test TestLeaderElection
 
 
 ** Task
-    * [HIVE-22618] - Fix checkstyle violations for ParseUtils
-    * [HIVE-27526] - Cleaner should honor compaction writeIdHwm
-    * [HIVE-27558] - HBase table query does not push BETWEEN predicate to storage layer
-    * [HIVE-27589] - Iceberg: Branches of Merge/Update statements should be committed atomically
-    * [HIVE-27637] - Compare highest write ID of compaction records when trying to perform abort cleanup
-    * [HIVE-27638] - Preparing for 4.0.0-beta-2 development
-    * [HIVE-27687] - Logger variable should be static final as its creation takes more time in query compilation
-    * [HIVE-27824] - Upgrade ivy to 2.5.2 and htmlunit to 2.70.0
-    * [HIVE-27843] - Add QueryOperation to Hive proto logger for post execution hook information
-    * [HIVE-27907] - Upgrade aws-java-sdk version in HIVE
-    * [HIVE-28005] - Remove upgrade-acid module
-    * [HIVE-28020] - Iceberg: Upgrade iceberg version to 1.4.3
-    * [HIVE-28030] - LLAP util code refactor
-    * [HIVE-28043] - Upgrade ZooKeeper to 3.8.3
-    * [HIVE-28063] - Drop PerfLogger#setPerfLogger method and unused fields/methods
+    * [HIVE-28087] - Iceberg: Timestamp partition columns with transforms are not correctly sorted during insert
+    * [HIVE-28158] - Add ASF license header in non-java files
+    * [HIVE-28204] - Remove some HMS obsolete scripts
+    * [HIVE-28211] - Restore hive-exec-core jar
+    * [HIVE-28249] - Parquet legacy timezone conversion converts march 1st to 29th feb and fails with not a leap year exception
+    * [HIVE-28310] - Disable hive.optimize.join.disjunctive.transitive.predicates.pushdown by default
+
