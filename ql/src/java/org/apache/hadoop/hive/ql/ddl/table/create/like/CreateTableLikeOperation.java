@@ -155,17 +155,14 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     // with other query engines like mysql, redshift.
     originalProperties.putAll(tbl.getParameters());
     tbl.getParameters().clear();
-    if (desc.getTblProps() != null) {
-      tbl.setParameters(desc.getTblProps());
-    }
     String paramsStr = HiveConf.getVar(context.getConf(), HiveConf.ConfVars.DDL_CTL_PARAMETERS_WHITELIST);
     if (paramsStr != null) {
       Set<String> retainer = new HashSet<String>(Arrays.asList(paramsStr.split(",")));
-      for (String key : retainer) {
-        if (originalProperties.containsKey(key) && !tbl.getParameters().containsKey(key)) {
-          tbl.getParameters().put(key, originalProperties.get(key));
-        }
-      }
+      originalProperties.entrySet().stream().filter(entry -> retainer.contains(entry.getKey()))
+          .forEach(entry -> tbl.getParameters().put(entry.getKey(), entry.getValue()));
+    }
+    if (desc.getTblProps() != null) {
+      tbl.setParameters(desc.getTblProps());
     }
     HiveStorageHandler storageHandler = tbl.getStorageHandler();
     if (storageHandler != null) {
