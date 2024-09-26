@@ -212,16 +212,12 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
   private List<TableIdentifier> listIcebergTables(
           List<String> tableNames, Namespace namespace, String tableTypeProp)
           throws TException, InterruptedException {
-    List<Table> tableObjects =
-            clients.run(client -> client.getTableObjectsByName(namespace.level(0), tableNames));
+    List<Table> tableObjects = clients.run(client -> client.getTableObjectsByName(namespace.level(0), tableNames));
     return tableObjects.stream()
-            .filter(
-                table ->
-                        table.getParameters() != null &&
-                                tableTypeProp.equalsIgnoreCase(
-                                table.getParameters().get(BaseMetastoreTableOperations.TABLE_TYPE_PROP)))
-            .map(table -> TableIdentifier.of(namespace, table.getTableName()))
-            .collect(Collectors.toList());
+            .filter(table -> table.getParameters() != null && tableTypeProp
+                .equalsIgnoreCase(table.getParameters().get(BaseMetastoreTableOperations.TABLE_TYPE_PROP)))
+        .map(table -> TableIdentifier.of(namespace, table.getTableName()))
+        .collect(Collectors.toList());
   }
 
   private void renameTableOrView(
