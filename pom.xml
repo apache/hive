@@ -183,6 +183,7 @@
     <oracle.version>21.3.0.0</oracle.version>
     <opencsv.version>5.9</opencsv.version>
     <orc.version>1.9.4</orc.version>
+    <otel.version>1.42.0</otel.version>
     <mockito-core.version>3.4.4</mockito-core.version>
     <mockito-inline.version>4.11.0</mockito-inline.version>
     <mina.version>2.0.0-M5</mina.version>
