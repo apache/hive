@@ -91,6 +91,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 import org.apache.hadoop.hive.ql.session.ClearDanglingScratchDir;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorThread;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
 import org.apache.hadoop.hive.registry.impl.ZookeeperUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -1204,17 +1205,21 @@ public class HiveServer2 extends CompositeService {
   private void maybeStartCompactorThreads(HiveConf hiveConf) throws Exception {
     if (MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.HIVE_METASTORE_RUNWORKER_IN).equals("hs2")) {
       int numWorkers = MetastoreConf.getIntVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS);
-      List<Map.Entry<String, String>> entries = hiveConf.getMatchingEntries(Constants.COMPACTION_POOLS_PATTERN);
+      Map<String, Integer> customPools = CompactorUtil.getPoolConf(hiveConf);
 
       StringBuilder sb = new StringBuilder(2048);
       sb.append("This HS2 instance will act as Compactor with the following worker pool configuration:\n");
       sb.append("Global pool size: ").append(numWorkers).append("\n");
 
       LOG.info("Initializing the compaction pools with using the global worker limit: {} ", numWorkers);
-      while (numWorkers > 0 && entries.size() > 0) {
-        Map.Entry<String, String> entry = entries.remove(0);
-        String poolName = entry.getValue();
-        int poolWorkers = hiveConf.getInt(entry.getKey(), 0);
+      for (Map.Entry<String, Integer> customPool: customPools.entrySet()) {
+        
+        if (numWorkers <= 0) {
+          break;
+        }
+        
+        String poolName = customPool.getKey();
+        int poolWorkers = customPool.getValue();
 
         if (poolWorkers == 0) {
           LOG.warn("Compaction pool ({}) configured with zero workers. Skipping pool initialization", poolName);
@@ -1240,9 +1245,9 @@ public class HiveServer2 extends CompositeService {
 
       if (numWorkers == 0) {
         LOG.warn("No default compaction pool configured, all non-labeled compaction requests will remain unprocessed!");
-        if (entries.size() > 0) {
-          for (Map.Entry<String, String> entry : entries) {
-            String poolName = entry.getValue();
+        if (customPools.size() > 0) {
+          for (Map.Entry<String, Integer> entry : customPools.entrySet()) {
+            String poolName = entry.getKey();
             LOG.warn("There are no available workers for the following compaction pool: {} ", poolName);
             sb.append("Pool not initialized, no remaining free workers: ").append(poolName).append("\n");
           }

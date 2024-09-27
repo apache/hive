@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
@@ -35,6 +37,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import java.io.*;
 
@@ -171,4 +174,30 @@ public class CompactionPoolOnTezTest extends CompactorOnTezTest {
     Assert.assertTrue(p.matcher(results.get(1).toString()).matches());
   }
 
+  @Test
+  public void testCompactionWithCustomPool() throws Exception {
+    conf.setInt("hive.compactor.worker.pool1.threads", 1);
+
+    Map<String, String> properties = new HashMap<>();
+    properties.put(Constants.HIVE_COMPACTOR_WORKER_POOL, "pool1");
+    provider.createFullAcidTable(null, DEFAULT_TABLE_NAME, false, false, properties);
+    provider.insertTestData(DEFAULT_TABLE_NAME, false);
+
+    TxnCommandsBaseForTests.runInitiator(conf);
+
+    checkCompactionRequest("initiated", "pool1");
+
+    Map<String, Integer> customPools = CompactorUtil.getPoolConf(conf);
+    Assert.assertEquals(customPools.size(), 1);
+    Assert.assertEquals(customPools.get("pool1"), new Integer(1));
+    
+    Worker worker = new Worker();
+    worker.setConf(conf);
+    worker.setPoolName("pool1");
+    worker.init(new AtomicBoolean(true));
+
+    worker.run();
+
+    checkCompactionRequest("ready for cleaning", "pool1");
+  }
 }

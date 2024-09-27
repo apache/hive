@@ -7241,15 +7241,4 @@ public class HiveConf extends Configuration {
       set(e.getKey(), e.getValue());
     }
   }
-
-  public List<Map.Entry<String, String>> getMatchingEntries(Pattern regex) {
-    List<Map.Entry<String, String>> matchingEntries = new ArrayList<>();
-    for (Map.Entry<String, String> entry : this) {
-      Matcher matcher = regex.matcher(entry.getKey());
-      if (matcher.matches()) {
-        matchingEntries.add(new AbstractMap.SimpleEntry<>(entry.getKey(), matcher.group(1)));
-      }
-    }
-    return matchingEntries;
-  }
 }

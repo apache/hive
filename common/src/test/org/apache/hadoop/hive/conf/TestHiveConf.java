@@ -254,16 +254,4 @@ public class TestHiveConf {
     f2.delete();
     fileBakHiveSite.delete();
   }
-
-  @Test
-  public void testGetMatchingEntries() {
-    HiveConf conf = new HiveConf();
-    conf.setInt("hive.compactor.worker.iceberg.threads", 4);
-
-    List<Map.Entry<String, String>> entries = conf.getMatchingEntries(Constants.COMPACTION_POOLS_PATTERN);
-    
-    Assert.assertEquals(entries.size(), 1);
-    Assert.assertEquals(entries.get(0).getKey(), "hive.compactor.worker.iceberg.threads");
-    Assert.assertEquals(entries.get(0).getValue(), "iceberg");
-  }
 }
