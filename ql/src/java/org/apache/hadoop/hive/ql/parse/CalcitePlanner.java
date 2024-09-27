@@ -148,6 +148,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
@@ -307,6 +308,7 @@ import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.mapper.EmptyStatsSource;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
@@ -1038,7 +1040,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
   }
 
   @Override
-  Table materializeCTE(String cteName, CTEClause cte) throws HiveException {
+  Table materializeCTE(String cteName, CTEClause cte, HashSet<ReadEntity> parentInputs) throws HiveException {
 
     ASTNode createTable = new ASTNode(new ClassicToken(HiveParser.TOK_CREATETABLE));
 
@@ -1065,6 +1067,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       queryState.setCommandType(operation);
     }
 
+    for (ReadEntity input : analyzer.inputs) {
+      PlanUtils.addInput(parentInputs, input);
+    }
     Table table = analyzer.tableDesc.toTable(conf);
     Path location = table.getDataLocation();
     try {
