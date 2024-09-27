@@ -1567,7 +1567,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  Table materializeCTE(String cteName, CTEClause cte) throws HiveException {
+  Table materializeCTE(String cteName, CTEClause cte, Set<ReadEntity> parentInputs) throws HiveException {
 
     ASTNode createTable = new ASTNode(new ClassicToken(HiveParser.TOK_CREATETABLE));
 
@@ -1594,6 +1594,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       queryState.setCommandType(operation);
     }
 
+    for (ReadEntity input : analyzer.inputs) {
+      PlanUtils.addInput(parentInputs, input);
+    }
     Table table = analyzer.tableDesc.toTable(conf);
     Path location = table.getDataLocation();
     try {
@@ -2406,7 +2409,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               sqAliasToCTEName.put(alias, cteName);
               continue;
             }
-            tab = materializeCTE(cteName, cte);
+            tab = materializeCTE(cteName, cte, this.inputs);
           }
         } else {
           tab = materializedTab;
@@ -2495,7 +2498,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       ReadEntity parentViewInfo = PlanUtils.getParentViewInfo(getAliasId(alias, qb), viewAliasToInput);
       // Temporary tables created during the execution are not the input sources
-      if (!PlanUtils.isValuesTempTable(alias)) {
+      if (!PlanUtils.isValuesTempTable(alias) && !tab.isMaterializedTable()) {
         PlanUtils.addInput(inputs,
             new ReadEntity(tab, parentViewInfo, parentViewInfo == null), mergeIsDirect);
       }

@@ -425,7 +425,9 @@ public class SimpleFetchOptimizer extends Transform {
       Utilities.addSchemaEvolutionToTableScanOperator(table, scanOp);
       TableDesc tableDesc = Utilities.getTableDesc(table);
       if (!table.isPartitioned()) {
-        inputs.add(new ReadEntity(table, parent, !table.isView() && parent == null));
+        if (!table.isMaterializedTable()) {
+          inputs.add(new ReadEntity(table, parent, !table.isView() && parent == null));
+        }
         FetchWork work = new FetchWork(table.getPath(), tableDesc);
         PlanUtils.configureInputJobPropertiesForStorageHandler(work.getTblDesc());
         work.setSplitSample(splitSample);
