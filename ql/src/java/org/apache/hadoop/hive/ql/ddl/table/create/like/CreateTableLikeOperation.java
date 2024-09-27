@@ -151,18 +151,19 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
 
   private void setTableParameters(Table tbl, Map<String, String> originalProperties) throws HiveException {
     // With Hive-25813, we'll not copy over table properties from the source.
-    // CTLT should should copy column schema but not table properties. It is also consistent
+    // CTLT should copy column schema but not table properties. It is also consistent
     // with other query engines like mysql, redshift.
     originalProperties.putAll(tbl.getParameters());
     tbl.getParameters().clear();
-    String paramsStr = HiveConf.getVar(context.getConf(), HiveConf.ConfVars.DDL_CTL_PARAMETERS_WHITELIST);
-    if (paramsStr != null) {
-      Set<String> retainer = new HashSet<String>(Arrays.asList(paramsStr.split(",")));
-      originalProperties.entrySet().stream().filter(entry -> retainer.contains(entry.getKey()))
-          .forEach(entry -> tbl.getParameters().put(entry.getKey(), entry.getValue()));
-    }
     if (desc.getTblProps() != null) {
       tbl.setParameters(desc.getTblProps());
+    }
+    String paramsStr = HiveConf.getVar(context.getConf(), HiveConf.ConfVars.DDL_CTL_PARAMETERS_WHITELIST);
+    if (paramsStr != null) {
+      Set<String> retainer = new HashSet<>(Arrays.asList(paramsStr.split(",")));
+      originalProperties.entrySet().stream()
+              .filter(entry -> retainer.contains(entry.getKey()) && !tbl.getParameters().containsKey(entry.getKey()))
+              .forEach(entry -> tbl.getParameters().put(entry.getKey(), entry.getValue()));
     }
     HiveStorageHandler storageHandler = tbl.getStorageHandler();
     if (storageHandler != null) {
