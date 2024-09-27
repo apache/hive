@@ -188,7 +188,6 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
     public void appendWhenMatchedUpdateClause(MergeStatement.UpdateClause updateClause) {
       Table targetTable = mergeStatement.getTargetTable();
       String targetAlias = mergeStatement.getTargetAlias();
-      String onClauseAsString = mergeStatement.getOnClauseAsText();
 
       UnaryOperator<String> columnRefsFunc = value -> replaceColumnRefsWithTargetPrefix(targetAlias, value);
       sqlGenerator.append("    -- update clause (insert part)\n").append("SELECT ");
