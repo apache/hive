@@ -41,6 +41,9 @@ import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
+import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -87,6 +90,12 @@ import org.apache.hadoop.hive.metastore.messaging.json.JSONUpdatePartitionColumn
 import org.apache.hadoop.hive.metastore.messaging.json.JSONDeleteTableColumnStatMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONDeletePartitionColumnStatMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONReloadMessage;
+import org.apache.hadoop.hive.metastore.messaging.json.JsonCreateRoleMessage;
+import org.apache.hadoop.hive.metastore.messaging.json.JsonDropRoleMessage;
+import org.apache.hadoop.hive.metastore.messaging.json.JsonGrantPrivilegesMessage;
+import org.apache.hadoop.hive.metastore.messaging.json.JsonGrantRoleMessage;
+import org.apache.hadoop.hive.metastore.messaging.json.JsonRevokePrivilegesMessage;
+import org.apache.hadoop.hive.metastore.messaging.json.JsonRevokeRoleMessage;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TDeserializer;
@@ -147,6 +156,12 @@ public class MessageBuilder {
   public static final String DROP_DATACONNECTOR_EVENT = "DROP_DATACONNECTOR";
   public static final String RELOAD_EVENT = "RELOAD";
   public static final String CONFIG_CHANGE_EVENT = "CONFIG_CHANGE_EVENT";
+  public static final String CREATE_ROLE_EVENT = "CREATE_ROLE_EVENT";
+  public static final String DROP_ROLE_EVENT = "DROP_ROLE_EVENT";
+  public static final String GRANT_ROLE_EVENT = "GRANT_ROLE_EVENT";
+  public static final String REVOKE_ROLE_EVENT = "REVOKE_ROLE_EVENT";
+  public static final String GRANT_PRIVILEGES_EVENT = "GRANT_PRIVILEGES_EVENT";
+  public static final String REVOKE_PRIVILEGES_EVENT = "REVOKE_PRIVILEGES_EVENT";
 
   protected static final Configuration conf = MetastoreConf.newMetastoreConf();
 
@@ -358,6 +373,31 @@ public class MessageBuilder {
             tableObj, partObj, refreshEvent, now());
   }
 
+  public CreateRoleMessage buildCreateRoleMessage(String roleName, String ownerName) {
+    return new JsonCreateRoleMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, roleName, ownerName, now());
+  }
+
+  public DropRoleMessage buildDropRoleMessage(String roleName) {
+    return new JsonDropRoleMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, roleName, now());
+  }
+
+  public GrantRoleMessage buildGrantRoleMessage(Role role, String principalName, PrincipalType principalType, String grantor,
+      PrincipalType grantorType, boolean grantOption) {
+    return new JsonGrantRoleMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, role, principalName, principalType, grantor, grantorType, grantOption, now());
+  }
+
+  public RevokeRoleMessage buildRevokeRoleMessage(Role role, String userName, PrincipalType principalType, boolean grantOption) {
+    return new JsonRevokeRoleMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, role, userName, principalType, grantOption, now());
+  }
+
+  public GrantPrivilegesMessage buildGrantPrivilegesMessage(PrivilegeBag privileges) {
+    return new JsonGrantPrivilegesMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, privileges, now());
+  }
+
+  public RevokePrivilegesMessage buildRevokePrivilegesMessage(PrivilegeBag privileges, boolean grantOption) {
+    return new JsonRevokePrivilegesMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, privileges, grantOption, now());
+  }
+
   private long now() {
     return System.currentTimeMillis() / 1000;
   }
@@ -438,6 +478,16 @@ public class MessageBuilder {
   public static String createTableColumnStatJson(ColumnStatistics tableColumnStat) throws TException {
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
     return serializer.toString(tableColumnStat);
+  }
+
+  public static String createRoleObjJson(Role roleObj) throws TException {
+    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+    return serializer.toString(roleObj);
+  }
+
+  public static String createPrivilegesObjJson(PrivilegeBag privilegeBagObj) throws TException {
+    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+    return serializer.toString(privilegeBagObj);
   }
 
   /*

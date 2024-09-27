@@ -7954,7 +7954,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           + " belong to " + PUBLIC + " role.");
     }
     Boolean ret;
+    boolean success = false;
     try {
+      Map<String, String> transactionalListenersResponses = Collections.emptyMap();
       RawStore ms = getMS();
       Role role = ms.getRole(roleName);
       if(principalType == PrincipalType.ROLE){
@@ -7965,7 +7967,25 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
               ". (no cycles allowed)");
         }
       }
-      ret = ms.grantRole(role, principalName, principalType, grantor, grantorType, grantOption);
+      ms.openTransaction();
+      try {
+        ret = ms.grantRole(role, principalName, principalType, grantor, grantorType, grantOption);
+        if (!transactionalListeners.isEmpty()) {
+          transactionalListenersResponses =
+              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventType.GRANT_ROLE, new GrantRoleEvent(true, this, role, principalName, principalType, grantor, grantorType, grantOption));
+        }
+        success = ms.commitTransaction();
+      } finally {
+        if (!success) {
+          ms.rollbackTransaction();
+        }
+        if (!listeners.isEmpty()) {
+          MetaStoreListenerNotifier.notifyEvent(listeners, EventType.GRANT_ROLE,
+              new GrantRoleEvent(success, this, role, principalName, principalType, grantor, grantorType, grantOption), null,
+              transactionalListenersResponses, ms);
+        }
+      }
     } catch (Exception e) {
       String exInfo = "Got exception: " + e.getClass().getName() + " " + e.getMessage();
       LOG.error(exInfo, e);
@@ -8014,9 +8034,30 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (PUBLIC.equals(role.getRoleName())) {
       throw new MetaException(PUBLIC + " role implicitly exists. It can't be created.");
     }
-    Boolean ret;
+    boolean ret;
+    boolean success = false;
     try {
-      ret = getMS().addRole(role.getRoleName(), role.getOwnerName());
+      Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+      RawStore ms  = getMS();
+      ms.openTransaction();
+      try {
+        ret = ms.addRole(role.getRoleName(), role.getOwnerName());
+        if (!transactionalListeners.isEmpty()) {
+          transactionalListenersResponses =
+              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventType.CREATE_ROLE, new CreateRoleEvent(true, this, role.getRoleName(), role.getOwnerName()));
+        }
+        success = ms.commitTransaction();
+      } finally {
+        if (!success) {
+          ms.rollbackTransaction();
+        }
+        if (!listeners.isEmpty()) {
+          MetaStoreListenerNotifier.notifyEvent(listeners, EventType.CREATE_ROLE,
+              new CreateRoleEvent(success, this, role.getRoleName(), role.getOwnerName()), null,
+              transactionalListenersResponses, ms);
+        }
+      }
     } catch (Exception e) {
       String exInfo = "Got exception: " + e.getClass().getName() + " " + e.getMessage();
       LOG.error(exInfo, e);
@@ -8034,9 +8075,30 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (ADMIN.equals(roleName) || PUBLIC.equals(roleName)) {
       throw new MetaException(PUBLIC + "," + ADMIN + " roles can't be dropped.");
     }
-    Boolean ret;
+    boolean ret;
+    boolean success = false;
     try {
-      ret = getMS().removeRole(roleName);
+      Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+      RawStore ms  = getMS();
+      ms.openTransaction();
+      try {
+        ret = ms.removeRole(roleName);
+        if (!transactionalListeners.isEmpty()) {
+          transactionalListenersResponses =
+              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventType.DROP_ROLE, new DropRoleEvent(true, this, roleName));
+        }
+        success = ms.commitTransaction();
+      } finally {
+        if (!success) {
+          ms.rollbackTransaction();
+        }
+        if (!listeners.isEmpty()) {
+          MetaStoreListenerNotifier.notifyEvent(listeners, EventType.DROP_ROLE,
+              new DropRoleEvent(success, this, roleName), null,
+              transactionalListenersResponses, ms);
+        }
+      }
     } catch (Exception e) {
       String exInfo = "Got exception: " + e.getClass().getName() + " " + e.getMessage();
       LOG.error(exInfo, e);
@@ -8064,9 +8126,30 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public boolean grant_privileges(final PrivilegeBag privileges) throws TException {
     incrementCounter("grant_privileges");
     firePreEvent(new PreAuthorizationCallEvent(this));
-    Boolean ret;
+    boolean ret;
+    boolean success = false;
     try {
-      ret = getMS().grantPrivileges(privileges);
+      Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+      RawStore ms  = getMS();
+      ms.openTransaction();
+      try {
+        ret = ms.grantPrivileges(privileges);
+        if (!transactionalListeners.isEmpty()) {
+          transactionalListenersResponses =
+              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventType.GRANT_PRIVILEGES, new GrantPrivilegesEvent(true, this, privileges));
+        }
+        success = ms.commitTransaction();
+      } finally {
+        if (!success) {
+          ms.rollbackTransaction();
+        }
+        if (!listeners.isEmpty()) {
+          MetaStoreListenerNotifier.notifyEvent(listeners, EventType.GRANT_PRIVILEGES,
+              new GrantPrivilegesEvent(success, this, privileges), null,
+              transactionalListenersResponses, ms);
+        }
+      }
     } catch (Exception e) {
       String exInfo = "Got exception: " + e.getClass().getName() + " " + e.getMessage();
       LOG.error(exInfo, e);
@@ -8090,11 +8173,31 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (PUBLIC.equals(roleName)) {
       throw new MetaException(PUBLIC + " role can't be revoked.");
     }
-    Boolean ret;
+    boolean ret;
+    boolean success = false;
     try {
-      RawStore ms = getMS();
+      Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+      RawStore ms  = getMS();
+      ms.openTransaction();
       Role mRole = ms.getRole(roleName);
-      ret = ms.revokeRole(mRole, userName, principalType, grantOption);
+      try {
+        ret = ms.revokeRole(mRole, userName, principalType, grantOption);
+        if (!transactionalListeners.isEmpty()) {
+          transactionalListenersResponses =
+              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventType.REVOKE_ROLE, new RevokeRoleEvent(true, this, mRole, userName, principalType, grantOption));
+        }
+        success = ms.commitTransaction();
+      } finally {
+        if (!success) {
+          ms.rollbackTransaction();
+        }
+        if (!listeners.isEmpty()) {
+          MetaStoreListenerNotifier.notifyEvent(listeners, EventType.REVOKE_ROLE,
+              new RevokeRoleEvent(success, this, mRole, userName, principalType, grantOption), null,
+              transactionalListenersResponses, ms);
+        }
+      }
     } catch (Exception e) {
       String exInfo = "Got exception: " + e.getClass().getName() + " " + e.getMessage();
       LOG.error(exInfo, e);
@@ -8185,9 +8288,30 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throws TException {
     incrementCounter("revoke_privileges");
     firePreEvent(new PreAuthorizationCallEvent(this));
-    Boolean ret;
+    boolean ret;
+    boolean success = false;
     try {
-      ret = getMS().revokePrivileges(privileges, grantOption);
+      Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+      RawStore ms  = getMS();
+      ms.openTransaction();
+      try {
+        ret = ms.revokePrivileges(privileges, grantOption);
+        if (!transactionalListeners.isEmpty()) {
+          transactionalListenersResponses =
+              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventType.REVOKE_PRIVILEGES, new RevokePrivilegesEvent(true, this, privileges, grantOption));
+        }
+        success = ms.commitTransaction();
+      } finally {
+        if (!success) {
+          ms.rollbackTransaction();
+        }
+        if (!listeners.isEmpty()) {
+          MetaStoreListenerNotifier.notifyEvent(listeners, EventType.REVOKE_PRIVILEGES,
+              new RevokePrivilegesEvent(success, this, privileges, grantOption), null,
+              transactionalListenersResponses, ms);
+        }
+      }
     } catch (Exception e) {
       String exInfo = "Got exception: " + e.getClass().getName() + " " + e.getMessage();
       LOG.error(exInfo, e);

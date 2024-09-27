@@ -580,27 +580,43 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   @Override
   public boolean addRole(String rowName, String ownerName) throws InvalidObjectException,
       MetaException, NoSuchObjectException {
-    return objectStore.addRole(rowName, ownerName);
+    if (shouldEventSucceed) {
+      return objectStore.addRole(rowName, ownerName);
+    } else {
+      throw new RuntimeException("Event failed.");
+    }
   }
 
   @Override
   public boolean removeRole(String roleName)
       throws MetaException, NoSuchObjectException {
-    return objectStore.removeRole(roleName);
+    if (shouldEventSucceed) {
+      return objectStore.removeRole(roleName);
+    } else {
+      throw new RuntimeException("Event failed.");
+    }
   }
 
   @Override
   public boolean grantRole(Role role, String userName, PrincipalType principalType,
                            String grantor, PrincipalType grantorType, boolean grantOption)
       throws MetaException, NoSuchObjectException, InvalidObjectException {
-    return objectStore.grantRole(role, userName, principalType, grantor, grantorType,
-        grantOption);
+    if (shouldEventSucceed) {
+      return objectStore.grantRole(role, userName, principalType, grantor, grantorType,
+          grantOption);
+    } else {
+      throw new RuntimeException("Event failed.");
+    }
   }
 
   @Override
   public boolean revokeRole(Role role, String userName, PrincipalType principalType, boolean grantOption)
       throws MetaException, NoSuchObjectException {
-    return objectStore.revokeRole(role, userName, principalType, grantOption);
+    if (shouldEventSucceed) {
+      return objectStore.revokeRole(role, userName, principalType, grantOption);
+    } else {
+      throw new RuntimeException("Event failed.");
+    }
   }
 
   @Override
@@ -698,13 +714,21 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   @Override
   public boolean grantPrivileges(PrivilegeBag privileges) throws InvalidObjectException,
       MetaException, NoSuchObjectException {
-    return objectStore.grantPrivileges(privileges);
+    if (shouldEventSucceed) {
+      return objectStore.grantPrivileges(privileges);
+    } else {
+      throw new RuntimeException("Event failed.");
+    }
   }
 
   @Override
   public boolean revokePrivileges(PrivilegeBag privileges, boolean grantOption)
       throws InvalidObjectException, MetaException, NoSuchObjectException {
-    return objectStore.revokePrivileges(privileges, grantOption);
+    if (shouldEventSucceed) {
+      return objectStore.revokePrivileges(privileges, grantOption);
+    } else {
+      throw new RuntimeException("Event failed.");
+    }
   }
 
   @Override
