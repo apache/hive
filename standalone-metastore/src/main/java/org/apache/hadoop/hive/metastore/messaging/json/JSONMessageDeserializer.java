@@ -29,18 +29,24 @@ import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateFunctionMessage;
+import org.apache.hadoop.hive.metastore.messaging.CreateRoleMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropFunctionMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropPartitionMessage;
+import org.apache.hadoop.hive.metastore.messaging.DropRoleMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropTableMessage;
+import org.apache.hadoop.hive.metastore.messaging.GrantPrivilegesMessage;
+import org.apache.hadoop.hive.metastore.messaging.GrantRoleMessage;
 import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
 import org.apache.hadoop.hive.metastore.messaging.OpenTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.AbortTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.AllocWriteIdMessage;
+import org.apache.hadoop.hive.metastore.messaging.RevokePrivilegesMessage;
+import org.apache.hadoop.hive.metastore.messaging.RevokeRoleMessage;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
@@ -257,6 +263,60 @@ public class JSONMessageDeserializer extends MessageDeserializer {
       return mapper.readValue(messageBody, JSONAllocWriteIdMessage.class);
     } catch (Exception e) {
       throw new IllegalArgumentException("Could not construct AllocWriteIdMessage", e);
+    }
+  }
+
+  @Override
+  public CreateRoleMessage getCreateRoleMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JsonCreateRoleMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct CreateRoleMessage", e);
+    }
+  }
+
+  @Override
+  public DropRoleMessage getDropRoleMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JsonDropRoleMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct DropRoleMessage", e);
+    }
+  }
+
+  @Override
+  public GrantRoleMessage getGrantRoleMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JsonGrantRoleMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct GrantRoleMessage", e);
+    }
+  }
+
+  @Override
+  public RevokeRoleMessage getRevokeRoleMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JsonRevokeRoleMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct RevokeRoleMessage", e);
+    }
+  }
+
+  @Override
+  public GrantPrivilegesMessage getGrantPrivilegesMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JsonGrantPrivilegesMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct GrantPrivilegesMessage", e);
+    }
+  }
+
+  @Override
+  public RevokePrivilegesMessage getRevokePrivilegesMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JsonRevokePrivilegesMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct RevokePrivilegesMessage", e);
     }
   }
 }
