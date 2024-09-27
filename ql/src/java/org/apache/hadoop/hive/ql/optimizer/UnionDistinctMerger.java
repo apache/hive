@@ -60,41 +60,77 @@ public class UnionDistinctMerger extends Transform {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       UnionMergeContext context = (UnionMergeContext) procCtx;
+
+      // The stack contains at least 8 operators, UNION-GBY-RS-GBY-UNION-GBY-RS-GBY.
+      // The leftmost UNION is on stack.size() - 8 and the rightmost GBY is on stack.size() - 1.
       Collection<Operator> allOps = context.pCtx.getAllOps();
       for (int i = 1; i <= 8; i ++) {
-        if (!allOps.contains(stack.get(stack.size() - i))) {
+        Operator<?> op = (Operator<?>) stack.get(stack.size() - i);
+        
+        // We do not apply the optimization if some operators do not belong to query plan.
+        // This can be happened when we already merged some UNIONs before.
+        // For example, Suppose that a query plan looks like the below graph:
+        //   (1)UNION-GBY-RS-GBY-(3)UNION-GBY-RS-GBY
+        //   (2)UNION-GBY-RS-GBY-
+        // Then we merge (1)-(3) to (1) and them move on to merging (2)-(3). Without checking the presence of
+        // operators in (2) and (3), the merge process will fail as (3) is already removed.
+        if (!allOps.contains(op)) {
+          return null;
+        }
+        
+        // We do not apply the optimization if intermediate outputs are used by other operators.
+        if (i != 1 && op.getChildOperators().size() > 1) {
           return null;
         }
       }
 
       UnionOperator upperUnionOperator = (UnionOperator) stack.get(stack.size() - 8);
-      GroupByOperator upperMiddleGroupByOperator = (GroupByOperator) stack.get(stack.size() - 7);
-      ReduceSinkOperator upperReduceSinkOperator = (ReduceSinkOperator) stack.get(stack.size() - 6);
       GroupByOperator upperFinalGroupByOperator = (GroupByOperator) stack.get(stack.size() - 5);
 
       UnionOperator lowerUnionOperator = (UnionOperator) stack.get(stack.size() - 4);
       GroupByOperator lowerFinalGroupByOperator = (GroupByOperator) stack.get(stack.size() - 1);
 
       if (upperFinalGroupByOperator.getConf().getAggregators().isEmpty() &&
-          lowerFinalGroupByOperator.getConf().getAggregators().isEmpty() &&
-          upperUnionOperator.getChildOperators().size() == 1 &&
-          upperMiddleGroupByOperator.getChildOperators().size() == 1 &&
-          upperReduceSinkOperator.getChildOperators().size() == 1 &&
-          upperFinalGroupByOperator.getChildOperators().size() == 1) {
+          lowerFinalGroupByOperator.getConf().getAggregators().isEmpty()) {
         LOG.info("Detect duplicate UNION-DISTINCT GBY patterns. Remove the latter one.");
 
+        // Step 0. UNION1->GBY1->RS1->GBY2->UNION2->GBY3->RS2->GBY4
+
+        // Step 1. Cut GBY2->UNINO1
         lowerUnionOperator.removeParent(upperFinalGroupByOperator);
+
+        // Step 2. Redirect the output of the parents of lowerUnionOperator to upperUnionOperator.
+        // Before step 2:
+        //    OP1-UNION1->GBY1->RS1->GBY2
+        //    OP2-
+        //    OP3-UNION2->GBY3->RS2->GBY4
+        //    OP4-
+        // After step 2:
+        //    OP1-UNION1->GBY1->RS1->GBY2
+        //    OP2-
+        //    OP3-
+        //    OP4-
         for (Operator<?> lowerUnionParent: lowerUnionOperator.getParentOperators()) {
           lowerUnionParent.replaceChild(lowerUnionOperator, upperUnionOperator);
           upperUnionOperator.getParentOperators().add(lowerUnionParent);
         }
         lowerUnionOperator.setParentOperators(new ArrayList<>());
 
+        // Step 3. Redirect the output of lowerFinalGroupByOperator to children of
+        // Before step 3:
+        //    OP1-UNION1->GBY1->RS1->GBY2
+        //    OP2-
+        //    OP3-UNION2->GBY3->RS2->GBY4
+        //    OP4-
+        // After step 3:
+        //    OP1-UNION1->GBY1->RS1->GBY2
+        //    OP2-
+        //    OP3-
+        //    OP4-
         for (Operator<?> lowerFinalGroupByChild: lowerFinalGroupByOperator.getChildOperators()) {
           lowerFinalGroupByChild.replaceParent(lowerFinalGroupByOperator, upperFinalGroupByOperator);
           upperFinalGroupByOperator.getChildOperators().add(lowerFinalGroupByChild);
         }
-
         upperUnionOperator.getConf().setNumInputs(upperUnionOperator.getNumParent());
       }
 
