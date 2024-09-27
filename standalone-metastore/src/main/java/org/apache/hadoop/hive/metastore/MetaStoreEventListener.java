@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.metastore.events.CreateCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.CreateISchemaEvent;
+import org.apache.hadoop.hive.metastore.events.CreateRoleEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.DropConstraintEvent;
@@ -47,14 +48,19 @@ import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.DropISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.DropRoleEvent;
 import org.apache.hadoop.hive.metastore.events.DropSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
+import org.apache.hadoop.hive.metastore.events.GrantPrivilegesEvent;
+import org.apache.hadoop.hive.metastore.events.GrantRoleEvent;
 import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
 import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
+import org.apache.hadoop.hive.metastore.events.RevokePrivilegesEvent;
+import org.apache.hadoop.hive.metastore.events.RevokeRoleEvent;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import java.sql.Connection;
 
@@ -280,6 +286,48 @@ public abstract class MetaStoreEventListener implements Configurable {
    */
   public void onAllocWriteId(AllocWriteIdEvent allocWriteIdEvent, Connection dbConn, SQLGenerator sqlGenerator)
           throws MetaException {
+  }
+
+  /**
+   * @param roleEvent role event
+   * @throws MetaException
+   */
+  public void onCreateRole(CreateRoleEvent roleEvent) throws MetaException {
+  }
+
+  /**
+   * @param roleEvent role event
+   * @throws MetaException
+   */
+  public void onDropRole(DropRoleEvent roleEvent) throws MetaException {
+  }
+
+  /**
+   * @param roleEvent role event
+   * @throws MetaException
+   */
+  public void onGrantRole(GrantRoleEvent roleEvent) throws MetaException {
+  }
+
+  /**
+   * @param roleEvent role event
+   * @throws MetaException
+   */
+  public void onRevokeRole(RevokeRoleEvent roleEvent) throws MetaException {
+  }
+
+  /**
+   * @param privilegesEvent privileges event
+   * @throws MetaException
+   */
+  public void onGrantPrivileges(GrantPrivilegesEvent privilegesEvent) throws MetaException {
+  }
+
+  /**
+   * @param privilegesEvent privileges event
+   * @throws MetaException
+   */
+  public void onRevokePrivileges(RevokePrivilegesEvent privilegesEvent) throws MetaException {
   }
 
   @Override

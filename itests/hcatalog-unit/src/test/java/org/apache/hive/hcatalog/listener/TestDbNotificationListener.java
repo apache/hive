@@ -54,8 +54,10 @@ import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.ResourceType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
+import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -69,6 +71,12 @@ import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
+import org.apache.hadoop.hive.metastore.events.CreateRoleEvent;
+import org.apache.hadoop.hive.metastore.events.DropRoleEvent;
+import org.apache.hadoop.hive.metastore.events.GrantRoleEvent;
+import org.apache.hadoop.hive.metastore.events.RevokeRoleEvent;
+import org.apache.hadoop.hive.metastore.events.GrantPrivilegesEvent;
+import org.apache.hadoop.hive.metastore.events.RevokePrivilegesEvent;
 import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
 import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
@@ -89,6 +97,12 @@ import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
+import org.apache.hadoop.hive.metastore.messaging.CreateRoleMessage;
+import org.apache.hadoop.hive.metastore.messaging.DropRoleMessage;
+import org.apache.hadoop.hive.metastore.messaging.GrantRoleMessage;
+import org.apache.hadoop.hive.metastore.messaging.RevokeRoleMessage;
+import org.apache.hadoop.hive.metastore.messaging.GrantPrivilegesMessage;
+import org.apache.hadoop.hive.metastore.messaging.RevokePrivilegesMessage;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -237,6 +251,36 @@ public class TestDbNotificationListener {
 
     public void onAllocWriteId(AllocWriteIdEvent allocWriteIdEvent) throws MetaException {
       pushEventId(EventType.ALLOC_WRITE_ID, allocWriteIdEvent);
+    }
+
+    @Override
+    public void onCreateRole(CreateRoleEvent createRoleEvent) throws MetaException {
+      pushEventId(EventType.CREATE_ROLE, createRoleEvent);
+    }
+
+    @Override
+    public void onDropRole(DropRoleEvent dropRoleEvent) throws MetaException {
+      pushEventId(EventType.DROP_ROLE, dropRoleEvent);
+    }
+
+    @Override
+    public void onGrantRole(GrantRoleEvent grantRoleEvent) throws MetaException {
+      pushEventId(EventType.GRANT_ROLE, grantRoleEvent);
+    }
+
+    @Override
+    public void onRevokeRole(RevokeRoleEvent revokeRoleEvent) throws MetaException {
+      pushEventId(EventType.REVOKE_ROLE, revokeRoleEvent);
+    }
+
+    @Override
+    public void onGrantPrivileges(GrantPrivilegesEvent grantPrivilegesEvent) throws MetaException {
+      pushEventId(EventType.GRANT_PRIVILEGES, grantPrivilegesEvent);
+    }
+
+    @Override
+    public void onRevokePrivileges(RevokePrivilegesEvent revokePrivilegesEvent) throws MetaException {
+      pushEventId(EventType.REVOKE_PRIVILEGES, revokePrivilegesEvent);
     }
   }
 
@@ -1403,5 +1447,275 @@ public class TestDbNotificationListener {
     rsp2 = msClient.getNextNotification(firstEventId, 0, null);
     LOG.info("third trigger done");
     assertEquals(0, rsp2.getEventsSize());
+  }
+
+  @Test
+  public void createRole() throws Exception {
+    String roleName1 = "createRole1";
+    String ownerName = "ownerName";
+    msClient.create_role(new Role(roleName1, 0, ownerName));
+    // Get notifications from metastore
+    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(1, rsp.getEventsSize());
+    NotificationEvent event = rsp.getEvents().get(0);
+    assertEquals(firstEventId + 1, event.getEventId());
+    assertTrue(event.getEventTime() >= startTime);
+    assertEquals(EventType.CREATE_ROLE.toString(), event.getEventType());
+    assertNull(event.getDbName());
+    assertNull(event.getTableName());
+
+    // Parse the message field
+    CreateRoleMessage createRoleMsg = md.getCreateRoleMessage(event.getMessage());
+    assertEquals(roleName1, createRoleMsg.getRoleName());
+    assertEquals(ownerName, createRoleMsg.getOwnerName());
+
+    // Verify the eventID was passed to the non-transactional listener
+    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_ROLE, firstEventId + 1);
+
+    // When hive.metastore.transactional.event.listeners is set,
+    // a failed event should not create a new notification
+    String roleName2 = "createRole2";
+    DummyRawStoreFailEvent.setEventSucceed(false);
+    try {
+      msClient.create_role(new Role(roleName2, 0, ownerName));
+      fail("Error: create role should've failed");
+    } catch (Exception ex) {
+      // expected
+    }
+    rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(1, rsp.getEventsSize());
+  }
+
+  @Test
+  public void DropRole() throws Exception {
+    String roleName1 = "dropRole1";
+    String ownerName = "ownerName";
+    msClient.create_role(new Role(roleName1, 0, ownerName));
+    msClient.drop_role(roleName1);
+    // Get notifications from metastore
+    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(2, rsp.getEventsSize());
+    NotificationEvent event = rsp.getEvents().get(0);
+    assertEquals(firstEventId + 1, event.getEventId());
+    assertTrue(event.getEventTime() >= startTime);
+    assertEquals(EventType.CREATE_ROLE.toString(), event.getEventType());
+    assertNull(event.getDbName());
+    assertNull(event.getTableName());
+    event = rsp.getEvents().get(1);
+    assertEquals(firstEventId + 2, event.getEventId());
+    assertTrue(event.getEventTime() >= startTime);
+    assertEquals(EventType.DROP_ROLE.toString(), event.getEventType());
+    assertNull(event.getDbName());
+    assertNull(event.getTableName());
+
+    // Parse the message field
+    DropRoleMessage dropRoleMessage = md.getDropRoleMessage(event.getMessage());
+    assertEquals(roleName1, dropRoleMessage.getRoleName());
+
+    // Verify the eventID was passed to the non-transactional listener
+    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.DROP_ROLE, firstEventId + 2);
+
+    // When hive.metastore.transactional.event.listeners is set,
+    // a failed event should not create a new notification
+    String roleName2 = "dropRole2";
+    msClient.create_role(new Role(roleName2, 0, ownerName));
+    DummyRawStoreFailEvent.setEventSucceed(false);
+    try {
+      msClient.drop_role(roleName2);
+      fail("Error: drop role should've failed");
+    } catch (Exception ex) {
+      // expected
+    }
+    rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(3, rsp.getEventsSize());
+  }
+
+  @Test
+  public void GrantRole() throws Exception {
+    String roleName = "grantRole";
+    String ownerName = "owner";
+    msClient.create_role(new Role(roleName, 0, ownerName));
+    String userName1 = "userName1";
+    PrincipalType principalType = PrincipalType.USER;
+    String grantor = "grantor";
+    PrincipalType grantorType = PrincipalType.ROLE;
+    boolean grantOption = false;
+    msClient.grant_role(roleName, userName1, principalType, grantor, grantorType, grantOption);
+    // Get notifications from metastore
+    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(2, rsp.getEventsSize());
+    NotificationEvent event = rsp.getEvents().get(0);
+    assertEquals(firstEventId + 1, event.getEventId());
+    assertTrue(event.getEventTime() >= startTime);
+    assertEquals(EventType.CREATE_ROLE.toString(), event.getEventType());
+    assertNull(event.getDbName());
+    assertNull(event.getTableName());
+    event = rsp.getEvents().get(1);
+    assertEquals(firstEventId + 2, event.getEventId());
+    assertTrue(event.getEventTime() >= startTime);
+    assertEquals(EventType.GRANT_ROLE.toString(), event.getEventType());
+    assertNull(event.getDbName());
+    assertNull(event.getTableName());
+
+    // Parse the message field
+    GrantRoleMessage grantRoleMessage = md.getGrantRoleMessage(event.getMessage());
+    assertEquals(roleName, grantRoleMessage.getRole().getRoleName());
+    assertEquals(userName1, grantRoleMessage.getPrincipalName());
+    assertEquals(principalType, grantRoleMessage.getPrincipalType());
+    assertEquals(grantor, grantRoleMessage.getGrantor());
+    assertEquals(grantorType, grantRoleMessage.getGrantorType());
+    assertEquals(grantOption, grantRoleMessage.isGrantOption());
+
+    // Verify the eventID was passed to the non-transactional listener
+    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.GRANT_ROLE, firstEventId + 2);
+
+    // When hive.metastore.transactional.event.listeners is set,
+    // a failed event should not create a new notification
+    String userName2 = "userName2";
+    DummyRawStoreFailEvent.setEventSucceed(false);
+    try {
+      msClient.grant_role(roleName, userName2, principalType, grantor, grantorType, grantOption);
+      fail("Error: grant role should've failed");
+    } catch (Exception ex) {
+      // expected
+    }
+    rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(2, rsp.getEventsSize());
+  }
+
+  @Test
+  public void revokeRole() throws Exception {
+    String roleName = "revokeRole";
+    String ownerName = "owner";
+    msClient.create_role(new Role(roleName, 0, ownerName));
+    String userName1 = "userName1";
+    PrincipalType principalType = PrincipalType.USER;
+    String grantor = "grantor";
+    PrincipalType grantorType = PrincipalType.ROLE;
+    boolean grantOption = false;
+    msClient.grant_role(roleName, userName1, principalType, grantor, grantorType, grantOption);
+    msClient.revoke_role(roleName, userName1, principalType, grantOption);
+    // Get notifications from metastore
+    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(3, rsp.getEventsSize());
+    NotificationEvent event = rsp.getEvents().get(0);
+    assertEquals(firstEventId + 1, event.getEventId());
+    assertTrue(event.getEventTime() >= startTime);
+    assertEquals(EventType.CREATE_ROLE.toString(), event.getEventType());
+    assertNull(event.getDbName());
+    assertNull(event.getTableName());
+    event = rsp.getEvents().get(1);
+    assertEquals(firstEventId + 2, event.getEventId());
+    assertTrue(event.getEventTime() >= startTime);
+    assertEquals(EventType.GRANT_ROLE.toString(), event.getEventType());
+    assertNull(event.getDbName());
+    assertNull(event.getTableName());
+    event = rsp.getEvents().get(2);
+    assertEquals(firstEventId + 3, event.getEventId());
+    assertTrue(event.getEventTime() >= startTime);
+    assertEquals(EventType.REVOKE_ROLE.toString(), event.getEventType());
+    assertNull(event.getDbName());
+    assertNull(event.getTableName());
+
+    // Parse the message field
+    RevokeRoleMessage revokeRoleMessage = md.getRevokeRoleMessage(event.getMessage());
+    assertEquals(roleName, revokeRoleMessage.getRole().getRoleName());
+    assertEquals(userName1, revokeRoleMessage.getUserName());
+    assertEquals(principalType, revokeRoleMessage.getPrincipalType());
+    assertEquals(grantOption, revokeRoleMessage.isGrantOption());
+
+    // Verify the eventID was passed to the non-transactional listener
+    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.REVOKE_ROLE, firstEventId + 3);
+
+    // When hive.metastore.transactional.event.listeners is set,
+    // a failed event should not create a new notification
+    String userName2 = "username2";
+    msClient.grant_role(roleName, userName2, principalType, grantor, grantorType, grantOption);
+    DummyRawStoreFailEvent.setEventSucceed(false);
+    try {
+      msClient.revoke_role(roleName, userName2, principalType, grantOption);
+      fail("Error: revoke role should've failed");
+    } catch (Exception ex) {
+      // expected
+    }
+    rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(4, rsp.getEventsSize());
+  }
+
+  @Test
+  public void GrantPrivileges() throws Exception {
+    PrivilegeBag privileges = new PrivilegeBag(new ArrayList<>());
+    msClient.grant_privileges(privileges);
+    // Get notifications from metastore
+    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(1, rsp.getEventsSize());
+    NotificationEvent event = rsp.getEvents().get(0);
+    assertEquals(firstEventId + 1, event.getEventId());
+    assertTrue(event.getEventTime() >= startTime);
+    assertEquals(EventType.GRANT_PRIVILEGES.toString(), event.getEventType());
+    assertNull(event.getDbName());
+    assertNull(event.getTableName());
+
+    // Parse the message field
+    GrantPrivilegesMessage grantPrivilegesMessage = md.getGrantPrivilegesMessage(event.getMessage());
+    assertEquals(0, privileges.compareTo(grantPrivilegesMessage.getPrivileges()));
+
+    // Verify the eventID was passed to the non-transactional listener
+    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.GRANT_PRIVILEGES, firstEventId + 1);
+
+    // When hive.metastore.transactional.event.listeners is set,
+    // a failed event should not create a new notification
+    DummyRawStoreFailEvent.setEventSucceed(false);
+    try {
+      msClient.grant_privileges(privileges);
+      fail("Error: grant privileges should've failed");
+    } catch (Exception ex) {
+      // expected
+    }
+    rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(1, rsp.getEventsSize());
+  }
+
+  @Test
+  public void RevokePrivileges() throws Exception {
+    PrivilegeBag privileges = new PrivilegeBag(new ArrayList<>());
+    boolean grantOption = false;
+    msClient.grant_privileges(privileges);
+    msClient.revoke_privileges(privileges, grantOption);
+    // Get notifications from metastore
+    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(2, rsp.getEventsSize());
+    NotificationEvent event = rsp.getEvents().get(0);
+    assertEquals(firstEventId + 1, event.getEventId());
+    assertTrue(event.getEventTime() >= startTime);
+    assertEquals(EventType.GRANT_PRIVILEGES.toString(), event.getEventType());
+    assertNull(event.getDbName());
+    assertNull(event.getTableName());
+    event = rsp.getEvents().get(1);
+    assertEquals(firstEventId + 2, event.getEventId());
+    assertTrue(event.getEventTime() >= startTime);
+    assertEquals(EventType.REVOKE_PRIVILEGES.toString(), event.getEventType());
+    assertNull(event.getDbName());
+    assertNull(event.getTableName());
+
+    // Parse the message field
+    RevokePrivilegesMessage revokePrivilegesMessage = md.getRevokePrivilegesMessage(event.getMessage());
+    assertEquals(0, privileges.compareTo(revokePrivilegesMessage.getPrivileges()));
+
+    // Verify the eventID was passed to the non-transactional listener
+    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.REVOKE_PRIVILEGES, firstEventId + 2);
+
+    // When hive.metastore.transactional.event.listeners is set,
+    // a failed event should not create a new notification
+    msClient.grant_privileges(privileges);
+    DummyRawStoreFailEvent.setEventSucceed(false);
+    try {
+      msClient.revoke_privileges(privileges, grantOption);
+      fail("Error: revoke privileges should've failed");
+    } catch (Exception ex) {
+      // expected
+    }
+    rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(3, rsp.getEventsSize());
   }
 }

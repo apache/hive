@@ -62,12 +62,16 @@ import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
+import org.apache.hadoop.hive.metastore.events.CreateRoleEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.DropRoleEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
+import org.apache.hadoop.hive.metastore.events.GrantPrivilegesEvent;
+import org.apache.hadoop.hive.metastore.events.GrantRoleEvent;
 import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
@@ -75,6 +79,8 @@ import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
+import org.apache.hadoop.hive.metastore.events.RevokePrivilegesEvent;
+import org.apache.hadoop.hive.metastore.events.RevokeRoleEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.metastore.messaging.OpenTxnMessage;
@@ -621,6 +627,66 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     } catch (SQLException e) {
       throw new MetaException("Unable to execute direct SQL " + StringUtils.stringifyException(e));
     }
+  }
+
+  /**
+   * @param roleEvent role event
+   * @throws MetaException
+   */
+  @Override
+  public void onCreateRole(CreateRoleEvent roleEvent) throws MetaException {
+    NotificationEvent event = new NotificationEvent(0, now(), EventType.CREATE_ROLE.toString(), msgFactory.buildCreateRoleMessage(roleEvent.getRoleName(), roleEvent.getOwnerName()).toString());
+    process(event, roleEvent);
+  }
+
+  /**
+   * @param roleEvent role event
+   * @throws MetaException
+   */
+  @Override
+  public void onDropRole(DropRoleEvent roleEvent) throws MetaException {
+    NotificationEvent event = new NotificationEvent(0, now(), EventType.DROP_ROLE.toString(), msgFactory.buildDropRoleMessage(roleEvent.getRoleName()).toString());
+    process(event, roleEvent);
+  }
+
+  /**
+   * @param roleEvent role event
+   * @throws MetaException
+   */
+  @Override
+  public void onGrantRole(GrantRoleEvent roleEvent) throws MetaException {
+    NotificationEvent event = new NotificationEvent(0, now(), EventType.GRANT_ROLE.toString(), msgFactory.buildGrantRoleMessage(roleEvent.getRole(), roleEvent.getPrincipalName(), roleEvent.getPrincipalType(), roleEvent.getGrantor(), roleEvent.getGrantorType(), roleEvent.isGrantOption()).toString());
+    process(event, roleEvent);
+  }
+
+  /**
+   * @param roleEvent role event
+   * @throws MetaException
+   */
+  @Override
+  public void onRevokeRole(RevokeRoleEvent roleEvent) throws MetaException {
+    NotificationEvent event = new NotificationEvent(0, now(), EventType.REVOKE_ROLE.toString(), msgFactory.buildRevokeRoleMessage(roleEvent.getRole(), roleEvent.getUserName(), roleEvent.getPrincipalType(), roleEvent.isGrantOption()).toString());
+    process(event, roleEvent);
+  }
+
+  /**
+   * @param privilegesEvent privileges event
+   * @throws MetaException
+   */
+  @Override
+  public void onGrantPrivileges(GrantPrivilegesEvent privilegesEvent) throws MetaException {
+    NotificationEvent event = new NotificationEvent(0, now(), EventType.GRANT_PRIVILEGES.toString(), msgFactory.buildGrantPrivilegesMessage(privilegesEvent.getPrivileges()).toString());
+    process(event, privilegesEvent);
+  }
+
+  /**
+   * @param privilegesEvent privileges event
+   * @throws MetaException
+   */
+  @Override
+  public void onRevokePrivileges(RevokePrivilegesEvent privilegesEvent) throws MetaException {
+    NotificationEvent event = new NotificationEvent(0, now(), EventType.REVOKE_PRIVILEGES.toString(), msgFactory.buildRevokePrivilegesMessage(privilegesEvent.getPrivileges(), privilegesEvent.isGrantOption()).toString());
+    process(event, privilegesEvent);
   }
 
   private int now() {
