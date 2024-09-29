@@ -60,7 +60,13 @@ public abstract class EventMessage {
     COMMIT_TXN(MessageFactory.COMMIT_TXN_EVENT),
     ABORT_TXN(MessageFactory.ABORT_TXN_EVENT),
     ALLOC_WRITE_ID(MessageFactory.ALLOC_WRITE_ID_EVENT),
-    ALTER_CATALOG(MessageFactory.ALTER_CATALOG_EVENT);
+    ALTER_CATALOG(MessageFactory.ALTER_CATALOG_EVENT),
+    CREATE_ROLE(MessageFactory.CREATE_ROLE_EVENT),
+    DROP_ROLE(MessageFactory.DROP_ROLE_EVENT),
+    GRANT_ROLE(MessageFactory.GRANT_ROLE_EVENT),
+    REVOKE_ROLE(MessageFactory.REVOKE_ROLE_EVENT),
+    REVOKE_PRIVILEGES(MessageFactory.REVOKE_PRIVILEGES_EVENT),
+    GRANT_PRIVILEGES(MessageFactory.GRANT_PRIVILEGES_EVENT);
 
     private String typeString;
 

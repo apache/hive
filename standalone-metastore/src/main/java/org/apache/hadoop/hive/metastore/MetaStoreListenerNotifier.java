@@ -40,20 +40,26 @@ import org.apache.hadoop.hive.metastore.events.CreateCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.CreateISchemaEvent;
+import org.apache.hadoop.hive.metastore.events.CreateRoleEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.DropISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.DropRoleEvent;
 import org.apache.hadoop.hive.metastore.events.DropSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
+import org.apache.hadoop.hive.metastore.events.GrantPrivilegesEvent;
+import org.apache.hadoop.hive.metastore.events.GrantRoleEvent;
 import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
 import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
+import org.apache.hadoop.hive.metastore.events.RevokePrivilegesEvent;
+import org.apache.hadoop.hive.metastore.events.RevokeRoleEvent;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import java.sql.Connection;
 import java.util.List;
@@ -221,6 +227,18 @@ public class MetaStoreListenerNotifier {
               (listener, event) -> listener.onAbortTxn((AbortTxnEvent) event, null, null))
           .put(EventType.ALLOC_WRITE_ID,
               (listener, event) -> listener.onAllocWriteId((AllocWriteIdEvent) event, null, null))
+          .put(EventType.CREATE_ROLE,
+              (listener, event) -> listener.onCreateRole((CreateRoleEvent) event))
+          .put(EventType.DROP_ROLE,
+              (listener, event) -> listener.onDropRole((DropRoleEvent) event))
+          .put(EventType.GRANT_ROLE,
+              (listener, event) -> listener.onGrantRole((GrantRoleEvent) event))
+          .put(EventType.REVOKE_ROLE,
+              (listener, event) -> listener.onRevokeRole((RevokeRoleEvent) event))
+          .put(EventType.GRANT_PRIVILEGES,
+              (listener, event) -> listener.onGrantPrivileges((GrantPrivilegesEvent) event))
+          .put(EventType.REVOKE_PRIVILEGES,
+              (listener, event) -> listener.onRevokePrivileges((RevokePrivilegesEvent) event))
           .build()
   );
 
