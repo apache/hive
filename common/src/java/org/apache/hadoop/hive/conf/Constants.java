@@ -100,6 +100,7 @@ public class Constants {
   public static final String ORC_OUTPUT_FORMAT = "org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat";
   
   public static final Pattern COMPACTION_POOLS_PATTERN = Pattern.compile("^hive\\.compactor\\.worker\\.(.+)\\.threads$");
+  public static final String COMPACTION_DEFAULT_POOL = "default";
   public static final String HIVE_COMPACTOR_WORKER_POOL = "hive.compactor.worker.pool";
 
   public static final String HTTP_HEADER_REQUEST_TRACK = "X-Request-ID";

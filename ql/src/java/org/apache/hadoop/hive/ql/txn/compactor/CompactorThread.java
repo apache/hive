@@ -111,12 +111,15 @@ public abstract class CompactorThread extends Thread implements Configurable {
     return Warehouse.getQualifiedName(t);
   }
 
-  public static void initializeAndStartThread(CompactorThread thread,
-      Configuration conf) throws Exception {
-    LOG.info("Starting compactor thread of type " + thread.getClass().getName());
-    thread.setConf(conf);
-    thread.init(new AtomicBoolean());
-    thread.start();
+  public static void initializeAndStartThread(CompactorThread thread, Configuration conf) {
+    try {
+      LOG.info("Starting compactor thread of type " + thread.getClass().getName());
+      thread.setConf(conf);
+      thread.init(new AtomicBoolean());
+      thread.start(); 
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   protected boolean replIsCompactionDisabledForTable(Table tbl) {

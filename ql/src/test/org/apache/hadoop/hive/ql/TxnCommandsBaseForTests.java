@@ -246,6 +246,13 @@ public abstract class TxnCommandsBaseForTests {
   public static void runWorker(HiveConf hiveConf) throws Exception {
     runCompactorThread(hiveConf, CompactorThreadType.WORKER);
   }
+  public static void runWorker(HiveConf hiveConf, String poolName) throws Exception {
+    Worker worker = new Worker();
+    worker.setConf(hiveConf);
+    worker.setPoolName(poolName);
+    worker.init(new AtomicBoolean(true));
+    worker.run();
+  }
   public static void runCleaner(HiveConf hiveConf) throws Exception {
     // Wait for the cooldown period so the Cleaner can see the last committed txn as the highest committed watermark
     Thread.sleep(MetastoreConf.getTimeVar(hiveConf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS));

@@ -35,6 +35,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -1202,67 +1204,63 @@ public class HiveServer2 extends CompositeService {
     }
   }
 
-  private void maybeStartCompactorThreads(HiveConf hiveConf) throws Exception {
+  public Map<String, Integer> maybeStartCompactorThreads(HiveConf hiveConf) {
+    Map<String, Integer> startedWorkers = new HashMap<>();
     if (MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.HIVE_METASTORE_RUNWORKER_IN).equals("hs2")) {
-      int numWorkers = MetastoreConf.getIntVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS);
+      AtomicInteger numWorkers = new AtomicInteger(MetastoreConf.getIntVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS));
       Map<String, Integer> customPools = CompactorUtil.getPoolConf(hiveConf);
 
       StringBuilder sb = new StringBuilder(2048);
       sb.append("This HS2 instance will act as Compactor with the following worker pool configuration:\n");
-      sb.append("Global pool size: ").append(numWorkers).append("\n");
+      sb.append("Global pool size: ").append(numWorkers.get()).append("\n");
 
-      LOG.info("Initializing the compaction pools with using the global worker limit: {} ", numWorkers);
-      for (Map.Entry<String, Integer> customPool: customPools.entrySet()) {
-        
-        if (numWorkers <= 0) {
-          break;
-        }
-        
-        String poolName = customPool.getKey();
-        int poolWorkers = customPool.getValue();
-
+      LOG.info("Initializing the compaction pools with using the global worker limit: {} ", numWorkers.get());
+      customPools.forEach((poolName, poolWorkers) -> {
         if (poolWorkers == 0) {
           LOG.warn("Compaction pool ({}) configured with zero workers. Skipping pool initialization", poolName);
           sb.append("Pool not initialized, 0 size: ").append(poolName).append("\n");
-          continue;
         }
-        if (poolWorkers > numWorkers) {
-          LOG.warn("Global worker pool exhausted, compaction pool ({}) will be configured with less workers than the " +
-              "required number. ({} -> {})", poolName, poolWorkers, numWorkers);
-          poolWorkers = numWorkers;
+        else if (numWorkers.get() == 0) {
+          LOG.warn("There are no available workers for the following compaction pool: {} ", poolName);
+          sb.append("Pool not initialized, no remaining free workers: ").append(poolName).append("\n");
         }
+        else {
+          if (poolWorkers > numWorkers.get()) {
+            LOG.warn("Global worker pool exhausted, compaction pool ({}) will be configured with less workers than the " +
+                "required number. ({} -> {})", poolName, poolWorkers, numWorkers.get());
+            poolWorkers = numWorkers.get();
+          }
 
-        LOG.info("Initializing compaction pool ({}) with {} workers.", poolName, poolWorkers);
-        for (int i = 0; i < poolWorkers; i++) {
-          Worker w = new Worker();
-          w.setPoolName(poolName);
-          CompactorThread.initializeAndStartThread(w, hiveConf);
-          sb.append("Worker - Name: ").append(w.getName()).append(", Pool: ").append(poolName)
-              .append(", Priority: ").append(w.getPriority()).append("\n");
+          LOG.info("Initializing compaction pool ({}) with {} workers.", poolName, poolWorkers);
+          IntStream.range(0, poolWorkers).forEach(i -> {
+            Worker w = new Worker();
+            w.setPoolName(poolName);
+            CompactorThread.initializeAndStartThread(w, hiveConf);
+            startedWorkers.put(poolName, startedWorkers.getOrDefault(poolName, 0)+1);
+            sb.append("Worker - Name: ").append(w.getName()).append(", Pool: ").append(poolName)
+                .append(", Priority: ").append(w.getPriority()).append("\n");
+          });
+          numWorkers.set(numWorkers.get() - poolWorkers); 
         }
-        numWorkers -= poolWorkers;
-      }
+      });
 
-      if (numWorkers == 0) {
+      if (numWorkers.get() == 0) {
         LOG.warn("No default compaction pool configured, all non-labeled compaction requests will remain unprocessed!");
         if (customPools.size() > 0) {
-          for (Map.Entry<String, Integer> entry : customPools.entrySet()) {
-            String poolName = entry.getKey();
-            LOG.warn("There are no available workers for the following compaction pool: {} ", poolName);
-            sb.append("Pool not initialized, no remaining free workers: ").append(poolName).append("\n");
-          }
           sb.append("Pool not initialized, no remaining free workers: default\n");
         }
       } else {
-        LOG.info("Initializing default compaction pool with {} workers.", numWorkers);
-        for (int i = 0; i < numWorkers; i++) {
+        LOG.info("Initializing default compaction pool with {} workers.", numWorkers.get());
+        IntStream.range(0, numWorkers.get()).forEach(i -> {
           Worker w = new Worker();
           CompactorThread.initializeAndStartThread(w, hiveConf);
+          startedWorkers.put(Constants.COMPACTION_DEFAULT_POOL, startedWorkers.getOrDefault(Constants.COMPACTION_DEFAULT_POOL, 0)+1);
           sb.append("Worker - Name: ").append(w.getName()).append(", Pool: default, Priority: ").append(w.getPriority()).append("\n");
-        }
+        });
       }
       LOG.info(sb.toString());
     }
+    return startedWorkers;
   }
 
   /**

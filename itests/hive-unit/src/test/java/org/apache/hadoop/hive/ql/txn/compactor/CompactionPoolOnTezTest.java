@@ -190,14 +190,8 @@ public class CompactionPoolOnTezTest extends CompactorOnTezTest {
     Map<String, Integer> customPools = CompactorUtil.getPoolConf(conf);
     Assert.assertEquals(customPools.size(), 1);
     Assert.assertEquals(customPools.get("pool1"), new Integer(1));
-    
-    Worker worker = new Worker();
-    worker.setConf(conf);
-    worker.setPoolName("pool1");
-    worker.init(new AtomicBoolean(true));
 
-    worker.run();
-
+    TxnCommandsBaseForTests.runWorker(conf, "pool1");
     checkCompactionRequest("ready for cleaning", "pool1");
   }
 }
