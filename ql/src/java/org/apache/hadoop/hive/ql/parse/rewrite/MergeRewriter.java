@@ -47,6 +47,51 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
+/**
+ * This class rewrites Merge statement's updates and deletes into insert statements since
+ * they are actually inserts.
+ * <br>
+ * In the source clause of the multi-insert the target and the source tables are joined via right outer join
+ * and the joined records are forwarded to the corresponding insert branch of the multi-insert statement. The left
+ * side of the join projects the target tables column and the targetRecordExists flag.
+ * To define which records should go to which branch filter predicates are used in the where clauses of the branch.
+ * <ul>
+ *   <li>WHERE targetRecordExists IS NULL - means the records should be inserted into the target table</li>
+ *   <li>WHERE targetRecordExists - means the matching record in the target table should be updated or deleted</li>
+ * </ul>
+ * <br>
+ * Example:
+ * <pre>
+ * MERGE INTO target as t using source s ON t.a = s.a
+ * WHEN MATCHED AND s.a > 8 THEN DELETE
+ * WHEN MATCHED THEN UPDATE SET b = 7
+ * WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b);
+ * </pre>
+ * is rewritten to
+ * <pre>
+ * FROM
+ * (SELECT ROW__ID,`a`, `b`, true AS targetRecordExists FROM `default`.`target_table`) `t`
+ * RIGHT OUTER JOIN `default`.`source_table` `s` ON `t`.`a` = `s`.`a`
+ * -- delete
+ * INSERT INTO `default`.`target_table`
+ * SELECT `t`.ROW__ID
+ * WHERE `t`.targetRecordExists  AND `s`.`a` > 8
+ * SORT BY `t`.ROW__ID
+ * -- update
+ * INSERT INTO `default`.`target_table`
+ * SELECT `t`.ROW__ID,`t`.`a`,7
+ * WHERE `t`.targetRecordExists AND (NOT(`s`.`a` > 8) OR (`s`.`a` > 8) IS NULL)
+ * SORT BY `t`.ROW__ID
+ * -- insert
+ * INSERT INTO `default`.`target_table`
+ * SELECT `s`.`a`, `s`.`b`
+ * WHERE targetRecordExists IS NULL
+ * -- cardinality check
+ * INSERT INTO merge_tmp_table
+ * SELECT cardinality_violation(`t`.ROW__ID)
+ * WHERE `t`.`a` = `s`.`a` GROUP BY `t`.ROW__ID HAVING count(*) > 1
+ * </pre>
+ */
 public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.DestClausePrefixSetter {
 
   private final Hive db;

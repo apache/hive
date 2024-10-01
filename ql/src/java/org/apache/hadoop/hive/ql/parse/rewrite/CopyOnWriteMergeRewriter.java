@@ -45,6 +45,52 @@ import java.util.stream.IntStream;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory.TARGET_PREFIX;
 
+/**
+ * Rewrite merge statement to insert select statement.
+ * The select clause has a union all operator with union branches representing insert/update/delete operations of the
+ * original merge statement.
+ * <br>
+ * Example:
+ * <pre>
+ * merge into target_ice as t using source src ON t.a = src.a
+ * when matched and t.c > 50 THEN DELETE
+ * when matched then update set b = concat(t.b, ' Merged'), c = t.c + 10
+ * when not matched then insert values (src.a, concat(src.b, ' New'), src.c);
+ * </pre>
+ * is rewritten to
+ * <pre>
+ * WITH `src` AS ( SELECT * FROM
+ * (SELECT `PARTITION__SPEC__ID` AS `t__PARTITION__SPEC__ID`,`PARTITION__HASH` AS `t__PARTITION__HASH`,`FILE__PATH` AS `t__FILE__PATH`,`ROW__POSITION` AS `t__ROW__POSITION`,`PARTITION__PROJECTION` AS `t__PARTITION__PROJECTION`,`a` AS `t__a`, `b` AS `t__b`, `c` AS `t__c`, true AS t__targetRecordExists FROM `default`.`target_ice`) `t`
+ * FULL OUTER JOIN
+ * (SELECT *, true sourceRecordExists FROM`default`.`source` `src`) `src`
+ * ON `t__a` = `src`.`a`
+ * ),
+ * t AS (
+ * select `t__PARTITION__SPEC__ID`,`t__PARTITION__HASH`,`t__FILE__PATH`,-1,`t__PARTITION__PROJECTION`,`t__a`,`t__b`,`t__c` from (
+ * select `t__PARTITION__SPEC__ID`,`t__PARTITION__HASH`,`t__FILE__PATH`,-1,`t__PARTITION__PROJECTION`,`t__a`,`t__b`,`t__c`, row_number() OVER (partition by `t__FILE__PATH`) rn from `src`
+ * where t__targetRecordExists AND sourceRecordExists
+ * ) q
+ * where rn=1
+ * )
+ * INSERT INTO `default`.`target_ice`
+ * -- update clause (insert part)
+ * SELECT `t__PARTITION__SPEC__ID`,`t__PARTITION__HASH`,`t__FILE__PATH`,`t__ROW__POSITION`,`t__PARTITION__PROJECTION`,`t__a`,`concat`(`t__b`, ' Merged') AS `t__b`,`t__c`   10 AS `t__c`
+ * FROM `src`  WHERE t__targetRecordExists AND (NOT(`t__c` > 50) OR (`t__c` > 50) IS NULL) AND sourceRecordExists
+ * union all
+ * -- insert clause
+ * SELECT `t__PARTITION__SPEC__ID`,`t__PARTITION__HASH`,`t__FILE__PATH`,`t__ROW__POSITION`,`t__PARTITION__PROJECTION`,`src`.`a`,concat(`src`.`b`, ' New'),`src`.`c`
+ * FROM `src`
+ * WHERE t__targetRecordExists IS NULL
+ * union all
+ * -- delete clause
+ * SELECT `t__PARTITION__SPEC__ID`,`t__PARTITION__HASH`,`t__FILE__PATH`,`t__ROW__POSITION`,`t__PARTITION__PROJECTION`,`t__a`,`t__b`,`t__c`
+ * FROM `src`  WHERE
+ * ( NOT((t__targetRecordExists AND sourceRecordExists OR t__targetRecordExists is null)) OR ((t__targetRecordExists AND sourceRecordExists OR t__targetRecordExists is null)) IS NULL )
+ * AND `t__FILE__PATH` IN ( select `t__FILE__PATH` from t )
+ * union all
+ * select * from t
+ * </pre>
+ */
 public class CopyOnWriteMergeRewriter extends MergeRewriter {
 
   public CopyOnWriteMergeRewriter(Hive db, HiveConf conf, SqlGeneratorFactory sqlGeneratorFactory) {
