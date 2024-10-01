@@ -53,7 +53,7 @@ import static org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory.TA
  * Example:
  * <pre>
  * merge into target_ice as t using source src ON t.a = src.a
- * when matched and t.c > 50 THEN DELETE
+ * when matched and t.c &gt; 50 THEN DELETE
  * when matched then update set b = concat(t.b, ' Merged'), c = t.c + 10
  * when not matched then insert values (src.a, concat(src.b, ' New'), src.c);
  * </pre>
@@ -75,7 +75,7 @@ import static org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory.TA
  * INSERT INTO `default`.`target_ice`
  * -- update clause (insert part)
  * SELECT `t__PARTITION__SPEC__ID`,`t__PARTITION__HASH`,`t__FILE__PATH`,`t__ROW__POSITION`,`t__PARTITION__PROJECTION`,`t__a`,`concat`(`t__b`, ' Merged') AS `t__b`,`t__c`   10 AS `t__c`
- * FROM `src`  WHERE t__targetRecordExists AND (NOT(`t__c` > 50) OR (`t__c` > 50) IS NULL) AND sourceRecordExists
+ * FROM `src`  WHERE t__targetRecordExists AND (NOT(`t__c` &gt; 50) OR (`t__c` &gt; 50) IS NULL) AND sourceRecordExists
  * union all
  * -- insert clause
  * SELECT `t__PARTITION__SPEC__ID`,`t__PARTITION__HASH`,`t__FILE__PATH`,`t__ROW__POSITION`,`t__PARTITION__PROJECTION`,`src`.`a`,concat(`src`.`b`, ' New'),`src`.`c`

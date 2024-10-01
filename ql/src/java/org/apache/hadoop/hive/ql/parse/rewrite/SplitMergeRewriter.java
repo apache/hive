@@ -40,7 +40,7 @@ import static java.util.Arrays.asList;
  * <br>
  * <pre>
  * MERGE INTO target as t using source s ON t.a = s.a
- * WHEN MATCHED AND s.a > 8 THEN DELETE
+ * WHEN MATCHED AND s.a &gt; 8 THEN DELETE
  * WHEN MATCHED THEN UPDATE SET b = 7
  * WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b);
  * </pre>
@@ -50,11 +50,11 @@ import static java.util.Arrays.asList;
  * -- update (insert part)
  * INSERT INTO `default`.`target_table`
  *   SELECT `t`.`a`,7
- *   WHERE `t`.targetRecordExists AND (NOT(`s`.`a` > 8) OR (`s`.`a` > 8) IS NULL)
+ *   WHERE `t`.targetRecordExists AND (NOT(`s`.`a` &gt; 8) OR (`s`.`a` &gt; 8) IS NULL)
  * -- update (delete part)
  * INSERT INTO `default`.`target_table`
  *   SELECT `t`.ROW__ID
- *   WHERE `t`.targetRecordExists  AND (NOT(`s`.`a` > 8) OR (`s`.`a` > 8) IS NULL)
+ *   WHERE `t`.targetRecordExists  AND (NOT(`s`.`a` &gt; 8) OR (`s`.`a` &gt; 8) IS NULL)
  *   SORT BY `t`.ROW__ID
  * ...
  * </pre>
