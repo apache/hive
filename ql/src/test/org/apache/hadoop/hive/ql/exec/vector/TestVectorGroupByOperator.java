@@ -103,6 +103,13 @@ public class TestVectorGroupByOperator {
 
   HiveConf hconf = new HiveConf();
 
+  private static GroupByDesc newGroupByDesc() {
+    GroupByDesc desc = new GroupByDesc();
+    long memoryAvailable = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax();
+    desc.setMaxMemoryAvailable(memoryAvailable);
+    return desc;
+  }
+
   private static ExprNodeDesc buildColumnDesc(
       VectorizationContext ctx,
       String column,
@@ -199,7 +206,7 @@ public class TestVectorGroupByOperator {
     ArrayList<String> outputColumnNames = new ArrayList<String>();
     outputColumnNames.add("_col0");
 
-    GroupByDesc desc = new GroupByDesc();
+    GroupByDesc desc = newGroupByDesc();
     VectorGroupByDesc vectorDesc = new VectorGroupByDesc();
 
     desc.setOutputColumnNames(outputColumnNames);
@@ -219,7 +226,7 @@ public class TestVectorGroupByOperator {
     ArrayList<String> outputColumnNames = new ArrayList<String>();
     outputColumnNames.add("_col0");
 
-    GroupByDesc desc = new GroupByDesc();
+    GroupByDesc desc = newGroupByDesc();
     VectorGroupByDesc vectorDesc = new VectorGroupByDesc();
     vectorDesc.setVecAggrDescs(
         new VectorAggregationDesc[] {
@@ -2425,7 +2432,7 @@ public class TestVectorGroupByOperator {
             TypeInfoFactory.getPrimitiveTypeInfo(columnTypes[i])));
     }
 
-    GroupByDesc desc = new GroupByDesc();
+    GroupByDesc desc = newGroupByDesc();
     VectorGroupByDesc vectorGroupByDesc = new VectorGroupByDesc();
 
     desc.setOutputColumnNames(outputColumnNames);
@@ -2542,7 +2549,7 @@ public class TestVectorGroupByOperator {
     outputColumnNames.add("_col0");
     outputColumnNames.add("_col1");
 
-    GroupByDesc desc = new GroupByDesc();
+    GroupByDesc desc = newGroupByDesc();
     VectorGroupByDesc vectorGroupByDesc = new VectorGroupByDesc();
 
     desc.setOutputColumnNames(outputColumnNames);

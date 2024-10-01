@@ -450,7 +450,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
                 + "minReductionHashAggr:{} ", maxHtEntries, groupingSets.length,
             numRowsCompareHashAggr, minReductionHashAggr);
       }
-      computeMemoryLimits();
+      computeMemoryLimits(HiveConf.getVar(hconf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez"));
       LOG.debug("using hash aggregation processing mode");
 
       if (keyWrappersBatch.getVectorHashKeyWrappers()[0] instanceof VectorHashKeyWrapperGeneral) {
@@ -616,7 +616,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
     /**
      * Computes the memory limits for hash table flush (spill).
      */
-    private void computeMemoryLimits() {
+    private void computeMemoryLimits(boolean isTez) {
       JavaDataModel model = JavaDataModel.get();
 
       fixedHashEntrySize =
@@ -625,7 +625,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
           aggregationBatchInfo.getAggregatorsFixedSize();
 
       MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
-      maxMemory = isLlap ? getConf().getMaxMemoryAvailable() : memoryMXBean.getHeapMemoryUsage().getMax();
+      maxMemory = isTez ? getConf().getMaxMemoryAvailable() : memoryMXBean.getHeapMemoryUsage().getMax();
       hashTableMemoryPercentage = conf.getGroupByMemoryUsage();
       // Tests may leave this unitialized, so better set it to 1
       if (hashTableMemoryPercentage == 0.0f) {
@@ -634,8 +634,9 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
       maxHashTblMemory = (int)(maxMemory * hashTableMemoryPercentage);
 
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("GBY memory limits - isLlap: {} maxMemory: {} ({} * {}) fixSize:{} (key:{} agg:{})",
+      if (LOG.isInfoEnabled()) {
+        LOG.info("GBY memory limits - isTez: {} isLlap: {} maxHashTblMemory: {} ({} * {}) fixSize:{} (key:{} agg:{})",
+          isTez,
           isLlap,
           LlapUtil.humanReadableByteCount(maxHashTblMemory),
           LlapUtil.humanReadableByteCount(maxMemory),

@@ -35,6 +35,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapDaemonInfo;
+import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
@@ -389,14 +390,14 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
     isLlap = LlapDaemonInfo.INSTANCE.isLlap();
     numExecutors = isLlap ? LlapDaemonInfo.INSTANCE.getNumExecutors() : 1;
     firstRow = true;
+    memoryMXBean = ManagementFactory.getMemoryMXBean();
+    maxMemory = isTez ? getConf().getMaxMemoryAvailable() : memoryMXBean.getHeapMemoryUsage().getMax();
     // estimate the number of hash table entries based on the size of each
     // entry. Since the size of a entry
     // is not known, estimate that based on the number of entries
     if (hashAggr) {
       computeMaxEntriesHashAggr();
     }
-    memoryMXBean = ManagementFactory.getMemoryMXBean();
-    maxMemory = isTez ? getConf().getMaxMemoryAvailable() : memoryMXBean.getHeapMemoryUsage().getMax();
     memoryThreshold = this.getConf().getMemoryThreshold();
     LOG.info("isTez: {} isLlap: {} numExecutors: {} maxMemory: {}", isTez, isLlap, numExecutors, maxMemory);
   }
@@ -411,13 +412,12 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
    *         aggregation only
    **/
   private void computeMaxEntriesHashAggr() throws HiveException {
-    float memoryPercentage = this.getConf().getGroupByMemoryUsage();
-    if (isTez) {
-      maxHashTblMemory = (long) (memoryPercentage * getConf().getMaxMemoryAvailable());
-    } else {
-      maxHashTblMemory = (long) (memoryPercentage * Runtime.getRuntime().maxMemory());
+    final float memoryPercentage = this.getConf().getGroupByMemoryUsage();
+    maxHashTblMemory = (long) (memoryPercentage * maxMemory);
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Max hash table memory: {} ({} * {})", LlapUtil.humanReadableByteCount(maxHashTblMemory),
+        LlapUtil.humanReadableByteCount(maxMemory), memoryPercentage);
     }
-    LOG.info("Max hash table memory: {} bytes", maxHashTblMemory);
     estimateRowSize();
   }
 
