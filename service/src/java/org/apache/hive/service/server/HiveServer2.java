@@ -118,6 +118,7 @@ import org.apache.hive.service.servlet.HS2LeadershipStatus;
 import org.apache.hive.service.servlet.HS2Peers;
 import org.apache.hive.service.servlet.LDAPAuthenticationFilter;
 import org.apache.hive.service.servlet.LoginServlet;
+import org.apache.hive.service.servlet.OTELExporter;
 import org.apache.hive.service.servlet.QueriesRESTfulAPIServlet;
 import org.apache.hive.service.servlet.QueryProfileServlet;
 import org.apache.http.StatusLine;
@@ -134,6 +135,8 @@ import org.apache.zookeeper.ZooDefs.Perms;
 import org.apache.zookeeper.data.ACL;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletHolder;
+
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -182,6 +185,7 @@ public class HiveServer2 extends CompositeService {
   private ZooKeeperHiveHelper zooKeeperHelper = null;
   private ScheduledQueryExecutionService scheduledQueryService;
   private ServiceContext serviceContext;
+  private OTELExporter otelExporter;
 
   public enum WebUIAuthMethod {
     NONE, LDAP
@@ -501,6 +505,19 @@ public class HiveServer2 extends CompositeService {
       }
     } catch (IOException ie) {
       throw new ServiceException(ie);
+    }
+
+    long otelExporterFrequency =
+        hiveConf.getTimeVar(ConfVars.HIVE_OTEL_METRICS_FREQUENCY_SECONDS, TimeUnit.MILLISECONDS);
+    if (otelExporterFrequency > 0) {
+      otelExporter = new OTELExporter(AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk(),
+          cliService.getSessionManager(), otelExporterFrequency);
+
+      otelExporter.setName("OTEL Exporter");
+      otelExporter.setDaemon(true);
+      otelExporter.start();
+
+      LOG.info("Started OTEL exporter with frequency {}", otelExporterFrequency);
     }
 
     // Add a shutdown hook for catching SIGTERM & SIGINT
@@ -1068,6 +1085,10 @@ public class HiveServer2 extends CompositeService {
       // this is mostly for testing purposes to make sure that SAML client is
       // reinitialized after a HS2 is restarted.
       HiveSaml2Client.shutdown();
+    }
+
+    if (otelExporter != null) {
+      otelExporter.interrupt();
     }
 
   }

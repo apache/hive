@@ -3015,26 +3015,44 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<String> getTables(String catName, String dbName, String tablePattern)
       throws TException {
-    List<String> tables = new ArrayList<>();
-    GetProjectionsSpec projectionsSpec = new GetProjectionsSpec();
-    projectionsSpec.setFieldList(Arrays.asList("dbName", "tableName", "owner", "ownerType"));
-    GetTablesRequest req = new GetTablesRequest(dbName);
-    req.setCatName(catName);
-    req.setCapabilities(version);
-    req.setTblNames(null);
-    if(tablePattern == null){
+    if (tablePattern == null) {
       tablePattern = ".*";
     }
-    req.setTablesPattern(tablePattern);
-    if (processorCapabilities != null)
-      req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
-    if (processorIdentifier != null)
-      req.setProcessorIdentifier(processorIdentifier);
-    req.setProjectionSpec(projectionsSpec);
-    List<Table> tableObjects = client.get_table_objects_by_name_req(req).getTables();
-    tableObjects = deepCopyTables(FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, tableObjects));
-    for (Table tbl : tableObjects) {
-      tables.add(tbl.getTableName());
+    List<String> tables = new ArrayList<>();
+    Database db = null;
+    try {
+      db = getDatabase(catName, dbName);
+    } catch (NoSuchObjectException e) { /* appears exception is not thrown currently if db doesnt exist */ }
+
+    if (MetaStoreUtils.isDatabaseRemote(db)) {
+      // TODO: remote database does not support list table names by pattern yet.
+      // This branch can be removed once it's supported.
+      GetProjectionsSpec projectionsSpec = new GetProjectionsSpec();
+      projectionsSpec.setFieldList(Arrays.asList("dbName", "tableName", "owner", "ownerType"));
+      GetTablesRequest req = new GetTablesRequest(dbName);
+      req.setCatName(catName);
+      req.setCapabilities(version);
+      req.setTblNames(null);
+      req.setTablesPattern(tablePattern);
+      if (processorCapabilities != null)
+        req.setProcessorCapabilities(Arrays.asList(processorCapabilities));
+      if (processorIdentifier != null)
+        req.setProcessorIdentifier(processorIdentifier);
+      req.setProjectionSpec(projectionsSpec);
+      List<Table> tableObjects = client.get_table_objects_by_name_req(req).getTables();
+      tableObjects = deepCopyTables(FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, tableObjects));
+      for (Table tbl : tableObjects) {
+        tables.add(tbl.getTableName());
+      }
+    } else {
+      // This trick handles pattern for both string regex and wildcards ('*' and '|').
+      // We need unify the pattern definition, see HIVE-28297 for details.
+      String[] patterns = tablePattern.split("\\|");
+      for (String pattern : patterns) {
+        pattern = "(?i)" + pattern.replaceAll("(?<!\\.)\\*", ".*");
+        String filter = String.format("%s like \"%s\"", hive_metastoreConstants.HIVE_FILTER_FIELD_TABLE_NAME, pattern);
+        tables.addAll(listTableNamesByFilter(catName, dbName, filter, (short) -1));
+      }
     }
     return tables;
   }

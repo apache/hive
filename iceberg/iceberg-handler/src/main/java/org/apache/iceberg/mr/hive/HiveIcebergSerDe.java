@@ -175,7 +175,8 @@ public class HiveIcebergSerDe extends AbstractSerDe {
         return projectedSchema;
       }
     }
-    if (IcebergTableUtil.isCopyOnWriteMode(operation, configuration::get)) {
+    boolean isCOW = IcebergTableUtil.isCopyOnWriteMode(operation, configuration::get);
+    if (isCOW) {
       return IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns());
     }
     switch (operation) {

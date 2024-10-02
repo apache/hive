@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.ql.parse.rewrite.sql;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 
@@ -34,7 +34,7 @@ public class NativeAcidMultiInsertSqlGenerator extends MultiInsertSqlGenerator {
   }
 
   @Override
-  public void appendAcidSelectColumns(Context.Operation operation) {
+  public void appendAcidSelectColumns(Operation operation) {
     queryStr.append("ROW__ID,");
     for (FieldSchema fieldSchema : targetTable.getPartCols()) {
       String identifier = HiveUtils.unparseIdentifier(fieldSchema.getName(), this.conf);
@@ -44,7 +44,7 @@ public class NativeAcidMultiInsertSqlGenerator extends MultiInsertSqlGenerator {
   }
 
   @Override
-  public List<String> getDeleteValues(Context.Operation operation) {
+  public List<String> getDeleteValues(Operation operation) {
     List<String> deleteValues = new ArrayList<>(1 + targetTable.getPartCols().size());
     deleteValues.add(qualify("ROW__ID"));
     for (FieldSchema fieldSchema : targetTable.getPartCols()) {
@@ -54,7 +54,7 @@ public class NativeAcidMultiInsertSqlGenerator extends MultiInsertSqlGenerator {
   }
 
   @Override
-  public List<String> getSortKeys() {
+  public List<String> getSortKeys(Operation operation) {
     return singletonList(qualify("ROW__ID"));
   }
 }

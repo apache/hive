@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableAnalyzer;
@@ -120,7 +119,7 @@ public class AlterTableCompactAnalyzer extends AbstractAlterTableAnalyzer {
   }
   
   @Override
-  protected void setAcidDdlDesc(DDLDescWithWriteId desc) {
-    // doesn't need an open txn
+  public boolean isRequiresOpenTransaction() {
+    return false; // doesn't need an open txn
   }
 }

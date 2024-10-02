@@ -50,8 +50,8 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_ice
 Warning: Shuffle Join MERGEJOIN[61][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 Warning: Shuffle Join MERGEJOIN[63][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
-Warning: Shuffle Join MERGEJOIN[63][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[65][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[61][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[63][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: delete from tbl_ice where a in (select a from tbl_ice where a <= 5) or c in (select c from tbl_ice where c > 800)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_ice

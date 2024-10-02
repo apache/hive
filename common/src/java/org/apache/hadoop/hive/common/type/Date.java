@@ -84,7 +84,7 @@ public class Date implements Comparable<Date> {
   private static final LocalDate EPOCH = LocalDate.of(1970, 1, 1);
 
   private static final DateTimeFormatter PARSE_FORMATTER =
-      new DateTimeFormatterBuilder().appendValue(YEAR, 1, 10, SignStyle.NORMAL).appendLiteral('-')
+      new DateTimeFormatterBuilder().appendValue(YEAR, 1, 4, SignStyle.NORMAL).appendLiteral('-')
           .appendValue(MONTH_OF_YEAR, 1, 2, SignStyle.NORMAL).appendLiteral('-')
           .appendValue(DAY_OF_MONTH, 1, 2, SignStyle.NORMAL).toFormatter().withResolverStyle(ResolverStyle.STRICT);
 
@@ -177,13 +177,22 @@ public class Date implements Comparable<Date> {
    * @throws NullPointerException if {@code text} is null
    */
   public static Date valueOf(final String text) {
-    String s = Objects.requireNonNull(text).trim();
+    String trimedText = Objects.requireNonNull(text).trim();
     ParsePosition pos = new ParsePosition(0);
     try {
-      TemporalAccessor t = PARSE_FORMATTER.parseUnresolved(s, pos);
+      TemporalAccessor t = PARSE_FORMATTER.parse(trimedText, pos);
       if (pos.getErrorIndex() >= 0) {
-        throw new DateTimeParseException("Text could not be parsed to date", s, pos.getErrorIndex());
+        throw new DateTimeParseException("Text could not be parsed to date", trimedText, pos.getErrorIndex());
       }
+      //Check if there is still text left after parsing
+      if(pos.getIndex() < trimedText.length()) {
+        char lastChar = trimedText.charAt(pos.getIndex());
+        //Check if the first character of the remaining is a digit, e.g. "2023-08-0800" if yes, then it is a parse error and must throw an exception
+        if (lastChar >= '0' && lastChar <= '9'){
+          throw new DateTimeParseException("Text '" + trimedText + "' could not be parsed, unparsed text found at index " + pos.getIndex(), trimedText,
+              pos.getIndex());
+        }
+      }  
       return new Date(LocalDate.of(t.get(YEAR), t.get(MONTH_OF_YEAR), t.get(DAY_OF_MONTH)));
     } catch (DateTimeException e) {
       throw new IllegalArgumentException("Cannot create date, parsing error");

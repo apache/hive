@@ -321,7 +321,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     if (tables == null || tables.size() == 0) {
       return tableNames;
     }
-    tablePattern = tablePattern.replaceAll("\\*", ".*");
+    tablePattern = tablePattern.replaceAll("(?<!\\.)\\*", ".*");
     Pattern pattern = Pattern.compile(tablePattern);
     Matcher matcher = pattern.matcher("");
     Set<String> combinedTableNames = new HashSet<String>();
@@ -351,7 +351,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
       if (tables == null || tables.size() == 0) {
         return tableNames;
       }
-      tablePattern = tablePattern.replaceAll("\\*", ".*");
+      tablePattern = tablePattern.replaceAll("(?<!\\.)\\*", ".*");
       Pattern pattern = Pattern.compile(tablePattern);
       Matcher matcher = pattern.matcher("");
       Set<String> combinedTableNames = new HashSet<String>();

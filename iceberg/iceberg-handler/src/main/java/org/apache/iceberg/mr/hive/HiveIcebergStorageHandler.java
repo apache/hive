@@ -164,10 +164,12 @@ import org.apache.iceberg.SortField;
 import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.StatisticsFile;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.TableScan;
 import org.apache.iceberg.actions.DeleteOrphanFiles;
 import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.exceptions.ValidationException;
 import org.apache.iceberg.expressions.Evaluator;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.ExpressionUtil;
@@ -175,6 +177,7 @@ import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.expressions.Projections;
 import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.expressions.StrictMetricsEvaluator;
+import org.apache.iceberg.hadoop.ConfigProperties;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.io.CloseableIterable;
@@ -206,6 +209,12 @@ import org.apache.iceberg.util.SnapshotUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.FILE_PATH;
+import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.PARTITION_HASH;
+import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.PARTITION_PROJECTION;
+import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.PARTITION_SPEC_ID;
+import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.ROW_POSITION;
+
 public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, HiveStorageHandler {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergStorageHandler.class);
 
@@ -219,13 +228,15 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   public static final String TABLE_DEFAULT_LOCATION = "TABLE_DEFAULT_LOCATION";
 
-  private static final List<VirtualColumn> ACID_VIRTUAL_COLS = ImmutableList.of(VirtualColumn.PARTITION_SPEC_ID,
-      VirtualColumn.PARTITION_HASH, VirtualColumn.FILE_PATH, VirtualColumn.ROW_POSITION,
-      VirtualColumn.PARTITION_PROJECTION);
-  private static final List<FieldSchema> ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA = ACID_VIRTUAL_COLS.stream()
-      .map(v -> new FieldSchema(v.getName(), v.getTypeInfo().getTypeName(), ""))
-      .collect(Collectors.toList());
+  private static final List<VirtualColumn> ACID_VIRTUAL_COLS = ImmutableList.of(
+      PARTITION_SPEC_ID, PARTITION_HASH, FILE_PATH, ROW_POSITION, PARTITION_PROJECTION);
 
+  private static final List<FieldSchema> ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA = schema(ACID_VIRTUAL_COLS);
+
+  private static final List<FieldSchema> POSITION_DELETE_ORDERING =
+      orderBy(PARTITION_SPEC_ID, PARTITION_HASH, FILE_PATH, ROW_POSITION);
+
+  private static final List<FieldSchema> EMPTY_ORDERING = ImmutableList.of();
 
   private Configuration conf;
 
@@ -542,15 +553,15 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         puffinWriter.finish();
 
         statisticsFile =
-          new GenericStatisticsFile(
-            snapshotId,
-            statsPath,
-            puffinWriter.fileSize(),
-            puffinWriter.footerSize(),
-            puffinWriter.writtenBlobsMetadata().stream()
-              .map(GenericBlobMetadata::from)
-              .collect(ImmutableList.toImmutableList())
-          );
+            new GenericStatisticsFile(
+                snapshotId,
+                statsPath,
+                puffinWriter.fileSize(),
+                puffinWriter.footerSize(),
+                puffinWriter.writtenBlobsMetadata().stream()
+                    .map(GenericBlobMetadata::from)
+                    .collect(ImmutableList.toImmutableList())
+            );
       } catch (IOException e) {
         LOG.warn("Unable to write stats to puffin file {}", e.getMessage());
         return false;
@@ -640,12 +651,15 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   /**
-   * No need for exclusive locks when writing, since Iceberg tables use optimistic concurrency when writing
-   * and only lock the table during the commit operation.
+   * Iceberg's optimistic concurrency control fails to provide means for IOW and Insert operations isolation.
+   * Use `hive.txn.ext.locking.enabled` config to create Hive locks in order to guarantee data consistency.
    */
   @Override
   public LockType getLockType(WriteEntity writeEntity) {
-    return LockType.SHARED_READ;
+    if (WriteEntity.WriteType.INSERT_OVERWRITE == writeEntity.getWriteType()) {
+      return LockType.EXCL_WRITE;
+    }
+    return LockType.SHARED_WRITE;
   }
 
   @Override
@@ -1202,7 +1216,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public FieldSchema getRowId() {
-    VirtualColumn rowId = VirtualColumn.ROW_POSITION;
+    VirtualColumn rowId = ROW_POSITION;
     return new FieldSchema(rowId.getName(), rowId.getTypeInfo().getTypeName(), "");
   }
 
@@ -1210,11 +1224,14 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public List<FieldSchema> acidSortColumns(org.apache.hadoop.hive.ql.metadata.Table table, Operation operation) {
     switch (operation) {
       case DELETE:
-        return ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA;
+        return IcebergTableUtil.isFanoutEnabled(table.getParameters()) ?
+            EMPTY_ORDERING : POSITION_DELETE_ORDERING;
+      case MERGE:
+        return POSITION_DELETE_ORDERING;
       default:
         // For update operations we use the same sort order defined by
         // {@link #createDPContext(HiveConf, org.apache.hadoop.hive.ql.metadata.Table)}
-        return ImmutableList.of();
+        return EMPTY_ORDERING;
     }
   }
 
@@ -1443,6 +1460,26 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     map.remove("columns.comments");
   }
 
+  @Override
+  public void validateCurrentSnapshot(TableDesc tableDesc) {
+    if (conf.getBoolean(ConfigProperties.LOCK_HIVE_ENABLED, TableProperties.HIVE_LOCK_ENABLED_DEFAULT) ||
+        !HiveConf.getBoolVar(conf, ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED)) {
+      return;
+    }
+    Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
+    if (table.currentSnapshot() != null || table instanceof BaseTable) {
+      TableMetadata currentMetadata = ((BaseTable) table).operations().current();
+      if (currentMetadata.propertyAsBoolean(TableProperties.HIVE_LOCK_ENABLED, false)) {
+        return;
+      }
+      TableMetadata newMetadata = ((BaseTable) table).operations().refresh();
+      ValidationException.check(
+          Objects.equals(newMetadata.metadataFileLocation(), currentMetadata.metadataFileLocation()),
+          "Table snapshot is outdated: %s", tableDesc.getTableName()
+      );
+    }
+  }
+
   /**
    * Recursively replaces the ExprNodeDynamicListDesc nodes by a dummy ExprNodeConstantDesc so we can test if we can
    * convert the predicate to an Iceberg predicate when pruning the partitions later. Also collects the column names
@@ -1543,7 +1580,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    * for example in Parquet (in Parquet files Time type is an int64 with 'time' logical annotation).
    * @param tableProps iceberg table properties
    * @param tableSchema iceberg table schema
-   * @return
+   * @return true if having time type column
    */
   private static boolean hasOrcTimeInSchema(Properties tableProps, Schema tableSchema) {
     if (!FileFormat.ORC.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT))) {
@@ -1558,7 +1595,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    * check {@link VectorizedParquetRecordReader#checkListColumnSupport} for details on nested types under lists
    * @param tableProps iceberg table properties
    * @param tableSchema iceberg table schema
-   * @return
+   * @return true if having nested types
    */
   private static boolean hasParquetNestedTypeWithinListOrMap(Properties tableProps, Schema tableSchema) {
     if (!FileFormat.PARQUET.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT))) {
@@ -1740,16 +1777,16 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   /**
    * Check the operation type of all snapshots which are newer than the specified. The specified snapshot is excluded.
-   * @deprecated
-   * <br>Use {@link HiveStorageHandler#getSnapshotContexts(
-   * org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since)}
-   * and check {@link SnapshotContext.WriteOperationType#APPEND}.equals({@link SnapshotContext#getOperation()}).
-   *
    * @param hmsTable table metadata stored in Hive Metastore
    * @param since the snapshot preceding the oldest snapshot which should be checked.
    *              The value null means all should be checked.
    * @return null if table is empty, true if all snapshots are {@link SnapshotContext.WriteOperationType#APPEND}s,
    * false otherwise.
+   *
+   * @deprecated
+   * <br>Use {@link HiveStorageHandler#getSnapshotContexts(
+   * org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since)}
+   * and check {@link SnapshotContext.WriteOperationType#APPEND}.equals({@link SnapshotContext#getOperation()}).
    */
   @Deprecated
   @Override
@@ -2087,7 +2124,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       tasks.forEach(task -> {
         DataFile file = task.file();
         PartitionSpec spec = task.spec();
-        if ((latestSpecOnly && file.specId() == tableSpecId) || (!latestSpecOnly && file.specId() != tableSpecId)) {
+        if (latestSpecOnly && file.specId() == tableSpecId || !latestSpecOnly && file.specId() != tableSpecId) {
           PartitionData partitionData = IcebergTableUtil.toPartitionData(task.partition(), spec.partitionType());
           String partName = spec.partitionToPath(partitionData);
           Map<String, String> partSpecMap = Maps.newLinkedHashMap();
@@ -2125,14 +2162,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public List<FileStatus> getMergeTaskInputFiles(Properties properties) throws IOException {
-    String tableName = properties.getProperty(Catalogs.NAME);
-    String snapshotRef = properties.getProperty(Catalogs.SNAPSHOT_REF);
-    Configuration configuration = SessionState.getSessionConf();
-    List<JobContext> originalContextList = HiveIcebergOutputCommitter
-            .generateJobContext(configuration, tableName, snapshotRef);
-    List<JobContext> jobContextList = originalContextList.stream()
-            .map(TezUtil::enrichContextWithVertexId)
-            .collect(Collectors.toList());
+    List<JobContext> jobContextList = IcebergMergeTaskProperties.getJobContexts(properties);
     if (jobContextList.isEmpty()) {
       return Collections.emptyList();
     }
@@ -2156,5 +2186,15 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public boolean hasUndergonePartitionEvolution(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     return hasUndergonePartitionEvolution(table);
+  }
+
+  private static List<FieldSchema> schema(List<VirtualColumn> exprs) {
+    return exprs.stream().map(v ->
+        new FieldSchema(v.getName(), v.getTypeInfo().getTypeName(), ""))
+      .collect(Collectors.toList());
+  }
+
+  private static List<FieldSchema> orderBy(VirtualColumn... exprs) {
+    return schema(Arrays.asList(exprs));
   }
 }

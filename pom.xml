@@ -161,7 +161,7 @@
     <javolution.version>5.5.1</javolution.version>
     <jettison.version>1.5.4</jettison.version>
     <jetty.version>9.4.45.v20220203</jetty.version>
-    <jersey.version>1.19</jersey.version>
+    <jersey.version>1.19.4</jersey.version>
     <jline.version>2.14.6</jline.version>
     <jms.version>2.0.2</jms.version>
     <joda.version>2.9.9</joda.version>
@@ -188,6 +188,7 @@
     <oracle.version>21.3.0.0</oracle.version>
     <opencsv.version>5.9</opencsv.version>
     <orc.version>1.9.4</orc.version>
+    <otel.version>1.42.0</otel.version>
     <mockito-core.version>3.4.4</mockito-core.version>
     <mockito-inline.version>4.11.0</mockito-inline.version>
     <mina.version>2.0.0-M5</mina.version>
@@ -201,11 +202,12 @@
     <plexus.version>1.5.6</plexus.version>
     <protobuf.version>3.24.4</protobuf.version>
     <rat.version>0.16.1</rat.version>
+    <roaringbit.version>1.0.1</roaringbit.version>
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.30</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
     <storage-api.version>4.1.0-SNAPSHOT</storage-api.version>
-    <tez.version>0.10.3</tez.version>
+    <tez.version>0.10.4</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
     <snappy.version>1.1.10.4</snappy.version>
@@ -1329,6 +1331,16 @@
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-api</artifactId>
         <version>${tez.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-json</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-client</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.tez</groupId>

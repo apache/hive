@@ -138,7 +138,7 @@
     <dependency>
       <groupId>org.roaringbitmap</groupId>
       <artifactId>RoaringBitmap</artifactId>
-      <version>0.9.22</version>
+      <version>${roaringbit.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -363,6 +363,16 @@
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-api</artifactId>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-json</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-client</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.tez</groupId>

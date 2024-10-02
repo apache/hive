@@ -1023,8 +1023,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
 
   private boolean isOrcOnlyFiles(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     return !"FALSE".equalsIgnoreCase(hmsTable.getParameters().get(ORC_FILES_ONLY)) &&
-        ((hmsTable.getSd().getInputFormat() != null &&
-            hmsTable.getSd().getInputFormat().toUpperCase().contains(org.apache.iceberg.FileFormat.ORC.name())) ||
+        (hmsTable.getSd().getInputFormat() != null &&
+            hmsTable.getSd().getInputFormat().toUpperCase().contains(org.apache.iceberg.FileFormat.ORC.name()) ||
             org.apache.iceberg.FileFormat.ORC.name()
                 .equalsIgnoreCase(hmsTable.getSd().getSerdeInfo().getParameters().get("write.format.default")) ||
             org.apache.iceberg.FileFormat.ORC.name()

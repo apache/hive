@@ -60,6 +60,10 @@
           <groupId>org.slf4j</groupId>
           <artifactId>jul-to-slf4j</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-client</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -633,6 +637,14 @@
           <groupId>javax.servlet</groupId>
           <artifactId>servlet-api</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-json</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-client</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -869,7 +881,7 @@
     <dependency>
       <groupId>org.roaringbitmap</groupId>
       <artifactId>RoaringBitmap</artifactId>
-      <version>0.9.22</version>
+      <version>${roaringbit.version}</version>
     </dependency>
   </dependencies>
   <profiles>
@@ -1105,7 +1117,6 @@
                   <include>org.apache.calcite.avatica:avatica</include>
                   <include>com.esri.geometry:esri-geometry-api</include>
                   <include>org.roaringbitmap:RoaringBitmap</include>
-                  <include>org.roaringbitmap:shims</include>
                   <include>com.github.luben:zstd-jni</include>
                 </includes>
               </artifactSet>

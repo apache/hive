@@ -69,7 +69,7 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
   }
 
   @Override
-  public void Authenticate(String user, String password) throws AuthenticationException {
+  public void authenticate(String user, String password) throws AuthenticationException {
     DirSearch search = null;
     String bindUser = this.conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_USER);
     String bindPassword = null;

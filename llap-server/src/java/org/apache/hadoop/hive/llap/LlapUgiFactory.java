@@ -11,12 +11,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.llap;
 
-package org.apache.hadoop.hive.common;
-
-import java.io.IOException;
 import org.apache.hadoop.security.UserGroupInformation;
 
-public interface UgiFactory {
-  UserGroupInformation createUgi() throws IOException;
+import java.io.IOException;
+
+public interface LlapUgiFactory {
+  /*
+   * Creates a UserGroupInformation instance for a user.
+   * Subclasses might implement a cache for taking care of reusing an existing ugi for the same query if possible.
+   */
+  UserGroupInformation createUgi(String user) throws IOException;
 }

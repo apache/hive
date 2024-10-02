@@ -25,12 +25,13 @@
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
     <path.to.iceberg.root>.</path.to.iceberg.root>
+    <!-- Upgrade roaringbit version in parent pom.xml whenever upgrading iceberg version -->
     <iceberg.version>1.5.2</iceberg.version>
     <kryo-shaded.version>4.0.3</kryo-shaded.version>
     <iceberg.mockito-core.version>3.4.4</iceberg.mockito-core.version>
     <iceberg.avro.version>1.11.3</iceberg.avro.version>
     <iceberg.kryo.version>5.5.0</iceberg.kryo.version>
-    <iceberg.checkstyle.plugin.version>3.1.2</iceberg.checkstyle.plugin.version>
+    <iceberg.checkstyle.plugin.version>3.5.0</iceberg.checkstyle.plugin.version>
     <spotless.maven.plugin.version>2.5.0</spotless.maven.plugin.version>
     <google.errorprone.javac.version>9+181-r4173-1</google.errorprone.javac.version>
     <google.errorprone.version>2.5.1</google.errorprone.version>
@@ -240,7 +241,8 @@
           <suppressionsLocation>${basedir}/${path.to.iceberg.root}/checkstyle/checkstyle-suppressions.xml
           </suppressionsLocation>
           <includeTestSourceDirectory>true</includeTestSourceDirectory>
-          <encoding>UTF-8</encoding>
+          <inputEncoding>UTF-8</inputEncoding>
+          <outputEncoding>UTF-8</outputEncoding>
           <consoleOutput>true</consoleOutput>
           <failsOnError>true</failsOnError>
         </configuration>
