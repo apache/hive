@@ -56,7 +56,7 @@ public class ShowProcesslistProcessor implements CommandProcessor{
     sch.addToFieldSchemas(new FieldSchema("Session Idle Time (s)", "string", ""));
     sch.addToFieldSchemas(new FieldSchema("Query ID", "string", ""));
     sch.addToFieldSchemas(new FieldSchema("State", "string", ""));
-    sch.addToFieldSchemas(new FieldSchema("Opened Timestamp", "string", ""));
+    sch.addToFieldSchemas(new FieldSchema("Opened Timestamp (s)", "string", ""));
     sch.addToFieldSchemas(new FieldSchema("Elapsed Time (s)", "string", ""));
     sch.addToFieldSchemas(new FieldSchema("Runtime (s)", "string", ""));
     sch.putToProperties(SERIALIZATION_NULL_FORMAT, defaultNullString);

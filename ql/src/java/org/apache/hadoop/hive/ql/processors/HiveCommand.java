@@ -38,8 +38,7 @@ public enum HiveCommand {
   RELOAD(),
   DELETE(),
   COMPILE(),
-  PROCESSLIST()
-  ;
+  PROCESSLIST();
 
   public static final boolean ONLY_FOR_TESTING = true;
   private boolean usedOnlyForTesting;
@@ -84,7 +83,8 @@ public enum HiveCommand {
         return null;//don't want set autocommit true|false to get mixed with set hive.foo.bar...
       } else if (command.length > 1 && "llap".equalsIgnoreCase(command[0])) {
         return getLlapSubCommand(command);
-      } else if (command.length > 1 && "processlist".equalsIgnoreCase(command[1])) {
+      } else if (command.length > 1 && "show".equalsIgnoreCase(command[0]) &&
+          "processlist".equalsIgnoreCase(command[1])) {
         return PROCESSLIST;
       } else if (COMMANDS.contains(cmd)) {
         HiveCommand hiveCommand = HiveCommand.valueOf(cmd);

@@ -28,13 +28,13 @@ public class ProcessListInfo {
   private final long sessionIdleTime;
   private final String executionEngine;
   private final String queryId;
-  private final long beginTime;
+  private final String beginTime;
   private final String runtime;  // tracks only running portion of the query.
   private final long elapsedTime;
   private final String state;
 
   private ProcessListInfo( String userName, String ipAddr, String sessionId,  long sessionActiveTime,
-      long sessionIdleTime,String queryId, String executionEngine, long beginTime,
+      long sessionIdleTime,String queryId, String executionEngine, String beginTime,
       String runtime, long elapsedTime, String state ) {
     this.userName = userName;
     this.ipAddr = ipAddr;
@@ -59,7 +59,7 @@ public class ProcessListInfo {
   public long getSessionActiveTime() { return sessionActiveTime; }
   public long getSessionIdleTime() { return sessionIdleTime; }
   public String getExecutionEngine() { return executionEngine; }
-  public long getBeginTime() { return beginTime; }
+  public String getBeginTime() { return beginTime; }
   public String getQueryId() { return queryId; }
   public String getRuntime() { return runtime; }
   public long getElapsedTime() { return elapsedTime; }
@@ -71,7 +71,7 @@ public class ProcessListInfo {
     private long sessionActiveTime;
     private long sessionIdleTime;
     private String executionEngine;
-    private long beginTime;
+    private String beginTime;
     private String queryId;
     private String runtime;
     private long elapsedTime;
@@ -107,7 +107,7 @@ public class ProcessListInfo {
       return this;
     }
 
-    public Builder setBeginTime(long beginTime) {
+    public Builder setBeginTime(String beginTime) {
       this.beginTime = beginTime;
       return this;
     }

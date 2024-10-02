@@ -26,10 +26,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Date;
 import java.util.stream.Collectors;
 
 import org.apache.hadoop.hive.common.io.SessionStream;
@@ -139,7 +141,7 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
       }
     } catch (CommandProcessorException e) {
       setState(OperationState.ERROR);
-      throw toSQLException("Error while processing statement: " + e.toString(), e);
+      throw toSQLException("Error while processing statement", e);
     } catch (Exception e) {
       setState(OperationState.ERROR);
       throw new HiveSQLException("Error running query: " + e.toString(), e);
@@ -153,6 +155,7 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
       return null;
     }
     long currentTime = System.currentTimeMillis();
+    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     Collection<Operation> operations = sessionManager.getOperations();
     return operations.stream()
         .filter(op -> op instanceof SQLOperation) // Filter for SQLOperation instances
@@ -169,7 +172,7 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
               .setSessionIdleTime((currentTime - session.getLastAccessTime()) / 1000)
               .setQueryId(op.getQueryId())
               .setExecutionEngine(query.getExecutionEngine())
-              .setBeginTime(query.getBeginTime())
+              .setBeginTime(formatter.format(new Date(query.getBeginTime())))
               .setRuntime(query.getRuntime() == null ? "Not finished" : String.valueOf(query.getRuntime() / 1000))
               .setElapsedTime(query.getElapsedTime() / 1000)
               .setState(query.getState())
