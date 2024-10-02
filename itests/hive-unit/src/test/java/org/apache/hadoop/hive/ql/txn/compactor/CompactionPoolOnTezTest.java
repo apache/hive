@@ -17,11 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.CompactionRequest;
-import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
@@ -29,7 +26,6 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.TxnCommandsBaseForTests;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -37,9 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
-import java.io.*;
 
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactorBase.executeStatementOnDriver;
 
@@ -176,22 +170,23 @@ public class CompactionPoolOnTezTest extends CompactorOnTezTest {
 
   @Test
   public void testCompactionWithCustomPool() throws Exception {
-    conf.setInt("hive.compactor.worker.pool1.threads", 1);
+    String poolName = "pool1";
+    conf.setInt(String.format("hive.compactor.worker.%s.threads", poolName), 1);
 
     Map<String, String> properties = new HashMap<>();
-    properties.put(Constants.HIVE_COMPACTOR_WORKER_POOL, "pool1");
+    properties.put(Constants.HIVE_COMPACTOR_WORKER_POOL, poolName);
     provider.createFullAcidTable(null, DEFAULT_TABLE_NAME, false, false, properties);
     provider.insertTestData(DEFAULT_TABLE_NAME, false);
 
     TxnCommandsBaseForTests.runInitiator(conf);
 
-    checkCompactionRequest("initiated", "pool1");
+    checkCompactionRequest("initiated", poolName);
 
     Map<String, Integer> customPools = CompactorUtil.getPoolConf(conf);
     Assert.assertEquals(customPools.size(), 1);
-    Assert.assertEquals(customPools.get("pool1"), new Integer(1));
+    Assert.assertEquals(customPools.get(poolName), new Integer(1));
 
-    TxnCommandsBaseForTests.runWorker(conf, "pool1");
-    checkCompactionRequest("ready for cleaning", "pool1");
+    TxnCommandsBaseForTests.runWorker(conf, poolName);
+    checkCompactionRequest("ready for cleaning", poolName);
   }
 }
