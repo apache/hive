@@ -15789,12 +15789,22 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return null;
   }
 
+  private Set<Long> getTransactionedTables() throws SemanticException {
+    return tablesFromReadEntities(inputs)
+            .stream()
+            .filter(AcidUtils::isTransactionalTable)
+            .map(Table::getTTable)
+            .map(org.apache.hadoop.hive.metastore.api.Table::getId)
+            .collect(Collectors.toSet());
+  }
+
   private QueryResultsCache.LookupInfo createLookupInfoForQuery(ASTNode astNode) throws SemanticException {
     QueryResultsCache.LookupInfo lookupInfo = null;
     String queryString = getQueryStringForCache(astNode);
     if (queryString != null) {
       ValidTxnWriteIdList writeIdList = getQueryValidTxnWriteIdList();
-      lookupInfo = new QueryResultsCache.LookupInfo(queryString, () -> writeIdList);
+      Set<Long> txnTables = getTransactionedTables();
+      lookupInfo = new QueryResultsCache.LookupInfo(queryString, () -> writeIdList, txnTables);
     }
     return lookupInfo;
   }
