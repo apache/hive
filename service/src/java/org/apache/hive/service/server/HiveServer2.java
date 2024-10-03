@@ -1217,12 +1217,10 @@ public class HiveServer2 extends CompositeService {
       LOG.info("Initializing the compaction pools with using the global worker limit: {} ", numWorkers.value);
       customPools.forEach((poolName, poolWorkers) -> {
         if (poolWorkers == 0) {
-          LOG.warn("Compaction pool ({}) configured with zero workers. Skipping pool initialization", poolName);
-          sb.append("Pool not initialized, 0 size: ").append(poolName).append("\n");
+          LOG.warn("Pool not initialized, configured with zero workers: {}", poolName);
         }
         else if (numWorkers.value == 0) {
-          LOG.warn("There are no available workers for the following compaction pool: {} ", poolName);
-          sb.append("Pool not initialized, no remaining free workers: ").append(poolName).append("\n");
+          LOG.warn("Pool not initialized, no available workers remained: {}", poolName);
         }
         else {
           if (poolWorkers > numWorkers.value) {

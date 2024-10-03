@@ -242,10 +242,10 @@ public abstract class TxnCommandsBaseForTests {
   }
 
   public static void runInitiator(HiveConf hiveConf) throws Exception {
-    runCompactorThread(hiveConf, CompactorThreadType.INITIATOR, Constants.COMPACTION_DEFAULT_POOL);
+    runCompactorThread(hiveConf, CompactorThreadType.INITIATOR);
   }
   public static void runWorker(HiveConf hiveConf) throws Exception {
-    runCompactorThread(hiveConf, CompactorThreadType.WORKER, Constants.COMPACTION_DEFAULT_POOL);
+    runCompactorThread(hiveConf, CompactorThreadType.WORKER);
   }
   public static void runWorker(HiveConf hiveConf, String poolName) throws Exception {
     runCompactorThread(hiveConf, CompactorThreadType.WORKER, poolName);
@@ -253,7 +253,10 @@ public abstract class TxnCommandsBaseForTests {
   public static void runCleaner(HiveConf hiveConf) throws Exception {
     // Wait for the cooldown period so the Cleaner can see the last committed txn as the highest committed watermark
     Thread.sleep(MetastoreConf.getTimeVar(hiveConf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS));
-    runCompactorThread(hiveConf, CompactorThreadType.CLEANER, Constants.COMPACTION_DEFAULT_POOL);
+    runCompactorThread(hiveConf, CompactorThreadType.CLEANER);
+  }
+  private static void runCompactorThread(HiveConf hiveConf, CompactorThreadType type) throws Exception {
+    runCompactorThread(hiveConf, type, Constants.COMPACTION_DEFAULT_POOL);
   }
   private static void runCompactorThread(HiveConf hiveConf, CompactorThreadType type, String poolName)
       throws Exception {
@@ -265,7 +268,7 @@ public abstract class TxnCommandsBaseForTests {
         break;
       case WORKER:
         t = new Worker();
-        if (!poolName.equals(Constants.COMPACTION_DEFAULT_POOL)) {
+        if (poolName != null && !poolName.equals(Constants.COMPACTION_DEFAULT_POOL)) {
           ((Worker)t).setPoolName(poolName); 
         }
         break;
