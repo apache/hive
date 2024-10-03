@@ -102,8 +102,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
 
     ColumnStatisticsData statsData = new ColumnStatisticsData();
 
-    if (columnType.equalsIgnoreCase("long")
-        || columnType.equalsIgnoreCase(serdeConstants.TINYINT_TYPE_NAME)
+    if (columnType.equalsIgnoreCase(serdeConstants.TINYINT_TYPE_NAME)
         || columnType.equalsIgnoreCase(serdeConstants.SMALLINT_TYPE_NAME)
         || columnType.equalsIgnoreCase(serdeConstants.INT_TYPE_NAME)
         || columnType.equalsIgnoreCase(serdeConstants.BIGINT_TYPE_NAME)) {

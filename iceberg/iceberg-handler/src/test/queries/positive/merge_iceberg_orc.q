@@ -20,3 +20,9 @@ when matched then update set b = 'Merged', c = t.c + 10
 when not matched then insert values (src.a, src.b, src.c);
 
 select * from target_ice;
+
+create external table target_ice2(a int, `date` string, c int) stored by iceberg stored as orc;
+-- reserved keywords
+explain
+merge into target_ice2 as t using source src ON t.a = src.a
+when not matched then insert (a, `date`) values (src.a, concat(src.b, '-merge'));

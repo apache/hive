@@ -349,9 +349,6 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
           Utilities.FILE_OP_LOGGER.warn("merger ignoring invalid DP path " + status[i].getPath());
           continue;
         }
-        if (useCustomStorageHandler) {
-          updatePartDescProperties(pDesc, mergeProperties);
-        }
         Utilities.FILE_OP_LOGGER.debug("merge resolver will merge " + status[i].getPath());
         work.resolveDynamicPartitionStoredAsSubDirsMerge(conf, status[i].getPath(), tblDesc,
             aliases, pDesc);
@@ -423,11 +420,13 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
           targetDirs.add(target);
         }
 
-        LoadMultiFilesDesc lmfd = new LoadMultiFilesDesc(toMove,
-            targetDirs, lfd.getIsDfsDir(), lfd.getColumns(), lfd.getColumnTypes());
         mvWork.setLoadFileWork(null);
         mvWork.setLoadTableWork(null);
-        mvWork.setMultiFilesDesc(lmfd);
+        if (!useCustomStorageHandler) {
+          LoadMultiFilesDesc lmfd = new LoadMultiFilesDesc(toMove,
+                  targetDirs, lfd.getIsDfsDir(), lfd.getColumns(), lfd.getColumnTypes());
+          mvWork.setMultiFilesDesc(lmfd);
+        }
       } else {
         resTsks.add(mrTask);
       }
@@ -568,11 +567,11 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
       mapWork.setAliasToWork(aliasToWork);
     }
     if (partitionDesc != null) {
-      updatePartDescProperties(partitionDesc, mergeProperties);
       pathToPartitionInfo.remove(dirPath);
       pathToPartitionInfo.put(tmpDir, partitionDesc);
       mapWork.setPathToPartitionInfo(pathToPartitionInfo);
     }
+    mapWork.setMergeSplitProperties(mergeProperties.getSplitProperties());
     mapWork.removePathToAlias(dirPath);
     mapWork.addPathToAlias(tmpDir, tmpDir.toString());
     mapWork.setUseInputPathsDirectly(true);
@@ -592,23 +591,5 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
       }
     }
     return manifestDirsToPaths;
-  }
-
-  private void updatePartDescProperties(PartitionDesc partitionDesc,
-                                        MergeTaskProperties mergeProperties) throws IOException, ClassNotFoundException {
-    if (mergeProperties != null) {
-      String inputFileFormatClassName = mergeProperties.getStorageFormatDescriptor().getInputFormat();
-      String outputFileFormatClassName = mergeProperties.getStorageFormatDescriptor().getOutputFormat();
-      String serdeClassName = mergeProperties.getStorageFormatDescriptor().getSerde();
-      if (inputFileFormatClassName != null) {
-        partitionDesc.setInputFileFormatClass(JavaUtils.loadClass(inputFileFormatClassName));
-      }
-      if (outputFileFormatClassName != null) {
-        partitionDesc.setOutputFileFormatClass(JavaUtils.loadClass(outputFileFormatClassName));
-      }
-      if (serdeClassName != null) {
-        partitionDesc.getTableDesc().getProperties().setProperty(serdeConstants.SERIALIZATION_LIB, serdeClassName);
-      }
-    }
   }
 }

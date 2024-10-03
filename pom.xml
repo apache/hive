@@ -60,6 +60,7 @@
     <module>packaging</module>
     <module>standalone-metastore</module>
     <module>kafka-handler</module>
+    <module>iceberg</module>
   </modules>
   <properties>
     <standalone-metastore.version>4.1.0-SNAPSHOT</standalone-metastore.version>
@@ -112,7 +113,7 @@
     <arrow.version>12.0.0</arrow.version>
     <avatica.version>1.12.0</avatica.version>
     <avro.version>1.11.3</avro.version>
-    <bcprov-jdk18on.version>1.77</bcprov-jdk18on.version>
+    <bcprov-jdk18on.version>1.78</bcprov-jdk18on.version>
     <calcite.version>1.25.0</calcite.version>
     <datanucleus-api-jdo.version>5.2.8</datanucleus-api-jdo.version>
     <datanucleus-core.version>5.2.10</datanucleus-core.version>
@@ -126,10 +127,9 @@
     <commons-configuration.version>1.10</commons-configuration.version>
     <commons-exec.version>1.1</commons-exec.version>
     <commons-io.version>2.12.0</commons-io.version>
-    <commons-pool2.version>2.11.1</commons-pool2.version>
     <commons-lang3.version>3.12.0</commons-lang3.version>
     <commons-math3.version>3.6.1</commons-math3.version>
-    <commons-dbcp2.version>2.9.0</commons-dbcp2.version>
+    <commons-dbcp2.version>2.12.0</commons-dbcp2.version>
     <commons-text.version>1.10.0</commons-text.version>
     <derby.version>10.14.2.0</derby.version>
     <dropwizard.version>3.1.0</dropwizard.version>
@@ -159,14 +159,14 @@
     <javolution.version>5.5.1</javolution.version>
     <jettison.version>1.5.4</jettison.version>
     <jetty.version>9.4.45.v20220203</jetty.version>
-    <jersey.version>1.19</jersey.version>
+    <jersey.version>1.19.4</jersey.version>
     <jline.version>2.14.6</jline.version>
     <jms.version>2.0.2</jms.version>
     <joda.version>2.9.9</joda.version>
     <jodd.version>6.0.0</jodd.version>
     <json.version>1.8</json.version>
     <junit.version>4.13.2</junit.version>
-    <junit.jupiter.version>5.6.2</junit.jupiter.version>
+    <junit.jupiter.version>5.10.0</junit.jupiter.version>
     <junit.vintage.version>5.6.3</junit.vintage.version>
     <kafka.version>2.5.0</kafka.version>
     <kryo.version>5.5.0</kryo.version>
@@ -181,8 +181,9 @@
     <mysql.version>8.0.31</mysql.version>
     <postgres.version>42.7.3</postgres.version>
     <oracle.version>21.3.0.0</oracle.version>
-    <opencsv.version>2.3</opencsv.version>
-    <orc.version>1.8.5</orc.version>
+    <opencsv.version>5.9</opencsv.version>
+    <orc.version>1.9.4</orc.version>
+    <otel.version>1.42.0</otel.version>
     <mockito-core.version>3.4.4</mockito-core.version>
     <mockito-inline.version>4.11.0</mockito-inline.version>
     <mina.version>2.0.0-M5</mina.version>
@@ -196,11 +197,12 @@
     <plexus.version>1.5.6</plexus.version>
     <protobuf.version>3.24.4</protobuf.version>
     <rat.version>0.16.1</rat.version>
+    <roaringbit.version>1.2.1</roaringbit.version>
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.30</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
     <storage-api.version>4.1.0-SNAPSHOT</storage-api.version>
-    <tez.version>0.10.3</tez.version>
+    <tez.version>0.10.4</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
     <snappy.version>1.1.10.4</snappy.version>
@@ -218,7 +220,7 @@
     <re2j.version>1.2</re2j.version>
     <rs-api.version>2.0.1</rs-api.version>
     <json-path.version>2.9.0</json-path.version>
-    <janino.version>3.0.11</janino.version>
+    <janino.version>3.1.12</janino.version>
     <datasketches.version>1.2.0</datasketches.version>
     <spotbugs.version>4.0.3</spotbugs.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
@@ -1324,6 +1326,16 @@
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-api</artifactId>
         <version>${tez.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-json</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-client</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.tez</groupId>
@@ -1334,10 +1346,35 @@
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-mapreduce</artifactId>
         <version>${tez.version}</version>
+        <optional>true</optional>
         <exclusions>
           <exclusion>
             <groupId>io.netty</groupId>
             <artifactId>netty</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-mapreduce-client-core</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-mapreduce-client-common</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-hdfs</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-yarn-client</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
@@ -1728,6 +1765,7 @@
             <additionalClasspathElement>${basedir}/${hive.path.to.root}/conf</additionalClasspathElement>
           </additionalClasspathElements>
           <environmentVariables>
+            <HIVE_CLUSTER_ID>hive-test-cluster-id-env</HIVE_CLUSTER_ID>
             <TZ>US/Pacific</TZ>
             <LANG>en_US.UTF-8</LANG>
             <HADOOP_CLASSPATH>${test.conf.dir}:${basedir}/${hive.path.to.root}/conf</HADOOP_CLASSPATH>
@@ -1751,6 +1789,7 @@
             <mapred.job.tracker>local</mapred.job.tracker>
             <log4j.configurationFile>${test.log4j.scheme}${test.conf.dir}/hive-log4j2.properties</log4j.configurationFile>
             <hive.test.console.log.level>${test.console.log.level}</hive.test.console.log.level>
+            <hive.cluster.id>hive-test-cluster-id-cli</hive.cluster.id>
             <log4j.debug>true</log4j.debug>
             <!-- don't dirty up /tmp -->
             <java.io.tmpdir>${test.tmp.dir}</java.io.tmpdir>
@@ -2071,12 +2110,6 @@
       <id>itests</id>
       <modules>
         <module>itests</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>iceberg</id>
-      <modules>
-        <module>iceberg</module>
       </modules>
     </profile>
     <profile>

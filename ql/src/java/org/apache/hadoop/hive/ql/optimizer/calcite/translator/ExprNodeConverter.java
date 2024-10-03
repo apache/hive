@@ -361,6 +361,9 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
             "char values must use NlsString for correctness");
         int precision = lType.getPrecision();
         HiveChar value = new HiveChar((String) literal.getValue3(), precision);
+        if (value.getCharacterLength() == 0) {
+          return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, null);
+        }
         return new ExprNodeConstantDesc(new CharTypeInfo(precision), value);
       }
       case VARCHAR: {

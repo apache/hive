@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 
 /**
  * DDL task description for ALTER TABLE ... [PARTITION ... ] COMPACT 'major|minor' [POOL 'poolname'] [WITH OVERWRITE TBLPROPERTIES ...]
@@ -42,11 +43,12 @@ public class AlterTableCompactDesc extends AbstractAlterTableDesc implements DDL
   private final int numberOfBuckets;
   private final Map<String, String> properties;
   private final String orderByClause;
+  private final ExprNodeDesc filterExpr;
   private Long writeId;
 
   public AlterTableCompactDesc(TableName tableName, Map<String, String> partitionSpec, String compactionType,
-      boolean isBlocking, String poolName, int numberOfBuckets, Map<String, String> properties, String orderByClause)
-      throws SemanticException{
+      boolean isBlocking, String poolName, int numberOfBuckets, Map<String, String> properties, String orderByClause, 
+      ExprNodeDesc filterExpr) throws SemanticException{
     super(AlterTableType.COMPACT, tableName, partitionSpec, null, false, false, properties);
     this.tableName = tableName.getNotEmptyDbTable();
     this.partitionSpec = partitionSpec;
@@ -56,6 +58,7 @@ public class AlterTableCompactDesc extends AbstractAlterTableDesc implements DDL
     this.numberOfBuckets = numberOfBuckets;
     this.properties = properties;
     this.orderByClause = orderByClause;
+    this.filterExpr = filterExpr;
   }
 
   @Explain(displayName = "table name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -97,6 +100,10 @@ public class AlterTableCompactDesc extends AbstractAlterTableDesc implements DDL
   @Explain(displayName = "order by", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getOrderByClause() {
     return orderByClause;
+  }
+
+  public ExprNodeDesc getFilterExpr() {
+    return filterExpr;
   }
 
   @Override

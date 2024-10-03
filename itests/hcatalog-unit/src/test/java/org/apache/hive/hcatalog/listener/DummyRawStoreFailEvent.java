@@ -472,10 +472,16 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   @Override
   public List<String> listPartitionNames(String catName, String dbName, String tblName,
       String defaultPartName, byte[] exprBytes, String order,
-      short maxParts) throws MetaException, NoSuchObjectException {
+      int maxParts) throws MetaException, NoSuchObjectException {
 
     return objectStore.listPartitionNames(catName, dbName, tblName,
         defaultPartName, exprBytes, order, maxParts);
+  }
+
+  @Override
+  public List<String> listPartitionNamesByFilter(String catName, String dbName, String tblName,
+      GetPartitionsArgs args) throws MetaException, NoSuchObjectException {
+    return objectStore.listPartitionNamesByFilter(catName, dbName, tblName, args);
   }
 
   @Override
@@ -1048,6 +1054,12 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   public List<String> getFunctions(String catName, String dbName, String pattern)
       throws MetaException {
     return objectStore.getFunctions(catName, dbName, pattern);
+  }
+
+  @Override
+  public <T> List<T> getFunctionsRequest(String catName, String dbName,
+      String pattern, boolean isReturnNames) throws MetaException {
+    return objectStore.getFunctionsRequest(catName, dbName, pattern, isReturnNames);
   }
 
   @Override

@@ -124,17 +124,17 @@ public class TezJobMonitor {
     this.dag = dag;
     this.context = ctx;
     console = SessionState.getConsole();
+    this.perfLogger = perfLogger;
     updateFunction = updateFunction();
     this.counters = counters;
-    this.perfLogger = perfLogger;
   }
 
   private RenderStrategy.UpdateFunction updateFunction() {
     return InPlaceUpdate.canRenderInPlace(hiveConf)
         && !SessionState.getConsole().getIsSilent()
         && !SessionState.get().isHiveServerQuery()
-        ? new RenderStrategy.InPlaceUpdateFunction(this)
-        : new RenderStrategy.LogToFileFunction(this);
+        ? new RenderStrategy.InPlaceUpdateFunction(this, perfLogger)
+        : new RenderStrategy.LogToFileFunction(this, perfLogger);
   }
 
   private boolean isProfilingEnabled() {

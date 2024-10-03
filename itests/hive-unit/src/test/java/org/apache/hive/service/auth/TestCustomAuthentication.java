@@ -108,7 +108,7 @@ public class TestCustomAuthentication {
     }
 
     @Override
-    public void Authenticate(String user, String password) throws AuthenticationException {
+    public void authenticate(String user, String password) throws AuthenticationException {
 
       if(!userMap.containsKey(user)){
         throw new AuthenticationException("Invalid user : "+user);

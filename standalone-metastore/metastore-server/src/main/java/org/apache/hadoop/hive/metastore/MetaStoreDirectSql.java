@@ -758,13 +758,28 @@ class MetaStoreDirectSql {
     List<Long> partitionIds = getPartitionIdsViaSqlFilter(catName,
         dbName, tableName, filter.filter, filter.params,
         filter.joins, args.getMax());
+
+    return getPartitionsByPartitionIdsInBatch(catName, dbName, tableName, partitionIds, isAcidTable, args);
+  }
+
+  public List<Partition> getPartitionsViaSqlPs(Table table, GetPartitionsArgs args) throws MetaException {
+    String catName = table.getCatName();
+    String dbName = table.getDbName();
+    String tblName = table.getTableName();
+
+    String sqlFilter = "" + PARTITIONS + ".\"PART_NAME\" like ? ";
+    String partialName = MetaStoreUtils.makePartNameMatcher(table, args.getPart_vals(), "_%");
+    List<Long> partitionIds = getPartitionFieldsViaSqlFilter(
+        catName, dbName, tblName, Arrays.asList("\"PART_ID\""), sqlFilter,
+        Arrays.asList(partialName), Collections.emptyList(), args.getMax());
     if (partitionIds.isEmpty()) {
       return Collections.emptyList(); // no partitions, bail early.
     }
+    boolean isAcidTable = TxnUtils.isAcidTable(table);
     return Batchable.runBatched(batchSize, partitionIds, new Batchable<Long, Partition>() {
       @Override
       public List<Partition> run(List<Long> input) throws MetaException {
-        return getPartitionsByPartitionIds(catName, dbName, tableName, input, isAcidTable, args);
+        return getPartitionsByPartitionIds(catName, dbName, tblName, input, isAcidTable, args);
       }
     });
   }
@@ -910,18 +925,9 @@ class MetaStoreDirectSql {
       String dbName, String tblName, GetPartitionsArgs args) throws MetaException {
     List<Long> partitionIds = getPartitionIdsViaSqlFilter(catName, dbName,
         tblName, null, Collections.<String>emptyList(), Collections.<String>emptyList(), args.getMax());
-    if (partitionIds.isEmpty()) {
-      return Collections.emptyList(); // no partitions, bail early.
-    }
 
     // Get full objects. For Oracle/etc. do it in batches.
-    List<Partition> result = Batchable.runBatched(batchSize, partitionIds, new Batchable<Long, Partition>() {
-      @Override
-      public List<Partition> run(List<Long> input) throws MetaException {
-        return getPartitionsByPartitionIds(catName, dbName, tblName, input, false, args);
-      }
-    });
-    return result;
+    return getPartitionsByPartitionIdsInBatch(catName, dbName, tblName, partitionIds, false, args);
   }
 
   private static Boolean isViewTable(Table t) {
@@ -1045,6 +1051,20 @@ class MetaStoreDirectSql {
 
     Object[] params = new Object[]{tblName, dbName, catName};
     return getPartitionsByQuery(catName, dbName, tblName, queryText, params, isAcidTable, args);
+  }
+
+  private List<Partition> getPartitionsByPartitionIdsInBatch(String catName, String dbName,
+      String tblName, List<Long> partIdList, boolean isAcidTable, GetPartitionsArgs args)
+      throws MetaException {
+    if (partIdList.isEmpty()) {
+      return Collections.emptyList(); // no partitions, bail early.
+    }
+    return Batchable.runBatched(batchSize, partIdList, new Batchable<Long, Partition>() {
+      @Override
+      public List<Partition> run(List<Long> input) throws MetaException {
+        return getPartitionsByPartitionIds(catName, dbName, tblName, input, isAcidTable, args);
+      }
+    });
   }
 
   /** Should be called with the list short enough to not trip up Oracle/etc. */
@@ -1252,7 +1272,6 @@ class MetaStoreDirectSql {
   }
 
   public int getNumPartitionsViaSqlFilter(SqlFilterForPushdown filter) throws MetaException {
-    boolean doTrace = LOG.isDebugEnabled();
     String catName = filter.catName.toLowerCase();
     String dbName = filter.dbName.toLowerCase();
     String tblName = filter.tableName.toLowerCase();
@@ -1275,13 +1294,32 @@ class MetaStoreDirectSql {
       params[i + 3] = filter.params.get(i);
     }
 
-    long start = doTrace ? System.nanoTime() : 0;
     try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
       query.setUnique(true);
-      int sqlResult = MetastoreDirectSqlUtils.extractSqlInt(query.executeWithArray(params));
-      long queryTime = doTrace ? System.nanoTime() : 0;
-      MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, queryTime);
-      return sqlResult;
+      return MetastoreDirectSqlUtils.extractSqlInt(executeWithArray(query.getInnerQuery(), params, queryText));
+    }
+  }
+
+  public int getNumPartitionsViaSqlPs(Table table, List<String> partVals) throws MetaException {
+    String partialName = MetaStoreUtils.makePartNameMatcher(table, partVals, "_%");
+
+    // Get number of partitions by doing count on PART_ID.
+    String queryText = "select count(" + PARTITIONS + ".\"PART_ID\") from " + PARTITIONS + ""
+      + "  inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\" "
+      + "    and " + TBLS + ".\"TBL_NAME\" = ? "
+      + "  inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" "
+      + "     and " + DBS + ".\"NAME\" = ? "
+      + " where " + DBS + ".\"CTLG_NAME\" = ? and " + PARTITIONS + ".\"PART_NAME\" like ? ";
+
+    Object[] params = new Object[4];
+    params[0] = table.getTableName();
+    params[1] = table.getDbName();
+    params[2] = table.getCatName();
+    params[3] = partialName;
+
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+      query.setUnique(true);
+      return MetastoreDirectSqlUtils.extractSqlInt(executeWithArray(query.getInnerQuery(), params, queryText));
     }
   }
 
@@ -1553,9 +1591,11 @@ class MetaStoreDirectSql {
               : tableValue + " " + node.operator.getSqlOp() + " " + nodeValue0;
       // For equals and not-equals filter, we can add partition name filter to improve performance.
       boolean isOpEquals = Operator.isEqualOperator(node.operator);
-      if (isOpEquals || Operator.isNotEqualOperator(node.operator)) {
+      boolean isOpNotEqual = Operator.isNotEqualOperator(node.operator);
+      String nodeValueStr = node.value.toString();
+      if (StringUtils.isNotEmpty(nodeValueStr) && (isOpEquals || isOpNotEqual)) {
         Map<String, String> partKeyToVal = new HashMap<>();
-        partKeyToVal.put(partCol.getName(), node.value.toString());
+        partKeyToVal.put(partCol.getName(), nodeValueStr);
         String escapedNameFragment = Warehouse.makePartName(partKeyToVal, false);
         if (colType == FilterType.Date) {
           // Some engines like Pig will record both date and time values, in which case we need
@@ -3344,7 +3384,7 @@ class MetaStoreDirectSql {
     String statement = TxnUtils.createUpdatePreparedStmt(
         "\"TABLE_PARAMS\"",
         ImmutableList.of("\"PARAM_VALUE\""),
-        ImmutableList.of("\"TBL_ID\"", "\"PARAM_KEY\"", "\"PARAM_VALUE\""));
+        ImmutableList.of("\"TBL_ID\"", "\"PARAM_KEY\"", dbType.toVarChar("\"PARAM_VALUE\"")));
     Query query = pm.newQuery("javax.jdo.query.SQL", statement);
     return (long) query.executeWithArray(newValue, table.getId(), key, expectedValue);
   }

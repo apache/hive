@@ -21,7 +21,9 @@ package org.apache.hadoop.hive.ql.ddl.table;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -55,6 +57,9 @@ public abstract class AbstractAlterTableAnalyzer extends AbstractBaseAlterTableA
       if (command.getType() == HiveParser.TOK_ALTERTABLE_RENAMEPART) {
         partitionSpec = getPartSpec(partitionSpecNode);
       } else {
+        if (command.getType() == HiveParser.TOK_ALTERTABLE_COMPACT) {
+          HiveConf.setVar(conf, HiveConf.ConfVars.REWRITE_POLICY, Context.RewritePolicy.PARTITION.name());
+        }
         partitionSpec = getValidatedPartSpec(getTable(tableName), partitionSpecNode, conf, false);
       }
     }

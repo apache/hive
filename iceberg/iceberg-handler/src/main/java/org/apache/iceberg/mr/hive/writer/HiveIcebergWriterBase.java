@@ -23,12 +23,22 @@ import java.io.IOException;
 import java.util.Map;
 import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.PartitionSpec;
-import org.apache.iceberg.Schema;
+import org.apache.iceberg.Table;
 import org.apache.iceberg.data.InternalRecordWrapper;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.deletes.DeleteGranularity;
+import org.apache.iceberg.deletes.PositionDelete;
+import org.apache.iceberg.io.ClusteredDataWriter;
+import org.apache.iceberg.io.ClusteredPositionDeleteWriter;
+import org.apache.iceberg.io.DataWriteResult;
+import org.apache.iceberg.io.DeleteWriteResult;
+import org.apache.iceberg.io.FanoutDataWriter;
+import org.apache.iceberg.io.FanoutPositionOnlyDeleteWriter;
 import org.apache.iceberg.io.FileIO;
+import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.io.PartitioningWriter;
 import org.apache.iceberg.mr.hive.FilesForCommit;
+import org.apache.iceberg.mr.hive.writer.WriterBuilder.Context;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.util.Tasks;
 import org.slf4j.Logger;
@@ -44,11 +54,10 @@ abstract class HiveIcebergWriterBase implements HiveIcebergWriter {
   protected final Map<Integer, PartitionKey> partitionKeys;
   protected final PartitioningWriter writer;
 
-  HiveIcebergWriterBase(Schema schema, Map<Integer, PartitionSpec> specs, FileIO io,
-      PartitioningWriter writer) {
-    this.io = io;
-    this.wrapper = new InternalRecordWrapper(schema.asStruct());
-    this.specs = specs;
+  HiveIcebergWriterBase(Table table, PartitioningWriter writer) {
+    this.io = table.io();
+    this.wrapper = new InternalRecordWrapper(table.schema().asStruct());
+    this.specs = table.specs();
     this.partitionKeys = Maps.newHashMapWithExpectedSize(specs.size());
     this.writer = writer;
   }
@@ -65,10 +74,12 @@ abstract class HiveIcebergWriterBase implements HiveIcebergWriter {
           .suppressFailureWhenFinished()
           .onFailure((file, exception) -> LOG.debug("Failed on to remove file {} on abort", file, exception))
           .run(file -> io.deleteFile(file.path().toString()));
+      LOG.warn("HiveIcebergWriter is closed with abort");
     }
 
-    LOG.info("HiveIcebergWriter is closed with abort={}. Created {} data files and {} delete files", abort,
+    LOG.info("Created {} data files and {} delete files",
         result.dataFiles().size(), result.deleteFiles().size());
+    LOG.debug(result.toString());
   }
 
   protected PartitionKey partition(Record row, int specId) {
@@ -76,5 +87,40 @@ abstract class HiveIcebergWriterBase implements HiveIcebergWriter {
         id -> new PartitionKey(specs.get(id), specs.get(id).schema()));
     partitionKey.partition(wrapper.wrap(row));
     return partitionKey;
+  }
+
+  // use a fanout writer only if enabled and the input is unordered and the table is partitioned
+  static PartitioningWriter<Record, DataWriteResult> newDataWriter(
+      Table table, HiveFileWriterFactory writers, OutputFileFactory files, Context context) {
+
+    FileIO io = table.io();
+    boolean useFanoutWriter = context.useFanoutWriter();
+    long targetFileSize = context.targetDataFileSize();
+
+    if (table.spec().isPartitioned() && useFanoutWriter) {
+      return new FanoutDataWriter<>(writers, files, io, targetFileSize);
+    } else {
+      return new ClusteredDataWriter<>(writers, files, io, targetFileSize);
+    }
+  }
+
+  // the spec requires position deletes to be ordered by file and position
+  // use a fanout writer if the input is unordered no matter whether fanout writers are enabled
+  // clustered writers assume that the position deletes are already ordered by file and position
+  static PartitioningWriter<PositionDelete<Record>, DeleteWriteResult> newDeleteWriter(
+      Table table, HiveFileWriterFactory writers, OutputFileFactory files, Context context) {
+
+    FileIO io = table.io();
+    boolean inputOrdered = context.inputOrdered();
+    long targetFileSize = context.targetDeleteFileSize();
+    DeleteGranularity deleteGranularity = context.deleteGranularity();
+
+    if (inputOrdered) {
+      return new ClusteredPositionDeleteWriter<>(
+        writers, files, io, targetFileSize, deleteGranularity);
+    } else {
+      return new FanoutPositionOnlyDeleteWriter<>(
+        writers, files, io, targetFileSize, deleteGranularity);
+    }
   }
 }

@@ -47,8 +47,8 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.ddl.DDLDescWithTableProperties;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -60,7 +60,6 @@ import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
-import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ValidationUtility;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -77,7 +76,7 @@ import static org.apache.hadoop.hive.ql.ddl.DDLUtils.setColumnsAndStorePartition
  * DDL task description for CREATE TABLE commands.
  */
 @Explain(displayName = "Create Table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class CreateTableDesc implements DDLDesc, Serializable {
+public class CreateTableDesc extends DDLDescWithTableProperties implements Serializable {
   private static final long serialVersionUID = 1L;
   private static final Logger LOG = LoggerFactory.getLogger(CreateTableDesc.class);
 
@@ -85,7 +84,6 @@ public class CreateTableDesc implements DDLDesc, Serializable {
   boolean isExternal;
   List<FieldSchema> cols;
   List<FieldSchema> partCols;
-  List<String> partColNames;
   List<String> bucketCols;
   List<Order> sortCols;
   int numBuckets;
@@ -98,17 +96,13 @@ public class CreateTableDesc implements DDLDesc, Serializable {
   String comment;
   String inputFormat;
   String outputFormat;
-  String location;
   String serName;
   String storageHandler;
   Map<String, String> serdeProps;
-  Map<String, String> tblProps;
   boolean ifNotExists;
   List<String> skewedColNames;
   List<List<String>> skewedColValues;
   boolean isStoredAsSubDirectories = false;
-  boolean isTemporary = false;
-  private boolean isMaterialization = false;
   private boolean replaceMode = false;
   private ReplicationSpec replicationSpec = null;
   private boolean isCTAS = false;
@@ -119,12 +113,7 @@ public class CreateTableDesc implements DDLDesc, Serializable {
   List<SQLDefaultConstraint> defaultConstraints;
   List<SQLCheckConstraint> checkConstraints;
   private ColumnStatistics colStats;  // For the sake of replication
-  private Long initialWriteId; // Initial write ID for CTAS and import.
-  // The FSOP configuration for the FSOP that is going to write initial data during ctas.
-  // This is not needed beyond compilation, so it is transient.
-  private transient FileSinkDesc writer;
   private Long replWriteId; // to be used by repl task to get the txn and valid write id list
-  private String ownerName = null;
   private String likeFile = null;
   private String likeFileFormat = null;
 
@@ -194,6 +183,8 @@ public class CreateTableDesc implements DDLDesc, Serializable {
       List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
       List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints,
       List<SQLDefaultConstraint> defaultConstraints, List<SQLCheckConstraint> checkConstraints) {
+    super(tblProps, location);
+    
     this.tableName = tableName;
     this.isExternal = isExternal;
     this.isTemporary = isTemporary;
@@ -207,14 +198,12 @@ public class CreateTableDesc implements DDLDesc, Serializable {
     this.inputFormat = inputFormat;
     this.outputFormat = outputFormat;
     this.lineDelim = lineDelim;
-    this.location = location;
     this.mapKeyDelim = mapKeyDelim;
     this.numBuckets = numBuckets;
     this.partCols = new ArrayList<FieldSchema>(partCols);
     this.serName = serName;
     this.storageHandler = storageHandler;
     this.serdeProps = serdeProps;
-    this.tblProps = tblProps;
     this.ifNotExists = ifNotExists;
     this.skewedColNames = copyList(skewedColNames);
     this.skewedColValues = copyList(skewedColValues);
@@ -270,7 +259,9 @@ public class CreateTableDesc implements DDLDesc, Serializable {
     return tableName.getNotEmptyDbTable();
   }
 
-  public TableName getTableName(){ return tableName; }
+  public TableName getFullTableName() {
+    return tableName;
+  }
 
   public String getDatabaseName(){
     return tableName.getDb();
@@ -294,14 +285,6 @@ public class CreateTableDesc implements DDLDesc, Serializable {
 
   public void setPartCols(ArrayList<FieldSchema> partCols) {
     this.partCols = partCols;
-  }
-
-  public List<String> getPartColNames() {
-    return partColNames;
-  }
-
-  public void setPartColNames(ArrayList<String> partColNames) {
-    this.partColNames = partColNames;
   }
 
   public List<SQLPrimaryKey> getPrimaryKeys() {
@@ -443,15 +426,6 @@ public class CreateTableDesc implements DDLDesc, Serializable {
     this.storageHandler = storageHandler;
   }
 
-  @Explain(displayName = "location")
-  public String getLocation() {
-    return location;
-  }
-
-  public void setLocation(String location) {
-    this.location = location;
-  }
-
   @Explain(displayName = "isExternal", displayOnlyOnTrue = true)
   public boolean isExternal() {
     return isExternal;
@@ -507,28 +481,6 @@ public class CreateTableDesc implements DDLDesc, Serializable {
    */
   public void setSerdeProps(Map<String, String> serdeProps) {
     this.serdeProps = serdeProps;
-  }
-
-  /**
-   * @return the table properties
-   */
-  public Map<String, String> getTblProps() {
-    return tblProps;
-  }
-
-  @Explain(displayName = "table properties")
-  public Map<String, String> getTblPropsExplain() { // only for displaying plan
-    return PlanUtils.getPropertiesForExplain(tblProps,
-            hive_metastoreConstants.TABLE_IS_CTAS,
-            hive_metastoreConstants.TABLE_BUCKETING_VERSION);
-  }
-
-  /**
-   * @param tblProps
-   *          the table properties to set
-   */
-  public void setTblProps(Map<String, String> tblProps) {
-    this.tblProps = tblProps;
   }
 
   /**
@@ -687,26 +639,10 @@ public class CreateTableDesc implements DDLDesc, Serializable {
   }
 
   /**
-   * @return the isTemporary
-   */
-  @Explain(displayName = "isTemporary", displayOnlyOnTrue = true)
-  public boolean isTemporary() {
-    return isTemporary;
-  }
-
-  /**
    * @param isTemporary table is Temporary or not.
    */
   public void setTemporary(boolean isTemporary) {
     this.isTemporary = isTemporary;
-  }
-
-  /**
-   * @return the isMaterialization
-   */
-  @Explain(displayName = "isMaterialization", displayOnlyOnTrue = true)
-  public boolean isMaterialization() {
-    return isMaterialization;
   }
 
   /**
@@ -952,38 +888,12 @@ public class CreateTableDesc implements DDLDesc, Serializable {
     return tbl;
   }
 
-  public void setInitialWriteId(Long writeId) {
-    this.initialWriteId = writeId;
-  }
-
-  public Long getInitialWriteId() {
-    return initialWriteId;
-  }
-
-  public FileSinkDesc getAndUnsetWriter() {
-    FileSinkDesc fsd = writer;
-    writer = null;
-    return fsd;
-  }
-
-  public void setWriter(FileSinkDesc writer) {
-    this.writer = writer;
-  }
-
   public Long getReplWriteId() {
     return replWriteId;
   }
 
   public void setReplWriteId(Long replWriteId) {
     this.replWriteId = replWriteId;
-  }
-
-  public String getOwnerName() {
-    return ownerName;
-  }
-
-  public void setOwnerName(String ownerName) {
-    this.ownerName = ownerName;
   }
 
   public void fromTable(org.apache.hadoop.hive.metastore.api.Table tTable) {

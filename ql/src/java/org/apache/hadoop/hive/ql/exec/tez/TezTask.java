@@ -141,6 +141,14 @@ public class TezTask extends Task<TezWork> {
     this.counters = counters;
   }
 
+  /**
+   * Making TezTask backward compatible with the old MR-based Task API (ExecDriver/MapRedTask)
+   */
+  @Override
+  public String getExternalHandle() {
+    return this.jobID;
+  }
+
   @Override
   public int execute() {
     int rc = 1;
@@ -256,6 +264,7 @@ public class TezTask extends Task<TezWork> {
         LOG.info("HS2 Host: [{}], Query ID: [{}], Dag ID: [{}], DAG Session ID: [{}]", ServerUtils.hostname(), queryId,
             dagId, this.dagClient.getSessionIdentifierString());
         LogUtils.putToMDC(LogUtils.DAGID_KEY, dagId);
+        this.jobID = dagId;
 
         // finally monitor will print progress until the job is done
         TezJobMonitor monitor = new TezJobMonitor(work.getAllWork(), dagClient, conf, dag, ctx, counters, perfLogger);
@@ -268,7 +277,10 @@ public class TezTask extends Task<TezWork> {
         try {
           // fetch the counters
           Set<StatusGetOpts> statusGetOpts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
-          TezCounters dagCounters = dagClient.getDAGStatus(statusGetOpts).getDAGCounters();
+          DAGStatus dagStatus = dagClient.getDAGStatus(statusGetOpts);
+          this.setStatusMessage(dagStatus.getState().name());
+
+          TezCounters dagCounters = dagStatus.getDAGCounters();
 
           // if initial counters exists, merge it with dag counters to get aggregated view
           TezCounters mergedCounters = counters == null ? dagCounters : Utils.mergeTezCounters(dagCounters, counters);

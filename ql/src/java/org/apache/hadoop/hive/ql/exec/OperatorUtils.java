@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.ql.exec.NodeUtils.Function;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.SemiJoinBranchInfo;
@@ -698,4 +699,20 @@ public class OperatorUtils {
     return getAllOperatorsForSimpleFetch(operatorList);
   }
 
+  /**
+   * Traverses the operator chain upwards to find input source operator in that branch
+   *
+   * @param op the starting operator
+   * @return the first matching operator or null if none found
+   */
+  public static Operator<?> findSourceOperatorInSameBranch(Operator<?> op) {
+    while (op != null && !(op instanceof TableScanOperator || op instanceof ReduceSinkOperator
+            || op instanceof CommonJoinOperator)) {
+      // If op has parents it is guaranteed to be 1.
+      List<Operator<?>> parents = op.getParentOperators();
+      Preconditions.checkState(parents.size() <= 1);
+      op = parents.size() == 1 ? parents.get(0) : null;
+    }
+    return op;
+  }
 }

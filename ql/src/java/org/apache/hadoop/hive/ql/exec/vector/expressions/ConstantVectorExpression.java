@@ -92,13 +92,13 @@ public class ConstantVectorExpression extends VectorExpression {
   public ConstantVectorExpression(int outputColumnNum, HiveChar value, TypeInfo outputTypeInfo)
       throws HiveException {
     this(outputColumnNum, outputTypeInfo);
-    setBytesValue(value.getStrippedValue().getBytes());
+    setBytesValue(value.getStrippedValue().getBytes(StandardCharsets.UTF_8));
   }
 
   public ConstantVectorExpression(int outputColumnNum, HiveVarchar value, TypeInfo outputTypeInfo)
       throws HiveException {
     this(outputColumnNum, outputTypeInfo);
-    setBytesValue(value.getValue().getBytes());
+    setBytesValue(value.getValue().getBytes(StandardCharsets.UTF_8));
   }
 
   // Include type name for precision/scale.

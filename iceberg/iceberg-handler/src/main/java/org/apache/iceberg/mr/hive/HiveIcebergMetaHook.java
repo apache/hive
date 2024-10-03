@@ -153,7 +153,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       AlterTableType.ADDPROPS, AlterTableType.DROPPROPS, AlterTableType.SETPARTITIONSPEC,
       AlterTableType.UPDATE_COLUMNS, AlterTableType.RENAME, AlterTableType.EXECUTE, AlterTableType.CREATE_BRANCH,
       AlterTableType.CREATE_TAG, AlterTableType.DROP_BRANCH, AlterTableType.RENAME_BRANCH, AlterTableType.DROPPARTITION,
-      AlterTableType.DROP_TAG, AlterTableType.COMPACT, AlterTableType.REPLACE_BRANCH);
+      AlterTableType.DROP_TAG, AlterTableType.COMPACT, AlterTableType.REPLACE_SNAPSHOTREF);
   private static final List<String> MIGRATION_ALLOWED_SOURCE_FORMATS = ImmutableList.of(
       FileFormat.PARQUET.name().toLowerCase(),
       FileFormat.ORC.name().toLowerCase(),
@@ -1019,8 +1019,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
 
   private boolean isOrcOnlyFiles(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     return !"FALSE".equalsIgnoreCase(hmsTable.getParameters().get(ORC_FILES_ONLY)) &&
-        ((hmsTable.getSd().getInputFormat() != null &&
-            hmsTable.getSd().getInputFormat().toUpperCase().contains(org.apache.iceberg.FileFormat.ORC.name())) ||
+        (hmsTable.getSd().getInputFormat() != null &&
+            hmsTable.getSd().getInputFormat().toUpperCase().contains(org.apache.iceberg.FileFormat.ORC.name()) ||
             org.apache.iceberg.FileFormat.ORC.name()
                 .equalsIgnoreCase(hmsTable.getSd().getSerdeInfo().getParameters().get("write.format.default")) ||
             org.apache.iceberg.FileFormat.ORC.name()
@@ -1067,13 +1067,29 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
           hmsTable.getParameters().put("current-snapshot-id", String.valueOf(snapshot.snapshotId()));
         }
         String formatVersion = String.valueOf(((BaseTable) tbl).operations().current().formatVersion());
-        // If it is not the default format version, then set it in the table properties.
-        if (!"1".equals(formatVersion)) {
-          hmsTable.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
+        hmsTable.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
+        // Set the serde info
+        hmsTable.getSd().setInputFormat(HiveIcebergInputFormat.class.getName());
+        hmsTable.getSd().setOutputFormat(HiveIcebergOutputFormat.class.getName());
+        hmsTable.getSd().getSerdeInfo().setSerializationLib(HiveIcebergSerDe.class.getName());
+        String storageHandler = hmsTable.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE);
+        // Check if META_TABLE_STORAGE is not present or is not an instance of ICEBERG_STORAGE_HANDLER
+        if (storageHandler == null || !isHiveIcebergStorageHandler(storageHandler)) {
+          hmsTable.getParameters()
+              .put(hive_metastoreConstants.META_TABLE_STORAGE, HiveTableOperations.HIVE_ICEBERG_STORAGE_HANDLER);
         }
       } catch (NoSuchTableException | NotFoundException ex) {
         // If the table doesn't exist, ignore throwing exception from here
       }
+    }
+  }
+
+  private static boolean isHiveIcebergStorageHandler(String storageHandler) {
+    try {
+      Class<?> storageHandlerClass = Class.forName(storageHandler);
+      return Class.forName(HIVE_ICEBERG_STORAGE_HANDLER).isAssignableFrom(storageHandlerClass);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException("Error checking storage handler class", e);
     }
   }
 

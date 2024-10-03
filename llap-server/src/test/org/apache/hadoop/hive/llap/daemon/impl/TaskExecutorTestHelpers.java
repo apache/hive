@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWor
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexOrBinary;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.security.Credentials;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.tez.dag.records.TezDAGID;
 import org.apache.tez.dag.records.TezVertexID;
@@ -231,7 +232,7 @@ public class TaskExecutorTestHelpers {
           null, new Credentials(), 0, mock(AMReporter.class), null, mock(
           LlapDaemonExecutorMetrics.class), mock(KilledTaskHandler.class), mock(
           FragmentCompletionHandler.class), new DefaultHadoopShim(), null,
-          requestProto.getWorkSpec().getVertex(), initialEvent, null, mock(
+          requestProto.getWorkSpec().getVertex(), initialEvent, mock(UserGroupInformation.class), mock(
           SchedulerFragmentCompletingListener.class), mock(SocketFactory.class), isGuaranteed, null);
       this.workTime = workTime;
       this.canFinish = canFinish;

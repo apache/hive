@@ -38,12 +38,13 @@ import javax.net.SocketFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JvmPauseMonitor;
 import org.apache.hadoop.hive.common.LogUtils;
-import org.apache.hadoop.hive.common.UgiFactory;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.DaemonId;
 import org.apache.hadoop.hive.llap.LlapDaemonInfo;
 import org.apache.hadoop.hive.llap.LlapOutputFormatService;
+import org.apache.hadoop.hive.llap.LlapUgiManager;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
@@ -69,10 +70,9 @@ import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.security.LlapExtClientJwtHelper;
-import org.apache.hadoop.hive.llap.security.LlapUgiFactoryFactory;
-import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 import org.apache.hadoop.hive.llap.security.SecretManager;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
+import org.apache.hadoop.hive.ql.ServiceContext;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -81,7 +81,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge.UdfWhitelistChecke
 import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.service.CompositeService;
 import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.util.StringUtils;
@@ -334,12 +333,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     this.server = new LlapProtocolServerImpl(secretManager, numHandlers, this, srvAddress, mngAddress, srvPort,
         externalClientsRpcPort, mngPort, daemonId, metrics).withTokenManager(this.llapTokenManager);
 
-    UgiFactory fsUgiFactory = null;
-    try {
-      fsUgiFactory = LlapUgiFactoryFactory.createFsUgiFactory(daemonConf);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    LlapUgiManager llapUgiManager = LlapUgiManager.getInstance(daemonConf);
 
     QueryTracker queryTracker = new QueryTracker(daemonConf, localDirs,
         daemonId.getClusterString());
@@ -355,7 +349,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
     this.containerRunner = new ContainerRunnerImpl(daemonConf, numExecutors,
         this.shufflePort, srvAddress, executorMemoryPerInstance, metrics,
-        amReporter, queryTracker, executorService, daemonId, fsUgiFactory, socketFactory);
+        amReporter, queryTracker, executorService, daemonId, llapUgiManager, socketFactory);
     addIfService(containerRunner);
 
     // Not adding the registry as a service, since we need to control when it is initialized - conf used to pickup properties.
@@ -619,6 +613,8 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       long ioMemoryBytes = LlapDaemonInfo.INSTANCE.getCacheSize();
       boolean isDirectCache = LlapDaemonInfo.INSTANCE.isDirectCache();
       boolean isLlapIo = LlapDaemonInfo.INSTANCE.isLlapIo();
+
+      daemonConf.set(Constants.CLUSTER_ID_HIVE_CONF_PROP, ServiceContext.findClusterId());
 
       LlapDaemon.initializeLogging(daemonConf);
       llapDaemon =

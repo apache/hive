@@ -26,6 +26,7 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -137,7 +138,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   static void internalBeforeClassSetup(Map<String, String> overrides,
       Class clazz) throws Exception {
 
-    conf = new HiveConf(clazz);
+    conf = new HiveConfForTest(clazz);
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("metastore.warehouse.tenant.colocation", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
@@ -3768,7 +3769,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     );
 
     WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
-            .run("create table t1 (id int)")
+            .run("create table t1 (id int) stored as orc tblproperties (\"transactional\"=\"true\")")
             .run("insert into table t1 values (1)")
             .dump(primaryDbName, incrementalBatchConfigs);
 

@@ -51,6 +51,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 
 import javax.jdo.PersistenceManager;
+import javax.jdo.Transaction;
 import javax.jdo.datastore.JDOConnection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -72,6 +73,7 @@ import java.util.stream.Collectors;
 import static org.apache.hadoop.hive.common.StatsSetupConst.COLUMN_STATS_ACCURATE;
 import static org.apache.hadoop.hive.metastore.HMSHandler.getPartValsFromName;
 import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.executeWithArray;
+import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.extractSqlClob;
 import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.extractSqlInt;
 import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.extractSqlLong;
 
@@ -98,14 +100,6 @@ class DirectSqlUpdatePart {
     this.dbType = dbType;
     this.maxBatchSize = batchSize;
     sqlGenerator = new SQLGenerator(dbType, conf);
-  }
-
-  void rollbackDBConn(Connection dbConn) {
-    try {
-      if (dbConn != null && !dbConn.isClosed()) dbConn.rollback();
-    } catch (SQLException e) {
-      LOG.warn("Failed to rollback db connection ", e);
-    }
   }
 
   void closeDbConn(JDOConnection jdoConn) {
@@ -483,60 +477,63 @@ class DirectSqlUpdatePart {
                                                       String validWriteIds, long writeId,
                                                       List<TransactionalMetaStoreEventListener> transactionalListeners)
           throws MetaException {
-    JDOConnection jdoConn = null;
-    Connection dbConn = null;
-    boolean committed = false;
+
+    Transaction tx = pm.currentTransaction();
     try {
       dbType.lockInternal();
-      jdoConn = pm.getDataStoreConnection();
-      dbConn = (Connection) (jdoConn.getNativeConnection());
+      tx.begin();
+      JDOConnection jdoConn = null;
+      Map<String, Map<String, String>> result;
+      try {
+        jdoConn = pm.getDataStoreConnection();
+        Connection dbConn = (Connection) jdoConn.getNativeConnection();
+        setAnsiQuotes(dbConn);
 
-      setAnsiQuotes(dbConn);
+        Map<PartitionInfo, ColumnStatistics> partitionInfoMap = getPartitionInfo(dbConn, tbl.getId(), partColStatsMap);
 
-      Map<PartitionInfo, ColumnStatistics> partitionInfoMap = getPartitionInfo(dbConn, tbl.getId(), partColStatsMap);
+        result = updatePartitionParamTable(dbConn, partitionInfoMap, validWriteIds,
+            writeId, TxnUtils.isAcidTable(tbl));
 
-      Map<String, Map<String, String>> result =
-              updatePartitionParamTable(dbConn, partitionInfoMap, validWriteIds, writeId, TxnUtils.isAcidTable(tbl));
+        Map<PartColNameInfo, MPartitionColumnStatistics> insertMap = new HashMap<>();
+        Map<PartColNameInfo, MPartitionColumnStatistics> updateMap = new HashMap<>();
+        populateInsertUpdateMap(partitionInfoMap, updateMap, insertMap, dbConn, tbl);
 
-      Map<PartColNameInfo, MPartitionColumnStatistics> insertMap = new HashMap<>();
-      Map<PartColNameInfo, MPartitionColumnStatistics> updateMap = new HashMap<>();
-      populateInsertUpdateMap(partitionInfoMap, updateMap, insertMap, dbConn, tbl);
+        LOG.info("Number of stats to insert  " + insertMap.size() + " update " + updateMap.size());
 
-      LOG.info("Number of stats to insert  " + insertMap.size() + " update " + updateMap.size());
-
-      if (insertMap.size() != 0) {
-        insertIntoPartColStatTable(insertMap, csId, dbConn);
-      }
-
-      if (updateMap.size() != 0) {
-        updatePartColStatTable(updateMap, dbConn);
-      }
-
-      if (transactionalListeners != null) {
-        UpdatePartitionColumnStatEventBatch eventBatch = new UpdatePartitionColumnStatEventBatch(null);
-        for (Map.Entry entry : result.entrySet()) {
-          Map<String, String> parameters = (Map<String, String>) entry.getValue();
-          ColumnStatistics colStats = partColStatsMap.get(entry.getKey());
-          List<String> partVals = getPartValsFromName(tbl, colStats.getStatsDesc().getPartName());
-          UpdatePartitionColumnStatEvent event = new UpdatePartitionColumnStatEvent(colStats, partVals, parameters,
-                  tbl, writeId, null);
-          eventBatch.addPartColStatEvent(event);
+        if (insertMap.size() != 0) {
+          insertIntoPartColStatTable(insertMap, csId, dbConn);
         }
-        MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
-                EventMessage.EventType.UPDATE_PARTITION_COLUMN_STAT_BATCH, eventBatch, dbConn, sqlGenerator);
+
+        if (updateMap.size() != 0) {
+          updatePartColStatTable(updateMap, dbConn);
+        }
+
+        if (transactionalListeners != null) {
+          UpdatePartitionColumnStatEventBatch eventBatch = new UpdatePartitionColumnStatEventBatch(null);
+          for (Map.Entry entry : result.entrySet()) {
+            Map<String, String> parameters = (Map<String, String>) entry.getValue();
+            ColumnStatistics colStats = partColStatsMap.get(entry.getKey());
+            List<String> partVals = getPartValsFromName(tbl, colStats.getStatsDesc().getPartName());
+            UpdatePartitionColumnStatEvent event = new UpdatePartitionColumnStatEvent(colStats, partVals, parameters,
+                tbl, writeId, null);
+            eventBatch.addPartColStatEvent(event);
+          }
+          MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
+              EventMessage.EventType.UPDATE_PARTITION_COLUMN_STAT_BATCH, eventBatch, dbConn, sqlGenerator);
+        }
+      } finally {
+        closeDbConn(jdoConn);
       }
-      dbConn.commit();
-      committed = true;
+      tx.commit();
       return result;
     } catch (Exception e) {
       LOG.error("Unable to update Column stats for  " + tbl.getTableName(), e);
       throw new MetaException("Unable to update Column stats for  " + tbl.getTableName()
               + " due to: "  + e.getMessage());
     } finally {
-      if (!committed) {
-        rollbackDBConn(dbConn);
+      if (tx.isActive()) {
+        tx.rollback();
       }
-      closeDbConn(jdoConn);
       dbType.unlockInternal();
     }
   }
@@ -547,72 +544,69 @@ class DirectSqlUpdatePart {
    */
   public long getNextCSIdForMPartitionColumnStatistics(long numStats) throws MetaException {
     long maxCsId = 0;
-    boolean committed = false;
-    Connection dbConn = null;
-    JDOConnection jdoConn = null;
-
+    Transaction tx = pm.currentTransaction();
     try {
       dbType.lockInternal();
-      jdoConn = pm.getDataStoreConnection();
-      dbConn = (Connection) (jdoConn.getNativeConnection());
+      tx.begin();
+      JDOConnection jdoConn = null;
+      try {
+        jdoConn = pm.getDataStoreConnection();
+        Connection dbConn = (Connection) jdoConn.getNativeConnection();
 
-      setAnsiQuotes(dbConn);
+        setAnsiQuotes(dbConn);
 
-      // This loop will be iterated at max twice. If there is no records, it will first insert and then do a select.
-      // We are not using any upsert operations as select for update and then update is required to make sure that
-      // the caller gets a reserved range for CSId not used by any other thread.
-      boolean insertDone = false;
-      while (maxCsId == 0) {
-        String query = sqlGenerator.addForUpdateClause("SELECT \"NEXT_VAL\" FROM \"SEQUENCE_TABLE\" "
-                + "WHERE \"SEQUENCE_NAME\"= "
-                + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics"));
-        LOG.debug("Execute query: " + query);
-        try (Statement statement = dbConn.createStatement();
-             ResultSet rs = statement.executeQuery(query)) {
-          if (rs.next()) {
-            maxCsId = rs.getLong(1);
-          } else if (insertDone) {
-            throw new MetaException("Invalid state of SEQUENCE_TABLE for MPartitionColumnStatistics");
-          } else {
-            insertDone = true;
-            query = "INSERT INTO \"SEQUENCE_TABLE\" (\"SEQUENCE_NAME\", \"NEXT_VAL\")  VALUES ( "
-                    + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics") + "," + 1
-                    + ")";
-            try {
-              statement.executeUpdate(query);
-            } catch (SQLException e) {
-              // If the record is already inserted by some other thread continue to select.
-              if (dbType.isDuplicateKeyError(e)) {
-                continue;
+        // This loop will be iterated at max twice. If there is no records, it will first insert and then do a select.
+        // We are not using any upsert operations as select for update and then update is required to make sure that
+        // the caller gets a reserved range for CSId not used by any other thread.
+        boolean insertDone = false;
+        while (maxCsId == 0) {
+          String query = sqlGenerator.addForUpdateClause(
+              "SELECT \"NEXT_VAL\" FROM \"SEQUENCE_TABLE\" " + "WHERE \"SEQUENCE_NAME\"= " + quoteString(
+                  "org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics"));
+          LOG.debug("Execute query: " + query);
+          try (Statement statement = dbConn.createStatement(); ResultSet rs = statement.executeQuery(query)) {
+            if (rs.next()) {
+              maxCsId = rs.getLong(1);
+            } else if (insertDone) {
+              throw new MetaException("Invalid state of SEQUENCE_TABLE for MPartitionColumnStatistics");
+            } else {
+              insertDone = true;
+              query = "INSERT INTO \"SEQUENCE_TABLE\" (\"SEQUENCE_NAME\", \"NEXT_VAL\")  VALUES ( " + quoteString(
+                  "org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics") + "," + 1 + ")";
+              try {
+                statement.executeUpdate(query);
+              } catch (SQLException e) {
+                // If the record is already inserted by some other thread continue to select.
+                if (dbType.isDuplicateKeyError(e)) {
+                  continue;
+                }
+                LOG.error("Unable to insert into SEQUENCE_TABLE for MPartitionColumnStatistics.", e);
+                throw e;
               }
-              LOG.error("Unable to insert into SEQUENCE_TABLE for MPartitionColumnStatistics.", e);
-              throw e;
             }
           }
         }
-      }
 
-      long nextMaxCsId = maxCsId + numStats + 1;
-      String query = "UPDATE \"SEQUENCE_TABLE\" SET \"NEXT_VAL\" = "
-              + nextMaxCsId
-              + " WHERE \"SEQUENCE_NAME\" = "
-              + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics");
+        long nextMaxCsId = maxCsId + numStats + 1;
+        String query = "UPDATE \"SEQUENCE_TABLE\" SET \"NEXT_VAL\" = " + nextMaxCsId + " WHERE \"SEQUENCE_NAME\" = " + quoteString(
+            "org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics");
 
-      try (Statement statement = dbConn.createStatement()) {
-        statement.executeUpdate(query);
+        try (Statement statement = dbConn.createStatement()) {
+          statement.executeUpdate(query);
+        }
+      } finally {
+        closeDbConn(jdoConn);
       }
-      dbConn.commit();
-      committed = true;
+      tx.commit();
       return maxCsId;
     } catch (Exception e) {
       LOG.error("Unable to getNextCSIdForMPartitionColumnStatistics", e);
       throw new MetaException("Unable to getNextCSIdForMPartitionColumnStatistics  "
               + " due to: " + e.getMessage());
     } finally {
-      if (!committed) {
-        rollbackDBConn(dbConn);
+      if (tx.isActive()) {
+        tx.rollback();
       }
-      closeDbConn(jdoConn);
       dbType.unlockInternal();
     }
   }
@@ -755,8 +749,8 @@ class DirectSqlUpdatePart {
           List<Object[]> sqlResult = executeWithArray(query.getInnerQuery(), null, queryText);
           for (Object[] row : sqlResult) {
             Long id = extractSqlLong(row[0]);
-            String paramKey = (String) row[1];
-            String paramVal = (String) row[2];
+            String paramKey = extractSqlClob(row[1]);
+            String paramVal = extractSqlClob(row[2]);
             idToParams.computeIfAbsent(id, key -> new HashMap<>()).put(paramKey, paramVal);
           }
         }
@@ -930,8 +924,8 @@ class DirectSqlUpdatePart {
               StorageDescriptor sd = idToSd.get(sdId);
               statement.setLong(1, idToCdId.get(sdId));
               statement.setString(2, sd.getInputFormat());
-              statement.setBoolean(3, sd.isCompressed());
-              statement.setBoolean(4, sd.isStoredAsSubDirectories());
+              statement.setObject(3, dbType.getBoolean(sd.isCompressed()));
+              statement.setObject(4, dbType.getBoolean(sd.isStoredAsSubDirectories()));
               statement.setString(5, sd.getLocation());
               statement.setInt(6, sd.getNumBuckets());
               statement.setString(7, sd.getOutputFormat());
@@ -1234,9 +1228,9 @@ class DirectSqlUpdatePart {
           List<Object[]> sqlResult = executeWithArray(query.getInnerQuery(), null, queryText);
           for (Object[] row : sqlResult) {
             Long id = extractSqlLong(row[0]);
-            String comment = (String) row[1];
-            String name = (String) row[2];
-            String type = (String) row[3];
+            String comment = extractSqlClob(row[1]);
+            String name = extractSqlClob(row[2]);
+            String type = extractSqlClob(row[3]);
             int index = extractSqlInt(row[4]);
             FieldSchema field = new FieldSchema(name, type, comment);
             cdIdToColIdxPair.computeIfAbsent(id, k -> new ArrayList<>()).add(Pair.of(index, field));

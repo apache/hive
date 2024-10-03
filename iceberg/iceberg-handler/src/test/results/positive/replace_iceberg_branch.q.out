@@ -90,10 +90,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 4
 44
 PREHOOK: query: explain alter table ice01 replace branch branch1 as of branch branch2
-PREHOOK: type: ALTERTABLE_REPLACEBRANCH
+PREHOOK: type: ALTERTABLE_REPLACESNAPSHOTREF
 PREHOOK: Input: default@ice01
 POSTHOOK: query: explain alter table ice01 replace branch branch1 as of branch branch2
-POSTHOOK: type: ALTERTABLE_REPLACEBRANCH
+POSTHOOK: type: ALTERTABLE_REPLACESNAPSHOTREF
 POSTHOOK: Input: default@ice01
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -102,13 +102,13 @@ STAGE PLANS:
   Stage: Stage-0
     SnapshotRef Operation
       table name: default.ice01
-      spec: AlterTableSnapshotRefSpec{operationType=REPLACE_BRANCH, operationParams=ReplaceSnapshotrefSpec{sourceBranch=branch1, targetBranch=branch2}}
+      spec: AlterTableSnapshotRefSpec{operationType=REPLACE_SNAPSHOTREF, operationParams=ReplaceSnapshotrefSpec{sourceRef=branch1, replace=Branch, targetBranch=branch2}}
 
 PREHOOK: query: alter table ice01 replace branch branch1 as of branch branch2
-PREHOOK: type: ALTERTABLE_REPLACEBRANCH
+PREHOOK: type: ALTERTABLE_REPLACESNAPSHOTREF
 PREHOOK: Input: default@ice01
 POSTHOOK: query: alter table ice01 replace branch branch1 as of branch branch2
-POSTHOOK: type: ALTERTABLE_REPLACEBRANCH
+POSTHOOK: type: ALTERTABLE_REPLACESNAPSHOTREF
 POSTHOOK: Input: default@ice01
 PREHOOK: query: select * from default.ice01.branch_branch1
 PREHOOK: type: QUERY
@@ -138,10 +138,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice01
 PREHOOK: query: explain alter table ice01 replace branch branch1 as of branch branch3 retain 5 days
-PREHOOK: type: ALTERTABLE_REPLACEBRANCH
+PREHOOK: type: ALTERTABLE_REPLACESNAPSHOTREF
 PREHOOK: Input: default@ice01
 POSTHOOK: query: explain alter table ice01 replace branch branch1 as of branch branch3 retain 5 days
-POSTHOOK: type: ALTERTABLE_REPLACEBRANCH
+POSTHOOK: type: ALTERTABLE_REPLACESNAPSHOTREF
 POSTHOOK: Input: default@ice01
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -150,13 +150,13 @@ STAGE PLANS:
   Stage: Stage-0
     SnapshotRef Operation
       table name: default.ice01
-      spec: AlterTableSnapshotRefSpec{operationType=REPLACE_BRANCH, operationParams=ReplaceSnapshotrefSpec{sourceBranch=branch1, targetBranch=branch3, maxRefAgeMs=432000000}}
+      spec: AlterTableSnapshotRefSpec{operationType=REPLACE_SNAPSHOTREF, operationParams=ReplaceSnapshotrefSpec{sourceRef=branch1, replace=Branch, targetBranch=branch3, maxRefAgeMs=432000000}}
 
 PREHOOK: query: alter table ice01 replace branch branch1 as of branch branch3 retain 5 days
-PREHOOK: type: ALTERTABLE_REPLACEBRANCH
+PREHOOK: type: ALTERTABLE_REPLACESNAPSHOTREF
 PREHOOK: Input: default@ice01
 POSTHOOK: query: alter table ice01 replace branch branch1 as of branch branch3 retain 5 days
-POSTHOOK: type: ALTERTABLE_REPLACEBRANCH
+POSTHOOK: type: ALTERTABLE_REPLACESNAPSHOTREF
 POSTHOOK: Input: default@ice01
 PREHOOK: query: select * from default.ice01.branch_branch1
 PREHOOK: type: QUERY
@@ -187,10 +187,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice01
 PREHOOK: query: explain alter table ice01 replace branch branch1 as of branch branch4 with snapshot retention 5 snapshots 6 days
-PREHOOK: type: ALTERTABLE_REPLACEBRANCH
+PREHOOK: type: ALTERTABLE_REPLACESNAPSHOTREF
 PREHOOK: Input: default@ice01
 POSTHOOK: query: explain alter table ice01 replace branch branch1 as of branch branch4 with snapshot retention 5 snapshots 6 days
-POSTHOOK: type: ALTERTABLE_REPLACEBRANCH
+POSTHOOK: type: ALTERTABLE_REPLACESNAPSHOTREF
 POSTHOOK: Input: default@ice01
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -199,13 +199,13 @@ STAGE PLANS:
   Stage: Stage-0
     SnapshotRef Operation
       table name: default.ice01
-      spec: AlterTableSnapshotRefSpec{operationType=REPLACE_BRANCH, operationParams=ReplaceSnapshotrefSpec{sourceBranch=branch1, targetBranch=branch4, minSnapshotsToKeep=5, maxSnapshotAgeMs=518400000}}
+      spec: AlterTableSnapshotRefSpec{operationType=REPLACE_SNAPSHOTREF, operationParams=ReplaceSnapshotrefSpec{sourceRef=branch1, replace=Branch, targetBranch=branch4, minSnapshotsToKeep=5, maxSnapshotAgeMs=518400000}}
 
 PREHOOK: query: alter table ice01 replace branch branch1 as of branch branch4 with snapshot retention 5 snapshots 6 days
-PREHOOK: type: ALTERTABLE_REPLACEBRANCH
+PREHOOK: type: ALTERTABLE_REPLACESNAPSHOTREF
 PREHOOK: Input: default@ice01
 POSTHOOK: query: alter table ice01 replace branch branch1 as of branch branch4 with snapshot retention 5 snapshots 6 days
-POSTHOOK: type: ALTERTABLE_REPLACEBRANCH
+POSTHOOK: type: ALTERTABLE_REPLACESNAPSHOTREF
 POSTHOOK: Input: default@ice01
 PREHOOK: query: select * from default.ice01.branch_branch1
 PREHOOK: type: QUERY

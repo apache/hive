@@ -22,15 +22,11 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.RemoteIterator;
-import org.apache.hadoop.fs.permission.AclStatus;
-import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.MetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -39,7 +35,6 @@ import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncod
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.shims.Utils;
 import org.junit.After;
 import org.junit.Assert;
@@ -53,9 +48,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -72,13 +65,8 @@ import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION
 public class TestReplicationFilterTransactions {
   static final private Logger LOG = LoggerFactory.getLogger(TestReplicationFilterTransactions.class);
 
-  private final static String tid =
-          TestReplicationFilterTransactions.class.getCanonicalName().toLowerCase().replace('.','_') + "_" + System.currentTimeMillis();
-  private final static String TEST_PATH =
-          System.getProperty("test.warehouse.dir", "/tmp") + Path.SEPARATOR + tid;
-
   @Rule
-  public TemporaryFolder tempFolder= new TemporaryFolder();
+  public TemporaryFolder tempFolder = new TemporaryFolder();
 
   // Event listener for the primary, mainly counts txn events.
   // Count totals are saved to static fields so they can be accessed
@@ -263,12 +251,15 @@ public class TestReplicationFilterTransactions {
 
     Map<String, String> conf = setupConf(miniDFSCluster.getFileSystem().getUri().toString(),
             PrimaryEventListenerTestImpl.class.getName());
+    //TODO: HIVE-28044: Replication tests to run on Tez
+    conf.put(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname, "mr");
     primary = new WarehouseInstance(LOG, miniDFSCluster, conf);
 
     conf = setupConf(miniDFSCluster.getFileSystem().getUri().toString(),
             ReplicaEventListenerTestImpl.class.getName());
     conf.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
-
+    //TODO: HIVE-28044: Replication tests to run on Tez
+    conf.put(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname, "mr");
     replica = new WarehouseInstance(LOG, miniDFSCluster, conf);
 
     primaryDbName = testName.getMethodName() + "_" + System.currentTimeMillis();

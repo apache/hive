@@ -46,6 +46,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.io.ContentSummaryInputFormat;
@@ -79,7 +80,7 @@ public class TestGetInputSummary {
   @Before
   public void setup() throws Exception {
     // creates scratch directories needed by the Context object
-    SessionState.start(new HiveConf());
+    SessionState.start(new HiveConfForTest(getClass()));
 
     this.jobConf = new JobConf();
     this.properties = new Properties();

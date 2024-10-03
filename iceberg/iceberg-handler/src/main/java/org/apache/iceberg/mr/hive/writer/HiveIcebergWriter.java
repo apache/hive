@@ -22,7 +22,6 @@ package org.apache.iceberg.mr.hive.writer;
 import java.io.IOException;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.mr.hive.FilesForCommit;
@@ -30,15 +29,14 @@ import org.apache.iceberg.mr.mapred.Container;
 
 public interface HiveIcebergWriter extends FileSinkOperator.RecordWriter,
     org.apache.hadoop.mapred.RecordWriter<NullWritable, Container<Record>> {
+
   FilesForCommit files();
-  void close(boolean abort) throws IOException;
-  void write(Writable row) throws IOException;
 
   default void close(Reporter reporter) throws IOException {
     close(false);
   }
 
-  default void write(NullWritable key, Container value) throws IOException {
+  default void write(NullWritable key, Container<Record> value) throws IOException {
     write(value);
   }
 }

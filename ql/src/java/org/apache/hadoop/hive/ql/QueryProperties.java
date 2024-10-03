@@ -49,6 +49,9 @@ public class QueryProperties {
   boolean hasJoinFollowedByGroupBy = false;
   boolean hasPTF = false;
   boolean hasWindowing = false;
+  boolean hasQualify = false;
+  boolean hasExcept = false;
+  boolean hasIntersect = false;
 
   // does the query have a using clause
   boolean usesScript = false;
@@ -69,6 +72,7 @@ public class QueryProperties {
 
   // True if this statement creates or replaces a materialized view
   private boolean isMaterializedView;
+  private boolean isView;
 
   public boolean isQuery() {
     return query;
@@ -241,6 +245,30 @@ public class QueryProperties {
     this.hasWindowing = hasWindowing;
   }
 
+  public boolean hasQualify() {
+    return hasQualify;
+  }
+
+  public void setHasQualify(boolean hasQualify) {
+    this.hasQualify = hasQualify;
+  }
+
+  public boolean hasExcept() {
+    return hasExcept;
+  }
+
+  public void setHasExcept(boolean hasExcept) {
+    this.hasExcept = hasExcept;
+  }
+
+  public boolean hasIntersect() {
+    return hasIntersect;
+  }
+
+  public void setHasIntersect(boolean hasIntersect) {
+    this.hasIntersect = hasIntersect;
+  }
+
   public boolean isMapJoinRemoved() {
     return mapJoinRemoved;
   }
@@ -285,6 +313,14 @@ public class QueryProperties {
     this.isMaterializedView = isMaterializedView;
   }
 
+  public boolean isView() {
+    return isView;
+  }
+
+  public void setView(boolean view) {
+    isView = view;
+  }
+
   public void clear() {
     query = false;
     analyzeCommand = false;
@@ -302,6 +338,9 @@ public class QueryProperties {
     hasJoinFollowedByGroupBy = false;
     hasPTF = false;
     hasWindowing = false;
+    hasQualify = false;
+    hasExcept = false;
+    hasIntersect = false;
 
     // does the query have a using clause
     usesScript = false;

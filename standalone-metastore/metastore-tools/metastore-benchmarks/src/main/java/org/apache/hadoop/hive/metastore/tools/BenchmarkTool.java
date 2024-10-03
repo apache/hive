@@ -59,6 +59,7 @@ import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkGetP
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkGetPartitions;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkGetPartitionsByFilter;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkGetPartitionsByName;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkGetPartitionsByPs;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkGetPartitionsStat;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkGetTable;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkListAllTables;
@@ -289,6 +290,8 @@ public class BenchmarkTool implements Runnable {
             () -> benchmarkGetPartitionsByName(bench, bData, 1))
         .add("getPartitionsByFilter",
             () -> benchmarkGetPartitionsByFilter(bench, bData, 1))
+        .add("getPartitionsByPs",
+            () -> benchmarkGetPartitionsByPs(bench, bData, 1))
         .add("getPartitionsStat",
             () -> benchmarkGetPartitionsStat(bench, bData, 1))
         .add("updatePartitionsStat",
@@ -319,6 +322,8 @@ public class BenchmarkTool implements Runnable {
               () -> benchmarkGetPartitionsByName(bench, bData, howMany))
           .add("getPartitionsByFilter" + '.' + howMany,
               () -> benchmarkGetPartitionsByFilter(bench, bData, howMany))
+          .add("getPartitionsByPs" + '.' + howMany,
+              () -> benchmarkGetPartitionsByPs(bench, bData, howMany))
           .add("getPartitionsStat" + '.' + howMany,
               () -> benchmarkGetPartitionsStat(bench, bData, howMany))
           .add("updatePartitionsStat" + '.' + howMany,

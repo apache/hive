@@ -62,9 +62,7 @@ import org.slf4j.LoggerFactory;
 @RunWith(Parameterized.class)
 public class TestHCatLoaderComplexSchema {
 
-  //private static MiniCluster cluster = MiniCluster.buildCluster();
   private static IDriver driver;
-  //private static Properties props;
   private static final Logger LOG = LoggerFactory.getLogger(TestHCatLoaderComplexSchema.class);
 
   private static final Map<String, Set<String>> DISABLED_STORAGE_FORMATS =
@@ -106,6 +104,8 @@ public class TestHCatLoaderComplexSchema {
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     HiveConf hiveConf = new HiveConf(TestHCatLoaderComplexSchema.class);
+    //TODO: HIVE-27998: hcatalog tests on Tez
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
     Path workDir = new Path(System.getProperty("test.tmp.dir",
         "target" + File.separator + "test" + File.separator + "tmp"));
     hiveConf.set("mapred.local.dir", workDir + File.separator + "TestHCatLoaderComplexSchema"

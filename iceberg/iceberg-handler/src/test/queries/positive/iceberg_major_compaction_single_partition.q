@@ -18,6 +18,8 @@
 --! qt:replace:/(MAJOR\s+succeeded\s+)[a-zA-Z0-9\-\.\s+]+(\s+manual)/$1#Masked#$2/
 -- Mask compaction id as they will be allocated in parallel threads
 --! qt:replace:/^[0-9]/#Masked#/
+-- Mask iceberg version
+--! qt:replace:/(\S\"iceberg-version\\\":\\\")(\w+\s\w+\s\d+\.\d+\.\d+\s\(\w+\s\w+\))(\\\")/$1#Masked#$3/
 
 set hive.llap.io.enabled=true;
 set hive.vectorized.execution.enabled=true;
@@ -59,11 +61,11 @@ alter table ice_orc_wo_evo PARTITION (dept_id=1, city='London', registration_dat
 
 select * from ice_orc_wo_evo;
 describe formatted ice_orc_wo_evo;
-show compactions;
+show compactions order by 'partition';
 
 explain alter table ice_orc_wo_evo PARTITION (dept_id=2, city='Paris', registration_date='2024-02-16') COMPACT 'major' and wait;
 alter table ice_orc_wo_evo PARTITION (dept_id=2, city='Paris', registration_date='2024-02-16') COMPACT 'major' and wait;
 
 select * from ice_orc_wo_evo;
 describe formatted ice_orc_wo_evo;
-show compactions;
+show compactions order by 'partition';

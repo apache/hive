@@ -59,18 +59,17 @@ import org.junit.Test;
 
 public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
 
-  private static HiveConf   hcatConf;
+  private static HiveConf hcatConf;
   private static IDriver driver;
 
   private final byte[] FAMILY     = Bytes.toBytes("testFamily");
   private final byte[] QUALIFIER1 = Bytes.toBytes("testQualifier1");
   private final byte[] QUALIFIER2 = Bytes.toBytes("testQualifier2");
 
-  public void Initialize() throws Exception {
-
+  public void initialize() throws Exception {
     hcatConf = new HiveConf(this.getClass());
-    //hcatConf.set(ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
-    //		HCatSemanticAnalyzer.class.getName());
+    //TODO: HIVE-27998: hcatalog tests on Tez
+    hcatConf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
     URI fsuri = getFileSystem().getUri();
     Path whPath = new Path(fsuri.getScheme(), fsuri.getAuthority(),
         getTestDir());
@@ -141,7 +140,7 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
 
   @Test
   public void testPigHBaseSchema() throws Exception {
-    Initialize();
+    initialize();
 
     String tableName = newTableName("MyTable");
     String databaseName = newTableName("MyDatabase");
@@ -203,7 +202,7 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
 
   @Test
   public void testPigFilterProjection() throws Exception {
-    Initialize();
+    initialize();
 
     String tableName = newTableName("MyTable");
     String databaseName = newTableName("MyDatabase");
@@ -281,7 +280,7 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
 
   @Test
   public void testPigPopulation() throws Exception {
-    Initialize();
+    initialize();
 
     String tableName = newTableName("MyTable");
     String databaseName = newTableName("MyDatabase");

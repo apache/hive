@@ -98,6 +98,8 @@ public class TestHiveAuthorizationTaskFactory {
   public void setup() throws Exception {
     queryState = new QueryState.Builder().build();
     HiveConf conf = queryState.getConf();
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    conf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
     conf.setVar(ConfVars.HIVE_AUTHORIZATION_TASK_FACTORY,
         TestHiveAuthorizationTaskFactory.DummyHiveAuthorizationTaskFactoryImpl.class.getName());
     conf

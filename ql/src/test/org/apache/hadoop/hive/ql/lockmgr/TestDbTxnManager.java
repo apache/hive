@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.ThreadPool;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
@@ -67,7 +68,7 @@ import static junit.framework.Assert.assertEquals;
  */
 public class TestDbTxnManager {
   private static final int TEST_TIMED_OUT_TXN_ABORT_BATCH_SIZE = 1000;
-  private final HiveConf conf = new HiveConf();
+  private final HiveConf conf = new HiveConfForTest(getClass());
   private HiveTxnManager txnMgr;
   private AcidHouseKeeperService houseKeeperService = null;
   private final Context ctx;
@@ -76,8 +77,7 @@ public class TestDbTxnManager {
   HashSet<WriteEntity> writeEntities;
 
   public TestDbTxnManager() throws Exception {
-    conf
-    .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
+    conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     TestTxnDbUtil.setConfValues(conf);
     SessionState.start(conf);

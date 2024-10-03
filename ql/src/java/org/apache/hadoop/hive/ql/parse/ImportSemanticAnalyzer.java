@@ -214,7 +214,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
    * hence for import to work correctly we have to pass in the sessionState default Db via the
    * parsedDbName parameter
    */
-  public static boolean prepareImport(boolean isImportCmd,
+  private boolean prepareImport(boolean isImportCmd,
                                       boolean isLocationSet, boolean isExternalSet, boolean isPartSpecSet,
                                       boolean waitOnPrecursor,
                                       String parsedLocation, String parsedTableName, String overrideDBName,
@@ -224,6 +224,9 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
                                       long writeId, // Initialize with 0 for non-ACID and non-MM tables.
                                       MetaData rv
   ) throws IOException, MetaException, HiveException, URISyntaxException {
+    if (!isExternalSet) {
+      queryState.getValidTxnList();
+    }
     return prepareImport(isImportCmd, isLocationSet, isExternalSet, isPartSpecSet, waitOnPrecursor,
                          parsedLocation, parsedTableName, overrideDBName, parsedPartSpec, fromLocn,
                          x, updatedMetadata, txnMgr, writeId, rv, null, null);

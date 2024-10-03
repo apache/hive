@@ -453,8 +453,14 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public List<String> listPartitionNames(String catName, String dbName, String tblName, String defaultPartName,
-      byte[] exprBytes, String order, short maxParts) throws MetaException, NoSuchObjectException {
+      byte[] exprBytes, String order, int maxParts) throws MetaException, NoSuchObjectException {
 
+    return Collections.emptyList();
+  }
+
+  @Override
+  public List<String> listPartitionNamesByFilter(String catName, String dbName, String tblName,
+      GetPartitionsArgs args) throws MetaException, NoSuchObjectException {
     return Collections.emptyList();
   }
 
@@ -1032,6 +1038,12 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   @Override
   public List<String> getFunctions(String catName, String dbName, String pattern)
       throws MetaException {
+    return Collections.emptyList();
+  }
+
+  @Override
+  public <T> List<T> getFunctionsRequest(String catName, String dbName,
+      String pattern, boolean isReturnNames) throws MetaException {
     return Collections.emptyList();
   }
 

@@ -119,6 +119,7 @@
                 java.util.Collections.*,
                 java.util.stream.Collectors.*,
                 org.apache.commons.lang3.Validate.*,
+                org.apache.hadoop.hive.ql.metadata.VirtualColumn.*,
                 org.apache.iceberg.expressions.Expressions.*,
                 org.apache.iceberg.expressions.Expression.Operation.*,
                 org.apache.iceberg.IsolationLevel.*,
@@ -423,7 +424,9 @@
             <property name="processJavadoc" value="true"/>
         </module>
         <module name="UpperEll"/> <!-- Java Style Guide: Numeric Literals -->
-        <module name="VisibilityModifier"/> <!-- Java Coding Guidelines: Minimize mutability -->
+        <module name="VisibilityModifier"> <!-- Java Coding Guidelines: Minimize mutability -->
+            <property name="protectedAllowed" value="true"/>
+        </module>
         <module name="WhitespaceAfter"/> <!-- Java Style Guide: Horizontal whitespace -->
         <module name="WhitespaceAround"> <!-- Java Style Guide: Horizontal whitespace -->
             <property name="allowEmptyConstructors" value="true"/>
@@ -446,7 +449,7 @@
           <property name="max" value="12"/>
         </module>
         <module name="JavadocMethod"> <!-- Java Style Guide: Where Javadoc is used -->
-            <property name="scope" value="public"/>
+            <property name="accessModifiers" value="public"/>
             <property name="allowMissingParamTags" value="true"/>
             <property name="allowMissingReturnTag" value="true"/>
             <property name="allowedAnnotations" value="Override, Test"/>

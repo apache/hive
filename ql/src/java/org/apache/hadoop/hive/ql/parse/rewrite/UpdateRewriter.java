@@ -83,7 +83,7 @@ public class UpdateRewriter implements Rewriter<UpdateStatement> {
     sqlGenerator.appendTargetTableName();
 
     // Add a sort by clause so that the row ids come out in the correct order
-    sqlGenerator.appendSortBy(sqlGenerator.getSortKeys());
+    sqlGenerator.appendSortKeys();
 
     ParseUtils.ReparseResult rr = ParseUtils.parseRewrittenQuery(context, sqlGenerator.toString());
     Context rewrittenCtx = rr.rewrittenCtx;

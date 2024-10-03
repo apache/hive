@@ -68,7 +68,8 @@ public class TestHiveMetaStoreTimeout {
         boolean isStarted = Deadline.startTimer(method.getName());
         Object object;
         try {
-          if (testTimeoutValue > 0 && method.getName().equals("create_database")) {
+          if (testTimeoutValue > 0 &&
+              (method.getName().equals("create_database") || method.getName().equals("create_database_req"))) {
             try {
               Thread.sleep(testTimeoutValue);
             } catch (InterruptedException e) {
@@ -94,7 +95,7 @@ public class TestHiveMetaStoreTimeout {
     conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setClass(conf, ConfVars.EXPRESSION_PROXY_CLASS,
         MockPartitionExpressionForMetastore.class, PartitionExpressionProxy.class);
-    MetastoreConf.setTimeVar(conf, ConfVars.CLIENT_SOCKET_TIMEOUT, 2000,
+    MetastoreConf.setTimeVar(conf, ConfVars.CLIENT_SOCKET_TIMEOUT, 10000,
         TimeUnit.MILLISECONDS);
     MetastoreConf.setVar(conf, ConfVars.HMS_HANDLER_PROXY_CLASS, DelayedHMSHandler.class.getName());
     MetaStoreTestUtils.setConfForStandloneMode(conf);
@@ -127,7 +128,7 @@ public class TestHiveMetaStoreTimeout {
 
   @Test
   public void testTimeout() throws Exception {
-    DelayedHMSHandler.testTimeoutValue = 4000;
+    DelayedHMSHandler.testTimeoutValue = 15000;
 
     Database db = new DatabaseBuilder()
         .setName(dbName)
@@ -156,7 +157,7 @@ public class TestHiveMetaStoreTimeout {
     client.dropDatabase(dbName, true, true);
 
     // reset
-    DelayedHMSHandler.testTimeoutValue = 4000;
+    DelayedHMSHandler.testTimeoutValue = 15000;
 
     // timeout after reset
     try {

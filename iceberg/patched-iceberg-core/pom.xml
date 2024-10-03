@@ -95,7 +95,7 @@
                   <outputDirectory>${project.build.directory}/classes</outputDirectory>
                   <excludes>
                       **/HadoopInputFile.class
-                      **/SerializableTable.class
+                      **/HadoopTableOperations.class
                   </excludes>
                 </artifactItem>
               </artifactItems>

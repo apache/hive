@@ -1,0 +1,44 @@
+PREHOOK: query: create external table test_table(
+  strcol string,
+  intcol integer
+) stored as ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table
+POSTHOOK: query: create external table test_table(
+  strcol string,
+  intcol integer
+) stored as ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table
+PREHOOK: query: insert into table test_table values ('ABC', 1), ('DEF', 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_table
+POSTHOOK: query: insert into table test_table values ('ABC', 1), ('DEF', 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_table
+POSTHOOK: Lineage: test_table.intcol SCRIPT []
+POSTHOOK: Lineage: test_table.strcol SCRIPT []
+PREHOOK: query: select * from test_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table
+#### A masked pattern was here ####
+ABC	1
+DEF	2
+PREHOOK: query: select * from test_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table
+#### A masked pattern was here ####
+ABC	1
+DEF	2

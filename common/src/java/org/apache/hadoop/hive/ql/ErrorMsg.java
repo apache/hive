@@ -373,7 +373,7 @@ public enum ErrorMsg {
       "metastore."),
   INVALID_COMPACTION_TYPE(10282, "Invalid compaction type, supported values are 'major' and " +
       "'minor'"),
-  NO_COMPACTION_PARTITION(10283, "You must specify a partition to compact for partitioned tables"),
+  COMPACTION_NO_PARTITION(10283, "You must specify a partition to compact for partitioned tables"),
   TOO_MANY_COMPACTION_PARTITIONS(10284, "Compaction can only be requested on one partition at a " +
       "time."),
   DISTINCT_NOT_SUPPORTED(10285, "Distinct keyword is not support in current context"),
@@ -489,6 +489,8 @@ public enum ErrorMsg {
           HiveConf.ConfVars.SPLIT_UPDATE.varname + "\"=\"true\""),
   READ_ONLY_DATABASE(10436, "Database {0} is read-only", true),
   UNEXPECTED_PARTITION_TRANSFORM_SPEC(10437, "Partition transforms are only supported by Iceberg storage handler", true),
+  NONICEBERG_COMPACTION_WITH_FILTER_NOT_SUPPORTED(10440, "Compaction with filter is not allowed on non-Iceberg table {0}.{1}", true),
+  ICEBERG_COMPACTION_WITH_PART_SPEC_AND_FILTER_NOT_SUPPORTED(10441, "Compaction command with both partition spec and filter is not supported on Iceberg table {0}.{1}", true),
 
   //========================== 20000 range starts here ========================//
 

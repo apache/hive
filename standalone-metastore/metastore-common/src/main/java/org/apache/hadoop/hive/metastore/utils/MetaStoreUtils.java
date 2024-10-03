@@ -25,8 +25,8 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.ResolverStyle;
 import java.util.ArrayList;
@@ -67,6 +67,7 @@ import org.apache.hadoop.hive.metastore.api.PartitionsSpecByExprResult;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.metastore.api.WMPoolSchedulingPolicy;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -123,7 +124,7 @@ public class MetaStoreUtils {
    * @return Timestamp in string format.
    */
   public static String convertTimestampToString(Timestamp timestamp) {
-    return TIMESTAMP_FORMATTER.format(timestamp.toLocalDateTime());
+    return TIMESTAMP_FORMATTER.format(timestamp.toInstant());
   }
 
   /**
@@ -132,8 +133,8 @@ public class MetaStoreUtils {
    * @return java.sql.Timestamp object.
    */
   public static Timestamp convertStringToTimestamp(String timestamp) {
-    LocalDateTime val = LocalDateTime.from(TIMESTAMP_FORMATTER.parse(timestamp));
-    return Timestamp.valueOf(val);
+    Instant instant = Instant.from(TIMESTAMP_FORMATTER.parse(timestamp));
+    return Timestamp.from(instant);
   }
 
   // Indicates a type was derived from the deserializer rather than Hive's metadata.
@@ -460,6 +461,26 @@ public class MetaStoreUtils {
     }
     return pvals;
   }
+
+  /**
+   * If all the values of partVals are empty strings, it means we are returning
+   * all the partitions and hence we can use get_partitions API.
+   * @param partVals The partitions values used to filter out the partitions.
+   * @return true if partVals is empty or if all the values in partVals is empty strings.
+   * other wise false.
+   */
+  public static boolean arePartValsEmpty(List<String> partVals) {
+    if (partVals == null || partVals.isEmpty()) {
+      return true;
+    }
+    for (String val : partVals) {
+      if (val != null && !val.isEmpty()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   public static String makePartNameMatcher(Table table, List<String> partVals, String defaultStr) throws MetaException {
     List<FieldSchema> partCols = table.getPartitionKeys();
     int numPartKeys = partCols.size();
@@ -1314,5 +1335,9 @@ public class MetaStoreUtils {
       }
     }
     return httpPath;
+  }
+
+  public static boolean isDatabaseRemote(Database db) {
+    return db != null && db.getType() == DatabaseType.REMOTE;
   }
 }

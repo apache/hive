@@ -106,6 +106,8 @@ public abstract class TxnCommandsBaseForTests {
   }
   void initHiveConf() {
     hiveConf = new HiveConf(this.getClass());
+    //TODO: HIVE-28029: Make unit tests based on TxnCommandsBaseForTests run on Tez
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
   }
   void setUpInternal() throws Exception {
     initHiveConf();
@@ -360,10 +362,13 @@ public abstract class TxnCommandsBaseForTests {
     checkExpected(rs, expectedResult, msg + (isVectorized ? " vect" : ""), LOG, !isVectorized);
     assertVectorized(isVectorized, query);
   }
-  void dropTable(String[] tabs) throws Exception {
-    for(String tab : tabs) {
-      d.run("drop table if exists " + tab);
+  void dropTables(String... tables) throws Exception {
+    HiveConf queryConf = d.getQueryState().getConf();
+    queryConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
+    for (String table : tables) {
+      d.run("drop table if exists " + table);
     }
+    queryConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
   }
   Driver swapDrivers(Driver otherDriver) {
     Driver tmp = d;

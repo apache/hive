@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -49,7 +50,7 @@ public class TestParseUtils {
   public TestParseUtils(String query, TxnType txnType) {
     this.query = query;
     this.txnType = txnType;
-    this.conf = new HiveConf();
+    this.conf = new HiveConfForTest(getClass());
   }
 
   @Before

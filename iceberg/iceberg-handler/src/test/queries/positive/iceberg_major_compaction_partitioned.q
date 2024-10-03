@@ -14,6 +14,10 @@
 --! qt:replace:/(MAJOR\s+succeeded\s+)[a-zA-Z0-9\-\.\s+]+(\s+manual)/$1#Masked#$2/
 -- Mask compaction id as they will be allocated in parallel threads
 --! qt:replace:/^[0-9]/#Masked#/
+-- Mask removed file size
+--! qt:replace:/(\S\"removed-files-size\\\":\\\")(\d+)(\\\")/$1#Masked#$3/
+-- Mask iceberg version
+--! qt:replace:/(\S\"iceberg-version\\\":\\\")(\w+\s\w+\s\d+\.\d+\.\d+\s\(\w+\s\w+\))(\\\")/$1#Masked#$3/
 
 set hive.llap.io.enabled=true;
 set hive.vectorized.execution.enabled=true;
@@ -53,7 +57,7 @@ alter table ice_orc COMPACT 'major' and wait;
 
 select * from ice_orc;
 describe formatted ice_orc;
-show compactions;
+show compactions order by 'partition';
 
 -- Starting second set of inserts/updates/deletes and calling compaction at the end
 -- to check that subsequent compaction works
@@ -86,4 +90,4 @@ alter table ice_orc COMPACT 'major' and wait;
 
 select * from ice_orc;
 describe formatted ice_orc;
-show compactions;
+show compactions order by 'partition';

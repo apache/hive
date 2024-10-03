@@ -20,13 +20,14 @@ package org.apache.hadoop.hive.ql.parse.rewrite.sql;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 
 import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Deque;
+import java.util.function.Function;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -60,18 +61,14 @@ public abstract class MultiInsertSqlGenerator {
     return targetTableFullName;
   }
 
-  public abstract void appendAcidSelectColumns(Context.Operation operation);
-
-  public void appendAcidSelectColumnsForDeletedRecords(Context.Operation operation) {
-    appendAcidSelectColumnsForDeletedRecords(operation, true);
-  }
+  public abstract void appendAcidSelectColumns(Operation operation);
   
-  public void appendAcidSelectColumnsForDeletedRecords(Context.Operation operation, boolean skipPrefix) {
+  public void appendAcidSelectColumnsForDeletedRecords(Operation operation, boolean skipPrefix) {
     throw new UnsupportedOperationException();
   }
 
-  public abstract List<String> getDeleteValues(Context.Operation operation);
-  public abstract List<String> getSortKeys();
+  public abstract List<String> getDeleteValues(Operation operation);
+  public abstract List<String> getSortKeys(Operation operation);
 
   public String qualify(String columnName) {
     if (isBlank(subQueryAlias)) {
@@ -96,7 +93,7 @@ public abstract class MultiInsertSqlGenerator {
   }
 
   public void appendDeleteBranch(String hintStr) {
-    List<String> deleteValues = getDeleteValues(Context.Operation.DELETE);
+    List<String> deleteValues = getDeleteValues(Operation.DELETE);
     appendInsertBranch(hintStr, deleteValues);
   }
 
@@ -119,11 +116,11 @@ public abstract class MultiInsertSqlGenerator {
       return;
     }
     queryStr.append(" partition (");
-    appendCols(partCols);
+    appendCols(partCols, FieldSchema::getName);
     queryStr.append(")");
   }
 
-  public void appendSortBy(List<String> keys) {
+  private void appendSortBy(List<String> keys) {
     if (keys.isEmpty()) {
       return;
     }
@@ -133,7 +130,7 @@ public abstract class MultiInsertSqlGenerator {
   }
 
   public void appendSortKeys() {
-    appendSortBy(getSortKeys());
+    appendSortBy(getSortKeys(Operation.DELETE));
   }
 
   public MultiInsertSqlGenerator append(String sqlTextFragment) {
@@ -155,22 +152,22 @@ public abstract class MultiInsertSqlGenerator {
       return;
     }
     queryStr.append(',');
-    appendCols(targetTable.getPartCols(), alias, null);
+    appendCols(targetTable.getPartCols(), alias, null, FieldSchema::getName);
   }
 
   public void appendAllColsOfTargetTable(String prefix) {
-    appendCols(targetTable.getAllCols(), null, prefix);
+    appendCols(targetTable.getAllCols(), null, prefix, FieldSchema::getName);
   }
   
   public void appendAllColsOfTargetTable() {
-    appendCols(targetTable.getAllCols());
+    appendCols(targetTable.getAllCols(), FieldSchema::getName);
+  }
+  
+  public <T> void appendCols(List<T> columns, Function<T, String> stringConverter) {
+    appendCols(columns, null, null, stringConverter);
   }
 
-  public void appendCols(List<FieldSchema> columns) {
-    appendCols(columns, null, null);
-  }
-
-  public void appendCols(List<FieldSchema> columns, String alias, String prefix) {
+  public <T> void appendCols(List<T> columns, String alias, String prefix, Function<T, String> stringConverter) {
     if (columns == null) {
       return;
     }
@@ -181,7 +178,7 @@ public abstract class MultiInsertSqlGenerator {
     }
 
     boolean first = true;
-    for (FieldSchema fschema : columns) {
+    for (T fschema : columns) {
       if (first) {
         first = false;
       } else {
@@ -191,11 +188,11 @@ public abstract class MultiInsertSqlGenerator {
       if (quotedAlias != null) {
         queryStr.append(quotedAlias).append('.');
       }
-      queryStr.append(HiveUtils.unparseIdentifier(fschema.getName(), this.conf));
+      queryStr.append(HiveUtils.unparseIdentifier(stringConverter.apply(fschema), this.conf));
       
       if (isNotBlank(prefix)) {
         queryStr.append(" AS ");
-        String prefixedIdentifier = HiveUtils.unparseIdentifier(prefix + fschema.getName(), this.conf);
+        String prefixedIdentifier = HiveUtils.unparseIdentifier(prefix + stringConverter.apply(fschema), this.conf);
         queryStr.append(prefixedIdentifier);
       }
     }

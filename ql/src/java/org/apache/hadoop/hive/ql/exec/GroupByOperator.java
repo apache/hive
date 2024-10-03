@@ -119,6 +119,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
   private transient int groupbyMapAggrInterval;
   private transient long numRowsCompareHashAggr;
   private transient float minReductionHashAggr;
+  private transient float hashAggrFlushPercent;
 
   private transient int outputKeyLength;
 
@@ -372,6 +373,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
       // compare every groupbyMapAggrInterval rows
       numRowsCompareHashAggr = groupbyMapAggrInterval;
       minReductionHashAggr = conf.getMinReductionHashAggr();
+      hashAggrFlushPercent = conf.getHashAggrFlushPercent();
     }
 
     List<String> fieldNames = new ArrayList<String>(conf.getOutputColumnNames());
@@ -951,9 +953,6 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
   private void flushHashTable(boolean complete) throws HiveException {
     countAfterReport = 0;
 
-    // Currently, the algorithm flushes 10% of the entries - this can be
-    // changed in the future
-
     if (complete) {
       for (Map.Entry<KeyWrapper, AggregationBuffer[]> entry : hashAggregations.entrySet()) {
         forward(entry.getKey().getKeyArray(), entry.getValue());
@@ -964,7 +963,8 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
     }
 
     int oldSize = hashAggregations.size();
-    LOG.info("Hash Tbl flush: #hash table = {}", oldSize);
+    int flushSize = (int) (oldSize * hashAggrFlushPercent);
+    LOG.trace("Hash Tbl flush: #hash table = {}, flush size = {}", oldSize, flushSize);
 
     Iterator<Map.Entry<KeyWrapper, AggregationBuffer[]>> iter = hashAggregations
         .entrySet().iterator();
@@ -974,8 +974,8 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
       forward(m.getKey().getKeyArray(), m.getValue());
       iter.remove();
       numDel++;
-      if (numDel * 10 >= oldSize) {
-        LOG.info("Hash Table flushed: new size = {}", hashAggregations.size());
+      if (numDel >= flushSize) {
+        LOG.trace("Hash Table flushed: new size = {}", hashAggregations.size());
         return;
       }
     }

@@ -144,6 +144,15 @@ public interface IMetaStoreClient extends AutoCloseable {
       throws NoSuchObjectException, InvalidOperationException, MetaException, TException;
 
   /**
+   * Drop a catalog.  Catalogs must be empty to be dropped, there is no cascade for dropping a
+   * catalog.
+   * @param catName name of the catalog to drop
+   * @param ifExists if true, do not throw an error if the catalog does not exist.
+   * @throws TException general thrift exception.
+   */
+  void dropCatalog(String catName, boolean ifExists) throws TException;
+
+  /**
    * Get the names of all databases in the default catalog that match the given pattern.
    * @param databasePattern pattern for the database name to patch
    * @return List of database names.
@@ -785,7 +794,6 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   List<Table> getTables(String catName, String dbName, List<String> tableNames, GetProjectionsSpec projectionsSpec)
           throws MetaException, InvalidOperationException, UnknownDBException, TException;
-
   /**
    * Get tables as objects (rather than just fetching their names).  This is more expensive and
    * should only be used if you actually need all the information about the tables.
@@ -3005,9 +3013,17 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
+  @Deprecated
   List<String> getFunctions(String dbName, String pattern)
       throws MetaException, TException;
 
+  /**
+   * Get all functions matching a pattern
+   * @param functionRequest function request.
+   * @throws TException thrift transport error
+   */
+  GetFunctionsResponse getFunctionsRequest(GetFunctionsRequest functionRequest)
+      throws TException;
   /**
    * Get all functions matching a pattern
    * @param catName catalog name.
@@ -3016,6 +3032,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
+  @Deprecated
   List<String> getFunctions(String catName, String dbName, String pattern)
       throws MetaException, TException;
 

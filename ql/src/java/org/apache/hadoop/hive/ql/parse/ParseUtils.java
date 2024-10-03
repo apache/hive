@@ -24,6 +24,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -37,6 +38,7 @@ import com.google.common.collect.Lists;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.util.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -278,18 +280,23 @@ public final class ParseUtils {
     return className;
   }
 
-  public static boolean containsTokenOfType(ASTNode root, Integer ... tokens) {
-    final Set<Integer> tokensToMatch = new HashSet<Integer>();
-    for (Integer tokenTypeToMatch : tokens) {
-      tokensToMatch.add(tokenTypeToMatch);
-    }
+  public static Pair<Boolean, String> containsTokenOfType(ASTNode root, Integer ... tokens) {
+    final Set<Integer> tokensToMatch = new HashSet<>(Arrays.asList(tokens));
+    final String[] matched = {null};
 
-    return ParseUtils.containsTokenOfType(root, new PTFUtils.Predicate<ASTNode>() {
+    boolean check =  ParseUtils.containsTokenOfType(root, new PTFUtils.Predicate<ASTNode>() {
       @Override
       public boolean apply(ASTNode node) {
-        return tokensToMatch.contains(node.getType());
+        if (tokensToMatch.contains(node.getType())) {
+          matched[0] = node.getText();
+          return true;
+        }
+
+        return false;
       }
     });
+
+    return Pair.of(check, matched[0]);
   }
 
   public static boolean containsTokenOfType(ASTNode root, PTFUtils.Predicate<ASTNode> predicate) {

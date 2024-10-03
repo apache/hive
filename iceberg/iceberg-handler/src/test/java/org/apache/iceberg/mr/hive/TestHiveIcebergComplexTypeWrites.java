@@ -210,9 +210,16 @@ public class TestHiveIcebergComplexTypeWrites extends HiveIcebergStorageHandlerW
       query.append("),");
     } else if (type instanceof Types.StructType) {
       query.append("named_struct(");
-      ((GenericRecord) field).struct().fields().stream()
-          .forEach(f -> query.append(buildComplexTypeInnerQuery(f.name(), Types.StringType.get()))
-              .append(buildComplexTypeInnerQuery(((GenericRecord) field).getField(f.name()), f.type())));
+      ((GenericRecord) field)
+          .struct()
+          .fields()
+          .forEach(
+              f ->
+                  query
+                      .append(buildComplexTypeInnerQuery(f.name(), Types.StringType.get()))
+                      .append(
+                          buildComplexTypeInnerQuery(
+                              ((GenericRecord) field).getField(f.name()), f.type())));
       query.setLength(query.length() - 1);
       query.append("),");
     } else if (type instanceof Types.StringType) {

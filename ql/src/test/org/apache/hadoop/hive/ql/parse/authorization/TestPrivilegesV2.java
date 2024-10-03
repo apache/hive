@@ -43,6 +43,8 @@ public class TestPrivilegesV2 extends PrivilegesTestBase{
     queryState = new QueryState.Builder().build();
     //set authorization mode to V2
     HiveConf conf = queryState.getConf();
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    conf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         SQLStdHiveAuthorizerFactory.class.getName());
     db = Mockito.mock(Hive.class);
