@@ -797,6 +797,9 @@ public interface HiveStorageHandler extends Configurable {
     return false;
   }
   default List<FieldSchema> getPartitionKeys(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    return getPartitionKeys(hmsTable, true);
+  }
+  default List<FieldSchema> getPartitionKeys(org.apache.hadoop.hive.ql.metadata.Table hmsTable, boolean latestSpecOnly) {
     throw new UnsupportedOperationException("Storage handler does not support getting partition keys " +
             "for a table.");
   }

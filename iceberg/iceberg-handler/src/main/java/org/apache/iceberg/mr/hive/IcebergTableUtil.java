@@ -473,17 +473,22 @@ public class IcebergTableUtil {
     return finalExp;
   }
 
-  public static List<FieldSchema> getPartitionKeys(Table table, int specId) {
-    Schema schema = table.specs().get(specId).schema();
-    List<FieldSchema> hiveSchema = HiveSchemaUtil.convert(schema);
-    Map<String, String> colNameToColType = hiveSchema.stream()
-        .collect(Collectors.toMap(FieldSchema::getName, FieldSchema::getType));
-    return table.specs().get(specId).fields().stream().map(partField ->
-        new FieldSchema(schema.findColumnName(partField.sourceId()),
-            colNameToColType.get(schema.findColumnName(partField.sourceId())),
-            String.format("Transform: %s", partField.transform().toString()))).collect(Collectors.toList());
+  public static List<FieldSchema> getPartitionKeys(Table table, boolean latestSpecOnly) {
+    Map<Integer, Schema> schemaBySpecId = table.specs().values().stream()
+        .filter(spec -> !latestSpecOnly || table.spec().specId() == spec.specId())
+        .collect(Collectors.toMap(PartitionSpec::specId, PartitionSpec::schema));
+    Map<Integer, List<FieldSchema>> hiveSchemaMapBySpecId = schemaBySpecId.entrySet().stream()
+        .collect(Collectors.toMap(item -> item.getKey(), item -> HiveSchemaUtil.convert(item.getValue())));
+    Map<Integer, Map<String, String>> colNameToColTypeBySpecId = hiveSchemaMapBySpecId.entrySet().stream().collect(
+        Collectors.toMap(listEntry -> listEntry.getKey(), listEntry -> listEntry.getValue().stream()
+            .collect(Collectors.toMap(FieldSchema::getName, FieldSchema::getType))));
+    return table.specs().values().stream().filter(spec -> !latestSpecOnly || table.spec().specId() == spec.specId())
+        .flatMap(partitionSpec -> partitionSpec.fields().stream().map(partField -> {
+          String columnName = schemaBySpecId.get(partitionSpec.specId()).findColumnName(partField.sourceId());
+          return new FieldSchema(columnName, colNameToColTypeBySpecId.get(partitionSpec.specId()).get(columnName),
+              String.format("Transform: %s", partField.transform().toString()));
+        })).distinct().collect(Collectors.toList());
   }
-
   public static List<PartitionField> getPartitionFields(Table table) {
     return table.specs().values().stream().flatMap(spec -> spec.fields()
         .stream()).distinct().collect(Collectors.toList());
