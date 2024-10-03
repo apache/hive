@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.junit.Assert;
 import org.apache.hadoop.hive.common.FileUtils;
@@ -4694,6 +4695,39 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
       LockState.ACQUIRED, "default", "mv_tab_acid", null, locks);
     // cleanup
     txnMgr.rollbackTxn();
+    driver.run("drop materialized view mv_tab_acid");
+  }
+
+  @Test
+  public void testMaterializedViewRebuildLockForSameMV() throws Exception {
+    driver.run("drop materialized view if exists mv_tab_acid");
+    dropTable(new String[]{"tab_acid"});
+
+    driver.run("create table if not exists tab_acid (a int, b int) partitioned by (p string) " +
+        "stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into tab_acid partition(p) (a,b,p) values(1,2,'foo'),(3,4,'bar')");
+
+    driver.run("create materialized view mv_tab_acid partitioned on (p) " +
+        "stored as orc TBLPROPERTIES ('transactional'='true') as select a, p from tab_acid where b > 1");
+
+    driver.run("insert into tab_acid partition(p) (a,b,p) values(1,2,'foo'),(3,4,'bar')");
+
+    driver.compileAndRespond("alter materialized view mv_tab_acid rebuild");
+    driver.lockAndRespond();
+
+    // rollback the transaction
+    txnMgr.rollbackTxn();
+
+    try {
+      driver.compileAndRespond("alter materialized view mv_tab_acid rebuild");
+    }
+    catch (Exception se) {
+      Assert.assertEquals(
+          "FAILED: SemanticException org.apache.hadoop.hive.ql.parse.SemanticException: Another process is rebuilding the materialized view default.mv_tab_acid",
+          se.getMessage());
+      Assert.fail("Should not throw exception here");
+    }
+    // cleanup
     driver.run("drop materialized view mv_tab_acid");
   }
 }

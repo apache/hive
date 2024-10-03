@@ -1163,9 +1163,15 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     public void run() {
       LOG.trace("Heartbeating materialization rebuild lock for {} for query: {}",
           AcidUtils.getFullTableName(dbName, tableName), queryId);
-      boolean refreshed;
+      boolean refreshed = false;
       try {
-        refreshed = txnMgr.heartbeatMaterializationRebuildLock(dbName, tableName, txnId);
+        if (!txnMgr.getValidTxns().isTxnAborted(txnId)) {
+          refreshed = txnMgr.heartbeatMaterializationRebuildLock(dbName, tableName, txnId);
+        } else {
+          LOG.info(
+              "Transaction {} is aborted so stopping the heartbeat for materialization rebuild lock for {} for query: {}",
+              txnId, AcidUtils.getFullTableName(dbName, tableName), queryId);
+        }
       } catch (LockException e) {
         LOG.error("Failed trying to acquire lock", e);
         throw new RuntimeException(e);
