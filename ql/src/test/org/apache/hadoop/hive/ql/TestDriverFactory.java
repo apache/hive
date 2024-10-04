@@ -62,7 +62,7 @@ public class TestDriverFactory {
     conf.setVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
         "overlay,reoptimize,reexecute_lost_am,dagsubmit");
 
-    conf.setVar(ConfVars.HIVE_QUERY_CUStOM_REEXECUTION_STRATEGIES,
+    conf.setVar(ConfVars.HIVE_QUERY_CUSTOM_REEXECUTION_STRATEGIES,
         "org.apache.hadoop.hive.ql.reexec.ReCompileWithoutCBOPlugin" +
         ",org.apache.hadoop.hive.ql.reexec.ReExecuteOnWriteConflictPlugin");
 
@@ -101,7 +101,7 @@ public class TestDriverFactory {
   @Test(expected = RuntimeException.class)
   public void testCustomNotInstanceOfIReExecutionPlugin() {
     HiveConf conf = new HiveConf();
-    conf.setVar(ConfVars.HIVE_QUERY_CUStOM_REEXECUTION_STRATEGIES,
+    conf.setVar(ConfVars.HIVE_QUERY_CUSTOM_REEXECUTION_STRATEGIES,
         "org.apache.hadoop.hive.conf.HiveConf");
 
     DriverFactory.newDriver(conf);
@@ -122,7 +122,7 @@ public class TestDriverFactory {
   }
 
   private List<IReExecutionPlugin> getCustomPlugins(HiveConf conf) {
-    String customeStrategies = conf.getVar(ConfVars.HIVE_QUERY_CUStOM_REEXECUTION_STRATEGIES);
+    String customeStrategies = conf.getVar(ConfVars.HIVE_QUERY_CUSTOM_REEXECUTION_STRATEGIES);
     List<IReExecutionPlugin> plugins = new ArrayList<>();
     for (String string : customeStrategies.split(",")) {
       if (string.trim().isEmpty()) {
@@ -140,7 +140,7 @@ public class TestDriverFactory {
       return pluginType.newInstance();
     } catch (InstantiationException | IllegalAccessException e) {
       throw new RuntimeException(
-          "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_CUStOM_REEXECUTION_STRATEGIES.varname + ")");
+          "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_CUSTOM_REEXECUTION_STRATEGIES.varname + ")");
     }
   }
 

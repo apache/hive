@@ -58,7 +58,7 @@ public final class DriverFactory {
       plugins.add(buildReExecPlugin(string));
     }
 
-    String customeStrategies = queryState.getConf().getVar(ConfVars.HIVE_QUERY_CUStOM_REEXECUTION_STRATEGIES);
+    String customeStrategies = queryState.getConf().getVar(ConfVars.HIVE_QUERY_CUSTOM_REEXECUTION_STRATEGIES);
     for (String string : customeStrategies.split(",")) {
       if (string.trim().isEmpty()) {
         continue;
@@ -91,7 +91,7 @@ public final class DriverFactory {
       return (IReExecutionPlugin) o;
     } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
       throw new RuntimeException(
-          "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_CUStOM_REEXECUTION_STRATEGIES.varname + ")");
+          "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_CUSTOM_REEXECUTION_STRATEGIES.varname + ")");
     }
   }
 

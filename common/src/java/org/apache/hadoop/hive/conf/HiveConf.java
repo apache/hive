@@ -5684,7 +5684,7 @@ public class HiveConf extends Configuration {
             + "  recompile_without_cbo: recompiles query after a CBO failure\n"
             + "  reexecute_lost_am: reexecutes query if it failed due to tez am node gets decommissioned\n "
             + "  write_conflict: retries the query once if the query failed due to write_conflict"),
-    HIVE_QUERY_CUStOM_REEXECUTION_STRATEGIES("hive.query.custome.reexecution.strategies",
+    HIVE_QUERY_CUSTOM_REEXECUTION_STRATEGIES("hive.query.custom.reexecution.strategies",
         "",
         "Define a custom reexecution strategies for hive.query.reexecution.strategies.:\n"
             + "  e.g.\n"
