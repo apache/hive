@@ -3960,7 +3960,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
         return null;
       }
 
-      OBLogicalPlanGenState obLogicalPlanGenState = beginGenOBLogicalPlan(sbAST, selPair, outermostOB);
+      final List<RexNode> newVCLst = new ArrayList<>();
+      final List<RelFieldCollation> fieldCollations = Lists.newArrayList();
+      List<Pair<ASTNode, TypeInfo>> vcASTTypePairs = new ArrayList<>();
+
+      beginGenSortByLogicalPlan(sbAST, selPair, newVCLst, fieldCollations, vcASTTypePairs);
+      OBLogicalPlanGenState obLogicalPlanGenState =
+          genOBProject(selPair, outermostOB, newVCLst, fieldCollations, vcASTTypePairs);
 
       // 4. Construct SortRel
       RelTraitSet traitSet = cluster.traitSetOf(HiveRelNode.CONVENTION);
@@ -3987,11 +3993,23 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return endGenOBLogicalPlan(obLogicalPlanGenState, sortRel);
     }
 
+    private OBLogicalPlanGenState beginGenOBLogicalPlan(
+        ASTNode obAST, Pair<RelNode, RowResolver> selPair, boolean outermostOB) throws SemanticException {
+      final List<RexNode> newVCLst = new ArrayList<>();
+      final List<RelFieldCollation> fieldCollations = Lists.newArrayList();
+      List<Pair<ASTNode, TypeInfo>> vcASTTypePairs = new ArrayList<>();
+
+      beginGenSortByLogicalPlan(obAST, selPair, newVCLst, fieldCollations, vcASTTypePairs);
+      return genOBProject(selPair, outermostOB, newVCLst, fieldCollations, vcASTTypePairs);
+    }
+
     // - Walk through OB exprs and extract field collations and additional virtual columns needed
     // - Add Child Project Rel if needed,
     // - Generate Output RR, input Sel Rel for top constraining Sel
-    private OBLogicalPlanGenState beginGenOBLogicalPlan(
-        ASTNode obAST, Pair<RelNode, RowResolver> selPair, boolean outermostOB) throws SemanticException {
+    private void beginGenSortByLogicalPlan(
+        ASTNode obAST, Pair<RelNode, RowResolver> selPair,
+        List<RexNode> newVCLst, List<RelFieldCollation> fieldCollations, List<Pair<ASTNode, TypeInfo>> vcASTTypePairs)
+        throws SemanticException {
       // selPair.getKey() is the operator right before OB
       // selPair.getValue() is RR which only contains columns needed in result
       // set. Extra columns needed by order by will be absent from it.
@@ -4000,14 +4018,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // 2. Walk through OB exprs and extract field collations and additional
       // virtual columns needed
-      final List<RexNode> newVCLst = new ArrayList<>();
-      final List<RelFieldCollation> fieldCollations = Lists.newArrayList();
       int fieldIndex = 0;
 
       List<Node> obASTExprLst = obAST.getChildren();
-      List<Pair<ASTNode, TypeInfo>> vcASTTypePairs = new ArrayList<>();
       RowResolver inputRR = relToHiveRR.get(srcRel);
-      RowResolver outputRR = new RowResolver();
 
       int srcRelRecordSz = srcRel.getRowType().getFieldCount();
 
@@ -4064,6 +4078,23 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // 2.5 Add to field collations
         fieldCollations.add(new RelFieldCollation(fieldIndex, order, nullOrder));
       }
+    }
+
+    // - Walk through OB exprs and extract field collations and additional virtual columns needed
+    // - Add Child Project Rel if needed,
+    // - Generate Output RR, input Sel Rel for top constraining Sel
+    private OBLogicalPlanGenState genOBProject(
+        Pair<RelNode, RowResolver> selPair, boolean outermostOB,
+        List<RexNode> newVCLst, List<RelFieldCollation> fieldCollations, List<Pair<ASTNode, TypeInfo>> vcASTTypePairs
+        ) throws SemanticException {
+      // selPair.getKey() is the operator right before OB
+      // selPair.getValue() is RR which only contains columns needed in result
+      // set. Extra columns needed by order by will be absent from it.
+      RelNode srcRel = selPair.getKey();
+      RowResolver selectOutputRR = selPair.getValue();
+      RowResolver inputRR = relToHiveRR.get(srcRel);
+      RowResolver outputRR = new RowResolver();
+
 
       // 3. Add Child Project Rel if needed, Generate Output RR, input Sel Rel
       // for top constraining Sel
@@ -5315,7 +5346,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
   /**
    * This class stores the partial results of Order/Sort by clause logical plan generation.
-   * See {@link CalcitePlannerAction#beginGenOBLogicalPlan}, {@link CalcitePlannerAction#endGenOBLogicalPlan}
+   * See {@link CalcitePlannerAction#beginGenSortByLogicalPlan}, {@link CalcitePlannerAction#endGenOBLogicalPlan}
    */
   private static class OBLogicalPlanGenState {
     private final RelNode obInputRel;
