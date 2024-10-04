@@ -4721,10 +4721,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
       driver.compileAndRespond("alter materialized view mv_tab_acid rebuild");
     }
     catch (Exception se) {
-      Assert.assertEquals(
-          "FAILED: SemanticException org.apache.hadoop.hive.ql.parse.SemanticException: Another process is rebuilding the materialized view default.mv_tab_acid",
-          se.getMessage());
-      Assert.fail("Should not throw exception here");
+      Assert.fail("Should not throw exception here. Exception message: " + se.getMessage());
     }
     // cleanup
     driver.run("drop materialized view mv_tab_acid");
