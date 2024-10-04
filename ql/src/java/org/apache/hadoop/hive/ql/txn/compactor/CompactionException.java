@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 
 @InterfaceAudience.Public
 @InterfaceStability.Stable
-public class RuntimeCompactionException extends RuntimeException {
+public class CompactionException extends RuntimeException {
 
   /**
    * Standard predefined message with error code and possibly SQL State, etc.
@@ -36,35 +36,35 @@ public class RuntimeCompactionException extends RuntimeException {
    */
   private String remoteErrorMsg;
 
-  public RuntimeCompactionException() {
+  public CompactionException() {
     super();
   }
 
-  public RuntimeCompactionException(String message) {
+  public CompactionException(String message) {
     super(message);
   }
 
-  public RuntimeCompactionException(Throwable cause) {
+  public CompactionException(Throwable cause) {
     super(cause);
   }
 
-  public RuntimeCompactionException(String message, Throwable cause) {
+  public CompactionException(String message, Throwable cause) {
     super(message, cause);
   }
 
-  public RuntimeCompactionException(ErrorMsg message, String... msgArgs) {
+  public CompactionException(ErrorMsg message, String... msgArgs) {
     this(null, null, message, msgArgs);
   }
 
-  public RuntimeCompactionException(Throwable cause, ErrorMsg errorMsg, String... msgArgs) {
+  public CompactionException(Throwable cause, ErrorMsg errorMsg, String... msgArgs) {
     this(cause, null, errorMsg, msgArgs);
   }
 
-  public RuntimeCompactionException(Throwable cause, ErrorMsg errorMsg) {
+  public CompactionException(Throwable cause, ErrorMsg errorMsg) {
     this(cause, null, errorMsg, new String[0]);
   }
 
-  public RuntimeCompactionException(ErrorMsg errorMsg) {
+  public CompactionException(ErrorMsg errorMsg) {
     this(null, null, errorMsg, new String[0]);
   }
 
@@ -75,7 +75,7 @@ public class RuntimeCompactionException extends RuntimeException {
    * @param errorMsg Canonical error message
    * @param msgArgs message arguments if message is parametrized; must be {@code null} is message takes no arguments
    */
-  public RuntimeCompactionException(Throwable cause, String remErrMsg, ErrorMsg errorMsg, String... msgArgs) {
+  public CompactionException(Throwable cause, String remErrMsg, ErrorMsg errorMsg, String... msgArgs) {
     super(errorMsg.format(msgArgs), cause);
     canonicalErrorMsg = errorMsg;
     remoteErrorMsg = remErrMsg;

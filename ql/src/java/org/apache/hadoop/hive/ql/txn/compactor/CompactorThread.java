@@ -118,7 +118,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
     try {
       thread.init(new AtomicBoolean());
     } catch (Exception e) {
-      throw new RuntimeCompactionException(e, ErrorMsg.COMPACTION_THREAD_INITIALIZATION);
+      throw new CompactionException(e, ErrorMsg.COMPACTION_THREAD_INITIALIZATION);
     }
     thread.start();
   }
