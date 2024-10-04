@@ -75,7 +75,7 @@ public final class DriverFactory {
       return pluginType.newInstance();
     } catch (InstantiationException | IllegalAccessException e) {
       throw new RuntimeException(
-          "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_CUStOM_REEXECUTION_STRATEGIES.varname + ")");
+          "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname + ")");
     }
   }
 
@@ -91,7 +91,7 @@ public final class DriverFactory {
       return (IReExecutionPlugin) o;
     } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
       throw new RuntimeException(
-          "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname + ")");
+          "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_CUStOM_REEXECUTION_STRATEGIES.varname + ")");
     }
   }
 
