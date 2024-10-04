@@ -4010,20 +4010,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
         ASTNode obAST, Pair<RelNode, RowResolver> selPair,
         List<RexNode> newVCLst, List<RelFieldCollation> fieldCollations, List<Pair<ASTNode, TypeInfo>> vcASTTypePairs)
         throws SemanticException {
-      // selPair.getKey() is the operator right before OB
-      // selPair.getValue() is RR which only contains columns needed in result
-      // set. Extra columns needed by order by will be absent from it.
-      RelNode srcRel = selPair.getKey();
-      RowResolver selectOutputRR = selPair.getValue();
-
       // 2. Walk through OB exprs and extract field collations and additional
       // virtual columns needed
-      int fieldIndex = 0;
-
       List<Node> obASTExprLst = obAST.getChildren();
-      RowResolver inputRR = relToHiveRR.get(srcRel);
-
-      int srcRelRecordSz = srcRel.getRowType().getFieldCount();
 
       for (int i = 0; i < obASTExprLst.size(); i++) {
         // 2.1 Convert AST Expr to ExprNode
@@ -4031,34 +4020,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         ASTNode nullObASTExpr = (ASTNode) orderByNode.getChild(0);
         ASTNode ref = (ASTNode) nullObASTExpr.getChild(0);
 
-        boolean isBothByPos = HiveConf.getBoolVar(conf, ConfVars.HIVE_GROUPBY_ORDERBY_POSITION_ALIAS);
-        boolean isObyByPos = isBothByPos
-                || HiveConf.getBoolVar(conf, ConfVars.HIVE_ORDERBY_POSITION_ALIAS);
-        // replace each of the position alias in ORDERBY with the actual column
-        if (ref != null && ref.getToken().getType() == HiveParser.Number) {
-          if (isObyByPos) {
-            fieldIndex = getFieldIndexFromColumnNumber(selectOutputRR, ref);
-          } else { // if not using position alias and it is a number.
-            LOG.warn("Using constant number "
-                    + ref.getText()
-                    + " in order by. If you try to use position alias when hive.orderby.position.alias is false, " +
-                    "the position alias will be ignored.");
-          }
-        } else {
-          // 2.2 Convert ExprNode to RexNode
-          RexNode orderByExpression = getOrderByExpression(selectOutputRR, inputRR, orderByNode, ref);
-
-          // 2.3 Determine the index of ob expr in child schema
-          // NOTE: Calcite can not take compound exprs in OB without it being
-          // present in the child (& hence we add a child Project Rel)
-          if (orderByExpression instanceof RexInputRef) {
-            fieldIndex = ((RexInputRef) orderByExpression).getIndex();
-          } else {
-            fieldIndex = srcRelRecordSz + newVCLst.size();
-            newVCLst.add(orderByExpression);
-            vcASTTypePairs.add(new Pair<>(ref, TypeConverter.convert(orderByExpression.getType())));
-          }
-        }
+        int fieldIndex = genSortByKey(ref, selPair, newVCLst, vcASTTypePairs);
 
         // 2.4 Determine the Direction of order by
         RelFieldCollation.Direction order = RelFieldCollation.Direction.DESCENDING;
@@ -4078,6 +4040,50 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // 2.5 Add to field collations
         fieldCollations.add(new RelFieldCollation(fieldIndex, order, nullOrder));
       }
+    }
+
+    private int genSortByKey(
+        ASTNode ref, Pair<RelNode, RowResolver> selPair,
+        List<RexNode> newVCLst, List<Pair<ASTNode, TypeInfo>> vcASTTypePairs)
+        throws SemanticException {
+      // selPair.getKey() is the operator right before OB
+      // selPair.getValue() is RR which only contains columns needed in result
+      // set. Extra columns needed by order by will be absent from it.
+      RelNode srcRel = selPair.getKey();
+      RowResolver selectOutputRR = selPair.getValue();
+      RowResolver inputRR = relToHiveRR.get(srcRel);
+
+      int srcRelRecordSz = srcRel.getRowType().getFieldCount();
+      boolean isBothByPos = HiveConf.getBoolVar(conf, ConfVars.HIVE_GROUPBY_ORDERBY_POSITION_ALIAS);
+      boolean isObyByPos = isBothByPos
+          || HiveConf.getBoolVar(conf, ConfVars.HIVE_ORDERBY_POSITION_ALIAS);
+      // replace each of the position alias in ORDERBY with the actual column
+      if (ref != null && ref.getToken().getType() == HiveParser.Number) {
+        if (isObyByPos) {
+          return getFieldIndexFromColumnNumber(selectOutputRR, ref);
+        } else { // if not using position alias and it is a number.
+          LOG.warn("Using constant number "
+              + ref.getText()
+              + " in order by. If you try to use position alias when hive.orderby.position.alias is false, " +
+              "the position alias will be ignored.");
+        }
+      } else {
+        // 2.2 Convert ExprNode to RexNode
+        RexNode orderByExpression = getOrderByExpression(selectOutputRR, inputRR, ref, ref);
+
+        // 2.3 Determine the index of ob expr in child schema
+        // NOTE: Calcite can not take compound exprs in OB without it being
+        // present in the child (& hence we add a child Project Rel)
+        if (orderByExpression instanceof RexInputRef) {
+          return ((RexInputRef) orderByExpression).getIndex();
+        } else {
+          newVCLst.add(orderByExpression);
+          vcASTTypePairs.add(new Pair<>(ref, TypeConverter.convert(orderByExpression.getType())));
+          return srcRelRecordSz + newVCLst.size();
+        }
+      }
+
+      return 0;
     }
 
     // - Walk through OB exprs and extract field collations and additional virtual columns needed
