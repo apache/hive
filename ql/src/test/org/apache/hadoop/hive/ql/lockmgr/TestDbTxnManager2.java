@@ -43,7 +43,6 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.junit.Assert;
 import org.apache.hadoop.hive.common.FileUtils;
