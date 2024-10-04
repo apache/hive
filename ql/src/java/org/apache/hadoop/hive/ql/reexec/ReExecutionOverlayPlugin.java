@@ -35,8 +35,16 @@ public class ReExecutionOverlayPlugin implements IReExecutionPlugin {
 
   private Driver driver;
   private Map<String, String> subtree;
+  private LocalHook hook;
 
   class LocalHook implements ExecuteWithHookContext {
+
+    private HiveConf conf;
+    private Map<String, String> subtree;
+
+    public LocalHook(HiveConf conf) {
+      this.conf = conf;
+    }
 
     @Override
     public void run(HookContext hookContext) throws Exception {
@@ -46,16 +54,23 @@ public class ReExecutionOverlayPlugin implements IReExecutionPlugin {
           if (exception.getMessage() != null && exception.getMessage().contains("Vertex failed,")) {
             retryPossible = true;
           }
+
+          subtree = conf.subtree("reexec.custom.overlay." + exception.getClass().getSimpleName());
         }
       }
+    }
+
+    public Map<String, String> getSubtree() {
+      return subtree;
     }
   }
 
   @Override
   public void initialize(Driver driver) {
     this.driver = driver;
-    driver.getHookRunner().addOnFailureHook(new LocalHook());
     HiveConf conf = driver.getConf();
+    this.hook = new LocalHook(conf);
+    driver.getHookRunner().addOnFailureHook(hook);
     // we unset the queue name intentionally in TezSessionState#startSessionAndContainers
     // as a result reexec create new session in the default queue and create problem
     String queueName = conf.get(TezConfiguration.TEZ_QUEUE_NAME);
@@ -71,6 +86,7 @@ public class ReExecutionOverlayPlugin implements IReExecutionPlugin {
   public void prepareToReExecute() {
     HiveConf conf = driver.getConf();
     conf.verifyAndSetAll(subtree);
+    conf.verifyAndSetAll(hook.getSubtree());
   }
 
   @Override
