@@ -114,7 +114,7 @@
     <avro.version>1.11.4</avro.version>
     <avatica.version>1.23.0</avatica.version>
     <bcprov-jdk18on.version>1.78</bcprov-jdk18on.version>
-    <calcite.version>1.33.0</calcite.version>
+    <calcite.version>1.38.0</calcite.version>
     <datanucleus-api-jdo.version>5.2.8</datanucleus-api-jdo.version>
     <datanucleus-core.version>5.2.10</datanucleus-core.version>
     <datanucleus-jdo.version>3.2.0-release</datanucleus-jdo.version>
@@ -239,6 +239,16 @@
       <id>central</id>
       <name>central</name>
       <url>https://repo.maven.apache.org/maven2</url>
+      <layout>default</layout>
+      <releases>
+        <enabled>true</enabled>
+        <checksumPolicy>warn</checksumPolicy>
+      </releases>
+    </repository>
+    <repository>
+      <id>nex</id>
+      <name>nex</name>
+      <url>https://repository.apache.org/content/repositories/orgapachecalcite-1233/</url>
       <layout>default</layout>
       <releases>
         <enabled>true</enabled>

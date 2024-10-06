@@ -49,6 +49,8 @@ import org.apache.calcite.rex.RexCorrelVariable;
 import org.apache.calcite.rex.RexDynamicParam;
 import org.apache.calcite.rex.RexFieldAccess;
 import org.apache.calcite.rex.RexInputRef;
+import org.apache.calcite.rex.RexLambda;
+import org.apache.calcite.rex.RexLambdaRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexLocalRef;
 import org.apache.calcite.rex.RexNode;
@@ -1141,6 +1143,15 @@ public class HiveCalciteUtil {
 
     @Override
     public Boolean visitPatternFieldRef(RexPatternFieldRef fieldRef) {
+      return false;
+    }
+    @Override
+    public Boolean visitLambda(RexLambda lambda) {
+      return false;
+    }
+
+    @Override
+    public Boolean visitLambdaRef(RexLambdaRef lambdaRef) {
       return false;
     }
   }
