@@ -4700,29 +4700,32 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
   @Test
   public void testMaterializedViewRebuildLockForSameMV() throws Exception {
     driver.run("drop materialized view if exists mv_tab_acid");
-    dropTable(new String[]{"tab_acid"});
+    dropTable(new String[] { "tab_acid" });
 
-    driver.run("create table if not exists tab_acid (a int, b int) partitioned by (p string) " +
-        "stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run(
+        "create table if not exists tab_acid (a int, b int) partitioned by (p string) " + "stored as orc TBLPROPERTIES ('transactional'='true')");
     driver.run("insert into tab_acid partition(p) (a,b,p) values(1,2,'foo'),(3,4,'bar')");
 
-    driver.run("create materialized view mv_tab_acid partitioned on (p) " +
-        "stored as orc TBLPROPERTIES ('transactional'='true') as select a, p from tab_acid where b > 1");
+    driver.run(
+        "create materialized view mv_tab_acid partitioned on (p) " + "stored as orc TBLPROPERTIES ('transactional'='true') as select a, p from tab_acid where b > 1");
 
     driver.run("insert into tab_acid partition(p) (a,b,p) values(1,2,'foo'),(3,4,'bar')");
 
     driver.compileAndRespond("alter materialized view mv_tab_acid rebuild");
     driver.lockAndRespond();
+    Assert.assertEquals("One lock should be there as MV Rebuild is in-progress", 1, TestTxnDbUtil.countQueryAgent(conf,
+        "select count(*) from MATERIALIZATION_REBUILD_LOCKS where MRL_TBL_NAME='mv_tab_acid'"));
 
     // rollback the transaction
     txnMgr.rollbackTxn();
+    Assert.assertEquals("There should not be any MV Rebuild lock as Txn is rollback.", 0,
+        TestTxnDbUtil.countQueryAgent(conf,
+            "select count(*) from MATERIALIZATION_REBUILD_LOCKS where MRL_TBL_NAME='mv_tab_acid'"));
 
-    try {
-      driver.compileAndRespond("alter materialized view mv_tab_acid rebuild");
-    }
-    catch (Exception se) {
-      Assert.fail("Should not throw exception here. Exception message: " + se.getMessage());
-    }
+    driver.compileAndRespond("alter materialized view mv_tab_acid rebuild");
+    Assert.assertEquals("One lock should be there as MV Rebuild is re-triggered", 1, TestTxnDbUtil.countQueryAgent(conf,
+        "select count(*) from MATERIALIZATION_REBUILD_LOCKS where MRL_TBL_NAME='mv_tab_acid'"));
+
     // cleanup
     driver.run("drop materialized view mv_tab_acid");
   }
