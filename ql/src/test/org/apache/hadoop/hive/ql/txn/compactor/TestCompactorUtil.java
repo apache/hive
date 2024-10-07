@@ -36,6 +36,6 @@ public class TestCompactorUtil {
     Map<String, Integer> entries = CompactorUtil.getPoolConf(conf);
  
     Assert.assertEquals(1, entries.size());
-    Assert.assertEquals(new Integer(4), entries.get("iceberg1"));
+    Assert.assertEquals(Integer.valueOf(4), entries.get("iceberg1"));
   }
 }

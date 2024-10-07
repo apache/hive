@@ -38,7 +38,7 @@ public class TestHiveServer2 {
 
     Map<String, Integer> startedWorkers = hs2.maybeStartCompactorThreads(conf);
     assertEquals(1, startedWorkers.size());
-    assertEquals(new Integer(1), startedWorkers.get("pool1"));
+    assertEquals(Integer.valueOf(1), startedWorkers.get("pool1"));
   }
 
   @Test
@@ -64,7 +64,7 @@ public class TestHiveServer2 {
 
     Map<String, Integer> startedWorkers = hs2.maybeStartCompactorThreads(conf);
     assertEquals(1, startedWorkers.size());
-    assertEquals(new Integer(5), startedWorkers.get(Constants.COMPACTION_DEFAULT_POOL));
+    assertEquals(Integer.valueOf(5), startedWorkers.get(Constants.COMPACTION_DEFAULT_POOL));
   }
 
   @Test
@@ -80,9 +80,9 @@ public class TestHiveServer2 {
 
     Map<String, Integer> startedWorkers = hs2.maybeStartCompactorThreads(conf);
     assertEquals(3, startedWorkers.size());
-    assertEquals(new Integer(3), startedWorkers.get("pool1"));
-    assertEquals(new Integer(4), startedWorkers.get("pool2"));
-    assertEquals(new Integer(5), startedWorkers.get("pool3"));
+    assertEquals(Integer.valueOf(3), startedWorkers.get("pool1"));
+    assertEquals(Integer.valueOf(4), startedWorkers.get("pool2"));
+    assertEquals(Integer.valueOf(5), startedWorkers.get("pool3"));
   }
 
   @Test
@@ -98,9 +98,9 @@ public class TestHiveServer2 {
 
     Map<String, Integer> startedWorkers = hs2.maybeStartCompactorThreads(conf);
     assertEquals(4, startedWorkers.size());
-    assertEquals(new Integer(3), startedWorkers.get("pool1"));
-    assertEquals(new Integer(4), startedWorkers.get("pool2"));
-    assertEquals(new Integer(5), startedWorkers.get("pool3"));
-    assertEquals(new Integer(3), startedWorkers.get(Constants.COMPACTION_DEFAULT_POOL));
+    assertEquals(Integer.valueOf(3), startedWorkers.get("pool1"));
+    assertEquals(Integer.valueOf(4), startedWorkers.get("pool2"));
+    assertEquals(Integer.valueOf(5), startedWorkers.get("pool3"));
+    assertEquals(Integer.valueOf(3), startedWorkers.get(Constants.COMPACTION_DEFAULT_POOL));
   }
 }

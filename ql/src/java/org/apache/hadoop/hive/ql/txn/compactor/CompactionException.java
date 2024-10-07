@@ -29,27 +29,29 @@ public class CompactionException extends RuntimeException {
   /**
    * Standard predefined message with error code and possibly SQL State, etc.
    */
-  private ErrorMsg canonicalErrorMsg = ErrorMsg.GENERIC_ERROR;
+  private final ErrorMsg canonicalErrorMsg;
 
   /**
    * Error Messages returned from remote exception (eg. hadoop error)
    */
-  private String remoteErrorMsg;
+  private final String remoteErrorMsg;
 
   public CompactionException() {
-    super();
+    this(null, null, ErrorMsg.GENERIC_ERROR);
   }
 
   public CompactionException(String message) {
-    super(message);
+    this(message, null);
   }
 
   public CompactionException(Throwable cause) {
-    super(cause);
+    this(cause, null, ErrorMsg.GENERIC_ERROR);
   }
 
   public CompactionException(String message, Throwable cause) {
     super(message, cause);
+    canonicalErrorMsg = ErrorMsg.GENERIC_ERROR;
+    remoteErrorMsg = null;
   }
 
   public CompactionException(ErrorMsg message, String... msgArgs) {
@@ -61,11 +63,11 @@ public class CompactionException extends RuntimeException {
   }
 
   public CompactionException(Throwable cause, ErrorMsg errorMsg) {
-    this(cause, null, errorMsg, new String[0]);
+    this(cause, null, errorMsg);
   }
 
   public CompactionException(ErrorMsg errorMsg) {
-    this(null, null, errorMsg, new String[0]);
+    this(null, null, errorMsg);
   }
 
   /**
