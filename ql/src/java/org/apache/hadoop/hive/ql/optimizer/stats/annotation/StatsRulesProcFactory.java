@@ -3294,7 +3294,6 @@ public class StatsRulesProcFactory {
       return stats;
     }
     LOG.debug("using runtime stats for {}; {}", op, os.get());
-    // Statistics.scaleToRowCount() creates and returns the clone of itself.
     Statistics outStats = stats.scaleToRowCount(os.get().getOutputRecords(), false);
     outStats.setRuntimeStats(true);
     return outStats;
