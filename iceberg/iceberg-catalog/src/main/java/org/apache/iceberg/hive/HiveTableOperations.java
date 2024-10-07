@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.util.Preconditions;
 import org.apache.hive.iceberg.com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.iceberg.BaseMetastoreOperations;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.ClientPool;
 import org.apache.iceberg.PartitionSpecParser;
@@ -184,7 +185,8 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
     boolean hiveEngineEnabled = hiveEngineEnabled(metadata, conf);
     boolean keepHiveStats = conf.getBoolean(ConfigProperties.KEEP_HIVE_STATS, false);
 
-    CommitStatus commitStatus = CommitStatus.FAILURE;
+    BaseMetastoreOperations.CommitStatus commitStatus =
+            BaseMetastoreOperations.CommitStatus.FAILURE;
     boolean updateHiveTable = false;
 
     HiveLock lock = lockObject(base);
@@ -206,7 +208,10 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
         LOG.debug("Committing new table: {}", fullName);
       }
 
-      tbl.setSd(HiveOperationsBase.storageDescriptor(metadata, hiveEngineEnabled)); // set to pickup any schema changes
+      tbl.setSd(HiveOperationsBase.storageDescriptor(
+              metadata.schema(),
+              metadata.location(),
+              hiveEngineEnabled)); // set to pickup any schema changes
 
       String metadataLocation = tbl.getParameters().get(METADATA_LOCATION_PROP);
       String baseMetadataLocation = base != null ? base.metadataFileLocation() : null;
@@ -244,9 +249,9 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
             tbl, updateHiveTable, hiveLockEnabled(base, conf) ? null : baseMetadataLocation);
         lock.ensureActive();
 
-        commitStatus = CommitStatus.SUCCESS;
+        commitStatus = BaseMetastoreOperations.CommitStatus.SUCCESS;
       } catch (LockException le) {
-        commitStatus = CommitStatus.UNKNOWN;
+        commitStatus = BaseMetastoreOperations.CommitStatus.UNKNOWN;
         throw new CommitStateUnknownException(
             "Failed to heartbeat for hive lock while " +
               "committing changes. This can lead to a concurrent commit attempt be able to overwrite this commit. " +
@@ -281,7 +286,9 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
 
         LOG.error("Cannot tell if commit to {}.{} succeeded, attempting to reconnect and check.",
             database, tableName, e);
-        commitStatus = checkCommitStatus(newMetadataLocation, metadata);
+        commitStatus =
+                BaseMetastoreOperations.CommitStatus.valueOf(
+                        checkCommitStatus(newMetadataLocation, metadata).name());
         switch (commitStatus) {
           case SUCCESS:
             break;
@@ -303,7 +310,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
       throw new CommitFailedException(e);
 
     } finally {
-      cleanupMetadataAndUnlock(commitStatus, newMetadataLocation, lock);
+      HiveOperationsBase.cleanupMetadataAndUnlock(io(), commitStatus, newMetadataLocation, lock);
     }
 
     LOG.info("Committed to table {} with the new metadata location {}", fullName, newMetadataLocation);
@@ -396,7 +403,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
     }
 
     setSnapshotStats(metadata, parameters);
-    setSchema(metadata, parameters);
+    setSchema(metadata.schema(), parameters);
     setPartitionSpec(metadata, parameters);
     setSortOrder(metadata, parameters);
 
@@ -487,15 +494,6 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
   @Override
   public ClientPool<IMetaStoreClient, TException> metaClients() {
     return actor instanceof HiveCatalogActor ? ((HiveCatalogActor) actor).clientPool() : null;
-  }
-
-  private void cleanupMetadataAndUnlock(CommitStatus commitStatus, String metadataLocation,
-      HiveLock lock) {
-    try {
-      HiveOperationsBase.cleanupMetadata(io(), commitStatus.name(), metadataLocation);
-    } finally {
-      doUnlock(lock);
-    }
   }
 
   void doUnlock(HiveLock lock) {

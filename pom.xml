@@ -202,7 +202,7 @@
     <plexus.version>1.5.6</plexus.version>
     <protobuf.version>3.24.4</protobuf.version>
     <rat.version>0.16.1</rat.version>
-    <roaringbit.version>1.0.1</roaringbit.version>
+    <roaringbit.version>1.2.1</roaringbit.version>
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.30</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
