@@ -68,6 +68,18 @@ public class HiveJdbcImplementor extends JdbcImplementor {
   @Override public Result visit(Sort e) {
     Result x = visitInput(e, 0, Clause.ORDER_BY, Clause.FETCH, Clause.OFFSET);
     Builder builder = x.builder(e);
+    
+    if (e.fetch != null) {
+      builder = x.builder(e);
+      builder.setFetch(builder.context.toSql(null, e.fetch));
+      x = builder.result();
+    }
+    if (e.offset != null) {
+      builder = x.builder(e);
+      builder.setOffset(builder.context.toSql(null, e.offset));
+      x = builder.result();
+    }
+    
     List<SqlNode> orderByList = Expressions.list();
     for (RelFieldCollation field : e.getCollation().getFieldCollations()) {
       builder.addOrderItem(orderByList, field);
@@ -87,16 +99,7 @@ public class HiveJdbcImplementor extends JdbcImplementor {
       builder.setOrderBy(new SqlNodeList(orderByList, POS));
       x = builder.result();
     }
-    if (e.fetch != null) {
-      builder = x.builder(e);
-      builder.setFetch(builder.context.toSql(null, e.fetch));
-      x = builder.result();
-    }
-    if (e.offset != null) {
-      builder = x.builder(e);
-      builder.setOffset(builder.context.toSql(null, e.offset));
-      x = builder.result();
-    }
+    
     return x;
   }
 

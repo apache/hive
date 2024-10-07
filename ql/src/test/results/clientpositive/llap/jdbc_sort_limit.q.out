@@ -1,0 +1,297 @@
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `date_dim`(
+  `d_date_sk` int, 
+  `d_date_id` string, 
+  `d_date` string, 
+  `d_month_seq` int, 
+  `d_week_seq` int, 
+  `d_quarter_seq` int, 
+  `d_year` int, 
+  `d_dow` int, 
+  `d_moy` int, 
+  `d_dom` int, 
+  `d_qoy` int, 
+  `d_fy_year` int, 
+  `d_fy_quarter_seq` int, 
+  `d_fy_week_seq` int, 
+  `d_day_name` string, 
+  `d_quarter_name` string, 
+  `d_holiday` string, 
+  `d_weekend` string, 
+  `d_following_holiday` string, 
+  `d_first_dom` int, 
+  `d_last_dom` int, 
+  `d_same_day_ly` int, 
+  `d_same_day_lq` int, 
+  `d_current_day` string, 
+  `d_current_week` string, 
+  `d_current_month` string, 
+  `d_current_quarter` string, 
+  `d_current_year` string)
+STORED BY                                          
+'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (                                    
+    "hive.sql.database.type" = "POSTGRES",
+    "hive.sql.jdbc.driver" = "org.postgresql.Driver",
+    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
+    "hive.sql.dbcp.username" = "qtestuser",
+    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.table" = "date_dim"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_dim
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `date_dim`(
+  `d_date_sk` int, 
+  `d_date_id` string, 
+  `d_date` string, 
+  `d_month_seq` int, 
+  `d_week_seq` int, 
+  `d_quarter_seq` int, 
+  `d_year` int, 
+  `d_dow` int, 
+  `d_moy` int, 
+  `d_dom` int, 
+  `d_qoy` int, 
+  `d_fy_year` int, 
+  `d_fy_quarter_seq` int, 
+  `d_fy_week_seq` int, 
+  `d_day_name` string, 
+  `d_quarter_name` string, 
+  `d_holiday` string, 
+  `d_weekend` string, 
+  `d_following_holiday` string, 
+  `d_first_dom` int, 
+  `d_last_dom` int, 
+  `d_same_day_ly` int, 
+  `d_same_day_lq` int, 
+  `d_current_day` string, 
+  `d_current_week` string, 
+  `d_current_month` string, 
+  `d_current_quarter` string, 
+  `d_current_year` string)
+STORED BY                                          
+'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (                                    
+    "hive.sql.database.type" = "POSTGRES",
+    "hive.sql.jdbc.driver" = "org.postgresql.Driver",
+    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
+    "hive.sql.dbcp.username" = "qtestuser",
+    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.table" = "date_dim"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_dim
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `store_sales`(
+  `ss_sold_date_sk` int,
+  `ss_sold_time_sk` int, 
+  `ss_item_sk` bigint, 
+  `ss_customer_sk` int, 
+  `ss_cdemo_sk` int, 
+  `ss_hdemo_sk` int, 
+  `ss_addr_sk` int, 
+  `ss_store_sk` int, 
+  `ss_promo_sk` int, 
+  `ss_ticket_number` bigint, 
+  `ss_quantity` int, 
+  `ss_wholesale_cost` decimal(7,2), 
+  `ss_list_price` decimal(7,2), 
+  `ss_sales_price` decimal(7,2), 
+  `ss_ext_discount_amt` decimal(7,2), 
+  `ss_ext_sales_price` decimal(7,2), 
+  `ss_ext_wholesale_cost` decimal(7,2), 
+  `ss_ext_list_price` decimal(7,2), 
+  `ss_ext_tax` decimal(7,2), 
+  `ss_coupon_amt` decimal(7,2), 
+  `ss_net_paid` decimal(7,2), 
+  `ss_net_paid_inc_tax` decimal(7,2), 
+  `ss_net_profit` decimal(7,2))
+STORED BY                                          
+'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (                                    
+    "hive.sql.database.type" = "POSTGRES",
+    "hive.sql.jdbc.driver" = "org.postgresql.Driver",
+    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
+    "hive.sql.dbcp.username" = "qtestuser",
+    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.table" = "store_sales"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@store_sales
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `store_sales`(
+  `ss_sold_date_sk` int,
+  `ss_sold_time_sk` int, 
+  `ss_item_sk` bigint, 
+  `ss_customer_sk` int, 
+  `ss_cdemo_sk` int, 
+  `ss_hdemo_sk` int, 
+  `ss_addr_sk` int, 
+  `ss_store_sk` int, 
+  `ss_promo_sk` int, 
+  `ss_ticket_number` bigint, 
+  `ss_quantity` int, 
+  `ss_wholesale_cost` decimal(7,2), 
+  `ss_list_price` decimal(7,2), 
+  `ss_sales_price` decimal(7,2), 
+  `ss_ext_discount_amt` decimal(7,2), 
+  `ss_ext_sales_price` decimal(7,2), 
+  `ss_ext_wholesale_cost` decimal(7,2), 
+  `ss_ext_list_price` decimal(7,2), 
+  `ss_ext_tax` decimal(7,2), 
+  `ss_coupon_amt` decimal(7,2), 
+  `ss_net_paid` decimal(7,2), 
+  `ss_net_paid_inc_tax` decimal(7,2), 
+  `ss_net_profit` decimal(7,2))
+STORED BY                                          
+'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (                                    
+    "hive.sql.database.type" = "POSTGRES",
+    "hive.sql.jdbc.driver" = "org.postgresql.Driver",
+    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
+    "hive.sql.dbcp.username" = "qtestuser",
+    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.table" = "store_sales"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@store_sales
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `item`(
+  `i_item_sk` bigint, 
+  `i_item_id` string, 
+  `i_rec_start_date` string, 
+  `i_rec_end_date` string, 
+  `i_item_desc` string, 
+  `i_current_price` decimal(7,2), 
+  `i_wholesale_cost` decimal(7,2), 
+  `i_brand_id` int, 
+  `i_brand` string, 
+  `i_class_id` int, 
+  `i_class` string, 
+  `i_category_id` int, 
+  `i_category` string, 
+  `i_manufact_id` int, 
+  `i_manufact` string, 
+  `i_size` string, 
+  `i_formulation` string, 
+  `i_color` string, 
+  `i_units` string, 
+  `i_container` string, 
+  `i_manager_id` int, 
+  `i_product_name` string)
+STORED BY                                          
+'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (                                    
+    "hive.sql.database.type" = "POSTGRES",
+    "hive.sql.jdbc.driver" = "org.postgresql.Driver",
+    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
+    "hive.sql.dbcp.username" = "qtestuser",
+    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.table" = "item"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@item
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `item`(
+  `i_item_sk` bigint, 
+  `i_item_id` string, 
+  `i_rec_start_date` string, 
+  `i_rec_end_date` string, 
+  `i_item_desc` string, 
+  `i_current_price` decimal(7,2), 
+  `i_wholesale_cost` decimal(7,2), 
+  `i_brand_id` int, 
+  `i_brand` string, 
+  `i_class_id` int, 
+  `i_class` string, 
+  `i_category_id` int, 
+  `i_category` string, 
+  `i_manufact_id` int, 
+  `i_manufact` string, 
+  `i_size` string, 
+  `i_formulation` string, 
+  `i_color` string, 
+  `i_units` string, 
+  `i_container` string, 
+  `i_manager_id` int, 
+  `i_product_name` string)
+STORED BY                                          
+'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (                                    
+    "hive.sql.database.type" = "POSTGRES",
+    "hive.sql.jdbc.driver" = "org.postgresql.Driver",
+    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
+    "hive.sql.dbcp.username" = "qtestuser",
+    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.table" = "item"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@item
+PREHOOK: query: explain cbo
+select  dt.d_year 
+       ,item.i_brand_id brand_id 
+       ,item.i_brand brand
+       ,sum(ss_ext_sales_price) sum_agg
+ from  date_dim dt 
+      ,store_sales
+      ,item
+ where dt.d_date_sk = store_sales.ss_sold_date_sk
+   and store_sales.ss_item_sk = item.i_item_sk
+   and item.i_manufact_id = 436
+   and dt.d_moy=12
+ group by dt.d_year
+      ,item.i_brand
+      ,item.i_brand_id
+ order by dt.d_year
+         ,sum_agg desc
+         ,brand_id
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select  dt.d_year 
+       ,item.i_brand_id brand_id 
+       ,item.i_brand brand
+       ,sum(ss_ext_sales_price) sum_agg
+ from  date_dim dt 
+      ,store_sales
+      ,item
+ where dt.d_date_sk = store_sales.ss_sold_date_sk
+   and store_sales.ss_item_sk = item.i_item_sk
+   and item.i_manufact_id = 436
+   and dt.d_moy=12
+ group by dt.d_year
+      ,item.i_brand
+      ,item.i_brand_id
+ order by dt.d_year
+         ,sum_agg desc
+         ,brand_id
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJdbcConverter(convention=[JDBC.POSTGRES])
+  JdbcSort(sort0=[$0], sort1=[$3], sort2=[$1], dir0=[ASC], dir1=[DESC], dir2=[ASC], fetch=[100])
+    JdbcAggregate(group=[{4, 6, 7}], agg#0=[sum($2)])
+      JdbcJoin(condition=[=($1, $5)], joinType=[inner])
+        JdbcJoin(condition=[=($3, $0)], joinType=[inner])
+          JdbcProject(ss_sold_date_sk=[$0], ss_item_sk=[$1], ss_ext_sales_price=[$2])
+            JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+              JdbcProject(ss_sold_date_sk=[$0], ss_item_sk=[$2], ss_ext_sales_price=[$15])
+                JdbcHiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+          JdbcProject(d_date_sk=[$0], d_year=[$1])
+            JdbcFilter(condition=[AND(=($2, 12), IS NOT NULL($0))])
+              JdbcProject(d_date_sk=[$0], d_year=[$6], d_moy=[$8])
+                JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[dt])
+        JdbcProject(i_item_sk=[$0], i_brand_id=[$1], i_brand=[$2])
+          JdbcFilter(condition=[AND(=($3, 436), IS NOT NULL($0))])
+            JdbcProject(i_item_sk=[$0], i_brand_id=[$7], i_brand=[$8], i_manufact_id=[$13])
+              JdbcHiveTableScan(table=[[default, item]], table:alias=[item])
+
