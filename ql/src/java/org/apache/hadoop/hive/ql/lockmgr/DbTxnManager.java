@@ -67,6 +67,7 @@ import javax.annotation.concurrent.NotThreadSafe;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1139,6 +1140,9 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
    */
   private static class MaterializationRebuildLockHeartbeater implements Runnable {
 
+    private static final List<TxnType> EXCLUDE_TXN_TYPES =
+        Arrays.asList(TxnType.DEFAULT, TxnType.REPL_CREATED, TxnType.READ_ONLY, TxnType.COMPACTION, TxnType.SOFT_DELETE,
+            TxnType.REBALANCE_COMPACTION);
     private final DbTxnManager txnMgr;
     private final String dbName;
     private final String tableName;
@@ -1165,7 +1169,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
           AcidUtils.getFullTableName(dbName, tableName), queryId);
       boolean refreshed = false;
       try {
-        if (!txnMgr.getValidTxns().isTxnAborted(txnId)) {
+        if (!txnMgr.getValidTxns(EXCLUDE_TXN_TYPES).isTxnAborted(txnId)) {
           refreshed = txnMgr.heartbeatMaterializationRebuildLock(dbName, tableName, txnId);
         } else {
           LOG.info(
