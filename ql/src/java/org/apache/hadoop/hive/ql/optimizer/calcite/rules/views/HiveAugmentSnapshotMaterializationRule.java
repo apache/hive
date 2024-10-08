@@ -33,7 +33,6 @@ import org.apache.calcite.util.ImmutableBeans;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
-import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
@@ -95,13 +94,8 @@ public class HiveAugmentSnapshotMaterializationRule extends RelRule<HiveAugmentS
   @VisibleForTesting
   static RelDataType snapshotIdType(RelDataTypeFactory typeFactory) {
     if (snapshotIdType == null) {
-      try {
-        snapshotIdType = typeFactory.createSqlType(
-            TypeConverter.convert(VirtualColumn.SNAPSHOT_ID.getTypeInfo(),
-                typeFactory).getSqlTypeName());
-      } catch (CalciteSemanticException e) {
-        throw new RuntimeException(e);
-      }
+      snapshotIdType = typeFactory.createSqlType(
+          TypeConverter.convert(VirtualColumn.SNAPSHOT_ID.getTypeInfo(), typeFactory).getSqlTypeName());
     }
 
     return snapshotIdType;
