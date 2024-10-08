@@ -30,8 +30,6 @@ import org.apache.hadoop.hive.ql.reexec.ReExecDriver;
 import org.apache.hadoop.hive.ql.reexec.ReExecutionStrategyType;
 import org.junit.Test;
 
-import com.google.common.base.Strings;
-
 public class TestDriverFactory {
 
   @Test
@@ -55,15 +53,21 @@ public class TestDriverFactory {
     }
   }
 
+  @Test(expected = RuntimeException.class)
+  public void testNormalFailed() {
+    HiveConf conf = new HiveConf();
+    conf.setVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
+        "overlay,reoptimize,reexecute_lost_am,dagsubmit,test");
+
+    DriverFactory.newDriver(conf);
+  }
+
   @Test
   public void testNormalAndCustom() {
     HiveConf conf = new HiveConf();
-    // ,recompile_without_cbo,write_conflict
     conf.setVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
-        "overlay,reoptimize,reexecute_lost_am,dagsubmit");
-
-    conf.setVar(ConfVars.HIVE_QUERY_CUSTOM_REEXECUTION_STRATEGIES,
-        "org.apache.hadoop.hive.ql.reexec.ReCompileWithoutCBOPlugin" +
+        "overlay,reoptimize,reexecute_lost_am,dagsubmit" + 
+        ",org.apache.hadoop.hive.ql.reexec.ReCompileWithoutCBOPlugin" +
         ",org.apache.hadoop.hive.ql.reexec.ReExecuteOnWriteConflictPlugin");
 
     IDriver driver = DriverFactory.newDriver(conf);
@@ -82,53 +86,32 @@ public class TestDriverFactory {
         fail("The ReExecutionPlugin defined has not been instantiated");
       }
     }
-
-    List<IReExecutionPlugin> customPlugins = getCustomPlugins(conf);
-    for (IReExecutionPlugin original : customPlugins) {
-      boolean found = false;
-      for (IReExecutionPlugin instance : reDriver.getPlugins()) {
-        if (original.getClass().getName().equals(instance.getClass().getName())) {
-          found = true;
-        }
-      }
-
-      if (!found) {
-        fail("The ReExecutionPlugin defined has not been instantiated");
-      }
-    }
   }
 
   @Test(expected = RuntimeException.class)
   public void testCustomNotInstanceOfIReExecutionPlugin() {
     HiveConf conf = new HiveConf();
-    conf.setVar(ConfVars.HIVE_QUERY_CUSTOM_REEXECUTION_STRATEGIES,
-        "org.apache.hadoop.hive.conf.HiveConf");
+    conf.setVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
+        "overlay,reoptimize,reexecute_lost_am,dagsubmit" +
+        ",org.apache.hadoop.hive.conf.HiveConf");
 
     DriverFactory.newDriver(conf);
   }
 
   private List<IReExecutionPlugin> getPlugins(HiveConf conf) {
     String strategies = conf.getVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES);
-    strategies = Strings.nullToEmpty(strategies).trim().toLowerCase();
     List<IReExecutionPlugin> plugins = new ArrayList<>();
     for (String string : strategies.split(",")) {
       if (string.trim().isEmpty()) {
         continue;
       }
-      plugins.add(buildReExecPlugin(string));
-    }
 
-    return plugins;
-  }
-
-  private List<IReExecutionPlugin> getCustomPlugins(HiveConf conf) {
-    String customeStrategies = conf.getVar(ConfVars.HIVE_QUERY_CUSTOM_REEXECUTION_STRATEGIES);
-    List<IReExecutionPlugin> plugins = new ArrayList<>();
-    for (String string : customeStrategies.split(",")) {
-      if (string.trim().isEmpty()) {
-        continue;
+      IReExecutionPlugin plugin = buildReExecPlugin(string);
+      if (plugin != null) {
+        plugins.add(buildReExecPlugin(string));
+      } else {
+        plugins.add(buildCustomReExecPlugin(string));
       }
-      plugins.add(buildCustomReExecPlugin(string));
     }
 
     return plugins;
@@ -136,11 +119,15 @@ public class TestDriverFactory {
 
   private IReExecutionPlugin buildReExecPlugin(String name) throws RuntimeException {
     Class<? extends IReExecutionPlugin> pluginType = ReExecutionStrategyType.getPluginClassByName(name);
+    if (pluginType == null) {
+      return null;
+    }
+
     try {
       return pluginType.newInstance();
     } catch (InstantiationException | IllegalAccessException e) {
       throw new RuntimeException(
-          "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_CUSTOM_REEXECUTION_STRATEGIES.varname + ")");
+          "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname + ")");
     }
   }
 

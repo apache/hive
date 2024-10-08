@@ -27,8 +27,6 @@ import org.apache.hadoop.hive.ql.reexec.IReExecutionPlugin;
 import org.apache.hadoop.hive.ql.reexec.ReExecDriver;
 import org.apache.hadoop.hive.ql.reexec.ReExecutionStrategyType;
 
-import com.google.common.base.Strings;
-
 /**
  * Constructs a driver for ql clients.
  */
@@ -49,21 +47,18 @@ public final class DriverFactory {
     }
 
     String strategies = queryState.getConf().getVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES);
-    strategies = Strings.nullToEmpty(strategies).trim().toLowerCase();
     List<IReExecutionPlugin> plugins = new ArrayList<>();
     for (String string : strategies.split(",")) {
       if (string.trim().isEmpty()) {
         continue;
       }
-      plugins.add(buildReExecPlugin(string));
-    }
 
-    String customeStrategies = queryState.getConf().getVar(ConfVars.HIVE_QUERY_CUSTOM_REEXECUTION_STRATEGIES);
-    for (String string : customeStrategies.split(",")) {
-      if (string.trim().isEmpty()) {
-        continue;
+      IReExecutionPlugin plugin = buildReExecPlugin(string);
+      if (plugin != null) {
+        plugins.add(buildReExecPlugin(string));
+      } else {
+        plugins.add(buildCustomReExecPlugin(string));
       }
-      plugins.add(buildCustomReExecPlugin(string));
     }
 
     return new ReExecDriver(queryState, queryInfo, plugins);
@@ -71,6 +66,10 @@ public final class DriverFactory {
 
   private static IReExecutionPlugin buildReExecPlugin(String name) throws RuntimeException {
     Class<? extends IReExecutionPlugin> pluginType = ReExecutionStrategyType.getPluginClassByName(name);
+    if (pluginType == null) {
+      return null;
+    }
+
     try {
       return pluginType.newInstance();
     } catch (InstantiationException | IllegalAccessException e) {
@@ -91,7 +90,7 @@ public final class DriverFactory {
       return (IReExecutionPlugin) o;
     } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
       throw new RuntimeException(
-          "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_CUSTOM_REEXECUTION_STRATEGIES.varname + ")");
+          "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname + ")");
     }
   }
 

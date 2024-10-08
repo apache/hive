@@ -5678,17 +5678,14 @@ public class HiveConf extends Configuration {
         "Enable query reexecutions"),
     HIVE_QUERY_REEXECUTION_STRATEGIES("hive.query.reexecution.strategies",
         "overlay,reoptimize,reexecute_lost_am,dagsubmit,recompile_without_cbo,write_conflict",
-        "comma separated list of plugin can be used:\n"
+        "comma separated list of plugin can be used. If custom plugins, specify the class name:\n"
             + "  overlay: hiveconf subtree 'reexec.overlay' is used as an overlay in case of an execution errors out\n"
             + "  reoptimize: collects operator statistics during execution and recompile the query after a failure\n"
             + "  recompile_without_cbo: recompiles query after a CBO failure\n"
             + "  reexecute_lost_am: reexecutes query if it failed due to tez am node gets decommissioned\n "
-            + "  write_conflict: retries the query once if the query failed due to write_conflict"),
-    HIVE_QUERY_CUSTOM_REEXECUTION_STRATEGIES("hive.query.custom.reexecution.strategies",
-        "",
-        "Define a custom reexecution strategies for hive.query.reexecution.strategies.:\n"
-            + "  e.g.\n"
-            + "    org.apache.hadoop.hive.ql.reexec.custom.CustomPlugin1,org.apache.hadoop.hive.ql.reexec.custom.CustomPlugin2"),
+            + "  write_conflict: retries the query once if the query failed due to write_conflict\n"
+            + "  custom plugins: e.g.\n"
+            + "    org.apache.hadoop.hive.ql.reexec.custom.CustomPlugin1"),
     HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE("hive.query.reexecution.stats.persist.scope", "metastore",
         new StringSet("query", "hiveserver", "metastore"),
         "Sets the persistence scope of runtime statistics\n"

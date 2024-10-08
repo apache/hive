@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.reexec;
 
-import java.util.Optional;
-
 public enum ReExecutionStrategyType {
   OVERLAY(ReExecutionOverlayPlugin.class),
   REOPTIMIZE(ReOptimizePlugin.class),
@@ -39,6 +37,10 @@ public enum ReExecutionStrategyType {
   }
 
   public static Class<? extends IReExecutionPlugin> getPluginClassByName(String strategy) {
-    return ReExecutionStrategyType.valueOf(strategy.toUpperCase()).getPluginClass();
+    try {
+      return ReExecutionStrategyType.valueOf(strategy.toUpperCase()).getPluginClass();
+    } catch (IllegalArgumentException e) {
+      return null;
+    }
   }
 }
