@@ -22,6 +22,8 @@ import java.util.List;
 import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcFilter;
 import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcJoin;
 import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcProject;
+import org.apache.calcite.plan.RelOptCluster;
+import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptRuleOperand;
@@ -32,10 +34,10 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
+import org.apache.calcite.rex.RexSimplify;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.RexNodeConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +77,7 @@ public abstract class JDBCExpandExpressionsRule extends RelOptRule {
       final RexNode condition = filter.getCondition();
 
       RexNode newCondition = analyzeRexNode(
-          filter.getCluster().getRexBuilder(), condition);
+          filter.getCluster(), condition);
 
       // If we could not transform anything, we bail out
       if (newCondition.toString().equals(condition.toString())) {
@@ -103,7 +105,7 @@ public abstract class JDBCExpandExpressionsRule extends RelOptRule {
           join.getCluster().getRexBuilder(), join.getCondition());
 
       RexNode newCondition = analyzeRexNode(
-          join.getCluster().getRexBuilder(), condition);
+          join.getCluster(), condition);
 
       // If we could not transform anything, we bail out
       if (newCondition.toString().equals(condition.toString())) {
@@ -132,11 +134,10 @@ public abstract class JDBCExpandExpressionsRule extends RelOptRule {
       LOG.debug("JDBCExpandExpressionsRule.ProjectionExpressions has been called");
 
       final Project project = call.rel(0);
-      final RexBuilder rexBuilder = project.getCluster().getRexBuilder();
       boolean changed = false;
       List<RexNode> newProjects = new ArrayList<>();
       for (RexNode oldNode : project.getProjects()) {
-        RexNode newNode = analyzeRexNode(rexBuilder, oldNode);
+        RexNode newNode = analyzeRexNode(project.getCluster(), oldNode);
         if (!newNode.toString().equals(oldNode.toString())) {
           changed = true;
           newProjects.add(newNode);
@@ -159,9 +160,16 @@ public abstract class JDBCExpandExpressionsRule extends RelOptRule {
 
   }
 
-  RexNode analyzeRexNode(RexBuilder rexBuilder, RexNode condition) {
-    RexTransformIntoOrAndClause transformIntoInClause = new RexTransformIntoOrAndClause(rexBuilder);
+  RexNode analyzeRexNode(RelOptCluster cluster, RexNode condition) {
+    RexTransformIntoOrAndClause transformIntoInClause = new RexTransformIntoOrAndClause(cluster.getRexBuilder());
     RexNode newCondition = transformIntoInClause.apply(condition);
+
+    if (!RexUtil.isFlat(newCondition)) {
+      newCondition = new RexSimplify(
+          cluster.getRexBuilder(), RelOptPredicateList.EMPTY, cluster.getPlanner().getExecutor()
+      ).simplify(newCondition);
+    }
+
     return newCondition;
   }
 
