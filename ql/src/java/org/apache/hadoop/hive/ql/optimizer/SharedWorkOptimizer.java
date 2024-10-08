@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer;
 
+import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
@@ -40,6 +41,7 @@ import java.util.Set;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
@@ -171,10 +173,9 @@ public class SharedWorkOptimizer extends Transform {
     // Gather information about the DPP table scans and store it in the cache
     gatherDPPTableScanOps(pctx, optimizerCache);
 
-    for (Entry<String, Long> tablePair : sortedTables) {
-      String tableName = tablePair.getKey();
-      List<TableScanOperator> scans = tableNameToOps.get(tableName);
-
+    final int batchSize = HiveConf.getIntVar(pctx.getConf(), ConfVars.HIVE_SHARED_WORK_MAX_SIBLINGS);
+    Preconditions.checkArgument(batchSize == -1 || batchSize > 0);
+    for (List<TableScanOperator> scans : groupTableScanOperators(sortedTables, tableNameToOps, batchSize)) {
       // Execute shared work optimization
       runSharedWorkOptimization(pctx, optimizerCache, scans, Mode.SubtreeMerge);
 
@@ -249,6 +250,32 @@ public class SharedWorkOptimizer extends Transform {
 
     LOG.info("SharedWorkOptimizer end");
     return pctx;
+  }
+
+  private static List<List<TableScanOperator>> groupTableScanOperators(List<Entry<String, Long>> sortedTables,
+      ArrayListMultimap<String, TableScanOperator> tableNameToOps, int batchSize) {
+    final List<List<TableScanOperator>> batches = new ArrayList<>();
+    for (Entry<String, Long> tablePair : sortedTables) {
+      final String tableName = tablePair.getKey();
+      final List<TableScanOperator> scans = tableNameToOps.get(tableName);
+      if (batchSize == -1) {
+        batches.add(scans);
+        continue;
+      }
+
+      final int limit = scans.size();
+      int from = 0;
+      while (from != limit) {
+        final int to = Math.min(limit, from + batchSize);
+        // We have to copy the list because it is mutated later
+        final List<TableScanOperator> subList = new ArrayList<>(scans.subList(from, to));
+        Preconditions.checkState(!subList.isEmpty());
+        batches.add(subList);
+        from = to;
+      }
+    }
+
+    return batches;
   }
 
   private boolean runSharedWorkOptimization(ParseContext pctx, SharedWorkOptimizerCache optimizerCache, List<TableScanOperator> scans,

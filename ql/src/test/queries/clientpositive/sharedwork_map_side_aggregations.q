@@ -1,6 +1,6 @@
 --! qt:dataset:src
 
---set hive.optimize.shared.work.max.siblings=3;
+set hive.optimize.shared.work.max.siblings=3;
 
 EXPLAIN
 SELECT count(*), SUM(t1.num), SUM(t2.num), SUM(t3.num), SUM(t4.num), SUM(t5.num), SUM(t6.num), SUM(t7.num)
