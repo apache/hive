@@ -995,9 +995,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
                                           HiveConf conf, boolean topLevelQB) {
     List<String> reasons = new ArrayList<>();
     // Not ok to run CBO, build error message.
-    if (queryProperties.hasClusterBy()) {
-      reasons.add("has cluster by");
-    }
     if (queryProperties.hasSortBy() && queryProperties.hasLimit()) {
       reasons.add("has sort by with limit");
     }
@@ -4002,6 +3999,54 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return endGenOBLogicalPlan(obLogicalPlanGenState, sortRel);
     }
 
+    private RelNode genClusterByLogicalPlan(QB qb, Pair<RelNode, RowResolver> selPair,
+        boolean outermostOB) throws SemanticException {
+      QBParseInfo qbp = getQBParseInfo(qb);
+      String dest = qbp.getClauseNames().iterator().next();
+      ASTNode clusterByAST = qbp.getClusterByForClause(dest);
+
+      if (clusterByAST == null) {
+        return null;
+      }
+
+      final List<RexNode> newVCLst = new ArrayList<>();
+      final List<RelFieldCollation> fieldCollations = Lists.newArrayList();
+      List<Pair<ASTNode, TypeInfo>> vcASTTypePairs = new ArrayList<>();
+
+      HiveRelDistribution hiveRelDistribution;
+      Builder<Integer> keys = ImmutableList.builder();
+      for (int i = 0; i < clusterByAST.getChildCount(); ++i) {
+        ASTNode keyAST = (ASTNode) clusterByAST.getChild(i);
+        int fieldIndex = genSortByKey(keyAST, selPair, newVCLst, vcASTTypePairs);
+        keys.add(fieldIndex);
+      }
+      ImmutableList<Integer> distributeKeys = keys.build();
+      hiveRelDistribution = new HiveRelDistribution(RelDistribution.Type.HASH_DISTRIBUTED, distributeKeys);
+
+      for (Integer fieldIndex : distributeKeys) {
+        fieldCollations.add(new RelFieldCollation(
+                fieldIndex, RelFieldCollation.Direction.ASCENDING, RelFieldCollation.NullDirection.FIRST));
+      }
+
+      OBLogicalPlanGenState obLogicalPlanGenState =
+              genOBProject(selPair, outermostOB, newVCLst, fieldCollations, vcASTTypePairs);
+
+      // 4. Construct SortRel
+      RelTraitSet traitSet = cluster.traitSetOf(HiveRelNode.CONVENTION);
+      RelCollation canonizedCollation =
+              traitSet.canonize(RelCollationImpl.of(obLogicalPlanGenState.getFieldCollation()));
+      ImmutableList.Builder<RexNode> builder = ImmutableList.builder();
+      for (RelFieldCollation relFieldCollation : canonizedCollation.getFieldCollations()) {
+        int index = relFieldCollation.getFieldIndex();
+        builder.add(cluster.getRexBuilder().makeInputRef(obLogicalPlanGenState.getObInputRel(), index));
+      }
+
+      RelNode sortRel = HiveSortExchange.create(
+              obLogicalPlanGenState.getObInputRel(), hiveRelDistribution, canonizedCollation, builder.build());
+
+      return endGenOBLogicalPlan(obLogicalPlanGenState, sortRel);
+    }
+
     private OBLogicalPlanGenState beginGenOBLogicalPlan(
         ASTNode obAST, Pair<RelNode, RowResolver> selPair, boolean outermostOB) throws SemanticException {
       final List<RexNode> newVCLst = new ArrayList<>();
@@ -5244,7 +5289,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
       } else {
         // 7. Build Rel for Sort By Clause
         sbRel = genSBLogicalPlan(qb, selPair, outerMostQB);
-        srcRel = (sbRel == null) ? srcRel : sbRel;
+        if (sbRel != null) {
+          srcRel = sbRel;
+        } else {
+          sbRel = genClusterByLogicalPlan(qb, selPair, outerMostQB);
+          srcRel = (sbRel == null) ? srcRel : sbRel;
+        }
 
         // 8. Build Rel for Limit Clause
         limitRel = genLimitLogicalPlan(qb, srcRel);
