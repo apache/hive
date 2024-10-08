@@ -27,6 +27,8 @@ import org.apache.hadoop.hive.ql.reexec.IReExecutionPlugin;
 import org.apache.hadoop.hive.ql.reexec.ReExecDriver;
 import org.apache.hadoop.hive.ql.reexec.ReExecutionStrategyType;
 
+import com.google.common.base.Strings;
+
 /**
  * Constructs a driver for ql clients.
  */
@@ -47,6 +49,7 @@ public final class DriverFactory {
     }
 
     String strategies = queryState.getConf().getVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES);
+    strategies = Strings.nullToEmpty(strategies).trim();
     List<IReExecutionPlugin> plugins = new ArrayList<>();
     for (String string : strategies.split(",")) {
       if (string.trim().isEmpty()) {
