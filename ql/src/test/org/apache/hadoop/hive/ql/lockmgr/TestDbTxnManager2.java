@@ -4702,12 +4702,12 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     driver.run("drop materialized view if exists mv_tab_acid");
     dropTable(new String[] { "tab_acid" });
 
-    driver.run(
-        "create table if not exists tab_acid (a int, b int) partitioned by (p string) " + "stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("create table if not exists tab_acid (a int, b int) partitioned by (p string) " +
+            "stored as orc TBLPROPERTIES ('transactional'='true')");
     driver.run("insert into tab_acid partition(p) (a,b,p) values(1,2,'foo'),(3,4,'bar')");
 
-    driver.run(
-        "create materialized view mv_tab_acid partitioned on (p) " + "stored as orc TBLPROPERTIES ('transactional'='true') as select a, p from tab_acid where b > 1");
+    driver.run("create materialized view mv_tab_acid partitioned on (p) " +
+            "stored as orc TBLPROPERTIES ('transactional'='true') as select a, p from tab_acid where b > 1");
 
     driver.run("insert into tab_acid partition(p) (a,b,p) values(1,2,'foo'),(3,4,'bar')");
 
