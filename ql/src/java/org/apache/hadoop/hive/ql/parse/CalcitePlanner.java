@@ -998,9 +998,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
     if (queryProperties.hasClusterBy()) {
       reasons.add("has cluster by");
     }
-    if (queryProperties.hasDistributeBy()) {
-      reasons.add("has distribute by");
-    }
     if (queryProperties.hasSortBy() && queryProperties.hasLimit()) {
       reasons.add("has sort by with limit");
     }
@@ -3967,6 +3964,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       beginGenSortByLogicalPlan(sbAST, selPair, newVCLst, fieldCollations, vcASTTypePairs);
 
+      HiveRelDistribution hiveRelDistribution;
       if (distributeByAST != null) {
         Builder<Integer> keys = ImmutableList.builder();
         for (int i = 0; i < distributeByAST.getChildCount(); ++i) {
@@ -3975,8 +3973,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
           keys.add(fieldIndex);
         }
 
-        HiveRelDistribution hiveRelDistribution =
+        hiveRelDistribution =
             new HiveRelDistribution(RelDistribution.Type.HASH_DISTRIBUTED, keys.build());
+      } else {
+        // In case of SORT BY we do not need Distribution
+        // but the instance RelDistributions.ANY can not be used here because
+        // org.apache.calcite.rel.core.Exchange has
+        // assert distribution != RelDistributions.ANY;
+        hiveRelDistribution = new HiveRelDistribution(RelDistribution.Type.ANY, RelDistributions.ANY.getKeys());
       }
 
       OBLogicalPlanGenState obLogicalPlanGenState =
@@ -3986,23 +3990,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
       RelTraitSet traitSet = cluster.traitSetOf(HiveRelNode.CONVENTION);
       RelCollation canonizedCollation =
               traitSet.canonize(RelCollationImpl.of(obLogicalPlanGenState.getFieldCollation()));
-      List<Integer> joinKeyPositions = new ArrayList<>(canonizedCollation.getFieldCollations().size());
       ImmutableList.Builder<RexNode> builder = ImmutableList.builder();
       for (RelFieldCollation relFieldCollation : canonizedCollation.getFieldCollations()) {
         int index = relFieldCollation.getFieldIndex();
-        joinKeyPositions.add(index);
         builder.add(cluster.getRexBuilder().makeInputRef(obLogicalPlanGenState.getObInputRel(), index));
       }
 
       RelNode sortRel = HiveSortExchange.create(
-                  obLogicalPlanGenState.getObInputRel(),
-                  // In case of SORT BY we do not need Distribution
-                  // but the instance RelDistributions.ANY can not be used here because
-                  // org.apache.calcite.rel.core.Exchange has
-                  // assert distribution != RelDistributions.ANY;
-                  new HiveRelDistribution(RelDistribution.Type.ANY, RelDistributions.ANY.getKeys()),
-              canonizedCollation,
-              builder.build());
+              obLogicalPlanGenState.getObInputRel(), hiveRelDistribution, canonizedCollation, builder.build());
 
       return endGenOBLogicalPlan(obLogicalPlanGenState, sortRel);
     }
