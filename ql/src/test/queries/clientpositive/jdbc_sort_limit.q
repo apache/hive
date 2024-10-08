@@ -1,4 +1,4 @@
---!qt:database:postgres:q_test_tpcds_tables.sql
+--!qt:database:postgres:q_test_tpcds_tables_schema.postgres.sql
 
 CREATE EXTERNAL TABLE IF NOT EXISTS `date_dim`(
   `d_date_sk` int, 
@@ -110,7 +110,7 @@ TBLPROPERTIES (
 );
 
 set hive.mapred.mode=nonstrict;
--- start query 1 in stream 0 using template query3.tpl and seed 2031708268
+
 explain cbo
 select  dt.d_year 
        ,item.i_brand_id brand_id 
