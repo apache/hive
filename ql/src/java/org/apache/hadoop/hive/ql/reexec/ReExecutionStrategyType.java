@@ -37,10 +37,6 @@ public enum ReExecutionStrategyType {
   }
 
   public static Class<? extends IReExecutionPlugin> getPluginClassByName(String strategy) {
-    try {
-      return ReExecutionStrategyType.valueOf(strategy.toUpperCase()).getPluginClass();
-    } catch (IllegalArgumentException e) {
-      return null;
-    }
+    return ReExecutionStrategyType.valueOf(strategy.toUpperCase()).getPluginClass();
   }
 }

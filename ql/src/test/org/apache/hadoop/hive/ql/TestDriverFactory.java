@@ -25,6 +25,8 @@ import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.reexec.IReExecutionPlugin;
 import org.apache.hadoop.hive.ql.reexec.ReExecDriver;
 import org.apache.hadoop.hive.ql.reexec.ReExecutionStrategyType;
@@ -106,42 +108,33 @@ public class TestDriverFactory {
         continue;
       }
 
-      IReExecutionPlugin plugin = buildReExecPlugin(string);
-      if (plugin != null) {
-        plugins.add(buildReExecPlugin(string));
-      } else {
-        plugins.add(buildCustomReExecPlugin(string));
-      }
+      plugins.add(buildReExecPlugin(string));
     }
 
     return plugins;
   }
 
-  private IReExecutionPlugin buildReExecPlugin(String name) throws RuntimeException {
-    Class<? extends IReExecutionPlugin> pluginType = ReExecutionStrategyType.getPluginClassByName(name);
-    if (pluginType == null) {
-      return null;
+  private static IReExecutionPlugin buildReExecPlugin(String name) throws RuntimeException {
+    Class<? extends IReExecutionPlugin> pluginType;
+    try {
+      pluginType = ReExecutionStrategyType.getPluginClassByName(name);
+    } catch (IllegalArgumentException e) {
+        try {
+          Class<?> cls = Class.forName(name);
+          if (cls.isAssignableFrom(IReExecutionPlugin.class)) {
+            throw new RuntimeException("Not re-execution plugin: " + name);
+          }
+
+          pluginType = (Class<? extends IReExecutionPlugin>) cls;
+        } catch (ClassNotFoundException e1) {
+          throw new RuntimeException(
+              "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname + ")");
+        }
     }
 
     try {
       return pluginType.newInstance();
     } catch (InstantiationException | IllegalAccessException e) {
-      throw new RuntimeException(
-          "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname + ")");
-    }
-  }
-
-  private IReExecutionPlugin buildCustomReExecPlugin(String name) throws RuntimeException {
-    try {
-      Class<?> cls = Class.forName(name);
-      Object o = cls.newInstance();
-      if (!(o instanceof IReExecutionPlugin)) {
-        throw new RuntimeException(
-            "Not re-execution plugin: " + name);
-      }
-
-      return (IReExecutionPlugin) o;
-    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
       throw new RuntimeException(
           "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname + ")");
     }
