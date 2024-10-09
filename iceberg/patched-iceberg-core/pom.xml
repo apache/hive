@@ -94,6 +94,7 @@
                   <excludes>
                       **/HadoopInputFile.class
                       **/HadoopTableOperations.class
+                      **/SnapshotProducer.class
                   </excludes>
                 </artifactItem>
               </artifactItems>

@@ -32,6 +32,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -462,7 +463,7 @@ public class Table implements Serializable {
       Map<String, String> spec, boolean shouldBeFull) throws SemanticException {
     List<FieldSchema> partCols = tTable.getPartitionKeys();
     final String tableName = Warehouse.getQualifiedName(tTable);
-    if (partCols == null || (partCols.size() == 0)) {
+    if (CollectionUtils.isEmpty(partCols)) {
       if (spec != null) {
         throw new ValidationFailureSemanticException(tableName +
             " table is not partitioned but partition spec exists: " + spec);
@@ -627,11 +628,16 @@ public class Table implements Serializable {
   }
 
   public List<String> getPartColNames() {
-    List<String> partColNames = new ArrayList<String>();
-    for (FieldSchema key : getPartCols()) {
+    List<String> partColNames = new ArrayList<>();
+    for (FieldSchema key : alwaysUnpartitioned() ? 
+        getStorageHandler().getPartitionKeys(this) : getPartCols()) {
       partColNames.add(key.getName());
     }
     return partColNames;
+  }
+
+  public boolean alwaysUnpartitioned() {
+    return getStorageHandler() != null && getStorageHandler().alwaysUnpartitioned();
   }
 
   public boolean isPartitionKey(String colName) {
@@ -825,12 +831,10 @@ public class Table implements Serializable {
       throw new HiveException("Class not found: " + name, e);
     }
   }
-
+  
   public boolean isPartitioned() {
-    if (getPartCols() == null) {
-      return false;
-    }
-    return (getPartCols().size() != 0);
+    return alwaysUnpartitioned() ? getStorageHandler().isPartitioned(this) : 
+        CollectionUtils.isNotEmpty(getPartCols());
   }
 
   public void setFields(List<FieldSchema> fields) {

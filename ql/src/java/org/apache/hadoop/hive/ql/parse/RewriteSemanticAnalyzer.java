@@ -319,7 +319,7 @@ public abstract class RewriteSemanticAnalyzer<T> extends CalcitePlanner {
   protected void updateOutputs(Table targetTable) {
     markReadEntityForUpdate();
 
-    if (targetTable.isPartitioned()) {
+    if (targetTable.isPartitioned() && !targetTable.alwaysUnpartitioned()) {
       List<ReadEntity> partitionsRead = getRestrictedPartitionSet(targetTable);
       if (!partitionsRead.isEmpty()) {
         // if there is WriteEntity with WriteType=UPDATE/DELETE for target table, replace it with

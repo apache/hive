@@ -276,8 +276,7 @@ public class StatsUtils {
     boolean estimateStats = HiveConf.getBoolVar(conf, ConfVars.HIVE_STATS_ESTIMATE_STATS);
     boolean metaTable = table.getMetaTable() != null;
 
-    if (!table.isPartitioned()) {
-
+    if (!table.isPartitioned() || !checkCanProvidePartitionStats(table)) {
       Factory basicStatsFactory = new BasicStats.Factory();
 
       if (estimateStats) {
@@ -2035,10 +2034,12 @@ public class StatsUtils {
   }
 
   public static boolean checkCanProvideStats(Table table) {
-    if (MetaStoreUtils.isExternalTable(table.getTTable())) {
-      return MetaStoreUtils.isNonNativeTable(table.getTTable()) && table.getStorageHandler().canProvideBasicStatistics();
-    }
-    return true;
+    return !MetaStoreUtils.isExternalTable(table.getTTable()) || table.isNonNative() 
+        && table.getStorageHandler().canProvideBasicStatistics();
+  }
+
+  public static boolean checkCanProvidePartitionStats(Table table) {
+    return !table.isNonNative() || table.getStorageHandler().canProvidePartitionStatistics(table);
   }
 
   /**

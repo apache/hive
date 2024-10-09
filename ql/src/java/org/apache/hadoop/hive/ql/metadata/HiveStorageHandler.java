@@ -261,6 +261,10 @@ public interface HiveStorageHandler extends Configurable {
     return false;
   }
 
+  default boolean canProvidePartitionStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    return false;
+  }
+
   /**
    * Return some col statistics (Lower bounds, Upper bounds, Null value counts, NaN, total counts) calculated by
    * the underlying storage handler implementation.
@@ -302,10 +306,15 @@ public interface HiveStorageHandler extends Configurable {
    * Check if the storage handler answer a few queries like count(1) purely using stats.
    * @return true if the storage handler can answer query using statistics
    */
-  default boolean canComputeQueryUsingStats(org.apache.hadoop.hive.ql.metadata.Table tbl) {
+  default boolean canComputeQueryUsingStats(Partish partish) {
     return false;
   }
-
+  
+  @Deprecated
+  default boolean canComputeQueryUsingStats(org.apache.hadoop.hive.ql.metadata.Table tbl) {
+    return canComputeQueryUsingStats(Partish.buildFor(tbl));
+  }
+  
   /**
    *
    * Gets the storage format descriptor to be used for temp table for LOAD data.
@@ -820,9 +829,13 @@ public interface HiveStorageHandler extends Configurable {
     SearchArgument searchArgument) {
     return false;
   }
+
+  default List<FieldSchema> getPartitionKeys(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    return getPartitionKeys(hmsTable, true);
+  }
+  
   default List<FieldSchema> getPartitionKeys(org.apache.hadoop.hive.ql.metadata.Table hmsTable, boolean latestSpecOnly) {
-    throw new UnsupportedOperationException("Storage handler does not support getting partition keys " +
-            "for a table.");
+    throw new UnsupportedOperationException("Storage handler does not support getting partition keys for a table.");
   }
 
   /**
@@ -888,6 +901,10 @@ public interface HiveStorageHandler extends Configurable {
     return getPartitions(table, partitionSpec, true);
   }
 
+  default List<Partition> getPartitions(org.apache.hadoop.hive.ql.metadata.Table table) throws SemanticException {
+    return getPartitions(table, Collections.emptyMap());
+  }
+
   /**
    * Returns a list of partitions based on table and partial partition specification.
    * @param table {@link org.apache.hadoop.hive.ql.metadata.Table} table metadata stored in Hive Metastore
@@ -902,7 +919,7 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   default boolean isPartitioned(org.apache.hadoop.hive.ql.metadata.Table table) {
-    throw new UnsupportedOperationException("Storage handler does not support checking if table is partitioned.");
+    return false;
   }
 
   default boolean hasUndergonePartitionEvolution(org.apache.hadoop.hive.ql.metadata.Table table) {
