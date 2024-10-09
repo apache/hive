@@ -25,12 +25,9 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.newMetaExcep
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.InetAddress;
-import java.net.URI;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
@@ -81,7 +78,6 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
@@ -257,8 +253,6 @@ import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.properties.CachingPropertyStore;
 import org.apache.hadoop.hive.metastore.properties.PropertyStore;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
-import org.apache.hadoop.hive.metastore.tools.metatool.IcebergTableMetadataHandler;
-import org.apache.hadoop.hive.metastore.tools.metatool.MetadataTableSummary;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
@@ -744,9 +738,7 @@ public class ObjectStore implements RawStore, Configurable {
       pm.makePersistent(mCat);
       committed = commitTransaction();
     } finally {
-      if (!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, null);
     }
   }
 
@@ -769,9 +761,7 @@ public class ObjectStore implements RawStore, Configurable {
       pm.makePersistent(mCat);
       committed = commitTransaction();
     } finally {
-      if (!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, null);
     }
   }
 
@@ -821,9 +811,7 @@ public class ObjectStore implements RawStore, Configurable {
       pm.deletePersistent(mCat);
       committed = commitTransaction();
     } finally {
-      if (!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, null);
     }
   }
 
@@ -893,9 +881,7 @@ public class ObjectStore implements RawStore, Configurable {
       pm.makePersistent(mdb);
       commited = commitTransaction();
     } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(commited, null);
     }
   }
 
@@ -968,9 +954,7 @@ public class ObjectStore implements RawStore, Configurable {
       mdb = getMDatabase(catName, name);
       commited = commitTransaction();
     } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(commited, null);
     }
     Database db = new Database();
     db.setName(mdb.getName());
@@ -1026,12 +1010,9 @@ public class ObjectStore implements RawStore, Configurable {
       pm.makePersistent(mdb);
       committed = commitTransaction();
     } finally {
-      if (!committed) {
-        rollbackTransaction();
-        return false;
-      }
+      rollbackAndCleanup(committed, null);
     }
-    return true;
+    return committed;
   }
 
   @Override
@@ -1132,9 +1113,7 @@ public class ObjectStore implements RawStore, Configurable {
       pm.makePersistent(mDataConnector);
       commited = commitTransaction();
     } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(commited, null);
     }
   }
 
@@ -1172,9 +1151,7 @@ public class ObjectStore implements RawStore, Configurable {
     } catch (NoSuchObjectException no) {
       throw new NoSuchObjectException("Dataconnector named " + name + " does not exist:" + no.getCause());
     } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(commited, null);
     }
     DataConnector connector = new DataConnector();
     connector.setName(mdc.getName());
@@ -1236,12 +1213,9 @@ public class ObjectStore implements RawStore, Configurable {
       pm.makePersistent(mdc);
       committed = commitTransaction();
     } finally {
-      if (!committed) {
-        rollbackTransaction();
-        return false;
-      }
+      rollbackAndCleanup(committed, null);
     }
-    return true;
+    return committed;
   }
 
   @Override
@@ -1354,9 +1328,7 @@ public class ObjectStore implements RawStore, Configurable {
       commited = commitTransaction();
       success = true;
     } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(commited, null);
     }
     return success;
   }
@@ -1438,9 +1410,7 @@ public class ObjectStore implements RawStore, Configurable {
       success = commitTransaction();
       return constraints;
     } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(success, null);
     }
   }
 
@@ -1481,9 +1451,7 @@ public class ObjectStore implements RawStore, Configurable {
       pm.makePersistentAll(toPersistPrivObjs);
       commited = commitTransaction();
     } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(commited, null);
     }
   }
 
@@ -1572,9 +1540,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       success = commitTransaction();
     } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(success, null);
     }
     return success;
   }
@@ -1590,9 +1556,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       success = commitTransaction();
     } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(success, null);
     }
     return success;
   }
@@ -1723,9 +1687,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       commited = commitTransaction();
     } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(commited, null);
     }
 
     return tbl;
@@ -2717,9 +2679,7 @@ public class ObjectStore implements RawStore, Configurable {
       addPartitionsInternal(catName, dbName, tblName, parts);
       success = commitTransaction();
     } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(success, null);
     }
     return success;
   }
@@ -2873,9 +2833,7 @@ public class ObjectStore implements RawStore, Configurable {
 
       success = commitTransaction();
     } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(success, null);
     }
     return success;
   }
@@ -2890,9 +2848,7 @@ public class ObjectStore implements RawStore, Configurable {
       addPartitionsInternal(catName, part.getDbName(), part.getTableName(), Arrays.asList(part));
       committed = commitTransaction();
     } finally {
-      if (!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, null);
     }
     return committed;
   }
@@ -3119,9 +3075,7 @@ public class ObjectStore implements RawStore, Configurable {
       dropPartitionCommon(part);
       success = commitTransaction();
     } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(success, null);
     }
     return success;
   }
@@ -3135,9 +3089,7 @@ public class ObjectStore implements RawStore, Configurable {
       dropPartitionsInternal(catName, dbName, tableName, Arrays.asList(partName), true, true);
       success = commitTransaction();
     } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(success, null);
     }
     return success;
   }
@@ -3200,9 +3152,7 @@ public class ObjectStore implements RawStore, Configurable {
         throw new MetaException("Failed to drop partitions");
       }
     } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(success, null);
     }
   }
 
@@ -3258,9 +3208,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       success = commitTransaction();
     } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(success, null);
     }
     return success;
   }
@@ -3278,9 +3226,7 @@ public class ObjectStore implements RawStore, Configurable {
       results = getPartitionsInternal(catName, dbName, tableName, true, true, args);
       success = commitTransaction();
     } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(success, null);
     }
     return results;
   }
@@ -3374,9 +3320,7 @@ public class ObjectStore implements RawStore, Configurable {
       success = commitTransaction();
       return part;
     } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(success, null);
     }
   }
 
@@ -3403,9 +3347,7 @@ public class ObjectStore implements RawStore, Configurable {
       pns = getPartitionNamesNoTxn(catName, dbName, tableName, max);
       success = commitTransaction();
     } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(success, null);
     }
     return pns;
   }
@@ -4090,9 +4032,7 @@ public class ObjectStore implements RawStore, Configurable {
       success = commitTransaction();
       LOG.debug("Done retrieving {} objects for listMPartitionsWithProjection", mparts.size());
     } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(success, null);
     }
     return mparts;
   }
@@ -4135,7 +4075,9 @@ public class ObjectStore implements RawStore, Configurable {
             getDefaultPartitionName(args.getDefaultPartName()),
             result);
     if (args.getMax() >= 0 && result.size() > args.getMax()) {
-      result = result.subList(0, args.getMax());
+      List<String> resultNames = new ArrayList<>(result.subList(0, args.getMax()));
+      result.clear();
+      result.addAll(resultNames);
     }
     return hasUnknownPartitions;
   }
@@ -5156,9 +5098,7 @@ public class ObjectStore implements RawStore, Configurable {
       // commit the changes
       success = commitTransaction();
     } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(success, null);
     }
     return newTable;
   }
@@ -5213,9 +5153,7 @@ public class ObjectStore implements RawStore, Configurable {
       success = commitTransaction();
       cm.setMaterializationTime(newMcm.getMaterializationTime());
     } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(success, null);
     }
   }
 
@@ -5396,9 +5334,7 @@ public class ObjectStore implements RawStore, Configurable {
       LOG.error("Alter failed", exception);
       throw new MetaException(exception.getMessage());
     } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(success, null);
     }
     return results;
   }
@@ -5907,9 +5843,7 @@ public class ObjectStore implements RawStore, Configurable {
         success = commitTransaction();
       }
     } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(success, null);
     }
     return properties;
   }
@@ -6568,9 +6502,7 @@ public class ObjectStore implements RawStore, Configurable {
       commited = commitTransaction();
       success = true;
     } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(commited, null);
     }
     return success;
   }
@@ -6604,9 +6536,7 @@ public class ObjectStore implements RawStore, Configurable {
       commited = commitTransaction();
       success = true;
     } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(commited, null);
     }
     return success;
   }
@@ -6644,9 +6574,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       success = commitTransaction();
     } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(success, null);
     }
     return success;
   }
@@ -6969,9 +6897,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       commited = commitTransaction();
     } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(commited, null);
     }
     return ret;
   }
@@ -7036,9 +6962,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       commited = commitTransaction();
     } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(commited, null);
     }
     return ret;
   }
@@ -7116,9 +7040,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       commited = commitTransaction();
     } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(commited, null);
     }
     return ret;
 
@@ -7162,9 +7084,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       commited = commitTransaction();
     } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(commited, null);
     }
     return ret;
   }
@@ -7206,9 +7126,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       commited = commitTransaction();
     } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(commited, null);
     }
     return ret;
   }
@@ -7252,9 +7170,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       commited = commitTransaction();
     } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(commited, null);
     }
     return ret;
   }
@@ -7576,9 +7492,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       committed = commitTransaction();
     } finally {
-      if (!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, null);
     }
     return committed;
   }
@@ -7845,9 +7759,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       committed = commitTransaction();
     } finally {
-      if (!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, null);
     }
     return committed;
   }
@@ -7940,9 +7852,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       committed = commitTransaction();
     } finally {
-      if (!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, null);
     }
     return committed;
   }
@@ -8663,9 +8573,7 @@ public class ObjectStore implements RawStore, Configurable {
       success = commitTransaction();
       LOG.debug("Done retrieving all objects for listPartitionGrants");
     } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(success, null);
     }
     return mSecurityTabPartList;
   }
@@ -9499,9 +9407,7 @@ public class ObjectStore implements RawStore, Configurable {
     success = commitTransaction();
     LOG.debug("Done executing markPartitionForEvent");
     } finally {
-      if(!success) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(success, null);
     }
     return tbl;
   }
@@ -9655,9 +9561,7 @@ public class ObjectStore implements RawStore, Configurable {
       return committed ? newParams : null;
     } finally {
       try {
-        if (!committed) {
-          rollbackTransaction();
-        }
+        rollbackAndCleanup(committed, null);
       } finally {
         tableLock.unlock();
       }
@@ -9747,9 +9651,7 @@ public class ObjectStore implements RawStore, Configurable {
       // TODO: what is the "return committed;" about? would it ever return false without throwing?
       return committed ? newParams : null;
     } finally {
-      if (!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, null);
     }
   }
 
@@ -9834,9 +9736,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       throw new MetaException(ex.getMessage());
     } finally {
-      if (!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, null);
     }
   }
 
@@ -10587,9 +10487,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       committed = commitTransaction();
     } finally {
-      if(!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, null);
     }
     LOG.debug("Done executing addToken with status : {}", committed);
     return committed && (token == null);
@@ -10609,9 +10507,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       committed = commitTransaction();
     } finally {
-      if(!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, null);
     }
     LOG.debug("Done executing removeToken with status : {}", committed);
     return committed && (token != null);
@@ -10631,9 +10527,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       committed = commitTransaction();
     } finally {
-      if(!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, null);
     }
     LOG.debug("Done executing getToken with status : {}", committed);
     return (null == token) ? null : token.getTokenStr();
@@ -10673,9 +10567,7 @@ public class ObjectStore implements RawStore, Configurable {
       pm.makePersistent(masterKey);
       committed = commitTransaction();
     } finally {
-      if(!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, null);
     }
     LOG.debug("Done executing addMasterKey with status : {}", committed);
     if (committed) {
@@ -10895,9 +10787,7 @@ public class ObjectStore implements RawStore, Configurable {
       pm.makePersistent(mSchemaVer);
       commited = commitTransaction();
     } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(commited, null);
     }
   }
 
@@ -11003,9 +10893,7 @@ public class ObjectStore implements RawStore, Configurable {
       pm.makePersistent(mfunc);
       committed = commitTransaction();
     } finally {
-      if (!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, null);
     }
   }
 
@@ -11044,9 +10932,7 @@ public class ObjectStore implements RawStore, Configurable {
       // commit the changes
       success = commitTransaction();
     } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(success, null);
     }
   }
 
@@ -11064,9 +10950,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       success = commitTransaction();
     } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(success, null);
     }
   }
 
@@ -11310,9 +11194,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       success = commitTransaction();
     } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(success, null);
     }
   }
 
@@ -11416,9 +11298,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       success = commitTransaction();
     } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(success, null);
     }
   }
 
@@ -12521,9 +12401,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       success = commitTransaction();
     } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(success, null);
     }
   }
 
@@ -12541,9 +12419,7 @@ public class ObjectStore implements RawStore, Configurable {
       pm.makePersistent(mSchema);
       committed = commitTransaction();
     } finally {
-      if (!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, null);
     }
   }
 
@@ -12570,9 +12446,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       committed = commitTransaction();
     } finally {
-      if (!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, null);
     }
   }
 
@@ -12586,9 +12460,7 @@ public class ObjectStore implements RawStore, Configurable {
       committed = commitTransaction();
       return schema;
     } finally {
-      if (!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, null);
     }
   }
 
@@ -12620,9 +12492,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       committed = commitTransaction();
     } finally {
-      if (!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, null);
     }
   }
 
@@ -12647,9 +12517,7 @@ public class ObjectStore implements RawStore, Configurable {
       pm.makePersistent(mSchemaVersion);
       committed = commitTransaction();
     } finally {
-      if (!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, null);
     }
   }
 
@@ -12674,9 +12542,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       committed = commitTransaction();
     } finally {
-      if (!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, null);
     }
   }
 
@@ -12691,9 +12557,7 @@ public class ObjectStore implements RawStore, Configurable {
       committed = commitTransaction();
       return schemaVersion;
     } finally {
-      if (!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, null);
     }
   }
 
@@ -12864,9 +12728,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       committed = commitTransaction();
     } finally {
-      if (!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, null);
     }
   }
 
@@ -12883,9 +12745,7 @@ public class ObjectStore implements RawStore, Configurable {
       committed = commitTransaction();
       return serde;
     } finally {
-      if (!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, null);
     }
   }
 
@@ -12911,9 +12771,7 @@ public class ObjectStore implements RawStore, Configurable {
       pm.makePersistent(mSerde);
       committed = commitTransaction();
     } finally {
-      if (!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, null);
     }
 
   }
@@ -13083,9 +12941,7 @@ public class ObjectStore implements RawStore, Configurable {
       checkForConstraintException(e, "Resource plan already exists: ");
       throw e;
     } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(commited, null);
     }
   }
 
@@ -14121,9 +13977,7 @@ public class ObjectStore implements RawStore, Configurable {
       pm.makePersistent(mStat);
       committed = commitTransaction();
     } finally {
-      if (!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, null);
     }
   }
 
@@ -14158,9 +14012,7 @@ public class ObjectStore implements RawStore, Configurable {
       committed = commitTransaction();
       return stats;
     } finally {
-      if (!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, null);
     }
   }
 
@@ -14354,9 +14206,7 @@ public class ObjectStore implements RawStore, Configurable {
 
       commited = commitTransaction();
     } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(commited, null);
     }
   }
 
@@ -14482,9 +14332,7 @@ public class ObjectStore implements RawStore, Configurable {
       pm.makePersistentAll(mReplicationMetricsList);
       commited = commitTransaction();
     } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(commited, null);
     }
   }
 
@@ -14502,9 +14350,7 @@ public class ObjectStore implements RawStore, Configurable {
       committed = commitTransaction();
       return replicationMetrics;
     } finally {
-      if (!committed) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(committed, null);
     }
   }
 
@@ -14657,9 +14503,7 @@ public class ObjectStore implements RawStore, Configurable {
       pm.makePersistent(schq);
       commited = commitTransaction();
     } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(commited, null);
     }
   }
 
@@ -14677,9 +14521,7 @@ public class ObjectStore implements RawStore, Configurable {
       pm.deletePersistent(persisted);
       commited = commitTransaction();
     } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(commited, null);
     }
   }
 
@@ -14705,9 +14547,7 @@ public class ObjectStore implements RawStore, Configurable {
       pm.makePersistent(persisted);
       commited = commitTransaction();
     } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(commited, null);
     }
   }
 
