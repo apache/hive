@@ -146,7 +146,7 @@ public class PlanModifierForASTConv {
     return null;
   }
 
-  private static void convertOpTree(RelNode rel, RelNode parent) {
+  public static void convertOpTree(RelNode rel, RelNode parent) {
 
     if (rel instanceof HepRelVertex) {
       throw new RuntimeException("Found HepRelVertex");

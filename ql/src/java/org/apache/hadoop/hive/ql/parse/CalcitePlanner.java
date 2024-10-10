@@ -1409,8 +1409,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
    * @throws SemanticException
    */
   Operator getOptimizedHiveOPDag(RelNode optimizedOptiqPlan) throws SemanticException {
-    RelNode modifiedOptimizedOptiqPlan = PlanModifierForReturnPath.convertOpTree(
-        optimizedOptiqPlan, resultSchema, this.getQB().getTableDesc() != null);
+    RelNode modifiedOptimizedOptiqPlan = PlanModifierForReturnPath.convertOpTree(optimizedOptiqPlan, resultSchema);
 
     LOG.debug("Translating the following plan:\n" + RelOptUtil.toString(modifiedOptimizedOptiqPlan));
     Operator<?> hiveRoot = new HiveOpConverter(this, conf, unparseTranslator, topOps)

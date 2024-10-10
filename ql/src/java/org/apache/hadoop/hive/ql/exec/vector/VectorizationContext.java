@@ -35,6 +35,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
+import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.BucketNumExpression;
@@ -326,7 +327,7 @@ import com.google.common.annotations.VisibleForTesting;
     this.projectionColumnNames = initialColumnNames;
 
     projectedColumns = new ArrayList<>();
-    projectionColumnMap = new HashMap<>();
+    projectionColumnMap = new CaseInsensitiveMap<>();
     for (int i = 0; i < this.projectionColumnNames.size(); i++) {
       projectedColumns.add(i);
       projectionColumnMap.put(projectionColumnNames.get(i), i);
@@ -353,7 +354,7 @@ import com.google.common.annotations.VisibleForTesting;
     this.projectionColumnNames = initialColumnNames;
 
     projectedColumns = new ArrayList<>();
-    projectionColumnMap = new HashMap<>();
+    projectionColumnMap = new CaseInsensitiveMap<>();
     for (int i = 0; i < this.projectionColumnNames.size(); i++) {
       projectedColumns.add(i);
       projectionColumnMap.put(projectionColumnNames.get(i), i);
@@ -389,7 +390,7 @@ import com.google.common.annotations.VisibleForTesting;
     initialColumnNames = new ArrayList<>();
     projectedColumns = new ArrayList<>();
     projectionColumnNames = new ArrayList<>();
-    projectionColumnMap = new HashMap<>();
+    projectionColumnMap = new CaseInsensitiveMap<>();
     this.ocm = new OutputColumnManager(0);
     this.tryDecimal64Cast = false;
     this.firstOutputColumnIndex = 0;
@@ -417,7 +418,7 @@ import com.google.common.annotations.VisibleForTesting;
     this.initialDataTypePhysicalVariations = vContext.initialDataTypePhysicalVariations;
     this.projectedColumns = new ArrayList<>();
     this.projectionColumnNames = new ArrayList<>();
-    this.projectionColumnMap = new HashMap<>();
+    this.projectionColumnMap = new CaseInsensitiveMap<>();
 
     this.ocm = vContext.ocm;
     this.tryDecimal64Cast = false;
@@ -451,7 +452,7 @@ import com.google.common.annotations.VisibleForTesting;
   public void resetProjectionColumns() {
     projectedColumns = new ArrayList<>();
     projectionColumnNames = new ArrayList<>();
-    projectionColumnMap = new HashMap<>();
+    projectionColumnMap = new CaseInsensitiveMap<>();
   }
 
   // Add a projection column to a projection vectorization context.

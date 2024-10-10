@@ -223,7 +223,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
             + call.getOperator() + "[" + call.getOperator().getKind() + "]/" + args.size());
       }
       try {
-        gfDesc = ExprNodeGenericFuncDesc.newInstance(hiveUdf, args);
+        gfDesc = ExprNodeGenericFuncDesc.newInstance(hiveUdf, call.getOperator().getName(), args);
       } catch (UDFArgumentException e) {
         LOG.error("Failed to instantiate udf: ", e);
         throw new RuntimeException(e);
