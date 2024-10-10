@@ -1376,7 +1376,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
             "       from " + Table.NONACIDORCTBL + " src) sub on sub.a = target.a\n" +
             "when not matched then insert values (sub.a,sub.b)");
     Assert.assertTrue("Error didn't match: " + e, e.getMessage().contains(
-        "No columns from target table 'trgt' found in ON clause '`sub`.`a` = `target`.`a`' of MERGE statement."));
+        "Invalid table alias or column reference 'target'"));
   }
 
   /**
