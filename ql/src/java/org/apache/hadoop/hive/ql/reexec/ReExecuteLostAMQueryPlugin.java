@@ -39,7 +39,7 @@ public class ReExecuteLostAMQueryPlugin implements IReExecutionPlugin {
   // Lost am container have exit code -100, due to node failures. This pattern of exception is thrown when
   // AM is managed by HS2.
   private static final Pattern LOST_AM_CONTAINER_ERROR_PATTERN =
-      Pattern.compile(".*AM Container for .* exited .* exitCode: -100.*");
+      Pattern.compile(".*AM Container for .* exited .* exitCode: -100.*", Pattern.DOTALL);
   // When HS2 does not manage the AMs, tez AMs are registered with zookeeper and HS2 discovers it,
   // failure of unmanaged AMs will throw AM record not being found in zookeeper.
   private static final String UNMANAGED_AM_FAILURE = "AM record not found (likely died)";
