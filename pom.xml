@@ -2121,14 +2121,6 @@
       </modules>
     </profile>
     <profile>
-      <id>customhbase</id>
-      <activation>
-        <property>
-          <name>hbase.version</name>
-        </property>
-      </activation>
-    </profile>
-    <profile>
       <id>dist</id>
       <build>
         <plugins>
