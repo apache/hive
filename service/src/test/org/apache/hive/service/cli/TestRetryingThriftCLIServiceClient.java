@@ -24,8 +24,8 @@ import org.apache.hive.service.Service;
 import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.cli.session.HiveSession;
 import org.apache.hive.service.cli.thrift.RetryingThriftCLIServiceClient;
+import org.apache.hive.service.cli.thrift.ThriftCLITestUtils;
 import org.apache.hive.service.cli.thrift.ThriftCLIService;
-import org.apache.hive.service.server.HiveServer2;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
@@ -44,14 +44,11 @@ import static org.junit.Assert.*;
  * Test CLI service with a retrying client. All tests should pass. This is to validate that calls
  * are transferred successfully.
  */
-public class TestRetryingThriftCLIServiceClient {
+public class TestRetryingThriftCLIServiceClient extends ThriftCLITestUtils {
   protected static ThriftCLIService service;
-  private HiveConf hiveConf;
-  private HiveServer2 server;
-
   @Before
-  public void init() {
-    hiveConf = new HiveConf();
+  public void init() throws Exception {
+    initConf();
     hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST, "localhost");
     hiveConf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT, 15000);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
@@ -64,22 +61,6 @@ public class TestRetryingThriftCLIServiceClient {
     hiveConf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-  }
-
-  private void startHiveServer() throws InterruptedException {
-    // Start hive server2
-    server = new HiveServer2();
-    server.init(hiveConf);
-    server.start();
-    Thread.sleep(5000);
-    System.out.println("## HiveServer started");
-  }
-
-  private void stopHiveServer() {
-    if (server != null) {
-      // kill server
-      server.stop();
-    }
   }
 
   static class RetryingThriftCLIServiceClientTest extends RetryingThriftCLIServiceClient {
@@ -117,7 +98,9 @@ public class TestRetryingThriftCLIServiceClient {
 
   @Test
   public void testRetryBehaviour() throws Exception {
-    startHiveServer();
+    startHiveServer2WithConf(hiveConf);
+    // Get the port number HS2 thrift port is started on
+    int thriftPort = hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT);
     // Check if giving invalid address causes retry in connection attempt
     hiveConf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT, 17000);
     try {
@@ -128,7 +111,7 @@ public class TestRetryingThriftCLIServiceClient {
       assertTrue(sqlExc.getMessage().contains("3"));
     }
     // Reset port setting
-    hiveConf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT, 15000);
+    hiveConf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT, thriftPort);
 
     hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST, "10.17.207.11");
     try {
@@ -146,7 +129,7 @@ public class TestRetryingThriftCLIServiceClient {
       = RetryingThriftCLIServiceClientTest.newRetryingCLIServiceClient(hiveConf);
     System.out.println("## Created client");
 
-    stopHiveServer();
+    stopHiveServer2();
     Thread.sleep(5000);
 
     // submit few queries
@@ -166,10 +149,10 @@ public class TestRetryingThriftCLIServiceClient {
   }
 
   @Test
-  public void testTransportClose() throws InterruptedException, HiveSQLException {
+  public void testTransportClose() throws Exception {
     hiveConf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_CLIENT_CONNECTION_RETRY_LIMIT, 0);
     try {
-      startHiveServer();
+      startHiveServer2WithConf(hiveConf);
       RetryingThriftCLIServiceClient.CLIServiceClientWrapper client
         = RetryingThriftCLIServiceClientTest.newRetryingCLIServiceClient(hiveConf);
       client.closeTransport();
@@ -181,22 +164,22 @@ public class TestRetryingThriftCLIServiceClient {
       }
     } finally {
       hiveConf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_CLIENT_CONNECTION_RETRY_LIMIT, 3);
-      stopHiveServer();
+      stopHiveServer2();
     }
   }
 
   @Test
-  public void testSessionLifeAfterTransportClose() throws InterruptedException, HiveSQLException {
+  public void testSessionLifeAfterTransportClose() throws Exception {
     try {
-      startHiveServer();
+      startHiveServer2WithConf(hiveConf);
       CLIService service = null;
-      for (Service s : server.getServices()) {
+      for (Service s : hiveServer2.getServices()) {
         if (s instanceof CLIService) {
           service = (CLIService) s;
         }
       }
       if (service == null) {
-        service = new CLIService(server, true);
+        service = new CLIService(hiveServer2, true);
       }
       RetryingThriftCLIServiceClient.CLIServiceClientWrapper client
         = RetryingThriftCLIServiceClientTest.newRetryingCLIServiceClient(hiveConf);
@@ -226,7 +209,7 @@ public class TestRetryingThriftCLIServiceClient {
         }
       }
     } finally {
-      stopHiveServer();
+      stopHiveServer2();
     }
   }
 }
