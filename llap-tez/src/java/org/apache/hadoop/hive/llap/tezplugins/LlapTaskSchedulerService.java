@@ -19,6 +19,7 @@ import com.google.common.io.ByteArrayDataOutput;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.hadoop.hive.llap.tezplugins.metrics.DummyLlapTaskSchedulerMetrics;
 import org.apache.hadoop.hive.llap.tezplugins.metrics.LlapMetricsCollector;
 import org.apache.hadoop.hive.llap.tezplugins.scheduler.StatsPerDag;
 import org.apache.hadoop.io.Text;
@@ -78,7 +79,6 @@ import org.apache.hadoop.hive.common.JvmPauseMonitor;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
-import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
 import org.apache.hadoop.hive.llap.metrics.ReadWriteLockMetrics;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto;
 import org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto;
@@ -449,17 +449,12 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     schedulerExecutor = MoreExecutors.listeningDecorator(schedulerExecutorServiceRaw);
 
     if (initMetrics && !conf.getBoolean(ConfVars.HIVE_IN_TEST.varname, false)) {
-      // Initialize the metrics system
-      LlapMetricsSystem.initialize("LlapTaskScheduler");
+      this.metrics = new LlapTaskSchedulerMetrics(conf);
       this.pauseMonitor = new JvmPauseMonitor(conf);
       pauseMonitor.start();
-      String displayName = "LlapTaskSchedulerMetrics-" + MetricsUtils.getHostName();
-      String sessionId = conf.get("llap.daemon.metrics.sessionid");
-      // TODO: Not sure about the use of this. Should we instead use workerIdentity as sessionId?
-      this.metrics = LlapTaskSchedulerMetrics.create(displayName, sessionId);
     } else {
-      this.metrics = null;
-      this.pauseMonitor = null;
+      this.metrics = new DummyLlapTaskSchedulerMetrics(conf);
+      pauseMonitor = null;
     }
 
     String hostsString = HiveConf.getVar(conf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
@@ -604,9 +599,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           + tgVersionForZk + "); the delta to adjust by is " + delta);
       if (delta == 0) return;
       totalGuaranteed = newTotalGuaranteed;
-      if (metrics != null) {
-        metrics.setWmTotalGuaranteed(totalGuaranteed);
-      }
+      metrics.setWmTotalGuaranteed(totalGuaranteed);
       if (delta > 0) {
         if (unusedGuaranteed == 0) {
           // There may be speculative tasks waiting.
@@ -616,18 +609,14 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           WM_LOG.info("Distributed " + totalUpdated);
         }
         int result = (unusedGuaranteed += delta);
-        if (metrics != null) {
-          metrics.setWmUnusedGuaranteed(result);
-        }
+        metrics.setWmUnusedGuaranteed(result);
         WM_LOG.info("Setting unused to " + result + " based on remaining delta " + delta);
       } else {
         delta = -delta;
         if (delta <= unusedGuaranteed) {
           // Somebody took away our unwanted ducks.
           int result = (unusedGuaranteed -= delta);
-          if (metrics != null) {
-            metrics.setWmUnusedGuaranteed(result);
-          }
+          metrics.setWmUnusedGuaranteed(result);
           WM_LOG.info("Setting unused to " + result + " based on full delta " + delta);
           return;
         } else {
@@ -635,9 +624,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           unusedGuaranteed = 0;
           toUpdate = new ArrayList<>();
           int totalUpdated = revokeGuaranteed(delta, null, toUpdate);
-          if (metrics != null) {
-            metrics.setWmUnusedGuaranteed(0);
-          }
+          metrics.setWmUnusedGuaranteed(0);
           WM_LOG.info("Setting unused to 0; revoked " + totalUpdated + " / " + delta);
           // We must be able to take away the requisite number; if we can't, where'd the ducks go?
           if (delta != totalUpdated) {
@@ -681,16 +668,14 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     ti.isPendingUpdate = true;
     ti.requestedValue = ti.isGuaranteed;
     // It's ok to update metrics for two tasks in parallel, but not for the same one.
-    if (metrics != null) {
-      metrics.setWmPendingStarted(ti.requestedValue);
-    }
+    metrics.setWmPendingStarted(ti.requestedValue);
   }
 
   private void setUpdateDoneUnderTiLock(TaskInfo ti) {
     ti.isPendingUpdate = false;
     // It's ok to update metrics for two tasks in parallel, but not for the same one.
     // Don't update metrics for the cancelled tasks - already taken care of during cancellation.
-    if (metrics != null && ti.requestedValue != null) {
+    if (ti.requestedValue != null) {
       metrics.setWmPendingDone(ti.requestedValue);
     }
     ti.lastSetGuaranteed = ti.requestedValue;
@@ -720,9 +705,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         newStateSameTask = ti.isGuaranteed;
         setUpdateStartedUnderTiLock(ti);
       } else {
-        if (metrics != null) {
-          metrics.setWmPendingFailed(requestedValue);
-        }
+        metrics.setWmPendingFailed(requestedValue);
         // An error, or couldn't find the task - lastSetGuaranteed does not change. The logic here
         // does not account for one special case - we have updated the task, but the response was
         // lost and we have received a network error. The state could be inconsistent, making
@@ -891,9 +874,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       instanceToNodeMap.remove(serviceInstance.getWorkerIdentity());
       LOG.info("Removed node with identity: {} due to RegistryNotification. currentActiveInstances={}",
           serviceInstance.getWorkerIdentity(), activeInstances.size());
-      if (metrics != null) {
-        metrics.setClusterNodeCount(activeInstances.size());
-      }
+      metrics.setClusterNodeCount(activeInstances.size());
       // if there are no more nodes. Signal timeout monitor to start timer
       if (activeInstances.size() == 0) {
         LOG.info("No node found. Signalling scheduler timeout monitor thread to start timer.");
@@ -991,10 +972,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           pauseMonitor.stop();
         }
 
-        if (metrics != null) {
-          LlapMetricsSystem.shutdown();
-        }
-
+        metrics.shutdown();
       }
     } finally {
       writeLock.unlock();
@@ -1073,9 +1051,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     // This is effectively DAG completed, and can be used to reset statistics being tracked.
     LOG.info("DAG: " + dagCounter.get() + " completed. Scheduling stats: " + dagStats);
     dagCounter.incrementAndGet();
-    if (metrics != null) {
-      metrics.incrCompletedDagCount();
-    }
+    metrics.incrCompletedDagCount();
     long tgVersionForZk;
     writeLock.lock();
     try {
@@ -1111,11 +1087,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
       totalGuaranteed = unusedGuaranteed = 0;
       tgVersionForZk = ++totalGuaranteedVersion;
-      if (metrics != null) {
-        metrics.setDagId(null);
-        // We remove the tasks above without state checks so just reset all metrics to 0.
-        metrics.resetWmMetrics();
-      }
+      metrics.setDagId(null);
+      // We remove the tasks above without state checks so just reset all metrics to 0.
+      metrics.resetWmMetrics();
       LOG.info("DAG reset. Current knownTaskCount={}, pendingTaskCount={}, runningTaskCount={}",
           knownTasks.size(), pendingCount, runningCount);
     } finally {
@@ -1169,7 +1143,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     LOG.info("Received allocateRequest. task={}, priority={}, capability={}",
             task, priority, capability);
     if (!dagRunning) {
-      if (metrics != null && id != null) {
+      if (id != null) {
         metrics.setDagId(id.getDAGID().toString());
       }
       dagRunning = true;
@@ -1190,7 +1164,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     LOG.info("Received allocateRequest. task={}, priority={}, capability={}, containerId={}",
         task, priority, capability, containerId);
     if (!dagRunning) {
-      if (metrics != null && id != null) {
+      if (id != null) {
         metrics.setDagId(id.getDAGID().toString());
       }
       dagRunning = true;
@@ -1236,9 +1210,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           WM_LOG.error("Task appears to have been deallocated twice: " + task
               + " There may be inconsistencies in guaranteed task counts.");
         } else {
-          if (metrics != null) {
-            metrics.setWmTaskFinished(taskInfo.isGuaranteed, taskInfo.isPendingUpdate);
-          }
+          metrics.setWmTaskFinished(taskInfo.isGuaranteed, taskInfo.isPendingUpdate);
           isGuaranteedFreed = taskInfo.isGuaranteed;
           // This tells the pending update (if any) that whatever it is doing is irrelevant,
           // and also makes sure we don't take the duck back twice if this is called twice.
@@ -1364,9 +1336,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     assert updatedCount <= 1;
     if (updatedCount == 0) {
       int result = ++unusedGuaranteed;
-      if (metrics != null) {
-        metrics.setWmUnusedGuaranteed(result);
-      }
+      metrics.setWmUnusedGuaranteed(result);
       WM_LOG.info("Returning the unused duck; unused is now " + result);
     }
     if (toUpdate.isEmpty()) return null;
@@ -1583,9 +1553,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     // De-allocate messages coming in from the old node are sent to the NodeInfo instance for the old node.
 
     instanceToNodeMap.put(node.getNodeIdentity(), node);
-    if (metrics != null) {
-      metrics.setClusterNodeCount(activeInstances.size());
-    }
+    metrics.setClusterNodeCount(activeInstances.size());
     // Trigger scheduling since a new node became available.
     LOG.info("Adding new node: {}. TotalNodeCount={}. activeInstances.size={}",
         node, instanceToNodeMap.size(), activeInstances.size());
@@ -1598,9 +1566,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       LOG.info("Attempting to re-enable node: " + nodeInfo.toShortString());
       if (activeInstances.getInstance(nodeInfo.getNodeIdentity()) != null) {
         nodeInfo.enableNode();
-        if (metrics != null) {
-          metrics.setDisabledNodeCount(disabledNodesQueue.size());
-        }
+        metrics.setDisabledNodeCount(disabledNodesQueue.size());
       } else {
         LOG.info("Not re-enabling node: {}, since it is not present in the RegistryActiveNodeList",
             nodeInfo.toShortString());
@@ -1639,9 +1605,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         nodeInfo.disableNode(isCommFailure);
         // TODO: handle task to container map events in case of hard failures
         disabledNodesQueue.add(nodeInfo);
-        if (metrics != null) {
-          metrics.setDisabledNodeCount(disabledNodesQueue.size());
-        }
+        metrics.setDisabledNodeCount(disabledNodesQueue.size());
         // Trigger a scheduling run - in case there's some task which was waiting for this node to
         // become available.
         trySchedulingPendingTasks();
@@ -1673,9 +1637,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       tasksAtPriority.add(taskInfo);
       knownTasks.putIfAbsent(taskInfo.task, taskInfo);
       tasksById.put(taskInfo.attemptId, taskInfo);
-      if (metrics != null) {
-        metrics.incrPendingTasksCount();
-      }
+      metrics.incrPendingTasksCount();
       LOG.info("PendingTasksInfo={}", constructPendingTaskCountsLogMessage());
     } finally {
       writeLock.unlock();
@@ -1707,9 +1669,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       isGuaranteed = taskInfo.isGuaranteed;
       taskInfo.isPendingUpdate = true;
       taskInfo.requestedValue = taskInfo.isGuaranteed;
-      if (metrics != null) {
-        metrics.setWmTaskStarted(taskInfo.requestedValue);
-      }
+      metrics.setWmTaskStarted(taskInfo.requestedValue);
       setUpdateStartedUnderTiLock(taskInfo);
     }
     TreeMap<Integer, TreeSet<TaskInfo>> runningTasks =
@@ -1718,9 +1678,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     try {
       WM_LOG.info("Registering {}, guaranteed: {}", taskInfo.attemptId, taskInfo.isGuaranteed);
       addToRunningTasksMap(runningTasks, taskInfo);
-      if (metrics != null) {
-        metrics.decrPendingTasksCount();
-      }
+      metrics.decrPendingTasksCount();
     } finally {
       writeLock.unlock();
     }
@@ -2027,9 +1985,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         WM_LOG.error("The task had guaranteed flag set before scheduling: " + taskInfo);
       } else {
         int result = --unusedGuaranteed;
-        if (metrics != null) {
-          metrics.setWmUnusedGuaranteed(result);
-        }
+        metrics.setWmUnusedGuaranteed(result);
         WM_LOG.info("Using an unused duck for " + taskInfo.attemptId
             + "; unused is now " + result);
       }
@@ -2266,9 +2222,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     writeLock.lock();
     try {
       pendingPreemptions.incrementAndGet();
-      if (metrics != null) {
-        metrics.incrPendingPreemptionTasksCount();
-      }
+      metrics.incrPendingPreemptionTasksCount();
       MutableInt val = pendingPreemptionsPerHost.get(host);
       if (val == null) {
         val = new MutableInt(0);
@@ -2284,9 +2238,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     writeLock.lock();
     try {
       pendingPreemptions.decrementAndGet();
-      if (metrics != null) {
-        metrics.decrPendingPreemptionTasksCount();
-      }
+      metrics.decrPendingPreemptionTasksCount();
       MutableInt val = pendingPreemptionsPerHost.get(host);
       Preconditions.checkNotNull(val);
       val.decrement();
@@ -2678,9 +2630,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         this.numSchedulableTasks = numSchedulableTasksConf;
         LOG.info("Setting up node: " + serviceInstance + " with schedulableCapacity=" + this.numSchedulableTasks);
       }
-      if (metrics != null) {
-        metrics.incrSchedulableTasksCount(numSchedulableTasks - oldNumSchedulableTasks);
-      }
+      metrics.incrSchedulableTasksCount(numSchedulableTasks - oldNumSchedulableTasks);
       shortStringBase = setupShortStringBase();
     }
 
@@ -2720,32 +2670,24 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
     void registerTaskScheduled() {
       numScheduledTasks++;
-      if (metrics != null) {
-        metrics.incrRunningTasksCount();
-        metrics.decrSchedulableTasksCount();
-      }
+      metrics.incrRunningTasksCount();
+      metrics.decrSchedulableTasksCount();
     }
 
     void registerTaskSuccess() {
       numSuccessfulTasks++;
       numScheduledTasks--;
-      if (metrics != null) {
-        metrics.incrSuccessfulTasksCount();
-        metrics.decrRunningTasksCount();
-        metrics.incrSchedulableTasksCount();
-      }
+      metrics.incrSuccessfulTasksCount();
+      metrics.decrRunningTasksCount();
+      metrics.incrSchedulableTasksCount();
     }
 
     void registerUnsuccessfulTaskEnd(boolean wasPreempted) {
       numScheduledTasks--;
-      if (metrics != null) {
-        metrics.decrRunningTasksCount();
-        metrics.incrSchedulableTasksCount();
-      }
+      metrics.decrRunningTasksCount();
+      metrics.incrSchedulableTasksCount();
       if (wasPreempted) {
-        if (metrics != null) {
-          metrics.incrPreemptedTasksCount();
-        }
+        metrics.incrPreemptedTasksCount();
       }
     }
 
