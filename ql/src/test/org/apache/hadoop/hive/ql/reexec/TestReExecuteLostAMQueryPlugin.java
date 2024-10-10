@@ -32,6 +32,16 @@ public class TestReExecuteLostAMQueryPlugin {
   }
 
   @Test
+  public void testRetryOnLostAmContainerMessageWithLineBreak() throws Exception {
+    testReExecuteWithExceptionMessage("Application application_1728328561547_0042 failed 1 times (global limit =5; " +
+        "local limit is =1) due to AM Container for appattempt_1728328561547_0042_000001 exited with  exitCode: " +
+        "-100\nFailing this attempt.Diagnostics: Container released on a *lost* nodeFor more detailed output, check " +
+        "the application tracking page: https://v2h0231.sjc.cloudera.com:8090/cluster/app/application_1728328561547_0042" +
+        " Then click on links to logs of each attempt.\n" +
+        ". Failing the application.");
+  }
+
+  @Test
   public void testRetryOnNoCurrentDAGException() throws Exception {
     testReExecuteWithExceptionMessage("No running DAG at present");
   }
