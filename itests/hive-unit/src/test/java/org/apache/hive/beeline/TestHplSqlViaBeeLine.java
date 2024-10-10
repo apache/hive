@@ -59,6 +59,7 @@ public class TestHplSqlViaBeeLine {
     hiveConf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE, 10);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_METADATA_QUERIES, false);
     hiveConf.set(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "verbose");
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED, true);
     miniHS2 = new MiniHS2(hiveConf, MiniHS2.MiniClusterType.TEZ);
     Map<String, String> confOverlay = new HashMap<>();
     miniHS2.start(confOverlay);
