@@ -27,18 +27,9 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.SharedWorkOptimizer.SharedWorkOptimizerCache;
 import org.apache.hadoop.hive.ql.optimizer.SharedWorkOptimizer.TSComparator;
+import org.apache.hadoop.hive.ql.parse.JoinType;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.FilterDesc;
-import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
-import org.apache.hadoop.hive.ql.plan.Statistics;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.ql.plan.*;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcat;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -323,39 +314,72 @@ public class TestSharedWorkOptimizer {
     Operator<?> rsC2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableC);
 
     // case 1. MapJoin1: (big, A, B), MapJoin2: (big, A, B)
-    List<Operator<?>> joinSource1 = Arrays.asList(ts1, rsA1, rsB1);
-    List<Operator<?>> joinSource2 = Arrays.asList(ts2, rsA2, rsB2);
+    setupJoinOperatorsAndTest(ts1, ts2, rsA1, rsA2, rsB1, rsB2, 0, 0,
+        JoinType.INNER.ordinal(), JoinType.INNER.ordinal(), true);
+
+    // case 2. MapJoin1: (big, A, B), MapJoin2: (big, A, C)
+    setupJoinOperatorsAndTest(ts1, ts2, rsA1, rsA2, rsB1, rsC2, 0, 0,
+        JoinType.INNER.ordinal(), JoinType.INNER.ordinal(), false);
+
+    // case 3. MapJoin1: (big, A, B), MapJoin2: (A, big, B)
+    setupJoinOperatorsAndTest(ts1, rsA2, rsA1, ts2, rsB1, rsB2, 0, 1,
+        JoinType.INNER.ordinal(), JoinType.INNER.ordinal(), false);
+
+    // case 4. MapJoin1: (big, A, B), MapJoin2: (big, A, B) with inner join and left outer join
+    setupJoinOperatorsAndTest(ts1, ts2, rsA1, rsA2, rsB1, rsB2, 0, 0,
+        JoinType.INNER.ordinal(), JoinType.LEFTOUTER.ordinal(), false);
+
+    // case 5. same as case4 with inner join and right outer join
+    setupJoinOperatorsAndTest(ts1, ts2, rsA1, rsA2, rsB1, rsB2, 0, 0,
+        JoinType.INNER.ordinal(), JoinType.RIGHTOUTER.ordinal(), false);
+
+    // case 6. same as case4 with inner join and left semi join
+    setupJoinOperatorsAndTest(ts1, ts2, rsA1, rsA2, rsB1, rsB2, 0, 0,
+        JoinType.INNER.ordinal(), JoinType.LEFTSEMI.ordinal(), false);
+
+    // case 7. same as case4 with inner join and anti join
+    setupJoinOperatorsAndTest(ts1, ts2, rsA1, rsA2, rsB1, rsB2, 0, 0,
+        JoinType.INNER.ordinal(), JoinType.ANTI.ordinal(), false);
+
+    // case 8. same as case4 with right outer join and left semi join
+    setupJoinOperatorsAndTest(ts1, ts2, rsA1, rsA2, rsB1, rsB2, 0, 0,
+        JoinType.RIGHTOUTER.ordinal(), JoinType.LEFTSEMI.ordinal(), false);
+
+    // case 9. same as case4 with right outer join and left outer join
+    setupJoinOperatorsAndTest(ts1, ts2, rsA1, rsA2, rsB1, rsB2, 0, 0,
+            JoinType.RIGHTOUTER.ordinal(), JoinType.LEFTOUTER.ordinal(), true);
+
+    // case 10. same as case4 with full outer join and inner join
+    setupJoinOperatorsAndTest(ts1, ts2, rsA1, rsA2, rsB1, rsB2, 0, 0,
+            JoinType.FULLOUTER.ordinal(), JoinType.INNER.ordinal(), false);
+  }
+
+  private void setupJoinOperatorsAndTest(Operator<?> join1Op1, Operator<?> join2Op1, Operator<?> join1Op2,
+                                         Operator<?> join2Op2, Operator<?> join1Op3, Operator<?> join2Op3,
+                                         int join1PosBigTable, int join2PosBigTable, int join1Type, int join2Type,
+                                         boolean positive) {
+    List<Operator<?>> joinSource1 = Arrays.asList(join1Op1, join1Op2, join1Op3);
+    List<Operator<?>> joinSource2 = Arrays.asList(join2Op1, join2Op2, join2Op3);
 
     MapJoinOperator mapJoin1 = (MapJoinOperator) OperatorFactory.getAndMakeChild(
-        cCtx, getMapJoinDesc(0), joinSource1);
+            cCtx, getMapJoinDesc(join1PosBigTable), joinSource1);
     MapJoinOperator mapJoin2 = (MapJoinOperator) OperatorFactory.getAndMakeChild(
-        cCtx, getMapJoinDesc(0), joinSource2);
-
+            cCtx, getMapJoinDesc(join2PosBigTable), joinSource2);
+    JoinCondDesc cond1 = new JoinCondDesc(0,0, join1Type);
+    JoinCondDesc cond2 = new JoinCondDesc(0,0, join2Type);
+    mapJoin1.getConf().setConds(new JoinCondDesc[]{cond1});
+    mapJoin2.getConf().setConds(new JoinCondDesc[]{cond2});
+    boolean isNoOuterJoin1 = !((join1Type == JoinType.RIGHTOUTER.ordinal()) || (join1Type == JoinType.LEFTOUTER.ordinal())
+            || (join1Type == JoinType.FULLOUTER.ordinal()));
+    boolean isNoOuterJoin2 = !((join2Type == JoinType.RIGHTOUTER.ordinal()) || (join2Type == JoinType.LEFTOUTER.ordinal())
+            || (join2Type == JoinType.FULLOUTER.ordinal()));
+    mapJoin1.getConf().setNoOuterJoin(isNoOuterJoin1);
+    mapJoin2.getConf().setNoOuterJoin(isNoOuterJoin2);
     runMapJoinCacheReuseOptimization(mapJoin1, mapJoin2);
-    assertEquals(mapJoin1.getConf().getCacheKey(), mapJoin2.getConf().getCacheKey());
-
-    // case 2. MapJoin3: (big, A, B), MapJoin4: (big, A, C)
-    List<Operator<?>> joinSource3 = Arrays.asList(ts1, rsA1, rsB1);
-    List<Operator<?>> joinSource4 = Arrays.asList(ts2, rsA2, rsC2);
-
-    MapJoinOperator mapJoin3 = (MapJoinOperator) OperatorFactory.getAndMakeChild(
-        cCtx, getMapJoinDesc(0), joinSource3);
-    MapJoinOperator mapJoin4 = (MapJoinOperator) OperatorFactory.getAndMakeChild(
-        cCtx, getMapJoinDesc(0), joinSource4);
-
-    runMapJoinCacheReuseOptimization(mapJoin3, mapJoin4);
-    assertNotEquals(mapJoin3.getConf().getCacheKey(), mapJoin4.getConf().getCacheKey());
-
-    // case 3. MapJoin5: (big, A, B), MapJoin6: (A, big, B)
-    List<Operator<?>> joinSource5 = Arrays.asList(ts1, rsA1, rsB1);
-    List<Operator<?>> joinSource6 = Arrays.asList(rsA2, ts2, rsB2);
-
-    MapJoinOperator mapJoin5 = (MapJoinOperator) OperatorFactory.getAndMakeChild(
-        cCtx, getMapJoinDesc(0), joinSource5);
-    MapJoinOperator mapJoin6 = (MapJoinOperator) OperatorFactory.getAndMakeChild(
-        cCtx, getMapJoinDesc(1), joinSource6);
-
-    runMapJoinCacheReuseOptimization(mapJoin5, mapJoin6);
-    assertNotEquals(mapJoin5.getConf().getCacheKey(), mapJoin6.getConf().getCacheKey());
+    if (positive) {
+      assertEquals(mapJoin1.getConf().getCacheKey(), mapJoin2.getConf().getCacheKey());
+      return;
+    }
+    assertNotEquals(mapJoin1.getConf().getCacheKey(), mapJoin2.getConf().getCacheKey());
   }
 }
