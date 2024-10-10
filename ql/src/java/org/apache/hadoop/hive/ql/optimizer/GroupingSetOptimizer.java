@@ -55,6 +55,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -203,8 +204,11 @@ public class GroupingSetOptimizer extends Transform {
         colNamesInSignature.add(pColInfo.getInternalName());
       }
 
+      List<Integer> groupingSetKeys = listGroupingSetKeyPositions(gby.getConf().getListGroupingSets());
       Set<String> candidates = new HashSet<>();
-      for (ExprNodeDesc key: gby.getConf().getKeys()) {
+      for (Integer groupingSetKeyPosition: groupingSetKeys) {
+        ExprNodeDesc key = gby.getConf().getKeys().get(groupingSetKeyPosition);
+
         if (key instanceof ExprNodeColumnDesc) {
           candidates.add(((ExprNodeColumnDesc) key).getColumn());
         }
@@ -320,6 +324,21 @@ public class GroupingSetOptimizer extends Transform {
       sel.setColumnExprMap(colExprMap);
 
       return sel;
+    }
+
+    private List<Integer> listGroupingSetKeyPositions(List<Long> groupingSets) {
+      long acc = 0L;
+      for (Long groupingSet: groupingSets) {
+        acc |= groupingSet;
+      }
+
+      BitSet bitset = BitSet.valueOf(new long[]{acc});
+      List<Integer> ret = new ArrayList<>();
+      for (int i = bitset.nextSetBit(0); i >= 0; i = bitset.nextSetBit(i + 1)) {
+        ret.add(i);
+      }
+
+      return ret;
     }
   }
 

@@ -16,4 +16,11 @@ select col0, col1, col2, sum(col3) from grp_set_test group by rollup(col0, col1,
 -- Should be optimized
 set hive.optimize.grouping.set.threshold=1;
 explain
-select col0, col1, col2, sum(col3) from (select * from grp_set_test distribute by col0)d group by rollup(col0, col1, col2);
+select col0, col1, col2, sum(col3) from grp_set_test group by rollup(col0, col1, col2);
+
+-- Should be optimized, and the selected partition key should not be col3.
+alter table grp_set_test update statistics for column col3 set('numDVs'='10000','numNulls'='10000');
+explain
+select col0, col1, col2, count(distinct col3) from grp_set_test group by rollup(col0, col1, col2);
+
+
