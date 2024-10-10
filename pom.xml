@@ -248,7 +248,7 @@
     <repository>
       <id>nex</id>
       <name>nex</name>
-      <url>https://repository.apache.org/content/repositories/orgapachecalcite-1233/</url>
+      <url>https://repository.apache.org/content/repositories/orgapachecalcite-1235/</url>
       <layout>default</layout>
       <releases>
         <enabled>true</enabled>
