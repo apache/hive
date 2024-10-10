@@ -8468,6 +8468,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                           RowSchema fsRS, boolean canBeMerged, Table dest_tab, boolean isMmCtas,
                                           Integer dest_type, QB qb, boolean isDirectInsert, AcidUtils.Operation acidOperation, String moveTaskId) throws SemanticException {
     boolean isInsertOverwrite = false;
+    boolean isLocal = false;
     Context.Operation writeOperation = getWriteOperation(dest);
     switch (dest_type) {
     case QBMetaData.DEST_PARTITION:
@@ -8492,6 +8493,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       break;
     case QBMetaData.DEST_LOCAL_FILE:
+      isLocal = true;
     case QBMetaData.DEST_DFS_FILE:
       //CTAS path or insert into file/directory
       break;
@@ -8545,7 +8547,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     fileSinkDesc.setStatsAggPrefix(fileSinkDesc.getDirName().toString());
     if (!destTableIsMaterialization &&
         HiveConf.getVar(conf, HIVE_STATS_DBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
-      String statsTmpLoc = ctx.getTempDirForInterimJobPath(dest_path).toString();
+      String statsTmpLoc;
+      if (isLocal){
+        statsTmpLoc = ctx.getMRTmpPath().toString();
+      } else {
+        statsTmpLoc = ctx.getTempDirForInterimJobPath(dest_path).toString();
+      }
       fileSinkDesc.setStatsTmpDir(statsTmpLoc);
       LOG.debug("Set stats collection dir : " + statsTmpLoc);
     }
