@@ -786,30 +786,7 @@ public class TypeCheckProcFactory<T> {
       return getDefaultExprProcessor().getFuncExprNodeDescWithUdfData(baseType, tableFieldTypeInfo, column);
     }
 
-    protected void validateUDF(ASTNode expr, boolean isFunction, TypeCheckCtx ctx, FunctionInfo fi,
-        List<T> children) throws SemanticException {
-      // Check if a bigint is implicitely cast to a double as part of a comparison
-      // Perform the check here instead of in GenericUDFBaseCompare to guarantee it is only run once per operator
-      if (exprFactory.isCompareFunction(fi) && children.size() == 2) {
-        TypeInfo oiTypeInfo0 = exprFactory.getTypeInfo(children.get(0));
-        TypeInfo oiTypeInfo1 = exprFactory.getTypeInfo(children.get(1));
-
-        SessionState ss = SessionState.get();
-        Configuration conf = (ss != null) ? ss.getConf() : new Configuration();
-
-        LogHelper console = new LogHelper(LOG);
-
-        if (TypeInfoUtils.isConversionLossy(oiTypeInfo0, oiTypeInfo1)) {
-          String error = StrictChecks.checkTypeSafety(conf);
-          if (error != null) {
-            throw new UDFArgumentException(error);
-          }
-          String tName0 = oiTypeInfo0.getTypeName();
-          String tName1 = oiTypeInfo1.getTypeName();
-          console.printError("WARNING: Comparing " + tName0 + " and " + tName1 + " may result in loss of information.");
-        }
-      }
-
+    protected void validateUDF(ASTNode expr, boolean isFunction, TypeCheckCtx ctx, FunctionInfo fi) throws SemanticException {
       // Detect UDTF's in nested SELECT, GROUP BY, etc as they aren't
       // supported
       if (fi.getGenericUDTF() != null) {
@@ -828,6 +805,28 @@ public class TypeCheckProcFactory<T> {
       if (!ctx.getAllowStatefulFunctions()) {
         if (exprFactory.isStateful(fi)) {
           throw new SemanticException(ErrorMsg.UDF_STATEFUL_INVALID_LOCATION.getMsg());
+        }
+      }
+    }
+
+    void validateUDFArguments(FunctionInfo fi, List<T> children) throws UDFArgumentException {
+      if (exprFactory.isCompareFunction(fi) && children.size() == 2) {
+        TypeInfo oiTypeInfo0 = exprFactory.getTypeInfo(children.get(0));
+        TypeInfo oiTypeInfo1 = exprFactory.getTypeInfo(children.get(1));
+
+        SessionState ss = SessionState.get();
+        Configuration conf = (ss != null) ? ss.getConf() : new Configuration();
+
+        LogHelper console = new LogHelper(LOG);
+
+        if (TypeInfoUtils.isConversionLossy(oiTypeInfo0, oiTypeInfo1)) {
+          String error = StrictChecks.checkTypeSafety(conf);
+          if (error != null) {
+            throw new UDFArgumentException(error);
+          }
+          String tName0 = oiTypeInfo0.getTypeName();
+          String tName1 = oiTypeInfo1.getTypeName();
+          console.printError("WARNING: Comparing " + tName0 + " and " + tName1 + " may result in loss of information.");
         }
       }
     }
@@ -965,7 +964,7 @@ public class TypeCheckProcFactory<T> {
 
         insertCast(funcText, children);
 
-        validateUDF(node, isFunction, ctx, fi, children);
+        validateUDF(node, isFunction, ctx, fi);
 
         // Try to infer the type of the constant only if there are two
         // nodes, one of them is column and the other is numeric const
@@ -988,6 +987,7 @@ public class TypeCheckProcFactory<T> {
             children.set(constIdx, newChild);
           }
         }
+        validateUDFArguments(fi, children);
         // The "in" function is sometimes changed to an "or".  Later on, the "or"
         // function is processed a little differently.  We don't want to process this
         // new "or" function differently, so we track it with this variable.

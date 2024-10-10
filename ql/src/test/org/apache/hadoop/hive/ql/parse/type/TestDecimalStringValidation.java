@@ -120,9 +120,8 @@ public class TestDecimalStringValidation {
 
   private void validateCall(HiveConf conf) throws SemanticException {
     SessionState.start(conf);
-    TypeCheckCtx ctx = new TypeCheckCtx(null);
     ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
-        .validateUDF(null, false, ctx, call.function, Arrays.asList(call.expL, call.expR));
+        .validateUDFArguments(call.function, Arrays.asList(call.expL, call.expR));
   }
 
 }
