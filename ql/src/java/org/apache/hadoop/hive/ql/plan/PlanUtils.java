@@ -1154,6 +1154,9 @@ public final class PlanUtils {
       if (isValuesTempTable(part.getTable().getTableName())) {
         continue;
       }
+      if (part.getTable().isMaterializedTable()) {
+        continue;
+      }
 
       ReadEntity newInput = null;
       if (part.getTable().isPartitioned()) {
