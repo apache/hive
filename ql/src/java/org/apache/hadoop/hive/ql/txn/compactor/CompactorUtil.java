@@ -341,6 +341,7 @@ public class CompactorUtil {
     }
     compactionRequest.setInitiatorVersion(ci.initiatorVersion);
     compactionRequest.setPoolName(ci.poolName);
+    compactionRequest.setOrderByClause(ci.orderByClause);
     LOG.info("Requesting compaction: " + compactionRequest);
     CompactionResponse resp = txnHandler.compact(compactionRequest);
     if (resp.isAccepted()) {
