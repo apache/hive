@@ -93,6 +93,8 @@
     <mockito-core.version>3.4.4</mockito-core.version>
     <orc.version>1.9.4</orc.version>
     <protobuf.version>3.24.4</protobuf.version>
+    <!-- TODO: Remove plexus property from this pom.xml once we upgrade datanucleus-maven-plugin version >= 6.0.0-release-->
+    <plexus.version>1.5.6</plexus.version>
     <io.grpc.version>1.51.0</io.grpc.version>
     <sqlline.version>1.9.0</sqlline.version>
     <jline.version>2.14.6</jline.version>
