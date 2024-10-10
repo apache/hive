@@ -49,12 +49,13 @@ public final class DriverFactory {
     }
 
     String strategies = queryState.getConf().getVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES);
-    strategies = Strings.nullToEmpty(strategies).trim().toLowerCase();
+    strategies = Strings.nullToEmpty(strategies);
     List<IReExecutionPlugin> plugins = new ArrayList<>();
     for (String string : strategies.split(",")) {
       if (string.trim().isEmpty()) {
         continue;
       }
+
       plugins.add(buildReExecPlugin(string));
     }
 
@@ -62,7 +63,23 @@ public final class DriverFactory {
   }
 
   private static IReExecutionPlugin buildReExecPlugin(String name) throws RuntimeException {
-    Class<? extends IReExecutionPlugin> pluginType = ReExecutionStrategyType.getPluginClassByName(name);
+    Class<? extends IReExecutionPlugin> pluginType;
+    try {
+      pluginType = ReExecutionStrategyType.getPluginClassByName(name);
+    } catch (IllegalArgumentException e) {
+        try {
+          Class<?> cls = Class.forName(name);
+          if (cls.isAssignableFrom(IReExecutionPlugin.class)) {
+            throw new RuntimeException("Not re-execution plugin: " + name);
+          }
+
+          pluginType = (Class<? extends IReExecutionPlugin>) cls;
+        } catch (ClassNotFoundException e1) {
+          throw new RuntimeException(
+              "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname + ")");
+        }
+    }
+
     try {
       return pluginType.newInstance();
     } catch (InstantiationException | IllegalAccessException e) {
