@@ -3922,10 +3922,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
       }
 
-      OrderByRelBuilder orderByRelBuilder = new OrderByRelBuilder(this);
-      orderByRelBuilder.beginGenSortByLogicalPlan(obAST, selPair);
-      orderByRelBuilder.genOBProject(selPair, outermostOB);
-
       RexNode offsetRN = null;
       RexNode fetchRN = null;
       if (limit != null) {
@@ -3934,7 +3930,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 null : cluster.getRexBuilder().makeExactLiteral(BigDecimal.valueOf(offset));
         fetchRN = cluster.getRexBuilder().makeExactLiteral(BigDecimal.valueOf(limit));
       }
-      return orderByRelBuilder.sortLimit(offsetRN, fetchRN);
+
+      return new OrderByRelBuilder(this, selPair, outermostOB)
+              .addSortByKeys(obAST)
+              .sortLimit(offsetRN, fetchRN);
     }
 
     private RelNode genSBLogicalPlan(QB qb, Pair<RelNode, RowResolver> selPair,
@@ -3948,11 +3947,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
         return null;
       }
 
-      OrderByRelBuilder orderByRelBuilder = new OrderByRelBuilder(this);
-      orderByRelBuilder.beginGenSortByLogicalPlan(sbAST, selPair);
-      orderByRelBuilder.genRelDistribution(distributeByAST, selPair);
-      orderByRelBuilder.genOBProject(selPair, outermostOB);
-      return orderByRelBuilder.sortExchange();
+      return new OrderByRelBuilder(this, selPair, outermostOB)
+              .addSortByKeys(sbAST)
+              .addRelDistribution(distributeByAST)
+              .sortExchange();
     }
 
     private RelNode genClusterByLogicalPlan(QB qb, Pair<RelNode, RowResolver> selPair,
@@ -3965,10 +3963,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
         return null;
       }
 
-      OrderByRelBuilder orderByRelBuilder = new OrderByRelBuilder(this);
-      orderByRelBuilder.genClusterBy(clusterByAST, selPair);
-      orderByRelBuilder.genOBProject(selPair, outermostOB);
-      return orderByRelBuilder.sortExchange();
+      return new OrderByRelBuilder(this, selPair, outermostOB)
+              .addClusterBy(clusterByAST)
+              .sortExchange();
     }
 
     private List<RexNode> toRexNodeList(RelNode srcRel) {
@@ -5110,12 +5107,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
   }
 
-  /**
-   * This class stores the partial results of Order/Sort by clause logical plan generation.
-   * See {@link CalcitePlannerAction#beginGenSortByLogicalPlan}, {@link CalcitePlannerAction#endGenOBLogicalPlan}
-   */
-
-
   @Override
   protected Table getTableObjectByName(String tabName, boolean throwException) throws HiveException {
     String[] names = Utilities.getDbTableName(tabName);
@@ -5374,31 +5365,33 @@ public class CalcitePlanner extends SemanticAnalyzer {
   }
 
   class OrderByRelBuilder {
-    final CalcitePlannerAction calcitePlannerAction;
-    final List<RexNode> newVCLst = new ArrayList<>();
-    final List<RelFieldCollation> fieldCollations = Lists.newArrayList();
-    final List<Pair<ASTNode, TypeInfo>> vcASTTypePairs = new ArrayList<>();
+    private final CalcitePlannerAction calcitePlannerAction;
+    private final List<RexNode> newVCLst = new ArrayList<>();
+    private final List<RelFieldCollation> fieldCollations = Lists.newArrayList();
+    private final List<Pair<ASTNode, TypeInfo>> vcASTTypePairs = new ArrayList<>();
+    private final RowResolver outputRR = new RowResolver();
+    private final Pair<RelNode, RowResolver> selPair;
+    private final boolean outermostOB;
 
     private HiveRelDistribution hiveRelDistribution;
     private RelNode obInputRel;
     private RowResolver selectOutputRR;
-    private RowResolver outputRR;
     private RelNode srcRel;
 
 
-    OrderByRelBuilder(CalcitePlannerAction calcitePlannerAction) {
+    OrderByRelBuilder(
+            CalcitePlannerAction calcitePlannerAction, Pair<RelNode, RowResolver> selPair, boolean outermostOB) {
       this.calcitePlannerAction = calcitePlannerAction;
-      this.outputRR = new RowResolver();
+      this.selPair = selPair;
+      this.outermostOB = outermostOB;
     }
 
     // - Walk through OB exprs and extract field collations and additional virtual columns needed
     // - Add Child Project Rel if needed,
     // - Generate Output RR, input Sel Rel for top constraining Sel
-    void beginGenSortByLogicalPlan(
-            ASTNode obAST, Pair<RelNode, RowResolver> selPair)
-            throws SemanticException {
+    OrderByRelBuilder addSortByKeys(ASTNode obAST) throws SemanticException {
       if (obAST == null) {
-        return;
+        return this;
       }
 
       // 2. Walk through OB exprs and extract field collations and additional
@@ -5411,7 +5404,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         ASTNode nullObASTExpr = (ASTNode) orderByNode.getChild(0);
         ASTNode ref = (ASTNode) nullObASTExpr.getChild(0);
 
-        int fieldIndex = genSortByKey(ref, selPair, newVCLst, vcASTTypePairs);
+        int fieldIndex = genSortByKey(ref);
 
         // 2.4 Determine the Direction of order by
         RelFieldCollation.Direction order = RelFieldCollation.Direction.DESCENDING;
@@ -5431,12 +5424,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // 2.5 Add to field collations
         fieldCollations.add(new RelFieldCollation(fieldIndex, order, nullOrder));
       }
+
+      return this;
     }
 
-    private int genSortByKey(
-            ASTNode ref, Pair<RelNode, RowResolver> selPair,
-            List<RexNode> newVCLst, List<Pair<ASTNode, TypeInfo>> vcASTTypePairs)
-            throws SemanticException {
+    private int genSortByKey(ASTNode ref) throws SemanticException {
       // selPair.getKey() is the operator right before OB
       // selPair.getValue() is RR which only contains columns needed in result
       // set. Extra columns needed by order by will be absent from it.
@@ -5523,13 +5515,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return fieldIndex;
     }
 
-    void genRelDistribution(ASTNode distributeByAST, Pair<RelNode, RowResolver> selPair)
-            throws SemanticException {
+    OrderByRelBuilder addRelDistribution(ASTNode distributeByAST) throws SemanticException {
       if (distributeByAST != null) {
         Builder<Integer> keys = ImmutableList.builder();
         for (int i = 0; i < distributeByAST.getChildCount(); ++i) {
           ASTNode keyAST = (ASTNode) distributeByAST.getChild(i);
-          int fieldIndex = genSortByKey(keyAST, selPair, newVCLst, vcASTTypePairs);
+          int fieldIndex = genSortByKey(keyAST);
           keys.add(fieldIndex);
         }
         hiveRelDistribution = new HiveRelDistribution(RelDistribution.Type.HASH_DISTRIBUTED, keys.build());
@@ -5540,20 +5531,22 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // assert distribution != RelDistributions.ANY;
         hiveRelDistribution = new HiveRelDistribution(RelDistribution.Type.ANY, RelDistributions.ANY.getKeys());
       }
+      return this;
     }
 
-    void genClusterBy(ASTNode clusterBy, Pair<RelNode, RowResolver> selPair) throws SemanticException {
-      genRelDistribution(clusterBy, selPair);
+    OrderByRelBuilder addClusterBy(ASTNode clusterBy) throws SemanticException {
+      addRelDistribution(clusterBy);
       for (Integer fieldIndex : hiveRelDistribution.getKeys()) {
         fieldCollations.add(new RelFieldCollation(
                 fieldIndex, RelFieldCollation.Direction.ASCENDING, RelFieldCollation.NullDirection.FIRST));
       }
+      return this;
     }
 
     // - Walk through OB exprs and extract field collations and additional virtual columns needed
     // - Add Child Project Rel if needed,
     // - Generate Output RR, input Sel Rel for top constraining Sel
-    void genOBProject(Pair<RelNode, RowResolver> selPair, boolean outermostOB) throws SemanticException {
+    private void genOBProject() throws SemanticException {
       // selPair.getKey() is the operator right before OB
       // selPair.getValue() is RR which only contains columns needed in result
       // set. Extra columns needed by order by will be absent from it.
@@ -5605,7 +5598,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
     }
 
-    RelNode sortLimit(RexNode offsetRN, RexNode fetchRN) throws CalciteSemanticException {
+    RelNode sortLimit(RexNode offsetRN, RexNode fetchRN) throws SemanticException {
+      genOBProject();
+
       // 4. Construct SortRel
       RelOptCluster cluster = calcitePlannerAction.cluster;
       RelTraitSet traitSet = cluster.traitSetOf(HiveRelNode.CONVENTION);
@@ -5614,7 +5609,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return endGenOBLogicalPlan(sortRel);
     }
 
-    RelNode sortExchange() throws CalciteSemanticException {
+    RelNode sortExchange() throws SemanticException {
+      genOBProject();
+
       RelTraitSet traitSet = calcitePlannerAction.cluster.traitSetOf(HiveRelNode.CONVENTION);
       RelCollation canonizedCollation = traitSet.canonize(RelCollationImpl.of(fieldCollations));
       ImmutableList.Builder<RexNode> builder = ImmutableList.builder();
