@@ -40,6 +40,8 @@
     <immutables.value.version>2.10.0</immutables.value.version>
     <validate.skip>false</validate.skip>
     <caffeine.version>2.9.3</caffeine.version>
+    <hive.version>${project.parent.version}</hive.version>
+    <revision>${hive.version}</revision>
   </properties>
   <modules>
     <module>patched-iceberg-api</module>
@@ -57,46 +59,6 @@
   </dependencies>
   <dependencyManagement>
     <dependencies>
-      <dependency>
-        <groupId>org.apache.hive</groupId>
-        <artifactId>patched-iceberg-api</artifactId>
-        <version>patched-${iceberg.version}-${project.parent.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.hive</groupId>
-        <artifactId>patched-iceberg-core</artifactId>
-        <version>patched-${iceberg.version}-${project.parent.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.iceberg</groupId>
-        <artifactId>iceberg-api</artifactId>
-        <version>${iceberg.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.iceberg</groupId>
-        <artifactId>iceberg-core</artifactId>
-        <version>${iceberg.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.iceberg</groupId>
-        <artifactId>iceberg-hive-metastore</artifactId>
-        <version>${iceberg.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.iceberg</groupId>
-        <artifactId>iceberg-data</artifactId>
-        <version>${iceberg.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.iceberg</groupId>
-        <artifactId>iceberg-parquet</artifactId>
-        <version>${iceberg.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.iceberg</groupId>
-        <artifactId>iceberg-orc</artifactId>
-        <version>${iceberg.version}</version>
-      </dependency>
       <dependency>
         <groupId>org.apache.hive</groupId>
         <artifactId>hive-iceberg-catalog</artifactId>
@@ -248,7 +210,7 @@
             <removeUnusedImports/>
             <importOrder>
               <!-- normal imports, static imports -->
-              <order>,\# </order>
+              <order>,\#</order>
             </importOrder>
             <trimTrailingWhitespace/>
             <endWithNewline/>
@@ -276,7 +238,8 @@
           <skip>${validate.skip}</skip>
           <propertyExpansion>config_loc=${basedir}/${path.to.iceberg.root}/checkstyle/</propertyExpansion>
           <configLocation>${basedir}/${path.to.iceberg.root}/checkstyle/checkstyle.xml</configLocation>
-          <suppressionsLocation>${basedir}/${path.to.iceberg.root}/checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
+          <suppressionsLocation>${basedir}/${path.to.iceberg.root}/checkstyle/checkstyle-suppressions.xml
+          </suppressionsLocation>
           <includeTestSourceDirectory>true</includeTestSourceDirectory>
           <inputEncoding>UTF-8</inputEncoding>
           <outputEncoding>UTF-8</outputEncoding>
@@ -309,7 +272,9 @@
               <compilerArgs>
                 <arg>-XDcompilePolicy=simple</arg>
                 <arg>-Xplugin:ErrorProne -Xep:BanSerializableRead:WARN</arg>
-                <arg>-J-Xbootclasspath/p:${settings.localRepository}/com/google/errorprone/javac/${google.errorprone.javac.version}/javac-${google.errorprone.javac.version}.jar</arg>
+                <arg>
+                  -J-Xbootclasspath/p:${settings.localRepository}/com/google/errorprone/javac/${google.errorprone.javac.version}/javac-${google.errorprone.javac.version}.jar
+                </arg>
               </compilerArgs>
               <annotationProcessorPaths>
                 <path>
