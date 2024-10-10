@@ -104,19 +104,19 @@ public class PartitionPruner extends Transform {
    * if the table is not partitioned, the function always returns true.
    * condition.
    *
-   * @param tab
+   * @param table
    *          the table object
    * @param expr
    *          the pruner expression for the table
    */
-  public static boolean onlyContainsPartnCols(Table tab, ExprNodeDesc expr) {
-    if (!tab.isPartitioned() || (expr == null)) {
+  public static boolean onlyContainsPartnCols(Table table, ExprNodeDesc expr) {
+    if(!isPartitioned(table) || (expr == null)) {
       return true;
     }
 
     if (expr instanceof ExprNodeColumnDesc) {
-      String colName = ((ExprNodeColumnDesc) expr).getColumn();
-      return tab.isPartitionKey(colName);
+      String columnName = ((ExprNodeColumnDesc) expr).getColumn();
+      return isPartitionKey(table, columnName);
     }
 
     // It cannot contain a non-deterministic function
@@ -130,7 +130,7 @@ public class PartitionPruner extends Transform {
     List<ExprNodeDesc> children = expr.getChildren();
     if (children != null) {
       for (int i = 0; i < children.size(); i++) {
-        if (!onlyContainsPartnCols(tab, children.get(i))) {
+        if (!onlyContainsPartnCols(table, children.get(i))) {
           return false;
         }
       }
@@ -139,6 +139,20 @@ public class PartitionPruner extends Transform {
     return true;
   }
 
+  public static boolean isPartitioned(Table table){
+    if (table.getStorageHandler() != null && table.getStorageHandler().alwaysUnpartitioned()) {
+      return table.getStorageHandler().isPartitioned(table);
+    } else {
+      return table.isPartitioned();
+    }
+  }
+  
+  public static boolean isPartitionKey(Table table, String columnName){
+    final String lowerCaseColumnName = columnName.toLowerCase();
+    List<FieldSchema> partitionKeys = table.getStorageHandler() != null && table.getStorageHandler().alwaysUnpartitioned() ?
+        table.getStorageHandler().getPartitionKeys(table) : table.getPartCols();
+    return partitionKeys.stream().filter(item->item.getName().toLowerCase().equals(lowerCaseColumnName)).findFirst().isPresent();
+  }
   /**
    * Get the partition list for the TS operator that satisfies the partition pruner
    * condition.
