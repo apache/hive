@@ -18,12 +18,9 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
+import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -51,11 +48,15 @@ public class DummyPartition extends Partition {
     this.name = name;
   }  
 
-  public DummyPartition(Table tbl, String name,
-      Map<String, String> partSpec) {
-    setTable(tbl);
+  public DummyPartition(Table tbl, String name, Map<String, String> partSpec) throws HiveException {
+    org.apache.hadoop.hive.metastore.api.Partition tPart = 
+        new org.apache.hadoop.hive.metastore.api.Partition();
+    tPart.setSd(tbl.getSd().deepCopy());
+    tPart.setParameters(Maps.newHashMap());
+    
     this.name = name;
-    this.partSpec = new LinkedHashMap<String, String>(partSpec);
+    this.partSpec = Maps.newLinkedHashMap(partSpec);
+    initialize(tbl,tPart);
   }
 
   public String getName() {

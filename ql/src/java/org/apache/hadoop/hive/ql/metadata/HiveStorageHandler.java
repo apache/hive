@@ -864,6 +864,10 @@ public interface HiveStorageHandler extends Configurable {
     return getPartitions(table, partitionSpec, true);
   }
 
+  default List<Partition> getPartitions(org.apache.hadoop.hive.ql.metadata.Table table) throws SemanticException {
+    return getPartitions(table, Collections.emptyMap());
+  }
+
   /**
    * Returns a list of partitions based on table and partial partition specification.
    * @param table {@link org.apache.hadoop.hive.ql.metadata.Table} table metadata stored in Hive Metastore
@@ -878,7 +882,7 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   default boolean isPartitioned(org.apache.hadoop.hive.ql.metadata.Table table) {
-    throw new UnsupportedOperationException("Storage handler does not support checking if table is partitioned.");
+    return false;
   }
 
   default boolean hasUndergonePartitionEvolution(org.apache.hadoop.hive.ql.metadata.Table table) {

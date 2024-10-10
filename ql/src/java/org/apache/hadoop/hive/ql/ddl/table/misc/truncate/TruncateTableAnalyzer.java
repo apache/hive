@@ -172,7 +172,7 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
             String partName = Warehouse.makePartName(partitionSpec, false);
             Partition partition = new DummyPartition(table, partName, partitionSpec);
             outputs.add(new WriteEntity(partition, writeType));
-          } catch (MetaException e) {
+          } catch (MetaException | HiveException e) {
             throw new SemanticException("Unable to construct name for dummy partition due to: ", e);
           }
         } else {

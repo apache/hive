@@ -36,6 +36,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -460,6 +461,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     HiveTableUtil.appendFiles(fromURI, format, icebergTbl, isOverwrite, partitionSpec, conf);
   }
 
+  @SuppressWarnings("checkstyle:CyclomaticComplexity")
   @Override
   public Map<String, String> getBasicStatistics(Partish partish) {
     org.apache.hadoop.hive.ql.metadata.Table hmsTable = partish.getTable();
@@ -470,6 +472,19 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       if (table.currentSnapshot() != null) {
         Map<String, String> summary = table.currentSnapshot().summary();
         if (summary != null) {
+
+          if (Boolean.parseBoolean(summary.get(SnapshotSummary.PARTITION_SUMMARY_PROP))) {
+            String key = SnapshotSummary.CHANGED_PARTITION_PREFIX + partish.getPartition().getName();
+            Map<String, String> map = Maps.newHashMap();
+
+            StringTokenizer tokenizer = new StringTokenizer(summary.get(key), ",");
+            while (tokenizer.hasMoreTokens()) {
+              String token = tokenizer.nextToken();
+              String[] keyValue = token.split("=");
+              map.put(keyValue[0], keyValue[1]);
+            }
+            summary = map;
+          }
 
           if (summary.containsKey(SnapshotSummary.TOTAL_DATA_FILES_PROP)) {
             stats.put(StatsSetupConst.NUM_FILES, summary.get(SnapshotSummary.TOTAL_DATA_FILES_PROP));
@@ -1979,11 +1994,19 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         .map(partName -> {
           Map<String, String> partSpecMap = Maps.newLinkedHashMap();
           Warehouse.makeSpecFromName(partSpecMap, new Path(partName), null);
-          return new DummyPartition(table, partName, partSpecMap);
+          try {
+            return new DummyPartition(table, partName, partSpecMap);
+          } catch (HiveException e) {
+            throw new RuntimeException("Unable to construct name for dummy partition due to: ", e);
+          }
         }).collect(Collectors.toList());
   }
 
   public boolean isPartitioned(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    if (!Catalogs.hiveCatalog(conf, hmsTable::getProperty) ||
+          hmsTable.getSd().getLocation() == null) {
+      return false;
+    }
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     return table.spec().isPartitioned();
   }
@@ -2000,7 +2023,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     try {
       String partName = Warehouse.makePartName(partitionSpec, false);
       return new DummyPartition(table, partName, partitionSpec);
-    } catch (MetaException e) {
+    } catch (MetaException | HiveException e) {
       throw new SemanticException("Unable to construct name for dummy partition due to: ", e);
     }
   }
@@ -2099,6 +2122,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public List<FieldSchema> getPartitionKeys(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    if (hmsTable.getSd().getLocation() == null) {
+      return null;
+    }
     Table icebergTable = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     return IcebergTableUtil.getPartitionKeys(icebergTable, icebergTable.spec().specId());
   }
@@ -2129,7 +2155,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
           String partName = spec.partitionToPath(partitionData);
           Map<String, String> partSpecMap = Maps.newLinkedHashMap();
           Warehouse.makeSpecFromName(partSpecMap, new Path(partName), null);
-          DummyPartition partition = new DummyPartition(hmsTable, partName, partSpecMap);
+          DummyPartition partition;
+          try {
+            partition = new DummyPartition(hmsTable, partName, partSpecMap);
+          } catch (HiveException e) {
+            throw new RuntimeException("Unable to construct name for dummy partition due to: ", e);
+          }
           partitions.add(partition);
         }
       });

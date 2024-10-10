@@ -102,6 +102,10 @@ public final class PcrOpProcFactory {
         return null;
       }
 
+      // skip the optimization for Iceberg tables
+      if (top.getConf().getTableMetadata().alwaysUnpartitioned()) {
+        return null;
+      }
 
       ParseContext pctx = owc.getParseContext();
       PrunedPartitionList prunedPartList;

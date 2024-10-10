@@ -3665,7 +3665,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   public Partition getPartition(Table tbl, Map<String, String> partSpec) throws HiveException {
-    if (tbl.getStorageHandler() != null && tbl.getStorageHandler().alwaysUnpartitioned()) {
+    if (tbl.alwaysUnpartitioned()) {
       return tbl.getStorageHandler().getPartition(tbl, partSpec, Context.RewritePolicy.get(conf));
     } else {
       return getPartition(tbl, partSpec, false);
@@ -4055,7 +4055,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       Map<String, String> partSpec, short max) throws HiveException {
     List<String> names = null;
     Table t = getTable(dbName, tblName);
-    if (t.getStorageHandler() != null && t.getStorageHandler().alwaysUnpartitioned()) {
+    if (t.alwaysUnpartitioned()) {
       return t.getStorageHandler().getPartitionNames(t, partSpec);
     }
 
@@ -4133,12 +4133,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS);
     try {
-      if (tbl.getStorageHandler() != null && tbl.getStorageHandler().alwaysUnpartitioned()) {
-        return tbl.getStorageHandler().getPartitions(tbl, Collections.EMPTY_MAP);
+      if (tbl.alwaysUnpartitioned()) {
+        return tbl.getStorageHandler().getPartitions(tbl);
       } else {
-        int batchSize= MetastoreConf.getIntVar(Hive.get().getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+        int batchSize= MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
         return new ArrayList<>(getAllPartitionsInBatches(tbl, batchSize, DEFAULT_BATCH_DECAYING_FACTOR, MetastoreConf
-                .getIntVar(Hive.get().getConf(), MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES),
+                .getIntVar(conf, MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES),
             null, true, getUserName(), getGroupNames())); 
       }
     } finally {
@@ -4155,17 +4155,20 @@ private void constructOneLBLocationMap(FileStatus fSta,
     if (!tbl.isPartitioned()) {
       return Sets.newHashSet(new Partition(tbl));
     }
-
-    List<org.apache.hadoop.hive.metastore.api.Partition> tParts;
-    try {
-      tParts = getMSC().listPartitions(tbl.getDbName(), tbl.getTableName(), (short)-1);
-    } catch (Exception e) {
-      LOG.error("Failed getAllPartitionsOf", e);
-      throw new HiveException(e);
-    }
-    Set<Partition> parts = new LinkedHashSet<Partition>(tParts.size());
-    for (org.apache.hadoop.hive.metastore.api.Partition tpart : tParts) {
-      parts.add(new Partition(tbl, tpart));
+    Set<Partition> parts = Sets.newLinkedHashSet();
+    if (tbl.alwaysUnpartitioned()) {
+      parts.addAll(tbl.getStorageHandler().getPartitions(tbl));
+    } else {
+      List<org.apache.hadoop.hive.metastore.api.Partition> tParts;
+      try {
+        tParts = getMSC().listPartitions(tbl.getDbName(), tbl.getTableName(), (short) -1);
+      } catch (Exception e) {
+        LOG.error("Failed getAllPartitionsOf", e);
+        throw new HiveException(e);
+      }
+      for (org.apache.hadoop.hive.metastore.api.Partition tpart : tParts) {
+        parts.add(new Partition(tbl, tpart));
+      }
     }
     return parts;
   }
@@ -4176,11 +4179,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return list of partition objects
    */
   public Set<Partition> getAllPartitionsOf(Table tbl) throws HiveException {
-    int batchSize= MetastoreConf.getIntVar(
-            Hive.get().getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+    int batchSize = tbl.alwaysUnpartitioned() ? 
+        0 : MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
     if (batchSize > 0) {
       return getAllPartitionsInBatches(tbl, batchSize, DEFAULT_BATCH_DECAYING_FACTOR, MetastoreConf.getIntVar(
-              Hive.get().getConf(), MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES), null, false);
+          conf, MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES), null, false);
     } else {
       return getAllPartitions(tbl);
     }
@@ -4239,9 +4242,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (limit >= 0) {
         return getPartitionsWithAuth(tbl, partialPartSpec, limit);
       } else {
-        int batchSize = MetastoreConf.getIntVar(Hive.get().getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+        int batchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
         return new ArrayList<>(getAllPartitionsInBatches(tbl, batchSize, DEFAULT_BATCH_DECAYING_FACTOR,
-                MetastoreConf.getIntVar(Hive.get().getConf(), MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES),
+                MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES),
                 partialPartSpec, true, getUserName(), getGroupNames()));
       }
     } finally {
