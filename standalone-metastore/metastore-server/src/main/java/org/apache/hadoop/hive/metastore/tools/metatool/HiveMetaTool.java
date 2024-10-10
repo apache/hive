@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.metastore.tools.metatool;
 
-import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.tools.MetaToolObjectStore;
 import org.slf4j.Logger;

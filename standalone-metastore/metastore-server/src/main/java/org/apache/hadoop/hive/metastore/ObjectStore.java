@@ -4075,9 +4075,7 @@ public class ObjectStore implements RawStore, Configurable {
             getDefaultPartitionName(args.getDefaultPartName()),
             result);
     if (args.getMax() >= 0 && result.size() > args.getMax()) {
-      List<String> resultNames = new ArrayList<>(result.subList(0, args.getMax()));
-      result.clear();
-      result.addAll(resultNames);
+      result = result.subList(0, args.getMax());
     }
     return hasUnknownPartitions;
   }

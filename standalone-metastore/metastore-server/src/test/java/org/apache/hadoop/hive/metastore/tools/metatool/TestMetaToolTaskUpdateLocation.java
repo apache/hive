@@ -27,7 +27,6 @@ import java.io.PrintStream;
 import java.net.URI;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.tools.MetaToolObjectStore;
 import org.junit.Before;

@@ -20,36 +20,48 @@ package org.apache.hadoop.hive.metastore.tools;
 
 import javax.jdo.Query;
 import javax.jdo.datastore.JDOConnection;
-import java.math.BigInteger;
 import java.net.URI;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
 import org.apache.hadoop.hive.metastore.model.MSerDeInfo;
 import org.apache.hadoop.hive.metastore.model.MStorageDescriptor;
 import org.apache.hadoop.hive.metastore.model.MTable;
-import org.apache.hadoop.hive.metastore.tools.metatool.IcebergTableMetadataHandler;
-import org.apache.hadoop.hive.metastore.tools.metatool.MetadataTableSummary;
+import org.apache.hadoop.hive.metastore.metasummary.MetadataTableSummary;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
+
+/**
+ * This class should be used in metatool only
+ */
 public class MetaToolObjectStore extends ObjectStore {
 
   private static final Logger LOG = LoggerFactory.getLogger(MetaToolObjectStore.class);
-
 
   /** The following API
    *
@@ -551,155 +563,103 @@ public class MetaToolObjectStore extends ObjectStore {
     }
   }
 
-  /** The following APIs
-   *
-   *  - getMetadataSummary
-   *
-   * is used by HiveMetaTool.
-   */
-
   /**
    * Using resultSet to read the HMS_SUMMARY table.
    * @param catalogFilter the optional catalog name filter
    * @param dbFilter the optional database name filter
    * @param tableFilter the optional table name filter
    * @return MetadataSummary
-   * @throws SQLException
+   * @throws MetaException
    */
-  public List<MetadataTableSummary> getMetadataSummary(String catalogFilter, String dbFilter, String tableFilter) throws SQLException {
-    ArrayList<MetadataTableSummary> metadataTableSummaryList = new ArrayList<MetadataTableSummary>();
-
-    ResultSet rs = null;
-    Statement stmt = null;
-    // Fetch the metrics from iceberg manifest for iceberg tables in hive
-    IcebergTableMetadataHandler icebergHandler = null;
-    Map<String, MetadataTableSummary> icebergTableSummaryMap = null;
-
-    try {
-      icebergHandler = new IcebergTableMetadataHandler(conf);
-      icebergTableSummaryMap = icebergHandler.getIcebergTables();
-    } catch (Exception e) {
-      LOG.error("Unable to fetch metadata from iceberg manifests", e);
-    }
-
+  public List<MetadataTableSummary> getMetadataSummary(String catalogFilter, String dbFilter, String tableFilter)
+      throws MetaException {
+    List<MetadataTableSummary> metadataTableSummaryList = new ArrayList<MetadataTableSummary>();
     List<String> querySet = sqlGenerator.getCreateQueriesForMetastoreSummary();
-    if (querySet == null) {
-      LOG.warn("Metadata summary has not been implemented for dbtype {}", sqlGenerator.getDbProduct().dbType);
+    if (querySet == null || querySet.isEmpty()) {
+      LOG.warn("Metadata summary has not been implemented for dbtype {}", DatabaseProduct.dbType);
       return null;
     }
 
+    JDOConnection jdoConn = null;
     try {
-      JDOConnection jdoConn = null;
-      jdoConn = pm.getDataStoreConnection();
-      stmt = ((Connection) jdoConn.getNativeConnection()).createStatement();
-      long startTime = System.currentTimeMillis();
-
-      for (String q: querySet) {
-        stmt.execute(q);
+      try {
+        jdoConn = pm.getDataStoreConnection();
+        try (Statement stmt = ((Connection) jdoConn.getNativeConnection()).createStatement()) {
+          long startTime = System.currentTimeMillis();
+          for (String q : querySet) {
+            stmt.addBatch(q);
+          }
+          stmt.executeBatch();
+          long endTime = System.currentTimeMillis();
+          LOG.info("Total query time for generating HMS Summary: {} (ms)", endTime - startTime);
+        }
+      } catch (SQLException e) {
+        LOG.error("Exception during computing HMS Summary", e);
+        throw new MetaException("Error preparing the context for computing the summary: " + e.getMessage());
       }
-      long endTime = System.currentTimeMillis();
-      LOG.info("Total query time for generating HMS Summary: {} (ms)", (((long)endTime) - ((long)startTime)));
-    } catch (SQLException e) {
-      LOG.error("Exception during computing HMS Summary", e);
-      throw e;
-    }
 
-    final String query = sqlGenerator.getSelectQueryForMetastoreSummary();
-    try {
-      String tblName, dbName, ctlgName, tblType, fileType, compressionType, partitionColumn, writeFormatDefault, transactionalProperties;
-      int colCount, arrayColCount, structColCount, mapColCount;
-      Integer partitionCnt;
-      BigInteger totalSize, sizeNumRows, sizeNumFiles;
-      stmt.setFetchSize(0);
-      rs = stmt.executeQuery(query);
-      while (rs.next()) {
-        tblName = rs.getString("TBL_NAME");
-        dbName = rs.getString("NAME");
-        ctlgName = rs.getString("CTLG");
-        if(ctlgName == null) ctlgName = "null";
-        colCount = rs.getInt("TOTAL_COLUMN_COUNT");
-        arrayColCount = rs.getInt("ARRAY_COLUMN_COUNT");
-        structColCount = rs.getInt("STRUCT_COLUMN_COUNT");
-        mapColCount = rs.getInt("MAP_COLUMN_COUNT");
-        tblType = rs.getString("TBL_TYPE");
-        fileType = rs.getString("SLIB");
-        if (fileType != null) fileType = extractFileFormat(fileType);
-        compressionType = rs.getString("IS_COMPRESSED");
-        if (compressionType.equals("0") || compressionType.equals("f")) compressionType = "None";
-        partitionColumn = rs.getString("PARTITION_COLUMN");
-        int partitionColumnCount = (partitionColumn == null) ? 0 : (partitionColumn.split(",")).length;
-        partitionCnt = rs.getInt("PARTITION_CNT");
+      final String query = sqlGenerator.getSelectQueryForMetastoreSummary();
+      try {
+        try (Statement stmt = ((Connection) jdoConn.getNativeConnection()).createStatement()) {
+          stmt.setFetchSize(0);
+          try (ResultSet rs = stmt.executeQuery(query)) {
+            while (rs.next()) {
+              MetadataTableSummary summary = new MetadataTableSummary(rs.getString("CTLG"),
+                  rs.getString("NAME"), rs.getString("TBL_NAME"));
+              String partitionColumn = rs.getString("PARTITION_COLUMN");
+              int partitionColumnCount = (partitionColumn == null) ? 0 : (partitionColumn.split(",")).length;
+              summary
+                  .partitionSummary(partitionColumnCount, rs.getInt("PARTITION_CNT"))
+                  .basicStatsSummary(rs.getLong("TOTAL_SIZE"), rs.getLong("NUM_ROWS"), rs.getLong("NUM_FILES"))
+                  .columnSummary(
+                      rs.getInt("TOTAL_COLUMN_COUNT"),
+                      rs.getInt("ARRAY_COLUMN_COUNT"),
+                      rs.getInt("STRUCT_COLUMN_COUNT"),
+                      rs.getInt("MAP_COLUMN_COUNT"));
 
-        totalSize = BigInteger.valueOf(rs.getLong("TOTAL_SIZE"));
-        sizeNumRows = BigInteger.valueOf(rs.getLong("NUM_ROWS"));
-        sizeNumFiles = BigInteger.valueOf(rs.getLong("NUM_FILES"));
-
-        writeFormatDefault = rs.getString("WRITE_FORMAT_DEFAULT");
-        if (writeFormatDefault == null) writeFormatDefault = "null";
-        transactionalProperties = rs.getString("TRANSACTIONAL_PROPERTIES");
-        if (transactionalProperties == null) transactionalProperties = "null";
-
-        // for iceberg tables, overwrite the metadata by the metadata fetched in HMSSummaryIcebergHandler
-        if (fileType != null && fileType.equals("iceberg") && icebergHandler.isEnabled() && icebergTableSummaryMap != null) {
-          // if the new metadata is not null or 0, overwrite the old metadata
-          MetadataTableSummary icebergTableSummary = icebergTableSummaryMap.get(tblName);
-          ctlgName = icebergTableSummary.getCtlgName() != null ? icebergTableSummary.getCtlgName() : ctlgName;
-          dbName = icebergTableSummary.getDbName() != null ? icebergTableSummary.getDbName() : dbName;
-          colCount = icebergTableSummary.getColCount() != 0 ? icebergTableSummary.getColCount() : colCount;
-          partitionColumnCount = icebergTableSummary.getPartitionColumnCount() != 0 ? icebergTableSummary.getPartitionColumnCount() : partitionColumnCount;
-          totalSize = icebergTableSummary.getTotalSize() != null ? icebergTableSummary.getTotalSize() : totalSize;
-          sizeNumRows = icebergTableSummary.getSizeNumRows() != null ? icebergTableSummary.getSizeNumRows(): sizeNumRows;
-          sizeNumFiles = icebergTableSummary.getSizeNumFiles() != null ? icebergTableSummary.getSizeNumFiles(): sizeNumFiles;
-          if (writeFormatDefault.equals("null")){
-            fileType = "parquet";
-          }
-          else {
-            fileType = writeFormatDefault;
-          }
-          tblType = "ICEBERG";
-        }
-
-        if (tblType.equals("EXTERNAL_TABLE")){
-          if (fileType.equals("parquet")){
-            tblType = "HIVE_EXTERNAL";
-          }
-          else if (fileType.equals("jdbc")){
-            tblType = "JDBC";
-          }
-          else if (fileType.equals("kudu")){
-            tblType = "KUDU";
-          }
-          else if (fileType.equals("hbase")){
-            tblType = "HBASE";
-          } else {
-            tblType = "HIVE_EXTERNAL";
+              String tblType = rs.getString("TBL_TYPE");
+              String fileType = extractFileFormat(rs.getString("SLIB"));
+              Set<String> nonNativeTabTypes = new HashSet<>(Arrays.asList("jdbc", "kudu", "hbase", "iceberg"));
+              if (nonNativeTabTypes.contains(fileType)) {
+                tblType = fileType.toUpperCase();
+                if ("iceberg".equalsIgnoreCase(tblType)) {
+                  String writeFormatDefault = rs.getString("WRITE_FORMAT_DEFAULT");
+                  if (writeFormatDefault == null) {
+                    writeFormatDefault = "null";
+                  }
+                  if (writeFormatDefault.equals("null")) {
+                    fileType = "parquet";
+                  } else {
+                    fileType = writeFormatDefault;
+                  }
+                }
+              } else if (TableType.MANAGED_TABLE.name().equalsIgnoreCase(tblType)) {
+                String transactionalProperties = rs.getString("TRANSACTIONAL_PROPERTIES");
+                if (transactionalProperties == null) {
+                  transactionalProperties = "null";
+                }
+                tblType = "insert_only".equalsIgnoreCase(transactionalProperties) ?
+                    "HIVE_ACID_INSERT_ONLY" : "HIVE_ACID_FULL";
+              } else if (TableType.EXTERNAL_TABLE.name().equalsIgnoreCase(tblType)) {
+                tblType = "HIVE_EXTERNAL";
+              } else {
+                tblType = tblType != null ? tblType.toUpperCase() : "NULL";
+              }
+              String compressionType = rs.getString("IS_COMPRESSED");
+              if (compressionType.equals("0") || compressionType.equals("f")) {
+                compressionType = "None";
+              }
+              metadataTableSummaryList.add(summary.tableFormatSummary(tblType, compressionType, fileType));
+            }
           }
         }
-
-        if (tblType.equals("MANAGED_TABLE")){
-          if (transactionalProperties == "insert_only"){
-            tblType = "HIVE_ACID_INSERT_ONLY";
-          }
-          else {
-            tblType = "HIVE_ACID_FULL";
-          }
-        }
-
-        MetadataTableSummary summary = new MetadataTableSummary(ctlgName, dbName, tblName, colCount,
-            partitionColumnCount, partitionCnt, totalSize, sizeNumRows, sizeNumFiles, tblType,
-            fileType, compressionType, arrayColCount, structColCount, mapColCount);
-        metadataTableSummaryList.add(summary);
+      } catch (Exception e) {
+        LOG.error("Exception while running the query " + query, e);
+        throw new MetaException("Exception while computing the summary: " + e.getMessage());
       }
-    } catch (Exception e) {
-      String msg = "Runtime exception while running the query " + query;
-      LOG.error(msg, e);
-      throw e;
     } finally {
-      if (rs != null) {
-        rs.close();
-      }
-      if (stmt != null) {
-        stmt.close();
+      if (jdoConn != null) {
+        jdoConn.close();
       }
     }
     return metadataTableSummaryList;
@@ -711,37 +671,74 @@ public class MetaToolObjectStore extends ObjectStore {
    * @return String A short String which indicates the type of the file.
    */
   private static String extractFileFormat(String fileFormat) {
-    String lowerCaseFileFormat = null;
     if (fileFormat == null) {
       return "NULL";
     }
-    lowerCaseFileFormat = fileFormat.toLowerCase();
-    if (lowerCaseFileFormat.contains("iceberg")) {
-      fileFormat = "iceberg";
-    } else if (lowerCaseFileFormat.contains("parquet")) {
-      fileFormat = "parquet";
-    } else if (lowerCaseFileFormat.contains("orc")) {
-      fileFormat = "orc";
-    } else if (lowerCaseFileFormat.contains("avro")) {
-      fileFormat = "avro";
-    } else if (lowerCaseFileFormat.contains("json")) {
-      fileFormat = "json";
-    } else if (lowerCaseFileFormat.contains("hbase")) {
-      fileFormat = "hbase";
-    } else if (lowerCaseFileFormat.contains("jdbc")) {
-      fileFormat = "jdbc";
-    } else if (lowerCaseFileFormat.contains("kudu")) {
-      fileFormat = "kudu";
-    } else if ((lowerCaseFileFormat.contains("text")) || (lowerCaseFileFormat.contains("lazysimple"))) {
-      fileFormat = "text";
-    } else if (lowerCaseFileFormat.contains("sequence")) {
-      fileFormat = "sequence";
-    } else if (lowerCaseFileFormat.contains("passthrough")) {
-      fileFormat = "passthrough";
-    } else if (lowerCaseFileFormat.contains("opencsv")) {
-      fileFormat = "openCSV";
+    final String lowerCaseFileFormat = fileFormat.toLowerCase();
+    Set<String> fileTypes = new HashSet<>(Arrays.asList("iceberg", "parquet", "orc", "avro", "json", "hbase", "jdbc",
+        "kudu", "text", "sequence", "opencsv", "lazysimple", "passthrough"));
+    Optional<String> result = fileTypes.stream().filter(lowerCaseFileFormat::contains).findFirst();
+    if (result.isPresent()) {
+      String file = result.get();
+      if ("opencsv".equals(file)) {
+        return "openCSV";
+      } else if ("lazysimple".equals(file)) {
+        return "text";
+      }
+      return file;
     }
     return fileFormat;
   }
 
+  public Set<TableName> filterTablesForSummary(List<Pair<TableName, MetadataTableSummary>> tableSummaries,
+      Integer lastUpdatedDays, Integer tablesLimit) {
+    if (tableSummaries == null || tableSummaries.isEmpty()) {
+      return Collections.emptySet();
+    }
+    Set<TableName> tableNames = tableSummaries.stream().map(Pair::getLeft).collect(Collectors.toSet());
+    if (lastUpdatedDays == null && (tablesLimit == null || tableNames.size() < tablesLimit)) {
+      return tableNames;
+    }
+    String tableType = tableSummaries.get(0).getRight().getTableType();
+    if (!"iceberg".equalsIgnoreCase(tableType)) {
+      // we don't support filtering this type yet, ignore...
+      LOG.warn("This table type: {} hasn't been supported selecting the summary yet, ignore...", tableType);
+      return tableNames;
+    }
+
+    Set<String> dbs = new HashSet<>();
+    tableSummaries.forEach(ts -> dbs.add(normalizeIdentifier(ts.getLeft().getDb())));
+    boolean success = false;
+    Query<?> query = null;
+    try {
+      String catalog = normalizeIdentifier(tableSummaries.get(0).getLeft().getCat());
+      if (StringUtils.isEmpty(catalog)) {
+        catalog = MetaStoreUtils.getDefaultCatalog(conf);
+      }
+      openTransaction();
+      String filter = "database.catalogName == t1 && t2.contains(database.name) && " +
+          "parameters.get(\"table_type\") == t3 && parameters.get(\"current-snapshot-timestamp-ms\") > t4";
+      query = pm.newQuery(MTable.class, filter) ;
+      query.declareParameters("java.lang.String t1, java.util.Collection t2, java.lang.String t3, java.lang.Long t4");
+      query.setResult("database.name, tableName");
+      query.setOrdering("parameters.get(\"current-snapshot-timestamp-ms\") DESC");
+      if (tablesLimit != null && tablesLimit >= 0) {
+        query.setRange(0, tablesLimit);
+      }
+      List<Object[]> result = (List<Object[]>) query.executeWithArray(catalog, dbs, tableType.toUpperCase(),
+          System.currentTimeMillis() - lastUpdatedDays * 24 * 3600000L);
+      if (result == null || result.isEmpty()) {
+        return Collections.emptySet();
+      }
+      Set<TableName> qr = new HashSet<>();
+      for (Object[] fields : result) {
+        qr.add(new TableName(catalog, (String)fields[0], (String) fields[1]));
+      }
+      tableNames = tableNames.stream().filter(qr::contains).collect(Collectors.toSet());
+      success = commitTransaction();
+    } finally {
+      rollbackAndCleanup(success, query);
+    }
+    return tableNames;
+  }
 }

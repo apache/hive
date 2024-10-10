@@ -37,9 +37,9 @@ class HiveMetaToolCommandLine {
 
   @SuppressWarnings("static-access")
   private static final Option METADATA_SUMMARY = OptionBuilder
-      .withArgName("output-format> " + "<optional-file-path")
-      .hasArgs(2)
-      .hasOptionalArgs(2)
+      .withArgName("output-format>" + " <optional-file-path>" + " <last-updated-days>" + " <nonnative-tables-limit")
+      .hasArgs(4)
+      .hasOptionalArgs(4)
       .withDescription("print the summary of metadata in the selected format")
       .create("metadataSummary");
 

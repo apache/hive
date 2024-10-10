@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.tools.MetaToolObjectStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
