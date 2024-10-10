@@ -44,6 +44,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.hadoop.conf.Configuration;
@@ -88,11 +89,13 @@ public final class QueryResultsCache {
   public static class LookupInfo {
     private String queryText;
     private Supplier<ValidTxnWriteIdList> txnWriteIdListProvider;
+    private Set<Long> txnTables;
 
-    public LookupInfo(String queryText, Supplier<ValidTxnWriteIdList> txnWriteIdListProvider) {
+    public LookupInfo(String queryText, Supplier<ValidTxnWriteIdList> txnWriteIdListProvider, Set<Long> txnTables) {
       super();
       this.queryText = queryText;
       this.txnWriteIdListProvider = txnWriteIdListProvider;
+      this.txnTables = txnTables;
     }
 
     public String getQueryText() {
@@ -671,6 +674,15 @@ public final class QueryResultsCache {
    */
   private boolean entryMatches(LookupInfo lookupInfo, CacheEntry entry, Set<CacheEntry> entriesToRemove) {
     QueryInfo queryInfo = entry.getQueryInfo();
+
+    if(!queryInfo.getInputs()
+            .stream()
+            .map(ReadEntity::getTable)
+            .map(Table::getTTable)
+            .map(org.apache.hadoop.hive.metastore.api.Table::getId)
+            .collect(Collectors.toSet()).containsAll(lookupInfo.txnTables))
+        return false;
+
     for (ReadEntity readEntity : queryInfo.getInputs()) {
       // Check that the tables used do not resolve to temp tables.
       if (readEntity.getType() == Type.TABLE) {
