@@ -38,6 +38,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.lang.reflect.*;
+
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 
 import com.google.common.collect.Sets;
@@ -66,6 +68,7 @@ import org.datanucleus.api.jdo.JDOPersistenceManager;
 import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
 import org.junit.Assert;
 import org.junit.Before;
+import org.mockito.Matchers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -116,6 +119,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public abstract class TestHiveMetaStore {
   private static final Logger LOG = LoggerFactory.getLogger(TestHiveMetaStore.class);
@@ -3865,5 +3869,28 @@ public abstract class TestHiveMetaStore {
   public void testDropDataConnectorIfNotExistsTrue() throws Exception {
     // No such data connector, ignore NoSuchObjectException
     client.dropDataConnector("no_such_data_connector", true, false);
+  }
+
+  @Test
+  public void testIsDnsPathEqualsOriginalPath() throws MetaException {
+    Warehouse wh = mock(Warehouse.class);
+    String tableDnsPath = "hdfs://ns1/user/test_user/test_db/test_table";
+    String partitionDnsPath = tableDnsPath + "/dt=2024-09-13";
+    when(wh.getDnsPath(Matchers.any())).thenReturn(new Path(partitionDnsPath));
+    Path path = wh.getDnsPath(new Path(partitionDnsPath));
+    assertEquals(path.toString(), partitionDnsPath);
+  }
+
+  @Test
+  public void testIsSubdirectory() throws MetaException {
+    Warehouse wh = mock(Warehouse.class);
+    String tableDnsPath = "hdfs://ns1/user/test_user/test_db/test_table";
+    String partitionDnsPath = tableDnsPath + "/dt=2024-09-13";
+    when(wh.getDnsPath(Matchers.any())).thenReturn(new Path(partitionDnsPath));
+    Path path = wh.getDnsPath(new Path(partitionDnsPath));
+    boolean isSubDirectory = FileUtils.isSubdirectory(tableDnsPath, path.toString());
+    assertTrue(isSubDirectory);
+    isSubDirectory = FileUtils.isSubdirectory(tableDnsPath, partitionDnsPath);
+    assertTrue(isSubDirectory);
   }
 }
