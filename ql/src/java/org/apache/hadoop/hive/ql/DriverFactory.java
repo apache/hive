@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -81,8 +82,8 @@ public final class DriverFactory {
     }
 
     try {
-      return pluginType.newInstance();
-    } catch (InstantiationException | IllegalAccessException e) {
+      return pluginType.getDeclaredConstructor(null).newInstance(null);
+    } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
       throw new RuntimeException(
           "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname + ")");
     }
