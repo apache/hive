@@ -946,12 +946,14 @@ public class StatsOptimizer extends Transform {
         if (!StatsUtils.areBasicStatsUptoDateForQueryAnswering(tbl, tbl.getParameters())) {
           if (MetaStoreUtils.isNonNativeTable(tbl.getTTable())
                   && tbl.getStorageHandler().canComputeQueryUsingStats(tbl)) {
-            return Long.valueOf(tbl.getStorageHandler().getBasicStatistics(Partish.buildFor(tbl))
+            return Long.valueOf(tbl.getStorageHandler().getBasicStatistics(tbl)
                     .get(StatsSetupConst.ROW_COUNT));
           }
           return null;
         }
-        rowCnt = Long.valueOf(tbl.getProperty(StatsSetupConst.ROW_COUNT));
+        Map<String, String> basicStats = MetaStoreUtils.isNonNativeTable(tbl.getTTable()) ?
+            tbl.getStorageHandler().getBasicStatistics(tbl) : tbl.getParameters();
+        rowCnt = Long.valueOf(basicStats.get(StatsSetupConst.ROW_COUNT));
       }
       return rowCnt;
     }
