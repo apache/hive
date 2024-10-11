@@ -518,13 +518,11 @@ public final class HiveUtils {
   }
 
   public static String getTableSnapshotRef(String refName) {
-    if (refName != null && !refName.isEmpty()) {
-      Matcher ref = SNAPSHOT_REF.matcher(refName);
-      if (ref.matches()) {
-        return ref.group(1);
-      }
+    if (org.apache.commons.lang3.StringUtils.isEmpty(refName)) {
+      return null;
     }
-    return null;
+    Matcher ref = SNAPSHOT_REF.matcher(refName);
+    return ref.matches()? ref.group(1) : null;
   }
 
   public static Boolean isTableTag(String refName) {
