@@ -21,6 +21,7 @@ import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.rel.RelNode;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 
 
@@ -57,7 +58,7 @@ public class HiveFieldTrimmerRule  extends RelOptRule {
       return;
     }
     // The node is the root, release the kraken!
-    node = HiveHepExtractRelNodeRule.execute(node);
+    node = HiveCalciteUtil.stripHepVertices(node);
     call.transformTo(trim(call, node));
     triggered = true;
   }
