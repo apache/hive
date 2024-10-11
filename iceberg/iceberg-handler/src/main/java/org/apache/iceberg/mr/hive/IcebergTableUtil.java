@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,9 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -42,6 +46,7 @@ import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFile;
@@ -59,6 +64,7 @@ import org.apache.iceberg.PositionDeletesScanTask;
 import org.apache.iceberg.RowLevelOperationMode;
 import org.apache.iceberg.ScanTask;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
@@ -79,6 +85,7 @@ import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.PropertyUtil;
+import org.apache.iceberg.util.SnapshotUtil;
 import org.apache.iceberg.util.StructProjection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -558,5 +565,33 @@ public class IcebergTableUtil {
     } catch (IOException e) {
       throw new SemanticException(String.format("Error while fetching the partitions due to: %s", e));
     }
+  }
+
+  public static Snapshot getSpecificSnapshot(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Table table) {
+    String refName = HiveUtils.getTableSnapshotRef(hmsTable.getSnapshotRef());
+    Snapshot snapshot;
+    if (refName != null) {
+      snapshot = table.snapshot(refName);
+    } else if (hmsTable.getAsOfTimestamp() != null) {
+      ZoneId timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() :
+          SessionState.get().getConf().getLocalTimeZone();
+      TimestampTZ time = TimestampTZUtil.parse(hmsTable.getAsOfTimestamp(), timeZone);
+      long snapshotId = SnapshotUtil.snapshotIdAsOfTime(table, time.toEpochMilli());
+      snapshot = table.snapshot(snapshotId);
+    } else if (hmsTable.getAsOfVersion() != null) {
+      try {
+        snapshot = table.snapshot(Long.parseLong(hmsTable.getAsOfVersion()));
+      } catch (NumberFormatException e) {
+        SnapshotRef ref = table.refs().get(hmsTable.getAsOfVersion());
+        if (ref == null) {
+          throw new RuntimeException("Cannot find matching snapshot ID or reference name for version " +
+              hmsTable.getAsOfVersion());
+        }
+        snapshot = table.snapshot(ref.snapshotId());
+      }
+    } else {
+      snapshot = table.currentSnapshot();
+    }
+    return snapshot;
   }
 }
