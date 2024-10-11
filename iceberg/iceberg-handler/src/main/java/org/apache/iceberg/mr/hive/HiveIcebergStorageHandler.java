@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,6 +56,8 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -158,6 +161,7 @@ import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SerializableTable;
 import org.apache.iceberg.Snapshot;
+import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.SnapshotSummary;
 import org.apache.iceberg.SortDirection;
 import org.apache.iceberg.SortField;
@@ -465,10 +469,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     org.apache.hadoop.hive.ql.metadata.Table hmsTable = partish.getTable();
     // For write queries where rows got modified, don't fetch from cache as values could have changed.
     Table table = getTable(hmsTable);
+    Snapshot snapshot = getSpecificSnapshot(partish.getTable(), table);
     Map<String, String> stats = Maps.newHashMap();
     if (getStatsSource().equals(HiveMetaHook.ICEBERG)) {
-      if (table.currentSnapshot() != null) {
-        Map<String, String> summary = table.currentSnapshot().summary();
+      if (snapshot != null) {
+        Map<String, String> summary = snapshot.summary();
         if (summary != null) {
 
           if (summary.containsKey(SnapshotSummary.TOTAL_DATA_FILES_PROP)) {
@@ -613,8 +618,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public boolean canComputeQueryUsingStats(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     if (getStatsSource().equals(HiveMetaHook.ICEBERG) && hmsTable.getMetaTable() == null) {
       Table table = getTable(hmsTable);
-      if (table.currentSnapshot() != null) {
-        Map<String, String> summary = table.currentSnapshot().summary();
+      Snapshot snapshot = getSpecificSnapshot(hmsTable, table);
+      if (snapshot != null) {
+        Map<String, String> summary = snapshot.summary();
         if (summary != null && summary.containsKey(SnapshotSummary.TOTAL_EQ_DELETES_PROP) &&
             summary.containsKey(SnapshotSummary.TOTAL_POS_DELETES_PROP)) {
 
@@ -2196,5 +2202,32 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   private static List<FieldSchema> orderBy(VirtualColumn... exprs) {
     return schema(Arrays.asList(exprs));
+  }
+  private Snapshot getSpecificSnapshot(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Table table) {
+    String refName = HiveUtils.getTableSnapshotRef(hmsTable.getSnapshotRef());
+    Snapshot snapshot;
+    if (refName != null) {
+      snapshot = table.snapshot(refName);
+    } else if (hmsTable.getAsOfTimestamp() != null) {
+      ZoneId timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() :
+              SessionState.get().getConf().getLocalTimeZone();
+      TimestampTZ time = TimestampTZUtil.parse(hmsTable.getAsOfTimestamp(), timeZone);
+      long snapshotId = SnapshotUtil.snapshotIdAsOfTime(table, time.toEpochMilli());
+      snapshot = table.snapshot(snapshotId);
+    } else if (hmsTable.getAsOfVersion() != null) {
+      try {
+        snapshot = table.snapshot(Long.parseLong(hmsTable.getAsOfVersion()));
+      } catch (NumberFormatException e) {
+        SnapshotRef ref = table.refs().get(hmsTable.getAsOfVersion());
+        if (ref == null) {
+          throw new RuntimeException("Cannot find matching snapshot ID or reference name for version " +
+                  hmsTable.getAsOfVersion());
+        }
+        snapshot = table.snapshot(ref.snapshotId());
+      }
+    } else {
+      snapshot = table.currentSnapshot();
+    }
+    return snapshot;
   }
 }
