@@ -253,6 +253,7 @@
       <releases>
         <enabled>true</enabled>
         <checksumPolicy>warn</checksumPolicy>
+        <updatePolicy>always</updatePolicy>
       </releases>
     </repository>
     <repository>
