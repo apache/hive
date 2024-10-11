@@ -2156,7 +2156,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       Map<List<String>, Integer> tableOccurrences = RelOptUtil.findAllTables(ctePlan).stream()
           .map(RelOptTable::getQualifiedName)
           .collect(Collectors.toMap(Function.identity(), v -> 1, Integer::sum));
-      CteRuleConfig cteConfig = CteRuleConfig.DEFAULT
+      CteRuleConfig cteConfig = CteRuleConfig.config()
           .withReferenceThreshold(referenceThreshold)
           .withTableOccurrences(tableOccurrences);
       HepProgram spoolProgram = HepProgram.builder()
