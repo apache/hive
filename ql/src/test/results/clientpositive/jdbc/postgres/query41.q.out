@@ -1,0 +1,140 @@
+PREHOOK: query: explain
+select  distinct(i_product_name)
+ from item i1
+ where i_manufact_id between 970 and 970+40 
+   and (select count(*) as item_cnt
+        from item
+        where (i_manufact = i1.i_manufact and
+        ((i_category = 'Women' and 
+        (i_color = 'frosted' or i_color = 'rose') and 
+        (i_units = 'Lb' or i_units = 'Gross') and
+        (i_size = 'medium' or i_size = 'large')
+        ) or
+        (i_category = 'Women' and
+        (i_color = 'chocolate' or i_color = 'black') and
+        (i_units = 'Box' or i_units = 'Dram') and
+        (i_size = 'economy' or i_size = 'petite')
+        ) or
+        (i_category = 'Men' and
+        (i_color = 'slate' or i_color = 'magenta') and
+        (i_units = 'Carton' or i_units = 'Bundle') and
+        (i_size = 'N/A' or i_size = 'small')
+        ) or
+        (i_category = 'Men' and
+        (i_color = 'cornflower' or i_color = 'firebrick') and
+        (i_units = 'Pound' or i_units = 'Oz') and
+        (i_size = 'medium' or i_size = 'large')
+        ))) or
+       (i_manufact = i1.i_manufact and
+        ((i_category = 'Women' and 
+        (i_color = 'almond' or i_color = 'steel') and 
+        (i_units = 'Tsp' or i_units = 'Case') and
+        (i_size = 'medium' or i_size = 'large')
+        ) or
+        (i_category = 'Women' and
+        (i_color = 'purple' or i_color = 'aquamarine') and
+        (i_units = 'Bunch' or i_units = 'Gram') and
+        (i_size = 'economy' or i_size = 'petite')
+        ) or
+        (i_category = 'Men' and
+        (i_color = 'lavender' or i_color = 'papaya') and
+        (i_units = 'Pallet' or i_units = 'Cup') and
+        (i_size = 'N/A' or i_size = 'small')
+        ) or
+        (i_category = 'Men' and
+        (i_color = 'maroon' or i_color = 'cyan') and
+        (i_units = 'Each' or i_units = 'N/A') and
+        (i_size = 'medium' or i_size = 'large')
+        )))) > 0
+ order by i_product_name
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@item
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select  distinct(i_product_name)
+ from item i1
+ where i_manufact_id between 970 and 970+40 
+   and (select count(*) as item_cnt
+        from item
+        where (i_manufact = i1.i_manufact and
+        ((i_category = 'Women' and 
+        (i_color = 'frosted' or i_color = 'rose') and 
+        (i_units = 'Lb' or i_units = 'Gross') and
+        (i_size = 'medium' or i_size = 'large')
+        ) or
+        (i_category = 'Women' and
+        (i_color = 'chocolate' or i_color = 'black') and
+        (i_units = 'Box' or i_units = 'Dram') and
+        (i_size = 'economy' or i_size = 'petite')
+        ) or
+        (i_category = 'Men' and
+        (i_color = 'slate' or i_color = 'magenta') and
+        (i_units = 'Carton' or i_units = 'Bundle') and
+        (i_size = 'N/A' or i_size = 'small')
+        ) or
+        (i_category = 'Men' and
+        (i_color = 'cornflower' or i_color = 'firebrick') and
+        (i_units = 'Pound' or i_units = 'Oz') and
+        (i_size = 'medium' or i_size = 'large')
+        ))) or
+       (i_manufact = i1.i_manufact and
+        ((i_category = 'Women' and 
+        (i_color = 'almond' or i_color = 'steel') and 
+        (i_units = 'Tsp' or i_units = 'Case') and
+        (i_size = 'medium' or i_size = 'large')
+        ) or
+        (i_category = 'Women' and
+        (i_color = 'purple' or i_color = 'aquamarine') and
+        (i_units = 'Bunch' or i_units = 'Gram') and
+        (i_size = 'economy' or i_size = 'petite')
+        ) or
+        (i_category = 'Men' and
+        (i_color = 'lavender' or i_color = 'papaya') and
+        (i_units = 'Pallet' or i_units = 'Cup') and
+        (i_size = 'N/A' or i_size = 'small')
+        ) or
+        (i_category = 'Men' and
+        (i_color = 'maroon' or i_color = 'cyan') and
+        (i_units = 'Each' or i_units = 'N/A') and
+        (i_size = 'medium' or i_size = 'large')
+        )))) > 0
+ order by i_product_name
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@item
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: i1
+          properties:
+            hive.sql.query SELECT "t8"."i_product_name"
+FROM (SELECT "t1"."i_product_name"
+FROM (SELECT "i_manufact", "i_product_name"
+FROM (SELECT "i_manufact_id", "i_manufact", "i_product_name"
+FROM "item") AS "t"
+WHERE "i_manufact_id" BETWEEN 970 AND 1010 AND "i_manufact" IS NOT NULL) AS "t1"
+INNER JOIN (SELECT "i_manufact"
+FROM (SELECT "i_category", "i_manufact", "i_size", "i_color", "i_units"
+FROM "item") AS "t2"
+WHERE ("i_category" = 'Women' AND "i_color" IN ('frosted', 'rose') AND ("i_units" IN ('Lb', 'Gross') AND "i_size" IN ('medium', 'large')) OR "i_category" = 'Women' AND "i_color" IN ('chocolate', 'black') AND ("i_units" IN ('Box', 'Dram') AND "i_size" IN ('economy', 'petite')) OR ("i_category" = 'Men' AND "i_color" IN ('slate', 'magenta') AND ("i_units" IN ('Carton', 'Bundle') AND "i_size" IN ('N/A', 'small')) OR "i_category" = 'Men' AND "i_color" IN ('cornflower', 'firebrick') AND ("i_units" IN ('Pound', 'Oz') AND "i_size" IN ('medium', 'large'))) OR ("i_category" = 'Women' AND "i_color" IN ('almond', 'steel') AND ("i_units" IN ('Tsp', 'Case') AND "i_size" IN ('medium', 'large')) OR "i_category" = 'Women' AND "i_color" IN ('purple', 'aquamarine') AND ("i_units" IN ('Bunch', 'Gram') AND "i_size" IN ('economy', 'petite')) OR ("i_category" = 'Men' AND "i_color" IN ('lavender', 'papaya') AND ("i_units" IN ('Pallet', 'Cup') AND "i_size" IN ('N/A', 'small')) OR "i_category" = 'Men' AND "i_color" IN ('maroon', 'cyan') AND ("i_units" IN ('Each', 'N/A') AND "i_size" IN ('medium', 'large'))))) AND ("i_category" IN ('Women', 'Men') AND "i_size" IN ('medium', 'large', 'economy', 'petite', 'N/A', 'small')) AND ("i_color" IN ('frosted', 'rose', 'chocolate', 'black', 'slate', 'magenta', 'cornflower', 'firebrick', 'almond', 'steel', 'purple', 'aquamarine', 'lavender', 'papaya', 'maroon', 'cyan') AND ("i_units" IN ('Lb', 'Gross', 'Box', 'Dram', 'Carton', 'Bundle', 'Pound', 'Oz', 'Tsp', 'Case', 'Bunch', 'Gram', 'Pallet', 'Cup', 'Each', 'N/A') AND "i_manufact" IS NOT NULL))
+GROUP BY "i_manufact"
+HAVING COUNT(*) > 0) AS "t6" ON "t1"."i_manufact" = "t6"."i_manufact"
+GROUP BY "t1"."i_product_name"
+ORDER BY "t1"."i_product_name"
+FETCH NEXT 100 ROWS ONLY) AS "t8"
+            hive.sql.query.fieldNames i_product_name
+            hive.sql.query.fieldTypes string
+            hive.sql.query.split false
+          Select Operator
+            expressions: i_product_name (type: string)
+            outputColumnNames: _col0
+            ListSink
+

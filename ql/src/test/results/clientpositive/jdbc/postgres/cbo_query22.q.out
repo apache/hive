@@ -1,0 +1,77 @@
+PREHOOK: query: explain cbo
+select  i_product_name
+             ,i_brand
+             ,i_class
+             ,i_category
+             ,avg(inv_quantity_on_hand) qoh
+       from inventory
+           ,date_dim
+           ,item
+           ,warehouse
+       where inv_date_sk=d_date_sk
+              and inv_item_sk=i_item_sk
+              and inv_warehouse_sk = w_warehouse_sk
+              and d_month_seq between 1212 and 1212 + 11
+       group by rollup(i_product_name
+                       ,i_brand
+                       ,i_class
+                       ,i_category)
+order by qoh, i_product_name, i_brand, i_class, i_category
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@inventory
+PREHOOK: Input: default@item
+PREHOOK: Input: default@warehouse
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select  i_product_name
+             ,i_brand
+             ,i_class
+             ,i_category
+             ,avg(inv_quantity_on_hand) qoh
+       from inventory
+           ,date_dim
+           ,item
+           ,warehouse
+       where inv_date_sk=d_date_sk
+              and inv_item_sk=i_item_sk
+              and inv_warehouse_sk = w_warehouse_sk
+              and d_month_seq between 1212 and 1212 + 11
+       group by rollup(i_product_name
+                       ,i_brand
+                       ,i_class
+                       ,i_category)
+order by qoh, i_product_name, i_brand, i_class, i_category
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@inventory
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@warehouse
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$4], sort1=[$0], sort2=[$1], sort3=[$2], sort4=[$3], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], fetch=[100])
+  HiveProject(i_product_name=[$3], i_brand=[$0], i_class=[$1], i_category=[$2], qoh=[/(CAST($4):DOUBLE, $5)])
+    HiveAggregate(group=[{7, 8, 9, 10}], groups=[[{7, 8, 9, 10}, {7, 8, 10}, {7, 10}, {10}, {}]], agg#0=[sum($3)], agg#1=[count($3)])
+      HiveProject(inv_date_sk=[$0], inv_item_sk=[$1], inv_warehouse_sk=[$2], inv_quantity_on_hand=[$3], d_date_sk=[$4], w_warehouse_sk=[$5], i_item_sk=[$6], i_brand=[$7], i_class=[$8], i_category=[$9], i_product_name=[$10])
+        HiveJdbcConverter(convention=[JDBC.POSTGRES])
+          JdbcJoin(condition=[=($1, $6)], joinType=[inner])
+            JdbcJoin(condition=[=($2, $5)], joinType=[inner])
+              JdbcJoin(condition=[=($0, $4)], joinType=[inner])
+                JdbcProject(inv_date_sk=[$0], inv_item_sk=[$1], inv_warehouse_sk=[$2], inv_quantity_on_hand=[$3])
+                  JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1), IS NOT NULL($2))])
+                    JdbcHiveTableScan(table=[[default, inventory]], table:alias=[inventory])
+                JdbcProject(d_date_sk=[$0])
+                  JdbcFilter(condition=[AND(BETWEEN(false, $1, 1212, 1223), IS NOT NULL($0))])
+                    JdbcProject(d_date_sk=[$0], d_month_seq=[$3])
+                      JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+              JdbcProject(w_warehouse_sk=[$0])
+                JdbcFilter(condition=[IS NOT NULL($0)])
+                  JdbcProject(w_warehouse_sk=[$0])
+                    JdbcHiveTableScan(table=[[default, warehouse]], table:alias=[warehouse])
+            JdbcProject(i_item_sk=[$0], i_brand=[$1], i_class=[$2], i_category=[$3], i_product_name=[$4])
+              JdbcFilter(condition=[IS NOT NULL($0)])
+                JdbcProject(i_item_sk=[$0], i_brand=[$8], i_class=[$10], i_category=[$12], i_product_name=[$21])
+                  JdbcHiveTableScan(table=[[default, item]], table:alias=[item])
+

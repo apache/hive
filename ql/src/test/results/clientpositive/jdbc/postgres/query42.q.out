@@ -1,0 +1,86 @@
+PREHOOK: query: explain
+select  dt.d_year
+ 	,item.i_category_id
+ 	,item.i_category
+ 	,sum(ss_ext_sales_price)
+ from 	date_dim dt
+ 	,store_sales
+ 	,item
+ where dt.d_date_sk = store_sales.ss_sold_date_sk
+ 	and store_sales.ss_item_sk = item.i_item_sk
+ 	and item.i_manager_id = 1  	
+ 	and dt.d_moy=12
+ 	and dt.d_year=1998
+ group by 	dt.d_year
+ 		,item.i_category_id
+ 		,item.i_category
+ order by       sum(ss_ext_sales_price) desc,dt.d_year
+ 		,item.i_category_id
+ 		,item.i_category
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select  dt.d_year
+ 	,item.i_category_id
+ 	,item.i_category
+ 	,sum(ss_ext_sales_price)
+ from 	date_dim dt
+ 	,store_sales
+ 	,item
+ where dt.d_date_sk = store_sales.ss_sold_date_sk
+ 	and store_sales.ss_item_sk = item.i_item_sk
+ 	and item.i_manager_id = 1  	
+ 	and dt.d_moy=12
+ 	and dt.d_year=1998
+ group by 	dt.d_year
+ 		,item.i_category_id
+ 		,item.i_category
+ order by       sum(ss_ext_sales_price) desc,dt.d_year
+ 		,item.i_category_id
+ 		,item.i_category
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: store_sales
+          properties:
+            hive.sql.query SELECT CAST(1998 AS INTEGER) AS "d_year", "t10"."i_category_id", "t10"."i_category", "t10"."_o__c3"
+FROM (SELECT "t7"."i_category_id", "t7"."i_category", SUM("t1"."ss_ext_sales_price") AS "_o__c3", SUM("t1"."ss_ext_sales_price") AS "(tok_function sum (tok_table_or_col ss_ext_sales_price))"
+FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_ext_sales_price"
+FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_ext_sales_price"
+FROM "store_sales") AS "t"
+WHERE "ss_sold_date_sk" IS NOT NULL AND "ss_item_sk" IS NOT NULL) AS "t1"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year", "d_moy"
+FROM "date_dim") AS "t2"
+WHERE "d_moy" = 12 AND ("d_year" = 1998 AND "d_date_sk" IS NOT NULL)) AS "t4" ON "t1"."ss_sold_date_sk" = "t4"."d_date_sk"
+INNER JOIN (SELECT "i_item_sk", "i_category_id", "i_category"
+FROM (SELECT "i_item_sk", "i_category_id", "i_category", "i_manager_id"
+FROM "item") AS "t5"
+WHERE "i_manager_id" = 1 AND "i_item_sk" IS NOT NULL) AS "t7" ON "t1"."ss_item_sk" = "t7"."i_item_sk"
+GROUP BY "t7"."i_category_id", "t7"."i_category"
+ORDER BY SUM("t1"."ss_ext_sales_price") DESC, "t7"."i_category_id", "t7"."i_category"
+FETCH NEXT 100 ROWS ONLY) AS "t10"
+            hive.sql.query.fieldNames d_year,i_category_id,i_category,_o__c3
+            hive.sql.query.fieldTypes int,int,string,decimal(17,2)
+            hive.sql.query.split false
+          Select Operator
+            expressions: d_year (type: int), i_category_id (type: int), i_category (type: string), _o__c3 (type: decimal(17,2))
+            outputColumnNames: _col0, _col1, _col2, _col3
+            ListSink
+

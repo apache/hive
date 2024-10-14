@@ -1,0 +1,404 @@
+CTE Suggestion:
+JdbcJoin(condition=[=($1, $3)], joinType=[inner])
+  JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0), IS NOT NULL($2))])
+    JdbcProject(ss_sold_time_sk=[$1], ss_hdemo_sk=[$5], ss_store_sk=[$7])
+      JdbcHiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+  JdbcProject(hd_demo_sk=[$0])
+    JdbcFilter(condition=[AND(IN($1, 3, 0, 1), OR(<=($2, 5), <=($2, 2), <=($2, 3)), OR(AND(=($1, 3), <=($2, 5)), AND(=($1, 0), <=($2, 2)), AND(=($1, 1), <=($2, 3))), IS NOT NULL($0))])
+      JdbcProject(hd_demo_sk=[$0], hd_dep_count=[$3], hd_vehicle_count=[$4])
+        JdbcHiveTableScan(table=[[default, household_demographics]], table:alias=[household_demographics])
+
+CTE Suggestion:
+JdbcProject(s_store_sk=[$0])
+  JdbcFilter(condition=[AND(=($1, _UTF-16LE'ese'), IS NOT NULL($0))])
+    JdbcProject(s_store_sk=[$0], s_store_name=[$5])
+      JdbcHiveTableScan(table=[[default, store]], table:alias=[store])
+
+Warning: Shuffle Join MERGEJOIN[40][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[41][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[42][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[43][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4]] in Stage 'Reducer 5' is a cross product
+Warning: Shuffle Join MERGEJOIN[44][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5]] in Stage 'Reducer 6' is a cross product
+Warning: Shuffle Join MERGEJOIN[45][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5, $hdt$_6]] in Stage 'Reducer 7' is a cross product
+Warning: Shuffle Join MERGEJOIN[46][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5, $hdt$_6, $hdt$_7]] in Stage 'Reducer 8' is a cross product
+PREHOOK: query: explain cbo
+select  *
+from
+ (select count(*) h8_30_to_9
+ from store_sales, household_demographics , time_dim, store
+ where ss_sold_time_sk = time_dim.t_time_sk   
+     and ss_hdemo_sk = household_demographics.hd_demo_sk 
+     and ss_store_sk = s_store_sk
+     and time_dim.t_hour = 8
+     and time_dim.t_minute >= 30
+     and ((household_demographics.hd_dep_count = 3 and household_demographics.hd_vehicle_count<=3+2) or
+          (household_demographics.hd_dep_count = 0 and household_demographics.hd_vehicle_count<=0+2) or
+          (household_demographics.hd_dep_count = 1 and household_demographics.hd_vehicle_count<=1+2)) 
+     and store.s_store_name = 'ese') s1,
+ (select count(*) h9_to_9_30 
+ from store_sales, household_demographics , time_dim, store
+ where ss_sold_time_sk = time_dim.t_time_sk
+     and ss_hdemo_sk = household_demographics.hd_demo_sk
+     and ss_store_sk = s_store_sk 
+     and time_dim.t_hour = 9 
+     and time_dim.t_minute < 30
+     and ((household_demographics.hd_dep_count = 3 and household_demographics.hd_vehicle_count<=3+2) or
+          (household_demographics.hd_dep_count = 0 and household_demographics.hd_vehicle_count<=0+2) or
+          (household_demographics.hd_dep_count = 1 and household_demographics.hd_vehicle_count<=1+2))
+     and store.s_store_name = 'ese') s2,
+ (select count(*) h9_30_to_10 
+ from store_sales, household_demographics , time_dim, store
+ where ss_sold_time_sk = time_dim.t_time_sk
+     and ss_hdemo_sk = household_demographics.hd_demo_sk
+     and ss_store_sk = s_store_sk
+     and time_dim.t_hour = 9
+     and time_dim.t_minute >= 30
+     and ((household_demographics.hd_dep_count = 3 and household_demographics.hd_vehicle_count<=3+2) or
+          (household_demographics.hd_dep_count = 0 and household_demographics.hd_vehicle_count<=0+2) or
+          (household_demographics.hd_dep_count = 1 and household_demographics.hd_vehicle_count<=1+2))
+     and store.s_store_name = 'ese') s3,
+ (select count(*) h10_to_10_30
+ from store_sales, household_demographics , time_dim, store
+ where ss_sold_time_sk = time_dim.t_time_sk
+     and ss_hdemo_sk = household_demographics.hd_demo_sk
+     and ss_store_sk = s_store_sk
+     and time_dim.t_hour = 10 
+     and time_dim.t_minute < 30
+     and ((household_demographics.hd_dep_count = 3 and household_demographics.hd_vehicle_count<=3+2) or
+          (household_demographics.hd_dep_count = 0 and household_demographics.hd_vehicle_count<=0+2) or
+          (household_demographics.hd_dep_count = 1 and household_demographics.hd_vehicle_count<=1+2))
+     and store.s_store_name = 'ese') s4,
+ (select count(*) h10_30_to_11
+ from store_sales, household_demographics , time_dim, store
+ where ss_sold_time_sk = time_dim.t_time_sk
+     and ss_hdemo_sk = household_demographics.hd_demo_sk
+     and ss_store_sk = s_store_sk
+     and time_dim.t_hour = 10 
+     and time_dim.t_minute >= 30
+     and ((household_demographics.hd_dep_count = 3 and household_demographics.hd_vehicle_count<=3+2) or
+          (household_demographics.hd_dep_count = 0 and household_demographics.hd_vehicle_count<=0+2) or
+          (household_demographics.hd_dep_count = 1 and household_demographics.hd_vehicle_count<=1+2))
+     and store.s_store_name = 'ese') s5,
+ (select count(*) h11_to_11_30
+ from store_sales, household_demographics , time_dim, store
+ where ss_sold_time_sk = time_dim.t_time_sk
+     and ss_hdemo_sk = household_demographics.hd_demo_sk
+     and ss_store_sk = s_store_sk 
+     and time_dim.t_hour = 11
+     and time_dim.t_minute < 30
+     and ((household_demographics.hd_dep_count = 3 and household_demographics.hd_vehicle_count<=3+2) or
+          (household_demographics.hd_dep_count = 0 and household_demographics.hd_vehicle_count<=0+2) or
+          (household_demographics.hd_dep_count = 1 and household_demographics.hd_vehicle_count<=1+2))
+     and store.s_store_name = 'ese') s6,
+ (select count(*) h11_30_to_12
+ from store_sales, household_demographics , time_dim, store
+ where ss_sold_time_sk = time_dim.t_time_sk
+     and ss_hdemo_sk = household_demographics.hd_demo_sk
+     and ss_store_sk = s_store_sk
+     and time_dim.t_hour = 11
+     and time_dim.t_minute >= 30
+     and ((household_demographics.hd_dep_count = 3 and household_demographics.hd_vehicle_count<=3+2) or
+          (household_demographics.hd_dep_count = 0 and household_demographics.hd_vehicle_count<=0+2) or
+          (household_demographics.hd_dep_count = 1 and household_demographics.hd_vehicle_count<=1+2))
+     and store.s_store_name = 'ese') s7,
+ (select count(*) h12_to_12_30
+ from store_sales, household_demographics , time_dim, store
+ where ss_sold_time_sk = time_dim.t_time_sk
+     and ss_hdemo_sk = household_demographics.hd_demo_sk
+     and ss_store_sk = s_store_sk
+     and time_dim.t_hour = 12
+     and time_dim.t_minute < 30
+     and ((household_demographics.hd_dep_count = 3 and household_demographics.hd_vehicle_count<=3+2) or
+          (household_demographics.hd_dep_count = 0 and household_demographics.hd_vehicle_count<=0+2) or
+          (household_demographics.hd_dep_count = 1 and household_demographics.hd_vehicle_count<=1+2))
+     and store.s_store_name = 'ese') s8
+PREHOOK: type: QUERY
+PREHOOK: Input: default@household_demographics
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@time_dim
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select  *
+from
+ (select count(*) h8_30_to_9
+ from store_sales, household_demographics , time_dim, store
+ where ss_sold_time_sk = time_dim.t_time_sk   
+     and ss_hdemo_sk = household_demographics.hd_demo_sk 
+     and ss_store_sk = s_store_sk
+     and time_dim.t_hour = 8
+     and time_dim.t_minute >= 30
+     and ((household_demographics.hd_dep_count = 3 and household_demographics.hd_vehicle_count<=3+2) or
+          (household_demographics.hd_dep_count = 0 and household_demographics.hd_vehicle_count<=0+2) or
+          (household_demographics.hd_dep_count = 1 and household_demographics.hd_vehicle_count<=1+2)) 
+     and store.s_store_name = 'ese') s1,
+ (select count(*) h9_to_9_30 
+ from store_sales, household_demographics , time_dim, store
+ where ss_sold_time_sk = time_dim.t_time_sk
+     and ss_hdemo_sk = household_demographics.hd_demo_sk
+     and ss_store_sk = s_store_sk 
+     and time_dim.t_hour = 9 
+     and time_dim.t_minute < 30
+     and ((household_demographics.hd_dep_count = 3 and household_demographics.hd_vehicle_count<=3+2) or
+          (household_demographics.hd_dep_count = 0 and household_demographics.hd_vehicle_count<=0+2) or
+          (household_demographics.hd_dep_count = 1 and household_demographics.hd_vehicle_count<=1+2))
+     and store.s_store_name = 'ese') s2,
+ (select count(*) h9_30_to_10 
+ from store_sales, household_demographics , time_dim, store
+ where ss_sold_time_sk = time_dim.t_time_sk
+     and ss_hdemo_sk = household_demographics.hd_demo_sk
+     and ss_store_sk = s_store_sk
+     and time_dim.t_hour = 9
+     and time_dim.t_minute >= 30
+     and ((household_demographics.hd_dep_count = 3 and household_demographics.hd_vehicle_count<=3+2) or
+          (household_demographics.hd_dep_count = 0 and household_demographics.hd_vehicle_count<=0+2) or
+          (household_demographics.hd_dep_count = 1 and household_demographics.hd_vehicle_count<=1+2))
+     and store.s_store_name = 'ese') s3,
+ (select count(*) h10_to_10_30
+ from store_sales, household_demographics , time_dim, store
+ where ss_sold_time_sk = time_dim.t_time_sk
+     and ss_hdemo_sk = household_demographics.hd_demo_sk
+     and ss_store_sk = s_store_sk
+     and time_dim.t_hour = 10 
+     and time_dim.t_minute < 30
+     and ((household_demographics.hd_dep_count = 3 and household_demographics.hd_vehicle_count<=3+2) or
+          (household_demographics.hd_dep_count = 0 and household_demographics.hd_vehicle_count<=0+2) or
+          (household_demographics.hd_dep_count = 1 and household_demographics.hd_vehicle_count<=1+2))
+     and store.s_store_name = 'ese') s4,
+ (select count(*) h10_30_to_11
+ from store_sales, household_demographics , time_dim, store
+ where ss_sold_time_sk = time_dim.t_time_sk
+     and ss_hdemo_sk = household_demographics.hd_demo_sk
+     and ss_store_sk = s_store_sk
+     and time_dim.t_hour = 10 
+     and time_dim.t_minute >= 30
+     and ((household_demographics.hd_dep_count = 3 and household_demographics.hd_vehicle_count<=3+2) or
+          (household_demographics.hd_dep_count = 0 and household_demographics.hd_vehicle_count<=0+2) or
+          (household_demographics.hd_dep_count = 1 and household_demographics.hd_vehicle_count<=1+2))
+     and store.s_store_name = 'ese') s5,
+ (select count(*) h11_to_11_30
+ from store_sales, household_demographics , time_dim, store
+ where ss_sold_time_sk = time_dim.t_time_sk
+     and ss_hdemo_sk = household_demographics.hd_demo_sk
+     and ss_store_sk = s_store_sk 
+     and time_dim.t_hour = 11
+     and time_dim.t_minute < 30
+     and ((household_demographics.hd_dep_count = 3 and household_demographics.hd_vehicle_count<=3+2) or
+          (household_demographics.hd_dep_count = 0 and household_demographics.hd_vehicle_count<=0+2) or
+          (household_demographics.hd_dep_count = 1 and household_demographics.hd_vehicle_count<=1+2))
+     and store.s_store_name = 'ese') s6,
+ (select count(*) h11_30_to_12
+ from store_sales, household_demographics , time_dim, store
+ where ss_sold_time_sk = time_dim.t_time_sk
+     and ss_hdemo_sk = household_demographics.hd_demo_sk
+     and ss_store_sk = s_store_sk
+     and time_dim.t_hour = 11
+     and time_dim.t_minute >= 30
+     and ((household_demographics.hd_dep_count = 3 and household_demographics.hd_vehicle_count<=3+2) or
+          (household_demographics.hd_dep_count = 0 and household_demographics.hd_vehicle_count<=0+2) or
+          (household_demographics.hd_dep_count = 1 and household_demographics.hd_vehicle_count<=1+2))
+     and store.s_store_name = 'ese') s7,
+ (select count(*) h12_to_12_30
+ from store_sales, household_demographics , time_dim, store
+ where ss_sold_time_sk = time_dim.t_time_sk
+     and ss_hdemo_sk = household_demographics.hd_demo_sk
+     and ss_store_sk = s_store_sk
+     and time_dim.t_hour = 12
+     and time_dim.t_minute < 30
+     and ((household_demographics.hd_dep_count = 3 and household_demographics.hd_vehicle_count<=3+2) or
+          (household_demographics.hd_dep_count = 0 and household_demographics.hd_vehicle_count<=0+2) or
+          (household_demographics.hd_dep_count = 1 and household_demographics.hd_vehicle_count<=1+2))
+     and store.s_store_name = 'ese') s8
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@household_demographics
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@time_dim
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject($f0=[$0], $f00=[$7], $f01=[$6], $f02=[$5], $f03=[$4], $f04=[$3], $f05=[$2], $f06=[$1])
+  HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveProject($f0=[$0])
+                  HiveProject($f0=[$0])
+                    HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                      JdbcAggregate(group=[{}], agg#0=[count()])
+                        JdbcJoin(condition=[=($2, $5)], joinType=[inner])
+                          JdbcJoin(condition=[=($0, $4)], joinType=[inner])
+                            JdbcJoin(condition=[=($1, $3)], joinType=[inner])
+                              JdbcProject(ss_sold_time_sk=[$0], ss_hdemo_sk=[$1], ss_store_sk=[$2])
+                                JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0), IS NOT NULL($2))])
+                                  JdbcProject(ss_sold_time_sk=[$1], ss_hdemo_sk=[$5], ss_store_sk=[$7])
+                                    JdbcHiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                              JdbcProject(hd_demo_sk=[$0])
+                                JdbcFilter(condition=[AND(OR(<=($2, 5), <=($2, 2), <=($2, 3)), OR(AND(=($1, 3), <=($2, 5)), AND(=($1, 0), <=($2, 2)), AND(=($1, 1), <=($2, 3))), IN($1, 3, 0, 1), IS NOT NULL($0))])
+                                  JdbcProject(hd_demo_sk=[$0], hd_dep_count=[$3], hd_vehicle_count=[$4])
+                                    JdbcHiveTableScan(table=[[default, household_demographics]], table:alias=[household_demographics])
+                            JdbcProject(t_time_sk=[$0])
+                              JdbcFilter(condition=[AND(>=($2, 30), =($1, 8), IS NOT NULL($0))])
+                                JdbcProject(t_time_sk=[$0], t_hour=[$3], t_minute=[$4])
+                                  JdbcHiveTableScan(table=[[default, time_dim]], table:alias=[time_dim])
+                          JdbcProject(s_store_sk=[$0])
+                            JdbcFilter(condition=[AND(=($1, _UTF-16LE'ese'), IS NOT NULL($0))])
+                              JdbcProject(s_store_sk=[$0], s_store_name=[$5])
+                                JdbcHiveTableScan(table=[[default, store]], table:alias=[store])
+                HiveProject($f0=[$0])
+                  HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                    JdbcAggregate(group=[{}], agg#0=[count()])
+                      JdbcJoin(condition=[=($2, $5)], joinType=[inner])
+                        JdbcJoin(condition=[=($0, $4)], joinType=[inner])
+                          JdbcJoin(condition=[=($1, $3)], joinType=[inner])
+                            JdbcProject(ss_sold_time_sk=[$0], ss_hdemo_sk=[$1], ss_store_sk=[$2])
+                              JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0), IS NOT NULL($2))])
+                                JdbcProject(ss_sold_time_sk=[$1], ss_hdemo_sk=[$5], ss_store_sk=[$7])
+                                  JdbcHiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                            JdbcProject(hd_demo_sk=[$0])
+                              JdbcFilter(condition=[AND(OR(<=($2, 5), <=($2, 2), <=($2, 3)), OR(AND(=($1, 3), <=($2, 5)), AND(=($1, 0), <=($2, 2)), AND(=($1, 1), <=($2, 3))), IN($1, 3, 0, 1), IS NOT NULL($0))])
+                                JdbcProject(hd_demo_sk=[$0], hd_dep_count=[$3], hd_vehicle_count=[$4])
+                                  JdbcHiveTableScan(table=[[default, household_demographics]], table:alias=[household_demographics])
+                          JdbcProject(t_time_sk=[$0])
+                            JdbcFilter(condition=[AND(<($2, 30), =($1, 12), IS NOT NULL($0))])
+                              JdbcProject(t_time_sk=[$0], t_hour=[$3], t_minute=[$4])
+                                JdbcHiveTableScan(table=[[default, time_dim]], table:alias=[time_dim])
+                        JdbcProject(s_store_sk=[$0])
+                          JdbcFilter(condition=[AND(=($1, _UTF-16LE'ese'), IS NOT NULL($0))])
+                            JdbcProject(s_store_sk=[$0], s_store_name=[$5])
+                              JdbcHiveTableScan(table=[[default, store]], table:alias=[store])
+              HiveProject($f0=[$0])
+                HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                  JdbcAggregate(group=[{}], agg#0=[count()])
+                    JdbcJoin(condition=[=($2, $5)], joinType=[inner])
+                      JdbcJoin(condition=[=($0, $4)], joinType=[inner])
+                        JdbcJoin(condition=[=($1, $3)], joinType=[inner])
+                          JdbcProject(ss_sold_time_sk=[$0], ss_hdemo_sk=[$1], ss_store_sk=[$2])
+                            JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0), IS NOT NULL($2))])
+                              JdbcProject(ss_sold_time_sk=[$1], ss_hdemo_sk=[$5], ss_store_sk=[$7])
+                                JdbcHiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                          JdbcProject(hd_demo_sk=[$0])
+                            JdbcFilter(condition=[AND(OR(<=($2, 5), <=($2, 2), <=($2, 3)), OR(AND(=($1, 3), <=($2, 5)), AND(=($1, 0), <=($2, 2)), AND(=($1, 1), <=($2, 3))), IN($1, 3, 0, 1), IS NOT NULL($0))])
+                              JdbcProject(hd_demo_sk=[$0], hd_dep_count=[$3], hd_vehicle_count=[$4])
+                                JdbcHiveTableScan(table=[[default, household_demographics]], table:alias=[household_demographics])
+                        JdbcProject(t_time_sk=[$0])
+                          JdbcFilter(condition=[AND(>=($2, 30), =($1, 11), IS NOT NULL($0))])
+                            JdbcProject(t_time_sk=[$0], t_hour=[$3], t_minute=[$4])
+                              JdbcHiveTableScan(table=[[default, time_dim]], table:alias=[time_dim])
+                      JdbcProject(s_store_sk=[$0])
+                        JdbcFilter(condition=[AND(=($1, _UTF-16LE'ese'), IS NOT NULL($0))])
+                          JdbcProject(s_store_sk=[$0], s_store_name=[$5])
+                            JdbcHiveTableScan(table=[[default, store]], table:alias=[store])
+            HiveProject($f0=[$0])
+              HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                JdbcAggregate(group=[{}], agg#0=[count()])
+                  JdbcJoin(condition=[=($2, $5)], joinType=[inner])
+                    JdbcJoin(condition=[=($0, $4)], joinType=[inner])
+                      JdbcJoin(condition=[=($1, $3)], joinType=[inner])
+                        JdbcProject(ss_sold_time_sk=[$0], ss_hdemo_sk=[$1], ss_store_sk=[$2])
+                          JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0), IS NOT NULL($2))])
+                            JdbcProject(ss_sold_time_sk=[$1], ss_hdemo_sk=[$5], ss_store_sk=[$7])
+                              JdbcHiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                        JdbcProject(hd_demo_sk=[$0])
+                          JdbcFilter(condition=[AND(OR(<=($2, 5), <=($2, 2), <=($2, 3)), OR(AND(=($1, 3), <=($2, 5)), AND(=($1, 0), <=($2, 2)), AND(=($1, 1), <=($2, 3))), IN($1, 3, 0, 1), IS NOT NULL($0))])
+                            JdbcProject(hd_demo_sk=[$0], hd_dep_count=[$3], hd_vehicle_count=[$4])
+                              JdbcHiveTableScan(table=[[default, household_demographics]], table:alias=[household_demographics])
+                      JdbcProject(t_time_sk=[$0])
+                        JdbcFilter(condition=[AND(<($2, 30), =($1, 11), IS NOT NULL($0))])
+                          JdbcProject(t_time_sk=[$0], t_hour=[$3], t_minute=[$4])
+                            JdbcHiveTableScan(table=[[default, time_dim]], table:alias=[time_dim])
+                    JdbcProject(s_store_sk=[$0])
+                      JdbcFilter(condition=[AND(=($1, _UTF-16LE'ese'), IS NOT NULL($0))])
+                        JdbcProject(s_store_sk=[$0], s_store_name=[$5])
+                          JdbcHiveTableScan(table=[[default, store]], table:alias=[store])
+          HiveProject($f0=[$0])
+            HiveJdbcConverter(convention=[JDBC.POSTGRES])
+              JdbcAggregate(group=[{}], agg#0=[count()])
+                JdbcJoin(condition=[=($2, $5)], joinType=[inner])
+                  JdbcJoin(condition=[=($0, $4)], joinType=[inner])
+                    JdbcJoin(condition=[=($1, $3)], joinType=[inner])
+                      JdbcProject(ss_sold_time_sk=[$0], ss_hdemo_sk=[$1], ss_store_sk=[$2])
+                        JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0), IS NOT NULL($2))])
+                          JdbcProject(ss_sold_time_sk=[$1], ss_hdemo_sk=[$5], ss_store_sk=[$7])
+                            JdbcHiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                      JdbcProject(hd_demo_sk=[$0])
+                        JdbcFilter(condition=[AND(OR(<=($2, 5), <=($2, 2), <=($2, 3)), OR(AND(=($1, 3), <=($2, 5)), AND(=($1, 0), <=($2, 2)), AND(=($1, 1), <=($2, 3))), IN($1, 3, 0, 1), IS NOT NULL($0))])
+                          JdbcProject(hd_demo_sk=[$0], hd_dep_count=[$3], hd_vehicle_count=[$4])
+                            JdbcHiveTableScan(table=[[default, household_demographics]], table:alias=[household_demographics])
+                    JdbcProject(t_time_sk=[$0])
+                      JdbcFilter(condition=[AND(>=($2, 30), =($1, 10), IS NOT NULL($0))])
+                        JdbcProject(t_time_sk=[$0], t_hour=[$3], t_minute=[$4])
+                          JdbcHiveTableScan(table=[[default, time_dim]], table:alias=[time_dim])
+                  JdbcProject(s_store_sk=[$0])
+                    JdbcFilter(condition=[AND(=($1, _UTF-16LE'ese'), IS NOT NULL($0))])
+                      JdbcProject(s_store_sk=[$0], s_store_name=[$5])
+                        JdbcHiveTableScan(table=[[default, store]], table:alias=[store])
+        HiveProject($f0=[$0])
+          HiveJdbcConverter(convention=[JDBC.POSTGRES])
+            JdbcAggregate(group=[{}], agg#0=[count()])
+              JdbcJoin(condition=[=($2, $5)], joinType=[inner])
+                JdbcJoin(condition=[=($0, $4)], joinType=[inner])
+                  JdbcJoin(condition=[=($1, $3)], joinType=[inner])
+                    JdbcProject(ss_sold_time_sk=[$0], ss_hdemo_sk=[$1], ss_store_sk=[$2])
+                      JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0), IS NOT NULL($2))])
+                        JdbcProject(ss_sold_time_sk=[$1], ss_hdemo_sk=[$5], ss_store_sk=[$7])
+                          JdbcHiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                    JdbcProject(hd_demo_sk=[$0])
+                      JdbcFilter(condition=[AND(OR(<=($2, 5), <=($2, 2), <=($2, 3)), OR(AND(=($1, 3), <=($2, 5)), AND(=($1, 0), <=($2, 2)), AND(=($1, 1), <=($2, 3))), IN($1, 3, 0, 1), IS NOT NULL($0))])
+                        JdbcProject(hd_demo_sk=[$0], hd_dep_count=[$3], hd_vehicle_count=[$4])
+                          JdbcHiveTableScan(table=[[default, household_demographics]], table:alias=[household_demographics])
+                  JdbcProject(t_time_sk=[$0])
+                    JdbcFilter(condition=[AND(<($2, 30), =($1, 10), IS NOT NULL($0))])
+                      JdbcProject(t_time_sk=[$0], t_hour=[$3], t_minute=[$4])
+                        JdbcHiveTableScan(table=[[default, time_dim]], table:alias=[time_dim])
+                JdbcProject(s_store_sk=[$0])
+                  JdbcFilter(condition=[AND(=($1, _UTF-16LE'ese'), IS NOT NULL($0))])
+                    JdbcProject(s_store_sk=[$0], s_store_name=[$5])
+                      JdbcHiveTableScan(table=[[default, store]], table:alias=[store])
+      HiveProject($f0=[$0])
+        HiveJdbcConverter(convention=[JDBC.POSTGRES])
+          JdbcAggregate(group=[{}], agg#0=[count()])
+            JdbcJoin(condition=[=($2, $5)], joinType=[inner])
+              JdbcJoin(condition=[=($0, $4)], joinType=[inner])
+                JdbcJoin(condition=[=($1, $3)], joinType=[inner])
+                  JdbcProject(ss_sold_time_sk=[$0], ss_hdemo_sk=[$1], ss_store_sk=[$2])
+                    JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0), IS NOT NULL($2))])
+                      JdbcProject(ss_sold_time_sk=[$1], ss_hdemo_sk=[$5], ss_store_sk=[$7])
+                        JdbcHiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                  JdbcProject(hd_demo_sk=[$0])
+                    JdbcFilter(condition=[AND(OR(<=($2, 5), <=($2, 2), <=($2, 3)), OR(AND(=($1, 3), <=($2, 5)), AND(=($1, 0), <=($2, 2)), AND(=($1, 1), <=($2, 3))), IN($1, 3, 0, 1), IS NOT NULL($0))])
+                      JdbcProject(hd_demo_sk=[$0], hd_dep_count=[$3], hd_vehicle_count=[$4])
+                        JdbcHiveTableScan(table=[[default, household_demographics]], table:alias=[household_demographics])
+                JdbcProject(t_time_sk=[$0])
+                  JdbcFilter(condition=[AND(>=($2, 30), =($1, 9), IS NOT NULL($0))])
+                    JdbcProject(t_time_sk=[$0], t_hour=[$3], t_minute=[$4])
+                      JdbcHiveTableScan(table=[[default, time_dim]], table:alias=[time_dim])
+              JdbcProject(s_store_sk=[$0])
+                JdbcFilter(condition=[AND(=($1, _UTF-16LE'ese'), IS NOT NULL($0))])
+                  JdbcProject(s_store_sk=[$0], s_store_name=[$5])
+                    JdbcHiveTableScan(table=[[default, store]], table:alias=[store])
+    HiveProject($f0=[$0])
+      HiveJdbcConverter(convention=[JDBC.POSTGRES])
+        JdbcAggregate(group=[{}], agg#0=[count()])
+          JdbcJoin(condition=[=($2, $5)], joinType=[inner])
+            JdbcJoin(condition=[=($0, $4)], joinType=[inner])
+              JdbcJoin(condition=[=($1, $3)], joinType=[inner])
+                JdbcProject(ss_sold_time_sk=[$0], ss_hdemo_sk=[$1], ss_store_sk=[$2])
+                  JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0), IS NOT NULL($2))])
+                    JdbcProject(ss_sold_time_sk=[$1], ss_hdemo_sk=[$5], ss_store_sk=[$7])
+                      JdbcHiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                JdbcProject(hd_demo_sk=[$0])
+                  JdbcFilter(condition=[AND(OR(<=($2, 5), <=($2, 2), <=($2, 3)), OR(AND(=($1, 3), <=($2, 5)), AND(=($1, 0), <=($2, 2)), AND(=($1, 1), <=($2, 3))), IN($1, 3, 0, 1), IS NOT NULL($0))])
+                    JdbcProject(hd_demo_sk=[$0], hd_dep_count=[$3], hd_vehicle_count=[$4])
+                      JdbcHiveTableScan(table=[[default, household_demographics]], table:alias=[household_demographics])
+              JdbcProject(t_time_sk=[$0])
+                JdbcFilter(condition=[AND(<($2, 30), =($1, 9), IS NOT NULL($0))])
+                  JdbcProject(t_time_sk=[$0], t_hour=[$3], t_minute=[$4])
+                    JdbcHiveTableScan(table=[[default, time_dim]], table:alias=[time_dim])
+            JdbcProject(s_store_sk=[$0])
+              JdbcFilter(condition=[AND(=($1, _UTF-16LE'ese'), IS NOT NULL($0))])
+                JdbcProject(s_store_sk=[$0], s_store_name=[$5])
+                  JdbcHiveTableScan(table=[[default, store]], table:alias=[store])
+

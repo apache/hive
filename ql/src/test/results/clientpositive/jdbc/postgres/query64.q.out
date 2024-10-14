@@ -1,0 +1,458 @@
+PREHOOK: query: explain
+with cs_ui as
+ (select cs_item_sk
+        ,sum(cs_ext_list_price) as sale,sum(cr_refunded_cash+cr_reversed_charge+cr_store_credit) as refund
+  from catalog_sales
+      ,catalog_returns
+  where cs_item_sk = cr_item_sk
+    and cs_order_number = cr_order_number
+  group by cs_item_sk
+  having sum(cs_ext_list_price)>2*sum(cr_refunded_cash+cr_reversed_charge+cr_store_credit)),
+cross_sales as
+ (select i_product_name product_name
+     ,i_item_sk item_sk
+     ,s_store_name store_name
+     ,s_zip store_zip
+     ,ad1.ca_street_number b_street_number
+     ,ad1.ca_street_name b_streen_name
+     ,ad1.ca_city b_city
+     ,ad1.ca_zip b_zip
+     ,ad2.ca_street_number c_street_number
+     ,ad2.ca_street_name c_street_name
+     ,ad2.ca_city c_city
+     ,ad2.ca_zip c_zip
+     ,d1.d_year as syear
+     ,d2.d_year as fsyear
+     ,d3.d_year s2year
+     ,count(*) cnt
+     ,sum(ss_wholesale_cost) s1
+     ,sum(ss_list_price) s2
+     ,sum(ss_coupon_amt) s3
+  FROM   store_sales
+        ,store_returns
+        ,cs_ui
+        ,date_dim d1
+        ,date_dim d2
+        ,date_dim d3
+        ,store
+        ,customer
+        ,customer_demographics cd1
+        ,customer_demographics cd2
+        ,promotion
+        ,household_demographics hd1
+        ,household_demographics hd2
+        ,customer_address ad1
+        ,customer_address ad2
+        ,income_band ib1
+        ,income_band ib2
+        ,item
+  WHERE  ss_store_sk = s_store_sk AND
+         ss_sold_date_sk = d1.d_date_sk AND
+         ss_customer_sk = c_customer_sk AND
+         ss_cdemo_sk= cd1.cd_demo_sk AND
+         ss_hdemo_sk = hd1.hd_demo_sk AND
+         ss_addr_sk = ad1.ca_address_sk and
+         ss_item_sk = i_item_sk and
+         ss_item_sk = sr_item_sk and
+         ss_ticket_number = sr_ticket_number and
+         ss_item_sk = cs_ui.cs_item_sk and
+         c_current_cdemo_sk = cd2.cd_demo_sk AND
+         c_current_hdemo_sk = hd2.hd_demo_sk AND
+         c_current_addr_sk = ad2.ca_address_sk and
+         c_first_sales_date_sk = d2.d_date_sk and
+         c_first_shipto_date_sk = d3.d_date_sk and
+         ss_promo_sk = p_promo_sk and
+         hd1.hd_income_band_sk = ib1.ib_income_band_sk and
+         hd2.hd_income_band_sk = ib2.ib_income_band_sk and
+         cd1.cd_marital_status <> cd2.cd_marital_status and
+         i_color in ('maroon','burnished','dim','steel','navajo','chocolate') and
+         i_current_price between 35 and 35 + 10 and
+         i_current_price between 35 + 1 and 35 + 15
+group by i_product_name
+       ,i_item_sk
+       ,s_store_name
+       ,s_zip
+       ,ad1.ca_street_number
+       ,ad1.ca_street_name
+       ,ad1.ca_city
+       ,ad1.ca_zip
+       ,ad2.ca_street_number
+       ,ad2.ca_street_name
+       ,ad2.ca_city
+       ,ad2.ca_zip
+       ,d1.d_year
+       ,d2.d_year
+       ,d3.d_year
+)
+select cs1.product_name
+     ,cs1.store_name
+     ,cs1.store_zip
+     ,cs1.b_street_number
+     ,cs1.b_streen_name
+     ,cs1.b_city
+     ,cs1.b_zip
+     ,cs1.c_street_number
+     ,cs1.c_street_name
+     ,cs1.c_city
+     ,cs1.c_zip
+     ,cs1.syear
+     ,cs1.cnt
+     ,cs1.s1
+     ,cs1.s2
+     ,cs1.s3
+     ,cs2.s1
+     ,cs2.s2
+     ,cs2.s3
+     ,cs2.syear
+     ,cs2.cnt
+from cross_sales cs1,cross_sales cs2
+where cs1.item_sk=cs2.item_sk and
+     cs1.syear = 2000 and
+     cs2.syear = 2000 + 1 and
+     cs2.cnt <= cs1.cnt and
+     cs1.store_name = cs2.store_name and
+     cs1.store_zip = cs2.store_zip
+order by cs1.product_name
+       ,cs1.store_name
+       ,cs2.cnt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_returns
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@customer_address
+PREHOOK: Input: default@customer_demographics
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@household_demographics
+PREHOOK: Input: default@income_band
+PREHOOK: Input: default@item
+PREHOOK: Input: default@promotion
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_returns
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+with cs_ui as
+ (select cs_item_sk
+        ,sum(cs_ext_list_price) as sale,sum(cr_refunded_cash+cr_reversed_charge+cr_store_credit) as refund
+  from catalog_sales
+      ,catalog_returns
+  where cs_item_sk = cr_item_sk
+    and cs_order_number = cr_order_number
+  group by cs_item_sk
+  having sum(cs_ext_list_price)>2*sum(cr_refunded_cash+cr_reversed_charge+cr_store_credit)),
+cross_sales as
+ (select i_product_name product_name
+     ,i_item_sk item_sk
+     ,s_store_name store_name
+     ,s_zip store_zip
+     ,ad1.ca_street_number b_street_number
+     ,ad1.ca_street_name b_streen_name
+     ,ad1.ca_city b_city
+     ,ad1.ca_zip b_zip
+     ,ad2.ca_street_number c_street_number
+     ,ad2.ca_street_name c_street_name
+     ,ad2.ca_city c_city
+     ,ad2.ca_zip c_zip
+     ,d1.d_year as syear
+     ,d2.d_year as fsyear
+     ,d3.d_year s2year
+     ,count(*) cnt
+     ,sum(ss_wholesale_cost) s1
+     ,sum(ss_list_price) s2
+     ,sum(ss_coupon_amt) s3
+  FROM   store_sales
+        ,store_returns
+        ,cs_ui
+        ,date_dim d1
+        ,date_dim d2
+        ,date_dim d3
+        ,store
+        ,customer
+        ,customer_demographics cd1
+        ,customer_demographics cd2
+        ,promotion
+        ,household_demographics hd1
+        ,household_demographics hd2
+        ,customer_address ad1
+        ,customer_address ad2
+        ,income_band ib1
+        ,income_band ib2
+        ,item
+  WHERE  ss_store_sk = s_store_sk AND
+         ss_sold_date_sk = d1.d_date_sk AND
+         ss_customer_sk = c_customer_sk AND
+         ss_cdemo_sk= cd1.cd_demo_sk AND
+         ss_hdemo_sk = hd1.hd_demo_sk AND
+         ss_addr_sk = ad1.ca_address_sk and
+         ss_item_sk = i_item_sk and
+         ss_item_sk = sr_item_sk and
+         ss_ticket_number = sr_ticket_number and
+         ss_item_sk = cs_ui.cs_item_sk and
+         c_current_cdemo_sk = cd2.cd_demo_sk AND
+         c_current_hdemo_sk = hd2.hd_demo_sk AND
+         c_current_addr_sk = ad2.ca_address_sk and
+         c_first_sales_date_sk = d2.d_date_sk and
+         c_first_shipto_date_sk = d3.d_date_sk and
+         ss_promo_sk = p_promo_sk and
+         hd1.hd_income_band_sk = ib1.ib_income_band_sk and
+         hd2.hd_income_band_sk = ib2.ib_income_band_sk and
+         cd1.cd_marital_status <> cd2.cd_marital_status and
+         i_color in ('maroon','burnished','dim','steel','navajo','chocolate') and
+         i_current_price between 35 and 35 + 10 and
+         i_current_price between 35 + 1 and 35 + 15
+group by i_product_name
+       ,i_item_sk
+       ,s_store_name
+       ,s_zip
+       ,ad1.ca_street_number
+       ,ad1.ca_street_name
+       ,ad1.ca_city
+       ,ad1.ca_zip
+       ,ad2.ca_street_number
+       ,ad2.ca_street_name
+       ,ad2.ca_city
+       ,ad2.ca_zip
+       ,d1.d_year
+       ,d2.d_year
+       ,d3.d_year
+)
+select cs1.product_name
+     ,cs1.store_name
+     ,cs1.store_zip
+     ,cs1.b_street_number
+     ,cs1.b_streen_name
+     ,cs1.b_city
+     ,cs1.b_zip
+     ,cs1.c_street_number
+     ,cs1.c_street_name
+     ,cs1.c_city
+     ,cs1.c_zip
+     ,cs1.syear
+     ,cs1.cnt
+     ,cs1.s1
+     ,cs1.s2
+     ,cs1.s3
+     ,cs2.s1
+     ,cs2.s2
+     ,cs2.s3
+     ,cs2.syear
+     ,cs2.cnt
+from cross_sales cs1,cross_sales cs2
+where cs1.item_sk=cs2.item_sk and
+     cs1.syear = 2000 and
+     cs2.syear = 2000 + 1 and
+     cs2.cnt <= cs1.cnt and
+     cs1.store_name = cs2.store_name and
+     cs1.store_zip = cs2.store_zip
+order by cs1.product_name
+       ,cs1.store_name
+       ,cs2.cnt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_returns
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@customer_address
+POSTHOOK: Input: default@customer_demographics
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@household_demographics
+POSTHOOK: Input: default@income_band
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@promotion
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_returns
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: store_sales
+          properties:
+            hive.sql.query SELECT "t134"."product_name", "t134"."store_name", "t134"."store_zip", "t134"."b_street_number", "t134"."b_streen_name", "t134"."b_city", "t134"."b_zip", "t134"."c_street_number", "t134"."c_street_name", "t134"."c_city", "t134"."c_zip", CAST(2000 AS INTEGER) AS "syear", "t134"."cnt", "t134"."s1", "t134"."s2", "t134"."s3", "t134"."s11", "t134"."s21", "t134"."s31", CAST(2001 AS INTEGER) AS "syear1", "t134"."cnt1"
+FROM (SELECT "t65"."$f0" AS "product_name", "t65"."$f2" AS "store_name", "t65"."$f3" AS "store_zip", "t65"."$f4" AS "b_street_number", "t65"."$f5" AS "b_streen_name", "t65"."$f6" AS "b_city", "t65"."$f7" AS "b_zip", "t65"."$f8" AS "c_street_number", "t65"."$f9" AS "c_street_name", "t65"."$f10" AS "c_city", "t65"."$f11" AS "c_zip", "t65"."$f15" AS "cnt", "t65"."$f16" AS "s1", "t65"."$f17" AS "s2", "t65"."$f18" AS "s3", "t132"."$f16" AS "s11", "t132"."$f17" AS "s21", "t132"."$f18" AS "s31", "t132"."$f15" AS "cnt1"
+FROM (SELECT "i_product_name" AS "$f0", "i_item_sk" AS "$f1", "s_store_name" AS "$f2", "s_zip" AS "$f3", "ca_street_number" AS "$f4", "ca_street_name" AS "$f5", "ca_city" AS "$f6", "ca_zip" AS "$f7", "ca_street_number0" AS "$f8", "ca_street_name0" AS "$f9", "ca_city0" AS "$f10", "ca_zip0" AS "$f11", "$f14" AS "$f15", "$f15" AS "$f16", "$f16" AS "$f17", "$f17" AS "$f18"
+FROM (SELECT "t22"."i_product_name", "t22"."i_item_sk", "t32"."s_store_name", "t32"."s_zip", "t35"."ca_street_number", "t35"."ca_street_name", "t35"."ca_city", "t35"."ca_zip", "t58"."ca_street_number" AS "ca_street_number0", "t58"."ca_street_name" AS "ca_street_name0", "t58"."ca_city" AS "ca_city0", "t58"."ca_zip" AS "ca_zip0", "t58"."d_year", "t58"."d_year0", COUNT(*) AS "$f14", SUM("t1"."ss_wholesale_cost") AS "$f15", SUM("t1"."ss_list_price") AS "$f16", SUM("t1"."ss_coupon_amt") AS "$f17"
+FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_customer_sk", "ss_cdemo_sk", "ss_hdemo_sk", "ss_addr_sk", "ss_store_sk", "ss_promo_sk", "ss_ticket_number", "ss_wholesale_cost", "ss_list_price", "ss_coupon_amt"
+FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_customer_sk", "ss_cdemo_sk", "ss_hdemo_sk", "ss_addr_sk", "ss_store_sk", "ss_promo_sk", "ss_ticket_number", "ss_wholesale_cost", "ss_list_price", "ss_coupon_amt"
+FROM "store_sales") AS "t"
+WHERE "ss_item_sk" IS NOT NULL AND "ss_ticket_number" IS NOT NULL AND ("ss_sold_date_sk" IS NOT NULL AND "ss_store_sk" IS NOT NULL) AND ("ss_customer_sk" IS NOT NULL AND "ss_cdemo_sk" IS NOT NULL AND ("ss_promo_sk" IS NOT NULL AND ("ss_hdemo_sk" IS NOT NULL AND "ss_addr_sk" IS NOT NULL)))) AS "t1"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year"
+FROM "date_dim") AS "t2"
+WHERE "d_year" = 2000 AND "d_date_sk" IS NOT NULL) AS "t4" ON "t1"."ss_sold_date_sk" = "t4"."d_date_sk"
+INNER JOIN (SELECT "p_promo_sk"
+FROM (SELECT "p_promo_sk"
+FROM "promotion") AS "t5"
+WHERE "p_promo_sk" IS NOT NULL) AS "t7" ON "t1"."ss_promo_sk" = "t7"."p_promo_sk"
+INNER JOIN (SELECT "sr_item_sk", "sr_ticket_number"
+FROM (SELECT "sr_item_sk", "sr_ticket_number"
+FROM "store_returns") AS "t8"
+WHERE "sr_item_sk" IS NOT NULL AND "sr_ticket_number" IS NOT NULL) AS "t10" ON "t1"."ss_item_sk" = "t10"."sr_item_sk" AND "t1"."ss_ticket_number" = "t10"."sr_ticket_number"
+INNER JOIN (SELECT "t13"."cs_item_sk" AS "$f0"
+FROM (SELECT "cs_item_sk", "cs_order_number", "cs_ext_list_price"
+FROM (SELECT "cs_item_sk", "cs_order_number", "cs_ext_list_price"
+FROM "catalog_sales") AS "t11"
+WHERE "cs_item_sk" IS NOT NULL AND "cs_order_number" IS NOT NULL) AS "t13"
+INNER JOIN (SELECT "cr_item_sk", "cr_order_number", "cr_refunded_cash" + "cr_reversed_charge" + "cr_store_credit" AS "+"
+FROM (SELECT "cr_item_sk", "cr_order_number", "cr_refunded_cash", "cr_reversed_charge", "cr_store_credit"
+FROM "catalog_returns") AS "t14"
+WHERE "cr_item_sk" IS NOT NULL AND "cr_order_number" IS NOT NULL) AS "t16" ON "t13"."cs_item_sk" = "t16"."cr_item_sk" AND "t13"."cs_order_number" = "t16"."cr_order_number"
+GROUP BY "t13"."cs_item_sk"
+HAVING SUM("t13"."cs_ext_list_price") > 2 * SUM("t16"."+")) AS "t19" ON "t1"."ss_item_sk" = "t19"."$f0"
+INNER JOIN (SELECT "i_item_sk", "i_product_name"
+FROM (SELECT "i_item_sk", "i_current_price", "i_color", "i_product_name"
+FROM "item") AS "t20"
+WHERE "i_color" IN ('maroon', 'burnished', 'dim', 'steel', 'navajo', 'chocolate') AND ("i_current_price" BETWEEN 36 AND 45 AND "i_item_sk" IS NOT NULL)) AS "t22" ON "t1"."ss_item_sk" = "t22"."i_item_sk"
+INNER JOIN (SELECT "t25"."hd_demo_sk", "t25"."hd_income_band_sk", "t28"."ib_income_band_sk"
+FROM (SELECT "hd_demo_sk", "hd_income_band_sk"
+FROM (SELECT "hd_demo_sk", "hd_income_band_sk"
+FROM "household_demographics") AS "t23"
+WHERE "hd_demo_sk" IS NOT NULL AND "hd_income_band_sk" IS NOT NULL) AS "t25"
+INNER JOIN (SELECT "ib_income_band_sk"
+FROM (SELECT "ib_income_band_sk"
+FROM "income_band") AS "t26"
+WHERE "ib_income_band_sk" IS NOT NULL) AS "t28" ON "t25"."hd_income_band_sk" = "t28"."ib_income_band_sk") AS "t29" ON "t1"."ss_hdemo_sk" = "t29"."hd_demo_sk"
+INNER JOIN (SELECT "s_store_sk", "s_store_name", "s_zip"
+FROM (SELECT "s_store_sk", "s_store_name", "s_zip"
+FROM "store") AS "t30"
+WHERE "s_store_sk" IS NOT NULL AND ("s_store_name" IS NOT NULL AND "s_zip" IS NOT NULL)) AS "t32" ON "t1"."ss_store_sk" = "t32"."s_store_sk"
+INNER JOIN (SELECT "ca_address_sk", "ca_street_number", "ca_street_name", "ca_city", "ca_zip"
+FROM (SELECT "ca_address_sk", "ca_street_number", "ca_street_name", "ca_city", "ca_zip"
+FROM "customer_address") AS "t33"
+WHERE "ca_address_sk" IS NOT NULL) AS "t35" ON "t1"."ss_addr_sk" = "t35"."ca_address_sk"
+INNER JOIN (SELECT "t38"."c_customer_sk", "t38"."c_current_cdemo_sk", "t38"."c_current_hdemo_sk", "t38"."c_current_addr_sk", "t38"."c_first_shipto_date_sk", "t38"."c_first_sales_date_sk", "t41"."cd_demo_sk", "t41"."cd_marital_status", "t44"."d_date_sk", "t44"."d_year", "t47"."d_date_sk" AS "d_date_sk0", "t47"."d_year" AS "d_year0", "t54"."hd_demo_sk", "t54"."hd_income_band_sk", "t54"."ib_income_band_sk", "t57"."ca_address_sk", "t57"."ca_street_number", "t57"."ca_street_name", "t57"."ca_city", "t57"."ca_zip"
+FROM (SELECT "c_customer_sk", "c_current_cdemo_sk", "c_current_hdemo_sk", "c_current_addr_sk", "c_first_shipto_date_sk", "c_first_sales_date_sk"
+FROM (SELECT "c_customer_sk", "c_current_cdemo_sk", "c_current_hdemo_sk", "c_current_addr_sk", "c_first_shipto_date_sk", "c_first_sales_date_sk"
+FROM "customer") AS "t36"
+WHERE "c_customer_sk" IS NOT NULL AND ("c_first_sales_date_sk" IS NOT NULL AND "c_first_shipto_date_sk" IS NOT NULL) AND ("c_current_cdemo_sk" IS NOT NULL AND ("c_current_hdemo_sk" IS NOT NULL AND "c_current_addr_sk" IS NOT NULL))) AS "t38"
+INNER JOIN (SELECT "cd_demo_sk", "cd_marital_status"
+FROM (SELECT "cd_demo_sk", "cd_marital_status"
+FROM "customer_demographics") AS "t39"
+WHERE "cd_demo_sk" IS NOT NULL) AS "t41" ON "t38"."c_current_cdemo_sk" = "t41"."cd_demo_sk"
+INNER JOIN (SELECT "d_date_sk", "d_year"
+FROM (SELECT "d_date_sk", "d_year"
+FROM "date_dim") AS "t42"
+WHERE "d_date_sk" IS NOT NULL) AS "t44" ON "t38"."c_first_sales_date_sk" = "t44"."d_date_sk"
+INNER JOIN (SELECT "d_date_sk", "d_year"
+FROM (SELECT "d_date_sk", "d_year"
+FROM "date_dim") AS "t45"
+WHERE "d_date_sk" IS NOT NULL) AS "t47" ON "t38"."c_first_shipto_date_sk" = "t47"."d_date_sk"
+INNER JOIN (SELECT "t50"."hd_demo_sk", "t50"."hd_income_band_sk", "t53"."ib_income_band_sk"
+FROM (SELECT "hd_demo_sk", "hd_income_band_sk"
+FROM (SELECT "hd_demo_sk", "hd_income_band_sk"
+FROM "household_demographics") AS "t48"
+WHERE "hd_demo_sk" IS NOT NULL AND "hd_income_band_sk" IS NOT NULL) AS "t50"
+INNER JOIN (SELECT "ib_income_band_sk"
+FROM (SELECT "ib_income_band_sk"
+FROM "income_band") AS "t51"
+WHERE "ib_income_band_sk" IS NOT NULL) AS "t53" ON "t50"."hd_income_band_sk" = "t53"."ib_income_band_sk") AS "t54" ON "t38"."c_current_hdemo_sk" = "t54"."hd_demo_sk"
+INNER JOIN (SELECT "ca_address_sk", "ca_street_number", "ca_street_name", "ca_city", "ca_zip"
+FROM (SELECT "ca_address_sk", "ca_street_number", "ca_street_name", "ca_city", "ca_zip"
+FROM "customer_address") AS "t55"
+WHERE "ca_address_sk" IS NOT NULL) AS "t57" ON "t38"."c_current_addr_sk" = "t57"."ca_address_sk") AS "t58" ON "t1"."ss_customer_sk" = "t58"."c_customer_sk"
+INNER JOIN (SELECT "cd_demo_sk", "cd_marital_status"
+FROM (SELECT "cd_demo_sk", "cd_marital_status"
+FROM "customer_demographics") AS "t59"
+WHERE "cd_demo_sk" IS NOT NULL) AS "t61" ON "t58"."cd_marital_status" <> "t61"."cd_marital_status" AND "t1"."ss_cdemo_sk" = "t61"."cd_demo_sk"
+GROUP BY "t22"."i_item_sk", "t22"."i_product_name", "t32"."s_store_name", "t32"."s_zip", "t35"."ca_street_number", "t35"."ca_street_name", "t35"."ca_city", "t35"."ca_zip", "t58"."d_year", "t58"."d_year0", "t58"."ca_street_number", "t58"."ca_street_name", "t58"."ca_city", "t58"."ca_zip") AS "t63"
+WHERE "t63"."$f14" IS NOT NULL) AS "t65"
+INNER JOIN (SELECT "i_item_sk" AS "$f1", "s_store_name" AS "$f2", "s_zip" AS "$f3", "$f14" AS "$f15", "$f15" AS "$f16", "$f16" AS "$f17", "$f17" AS "$f18"
+FROM (SELECT "t89"."i_product_name", "t89"."i_item_sk", "t99"."s_store_name", "t99"."s_zip", "t102"."ca_street_number", "t102"."ca_street_name", "t102"."ca_city", "t102"."ca_zip", "t125"."ca_street_number" AS "ca_street_number0", "t125"."ca_street_name" AS "ca_street_name0", "t125"."ca_city" AS "ca_city0", "t125"."ca_zip" AS "ca_zip0", "t125"."d_year", "t125"."d_year0", COUNT(*) AS "$f14", SUM("t68"."ss_wholesale_cost") AS "$f15", SUM("t68"."ss_list_price") AS "$f16", SUM("t68"."ss_coupon_amt") AS "$f17"
+FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_customer_sk", "ss_cdemo_sk", "ss_hdemo_sk", "ss_addr_sk", "ss_store_sk", "ss_promo_sk", "ss_ticket_number", "ss_wholesale_cost", "ss_list_price", "ss_coupon_amt"
+FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_customer_sk", "ss_cdemo_sk", "ss_hdemo_sk", "ss_addr_sk", "ss_store_sk", "ss_promo_sk", "ss_ticket_number", "ss_wholesale_cost", "ss_list_price", "ss_coupon_amt"
+FROM "store_sales") AS "t66"
+WHERE "ss_item_sk" IS NOT NULL AND "ss_ticket_number" IS NOT NULL AND ("ss_sold_date_sk" IS NOT NULL AND "ss_store_sk" IS NOT NULL) AND ("ss_customer_sk" IS NOT NULL AND "ss_cdemo_sk" IS NOT NULL AND ("ss_promo_sk" IS NOT NULL AND ("ss_hdemo_sk" IS NOT NULL AND "ss_addr_sk" IS NOT NULL)))) AS "t68"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year"
+FROM "date_dim") AS "t69"
+WHERE "d_year" = 2001 AND "d_date_sk" IS NOT NULL) AS "t71" ON "t68"."ss_sold_date_sk" = "t71"."d_date_sk"
+INNER JOIN (SELECT "p_promo_sk"
+FROM (SELECT "p_promo_sk"
+FROM "promotion") AS "t72"
+WHERE "p_promo_sk" IS NOT NULL) AS "t74" ON "t68"."ss_promo_sk" = "t74"."p_promo_sk"
+INNER JOIN (SELECT "sr_item_sk", "sr_ticket_number"
+FROM (SELECT "sr_item_sk", "sr_ticket_number"
+FROM "store_returns") AS "t75"
+WHERE "sr_item_sk" IS NOT NULL AND "sr_ticket_number" IS NOT NULL) AS "t77" ON "t68"."ss_item_sk" = "t77"."sr_item_sk" AND "t68"."ss_ticket_number" = "t77"."sr_ticket_number"
+INNER JOIN (SELECT "t80"."cs_item_sk" AS "$f0"
+FROM (SELECT "cs_item_sk", "cs_order_number", "cs_ext_list_price"
+FROM (SELECT "cs_item_sk", "cs_order_number", "cs_ext_list_price"
+FROM "catalog_sales") AS "t78"
+WHERE "cs_item_sk" IS NOT NULL AND "cs_order_number" IS NOT NULL) AS "t80"
+INNER JOIN (SELECT "cr_item_sk", "cr_order_number", "cr_refunded_cash" + "cr_reversed_charge" + "cr_store_credit" AS "+"
+FROM (SELECT "cr_item_sk", "cr_order_number", "cr_refunded_cash", "cr_reversed_charge", "cr_store_credit"
+FROM "catalog_returns") AS "t81"
+WHERE "cr_item_sk" IS NOT NULL AND "cr_order_number" IS NOT NULL) AS "t83" ON "t80"."cs_item_sk" = "t83"."cr_item_sk" AND "t80"."cs_order_number" = "t83"."cr_order_number"
+GROUP BY "t80"."cs_item_sk"
+HAVING SUM("t80"."cs_ext_list_price") > 2 * SUM("t83"."+")) AS "t86" ON "t68"."ss_item_sk" = "t86"."$f0"
+INNER JOIN (SELECT "i_item_sk", "i_product_name"
+FROM (SELECT "i_item_sk", "i_current_price", "i_color", "i_product_name"
+FROM "item") AS "t87"
+WHERE "i_color" IN ('maroon', 'burnished', 'dim', 'steel', 'navajo', 'chocolate') AND ("i_current_price" BETWEEN 36 AND 45 AND "i_item_sk" IS NOT NULL)) AS "t89" ON "t68"."ss_item_sk" = "t89"."i_item_sk"
+INNER JOIN (SELECT "t92"."hd_demo_sk", "t92"."hd_income_band_sk", "t95"."ib_income_band_sk"
+FROM (SELECT "hd_demo_sk", "hd_income_band_sk"
+FROM (SELECT "hd_demo_sk", "hd_income_band_sk"
+FROM "household_demographics") AS "t90"
+WHERE "hd_demo_sk" IS NOT NULL AND "hd_income_band_sk" IS NOT NULL) AS "t92"
+INNER JOIN (SELECT "ib_income_band_sk"
+FROM (SELECT "ib_income_band_sk"
+FROM "income_band") AS "t93"
+WHERE "ib_income_band_sk" IS NOT NULL) AS "t95" ON "t92"."hd_income_band_sk" = "t95"."ib_income_band_sk") AS "t96" ON "t68"."ss_hdemo_sk" = "t96"."hd_demo_sk"
+INNER JOIN (SELECT "s_store_sk", "s_store_name", "s_zip"
+FROM (SELECT "s_store_sk", "s_store_name", "s_zip"
+FROM "store") AS "t97"
+WHERE "s_store_sk" IS NOT NULL AND ("s_store_name" IS NOT NULL AND "s_zip" IS NOT NULL)) AS "t99" ON "t68"."ss_store_sk" = "t99"."s_store_sk"
+INNER JOIN (SELECT "ca_address_sk", "ca_street_number", "ca_street_name", "ca_city", "ca_zip"
+FROM (SELECT "ca_address_sk", "ca_street_number", "ca_street_name", "ca_city", "ca_zip"
+FROM "customer_address") AS "t100"
+WHERE "ca_address_sk" IS NOT NULL) AS "t102" ON "t68"."ss_addr_sk" = "t102"."ca_address_sk"
+INNER JOIN (SELECT "t105"."c_customer_sk", "t105"."c_current_cdemo_sk", "t105"."c_current_hdemo_sk", "t105"."c_current_addr_sk", "t105"."c_first_shipto_date_sk", "t105"."c_first_sales_date_sk", "t108"."cd_demo_sk", "t108"."cd_marital_status", "t111"."d_date_sk", "t111"."d_year", "t114"."d_date_sk" AS "d_date_sk0", "t114"."d_year" AS "d_year0", "t121"."hd_demo_sk", "t121"."hd_income_band_sk", "t121"."ib_income_band_sk", "t124"."ca_address_sk", "t124"."ca_street_number", "t124"."ca_street_name", "t124"."ca_city", "t124"."ca_zip"
+FROM (SELECT "c_customer_sk", "c_current_cdemo_sk", "c_current_hdemo_sk", "c_current_addr_sk", "c_first_shipto_date_sk", "c_first_sales_date_sk"
+FROM (SELECT "c_customer_sk", "c_current_cdemo_sk", "c_current_hdemo_sk", "c_current_addr_sk", "c_first_shipto_date_sk", "c_first_sales_date_sk"
+FROM "customer") AS "t103"
+WHERE "c_customer_sk" IS NOT NULL AND ("c_first_sales_date_sk" IS NOT NULL AND "c_first_shipto_date_sk" IS NOT NULL) AND ("c_current_cdemo_sk" IS NOT NULL AND ("c_current_hdemo_sk" IS NOT NULL AND "c_current_addr_sk" IS NOT NULL))) AS "t105"
+INNER JOIN (SELECT "cd_demo_sk", "cd_marital_status"
+FROM (SELECT "cd_demo_sk", "cd_marital_status"
+FROM "customer_demographics") AS "t106"
+WHERE "cd_demo_sk" IS NOT NULL) AS "t108" ON "t105"."c_current_cdemo_sk" = "t108"."cd_demo_sk"
+INNER JOIN (SELECT "d_date_sk", "d_year"
+FROM (SELECT "d_date_sk", "d_year"
+FROM "date_dim") AS "t109"
+WHERE "d_date_sk" IS NOT NULL) AS "t111" ON "t105"."c_first_sales_date_sk" = "t111"."d_date_sk"
+INNER JOIN (SELECT "d_date_sk", "d_year"
+FROM (SELECT "d_date_sk", "d_year"
+FROM "date_dim") AS "t112"
+WHERE "d_date_sk" IS NOT NULL) AS "t114" ON "t105"."c_first_shipto_date_sk" = "t114"."d_date_sk"
+INNER JOIN (SELECT "t117"."hd_demo_sk", "t117"."hd_income_band_sk", "t120"."ib_income_band_sk"
+FROM (SELECT "hd_demo_sk", "hd_income_band_sk"
+FROM (SELECT "hd_demo_sk", "hd_income_band_sk"
+FROM "household_demographics") AS "t115"
+WHERE "hd_demo_sk" IS NOT NULL AND "hd_income_band_sk" IS NOT NULL) AS "t117"
+INNER JOIN (SELECT "ib_income_band_sk"
+FROM (SELECT "ib_income_band_sk"
+FROM "income_band") AS "t118"
+WHERE "ib_income_band_sk" IS NOT NULL) AS "t120" ON "t117"."hd_income_band_sk" = "t120"."ib_income_band_sk") AS "t121" ON "t105"."c_current_hdemo_sk" = "t121"."hd_demo_sk"
+INNER JOIN (SELECT "ca_address_sk", "ca_street_number", "ca_street_name", "ca_city", "ca_zip"
+FROM (SELECT "ca_address_sk", "ca_street_number", "ca_street_name", "ca_city", "ca_zip"
+FROM "customer_address") AS "t122"
+WHERE "ca_address_sk" IS NOT NULL) AS "t124" ON "t105"."c_current_addr_sk" = "t124"."ca_address_sk") AS "t125" ON "t68"."ss_customer_sk" = "t125"."c_customer_sk"
+INNER JOIN (SELECT "cd_demo_sk", "cd_marital_status"
+FROM (SELECT "cd_demo_sk", "cd_marital_status"
+FROM "customer_demographics") AS "t126"
+WHERE "cd_demo_sk" IS NOT NULL) AS "t128" ON "t125"."cd_marital_status" <> "t128"."cd_marital_status" AND "t68"."ss_cdemo_sk" = "t128"."cd_demo_sk"
+GROUP BY "t89"."i_item_sk", "t89"."i_product_name", "t99"."s_store_name", "t99"."s_zip", "t102"."ca_street_number", "t102"."ca_street_name", "t102"."ca_city", "t102"."ca_zip", "t125"."d_year", "t125"."d_year0", "t125"."ca_street_number", "t125"."ca_street_name", "t125"."ca_city", "t125"."ca_zip") AS "t130"
+WHERE "t130"."$f14" IS NOT NULL) AS "t132" ON "t65"."$f1" = "t132"."$f1" AND "t65"."$f15" >= "t132"."$f15" AND "t65"."$f2" = "t132"."$f2" AND "t65"."$f3" = "t132"."$f3"
+ORDER BY "t65"."$f0", "t65"."$f2", "t132"."$f15") AS "t134"
+            hive.sql.query.fieldNames product_name,store_name,store_zip,b_street_number,b_streen_name,b_city,b_zip,c_street_number,c_street_name,c_city,c_zip,syear,cnt,s1,s2,s3,s11,s21,s31,syear1,cnt1
+            hive.sql.query.fieldTypes string,string,string,string,string,string,string,string,string,string,string,int,bigint,decimal(17,2),decimal(17,2),decimal(17,2),decimal(17,2),decimal(17,2),decimal(17,2),int,bigint
+            hive.sql.query.split false
+          Select Operator
+            expressions: product_name (type: string), store_name (type: string), store_zip (type: string), b_street_number (type: string), b_streen_name (type: string), b_city (type: string), b_zip (type: string), c_street_number (type: string), c_street_name (type: string), c_city (type: string), c_zip (type: string), syear (type: int), cnt (type: bigint), s1 (type: decimal(17,2)), s2 (type: decimal(17,2)), s3 (type: decimal(17,2)), s11 (type: decimal(17,2)), s21 (type: decimal(17,2)), s31 (type: decimal(17,2)), syear1 (type: int), cnt1 (type: bigint)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20
+            ListSink
+

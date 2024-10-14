@@ -1,0 +1,63 @@
+PREHOOK: query: explain cbo
+select  count(*) 
+from store_sales
+    ,household_demographics 
+    ,time_dim, store
+where ss_sold_time_sk = time_dim.t_time_sk   
+    and ss_hdemo_sk = household_demographics.hd_demo_sk 
+    and ss_store_sk = s_store_sk
+    and time_dim.t_hour = 8
+    and time_dim.t_minute >= 30
+    and household_demographics.hd_dep_count = 5
+    and store.s_store_name = 'ese'
+order by count(*)
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@household_demographics
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@time_dim
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select  count(*) 
+from store_sales
+    ,household_demographics 
+    ,time_dim, store
+where ss_sold_time_sk = time_dim.t_time_sk   
+    and ss_hdemo_sk = household_demographics.hd_demo_sk 
+    and ss_store_sk = s_store_sk
+    and time_dim.t_hour = 8
+    and time_dim.t_minute >= 30
+    and household_demographics.hd_dep_count = 5
+    and store.s_store_name = 'ese'
+order by count(*)
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@household_demographics
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@time_dim
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJdbcConverter(convention=[JDBC.POSTGRES])
+  JdbcAggregate(group=[{}], agg#0=[count()])
+    JdbcJoin(condition=[=($2, $5)], joinType=[inner])
+      JdbcJoin(condition=[=($0, $4)], joinType=[inner])
+        JdbcJoin(condition=[=($1, $3)], joinType=[inner])
+          JdbcProject(ss_sold_time_sk=[$0], ss_hdemo_sk=[$1], ss_store_sk=[$2])
+            JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0), IS NOT NULL($2))])
+              JdbcProject(ss_sold_time_sk=[$1], ss_hdemo_sk=[$5], ss_store_sk=[$7])
+                JdbcHiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+          JdbcProject(hd_demo_sk=[$0])
+            JdbcFilter(condition=[AND(=($1, 5), IS NOT NULL($0))])
+              JdbcProject(hd_demo_sk=[$0], hd_dep_count=[$3])
+                JdbcHiveTableScan(table=[[default, household_demographics]], table:alias=[household_demographics])
+        JdbcProject(t_time_sk=[$0])
+          JdbcFilter(condition=[AND(>=($2, 30), =($1, 8), IS NOT NULL($0))])
+            JdbcProject(t_time_sk=[$0], t_hour=[$3], t_minute=[$4])
+              JdbcHiveTableScan(table=[[default, time_dim]], table:alias=[time_dim])
+      JdbcProject(s_store_sk=[$0])
+        JdbcFilter(condition=[AND(=($1, _UTF-16LE'ese'), IS NOT NULL($0))])
+          JdbcProject(s_store_sk=[$0], s_store_name=[$5])
+            JdbcHiveTableScan(table=[[default, store]], table:alias=[store])
+
