@@ -1,3 +1,5 @@
+set hive.cbo.returnpath.hiveop=true;
+
 create table t1 (a string, b int);
 
 insert into t1 values ('2014-03-14 10:10:12', 10);

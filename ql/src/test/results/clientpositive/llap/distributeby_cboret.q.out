@@ -26,12 +26,6 @@ select * from t1 where a between date_add('2014-03-14', -1) and '2014-03-14' dis
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-CBO PLAN:
-HiveSortExchange(distribution=[hash[0]], collation=[[]])
-  HiveProject(a=[$0], b=[$1])
-    HiveFilter(condition=[BETWEEN(false, CAST($0):DATE, 2014-03-13:DATE, 2014-03-14:DATE)])
-      HiveTableScan(table=[[default, t1]], table:alias=[t1])
-
 PREHOOK: query: explain
 select * from t1 where a between date_add('2014-03-14', -1) and '2014-03-14' distribute by a
 PREHOOK: type: QUERY
@@ -65,22 +59,22 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 107 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: a (type: string), b (type: int)
-                      outputColumnNames: _col0, _col1
+                      outputColumnNames: a, b
                       Statistics: Num rows: 1 Data size: 107 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         null sort order: 
                         sort order: 
-                        Map-reduce partition columns: _col0 (type: string)
+                        Map-reduce partition columns: a (type: string)
                         Statistics: Num rows: 1 Data size: 107 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: string), _col1 (type: int)
+                        value expressions: a (type: string), b (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: string), VALUE._col1 (type: int)
-                outputColumnNames: _col0, _col1
+                expressions: VALUE.a (type: string), VALUE.b (type: int)
+                outputColumnNames: a, b
                 Statistics: Num rows: 1 Data size: 107 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
@@ -115,11 +109,6 @@ select * from t1 distribute by a, b sort by a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-CBO PLAN:
-HiveSortExchange(distribution=[hash[0, 1]], collation=[[0]])
-  HiveProject(a=[$0], b=[$1])
-    HiveTableScan(table=[[default, t1]], table:alias=[t1])
-
 PREHOOK: query: explain
 select * from t1 distribute by a, b sort by a
 PREHOOK: type: QUERY
@@ -149,23 +138,23 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 107 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: a (type: string), b (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: a, b
                     Statistics: Num rows: 1 Data size: 107 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: _col0 (type: string)
+                      key expressions: a (type: string)
                       null sort order: z
                       sort order: +
-                      Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                      Map-reduce partition columns: a (type: string), b (type: int)
                       Statistics: Num rows: 1 Data size: 107 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col1 (type: int)
+                      value expressions: b (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: int)
-                outputColumnNames: _col0, _col1
+                expressions: KEY.reducesinkkey0 (type: string), VALUE.b (type: int)
+                outputColumnNames: a, b
                 Statistics: Num rows: 1 Data size: 107 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
@@ -191,11 +180,6 @@ select * from t1 cluster by a, b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-CBO PLAN:
-HiveSortExchange(distribution=[hash[0, 1]], collation=[[0 ASC-nulls-first, 1 ASC-nulls-first]])
-  HiveProject(a=[$0], b=[$1])
-    HiveTableScan(table=[[default, t1]], table:alias=[t1])
-
 PREHOOK: query: explain
 select * from t1 cluster by a, b
 PREHOOK: type: QUERY
@@ -225,13 +209,13 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 107 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: a (type: string), b (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: a, b
                     Statistics: Num rows: 1 Data size: 107 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: _col0 (type: string), _col1 (type: int)
+                      key expressions: a (type: string), b (type: int)
                       null sort order: aa
                       sort order: ++
-                      Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                      Map-reduce partition columns: a (type: string), b (type: int)
                       Statistics: Num rows: 1 Data size: 107 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -240,7 +224,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: int)
-                outputColumnNames: _col0, _col1
+                outputColumnNames: a, b
                 Statistics: Num rows: 1 Data size: 107 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
