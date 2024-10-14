@@ -183,14 +183,8 @@ final class HiveOpConverterUtils {
       }
     }
 
-    ReduceSinkDesc rsDesc;
-    if (order.isEmpty()) {
-      rsDesc = PlanUtils.getReduceSinkDesc(reduceKeys, reduceValues, outputColumnNames, false, tag,
-          reduceKeys.size(), numReducers, acidOperation, NullOrdering.defaultNullOrder(hiveConf));
-    } else {
-      rsDesc = PlanUtils.getReduceSinkDesc(reduceKeys, reduceValues, outputColumnNames, false, tag,
+    ReduceSinkDesc rsDesc = PlanUtils.getReduceSinkDesc(reduceKeys, reduceValues, outputColumnNames, false, tag,
           partitionCols, order, nullOrder, NullOrdering.defaultNullOrder(hiveConf), numReducers, acidOperation, false);
-    }
 
     ReduceSinkOperator rsOp = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(
         rsDesc, new RowSchema(outputColumns), input);
