@@ -1,0 +1,367 @@
+CTE Suggestion:
+JdbcProject(d_date_sk=[$0])
+  JdbcFilter(condition=[AND(BETWEEN(false, CAST($1):TIMESTAMP(9), 1998-08-04 00:00:00:TIMESTAMP(9), 1998-08-18 00:00:00:TIMESTAMP(9)), IS NOT NULL($0))])
+    JdbcProject(d_date_sk=[$0], d_date=[$2])
+      JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+
+PREHOOK: query: explain cbo
+with ssr as
+ (select s_store_id,
+        sum(sales_price) as sales,
+        sum(profit) as profit,
+        sum(return_amt) as returns,
+        sum(net_loss) as profit_loss
+ from
+  ( select  ss_store_sk as store_sk,
+            ss_sold_date_sk  as date_sk,
+            ss_ext_sales_price as sales_price,
+            ss_net_profit as profit,
+            cast(0 as decimal(7,2)) as return_amt,
+            cast(0 as decimal(7,2)) as net_loss
+    from store_sales
+    union all
+    select sr_store_sk as store_sk,
+           sr_returned_date_sk as date_sk,
+           cast(0 as decimal(7,2)) as sales_price,
+           cast(0 as decimal(7,2)) as profit,
+           sr_return_amt as return_amt,
+           sr_net_loss as net_loss
+    from store_returns
+   ) salesreturns,
+     date_dim,
+     store
+ where date_sk = d_date_sk
+       and d_date between cast('1998-08-04' as date) 
+                  and (cast('1998-08-04' as date) +  14 days)
+       and store_sk = s_store_sk
+ group by s_store_id)
+ ,
+ csr as
+ (select cp_catalog_page_id,
+        sum(sales_price) as sales,
+        sum(profit) as profit,
+        sum(return_amt) as returns,
+        sum(net_loss) as profit_loss
+ from
+  ( select  cs_catalog_page_sk as page_sk,
+            cs_sold_date_sk  as date_sk,
+            cs_ext_sales_price as sales_price,
+            cs_net_profit as profit,
+            cast(0 as decimal(7,2)) as return_amt,
+            cast(0 as decimal(7,2)) as net_loss
+    from catalog_sales
+    union all
+    select cr_catalog_page_sk as page_sk,
+           cr_returned_date_sk as date_sk,
+           cast(0 as decimal(7,2)) as sales_price,
+           cast(0 as decimal(7,2)) as profit,
+           cr_return_amount as return_amt,
+           cr_net_loss as net_loss
+    from catalog_returns
+   ) salesreturns,
+     date_dim,
+     catalog_page
+ where date_sk = d_date_sk
+       and d_date between cast('1998-08-04' as date)
+                  and (cast('1998-08-04' as date) +  14 days)
+       and page_sk = cp_catalog_page_sk
+ group by cp_catalog_page_id)
+ ,
+ wsr as
+ (select web_site_id,
+        sum(sales_price) as sales,
+        sum(profit) as profit,
+        sum(return_amt) as returns,
+        sum(net_loss) as profit_loss
+ from
+  ( select  ws_web_site_sk as wsr_web_site_sk,
+            ws_sold_date_sk  as date_sk,
+            ws_ext_sales_price as sales_price,
+            ws_net_profit as profit,
+            cast(0 as decimal(7,2)) as return_amt,
+            cast(0 as decimal(7,2)) as net_loss
+    from web_sales
+    union all
+    select ws_web_site_sk as wsr_web_site_sk,
+           wr_returned_date_sk as date_sk,
+           cast(0 as decimal(7,2)) as sales_price,
+           cast(0 as decimal(7,2)) as profit,
+           wr_return_amt as return_amt,
+           wr_net_loss as net_loss
+    from web_returns left outer join web_sales on
+         ( wr_item_sk = ws_item_sk
+           and wr_order_number = ws_order_number)
+   ) salesreturns,
+     date_dim,
+     web_site
+ where date_sk = d_date_sk
+       and d_date between cast('1998-08-04' as date)
+                  and (cast('1998-08-04' as date) +  14 days)
+       and wsr_web_site_sk = web_site_sk
+ group by web_site_id)
+  select  channel
+        , id
+        , sum(sales) as sales
+        , sum(returns) as returns
+        , sum(profit) as profit
+ from 
+ (select 'store channel' as channel
+        , 'store' || s_store_id as id
+        , sales
+        , returns
+        , (profit - profit_loss) as profit
+ from   ssr
+ union all
+ select 'catalog channel' as channel
+        , 'catalog_page' || cp_catalog_page_id as id
+        , sales
+        , returns
+        , (profit - profit_loss) as profit
+ from  csr
+ union all
+ select 'web channel' as channel
+        , 'web_site' || web_site_id as id
+        , sales
+        , returns
+        , (profit - profit_loss) as profit
+ from   wsr
+ ) x
+ group by rollup (channel, id)
+ order by channel
+         ,id
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_page
+PREHOOK: Input: default@catalog_returns
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_returns
+PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@web_returns
+PREHOOK: Input: default@web_sales
+PREHOOK: Input: default@web_site
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+with ssr as
+ (select s_store_id,
+        sum(sales_price) as sales,
+        sum(profit) as profit,
+        sum(return_amt) as returns,
+        sum(net_loss) as profit_loss
+ from
+  ( select  ss_store_sk as store_sk,
+            ss_sold_date_sk  as date_sk,
+            ss_ext_sales_price as sales_price,
+            ss_net_profit as profit,
+            cast(0 as decimal(7,2)) as return_amt,
+            cast(0 as decimal(7,2)) as net_loss
+    from store_sales
+    union all
+    select sr_store_sk as store_sk,
+           sr_returned_date_sk as date_sk,
+           cast(0 as decimal(7,2)) as sales_price,
+           cast(0 as decimal(7,2)) as profit,
+           sr_return_amt as return_amt,
+           sr_net_loss as net_loss
+    from store_returns
+   ) salesreturns,
+     date_dim,
+     store
+ where date_sk = d_date_sk
+       and d_date between cast('1998-08-04' as date) 
+                  and (cast('1998-08-04' as date) +  14 days)
+       and store_sk = s_store_sk
+ group by s_store_id)
+ ,
+ csr as
+ (select cp_catalog_page_id,
+        sum(sales_price) as sales,
+        sum(profit) as profit,
+        sum(return_amt) as returns,
+        sum(net_loss) as profit_loss
+ from
+  ( select  cs_catalog_page_sk as page_sk,
+            cs_sold_date_sk  as date_sk,
+            cs_ext_sales_price as sales_price,
+            cs_net_profit as profit,
+            cast(0 as decimal(7,2)) as return_amt,
+            cast(0 as decimal(7,2)) as net_loss
+    from catalog_sales
+    union all
+    select cr_catalog_page_sk as page_sk,
+           cr_returned_date_sk as date_sk,
+           cast(0 as decimal(7,2)) as sales_price,
+           cast(0 as decimal(7,2)) as profit,
+           cr_return_amount as return_amt,
+           cr_net_loss as net_loss
+    from catalog_returns
+   ) salesreturns,
+     date_dim,
+     catalog_page
+ where date_sk = d_date_sk
+       and d_date between cast('1998-08-04' as date)
+                  and (cast('1998-08-04' as date) +  14 days)
+       and page_sk = cp_catalog_page_sk
+ group by cp_catalog_page_id)
+ ,
+ wsr as
+ (select web_site_id,
+        sum(sales_price) as sales,
+        sum(profit) as profit,
+        sum(return_amt) as returns,
+        sum(net_loss) as profit_loss
+ from
+  ( select  ws_web_site_sk as wsr_web_site_sk,
+            ws_sold_date_sk  as date_sk,
+            ws_ext_sales_price as sales_price,
+            ws_net_profit as profit,
+            cast(0 as decimal(7,2)) as return_amt,
+            cast(0 as decimal(7,2)) as net_loss
+    from web_sales
+    union all
+    select ws_web_site_sk as wsr_web_site_sk,
+           wr_returned_date_sk as date_sk,
+           cast(0 as decimal(7,2)) as sales_price,
+           cast(0 as decimal(7,2)) as profit,
+           wr_return_amt as return_amt,
+           wr_net_loss as net_loss
+    from web_returns left outer join web_sales on
+         ( wr_item_sk = ws_item_sk
+           and wr_order_number = ws_order_number)
+   ) salesreturns,
+     date_dim,
+     web_site
+ where date_sk = d_date_sk
+       and d_date between cast('1998-08-04' as date)
+                  and (cast('1998-08-04' as date) +  14 days)
+       and wsr_web_site_sk = web_site_sk
+ group by web_site_id)
+  select  channel
+        , id
+        , sum(sales) as sales
+        , sum(returns) as returns
+        , sum(profit) as profit
+ from 
+ (select 'store channel' as channel
+        , 'store' || s_store_id as id
+        , sales
+        , returns
+        , (profit - profit_loss) as profit
+ from   ssr
+ union all
+ select 'catalog channel' as channel
+        , 'catalog_page' || cp_catalog_page_id as id
+        , sales
+        , returns
+        , (profit - profit_loss) as profit
+ from  csr
+ union all
+ select 'web channel' as channel
+        , 'web_site' || web_site_id as id
+        , sales
+        , returns
+        , (profit - profit_loss) as profit
+ from   wsr
+ ) x
+ group by rollup (channel, id)
+ order by channel
+         ,id
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_page
+POSTHOOK: Input: default@catalog_returns
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_returns
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@web_returns
+POSTHOOK: Input: default@web_sales
+POSTHOOK: Input: default@web_site
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
+  HiveProject(channel=[$0], id=[$1], $f2=[$2], $f3=[$3], $f4=[$4])
+    HiveAggregate(group=[{0, 1}], groups=[[{0, 1}, {0}, {}]], agg#0=[sum($2)], agg#1=[sum($3)], agg#2=[sum($4)])
+      HiveProject(channel=[$0], id=[$1], sales=[$2], returns=[$3], profit=[$4])
+        HiveUnion(all=[true])
+          HiveProject(channel=[_UTF-16LE'store channel':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], id=[||(_UTF-16LE'store':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0)], sales=[$1], returns=[$3], profit=[-($2, $4)])
+            HiveProject(s_store_id=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4])
+              HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                JdbcAggregate(group=[{8}], agg#0=[sum($2)], agg#1=[sum($3)], agg#2=[sum($4)], agg#3=[sum($5)])
+                  JdbcJoin(condition=[=($0, $7)], joinType=[inner])
+                    JdbcJoin(condition=[=($1, $6)], joinType=[inner])
+                      JdbcProject(store_sk=[$0], date_sk=[$1], sales_price=[$2], profit=[$3], return_amt=[$4], net_loss=[$5])
+                        JdbcUnion(all=[true])
+                          JdbcProject(store_sk=[$1], date_sk=[$0], sales_price=[$2], profit=[$3], return_amt=[CAST(0:DECIMAL(7, 2)):DECIMAL(7, 2)], net_loss=[CAST(0:DECIMAL(7, 2)):DECIMAL(7, 2)])
+                            JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                              JdbcProject(ss_sold_date_sk=[$0], ss_store_sk=[$7], ss_ext_sales_price=[$15], ss_net_profit=[$22])
+                                JdbcHiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                          JdbcProject(store_sk=[$1], date_sk=[$0], sales_price=[CAST(0:DECIMAL(7, 2)):DECIMAL(7, 2)], profit=[CAST(0:DECIMAL(7, 2)):DECIMAL(7, 2)], return_amt=[$2], net_loss=[$3])
+                            JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                              JdbcProject(sr_returned_date_sk=[$0], sr_store_sk=[$7], sr_return_amt=[$11], sr_net_loss=[$19])
+                                JdbcHiveTableScan(table=[[default, store_returns]], table:alias=[store_returns])
+                      JdbcProject(d_date_sk=[$0])
+                        JdbcFilter(condition=[AND(BETWEEN(false, CAST($1):TIMESTAMP(9), 1998-08-04 00:00:00:TIMESTAMP(9), 1998-08-18 00:00:00:TIMESTAMP(9)), IS NOT NULL($0))])
+                          JdbcProject(d_date_sk=[$0], d_date=[$2])
+                            JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                    JdbcProject(s_store_sk=[$0], s_store_id=[$1])
+                      JdbcFilter(condition=[IS NOT NULL($0)])
+                        JdbcProject(s_store_sk=[$0], s_store_id=[$1])
+                          JdbcHiveTableScan(table=[[default, store]], table:alias=[store])
+          HiveProject(channel=[_UTF-16LE'catalog channel':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], id=[||(_UTF-16LE'catalog_page':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0)], sales=[$1], returns=[$3], profit=[-($2, $4)])
+            HiveProject(cp_catalog_page_id=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4])
+              HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                JdbcAggregate(group=[{8}], agg#0=[sum($2)], agg#1=[sum($3)], agg#2=[sum($4)], agg#3=[sum($5)])
+                  JdbcJoin(condition=[=($0, $7)], joinType=[inner])
+                    JdbcJoin(condition=[=($1, $6)], joinType=[inner])
+                      JdbcProject(page_sk=[$0], date_sk=[$1], sales_price=[$2], profit=[$3], return_amt=[$4], net_loss=[$5])
+                        JdbcUnion(all=[true])
+                          JdbcProject(page_sk=[$1], date_sk=[$0], sales_price=[$2], profit=[$3], return_amt=[CAST(0:DECIMAL(7, 2)):DECIMAL(7, 2)], net_loss=[CAST(0:DECIMAL(7, 2)):DECIMAL(7, 2)])
+                            JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                              JdbcProject(cs_sold_date_sk=[$0], cs_catalog_page_sk=[$12], cs_ext_sales_price=[$23], cs_net_profit=[$33])
+                                JdbcHiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                          JdbcProject(page_sk=[$1], date_sk=[$0], sales_price=[CAST(0:DECIMAL(7, 2)):DECIMAL(7, 2)], profit=[CAST(0:DECIMAL(7, 2)):DECIMAL(7, 2)], return_amt=[$2], net_loss=[$3])
+                            JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                              JdbcProject(cr_returned_date_sk=[$0], cr_catalog_page_sk=[$12], cr_return_amount=[$18], cr_net_loss=[$26])
+                                JdbcHiveTableScan(table=[[default, catalog_returns]], table:alias=[catalog_returns])
+                      JdbcProject(d_date_sk=[$0])
+                        JdbcFilter(condition=[AND(BETWEEN(false, CAST($1):TIMESTAMP(9), 1998-08-04 00:00:00:TIMESTAMP(9), 1998-08-18 00:00:00:TIMESTAMP(9)), IS NOT NULL($0))])
+                          JdbcProject(d_date_sk=[$0], d_date=[$2])
+                            JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                    JdbcProject(cp_catalog_page_sk=[$0], cp_catalog_page_id=[$1])
+                      JdbcFilter(condition=[IS NOT NULL($0)])
+                        JdbcProject(cp_catalog_page_sk=[$0], cp_catalog_page_id=[$1])
+                          JdbcHiveTableScan(table=[[default, catalog_page]], table:alias=[catalog_page])
+          HiveProject(channel=[_UTF-16LE'web channel':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], id=[||(_UTF-16LE'web_site':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0)], sales=[$1], returns=[$3], profit=[-($2, $4)])
+            HiveProject(web_site_id=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4])
+              HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                JdbcAggregate(group=[{8}], agg#0=[sum($2)], agg#1=[sum($3)], agg#2=[sum($4)], agg#3=[sum($5)])
+                  JdbcJoin(condition=[=($0, $7)], joinType=[inner])
+                    JdbcJoin(condition=[=($1, $6)], joinType=[inner])
+                      JdbcProject(wsr_web_site_sk=[$0], date_sk=[$1], sales_price=[$2], profit=[$3], return_amt=[$4], net_loss=[$5])
+                        JdbcUnion(all=[true])
+                          JdbcProject(wsr_web_site_sk=[$1], date_sk=[$0], sales_price=[$2], profit=[$3], return_amt=[CAST(0:DECIMAL(7, 2)):DECIMAL(7, 2)], net_loss=[CAST(0:DECIMAL(7, 2)):DECIMAL(7, 2)])
+                            JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                              JdbcProject(ws_sold_date_sk=[$0], ws_web_site_sk=[$13], ws_ext_sales_price=[$23], ws_net_profit=[$33])
+                                JdbcHiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+                          JdbcProject(wsr_web_site_sk=[$6], date_sk=[$0], sales_price=[CAST(0:DECIMAL(7, 2)):DECIMAL(7, 2)], profit=[CAST(0:DECIMAL(7, 2)):DECIMAL(7, 2)], return_amt=[$3], net_loss=[$4])
+                            JdbcJoin(condition=[AND(=($1, $5), =($2, $7))], joinType=[inner])
+                              JdbcProject(wr_returned_date_sk=[$0], wr_item_sk=[$1], wr_order_number=[$2], wr_return_amt=[$3], wr_net_loss=[$4])
+                                JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1), IS NOT NULL($2))])
+                                  JdbcProject(wr_returned_date_sk=[$0], wr_item_sk=[$2], wr_order_number=[$13], wr_return_amt=[$15], wr_net_loss=[$23])
+                                    JdbcHiveTableScan(table=[[default, web_returns]], table:alias=[web_returns])
+                              JdbcProject(ws_item_sk=[$0], ws_web_site_sk=[$1], ws_order_number=[$2])
+                                JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($2), IS NOT NULL($1))])
+                                  JdbcProject(ws_item_sk=[$3], ws_web_site_sk=[$13], ws_order_number=[$17])
+                                    JdbcHiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+                      JdbcProject(d_date_sk=[$0])
+                        JdbcFilter(condition=[AND(BETWEEN(false, CAST($1):TIMESTAMP(9), 1998-08-04 00:00:00:TIMESTAMP(9), 1998-08-18 00:00:00:TIMESTAMP(9)), IS NOT NULL($0))])
+                          JdbcProject(d_date_sk=[$0], d_date=[$2])
+                            JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                    JdbcProject(web_site_sk=[$0], web_site_id=[$1])
+                      JdbcFilter(condition=[IS NOT NULL($0)])
+                        JdbcProject(web_site_sk=[$0], web_site_id=[$1])
+                          JdbcHiveTableScan(table=[[default, web_site]], table:alias=[web_site])
+
