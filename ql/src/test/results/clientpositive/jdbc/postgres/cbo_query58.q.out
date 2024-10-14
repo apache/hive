@@ -1,0 +1,311 @@
+CTE Suggestion:
+HiveProject(d_date=[$0])
+  HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveJdbcConverter(convention=[JDBC.POSTGRES])
+      JdbcJoin(condition=[=($1, $2)], joinType=[inner])
+        JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
+          JdbcProject(d_date=[$2], d_week_seq=[$4])
+            JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+        JdbcProject(d_week_seq=[$1])
+          JdbcFilter(condition=[AND(=($0, _UTF-16LE'1998-02-19'), IS NOT NULL($1))])
+            JdbcProject(d_date=[$2], d_week_seq=[$4])
+              JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+    HiveFilter(condition=[sq_count_check($0)])
+      HiveJdbcConverter(convention=[JDBC.POSTGRES])
+        JdbcAggregate(group=[{}], cnt=[COUNT()])
+          JdbcFilter(condition=[=($0, _UTF-16LE'1998-02-19')])
+            JdbcProject(d_date=[$2])
+              JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+
+CTE Suggestion:
+JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+  JdbcProject(i_item_sk=[$0], i_item_id=[$1])
+    JdbcHiveTableScan(table=[[default, item]], table:alias=[item])
+
+CTE Suggestion:
+JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
+  JdbcProject(d_date_sk=[$0], d_date=[$2])
+    JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+
+Warning: Shuffle Join MERGEJOIN[123][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 8' is a cross product
+PREHOOK: query: explain cbo
+with ss_items as
+ (select i_item_id item_id
+        ,sum(ss_ext_sales_price) ss_item_rev 
+ from store_sales
+     ,item
+     ,date_dim
+ where ss_item_sk = i_item_sk
+   and d_date in (select d_date
+                  from date_dim
+                  where d_week_seq = (select d_week_seq 
+                                      from date_dim
+                                      where d_date = '1998-02-19'))
+   and ss_sold_date_sk   = d_date_sk
+ group by i_item_id),
+ cs_items as
+ (select i_item_id item_id
+        ,sum(cs_ext_sales_price) cs_item_rev
+  from catalog_sales
+      ,item
+      ,date_dim
+ where cs_item_sk = i_item_sk
+  and  d_date in (select d_date
+                  from date_dim
+                  where d_week_seq = (select d_week_seq 
+                                      from date_dim
+                                      where d_date = '1998-02-19'))
+  and  cs_sold_date_sk = d_date_sk
+ group by i_item_id),
+ ws_items as
+ (select i_item_id item_id
+        ,sum(ws_ext_sales_price) ws_item_rev
+  from web_sales
+      ,item
+      ,date_dim
+ where ws_item_sk = i_item_sk
+  and  d_date in (select d_date
+                  from date_dim
+                  where d_week_seq =(select d_week_seq 
+                                     from date_dim
+                                     where d_date = '1998-02-19'))
+  and ws_sold_date_sk   = d_date_sk
+ group by i_item_id)
+  select  ss_items.item_id
+       ,ss_item_rev
+       ,ss_item_rev/(ss_item_rev+cs_item_rev+ws_item_rev)/3 * 100 ss_dev
+       ,cs_item_rev
+       ,cs_item_rev/(ss_item_rev+cs_item_rev+ws_item_rev)/3 * 100 cs_dev
+       ,ws_item_rev
+       ,ws_item_rev/(ss_item_rev+cs_item_rev+ws_item_rev)/3 * 100 ws_dev
+       ,(ss_item_rev+cs_item_rev+ws_item_rev)/3 average
+ from ss_items,cs_items,ws_items
+ where ss_items.item_id=cs_items.item_id
+   and ss_items.item_id=ws_items.item_id 
+   and ss_item_rev between 0.9 * cs_item_rev and 1.1 * cs_item_rev
+   and ss_item_rev between 0.9 * ws_item_rev and 1.1 * ws_item_rev
+   and cs_item_rev between 0.9 * ss_item_rev and 1.1 * ss_item_rev
+   and cs_item_rev between 0.9 * ws_item_rev and 1.1 * ws_item_rev
+   and ws_item_rev between 0.9 * ss_item_rev and 1.1 * ss_item_rev
+   and ws_item_rev between 0.9 * cs_item_rev and 1.1 * cs_item_rev
+ order by item_id
+         ,ss_item_rev
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@web_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+with ss_items as
+ (select i_item_id item_id
+        ,sum(ss_ext_sales_price) ss_item_rev 
+ from store_sales
+     ,item
+     ,date_dim
+ where ss_item_sk = i_item_sk
+   and d_date in (select d_date
+                  from date_dim
+                  where d_week_seq = (select d_week_seq 
+                                      from date_dim
+                                      where d_date = '1998-02-19'))
+   and ss_sold_date_sk   = d_date_sk
+ group by i_item_id),
+ cs_items as
+ (select i_item_id item_id
+        ,sum(cs_ext_sales_price) cs_item_rev
+  from catalog_sales
+      ,item
+      ,date_dim
+ where cs_item_sk = i_item_sk
+  and  d_date in (select d_date
+                  from date_dim
+                  where d_week_seq = (select d_week_seq 
+                                      from date_dim
+                                      where d_date = '1998-02-19'))
+  and  cs_sold_date_sk = d_date_sk
+ group by i_item_id),
+ ws_items as
+ (select i_item_id item_id
+        ,sum(ws_ext_sales_price) ws_item_rev
+  from web_sales
+      ,item
+      ,date_dim
+ where ws_item_sk = i_item_sk
+  and  d_date in (select d_date
+                  from date_dim
+                  where d_week_seq =(select d_week_seq 
+                                     from date_dim
+                                     where d_date = '1998-02-19'))
+  and ws_sold_date_sk   = d_date_sk
+ group by i_item_id)
+  select  ss_items.item_id
+       ,ss_item_rev
+       ,ss_item_rev/(ss_item_rev+cs_item_rev+ws_item_rev)/3 * 100 ss_dev
+       ,cs_item_rev
+       ,cs_item_rev/(ss_item_rev+cs_item_rev+ws_item_rev)/3 * 100 cs_dev
+       ,ws_item_rev
+       ,ws_item_rev/(ss_item_rev+cs_item_rev+ws_item_rev)/3 * 100 ws_dev
+       ,(ss_item_rev+cs_item_rev+ws_item_rev)/3 average
+ from ss_items,cs_items,ws_items
+ where ss_items.item_id=cs_items.item_id
+   and ss_items.item_id=ws_items.item_id 
+   and ss_item_rev between 0.9 * cs_item_rev and 1.1 * cs_item_rev
+   and ss_item_rev between 0.9 * ws_item_rev and 1.1 * ws_item_rev
+   and cs_item_rev between 0.9 * ss_item_rev and 1.1 * ss_item_rev
+   and cs_item_rev between 0.9 * ws_item_rev and 1.1 * ws_item_rev
+   and ws_item_rev between 0.9 * ss_item_rev and 1.1 * ss_item_rev
+   and ws_item_rev between 0.9 * cs_item_rev and 1.1 * cs_item_rev
+ order by item_id
+         ,ss_item_rev
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@web_sales
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
+  HiveProject(item_id=[$0], ss_item_rev=[$1], ss_dev=[*(/(/($1, +(+($1, $5), $9)), 3:DECIMAL(10, 0)), 100:DECIMAL(10, 0))], cs_item_rev=[$5], cs_dev=[*(/(/($5, +(+($1, $5), $9)), 3:DECIMAL(10, 0)), 100:DECIMAL(10, 0))], ws_item_rev=[$9], ws_dev=[*(/(/($9, +(+($1, $5), $9)), 3:DECIMAL(10, 0)), 100:DECIMAL(10, 0))], average=[/(+(+($1, $5), $9), 3:DECIMAL(10, 0))])
+    HiveJoin(condition=[AND(=($0, $8), BETWEEN(false, $1, $10, $11), BETWEEN(false, $5, $10, $11), BETWEEN(false, $9, $2, $3), BETWEEN(false, $9, $6, $7))], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveJoin(condition=[AND(=($0, $4), BETWEEN(false, $1, $6, $7), BETWEEN(false, $5, $2, $3))], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject($f0=[$0], $f1=[$1], *=[*(0.9:DECIMAL(1, 1), $1)], *3=[*(1.1:DECIMAL(2, 1), $1)])
+          HiveAggregate(group=[{4}], agg#0=[sum($2)])
+            HiveSemiJoin(condition=[=($6, $7)], joinType=[semi])
+              HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$1], ss_ext_sales_price=[$2], i_item_sk=[$3], i_item_id=[$4], d_date_sk=[$5], d_date=[$6])
+                HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                  JdbcJoin(condition=[=($0, $5)], joinType=[inner])
+                    JdbcJoin(condition=[=($1, $3)], joinType=[inner])
+                      JdbcProject(ss_sold_date_sk=[$0], ss_item_sk=[$1], ss_ext_sales_price=[$2])
+                        JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
+                          JdbcProject(ss_sold_date_sk=[$0], ss_item_sk=[$2], ss_ext_sales_price=[$15])
+                            JdbcHiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                      JdbcProject(i_item_sk=[$0], i_item_id=[$1])
+                        JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                          JdbcProject(i_item_sk=[$0], i_item_id=[$1])
+                            JdbcHiveTableScan(table=[[default, item]], table:alias=[item])
+                    JdbcProject(d_date_sk=[$0], d_date=[$1])
+                      JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
+                        JdbcProject(d_date_sk=[$0], d_date=[$2])
+                          JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+              HiveProject(d_date=[$0])
+                HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveProject(d_date=[$0], d_week_seq=[$1], d_week_seq0=[$2])
+                    HiveProject(d_date=[$0], d_week_seq=[$1], d_week_seq0=[$2])
+                      HiveProject(d_date=[$0], d_week_seq=[$1], d_week_seq0=[$2])
+                        HiveProject(d_date=[$0], d_week_seq=[$1], d_week_seq0=[$2])
+                          HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                            JdbcJoin(condition=[=($1, $2)], joinType=[inner])
+                              JdbcProject(d_date=[$0], d_week_seq=[$1])
+                                JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
+                                  JdbcProject(d_date=[$2], d_week_seq=[$4])
+                                    JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                              JdbcProject(d_week_seq=[$1])
+                                JdbcFilter(condition=[AND(=($0, _UTF-16LE'1998-02-19'), IS NOT NULL($1))])
+                                  JdbcProject(d_date=[$2], d_week_seq=[$4])
+                                    JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                  HiveProject(cnt=[$0])
+                    HiveFilter(condition=[sq_count_check($0)])
+                      HiveProject(cnt=[$0])
+                        HiveProject(cnt=[$0])
+                          HiveProject(cnt=[$0])
+                            HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                              JdbcAggregate(group=[{}], cnt=[COUNT()])
+                                JdbcFilter(condition=[=($0, _UTF-16LE'1998-02-19')])
+                                  JdbcProject(d_date=[$2])
+                                    JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+        HiveProject($f0=[$0], $f1=[$1], *=[*(0.9:DECIMAL(1, 1), $1)], *3=[*(1.1:DECIMAL(2, 1), $1)])
+          HiveAggregate(group=[{4}], agg#0=[sum($2)])
+            HiveSemiJoin(condition=[=($6, $7)], joinType=[semi])
+              HiveProject(cs_sold_date_sk=[$0], cs_item_sk=[$1], cs_ext_sales_price=[$2], i_item_sk=[$3], i_item_id=[$4], d_date_sk=[$5], d_date=[$6])
+                HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                  JdbcJoin(condition=[=($0, $5)], joinType=[inner])
+                    JdbcJoin(condition=[=($1, $3)], joinType=[inner])
+                      JdbcProject(cs_sold_date_sk=[$0], cs_item_sk=[$1], cs_ext_sales_price=[$2])
+                        JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
+                          JdbcProject(cs_sold_date_sk=[$0], cs_item_sk=[$15], cs_ext_sales_price=[$23])
+                            JdbcHiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                      JdbcProject(i_item_sk=[$0], i_item_id=[$1])
+                        JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                          JdbcProject(i_item_sk=[$0], i_item_id=[$1])
+                            JdbcHiveTableScan(table=[[default, item]], table:alias=[item])
+                    JdbcProject(d_date_sk=[$0], d_date=[$1])
+                      JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
+                        JdbcProject(d_date_sk=[$0], d_date=[$2])
+                          JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+              HiveProject(d_date=[$0])
+                HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveProject(d_date=[$0], d_week_seq=[$1], d_week_seq0=[$2])
+                    HiveProject(d_date=[$0], d_week_seq=[$1], d_week_seq0=[$2])
+                      HiveProject(d_date=[$0], d_week_seq=[$1], d_week_seq0=[$2])
+                        HiveProject(d_date=[$0], d_week_seq=[$1], d_week_seq0=[$2])
+                          HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                            JdbcJoin(condition=[=($1, $2)], joinType=[inner])
+                              JdbcProject(d_date=[$0], d_week_seq=[$1])
+                                JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
+                                  JdbcProject(d_date=[$2], d_week_seq=[$4])
+                                    JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                              JdbcProject(d_week_seq=[$1])
+                                JdbcFilter(condition=[AND(=($0, _UTF-16LE'1998-02-19'), IS NOT NULL($1))])
+                                  JdbcProject(d_date=[$2], d_week_seq=[$4])
+                                    JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                  HiveProject(cnt=[$0])
+                    HiveFilter(condition=[sq_count_check($0)])
+                      HiveProject(cnt=[$0])
+                        HiveProject(cnt=[$0])
+                          HiveProject(cnt=[$0])
+                            HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                              JdbcAggregate(group=[{}], cnt=[COUNT()])
+                                JdbcFilter(condition=[=($0, _UTF-16LE'1998-02-19')])
+                                  JdbcProject(d_date=[$2])
+                                    JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+      HiveProject($f0=[$0], $f1=[$1], *=[*(0.9:DECIMAL(1, 1), $1)], *3=[*(1.1:DECIMAL(2, 1), $1)])
+        HiveAggregate(group=[{4}], agg#0=[sum($2)])
+          HiveSemiJoin(condition=[=($6, $7)], joinType=[semi])
+            HiveProject(ws_sold_date_sk=[$0], ws_item_sk=[$1], ws_ext_sales_price=[$2], i_item_sk=[$3], i_item_id=[$4], d_date_sk=[$5], d_date=[$6])
+              HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                JdbcJoin(condition=[=($0, $5)], joinType=[inner])
+                  JdbcJoin(condition=[=($1, $3)], joinType=[inner])
+                    JdbcProject(ws_sold_date_sk=[$0], ws_item_sk=[$1], ws_ext_sales_price=[$2])
+                      JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
+                        JdbcProject(ws_sold_date_sk=[$0], ws_item_sk=[$3], ws_ext_sales_price=[$23])
+                          JdbcHiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+                    JdbcProject(i_item_sk=[$0], i_item_id=[$1])
+                      JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                        JdbcProject(i_item_sk=[$0], i_item_id=[$1])
+                          JdbcHiveTableScan(table=[[default, item]], table:alias=[item])
+                  JdbcProject(d_date_sk=[$0], d_date=[$1])
+                    JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
+                      JdbcProject(d_date_sk=[$0], d_date=[$2])
+                        JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+            HiveProject(d_date=[$0])
+              HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveProject(d_date=[$0], d_week_seq=[$1], d_week_seq0=[$2])
+                  HiveProject(d_date=[$0], d_week_seq=[$1], d_week_seq0=[$2])
+                    HiveProject(d_date=[$0], d_week_seq=[$1], d_week_seq0=[$2])
+                      HiveProject(d_date=[$0], d_week_seq=[$1], d_week_seq0=[$2])
+                        HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                          JdbcJoin(condition=[=($1, $2)], joinType=[inner])
+                            JdbcProject(d_date=[$0], d_week_seq=[$1])
+                              JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
+                                JdbcProject(d_date=[$2], d_week_seq=[$4])
+                                  JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                            JdbcProject(d_week_seq=[$1])
+                              JdbcFilter(condition=[AND(=($0, _UTF-16LE'1998-02-19'), IS NOT NULL($1))])
+                                JdbcProject(d_date=[$2], d_week_seq=[$4])
+                                  JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                HiveProject(cnt=[$0])
+                  HiveFilter(condition=[sq_count_check($0)])
+                    HiveProject(cnt=[$0])
+                      HiveProject(cnt=[$0])
+                        HiveProject(cnt=[$0])
+                          HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                            JdbcAggregate(group=[{}], cnt=[COUNT()])
+                              JdbcFilter(condition=[=($0, _UTF-16LE'1998-02-19')])
+                                JdbcProject(d_date=[$2])
+                                  JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+

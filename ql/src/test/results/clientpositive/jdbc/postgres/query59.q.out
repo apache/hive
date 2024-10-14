@@ -1,0 +1,155 @@
+PREHOOK: query: explain
+with wss as 
+ (select d_week_seq,
+        ss_store_sk,
+        sum(case when (d_day_name='Sunday') then ss_sales_price else null end) sun_sales,
+        sum(case when (d_day_name='Monday') then ss_sales_price else null end) mon_sales,
+        sum(case when (d_day_name='Tuesday') then ss_sales_price else  null end) tue_sales,
+        sum(case when (d_day_name='Wednesday') then ss_sales_price else null end) wed_sales,
+        sum(case when (d_day_name='Thursday') then ss_sales_price else null end) thu_sales,
+        sum(case when (d_day_name='Friday') then ss_sales_price else null end) fri_sales,
+        sum(case when (d_day_name='Saturday') then ss_sales_price else null end) sat_sales
+ from store_sales,date_dim
+ where d_date_sk = ss_sold_date_sk
+ group by d_week_seq,ss_store_sk
+ )
+  select  s_store_name1,s_store_id1,d_week_seq1
+       ,sun_sales1/sun_sales2,mon_sales1/mon_sales2
+       ,tue_sales1/tue_sales1,wed_sales1/wed_sales2,thu_sales1/thu_sales2
+       ,fri_sales1/fri_sales2,sat_sales1/sat_sales2
+ from
+ (select s_store_name s_store_name1,wss.d_week_seq d_week_seq1
+        ,s_store_id s_store_id1,sun_sales sun_sales1
+        ,mon_sales mon_sales1,tue_sales tue_sales1
+        ,wed_sales wed_sales1,thu_sales thu_sales1
+        ,fri_sales fri_sales1,sat_sales sat_sales1
+  from wss,store,date_dim d
+  where d.d_week_seq = wss.d_week_seq and
+        ss_store_sk = s_store_sk and 
+        d_month_seq between 1185 and 1185 + 11) y,
+ (select s_store_name s_store_name2,wss.d_week_seq d_week_seq2
+        ,s_store_id s_store_id2,sun_sales sun_sales2
+        ,mon_sales mon_sales2,tue_sales tue_sales2
+        ,wed_sales wed_sales2,thu_sales thu_sales2
+        ,fri_sales fri_sales2,sat_sales sat_sales2
+  from wss,store,date_dim d
+  where d.d_week_seq = wss.d_week_seq and
+        ss_store_sk = s_store_sk and 
+        d_month_seq between 1185+ 12 and 1185 + 23) x
+ where s_store_id1=s_store_id2
+   and d_week_seq1=d_week_seq2-52
+ order by s_store_name1,s_store_id1,d_week_seq1
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+with wss as 
+ (select d_week_seq,
+        ss_store_sk,
+        sum(case when (d_day_name='Sunday') then ss_sales_price else null end) sun_sales,
+        sum(case when (d_day_name='Monday') then ss_sales_price else null end) mon_sales,
+        sum(case when (d_day_name='Tuesday') then ss_sales_price else  null end) tue_sales,
+        sum(case when (d_day_name='Wednesday') then ss_sales_price else null end) wed_sales,
+        sum(case when (d_day_name='Thursday') then ss_sales_price else null end) thu_sales,
+        sum(case when (d_day_name='Friday') then ss_sales_price else null end) fri_sales,
+        sum(case when (d_day_name='Saturday') then ss_sales_price else null end) sat_sales
+ from store_sales,date_dim
+ where d_date_sk = ss_sold_date_sk
+ group by d_week_seq,ss_store_sk
+ )
+  select  s_store_name1,s_store_id1,d_week_seq1
+       ,sun_sales1/sun_sales2,mon_sales1/mon_sales2
+       ,tue_sales1/tue_sales1,wed_sales1/wed_sales2,thu_sales1/thu_sales2
+       ,fri_sales1/fri_sales2,sat_sales1/sat_sales2
+ from
+ (select s_store_name s_store_name1,wss.d_week_seq d_week_seq1
+        ,s_store_id s_store_id1,sun_sales sun_sales1
+        ,mon_sales mon_sales1,tue_sales tue_sales1
+        ,wed_sales wed_sales1,thu_sales thu_sales1
+        ,fri_sales fri_sales1,sat_sales sat_sales1
+  from wss,store,date_dim d
+  where d.d_week_seq = wss.d_week_seq and
+        ss_store_sk = s_store_sk and 
+        d_month_seq between 1185 and 1185 + 11) y,
+ (select s_store_name s_store_name2,wss.d_week_seq d_week_seq2
+        ,s_store_id s_store_id2,sun_sales sun_sales2
+        ,mon_sales mon_sales2,tue_sales tue_sales2
+        ,wed_sales wed_sales2,thu_sales thu_sales2
+        ,fri_sales fri_sales2,sat_sales sat_sales2
+  from wss,store,date_dim d
+  where d.d_week_seq = wss.d_week_seq and
+        ss_store_sk = s_store_sk and 
+        d_month_seq between 1185+ 12 and 1185 + 23) x
+ where s_store_id1=s_store_id2
+   and d_week_seq1=d_week_seq2-52
+ order by s_store_name1,s_store_id1,d_week_seq1
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: date_dim
+          properties:
+            hive.sql.query SELECT "t30"."s_store_name1", "t30"."s_store_id1", "t30"."d_week_seq1", "t30"."_o__c3", "t30"."_o__c4", "t30"."_o__c5", "t30"."_o__c6", "t30"."_o__c7", "t30"."_o__c8", "t30"."_o__c9"
+FROM (SELECT "t16"."s_store_name" AS "s_store_name1", "t16"."s_store_id" AS "s_store_id1", "t6"."$f0" AS "d_week_seq1", "t6"."$f2" / "t28"."$f2" AS "_o__c3", "t6"."$f3" / "t28"."$f3" AS "_o__c4", "t6"."$f4" / "t6"."$f4" AS "_o__c5", "t6"."$f5" / "t28"."$f4" AS "_o__c6", "t6"."$f6" / "t28"."$f5" AS "_o__c7", "t6"."$f7" / "t28"."$f6" AS "_o__c8", "t6"."$f8" / "t28"."$f7" AS "_o__c9"
+FROM (SELECT "t1"."d_week_seq" AS "$f0", "t4"."ss_store_sk" AS "$f1", SUM(CASE WHEN "t1"."=" THEN "t4"."ss_sales_price" ELSE NULL END) AS "$f2", SUM(CASE WHEN "t1"."=3" THEN "t4"."ss_sales_price" ELSE NULL END) AS "$f3", SUM(CASE WHEN "t1"."=4" THEN "t4"."ss_sales_price" ELSE NULL END) AS "$f4", SUM(CASE WHEN "t1"."=5" THEN "t4"."ss_sales_price" ELSE NULL END) AS "$f5", SUM(CASE WHEN "t1"."=6" THEN "t4"."ss_sales_price" ELSE NULL END) AS "$f6", SUM(CASE WHEN "t1"."=7" THEN "t4"."ss_sales_price" ELSE NULL END) AS "$f7", SUM(CASE WHEN "t1"."=8" THEN "t4"."ss_sales_price" ELSE NULL END) AS "$f8"
+FROM (SELECT "d_date_sk", "d_week_seq", "d_day_name" = 'Sunday' AS "=", "d_day_name" = 'Monday' AS "=3", "d_day_name" = 'Tuesday' AS "=4", "d_day_name" = 'Wednesday' AS "=5", "d_day_name" = 'Thursday' AS "=6", "d_day_name" = 'Friday' AS "=7", "d_day_name" = 'Saturday' AS "=8"
+FROM (SELECT "d_date_sk", "d_week_seq", "d_day_name"
+FROM "date_dim") AS "t"
+WHERE "d_date_sk" IS NOT NULL AND "d_week_seq" IS NOT NULL) AS "t1"
+INNER JOIN (SELECT "ss_sold_date_sk", "ss_store_sk", "ss_sales_price"
+FROM (SELECT "ss_sold_date_sk", "ss_store_sk", "ss_sales_price"
+FROM "store_sales") AS "t2"
+WHERE "ss_sold_date_sk" IS NOT NULL AND "ss_store_sk" IS NOT NULL) AS "t4" ON "t1"."d_date_sk" = "t4"."ss_sold_date_sk"
+GROUP BY "t1"."d_week_seq", "t4"."ss_store_sk") AS "t6"
+INNER JOIN (SELECT "d_week_seq"
+FROM (SELECT "d_month_seq", "d_week_seq"
+FROM "date_dim") AS "t7"
+WHERE "d_month_seq" BETWEEN 1185 AND 1196 AND "d_week_seq" IS NOT NULL) AS "t9" ON "t6"."$f0" = "t9"."d_week_seq"
+INNER JOIN (SELECT "t12"."s_store_sk", "t12"."s_store_id", "t12"."s_store_name", "t15"."s_store_sk" AS "s_store_sk0", "t15"."s_store_id" AS "s_store_id0"
+FROM (SELECT "s_store_sk", "s_store_id", "s_store_name"
+FROM (SELECT "s_store_sk", "s_store_id", "s_store_name"
+FROM "store") AS "t10"
+WHERE "s_store_sk" IS NOT NULL AND "s_store_id" IS NOT NULL) AS "t12"
+INNER JOIN (SELECT "s_store_sk", "s_store_id"
+FROM (SELECT "s_store_sk", "s_store_id"
+FROM "store") AS "t13"
+WHERE "s_store_sk" IS NOT NULL AND "s_store_id" IS NOT NULL) AS "t15" ON "t12"."s_store_id" = "t15"."s_store_id") AS "t16" ON "t6"."$f1" = "t16"."s_store_sk"
+INNER JOIN (SELECT "t24"."$f0", "t24"."$f1", "t24"."$f2", "t24"."$f3", "t24"."$f4", "t24"."$f5", "t24"."$f6", "t24"."$f7", "t27"."d_week_seq"
+FROM (SELECT "t19"."d_week_seq" AS "$f0", "t22"."ss_store_sk" AS "$f1", SUM(CASE WHEN "t19"."=" THEN "t22"."ss_sales_price" ELSE NULL END) AS "$f2", SUM(CASE WHEN "t19"."=3" THEN "t22"."ss_sales_price" ELSE NULL END) AS "$f3", SUM(CASE WHEN "t19"."=5" THEN "t22"."ss_sales_price" ELSE NULL END) AS "$f4", SUM(CASE WHEN "t19"."=6" THEN "t22"."ss_sales_price" ELSE NULL END) AS "$f5", SUM(CASE WHEN "t19"."=7" THEN "t22"."ss_sales_price" ELSE NULL END) AS "$f6", SUM(CASE WHEN "t19"."=8" THEN "t22"."ss_sales_price" ELSE NULL END) AS "$f7"
+FROM (SELECT "d_date_sk", "d_week_seq", "d_day_name" = 'Sunday' AS "=", "d_day_name" = 'Monday' AS "=3", "d_day_name" = 'Tuesday' AS "=4", "d_day_name" = 'Wednesday' AS "=5", "d_day_name" = 'Thursday' AS "=6", "d_day_name" = 'Friday' AS "=7", "d_day_name" = 'Saturday' AS "=8"
+FROM (SELECT "d_date_sk", "d_week_seq", "d_day_name"
+FROM "date_dim") AS "t17"
+WHERE "d_date_sk" IS NOT NULL AND "d_week_seq" IS NOT NULL) AS "t19"
+INNER JOIN (SELECT "ss_sold_date_sk", "ss_store_sk", "ss_sales_price"
+FROM (SELECT "ss_sold_date_sk", "ss_store_sk", "ss_sales_price"
+FROM "store_sales") AS "t20"
+WHERE "ss_sold_date_sk" IS NOT NULL AND "ss_store_sk" IS NOT NULL) AS "t22" ON "t19"."d_date_sk" = "t22"."ss_sold_date_sk"
+GROUP BY "t19"."d_week_seq", "t22"."ss_store_sk") AS "t24"
+INNER JOIN (SELECT "d_week_seq"
+FROM (SELECT "d_month_seq", "d_week_seq"
+FROM "date_dim") AS "t25"
+WHERE "d_month_seq" BETWEEN 1197 AND 1208 AND "d_week_seq" IS NOT NULL) AS "t27" ON "t24"."$f0" = "t27"."d_week_seq") AS "t28" ON "t6"."$f0" = "t28"."$f0" - 52 AND "t16"."s_store_sk0" = "t28"."$f1"
+ORDER BY "t16"."s_store_name", "t16"."s_store_id", "t6"."$f0"
+FETCH NEXT 100 ROWS ONLY) AS "t30"
+            hive.sql.query.fieldNames s_store_name1,s_store_id1,d_week_seq1,_o__c3,_o__c4,_o__c5,_o__c6,_o__c7,_o__c8,_o__c9
+            hive.sql.query.fieldTypes string,string,int,decimal(37,20),decimal(37,20),decimal(37,20),decimal(37,20),decimal(37,20),decimal(37,20),decimal(37,20)
+            hive.sql.query.split false
+          Select Operator
+            expressions: s_store_name1 (type: string), s_store_id1 (type: string), d_week_seq1 (type: int), _o__c3 (type: decimal(37,20)), _o__c4 (type: decimal(37,20)), _o__c5 (type: decimal(37,20)), _o__c6 (type: decimal(37,20)), _o__c7 (type: decimal(37,20)), _o__c8 (type: decimal(37,20)), _o__c9 (type: decimal(37,20))
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+            ListSink
+
