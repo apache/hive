@@ -1,0 +1,240 @@
+Warning: Shuffle Join MERGEJOIN[10][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain
+select  promotions,total,cast(promotions as decimal(15,4))/cast(total as decimal(15,4))*100
+from
+  (select sum(ss_ext_sales_price) promotions
+   from  store_sales
+        ,store
+        ,promotion
+        ,date_dim
+        ,customer
+        ,customer_address 
+        ,item
+   where ss_sold_date_sk = d_date_sk
+   and   ss_store_sk = s_store_sk
+   and   ss_promo_sk = p_promo_sk
+   and   ss_customer_sk= c_customer_sk
+   and   ca_address_sk = c_current_addr_sk
+   and   ss_item_sk = i_item_sk 
+   and   ca_gmt_offset = -7
+   and   i_category = 'Electronics'
+   and   (p_channel_dmail = 'Y' or p_channel_email = 'Y' or p_channel_tv = 'Y')
+   and   s_gmt_offset = -7
+   and   d_year = 1999
+   and   d_moy  = 11) promotional_sales,
+  (select sum(ss_ext_sales_price) total
+   from  store_sales
+        ,store
+        ,date_dim
+        ,customer
+        ,customer_address
+        ,item
+   where ss_sold_date_sk = d_date_sk
+   and   ss_store_sk = s_store_sk
+   and   ss_customer_sk= c_customer_sk
+   and   ca_address_sk = c_current_addr_sk
+   and   ss_item_sk = i_item_sk
+   and   ca_gmt_offset = -7
+   and   i_category = 'Electronics'
+   and   s_gmt_offset = -7
+   and   d_year = 1999
+   and   d_moy  = 11) all_sales
+order by promotions, total
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@customer_address
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@promotion
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select  promotions,total,cast(promotions as decimal(15,4))/cast(total as decimal(15,4))*100
+from
+  (select sum(ss_ext_sales_price) promotions
+   from  store_sales
+        ,store
+        ,promotion
+        ,date_dim
+        ,customer
+        ,customer_address 
+        ,item
+   where ss_sold_date_sk = d_date_sk
+   and   ss_store_sk = s_store_sk
+   and   ss_promo_sk = p_promo_sk
+   and   ss_customer_sk= c_customer_sk
+   and   ca_address_sk = c_current_addr_sk
+   and   ss_item_sk = i_item_sk 
+   and   ca_gmt_offset = -7
+   and   i_category = 'Electronics'
+   and   (p_channel_dmail = 'Y' or p_channel_email = 'Y' or p_channel_tv = 'Y')
+   and   s_gmt_offset = -7
+   and   d_year = 1999
+   and   d_moy  = 11) promotional_sales,
+  (select sum(ss_ext_sales_price) total
+   from  store_sales
+        ,store
+        ,date_dim
+        ,customer
+        ,customer_address
+        ,item
+   where ss_sold_date_sk = d_date_sk
+   and   ss_store_sk = s_store_sk
+   and   ss_customer_sk= c_customer_sk
+   and   ca_address_sk = c_current_addr_sk
+   and   ss_item_sk = i_item_sk
+   and   ca_gmt_offset = -7
+   and   i_category = 'Electronics'
+   and   s_gmt_offset = -7
+   and   d_year = 1999
+   and   d_moy  = 11) all_sales
+order by promotions, total
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@customer_address
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@promotion
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (XPROD_EDGE), Map 3 (XPROD_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  properties:
+                    hive.sql.query SELECT SUM("t1"."ss_ext_sales_price") AS "$f0"
+FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_customer_sk", "ss_store_sk", "ss_promo_sk", "ss_ext_sales_price"
+FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_customer_sk", "ss_store_sk", "ss_promo_sk", "ss_ext_sales_price"
+FROM "store_sales") AS "t"
+WHERE "ss_store_sk" IS NOT NULL AND "ss_promo_sk" IS NOT NULL AND ("ss_sold_date_sk" IS NOT NULL AND ("ss_customer_sk" IS NOT NULL AND "ss_item_sk" IS NOT NULL))) AS "t1"
+INNER JOIN (SELECT "s_store_sk"
+FROM (SELECT "s_store_sk", "s_gmt_offset"
+FROM "store") AS "t2"
+WHERE "s_gmt_offset" = -7 AND "s_store_sk" IS NOT NULL) AS "t4" ON "t1"."ss_store_sk" = "t4"."s_store_sk"
+INNER JOIN (SELECT "p_promo_sk"
+FROM (SELECT "p_promo_sk", "p_channel_dmail", "p_channel_email", "p_channel_tv"
+FROM "promotion") AS "t5"
+WHERE ("p_channel_dmail" = 'Y' OR ("p_channel_email" = 'Y' OR "p_channel_tv" = 'Y')) AND "p_promo_sk" IS NOT NULL) AS "t7" ON "t1"."ss_promo_sk" = "t7"."p_promo_sk"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year", "d_moy"
+FROM "date_dim") AS "t8"
+WHERE "d_year" = 1999 AND ("d_moy" = 11 AND "d_date_sk" IS NOT NULL)) AS "t10" ON "t1"."ss_sold_date_sk" = "t10"."d_date_sk"
+INNER JOIN (SELECT "i_item_sk"
+FROM (SELECT "i_item_sk", "i_category"
+FROM "item") AS "t11"
+WHERE "i_category" = 'Electronics' AND "i_item_sk" IS NOT NULL) AS "t13" ON "t1"."ss_item_sk" = "t13"."i_item_sk"
+INNER JOIN (SELECT "t16"."c_customer_sk", "t16"."c_current_addr_sk", "t19"."ca_address_sk"
+FROM (SELECT "c_customer_sk", "c_current_addr_sk"
+FROM (SELECT "c_customer_sk", "c_current_addr_sk"
+FROM "customer") AS "t14"
+WHERE "c_customer_sk" IS NOT NULL AND "c_current_addr_sk" IS NOT NULL) AS "t16"
+INNER JOIN (SELECT "ca_address_sk"
+FROM (SELECT "ca_address_sk", "ca_gmt_offset"
+FROM "customer_address") AS "t17"
+WHERE "ca_gmt_offset" = -7 AND "ca_address_sk" IS NOT NULL) AS "t19" ON "t16"."c_current_addr_sk" = "t19"."ca_address_sk") AS "t20" ON "t1"."ss_customer_sk" = "t20"."c_customer_sk"
+                    hive.sql.query.fieldNames $f0
+                    hive.sql.query.fieldTypes decimal(17,2)
+                    hive.sql.query.split false
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: $f0 (type: decimal(17,2))
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: decimal(17,2))
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  properties:
+                    hive.sql.query SELECT SUM("t1"."ss_ext_sales_price") AS "$f0"
+FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_customer_sk", "ss_store_sk", "ss_ext_sales_price"
+FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_customer_sk", "ss_store_sk", "ss_ext_sales_price"
+FROM "store_sales") AS "t"
+WHERE "ss_store_sk" IS NOT NULL AND "ss_sold_date_sk" IS NOT NULL AND ("ss_customer_sk" IS NOT NULL AND "ss_item_sk" IS NOT NULL)) AS "t1"
+INNER JOIN (SELECT "s_store_sk"
+FROM (SELECT "s_store_sk", "s_gmt_offset"
+FROM "store") AS "t2"
+WHERE "s_gmt_offset" = -7 AND "s_store_sk" IS NOT NULL) AS "t4" ON "t1"."ss_store_sk" = "t4"."s_store_sk"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year", "d_moy"
+FROM "date_dim") AS "t5"
+WHERE "d_year" = 1999 AND ("d_moy" = 11 AND "d_date_sk" IS NOT NULL)) AS "t7" ON "t1"."ss_sold_date_sk" = "t7"."d_date_sk"
+INNER JOIN (SELECT "i_item_sk"
+FROM (SELECT "i_item_sk", "i_category"
+FROM "item") AS "t8"
+WHERE "i_category" = 'Electronics' AND "i_item_sk" IS NOT NULL) AS "t10" ON "t1"."ss_item_sk" = "t10"."i_item_sk"
+INNER JOIN (SELECT "t13"."c_customer_sk", "t13"."c_current_addr_sk", "t16"."ca_address_sk"
+FROM (SELECT "c_customer_sk", "c_current_addr_sk"
+FROM (SELECT "c_customer_sk", "c_current_addr_sk"
+FROM "customer") AS "t11"
+WHERE "c_customer_sk" IS NOT NULL AND "c_current_addr_sk" IS NOT NULL) AS "t13"
+INNER JOIN (SELECT "ca_address_sk"
+FROM (SELECT "ca_address_sk", "ca_gmt_offset"
+FROM "customer_address") AS "t14"
+WHERE "ca_gmt_offset" = -7 AND "ca_address_sk" IS NOT NULL) AS "t16" ON "t13"."c_current_addr_sk" = "t16"."ca_address_sk") AS "t17" ON "t1"."ss_customer_sk" = "t17"."c_customer_sk"
+                    hive.sql.query.fieldNames $f0
+                    hive.sql.query.fieldTypes decimal(17,2)
+                    hive.sql.query.split false
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: $f0 (type: decimal(17,2))
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: decimal(17,2))
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 225 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: decimal(17,2)), _col1 (type: decimal(17,2)), ((CAST( _col0 AS decimal(15,4)) / CAST( _col1 AS decimal(15,4))) * 100) (type: decimal(38,19))
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1 Data size: 225 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 225 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

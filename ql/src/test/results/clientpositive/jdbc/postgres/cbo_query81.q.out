@@ -1,0 +1,134 @@
+CTE Suggestion:
+JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+  JdbcProject(ca_address_sk=[$0], ca_state=[$8])
+    JdbcHiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
+
+CTE Suggestion:
+JdbcProject(d_date_sk=[$0])
+  JdbcFilter(condition=[AND(=($1, 1998), IS NOT NULL($0))])
+    JdbcProject(d_date_sk=[$0], d_year=[$6])
+      JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+
+PREHOOK: query: explain cbo
+with customer_total_return as
+ (select cr_returning_customer_sk as ctr_customer_sk
+        ,ca_state as ctr_state, 
+ 	sum(cr_return_amt_inc_tax) as ctr_total_return
+ from catalog_returns
+     ,date_dim
+     ,customer_address
+ where cr_returned_date_sk = d_date_sk 
+   and d_year =1998
+   and cr_returning_addr_sk = ca_address_sk 
+ group by cr_returning_customer_sk
+         ,ca_state )
+  select  c_customer_id,c_salutation,c_first_name,c_last_name,ca_street_number,ca_street_name
+                   ,ca_street_type,ca_suite_number,ca_city,ca_county,ca_state,ca_zip,ca_country,ca_gmt_offset
+                  ,ca_location_type,ctr_total_return
+ from customer_total_return ctr1
+     ,customer_address
+     ,customer
+ where ctr1.ctr_total_return > (select avg(ctr_total_return)*1.2
+ 			  from customer_total_return ctr2 
+                  	  where ctr1.ctr_state = ctr2.ctr_state)
+       and ca_address_sk = c_current_addr_sk
+       and ca_state = 'IL'
+       and ctr1.ctr_customer_sk = c_customer_sk
+ order by c_customer_id,c_salutation,c_first_name,c_last_name,ca_street_number,ca_street_name
+                   ,ca_street_type,ca_suite_number,ca_city,ca_county,ca_state,ca_zip,ca_country,ca_gmt_offset
+                  ,ca_location_type,ctr_total_return
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_returns
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@customer_address
+PREHOOK: Input: default@date_dim
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+with customer_total_return as
+ (select cr_returning_customer_sk as ctr_customer_sk
+        ,ca_state as ctr_state, 
+ 	sum(cr_return_amt_inc_tax) as ctr_total_return
+ from catalog_returns
+     ,date_dim
+     ,customer_address
+ where cr_returned_date_sk = d_date_sk 
+   and d_year =1998
+   and cr_returning_addr_sk = ca_address_sk 
+ group by cr_returning_customer_sk
+         ,ca_state )
+  select  c_customer_id,c_salutation,c_first_name,c_last_name,ca_street_number,ca_street_name
+                   ,ca_street_type,ca_suite_number,ca_city,ca_county,ca_state,ca_zip,ca_country,ca_gmt_offset
+                  ,ca_location_type,ctr_total_return
+ from customer_total_return ctr1
+     ,customer_address
+     ,customer
+ where ctr1.ctr_total_return > (select avg(ctr_total_return)*1.2
+ 			  from customer_total_return ctr2 
+                  	  where ctr1.ctr_state = ctr2.ctr_state)
+       and ca_address_sk = c_current_addr_sk
+       and ca_state = 'IL'
+       and ctr1.ctr_customer_sk = c_customer_sk
+ order by c_customer_id,c_salutation,c_first_name,c_last_name,ca_street_number,ca_street_name
+                   ,ca_street_type,ca_suite_number,ca_city,ca_county,ca_state,ca_zip,ca_country,ca_gmt_offset
+                  ,ca_location_type,ctr_total_return
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_returns
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@customer_address
+POSTHOOK: Input: default@date_dim
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJdbcConverter(convention=[JDBC.POSTGRES])
+  JdbcProject(c_customer_id=[$0], c_salutation=[$1], c_first_name=[$2], c_last_name=[$3], ca_street_number=[$4], ca_street_name=[$5], ca_street_type=[$6], ca_suite_number=[$7], ca_city=[$8], ca_county=[$9], ca_state=[CAST(_UTF-16LE'IL':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], ca_zip=[$10], ca_country=[$11], ca_gmt_offset=[$12], ca_location_type=[$13], ctr_total_return=[$14])
+    JdbcSort(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=[$5], sort6=[$6], sort7=[$7], sort8=[$8], sort9=[$9], sort10=[$10], sort11=[$11], sort12=[$12], sort13=[$13], sort14=[$14], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], dir5=[ASC], dir6=[ASC], dir7=[ASC], dir8=[ASC], dir9=[ASC], dir10=[ASC], dir11=[ASC], dir12=[ASC], dir13=[ASC], dir14=[ASC], fetch=[100])
+      JdbcProject(c_customer_id=[$12], c_salutation=[$14], c_first_name=[$15], c_last_name=[$16], ca_street_number=[$1], ca_street_name=[$2], ca_street_type=[$3], ca_suite_number=[$4], ca_city=[$5], ca_county=[$6], ca_zip=[$7], ca_country=[$8], ca_gmt_offset=[$9], ca_location_type=[$10], ctr_total_return=[$19])
+        JdbcJoin(condition=[=($17, $11)], joinType=[inner])
+          JdbcJoin(condition=[=($0, $13)], joinType=[inner])
+            JdbcProject(ca_address_sk=[$0], ca_street_number=[$1], ca_street_name=[$2], ca_street_type=[$3], ca_suite_number=[$4], ca_city=[$5], ca_county=[$6], ca_zip=[$8], ca_country=[$9], ca_gmt_offset=[$10], ca_location_type=[$11])
+              JdbcFilter(condition=[AND(=($7, _UTF-16LE'IL'), IS NOT NULL($0))])
+                JdbcProject(ca_address_sk=[$0], ca_street_number=[$2], ca_street_name=[$3], ca_street_type=[$4], ca_suite_number=[$5], ca_city=[$6], ca_county=[$7], ca_state=[$8], ca_zip=[$9], ca_country=[$10], ca_gmt_offset=[$11], ca_location_type=[$12])
+                  JdbcHiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
+            JdbcProject(c_customer_sk=[$0], c_customer_id=[$1], c_current_addr_sk=[$2], c_salutation=[$3], c_first_name=[$4], c_last_name=[$5])
+              JdbcFilter(condition=[AND(IS NOT NULL($2), IS NOT NULL($0))])
+                JdbcProject(c_customer_sk=[$0], c_customer_id=[$1], c_current_addr_sk=[$4], c_salutation=[$7], c_first_name=[$8], c_last_name=[$9])
+                  JdbcHiveTableScan(table=[[default, customer]], table:alias=[customer])
+          JdbcProject(cr_returning_customer_sk=[$0], ca_state=[$1], $f2=[$2], _o__c0=[$3], ctr_state=[$4])
+            JdbcJoin(condition=[AND(=($1, $4), >($2, $3))], joinType=[inner])
+              JdbcProject(cr_returning_customer_sk=[$0], ca_state=[$1], $f2=[$2])
+                JdbcFilter(condition=[IS NOT NULL($2)])
+                  JdbcAggregate(group=[{1, 6}], agg#0=[sum($3)])
+                    JdbcJoin(condition=[=($2, $5)], joinType=[inner])
+                      JdbcJoin(condition=[=($0, $4)], joinType=[inner])
+                        JdbcProject(cr_returned_date_sk=[$0], cr_returning_customer_sk=[$1], cr_returning_addr_sk=[$2], cr_return_amt_inc_tax=[$3])
+                          JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($2), IS NOT NULL($1))])
+                            JdbcProject(cr_returned_date_sk=[$0], cr_returning_customer_sk=[$7], cr_returning_addr_sk=[$10], cr_return_amt_inc_tax=[$20])
+                              JdbcHiveTableScan(table=[[default, catalog_returns]], table:alias=[catalog_returns])
+                        JdbcProject(d_date_sk=[$0])
+                          JdbcFilter(condition=[AND(=($1, 1998), IS NOT NULL($0))])
+                            JdbcProject(d_date_sk=[$0], d_year=[$6])
+                              JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                      JdbcProject(ca_address_sk=[$0], ca_state=[$1])
+                        JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                          JdbcProject(ca_address_sk=[$0], ca_state=[$8])
+                            JdbcHiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
+              JdbcProject(_o__c0=[*(CAST(/($1, $2)):DECIMAL(21, 6), 1.2:DECIMAL(2, 1))], ctr_state=[$0])
+                JdbcFilter(condition=[IS NOT NULL(CAST(/($1, $2)):DECIMAL(21, 6))])
+                  JdbcAggregate(group=[{1}], agg#0=[sum($2)], agg#1=[count($2)])
+                    JdbcAggregate(group=[{1, 6}], agg#0=[sum($3)])
+                      JdbcJoin(condition=[=($2, $5)], joinType=[inner])
+                        JdbcJoin(condition=[=($0, $4)], joinType=[inner])
+                          JdbcProject(cr_returned_date_sk=[$0], cr_returning_customer_sk=[$1], cr_returning_addr_sk=[$2], cr_return_amt_inc_tax=[$3])
+                            JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($2))])
+                              JdbcProject(cr_returned_date_sk=[$0], cr_returning_customer_sk=[$7], cr_returning_addr_sk=[$10], cr_return_amt_inc_tax=[$20])
+                                JdbcHiveTableScan(table=[[default, catalog_returns]], table:alias=[catalog_returns])
+                          JdbcProject(d_date_sk=[$0])
+                            JdbcFilter(condition=[AND(=($1, 1998), IS NOT NULL($0))])
+                              JdbcProject(d_date_sk=[$0], d_year=[$6])
+                                JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                        JdbcProject(ca_address_sk=[$0], ca_state=[$1])
+                          JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                            JdbcProject(ca_address_sk=[$0], ca_state=[$8])
+                              JdbcHiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
+

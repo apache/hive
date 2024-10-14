@@ -1,0 +1,122 @@
+PREHOOK: query: explain cbo
+select  distinct(i_product_name)
+from item i1
+where i_manufact_id between 970 and 970+40
+  and (select count(*) as item_cnt
+       from item
+       where (i_manufact = i1.i_manufact and
+              ((i_category = 'Women' and
+                (i_color = 'frosted' or i_color = 'rose') and
+                (i_units = 'Lb' or i_units = 'Gross') and
+                (i_size = 'medium' or i_size = 'large')
+                   ) or
+               (i_category = 'Women' and
+                (i_color = 'chocolate' or i_color = 'black') and
+                (i_units = 'Box' or i_units = 'Dram') and
+                (i_size = 'economy' or i_size = 'petite')
+                   ) or
+               (i_category = 'Men' and
+                (i_color = 'slate' or i_color = 'magenta') and
+                (i_units = 'Carton' or i_units = 'Bundle') and
+                (i_size = 'N/A' or i_size = 'small')
+                   ) or
+               (i_category = 'Men' and
+                (i_color = 'cornflower' or i_color = 'firebrick') and
+                (i_units = 'Pound' or i_units = 'Oz') and
+                (i_size = 'medium' or i_size = 'large')
+                   ))) or
+           (i_manufact = i1.i_manufact and
+            ((i_category = 'Women' and
+              (i_color = 'almond' or i_color = 'steel') and
+              (i_units = 'Tsp' or i_units = 'Case') and
+              (i_size = 'medium' or i_size = 'large')
+                 ) or
+             (i_category = 'Women' and
+              (i_color = 'purple' or i_color = 'aquamarine') and
+              (i_units = 'Bunch' or i_units = 'Gram') and
+              (i_size = 'economy' or i_size = 'petite')
+                 ) or
+             (i_category = 'Men' and
+              (i_color = 'lavender' or i_color = 'papaya') and
+              (i_units = 'Pallet' or i_units = 'Cup') and
+              (i_size = 'N/A' or i_size = 'small')
+                 ) or
+             (i_category = 'Men' and
+              (i_color = 'maroon' or i_color = 'cyan') and
+              (i_units = 'Each' or i_units = 'N/A') and
+              (i_size = 'medium' or i_size = 'large')
+                 )))) > 0
+order by i_product_name
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@item
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select  distinct(i_product_name)
+from item i1
+where i_manufact_id between 970 and 970+40
+  and (select count(*) as item_cnt
+       from item
+       where (i_manufact = i1.i_manufact and
+              ((i_category = 'Women' and
+                (i_color = 'frosted' or i_color = 'rose') and
+                (i_units = 'Lb' or i_units = 'Gross') and
+                (i_size = 'medium' or i_size = 'large')
+                   ) or
+               (i_category = 'Women' and
+                (i_color = 'chocolate' or i_color = 'black') and
+                (i_units = 'Box' or i_units = 'Dram') and
+                (i_size = 'economy' or i_size = 'petite')
+                   ) or
+               (i_category = 'Men' and
+                (i_color = 'slate' or i_color = 'magenta') and
+                (i_units = 'Carton' or i_units = 'Bundle') and
+                (i_size = 'N/A' or i_size = 'small')
+                   ) or
+               (i_category = 'Men' and
+                (i_color = 'cornflower' or i_color = 'firebrick') and
+                (i_units = 'Pound' or i_units = 'Oz') and
+                (i_size = 'medium' or i_size = 'large')
+                   ))) or
+           (i_manufact = i1.i_manufact and
+            ((i_category = 'Women' and
+              (i_color = 'almond' or i_color = 'steel') and
+              (i_units = 'Tsp' or i_units = 'Case') and
+              (i_size = 'medium' or i_size = 'large')
+                 ) or
+             (i_category = 'Women' and
+              (i_color = 'purple' or i_color = 'aquamarine') and
+              (i_units = 'Bunch' or i_units = 'Gram') and
+              (i_size = 'economy' or i_size = 'petite')
+                 ) or
+             (i_category = 'Men' and
+              (i_color = 'lavender' or i_color = 'papaya') and
+              (i_units = 'Pallet' or i_units = 'Cup') and
+              (i_size = 'N/A' or i_size = 'small')
+                 ) or
+             (i_category = 'Men' and
+              (i_color = 'maroon' or i_color = 'cyan') and
+              (i_units = 'Each' or i_units = 'N/A') and
+              (i_size = 'medium' or i_size = 'large')
+                 )))) > 0
+order by i_product_name
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@item
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJdbcConverter(convention=[JDBC.POSTGRES])
+  JdbcSort(sort0=[$0], dir0=[ASC], fetch=[100])
+    JdbcAggregate(group=[{1}])
+      JdbcJoin(condition=[=($2, $0)], joinType=[inner])
+        JdbcProject(i_manufact=[$1], i_product_name=[$2])
+          JdbcFilter(condition=[AND(BETWEEN(false, $0, 970, 1010), IS NOT NULL($1))])
+            JdbcProject(i_manufact_id=[$13], i_manufact=[$14], i_product_name=[$21])
+              JdbcHiveTableScan(table=[[default, item]], table:alias=[i1])
+        JdbcProject(i_manufact=[$0])
+          JdbcFilter(condition=[>($1, 0)])
+            JdbcAggregate(group=[{1}], agg#0=[count()])
+              JdbcFilter(condition=[AND(OR(AND(=($0, _UTF-16LE'Women'), IN($3, _UTF-16LE'frosted':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'rose':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IN($4, _UTF-16LE'Lb':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Gross':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IN($2, _UTF-16LE'medium':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'large':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")), AND(=($0, _UTF-16LE'Women'), IN($3, _UTF-16LE'chocolate':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'black':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IN($4, _UTF-16LE'Box':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Dram':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IN($2, _UTF-16LE'economy':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'petite':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")), AND(=($0, _UTF-16LE'Men'), IN($3, _UTF-16LE'slate':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'magenta':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IN($4, _UTF-16LE'Carton':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Bundle':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IN($2, _UTF-16LE'N/A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'small':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")), AND(=($0, _UTF-16LE'Men'), IN($3, _UTF-16LE'cornflower':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'firebrick':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IN($4, _UTF-16LE'Pound':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Oz':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IN($2, _UTF-16LE'medium':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'large':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")), AND(=($0, _UTF-16LE'Women'), IN($3, _UTF-16LE'almond':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'steel':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IN($4, _UTF-16LE'Tsp':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Case':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IN($2, _UTF-16LE'medium':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'large':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")), AND(=($0, _UTF-16LE'Women'), IN($3, _UTF-16LE'purple':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'aquamarine':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IN($4, _UTF-16LE'Bunch':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Gram':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IN($2, _UTF-16LE'economy':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'petite':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")), AND(=($0, _UTF-16LE'Men'), IN($3, _UTF-16LE'lavender':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'papaya':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IN($4, _UTF-16LE'Pallet':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Cup':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IN($2, _UTF-16LE'N/A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'small':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")), AND(=($0, _UTF-16LE'Men'), IN($3, _UTF-16LE'maroon':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'cyan':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IN($4, _UTF-16LE'Each':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'N/A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IN($2, _UTF-16LE'medium':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'large':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))), IN($0, _UTF-16LE'Women':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Men':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IN($2, _UTF-16LE'medium':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'large':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'economy':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'petite':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'N/A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'small':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IN($3, _UTF-16LE'frosted':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'rose':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'chocolate':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'black':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'slate':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'magenta':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'cornflower':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'firebrick':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'almond':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'steel':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'purple':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'aquamarine':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'lavender':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'papaya':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'maroon':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'cyan':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IN($4, _UTF-16LE'Lb':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Gross':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Box':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Dram':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Carton':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Bundle':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Pound':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Oz':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Tsp':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Case':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Bunch':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Gram':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Pallet':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Cup':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Each':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'N/A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NOT NULL($1))])
+                JdbcProject(i_category=[$12], i_manufact=[$14], i_size=[$15], i_color=[$17], i_units=[$18])
+                  JdbcHiveTableScan(table=[[default, item]], table:alias=[item])
+

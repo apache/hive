@@ -1,0 +1,96 @@
+PREHOOK: query: explain
+select  i_item_id, 
+        avg(ss_quantity) agg1,
+        avg(ss_list_price) agg2,
+        avg(ss_coupon_amt) agg3,
+        avg(ss_sales_price) agg4 
+ from store_sales, customer_demographics, date_dim, item, promotion
+ where ss_sold_date_sk = d_date_sk and
+       ss_item_sk = i_item_sk and
+       ss_cdemo_sk = cd_demo_sk and
+       ss_promo_sk = p_promo_sk and
+       cd_gender = 'F' and 
+       cd_marital_status = 'W' and
+       cd_education_status = 'Primary' and
+       (p_channel_email = 'N' or p_channel_event = 'N') and
+       d_year = 1998 
+ group by i_item_id
+ order by i_item_id
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_demographics
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@promotion
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select  i_item_id, 
+        avg(ss_quantity) agg1,
+        avg(ss_list_price) agg2,
+        avg(ss_coupon_amt) agg3,
+        avg(ss_sales_price) agg4 
+ from store_sales, customer_demographics, date_dim, item, promotion
+ where ss_sold_date_sk = d_date_sk and
+       ss_item_sk = i_item_sk and
+       ss_cdemo_sk = cd_demo_sk and
+       ss_promo_sk = p_promo_sk and
+       cd_gender = 'F' and 
+       cd_marital_status = 'W' and
+       cd_education_status = 'Primary' and
+       (p_channel_email = 'N' or p_channel_event = 'N') and
+       d_year = 1998 
+ group by i_item_id
+ order by i_item_id
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_demographics
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@promotion
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: store_sales
+          properties:
+            hive.sql.query SELECT "t16"."i_item_id", "t16"."agg1", "t16"."agg2", "t16"."agg3", "t16"."agg4"
+FROM (SELECT "t13"."i_item_id", CAST(SUM("t1"."ss_quantity") AS DOUBLE PRECISION) / COUNT("t1"."ss_quantity") AS "agg1", CAST(SUM("t1"."ss_list_price") / COUNT("t1"."ss_list_price") AS DECIMAL(11, 6)) AS "agg2", CAST(SUM("t1"."ss_coupon_amt") / COUNT("t1"."ss_coupon_amt") AS DECIMAL(11, 6)) AS "agg3", CAST(SUM("t1"."ss_sales_price") / COUNT("t1"."ss_sales_price") AS DECIMAL(11, 6)) AS "agg4"
+FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_cdemo_sk", "ss_promo_sk", "ss_quantity", "ss_list_price", "ss_sales_price", "ss_coupon_amt"
+FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_cdemo_sk", "ss_promo_sk", "ss_quantity", "ss_list_price", "ss_sales_price", "ss_coupon_amt"
+FROM "store_sales") AS "t"
+WHERE "ss_cdemo_sk" IS NOT NULL AND "ss_sold_date_sk" IS NOT NULL AND ("ss_item_sk" IS NOT NULL AND "ss_promo_sk" IS NOT NULL)) AS "t1"
+INNER JOIN (SELECT "cd_demo_sk"
+FROM (SELECT "cd_demo_sk", "cd_gender", "cd_marital_status", "cd_education_status"
+FROM "customer_demographics") AS "t2"
+WHERE "cd_gender" = 'F' AND "cd_marital_status" = 'W' AND ("cd_education_status" = 'Primary' AND "cd_demo_sk" IS NOT NULL)) AS "t4" ON "t1"."ss_cdemo_sk" = "t4"."cd_demo_sk"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year"
+FROM "date_dim") AS "t5"
+WHERE "d_year" = 1998 AND "d_date_sk" IS NOT NULL) AS "t7" ON "t1"."ss_sold_date_sk" = "t7"."d_date_sk"
+INNER JOIN (SELECT "p_promo_sk"
+FROM (SELECT "p_promo_sk", "p_channel_email", "p_channel_event"
+FROM "promotion") AS "t8"
+WHERE ("p_channel_email" = 'N' OR "p_channel_event" = 'N') AND "p_promo_sk" IS NOT NULL) AS "t10" ON "t1"."ss_promo_sk" = "t10"."p_promo_sk"
+INNER JOIN (SELECT "i_item_sk", "i_item_id"
+FROM (SELECT "i_item_sk", "i_item_id"
+FROM "item") AS "t11"
+WHERE "i_item_sk" IS NOT NULL) AS "t13" ON "t1"."ss_item_sk" = "t13"."i_item_sk"
+GROUP BY "t13"."i_item_id"
+ORDER BY "t13"."i_item_id"
+FETCH NEXT 100 ROWS ONLY) AS "t16"
+            hive.sql.query.fieldNames i_item_id,agg1,agg2,agg3,agg4
+            hive.sql.query.fieldTypes string,double,decimal(11,6),decimal(11,6),decimal(11,6)
+            hive.sql.query.split false
+          Select Operator
+            expressions: i_item_id (type: string), agg1 (type: double), agg2 (type: decimal(11,6)), agg3 (type: decimal(11,6)), agg4 (type: decimal(11,6))
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4
+            ListSink
+
