@@ -1,0 +1,297 @@
+PREHOOK: query: explain
+WITH all_sales AS (
+ SELECT d_year
+       ,i_brand_id
+       ,i_class_id
+       ,i_category_id
+       ,i_manufact_id
+       ,SUM(sales_cnt) AS sales_cnt
+       ,SUM(sales_amt) AS sales_amt
+ FROM (SELECT d_year
+             ,i_brand_id
+             ,i_class_id
+             ,i_category_id
+             ,i_manufact_id
+             ,cs_quantity - COALESCE(cr_return_quantity,0) AS sales_cnt
+             ,cs_ext_sales_price - COALESCE(cr_return_amount,0.0) AS sales_amt
+       FROM catalog_sales JOIN item ON i_item_sk=cs_item_sk
+                          JOIN date_dim ON d_date_sk=cs_sold_date_sk
+                          LEFT JOIN catalog_returns ON (cs_order_number=cr_order_number 
+                                                    AND cs_item_sk=cr_item_sk)
+       WHERE i_category='Sports'
+       UNION
+       SELECT d_year
+             ,i_brand_id
+             ,i_class_id
+             ,i_category_id
+             ,i_manufact_id
+             ,ss_quantity - COALESCE(sr_return_quantity,0) AS sales_cnt
+             ,ss_ext_sales_price - COALESCE(sr_return_amt,0.0) AS sales_amt
+       FROM store_sales JOIN item ON i_item_sk=ss_item_sk
+                        JOIN date_dim ON d_date_sk=ss_sold_date_sk
+                        LEFT JOIN store_returns ON (ss_ticket_number=sr_ticket_number 
+                                                AND ss_item_sk=sr_item_sk)
+       WHERE i_category='Sports'
+       UNION
+       SELECT d_year
+             ,i_brand_id
+             ,i_class_id
+             ,i_category_id
+             ,i_manufact_id
+             ,ws_quantity - COALESCE(wr_return_quantity,0) AS sales_cnt
+             ,ws_ext_sales_price - COALESCE(wr_return_amt,0.0) AS sales_amt
+       FROM web_sales JOIN item ON i_item_sk=ws_item_sk
+                      JOIN date_dim ON d_date_sk=ws_sold_date_sk
+                      LEFT JOIN web_returns ON (ws_order_number=wr_order_number 
+                                            AND ws_item_sk=wr_item_sk)
+       WHERE i_category='Sports') sales_detail
+ GROUP BY d_year, i_brand_id, i_class_id, i_category_id, i_manufact_id)
+ SELECT  prev_yr.d_year AS prev_year
+                          ,curr_yr.d_year AS year
+                          ,curr_yr.i_brand_id
+                          ,curr_yr.i_class_id
+                          ,curr_yr.i_category_id
+                          ,curr_yr.i_manufact_id
+                          ,prev_yr.sales_cnt AS prev_yr_cnt
+                          ,curr_yr.sales_cnt AS curr_yr_cnt
+                          ,curr_yr.sales_cnt-prev_yr.sales_cnt AS sales_cnt_diff
+                          ,curr_yr.sales_amt-prev_yr.sales_amt AS sales_amt_diff
+ FROM all_sales curr_yr, all_sales prev_yr
+ WHERE curr_yr.i_brand_id=prev_yr.i_brand_id
+   AND curr_yr.i_class_id=prev_yr.i_class_id
+   AND curr_yr.i_category_id=prev_yr.i_category_id
+   AND curr_yr.i_manufact_id=prev_yr.i_manufact_id
+   AND curr_yr.d_year=2002
+   AND prev_yr.d_year=2002-1
+   AND CAST(curr_yr.sales_cnt AS DECIMAL(17,2))/CAST(prev_yr.sales_cnt AS DECIMAL(17,2))<0.9
+ ORDER BY sales_cnt_diff
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_returns
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store_returns
+PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@web_returns
+PREHOOK: Input: default@web_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+WITH all_sales AS (
+ SELECT d_year
+       ,i_brand_id
+       ,i_class_id
+       ,i_category_id
+       ,i_manufact_id
+       ,SUM(sales_cnt) AS sales_cnt
+       ,SUM(sales_amt) AS sales_amt
+ FROM (SELECT d_year
+             ,i_brand_id
+             ,i_class_id
+             ,i_category_id
+             ,i_manufact_id
+             ,cs_quantity - COALESCE(cr_return_quantity,0) AS sales_cnt
+             ,cs_ext_sales_price - COALESCE(cr_return_amount,0.0) AS sales_amt
+       FROM catalog_sales JOIN item ON i_item_sk=cs_item_sk
+                          JOIN date_dim ON d_date_sk=cs_sold_date_sk
+                          LEFT JOIN catalog_returns ON (cs_order_number=cr_order_number 
+                                                    AND cs_item_sk=cr_item_sk)
+       WHERE i_category='Sports'
+       UNION
+       SELECT d_year
+             ,i_brand_id
+             ,i_class_id
+             ,i_category_id
+             ,i_manufact_id
+             ,ss_quantity - COALESCE(sr_return_quantity,0) AS sales_cnt
+             ,ss_ext_sales_price - COALESCE(sr_return_amt,0.0) AS sales_amt
+       FROM store_sales JOIN item ON i_item_sk=ss_item_sk
+                        JOIN date_dim ON d_date_sk=ss_sold_date_sk
+                        LEFT JOIN store_returns ON (ss_ticket_number=sr_ticket_number 
+                                                AND ss_item_sk=sr_item_sk)
+       WHERE i_category='Sports'
+       UNION
+       SELECT d_year
+             ,i_brand_id
+             ,i_class_id
+             ,i_category_id
+             ,i_manufact_id
+             ,ws_quantity - COALESCE(wr_return_quantity,0) AS sales_cnt
+             ,ws_ext_sales_price - COALESCE(wr_return_amt,0.0) AS sales_amt
+       FROM web_sales JOIN item ON i_item_sk=ws_item_sk
+                      JOIN date_dim ON d_date_sk=ws_sold_date_sk
+                      LEFT JOIN web_returns ON (ws_order_number=wr_order_number 
+                                            AND ws_item_sk=wr_item_sk)
+       WHERE i_category='Sports') sales_detail
+ GROUP BY d_year, i_brand_id, i_class_id, i_category_id, i_manufact_id)
+ SELECT  prev_yr.d_year AS prev_year
+                          ,curr_yr.d_year AS year
+                          ,curr_yr.i_brand_id
+                          ,curr_yr.i_class_id
+                          ,curr_yr.i_category_id
+                          ,curr_yr.i_manufact_id
+                          ,prev_yr.sales_cnt AS prev_yr_cnt
+                          ,curr_yr.sales_cnt AS curr_yr_cnt
+                          ,curr_yr.sales_cnt-prev_yr.sales_cnt AS sales_cnt_diff
+                          ,curr_yr.sales_amt-prev_yr.sales_amt AS sales_amt_diff
+ FROM all_sales curr_yr, all_sales prev_yr
+ WHERE curr_yr.i_brand_id=prev_yr.i_brand_id
+   AND curr_yr.i_class_id=prev_yr.i_class_id
+   AND curr_yr.i_category_id=prev_yr.i_category_id
+   AND curr_yr.i_manufact_id=prev_yr.i_manufact_id
+   AND curr_yr.d_year=2002
+   AND prev_yr.d_year=2002-1
+   AND CAST(curr_yr.sales_cnt AS DECIMAL(17,2))/CAST(prev_yr.sales_cnt AS DECIMAL(17,2))<0.9
+ ORDER BY sales_cnt_diff
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_returns
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store_returns
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@web_returns
+POSTHOOK: Input: default@web_sales
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: catalog_sales
+          properties:
+            hive.sql.query SELECT CAST(2001 AS INTEGER) AS "prev_year", CAST(2002 AS INTEGER) AS "year", "t94"."i_brand_id", "t94"."i_class_id", "t94"."i_category_id", "t94"."i_manufact_id", "t94"."prev_yr_cnt", "t94"."curr_yr_cnt", "t94"."sales_cnt_diff", "t94"."sales_amt_diff"
+FROM (SELECT "t45"."i_brand_id", "t45"."i_class_id", "t45"."i_category_id", "t45"."i_manufact_id", "t92"."$f4" AS "prev_yr_cnt", "t45"."$f4" AS "curr_yr_cnt", "t45"."$f4" - "t92"."$f4" AS "sales_cnt_diff", "t45"."$f5" - "t92"."$f5" AS "sales_amt_diff"
+FROM (SELECT "i_brand_id", "i_class_id", "i_category_id", "i_manufact_id", SUM("sales_cnt") AS "$f4", SUM("sales_amt") AS "$f5"
+FROM (SELECT "i_brand_id", "i_class_id", "i_category_id", "i_manufact_id", "sales_cnt", "sales_amt"
+FROM (SELECT "i_brand_id", "i_class_id", "i_category_id", "i_manufact_id", "sales_cnt", "sales_amt"
+FROM (SELECT "t10"."i_brand_id", "t10"."i_class_id", "t10"."i_category_id", "t10"."i_manufact_id", "t1"."cs_quantity" - CASE WHEN "t7"."cr_return_quantity" IS NOT NULL THEN "t7"."cr_return_quantity" ELSE 0 END AS "sales_cnt", "t1"."cs_ext_sales_price" - CASE WHEN "t7"."cr_return_amount" IS NOT NULL THEN "t7"."cr_return_amount" ELSE 0 END AS "sales_amt"
+FROM (SELECT "cs_sold_date_sk", "cs_item_sk", "cs_order_number", "cs_quantity", "cs_ext_sales_price"
+FROM (SELECT "cs_sold_date_sk", "cs_item_sk", "cs_order_number", "cs_quantity", "cs_ext_sales_price"
+FROM "catalog_sales") AS "t"
+WHERE "cs_item_sk" IS NOT NULL AND "cs_sold_date_sk" IS NOT NULL) AS "t1"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year"
+FROM "date_dim") AS "t2"
+WHERE "d_year" = 2002 AND "d_date_sk" IS NOT NULL) AS "t4" ON "t1"."cs_sold_date_sk" = "t4"."d_date_sk"
+LEFT JOIN (SELECT "cr_item_sk", "cr_order_number", "cr_return_quantity", "cr_return_amount"
+FROM (SELECT "cr_item_sk", "cr_order_number", "cr_return_quantity", "cr_return_amount"
+FROM "catalog_returns") AS "t5"
+WHERE "cr_order_number" IS NOT NULL AND "cr_item_sk" IS NOT NULL) AS "t7" ON "t1"."cs_order_number" = "t7"."cr_order_number" AND "t1"."cs_item_sk" = "t7"."cr_item_sk"
+INNER JOIN (SELECT "i_item_sk", "i_brand_id", "i_class_id", "i_category_id", "i_manufact_id"
+FROM (SELECT "i_item_sk", "i_brand_id", "i_class_id", "i_category_id", "i_category", "i_manufact_id"
+FROM "item") AS "t8"
+WHERE "i_category" = 'Sports' AND ("i_item_sk" IS NOT NULL AND "i_brand_id" IS NOT NULL) AND ("i_class_id" IS NOT NULL AND ("i_category_id" IS NOT NULL AND "i_manufact_id" IS NOT NULL))) AS "t10" ON "t1"."cs_item_sk" = "t10"."i_item_sk"
+UNION ALL
+SELECT "t23"."i_brand_id", "t23"."i_class_id", "t23"."i_category_id", "t23"."i_manufact_id", "t14"."ss_quantity" - CASE WHEN "t20"."sr_return_quantity" IS NOT NULL THEN "t20"."sr_return_quantity" ELSE 0 END AS "sales_cnt", "t14"."ss_ext_sales_price" - CASE WHEN "t20"."sr_return_amt" IS NOT NULL THEN "t20"."sr_return_amt" ELSE 0 END AS "sales_amt"
+FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_ticket_number", "ss_quantity", "ss_ext_sales_price"
+FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_ticket_number", "ss_quantity", "ss_ext_sales_price"
+FROM "store_sales") AS "t12"
+WHERE "ss_item_sk" IS NOT NULL AND "ss_sold_date_sk" IS NOT NULL) AS "t14"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year"
+FROM "date_dim") AS "t15"
+WHERE "d_year" = 2002 AND "d_date_sk" IS NOT NULL) AS "t17" ON "t14"."ss_sold_date_sk" = "t17"."d_date_sk"
+LEFT JOIN (SELECT "sr_item_sk", "sr_ticket_number", "sr_return_quantity", "sr_return_amt"
+FROM (SELECT "sr_item_sk", "sr_ticket_number", "sr_return_quantity", "sr_return_amt"
+FROM "store_returns") AS "t18"
+WHERE "sr_ticket_number" IS NOT NULL AND "sr_item_sk" IS NOT NULL) AS "t20" ON "t14"."ss_ticket_number" = "t20"."sr_ticket_number" AND "t14"."ss_item_sk" = "t20"."sr_item_sk"
+INNER JOIN (SELECT "i_item_sk", "i_brand_id", "i_class_id", "i_category_id", "i_manufact_id"
+FROM (SELECT "i_item_sk", "i_brand_id", "i_class_id", "i_category_id", "i_category", "i_manufact_id"
+FROM "item") AS "t21"
+WHERE "i_category" = 'Sports' AND ("i_item_sk" IS NOT NULL AND "i_brand_id" IS NOT NULL) AND ("i_class_id" IS NOT NULL AND ("i_category_id" IS NOT NULL AND "i_manufact_id" IS NOT NULL))) AS "t23" ON "t14"."ss_item_sk" = "t23"."i_item_sk") AS "t25"
+GROUP BY "i_brand_id", "i_class_id", "i_category_id", "i_manufact_id", "sales_cnt", "sales_amt"
+UNION ALL
+SELECT "t40"."i_brand_id", "t40"."i_class_id", "t40"."i_category_id", "t40"."i_manufact_id", "t31"."ws_quantity" - CASE WHEN "t37"."wr_return_quantity" IS NOT NULL THEN "t37"."wr_return_quantity" ELSE 0 END AS "sales_cnt", "t31"."ws_ext_sales_price" - CASE WHEN "t37"."wr_return_amt" IS NOT NULL THEN "t37"."wr_return_amt" ELSE 0 END AS "sales_amt"
+FROM (SELECT "ws_sold_date_sk", "ws_item_sk", "ws_order_number", "ws_quantity", "ws_ext_sales_price"
+FROM (SELECT "ws_sold_date_sk", "ws_item_sk", "ws_order_number", "ws_quantity", "ws_ext_sales_price"
+FROM "web_sales") AS "t29"
+WHERE "ws_item_sk" IS NOT NULL AND "ws_sold_date_sk" IS NOT NULL) AS "t31"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year"
+FROM "date_dim") AS "t32"
+WHERE "d_year" = 2002 AND "d_date_sk" IS NOT NULL) AS "t34" ON "t31"."ws_sold_date_sk" = "t34"."d_date_sk"
+LEFT JOIN (SELECT "wr_item_sk", "wr_order_number", "wr_return_quantity", "wr_return_amt"
+FROM (SELECT "wr_item_sk", "wr_order_number", "wr_return_quantity", "wr_return_amt"
+FROM "web_returns") AS "t35"
+WHERE "wr_order_number" IS NOT NULL AND "wr_item_sk" IS NOT NULL) AS "t37" ON "t31"."ws_order_number" = "t37"."wr_order_number" AND "t31"."ws_item_sk" = "t37"."wr_item_sk"
+INNER JOIN (SELECT "i_item_sk", "i_brand_id", "i_class_id", "i_category_id", "i_manufact_id"
+FROM (SELECT "i_item_sk", "i_brand_id", "i_class_id", "i_category_id", "i_category", "i_manufact_id"
+FROM "item") AS "t38"
+WHERE "i_category" = 'Sports' AND ("i_item_sk" IS NOT NULL AND "i_brand_id" IS NOT NULL) AND ("i_class_id" IS NOT NULL AND ("i_category_id" IS NOT NULL AND "i_manufact_id" IS NOT NULL))) AS "t40" ON "t31"."ws_item_sk" = "t40"."i_item_sk") AS "t42"
+GROUP BY "i_brand_id", "i_class_id", "i_category_id", "i_manufact_id", "sales_cnt", "sales_amt") AS "t44"
+GROUP BY "i_brand_id", "i_class_id", "i_category_id", "i_manufact_id") AS "t45"
+INNER JOIN (SELECT "i_brand_id", "i_class_id", "i_category_id", "i_manufact_id", SUM("sales_cnt") AS "$f4", SUM("sales_amt") AS "$f5"
+FROM (SELECT "i_brand_id", "i_class_id", "i_category_id", "i_manufact_id", "sales_cnt", "sales_amt"
+FROM (SELECT "i_brand_id", "i_class_id", "i_category_id", "i_manufact_id", "sales_cnt", "sales_amt"
+FROM (SELECT "t57"."i_brand_id", "t57"."i_class_id", "t57"."i_category_id", "t57"."i_manufact_id", "t48"."cs_quantity" - CASE WHEN "t54"."cr_return_quantity" IS NOT NULL THEN "t54"."cr_return_quantity" ELSE 0 END AS "sales_cnt", "t48"."cs_ext_sales_price" - CASE WHEN "t54"."cr_return_amount" IS NOT NULL THEN "t54"."cr_return_amount" ELSE 0 END AS "sales_amt"
+FROM (SELECT "cs_sold_date_sk", "cs_item_sk", "cs_order_number", "cs_quantity", "cs_ext_sales_price"
+FROM (SELECT "cs_sold_date_sk", "cs_item_sk", "cs_order_number", "cs_quantity", "cs_ext_sales_price"
+FROM "catalog_sales") AS "t46"
+WHERE "cs_item_sk" IS NOT NULL AND "cs_sold_date_sk" IS NOT NULL) AS "t48"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year"
+FROM "date_dim") AS "t49"
+WHERE "d_year" = 2001 AND "d_date_sk" IS NOT NULL) AS "t51" ON "t48"."cs_sold_date_sk" = "t51"."d_date_sk"
+LEFT JOIN (SELECT "cr_item_sk", "cr_order_number", "cr_return_quantity", "cr_return_amount"
+FROM (SELECT "cr_item_sk", "cr_order_number", "cr_return_quantity", "cr_return_amount"
+FROM "catalog_returns") AS "t52"
+WHERE "cr_order_number" IS NOT NULL AND "cr_item_sk" IS NOT NULL) AS "t54" ON "t48"."cs_order_number" = "t54"."cr_order_number" AND "t48"."cs_item_sk" = "t54"."cr_item_sk"
+INNER JOIN (SELECT "i_item_sk", "i_brand_id", "i_class_id", "i_category_id", "i_manufact_id"
+FROM (SELECT "i_item_sk", "i_brand_id", "i_class_id", "i_category_id", "i_category", "i_manufact_id"
+FROM "item") AS "t55"
+WHERE "i_category" = 'Sports' AND ("i_item_sk" IS NOT NULL AND "i_brand_id" IS NOT NULL) AND ("i_class_id" IS NOT NULL AND ("i_category_id" IS NOT NULL AND "i_manufact_id" IS NOT NULL))) AS "t57" ON "t48"."cs_item_sk" = "t57"."i_item_sk"
+UNION ALL
+SELECT "t70"."i_brand_id", "t70"."i_class_id", "t70"."i_category_id", "t70"."i_manufact_id", "t61"."ss_quantity" - CASE WHEN "t67"."sr_return_quantity" IS NOT NULL THEN "t67"."sr_return_quantity" ELSE 0 END AS "sales_cnt", "t61"."ss_ext_sales_price" - CASE WHEN "t67"."sr_return_amt" IS NOT NULL THEN "t67"."sr_return_amt" ELSE 0 END AS "sales_amt"
+FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_ticket_number", "ss_quantity", "ss_ext_sales_price"
+FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_ticket_number", "ss_quantity", "ss_ext_sales_price"
+FROM "store_sales") AS "t59"
+WHERE "ss_item_sk" IS NOT NULL AND "ss_sold_date_sk" IS NOT NULL) AS "t61"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year"
+FROM "date_dim") AS "t62"
+WHERE "d_year" = 2001 AND "d_date_sk" IS NOT NULL) AS "t64" ON "t61"."ss_sold_date_sk" = "t64"."d_date_sk"
+LEFT JOIN (SELECT "sr_item_sk", "sr_ticket_number", "sr_return_quantity", "sr_return_amt"
+FROM (SELECT "sr_item_sk", "sr_ticket_number", "sr_return_quantity", "sr_return_amt"
+FROM "store_returns") AS "t65"
+WHERE "sr_ticket_number" IS NOT NULL AND "sr_item_sk" IS NOT NULL) AS "t67" ON "t61"."ss_ticket_number" = "t67"."sr_ticket_number" AND "t61"."ss_item_sk" = "t67"."sr_item_sk"
+INNER JOIN (SELECT "i_item_sk", "i_brand_id", "i_class_id", "i_category_id", "i_manufact_id"
+FROM (SELECT "i_item_sk", "i_brand_id", "i_class_id", "i_category_id", "i_category", "i_manufact_id"
+FROM "item") AS "t68"
+WHERE "i_category" = 'Sports' AND ("i_item_sk" IS NOT NULL AND "i_brand_id" IS NOT NULL) AND ("i_class_id" IS NOT NULL AND ("i_category_id" IS NOT NULL AND "i_manufact_id" IS NOT NULL))) AS "t70" ON "t61"."ss_item_sk" = "t70"."i_item_sk") AS "t72"
+GROUP BY "i_brand_id", "i_class_id", "i_category_id", "i_manufact_id", "sales_cnt", "sales_amt"
+UNION ALL
+SELECT "t87"."i_brand_id", "t87"."i_class_id", "t87"."i_category_id", "t87"."i_manufact_id", "t78"."ws_quantity" - CASE WHEN "t84"."wr_return_quantity" IS NOT NULL THEN "t84"."wr_return_quantity" ELSE 0 END AS "sales_cnt", "t78"."ws_ext_sales_price" - CASE WHEN "t84"."wr_return_amt" IS NOT NULL THEN "t84"."wr_return_amt" ELSE 0 END AS "sales_amt"
+FROM (SELECT "ws_sold_date_sk", "ws_item_sk", "ws_order_number", "ws_quantity", "ws_ext_sales_price"
+FROM (SELECT "ws_sold_date_sk", "ws_item_sk", "ws_order_number", "ws_quantity", "ws_ext_sales_price"
+FROM "web_sales") AS "t76"
+WHERE "ws_item_sk" IS NOT NULL AND "ws_sold_date_sk" IS NOT NULL) AS "t78"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year"
+FROM "date_dim") AS "t79"
+WHERE "d_year" = 2001 AND "d_date_sk" IS NOT NULL) AS "t81" ON "t78"."ws_sold_date_sk" = "t81"."d_date_sk"
+LEFT JOIN (SELECT "wr_item_sk", "wr_order_number", "wr_return_quantity", "wr_return_amt"
+FROM (SELECT "wr_item_sk", "wr_order_number", "wr_return_quantity", "wr_return_amt"
+FROM "web_returns") AS "t82"
+WHERE "wr_order_number" IS NOT NULL AND "wr_item_sk" IS NOT NULL) AS "t84" ON "t78"."ws_order_number" = "t84"."wr_order_number" AND "t78"."ws_item_sk" = "t84"."wr_item_sk"
+INNER JOIN (SELECT "i_item_sk", "i_brand_id", "i_class_id", "i_category_id", "i_manufact_id"
+FROM (SELECT "i_item_sk", "i_brand_id", "i_class_id", "i_category_id", "i_category", "i_manufact_id"
+FROM "item") AS "t85"
+WHERE "i_category" = 'Sports' AND ("i_item_sk" IS NOT NULL AND "i_brand_id" IS NOT NULL) AND ("i_class_id" IS NOT NULL AND ("i_category_id" IS NOT NULL AND "i_manufact_id" IS NOT NULL))) AS "t87" ON "t78"."ws_item_sk" = "t87"."i_item_sk") AS "t89"
+GROUP BY "i_brand_id", "i_class_id", "i_category_id", "i_manufact_id", "sales_cnt", "sales_amt") AS "t91"
+GROUP BY "i_brand_id", "i_class_id", "i_category_id", "i_manufact_id") AS "t92" ON "t45"."i_brand_id" = "t92"."i_brand_id" AND "t45"."i_class_id" = "t92"."i_class_id" AND "t45"."i_category_id" = "t92"."i_category_id" AND "t45"."i_manufact_id" = "t92"."i_manufact_id" AND CAST("t45"."$f4" AS DECIMAL(17, 2)) / CAST("t92"."$f4" AS DECIMAL(17, 2)) < 0.9
+ORDER BY "t45"."$f4" - "t92"."$f4"
+FETCH NEXT 100 ROWS ONLY) AS "t94"
+            hive.sql.query.fieldNames prev_year,year,i_brand_id,i_class_id,i_category_id,i_manufact_id,prev_yr_cnt,curr_yr_cnt,sales_cnt_diff,sales_amt_diff
+            hive.sql.query.fieldTypes int,int,int,int,int,int,bigint,bigint,bigint,decimal(19,2)
+            hive.sql.query.split false
+          Select Operator
+            expressions: prev_year (type: int), year (type: int), i_brand_id (type: int), i_class_id (type: int), i_category_id (type: int), i_manufact_id (type: int), prev_yr_cnt (type: bigint), curr_yr_cnt (type: bigint), sales_cnt_diff (type: bigint), sales_amt_diff (type: decimal(19,2))
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+            ListSink
+

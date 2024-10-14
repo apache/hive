@@ -1,0 +1,211 @@
+PREHOOK: query: explain
+with year_total as (
+ select c_customer_id customer_id
+       ,c_first_name customer_first_name
+       ,c_last_name customer_last_name
+       ,d_year as year
+       ,sum(ss_net_paid) year_total
+       ,'s' sale_type
+ from customer
+     ,store_sales
+     ,date_dim
+ where c_customer_sk = ss_customer_sk
+   and ss_sold_date_sk = d_date_sk
+   and d_year in (1998,1998+1)
+ group by c_customer_id
+         ,c_first_name
+         ,c_last_name
+         ,d_year
+ union all
+ select c_customer_id customer_id
+       ,c_first_name customer_first_name
+       ,c_last_name customer_last_name
+       ,d_year as year
+       ,sum(ws_net_paid) year_total
+       ,'w' sale_type
+ from customer
+     ,web_sales
+     ,date_dim
+ where c_customer_sk = ws_bill_customer_sk
+   and ws_sold_date_sk = d_date_sk
+   and d_year in (1998,1998+1)
+ group by c_customer_id
+         ,c_first_name
+         ,c_last_name
+         ,d_year
+         )
+  select
+        t_s_secyear.customer_id, t_s_secyear.customer_first_name, t_s_secyear.customer_last_name
+ from year_total t_s_firstyear
+     ,year_total t_s_secyear
+     ,year_total t_w_firstyear
+     ,year_total t_w_secyear
+ where t_s_secyear.customer_id = t_s_firstyear.customer_id
+         and t_s_firstyear.customer_id = t_w_secyear.customer_id
+         and t_s_firstyear.customer_id = t_w_firstyear.customer_id
+         and t_s_firstyear.sale_type = 's'
+         and t_w_firstyear.sale_type = 'w'
+         and t_s_secyear.sale_type = 's'
+         and t_w_secyear.sale_type = 'w'
+         and t_s_firstyear.year = 1998
+         and t_s_secyear.year = 1998+1
+         and t_w_firstyear.year = 1998
+         and t_w_secyear.year = 1998+1
+         and t_s_firstyear.year_total > 0
+         and t_w_firstyear.year_total > 0
+         and case when t_w_firstyear.year_total > 0 then t_w_secyear.year_total / t_w_firstyear.year_total else null end
+           > case when t_s_firstyear.year_total > 0 then t_s_secyear.year_total / t_s_firstyear.year_total else null end
+ order by 3,1,2
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@web_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+with year_total as (
+ select c_customer_id customer_id
+       ,c_first_name customer_first_name
+       ,c_last_name customer_last_name
+       ,d_year as year
+       ,sum(ss_net_paid) year_total
+       ,'s' sale_type
+ from customer
+     ,store_sales
+     ,date_dim
+ where c_customer_sk = ss_customer_sk
+   and ss_sold_date_sk = d_date_sk
+   and d_year in (1998,1998+1)
+ group by c_customer_id
+         ,c_first_name
+         ,c_last_name
+         ,d_year
+ union all
+ select c_customer_id customer_id
+       ,c_first_name customer_first_name
+       ,c_last_name customer_last_name
+       ,d_year as year
+       ,sum(ws_net_paid) year_total
+       ,'w' sale_type
+ from customer
+     ,web_sales
+     ,date_dim
+ where c_customer_sk = ws_bill_customer_sk
+   and ws_sold_date_sk = d_date_sk
+   and d_year in (1998,1998+1)
+ group by c_customer_id
+         ,c_first_name
+         ,c_last_name
+         ,d_year
+         )
+  select
+        t_s_secyear.customer_id, t_s_secyear.customer_first_name, t_s_secyear.customer_last_name
+ from year_total t_s_firstyear
+     ,year_total t_s_secyear
+     ,year_total t_w_firstyear
+     ,year_total t_w_secyear
+ where t_s_secyear.customer_id = t_s_firstyear.customer_id
+         and t_s_firstyear.customer_id = t_w_secyear.customer_id
+         and t_s_firstyear.customer_id = t_w_firstyear.customer_id
+         and t_s_firstyear.sale_type = 's'
+         and t_w_firstyear.sale_type = 'w'
+         and t_s_secyear.sale_type = 's'
+         and t_w_secyear.sale_type = 'w'
+         and t_s_firstyear.year = 1998
+         and t_s_secyear.year = 1998+1
+         and t_w_firstyear.year = 1998
+         and t_w_secyear.year = 1998+1
+         and t_s_firstyear.year_total > 0
+         and t_w_firstyear.year_total > 0
+         and case when t_w_firstyear.year_total > 0 then t_w_secyear.year_total / t_w_firstyear.year_total else null end
+           > case when t_s_firstyear.year_total > 0 then t_s_secyear.year_total / t_s_firstyear.year_total else null end
+ order by 3,1,2
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@web_sales
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: store_sales
+          properties:
+            hive.sql.query SELECT "t45"."customer_id", "t45"."customer_first_name", "t45"."customer_last_name"
+FROM (SELECT "t43"."c_customer_id" AS "customer_id", "t43"."c_first_name" AS "customer_first_name", "t43"."c_last_name" AS "customer_last_name"
+FROM (SELECT "t7"."c_customer_id" AS "customer_id", SUM("t1"."ss_net_paid") AS "year_total", SUM("t1"."ss_net_paid") > 0 AS ">"
+FROM (SELECT "ss_sold_date_sk", "ss_customer_sk", "ss_net_paid"
+FROM (SELECT "ss_sold_date_sk", "ss_customer_sk", "ss_net_paid"
+FROM "store_sales") AS "t"
+WHERE "ss_customer_sk" IS NOT NULL AND "ss_sold_date_sk" IS NOT NULL) AS "t1"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year"
+FROM "date_dim") AS "t2"
+WHERE "d_year" = 1998 AND "d_date_sk" IS NOT NULL) AS "t4" ON "t1"."ss_sold_date_sk" = "t4"."d_date_sk"
+INNER JOIN (SELECT "c_customer_sk", "c_customer_id", "c_first_name", "c_last_name"
+FROM (SELECT "c_customer_sk", "c_customer_id", "c_first_name", "c_last_name"
+FROM "customer") AS "t5"
+WHERE "c_customer_sk" IS NOT NULL AND "c_customer_id" IS NOT NULL) AS "t7" ON "t1"."ss_customer_sk" = "t7"."c_customer_sk"
+GROUP BY "t7"."c_customer_id", "t7"."c_first_name", "t7"."c_last_name"
+HAVING SUM("t1"."ss_net_paid") > 0) AS "t10"
+INNER JOIN (SELECT "t19"."c_customer_id" AS "customer_id", SUM("t13"."ws_net_paid") AS "year_total"
+FROM (SELECT "ws_sold_date_sk", "ws_bill_customer_sk", "ws_net_paid"
+FROM (SELECT "ws_sold_date_sk", "ws_bill_customer_sk", "ws_net_paid"
+FROM "web_sales") AS "t11"
+WHERE "ws_bill_customer_sk" IS NOT NULL AND "ws_sold_date_sk" IS NOT NULL) AS "t13"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year"
+FROM "date_dim") AS "t14"
+WHERE "d_year" = 1999 AND "d_date_sk" IS NOT NULL) AS "t16" ON "t13"."ws_sold_date_sk" = "t16"."d_date_sk"
+INNER JOIN (SELECT "c_customer_sk", "c_customer_id", "c_first_name", "c_last_name"
+FROM (SELECT "c_customer_sk", "c_customer_id", "c_first_name", "c_last_name"
+FROM "customer") AS "t17"
+WHERE "c_customer_sk" IS NOT NULL AND "c_customer_id" IS NOT NULL) AS "t19" ON "t13"."ws_bill_customer_sk" = "t19"."c_customer_sk"
+GROUP BY "t19"."c_customer_id", "t19"."c_first_name", "t19"."c_last_name") AS "t21" ON "t10"."customer_id" = "t21"."customer_id"
+INNER JOIN (SELECT "t30"."c_customer_id" AS "customer_id", SUM("t24"."ws_net_paid") AS "year_total", SUM("t24"."ws_net_paid") > 0 AS ">"
+FROM (SELECT "ws_sold_date_sk", "ws_bill_customer_sk", "ws_net_paid"
+FROM (SELECT "ws_sold_date_sk", "ws_bill_customer_sk", "ws_net_paid"
+FROM "web_sales") AS "t22"
+WHERE "ws_bill_customer_sk" IS NOT NULL AND "ws_sold_date_sk" IS NOT NULL) AS "t24"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year"
+FROM "date_dim") AS "t25"
+WHERE "d_year" = 1998 AND "d_date_sk" IS NOT NULL) AS "t27" ON "t24"."ws_sold_date_sk" = "t27"."d_date_sk"
+INNER JOIN (SELECT "c_customer_sk", "c_customer_id", "c_first_name", "c_last_name"
+FROM (SELECT "c_customer_sk", "c_customer_id", "c_first_name", "c_last_name"
+FROM "customer") AS "t28"
+WHERE "c_customer_sk" IS NOT NULL AND "c_customer_id" IS NOT NULL) AS "t30" ON "t24"."ws_bill_customer_sk" = "t30"."c_customer_sk"
+GROUP BY "t30"."c_customer_id", "t30"."c_first_name", "t30"."c_last_name"
+HAVING SUM("t24"."ws_net_paid") > 0) AS "t33" ON "t10"."customer_id" = "t33"."customer_id"
+INNER JOIN (SELECT "t42"."c_customer_id", "t42"."c_first_name", "t42"."c_last_name", SUM("t36"."ss_net_paid") AS "$f3"
+FROM (SELECT "ss_sold_date_sk", "ss_customer_sk", "ss_net_paid"
+FROM (SELECT "ss_sold_date_sk", "ss_customer_sk", "ss_net_paid"
+FROM "store_sales") AS "t34"
+WHERE "ss_customer_sk" IS NOT NULL AND "ss_sold_date_sk" IS NOT NULL) AS "t36"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year"
+FROM "date_dim") AS "t37"
+WHERE "d_year" = 1999 AND "d_date_sk" IS NOT NULL) AS "t39" ON "t36"."ss_sold_date_sk" = "t39"."d_date_sk"
+INNER JOIN (SELECT "c_customer_sk", "c_customer_id", "c_first_name", "c_last_name"
+FROM (SELECT "c_customer_sk", "c_customer_id", "c_first_name", "c_last_name"
+FROM "customer") AS "t40"
+WHERE "c_customer_sk" IS NOT NULL AND "c_customer_id" IS NOT NULL) AS "t42" ON "t36"."ss_customer_sk" = "t42"."c_customer_sk"
+GROUP BY "t42"."c_customer_id", "t42"."c_first_name", "t42"."c_last_name") AS "t43" ON "t10"."customer_id" = "t43"."c_customer_id" AND CASE WHEN "t10".">" THEN CASE WHEN "t33".">" THEN "t21"."year_total" / "t33"."year_total" > "t43"."$f3" / "t10"."year_total" ELSE FALSE END ELSE FALSE END
+ORDER BY "t43"."c_last_name", "t43"."c_customer_id", "t43"."c_first_name"
+FETCH NEXT 100 ROWS ONLY) AS "t45"
+            hive.sql.query.fieldNames customer_id,customer_first_name,customer_last_name
+            hive.sql.query.fieldTypes string,string,string
+            hive.sql.query.split false
+          Select Operator
+            expressions: customer_id (type: string), customer_first_name (type: string), customer_last_name (type: string)
+            outputColumnNames: _col0, _col1, _col2
+            ListSink
+

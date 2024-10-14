@@ -63,6 +63,8 @@ public abstract class AbstractCliConfig {
   // these should have viable defaults
   private String cleanupScript;
   private String initScript;
+  private String jdbcInitScript;
+  private String externalTablesForJdbcInitScript;
   private String hiveConfDir;
   private MiniClusterType clusterType;
   private FsType fsType;
@@ -345,6 +347,22 @@ public abstract class AbstractCliConfig {
     } else {
       this.initScript = initScript;
     }
+  }
+
+  public String getJdbcInitScript() {
+    return jdbcInitScript;
+  }
+
+  public void setJdbcInitScript(String jdbcInitScript) {
+    this.jdbcInitScript = jdbcInitScript;
+  }
+
+  public String getExternalTablesForJdbcInitScript() {
+    return externalTablesForJdbcInitScript;
+  }
+
+  public void setExternalTablesForJdbcInitScript(String externalTablesForJdbcInitScript) {
+    this.externalTablesForJdbcInitScript = externalTablesForJdbcInitScript;
   }
   public String getHiveConfDir() {
     return hiveConfDir;

@@ -1,0 +1,396 @@
+PREHOOK: query: explain
+select   
+  ca_state,
+  cd_gender,
+  cd_marital_status,
+  count(*) cnt1,
+  avg(cd_dep_count),
+  max(cd_dep_count),
+  sum(cd_dep_count),
+  cd_dep_employed_count,
+  count(*) cnt2,
+  avg(cd_dep_employed_count),
+  max(cd_dep_employed_count),
+  sum(cd_dep_employed_count),
+  cd_dep_college_count,
+  count(*) cnt3,
+  avg(cd_dep_college_count),
+  max(cd_dep_college_count),
+  sum(cd_dep_college_count)
+ from
+  customer c,customer_address ca,customer_demographics
+ where
+  c.c_current_addr_sk = ca.ca_address_sk and
+  cd_demo_sk = c.c_current_cdemo_sk and 
+  exists (select *
+          from store_sales,date_dim
+          where c.c_customer_sk = ss_customer_sk and
+                ss_sold_date_sk = d_date_sk and
+                d_year = 1999 and
+                d_qoy < 4) and
+   (exists (select *
+            from web_sales,date_dim
+            where c.c_customer_sk = ws_bill_customer_sk and
+                  ws_sold_date_sk = d_date_sk and
+                  d_year = 1999 and
+                  d_qoy < 4) or 
+    exists (select * 
+            from catalog_sales,date_dim
+            where c.c_customer_sk = cs_ship_customer_sk and
+                  cs_sold_date_sk = d_date_sk and
+                  d_year = 1999 and
+                  d_qoy < 4))
+ group by ca_state,
+          cd_gender,
+          cd_marital_status,
+          cd_dep_count,
+          cd_dep_employed_count,
+          cd_dep_college_count
+ order by ca_state,
+          cd_gender,
+          cd_marital_status,
+          cd_dep_count,
+          cd_dep_employed_count,
+          cd_dep_college_count
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@customer_address
+PREHOOK: Input: default@customer_demographics
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@web_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select   
+  ca_state,
+  cd_gender,
+  cd_marital_status,
+  count(*) cnt1,
+  avg(cd_dep_count),
+  max(cd_dep_count),
+  sum(cd_dep_count),
+  cd_dep_employed_count,
+  count(*) cnt2,
+  avg(cd_dep_employed_count),
+  max(cd_dep_employed_count),
+  sum(cd_dep_employed_count),
+  cd_dep_college_count,
+  count(*) cnt3,
+  avg(cd_dep_college_count),
+  max(cd_dep_college_count),
+  sum(cd_dep_college_count)
+ from
+  customer c,customer_address ca,customer_demographics
+ where
+  c.c_current_addr_sk = ca.ca_address_sk and
+  cd_demo_sk = c.c_current_cdemo_sk and 
+  exists (select *
+          from store_sales,date_dim
+          where c.c_customer_sk = ss_customer_sk and
+                ss_sold_date_sk = d_date_sk and
+                d_year = 1999 and
+                d_qoy < 4) and
+   (exists (select *
+            from web_sales,date_dim
+            where c.c_customer_sk = ws_bill_customer_sk and
+                  ws_sold_date_sk = d_date_sk and
+                  d_year = 1999 and
+                  d_qoy < 4) or 
+    exists (select * 
+            from catalog_sales,date_dim
+            where c.c_customer_sk = cs_ship_customer_sk and
+                  cs_sold_date_sk = d_date_sk and
+                  d_year = 1999 and
+                  d_qoy < 4))
+ group by ca_state,
+          cd_gender,
+          cd_marital_status,
+          cd_dep_count,
+          cd_dep_employed_count,
+          cd_dep_college_count
+ order by ca_state,
+          cd_gender,
+          cd_marital_status,
+          cd_dep_count,
+          cd_dep_employed_count,
+          cd_dep_college_count
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@customer_address
+POSTHOOK: Input: default@customer_demographics
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@web_sales
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
+        Reducer 3 <- Map 8 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Map 9 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
+        Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
+        Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: c
+                  properties:
+                    hive.sql.query SELECT "t1"."c_customer_sk", "t1"."c_current_cdemo_sk", "t1"."c_current_addr_sk", "t4"."ca_address_sk", "t4"."ca_state", "t7"."cd_demo_sk", "t7"."cd_gender", "t7"."cd_marital_status", "t7"."cd_dep_count", "t7"."cd_dep_employed_count", "t7"."cd_dep_college_count"
+FROM (SELECT "c_customer_sk", "c_current_cdemo_sk", "c_current_addr_sk"
+FROM (SELECT "c_customer_sk", "c_current_cdemo_sk", "c_current_addr_sk"
+FROM "customer") AS "t"
+WHERE "c_current_addr_sk" IS NOT NULL AND ("c_current_cdemo_sk" IS NOT NULL AND "c_customer_sk" IS NOT NULL)) AS "t1"
+INNER JOIN (SELECT "ca_address_sk", "ca_state"
+FROM (SELECT "ca_address_sk", "ca_state"
+FROM "customer_address") AS "t2"
+WHERE "ca_address_sk" IS NOT NULL) AS "t4" ON "t1"."c_current_addr_sk" = "t4"."ca_address_sk"
+INNER JOIN (SELECT "cd_demo_sk", "cd_gender", "cd_marital_status", "cd_dep_count", "cd_dep_employed_count", "cd_dep_college_count"
+FROM (SELECT "cd_demo_sk", "cd_gender", "cd_marital_status", "cd_dep_count", "cd_dep_employed_count", "cd_dep_college_count"
+FROM "customer_demographics") AS "t5"
+WHERE "cd_demo_sk" IS NOT NULL) AS "t7" ON "t1"."c_current_cdemo_sk" = "t7"."cd_demo_sk"
+                    hive.sql.query.fieldNames c_customer_sk,c_current_cdemo_sk,c_current_addr_sk,ca_address_sk,ca_state,cd_demo_sk,cd_gender,cd_marital_status,cd_dep_count,cd_dep_employed_count,cd_dep_college_count
+                    hive.sql.query.fieldTypes int,int,int,int,string,int,string,string,int,int,int
+                    hive.sql.query.split false
+                  Statistics: Num rows: 1 Data size: 568 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: c_customer_sk (type: int), ca_state (type: string), cd_gender (type: string), cd_marital_status (type: string), cd_dep_count (type: int), cd_dep_employed_count (type: int), cd_dep_college_count (type: int)
+                    outputColumnNames: _col0, _col4, _col6, _col7, _col8, _col9, _col10
+                    Statistics: Num rows: 1 Data size: 568 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 1 Data size: 568 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col4 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: int), _col9 (type: int), _col10 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  properties:
+                    hive.sql.query SELECT "t1"."ss_customer_sk"
+FROM (SELECT "ss_sold_date_sk", "ss_customer_sk"
+FROM (SELECT "ss_sold_date_sk", "ss_customer_sk"
+FROM "store_sales") AS "t"
+WHERE "ss_customer_sk" IS NOT NULL AND "ss_sold_date_sk" IS NOT NULL) AS "t1"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year", "d_qoy"
+FROM "date_dim") AS "t2"
+WHERE "d_qoy" < 4 AND ("d_year" = 1999 AND "d_date_sk" IS NOT NULL)) AS "t4" ON "t1"."ss_sold_date_sk" = "t4"."d_date_sk"
+                    hive.sql.query.fieldNames ss_customer_sk
+                    hive.sql.query.fieldTypes int
+                    hive.sql.query.split false
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: ss_customer_sk (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: _col0 (type: int)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 8 
+            Map Operator Tree:
+                TableScan
+                  alias: web_sales
+                  properties:
+                    hive.sql.query SELECT TRUE AS "literalTrue", "t1"."ws_bill_customer_sk"
+FROM (SELECT "ws_sold_date_sk", "ws_bill_customer_sk"
+FROM (SELECT "ws_sold_date_sk", "ws_bill_customer_sk"
+FROM "web_sales") AS "t"
+WHERE "ws_bill_customer_sk" IS NOT NULL AND "ws_sold_date_sk" IS NOT NULL) AS "t1"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year", "d_qoy"
+FROM "date_dim") AS "t2"
+WHERE "d_qoy" < 4 AND ("d_year" = 1999 AND "d_date_sk" IS NOT NULL)) AS "t4" ON "t1"."ws_sold_date_sk" = "t4"."d_date_sk"
+GROUP BY "t1"."ws_bill_customer_sk"
+                    hive.sql.query.fieldNames literalTrue,ws_bill_customer_sk
+                    hive.sql.query.fieldTypes boolean,int
+                    hive.sql.query.split false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: literaltrue (type: boolean), ws_bill_customer_sk (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: int)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col1 (type: int)
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: boolean)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 9 
+            Map Operator Tree:
+                TableScan
+                  alias: catalog_sales
+                  properties:
+                    hive.sql.query SELECT TRUE AS "literalTrue", "t1"."cs_ship_customer_sk"
+FROM (SELECT "cs_sold_date_sk", "cs_ship_customer_sk"
+FROM (SELECT "cs_sold_date_sk", "cs_ship_customer_sk"
+FROM "catalog_sales") AS "t"
+WHERE "cs_ship_customer_sk" IS NOT NULL AND "cs_sold_date_sk" IS NOT NULL) AS "t1"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year", "d_qoy"
+FROM "date_dim") AS "t2"
+WHERE "d_qoy" < 4 AND ("d_year" = 1999 AND "d_date_sk" IS NOT NULL)) AS "t4" ON "t1"."cs_sold_date_sk" = "t4"."d_date_sk"
+GROUP BY "t1"."cs_ship_customer_sk"
+                    hive.sql.query.fieldNames literalTrue,cs_ship_customer_sk
+                    hive.sql.query.fieldTypes boolean,int
+                    hive.sql.query.split false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: literaltrue (type: boolean), cs_ship_customer_sk (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: int)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col1 (type: int)
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: boolean)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Semi Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col4, _col6, _col7, _col8, _col9, _col10
+                Statistics: Num rows: 1 Data size: 624 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 1 Data size: 624 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col4 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: int), _col9 (type: int), _col10 (type: int)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col1 (type: int)
+                outputColumnNames: _col0, _col4, _col6, _col7, _col8, _col9, _col10, _col11
+                Statistics: Num rows: 1 Data size: 686 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 1 Data size: 686 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col4 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: int), _col9 (type: int), _col10 (type: int), _col11 (type: boolean)
+        Reducer 4 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col1 (type: int)
+                outputColumnNames: _col4, _col6, _col7, _col8, _col9, _col10, _col11, _col13
+                Statistics: Num rows: 1 Data size: 754 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: (_col11 is not null or _col13 is not null) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 754 Basic stats: COMPLETE Column stats: NONE
+                  Top N Key Operator
+                    sort order: ++++++
+                    keys: _col4 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: int), _col9 (type: int), _col10 (type: int)
+                    null sort order: zzzzzz
+                    Statistics: Num rows: 1 Data size: 754 Basic stats: COMPLETE Column stats: NONE
+                    top n: 100
+                    Select Operator
+                      expressions: _col4 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: int), _col9 (type: int), _col10 (type: int)
+                      outputColumnNames: _col4, _col6, _col7, _col8, _col9, _col10
+                      Statistics: Num rows: 1 Data size: 754 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: count(), sum(_col8), count(_col8), max(_col8), sum(_col9), count(_col9), max(_col9), sum(_col10), count(_col10), max(_col10)
+                        keys: _col4 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: int), _col9 (type: int), _col10 (type: int)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15
+                        Statistics: Num rows: 1 Data size: 754 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: int), _col4 (type: int), _col5 (type: int)
+                          null sort order: zzzzzz
+                          sort order: ++++++
+                          Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: int), _col4 (type: int), _col5 (type: int)
+                          Statistics: Num rows: 1 Data size: 754 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col6 (type: bigint), _col7 (type: bigint), _col8 (type: bigint), _col9 (type: int), _col10 (type: bigint), _col11 (type: bigint), _col12 (type: int), _col13 (type: bigint), _col14 (type: bigint), _col15 (type: int)
+        Reducer 5 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0), sum(VALUE._col1), count(VALUE._col2), max(VALUE._col3), sum(VALUE._col4), count(VALUE._col5), max(VALUE._col6), sum(VALUE._col7), count(VALUE._col8), max(VALUE._col9)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string), KEY._col3 (type: int), KEY._col4 (type: int), KEY._col5 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15
+                Statistics: Num rows: 1 Data size: 754 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col6 (type: bigint), (UDFToDouble(_col7) / _col8) (type: double), _col9 (type: int), _col7 (type: bigint), _col4 (type: int), (UDFToDouble(_col10) / _col11) (type: double), _col12 (type: int), _col10 (type: bigint), _col5 (type: int), (UDFToDouble(_col13) / _col14) (type: double), _col15 (type: int), _col13 (type: bigint), _col3 (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col9, _col10, _col11, _col12, _col14, _col15, _col16, _col17
+                  Statistics: Num rows: 1 Data size: 754 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col17 (type: int), _col7 (type: int), _col12 (type: int)
+                    null sort order: zzzzzz
+                    sort order: ++++++
+                    Statistics: Num rows: 1 Data size: 754 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col3 (type: bigint), _col4 (type: double), _col5 (type: int), _col6 (type: bigint), _col9 (type: double), _col10 (type: int), _col11 (type: bigint), _col14 (type: double), _col15 (type: int), _col16 (type: bigint)
+        Reducer 6 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: string), VALUE._col0 (type: bigint), VALUE._col1 (type: double), VALUE._col2 (type: int), VALUE._col3 (type: bigint), KEY.reducesinkkey4 (type: int), VALUE._col0 (type: bigint), VALUE._col4 (type: double), VALUE._col5 (type: int), VALUE._col6 (type: bigint), KEY.reducesinkkey5 (type: int), VALUE._col0 (type: bigint), VALUE._col7 (type: double), VALUE._col8 (type: int), VALUE._col9 (type: bigint)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16
+                Statistics: Num rows: 1 Data size: 754 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 100
+                  Statistics: Num rows: 1 Data size: 754 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 754 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

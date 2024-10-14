@@ -1,0 +1,112 @@
+PREHOOK: query: explain
+select c_last_name
+       ,c_first_name
+       ,c_salutation
+       ,c_preferred_cust_flag 
+       ,ss_ticket_number
+       ,cnt from
+   (select ss_ticket_number
+          ,ss_customer_sk
+          ,count(*) cnt
+    from store_sales,date_dim,store,household_demographics
+    where store_sales.ss_sold_date_sk = date_dim.d_date_sk
+    and store_sales.ss_store_sk = store.s_store_sk  
+    and store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
+    and date_dim.d_dom between 1 and 2 
+    and (household_demographics.hd_buy_potential = '>10000' or
+         household_demographics.hd_buy_potential = 'unknown')
+    and household_demographics.hd_vehicle_count > 0
+    and case when household_demographics.hd_vehicle_count > 0 then 
+             household_demographics.hd_dep_count/ household_demographics.hd_vehicle_count else null end > 1
+    and date_dim.d_year in (2000,2000+1,2000+2)
+    and store.s_county in ('Mobile County','Maverick County','Huron County','Kittitas County')
+    group by ss_ticket_number,ss_customer_sk) dj,customer
+    where ss_customer_sk = c_customer_sk
+      and cnt between 1 and 5
+    order by cnt desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@household_demographics
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select c_last_name
+       ,c_first_name
+       ,c_salutation
+       ,c_preferred_cust_flag 
+       ,ss_ticket_number
+       ,cnt from
+   (select ss_ticket_number
+          ,ss_customer_sk
+          ,count(*) cnt
+    from store_sales,date_dim,store,household_demographics
+    where store_sales.ss_sold_date_sk = date_dim.d_date_sk
+    and store_sales.ss_store_sk = store.s_store_sk  
+    and store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
+    and date_dim.d_dom between 1 and 2 
+    and (household_demographics.hd_buy_potential = '>10000' or
+         household_demographics.hd_buy_potential = 'unknown')
+    and household_demographics.hd_vehicle_count > 0
+    and case when household_demographics.hd_vehicle_count > 0 then 
+             household_demographics.hd_dep_count/ household_demographics.hd_vehicle_count else null end > 1
+    and date_dim.d_year in (2000,2000+1,2000+2)
+    and store.s_county in ('Mobile County','Maverick County','Huron County','Kittitas County')
+    group by ss_ticket_number,ss_customer_sk) dj,customer
+    where ss_customer_sk = c_customer_sk
+      and cnt between 1 and 5
+    order by cnt desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@household_demographics
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: customer
+          properties:
+            hive.sql.query SELECT "t19"."c_last_name", "t19"."c_first_name", "t19"."c_salutation", "t19"."c_preferred_cust_flag", "t19"."ss_ticket_number", "t19"."cnt"
+FROM (SELECT "t1"."c_last_name", "t1"."c_first_name", "t1"."c_salutation", "t1"."c_preferred_cust_flag", "t17"."ss_ticket_number", "t17"."$f2" AS "cnt"
+FROM (SELECT "c_customer_sk", "c_salutation", "c_first_name", "c_last_name", "c_preferred_cust_flag"
+FROM (SELECT "c_customer_sk", "c_salutation", "c_first_name", "c_last_name", "c_preferred_cust_flag"
+FROM "customer") AS "t"
+WHERE "c_customer_sk" IS NOT NULL) AS "t1"
+INNER JOIN (SELECT "ss_ticket_number", "ss_customer_sk", "$f2"
+FROM (SELECT "t4"."ss_ticket_number", "t4"."ss_customer_sk", COUNT(*) AS "$f2"
+FROM (SELECT "ss_sold_date_sk", "ss_customer_sk", "ss_hdemo_sk", "ss_store_sk", "ss_ticket_number"
+FROM (SELECT "ss_sold_date_sk", "ss_customer_sk", "ss_hdemo_sk", "ss_store_sk", "ss_ticket_number"
+FROM "store_sales") AS "t2"
+WHERE "ss_sold_date_sk" IS NOT NULL AND "ss_store_sk" IS NOT NULL AND ("ss_hdemo_sk" IS NOT NULL AND "ss_customer_sk" IS NOT NULL)) AS "t4"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year", "d_dom"
+FROM "date_dim") AS "t5"
+WHERE "d_year" IN (2000, 2001, 2002) AND ("d_dom" BETWEEN 1 AND 2 AND "d_date_sk" IS NOT NULL)) AS "t7" ON "t4"."ss_sold_date_sk" = "t7"."d_date_sk"
+INNER JOIN (SELECT "s_store_sk"
+FROM (SELECT "s_store_sk", "s_county"
+FROM "store") AS "t8"
+WHERE "s_county" IN ('Mobile County', 'Maverick County', 'Huron County', 'Kittitas County') AND "s_store_sk" IS NOT NULL) AS "t10" ON "t4"."ss_store_sk" = "t10"."s_store_sk"
+INNER JOIN (SELECT "hd_demo_sk"
+FROM (SELECT "hd_demo_sk", "hd_buy_potential", "hd_dep_count", "hd_vehicle_count"
+FROM "household_demographics") AS "t11"
+WHERE "hd_vehicle_count" > 0 AND "hd_buy_potential" IN ('>10000', 'unknown') AND (CASE WHEN "hd_vehicle_count" > 0 THEN CAST("hd_dep_count" AS DOUBLE PRECISION) / CAST("hd_vehicle_count" AS DOUBLE PRECISION) > 1 ELSE FALSE END AND "hd_demo_sk" IS NOT NULL)) AS "t13" ON "t4"."ss_hdemo_sk" = "t13"."hd_demo_sk"
+GROUP BY "t4"."ss_customer_sk", "t4"."ss_ticket_number") AS "t15"
+WHERE "t15"."$f2" BETWEEN 1 AND 5) AS "t17" ON "t1"."c_customer_sk" = "t17"."ss_customer_sk"
+ORDER BY "t17"."$f2" DESC) AS "t19"
+            hive.sql.query.fieldNames c_last_name,c_first_name,c_salutation,c_preferred_cust_flag,ss_ticket_number,cnt
+            hive.sql.query.fieldTypes string,string,string,string,bigint,bigint
+            hive.sql.query.split false
+          Select Operator
+            expressions: c_last_name (type: string), c_first_name (type: string), c_salutation (type: string), c_preferred_cust_flag (type: string), ss_ticket_number (type: bigint), cnt (type: bigint)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+            ListSink
+
