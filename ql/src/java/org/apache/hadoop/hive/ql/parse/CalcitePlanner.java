@@ -1852,7 +1852,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       rules.add(HiveFilterTableFunctionTransposeRule.INSTANCE);
       rules.add(HiveOptimizeInlineArrayTableFunctionRule.INSTANCE);
       rules.add(HiveFilterSetOpTransposeRule.INSTANCE);
-      rules.add(HiveFilterSortTransposeRule.INSTANCE);
+      rules.add(HiveFilterSortTransposeRule.SORT_LIMIT_INSTANCE);
+      rules.add(HiveFilterSortTransposeRule.SORT_EXCHANGE_INSTANCE);
       rules.add(HiveFilterJoinRule.JOIN);
       rules.add(HiveFilterJoinRule.FILTER_ON_JOIN);
       rules.add(new HiveFilterAggregateTransposeRule(Filter.class, HiveRelFactories.HIVE_BUILDER,
