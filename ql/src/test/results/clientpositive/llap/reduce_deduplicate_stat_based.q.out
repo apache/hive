@@ -145,26 +145,26 @@ STAGE PLANS:
                   Statistics: Num rows: 741000000 Data size: 5927996004 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: id (type: int), country (type: int)
-                    outputColumnNames: _col0, _col3
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 741000000 Data size: 5927996004 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
-                      Map-reduce partition columns: _col3 (type: int), _col0 (type: int)
+                      Map-reduce partition columns: _col1 (type: int), _col0 (type: int)
                       Statistics: Num rows: 741000000 Data size: 5927996004 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: int), _col3 (type: int)
+                      value expressions: _col0 (type: int), _col1 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: int), VALUE._col3 (type: int)
-                outputColumnNames: _col0, _col3
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: int)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 741000000 Data size: 5927996004 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count(_col0)
-                  keys: _col3 (type: int)
+                  keys: _col1 (type: int)
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
@@ -227,26 +227,26 @@ STAGE PLANS:
                   Statistics: Num rows: 741000000 Data size: 65864000085 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: id (type: int), sex (type: string)
-                    outputColumnNames: _col0, _col2
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 741000000 Data size: 65864000085 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
-                      Map-reduce partition columns: _col2 (type: string), _col0 (type: int)
+                      Map-reduce partition columns: _col1 (type: string), _col0 (type: int)
                       Statistics: Num rows: 741000000 Data size: 65864000085 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: int), _col2 (type: string)
+                      value expressions: _col0 (type: int), _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: int), VALUE._col2 (type: string)
-                outputColumnNames: _col0, _col2
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: string)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 741000000 Data size: 65864000085 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count(_col0)
-                  keys: _col2 (type: string)
+                  keys: _col1 (type: string)
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
