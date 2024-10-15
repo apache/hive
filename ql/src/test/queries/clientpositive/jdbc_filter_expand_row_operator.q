@@ -13,9 +13,3 @@ TBLPROPERTIES (
 explain cbo
 select * from book 
 where id = 0 or (id = 1 and author = 11) or (id = 2 and author = 22);
-
--- non jdbc plan containing ROW, for reference
-CREATE EXTERNAL TABLE book1 (id int, title varchar(100), author int);
-explain cbo
-select * from book1
-where id = 0 or (id = 1 and author = 11) or (id = 2 and author = 22);
