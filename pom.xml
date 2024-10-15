@@ -246,17 +246,6 @@
       </releases>
     </repository>
     <repository>
-      <id>nex</id>
-      <name>nex</name>
-      <url>https://repository.apache.org/content/repositories/orgapachecalcite-1235/</url>
-      <layout>default</layout>
-      <releases>
-        <enabled>true</enabled>
-        <checksumPolicy>warn</checksumPolicy>
-        <updatePolicy>always</updatePolicy>
-      </releases>
-    </repository>
-    <repository>
       <id>repository-release</id>
       <url>https://repository.apache.org/content/repositories/releases/</url>
       <releases>
