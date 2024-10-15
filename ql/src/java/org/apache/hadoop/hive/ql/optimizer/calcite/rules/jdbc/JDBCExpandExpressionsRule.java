@@ -158,10 +158,10 @@ public abstract class JDBCExpandExpressionsRule extends RelOptRule {
 
   }
 
-  RexNode analyzeRexNode(RexBuilder builder, RexNode condition) {
-    RexTransformIntoOrAndClause transformIntoInClause = new RexTransformIntoOrAndClause(builder);
-
-    return transformIntoInClause.apply(condition);
+  RexNode analyzeRexNode(RexBuilder rexBuilder, RexNode condition) {
+    RexTransformIntoOrAndClause transformIntoInClause = new RexTransformIntoOrAndClause(rexBuilder);
+    RexNode newCondition = transformIntoInClause.apply(condition);
+    return newCondition;
   }
 
   /**
