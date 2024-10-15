@@ -5460,9 +5460,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
         if (orderByExpression instanceof RexInputRef) {
           return ((RexInputRef) orderByExpression).getIndex();
         } else {
+          int fieldIndex = srcRelRecordSz + newVCLst.size();
           newVCLst.add(orderByExpression);
           vcASTTypePairs.add(new Pair<>(ref, TypeConverter.convert(orderByExpression.getType())));
-          return srcRelRecordSz + newVCLst.size();
+          return fieldIndex;
         }
       }
 
