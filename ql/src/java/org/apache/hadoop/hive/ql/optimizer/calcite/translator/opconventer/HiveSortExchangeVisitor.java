@@ -26,6 +26,7 @@ import org.apache.calcite.rel.RelDistribution.Type;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.io.AcidUtils.Operation;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.opconventer.HiveOpConverter.OpAttr;
@@ -86,9 +87,9 @@ class HiveSortExchangeVisitor extends HiveRelNodeVisitor<HiveSortExchange> {
       keepColumns.add(columnInfo.getInternalName());
     }
 
-    Operator<?> resultOp = HiveOpConverterUtils.genReduceSinkAndBacktrackSelect(
-            inputOpAf.inputs.get(0), expressions, -1, partitionKeyList, order.toString(), nullOrder.toString(),
-            -1, Operation.NOT_ACID, hiveOpConverter.getHiveConf(), keepColumns);
+    ReduceSinkOperator resultOp = HiveOpConverterUtils.genReduceSink(inputOpAf.inputs.get(0), tabAlias, expressions,
+            -1, partitionKeyList, order.toString(), nullOrder.toString(), -1, Operation.NOT_ACID,
+            hiveOpConverter.getHiveConf());
 
     return new OpAttr(tabAlias, inputOpAf.vcolsInCalcite, resultOp);
   }
