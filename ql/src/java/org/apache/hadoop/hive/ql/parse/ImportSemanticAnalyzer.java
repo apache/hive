@@ -772,10 +772,21 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         tgtPath = new Path(table.getDataLocation().toString(),
             Warehouse.makePartPath(partSpec.getPartSpec()));
       } else {
-        Database parentDb = x.getHive().getDatabase(tblDesc.getDatabaseName());
-        tgtPath = new Path(
-            wh.getDefaultTablePath( parentDb, tblDesc.getTableName(), tblDesc.isExternal()),
-            Warehouse.makePartPath(partSpec.getPartSpec()));
+        try {
+          Table translatedTable =
+              x.getHive().getTranslateTableDryrun(tblDesc.toTable(x.getConf()).getTTable());
+          Path tablePath = translatedTable.getDataLocation();
+          if (tablePath == null) {
+            Database parentDb = x.getHive().getDatabase(tblDesc.getDatabaseName());
+            tablePath = wh.getDefaultTablePath(parentDb, tblDesc.getTableName(), tblDesc.isExternal());
+          }
+          tgtPath = new Path(tablePath, Warehouse.makePartPath(partSpec.getPartSpec()));
+        } catch (MetaException | HiveException | IOException e) {
+          throw e;
+        } catch (Exception e) {
+          throw new HiveException("Unable to determine the target path of the partition: " +
+              partSpec.getPartSpec(), e);
+        }
       }
     } else {
       tgtPath = new Path(tblDesc.getLocation(),
