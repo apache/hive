@@ -470,14 +470,14 @@ FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1"
                 TableScan
                   alias: db1_ext_auth1
                   properties:
-                    hive.sql.query SELECT "IKEY" * 2 AS "*"
+                    hive.sql.query SELECT "IKEY" * 2 AS "_o__c1"
 FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1"
-                    hive.sql.query.fieldNames *
+                    hive.sql.query.fieldNames _o__c1
                     hive.sql.query.fieldTypes int
                     hive.sql.query.split true
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: * (type: int)
+                    expressions: _o__c1 (type: int)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator

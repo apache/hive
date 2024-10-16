@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
-import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlFunctionCategory;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlSplittableAggFunction;
@@ -32,6 +31,7 @@ import org.apache.calcite.sql.type.SqlReturnTypeInference;
 import org.apache.calcite.sql.type.SqlTypeName;
 
 import com.google.common.collect.ImmutableList;
+import org.apache.calcite.util.Optionality;
 
 /**
  * <code>Sum0</code> is an aggregator which returns the sum of the values which
@@ -39,7 +39,7 @@ import com.google.common.collect.ImmutableList;
  * are applied zero is returned instead of null. Can be used along with <code>
  * Count</code> to implement <code>Sum</code>.
  */
-public class HiveSqlSumEmptyIsZeroAggFunction extends SqlAggFunction {
+public class HiveSqlSumEmptyIsZeroAggFunction extends HiveSqlAggFunction {
   //~ Constructors -----------------------------------------------------------
 
   public HiveSqlSumEmptyIsZeroAggFunction(boolean isDistinct, SqlReturnTypeInference returnTypeInference,
@@ -52,7 +52,8 @@ public class HiveSqlSumEmptyIsZeroAggFunction extends SqlAggFunction {
         operandTypeChecker,
         SqlFunctionCategory.NUMERIC,
         false,
-        false);
+        false,
+        Optionality.FORBIDDEN);
   }
 
   //~ Methods ----------------------------------------------------------------

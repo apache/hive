@@ -51,7 +51,6 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.graph.DiGraph;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.slf4j.Logger;
@@ -62,6 +61,8 @@ import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
+
+import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil.transformOrToInAndInequalityToBetween;
 
 /**
  * This optimization attempts to identify and close expanded INs and BETWEENs
@@ -93,7 +94,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       final RexBuilder rexBuilder = filter.getCluster().getRexBuilder();
       final RexNode condition = RexUtil.pullFactors(rexBuilder, filter.getCondition());
 
-      RexNode newCondition = analyzeRexNode(rexBuilder, condition);
+      RexNode newCondition = transformOrToInAndInequalityToBetween(rexBuilder, condition, minNumORClauses);
 
       // If we could not transform anything, we bail out
       if (newCondition.toString().equals(condition.toString())) {
@@ -118,7 +119,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       final RexBuilder rexBuilder = join.getCluster().getRexBuilder();
       final RexNode condition = RexUtil.pullFactors(rexBuilder, join.getCondition());
 
-      RexNode newCondition = analyzeRexNode(rexBuilder, condition);
+      RexNode newCondition = transformOrToInAndInequalityToBetween(rexBuilder, condition, minNumORClauses);
 
       // If we could not transform anything, we bail out
       if (newCondition.toString().equals(condition.toString())) {
@@ -150,7 +151,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       final RexBuilder rexBuilder = project.getCluster().getRexBuilder();
       List<RexNode> newProjects = new ArrayList<>();
       for (RexNode oldNode : project.getProjects()) {
-        RexNode newNode = analyzeRexNode(rexBuilder, oldNode);
+        RexNode newNode = transformOrToInAndInequalityToBetween(rexBuilder, oldNode, minNumORClauses);
         if (!newNode.toString().equals(oldNode.toString())) {
           changed = true;
           newProjects.add(newNode);
@@ -179,29 +180,14 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
     this.minNumORClauses = minNumORClauses;
   }
 
-  public RexNode analyzeRexNode(RexBuilder rexBuilder, RexNode condition) {
-    // 1. We try to transform possible candidates
-    RexTransformIntoInClause transformIntoInClause = new RexTransformIntoInClause(rexBuilder, minNumORClauses);
-    RexNode newCondition = transformIntoInClause.apply(condition);
-
-    // 2. We merge IN expressions
-    RexMergeInClause mergeInClause = new RexMergeInClause(rexBuilder);
-    newCondition = mergeInClause.apply(newCondition);
-
-    // 3. Close BETWEEN expressions if possible
-    RexTransformIntoBetween t = new RexTransformIntoBetween(rexBuilder);
-    newCondition = t.apply(newCondition);
-    return newCondition;
-  }
-
   /**
    * Transforms inequality candidates into [NOT] BETWEEN calls.
    *
    */
-  protected static class RexTransformIntoBetween extends RexShuttle {
+  public static class RexTransformIntoBetween extends RexShuttle {
     private final RexBuilder rexBuilder;
 
-    RexTransformIntoBetween(RexBuilder rexBuilder) {
+    public RexTransformIntoBetween(RexBuilder rexBuilder) {
       this.rexBuilder = rexBuilder;
     }
 
@@ -411,11 +397,11 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
   /**
    * Transforms OR clauses into IN clauses, when possible.
    */
-  protected static class RexTransformIntoInClause extends RexShuttle {
+  public static class RexTransformIntoInClause extends RexShuttle {
     private final RexBuilder rexBuilder;
     private final int minNumORClauses;
 
-    RexTransformIntoInClause(RexBuilder rexBuilder, int minNumORClauses) {
+    public RexTransformIntoInClause(RexBuilder rexBuilder, int minNumORClauses) {
       this.rexBuilder = rexBuilder;
       this.minNumORClauses = minNumORClauses;
     }
@@ -555,7 +541,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         operands.add(useStructIfNeeded(values));
       }
 
-      return rexBuilder.makeCall(HiveIn.INSTANCE, operands);
+      return rexBuilder.makeIn(operands.get(0), operands.subList(1, operands.size()));
     }
 
     private RexNode useStructIfNeeded(List<? extends RexNode> columns) {
@@ -572,10 +558,10 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
   /**
    * Merge IN clauses, when possible.
    */
-  protected static class RexMergeInClause extends RexShuttle {
+  public static class RexMergeInClause extends RexShuttle {
     private final RexBuilder rexBuilder;
 
-    RexMergeInClause(RexBuilder rexBuilder) {
+    public RexMergeInClause(RexBuilder rexBuilder) {
       this.rexBuilder = rexBuilder;
     }
 
@@ -797,7 +783,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
           List<RexNode> newOperands = new ArrayList<>(exprs.size() + 1);
           newOperands.add(ref);
           newOperands.addAll(exprs.stream().map(SimilarRexNodeElement::getRexNode).collect(Collectors.toList()));
-          newExpressions.add(rexBuilder.makeCall(HiveIn.INSTANCE, newOperands));
+          newExpressions.add(rexBuilder.makeIn(newOperands.get(0), newOperands.subList(1, newOperands.size())));
         }
       }
       return newExpressions;

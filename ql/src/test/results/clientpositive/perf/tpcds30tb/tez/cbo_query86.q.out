@@ -11,7 +11,7 @@ HiveProject(total_sum=[$0], i_category=[$1], i_class=[$2], lochierarchy=[$3], ra
                   HiveFilter(condition=[IS NOT NULL($33)])
                     HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
                 HiveProject(d_date_sk=[$0])
-                  HiveFilter(condition=[BETWEEN(false, $3, 1212, 1223)])
+                  HiveFilter(condition=[SEARCH($3, Sarg[[1212..1223]])])
                     HiveTableScan(table=[[default, date_dim]], table:alias=[d1])
               HiveProject(i_item_sk=[$0], i_class=[$10], i_category=[$12])
                 HiveTableScan(table=[[default, item]], table:alias=[item])
