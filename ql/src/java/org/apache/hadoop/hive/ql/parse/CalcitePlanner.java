@@ -5376,9 +5376,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     private HiveRelDistribution hiveRelDistribution;
     private RelNode obInputRel;
-    private RowResolver selectOutputRR;
-    private RelNode srcRel;
-
 
     OrderByRelBuilder(
             CalcitePlannerAction calcitePlannerAction, Pair<RelNode, RowResolver> selPair, boolean outermostOB) {
@@ -5552,8 +5549,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // selPair.getKey() is the operator right before OB
       // selPair.getValue() is RR which only contains columns needed in result
       // set. Extra columns needed by order by will be absent from it.
-      srcRel = selPair.getKey();
-      selectOutputRR = selPair.getValue();
+      RelNode srcRel = selPair.getKey();
       RowResolver inputRR = calcitePlannerAction.relToHiveRR.get(srcRel);
 
       // 3. Add Child Project Rel if needed, Generate Output RR, input Sel Rel
@@ -5637,8 +5633,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       calcitePlannerAction.relToHiveRR.put(sortRel, outputRR);
       calcitePlannerAction.relToHiveColNameCalcitePosMap.put(sortRel, hiveColNameCalcitePosMap);
 
+      RowResolver selectOutputRR = selPair.getValue();
       if (selectOutputRR != null) {
-        List<RexNode> originalInputRefs = calcitePlannerAction.toRexNodeList(srcRel);
+        List<RexNode> originalInputRefs = calcitePlannerAction.toRexNodeList(selPair.getKey());
         List<RexNode> selectedRefs = originalInputRefs.subList(0, selectOutputRR.getColumnInfos().size());
         // We need to add select since order by schema may have more columns than result schema.
         return calcitePlannerAction.genSelectRelNode(selectedRefs, selectOutputRR, sortRel);
