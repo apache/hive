@@ -24,4 +24,9 @@
   <value> </value>
 </property>
 
+<property>
+  <name>metastore.lock.sleep.between.retries</name>
+  <value>2</value>
+</property>
+
 </configuration>
