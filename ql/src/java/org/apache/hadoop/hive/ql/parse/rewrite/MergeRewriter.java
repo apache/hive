@@ -47,6 +47,51 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
+/**
+ * This class rewrites Merge statement's updates and deletes into insert statements since
+ * they are actually inserts.
+ * <br>
+ * In the source clause of the multi-insert the target and the source tables are joined via right outer join
+ * and the joined records are forwarded to the corresponding insert branch of the multi-insert statement. The left
+ * side of the join projects the target tables column and the targetRecordExists flag.
+ * To define which records should go to which branch filter predicates are used in the where clauses of the branch.
+ * <ul>
+ *   <li>WHERE targetRecordExists IS NULL - means the records should be inserted into the target table</li>
+ *   <li>WHERE targetRecordExists - means the matching record in the target table should be updated or deleted</li>
+ * </ul>
+ * <br>
+ * Example:
+ * <pre>
+ * MERGE INTO target as t using source s ON t.a = s.a
+ * WHEN MATCHED AND s.a &gt; 8 THEN DELETE
+ * WHEN MATCHED THEN UPDATE SET b = 7
+ * WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b);
+ * </pre>
+ * is rewritten to
+ * <pre>
+ * FROM
+ * (SELECT ROW__ID,`a`, `b`, true AS targetRecordExists FROM `default`.`target_table`) `t`
+ * RIGHT OUTER JOIN `default`.`source_table` `s` ON `t`.`a` = `s`.`a`
+ * -- delete
+ * INSERT INTO `default`.`target_table`
+ * SELECT `t`.ROW__ID
+ * WHERE `t`.targetRecordExists  AND `s`.`a` &gt; 8
+ * SORT BY `t`.ROW__ID
+ * -- update
+ * INSERT INTO `default`.`target_table`
+ * SELECT `t`.ROW__ID,`t`.`a`,7
+ * WHERE `t`.targetRecordExists AND (NOT(`s`.`a` &gt; 8) OR (`s`.`a` &gt; 8) IS NULL)
+ * SORT BY `t`.ROW__ID
+ * -- insert
+ * INSERT INTO `default`.`target_table`
+ * SELECT `s`.`a`, `s`.`b`
+ * WHERE targetRecordExists IS NULL
+ * -- cardinality check
+ * INSERT INTO merge_tmp_table
+ * SELECT cardinality_violation(`t`.ROW__ID)
+ * WHERE `t`.`a` = `s`.`a` GROUP BY `t`.ROW__ID HAVING count(*) &gt; 1
+ * </pre>
+ */
 public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.DestClausePrefixSetter {
 
   private final Hive db;
@@ -107,7 +152,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
     sqlGenerator.append("(SELECT ");
     sqlGenerator.appendAcidSelectColumns(Operation.MERGE);
     sqlGenerator.appendAllColsOfTargetTable();
-    sqlGenerator.append(" FROM ").appendTargetTableName().append(") ");
+    sqlGenerator.append(", true AS targetRecordExists FROM ").appendTargetTableName().append(") ");
     sqlGenerator.appendSubQueryAlias();
     sqlGenerator.append('\n');
     sqlGenerator.indent().append(hasWhenNotMatchedClause ? "RIGHT OUTER JOIN" : "INNER JOIN").append("\n");
@@ -193,7 +238,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
       }
 
       sqlGenerator.append(String.join(", ", insertClause.getValuesClause()));
-      sqlGenerator.append("\n   WHERE ").append(insertClause.getPredicate());
+      sqlGenerator.append("\n   WHERE targetRecordExists IS NULL ");
 
       if (insertClause.getExtraPredicate() != null) {
         //we have WHEN NOT MATCHED AND <boolean expr> THEN INSERT
@@ -207,7 +252,6 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
     public void appendWhenMatchedUpdateClause(MergeStatement.UpdateClause updateClause) {
       Table targetTable = mergeStatement.getTargetTable();
       String targetAlias = mergeStatement.getTargetAlias();
-      String onClauseAsString = mergeStatement.getOnClauseAsText();
 
       sqlGenerator.append("    -- update clause").append("\n");
       List<String> valuesAndAcidSortKeys = new ArrayList<>(
@@ -217,8 +261,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
       sqlGenerator.appendInsertBranch(hintStr, valuesAndAcidSortKeys);
       hintStr = null;
 
-      addWhereClauseOfUpdate(
-          onClauseAsString, updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), sqlGenerator);
+      addWhereClauseOfUpdate(updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), sqlGenerator);
 
       sqlGenerator.appendSortKeys();
     }
@@ -245,20 +288,22 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
       return newValue;
     }
 
-    protected void addWhereClauseOfUpdate(String onClauseAsString, String extraPredicate, String deleteExtraPredicate,
+    protected void addWhereClauseOfUpdate(String extraPredicate, String deleteExtraPredicate,
                                           MultiInsertSqlGenerator sqlGenerator) {
-      addWhereClauseOfUpdate(onClauseAsString, extraPredicate, deleteExtraPredicate, sqlGenerator, UnaryOperator.identity());
+      addWhereClauseOfUpdate(extraPredicate, deleteExtraPredicate, sqlGenerator, UnaryOperator.identity());
     }
     
-    protected void addWhereClauseOfUpdate(String onClauseAsString, String extraPredicate, String deleteExtraPredicate,
+    protected void addWhereClauseOfUpdate(String extraPredicate, String deleteExtraPredicate,
                                           MultiInsertSqlGenerator sqlGenerator, UnaryOperator<String> columnRefsFunc) {
-      StringBuilder whereClause = new StringBuilder(onClauseAsString);
+      StringBuilder whereClause = new StringBuilder(mergeStatement.getTargetAlias());
+      whereClause.append(".targetRecordExists");
       if (extraPredicate != null) {
         //we have WHEN MATCHED AND <boolean expr> THEN DELETE
         whereClause.append(" AND ").append(extraPredicate);
       }
       if (deleteExtraPredicate != null) {
-        whereClause.append(" AND NOT(").append(deleteExtraPredicate).append(")");
+        whereClause.append(" AND (NOT(").append(deleteExtraPredicate).append(") OR (")
+            .append(deleteExtraPredicate).append(") IS NULL)");
       }
       sqlGenerator.indent().append("WHERE ");
       sqlGenerator.append(columnRefsFunc.apply(whereClause.toString()));
@@ -266,22 +311,23 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
 
     @Override
     public void appendWhenMatchedDeleteClause(MergeStatement.DeleteClause deleteClause) {
-      handleWhenMatchedDelete(mergeStatement.getOnClauseAsText(),
+      handleWhenMatchedDelete(
           deleteClause.getExtraPredicate(), deleteClause.getUpdateExtraPredicate(), hintStr, sqlGenerator);
       hintStr = null;
     }
 
-    protected void handleWhenMatchedDelete(String onClauseAsString, String extraPredicate, String updateExtraPredicate,
+    protected void handleWhenMatchedDelete(String extraPredicate, String updateExtraPredicate,
                                          String hintStr, MultiInsertSqlGenerator sqlGenerator) {
       sqlGenerator.appendDeleteBranch(hintStr);
 
-      sqlGenerator.indent().append("WHERE ").append(onClauseAsString);
+      sqlGenerator.indent().append("WHERE ").append(mergeStatement.getTargetAlias()).append(".targetRecordExists ");
       if (extraPredicate != null) {
         //we have WHEN MATCHED AND <boolean expr> THEN DELETE
         sqlGenerator.append(" AND ").append(extraPredicate);
       }
       if (updateExtraPredicate != null) {
-        sqlGenerator.append(" AND NOT(").append(updateExtraPredicate).append(")");
+        sqlGenerator.append(" AND (NOT(").append(updateExtraPredicate).append(") OR (")
+            .append(updateExtraPredicate).append(") IS NULL)");
       }
       sqlGenerator.append("\n").indent();
       sqlGenerator.appendSortKeys();
