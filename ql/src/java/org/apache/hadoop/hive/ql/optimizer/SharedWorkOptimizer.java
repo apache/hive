@@ -1006,6 +1006,16 @@ public class SharedWorkOptimizer extends Transform {
       return false;
     }
 
+    // Map Joins when vectorized can have different formats for the hash tables built on the small table.
+    // Reusing hash tables between different join type can lead to ClassCastException or even wrong results.
+    if (mapJoinOp1.getConf().getConds() != null && mapJoinOp1.getConf().getConds().length > 0
+        && mapJoinOp2.getConf().getConds() != null && mapJoinOp2.getConf().getConds().length > 0
+        && mapJoinOp1.getConf().getConds()[0].getType() != mapJoinOp2.getConf().getConds()[0].getType()
+        && (mapJoinOp1.getConf().isNoOuterJoin() || mapJoinOp2.getConf().isNoOuterJoin())) {
+        return false;
+    }
+
+
     for (int i = 0; i < mapJoinOp1.getNumParent(); i ++) {
       if (i == mapJoinOp1.getConf().getPosBigTable()) {
         continue;
