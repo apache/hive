@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import com.google.common.collect.Maps;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -56,7 +57,6 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.StringableMap;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.shims.HadoopShims;
@@ -567,15 +567,14 @@ public class CompactorUtil {
     return poolConf;
   }
 
-  public static String getCompactPoolName(HiveConf conf, org.apache.hadoop.hive.ql.metadata.Table table) 
-      throws Exception {
-    String poolName;
-    Map<String, String> params = table.getParameters();
-    poolName = params == null ? null : params.get(Constants.HIVE_COMPACTOR_WORKER_POOL);
+  public static String getPoolName(HiveConf conf, Table t, MetadataCache metadataCache) throws Exception {
+    Map<String, String> params = ObjectUtils.defaultIfNull(t.getParameters(), Collections.emptyMap());
+    String poolName = params.get(Constants.HIVE_COMPACTOR_WORKER_POOL);
     if (StringUtils.isBlank(poolName)) {
-      params = CompactorUtil.resolveDatabase(conf, table.getDbName()).getParameters();
-      poolName = params == null ? null : params.get(Constants.HIVE_COMPACTOR_WORKER_POOL);
-    } 
+      params = ObjectUtils.defaultIfNull(metadataCache.computeIfAbsent(t.getDbName(), 
+          () -> resolveDatabase(conf, t.getDbName())).getParameters(), Collections.emptyMap());
+      poolName = params.get(Constants.HIVE_COMPACTOR_WORKER_POOL);
+    }
     return poolName;
   }
 }

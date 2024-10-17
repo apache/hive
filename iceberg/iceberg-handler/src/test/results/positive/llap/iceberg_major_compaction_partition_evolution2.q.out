@@ -1,3 +1,15 @@
+PREHOOK: query: create database ice_comp with dbproperties('hive.compactor.worker.pool'='iceberg')
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:ice_comp
+POSTHOOK: query: create database ice_comp with dbproperties('hive.compactor.worker.pool'='iceberg')
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:ice_comp
+PREHOOK: query: use ice_comp
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:ice_comp
+POSTHOOK: query: use ice_comp
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:ice_comp
 PREHOOK: query: create table ice_orc (
     first_name string, 
     last_name string,
@@ -6,8 +18,8 @@ PREHOOK: query: create table ice_orc (
 stored by iceberg stored as orc 
 tblproperties ('format-version'='2')
 PREHOOK: type: CREATETABLE
-PREHOOK: Output: database:default
-PREHOOK: Output: default@ice_orc
+PREHOOK: Output: database:ice_comp
+PREHOOK: Output: ice_comp@ice_orc
 POSTHOOK: query: create table ice_orc (
     first_name string, 
     last_name string,
@@ -16,102 +28,102 @@ POSTHOOK: query: create table ice_orc (
 stored by iceberg stored as orc 
 tblproperties ('format-version'='2')
 POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@ice_orc
+POSTHOOK: Output: database:ice_comp
+POSTHOOK: Output: ice_comp@ice_orc
 PREHOOK: query: insert into ice_orc VALUES ('fn1','ln1', 1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@ice_orc
+PREHOOK: Output: ice_comp@ice_orc
 POSTHOOK: query: insert into ice_orc VALUES ('fn1','ln1', 1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@ice_orc
+POSTHOOK: Output: ice_comp@ice_orc
 PREHOOK: query: insert into ice_orc VALUES ('fn2','ln2', 1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@ice_orc
+PREHOOK: Output: ice_comp@ice_orc
 POSTHOOK: query: insert into ice_orc VALUES ('fn2','ln2', 1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@ice_orc
+POSTHOOK: Output: ice_comp@ice_orc
 PREHOOK: query: insert into ice_orc VALUES ('fn3','ln3', 1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@ice_orc
+PREHOOK: Output: ice_comp@ice_orc
 POSTHOOK: query: insert into ice_orc VALUES ('fn3','ln3', 1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@ice_orc
+POSTHOOK: Output: ice_comp@ice_orc
 PREHOOK: query: insert into ice_orc VALUES ('fn4','ln4', 1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@ice_orc
+PREHOOK: Output: ice_comp@ice_orc
 POSTHOOK: query: insert into ice_orc VALUES ('fn4','ln4', 1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@ice_orc
+POSTHOOK: Output: ice_comp@ice_orc
 PREHOOK: query: delete from ice_orc where last_name in ('ln3', 'ln4')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice_orc
+PREHOOK: Input: ice_comp@ice_orc
 #### A masked pattern was here ####
 POSTHOOK: query: delete from ice_orc where last_name in ('ln3', 'ln4')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice_orc
+POSTHOOK: Input: ice_comp@ice_orc
 #### A masked pattern was here ####
 PREHOOK: query: alter table ice_orc set partition spec(dept_id)
 PREHOOK: type: ALTERTABLE_SETPARTSPEC
-PREHOOK: Input: default@ice_orc
+PREHOOK: Input: ice_comp@ice_orc
 POSTHOOK: query: alter table ice_orc set partition spec(dept_id)
 POSTHOOK: type: ALTERTABLE_SETPARTSPEC
-POSTHOOK: Input: default@ice_orc
-POSTHOOK: Output: default@ice_orc
+POSTHOOK: Input: ice_comp@ice_orc
+POSTHOOK: Output: ice_comp@ice_orc
 PREHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn5','ln5')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@ice_orc@dept_id=2
+PREHOOK: Output: ice_comp@ice_orc@dept_id=2
 POSTHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn5','ln5')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@ice_orc@dept_id=2
+POSTHOOK: Output: ice_comp@ice_orc@dept_id=2
 PREHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn6','ln6')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@ice_orc@dept_id=2
+PREHOOK: Output: ice_comp@ice_orc@dept_id=2
 POSTHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn6','ln6')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@ice_orc@dept_id=2
+POSTHOOK: Output: ice_comp@ice_orc@dept_id=2
 PREHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn7','ln7')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@ice_orc@dept_id=2
+PREHOOK: Output: ice_comp@ice_orc@dept_id=2
 POSTHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn7','ln7')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@ice_orc@dept_id=2
+POSTHOOK: Output: ice_comp@ice_orc@dept_id=2
 PREHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn8','ln8')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@ice_orc@dept_id=2
+PREHOOK: Output: ice_comp@ice_orc@dept_id=2
 POSTHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn8','ln8')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@ice_orc@dept_id=2
+POSTHOOK: Output: ice_comp@ice_orc@dept_id=2
 PREHOOK: query: delete from ice_orc where last_name in ('ln7', 'ln8')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice_orc
+PREHOOK: Input: ice_comp@ice_orc
 #### A masked pattern was here ####
 POSTHOOK: query: delete from ice_orc where last_name in ('ln7', 'ln8')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice_orc
+POSTHOOK: Input: ice_comp@ice_orc
 #### A masked pattern was here ####
 PREHOOK: query: select * from ice_orc
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice_orc
+PREHOOK: Input: ice_comp@ice_orc
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ice_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice_orc
+POSTHOOK: Input: ice_comp@ice_orc
 #### A masked pattern was here ####
 fn1	ln1	1
 fn2	ln2	1
@@ -119,10 +131,10 @@ fn5	ln5	2
 fn6	ln6	2
 PREHOOK: query: describe formatted ice_orc
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@ice_orc
+PREHOOK: Input: ice_comp@ice_orc
 POSTHOOK: query: describe formatted ice_orc
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@ice_orc
+POSTHOOK: Input: ice_comp@ice_orc
 # col_name            	data_type           	comment             
 first_name          	string              	                    
 last_name           	string              	                    
@@ -133,7 +145,7 @@ dept_id             	bigint
 dept_id             	IDENTITY            	 
 	 	 
 # Detailed Table Information	 	 
-Database:           	default             	 
+Database:           	ice_comp            	 
 #### A masked pattern was here ####
 Retention:          	0                   	 
 #### A masked pattern was here ####
@@ -180,19 +192,19 @@ POSTHOOK: type: SHOW COMPACTIONS
 CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
 PREHOOK: query: alter table ice_orc COMPACT 'major' and wait
 PREHOOK: type: ALTERTABLE_COMPACT
-PREHOOK: Input: default@ice_orc
-PREHOOK: Output: default@ice_orc
+PREHOOK: Input: ice_comp@ice_orc
+PREHOOK: Output: ice_comp@ice_orc
 POSTHOOK: query: alter table ice_orc COMPACT 'major' and wait
 POSTHOOK: type: ALTERTABLE_COMPACT
-POSTHOOK: Input: default@ice_orc
-POSTHOOK: Output: default@ice_orc
+POSTHOOK: Input: ice_comp@ice_orc
+POSTHOOK: Output: ice_comp@ice_orc
 PREHOOK: query: select * from ice_orc
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice_orc
+PREHOOK: Input: ice_comp@ice_orc
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ice_orc
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice_orc
+POSTHOOK: Input: ice_comp@ice_orc
 #### A masked pattern was here ####
 fn1	ln1	1
 fn2	ln2	1
@@ -200,10 +212,10 @@ fn5	ln5	2
 fn6	ln6	2
 PREHOOK: query: describe formatted ice_orc
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@ice_orc
+PREHOOK: Input: ice_comp@ice_orc
 POSTHOOK: query: describe formatted ice_orc
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@ice_orc
+POSTHOOK: Input: ice_comp@ice_orc
 # col_name            	data_type           	comment             
 first_name          	string              	                    
 last_name           	string              	                    
@@ -214,7 +226,7 @@ dept_id             	bigint
 dept_id             	IDENTITY            	 
 	 	 
 # Detailed Table Information	 	 
-Database:           	default             	 
+Database:           	ice_comp            	 
 #### A masked pattern was here ####
 Retention:          	0                   	 
 #### A masked pattern was here ####
@@ -259,5 +271,5 @@ PREHOOK: type: SHOW COMPACTIONS
 POSTHOOK: query: show compactions order by 'partition'
 POSTHOOK: type: SHOW COMPACTIONS
 CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
-#Masked#	default	ice_orc	dept_id=2	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
-#Masked#	default	ice_orc	 --- 	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	ice_comp	ice_orc	dept_id=2	MAJOR	succeeded	#Masked#	manual	iceberg	0	0	0	 --- 
+#Masked#	ice_comp	ice_orc	 --- 	MAJOR	succeeded	#Masked#	manual	iceberg	0	0	0	 --- 

@@ -86,7 +86,6 @@ public class TestIcebergLlapLocalCompactorCliDriver {
 
   @Test
   public void testCliDriver() throws Exception {
-    adapter.setUp();
     adapter.runTest(name, qfile);
   }
 }
