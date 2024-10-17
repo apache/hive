@@ -89,6 +89,7 @@ import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcCtx.ConstantProp
 import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
 import org.apache.hadoop.hive.ql.optimizer.DynamicPartitionPruningOptimization;
 import org.apache.hadoop.hive.ql.optimizer.FiltertagAppenderProc;
+import org.apache.hadoop.hive.ql.optimizer.GroupingSetOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.MergeJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.NonBlockingOpDeDupProc;
 import org.apache.hadoop.hive.ql.optimizer.ParallelEdgeFixer;
@@ -228,6 +229,12 @@ public class TezCompiler extends TaskCompiler {
     // run the optimizations that use stats for optimization
     runStatsDependentOptimizations(procCtx);
     perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run the optimizations that use stats for optimization");
+
+    perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+    if (procCtx.conf.getLongVar(ConfVars.HIVE_OPTIMIZE_GROUPING_SET_THRESHOLD) > 0) {
+      new GroupingSetOptimizer().transform(pCtx);
+    }
+    perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run GroupingSet optimizer");
 
     // repopulate bucket versions; join conversion may have created some new reducesinks
     new BucketVersionPopulator().transform(pCtx);
