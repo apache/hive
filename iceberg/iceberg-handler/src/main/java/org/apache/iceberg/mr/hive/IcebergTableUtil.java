@@ -484,6 +484,10 @@ public class IcebergTableUtil {
             String.format("Transform: %s", partField.transform().toString()))).collect(Collectors.toList());
   }
 
+  public static List<FieldSchema> getAllPartitionKeys(Table table) {
+    return  table.specs().keySet().stream().flatMap(id -> getPartitionKeys(table, id).stream())
+        .distinct().collect(Collectors.toList());
+  }
   public static List<PartitionField> getPartitionFields(Table table) {
     return table.specs().values().stream().flatMap(spec -> spec.fields()
         .stream()).distinct().collect(Collectors.toList());
