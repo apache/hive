@@ -511,7 +511,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * @return the selectivity of a predicate "column &gt; value" in the range [0, 1]
    */
   public static double greaterThanSelectivity(KllFloatsSketch kll, float value) {
-    float max = kll.getMaxValue();
+    float max = kll.getMaxItem();
     if (value > max) {
       return 0;
     }
@@ -529,10 +529,10 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * @return the selectivity of a predicate "column &gt;= value" in the range [0, 1]
    */
   public static double greaterThanOrEqualSelectivity(KllFloatsSketch kll, float value) {
-    if (value > kll.getMaxValue()) {
+    if (value > kll.getMaxItem()) {
       return 0;
     }
-    return rangedSelectivity(kll, value, Math.nextUp(kll.getMaxValue()));
+    return rangedSelectivity(kll, value, Math.nextUp(kll.getMaxItem()));
   }
 
   /**
@@ -542,7 +542,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * @return the selectivity of a predicate "column &lt;= value" in the range [0, 1]
    */
   public static double lessThanOrEqualSelectivity(KllFloatsSketch kll, float value) {
-    if (value < kll.getMinValue()) {
+    if (value < kll.getMinItem()) {
       return 0;
     }
     return kll.getCDF(new float[] { Math.nextUp(value) })[0];
@@ -555,7 +555,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * @return the selectivity of a predicate "column &lt; value" in the range [0, 1]
    */
   public static double lessThanSelectivity(KllFloatsSketch kll, float value) {
-    float min = kll.getMinValue();
+    float min = kll.getMinItem();
     if (value < min) {
       return 0;
     }
