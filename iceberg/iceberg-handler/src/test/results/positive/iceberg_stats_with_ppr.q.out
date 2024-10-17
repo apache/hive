@@ -1,0 +1,78 @@
+PREHOOK: query: create external table ice01 (`i` int, `t` timestamp) 
+    partitioned by (year int, month int, day int) 
+stored by iceberg tblproperties ('format-version'='2', 'write.summary.partition-limit'='10')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice01
+POSTHOOK: query: create external table ice01 (`i` int, `t` timestamp) 
+    partitioned by (year int, month int, day int) 
+stored by iceberg tblproperties ('format-version'='2', 'write.summary.partition-limit'='10')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice01
+PREHOOK: query: insert into ice01 (i, year, month, day) values
+(1, 2023, 10, 3),
+(2, 2023, 10, 3),
+(2, 2023, 10, 3),
+(3, 2023, 10, 4),
+(4, 2023, 10, 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice01
+POSTHOOK: query: insert into ice01 (i, year, month, day) values
+(1, 2023, 10, 3),
+(2, 2023, 10, 3),
+(2, 2023, 10, 3),
+(3, 2023, 10, 4),
+(4, 2023, 10, 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice01
+PREHOOK: query: explain
+select i from ice01 where year=2023 and month = 10 and day = 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Input: default@ice01@year=2023/month=10/day=3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select i from ice01 where year=2023 and month = 10 and day = 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Input: default@ice01@year=2023/month=10/day=3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice01
+                  filterExpr: ((year = 2023) and (month = 10) and (day = 3)) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((year = 2023) and (month = 10) and (day = 3)) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: i (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

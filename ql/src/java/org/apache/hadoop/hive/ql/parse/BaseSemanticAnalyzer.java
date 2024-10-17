@@ -1256,7 +1256,7 @@ public abstract class BaseSemanticAnalyzer {
         validatePartSpec(tableHandle, tmpPartSpec, ast, conf, false);
 
         List<FieldSchema> parts = tableHandle.getPartitionKeys();
-        if (tableHandle.getStorageHandler() != null && tableHandle.getStorageHandler().alwaysUnpartitioned()) {
+        if (tableHandle.alwaysUnpartitioned()) {
           partSpec = tmpPartSpec;
         } else {
           partSpec = new LinkedHashMap<>(partspec.getChildCount());
@@ -1269,7 +1269,7 @@ public abstract class BaseSemanticAnalyzer {
         // check if the partition spec is valid
         if (numDynParts > 0) {
           int numStaPart;
-          if (tableHandle.getStorageHandler() != null && tableHandle.getStorageHandler().alwaysUnpartitioned()) {
+          if (tableHandle.alwaysUnpartitioned()) {
             numStaPart = partSpec.size() - numDynParts;
           } else {
             numStaPart = parts.size() - numDynParts;
@@ -1281,7 +1281,7 @@ public abstract class BaseSemanticAnalyzer {
 
           // Partitions in partSpec is already checked via storage handler.
           // Hence no need to check for cases which are always unpartitioned.
-          if (tableHandle.getStorageHandler() == null || !tableHandle.getStorageHandler().alwaysUnpartitioned()) {
+          if (!tableHandle.alwaysUnpartitioned()) {
             // check the partitions in partSpec be the same as defined in table schema
             if (partSpec.keySet().size() != parts.size()) {
               ErrorPartSpec(partSpec, parts);
@@ -1314,7 +1314,7 @@ public abstract class BaseSemanticAnalyzer {
               partitions = db.getPartitions(tableHandle, partSpec);
             } else {
               // this doesn't create partition.
-              if (tableHandle.getStorageHandler() == null || !tableHandle.getStorageHandler().alwaysUnpartitioned()) {
+              if (!tableHandle.alwaysUnpartitioned()) {
                 partHandle = db.getPartition(tableHandle, partSpec, false);
               }
               if (partHandle == null) {
@@ -1706,7 +1706,7 @@ public abstract class BaseSemanticAnalyzer {
 
   public static void validatePartSpec(Table tbl, Map<String, String> partSpec,
       ASTNode astNode, HiveConf conf, boolean shouldBeFull) throws SemanticException {
-    if (tbl.getStorageHandler() != null && tbl.getStorageHandler().alwaysUnpartitioned()) {
+    if (tbl.alwaysUnpartitioned()) {
       tbl.getStorageHandler().validatePartSpec(tbl, partSpec, Context.RewritePolicy.get(conf));
     } else {
       tbl.validatePartColumnNames(partSpec, shouldBeFull);
@@ -1725,7 +1725,7 @@ public abstract class BaseSemanticAnalyzer {
    * @param partitionClausePresent Whether a partition clause is present in the query (e.g. PARTITION(last_name='Don'))
    */
   protected static void validateUnsupportedPartitionClause(Table tbl, boolean partitionClausePresent) {
-    if (partitionClausePresent && tbl.getStorageHandler() != null && tbl.getStorageHandler().alwaysUnpartitioned()) {
+    if (partitionClausePresent && tbl.alwaysUnpartitioned()) {
       throw new UnsupportedOperationException("Using partition spec in query is unsupported for non-native table" +
           " backed by: " + tbl.getStorageHandler().toString());
     }
