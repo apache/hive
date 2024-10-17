@@ -177,9 +177,6 @@ public abstract class JDBCExpandExpressionsRule extends RelOptRule {
     @Override
     public RexNode visitCall(RexCall inputCall) {
       RexNode node = super.visitCall(inputCall);
-      if (!RexUtil.isFlat(node)) {
-        node = RexUtil.flatten(rexBuilder, node);
-      }
       if (node instanceof RexCall) {
         RexCall call = (RexCall) node;
         switch (call.getKind()) {
@@ -189,7 +186,7 @@ public abstract class JDBCExpandExpressionsRule extends RelOptRule {
             break;
         }
       }
-      return node;
+      return RexUtil.isFlat(node) ? node : RexUtil.flatten(rexBuilder, node);
     }
 
     private RexNode transformIntoOrAndClause(RexBuilder rexBuilder, RexCall expression) {
