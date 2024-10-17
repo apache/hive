@@ -54,7 +54,6 @@ apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
-WARNING: Comparing decimal(5,3) and string may result in loss of information.
 PREHOOK: query: select * from newtypestbl_n5 where d='0.22'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl_n5
@@ -73,7 +72,6 @@ apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
-WARNING: Comparing decimal(5,3) and string may result in loss of information.
 PREHOOK: query: select * from newtypestbl_n5 where d='0.22'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl_n5
@@ -144,7 +142,6 @@ POSTHOOK: query: select * from newtypestbl_n5 where d!=0.22
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl_n5
 #### A masked pattern was here ####
-WARNING: Comparing decimal(5,3) and string may result in loss of information.
 PREHOOK: query: select * from newtypestbl_n5 where d!='0.22'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl_n5
@@ -153,7 +150,6 @@ POSTHOOK: query: select * from newtypestbl_n5 where d!='0.22'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl_n5
 #### A masked pattern was here ####
-WARNING: Comparing decimal(5,3) and string may result in loss of information.
 PREHOOK: query: select * from newtypestbl_n5 where d!='0.22'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl_n5
@@ -214,7 +210,6 @@ apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
-WARNING: Comparing decimal(5,3) and string may result in loss of information.
 PREHOOK: query: select * from newtypestbl_n5 where d<'11.22'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl_n5
@@ -233,7 +228,6 @@ apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
-WARNING: Comparing decimal(5,3) and string may result in loss of information.
 PREHOOK: query: select * from newtypestbl_n5 where d<'11.22'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl_n5
@@ -360,7 +354,6 @@ apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
-WARNING: Comparing decimal(5,3) and string may result in loss of information.
 PREHOOK: query: select * from newtypestbl_n5 where d<='11.22' sort by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl_n5
@@ -379,7 +372,6 @@ apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
-WARNING: Comparing decimal(5,3) and string may result in loss of information.
 PREHOOK: query: select * from newtypestbl_n5 where d<='11.22' sort by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl_n5
