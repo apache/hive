@@ -1,0 +1,27 @@
+PREHOOK: query: CREATE TABLE tbl (id INT, name STRING) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl
+POSTHOOK: query: CREATE TABLE tbl (id INT, name STRING) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl
+PREHOOK: query: INSERT INTO tbl VALUES (1, 'abc')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl
+POSTHOOK: query: INSERT INTO tbl VALUES (1, 'abc')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl
+POSTHOOK: Lineage: tbl.id SCRIPT []
+POSTHOOK: Lineage: tbl.name SCRIPT []
+PREHOOK: query: SELECT * FROM tbl
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM tbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl
+#### A masked pattern was here ####
+1	abc
