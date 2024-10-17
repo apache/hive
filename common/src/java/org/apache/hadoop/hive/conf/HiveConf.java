@@ -6670,7 +6670,7 @@ public class HiveConf extends Configuration {
     // and regex list
     String confVarPatternStr = Joiner.on("|").join(convertVarsToRegex(SQL_STD_AUTH_SAFE_VAR_NAMES));
     String regexPatternStr = Joiner.on("|").join(sqlStdAuthSafeVarNameRegexes);
-    return regexPatternStr + "|" + confVarPatternStr;
+    return regexPatternStr + "|" + confVarPatternStr + "|QUERY_EXECUTOR";
   }
 
   /**
