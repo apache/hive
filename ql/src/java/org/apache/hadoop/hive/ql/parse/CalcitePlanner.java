@@ -5602,7 +5602,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // 4. Construct SortRel
       RelOptCluster cluster = calcitePlannerAction.cluster;
       RelTraitSet traitSet = cluster.traitSetOf(HiveRelNode.CONVENTION);
-      RelCollation canonizedCollation = traitSet.canonize(RelCollationImpl.of(fieldCollations));
+      RelCollation canonizedCollation = RelCollations.of(fieldCollations);
       RelNode sortRel = new HiveSortLimit(cluster, traitSet, obInputRel, canonizedCollation, offsetRN, fetchRN);
       return endGenOBLogicalPlan(sortRel);
     }
@@ -5610,8 +5610,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     RelNode sortExchange() throws SemanticException {
       genOBProject();
 
-      RelTraitSet traitSet = calcitePlannerAction.cluster.traitSetOf(HiveRelNode.CONVENTION);
-      RelCollation canonizedCollation = traitSet.canonize(RelCollationImpl.of(fieldCollations));
+      RelCollation canonizedCollation = RelCollations.of(fieldCollations);
       ImmutableList.Builder<RexNode> builder = ImmutableList.builder();
       for (RelFieldCollation relFieldCollation : canonizedCollation.getFieldCollations()) {
         int index = relFieldCollation.getFieldIndex();
