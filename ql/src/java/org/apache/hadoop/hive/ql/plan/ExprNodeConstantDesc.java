@@ -181,7 +181,7 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
       List<?> items = (List<?>) getWritableObjectInspector().getWritableConstantValue();
       List<TypeInfo> structTypes = ((StructTypeInfo) typeInfo).getAllStructFieldTypeInfos();
       for (int i = 0; i < structTypes.size(); i++) {
-        final Object o = (i < items.size()) ? items.get(i) : null;
+        final Object o = (items != null && i < items.size()) ? items.get(i) : null;
         sb.append(getFormatted(structTypes.get(i), o)).append(",");
       }
       sb.setCharAt(sb.length() - 1, ')');
