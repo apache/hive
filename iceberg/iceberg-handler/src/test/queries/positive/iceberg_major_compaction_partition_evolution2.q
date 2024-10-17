@@ -23,6 +23,9 @@ set hive.llap.io.enabled=true;
 set hive.vectorized.execution.enabled=true;
 set hive.optimize.shared.work.merge.ts.schema=true;
 
+create database ice_comp with dbproperties('hive.compactor.worker.pool'='iceberg');
+use ice_comp;
+ 
 create table ice_orc (
     first_name string, 
     last_name string,

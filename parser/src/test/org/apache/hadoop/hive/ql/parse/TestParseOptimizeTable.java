@@ -77,4 +77,24 @@ public class TestParseOptimizeTable {
         " optimize table tbl0 rewrite data order by col01 desc", null).getTree();
     assertThat(tree.dump(), is(EXPECTED_ORDER_BY));
   }
+
+  @Test
+  public void testOptimizeTableWithPool() throws Exception {
+
+    String EXPECTED_WITH_COMPACT_POOL = "\n" +
+        "nil\n" +
+        "   TOK_ALTERTABLE\n" +
+        "      TOK_TABNAME\n" +
+        "         tbl0\n" +
+        "      TOK_ALTERTABLE_COMPACT\n" +
+        "         'MAJOR'\n" +
+        "         TOK_BLOCKING\n" +
+        "         TOK_COMPACT_POOL\n" +
+        "            'iceberg'\n" +
+        "   <EOF>\n";
+
+    ASTNode tree = parseDriver.parse(
+        " optimize table tbl0 rewrite data pool 'iceberg'", null).getTree();
+    assertThat(tree.dump(), is(EXPECTED_WITH_COMPACT_POOL));
+  }
 }

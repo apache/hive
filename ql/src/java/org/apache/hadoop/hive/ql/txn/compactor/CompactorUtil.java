@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import com.google.common.collect.Maps;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -564,5 +565,16 @@ public class CompactorUtil {
       }
     }
     return poolConf;
+  }
+
+  public static String getPoolName(HiveConf conf, Table t, MetadataCache metadataCache) throws Exception {
+    Map<String, String> params = ObjectUtils.defaultIfNull(t.getParameters(), Collections.emptyMap());
+    String poolName = params.get(Constants.HIVE_COMPACTOR_WORKER_POOL);
+    if (StringUtils.isBlank(poolName)) {
+      params = ObjectUtils.defaultIfNull(metadataCache.computeIfAbsent(t.getDbName(), 
+          () -> resolveDatabase(conf, t.getDbName())).getParameters(), Collections.emptyMap());
+      poolName = params.get(Constants.HIVE_COMPACTOR_WORKER_POOL);
+    }
+    return poolName;
   }
 }

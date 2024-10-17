@@ -141,7 +141,7 @@ public class Initiator extends MetaStoreCompactorThread {
               }
 
               Table t = metadataCache.computeIfAbsent(ci.getFullTableName(), () -> resolveTable(ci));
-              ci.poolName = getPoolName(ci, t);
+              ci.poolName = CompactorUtil.getPoolName(conf, t, metadataCache);
               Partition p = resolvePartition(ci);
               if (p == null && ci.partName != null) {
                 LOG.info("Can't find partition " + ci.getFullPartitionName() +
@@ -211,16 +211,6 @@ public class Initiator extends MetaStoreCompactorThread {
   protected boolean isCacheEnabled() {
     return MetastoreConf.getBoolVar(conf,
             MetastoreConf.ConfVars.COMPACTOR_INITIATOR_TABLECACHE_ON);
-  }
-
-  private String getPoolName(CompactionInfo ci, Table t) throws Exception {
-    Map<String, String> params = t.getParameters();
-    String poolName = params == null ? null : params.get(Constants.HIVE_COMPACTOR_WORKER_POOL);
-    if (StringUtils.isBlank(poolName)) {
-      params = metadataCache.computeIfAbsent(ci.dbname, () -> resolveDatabase(ci)).getParameters();
-      poolName = params == null ? null : params.get(Constants.HIVE_COMPACTOR_WORKER_POOL);
-    }
-    return poolName;
   }
 
   private Database resolveDatabase(CompactionInfo ci) throws MetaException, NoSuchObjectException {
