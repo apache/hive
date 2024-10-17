@@ -154,6 +154,7 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
     }
 
     job.set(InputFormatConfig.SELECTED_COLUMNS, job.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, ""));
+    job.set(InputFormatConfig.GROUPING_PARTITION_COLUMNS, job.get(TableScanDesc.GROUPING_PARTITION_COLUMNS, ""));
     job.setBoolean(InputFormatConfig.FETCH_VIRTUAL_COLUMNS,
             job.getBoolean(ColumnProjectionUtils.FETCH_VIRTUAL_COLUMNS_CONF_STR, false));
     job.set(InputFormatConfig.AS_OF_TIMESTAMP, job.get(TableScanDesc.AS_OF_TIMESTAMP, "-1"));
@@ -162,8 +163,9 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
     job.set(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF, job.get(TableScanDesc.SNAPSHOT_REF, ""));
 
     String location = job.get(InputFormatConfig.TABLE_LOCATION);
+    int numBuckets = job.getInt(TableScanDesc.GROUPING_NUM_BUCKETS, -1);
     return Arrays.stream(super.getSplits(job, numSplits))
-                 .map(split -> new HiveIcebergSplit((IcebergSplit) split, location))
+                 .map(split -> new HiveIcebergSplit((IcebergSplit) split, location, numBuckets))
                  .toArray(InputSplit[]::new);
   }
 
