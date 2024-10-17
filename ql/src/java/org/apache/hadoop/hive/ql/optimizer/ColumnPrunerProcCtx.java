@@ -359,7 +359,7 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
 
   static FieldNode lookupColumn(Collection<FieldNode> columns, String colName) {
     for (FieldNode fn : columns) {
-      if (fn.getFieldName() != null && fn.getFieldName().equals(colName)) {
+      if (fn.getFieldName() != null && fn.getFieldName().equalsIgnoreCase(colName)) {
         return fn;
       }
     }

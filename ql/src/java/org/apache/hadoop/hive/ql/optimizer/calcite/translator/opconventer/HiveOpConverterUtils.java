@@ -127,13 +127,13 @@ final class HiveOpConverterUtils {
     }
 
     // Walk over the input schema and copy in the output
-    ArrayList<ExprNodeDesc> reduceValues = new ArrayList<ExprNodeDesc>();
-    ArrayList<ExprNodeDesc> reduceValuesBack = new ArrayList<ExprNodeDesc>();
-    Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
-
     List<ColumnInfo> inputColumns = input.getSchema().getSignature();
-    ArrayList<ColumnInfo> outputColumns = new ArrayList<ColumnInfo>();
-    List<String> outputColumnNames = new ArrayList<String>();
+    ArrayList<ExprNodeDesc> reduceValues = new ArrayList<>(inputColumns.size());
+    ArrayList<ExprNodeDesc> reduceValuesBack = new ArrayList<>(inputColumns.size());
+    Map<String, ExprNodeDesc> colExprMap = new HashMap<>(inputColumns.size());
+
+    Map<String, ColumnInfo> outputColumns = new HashMap<>(inputColumns.size());
+    List<String> outputColumnNames = new ArrayList<>(inputColumns.size());
     int[] index = new int[inputColumns.size()];
     for (int i = 0; i < inputColumns.size(); i++) {
       ColumnInfo colInfo = inputColumns.get(i);
@@ -148,7 +148,7 @@ final class HiveOpConverterUtils {
         newColInfo.setInternalName(Utilities.ReduceField.KEY + ".reducesinkkey" + kindex);
         newColInfo.setAlias(outputColName);
         newColInfo.setTabAlias(tableAlias);
-        outputColumns.add(newColInfo);
+        outputColumns.put(newColInfo.getInternalName(), newColInfo);
         index[i] = kindex;
         continue;
       }
@@ -167,13 +167,13 @@ final class HiveOpConverterUtils {
       newColInfo.setAlias(outputColName);
       newColInfo.setTabAlias(tableAlias);
 
-      outputColumns.add(newColInfo);
+      outputColumns.put(newColInfo.getInternalName(), newColInfo);
       outputColumnNames.add(outputColName);
     }
     dummy.setParentOperators(null);
 
     // Use only 1 reducer if no reduce keys
-    if (reduceKeys.size() == 0) {
+    if (reduceKeys.isEmpty()) {
       numReducers = 1;
 
       // Cartesian product is not supported in strict mode
@@ -193,7 +193,7 @@ final class HiveOpConverterUtils {
     }
 
     ReduceSinkOperator rsOp = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(
-        rsDesc, new RowSchema(outputColumns), input);
+        rsDesc, new RowSchema(new ArrayList<>(outputColumns.values())), input);
 
     List<String> keyColNames = rsDesc.getOutputKeyColumnNames();
     for (int i = 0; i < keyColNames.size(); i++) {
