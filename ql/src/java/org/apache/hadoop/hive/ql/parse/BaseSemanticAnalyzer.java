@@ -1314,9 +1314,7 @@ public abstract class BaseSemanticAnalyzer {
               partitions = db.getPartitions(tableHandle, partSpec);
             } else {
               // this doesn't create partition.
-              if (!tableHandle.alwaysUnpartitioned()) {
-                partHandle = db.getPartition(tableHandle, partSpec, false);
-              }
+              partHandle = db.getPartition(tableHandle, partSpec);
               if (partHandle == null) {
                 // if partSpec doesn't exists in DB, return a delegate one
                 // and the actual partition is created in MoveTask

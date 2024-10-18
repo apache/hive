@@ -429,8 +429,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public boolean canProvidePartitionStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    Map<String, String> summary = table.currentSnapshot().summary();
-    if (summary != null) {
+    if (table.currentSnapshot() != null) {
+      Map<String, String> summary = table.currentSnapshot().summary();
       return Boolean.parseBoolean(summary.get(SnapshotSummary.PARTITION_SUMMARY_PROP));
     }
     return false;
@@ -2022,8 +2022,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
               hasUndergonePartitionEvolution(hmsTable)) {
       return false;
     }
-    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    return table.spec().isPartitioned();
+    // Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    // return table.spec().isPartitioned();
+    return false;
   }
 
   @Override
