@@ -106,6 +106,8 @@ public class HBaseTestSetup extends QTestSetup {
         "org.apache.hadoop.hbase.shaded.");
 
     Configuration hbaseConf = HBaseConfiguration.create(conf);
+    // A workaround for HBASE-28908
+    hbaseConf.set("hbase.wal.provider", "filesystem");
     util = new HBaseTestingUtility(hbaseConf);
 
     util.startMiniDFSCluster(1);
