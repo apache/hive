@@ -165,6 +165,11 @@
 </property>
 
 <property>
+  <name>hive.lock.sleep.between.retries</name>
+  <value>2</value>
+</property>
+
+<property>
   <name>fs.pfile.impl</name>
   <value>org.apache.hadoop.fs.ProxyLocalFileSystem</value>
   <description>A proxy for local file system used for cross file system testing</description>

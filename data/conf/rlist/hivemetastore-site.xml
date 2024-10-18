@@ -32,4 +32,9 @@
   <description>Using dummy param to test server specific configuration</description>
 </property>
 
+<property>
+  <name>metastore.lock.sleep.between.retries</name>
+  <value>2</value>
+</property>
+
 </configuration>
