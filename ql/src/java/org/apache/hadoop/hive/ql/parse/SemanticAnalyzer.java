@@ -4471,7 +4471,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private List<Long> getGroupingSetsForRollup(int size) {
+  public static List<Long> getGroupingSetsForRollup(int size) {
     List<Long> groupingSetKeys = new ArrayList<Long>();
     for (int i = 0; i <= size; i++) {
       groupingSetKeys.add((1L << i) - 1);
@@ -4479,7 +4479,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return groupingSetKeys;
   }
 
-  private List<Long> getGroupingSetsForCube(int size) {
+  public static List<Long> getGroupingSetsForCube(int size) {
     long count = 1L << size;
     List<Long> results = new ArrayList<Long>();
     for (long i = 0; i < count; ++i) {
@@ -4567,7 +4567,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return bitmap | (1L << bitIdx);
   }
 
-  private long unsetBit(long bitmap, int bitIdx) {
+  public static long unsetBit(long bitmap, int bitIdx) {
     return bitmap & ~(1L << bitIdx);
   }
 

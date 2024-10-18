@@ -247,6 +247,7 @@ class JoinVisitor extends HiveRelNodeVisitor<RelNode> {
       filtersPerInput.add(new ArrayList<ExprNodeDesc>());
     }
     // 3. We populate the filters structure
+    List<ExprNodeDesc> residualFilters = new ArrayList<>(filterExpressions.size());
     for (int i=0; i<filterExpressions.size(); i++) {
       int leftPos = joinCondns[i].getLeft();
       int rightPos = joinCondns[i].getRight();
@@ -255,19 +256,25 @@ class JoinVisitor extends HiveRelNodeVisitor<RelNode> {
         // We need to update the exprNode, as currently
         // they refer to columns in the output of the join;
         // they should refer to the columns output by the RS
-        int inputPos = updateExprNode(expr, reversedExprs, colExprMap);
-        if (inputPos == -1) {
-          inputPos = leftPos;
-        }
-        filtersPerInput.get(inputPos).add(expr);
-
-        if (joinCondns[i].getType() == JoinDesc.FULL_OUTER_JOIN ||
-                joinCondns[i].getType() == JoinDesc.LEFT_OUTER_JOIN ||
-                joinCondns[i].getType() == JoinDesc.RIGHT_OUTER_JOIN) {
-          if (inputPos == leftPos) {
-            updateFilterMap(filterMap, leftPos, rightPos);
+        Set<Integer> inputPositions = getInputOfColumnRefs(expr, reversedExprs);
+        if (inputPositions.size() > 1) {
+          residualFilters.add(expr);
+        } else {
+          int inputPos;
+          if (inputPositions.isEmpty()) {
+            inputPos = leftPos;
           } else {
-            updateFilterMap(filterMap, rightPos, leftPos);
+            inputPos = inputPositions.iterator().next();
+          }
+          filtersPerInput.get(inputPos).add(expr);
+          if (joinCondns[i].getType() == JoinDesc.FULL_OUTER_JOIN ||
+              joinCondns[i].getType() == JoinDesc.LEFT_OUTER_JOIN ||
+              joinCondns[i].getType() == JoinDesc.RIGHT_OUTER_JOIN) {
+            if (inputPos == leftPos) {
+              updateFilterMap(filterMap, leftPos, rightPos);
+            } else {
+              updateFilterMap(filterMap, rightPos, leftPos);
+            }
           }
         }
       }
@@ -283,6 +290,7 @@ class JoinVisitor extends HiveRelNodeVisitor<RelNode> {
     JoinDesc desc = new JoinDesc(exprMap, outputColumnNames, noOuterJoin, joinCondns, filters, joinExpressions, null);
     desc.setReversedExprs(reversedExprs);
     desc.setFilterMap(filterMap);
+    desc.setResidualFilterExprs(residualFilters);
 
     JoinOperator joinOp = (JoinOperator) OperatorFactory.getAndMakeChild(
         childOps[0].getCompilationOpContext(), desc, new RowSchema(outputColumns), childOps);
@@ -316,49 +324,27 @@ class JoinVisitor extends HiveRelNodeVisitor<RelNode> {
   }
 
   /*
-   * This method updates the input expr, changing all the
-   * ExprNodeColumnDesc in it to refer to columns given by the
-   * colExprMap.
-   *
-   * For instance, "col_0 = 1" would become "VALUE.col_0 = 1";
-   * the execution engine expects filters in the Join operators
-   * to be expressed that way.
+   * Check all the column references in the specified expression and return which side of the join
+   * is the input of the column based on the specified reversedExprs
    */
-  private int updateExprNode(ExprNodeDesc expr, final Map<String, Byte> reversedExprs,
-      final Map<String, ExprNodeDesc> colExprMap) throws SemanticException {
-    int inputPos = -1;
+  private Set<Integer> getInputOfColumnRefs(ExprNodeDesc expr, final Map<String, Byte> reversedExprs) {
+    Set<Integer> inputPositions = new HashSet<>(2);
     if (expr instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc func = (ExprNodeGenericFuncDesc) expr;
-      List<ExprNodeDesc> newChildren = new ArrayList<ExprNodeDesc>();
       for (ExprNodeDesc functionChild : func.getChildren()) {
         if (functionChild instanceof ExprNodeColumnDesc) {
           String colRef = functionChild.getExprString();
           int pos = reversedExprs.get(colRef);
           if (pos != -1) {
-            if (inputPos == -1) {
-              inputPos = pos;
-            } else if (inputPos != pos) {
-              throw new SemanticException(
-                  "UpdateExprNode is expecting only one position for join operator convert. But there are more than one.");
-            }
+              inputPositions.add(pos);
           }
-          newChildren.add(colExprMap.get(colRef));
         } else {
-          int pos = updateExprNode(functionChild, reversedExprs, colExprMap);
-          if (pos != -1) {
-            if (inputPos == -1) {
-              inputPos = pos;
-            } else if (inputPos != pos) {
-              throw new SemanticException(
-                  "UpdateExprNode is expecting only one position for join operator convert. But there are more than one.");
-            }
-          }
-          newChildren.add(functionChild);
+          Set<Integer> positions = getInputOfColumnRefs(functionChild, reversedExprs);
+          inputPositions.addAll(positions);
         }
       }
-      func.setChildren(newChildren);
     }
-    return inputPos;
+    return inputPositions;
   }
 
   private void updateFilterMap(int[][] filterMap, int inputPos, int joinPos) {
