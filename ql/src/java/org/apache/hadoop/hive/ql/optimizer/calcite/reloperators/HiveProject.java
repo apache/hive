@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelCollation;
@@ -29,6 +30,7 @@ import org.apache.calcite.rel.RelShuttle;
 import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlExplainLevel;
@@ -37,9 +39,12 @@ import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.correlation.CorrelationInfoVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.correlation.HiveCorrelationInfo;
+
+import static org.apache.hadoop.hive.ql.optimizer.calcite.Bug.CALCITE_VERSION;
 
 public class HiveProject extends Project implements HiveRelNode {
 
@@ -138,6 +143,18 @@ public class HiveProject extends Project implements HiveRelNode {
 
   @Override
   public RelWriter explainTerms(RelWriter pw) {
+    // Remove this if block after upgrading Calcite to 1.35+
+    if (CALCITE_VERSION < 35 
+        && pw.getDetailLevel() == SqlExplainLevel.ALL_ATTRIBUTES && getDigest().contains("SEARCH")) {
+      return ((HiveProject) this.accept(
+          RexUtil.searchShuttle(
+              new RexBuilder(new JavaTypeFactoryImpl(new HiveTypeSystemImpl())),
+              null,
+              -1
+          )
+      )).explainTerms(pw);
+    }
+    
     return super.explainTerms(pw)
         .itemIf("synthetic", this.isSysnthetic, pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES);
   }

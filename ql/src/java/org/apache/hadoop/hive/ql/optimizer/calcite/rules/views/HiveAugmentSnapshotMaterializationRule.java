@@ -29,13 +29,13 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
-import org.apache.calcite.util.ImmutableBeans;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.BaseMutableHiveConfig;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 
 import java.util.HashSet;
@@ -69,7 +69,7 @@ import static java.util.Collections.singletonList;
 public class HiveAugmentSnapshotMaterializationRule extends RelRule<HiveAugmentSnapshotMaterializationRule.Config> {
 
   public static RelOptRule with(Map<String, SnapshotContext> mvMetaStoredSnapshot) {
-    return RelRule.Config.EMPTY.as(HiveAugmentSnapshotMaterializationRule.Config.class)
+    return new Config().as(HiveAugmentSnapshotMaterializationRule.Config.class)
             .withMvMetaStoredSnapshot(mvMetaStoredSnapshot)
             .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
             .withOperandSupplier(operandBuilder -> operandBuilder.operand(TableScan.class).anyInputs())
@@ -77,15 +77,22 @@ public class HiveAugmentSnapshotMaterializationRule extends RelRule<HiveAugmentS
             .toRule();
   }
 
-  public interface Config extends RelRule.Config {
+  public static class Config extends BaseMutableHiveConfig {
 
-    HiveAugmentSnapshotMaterializationRule.Config withMvMetaStoredSnapshot(
-            Map<String, SnapshotContext> mvMetaStoredSnapshot);
+    private Map<String, SnapshotContext> mvMetaStoredSnapshot;
 
-    @ImmutableBeans.Property
-    Map<String, SnapshotContext> getMvMetaStoredSnapshot();
+    public HiveAugmentSnapshotMaterializationRule.Config withMvMetaStoredSnapshot(
+            Map<String, SnapshotContext> mvMetaStoredSnapshot) {
+      this.mvMetaStoredSnapshot = mvMetaStoredSnapshot;
+      return this;
+    }
 
-    @Override default HiveAugmentSnapshotMaterializationRule toRule() {
+    public Map<String, SnapshotContext> getMvMetaStoredSnapshot() {
+      return mvMetaStoredSnapshot;
+    }
+
+    @Override
+    public HiveAugmentSnapshotMaterializationRule toRule() {
       return new HiveAugmentSnapshotMaterializationRule(this);
     }
   }

@@ -19,16 +19,18 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
+import com.google.common.collect.Range;
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelFieldCollation;
@@ -60,6 +62,7 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
+import org.apache.calcite.rex.RexUnknownAs;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.rex.RexWindow;
@@ -69,15 +72,16 @@ import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.calcite.util.Sarg;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveValues;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter;
@@ -93,6 +97,7 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.slf4j.Logger;
@@ -101,6 +106,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Iterables;
 
 import static org.apache.calcite.rel.core.Values.isEmpty;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil.transformOrToInAndInequalityToBetween;
 
 public class ASTConverter {
   private static final Logger LOG = LoggerFactory.getLogger(ASTConverter.class);
@@ -858,6 +864,12 @@ public class ASTConverter {
     @Override
     public ASTNode visitLiteral(RexLiteral literal) {
 
+      if (!RexUtil.isNull(literal) && literal.getType().isStruct()) {
+        return rexBuilder
+            .makeCall(SqlStdOperatorTable.ROW, (List<? extends RexNode>) literal.getValue())
+            .accept(this);
+      }
+
       if (RexUtil.isNull(literal) && literal.getType().getSqlTypeName() != SqlTypeName.NULL
           && rexBuilder != null) {
         // It is NULL value with different type, we need to introduce a CAST
@@ -1056,9 +1068,17 @@ public class ASTConverter {
         return SqlFunctionConverter.buildAST(SqlStdOperatorTable.NOT,
           Collections.singletonList(SqlFunctionConverter.buildAST(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, astNodeLst, call.getType())), call.getType());
       case CAST:
-        assert(call.getOperands().size() == 1);
+        if (call.getOperands().size() != 1) {
+          throw new IllegalArgumentException("CASTs should have only 1 operand");
+        }
+        RexNode castOperand = call.getOperands().get(0);
+        
+        // Extract RexNode out of CAST when it's not a literal and the types are equal
+        if (!(castOperand instanceof RexLiteral) && call.getType().equals(castOperand.getType())) {
+          return castOperand.accept(this);
+        }
         astNodeLst.add(convertType(call.getType()));
-        astNodeLst.add(call.getOperands().get(0).accept(this));
+        astNodeLst.add(castOperand.accept(this));
         break;
       case EXTRACT:
         // Extract on date: special handling since function in Hive does
@@ -1067,6 +1087,49 @@ public class ASTConverter {
         // proceed correctly if we just ignore the <time_unit>
         astNodeLst.add(call.operands.get(1).accept(this));
         break;
+      case SEARCH:
+        ASTNode astNode = call.getOperands().get(0).accept(this);
+        astNodeLst.add(astNode);
+        RexLiteral literal = (RexLiteral) call.operands.get(1);
+        Sarg<?> sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
+        int minOrClauses = SessionState.getSessionConf().getIntVar(HiveConf.ConfVars.HIVE_POINT_LOOKUP_OPTIMIZER_MIN);
+
+        // convert Sarg to IN when they are points.
+        if (sarg.isPoints()) {
+          // just expand SEARCH to ORs when point count is less than HIVE_POINT_LOOKUP_OPTIMIZER_MIN
+          if (sarg.pointCount < minOrClauses) {
+            return visitCall((RexCall) call.accept(RexUtil.searchShuttle(rexBuilder, null, -1)));
+          }
+
+          // else convert to IN
+          for (Range<?> range : sarg.rangeSet.asRanges()) {
+            astNodeLst.add(visitLiteral((RexLiteral) rexBuilder.makeLiteral(
+                    range.lowerEndpoint(), literal.getType(), true, true)));
+          }
+          ASTNode inAST = SqlFunctionConverter.buildAST(HiveIn.INSTANCE, astNodeLst, call.getType());
+
+          if (sarg.nullAs == RexUnknownAs.UNKNOWN) {
+            return inAST;
+          } else if (sarg.nullAs == RexUnknownAs.TRUE) {
+            ASTNode isNull =
+                visitCall((RexCall) rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, call.getOperands().get(0)));
+            return SqlFunctionConverter.buildAST(SqlStdOperatorTable.OR, Arrays.asList(isNull, inAST), call.getType());
+          } else {
+            ASTNode isNotNull =
+                visitCall((RexCall) rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, call.getOperands().get(0)));
+            return SqlFunctionConverter
+                .buildAST(SqlStdOperatorTable.AND, Arrays.asList(isNotNull, inAST), call.getType());
+          }
+
+          // Expand SEARCH operator
+        } else {
+          return visitCall((RexCall) transformOrToInAndInequalityToBetween(
+                  rexBuilder,
+                  call.accept(RexUtil.searchShuttle(rexBuilder, null, -1)),
+                  minOrClauses
+              )
+          );
+        }
       case FLOOR:
         if (call.operands.size() == 2) {
           // Floor on date: special handling since function in Hive does
