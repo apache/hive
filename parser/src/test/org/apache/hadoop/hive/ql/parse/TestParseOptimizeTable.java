@@ -28,7 +28,7 @@ public class TestParseOptimizeTable {
   @Test
   public void testOptimizeTableWithWhere() throws Exception {
 
-    String EXPECTED_WHERE_FILTER = "\n" +
+    String expectedWhereFilter = "\n" +
         "nil\n" +
         "   TOK_ALTERTABLE\n" +
         "      TOK_TABNAME\n" +
@@ -52,13 +52,13 @@ public class TestParseOptimizeTable {
 
     ASTNode tree = parseDriver.parse(
         " optimize table tbl0 rewrite data where (col01 in ('A', 'B') and col02 < '2024-09-17 00:00:00')", null).getTree();
-    assertThat(tree.dump(), is(EXPECTED_WHERE_FILTER));
+    assertThat(tree.dump(), is(expectedWhereFilter));
   }
 
   @Test
   public void testOptimizeTableWithOrderBy() throws Exception {
 
-    String EXPECTED_ORDER_BY = "\n" +
+    String expectedOrderBy = "\n" +
         "nil\n" +
         "   TOK_ALTERTABLE\n" +
         "      TOK_TABNAME\n" +
@@ -75,6 +75,26 @@ public class TestParseOptimizeTable {
     
     ASTNode tree = parseDriver.parse(
         " optimize table tbl0 rewrite data order by col01 desc", null).getTree();
-    assertThat(tree.dump(), is(EXPECTED_ORDER_BY));
+    assertThat(tree.dump(), is(expectedOrderBy));
+  }
+
+  @Test
+  public void testOptimizeTableWithPool() throws Exception {
+
+    String expectedWithCompactPool = "\n" +
+        "nil\n" +
+        "   TOK_ALTERTABLE\n" +
+        "      TOK_TABNAME\n" +
+        "         tbl0\n" +
+        "      TOK_ALTERTABLE_COMPACT\n" +
+        "         'MAJOR'\n" +
+        "         TOK_BLOCKING\n" +
+        "         TOK_COMPACT_POOL\n" +
+        "            'iceberg'\n" +
+        "   <EOF>\n";
+
+    ASTNode tree = parseDriver.parse(
+        " optimize table tbl0 rewrite data pool 'iceberg'", null).getTree();
+    assertThat(tree.dump(), is(expectedWithCompactPool));
   }
 }
