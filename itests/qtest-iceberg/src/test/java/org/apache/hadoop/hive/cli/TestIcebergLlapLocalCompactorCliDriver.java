@@ -41,8 +41,8 @@ public class TestIcebergLlapLocalCompactorCliDriver {
 
   static CliAdapter adapter = new CliConfigs.IcebergLlapLocalCompactorCliConfig().getCliAdapter();
   private static final AtomicBoolean stop = new AtomicBoolean();
-  private static final String defaultPoolName = null;
-  private static final String icebergPoolName = "iceberg";
+  private static final String DEFAULT_POOL_NAME = null;
+  private static final String ICEBERG_POOL_NAME = "iceberg";
   private static Worker worker;
 
   @Parameters(name ="{0}")
@@ -52,8 +52,8 @@ public class TestIcebergLlapLocalCompactorCliDriver {
 
   @BeforeClass
   public static void setup() throws Exception {
-    setupWorker(defaultPoolName);
-    setupWorker(icebergPoolName);
+    setupWorker(DEFAULT_POOL_NAME);
+    setupWorker(ICEBERG_POOL_NAME);
   }
   
   private static void setupWorker(String poolName) throws Exception {
