@@ -61,7 +61,7 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 500 Data size: 42500 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: count(1)
+                      aggregations: count()
                       keys: _col0 (type: string)
                       minReductionHashAggr: 0.99
                       mode: hash
@@ -86,7 +86,7 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 500 Data size: 92000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: count(1)
+                      aggregations: count()
                       keys: _col0 (type: string)
                       minReductionHashAggr: 0.99
                       mode: hash
@@ -111,7 +111,7 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: count(1)
+                      aggregations: count()
                       keys: _col0 (type: string)
                       minReductionHashAggr: 0.99
                       mode: hash
@@ -136,7 +136,7 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 11 Data size: 2024 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
+                      aggregations: count()
                       keys: _col0 (type: string)
                       minReductionHashAggr: 0.99
                       mode: hash
@@ -161,7 +161,7 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 11 Data size: 21120 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
+                      aggregations: count()
                       keys: _col0 (type: string)
                       minReductionHashAggr: 0.99
                       mode: hash
