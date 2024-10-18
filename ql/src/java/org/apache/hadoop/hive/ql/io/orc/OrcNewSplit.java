@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.io.WritableUtils;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.orc.OrcProto;
+import org.apache.orc.impl.BufferChunk;
 import org.apache.orc.impl.OrcTail;
 
 /**
@@ -101,7 +102,7 @@ public class OrcNewSplit extends FileSplit {
       byte[] tailBuffer = new byte[tailLen];
       in.readFully(tailBuffer);
       OrcProto.FileTail fileTail = OrcProto.FileTail.parseFrom(tailBuffer);
-      orcTail = new OrcTail(fileTail, null);
+      orcTail = new OrcTail(fileTail, new BufferChunk(0, 0), -1);
     }
   }
 
