@@ -22,31 +22,36 @@ import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 
 import com.google.common.collect.ImmutableList;
 
-public class HiveFilterSortTransposeRule extends RelOptRule {
+import static java.util.Collections.singletonList;
 
-  public static final HiveFilterSortTransposeRule INSTANCE =
-      new HiveFilterSortTransposeRule();
+public class HiveFilterSortTransposeRule<T extends RelNode> extends RelOptRule {
+
+  public static final HiveFilterSortTransposeRule<HiveSortLimit> SORT_LIMIT_INSTANCE =
+      new HiveFilterSortTransposeRule<>(HiveSortLimit.class);
+  public static final HiveFilterSortTransposeRule<HiveSortExchange> SORT_EXCHANGE_INSTANCE =
+      new HiveFilterSortTransposeRule<>(HiveSortExchange.class);
 
   //~ Constructors -----------------------------------------------------------
 
   /**
    * Creates a HiveFilterSortTransposeRule.
    */
-  private HiveFilterSortTransposeRule() {
+  private HiveFilterSortTransposeRule(Class<T> clazz) {
     super(
         operand(
             HiveFilter.class,
-            operand(HiveSortLimit.class, any())));
+            operand(clazz, any())));
   }
 
   //~ Methods ----------------------------------------------------------------
 
   public boolean matches(RelOptRuleCall call) {
-    final HiveSortLimit sort = call.rel(1);
+    final T sort = call.rel(1);
 
     // If sort contains a limit operation, we bail out
     if (HiveCalciteUtil.limitRelNode(sort)) {
@@ -58,14 +63,12 @@ public class HiveFilterSortTransposeRule extends RelOptRule {
 
   public void onMatch(RelOptRuleCall call) {
     final HiveFilter filter = call.rel(0);
-    final HiveSortLimit sort = call.rel(1);
+    final T sort = call.rel(1);
 
-    final RelNode newFilter = filter.copy(sort.getInput().getTraitSet(),
-            ImmutableList.<RelNode>of(sort.getInput()));
-    final HiveSortLimit newSort = sort.copy(sort.getTraitSet(),
-            newFilter, sort.collation, sort.offset, sort.fetch);
+    final RelNode newFilter = filter.copy(sort.getInput(0).getTraitSet(),
+            ImmutableList.of(sort.getInput(0)));
+    final RelNode newSort = sort.copy(sort.getTraitSet(), singletonList(newFilter));
 
     call.transformTo(newSort);
   }
-
 }
