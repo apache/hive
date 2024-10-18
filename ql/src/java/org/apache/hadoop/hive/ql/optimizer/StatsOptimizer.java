@@ -932,7 +932,7 @@ public class StatsOptimizer extends Transform {
     private Long getRowCnt(
         ParseContext pCtx, TableScanOperator tsOp, Table tbl) throws HiveException {
       Long rowCnt = 0L;
-      if (tbl.isPartitioned()) {
+      if (tbl.isPartitioned() && StatsUtils.checkCanProvidePartitionStats(tbl)) {
         for (Partition part : pctx.getPrunedPartitions(
             tsOp.getConf().getAlias(), tsOp).getPartitions()) {
           if (!StatsUtils.areBasicStatsUptoDateForQueryAnswering(part.getTable(), part.getParameters())) {

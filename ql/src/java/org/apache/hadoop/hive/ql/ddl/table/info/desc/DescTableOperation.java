@@ -150,11 +150,13 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
 
     // Fetch partition statistics only for describe extended or formatted.
     if (desc.isExtended() || desc.isFormatted()) {
-      boolean disablePartitionStats = HiveConf.getBoolVar(context.getConf(), HiveConf.ConfVars.HIVE_DESCRIBE_PARTITIONED_TABLE_IGNORE_STATS);
+      boolean disablePartitionStats = table.alwaysUnpartitioned() || 
+          HiveConf.getBoolVar(context.getConf(), HiveConf.ConfVars.HIVE_DESCRIBE_PARTITIONED_TABLE_IGNORE_STATS);
+      
       if (table.isPartitioned() && partition == null && !disablePartitionStats) {
         // No partition specified for partitioned table, lets fetch all.
         Map<String, String> tblProps = table.getParameters() == null ?
-                new HashMap<String, String>() : table.getParameters();
+            new HashMap<>() : table.getParameters();
 
         Map<String, Long> valueMap = new HashMap<>();
         Map<String, Boolean> stateMap = new HashMap<>();
@@ -164,7 +166,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
         }
 
         PartitionIterable partitions = new PartitionIterable(context.getDb(), table, null,
-                MetastoreConf.getIntVar(context.getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX));
+            MetastoreConf.getIntVar(context.getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX));
         int numParts = 0;
         for (Partition p : partitions) {
           Map<String, String> partitionProps = p.getParameters();
@@ -190,16 +192,16 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
 
   private void getColumnDataColPathSpecified(Table table, Partition part, List<FieldSchema> cols,
       List<ColumnStatisticsObj> colStats, Deserializer deserializer)
-      throws SemanticException, HiveException, MetaException {
+      throws HiveException, MetaException {
     // when column name is specified in describe table DDL, colPath will be db_name.table_name.column_name
     String colName = desc.getColumnPath().split("\\.")[2];
     List<String> colNames = Lists.newArrayList(colName.toLowerCase());
 
     TableName tableName = HiveTableName.of(desc.getDbTableName());
     if (null == part) {
-      if (table.isPartitioned()) {
+      if (table.isPartitioned() && !table.alwaysUnpartitioned()) {
         Map<String, String> tableProps = table.getParameters() == null ?
-            new HashMap<String, String>() : table.getParameters();
+            new HashMap<>() : table.getParameters();
         if (table.isPartitionKey(colNames.get(0))) {
           getColumnDataForPartitionKeyColumn(table, cols, colStats, colNames, tableProps);
         } else {

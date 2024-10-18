@@ -103,41 +103,57 @@ POSTHOOK: Output: default@ice_orc
 PREHOOK: query: update ice_orc set last_name = 'ln1a' where first_name='fn1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc
+PREHOOK: Input: default@ice_orc@company_id=100/dept_id=2/team_id=21
 PREHOOK: Output: default@ice_orc
 PREHOOK: Output: default@ice_orc
 POSTHOOK: query: update ice_orc set last_name = 'ln1a' where first_name='fn1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc
+POSTHOOK: Input: default@ice_orc@company_id=100/dept_id=2/team_id=21
 POSTHOOK: Output: default@ice_orc
 POSTHOOK: Output: default@ice_orc
 PREHOOK: query: update ice_orc set last_name = 'ln2a' where first_name='fn2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc
+PREHOOK: Input: default@ice_orc@company_id=100/dept_id=1/team_id=10
+PREHOOK: Input: default@ice_orc@company_id=100/dept_id=2/team_id=21
 PREHOOK: Output: default@ice_orc
 PREHOOK: Output: default@ice_orc
 POSTHOOK: query: update ice_orc set last_name = 'ln2a' where first_name='fn2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc
+POSTHOOK: Input: default@ice_orc@company_id=100/dept_id=1/team_id=10
+POSTHOOK: Input: default@ice_orc@company_id=100/dept_id=2/team_id=21
 POSTHOOK: Output: default@ice_orc
 POSTHOOK: Output: default@ice_orc
 PREHOOK: query: update ice_orc set last_name = 'ln3a' where first_name='fn3'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc
+PREHOOK: Input: default@ice_orc@company_id=100/dept_id=1/team_id=10
+PREHOOK: Input: default@ice_orc@company_id=100/dept_id=2/team_id=21
 PREHOOK: Output: default@ice_orc
 PREHOOK: Output: default@ice_orc
 POSTHOOK: query: update ice_orc set last_name = 'ln3a' where first_name='fn3'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc
+POSTHOOK: Input: default@ice_orc@company_id=100/dept_id=1/team_id=10
+POSTHOOK: Input: default@ice_orc@company_id=100/dept_id=2/team_id=21
 POSTHOOK: Output: default@ice_orc
 POSTHOOK: Output: default@ice_orc
 PREHOOK: query: update ice_orc set last_name = 'ln4a' where first_name='fn4'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc
+PREHOOK: Input: default@ice_orc@company_id=100/dept_id=1/team_id=10
+PREHOOK: Input: default@ice_orc@company_id=100/dept_id=1/team_id=11
+PREHOOK: Input: default@ice_orc@company_id=100/dept_id=2/team_id=21
 PREHOOK: Output: default@ice_orc
 PREHOOK: Output: default@ice_orc
 POSTHOOK: query: update ice_orc set last_name = 'ln4a' where first_name='fn4'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc
+POSTHOOK: Input: default@ice_orc@company_id=100/dept_id=1/team_id=10
+POSTHOOK: Input: default@ice_orc@company_id=100/dept_id=1/team_id=11
+POSTHOOK: Input: default@ice_orc@company_id=100/dept_id=2/team_id=21
 POSTHOOK: Output: default@ice_orc
 POSTHOOK: Output: default@ice_orc
 PREHOOK: query: alter table ice_orc set partition spec(company_id, dept_id)
@@ -150,41 +166,57 @@ POSTHOOK: Output: default@ice_orc
 PREHOOK: query: update ice_orc set last_name = 'ln5a' where first_name='fn5'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc
+PREHOOK: Input: default@ice_orc@company_id=100/dept_id=1
+PREHOOK: Input: default@ice_orc@company_id=100/dept_id=2
 PREHOOK: Output: default@ice_orc
 PREHOOK: Output: default@ice_orc
 POSTHOOK: query: update ice_orc set last_name = 'ln5a' where first_name='fn5'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc
+POSTHOOK: Input: default@ice_orc@company_id=100/dept_id=1
+POSTHOOK: Input: default@ice_orc@company_id=100/dept_id=2
 POSTHOOK: Output: default@ice_orc
 POSTHOOK: Output: default@ice_orc
 PREHOOK: query: update ice_orc set last_name = 'ln6a' where first_name='fn6'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc
+PREHOOK: Input: default@ice_orc@company_id=100/dept_id=1
+PREHOOK: Input: default@ice_orc@company_id=100/dept_id=2
 PREHOOK: Output: default@ice_orc
 PREHOOK: Output: default@ice_orc
 POSTHOOK: query: update ice_orc set last_name = 'ln6a' where first_name='fn6'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc
+POSTHOOK: Input: default@ice_orc@company_id=100/dept_id=1
+POSTHOOK: Input: default@ice_orc@company_id=100/dept_id=2
 POSTHOOK: Output: default@ice_orc
 POSTHOOK: Output: default@ice_orc
 PREHOOK: query: update ice_orc set last_name = 'ln7a' where first_name='fn7'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc
+PREHOOK: Input: default@ice_orc@company_id=100/dept_id=1
+PREHOOK: Input: default@ice_orc@company_id=100/dept_id=2
 PREHOOK: Output: default@ice_orc
 PREHOOK: Output: default@ice_orc
 POSTHOOK: query: update ice_orc set last_name = 'ln7a' where first_name='fn7'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc
+POSTHOOK: Input: default@ice_orc@company_id=100/dept_id=1
+POSTHOOK: Input: default@ice_orc@company_id=100/dept_id=2
 POSTHOOK: Output: default@ice_orc
 POSTHOOK: Output: default@ice_orc
 PREHOOK: query: update ice_orc set last_name = 'ln8a' where first_name='fn8'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc
+PREHOOK: Input: default@ice_orc@company_id=100/dept_id=1
+PREHOOK: Input: default@ice_orc@company_id=100/dept_id=2
 PREHOOK: Output: default@ice_orc
 PREHOOK: Output: default@ice_orc
 POSTHOOK: query: update ice_orc set last_name = 'ln8a' where first_name='fn8'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc
+POSTHOOK: Input: default@ice_orc@company_id=100/dept_id=1
+POSTHOOK: Input: default@ice_orc@company_id=100/dept_id=2
 POSTHOOK: Output: default@ice_orc
 POSTHOOK: Output: default@ice_orc
 PREHOOK: query: delete from ice_orc where last_name in ('ln1a', 'ln8a')

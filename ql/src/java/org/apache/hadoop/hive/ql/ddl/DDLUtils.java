@@ -204,9 +204,8 @@ public final class DDLUtils {
           HiveConf conf, Table tbl) {
     Optional<List<FieldSchema>> cols = Optional.ofNullable(columns);
     Optional<List<FieldSchema>> partCols = Optional.ofNullable(partitionColumns);
-    HiveStorageHandler storageHandler = tbl.getStorageHandler();
-
-    if (storageHandler != null && storageHandler.alwaysUnpartitioned()) {
+    
+    if (tbl.alwaysUnpartitioned()) {
       tbl.getSd().setCols(new ArrayList<>());
       cols.ifPresent(c -> tbl.getSd().getCols().addAll(c));
       if (partCols.isPresent() && !partCols.get().isEmpty()) {

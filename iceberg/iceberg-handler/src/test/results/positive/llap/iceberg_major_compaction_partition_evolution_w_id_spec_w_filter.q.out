@@ -128,26 +128,50 @@ POSTHOOK: Output: default@ice_orc
 PREHOOK: query: delete from ice_orc where last_name in ('ln1', 'ln9')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc
+PREHOOK: Input: default@ice_orc@company_id=100/dept_id=1
+PREHOOK: Input: default@ice_orc@company_id=100/dept_id=2
+PREHOOK: Input: default@ice_orc@company_id=100/dept_id=3
+PREHOOK: Input: default@ice_orc@company_id=100/dept_id=4
 PREHOOK: Output: default@ice_orc
 POSTHOOK: query: delete from ice_orc where last_name in ('ln1', 'ln9')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc
+POSTHOOK: Input: default@ice_orc@company_id=100/dept_id=1
+POSTHOOK: Input: default@ice_orc@company_id=100/dept_id=2
+POSTHOOK: Input: default@ice_orc@company_id=100/dept_id=3
+POSTHOOK: Input: default@ice_orc@company_id=100/dept_id=4
 POSTHOOK: Output: default@ice_orc
 PREHOOK: query: delete from ice_orc where last_name in ('ln3', 'ln11')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc
+PREHOOK: Input: default@ice_orc@company_id=100/dept_id=1
+PREHOOK: Input: default@ice_orc@company_id=100/dept_id=2
+PREHOOK: Input: default@ice_orc@company_id=100/dept_id=3
+PREHOOK: Input: default@ice_orc@company_id=100/dept_id=4
 PREHOOK: Output: default@ice_orc
 POSTHOOK: query: delete from ice_orc where last_name in ('ln3', 'ln11')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc
+POSTHOOK: Input: default@ice_orc@company_id=100/dept_id=1
+POSTHOOK: Input: default@ice_orc@company_id=100/dept_id=2
+POSTHOOK: Input: default@ice_orc@company_id=100/dept_id=3
+POSTHOOK: Input: default@ice_orc@company_id=100/dept_id=4
 POSTHOOK: Output: default@ice_orc
 PREHOOK: query: delete from ice_orc where last_name in ('ln5', 'ln13')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc
+PREHOOK: Input: default@ice_orc@company_id=100/dept_id=1
+PREHOOK: Input: default@ice_orc@company_id=100/dept_id=2
+PREHOOK: Input: default@ice_orc@company_id=100/dept_id=3
+PREHOOK: Input: default@ice_orc@company_id=100/dept_id=4
 PREHOOK: Output: default@ice_orc
 POSTHOOK: query: delete from ice_orc where last_name in ('ln5', 'ln13')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc
+POSTHOOK: Input: default@ice_orc@company_id=100/dept_id=1
+POSTHOOK: Input: default@ice_orc@company_id=100/dept_id=2
+POSTHOOK: Input: default@ice_orc@company_id=100/dept_id=3
+POSTHOOK: Input: default@ice_orc@company_id=100/dept_id=4
 POSTHOOK: Output: default@ice_orc
 PREHOOK: query: select * from ice_orc
 PREHOOK: type: QUERY

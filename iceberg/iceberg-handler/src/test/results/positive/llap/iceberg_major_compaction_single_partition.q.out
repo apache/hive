@@ -81,71 +81,99 @@ POSTHOOK: Output: default@ice_orc_wo_evo
 PREHOOK: query: update ice_orc_wo_evo set last_name = 'ln1a' where first_name='fn1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc_wo_evo
+PREHOOK: Input: default@ice_orc_wo_evo@dept_id=1/city=London/registration_date=2024-03-11
+PREHOOK: Input: default@ice_orc_wo_evo@dept_id=2/city=Paris/registration_date=2024-02-16
 PREHOOK: Output: default@ice_orc_wo_evo
 PREHOOK: Output: default@ice_orc_wo_evo
 POSTHOOK: query: update ice_orc_wo_evo set last_name = 'ln1a' where first_name='fn1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc_wo_evo
+POSTHOOK: Input: default@ice_orc_wo_evo@dept_id=1/city=London/registration_date=2024-03-11
+POSTHOOK: Input: default@ice_orc_wo_evo@dept_id=2/city=Paris/registration_date=2024-02-16
 POSTHOOK: Output: default@ice_orc_wo_evo
 POSTHOOK: Output: default@ice_orc_wo_evo
 PREHOOK: query: update ice_orc_wo_evo set last_name = 'ln2a' where first_name='fn2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc_wo_evo
+PREHOOK: Input: default@ice_orc_wo_evo@dept_id=1/city=London/registration_date=2024-03-11
+PREHOOK: Input: default@ice_orc_wo_evo@dept_id=2/city=Paris/registration_date=2024-02-16
 PREHOOK: Output: default@ice_orc_wo_evo
 PREHOOK: Output: default@ice_orc_wo_evo
 POSTHOOK: query: update ice_orc_wo_evo set last_name = 'ln2a' where first_name='fn2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc_wo_evo
+POSTHOOK: Input: default@ice_orc_wo_evo@dept_id=1/city=London/registration_date=2024-03-11
+POSTHOOK: Input: default@ice_orc_wo_evo@dept_id=2/city=Paris/registration_date=2024-02-16
 POSTHOOK: Output: default@ice_orc_wo_evo
 POSTHOOK: Output: default@ice_orc_wo_evo
 PREHOOK: query: update ice_orc_wo_evo set last_name = 'ln3a' where first_name='fn3'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc_wo_evo
+PREHOOK: Input: default@ice_orc_wo_evo@dept_id=1/city=London/registration_date=2024-03-11
+PREHOOK: Input: default@ice_orc_wo_evo@dept_id=2/city=Paris/registration_date=2024-02-16
 PREHOOK: Output: default@ice_orc_wo_evo
 PREHOOK: Output: default@ice_orc_wo_evo
 POSTHOOK: query: update ice_orc_wo_evo set last_name = 'ln3a' where first_name='fn3'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc_wo_evo
+POSTHOOK: Input: default@ice_orc_wo_evo@dept_id=1/city=London/registration_date=2024-03-11
+POSTHOOK: Input: default@ice_orc_wo_evo@dept_id=2/city=Paris/registration_date=2024-02-16
 POSTHOOK: Output: default@ice_orc_wo_evo
 POSTHOOK: Output: default@ice_orc_wo_evo
 PREHOOK: query: update ice_orc_wo_evo set last_name = 'ln4a' where first_name='fn4'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc_wo_evo
+PREHOOK: Input: default@ice_orc_wo_evo@dept_id=1/city=London/registration_date=2024-03-11
+PREHOOK: Input: default@ice_orc_wo_evo@dept_id=2/city=Paris/registration_date=2024-02-16
 PREHOOK: Output: default@ice_orc_wo_evo
 PREHOOK: Output: default@ice_orc_wo_evo
 POSTHOOK: query: update ice_orc_wo_evo set last_name = 'ln4a' where first_name='fn4'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc_wo_evo
+POSTHOOK: Input: default@ice_orc_wo_evo@dept_id=1/city=London/registration_date=2024-03-11
+POSTHOOK: Input: default@ice_orc_wo_evo@dept_id=2/city=Paris/registration_date=2024-02-16
 POSTHOOK: Output: default@ice_orc_wo_evo
 POSTHOOK: Output: default@ice_orc_wo_evo
 PREHOOK: query: update ice_orc_wo_evo set last_name = 'ln5a' where first_name='fn5'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc_wo_evo
+PREHOOK: Input: default@ice_orc_wo_evo@dept_id=1/city=London/registration_date=2024-03-11
+PREHOOK: Input: default@ice_orc_wo_evo@dept_id=2/city=Paris/registration_date=2024-02-16
 PREHOOK: Output: default@ice_orc_wo_evo
 PREHOOK: Output: default@ice_orc_wo_evo
 POSTHOOK: query: update ice_orc_wo_evo set last_name = 'ln5a' where first_name='fn5'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc_wo_evo
+POSTHOOK: Input: default@ice_orc_wo_evo@dept_id=1/city=London/registration_date=2024-03-11
+POSTHOOK: Input: default@ice_orc_wo_evo@dept_id=2/city=Paris/registration_date=2024-02-16
 POSTHOOK: Output: default@ice_orc_wo_evo
 POSTHOOK: Output: default@ice_orc_wo_evo
 PREHOOK: query: update ice_orc_wo_evo set last_name = 'ln6a' where first_name='fn6'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc_wo_evo
+PREHOOK: Input: default@ice_orc_wo_evo@dept_id=1/city=London/registration_date=2024-03-11
+PREHOOK: Input: default@ice_orc_wo_evo@dept_id=2/city=Paris/registration_date=2024-02-16
 PREHOOK: Output: default@ice_orc_wo_evo
 PREHOOK: Output: default@ice_orc_wo_evo
 POSTHOOK: query: update ice_orc_wo_evo set last_name = 'ln6a' where first_name='fn6'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc_wo_evo
+POSTHOOK: Input: default@ice_orc_wo_evo@dept_id=1/city=London/registration_date=2024-03-11
+POSTHOOK: Input: default@ice_orc_wo_evo@dept_id=2/city=Paris/registration_date=2024-02-16
 POSTHOOK: Output: default@ice_orc_wo_evo
 POSTHOOK: Output: default@ice_orc_wo_evo
 PREHOOK: query: update ice_orc_wo_evo set last_name = 'ln7a' where first_name='fn7'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc_wo_evo
+PREHOOK: Input: default@ice_orc_wo_evo@dept_id=1/city=London/registration_date=2024-03-11
+PREHOOK: Input: default@ice_orc_wo_evo@dept_id=2/city=Paris/registration_date=2024-02-16
 PREHOOK: Output: default@ice_orc_wo_evo
 PREHOOK: Output: default@ice_orc_wo_evo
 POSTHOOK: query: update ice_orc_wo_evo set last_name = 'ln7a' where first_name='fn7'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc_wo_evo
+POSTHOOK: Input: default@ice_orc_wo_evo@dept_id=1/city=London/registration_date=2024-03-11
+POSTHOOK: Input: default@ice_orc_wo_evo@dept_id=2/city=Paris/registration_date=2024-02-16
 POSTHOOK: Output: default@ice_orc_wo_evo
 POSTHOOK: Output: default@ice_orc_wo_evo
 PREHOOK: query: delete from ice_orc_wo_evo where last_name in ('ln1a', 'ln2a', 'ln7a')

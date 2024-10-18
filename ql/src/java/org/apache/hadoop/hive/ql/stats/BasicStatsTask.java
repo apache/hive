@@ -506,7 +506,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       // INSERT OVERWRITE command
       LoadTableDesc tbd = work.getLoadTableDesc();
       table = db.getTable(tbd.getTable().getTableName());
-      if (!table.isPartitioned()) {
+      if (!table.isPartitioned() || table.alwaysUnpartitioned()) {
         return null;
       }
       DynamicPartitionCtx dpCtx = tbd.getDPCtx();
@@ -518,7 +518,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
           return db.getPartitionsByNames(table, partNames);
         }
       } else { // static partition
-        return singletonList(db.getPartition(table, tbd.getPartitionSpec(), false));
+        return singletonList(db.getPartition(table, tbd.getPartitionSpec()));
       }
     }
     return emptyList();

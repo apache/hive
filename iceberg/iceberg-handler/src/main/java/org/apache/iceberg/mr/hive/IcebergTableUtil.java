@@ -380,20 +380,19 @@ public class IcebergTableUtil {
       Types.StructType targetKeyType) {
     PartitionData data = new PartitionData(targetKeyType);
     for (int i = 0; i < targetKeyType.fields().size(); i++) {
+      Types.NestedField targetKey = targetKeyType.fields().get(i);
 
-      int fi = i;
-      String fieldName = targetKeyType.fields().get(fi).name();
-      Object val = sourceKeyType.fields().stream()
-          .filter(f -> f.name().equals(fieldName)).findFirst()
-          .map(sourceKeyElem -> sourceKey.get(sourceKeyType.fields().indexOf(sourceKeyElem),
-              targetKeyType.fields().get(fi).type().typeId().javaClass()))
-          .orElseThrow(() -> new RuntimeException(
-              String.format("Error retrieving value of partition field %s", fieldName)));
-
-      if (val != null) {
-        data.set(fi, val);
-      } else {
-        throw new RuntimeException(String.format("Partition field's %s value is null", fieldName));
+      Optional<Object> val = sourceKeyType.fields().stream()
+          .filter(f -> f.name().equals(targetKey.name()))
+          .findFirst()
+          .map(sourceKeyElem ->
+            sourceKey.get(
+              sourceKeyType.fields().indexOf(sourceKeyElem),
+              targetKey.type().typeId().javaClass()
+            )
+          );
+      if (val.isPresent()) {
+        data.set(i, val.get());
       }
     }
     return data;
@@ -445,9 +444,9 @@ public class IcebergTableUtil {
         t -> ((PositionDeletesScanTask) t).file()));
   }
 
-  public static Expression generateExpressionFromPartitionSpec(Table table, Map<String, String> partitionSpec)
-      throws SemanticException {
-    Map<String, PartitionField> partitionFieldMap = getPartitionFields(table).stream()
+  public static Expression generateExpressionFromPartitionSpec(Table table, Map<String, String> partitionSpec,
+      boolean latestSpecOnly) throws SemanticException {
+    Map<String, PartitionField> partitionFieldMap = getPartitionFields(table, latestSpecOnly).stream()
         .collect(Collectors.toMap(PartitionField::name, Function.identity()));
     Expression finalExp = Expressions.alwaysTrue();
     for (Map.Entry<String, String> entry : partitionSpec.entrySet()) {
@@ -484,8 +483,10 @@ public class IcebergTableUtil {
             String.format("Transform: %s", partField.transform().toString()))).collect(Collectors.toList());
   }
 
-  public static List<PartitionField> getPartitionFields(Table table) {
-    return table.specs().values().stream().flatMap(spec -> spec.fields()
+  public static List<PartitionField> getPartitionFields(Table table, boolean latestSpecOnly) {
+    return table.specs().values().stream()
+        .filter(spec -> !latestSpecOnly || table.spec().specId() == spec.specId())
+        .flatMap(spec -> spec.fields()
         .stream()).distinct().collect(Collectors.toList());
   }
 
@@ -499,9 +500,10 @@ public class IcebergTableUtil {
    */
   public static Map<PartitionData, Integer> getPartitionInfo(Table icebergTable, Map<String, String> partSpecMap,
       boolean allowPartialSpec, boolean latestSpecOnly) throws SemanticException, IOException {
-    Expression expression = IcebergTableUtil.generateExpressionFromPartitionSpec(icebergTable, partSpecMap);
-    PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
-        .createMetadataTableInstance(icebergTable, MetadataTableType.PARTITIONS);
+    Expression expression = IcebergTableUtil.generateExpressionFromPartitionSpec(
+        icebergTable, partSpecMap, latestSpecOnly);
+    PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils.createMetadataTableInstance(
+        icebergTable, MetadataTableType.PARTITIONS);
 
     Map<PartitionData, Integer> result = Maps.newLinkedHashMap();
     try (CloseableIterable<FileScanTask> fileScanTasks = partitionsTable.newScan().planFiles()) {
