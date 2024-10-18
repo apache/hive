@@ -45,6 +45,52 @@ import java.util.stream.IntStream;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory.TARGET_PREFIX;
 
+/**
+ * Rewrite merge statement to insert select statement.
+ * The select clause has a union all operator with union branches representing insert/update/delete operations of the
+ * original merge statement.
+ * <br>
+ * Example:
+ * <pre>
+ * merge into target_ice as t using source src ON t.a = src.a
+ * when matched and t.c &gt; 50 THEN DELETE
+ * when matched then update set b = concat(t.b, ' Merged'), c = t.c + 10
+ * when not matched then insert values (src.a, concat(src.b, ' New'), src.c);
+ * </pre>
+ * is rewritten to
+ * <pre>
+ * WITH `src` AS ( SELECT * FROM
+ * (SELECT `PARTITION__SPEC__ID` AS `t__PARTITION__SPEC__ID`,`PARTITION__HASH` AS `t__PARTITION__HASH`,`FILE__PATH` AS `t__FILE__PATH`,`ROW__POSITION` AS `t__ROW__POSITION`,`PARTITION__PROJECTION` AS `t__PARTITION__PROJECTION`,`a` AS `t__a`, `b` AS `t__b`, `c` AS `t__c`, true AS t__targetRecordExists FROM `default`.`target_ice`) `t`
+ * FULL OUTER JOIN
+ * (SELECT *, true sourceRecordExists FROM`default`.`source` `src`) `src`
+ * ON `t__a` = `src`.`a`
+ * ),
+ * t AS (
+ * select `t__PARTITION__SPEC__ID`,`t__PARTITION__HASH`,`t__FILE__PATH`,-1,`t__PARTITION__PROJECTION`,`t__a`,`t__b`,`t__c` from (
+ * select `t__PARTITION__SPEC__ID`,`t__PARTITION__HASH`,`t__FILE__PATH`,-1,`t__PARTITION__PROJECTION`,`t__a`,`t__b`,`t__c`, row_number() OVER (partition by `t__FILE__PATH`) rn from `src`
+ * where t__targetRecordExists AND sourceRecordExists
+ * ) q
+ * where rn=1
+ * )
+ * INSERT INTO `default`.`target_ice`
+ * -- update clause (insert part)
+ * SELECT `t__PARTITION__SPEC__ID`,`t__PARTITION__HASH`,`t__FILE__PATH`,`t__ROW__POSITION`,`t__PARTITION__PROJECTION`,`t__a`,`concat`(`t__b`, ' Merged') AS `t__b`,`t__c`   10 AS `t__c`
+ * FROM `src`  WHERE t__targetRecordExists AND (NOT(`t__c` &gt; 50) OR (`t__c` &gt; 50) IS NULL) AND sourceRecordExists
+ * union all
+ * -- insert clause
+ * SELECT `t__PARTITION__SPEC__ID`,`t__PARTITION__HASH`,`t__FILE__PATH`,`t__ROW__POSITION`,`t__PARTITION__PROJECTION`,`src`.`a`,concat(`src`.`b`, ' New'),`src`.`c`
+ * FROM `src`
+ * WHERE t__targetRecordExists IS NULL
+ * union all
+ * -- delete clause
+ * SELECT `t__PARTITION__SPEC__ID`,`t__PARTITION__HASH`,`t__FILE__PATH`,`t__ROW__POSITION`,`t__PARTITION__PROJECTION`,`t__a`,`t__b`,`t__c`
+ * FROM `src`  WHERE
+ * ( NOT((t__targetRecordExists AND sourceRecordExists OR t__targetRecordExists is null)) OR ((t__targetRecordExists AND sourceRecordExists OR t__targetRecordExists is null)) IS NULL )
+ * AND `t__FILE__PATH` IN ( select `t__FILE__PATH` from t )
+ * union all
+ * select * from t
+ * </pre>
+ */
 public class CopyOnWriteMergeRewriter extends MergeRewriter {
 
   public CopyOnWriteMergeRewriter(Hive db, HiveConf conf, SqlGeneratorFactory sqlGeneratorFactory) {
@@ -111,11 +157,13 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
     sqlGenerator.append("(SELECT ");
     sqlGenerator.appendAcidSelectColumns(Context.Operation.MERGE);
     sqlGenerator.appendAllColsOfTargetTable(TARGET_PREFIX);
+    sqlGenerator.append(", true AS ").append(TARGET_PREFIX).append("targetRecordExists");
     sqlGenerator.append(" FROM ").appendTargetTableName().append(") ");
     sqlGenerator.append(targetAlias);
     sqlGenerator.append('\n');
     sqlGenerator.indent().append(hasWhenNotMatchedInsertClause ? "FULL OUTER JOIN" : "LEFT OUTER JOIN").append("\n");
-    sqlGenerator.indent().append(sourceAlias);
+    sqlGenerator.indent().append("(SELECT *, true sourceRecordExists FROM");
+    sqlGenerator.append(sourceAlias).append(") ").append(sourceName);
     sqlGenerator.append('\n');
     sqlGenerator.indent().append("ON ").append(onClauseAsString);
     sqlGenerator.append('\n');
@@ -170,7 +218,8 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       sqlGenerator.append("\nFROM " + mergeStatement.getSourceName());
       sqlGenerator.append("\n   WHERE ");
       
-      StringBuilder whereClause = new StringBuilder(insertClause.getPredicate());
+      StringBuilder whereClause = new StringBuilder();
+      whereClause.append(TARGET_PREFIX).append("targetRecordExists IS NULL ");
       
       if (insertClause.getExtraPredicate() != null) {
         //we have WHEN NOT MATCHED AND <boolean expr> THEN INSERT
@@ -185,7 +234,6 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
     public void appendWhenMatchedUpdateClause(MergeStatement.UpdateClause updateClause) {
       Table targetTable = mergeStatement.getTargetTable();
       String targetAlias = mergeStatement.getTargetAlias();
-      String onClauseAsString = mergeStatement.getOnClauseAsText();
 
       UnaryOperator<String> columnRefsFunc = value -> replaceColumnRefsWithTargetPrefix(targetAlias, value);
       sqlGenerator.append("    -- update clause (insert part)\n").append("SELECT ");
@@ -203,9 +251,8 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       sqlGenerator.append("\nFROM " + mergeStatement.getSourceName());
 
       addWhereClauseOfUpdate(
-          onClauseAsString, updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), sqlGenerator,
-          columnRefsFunc);
-      sqlGenerator.append("\n");
+          updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), sqlGenerator, columnRefsFunc);
+      sqlGenerator.append(" AND sourceRecordExists\n");
     }
     
     @Override
@@ -214,11 +261,10 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
     }
 
     @Override
-    protected void handleWhenMatchedDelete(String onClauseAsString, String extraPredicate, String updateExtraPredicate,
+    protected void handleWhenMatchedDelete(String extraPredicate, String updateExtraPredicate,
                                          String hintStr, MultiInsertSqlGenerator sqlGenerator) {
       String targetAlias = mergeStatement.getTargetAlias();
       String sourceName = mergeStatement.getSourceName();
-      String onClausePredicate = mergeStatement.getOnClausePredicate();
 
       UnaryOperator<String> columnRefsFunc = value -> replaceColumnRefsWithTargetPrefix(targetAlias, value);
       List<String> deleteValues = sqlGenerator.getDeleteValues(Context.Operation.DELETE);
@@ -235,21 +281,25 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       sqlGenerator.append("\nFROM " + sourceName);
       sqlGenerator.indent().append("WHERE ");
 
-      StringBuilder whereClause = new StringBuilder(onClauseAsString);
+
+      // ( NOT(t__targetRecordExists and t__sourceRecordExists or t__targetRecordExists is null) OR (t__targetRecordExists and t__sourceRecordExists or t__targetRecordExists is null) IS NULL )
+      StringBuilder flagPredicate = new StringBuilder();
+      flagPredicate.append(TARGET_PREFIX).append("targetRecordExists");
+      flagPredicate.append(" AND sourceRecordExists");
+      StringBuilder whereClause = new StringBuilder("(");
+      whereClause.append(flagPredicate);
+      whereClause.append(" OR ");
+      whereClause.append(TARGET_PREFIX).append("targetRecordExists is null)");
+
       if (isNotBlank(extraPredicate)) {
         //we have WHEN MATCHED AND <boolean expr> THEN DELETE
         whereClause.append(" AND ").append(extraPredicate);
       }
-      String whereClauseStr = columnRefsFunc.apply(whereClause.toString());
-      String filePathCol = HiveUtils.unparseIdentifier(TARGET_PREFIX + VirtualColumn.FILE_PATH.getName(), conf);
-
-      if (isNotBlank(onClausePredicate)) {
-        whereClause.append(" OR ").append(onClausePredicate);
-      }
       sqlGenerator.append("\n").indent();
       sqlGenerator.append("( NOT(%s) OR (%s) IS NULL )".replace("%s", columnRefsFunc.apply(
           whereClause.toString())));
-      
+
+      String filePathCol = HiveUtils.unparseIdentifier(TARGET_PREFIX + VirtualColumn.FILE_PATH.getName(), conf);
       sqlGenerator.append("\n").indent();
       // Add the file path filter that matches the delete condition.
       sqlGenerator.append("AND ").append(filePathCol);
@@ -257,7 +307,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       sqlGenerator.append("\nunion all");
       sqlGenerator.append("\nselect * from t");
 
-      cowWithClauseBuilder.appendWith(sqlGenerator, sourceName, filePathCol, whereClauseStr, false);
+      cowWithClauseBuilder.appendWith(sqlGenerator, sourceName, filePathCol, flagPredicate.toString(), false);
     }
   }
 }
