@@ -21,6 +21,7 @@ package org.apache.hive.hcatalog.mapreduce;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.junit.Assert;
@@ -122,10 +123,14 @@ public class TestHCatDynamicPartitioned extends HCatMapReduceTest {
   protected void runHCatDynamicPartitionedTable(boolean asSingleMapTask,
       String customDynamicPathPattern) throws Exception {
     generateWriteRecords(NUM_RECORDS, NUM_TOP_PARTITIONS, 0);
+    HashMap<String, String> properties = new HashMap<String, String>();
+    if (customDynamicPathPattern != null) {
+      properties.put(HCatConstants.HCAT_DYNAMIC_CUSTOM_PATTERN, customDynamicPathPattern);
+    }
     runMRCreate(null, dataColumns, writeRecords.subList(0,NUM_RECORDS/2), NUM_RECORDS/2,
-        true, asSingleMapTask, customDynamicPathPattern);
+        true, asSingleMapTask, properties);
     runMRCreate(null, dataColumns, writeRecords.subList(NUM_RECORDS/2,NUM_RECORDS), NUM_RECORDS/2,
-        true, asSingleMapTask, customDynamicPathPattern);
+        true, asSingleMapTask, properties);
 
     runMRRead(NUM_RECORDS);
 
@@ -149,7 +154,7 @@ public class TestHCatDynamicPartitioned extends HCatMapReduceTest {
     try {
       generateWriteRecords(NUM_RECORDS, NUM_TOP_PARTITIONS, 0);
       Job job = runMRCreate(null, dataColumns, writeRecords, NUM_RECORDS, false,
-          true, customDynamicPathPattern);
+          true, properties);
 
       if (HCatUtil.isHadoop23()) {
         Assert.assertTrue(job.isSuccessful()==false);
