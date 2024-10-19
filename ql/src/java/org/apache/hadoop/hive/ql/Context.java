@@ -175,7 +175,7 @@ public class Context {
   private WmContext wmContext;
 
   private boolean isExplainPlan = false;
-  private PlanMapper planMapper;
+  private PlanMapper planMapper = new PlanMapper();
   private StatsSource statsSource;
   private int executionIndex;
 
@@ -423,7 +423,6 @@ public class Context {
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SQL) ||
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SUBQUERY_SQL);
     scheduledQuery = false;
-    planMapper = new PlanMapper(conf);
   }
 
   protected Context(Context ctx) {
@@ -471,8 +470,6 @@ public class Context {
     this.opContext = new CompilationOpContext();
     this.enableUnparse = ctx.enableUnparse;
     this.scheduledQuery = ctx.scheduledQuery;
-    // Don't inherit the original plan mapper
-    this.planMapper = new PlanMapper(ctx.conf);
   }
 
   public Map<String, Path> getFsScratchDirs() {

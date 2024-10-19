@@ -33,9 +33,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignatureFactory;
@@ -54,12 +51,7 @@ public class PlanMapper {
 
   private final Set<EquivGroup> groups = new HashSet<>();
   private final Map<Object, EquivGroup> objectMap = new CompositeMap<>(OpTreeSignature.class, AuxOpTreeSignature.class);
-  private final boolean failsWithIllegalLink;
   private final AtomicBoolean isBroken = new AtomicBoolean(false);
-
-  public PlanMapper(Configuration conf) {
-    failsWithIllegalLink = HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST_PLANMAPPER_STRICT_VALIDATION);
-  }
 
   /**
    * Specialized class which can compare by identity or value; based on the key type.
@@ -231,9 +223,6 @@ public class PlanMapper {
     if (mGroups.size() > 1) {
       if (!mayMerge) {
         LOG.warn("Illegally linking {} and {}", o1, o2);
-        if (failsWithIllegalLink) {
-          throw new RuntimeException("equivalence mapping violation");
-        }
         isBroken.set(true);
       }
       EquivGroup newGrp = new EquivGroup();
