@@ -32,7 +32,6 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignatureFactory;
@@ -51,7 +50,7 @@ public class PlanMapper {
 
   private final Set<EquivGroup> groups = new HashSet<>();
   private final Map<Object, EquivGroup> objectMap = new CompositeMap<>(OpTreeSignature.class, AuxOpTreeSignature.class);
-  private final AtomicBoolean isBroken = new AtomicBoolean(false);
+  private boolean isBroken = false;
 
   /**
    * Specialized class which can compare by identity or value; based on the key type.
@@ -223,7 +222,7 @@ public class PlanMapper {
     if (mGroups.size() > 1) {
       if (!mayMerge) {
         LOG.warn("Illegally linking {} and {}", o1, o2);
-        isBroken.set(true);
+        isBroken = true;
       }
       EquivGroup newGrp = new EquivGroup();
       newGrp.add(o1);
@@ -255,7 +254,7 @@ public class PlanMapper {
   }
 
   public boolean isBroken() {
-    return isBroken.get();
+    return isBroken;
   }
 
   public <T> List<T> getAll(Class<T> clazz) {
