@@ -258,6 +258,10 @@ public class PlanMapper {
   }
 
   public <T> List<T> getAll(Class<T> clazz) {
+    if (isBroken) {
+      LOG.warn("PlanMapper#getAll is no longer valid. Please use PlanMapper#isBroken to handle the state correctly");
+      return Collections.emptyList();
+    }
     List<T> ret = new ArrayList<>();
     for (EquivGroup g : groups) {
       ret.addAll(g.getAll(clazz));
@@ -284,6 +288,11 @@ public class PlanMapper {
   }
 
   public Iterator<EquivGroup> iterateGroups() {
+    if (isBroken) {
+      LOG.warn("PlanMapper#iterateGroups is no longer valid. "
+          + "Please use PlanMapper#isBroken to handle the state correctly");
+      return Collections.emptyIterator();
+    }
     return groups.iterator();
 
   }
