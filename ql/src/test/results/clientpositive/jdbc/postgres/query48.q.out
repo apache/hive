@@ -163,7 +163,7 @@ WHERE "s_store_sk" IS NOT NULL) AS "t4" ON "t1"."ss_store_sk" = "t4"."s_store_sk
 INNER JOIN (SELECT "cd_demo_sk"
 FROM (SELECT "cd_demo_sk", "cd_marital_status", "cd_education_status"
 FROM "customer_demographics") AS "t5"
-WHERE "cd_marital_status" = 'M' AND ("cd_education_status" = '4 yr Degree' AND "cd_demo_sk" IS NOT NULL)) AS "t7" ON "t1"."ss_cdemo_sk" = "t7"."cd_demo_sk"
+WHERE "cd_education_status" = '4 yr Degree' AND ("cd_marital_status" = 'M' AND "cd_demo_sk" IS NOT NULL)) AS "t7" ON "t1"."ss_cdemo_sk" = "t7"."cd_demo_sk"
 INNER JOIN (SELECT "d_date_sk"
 FROM (SELECT "d_date_sk", "d_year"
 FROM "date_dim") AS "t8"
