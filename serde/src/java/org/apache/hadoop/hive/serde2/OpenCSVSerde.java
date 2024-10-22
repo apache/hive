@@ -95,8 +95,7 @@ public final class OpenCSVSerde extends AbstractEncodingAwareSerDe {
     separatorChar = getProperty(properties, SEPARATORCHAR, CSVWriter.DEFAULT_SEPARATOR);
     quoteChar = getProperty(properties, QUOTECHAR, CSVWriter.DEFAULT_QUOTE_CHARACTER);
     escapeChar = getProperty(properties, ESCAPECHAR, CSVWriter.DEFAULT_ESCAPE_CHARACTER);
-    final String temp = properties.getProperty(APPLYQUOTESTOALL);
-    applyQuotesToAll = temp != null && temp.equalsIgnoreCase("true");
+    applyQuotesToAll = Boolean.parseBoolean(properties.getProperty(APPLYQUOTESTOALL))
   }
 
   private char getProperty(final Properties tbl, final String property, final char def) {
