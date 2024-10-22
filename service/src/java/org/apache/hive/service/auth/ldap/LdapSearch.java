@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
@@ -29,6 +30,7 @@ import javax.naming.directory.SearchResult;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ldap.support.LdapEncoder;
 
 /**
  * Implements search for LDAP.
@@ -180,7 +182,8 @@ public final class LdapSearch implements DirSearch {
    */
   @Override
   public List<String> executeUserAndGroupFilterQuery(String user, String userDn, String groupSearchFilter, String groupBaseDn) throws NamingException {
-    Query query = queries.findDnByUserAndGroupSearch(user, userDn, groupSearchFilter);
+    String userDnTransformed = Matcher.quoteReplacement(LdapEncoder.filterEncode(userDn));
+    Query query = queries.findDnByUserAndGroupSearch(user, userDnTransformed, groupSearchFilter);
     return execute(Collections.singletonList(groupBaseDn), query).getAllLdapNames();
   }
 

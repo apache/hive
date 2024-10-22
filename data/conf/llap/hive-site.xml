@@ -398,4 +398,8 @@
   <value>false</value>
 </property>
 
+<property>
+  <name>hive.lock.sleep.between.retries</name>
+  <value>2</value>
+</property>
 </configuration>

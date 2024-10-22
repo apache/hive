@@ -1,8 +1,5 @@
--- SORT_QUERY_RESULTS
 -- Mask neededVirtualColumns due to non-strict order
 --! qt:replace:/(\s+neededVirtualColumns:\s)(.*)/$1#Masked#/
--- Mask the totalSize value as it can have slight variability, causing test flakiness
---! qt:replace:/(\s+totalSize\s+)\S+(\s+)/$1#Masked#$2/
 -- Mask random uuid
 --! qt:replace:/(\s+uuid\s+)\S+(\s*)/$1#Masked#$2/
 -- Mask a random snapshot id
@@ -31,31 +28,26 @@ create table ice_orc (
     last_name string
  )
 stored by iceberg stored as orc 
-tblproperties ('format-version'='2');
+tblproperties ('format-version'='2', 'hive.compactor.worker.pool'='iceberg');
 
-insert into ice_orc VALUES ('fn1','ln1');
-insert into ice_orc VALUES ('fn2','ln2');
-insert into ice_orc VALUES ('fn3','ln3');
-insert into ice_orc VALUES ('fn4','ln4');
-insert into ice_orc VALUES ('fn5','ln5');
-insert into ice_orc VALUES ('fn6','ln6');
-insert into ice_orc VALUES ('fn7','ln7');
+insert into ice_orc VALUES 
+('fn1','ln1'),
+('fn2','ln2'),
+('fn3','ln3'),
+('fn4','ln4'),
+('fn5','ln5'),
+('fn6','ln6'),
+('fn7','ln7');
 
-update ice_orc set last_name = 'ln1a' where first_name='fn1';
-update ice_orc set last_name = 'ln2a' where first_name='fn2';
-update ice_orc set last_name = 'ln3a' where first_name='fn3';
-update ice_orc set last_name = 'ln4a' where first_name='fn4';
-update ice_orc set last_name = 'ln5a' where first_name='fn5';
-update ice_orc set last_name = 'ln6a' where first_name='fn6';
-update ice_orc set last_name = 'ln7a' where first_name='fn7';
-
-delete from ice_orc where last_name in ('ln5a', 'ln6a', 'ln7a');
+delete from ice_orc where last_name in ('ln5', 'ln6', 'ln7');
 
 select * from ice_orc;
 describe formatted ice_orc;
 
-explain optimize table ice_orc rewrite data;
-optimize table ice_orc rewrite data;
+explain alter table ice_orc COMPACT 'major' and wait order by last_name desc;
+explain optimize table ice_orc rewrite data order by last_name desc;
+
+alter table ice_orc COMPACT 'major' and wait order by last_name desc;
 
 select * from ice_orc;
 describe formatted ice_orc;

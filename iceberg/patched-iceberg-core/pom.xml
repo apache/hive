@@ -20,9 +20,7 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.apache.hive</groupId>
   <artifactId>patched-iceberg-core</artifactId>
-  <version>${revision}</version>
   <name>Patched Iceberg Core</name>
   <!-- Temporary package until we need unreleased Iceberg changes for development purposes. -->
   <!-- We should periodically clean this package during rebasing to newer Iceberg releases. -->

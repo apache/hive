@@ -31,7 +31,7 @@ create table ice_orc (
  )
 partitioned by (company_id bigint)
 stored by iceberg stored as orc 
-tblproperties ('format-version'='2');
+tblproperties ('format-version'='2', 'hive.compactor.worker.pool'='iceberg');
 
 insert into ice_orc VALUES ('fn1','ln1', 1, 10, 100);
 insert into ice_orc VALUES ('fn2','ln2', 1, 10, 100);

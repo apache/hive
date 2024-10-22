@@ -104,7 +104,7 @@
     <maven.cyclonedx.plugin.version>2.7.10</maven.cyclonedx.plugin.version>
     <maven.license.plugin.version>2.3.0</maven.license.plugin.version>
     <!-- Library Dependency Versions -->
-    <accumulo.version>1.10.1</accumulo.version>
+    <accumulo.version>1.10.4</accumulo.version>
     <ant.version>1.10.13</ant.version>
     <antlr.version>3.5.2</antlr.version>
     <!-- Make sure to sync it with standalone-metastore/pom.xml -->
@@ -113,7 +113,7 @@
     <!-- Include arrow for LlapOutputFormatService -->
     <arrow.version>12.0.0</arrow.version>
     <avatica.version>1.12.0</avatica.version>
-    <avro.version>1.11.3</avro.version>
+    <avro.version>1.11.4</avro.version>
     <bcprov-jdk18on.version>1.78</bcprov-jdk18on.version>
     <calcite.version>1.25.0</calcite.version>
     <datanucleus-api-jdo.version>5.2.8</datanucleus-api-jdo.version>
@@ -233,7 +233,8 @@
     <aws-java-sdk.version>1.12.499</aws-java-sdk.version>
     <jansi.version>2.4.0</jansi.version>
     <!-- If upgrading, upgrade atlas as well in ql/pom.xml, which brings in some springframework dependencies transitively -->
-    <spring.version>5.3.21</spring.version>
+    <spring.version>5.3.39</spring.version>
+    <spring.ldap.version>2.4.1</spring.ldap.version>
     <project.build.outputTimestamp>2024-01-01T00:00:00Z</project.build.outputTimestamp>
   </properties>
   <repositories>
@@ -1696,11 +1697,17 @@
                   <excludes>
                     <!-- Move to SLF4J -->
                     <exclude>commons-logging:commons-logging</exclude>
-                    <exclude>log4j:log4j</exclude>
                     <exclude>ch.qos.reload4j:reload4j</exclude>
                   </excludes>
                   <searchTransitive>false</searchTransitive>
                   <message>A banned logging dependency was found!</message>
+                </bannedDependencies>
+                <bannedDependencies>
+                  <excludes>
+                    <exclude>log4j:log4j</exclude>
+                  </excludes>
+                  <searchTransitive>true</searchTransitive>
+                  <message>Banned log4j:log4j dependency/transitive dependency was found!</message>
                 </bannedDependencies>
               </rules>
               <fail>true</fail>

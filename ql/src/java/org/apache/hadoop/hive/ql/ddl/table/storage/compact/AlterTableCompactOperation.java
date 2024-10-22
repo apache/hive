@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.storage.compact;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -39,6 +40,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
+import org.apache.hadoop.hive.ql.txn.compactor.MetadataCache;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -54,6 +56,8 @@ import static org.apache.hadoop.hive.ql.io.AcidUtils.compactionTypeStr2ThriftTyp
  */
 public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDesc> {
 
+  private static MetadataCache metadataCache = new MetadataCache(true);
+      
   public AlterTableCompactOperation(DDLOperationContext context, AlterTableCompactDesc desc) {
     super(context, desc);
   }
@@ -88,7 +92,10 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
     CompactionRequest compactionRequest = new CompactionRequest(table.getDbName(), table.getTableName(),
         compactionTypeStr2ThriftType(desc.getCompactionType()));
 
-    compactionRequest.setPoolName(desc.getPoolName());
+    String poolName = ObjectUtils.defaultIfNull(desc.getPoolName(),
+        CompactorUtil.getPoolName(context.getConf(), table.getTTable(), metadataCache));
+
+    compactionRequest.setPoolName(poolName);
     compactionRequest.setProperties(desc.getProperties());
     compactionRequest.setInitiatorId(JavaUtils.hostname() + "-" + HiveMetaStoreClient.MANUALLY_INITIATED_COMPACTION);
     compactionRequest.setInitiatorVersion(HiveMetaStoreClient.class.getPackage().getImplementationVersion());
