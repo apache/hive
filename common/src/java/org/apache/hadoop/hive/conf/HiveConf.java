@@ -2655,6 +2655,8 @@ public class HiveConf extends Configuration {
         "By default, when writing data into a table and UNION ALL is the last step of the query, Hive on Tez will\n" +
         "create a subdirectory for each branch of the UNION ALL. When this property is enabled,\n" +
         "the subdirectories are removed, and the files are renamed and moved to the parent directory"),
+    HIVE_OPTIMIZE_MERGE_ADJACENT_UNION_DISTINCT("hive.optimize.merge.adjacent.union.distinct", true,
+        "Whether to merge adjacent binary UNION DISTINCT into a single n-ary UNION DISTINCT."),
     HIVE_OPT_CORRELATION("hive.optimize.correlation", false, "exploit intra-query correlations."),
 
     HIVE_OPTIMIZE_LIMIT_TRANSPOSE("hive.optimize.limittranspose", false,
