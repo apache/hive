@@ -293,6 +293,13 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
       rproc.run();
 
       perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_PROCESSOR);
+
+      // Try to call canCommit to AM. If there is no other speculative attempt execute canCommit, then continue.
+      // If there are other speculative attempt execute canCommit first, then wait until the attempt is killed
+      // or the committed task fails.
+      while (!this.processorContext.canCommit()) {
+        Thread.sleep(100);
+      }
     } catch (Throwable t) {
       rproc.setAborted(true);
       originalThrowable = t;
