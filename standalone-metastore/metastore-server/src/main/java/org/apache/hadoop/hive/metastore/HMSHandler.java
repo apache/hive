@@ -3221,11 +3221,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         for (String partName : partNames) {
           String pathString = partitionLocations.get(partName);
           if (pathString != null) {
-            Path partPath = wh.getDnsPath(new Path(pathString));
             // Double check here. Maybe Warehouse.getDnsPath revealed relationship between the
             // path objects
             if (tableDnsPath == null ||
-                !FileUtils.isSubdirectory(tableDnsPath, partPath.toString())) {
+                !FileUtils.isSubdirectory(tableDnsPath, pathString)) {
+              Path partPath = wh.getDnsPath(new Path(pathString));
               if (!wh.isWritable(partPath.getParent())) {
                 throw new MetaException("Table metadata not deleted since the partition "
                     + partName + " has parent location " + partPath.getParent()
