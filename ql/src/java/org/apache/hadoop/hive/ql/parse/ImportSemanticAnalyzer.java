@@ -772,21 +772,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         tgtPath = new Path(table.getDataLocation().toString(),
             Warehouse.makePartPath(partSpec.getPartSpec()));
       } else {
-        try {
-          Table translatedTable =
-              x.getHive().getTranslateTableDryrun(tblDesc.toTable(x.getConf()).getTTable());
-          Path tablePath = translatedTable.getDataLocation();
-          if (tablePath == null) {
-            Database parentDb = x.getHive().getDatabase(tblDesc.getDatabaseName());
-            tablePath = wh.getDefaultTablePath(parentDb, tblDesc.getTableName(), tblDesc.isExternal());
-          }
-          tgtPath = new Path(tablePath, Warehouse.makePartPath(partSpec.getPartSpec()));
-        } catch (MetaException | HiveException | IOException e) {
-          throw e;
-        } catch (Exception e) {
-          throw new HiveException("Unable to determine the target path of the partition: " +
-              partSpec.getPartSpec(), e);
-        }
+        tgtPath = new Path(getTableDataLocation(wh, tblDesc, x), Warehouse.makePartPath(partSpec.getPartSpec()));
       }
     } else {
       tgtPath = new Path(tblDesc.getLocation(),
@@ -1119,7 +1105,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           if (tblDesc.getLocation() != null) {
             tablePath = new Path(tblDesc.getLocation());
           } else {
-            tablePath = wh.getDefaultTablePath(parentDb, tblDesc.getTableName(), tblDesc.isExternal());
+            tablePath = getTableDataLocation(wh, tblDesc, x);
           }
           FileSystem tgtFs = FileSystem.get(tablePath.toUri(), x.getConf());
           checkTargetLocationEmpty(tgtFs, tablePath, replicationSpec,x.getLOG());
@@ -1414,4 +1400,15 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+  private static Path getTableDataLocation(Warehouse wh, ImportTableDesc tblDesc,
+      EximUtil.SemanticAnalyzerWrapperContext x) throws HiveException, MetaException {
+    Table translatedTable =
+        x.getHive().getTranslateTableDryrun(tblDesc.toTable(x.getConf()).getTTable());
+    Path tablePath = translatedTable.getDataLocation();
+    if (tablePath == null) {
+      Database parentDb = x.getHive().getDatabase(tblDesc.getDatabaseName());
+      tablePath = wh.getDefaultTablePath(parentDb, tblDesc.getTableName(), tblDesc.isExternal());
+    }
+    return tablePath;
+  }
 }
