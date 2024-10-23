@@ -208,9 +208,10 @@ class DynamicPartitionFileRecordWriterContainer extends FileRecordWriterContaine
       baseOutputCommitter.setupTask(currTaskContext);
 
       Path parentDir = new Path(currTaskContext.getConfiguration().get("mapred.work.output.dir"));
+      String extension = HiveConf.getVar(currTaskContext.getConfiguration(), HiveConf.ConfVars.OUTPUT_FILE_EXTENSION, "");
       Path childPath =
           new Path(parentDir, FileOutputFormat.getUniqueFile(currTaskContext,
-              currTaskContext.getConfiguration().get("mapreduce.output.basename", "part"), ""));
+              currTaskContext.getConfiguration().get("mapreduce.output.basename", "part"), extension));
 
       RecordWriter baseRecordWriter =
           baseOF.getRecordWriter(parentDir.getFileSystem(currTaskContext.getConfiguration()),
