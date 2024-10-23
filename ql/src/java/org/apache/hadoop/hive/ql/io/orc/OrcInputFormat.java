@@ -133,6 +133,7 @@ import org.apache.orc.OrcUtils;
 import org.apache.orc.StripeInformation;
 import org.apache.orc.StripeStatistics;
 import org.apache.orc.TypeDescription;
+import org.apache.orc.impl.BufferChunk;
 import org.apache.orc.impl.InStream;
 import org.apache.orc.impl.OrcTail;
 import org.apache.orc.impl.SchemaEvolution;
@@ -1669,8 +1670,13 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
             OrcFile.readerOptions(context.conf)
                 .filesystem(fs)
                 .maxLength(context.isAcid ? AcidUtils.getLogicalLength(fs, file) : file.getLen()))) {
-          orcTail = new OrcTail(orcReader.getFileTail(), orcReader.getSerializedFileFooter(),
-              file.getModificationTime());
+          BufferChunk bufferChunk = new BufferChunk(orcReader.getSerializedFileFooter(),
+                  getStripeStatisticsOffset(orcReader.getFileTail()));
+          orcTail = new OrcTail(orcReader.getFileTail(),
+                  bufferChunk,
+                  file.getModificationTime(),
+                  orcReader);
+
           if (context.cacheStripeDetails) {
             context.footerCache.put(new FooterCacheKey(fsFileId, file.getPath()), orcTail);
           }
@@ -1722,6 +1728,20 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       if (!context.footerInSplits) {
         orcTail = null;
       }
+    }
+
+    private long getMetadataOffset(OrcProto.FileTail tail) {
+      OrcProto.PostScript ps = tail.getPostscript();
+      return tail.getFileLength()
+              - 1
+              - tail.getPostscriptLength()
+              - ps.getFooterLength()
+              - ps.getMetadataLength();
+    }
+
+    private long getStripeStatisticsOffset(OrcProto.FileTail tail) {
+      OrcProto.PostScript ps = tail.getPostscript();
+      return getMetadataOffset(tail) - ps.getStripeStatisticsLength();
     }
 
     private long computeProjectionSize(List<OrcProto.Type> fileTypes,
