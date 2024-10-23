@@ -228,6 +228,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   public static final String TABLE_DEFAULT_LOCATION = "TABLE_DEFAULT_LOCATION";
 
+  public static final String DUMMY_METADATA_JSON = "/metadata/dummy.metadata.json";
+
   private static final List<VirtualColumn> ACID_VIRTUAL_COLS = ImmutableList.of(
       PARTITION_SPEC_ID, PARTITION_HASH, FILE_PATH, ROW_POSITION, PARTITION_PROJECTION);
 
@@ -1107,11 +1109,21 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         // this property is set during the create operation before the hive table was created
         // we are returning a dummy iceberg metadata file
         authURI.append(getPathForAuth(locationProperty.get()))
-            .append(encodeString("/metadata/dummy.metadata.json"));
+            .append(encodeString(DUMMY_METADATA_JSON));
       } else {
-        Table table = IcebergTableUtil.getTable(conf, hmsTable);
-        authURI.append(getPathForAuth(((BaseTable) table).operations().current().metadataFileLocation(),
-            hmsTable.getSd().getLocation()));
+        try {
+          Table table = IcebergTableUtil.getTable(conf, hmsTable);
+          authURI.append(getPathForAuth(((BaseTable) table).operations().current().metadataFileLocation(),
+                  hmsTable.getSd().getLocation()));
+        } catch (NoSuchTableException ex) {
+          if (hmsTable.getSd() != null && !hmsTable.getSd().getLocation().isEmpty()) {
+            authURI.append(encodeString(URI.create(hmsTable.getSd().getLocation()).getPath()))
+                    .append(encodeString(DUMMY_METADATA_JSON));
+          } else {
+            throw new URISyntaxException("Couldn't create URI for table: " + dbName + "." +
+                    tableName + "as the table location isn't set", ex.getMessage());
+          }
+        }
       }
     }
     LOG.debug("Iceberg storage handler authorization URI {}", authURI);
