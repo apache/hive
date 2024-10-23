@@ -91,6 +91,8 @@ hive_metastoreConstants::hive_metastoreConstants() {
 
   DEFAULT_TABLE_TYPE = "defaultTableType";
 
+  DEFAULT_TABLE_LOCATION = "defaultLocation";
+
   TXN_ID = "txnId";
 
   WRITE_ID = "writeId";
