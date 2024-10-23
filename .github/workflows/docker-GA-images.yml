@@ -49,10 +49,10 @@ jobs:
         uses: actions/checkout@v3
 
       -
-        name: 'Set up JDK 8'
+        name: 'Set up JDK 17'
         uses: actions/setup-java@v1
         with:
-          java-version: 8
+          java-version: 17
 
       -
         name: Hive version
@@ -101,10 +101,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: 'Set up JDK 8'
+      - name: 'Set up JDK 17'
         uses: actions/setup-java@v1
         with:
-          java-version: 8
+          java-version: 17
 
       - name: Hive version
         run: echo "HIVE_VERSION=$(mvn -f "pom.xml" -q help:evaluate -Dexpression=project.version -DforceStdout)" >> $GITHUB_ENV
@@ -146,7 +146,7 @@ jobs:
           file: ./packaging/src/docker/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: apache/hive:${{ env.tag }}
+          tags: apache/hive-17:${{ env.tag }}
           build-args:
             |
             HIVE_VERSION=${{ env.HIVE_VERSION }}
