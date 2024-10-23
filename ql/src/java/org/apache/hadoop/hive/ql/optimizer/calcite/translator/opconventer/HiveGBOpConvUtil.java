@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import com.google.common.math.LongMath;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.Aggregate.Group;
@@ -42,6 +43,7 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
@@ -65,6 +67,11 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 import com.google.common.collect.ImmutableList;
+
+import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.GROUPINGID;
+import static org.apache.hadoop.hive.ql.parse.SemanticAnalyzer.getColumnInternalName;
+import static org.apache.hadoop.hive.ql.parse.SemanticAnalyzer.getGroupingSetsForCube;
+import static org.apache.hadoop.hive.ql.parse.SemanticAnalyzer.getGroupingSetsForRollup;
 
 /**
  * TODO:<br>
@@ -186,15 +193,7 @@ final class HiveGBOpConvUtil {
     // 2. Collect Grouping Set info
     if (aggRel.getGroupType() != Group.SIMPLE) {
       // 2.1 Translate Grouping set col bitset
-      ImmutableList<ImmutableBitSet> lstGrpSet = aggRel.getGroupSets();
-      long bitmap = 0;
-      for (ImmutableBitSet grpSet : lstGrpSet) {
-        bitmap = 0;
-        for (Integer bitIdx : grpSet.asList()) {
-          bitmap = SemanticAnalyzer.setBit(bitmap, bitIdx);
-        }
-        gbInfo.grpSets.add(bitmap);
-      }
+      gbInfo.grpSets.addAll(convertGroupingSets(aggRel));
       Collections.sort(gbInfo.grpSets);
 
       // 2.2 Check if GRpSet require additional MR Job
@@ -295,6 +294,31 @@ final class HiveGBOpConvUtil {
     gbInfo.defaultNullOrder = NullOrdering.defaultNullOrder(hc);
 
     return gbInfo;
+  }
+
+  private static List<Long> convertGroupingSets(HiveAggregate aggRel) {
+    switch (aggRel.getGroupType()) {
+      case SIMPLE:
+        return Collections.emptyList();
+      case CUBE:
+        return getGroupingSetsForCube(aggRel.getGroupSet().cardinality());
+      case ROLLUP:
+        return getGroupingSetsForRollup(aggRel.getGroupSet().cardinality());
+      default:
+        return convertGroupingSets(aggRel.getGroupSets());
+    }
+  }
+
+  private static List<Long> convertGroupingSets(ImmutableList<ImmutableBitSet> lstGrpSet) {
+    List<Long> groupSets = new ArrayList<>(lstGrpSet.size());
+    for (ImmutableBitSet grpSet : lstGrpSet) {
+      long bitmap = LongMath.pow(2, lstGrpSet.size()) - 1;
+      for (Integer bitIdx : grpSet.asList()) {
+        bitmap = SemanticAnalyzer.unsetBit(bitmap, lstGrpSet.size() - bitIdx - 1);
+      }
+      groupSets.add(bitmap);
+    }
+    return groupSets;
   }
 
   static OpAttr translateGB(OpAttr inputOpAf, HiveAggregate aggRel, HiveConf hc)
@@ -601,6 +625,9 @@ final class HiveGBOpConvUtil {
     case MAP_SIDE_GB_SKEW_GBKEYS_AND_DIST_UDAF_NOT_PRESENT:
     case NO_MAP_SIDE_GB_NO_SKEW:
       numPartFields += gbInfo.gbKeys.size();
+      if (inclGrpSetInMapSide(gbInfo)) {
+        ++numPartFields;
+      }
       break;
     case NO_MAP_SIDE_GB_SKEW:
     case MAP_SIDE_GB_SKEW_GBKEYS_OR_DIST_UDAF_PRESENT:
@@ -681,7 +708,7 @@ final class HiveGBOpConvUtil {
     int keyLength = reduceKeys.size();
 
     if (inclGrpSetInMapSide(gbInfo)) {
-      addGrpSetCol(false, SemanticAnalyzer.getColumnInternalName(reduceKeys.size()), true,
+      addGrpSetCol(false, getColumnInternalName(reduceKeys.size()), true,
           reduceKeys, outputKeyColumnNames, colInfoLst, colExprMap);
       keyLength++;
     }
@@ -692,7 +719,7 @@ final class HiveGBOpConvUtil {
     } else if (!gbInfo.distColIndices.isEmpty()) {
       // This is the case where distinct cols are part of GB Keys in which case
       // we still need to add it to out put col names
-      outputKeyColumnNames.add(SemanticAnalyzer.getColumnInternalName(reduceKeys.size()));
+      outputKeyColumnNames.add(getColumnInternalName(reduceKeys.size()));
     }
 
     ArrayList<ExprNodeDesc> reduceValues = getValueKeysForRS(mapGB, mapGB.getConf().getKeys()
@@ -721,10 +748,11 @@ final class HiveGBOpConvUtil {
     for (int i = 0; i < gbInfo.gbKeys.size(); i++) {
       //gbInfo already has ExprNode for gbkeys
       reduceKeys.add(gbInfo.gbKeys.get(i));
-      String colOutputName = SemanticAnalyzer.getColumnInternalName(i);
+      String colOutputName = getColumnInternalName(i);
       outputKeyColumnNames.add(colOutputName);
-      colInfoLst.add(new ColumnInfo(Utilities.ReduceField.KEY.toString() + "." + colOutputName, gbInfo.gbKeyTypes.get(i), "", false));
-      colExprMap.put(colOutputName, gbInfo.gbKeys.get(i));
+      String field = String.format("%s.%s", Utilities.ReduceField.KEY, colOutputName);
+      colInfoLst.add(new ColumnInfo(field, gbInfo.gbKeyTypes.get(i), "", false));
+      colExprMap.put(field, gbInfo.gbKeys.get(i));
     }
 
     // Note: GROUPING SETS are not allowed with map side aggregation set to false so we don't have to worry about it
@@ -734,14 +762,14 @@ final class HiveGBOpConvUtil {
     // 2. Add Dist UDAF args to reduce keys
     if (gbInfo.containsDistinctAggr) {
       // TODO: Why is this needed (doesn't represent any cols)
-      String udafName = SemanticAnalyzer.getColumnInternalName(reduceKeys.size());
+      String udafName = getColumnInternalName(reduceKeys.size());
       outputKeyColumnNames.add(udafName);
       for (int i = 0; i < gbInfo.distExprNodes.size(); i++) {
         reduceKeys.add(gbInfo.distExprNodes.get(i));
         //this part of reduceKeys is later used to create column names strictly for non-distinct aggregates
         // with parameters same as distinct keys which expects _col0 at the end. So we always append
         // _col0 at the end instead of _col<i>
-        outputColName = SemanticAnalyzer.getColumnInternalName(0);
+        outputColName = getColumnInternalName(0);
         String field = Utilities.ReduceField.KEY.toString() + "." + udafName + ":" + i + "."
             + outputColName;
         ColumnInfo colInfo = new ColumnInfo(field, gbInfo.distExprNodes.get(i).getTypeInfo(), null,
@@ -755,7 +783,7 @@ final class HiveGBOpConvUtil {
     ArrayList<ExprNodeDesc> reduceValues = new ArrayList<ExprNodeDesc>();
     for (int i = 0; i < gbInfo.deDupedNonDistIrefs.size(); i++) {
       reduceValues.add(gbInfo.deDupedNonDistIrefs.get(i));
-      outputColName = SemanticAnalyzer.getColumnInternalName(reduceValues.size() - 1);
+      outputColName = getColumnInternalName(reduceValues.size() - 1);
       outputValueColumnNames.add(outputColName);
       String field = Utilities.ReduceField.VALUE.toString() + "." + outputColName;
       colInfoLst.add(new ColumnInfo(field, reduceValues.get(reduceValues.size() - 1).getTypeInfo(),
@@ -800,21 +828,20 @@ final class HiveGBOpConvUtil {
     int groupingSetsPosition = -1;
     if (inclGrpSetInReduceSide(gbInfo) && gbInfo.grpIdFunctionNeeded) {
       groupingSetsPosition = gbKeys.size();
-      ExprNodeDesc grpSetColExpr = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo,
+      ExprNodeDesc grpSetColExpr = new ExprNodeColumnDesc(GROUPINGID.getTypeInfo(),
           rsColInfoLst.get(groupingSetsPosition).getInternalName(), null, false);
       gbKeys.add(grpSetColExpr);
       colOutputName = gbInfo.outputColNames.get(gbInfo.outputColNames.size() - 1);
       ;
       outputColNames.add(colOutputName);
-      colInfoLst.add(new ColumnInfo(colOutputName, TypeInfoFactory.stringTypeInfo, null, true));
+      colInfoLst.add(new ColumnInfo(colOutputName, GROUPINGID.getTypeInfo(), null, true));
       colExprMap.put(colOutputName, grpSetColExpr);
     }
 
     // 2. Add UDAF
     UDAFAttrs udafAttr;
     ArrayList<AggregationDesc> aggregations = new ArrayList<AggregationDesc>();
-    int udafStartPosInGBInfOutputColNames = gbInfo.grpSets.isEmpty() ? gbInfo.gbKeys.size()
-        : gbInfo.gbKeys.size() * 2;
+    int udafStartPosInGBInfOutputColNames = gbInfo.gbKeys.size();
     int udafStartPosInInputRS = gbInfo.grpSets.isEmpty() ? gbInfo.gbKeys.size() : gbInfo.gbKeys.size() + 1;
 
     for (int i = 0; i < gbInfo.udafAttrs.size(); i++) {
@@ -864,7 +891,7 @@ final class HiveGBOpConvUtil {
       if (finalGB) {
         colOutputName = gbInfo.outputColNames.get(i);
       } else {
-        colOutputName = SemanticAnalyzer.getColumnInternalName(i);
+        colOutputName = getColumnInternalName(i);
       }
       outputColNames.add(colOutputName);
       colInfoLst.add(new ColumnInfo(colOutputName, ci.getType(), "", false));
@@ -877,7 +904,7 @@ final class HiveGBOpConvUtil {
       groupingSetsColPosition = gbInfo.gbKeys.size();
       if (computeGrpSet) {
         // GrpSet Col needs to be constructed
-        gbKeys.add(new ExprNodeConstantDesc("0L"));
+        gbKeys.add(new ExprNodeConstantDesc(0L));
       } else {
         // GrpSet Col already part of input RS
         // TODO: Can't we just copy the ExprNodeDEsc from input (Do we need to
@@ -891,8 +918,28 @@ final class HiveGBOpConvUtil {
         colOutputName = gbInfo.outputColNames.get(gbInfo.outputColNames.size() - 1);
       }
       outputColNames.add(colOutputName);
-      colInfoLst.add(new ColumnInfo(colOutputName, TypeInfoFactory.stringTypeInfo, null, true));
+      colInfoLst.add(new ColumnInfo(colOutputName, TypeInfoFactory.longTypeInfo, null, true));
       colExprMap.put(colOutputName, gbKeys.get(groupingSetsColPosition));
+    } else if (!gbInfo.grpSets.isEmpty()) {
+      if (gbInfo.gbPhysicalPipelineMode == HIVEGBPHYSICALMODE.MAP_SIDE_GB_NO_SKEW_NO_ADD_MR_JOB) {
+        groupingSetsColPosition = gbInfo.gbKeys.size();
+        String groupingSetColumnName = rs.getSchema().getSignature().get(groupingSetsColPosition).getInternalName();
+        ExprNodeDesc inputExpr = new ExprNodeColumnDesc(VirtualColumn.GROUPINGID.getTypeInfo(),
+            groupingSetColumnName, null, false);
+        gbKeys.add(inputExpr);
+
+        String field = VirtualColumn.GROUPINGID.getName();
+        outputColNames.add(field);
+        colExprMap.put(field, gbKeys.get(gbKeys.size() - 1));
+        colInfoLst.add(new ColumnInfo(field, VirtualColumn.GROUPINGID.getTypeInfo(), null, true));
+      } else {
+        ExprNodeConstantDesc constant = new ExprNodeConstantDesc(VirtualColumn.GROUPINGID.getTypeInfo(), 0L);
+        gbKeys.add(constant);
+        String field = VirtualColumn.GROUPINGID.getName();
+        outputColNames.add(field);
+        colExprMap.put(field, constant);
+        colInfoLst.add(new ColumnInfo(field, VirtualColumn.GROUPINGID.getTypeInfo(), null, true));
+      }
     }
 
     // 2. Walk through UDAF and add them to GB
@@ -906,8 +953,7 @@ final class HiveGBOpConvUtil {
     int distinctStartPosInReduceKeys = gbKeys.size();
     List<ExprNodeDesc> reduceValues = rs.getConf().getValueCols();
     ArrayList<AggregationDesc> aggregations = new ArrayList<AggregationDesc>();
-    int udafColStartPosInOriginalGB = (gbInfo.grpSets.size() > 0) ? gbInfo.gbKeys.size() * 2
-        : gbInfo.gbKeys.size();
+    int udafColStartPosInOriginalGB = gbInfo.gbKeys.size();
     int udafColStartPosInRS = rs.getConf().getKeyCols().size();
     for (int i = 0; i < gbInfo.udafAttrs.size(); i++) {
       UDAFAttrs udafAttr = gbInfo.udafAttrs.get(i);
@@ -923,7 +969,7 @@ final class HiveGBOpConvUtil {
           // TODO: verify if this is needed
           if (lastReduceKeyColName != null) {
             rsDistUDAFParamName = Utilities.ReduceField.KEY.name() + "." + lastReduceKeyColName
-                + ":" + numDistinctUDFs + "." + SemanticAnalyzer.getColumnInternalName(j);
+                + ":" + numDistinctUDFs + "." + getColumnInternalName(j);
           }
 
           distinctUDAFParam = new ExprNodeColumnDesc(rsDistUDAFParamColInfo.getType(),
@@ -954,7 +1000,7 @@ final class HiveGBOpConvUtil {
       if (finalGB) {
         colOutputName = gbInfo.outputColNames.get(udafColStartPosInOriginalGB + i);
       } else {
-        colOutputName = SemanticAnalyzer.getColumnInternalName(gbKeys.size() + aggregations.size()
+        colOutputName = getColumnInternalName(gbKeys.size() + aggregations.size()
             - 1);
       }
 
@@ -1012,7 +1058,7 @@ final class HiveGBOpConvUtil {
       if (useOriginalGBNames) {
         colOutputName = gbInfo.outputColNames.get(i);
       } else {
-        colOutputName = SemanticAnalyzer.getColumnInternalName(i);
+        colOutputName = getColumnInternalName(i);
       }
       outputColNames.add(colOutputName);
       colInfoLst.add(new ColumnInfo(colOutputName, ci.getType(), null, false));
@@ -1108,7 +1154,7 @@ final class HiveGBOpConvUtil {
       if (useOriginalGBNames) {
         colOutputName = gbInfo.outputColNames.get(udafColStartPosInOriginalGB + e.getKey());
       } else {
-        colOutputName = SemanticAnalyzer.getColumnInternalName(gbKeys.size() + aggregations.size()
+        colOutputName = getColumnInternalName(gbKeys.size() + aggregations.size()
             - 1);
       }
       colInfoLst.add(new ColumnInfo(colOutputName, udaf.returnType, "", false));
@@ -1160,7 +1206,7 @@ final class HiveGBOpConvUtil {
     ArrayList<ExprNodeDesc> gbKeys = new ArrayList<ExprNodeDesc>();
     for (int i = 0; i < gbAttrs.gbKeys.size(); i++) {
       gbKeys.add(gbAttrs.gbKeys.get(i));
-      colOutputName = SemanticAnalyzer.getColumnInternalName(i);
+      colOutputName = getColumnInternalName(i);
       colInfoLst.add(new ColumnInfo(colOutputName, gbAttrs.gbKeyTypes.get(i), "", false));
       outputColNames.add(colOutputName);
       gbKeyColsAsNamesFrmIn.add(gbAttrs.gbKeyColNamesInInput.get(i));
@@ -1181,7 +1227,7 @@ final class HiveGBOpConvUtil {
     for (int i = 0; i < gbAttrs.distExprNodes.size(); i++) {
       if (!gbKeyColsAsNamesFrmIn.contains(gbAttrs.distExprNames.get(i))) {
         gbKeys.add(gbAttrs.distExprNodes.get(i));
-        colOutputName = SemanticAnalyzer.getColumnInternalName(gbKeys.size() - 1);
+        colOutputName = getColumnInternalName(gbKeys.size() - 1);
         colInfoLst.add(new ColumnInfo(colOutputName, gbAttrs.distExprTypes.get(i), "", false));
         outputColNames.add(colOutputName);
         gbKeyColsAsNamesFrmIn.add(gbAttrs.distExprNames.get(i));
@@ -1203,7 +1249,7 @@ final class HiveGBOpConvUtil {
       } catch (SemanticException e) {
         throw new RuntimeException(e);
       }
-      colOutputName = SemanticAnalyzer.getColumnInternalName(gbKeys.size() + aggregations.size()
+      colOutputName = getColumnInternalName(gbKeys.size() + aggregations.size()
           - 1);
       colInfoLst.add(new ColumnInfo(colOutputName, udafInfo.returnType, "", false));
       outputColNames.add(colOutputName);
@@ -1232,18 +1278,18 @@ final class HiveGBOpConvUtil {
     ExprNodeDesc grpSetColExpr = null;
 
     if (createConstantExpr) {
-      grpSetColExpr = new ExprNodeConstantDesc("0L");
+      grpSetColExpr = new ExprNodeConstantDesc(0L);
     } else {
-      grpSetColExpr = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, grpSetIDExprName,
+      grpSetColExpr = new ExprNodeColumnDesc(TypeInfoFactory.longTypeInfo, grpSetIDExprName,
           null, false);
     }
     exprLst.add(grpSetColExpr);
 
-    outputColName = SemanticAnalyzer.getColumnInternalName(exprLst.size() - 1);
+    outputColName = getColumnInternalName(exprLst.size() - 1);
     outputColumnNames.add(outputColName);
     String internalColName = outputColName;
     if (addReducePrefixToColInfoName) {
-      internalColName = Utilities.ReduceField.KEY.toString() + "." + outputColName;
+      internalColName = Utilities.ReduceField.KEY + "." + outputColName;
     }
     colInfoLst.add(new ColumnInfo(internalColName, grpSetColExpr.getTypeInfo(), null, true));
     colExprMap.put(internalColName, grpSetColExpr);
@@ -1271,7 +1317,7 @@ final class HiveGBOpConvUtil {
           setColToNonVirtual);
       int outColNameIndx = startPos;
       for (int i = 0; i < reduceKeys.size(); ++i) {
-        String outputColName = SemanticAnalyzer.getColumnInternalName(outColNameIndx);
+        String outputColName = getColumnInternalName(outColNameIndx);
         outColNameIndx++;
         if (!addOnlyOneKeyColName || i == 0) {
           outputKeyColumnNames.add(outputColName);
@@ -1311,7 +1357,7 @@ final class HiveGBOpConvUtil {
       valueKeys = ExprNodeDescUtils.genExprNodeDesc(inOp, aggStartPos, mapGBColInfoLst.size() - 1,
           true, setColToNonVirtual);
       for (int i = 0; i < valueKeys.size(); ++i) {
-        String outputColName = SemanticAnalyzer.getColumnInternalName(i);
+        String outputColName = getColumnInternalName(i);
         outputKeyColumnNames.add(outputColName);
         // TODO: Verify if this is needed (Why can't it be always null/empty
         String tabAlias = addEmptyTabAlias ? "" : null;
