@@ -159,7 +159,7 @@ public class TestFilterSelectivityEstimator {
 
   @Test
   public void testLessThanSelectivity() {
-    Assert.assertEquals(0.6923076923076923, lessThanSelectivity(KLL, 3), DELTA);
+    Assert.assertEquals(0.6153846153846154, lessThanSelectivity(KLL, 3), DELTA);
   }
 
   @Test
@@ -204,7 +204,7 @@ public class TestFilterSelectivityEstimator {
 
   @Test
   public void testGreaterThanOrEqualSelectivity() {
-    Assert.assertEquals(0.3076923076923077, greaterThanOrEqualSelectivity(KLL, 3), DELTA);
+    Assert.assertEquals(0.3846153846153846, greaterThanOrEqualSelectivity(KLL, 3), DELTA);
   }
 
   @Test
@@ -270,7 +270,7 @@ public class TestFilterSelectivityEstimator {
     doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
     RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN, inputRef0, int3);
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
-    Assert.assertEquals(0.6923076923076923, estimator.estimateSelectivity(filter), DELTA);
+    Assert.assertEquals(0.6153846153846154, estimator.estimateSelectivity(filter), DELTA);
   }
 
   @Test
@@ -342,7 +342,7 @@ public class TestFilterSelectivityEstimator {
     doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
     RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.GREATER_THAN_OR_EQUAL, inputRef0, int3);
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
-    Assert.assertEquals(0.3076923076923077, estimator.estimateSelectivity(filter), DELTA);
+    Assert.assertEquals(0.38461538461538464, estimator.estimateSelectivity(filter), DELTA);
   }
 
   @Test
@@ -474,7 +474,7 @@ public class TestFilterSelectivityEstimator {
     doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
     RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.GREATER_THAN_OR_EQUAL, inputRef0, int3);
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
-    Assert.assertEquals(0.2, estimator.estimateSelectivity(filter), DELTA);
+    Assert.assertEquals(0.25, estimator.estimateSelectivity(filter), DELTA);
   }
 
   @Test
@@ -483,7 +483,7 @@ public class TestFilterSelectivityEstimator {
     doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
     RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN, inputRef0, int3);
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
-    Assert.assertEquals(0.45, estimator.estimateSelectivity(filter), DELTA);
+    Assert.assertEquals(0.4, estimator.estimateSelectivity(filter), DELTA);
   }
 
   @Test

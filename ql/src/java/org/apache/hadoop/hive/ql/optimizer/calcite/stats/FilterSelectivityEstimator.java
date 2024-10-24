@@ -43,6 +43,7 @@ import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.datasketches.kll.KllFloatsSketch;
 import org.apache.datasketches.memory.Memory;
+import org.apache.datasketches.quantilescommon.QuantileSearchCriteria;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -500,7 +501,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
 
   private static double rangedSelectivity(KllFloatsSketch kll, float val1, float val2) {
     float[] splitPoints = new float[] { val1, val2 };
-    double[] boundaries = kll.getCDF(splitPoints);
+    double[] boundaries = kll.getCDF(splitPoints, QuantileSearchCriteria.EXCLUSIVE);
     return boundaries[1] - boundaries[0];
   }
 
@@ -545,7 +546,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     if (value < kll.getMinItem()) {
       return 0;
     }
-    return kll.getCDF(new float[] { Math.nextUp(value) })[0];
+    return kll.getCDF(new float[] { Math.nextUp(value) }, QuantileSearchCriteria.EXCLUSIVE)[0];
   }
 
   /**
@@ -562,7 +563,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     if (Double.compare(value, min) == 0 || Double.compare(Math.nextUp(value), min) == 0) {
       return 0;
     }
-    return kll.getCDF(new float[] { value })[0];
+    return kll.getCDF(new float[] { value }, QuantileSearchCriteria.EXCLUSIVE)[0];
   }
 
   /**

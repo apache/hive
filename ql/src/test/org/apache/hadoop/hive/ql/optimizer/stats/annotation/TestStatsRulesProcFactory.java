@@ -102,7 +102,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    assertEquals(9, numRows);
+    assertEquals(8, numRows);
   }
 
   @Test
@@ -141,7 +141,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    assertEquals(13, numRows);
+    assertEquals(12, numRows);
   }
 
   @Test
@@ -286,7 +286,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    assertEquals(2, numRows);
+    assertEquals(3, numRows);
   }
 
   @Test
@@ -298,7 +298,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    assertEquals(12, numRows);
+    assertEquals(13, numRows);
   }
 
   @Test
@@ -322,7 +322,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    assertEquals(0, numRows);
+    assertEquals(1, numRows);
   }
 
   @Test
@@ -362,7 +362,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, values.length + numNulls);
 
-    assertEquals(0, numRows);
+    assertEquals(2, numRows);
   }
 
   @Test
@@ -476,7 +476,7 @@ public class TestStatsRulesProcFactory {
     long numRowsBetween = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDescBetween, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    assertEquals(5, numRowsGeq);
+    assertEquals(numRowsGeq, numRowsBetween);
     assertEquals(12, numRowsBetween);
   }
 
@@ -543,7 +543,7 @@ public class TestStatsRulesProcFactory {
     long numRowsGth = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDescGth, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    assertEquals(12, numRows);
+    assertEquals(11, numRows);
     assertEquals(numRows, numRowsLth + numRowsGth);
   }
 
@@ -572,7 +572,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    assertEquals(VALUES.length, numRows);
+    assertEquals(VALUES.length - 1, numRows);
   }
 
   @Test

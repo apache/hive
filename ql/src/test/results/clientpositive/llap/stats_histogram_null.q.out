@@ -767,17 +767,17 @@ STAGE PLANS:
                   Statistics: Num rows: 20 Data size: 1756 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((b >= 3) and a is not null) (type: boolean)
-                    Statistics: Num rows: 4 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 5 Data size: 441 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: a (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 4 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 5 Data size: 425 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 4 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 5 Data size: 425 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 4 
@@ -810,10 +810,10 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
-                  minReductionHashAggr: 0.75
+                  minReductionHashAggr: 0.8
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1136,17 +1136,17 @@ STAGE PLANS:
                   Statistics: Num rows: 20 Data size: 1756 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((b < 5) and a is not null) (type: boolean)
-                    Statistics: Num rows: 11 Data size: 967 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 10 Data size: 878 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: a (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 11 Data size: 935 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 11 Data size: 935 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 4 
@@ -1179,10 +1179,10 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 11 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 10 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
-                  minReductionHashAggr: 0.9090909
+                  minReductionHashAggr: 0.9
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE

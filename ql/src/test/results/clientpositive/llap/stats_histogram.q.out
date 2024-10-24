@@ -564,12 +564,12 @@ STAGE PLANS:
                   Statistics: Num rows: 15 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (b < 3) (type: boolean)
-                    Statistics: Num rows: 9 Data size: 36 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 8 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      Statistics: Num rows: 9 Data size: 36 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 8 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
-                        minReductionHashAggr: 0.8888889
+                        minReductionHashAggr: 0.875
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
