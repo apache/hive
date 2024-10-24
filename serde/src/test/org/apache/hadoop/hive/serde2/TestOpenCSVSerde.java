@@ -39,6 +39,18 @@ public class TestOpenCSVSerde {
     props.setProperty(serdeConstants.LIST_COLUMN_TYPES, "string,string,string");
   }
 
+
+  @Test
+  public void testColumnDeserializeCase() throws Exception {
+    props.setProperty(serdeConstants.LIST_COLUMN_TYPES, "STRING,STRING,STRING");
+    csv.initialize(null, props, null);
+    final Text in = new Text("hello,\"yes, okay\",1");
+    final List<String> row = (List<String>) csv.deserialize(in);
+    assertEquals("hello", row.get(0));
+    assertEquals("yes, okay", row.get(1));
+    assertEquals("1", row.get(2));
+  }
+
   @Test
   public void testDeserialize() throws Exception {
     csv.initialize(null, props, null);
