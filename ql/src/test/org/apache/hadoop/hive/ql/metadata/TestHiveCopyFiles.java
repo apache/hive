@@ -21,10 +21,13 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.mockito.Mockito;
@@ -39,6 +42,13 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
 public class TestHiveCopyFiles {
+
+  @ClassRule
+  public static HiveTestEnvSetup env_setup = new HiveTestEnvSetup();
+
+  @Rule
+  public TestRule methodRule = env_setup.getMethodRule();
+
   private static boolean LOCAL_SOURCE = true;
   private static boolean NO_ACID = false;
 
@@ -62,7 +72,7 @@ public class TestHiveCopyFiles {
 
   @BeforeClass
   public static void setUp() {
-    hiveConf = new HiveConf(TestHiveCopyFiles.class);
+    hiveConf = env_setup.getTestCtx().hiveConf;
     SessionState.start(hiveConf);
   }
 

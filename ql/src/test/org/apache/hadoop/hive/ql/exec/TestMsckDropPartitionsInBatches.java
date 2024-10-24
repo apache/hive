@@ -29,11 +29,15 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.mockito.ArgumentCaptor;
 
 import java.util.ArrayList;
@@ -54,6 +58,13 @@ import static org.mockito.Mockito.verify;
  * Unit test for function dropPartitionsInBatches in DDLTask.
  **/
 public class TestMsckDropPartitionsInBatches {
+
+  @ClassRule
+  public static HiveTestEnvSetup env_setup = new HiveTestEnvSetup();
+
+  @Rule
+  public TestRule methodRule = env_setup.getMethodRule();
+
   private static HiveConf hiveConf;
   private static Msck msck;
   private final String catName = "hive";
@@ -65,7 +76,7 @@ public class TestMsckDropPartitionsInBatches {
 
   @BeforeClass
   public static void setupClass() throws Exception {
-    hiveConf = new HiveConf(TestMsckCreatePartitionsInBatches.class);
+    hiveConf = env_setup.getTestCtx().hiveConf;
     hiveConf.setIntVar(ConfVars.HIVE_MSCK_REPAIR_BATCH_SIZE, 5);
     hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
       "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
