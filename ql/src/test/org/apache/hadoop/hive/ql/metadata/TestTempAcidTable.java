@@ -31,9 +31,13 @@ import org.apache.hadoop.util.StringUtils;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.AfterClass;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 
 import java.util.Map;
 
@@ -42,12 +46,19 @@ import java.util.Map;
  *
  */
 public class TestTempAcidTable {
+
+  @ClassRule
+  public static HiveTestEnvSetup env_setup = new HiveTestEnvSetup();
+
+  @Rule
+  public TestRule methodRule = env_setup.getMethodRule();
+
   private static Hive hive;
 
   @BeforeClass
   public static void setUp() throws Exception {
     hive = Hive.get();
-    HiveConf hiveConf = hive.getConf();
+    HiveConf hiveConf = env_setup.getTestCtx().hiveConf;
     hiveConf.setVar(ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     hiveConf.setBoolVar(ConfVars.HIVE_IN_TEST, true);

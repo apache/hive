@@ -34,9 +34,13 @@ import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.testutils.HiveTestEnvSetup;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 
 import org.junit.Assert;
 
@@ -44,13 +48,20 @@ import org.junit.Assert;
  * Tests for parsing and semantic analysis of ALTER TABLE ... compact.
  */
 public class TestQBCompact {
+
+  @ClassRule
+  public static HiveTestEnvSetup env_setup = new HiveTestEnvSetup();
+
+  @Rule
+  public TestRule methodRule = env_setup.getMethodRule();
+
   static QueryState queryState;
   static HiveConf conf;
 
   @BeforeClass
   public static void init() throws Exception {
     queryState = new QueryState.Builder().build();
-    conf = queryState.getConf();
+    conf = env_setup.getTestCtx().hiveConf;
     conf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");

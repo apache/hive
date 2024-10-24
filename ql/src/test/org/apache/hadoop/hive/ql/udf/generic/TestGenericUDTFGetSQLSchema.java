@@ -26,9 +26,13 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -37,11 +41,19 @@ import static org.junit.Assert.assertTrue;
  */
 public class TestGenericUDTFGetSQLSchema {
 
+  @ClassRule
+  public static HiveTestEnvSetup env_setup = new HiveTestEnvSetup();
+
+  @Rule
+  public TestRule methodRule = env_setup.getMethodRule();
+
+  public static HiveConf conf;
+
   private static SessionState sessionState;
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-    HiveConf conf = new HiveConf();
+    conf = env_setup.getTestCtx().hiveConf;
     conf.set("hive.security.authorization.manager",
         "org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider");
     sessionState = SessionState.start(conf);
@@ -84,6 +96,8 @@ public class TestGenericUDTFGetSQLSchema {
 
   @Test
   public void testWithDDL() throws Exception {
+    // Set the execution engine to mr to avoid the NPE exception in stats flow
+    conf.set("hive.execution.engine", "mr");
     invokeUDTFAndTest("show tables", new String[]{});
   }
 
