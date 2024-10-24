@@ -1,0 +1,217 @@
+PREHOOK: query: explain
+with ss as
+ (select ca_county,d_qoy, d_year,sum(ss_ext_sales_price) as store_sales
+ from store_sales,date_dim,customer_address
+ where ss_sold_date_sk = d_date_sk
+  and ss_addr_sk=ca_address_sk
+ group by ca_county,d_qoy, d_year),
+ ws as
+ (select ca_county,d_qoy, d_year,sum(ws_ext_sales_price) as web_sales
+ from web_sales,date_dim,customer_address
+ where ws_sold_date_sk = d_date_sk
+  and ws_bill_addr_sk=ca_address_sk
+ group by ca_county,d_qoy, d_year)
+ select /* tt */
+        ss1.ca_county
+       ,ss1.d_year
+       ,ws2.web_sales/ws1.web_sales web_q1_q2_increase
+       ,ss2.store_sales/ss1.store_sales store_q1_q2_increase
+       ,ws3.web_sales/ws2.web_sales web_q2_q3_increase
+       ,ss3.store_sales/ss2.store_sales store_q2_q3_increase
+ from
+        ss ss1
+       ,ss ss2
+       ,ss ss3
+       ,ws ws1
+       ,ws ws2
+       ,ws ws3
+ where
+    ss1.d_qoy = 1
+    and ss1.d_year = 2000
+    and ss1.ca_county = ss2.ca_county
+    and ss2.d_qoy = 2
+    and ss2.d_year = 2000
+ and ss2.ca_county = ss3.ca_county
+    and ss3.d_qoy = 3
+    and ss3.d_year = 2000
+    and ss1.ca_county = ws1.ca_county
+    and ws1.d_qoy = 1
+    and ws1.d_year = 2000
+    and ws1.ca_county = ws2.ca_county
+    and ws2.d_qoy = 2
+    and ws2.d_year = 2000
+    and ws1.ca_county = ws3.ca_county
+    and ws3.d_qoy = 3
+    and ws3.d_year =2000
+    and case when ws1.web_sales > 0 then ws2.web_sales/ws1.web_sales else null end 
+       > case when ss1.store_sales > 0 then ss2.store_sales/ss1.store_sales else null end
+    and case when ws2.web_sales > 0 then ws3.web_sales/ws2.web_sales else null end
+       > case when ss2.store_sales > 0 then ss3.store_sales/ss2.store_sales else null end
+ order by ss1.d_year
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_address
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@web_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+with ss as
+ (select ca_county,d_qoy, d_year,sum(ss_ext_sales_price) as store_sales
+ from store_sales,date_dim,customer_address
+ where ss_sold_date_sk = d_date_sk
+  and ss_addr_sk=ca_address_sk
+ group by ca_county,d_qoy, d_year),
+ ws as
+ (select ca_county,d_qoy, d_year,sum(ws_ext_sales_price) as web_sales
+ from web_sales,date_dim,customer_address
+ where ws_sold_date_sk = d_date_sk
+  and ws_bill_addr_sk=ca_address_sk
+ group by ca_county,d_qoy, d_year)
+ select /* tt */
+        ss1.ca_county
+       ,ss1.d_year
+       ,ws2.web_sales/ws1.web_sales web_q1_q2_increase
+       ,ss2.store_sales/ss1.store_sales store_q1_q2_increase
+       ,ws3.web_sales/ws2.web_sales web_q2_q3_increase
+       ,ss3.store_sales/ss2.store_sales store_q2_q3_increase
+ from
+        ss ss1
+       ,ss ss2
+       ,ss ss3
+       ,ws ws1
+       ,ws ws2
+       ,ws ws3
+ where
+    ss1.d_qoy = 1
+    and ss1.d_year = 2000
+    and ss1.ca_county = ss2.ca_county
+    and ss2.d_qoy = 2
+    and ss2.d_year = 2000
+ and ss2.ca_county = ss3.ca_county
+    and ss3.d_qoy = 3
+    and ss3.d_year = 2000
+    and ss1.ca_county = ws1.ca_county
+    and ws1.d_qoy = 1
+    and ws1.d_year = 2000
+    and ws1.ca_county = ws2.ca_county
+    and ws2.d_qoy = 2
+    and ws2.d_year = 2000
+    and ws1.ca_county = ws3.ca_county
+    and ws3.d_qoy = 3
+    and ws3.d_year =2000
+    and case when ws1.web_sales > 0 then ws2.web_sales/ws1.web_sales else null end 
+       > case when ss1.store_sales > 0 then ss2.store_sales/ss1.store_sales else null end
+    and case when ws2.web_sales > 0 then ws3.web_sales/ws2.web_sales else null end
+       > case when ss2.store_sales > 0 then ss3.store_sales/ss2.store_sales else null end
+ order by ss1.d_year
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_address
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@web_sales
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: web_sales
+          properties:
+            hive.sql.query SELECT "t61"."ca_county", CAST(2000 AS INTEGER) AS "d_year", "t30"."$f3" / "t9"."$f3" AS "web_q1_q2_increase", "t61"."$f10" / "t61"."$f1" AS "store_q1_q2_increase", "t19"."$f1" / "t30"."$f3" AS "web_q2_q3_increase", "t61"."$f11" / "t61"."$f10" AS "store_q2_q3_increase"
+FROM (SELECT "t7"."ca_county" AS "$f0", SUM("t1"."ws_ext_sales_price") AS "$f3", SUM("t1"."ws_ext_sales_price") > 0 AS ">"
+FROM (SELECT "ws_sold_date_sk", "ws_bill_addr_sk", "ws_ext_sales_price"
+FROM (SELECT "ws_sold_date_sk", "ws_bill_addr_sk", "ws_ext_sales_price"
+FROM "web_sales") AS "t"
+WHERE "ws_sold_date_sk" IS NOT NULL AND "ws_bill_addr_sk" IS NOT NULL) AS "t1"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year", "d_qoy"
+FROM "date_dim") AS "t2"
+WHERE "d_qoy" = 1 AND ("d_year" = 2000 AND "d_date_sk" IS NOT NULL)) AS "t4" ON "t1"."ws_sold_date_sk" = "t4"."d_date_sk"
+INNER JOIN (SELECT "ca_address_sk", "ca_county"
+FROM (SELECT "ca_address_sk", "ca_county"
+FROM "customer_address") AS "t5"
+WHERE "ca_address_sk" IS NOT NULL AND "ca_county" IS NOT NULL) AS "t7" ON "t1"."ws_bill_addr_sk" = "t7"."ca_address_sk"
+GROUP BY "t7"."ca_county") AS "t9"
+INNER JOIN (SELECT "t18"."ca_county", SUM("t12"."ws_ext_sales_price") AS "$f1"
+FROM (SELECT "ws_sold_date_sk", "ws_bill_addr_sk", "ws_ext_sales_price"
+FROM (SELECT "ws_sold_date_sk", "ws_bill_addr_sk", "ws_ext_sales_price"
+FROM "web_sales") AS "t10"
+WHERE "ws_sold_date_sk" IS NOT NULL AND "ws_bill_addr_sk" IS NOT NULL) AS "t12"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year", "d_qoy"
+FROM "date_dim") AS "t13"
+WHERE "d_qoy" = 3 AND ("d_year" = 2000 AND "d_date_sk" IS NOT NULL)) AS "t15" ON "t12"."ws_sold_date_sk" = "t15"."d_date_sk"
+INNER JOIN (SELECT "ca_address_sk", "ca_county"
+FROM (SELECT "ca_address_sk", "ca_county"
+FROM "customer_address") AS "t16"
+WHERE "ca_address_sk" IS NOT NULL AND "ca_county" IS NOT NULL) AS "t18" ON "t12"."ws_bill_addr_sk" = "t18"."ca_address_sk"
+GROUP BY "t18"."ca_county") AS "t19" ON "t9"."$f0" = "t19"."ca_county"
+INNER JOIN (SELECT "t28"."ca_county" AS "$f0", SUM("t22"."ws_ext_sales_price") AS "$f3", SUM("t22"."ws_ext_sales_price") > 0 AS ">"
+FROM (SELECT "ws_sold_date_sk", "ws_bill_addr_sk", "ws_ext_sales_price"
+FROM (SELECT "ws_sold_date_sk", "ws_bill_addr_sk", "ws_ext_sales_price"
+FROM "web_sales") AS "t20"
+WHERE "ws_sold_date_sk" IS NOT NULL AND "ws_bill_addr_sk" IS NOT NULL) AS "t22"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year", "d_qoy"
+FROM "date_dim") AS "t23"
+WHERE "d_qoy" = 2 AND ("d_year" = 2000 AND "d_date_sk" IS NOT NULL)) AS "t25" ON "t22"."ws_sold_date_sk" = "t25"."d_date_sk"
+INNER JOIN (SELECT "ca_address_sk", "ca_county"
+FROM (SELECT "ca_address_sk", "ca_county"
+FROM "customer_address") AS "t26"
+WHERE "ca_address_sk" IS NOT NULL AND "ca_county" IS NOT NULL) AS "t28" ON "t22"."ws_bill_addr_sk" = "t28"."ca_address_sk"
+GROUP BY "t28"."ca_county") AS "t30" ON "t9"."$f0" = "t30"."$f0"
+INNER JOIN (SELECT "t40"."ca_county", "t40"."$f1", "t50"."ca_county" AS "ca_county0", "t50"."$f1" AS "$f10", "t60"."ca_county" AS "ca_county1", "t60"."$f1" AS "$f11"
+FROM (SELECT "t39"."ca_county", SUM("t33"."ss_ext_sales_price") AS "$f1"
+FROM (SELECT "ss_sold_date_sk", "ss_addr_sk", "ss_ext_sales_price"
+FROM (SELECT "ss_sold_date_sk", "ss_addr_sk", "ss_ext_sales_price"
+FROM "store_sales") AS "t31"
+WHERE "ss_sold_date_sk" IS NOT NULL AND "ss_addr_sk" IS NOT NULL) AS "t33"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year", "d_qoy"
+FROM "date_dim") AS "t34"
+WHERE "d_qoy" = 1 AND ("d_year" = 2000 AND "d_date_sk" IS NOT NULL)) AS "t36" ON "t33"."ss_sold_date_sk" = "t36"."d_date_sk"
+INNER JOIN (SELECT "ca_address_sk", "ca_county"
+FROM (SELECT "ca_address_sk", "ca_county"
+FROM "customer_address") AS "t37"
+WHERE "ca_address_sk" IS NOT NULL AND "ca_county" IS NOT NULL) AS "t39" ON "t33"."ss_addr_sk" = "t39"."ca_address_sk"
+GROUP BY "t39"."ca_county") AS "t40"
+INNER JOIN (SELECT "t49"."ca_county", SUM("t43"."ss_ext_sales_price") AS "$f1"
+FROM (SELECT "ss_sold_date_sk", "ss_addr_sk", "ss_ext_sales_price"
+FROM (SELECT "ss_sold_date_sk", "ss_addr_sk", "ss_ext_sales_price"
+FROM "store_sales") AS "t41"
+WHERE "ss_sold_date_sk" IS NOT NULL AND "ss_addr_sk" IS NOT NULL) AS "t43"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year", "d_qoy"
+FROM "date_dim") AS "t44"
+WHERE "d_qoy" = 2 AND ("d_year" = 2000 AND "d_date_sk" IS NOT NULL)) AS "t46" ON "t43"."ss_sold_date_sk" = "t46"."d_date_sk"
+INNER JOIN (SELECT "ca_address_sk", "ca_county"
+FROM (SELECT "ca_address_sk", "ca_county"
+FROM "customer_address") AS "t47"
+WHERE "ca_address_sk" IS NOT NULL AND "ca_county" IS NOT NULL) AS "t49" ON "t43"."ss_addr_sk" = "t49"."ca_address_sk"
+GROUP BY "t49"."ca_county") AS "t50" ON "t40"."ca_county" = "t50"."ca_county"
+INNER JOIN (SELECT "t59"."ca_county", SUM("t53"."ss_ext_sales_price") AS "$f1"
+FROM (SELECT "ss_sold_date_sk", "ss_addr_sk", "ss_ext_sales_price"
+FROM (SELECT "ss_sold_date_sk", "ss_addr_sk", "ss_ext_sales_price"
+FROM "store_sales") AS "t51"
+WHERE "ss_sold_date_sk" IS NOT NULL AND "ss_addr_sk" IS NOT NULL) AS "t53"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year", "d_qoy"
+FROM "date_dim") AS "t54"
+WHERE "d_qoy" = 3 AND ("d_year" = 2000 AND "d_date_sk" IS NOT NULL)) AS "t56" ON "t53"."ss_sold_date_sk" = "t56"."d_date_sk"
+INNER JOIN (SELECT "ca_address_sk", "ca_county"
+FROM (SELECT "ca_address_sk", "ca_county"
+FROM "customer_address") AS "t57"
+WHERE "ca_address_sk" IS NOT NULL AND "ca_county" IS NOT NULL) AS "t59" ON "t53"."ss_addr_sk" = "t59"."ca_address_sk"
+GROUP BY "t59"."ca_county") AS "t60" ON "t50"."ca_county" = "t60"."ca_county") AS "t61" ON "t9"."$f0" = "t61"."ca_county" AND CASE WHEN "t61"."$f1" > 0 THEN CASE WHEN "t9".">" THEN "t30"."$f3" / "t9"."$f3" > "t61"."$f10" / "t61"."$f1" ELSE FALSE END ELSE FALSE END AND CASE WHEN "t61"."$f10" > 0 THEN CASE WHEN "t30".">" THEN "t19"."$f1" / "t30"."$f3" > "t61"."$f11" / "t61"."$f10" ELSE FALSE END ELSE FALSE END
+            hive.sql.query.fieldNames ca_county,d_year,web_q1_q2_increase,store_q1_q2_increase,web_q2_q3_increase,store_q2_q3_increase
+            hive.sql.query.fieldTypes string,int,decimal(37,20),decimal(37,20),decimal(37,20),decimal(37,20)
+            hive.sql.query.split false
+          Select Operator
+            expressions: ca_county (type: string), d_year (type: int), web_q1_q2_increase (type: decimal(37,20)), store_q1_q2_increase (type: decimal(37,20)), web_q2_q3_increase (type: decimal(37,20)), store_q2_q3_increase (type: decimal(37,20))
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+            ListSink
+

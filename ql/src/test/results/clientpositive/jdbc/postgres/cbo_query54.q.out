@@ -1,0 +1,237 @@
+CTE Suggestion:
+JdbcFilter(condition=[AND(=($1, 1999), =($2, 3))])
+  JdbcProject(d_month_seq=[$3], d_year=[$6], d_moy=[$8])
+    JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+
+CTE Suggestion:
+JdbcFilter(condition=[AND(=($1, 1999), =($2, 3), IS NOT NULL($0))])
+  JdbcProject(d_month_seq=[$3], d_year=[$6], d_moy=[$8])
+    JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+
+Warning: Shuffle Join MERGEJOIN[69][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[71][tables = [$hdt$_3, $hdt$_4]] in Stage 'Reducer 12' is a cross product
+Warning: Shuffle Join MERGEJOIN[72][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
+PREHOOK: query: explain cbo
+with my_customers as (
+ select distinct c_customer_sk
+        , c_current_addr_sk
+ from   
+        ( select cs_sold_date_sk sold_date_sk,
+                 cs_bill_customer_sk customer_sk,
+                 cs_item_sk item_sk
+          from   catalog_sales
+          union all
+          select ws_sold_date_sk sold_date_sk,
+                 ws_bill_customer_sk customer_sk,
+                 ws_item_sk item_sk
+          from   web_sales
+         ) cs_or_ws_sales,
+         item,
+         date_dim,
+         customer
+ where   sold_date_sk = d_date_sk
+         and item_sk = i_item_sk
+         and i_category = 'Jewelry'
+         and i_class = 'consignment'
+         and c_customer_sk = cs_or_ws_sales.customer_sk
+         and d_moy = 3
+         and d_year = 1999
+ )
+ , my_revenue as (
+ select c_customer_sk,
+        sum(ss_ext_sales_price) as revenue
+ from   my_customers,
+        store_sales,
+        customer_address,
+        store,
+        date_dim
+ where  c_current_addr_sk = ca_address_sk
+        and ca_county = s_county
+        and ca_state = s_state
+        and ss_sold_date_sk = d_date_sk
+        and c_customer_sk = ss_customer_sk
+        and d_month_seq between (select distinct d_month_seq+1
+                                 from   date_dim where d_year = 1999 and d_moy = 3)
+                           and  (select distinct d_month_seq+3
+                                 from   date_dim where d_year = 1999 and d_moy = 3)
+ group by c_customer_sk
+ )
+ , segments as
+ (select cast((revenue/50) as int) as segment
+  from   my_revenue
+ )
+  select  segment, count(*) as num_customers, segment*50 as segment_base
+ from segments
+ group by segment
+ order by segment, num_customers
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@customer_address
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@web_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+with my_customers as (
+ select distinct c_customer_sk
+        , c_current_addr_sk
+ from   
+        ( select cs_sold_date_sk sold_date_sk,
+                 cs_bill_customer_sk customer_sk,
+                 cs_item_sk item_sk
+          from   catalog_sales
+          union all
+          select ws_sold_date_sk sold_date_sk,
+                 ws_bill_customer_sk customer_sk,
+                 ws_item_sk item_sk
+          from   web_sales
+         ) cs_or_ws_sales,
+         item,
+         date_dim,
+         customer
+ where   sold_date_sk = d_date_sk
+         and item_sk = i_item_sk
+         and i_category = 'Jewelry'
+         and i_class = 'consignment'
+         and c_customer_sk = cs_or_ws_sales.customer_sk
+         and d_moy = 3
+         and d_year = 1999
+ )
+ , my_revenue as (
+ select c_customer_sk,
+        sum(ss_ext_sales_price) as revenue
+ from   my_customers,
+        store_sales,
+        customer_address,
+        store,
+        date_dim
+ where  c_current_addr_sk = ca_address_sk
+        and ca_county = s_county
+        and ca_state = s_state
+        and ss_sold_date_sk = d_date_sk
+        and c_customer_sk = ss_customer_sk
+        and d_month_seq between (select distinct d_month_seq+1
+                                 from   date_dim where d_year = 1999 and d_moy = 3)
+                           and  (select distinct d_month_seq+3
+                                 from   date_dim where d_year = 1999 and d_moy = 3)
+ group by c_customer_sk
+ )
+ , segments as
+ (select cast((revenue/50) as int) as segment
+  from   my_revenue
+ )
+  select  segment, count(*) as num_customers, segment*50 as segment_base
+ from segments
+ group by segment
+ order by segment, num_customers
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@customer_address
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@web_sales
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
+  HiveProject(segment=[$0], num_customers=[$1], segment_base=[*($0, 50)])
+    HiveAggregate(group=[{0}], agg#0=[count()])
+      HiveProject($f0=[CAST(/($1, 50:DECIMAL(10, 0))):INTEGER])
+        HiveAggregate(group=[{14}], agg#0=[sum($6)])
+          HiveJoin(condition=[=($14, $5)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveJoin(condition=[<=($1, $8)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveProject(d_date_sk=[$0], d_month_seq=[$1], $f0=[$2])
+                    HiveProject(d_date_sk=[$0], d_month_seq=[$1], $f0=[$2])
+                      HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                        JdbcJoin(condition=[<=($2, $1)], joinType=[inner])
+                          JdbcProject(d_date_sk=[$0], d_month_seq=[$1])
+                            JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                              JdbcProject(d_date_sk=[$0], d_month_seq=[$3])
+                                JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                          JdbcAggregate(group=[{0}])
+                            JdbcProject($f0=[+($0, 1)])
+                              JdbcFilter(condition=[AND(=($1, 1999), =($2, 3), IS NOT NULL($0))])
+                                JdbcProject(d_month_seq=[$3], d_year=[$6], d_moy=[$8])
+                                  JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                  HiveProject(cnt=[$0])
+                    HiveFilter(condition=[sq_count_check($0)])
+                      HiveProject(cnt=[$0])
+                        HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                          JdbcAggregate(group=[{}], cnt=[COUNT()])
+                            JdbcAggregate(group=[{0}])
+                              JdbcProject($f0=[+($0, 3)])
+                                JdbcFilter(condition=[AND(=($1, 1999), =($2, 3))])
+                                  JdbcProject(d_month_seq=[$3], d_year=[$6], d_moy=[$8])
+                                    JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                HiveProject(ss_sold_date_sk=[$0], ss_customer_sk=[$1], ss_ext_sales_price=[$2])
+                  HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                    JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
+                      JdbcProject(ss_sold_date_sk=[$0], ss_customer_sk=[$3], ss_ext_sales_price=[$15])
+                        JdbcHiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+              HiveProject(cnt=[$0], $f0=[$1])
+                HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveProject(cnt=[$0])
+                    HiveFilter(condition=[sq_count_check($0)])
+                      HiveProject(cnt=[$0])
+                        HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                          JdbcAggregate(group=[{}], cnt=[COUNT()])
+                            JdbcAggregate(group=[{0}])
+                              JdbcProject($f0=[+($0, 1)])
+                                JdbcFilter(condition=[AND(=($1, 1999), =($2, 3))])
+                                  JdbcProject(d_month_seq=[$3], d_year=[$6], d_moy=[$8])
+                                    JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                  HiveProject($f0=[$0])
+                    HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                      JdbcAggregate(group=[{0}])
+                        JdbcProject($f0=[+($0, 3)])
+                          JdbcFilter(condition=[AND(=($1, 1999), =($2, 3), IS NOT NULL($0))])
+                            JdbcProject(d_month_seq=[$3], d_year=[$6], d_moy=[$8])
+                              JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+            HiveProject(ca_address_sk=[$0], ca_county=[$1], ca_state=[$2], s_county=[$3], s_state=[$4], c_customer_sk=[$5], c_current_addr_sk=[$6])
+              HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                JdbcJoin(condition=[=($6, $0)], joinType=[inner])
+                  JdbcJoin(condition=[AND(=($1, $3), =($2, $4))], joinType=[inner])
+                    JdbcProject(ca_address_sk=[$0], ca_county=[$1], ca_state=[$2])
+                      JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1), IS NOT NULL($2))])
+                        JdbcProject(ca_address_sk=[$0], ca_county=[$7], ca_state=[$8])
+                          JdbcHiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
+                    JdbcProject(s_county=[$0], s_state=[$1])
+                      JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                        JdbcProject(s_county=[$23], s_state=[$24])
+                          JdbcHiveTableScan(table=[[default, store]], table:alias=[store])
+                  JdbcAggregate(group=[{5, 6}])
+                    JdbcJoin(condition=[=($5, $1)], joinType=[inner])
+                      JdbcJoin(condition=[=($0, $4)], joinType=[inner])
+                        JdbcJoin(condition=[=($2, $3)], joinType=[inner])
+                          JdbcProject(cs_sold_date_sk=[$0], cs_bill_customer_sk=[$1], cs_item_sk=[$2])
+                            JdbcUnion(all=[true])
+                              JdbcProject(cs_sold_date_sk=[$0], cs_bill_customer_sk=[$1], cs_item_sk=[$2])
+                                JdbcFilter(condition=[AND(IS NOT NULL($2), IS NOT NULL($0), IS NOT NULL($1))])
+                                  JdbcProject(cs_sold_date_sk=[$0], cs_bill_customer_sk=[$3], cs_item_sk=[$15])
+                                    JdbcHiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                              JdbcProject(sold_date_sk=[$0], customer_sk=[$2], item_sk=[$1])
+                                JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0), IS NOT NULL($2))])
+                                  JdbcProject(ws_sold_date_sk=[$0], ws_item_sk=[$3], ws_bill_customer_sk=[$4])
+                                    JdbcHiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+                          JdbcProject(i_item_sk=[$0])
+                            JdbcFilter(condition=[AND(=($2, _UTF-16LE'Jewelry'), =($1, _UTF-16LE'consignment'), IS NOT NULL($0))])
+                              JdbcProject(i_item_sk=[$0], i_class=[$10], i_category=[$12])
+                                JdbcHiveTableScan(table=[[default, item]], table:alias=[item])
+                        JdbcProject(d_date_sk=[$0])
+                          JdbcFilter(condition=[AND(=($2, 3), =($1, 1999), IS NOT NULL($0))])
+                            JdbcProject(d_date_sk=[$0], d_year=[$6], d_moy=[$8])
+                              JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                      JdbcProject(c_customer_sk=[$0], c_current_addr_sk=[$1])
+                        JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                          JdbcProject(c_customer_sk=[$0], c_current_addr_sk=[$4])
+                            JdbcHiveTableScan(table=[[default, customer]], table:alias=[customer])
+

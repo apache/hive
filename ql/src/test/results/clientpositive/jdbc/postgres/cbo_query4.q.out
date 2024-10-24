@@ -1,0 +1,386 @@
+CTE Suggestion:
+JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+  JdbcProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
+    JdbcHiveTableScan(table=[[default, customer]], table:alias=[customer])
+
+CTE Suggestion:
+JdbcProject(cs_sold_date_sk=[$0], cs_bill_customer_sk=[$1], /=[/(+(-(-($5, $4), $2), $3), 2:DECIMAL(10, 0))])
+  JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
+    JdbcProject(cs_sold_date_sk=[$0], cs_bill_customer_sk=[$3], cs_ext_discount_amt=[$22], cs_ext_sales_price=[$23], cs_ext_wholesale_cost=[$24], cs_ext_list_price=[$25])
+      JdbcHiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+
+CTE Suggestion:
+JdbcProject(d_date_sk=[$0])
+  JdbcFilter(condition=[AND(=($1, 1999), IS NOT NULL($0))])
+    JdbcProject(d_date_sk=[$0], d_year=[$6])
+      JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+
+CTE Suggestion:
+JdbcProject(d_date_sk=[$0])
+  JdbcFilter(condition=[AND(=($1, 2000), IS NOT NULL($0))])
+    JdbcProject(d_date_sk=[$0], d_year=[$6])
+      JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+
+CTE Suggestion:
+JdbcProject(ss_sold_date_sk=[$0], ss_customer_sk=[$1], /=[/(+(-(-($5, $4), $2), $3), 2:DECIMAL(10, 0))])
+  JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
+    JdbcProject(ss_sold_date_sk=[$0], ss_customer_sk=[$3], ss_ext_discount_amt=[$14], ss_ext_sales_price=[$15], ss_ext_wholesale_cost=[$16], ss_ext_list_price=[$17])
+      JdbcHiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+
+CTE Suggestion:
+JdbcProject(ws_sold_date_sk=[$0], ws_bill_customer_sk=[$1], /=[/(+(-(-($5, $4), $2), $3), 2:DECIMAL(10, 0))])
+  JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
+    JdbcProject(ws_sold_date_sk=[$0], ws_bill_customer_sk=[$4], ws_ext_discount_amt=[$22], ws_ext_sales_price=[$23], ws_ext_wholesale_cost=[$24], ws_ext_list_price=[$25])
+      JdbcHiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+
+PREHOOK: query: explain cbo
+with year_total as (
+ select c_customer_id customer_id
+       ,c_first_name customer_first_name
+       ,c_last_name customer_last_name
+       ,c_preferred_cust_flag customer_preferred_cust_flag
+       ,c_birth_country customer_birth_country
+       ,c_login customer_login
+       ,c_email_address customer_email_address
+       ,d_year dyear
+       ,sum(((ss_ext_list_price-ss_ext_wholesale_cost-ss_ext_discount_amt)+ss_ext_sales_price)/2) year_total
+       ,'s' sale_type
+ from customer
+     ,store_sales
+     ,date_dim
+ where c_customer_sk = ss_customer_sk
+   and ss_sold_date_sk = d_date_sk
+ group by c_customer_id
+         ,c_first_name
+         ,c_last_name
+         ,c_preferred_cust_flag
+         ,c_birth_country
+         ,c_login
+         ,c_email_address
+         ,d_year
+ union all
+ select c_customer_id customer_id
+       ,c_first_name customer_first_name
+       ,c_last_name customer_last_name
+       ,c_preferred_cust_flag customer_preferred_cust_flag
+       ,c_birth_country customer_birth_country
+       ,c_login customer_login
+       ,c_email_address customer_email_address
+       ,d_year dyear
+       ,sum((((cs_ext_list_price-cs_ext_wholesale_cost-cs_ext_discount_amt)+cs_ext_sales_price)/2) ) year_total
+       ,'c' sale_type
+ from customer
+     ,catalog_sales
+     ,date_dim
+ where c_customer_sk = cs_bill_customer_sk
+   and cs_sold_date_sk = d_date_sk
+ group by c_customer_id
+         ,c_first_name
+         ,c_last_name
+         ,c_preferred_cust_flag
+         ,c_birth_country
+         ,c_login
+         ,c_email_address
+         ,d_year
+union all
+ select c_customer_id customer_id
+       ,c_first_name customer_first_name
+       ,c_last_name customer_last_name
+       ,c_preferred_cust_flag customer_preferred_cust_flag
+       ,c_birth_country customer_birth_country
+       ,c_login customer_login
+       ,c_email_address customer_email_address
+       ,d_year dyear
+       ,sum((((ws_ext_list_price-ws_ext_wholesale_cost-ws_ext_discount_amt)+ws_ext_sales_price)/2) ) year_total
+       ,'w' sale_type
+ from customer
+     ,web_sales
+     ,date_dim
+ where c_customer_sk = ws_bill_customer_sk
+   and ws_sold_date_sk = d_date_sk
+ group by c_customer_id
+         ,c_first_name
+         ,c_last_name
+         ,c_preferred_cust_flag
+         ,c_birth_country
+         ,c_login
+         ,c_email_address
+         ,d_year
+         )
+  select
+                  t_s_secyear.customer_id
+                 ,t_s_secyear.customer_first_name
+                 ,t_s_secyear.customer_last_name
+                 ,t_s_secyear.customer_birth_country
+ from year_total t_s_firstyear
+     ,year_total t_s_secyear
+     ,year_total t_c_firstyear
+     ,year_total t_c_secyear
+     ,year_total t_w_firstyear
+     ,year_total t_w_secyear
+ where t_s_secyear.customer_id = t_s_firstyear.customer_id
+   and t_s_firstyear.customer_id = t_c_secyear.customer_id
+   and t_s_firstyear.customer_id = t_c_firstyear.customer_id
+   and t_s_firstyear.customer_id = t_w_firstyear.customer_id
+   and t_s_firstyear.customer_id = t_w_secyear.customer_id
+   and t_s_firstyear.sale_type = 's'
+   and t_c_firstyear.sale_type = 'c'
+   and t_w_firstyear.sale_type = 'w'
+   and t_s_secyear.sale_type = 's'
+   and t_c_secyear.sale_type = 'c'
+   and t_w_secyear.sale_type = 'w'
+   and t_s_firstyear.dyear =  1999
+   and t_s_secyear.dyear = 1999+1
+   and t_c_firstyear.dyear =  1999
+   and t_c_secyear.dyear =  1999+1
+   and t_w_firstyear.dyear = 1999
+   and t_w_secyear.dyear = 1999+1
+   and t_s_firstyear.year_total > 0
+   and t_c_firstyear.year_total > 0
+   and t_w_firstyear.year_total > 0
+   and case when t_c_firstyear.year_total > 0 then t_c_secyear.year_total / t_c_firstyear.year_total else null end
+           > case when t_s_firstyear.year_total > 0 then t_s_secyear.year_total / t_s_firstyear.year_total else null end
+   and case when t_c_firstyear.year_total > 0 then t_c_secyear.year_total / t_c_firstyear.year_total else null end
+           > case when t_w_firstyear.year_total > 0 then t_w_secyear.year_total / t_w_firstyear.year_total else null end
+ order by t_s_secyear.customer_id
+         ,t_s_secyear.customer_first_name
+         ,t_s_secyear.customer_last_name
+         ,t_s_secyear.customer_birth_country
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@web_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+with year_total as (
+ select c_customer_id customer_id
+       ,c_first_name customer_first_name
+       ,c_last_name customer_last_name
+       ,c_preferred_cust_flag customer_preferred_cust_flag
+       ,c_birth_country customer_birth_country
+       ,c_login customer_login
+       ,c_email_address customer_email_address
+       ,d_year dyear
+       ,sum(((ss_ext_list_price-ss_ext_wholesale_cost-ss_ext_discount_amt)+ss_ext_sales_price)/2) year_total
+       ,'s' sale_type
+ from customer
+     ,store_sales
+     ,date_dim
+ where c_customer_sk = ss_customer_sk
+   and ss_sold_date_sk = d_date_sk
+ group by c_customer_id
+         ,c_first_name
+         ,c_last_name
+         ,c_preferred_cust_flag
+         ,c_birth_country
+         ,c_login
+         ,c_email_address
+         ,d_year
+ union all
+ select c_customer_id customer_id
+       ,c_first_name customer_first_name
+       ,c_last_name customer_last_name
+       ,c_preferred_cust_flag customer_preferred_cust_flag
+       ,c_birth_country customer_birth_country
+       ,c_login customer_login
+       ,c_email_address customer_email_address
+       ,d_year dyear
+       ,sum((((cs_ext_list_price-cs_ext_wholesale_cost-cs_ext_discount_amt)+cs_ext_sales_price)/2) ) year_total
+       ,'c' sale_type
+ from customer
+     ,catalog_sales
+     ,date_dim
+ where c_customer_sk = cs_bill_customer_sk
+   and cs_sold_date_sk = d_date_sk
+ group by c_customer_id
+         ,c_first_name
+         ,c_last_name
+         ,c_preferred_cust_flag
+         ,c_birth_country
+         ,c_login
+         ,c_email_address
+         ,d_year
+union all
+ select c_customer_id customer_id
+       ,c_first_name customer_first_name
+       ,c_last_name customer_last_name
+       ,c_preferred_cust_flag customer_preferred_cust_flag
+       ,c_birth_country customer_birth_country
+       ,c_login customer_login
+       ,c_email_address customer_email_address
+       ,d_year dyear
+       ,sum((((ws_ext_list_price-ws_ext_wholesale_cost-ws_ext_discount_amt)+ws_ext_sales_price)/2) ) year_total
+       ,'w' sale_type
+ from customer
+     ,web_sales
+     ,date_dim
+ where c_customer_sk = ws_bill_customer_sk
+   and ws_sold_date_sk = d_date_sk
+ group by c_customer_id
+         ,c_first_name
+         ,c_last_name
+         ,c_preferred_cust_flag
+         ,c_birth_country
+         ,c_login
+         ,c_email_address
+         ,d_year
+         )
+  select
+                  t_s_secyear.customer_id
+                 ,t_s_secyear.customer_first_name
+                 ,t_s_secyear.customer_last_name
+                 ,t_s_secyear.customer_birth_country
+ from year_total t_s_firstyear
+     ,year_total t_s_secyear
+     ,year_total t_c_firstyear
+     ,year_total t_c_secyear
+     ,year_total t_w_firstyear
+     ,year_total t_w_secyear
+ where t_s_secyear.customer_id = t_s_firstyear.customer_id
+   and t_s_firstyear.customer_id = t_c_secyear.customer_id
+   and t_s_firstyear.customer_id = t_c_firstyear.customer_id
+   and t_s_firstyear.customer_id = t_w_firstyear.customer_id
+   and t_s_firstyear.customer_id = t_w_secyear.customer_id
+   and t_s_firstyear.sale_type = 's'
+   and t_c_firstyear.sale_type = 'c'
+   and t_w_firstyear.sale_type = 'w'
+   and t_s_secyear.sale_type = 's'
+   and t_c_secyear.sale_type = 'c'
+   and t_w_secyear.sale_type = 'w'
+   and t_s_firstyear.dyear =  1999
+   and t_s_secyear.dyear = 1999+1
+   and t_c_firstyear.dyear =  1999
+   and t_c_secyear.dyear =  1999+1
+   and t_w_firstyear.dyear = 1999
+   and t_w_secyear.dyear = 1999+1
+   and t_s_firstyear.year_total > 0
+   and t_c_firstyear.year_total > 0
+   and t_w_firstyear.year_total > 0
+   and case when t_c_firstyear.year_total > 0 then t_c_secyear.year_total / t_c_firstyear.year_total else null end
+           > case when t_s_firstyear.year_total > 0 then t_s_secyear.year_total / t_s_firstyear.year_total else null end
+   and case when t_c_firstyear.year_total > 0 then t_c_secyear.year_total / t_c_firstyear.year_total else null end
+           > case when t_w_firstyear.year_total > 0 then t_w_secyear.year_total / t_w_firstyear.year_total else null end
+ order by t_s_secyear.customer_id
+         ,t_s_secyear.customer_first_name
+         ,t_s_secyear.customer_last_name
+         ,t_s_secyear.customer_birth_country
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@web_sales
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJdbcConverter(convention=[JDBC.POSTGRES])
+  JdbcSort(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], fetch=[100])
+    JdbcProject(customer_id=[$13], customer_first_name=[$14], customer_last_name=[$15], customer_birth_country=[$16])
+      JdbcJoin(condition=[AND(=($13, $0), CASE($2, CASE($9, >(/($4, $8), /($17, $1)), false), false))], joinType=[inner])
+        JdbcJoin(condition=[AND(=($0, $10), CASE($12, CASE($9, >(/($4, $8), /($6, $11)), false), false))], joinType=[inner])
+          JdbcJoin(condition=[=($0, $7)], joinType=[inner])
+            JdbcJoin(condition=[=($0, $5)], joinType=[inner])
+              JdbcJoin(condition=[=($0, $3)], joinType=[inner])
+                JdbcProject(customer_id=[$0], year_total=[$7], >=[>($7, 0:DECIMAL(1, 0))])
+                  JdbcFilter(condition=[>($7, 0:DECIMAL(1, 0))])
+                    JdbcAggregate(group=[{1, 2, 3, 4, 5, 6, 7}], agg#0=[sum($10)])
+                      JdbcJoin(condition=[=($0, $9)], joinType=[inner])
+                        JdbcProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$2], c_last_name=[$3], c_preferred_cust_flag=[$4], c_birth_country=[$5], c_login=[$6], c_email_address=[$7])
+                          JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                            JdbcProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
+                              JdbcHiveTableScan(table=[[default, customer]], table:alias=[customer])
+                        JdbcJoin(condition=[=($0, $3)], joinType=[inner])
+                          JdbcProject(ss_sold_date_sk=[$0], ss_customer_sk=[$1], /=[/(+(-(-($5, $4), $2), $3), 2:DECIMAL(10, 0))])
+                            JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
+                              JdbcProject(ss_sold_date_sk=[$0], ss_customer_sk=[$3], ss_ext_discount_amt=[$14], ss_ext_sales_price=[$15], ss_ext_wholesale_cost=[$16], ss_ext_list_price=[$17])
+                                JdbcHiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                          JdbcProject(d_date_sk=[$0])
+                            JdbcFilter(condition=[AND(=($1, 1999), IS NOT NULL($0))])
+                              JdbcProject(d_date_sk=[$0], d_year=[$6])
+                                JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                JdbcProject(customer_id=[$0], year_total=[$7])
+                  JdbcAggregate(group=[{1, 2, 3, 4, 5, 6, 7}], agg#0=[sum($10)])
+                    JdbcJoin(condition=[=($0, $9)], joinType=[inner])
+                      JdbcProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$2], c_last_name=[$3], c_preferred_cust_flag=[$4], c_birth_country=[$5], c_login=[$6], c_email_address=[$7])
+                        JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                          JdbcProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
+                            JdbcHiveTableScan(table=[[default, customer]], table:alias=[customer])
+                      JdbcJoin(condition=[=($0, $3)], joinType=[inner])
+                        JdbcProject(cs_sold_date_sk=[$0], cs_bill_customer_sk=[$1], /=[/(+(-(-($5, $4), $2), $3), 2:DECIMAL(10, 0))])
+                          JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
+                            JdbcProject(cs_sold_date_sk=[$0], cs_bill_customer_sk=[$3], cs_ext_discount_amt=[$22], cs_ext_sales_price=[$23], cs_ext_wholesale_cost=[$24], cs_ext_list_price=[$25])
+                              JdbcHiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                        JdbcProject(d_date_sk=[$0])
+                          JdbcFilter(condition=[AND(=($1, 2000), IS NOT NULL($0))])
+                            JdbcProject(d_date_sk=[$0], d_year=[$6])
+                              JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+              JdbcProject(customer_id=[$0], year_total=[$7])
+                JdbcAggregate(group=[{1, 2, 3, 4, 5, 6, 7}], agg#0=[sum($10)])
+                  JdbcJoin(condition=[=($0, $9)], joinType=[inner])
+                    JdbcProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$2], c_last_name=[$3], c_preferred_cust_flag=[$4], c_birth_country=[$5], c_login=[$6], c_email_address=[$7])
+                      JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                        JdbcProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
+                          JdbcHiveTableScan(table=[[default, customer]], table:alias=[customer])
+                    JdbcJoin(condition=[=($0, $3)], joinType=[inner])
+                      JdbcProject(ws_sold_date_sk=[$0], ws_bill_customer_sk=[$1], /=[/(+(-(-($5, $4), $2), $3), 2:DECIMAL(10, 0))])
+                        JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
+                          JdbcProject(ws_sold_date_sk=[$0], ws_bill_customer_sk=[$4], ws_ext_discount_amt=[$22], ws_ext_sales_price=[$23], ws_ext_wholesale_cost=[$24], ws_ext_list_price=[$25])
+                            JdbcHiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+                      JdbcProject(d_date_sk=[$0])
+                        JdbcFilter(condition=[AND(=($1, 2000), IS NOT NULL($0))])
+                          JdbcProject(d_date_sk=[$0], d_year=[$6])
+                            JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+            JdbcProject(customer_id=[$0], year_total=[$7], >=[>($7, 0:DECIMAL(1, 0))])
+              JdbcFilter(condition=[>($7, 0:DECIMAL(1, 0))])
+                JdbcAggregate(group=[{1, 2, 3, 4, 5, 6, 7}], agg#0=[sum($10)])
+                  JdbcJoin(condition=[=($0, $9)], joinType=[inner])
+                    JdbcProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$2], c_last_name=[$3], c_preferred_cust_flag=[$4], c_birth_country=[$5], c_login=[$6], c_email_address=[$7])
+                      JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                        JdbcProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
+                          JdbcHiveTableScan(table=[[default, customer]], table:alias=[customer])
+                    JdbcJoin(condition=[=($0, $3)], joinType=[inner])
+                      JdbcProject(cs_sold_date_sk=[$0], cs_bill_customer_sk=[$1], /=[/(+(-(-($5, $4), $2), $3), 2:DECIMAL(10, 0))])
+                        JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
+                          JdbcProject(cs_sold_date_sk=[$0], cs_bill_customer_sk=[$3], cs_ext_discount_amt=[$22], cs_ext_sales_price=[$23], cs_ext_wholesale_cost=[$24], cs_ext_list_price=[$25])
+                            JdbcHiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                      JdbcProject(d_date_sk=[$0])
+                        JdbcFilter(condition=[AND(=($1, 1999), IS NOT NULL($0))])
+                          JdbcProject(d_date_sk=[$0], d_year=[$6])
+                            JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+          JdbcProject(customer_id=[$0], year_total=[$7], >=[>($7, 0:DECIMAL(1, 0))])
+            JdbcFilter(condition=[>($7, 0:DECIMAL(1, 0))])
+              JdbcAggregate(group=[{1, 2, 3, 4, 5, 6, 7}], agg#0=[sum($10)])
+                JdbcJoin(condition=[=($0, $9)], joinType=[inner])
+                  JdbcProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$2], c_last_name=[$3], c_preferred_cust_flag=[$4], c_birth_country=[$5], c_login=[$6], c_email_address=[$7])
+                    JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                      JdbcProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
+                        JdbcHiveTableScan(table=[[default, customer]], table:alias=[customer])
+                  JdbcJoin(condition=[=($0, $3)], joinType=[inner])
+                    JdbcProject(ws_sold_date_sk=[$0], ws_bill_customer_sk=[$1], /=[/(+(-(-($5, $4), $2), $3), 2:DECIMAL(10, 0))])
+                      JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
+                        JdbcProject(ws_sold_date_sk=[$0], ws_bill_customer_sk=[$4], ws_ext_discount_amt=[$22], ws_ext_sales_price=[$23], ws_ext_wholesale_cost=[$24], ws_ext_list_price=[$25])
+                          JdbcHiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+                    JdbcProject(d_date_sk=[$0])
+                      JdbcFilter(condition=[AND(=($1, 1999), IS NOT NULL($0))])
+                        JdbcProject(d_date_sk=[$0], d_year=[$6])
+                          JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+        JdbcProject(customer_id=[$0], customer_first_name=[$1], customer_last_name=[$2], customer_birth_country=[$4], year_total=[$7])
+          JdbcAggregate(group=[{1, 2, 3, 4, 5, 6, 7}], agg#0=[sum($10)])
+            JdbcJoin(condition=[=($0, $9)], joinType=[inner])
+              JdbcProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$2], c_last_name=[$3], c_preferred_cust_flag=[$4], c_birth_country=[$5], c_login=[$6], c_email_address=[$7])
+                JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                  JdbcProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
+                    JdbcHiveTableScan(table=[[default, customer]], table:alias=[customer])
+              JdbcJoin(condition=[=($0, $3)], joinType=[inner])
+                JdbcProject(ss_sold_date_sk=[$0], ss_customer_sk=[$1], /=[/(+(-(-($5, $4), $2), $3), 2:DECIMAL(10, 0))])
+                  JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
+                    JdbcProject(ss_sold_date_sk=[$0], ss_customer_sk=[$3], ss_ext_discount_amt=[$14], ss_ext_sales_price=[$15], ss_ext_wholesale_cost=[$16], ss_ext_list_price=[$17])
+                      JdbcHiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                JdbcProject(d_date_sk=[$0])
+                  JdbcFilter(condition=[AND(=($1, 2000), IS NOT NULL($0))])
+                    JdbcProject(d_date_sk=[$0], d_year=[$6])
+                      JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+

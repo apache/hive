@@ -1,0 +1,114 @@
+CTE Suggestion:
+JdbcProject(d_date_sk=[$0])
+  JdbcFilter(condition=[AND(BETWEEN(false, $1, 1212, 1223), IS NOT NULL($0))])
+    JdbcProject(d_date_sk=[$0], d_month_seq=[$3])
+      JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+
+PREHOOK: query: explain cbo
+select 
+	s_store_name,
+	i_item_desc,
+	sc.revenue,
+	i_current_price,
+	i_wholesale_cost,
+	i_brand
+ from store, item,
+     (select ss_store_sk, avg(revenue) as ave
+ 	from
+ 	    (select  ss_store_sk, ss_item_sk, 
+ 		     sum(ss_sales_price) as revenue
+ 		from store_sales, date_dim
+ 		where ss_sold_date_sk = d_date_sk and d_month_seq between 1212 and 1212+11
+ 		group by ss_store_sk, ss_item_sk) sa
+ 	group by ss_store_sk) sb,
+     (select  ss_store_sk, ss_item_sk, sum(ss_sales_price) as revenue
+ 	from store_sales, date_dim
+ 	where ss_sold_date_sk = d_date_sk and d_month_seq between 1212 and 1212+11
+ 	group by ss_store_sk, ss_item_sk) sc
+ where sb.ss_store_sk = sc.ss_store_sk and 
+       sc.revenue <= 0.1 * sb.ave and
+       s_store_sk = sc.ss_store_sk and
+       i_item_sk = sc.ss_item_sk
+ order by s_store_name, i_item_desc
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select 
+	s_store_name,
+	i_item_desc,
+	sc.revenue,
+	i_current_price,
+	i_wholesale_cost,
+	i_brand
+ from store, item,
+     (select ss_store_sk, avg(revenue) as ave
+ 	from
+ 	    (select  ss_store_sk, ss_item_sk, 
+ 		     sum(ss_sales_price) as revenue
+ 		from store_sales, date_dim
+ 		where ss_sold_date_sk = d_date_sk and d_month_seq between 1212 and 1212+11
+ 		group by ss_store_sk, ss_item_sk) sa
+ 	group by ss_store_sk) sb,
+     (select  ss_store_sk, ss_item_sk, sum(ss_sales_price) as revenue
+ 	from store_sales, date_dim
+ 	where ss_sold_date_sk = d_date_sk and d_month_seq between 1212 and 1212+11
+ 	group by ss_store_sk, ss_item_sk) sc
+ where sb.ss_store_sk = sc.ss_store_sk and 
+       sc.revenue <= 0.1 * sb.ave and
+       s_store_sk = sc.ss_store_sk and
+       i_item_sk = sc.ss_item_sk
+ order by s_store_name, i_item_desc
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJdbcConverter(convention=[JDBC.POSTGRES])
+  JdbcSort(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
+    JdbcProject(s_store_name=[$4], i_item_desc=[$8], revenue=[$2], i_current_price=[$9], i_wholesale_cost=[$10], i_brand=[$11])
+      JdbcJoin(condition=[=($7, $1)], joinType=[inner])
+        JdbcJoin(condition=[AND(=($5, $0), <=($2, $6))], joinType=[inner])
+          JdbcJoin(condition=[=($3, $0)], joinType=[inner])
+            JdbcProject(ss_store_sk=[$0], ss_item_sk=[$1], $f2=[$2])
+              JdbcFilter(condition=[IS NOT NULL($2)])
+                JdbcProject(ss_store_sk=[$1], ss_item_sk=[$0], $f2=[$2])
+                  JdbcAggregate(group=[{1, 2}], agg#0=[sum($3)])
+                    JdbcJoin(condition=[=($0, $4)], joinType=[inner])
+                      JdbcProject(ss_sold_date_sk=[$0], ss_item_sk=[$1], ss_store_sk=[$2], ss_sales_price=[$3])
+                        JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($2), IS NOT NULL($1))])
+                          JdbcProject(ss_sold_date_sk=[$0], ss_item_sk=[$2], ss_store_sk=[$7], ss_sales_price=[$13])
+                            JdbcHiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                      JdbcProject(d_date_sk=[$0])
+                        JdbcFilter(condition=[AND(BETWEEN(false, $1, 1212, 1223), IS NOT NULL($0))])
+                          JdbcProject(d_date_sk=[$0], d_month_seq=[$3])
+                            JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+            JdbcProject(s_store_sk=[$0], s_store_name=[$1])
+              JdbcFilter(condition=[IS NOT NULL($0)])
+                JdbcProject(s_store_sk=[$0], s_store_name=[$5])
+                  JdbcHiveTableScan(table=[[default, store]], table:alias=[store])
+          JdbcProject($f0=[$0], *=[*(0.1:DECIMAL(1, 1), CAST(/($1, $2)):DECIMAL(21, 6))])
+            JdbcFilter(condition=[IS NOT NULL(CAST(/($1, $2)):DECIMAL(21, 6))])
+              JdbcAggregate(group=[{1}], agg#0=[sum($2)], agg#1=[count($2)])
+                JdbcAggregate(group=[{1, 2}], agg#0=[sum($3)])
+                  JdbcJoin(condition=[=($0, $4)], joinType=[inner])
+                    JdbcProject(ss_sold_date_sk=[$0], ss_item_sk=[$1], ss_store_sk=[$2], ss_sales_price=[$3])
+                      JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($2))])
+                        JdbcProject(ss_sold_date_sk=[$0], ss_item_sk=[$2], ss_store_sk=[$7], ss_sales_price=[$13])
+                          JdbcHiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                    JdbcProject(d_date_sk=[$0])
+                      JdbcFilter(condition=[AND(BETWEEN(false, $1, 1212, 1223), IS NOT NULL($0))])
+                        JdbcProject(d_date_sk=[$0], d_month_seq=[$3])
+                          JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+        JdbcProject(i_item_sk=[$0], i_item_desc=[$1], i_current_price=[$2], i_wholesale_cost=[$3], i_brand=[$4])
+          JdbcFilter(condition=[IS NOT NULL($0)])
+            JdbcProject(i_item_sk=[$0], i_item_desc=[$4], i_current_price=[$5], i_wholesale_cost=[$6], i_brand=[$8])
+              JdbcHiveTableScan(table=[[default, item]], table:alias=[item])
+
