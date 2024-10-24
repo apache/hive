@@ -1,0 +1,91 @@
+#### A masked pattern was here ####
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:import_export
+#### A masked pattern was here ####
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:import_export
+#### A masked pattern was here ####
+PREHOOK: query: use import_export
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:import_export
+POSTHOOK: query: use import_export
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:import_export
+PREHOOK: query: create external table test_a (val string) partitioned by (pt string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:import_export
+PREHOOK: Output: import_export@test_a
+POSTHOOK: query: create external table test_a (val string) partitioned by (pt string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:import_export
+POSTHOOK: Output: import_export@test_a
+PREHOOK: query: insert into test_a partition (pt ='1111') values ("asfd")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: import_export@test_a@pt=1111
+POSTHOOK: query: insert into test_a partition (pt ='1111') values ("asfd")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: import_export@test_a@pt=1111
+POSTHOOK: Lineage: test_a PARTITION(pt=1111).val SCRIPT []
+#### A masked pattern was here ####
+PREHOOK: type: EXPORT
+#### A masked pattern was here ####
+POSTHOOK: type: EXPORT
+#### A masked pattern was here ####
+PREHOOK: type: IMPORT
+#### A masked pattern was here ####
+PREHOOK: Output: database:import_export
+#### A masked pattern was here ####
+POSTHOOK: type: IMPORT
+#### A masked pattern was here ####
+POSTHOOK: Output: database:import_export
+POSTHOOK: Output: import_export@test_b
+POSTHOOK: Output: import_export@test_b@pt=1111
+PREHOOK: query: show create table test_b
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: import_export@test_b
+POSTHOOK: query: show create table test_b
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: import_export@test_b
+CREATE EXTERNAL TABLE `test_b`(
+  `val` string)
+PARTITIONED BY ( 
+  `pt` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+### TABLE DIRECTORY ###'
+TBLPROPERTIES (
+  'TRANSLATED_TO_EXTERNAL'='TRUE', 
+  'bucketing_version'='2', 
+  'external.table.purge'='TRUE', 
+#### A masked pattern was here ####
+Found 1 items
+### TABLE DIRECTORY ###/pt=1111/000000_0
+PREHOOK: query: select "============list managed directory==================="
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select "============list managed directory==================="
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+============list managed directory===================
+#### A masked pattern was here ####
+PREHOOK: query: drop database import_export cascade
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:import_export
+PREHOOK: Output: database:import_export
+PREHOOK: Output: import_export@test_a
+PREHOOK: Output: import_export@test_b
+POSTHOOK: query: drop database import_export cascade
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:import_export
+POSTHOOK: Output: database:import_export
+POSTHOOK: Output: import_export@test_a
+POSTHOOK: Output: import_export@test_b
