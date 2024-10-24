@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax;
@@ -943,9 +944,16 @@ public class StatsOptimizer extends Transform {
         }
       } else { // unpartitioned table
         if (!StatsUtils.areBasicStatsUptoDateForQueryAnswering(tbl, tbl.getParameters())) {
+          if (MetaStoreUtils.isNonNativeTable(tbl.getTTable())
+                  && tbl.getStorageHandler().canComputeQueryUsingStats(tbl)) {
+            return Long.valueOf(tbl.getStorageHandler().getBasicStatistics(tbl)
+                    .get(StatsSetupConst.ROW_COUNT));
+          }
           return null;
         }
-        rowCnt = Long.valueOf(tbl.getProperty(StatsSetupConst.ROW_COUNT));
+        Map<String, String> basicStats = MetaStoreUtils.isNonNativeTable(tbl.getTTable()) ?
+            tbl.getStorageHandler().getBasicStatistics(tbl) : tbl.getParameters();
+        rowCnt = Long.valueOf(basicStats.get(StatsSetupConst.ROW_COUNT));
       }
       return rowCnt;
     }
