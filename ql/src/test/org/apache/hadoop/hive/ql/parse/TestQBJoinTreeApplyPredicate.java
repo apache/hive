@@ -25,11 +25,21 @@ import org.junit.Assert;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.testutils.HiveTestEnvSetup;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 
 public class TestQBJoinTreeApplyPredicate {
+
+  @ClassRule
+  public static HiveTestEnvSetup env_setup = new HiveTestEnvSetup();
+
+  @Rule
+  public TestRule methodRule = env_setup.getMethodRule();
 
   static QueryState queryState;
   static HiveConf conf;
@@ -39,8 +49,8 @@ public class TestQBJoinTreeApplyPredicate {
   @BeforeClass
   public static void initialize() {
     queryState =
-        new QueryState.Builder().withHiveConf(new HiveConf(SemanticAnalyzer.class)).build();
-    conf = queryState.getConf();
+        new QueryState.Builder().build();
+    conf = env_setup.getTestCtx().hiveConf;
     SessionState.start(conf);
   }
 

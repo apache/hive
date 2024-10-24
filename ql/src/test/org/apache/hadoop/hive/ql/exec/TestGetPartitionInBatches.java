@@ -30,11 +30,16 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.Assert;
+import static org.junit.Assert.fail;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.mockito.ArgumentCaptor;
 
 import java.util.HashMap;
@@ -48,8 +53,15 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 public class TestGetPartitionInBatches {
+
+    @ClassRule
+    public static HiveTestEnvSetup env_setup = new HiveTestEnvSetup();
+
+    @Rule
+    public TestRule methodRule = env_setup.getMethodRule();
 
     private final String catName = "hive";
     private final String dbName = "default";
@@ -64,9 +76,9 @@ public class TestGetPartitionInBatches {
 
     @BeforeClass
     public static void setupClass() throws HiveException {
-        hiveConf = new HiveConf(TestGetPartitionInBatches.class);
-        hive = Hive.get();
-        SessionState.start(hiveConf);
+        hiveConf = env_setup.getTestCtx().hiveConf;
+        SessionState ss = SessionState.start(hiveConf);
+        hive = ss.getHiveDb();
         try {
             msc = new HiveMetaStoreClient(hiveConf);
         } catch (MetaException e) {

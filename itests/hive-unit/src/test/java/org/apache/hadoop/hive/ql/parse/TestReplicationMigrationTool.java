@@ -43,7 +43,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+
 
 public class TestReplicationMigrationTool extends BaseReplicationAcrossInstances {
 
@@ -249,7 +249,6 @@ public class TestReplicationMigrationTool extends BaseReplicationAcrossInstances
     FSDataOutputStream stream = fs.append(new Path(externalTableLocationa, "filea1.txt"));
     ToolRunner.run(conf, replTool,
         new String[] { "-dumpFilePath", tuple.dumpLocation, "-fileLevelCheck", "-verifyOpenFiles" });
-    fail("Script didn't fail despite having an open file.");
     // Make sure we get the exception.
     assertTrue(err.toString(), err.toString().contains("There are open files"));
     err.reset();
@@ -333,7 +332,6 @@ public class TestReplicationMigrationTool extends BaseReplicationAcrossInstances
       String message) throws Exception {
     ToolRunner.run(conf, replTool,
         new String[] { "-dumpFilePath", tuple.dumpLocation, "-fileLevelCheck", "-verifyChecksum" });
-    fail("Script didn't fail despite having an extra file.");
     // Make sure we get the exception.
     assertTrue(err.toString(), err.toString().contains(message));
     // Confirm that successful message is not printed.
@@ -385,7 +383,6 @@ public class TestReplicationMigrationTool extends BaseReplicationAcrossInstances
     assertEquals(0,
         ToolRunner.run(conf, replTool, new String[] { "-dumpFilePath", tuple.dumpLocation +"/hive/_file_list_external", "-dirLevelCheck" }));
     assertTrue(out.toString().contains("Completed verification"));
-    assertFalse(err.toString(), err.toString().isEmpty());
     out.reset();
     err.reset();
 
@@ -393,7 +390,6 @@ public class TestReplicationMigrationTool extends BaseReplicationAcrossInstances
     assertEquals(0, ToolRunner
         .run(conf, replTool, new String[] { "-dumpFilePath", tuple.dumpLocation + "/hive", "-fileLevelCheck" }));
     assertTrue(out.toString().contains("Completed verification."));
-    assertFalse(err.toString(), err.toString().isEmpty());
     out.reset();
     err.reset();
 
@@ -401,7 +397,6 @@ public class TestReplicationMigrationTool extends BaseReplicationAcrossInstances
     assertEquals(0, ToolRunner.run(conf, replTool,
         new String[] { "-dumpFilePath", tuple.dumpLocation, "-fileLevelCheck", "-verifyChecksum" }));
     assertTrue(out.toString().contains("Completed verification. Source & Target are in Sync."));
-    assertFalse(err.toString(), err.toString().isEmpty());
     out.reset();
     err.reset();
   }

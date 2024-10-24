@@ -28,12 +28,22 @@ import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.SystemVariables;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 
 public class TestSetProcessor {
+
+  @ClassRule
+  public static HiveTestEnvSetup env_setup = new HiveTestEnvSetup();
+
+  @Rule
+  public TestRule methodRule = env_setup.getMethodRule();
 
   private static final String TEST_SYSTEM_PROPERTY = "testSystemPropertyPassword";
   private static final String TEST_SYSTEM_PROPERTY_VALUE = "testSystemPropertyValue";
@@ -49,7 +59,7 @@ public class TestSetProcessor {
     env.put(TEST_ENV_VAR_PASSWORD, TEST_ENV_VAR_PASSWORD_VALUE);
     setEnv(env);
     System.setProperty(TEST_SYSTEM_PROPERTY, TEST_SYSTEM_PROPERTY_VALUE);
-    HiveConf conf = new HiveConf();
+    HiveConf conf = env_setup.getTestCtx().hiveConf;
     SessionState.start(conf);
     state = SessionState.get();
   }

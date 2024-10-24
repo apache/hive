@@ -28,11 +28,15 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.mockito.ArgumentCaptor;
 
 import java.util.Arrays;
@@ -49,6 +53,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 public class TestGetPartitionAuthWithBatches {
+
+    @ClassRule
+    public static HiveTestEnvSetup env_setup = new HiveTestEnvSetup();
+
+    @Rule
+    public TestRule methodRule = env_setup.getMethodRule();
 
     private final String catName = "hive";
     private final String dbName = "default";
@@ -67,7 +77,7 @@ public class TestGetPartitionAuthWithBatches {
 
     @BeforeClass
     public static void setupClass() throws HiveException {
-        hiveConf = new HiveConf(TestGetPartitionAuthWithBatches.class);
+        hiveConf = env_setup.getTestCtx().hiveConf;
         hiveConf.set("hive.security.authorization.enabled", "true");
         hiveConf.set("hive.security.authorization.manager","org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider");
         hive = Hive.get();

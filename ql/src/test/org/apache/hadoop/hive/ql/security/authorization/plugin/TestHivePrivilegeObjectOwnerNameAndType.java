@@ -29,10 +29,14 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
@@ -46,6 +50,13 @@ import static org.mockito.Mockito.verify;
  * Test HiveAuthorizer api invocation.
  */
 public class TestHivePrivilegeObjectOwnerNameAndType {
+
+  @ClassRule
+  public static HiveTestEnvSetup env_setup = new HiveTestEnvSetup();
+
+  @Rule
+  public TestRule methodRule = env_setup.getMethodRule();
+
   protected static HiveConf conf;
   protected static Driver driver;
   private static final String TABLE_NAME = TestHivePrivilegeObjectOwnerNameAndType.class.getSimpleName() + "Table";
@@ -68,7 +79,7 @@ public class TestHivePrivilegeObjectOwnerNameAndType {
   @BeforeClass
   public static void beforeTest() throws Exception {
     UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser("hive"));
-    conf = new HiveConf();
+    conf = env_setup.getTestCtx().hiveConf;
 
     // Turn on mocked authorization
     conf.setVar(ConfVars.HIVE_AUTHORIZATION_MANAGER, MockedHiveAuthorizerFactory.class.getName());
@@ -79,6 +90,7 @@ public class TestHivePrivilegeObjectOwnerNameAndType {
     conf.setVar(ConfVars.HIVE_TXN_MANAGER, DbTxnManager.class.getName());
     conf.setVar(ConfVars.HIVE_MAPRED_MODE, "nonstrict");
     conf.setVar(ConfVars.DYNAMIC_PARTITIONING_MODE, "nonstrict");
+    conf.set("hive.execution.engine", "mr");
 
     TestTxnDbUtil.prepDb(conf);
     SessionState.start(conf);

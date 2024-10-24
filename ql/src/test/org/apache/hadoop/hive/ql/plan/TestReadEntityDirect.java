@@ -35,10 +35,14 @@ import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.testutils.HiveTestEnvSetup;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 
 /**
  * Test if ReadEntity isDirect flag is set correctly to indicate if
@@ -46,6 +50,12 @@ import org.junit.Test;
  * of flag in ReadEntity.
  */
 public class TestReadEntityDirect {
+
+  @ClassRule
+  public static HiveTestEnvSetup env_setup = new HiveTestEnvSetup();
+
+  @Rule
+  public TestRule methodRule = env_setup.getMethodRule();
 
   @BeforeClass
   public static void onetimeSetup() throws Exception {
@@ -174,7 +184,7 @@ public class TestReadEntityDirect {
    * Create driver with the test hook set in config
    */
   private static Driver createDriver() {
-    HiveConf conf = new HiveConf(Driver.class);
+    HiveConf conf = env_setup.getTestCtx().hiveConf;
     conf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
