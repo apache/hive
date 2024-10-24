@@ -766,18 +766,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
        */
       return;
     }
-    Path tgtPath;
-    if (tblDesc.getLocation() == null) {
-      if (table.getDataLocation() != null) {
-        tgtPath = new Path(table.getDataLocation().toString(),
-            Warehouse.makePartPath(partSpec.getPartSpec()));
-      } else {
-        tgtPath = new Path(getTableDataLocation(wh, tblDesc, x), Warehouse.makePartPath(partSpec.getPartSpec()));
-      }
-    } else {
-      tgtPath = new Path(tblDesc.getLocation(),
-          Warehouse.makePartPath(partSpec.getPartSpec()));
-    }
+    Path tableLocation = getTableDataLocation(wh, table, tblDesc, x);
+    Path tgtPath = new Path(tableLocation, Warehouse.makePartPath(partSpec.getPartSpec()));
     FileSystem tgtFs = FileSystem.get(tgtPath.toUri(), x.getConf());
     checkTargetLocationEmpty(tgtFs, tgtPath, replicationSpec, x.getLOG());
     partSpec.setLocation(tgtPath.toString());
@@ -1101,12 +1091,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           Path dataPath = new Path(fromURI.toString(), EximUtil.DATA_PATH_NAME);
           tblDesc.setLocation(dataPath.toString());
         } else {
-          Path tablePath = null;
-          if (tblDesc.getLocation() != null) {
-            tablePath = new Path(tblDesc.getLocation());
-          } else {
-            tablePath = getTableDataLocation(wh, tblDesc, x);
-          }
+          Path tablePath = getTableDataLocation(wh, table, tblDesc, x);
           FileSystem tgtFs = FileSystem.get(tablePath.toUri(), x.getConf());
           checkTargetLocationEmpty(tgtFs, tablePath, replicationSpec,x.getLOG());
           t.addDependentTask(loadTable(fromURI, tblDesc, false, tablePath, replicationSpec, x,
@@ -1400,15 +1385,25 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private static Path getTableDataLocation(Warehouse wh, ImportTableDesc tblDesc,
+  private static Path getTableDataLocation(Warehouse wh, Table destTable, ImportTableDesc tblDesc,
       EximUtil.SemanticAnalyzerWrapperContext x) throws HiveException, MetaException {
-    Table translatedTable =
-        x.getHive().getTranslateTableDryrun(tblDesc.toTable(x.getConf()).getTTable());
-    Path tablePath = translatedTable.getDataLocation();
-    if (tablePath == null) {
-      Database parentDb = x.getHive().getDatabase(tblDesc.getDatabaseName());
-      tablePath = wh.getDefaultTablePath(parentDb, tblDesc.getTableName(), tblDesc.isExternal());
+    if (tblDesc.getLocation() != null) {
+      // If the import has specified the target location, use it.
+      // The partition can be imported to a customized location.
+      return new Path(tblDesc.getLocation());
+    } else if (destTable != null && destTable.getDataLocation() != null) {
+      // If the import table is existing, use the table location
+      return destTable.getDataLocation();
+    } else {
+      // For import new table
+      Table translatedTable = x.getHive().getTranslateTableDryrun(tblDesc.toTable(x.getConf()).getTTable());
+      Path tablePath = translatedTable.getDataLocation();
+      if (tablePath == null) {
+        Database parentDb = x.getHive().getDatabase(tblDesc.getDatabaseName());
+        tablePath = wh.getDefaultTablePath(parentDb, tblDesc.getTableName(), tblDesc.isExternal());
+      }
+      return tablePath;
     }
-    return tablePath;
   }
+
 }
