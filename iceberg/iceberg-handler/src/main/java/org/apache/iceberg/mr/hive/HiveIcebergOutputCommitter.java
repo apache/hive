@@ -68,7 +68,6 @@ import org.apache.iceberg.ReplacePartitions;
 import org.apache.iceberg.RewriteFiles;
 import org.apache.iceberg.RowDelta;
 import org.apache.iceberg.Snapshot;
-import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.expressions.Expression;
@@ -513,12 +512,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
   }
 
   private Long getSnapshotId(Table table, String branchName) {
-    Optional<Long> snapshotId = Optional.ofNullable(table.currentSnapshot()).map(Snapshot::snapshotId);
-    if (StringUtils.isNotEmpty(branchName)) {
-      String ref = HiveUtils.getTableSnapshotRef(branchName);
-      snapshotId = Optional.ofNullable(table.refs().get(ref)).map(SnapshotRef::snapshotId);
-    }
-    return snapshotId.orElse(null);
+    Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, branchName);
+    return snapshot != null ? snapshot.snapshotId() : null;
   }
 
   /**

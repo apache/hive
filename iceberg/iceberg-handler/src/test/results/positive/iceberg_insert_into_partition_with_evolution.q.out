@@ -125,6 +125,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            b rtyuiy
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat

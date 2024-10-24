@@ -59,6 +59,7 @@ import org.apache.iceberg.PositionDeletesScanTask;
 import org.apache.iceberg.RowLevelOperationMode;
 import org.apache.iceberg.ScanTask;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
@@ -129,19 +130,18 @@ public class IcebergTableUtil {
    */
   static Table getTable(Configuration configuration, Properties properties, boolean skipCache) {
     String metaTable = properties.getProperty(IcebergAcidUtil.META_TABLE_PROPERTY);
-    String tableName = properties.getProperty(Catalogs.NAME);
-    String location = properties.getProperty(Catalogs.LOCATION);
+
+    Properties props = new Properties(properties); // use input properties as default
     if (metaTable != null) {
       // HiveCatalog, HadoopCatalog uses NAME to identify the metadata table
-      properties.setProperty(Catalogs.NAME, tableName + "." + metaTable);
+      props.put(Catalogs.NAME, properties.get(Catalogs.NAME) + "." + metaTable);
       // HadoopTable uses LOCATION to identify the metadata table
-      properties.setProperty(Catalogs.LOCATION, location + "#" + metaTable);
+      props.put(Catalogs.LOCATION, properties.get(Catalogs.LOCATION) + "#" + metaTable);
     }
-
-    String tableIdentifier = properties.getProperty(Catalogs.NAME);
+    String tableIdentifier = props.getProperty(Catalogs.NAME);
     Function<Void, Table> tableLoadFunc =
         unused -> {
-          Table tab = Catalogs.loadTable(configuration, properties);
+          Table tab = Catalogs.loadTable(configuration, props);
           SessionStateUtil.addResource(configuration, tableIdentifier, tab);
           return tab;
         };
@@ -160,6 +160,32 @@ public class IcebergTableUtil {
 
   static Table getTable(Configuration configuration, Properties properties) {
     return getTable(configuration, properties, false);
+  }
+
+  static Snapshot getTableSnapshot(Table table, org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    if (hmsTable.getAsOfVersion() != null) {
+      long snapshotId;
+      try {
+        snapshotId = Long.parseLong(hmsTable.getAsOfVersion());
+      } catch (NumberFormatException e) {
+        SnapshotRef ref = table.refs().get(hmsTable.getAsOfVersion());
+        if (ref == null) {
+          throw new RuntimeException("Cannot find matching snapshot ID or reference name for version " +
+              hmsTable.getAsOfVersion());
+        }
+        snapshotId = ref.snapshotId();
+      }
+      return table.snapshot(snapshotId);
+    }
+    return getTableSnapshot(table, hmsTable.getSnapshotRef());
+  }
+
+  static Snapshot getTableSnapshot(Table table, String snapshotRef) {
+    if (snapshotRef != null) {
+      String ref = HiveUtils.getTableSnapshotRef(snapshotRef);
+      return table.snapshot(ref);
+    }
+    return table.currentSnapshot();
   }
 
   static Optional<Path> getColStatsPath(Table table) {
@@ -380,20 +406,19 @@ public class IcebergTableUtil {
       Types.StructType targetKeyType) {
     PartitionData data = new PartitionData(targetKeyType);
     for (int i = 0; i < targetKeyType.fields().size(); i++) {
+      Types.NestedField targetKey = targetKeyType.fields().get(i);
 
-      int fi = i;
-      String fieldName = targetKeyType.fields().get(fi).name();
-      Object val = sourceKeyType.fields().stream()
-          .filter(f -> f.name().equals(fieldName)).findFirst()
-          .map(sourceKeyElem -> sourceKey.get(sourceKeyType.fields().indexOf(sourceKeyElem),
-              targetKeyType.fields().get(fi).type().typeId().javaClass()))
-          .orElseThrow(() -> new RuntimeException(
-              String.format("Error retrieving value of partition field %s", fieldName)));
-
-      if (val != null) {
-        data.set(fi, val);
-      } else {
-        throw new RuntimeException(String.format("Partition field's %s value is null", fieldName));
+      Optional<Object> val = sourceKeyType.fields().stream()
+          .filter(f -> f.name().equals(targetKey.name()))
+          .findFirst()
+          .map(sourceKeyElem ->
+            sourceKey.get(
+              sourceKeyType.fields().indexOf(sourceKeyElem),
+              targetKey.type().typeId().javaClass()
+            )
+          );
+      if (val.isPresent()) {
+        data.set(i, val.get());
       }
     }
     return data;
@@ -445,9 +470,9 @@ public class IcebergTableUtil {
         t -> ((PositionDeletesScanTask) t).file()));
   }
 
-  public static Expression generateExpressionFromPartitionSpec(Table table, Map<String, String> partitionSpec)
-      throws SemanticException {
-    Map<String, PartitionField> partitionFieldMap = getPartitionFields(table).stream()
+  public static Expression generateExpressionFromPartitionSpec(Table table, Map<String, String> partitionSpec,
+      boolean latestSpecOnly) throws SemanticException {
+    Map<String, PartitionField> partitionFieldMap = getPartitionFields(table, latestSpecOnly).stream()
         .collect(Collectors.toMap(PartitionField::name, Function.identity()));
     Expression finalExp = Expressions.alwaysTrue();
     for (Map.Entry<String, String> entry : partitionSpec.entrySet()) {
@@ -484,9 +509,11 @@ public class IcebergTableUtil {
             String.format("Transform: %s", partField.transform().toString()))).collect(Collectors.toList());
   }
 
-  public static List<PartitionField> getPartitionFields(Table table) {
-    return table.specs().values().stream().flatMap(spec -> spec.fields()
-        .stream()).distinct().collect(Collectors.toList());
+  public static List<PartitionField> getPartitionFields(Table table, boolean latestSpecOnly) {
+    return latestSpecOnly ? table.spec().fields() :
+      table.specs().values().stream()
+        .flatMap(spec -> spec.fields().stream()).distinct()
+        .collect(Collectors.toList());
   }
 
   /**
@@ -499,9 +526,10 @@ public class IcebergTableUtil {
    */
   public static Map<PartitionData, Integer> getPartitionInfo(Table icebergTable, Map<String, String> partSpecMap,
       boolean allowPartialSpec, boolean latestSpecOnly) throws SemanticException, IOException {
-    Expression expression = IcebergTableUtil.generateExpressionFromPartitionSpec(icebergTable, partSpecMap);
-    PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
-        .createMetadataTableInstance(icebergTable, MetadataTableType.PARTITIONS);
+    Expression expression = IcebergTableUtil.generateExpressionFromPartitionSpec(
+        icebergTable, partSpecMap, latestSpecOnly);
+    PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils.createMetadataTableInstance(
+        icebergTable, MetadataTableType.PARTITIONS);
 
     Map<PartitionData, Integer> result = Maps.newLinkedHashMap();
     try (CloseableIterable<FileScanTask> fileScanTasks = partitionsTable.newScan().planFiles()) {

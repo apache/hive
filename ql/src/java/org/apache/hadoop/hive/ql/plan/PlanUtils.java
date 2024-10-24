@@ -1156,7 +1156,7 @@ public final class PlanUtils {
       }
 
       ReadEntity newInput = null;
-      if (part.getTable().isPartitioned()) {
+      if (part.getTable().isPartitioned() && !part.getTable().alwaysUnpartitioned()) {
         newInput = new ReadEntity(part, parentViewInfo, isDirectRead);
       } else {
         newInput = new ReadEntity(part.getTable(), parentViewInfo, isDirectRead);

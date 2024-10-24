@@ -528,7 +528,7 @@ public final class ColumnPrunerProcFactory {
         continue;
       }
       referencedColumnNames.add(column);
-      if (colInfo.getIsVirtualCol()) {
+      if (colInfo.getIsVirtualCol() && !colInfo.isHiddenPartitionCol()) {
         // part is also a virtual column, but part col should not in this
         // list.
         for (int j = 0; j < virtualCols.size(); j++) {

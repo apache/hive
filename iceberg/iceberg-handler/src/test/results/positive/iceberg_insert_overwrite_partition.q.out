@@ -115,6 +115,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 1
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -223,6 +225,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 1
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -417,6 +421,9 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            country USA
+            state CA
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -913,6 +920,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            state TX
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -1032,6 +1041,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            country India
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -1151,6 +1162,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            country India
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -1389,6 +1402,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 1999-12-31
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -1505,6 +1520,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 1999-12-31
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -1609,6 +1626,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 1999-12-26
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -1833,6 +1852,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 34567890123456787
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -1949,6 +1970,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 34567890123456787
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -2053,6 +2076,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 12346577399277578
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -2277,6 +2302,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 3.14786
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -2393,6 +2420,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 3.14786
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -2497,6 +2526,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 3.189
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -2721,6 +2752,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 3.14786
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -2837,6 +2870,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 3.14786
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -2941,6 +2976,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 3.189
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat

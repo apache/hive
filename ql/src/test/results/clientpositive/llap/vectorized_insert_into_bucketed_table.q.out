@@ -58,10 +58,11 @@ STAGE PLANS:
             Execution mode: llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
+                enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                enabledConditionsNotMet: Could not enable vectorization due to partition column names size 1 is greater than the number of table column names size 0 IS false
                 inputFileFormats: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
+                notVectorizedReason: UDTF Operator (UDTF) not supported
+                vectorized: false
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:

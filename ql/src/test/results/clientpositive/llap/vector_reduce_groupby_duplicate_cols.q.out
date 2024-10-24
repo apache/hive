@@ -61,19 +61,36 @@ STAGE PLANS:
                   alias: _dummy_table
                   Row Limit Per Split: 1
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 1:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: 1 (type: int), 2 (type: int)
                     null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: 1 (type: int), 2 (type: int)
+                    Reduce Sink Vectorization:
+                        className: VectorReduceSinkOperator
+                        native: false
+                        nativeConditionsMet: hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsNotMet: hive.vectorized.execution.reducesink.new.enabled IS false
                     Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
+                enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                enabledConditionsNotMet: Could not enable vectorization due to partition column names size 1 is greater than the number of table column names size 0 IS false
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 0
+                    includeColumns: []
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint]
         Map 2 
             Map Operator Tree:
                 TableScan
