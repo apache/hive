@@ -1,0 +1,389 @@
+PREHOOK: query: create table t_target(a int, b string, c int)stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_target
+POSTHOOK: query: create table t_target(a int, b string, c int)stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_target
+PREHOOK: query: create table t_source(a int, b string, c int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_source
+POSTHOOK: query: create table t_source(a int, b string, c int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_source
+PREHOOK: query: insert into t_target values (1, 'match', 50), (2, 'not match', 51), (3, 'delete', 55), (4, 'not delete null', null), (null, 'match null', 56)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_target
+POSTHOOK: query: insert into t_target values (1, 'match', 50), (2, 'not match', 51), (3, 'delete', 55), (4, 'not delete null', null), (null, 'match null', 56)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_target
+POSTHOOK: Lineage: t_target.a SCRIPT []
+POSTHOOK: Lineage: t_target.b SCRIPT []
+POSTHOOK: Lineage: t_target.c SCRIPT []
+PREHOOK: query: insert into t_source values (1, 'match', 50), (22, 'not match', 51), (3, 'delete', 55), (4, 'not delete null', null), (null, 'match null', 56)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_source
+POSTHOOK: query: insert into t_source values (1, 'match', 50), (22, 'not match', 51), (3, 'delete', 55), (4, 'not delete null', null), (null, 'match null', 56)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_source
+POSTHOOK: Lineage: t_source.a SCRIPT []
+POSTHOOK: Lineage: t_source.b SCRIPT []
+POSTHOOK: Lineage: t_source.c SCRIPT []
+PREHOOK: query: explain
+merge into t_target as t using t_source src ON t.a <=> src.a
+when matched and t.c > 50 THEN DELETE
+when matched then update set b = concat(t.b, ' Merged'), c = t.c + 10
+when not matched then insert values (src.a, concat(src.b, ' New'), src.c)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_source
+PREHOOK: Input: default@t_target
+PREHOOK: Output: default@merge_tmp_table
+PREHOOK: Output: default@t_target
+PREHOOK: Output: default@t_target
+POSTHOOK: query: explain
+merge into t_target as t using t_source src ON t.a <=> src.a
+when matched and t.c > 50 THEN DELETE
+when matched then update set b = concat(t.b, ' Merged'), c = t.c + 10
+when not matched then insert values (src.a, concat(src.b, ' New'), src.c)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_source
+POSTHOOK: Input: default@t_target
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Output: default@t_target
+POSTHOOK: Output: default@t_target
+STAGE DEPENDENCIES:
+  Stage-5 is a root stage
+  Stage-6 depends on stages: Stage-5
+  Stage-0 depends on stages: Stage-6
+  Stage-7 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-6
+  Stage-8 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-6
+  Stage-9 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-6
+  Stage-10 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-6
+  Stage-11 depends on stages: Stage-4
+
+STAGE PLANS:
+  Stage: Stage-5
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 6 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 5 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t_target
+                  Statistics: Num rows: 5 Data size: 505 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), a (type: int), b (type: string), c (type: int), true (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                    Statistics: Num rows: 5 Data size: 905 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: int)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col1 (type: int)
+                      Statistics: Num rows: 5 Data size: 905 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col2 (type: string), _col3 (type: int), _col4 (type: boolean)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 5 Data size: 505 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: a (type: int), b (type: string), c (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 5 Data size: 505 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 5 Data size: 505 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: string), _col2 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Right Outer Join 0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col0 (type: int)
+                nullSafes: [true]
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                Statistics: Num rows: 6 Data size: 1692 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col4 (type: boolean), _col6 (type: string), _col5 (type: int), _col7 (type: int), _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col3 (type: int), _col2 (type: string), _col1 (type: int), _col4 (type: boolean)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                  Statistics: Num rows: 6 Data size: 1716 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (_col0 and (_col5 > 50)) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 858 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col4 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 3 Data size: 228 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: UDFToInteger(_col0) (type: int)
+                        Statistics: Num rows: 3 Data size: 228 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (_col0 and ((_col5 <= 50) or (_col5 > 50) is null)) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 286 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col4 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: UDFToInteger(_col0) (type: int)
+                        Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (_col0 and ((_col5 <= 50) or (_col5 > 50) is null)) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 286 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col7 (type: int), concat(_col6, ' Merged') (type: string), (_col5 + 10) (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                            name: default.t_target
+                        Write Type: INSERT
+                  Filter Operator
+                    predicate: _col8 is null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 286 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col2 (type: int), concat(_col1, ' New') (type: string), _col3 (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                            name: default.t_target
+                        Write Type: INSERT
+                  Filter Operator
+                    predicate: (_col7 IS NOT DISTINCT FROM _col2) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 858 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col4 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                      outputColumnNames: _col4
+                      Statistics: Num rows: 3 Data size: 858 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        keys: _col4 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 3 Data size: 252 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                          Statistics: Num rows: 3 Data size: 252 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col1 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 228 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 3 Data size: 228 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      name: default.t_target
+                  Write Type: DELETE
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      name: default.t_target
+                  Write Type: DELETE
+        Reducer 5 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 252 Basic stats: COMPLETE Column stats: COMPLETE
+                Filter Operator
+                  predicate: (_col1 > 1L) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: cardinality_violation(_col0) (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.merge_tmp_table
+
+  Stage: Stage-6
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.t_target
+          Write Type: DELETE
+
+  Stage: Stage-7
+    Stats Work
+      Basic Stats Work:
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.t_target
+          Write Type: DELETE
+
+  Stage: Stage-8
+    Stats Work
+      Basic Stats Work:
+
+  Stage: Stage-2
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.t_target
+          Write Type: INSERT
+
+  Stage: Stage-9
+    Stats Work
+      Basic Stats Work:
+
+  Stage: Stage-3
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.t_target
+          Write Type: INSERT
+
+  Stage: Stage-10
+    Stats Work
+      Basic Stats Work:
+
+  Stage: Stage-4
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.merge_tmp_table
+
+  Stage: Stage-11
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: merge into t_target as t using t_source src ON t.a <=> src.a
+when matched and t.c > 50 THEN DELETE
+when matched then update set b = concat(t.b, ' Merged'), c = t.c + 10
+when not matched then insert values (src.a, concat(src.b, ' New'), src.c)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_source
+PREHOOK: Input: default@t_target
+PREHOOK: Output: default@merge_tmp_table
+PREHOOK: Output: default@t_target
+PREHOOK: Output: default@t_target
+POSTHOOK: query: merge into t_target as t using t_source src ON t.a <=> src.a
+when matched and t.c > 50 THEN DELETE
+when matched then update set b = concat(t.b, ' Merged'), c = t.c + 10
+when not matched then insert values (src.a, concat(src.b, ' New'), src.c)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_source
+POSTHOOK: Input: default@t_target
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Output: default@t_target
+POSTHOOK: Output: default@t_target
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(t_target)t_target.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: t_target.a SIMPLE [(t_source)src.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: t_target.a SIMPLE [(t_source)src.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: t_target.b EXPRESSION [(t_source)src.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: t_target.b EXPRESSION [(t_source)src.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: t_target.c SIMPLE [(t_source)src.FieldSchema(name:c, type:int, comment:null), ]
+POSTHOOK: Lineage: t_target.c SIMPLE [(t_source)src.FieldSchema(name:c, type:int, comment:null), ]
+PREHOOK: query: select * from t_target
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_target
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t_target
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_target
+#### A masked pattern was here ####
+2	not match	51
+1	match Merged	60
+4	not delete null Merged	NULL
+22	not match New	51
