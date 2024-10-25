@@ -33,6 +33,8 @@ import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableAnalyzer;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
@@ -93,8 +95,10 @@ public class AlterTableCompactAnalyzer extends AbstractAlterTableAnalyzer {
         case HiveParser.TOK_WHERE:
           RowResolver rwsch = new RowResolver();
           Map<String, String> colTypes = new HashMap<>();
+          Table table;
           try {
-            for (FieldSchema fs : getDb().getTable(tableName).getCols()) {
+            table = getDb().getTable(tableName);
+            for (FieldSchema fs : table.getCols()) {
               TypeInfo columnType = TypeInfoUtils.getTypeInfoFromTypeString(fs.getType());
               rwsch.put(tableName.getTable(), fs.getName(), 
                   new ColumnInfo(fs.getName(), columnType, null, true));
@@ -106,6 +110,9 @@ public class AlterTableCompactAnalyzer extends AbstractAlterTableAnalyzer {
           TypeCheckCtx tcCtx = new TypeCheckCtx(rwsch);
           ASTNode conds = (ASTNode) node.getChild(0);
           filterExpr = ExprNodeTypeCheck.genExprNode(conds, tcCtx).get(conds);
+          if (!PartitionPruner.onlyContainsPartnCols(table, filterExpr)) {
+            throw new SemanticException(ErrorMsg.ALTER_TABLE_COMPACTION_NON_PARTITIONED_COLUMN_NOT_ALLOWED);
+          }
           break;
         default:
           break;
