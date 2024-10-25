@@ -119,6 +119,7 @@ import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvide
 import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
+import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.DefaultFetchFormatter;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -460,7 +461,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public Map<String, String> getBasicStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+  public Map<String, String> getBasicStatistics(Partish partish) {
+    org.apache.hadoop.hive.ql.metadata.Table hmsTable = partish.getTable();
     // For write queries where rows got modified, don't fetch from cache as values could have changed.
     Map<String, String> stats = Maps.newHashMap();
     if (!getStatsSource().equals(HiveMetaHook.ICEBERG)) {
@@ -468,7 +470,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
     Table table = getTable(hmsTable);
 
-    Snapshot snapshot = IcebergTableUtil.getSpecificSnapshot(hmsTable, table);
+    Snapshot snapshot = IcebergTableUtil.getTableSnapshot(hmsTable, table);
     if (snapshot != null) {
       Map<String, String> summary = snapshot.summary();
       if (summary != null) {
@@ -614,7 +616,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public boolean canComputeQueryUsingStats(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     if (getStatsSource().equals(HiveMetaHook.ICEBERG) && hmsTable.getMetaTable() == null) {
       Table table = getTable(hmsTable);
-      Snapshot snapshot = IcebergTableUtil.getSpecificSnapshot(hmsTable, table);
+      Snapshot snapshot = IcebergTableUtil.getTableSnapshot(hmsTable, table);
       if (snapshot != null) {
         Map<String, String> summary = snapshot.summary();
         if (summary != null && summary.containsKey(SnapshotSummary.TOTAL_EQ_DELETES_PROP) &&

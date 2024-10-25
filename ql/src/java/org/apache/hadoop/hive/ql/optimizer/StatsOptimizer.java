@@ -943,16 +943,15 @@ public class StatsOptimizer extends Transform {
           rowCnt += partRowCnt;
         }
       } else { // unpartitioned table
-        if (!StatsUtils.areBasicStatsUptoDateForQueryAnswering(tbl, tbl.getParameters())) {
-          if (MetaStoreUtils.isNonNativeTable(tbl.getTTable())
-                  && tbl.getStorageHandler().canComputeQueryUsingStats(tbl)) {
-            return Long.valueOf(tbl.getStorageHandler().getBasicStatistics(tbl)
-                    .get(StatsSetupConst.ROW_COUNT));
+        Map<String, String> basicStats = tbl.getParameters();
+        if (MetaStoreUtils.isNonNativeTable(tbl.getTTable())) {
+          if (!tbl.getStorageHandler().canComputeQueryUsingStats(tbl)) {
+            return null;
           }
+          basicStats = tbl.getStorageHandler().getBasicStatistics(Partish.buildFor(tbl));
+        } else if (!StatsUtils.areBasicStatsUptoDateForQueryAnswering(tbl, tbl.getParameters())) {
           return null;
         }
-        Map<String, String> basicStats = MetaStoreUtils.isNonNativeTable(tbl.getTTable()) ?
-            tbl.getStorageHandler().getBasicStatistics(tbl) : tbl.getParameters();
         rowCnt = Long.valueOf(basicStats.get(StatsSetupConst.ROW_COUNT));
       }
       return rowCnt;

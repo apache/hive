@@ -567,7 +567,7 @@ public class IcebergTableUtil {
     }
   }
 
-  public static Snapshot getSpecificSnapshot(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Table table) {
+  public static Snapshot getTableSnapshot(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Table table) {
     String refName = HiveUtils.getTableSnapshotRef(hmsTable.getSnapshotRef());
     Snapshot snapshot;
     if (refName != null) {
