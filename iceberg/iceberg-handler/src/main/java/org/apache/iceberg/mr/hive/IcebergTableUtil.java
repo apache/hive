@@ -473,10 +473,13 @@ public class IcebergTableUtil {
     List<FieldSchema> hiveSchema = HiveSchemaUtil.convert(schema);
     Map<String, String> colNameToColType = hiveSchema.stream()
         .collect(Collectors.toMap(FieldSchema::getName, FieldSchema::getType));
-    return table.specs().get(specId).fields().stream().map(partField ->
-        new FieldSchema(schema.findColumnName(partField.sourceId()),
+    return table.specs().get(specId).fields().stream()
+        .map(partField -> new FieldSchema(
+            schema.findColumnName(partField.sourceId()),
             colNameToColType.get(schema.findColumnName(partField.sourceId())),
-            String.format("Transform: %s", partField.transform().toString()))).collect(Collectors.toList());
+            String.format("Transform: %s", partField.transform().toString()))
+        )
+        .collect(Collectors.toList());
   }
 
   public static List<PartitionField> getPartitionFields(Table table, boolean latestSpecOnly) {
@@ -484,15 +487,6 @@ public class IcebergTableUtil {
       table.specs().values().stream()
         .flatMap(spec -> spec.fields().stream()).distinct()
         .collect(Collectors.toList());
-  }
-
-  public static List<FieldSchema> getPartitionKeys(Table table, boolean latestSpecOnly) {
-    if (latestSpecOnly) {
-      return getPartitionKeys(table, table.spec().specId());
-    } else {
-      return table.specs().keySet().stream().flatMap(id -> getPartitionKeys(table, id).stream())
-          .distinct().collect(Collectors.toList());
-    }
   }
 
   /**

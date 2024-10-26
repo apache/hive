@@ -66,21 +66,6 @@ delete from ice_orc where last_name in ('ln1', 'ln9');
 delete from ice_orc where last_name in ('ln3', 'ln11');
 delete from ice_orc where last_name in ('ln5', 'ln13');
 
-alter table ice_orc set partition spec(team_id);
-insert into ice_orc VALUES
-    ('fn17', 'ln17',  1, 10, 100),
-    ('fn18','ln18', 1, 10, 100);
-insert into ice_orc VALUES
-    ('fn19','ln19', 2, 11, 100),
-    ('fn20','ln20', 2, 11, 100);
-insert into ice_orc VALUES
-    ('fn21','ln21', 3, 12, 100),
-    ('fn22','ln22', 3, 12, 100);
-insert into ice_orc VALUES
-    ('fn23','ln23', 4, 13, 100),
-    ('fn24','ln24', 4, 13, 100);
-
-
 select * from ice_orc;
 describe formatted ice_orc;
 

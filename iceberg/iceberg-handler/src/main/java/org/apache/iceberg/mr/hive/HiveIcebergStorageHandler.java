@@ -2190,12 +2190,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public List<FieldSchema> getPartitionKeys(org.apache.hadoop.hive.ql.metadata.Table hmsTable, boolean latestSpecOnly) {
+  public List<FieldSchema> getPartitionKeys(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     if (!hmsTable.getTTable().isSetId()) {
       return Collections.emptyList();
     }
     Table icebergTable = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    return IcebergTableUtil.getPartitionKeys(icebergTable, latestSpecOnly);
+    return IcebergTableUtil.getPartitionKeys(icebergTable, icebergTable.spec().specId());
   }
 
   @Override

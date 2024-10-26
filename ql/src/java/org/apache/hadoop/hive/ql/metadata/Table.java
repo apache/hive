@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -608,32 +609,26 @@ public class Table implements Serializable {
     return true;
   }
 
-
   public List<FieldSchema> getPartCols() {
     List<FieldSchema> partKeys = tTable.getPartitionKeys();
     if (partKeys == null) {
-      partKeys = new ArrayList<FieldSchema>();
+      partKeys = new ArrayList<>();
       tTable.setPartitionKeys(partKeys);
     }
     return partKeys;
   }
 
   public FieldSchema getPartColByName(String colName) {
-    for (FieldSchema key : getPartCols()) {
-      if (key.getName().toLowerCase().equals(colName)) {
-        return key;
-      }
-    }
-    return null;
+    return getPartCols().stream()
+      .filter(key -> key.getName().toLowerCase().equals(colName))
+      .findFirst().orElse(null);
   }
 
   public List<String> getPartColNames() {
-    List<String> partColNames = new ArrayList<>();
-    for (FieldSchema key : alwaysUnpartitioned() ? 
-        getStorageHandler().getPartitionKeys(this) : getPartCols()) {
-      partColNames.add(key.getName());
-    }
-    return partColNames;
+    List<FieldSchema> partCols = alwaysUnpartitioned() ?
+      getStorageHandler().getPartitionKeys(this) : getPartCols();
+    return partCols.stream().map(FieldSchema::getName)
+      .collect(Collectors.toList());
   }
 
   public boolean alwaysUnpartitioned() {
@@ -647,7 +642,7 @@ public class Table implements Serializable {
   // TODO merge this with getBucketCols function
   public String getBucketingDimensionId() {
     List<String> bcols = tTable.getSd().getBucketCols();
-    if (bcols == null || bcols.size() == 0) {
+    if (bcols == null || bcols.isEmpty()) {
       return null;
     }
 

@@ -111,7 +111,7 @@ public class PartitionPruner extends Transform {
    *          the pruner expression for the table
    */
   public static boolean onlyContainsPartnCols(Table table, ExprNodeDesc expr) {
-    if(!isPartitioned(table) || (expr == null)) {
+    if(!table.isPartitioned() || (expr == null)) {
       return true;
     }
 
@@ -139,20 +139,9 @@ public class PartitionPruner extends Transform {
 
     return true;
   }
-
-  private static boolean isPartitioned(Table table) {
-    if (table.getStorageHandler() != null && table.getStorageHandler().alwaysUnpartitioned()) {
-      return table.getStorageHandler().isPartitioned(table);
-    } else {
-      return table.isPartitioned();
-    }
-  }
   
   private static boolean isPartitionKey(Table table, String columnName) {
-    List<String> partitionKeyNames = table.getStorageHandler() != null && table.getStorageHandler().alwaysUnpartitioned() ?
-        table.getStorageHandler().getPartitionKeys(table, false).stream()
-        .map(FieldSchema::getName).collect(Collectors.toList()) : table.getPartColNames();
-    return partitionKeyNames.stream().anyMatch(item->item.equalsIgnoreCase(columnName));
+    return table.getPartColNames().stream().anyMatch(item -> item.equalsIgnoreCase(columnName));
   }
   /**
    * Get the partition list for the TS operator that satisfies the partition pruner

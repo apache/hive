@@ -271,7 +271,7 @@ public interface HiveStorageHandler extends Configurable {
    * @param table
    * @return A List of Column Statistics Objects, can be null
    */
-  default List<ColumnStatisticsObj>getColStatistics(org.apache.hadoop.hive.ql.metadata.Table table) {
+  default List<ColumnStatisticsObj> getColStatistics(org.apache.hadoop.hive.ql.metadata.Table table) {
     return null;
   }
 
@@ -831,10 +831,6 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   default List<FieldSchema> getPartitionKeys(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    return getPartitionKeys(hmsTable, true);
-  }
-  
-  default List<FieldSchema> getPartitionKeys(org.apache.hadoop.hive.ql.metadata.Table hmsTable, boolean latestSpecOnly) {
     throw new UnsupportedOperationException("Storage handler does not support getting partition keys for a table.");
   }
 
