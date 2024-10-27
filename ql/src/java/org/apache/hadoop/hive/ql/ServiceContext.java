@@ -30,6 +30,7 @@ public class ServiceContext {
   private final String clusterId;
   private final Supplier<String> host;
   private final Supplier<Integer> port;
+  public static final String QUERY_ID = "Query ID";
 
   public ServiceContext(Supplier<String> host, Supplier<Integer> port) {
     this.host = host;
