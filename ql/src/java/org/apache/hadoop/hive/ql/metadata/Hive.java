@@ -4091,6 +4091,36 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return names;
   }
 
+  public List<String> getPartitionNames(String dbName, String tblName,
+      short max, List<String> pVals) throws HiveException {
+    List<String> names = null;
+    Table t = getTable(dbName, tblName);
+
+    try {
+      GetPartitionNamesPsRequest req = new GetPartitionNamesPsRequest();
+      req.setTblName(tblName);
+      req.setDbName(dbName);
+      req.setPartValues(pVals);
+      req.setMaxParts(max);
+      if (AcidUtils.isTransactionalTable(t)) {
+        ValidWriteIdList validWriteIdList = getValidWriteIdList(dbName, tblName);
+        req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
+        req.setId(t.getTTable().getId());
+      }
+      GetPartitionNamesPsResponse res = getMSC().listPartitionNamesRequest(req);
+      names = res.getNames();
+    } catch (NoSuchObjectException nsoe) {
+      // this means no partition exists for the given partition spec
+      // key value pairs - thrift cannot handle null return values, hence
+      // listPartitionNames() throws NoSuchObjectException to indicate null partitions
+      return Lists.newArrayList();
+    } catch (Exception e) {
+      LOG.error("Failed getPartitionNames", e);
+      throw new HiveException(e);
+    }
+    return names;
+  }
+
   public List<String> getPartitionNames(Table tbl, ExprNodeGenericFuncDesc expr, String order,
        short maxParts) throws HiveException {
     List<String> names = null;
@@ -4223,6 +4253,30 @@ private void constructOneLBLocationMap(FileStatus fSta,
         result.clear();
         PartitionIterable partitionIterable = new PartitionIterable(Hive.get(), tbl, partialPartitionSpec, size,
             isAuthRequired, userName, groupNames);
+        partitionIterable.forEach(result::add);
+        return null;
+      }
+    };
+    try {
+      batchTask.run();
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+    return result;
+  }
+
+  public Set<Partition> getAllPartitionsWithSpecsInBatches(Table tbl, int batchSize, int decayingFactor,
+      int maxRetries, GetPartitionsRequest request) throws HiveException, TException {
+    if (!tbl.isPartitioned()) {
+      return Sets.newHashSet(new Partition(tbl));
+    }
+    Set<Partition> result = new LinkedHashSet<>();
+    RetryUtilities.ExponentiallyDecayingBatchWork batchTask = new RetryUtilities
+        .ExponentiallyDecayingBatchWork<Void>(batchSize, decayingFactor, maxRetries) {
+      @Override
+      public Void execute(int size) throws HiveException, TException {
+        result.clear();
+        PartitionIterable partitionIterable = new PartitionIterable(Hive.get(), tbl, size, request);
         partitionIterable.forEach(result::add);
         return null;
       }
@@ -4465,6 +4519,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
     if (!tbl.isPartitioned()) {
       throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, tbl.getTableName());
     }
+    int batchSize= MetastoreConf.getIntVar(Hive.get().getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+    if(batchSize > 0){
+      return new ArrayList<>(getAllPartitionsWithSpecsInBatches(tbl, batchSize, DEFAULT_BATCH_DECAYING_FACTOR, MetastoreConf.getIntVar(
+          Hive.get().getConf(), MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES), request));
+    }else{
+      return getPartitionsWithSpecs(request, tbl);
+    }
+  }
 
     List<org.apache.hadoop.hive.metastore.api.Partition> tParts = getMSC().listPartitionsByFilter(
         tbl.getDbName(), tbl.getTableName(), filter, (short)-1);
@@ -4478,11 +4540,60 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, tbl.getTableName());
     }
 
+  public List<Partition> getPartitionsWithSpecs(GetPartitionsRequest request, Table tbl)
+      throws HiveException, TException {
+
+    if (!tbl.isPartitioned()) {
+      throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, tbl.getTableName());
+    }
     GetPartitionsResponse response = getMSC().getPartitionsWithSpecs(request);
     List<org.apache.hadoop.hive.metastore.api.PartitionSpec> partitionSpecs = response.getPartitionSpec();
     List<Partition> partitions = new ArrayList<>();
     partitions.addAll(convertFromPartSpec(partitionSpecs.iterator(), tbl));
 
+    return partitions;
+  }
+
+  List<Partition> getPartitionsWithSpecs(Table tbl, List<String> partNames, GetPartitionsRequest request)
+      throws HiveException, TException {
+
+    if (!tbl.isPartitioned()) {
+      throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, tbl.getTableName());
+    }
+    List<Partition> partitions = new ArrayList<Partition>(partNames.size());
+
+    int batchSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX);
+    int nParts = partNames.size();
+    int nBatches = nParts / batchSize;
+
+    try {
+      for (int i = 0; i < nBatches; ++i) {
+        GetPartitionsRequest req = new GetPartitionsRequest(tbl.getDbName(), tbl.getTableName(), new GetProjectionsSpec(), new GetPartitionsFilterSpec());
+        req.getFilterSpec().setFilters(partNames.subList(i*batchSize, (i+1)*batchSize));
+        req.getFilterSpec().setFilterMode(PartitionFilterMode.BY_NAMES);
+        List<Partition> tParts = getPartitionsWithSpecs(req, tbl);
+
+        if (tParts != null) {
+          for (Partition tpart: tParts) {
+            partitions.add(new Partition(tbl, tpart.getTPartition()));
+          }
+        }
+      }
+
+      if (nParts > nBatches * batchSize) {
+        GetPartitionsRequest req = new GetPartitionsRequest(tbl.getDbName(), tbl.getTableName(), new GetProjectionsSpec(), new GetPartitionsFilterSpec());
+        req.getFilterSpec().setFilters(partNames.subList(nBatches*batchSize, nParts));
+        req.getFilterSpec().setFilterMode(PartitionFilterMode.BY_NAMES);
+        List<Partition> tParts = getPartitionsWithSpecs(req, tbl);
+        if (tParts != null) {
+          for (Partition tpart: tParts) {
+            partitions.add(new Partition(tbl, tpart.getTPartition()));
+          }
+        }
+      }
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
     return partitions;
   }
 
