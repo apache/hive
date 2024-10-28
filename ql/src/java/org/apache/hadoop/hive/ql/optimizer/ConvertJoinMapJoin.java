@@ -722,11 +722,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     if (updatePartitionCols) {
       // use the positions to only pick the partitionCols which are required
       // on the small table side.
-      for (Operator<?> op : mapJoinOp.getParentOperators()) {
-        if (!(op instanceof ReduceSinkOperator)) {
-          continue;
-        }
-
+      mapJoinOp.getParentOperators().stream().filter(op -> op instanceof ReduceSinkOperator).forEach(op -> {
         ReduceSinkOperator rsOp = (ReduceSinkOperator) op;
         List<ExprNodeDesc> newPartitionCols = new ArrayList<>();
         List<ExprNodeDesc> partitionCols = rsOp.getConf().getPartitionCols();
@@ -734,7 +730,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
           newPartitionCols.add(partitionCols.get(position));
         }
         rsOp.getConf().setPartitionCols(newPartitionCols);
-      }
+      });
     }
 
     if (bucketFunction != null) {
@@ -744,14 +740,10 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
         tso.getConf().setGroupingNumBuckets(bucketFunction.getNumBuckets());
       }
 
-      for (Operator<?> op : mapJoinOp.getParentOperators()) {
-        if (!(op instanceof ReduceSinkOperator)) {
-          continue;
-        }
-
+      mapJoinOp.getParentOperators().stream().filter(op -> op instanceof ReduceSinkOperator).forEach(op -> {
         ReduceSinkOperator rsOp = (ReduceSinkOperator) op;
         rsOp.getConf().setCustomPartitionFunction(bucketFunction);
-      }
+      });
     }
 
     // Update the memory monitor info for LLAP.
@@ -989,8 +981,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
      * join column in say a group by operation
      */
     final CustomBucketFunction parentBucketFunction = rs.getOpTraits().getCustomBucketFunctions().get(0);
-    int numBuckets = parentBucketFunction != null
-        ? parentBucketFunction.getNumBuckets()
+    int numBuckets = parentBucketFunction != null ? parentBucketFunction.getNumBuckets()
         : parentOfParent.getOpTraits().getNumBuckets();
     if (numBuckets < 0) {
       numBuckets = rs.getConf().getNumReducers();

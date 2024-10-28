@@ -175,10 +175,7 @@ public class OpTraitsRulesProcFactory {
       } else {
         Preconditions.checkState(parentOpTraits.getBucketColNames().size() == 1);
         Preconditions.checkState(parentOpTraits.getCustomBucketFunctions().size() == 1);
-        final Map<String, String> inputToOutput = rs
-            .getColumnExprMap()
-            .entrySet()
-            .stream()
+        final Map<String, String> inputToOutput = rs.getColumnExprMap().entrySet().stream()
             .filter(entry -> entry.getValue() instanceof ExprNodeColumnDesc)
             .filter(entry -> rs.getConf().getKeyCols().stream().anyMatch(keyDesc -> keyDesc.isSame(entry.getValue())))
             .collect(Collectors.toMap(
@@ -191,8 +188,8 @@ public class OpTraitsRulesProcFactory {
         final List<String> rsBucketColNames = new ArrayList<>();
         for (int i = 0; i < parentBucketColNames.size(); i++) {
           final String rsColumnName = inputToOutput.get(parentBucketColNames.get(i));
-          retainedColumns[i] = rsColumnName != null;
           if (rsColumnName != null) {
+            retainedColumns[i] = true;
             rsBucketColNames.add(rsColumnName);
           }
         }

@@ -838,12 +838,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
           pushDownProjection = true;
           // push down filters and as of information
           pushFiltersAndAsOf(newjob, tableScan, this.mrwork);
-          final List<String> groupingPartitionColumns = tableScan.getConf().getGroupingPartitionColumns();
-          if (groupingPartitionColumns != null) {
-            newjob.setStrings(TableScanDesc.GROUPING_PARTITION_COLUMNS,
-                groupingPartitionColumns.toArray(new String[0]));
-            newjob.setInt(TableScanDesc.GROUPING_NUM_BUCKETS, tableScan.getConf().getGroupingNumBuckets());
-          }
+          addGroupingDetails(newjob, tableScan);
         }
       } else {
         if (LOG.isDebugEnabled()) {
@@ -1099,6 +1094,14 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
             ts.getConf().getAcidOperationalProperties());
         AcidUtils.setValidWriteIdList(job, ts.getConf());
       }
+    }
+  }
+
+  private void addGroupingDetails(JobConf conf, TableScanOperator tableScan) {
+    final List<String> groupingPartitionColumns = tableScan.getConf().getGroupingPartitionColumns();
+    if (groupingPartitionColumns != null) {
+      conf.setStrings(TableScanDesc.GROUPING_PARTITION_COLUMNS, groupingPartitionColumns.toArray(new String[0]));
+      conf.setInt(TableScanDesc.GROUPING_NUM_BUCKETS, tableScan.getConf().getGroupingNumBuckets());
     }
   }
 }

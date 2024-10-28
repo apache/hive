@@ -75,13 +75,11 @@ import com.google.protobuf.ByteString;
  */
 public class CustomPartitionVertex extends VertexManagerPlugin {
 
-  public static class ComparatorForSplit implements Comparator<InputSplit> {
+  private static class HiveInputSplitComparator implements Comparator<HiveInputSplit> {
 
     @Override
-    public int compare(InputSplit inp1, InputSplit inp2) {
-      HiveInputSplit fs1 = (HiveInputSplit) inp1;
-      HiveInputSplit fs2 = (HiveInputSplit) inp2;
-      return UnsignedBytes.lexicographicalComparator().compare(fs1.getBytesForIdentity(), fs2.getBytesForIdentity());
+    public int compare(HiveInputSplit inp1, HiveInputSplit inp2) {
+      return UnsignedBytes.lexicographicalComparator().compare(inp1.getBytesForIdentity(), inp2.getBytesForIdentity());
     }
   }
 
@@ -218,11 +216,8 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
           throw new RuntimeException("Failed to get file split for event: " + diEvent, e);
         }
         final int bucketId = inputSplit.getBucketId().orElse(-1);
-        Set<HiveInputSplit> inputSplits = bucketFileSplitsMap.get(bucketId);
-        if (inputSplits == null) {
-          inputSplits = new TreeSet<>(new ComparatorForSplit());
-          bucketFileSplitsMap.put(bucketId, inputSplits);
-        }
+        Set<HiveInputSplit> inputSplits = bucketFileSplitsMap.computeIfAbsent(bucketId,
+            k -> new TreeSet<>(new HiveInputSplitComparator()));
         inputSplits.add(inputSplit);
       }
     }
@@ -535,11 +530,6 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
 
     boolean fallback = false;
     for (Map.Entry<Integer, Set<HiveInputSplit>> entry : bucketSplitsMap.entrySet()) {
-      // Extract the buckedID from pathFilesMap, this is more accurate method,
-      // however. it may not work in certain cases where buckets are named
-      // after files used while loading data. In such case, fallback to old
-      // potential inaccurate method.
-      // The accepted file names are such as 000000_0, 000001_0_copy_1.
       int bucketId = entry.getKey();
       if (bucketId < 0) {
         fallback = true;
