@@ -271,7 +271,7 @@ public class HiveMetaStoreChecker {
         parts = new PartitionIterable(results);
       } else {
         GetPartitionsRequest request = new GetPartitionsRequest(table.getDbName(), table.getTableName(),
-            null, null);
+            null, new GetPartitionsFilterSpec());
         request.setProjectionSpec(new GetPartitionProjectionsSpecBuilder().addProjectField("sd.location")
             .addProjectField("createTime").addProjectField("tableName")
             .addProjectField("values").build());

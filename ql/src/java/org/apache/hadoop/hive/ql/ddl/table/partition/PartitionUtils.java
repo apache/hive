@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -115,6 +116,20 @@ public final class PartitionUtils {
     }
     if (partitions.isEmpty() && throwException) {
       throw new SemanticException(toMessage(ErrorMsg.INVALID_PARTITION, partitionSpec));
+    }
+    return partitions;
+  }
+
+  public static List<Partition> getPartitionsWithSpecs(Hive db, Table table, GetPartitionsRequest request,
+      boolean throwException) throws SemanticException {
+    List<Partition> partitions = null;
+    try {
+      partitions = db.getPartitionsWithSpecs(table, request);
+    } catch (Exception e) {
+      throw new SemanticException(toMessage(ErrorMsg.INVALID_PARTITION, request.getFilterSpec()), e);
+    }
+    if (partitions.isEmpty() && throwException) {
+      throw new SemanticException(toMessage(ErrorMsg.INVALID_PARTITION, request.getFilterSpec()));
     }
     return partitions;
   }

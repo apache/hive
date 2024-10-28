@@ -23,6 +23,8 @@ import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -36,6 +38,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,14 +101,21 @@ public class ReplExternalTables {
     if (table.isPartitioned()) {
       List<Partition> partitions;
       try {
-        partitions = Hive.get(hiveConf).getPartitions(table);
-      } catch (HiveException e) {
+        GetPartitionsRequest request = new GetPartitionsRequest(table.getDbName(), table.getTableName(),
+            null, new GetPartitionsFilterSpec());
+        request.setCatName(table.getCatName());
+        request.setProjectionSpec(
+            new org.apache.hadoop.hive.metastore.client.builder.GetPartitionProjectionsSpecBuilder()
+                .addProjectField("catName").addProjectField("tableName")
+                .addProjectField("dbName").addProjectField("sd.location").build());
+        partitions = Hive.get(hiveConf).getPartitionsWithSpecs(table, request);
+      } catch (HiveException | TException e) {
         if (e.getCause() instanceof NoSuchObjectException) {
           // If table is dropped when dump in progress, just skip partitions data location dump
           LOG.debug(e.getMessage());
           return;
         }
-        throw e;
+        throw new HiveException(e);
       }
 
       for (Partition partition : partitions) {

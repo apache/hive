@@ -23,6 +23,11 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
+import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
+import org.apache.hadoop.hive.metastore.api.PartitionFilterMode;
+import org.apache.hadoop.hive.metastore.client.builder.GetPartitionProjectionsSpecBuilder;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -36,6 +41,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity.WriteType;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClient;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -77,9 +83,31 @@ public  class AlterTableExchangePartitionAnalyzer extends AbstractAlterTableAnal
     if (AcidUtils.isTransactionalTable(sourceTable) || AcidUtils.isTransactionalTable(destTable)) {
       throw new SemanticException(ErrorMsg.EXCHANGE_PARTITION_NOT_ALLOWED_WITH_TRANSACTIONAL_TABLES.getMsg());
     }
+    Map<String, Table> sourceTempTables = SessionHiveMetaStoreClient.getTempTablesForDatabase(sourceTable.getDbName(), sourceTable.getTableName());
+    Map<String, Table> destTempTables = SessionHiveMetaStoreClient.getTempTablesForDatabase(destTable.getDbName(), destTable.getTableName());
+    List<String> projectFilters = MetaStoreUtils.getPvals(sourceTable.getPartCols(), partitionSpecs);
 
     // check if source partition exists
-    PartitionUtils.getPartitions(db, sourceTable, partitionSpecs, true);
+    if(sourceTempTables != null && sourceTempTables.containsKey(sourceTable.getTableName())){
+      PartitionUtils.getPartitions(db, sourceTable, partitionSpecs, true);
+    } else {
+      GetPartitionsFilterSpec getPartitionsFilterSpec = new GetPartitionsFilterSpec();
+      getPartitionsFilterSpec.setFilters(projectFilters);
+      getPartitionsFilterSpec.setFilterMode(PartitionFilterMode.BY_VALUES);
+
+      GetProjectionsSpec getProjectionsSpec = new GetPartitionProjectionsSpecBuilder()
+          .addProjectField("catName").addProjectField("dbName").addProjectField("tableName")
+          .addProjectField("lastAccessTime").addProjectField("values").build();
+
+      GetPartitionsRequest request = new GetPartitionsRequest(sourceTable.getDbName(), sourceTable.getTableName(),
+          getProjectionsSpec, getPartitionsFilterSpec);
+      request.setCatName(sourceTable.getCatName());
+      try {
+        PartitionUtils.getPartitionsWithSpecs(db, sourceTable, request, true);
+      } catch (SemanticException ex) {
+        throw ex;
+      }
+    }
 
     // Verify that the partitions specified are continuous
     // If a subpartition value is specified without specifying a partition's value then we throw an exception
@@ -90,11 +118,26 @@ public  class AlterTableExchangePartitionAnalyzer extends AbstractAlterTableAnal
 
     List<Partition> destPartitions = null;
     try {
-      destPartitions = PartitionUtils.getPartitions(db, destTable, partitionSpecs, true);
+      if(destTempTables != null && destTempTables.containsKey(destTable.getTableName())){
+        destPartitions = PartitionUtils.getPartitions(db, destTable, partitionSpecs, true);
+      }else{
+        GetPartitionsFilterSpec getPartitionsFilterSpec = new GetPartitionsFilterSpec();
+        getPartitionsFilterSpec.setFilters(projectFilters);
+        getPartitionsFilterSpec.setFilterMode(PartitionFilterMode.BY_VALUES);
+
+        GetProjectionsSpec getProjectionsSpec = new GetPartitionProjectionsSpecBuilder()
+            .addProjectField("catName").addProjectField("dbName").addProjectField("tableName")
+            .addProjectField("lastAccessTime").addProjectField("values").build();
+
+        GetPartitionsRequest destRequest = new GetPartitionsRequest(destTable.getDbName(), destTable.getTableName(),
+            getProjectionsSpec, getPartitionsFilterSpec);
+        destRequest.setCatName(destTable.getCatName());
+        destPartitions = PartitionUtils.getPartitionsWithSpecs(db, destTable, destRequest, true);
+      }
     } catch (SemanticException ex) {
       // We should expect a semantic exception being throw as this partition should not be present.
     }
-    if (destPartitions != null) {
+    if (destPartitions != null && !destPartitions.isEmpty()) {
       // If any destination partition is present then throw a Semantic Exception.
       throw new SemanticException(ErrorMsg.PARTITION_EXISTS.getMsg(destPartitions.toString()));
     }
