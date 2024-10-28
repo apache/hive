@@ -38,10 +38,6 @@ public class RuntimeStatsPersistenceCheckerHook implements ExecuteWithHookContex
   public void run(HookContext hookContext) throws Exception {
 
     PlanMapper pm = ((PrivateHookContext) hookContext).getContext().getPlanMapper();
-    if (pm.isBroken()) {
-      LOG.warn("Skip checking signatures. The PlanMapper is broken");
-      return;
-    }
 
     List<OpTreeSignature> sigs = pm.getAll(OpTreeSignature.class);
 

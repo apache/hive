@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignatureFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
+import org.apache.hadoop.hive.ql.stats.OperatorStats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,9 +49,8 @@ import org.slf4j.LoggerFactory;
 public class PlanMapper {
   private static final Logger LOG = LoggerFactory.getLogger(PlanMapper.class);
 
-  private final Set<EquivGroup> groups = new HashSet<>();
-  private final Map<Object, EquivGroup> objectMap = new CompositeMap<>(OpTreeSignature.class, AuxOpTreeSignature.class);
-  private boolean isBroken = false;
+  Set<EquivGroup> groups = new HashSet<>();
+  private Map<Object, EquivGroup> objectMap = new CompositeMap<>(OpTreeSignature.class, AuxOpTreeSignature.class);
 
   /**
    * Specialized class which can compare by identity or value; based on the key type.
@@ -222,7 +222,8 @@ public class PlanMapper {
     if (mGroups.size() > 1) {
       if (!mayMerge) {
         LOG.warn("Illegally linking {} and {}", o1, o2);
-        isBroken = true;
+        mGroups.forEach(g -> g.add(new OperatorStats.IncorrectRuntimeStatsMarker()));
+        return;
       }
       EquivGroup newGrp = new EquivGroup();
       newGrp.add(o1);
@@ -253,15 +254,7 @@ public class PlanMapper {
     return o;
   }
 
-  public boolean isBroken() {
-    return isBroken;
-  }
-
   public <T> List<T> getAll(Class<T> clazz) {
-    if (isBroken) {
-      LOG.warn("PlanMapper#getAll is no longer valid. Please use PlanMapper#isBroken to handle the state correctly");
-      return Collections.emptyList();
-    }
     List<T> ret = new ArrayList<>();
     for (EquivGroup g : groups) {
       ret.addAll(g.getAll(clazz));
@@ -288,11 +281,6 @@ public class PlanMapper {
   }
 
   public Iterator<EquivGroup> iterateGroups() {
-    if (isBroken) {
-      LOG.warn("PlanMapper#iterateGroups is no longer valid. "
-          + "Please use PlanMapper#isBroken to handle the state correctly");
-      return Collections.emptyIterator();
-    }
     return groups.iterator();
 
   }

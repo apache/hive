@@ -77,11 +77,6 @@ public class StatsSources {
 
   private static ImmutableList<PersistedRuntimeStats> extractStatsFromPlanMapper(PlanMapper pm) {
     Builder<PersistedRuntimeStats> li = ImmutableList.builder();
-    if (pm.isBroken()) {
-      LOG.warn("Don't generate any stats. This PlanMapper is broken");
-      return li.build();
-    }
-
     Iterator<EquivGroup> it = pm.iterateGroups();
     while (it.hasNext()) {
       EquivGroup e = it.next();
