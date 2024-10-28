@@ -41,6 +41,7 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
   private transient CreateMaterializedViewDesc createViewDesc;
   private boolean isMmCtas;
   private String moveTaskId;
+  private boolean isOverwrite;
 
   public LoadFileDesc(final LoadFileDesc o) {
     super(o.getSourcePath(), o.getWriteType());
@@ -151,5 +152,13 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
 
   public void setMoveTaskId(String moveTaskId) {
     this.moveTaskId = moveTaskId;
+  }
+
+  public boolean getIsOverwrite() {
+    return isOverwrite;
+  }
+
+  public void setIsOverwrite(boolean isOverwrite) {
+    this.isOverwrite = isOverwrite;
   }
 }

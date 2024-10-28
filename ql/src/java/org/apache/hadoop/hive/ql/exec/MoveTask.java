@@ -166,7 +166,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
   }
 
-  private void moveFile(Path sourcePath, Path targetPath, boolean isDfsDir)
+  private void moveFile(Path sourcePath, Path targetPath, boolean isDfsDir, boolean isOverwrite)
       throws HiveException {
     try {
       PerfLogger perfLogger = SessionState.getPerfLogger();
@@ -186,7 +186,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       }
 
       if (isDfsDir) {
-        moveFileInDfs (sourcePath, targetPath, conf);
+        moveFileInDfs (sourcePath, targetPath, conf, isOverwrite);
       } else {
         // This is a local file
         FileSystem dstFs = FileSystem.getLocal(conf);
@@ -200,7 +200,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
   }
 
-  private void moveFileInDfs (Path sourcePath, Path targetPath, HiveConf conf)
+  private void moveFileInDfs (Path sourcePath, Path targetPath, HiveConf conf, boolean isInsertOverwrite)
       throws HiveException, IOException {
 
     final FileSystem srcFs, tgtFs;
@@ -215,6 +215,14 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     } catch (IOException e) {
       LOG.error("Failed to get src fs", e);
       throw new HiveException(e.getMessage(), e);
+    }
+    if (isInsertOverwrite && tgtFs.isDirectory(targetPath)) {
+      FileStatus[] destFiles = tgtFs.listStatus(targetPath);
+      for (FileStatus destFile : destFiles) {
+        if (!tgtFs.delete(destFile.getPath(), true)) {
+          throw new IOException("Unable to clean the destination directory: " + targetPath);
+        }
+      }
     }
 
     // if source exists, rename. Otherwise, create a empty directory
@@ -442,7 +450,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             if (!targetFs.exists(targetPath.getParent())){
               targetFs.mkdirs(targetPath.getParent());
             }
-            moveFile(sourcePath, targetPath, lfd.getIsDfsDir());
+            moveFile(sourcePath, targetPath, lfd.getIsDfsDir(), lfd.getIsOverwrite());
           }
         }
       }
@@ -467,7 +475,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
               destFs.mkdirs(destPath.getParent());
             }
             Utilities.FILE_OP_LOGGER.debug("MoveTask moving (multi-file) " + srcPath + " to " + destPath);
-            moveFile(srcPath, destPath, isDfsDir);
+            moveFile(srcPath, destPath, isDfsDir, false);
           } else {
             if (!destFs.exists(destPath)) {
               destFs.mkdirs(destPath);
@@ -479,7 +487,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                 Path childSrc = child.getPath();
                 Path childDest = new Path(destPath, filePrefix + childSrc.getName());
                 Utilities.FILE_OP_LOGGER.debug("MoveTask moving (multi-file) " + childSrc + " to " + childDest);
-                moveFile(childSrc, childDest, isDfsDir);
+                moveFile(childSrc, childDest, isDfsDir, false);
               }
             } else {
               Utilities.FILE_OP_LOGGER.debug("MoveTask skipping empty directory (multi-file) " + srcPath);
