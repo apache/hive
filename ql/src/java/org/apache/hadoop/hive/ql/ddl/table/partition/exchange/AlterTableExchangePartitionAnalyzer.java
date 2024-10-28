@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.ddl.table.partition.exchange;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
@@ -137,7 +138,7 @@ public  class AlterTableExchangePartitionAnalyzer extends AbstractAlterTableAnal
     } catch (SemanticException ex) {
       // We should expect a semantic exception being throw as this partition should not be present.
     }
-    if (destPartitions != null && !destPartitions.isEmpty()) {
+    if (CollectionUtils.isNotEmpty(destPartitions)) {
       // If any destination partition is present then throw a Semantic Exception.
       throw new SemanticException(ErrorMsg.PARTITION_EXISTS.getMsg(destPartitions.toString()));
     }

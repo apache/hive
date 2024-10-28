@@ -230,4 +230,5 @@ public class PartitionIterable implements Iterable<Partition> {
           table.getDbName(),table.getTableName(),partialPartitionSpec,(short)-1);
     }
   }
+
 }

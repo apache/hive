@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.VectorizationDetailLevel;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
@@ -178,7 +177,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     //Sharing QueryState between generating the plan and executing the query seems bad
     //BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(new QueryState(queryState.getConf()), input);
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, input);
-      sem.analyze(input, ctx);
+    sem.analyze(input, ctx);
     sem.validate();
     inputs = sem.getInputs();
     outputs = sem.getOutputs();
