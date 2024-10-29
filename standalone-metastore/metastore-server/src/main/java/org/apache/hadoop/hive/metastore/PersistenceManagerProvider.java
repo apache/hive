@@ -311,6 +311,7 @@ public class PersistenceManagerProvider {
       try (DataSourceProvider.DataSourceNameConfigurator configurator =
                new DataSourceProvider.DataSourceNameConfigurator(conf, sourceName)) {
         ds = (maxPoolSize > 0) ? dsp.create(conf, maxPoolSize) : dsp.create(conf);
+        databaseProduct = DatabaseProduct.determineDatabaseProduct(ds, conf);
         // The secondary connection factory is used for schema generation, and for value generation operations.
         // We should use a different pool for the secondary connection factory to avoid resource starvation.
         // Since DataNucleus uses locks for schema generation and value generation, 2 connections should be sufficient.
@@ -318,7 +319,6 @@ public class PersistenceManagerProvider {
         ds2 = dsp.create(conf, /* maxPoolSize */ 2);
         dsProp.put(PropertyNames.PROPERTY_CONNECTION_FACTORY, ds);
         dsProp.put(PropertyNames.PROPERTY_CONNECTION_FACTORY2, ds2);
-        databaseProduct = DatabaseProduct.determineDatabaseProduct(ds, conf);
         dsProp.put(ConfVars.MANAGER_FACTORY_CLASS.getVarname(),
             "org.datanucleus.api.jdo.JDOPersistenceManagerFactory");
         pmf = JDOHelper.getPersistenceManagerFactory(dsProp);
@@ -516,8 +516,8 @@ public class PersistenceManagerProvider {
 
   public static DatabaseProduct getDatabaseProduct() {
     if (databaseProduct == null) {
-      throw new RuntimeException(
-          "Cannot determine the database product. PersistenceManagerFactory has not initialized yet");
+      throw new IllegalStateException(
+          "Cannot determine the database product. PersistenceManagerFactory has not been initialized yet");
     }
     return databaseProduct;
   }
