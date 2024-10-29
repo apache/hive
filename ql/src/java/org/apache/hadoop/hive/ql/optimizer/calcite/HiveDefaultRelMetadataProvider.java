@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdCumulativeCost
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdDistinctRowCount;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdDistribution;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdExpressionLineage;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdMaxRowCount;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdMemory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdParallelism;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdPredicates;
@@ -71,6 +72,7 @@ public class HiveDefaultRelMetadataProvider {
                   HiveRelMdPredicates.SOURCE,
                   HiveRelMdTableReferences.SOURCE,
                   HiveRelMdAggregatedColumns.SOURCE,
+                  HiveRelMdMaxRowCount.SOURCE,
                   JaninoRelMetadataProvider.DEFAULT)));
 
   private final RelMetadataProvider metadataProvider;
@@ -108,6 +110,7 @@ public class HiveDefaultRelMetadataProvider {
                   HiveRelMdPredicates.SOURCE,
                   HiveRelMdTableReferences.SOURCE,
                   HiveRelMdAggregatedColumns.SOURCE,
+                  HiveRelMdMaxRowCount.SOURCE,
                   JaninoRelMetadataProvider.DEFAULT)));
 
       if (nodeClasses != null) {

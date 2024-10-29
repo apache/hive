@@ -82,7 +82,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 public class RelOptHiveTable implements RelOptTable {
 
@@ -112,7 +111,7 @@ public class RelOptHiveTable implements RelOptTable {
   private final AtomicInteger                     noColsMissingStats;
 
   private double                                  rowCount        = -1;
-  PrunedPartitionList                             partitionList;
+  private PrunedPartitionList                     partitionList;
 
   protected static final Logger LOG = LoggerFactory.getLogger(RelOptHiveTable.class.getName());
 
@@ -187,6 +186,10 @@ public class RelOptHiveTable implements RelOptTable {
   @Override
   public List<ColumnStrategy> getColumnStrategies() {
     return RelOptTableImpl.columnStrategies(this);
+  }
+
+  public PrunedPartitionList getPrunedPartitionList() {
+    return partitionList;
   }
 
   public RelOptHiveTable copy(RelDataType newRowType) {

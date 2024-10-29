@@ -1,0 +1,103 @@
+PREHOOK: query: create table c (a1 int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@c
+POSTHOOK: query: create table c (a1 int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@c
+PREHOOK: query: create table tmp1 (a int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp1
+POSTHOOK: query: create table tmp1 (a int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp1
+PREHOOK: query: create table tmp2 (a int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp2
+POSTHOOK: query: create table tmp2 (a int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp2
+PREHOOK: query: insert into table c values (3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@c
+POSTHOOK: query: insert into table c values (3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@c
+POSTHOOK: Lineage: c.a1 SCRIPT []
+PREHOOK: query: insert into table tmp1 values (3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tmp1
+POSTHOOK: query: insert into table tmp1 values (3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tmp1
+POSTHOOK: Lineage: tmp1.a SCRIPT []
+Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain cbo
+with
+first as (
+select a1 from c where a1 = 3
+),
+second as (
+select a from tmp1
+union all
+select a from tmp2
+)
+select a from second cross join first
+PREHOOK: type: QUERY
+PREHOOK: Input: default@c
+PREHOOK: Input: default@tmp1
+PREHOOK: Input: default@tmp2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+with
+first as (
+select a1 from c where a1 = 3
+),
+second as (
+select a from tmp1
+union all
+select a from tmp2
+)
+select a from second cross join first
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@c
+POSTHOOK: Input: default@tmp1
+POSTHOOK: Input: default@tmp2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(a=[$0])
+  HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(a=[$0])
+      HiveTableScan(table=[[default, tmp1]], table:alias=[tmp1])
+    HiveProject(a1=[CAST(3):INTEGER])
+      HiveFilter(condition=[=($0, 3)])
+        HiveTableScan(table=[[default, c]], table:alias=[c])
+
+PREHOOK: query: explain cbo 
+select * from c join tmp1 join tmp2
+where c.a1 = tmp1.a and tmp1.a = tmp2.a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@c
+PREHOOK: Input: default@tmp1
+PREHOOK: Input: default@tmp2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo 
+select * from c join tmp1 join tmp2
+where c.a1 = tmp1.a and tmp1.a = tmp2.a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@c
+POSTHOOK: Input: default@tmp1
+POSTHOOK: Input: default@tmp2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveValues(tuples=[[]])
+

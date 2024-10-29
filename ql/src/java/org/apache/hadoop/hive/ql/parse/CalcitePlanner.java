@@ -1979,7 +1979,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
               HiveRemoveEmptySingleRules.AGGREGATE_INSTANCE,
               HiveRemoveEmptySingleRules.UNION_INSTANCE,
               HiveRemoveEmptySingleRules.CORRELATE_LEFT_INSTANCE,
-              HiveRemoveEmptySingleRules.CORRELATE_RIGHT_INSTANCE);
+              HiveRemoveEmptySingleRules.CORRELATE_RIGHT_INSTANCE,
+              HiveRemoveEmptySingleRules.EMPTY_TABLE_INSTANCE);
 
       // Trigger program
       basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);

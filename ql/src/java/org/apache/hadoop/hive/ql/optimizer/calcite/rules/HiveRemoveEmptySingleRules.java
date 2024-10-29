@@ -21,6 +21,7 @@ import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelRule;
+import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.plan.volcano.RelSubset;
 import org.apache.calcite.rel.RelNode;
@@ -28,6 +29,7 @@ import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.Correlate;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
+import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.core.Union;
 import org.apache.calcite.rel.core.Values;
 import org.apache.calcite.rel.rules.PruneEmptyRules;
@@ -360,4 +362,45 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
     }
     return false;
   }
+
+  /**
+   *  Copy of org.apache.calcite.rel.rules.PruneEmptyRules.PruneEmptyRule.ZeroMaxRowsRuleConfig
+   */
+  public interface HiveZeroMaxRowsRuleConfig extends PruneEmptyRule.Config {
+    @Override
+    default PruneEmptyRule toRule() {
+      if (Bug.CALCITE_5314_fixed) {
+        throw new IllegalStateException("HiveZeroMaxRowsRuleConfig is redundant");
+      }
+      return new PruneEmptyRule(this) {
+        @Override 
+        public boolean matches(RelOptRuleCall call) {
+          RelNode node = call.rel(0);
+          Double maxRowCount = call.getMetadataQuery().getMaxRowCount(node);
+          return maxRowCount != null && maxRowCount == 0.0;
+        }
+        
+        @Override
+        public void onMatch(RelOptRuleCall call) {
+          RelNode node = call.rel(0);
+          RelNode emptyValues = call.builder().push(node).empty().build();
+          RelTraitSet traits = node.getTraitSet();
+          // propagate all traits (except convention) from the original tableScan
+          // into the empty values
+          if (emptyValues.getConvention() != null) {
+            traits = traits.replace(emptyValues.getConvention());
+          }
+          emptyValues = emptyValues.copy(traits, Collections.emptyList());
+          call.transformTo(emptyValues);
+        }
+      };
+    }
+  }
+
+  public static final RelOptRule EMPTY_TABLE_INSTANCE = RelRule.Config.EMPTY
+      .withOperandSupplier(b0 -> b0.operand(TableScan.class).noInputs())
+      .withDescription("HivePruneZeroRowsTable")
+      .as(HiveZeroMaxRowsRuleConfig.class)
+      .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+      .toRule();
 }
