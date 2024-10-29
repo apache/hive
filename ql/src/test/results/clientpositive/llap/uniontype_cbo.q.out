@@ -1,0 +1,171 @@
+PREHOOK: query: CREATE TABLE utable (cu UNIONTYPE<INTEGER, STRING>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@utable
+POSTHOOK: query: CREATE TABLE utable (cu UNIONTYPE<INTEGER, STRING>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@utable
+PREHOOK: query: DESCRIBE utable
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@utable
+POSTHOOK: query: DESCRIBE utable
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@utable
+cu                  	uniontype<int,string>	                    
+PREHOOK: query: EXPLAIN CBO 
+INSERT INTO utable values
+(create_union(0, 10, 'ten')),
+(create_union(1, 10, 'ten'))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@utable
+POSTHOOK: query: EXPLAIN CBO 
+INSERT INTO utable values
+(create_union(0, 10, 'ten')),
+(create_union(1, 10, 'ten'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@utable
+CBO PLAN:
+HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(create_union(0, 10, _UTF-16LE'ten':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")), ROW(create_union(1, 10, _UTF-16LE'ten':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))))], rowType=[RecordType(RecordType(INTEGER $tag_0, VARCHAR(2147483647) $tag_1) col1)])
+  HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+
+PREHOOK: query: INSERT INTO utable values
+(create_union(0, 10, 'ten')),
+(create_union(1, 10, 'ten'))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@utable
+POSTHOOK: query: INSERT INTO utable values
+(create_union(0, 10, 'ten')),
+(create_union(1, 10, 'ten'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@utable
+POSTHOOK: Lineage: utable.cu SCRIPT []
+PREHOOK: query: EXPLAIN CBO
+SELECT cu FROM utable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@utable
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT cu FROM utable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@utable
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(cu=[$0])
+  HiveTableScan(table=[[default, utable]], table:alias=[utable])
+
+PREHOOK: query: SELECT cu FROM utable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@utable
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cu FROM utable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@utable
+#### A masked pattern was here ####
+{0:10}
+{1:"ten"}
+PREHOOK: query: EXPLAIN CBO
+SELECT extract_union(cu) FROM utable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@utable
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT extract_union(cu) FROM utable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@utable
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(_o__c0=[extract_union($0)])
+  HiveTableScan(table=[[default, utable]], table:alias=[utable])
+
+PREHOOK: query: SELECT extract_union(cu) FROM utable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@utable
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT extract_union(cu) FROM utable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@utable
+#### A masked pattern was here ####
+{"tag_0":10,"tag_1":null}
+{"tag_0":null,"tag_1":"ten"}
+PREHOOK: query: CREATE TABLE author (id INT, fname STRING, age INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@author
+POSTHOOK: query: CREATE TABLE author (id INT, fname STRING, age INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@author
+PREHOOK: query: INSERT INTO author VALUES (0, 'Victor' , '37'), (1, 'Alexander' , '44')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@author
+POSTHOOK: query: INSERT INTO author VALUES (0, 'Victor' , '37'), (1, 'Alexander' , '44')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@author
+POSTHOOK: Lineage: author.age SCRIPT []
+POSTHOOK: Lineage: author.fname SCRIPT []
+POSTHOOK: Lineage: author.id SCRIPT []
+PREHOOK: query: EXPLAIN CBO
+CREATE TABLE uauthor AS SELECT create_union(id % 2, age, fname) as u_age_name FROM author
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@author
+PREHOOK: Output: database:default
+PREHOOK: Output: default@uauthor
+POSTHOOK: query: EXPLAIN CBO
+CREATE TABLE uauthor AS SELECT create_union(id % 2, age, fname) as u_age_name FROM author
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@author
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@uauthor
+CBO PLAN:
+HiveProject(u_age_name=[create_union(MOD($0, 2), $2, $1)])
+  HiveTableScan(table=[[default, author]], table:alias=[author])
+
+PREHOOK: query: CREATE TABLE uauthor AS SELECT create_union(id % 2, age, fname) as u_age_name FROM author
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@author
+PREHOOK: Output: database:default
+PREHOOK: Output: default@uauthor
+POSTHOOK: query: CREATE TABLE uauthor AS SELECT create_union(id % 2, age, fname) as u_age_name FROM author
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@author
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@uauthor
+POSTHOOK: Lineage: uauthor.u_age_name EXPRESSION [(author)author.FieldSchema(name:id, type:int, comment:null), (author)author.FieldSchema(name:age, type:int, comment:null), (author)author.FieldSchema(name:fname, type:string, comment:null), ]
+PREHOOK: query: DESCRIBE uauthor
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@uauthor
+POSTHOOK: query: DESCRIBE uauthor
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@uauthor
+u_age_name          	uniontype<int,string>	                    
+PREHOOK: query: EXPLAIN CBO
+SELECT u_age_name FROM uauthor
+PREHOOK: type: QUERY
+PREHOOK: Input: default@uauthor
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT u_age_name FROM uauthor
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@uauthor
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(u_age_name=[$0])
+  HiveTableScan(table=[[default, uauthor]], table:alias=[uauthor])
+
+PREHOOK: query: SELECT u_age_name FROM uauthor
+PREHOOK: type: QUERY
+PREHOOK: Input: default@uauthor
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT u_age_name FROM uauthor
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@uauthor
+#### A masked pattern was here ####
+{0:37}
+{1:"Alexander"}

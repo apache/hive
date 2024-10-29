@@ -464,41 +464,44 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public Map<String, String> getBasicStatistics(Partish partish) {
     org.apache.hadoop.hive.ql.metadata.Table hmsTable = partish.getTable();
     // For write queries where rows got modified, don't fetch from cache as values could have changed.
-    Table table = getTable(hmsTable);
     Map<String, String> stats = Maps.newHashMap();
-    if (getStatsSource().equals(HiveMetaHook.ICEBERG)) {
-      if (table.currentSnapshot() != null) {
-        Map<String, String> summary = table.currentSnapshot().summary();
-        if (summary != null) {
+    if (!getStatsSource().equals(HiveMetaHook.ICEBERG)) {
+      return hmsTable.getParameters();
+    }
+    Table table = getTable(hmsTable);
 
-          if (summary.containsKey(SnapshotSummary.TOTAL_DATA_FILES_PROP)) {
-            stats.put(StatsSetupConst.NUM_FILES, summary.get(SnapshotSummary.TOTAL_DATA_FILES_PROP));
-          }
+    Snapshot snapshot = IcebergTableUtil.getTableSnapshot(hmsTable, table);
+    if (snapshot != null) {
+      Map<String, String> summary = snapshot.summary();
+      if (summary != null) {
 
-          if (summary.containsKey(SnapshotSummary.TOTAL_RECORDS_PROP)) {
-            long totalRecords = Long.parseLong(summary.get(SnapshotSummary.TOTAL_RECORDS_PROP));
-            if (summary.containsKey(SnapshotSummary.TOTAL_EQ_DELETES_PROP) &&
-                summary.containsKey(SnapshotSummary.TOTAL_POS_DELETES_PROP)) {
-
-              long totalEqDeletes = Long.parseLong(summary.get(SnapshotSummary.TOTAL_EQ_DELETES_PROP));
-              long totalPosDeletes = Long.parseLong(summary.get(SnapshotSummary.TOTAL_POS_DELETES_PROP));
-
-              long actualRecords = totalRecords - (totalEqDeletes > 0 ? 0 : totalPosDeletes);
-              totalRecords = actualRecords > 0 ? actualRecords : totalRecords;
-              // actualRecords maybe -ve in edge cases
-            }
-            stats.put(StatsSetupConst.ROW_COUNT, String.valueOf(totalRecords));
-          }
-
-          if (summary.containsKey(SnapshotSummary.TOTAL_FILE_SIZE_PROP)) {
-            stats.put(StatsSetupConst.TOTAL_SIZE, summary.get(SnapshotSummary.TOTAL_FILE_SIZE_PROP));
-          }
+        if (summary.containsKey(SnapshotSummary.TOTAL_DATA_FILES_PROP)) {
+          stats.put(StatsSetupConst.NUM_FILES, summary.get(SnapshotSummary.TOTAL_DATA_FILES_PROP));
         }
-      } else {
-        stats.put(StatsSetupConst.NUM_FILES, "0");
-        stats.put(StatsSetupConst.ROW_COUNT, "0");
-        stats.put(StatsSetupConst.TOTAL_SIZE, "0");
+
+        if (summary.containsKey(SnapshotSummary.TOTAL_RECORDS_PROP)) {
+          long totalRecords = Long.parseLong(summary.get(SnapshotSummary.TOTAL_RECORDS_PROP));
+          if (summary.containsKey(SnapshotSummary.TOTAL_EQ_DELETES_PROP) &&
+              summary.containsKey(SnapshotSummary.TOTAL_POS_DELETES_PROP)) {
+
+            long totalEqDeletes = Long.parseLong(summary.get(SnapshotSummary.TOTAL_EQ_DELETES_PROP));
+            long totalPosDeletes = Long.parseLong(summary.get(SnapshotSummary.TOTAL_POS_DELETES_PROP));
+
+            long actualRecords = totalRecords - (totalEqDeletes > 0 ? 0 : totalPosDeletes);
+            totalRecords = actualRecords > 0 ? actualRecords : totalRecords;
+            // actualRecords maybe -ve in edge cases
+          }
+          stats.put(StatsSetupConst.ROW_COUNT, String.valueOf(totalRecords));
+        }
+
+        if (summary.containsKey(SnapshotSummary.TOTAL_FILE_SIZE_PROP)) {
+          stats.put(StatsSetupConst.TOTAL_SIZE, summary.get(SnapshotSummary.TOTAL_FILE_SIZE_PROP));
+        }
       }
+    } else {
+      stats.put(StatsSetupConst.NUM_FILES, "0");
+      stats.put(StatsSetupConst.ROW_COUNT, "0");
+      stats.put(StatsSetupConst.TOTAL_SIZE, "0");
     }
     return stats;
   }
@@ -613,8 +616,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public boolean canComputeQueryUsingStats(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     if (getStatsSource().equals(HiveMetaHook.ICEBERG) && hmsTable.getMetaTable() == null) {
       Table table = getTable(hmsTable);
-      if (table.currentSnapshot() != null) {
-        Map<String, String> summary = table.currentSnapshot().summary();
+      Snapshot snapshot = IcebergTableUtil.getTableSnapshot(hmsTable, table);
+      if (snapshot != null) {
+        Map<String, String> summary = snapshot.summary();
         if (summary != null && summary.containsKey(SnapshotSummary.TOTAL_EQ_DELETES_PROP) &&
             summary.containsKey(SnapshotSummary.TOTAL_POS_DELETES_PROP)) {
 
@@ -2098,9 +2102,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public List<FieldSchema> getPartitionKeys(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+  public List<FieldSchema> getPartitionKeys(org.apache.hadoop.hive.ql.metadata.Table hmsTable, boolean latestSpecOnly) {
     Table icebergTable = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    return IcebergTableUtil.getPartitionKeys(icebergTable, icebergTable.spec().specId());
+    return IcebergTableUtil.getPartitionKeys(icebergTable, latestSpecOnly);
   }
 
   @Override

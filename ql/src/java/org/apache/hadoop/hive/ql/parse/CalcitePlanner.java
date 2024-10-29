@@ -3355,12 +3355,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         if(context == null) {
           // we have correlated column, build data type from outer rr
-          RelDataType rowType;
-          try {
-            rowType = TypeConverter.getType(cluster, outerRowResolver, null);
-          } catch (CalciteSemanticException e) {
-            throw new RuntimeException("Error converting type", e);
-          }
+          RelDataType rowType = TypeConverter.getType(cluster, outerRowResolver, null);
           int index = col.getIndex() - inputContext.inputRowType.getFieldList().size();
           if (outerPositionToColumnName.get(index) == null) {
             throw new RuntimeException(ErrorMsg.INVALID_COLUMN_NAME.getMsg());
@@ -3535,7 +3530,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private AggregateCall convertGBAgg(AggregateInfo agg, List<RexNode> gbChildProjLst,
-        HashMap<String, Integer> rexNodeToPosMap, Integer childProjLstIndx) throws SemanticException {
+        HashMap<String, Integer> rexNodeToPosMap, Integer childProjLstIndx) {
       // 1. Get agg fn ret type in Calcite
       RelDataType aggFnRetType = TypeConverter.convert(agg.getReturnType(),
           this.cluster.getTypeFactory());

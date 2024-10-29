@@ -56,7 +56,6 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
-import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
@@ -421,13 +420,7 @@ public final class HiveMaterializedViewsRegistry {
     }
 
     // 1.3 Build row type from field <type, name>
-    RelDataType rowType;
-    try {
-      rowType = TypeConverter.getType(cluster, rr, null);
-    } catch (CalciteSemanticException e) {
-      // Bail out
-      return null;
-    }
+    RelDataType rowType = TypeConverter.getType(cluster, rr, null);
 
     // 2. Build RelOptAbstractTable
     List<String> fullyQualifiedTabName = new ArrayList<>();

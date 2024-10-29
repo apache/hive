@@ -93,7 +93,7 @@
     <test.excludes.additional/>
     <!-- Plugin and Plugin Dependency Versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
-    <maven.test.jvm.args>-Xmx2048m -DJETTY_AVAILABLE_PROCESSORS=4</maven.test.jvm.args>
+    <maven.test.jvm.args>-Xmx2048m -DJETTY_AVAILABLE_PROCESSORS=4 -Duser.country=US</maven.test.jvm.args>
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
     <maven.build-helper.plugin.version>3.4.0</maven.build-helper.plugin.version>
     <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
@@ -180,7 +180,7 @@
     <!--
     <thrift.home>/usr/local</thrift.home>
     -->
-    <log4j2.version>2.18.0</log4j2.version>
+    <log4j2.version>2.24.1</log4j2.version>
     <mariadb.version>2.5.0</mariadb.version>
     <mssql.version>6.2.1.jre8</mssql.version>
     <mysql.version>8.0.31</mysql.version>
@@ -200,7 +200,7 @@
     <parquet.version>1.13.1</parquet.version>
     <pig.version>0.16.0</pig.version>
     <plexus.version>1.5.6</plexus.version>
-    <protobuf.version>3.24.4</protobuf.version>
+    <protobuf.version>3.25.5</protobuf.version>
     <rat.version>0.16.1</rat.version>
     <roaringbit.version>1.2.1</roaringbit.version>
     <stax.version>1.0.1</stax.version>
@@ -1803,7 +1803,6 @@
             </log4j.configurationFile>
             <hive.test.console.log.level>${test.console.log.level}</hive.test.console.log.level>
             <hive.cluster.id>hive-test-cluster-id-cli</hive.cluster.id>
-            <log4j.debug>true</log4j.debug>
             <!-- don't dirty up /tmp -->
             <java.io.tmpdir>${test.tmp.dir}</java.io.tmpdir>
             <!-- Hadoop's minidfs class uses this -->
