@@ -306,8 +306,9 @@ public class PersistenceManagerProvider {
     if (dsp == null) {
       pmf = JDOHelper.getPersistenceManagerFactory(dsProp);
     } else {
+      DataSource ds = null;
+      DataSource ds2 = null;
       String sourceName = forCompactor ? "objectstore-compactor" : "objectstore";
-      DataSource ds = null, ds2 = null;
       try (DataSourceProvider.DataSourceNameConfigurator configurator =
                new DataSourceProvider.DataSourceNameConfigurator(conf, sourceName)) {
         ds = (maxPoolSize > 0) ? dsp.create(conf, maxPoolSize) : dsp.create(conf);
@@ -336,7 +337,7 @@ public class PersistenceManagerProvider {
         }
       }
     }
-    DataStoreCache dsc = pmf.getDataStoreCache();
+    DataStoreCache dsc = pmf != null ? pmf.getDataStoreCache() : null;
     if (dsc != null) {
       String objTypes = MetastoreConf.getVar(conf, ConfVars.CACHE_PINOBJTYPES);
       LOG.info(
