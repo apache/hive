@@ -661,7 +661,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     boolean updatePartitionCols = false;
     List<Integer> positions = new ArrayList<>();
 
-    final CustomBucketFunction bucketFunction;
+    CustomBucketFunction bucketFunction = opTraits.getCustomBucketFunctions().get(0);
     if (listBucketCols.get(0).size() != bigTablePartitionCols.size()) {
       updatePartitionCols = true;
       // Prepare updated partition columns for small table(s).
@@ -683,9 +683,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
       }
 
       Preconditions.checkState(opTraits.getCustomBucketFunctions().size() == 1);
-      if (opTraits.getCustomBucketFunctions().get(0) == null) {
-        bucketFunction = null;
-      } else {
+      if (opTraits.getCustomBucketFunctions().get(0) != null) {
         final Optional<CustomBucketFunction> selected =
             opTraits.getCustomBucketFunctions().get(0).select(retainedColumns);
         if (!selected.isPresent()) {
@@ -694,8 +692,6 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
         }
         bucketFunction = selected.get();
       }
-    } else {
-      bucketFunction = opTraits.getCustomBucketFunctions().get(0);
     }
 
     MapJoinOperator mapJoinOp = convertJoinMapJoin(joinOp, context, mapJoinConversion, true);
@@ -740,9 +736,10 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
         tso.getConf().setGroupingNumBuckets(bucketFunction.getNumBuckets());
       }
 
+      final CustomBucketFunction finalBucketFunction = bucketFunction;
       mapJoinOp.getParentOperators().stream().filter(op -> op instanceof ReduceSinkOperator).forEach(op -> {
         ReduceSinkOperator rsOp = (ReduceSinkOperator) op;
-        rsOp.getConf().setCustomPartitionFunction(bucketFunction);
+        rsOp.getConf().setCustomPartitionFunction(finalBucketFunction);
       });
     }
 
@@ -1561,15 +1558,12 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     int estimatedBuckets = -1;
 
     for (Operator<? extends OperatorDesc>parentOp : joinOp.getParentOperators()) {
-      final OpTraits parentOpTraits = parentOp.getOpTraits();
-      if (parentOpTraits.getNumBuckets() > 0) {
-        numBuckets = (numBuckets < parentOpTraits.getNumBuckets()) ?
-            parentOpTraits.getNumBuckets() : numBuckets;
-      }
-
       if (!(parentOp instanceof ReduceSinkOperator)) {
         continue;
       }
+
+      final OpTraits parentOpTraits = parentOp.getOpTraits();
+      numBuckets = Math.max(numBuckets, parentOpTraits.getNumBuckets());
 
       if (parentOpTraits.hasCustomBucketFunction()) {
         Preconditions.checkState(parentOpTraits.getCustomBucketFunctions().size() == 1);
@@ -1578,8 +1572,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
 
       if (!useOpTraits) {
         ReduceSinkOperator rs = (ReduceSinkOperator) parentOp;
-        estimatedBuckets = (estimatedBuckets < rs.getConf().getNumReducers()) ?
-            rs.getConf().getNumReducers() : estimatedBuckets;
+        estimatedBuckets = Math.max(estimatedBuckets, rs.getConf().getNumReducers());
       }
     }
 

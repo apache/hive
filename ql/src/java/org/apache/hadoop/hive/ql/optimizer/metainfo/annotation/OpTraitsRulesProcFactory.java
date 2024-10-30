@@ -26,6 +26,7 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map.Entry;
 
 import java.util.stream.Collectors;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
@@ -160,21 +161,21 @@ public class OpTraitsRulesProcFactory {
 
       final List<List<String>> listBucketCols = new ArrayList<>();
       final List<CustomBucketFunction> bucketFunctions = new ArrayList<>();
-      final int numBuckets;
+      int numBuckets = -1;
       if (parentOpTraits == null || !parentOpTraits.hasCustomBucketFunction()) {
         // No CustomBucketFunctions
         listBucketCols.add(bucketCols);
         bucketFunctions.add(null);
-        numBuckets = parentOpTraits == null ? -1 : parentOpTraits.getNumBuckets();
+        if (parentOpTraits != null) {
+          numBuckets = parentOpTraits.getNumBuckets();
+        }
       } else if (parentOpTraits.getCustomBucketFunctions().size() > 1) {
         // We don't know how to merge multiple custom bucket functions. Reset bucket attributes
         Preconditions.checkState(parentOpTraits.getBucketColNames().size() > 1);
         listBucketCols.add(Collections.emptyList());
         bucketFunctions.add(null);
-        numBuckets = -1;
       } else {
         Preconditions.checkState(parentOpTraits.getBucketColNames().size() == 1);
-        Preconditions.checkState(parentOpTraits.getCustomBucketFunctions().size() == 1);
         final Map<String, String> inputToOutput = rs.getColumnExprMap().entrySet().stream()
             .filter(entry -> entry.getValue() instanceof ExprNodeColumnDesc)
             .filter(entry -> rs.getConf().getKeyCols().stream().anyMatch(keyDesc -> keyDesc.isSame(entry.getValue())))
@@ -202,7 +203,6 @@ public class OpTraitsRulesProcFactory {
           listBucketCols.add(Collections.emptyList());
           bucketFunctions.add(null);
         }
-        numBuckets = -1;
       }
 
       OpTraits opTraits = new OpTraits(listBucketCols, bucketFunctions, numBuckets,
@@ -274,7 +274,7 @@ public class OpTraitsRulesProcFactory {
       final List<List<String>> bucketColsList = new ArrayList<>();
       final List<List<String>> sortedColsList = new ArrayList<>();
       final List<CustomBucketFunction> bucketFunctions = new ArrayList<>();
-      final int numBuckets;
+      int numBuckets = -1;
       if (table.getStorageHandler() != null
           && table.getStorageHandler().supportsPartitionAwareOptimization(table)
           && HiveConf.getVar(opTraitsCtx.getConf(), HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
@@ -282,7 +282,6 @@ public class OpTraitsRulesProcFactory {
             table.getStorageHandler().createPartitionAwareOptimizationContext(table);
         bucketColsList.add(ctx.getBucketFunction().getSourceColumnNames());
         bucketFunctions.add(ctx.getBucketFunction());
-        numBuckets = -1;
       } else if (checkBucketedTable(table, opTraitsCtx.getParseContext(), prunedPartList)) {
         bucketColsList.add(table.getBucketCols());
         numBuckets = table.getNumBuckets();
@@ -292,8 +291,6 @@ public class OpTraitsRulesProcFactory {
         }
         sortedColsList.add(sortCols);
         bucketFunctions.add(null);
-      } else {
-        numBuckets = -1;
       }
 
       // num reduce sinks hardcoded to 0 because TS has no parents
@@ -442,10 +439,8 @@ public class OpTraitsRulesProcFactory {
         }
       }
 
-      final List<CustomBucketFunction> bucketFunctions;
-      if (listBucketCols == null) {
-        bucketFunctions = null;
-      } else {
+      List<CustomBucketFunction> bucketFunctions = null;
+      if (listBucketCols != null) {
         Preconditions.checkState(parentBucketColNames.size() == listBucketCols.size());
         bucketFunctions = new ArrayList<>();
         for (int i = 0; i < listBucketCols.size(); i++) {
@@ -458,13 +453,12 @@ public class OpTraitsRulesProcFactory {
         }
       }
 
-      final int numBuckets;
-      // if bucket columns are empty, then numbuckets must be set to -1.
-      if (listBucketCols == null || listBucketCols.isEmpty() || listBucketCols.get(0).isEmpty()) {
-        numBuckets = -1;
-      } else if (bucketFunctions.get(0) != null) {
-        numBuckets = -1;
-      } else {
+      int numBuckets = -1;
+      if (CollectionUtils.isNotEmpty(listBucketCols)
+          && CollectionUtils.isNotEmpty(listBucketCols.get(0))
+          && bucketFunctions.get(0) == null) {
+        // if bucket columns are empty, then num buckets must be set to -1.
+        // if a custom bucket function is available, the num buckets must be set to -1.
         numBuckets = parentOpTraits.getNumBuckets();
       }
       final int numReduceSinks = parentOpTraits.getNumReduceSinks();
