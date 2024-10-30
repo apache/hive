@@ -49,8 +49,6 @@ import org.apache.hadoop.hive.ql.parse.TransformSpec.TransformType;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
-import org.apache.iceberg.DataFile;
-import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.DeleteFiles;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.ManageSnapshots;
@@ -61,9 +59,7 @@ import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Partitioning;
 import org.apache.iceberg.PartitionsTable;
-import org.apache.iceberg.PositionDeletesScanTask;
 import org.apache.iceberg.RowLevelOperationMode;
-import org.apache.iceberg.ScanTask;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotRef;
@@ -80,7 +76,6 @@ import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.collect.FluentIterable;
-import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Type;
@@ -410,52 +405,6 @@ public class IcebergTableUtil {
       }
     }
     return data;
-  }
-
-  /**
-   * Returns table's list of data files as following:
-   *  1. If the table is unpartitioned, returns all data files.
-   *  2. If partitionPath is not provided, returns all data files that belong to the non-latest partition spec.
-   *  3. If partitionPath is provided, returns all data files that belong to the corresponding partition.
-   * @param table the iceberg table
-   * @param partitionPath partition path
-   */
-  public static List<DataFile> getDataFiles(Table table, String partitionPath) {
-    CloseableIterable<FileScanTask> fileScanTasks =
-        table.newScan().useSnapshot(table.currentSnapshot().snapshotId()).ignoreResiduals().planFiles();
-    CloseableIterable<FileScanTask> filteredFileScanTasks =
-        CloseableIterable.filter(fileScanTasks, t -> {
-          DataFile file = t.asFileScanTask().file();
-          return !table.spec().isPartitioned() ||
-              partitionPath == null && file.specId() != table.spec().specId() ||
-              partitionPath != null &&
-                  table.specs().get(file.specId()).partitionToPath(file.partition()).equals(partitionPath);
-        });
-    return Lists.newArrayList(CloseableIterable.transform(filteredFileScanTasks, t -> t.file()));
-  }
-
-  /**
-   * Returns table's list of delete files as following:
-   *  1. If the table is unpartitioned, returns all delete files.
-   *  2. If partitionPath is not provided, returns all delete files that belong to the non-latest partition spec.
-   *  3. If partitionPath is provided, returns all delete files that belong to corresponding partition.
-   * @param table the iceberg table
-   * @param partitionPath partition path
-   */
-  public static List<DeleteFile> getDeleteFiles(Table table, String partitionPath) {
-    Table deletesTable =
-        MetadataTableUtils.createMetadataTableInstance(table, MetadataTableType.POSITION_DELETES);
-    CloseableIterable<ScanTask> deletesScanTasks = deletesTable.newBatchScan().planFiles();
-    CloseableIterable<ScanTask> filteredDeletesScanTasks =
-        CloseableIterable.filter(deletesScanTasks, t -> {
-          DeleteFile file = ((PositionDeletesScanTask) t).file();
-          return !table.spec().isPartitioned() ||
-              partitionPath == null && file.specId() != table.spec().specId() ||
-              partitionPath != null &&
-                  table.specs().get(file.specId()).partitionToPath(file.partition()).equals(partitionPath);
-        });
-    return Lists.newArrayList(CloseableIterable.transform(filteredDeletesScanTasks,
-        t -> ((PositionDeletesScanTask) t).file()));
   }
 
   public static Expression generateExpressionFromPartitionSpec(Table table, Map<String, String> partitionSpec)
