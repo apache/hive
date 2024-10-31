@@ -49,7 +49,7 @@ import java.util.Stack;
 public class UnionDistinctMerger extends Transform {
   private static final Logger LOG = LoggerFactory.getLogger(UnionDistinctMerger.class);
 
-  private static final String patternString = new StringBuilder()
+  private static final String PatternString = new StringBuilder()
       .append(UnionOperator.getOperatorName()).append("%")
       .append(GroupByOperator.getOperatorName()).append("%")
       .append(ReduceSinkOperator.getOperatorName()).append("%")
@@ -154,10 +154,11 @@ public class UnionDistinctMerger extends Transform {
       super(disp);
     }
 
+    @Override
     public void startWalking(Collection<Node> startNodes,
         HashMap<Node, Object> nodeOutput) throws SemanticException {
       toWalk.addAll(startNodes);
-      while (toWalk.size() > 0) {
+      while (!toWalk.isEmpty()) {
         Node nd = toWalk.remove(0);
         walk(nd);
         // We need to revisit GroupBy operator for every distinct operator path.
@@ -170,7 +171,7 @@ public class UnionDistinctMerger extends Transform {
 
   public ParseContext transform(ParseContext pCtx) throws SemanticException {
     Map<SemanticRule, SemanticNodeProcessor> testRules = new LinkedHashMap<>();
-    testRules.put(new RuleRegExp("AdjacentDistinctUnion", patternString), new UnionMergeProcessor());
+    testRules.put(new RuleRegExp("AdjacentDistinctUnion", PatternString), new UnionMergeProcessor());
     SemanticDispatcher disp = new DefaultRuleDispatcher(null, testRules, new UnionMergeContext(pCtx));
     SemanticGraphWalker ogw = new NoSkipGraphWalker(disp);
 
