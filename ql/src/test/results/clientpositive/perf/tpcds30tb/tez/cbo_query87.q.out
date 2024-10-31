@@ -1,6 +1,6 @@
 CTE Suggestion:
 HiveProject(d_date_sk=[$0], d_date=[$2])
-  HiveFilter(condition=[BETWEEN(false, $3, 1212, 1223)])
+  HiveFilter(condition=[SEARCH($3, Sarg[[1212..1223]])])
     HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
 
 CBO PLAN:

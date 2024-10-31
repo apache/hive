@@ -11,7 +11,7 @@ HiveJoin(condition=[AND(=($1, $7), =($2, $16))], joinType=[inner], algorithm=[no
       HiveFilter(condition=[IS NOT NULL($4)])
         HiveTableScan(table=[[default, customer]], table:alias=[customer])
     HiveJoin(condition=[=($7, $2)], joinType=[inner], algorithm=[none], cost=[not available])
-      HiveProject(ca_address_sk=[$0], ca_state=[$8], ca_zip=[$9], UPPER=[UPPER($10)])
+      HiveProject(ca_address_sk=[$0], ca_state=[$8], ca_zip=[$9], EXPR$0=[UPPER($10)])
         HiveFilter(condition=[IS NOT NULL($9)])
           HiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
       HiveProject(s_store_sk=[$0], s_store_name=[$5], s_state=[$24], s_zip=[$25])
