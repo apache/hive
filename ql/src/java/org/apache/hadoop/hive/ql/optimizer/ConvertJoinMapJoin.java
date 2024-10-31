@@ -718,7 +718,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     if (updatePartitionCols) {
       // use the positions to only pick the partitionCols which are required
       // on the small table side.
-      mapJoinOp.getParentOperators().stream().filter(op -> op instanceof ReduceSinkOperator).forEach(op -> {
+      mapJoinOp.getParentOperators().stream().filter(ReduceSinkOperator.class::isInstance).forEach(op -> {
         ReduceSinkOperator rsOp = (ReduceSinkOperator) op;
         List<ExprNodeDesc> newPartitionCols = new ArrayList<>();
         List<ExprNodeDesc> partitionCols = rsOp.getConf().getPartitionCols();
@@ -737,7 +737,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
       }
 
       final CustomBucketFunction finalBucketFunction = bucketFunction;
-      mapJoinOp.getParentOperators().stream().filter(op -> op instanceof ReduceSinkOperator).forEach(op -> {
+      mapJoinOp.getParentOperators().stream().filter(ReduceSinkOperator.class::isInstance).forEach(op -> {
         ReduceSinkOperator rsOp = (ReduceSinkOperator) op;
         rsOp.getConf().setCustomPartitionFunction(finalBucketFunction);
       });
