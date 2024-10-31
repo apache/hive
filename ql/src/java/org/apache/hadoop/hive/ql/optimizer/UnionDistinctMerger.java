@@ -43,6 +43,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
 public class UnionDistinctMerger extends Transform {
@@ -75,7 +76,7 @@ public class UnionDistinctMerger extends Transform {
 
       // The stack contains at least 8 operators, UNION-GBY-RS-GBY-UNION-GBY-RS-GBY.
       // The leftmost UNION is on stack.size() - 8 and the rightmost GBY is on stack.size() - 1.
-      HashSet<Operator> allOps = new HashSet<>(context.pCtx.getAllOps());
+      Set<Operator> allOps = new HashSet<>(context.pCtx.getAllOps());
       for (int i = 1; i <= 8; i ++) {
         Operator<?> op = (Operator<?>) stack.get(stack.size() - i);
 
@@ -102,6 +103,8 @@ public class UnionDistinctMerger extends Transform {
       UnionOperator lowerUnionOperator = (UnionOperator) stack.get(stack.size() - 4);
       GroupByOperator lowerFinalGroupByOperator = (GroupByOperator) stack.get(stack.size() - 1);
 
+      // We can apply the optimization if there is no aggregators in final GroupBy operators. The absence of
+      // aggregators ensures that we are merging two distinct computation.
       if (upperFinalGroupByOperator.getConf().getAggregators().isEmpty() &&
           lowerFinalGroupByOperator.getConf().getAggregators().isEmpty()) {
         LOG.info("Detect duplicate UNION-DISTINCT GBY patterns. Remove the latter one.");
@@ -111,24 +114,24 @@ public class UnionDistinctMerger extends Transform {
         // Step 1. Cut GBY2->UNION2
         lowerUnionOperator.removeParent(upperFinalGroupByOperator);
 
-        // Step 2. Redirect the output of the parents of lowerUnionOperator to upperUnionOperator.
+        // Step 2.
+        //   Connect the parent of lowerUnionOperator and upperUnionOperator.
+        //   Disconnect lowerUnionOperator from operator graph.
         // Before step 2:
-        //    OP1-UNION1->GBY1->RS1->GBY2
-        //    OP2-
-        //    OP3-UNION2->GBY3->RS2->GBY4
-        //    OP4-
+        //    {OP1, 2}-UNION1->GBY1->RS1->GBY2-{}
+        //    {OP3, 4}-UNION2->GBY3->RS2->GBY4-{OP5, 6, ...}
         // After step 2:
-        //    OP1-UNION1->GBY1->RS1->GBY2
-        //    OP2-
-        //    OP3-
-        //    OP4-
+        //    {OP1, 2}-UNION1->GBY1->RS1->GBY2-{}
+        //          {}-UNION2->GBY3->RS2->GBY4-{OP5, 6, ...}
         for (Operator<?> lowerUnionParent: lowerUnionOperator.getParentOperators()) {
           lowerUnionParent.replaceChild(lowerUnionOperator, upperUnionOperator);
           upperUnionOperator.getParentOperators().add(lowerUnionParent);
         }
         lowerUnionOperator.setParentOperators(new ArrayList<>());
 
-        // Step 3. Redirect the output of lowerFinalGroupByOperator to children of upperFinalGroupByOperator.
+        // Step 3.
+        //   Connect upperFinalGroupByOperator and the children of lowerFinalGroupByOperator.
+        //   Disconnect lowerFinalGroupByOperator from operator graph.
         // Before step 3:
         //    {OP1, 2, ...}-UNION1->GBY1->RS1->GBY2-{}
         //               {}-UNION2->GBY3->RS2->GBY4-{OP5, 6, ...}
