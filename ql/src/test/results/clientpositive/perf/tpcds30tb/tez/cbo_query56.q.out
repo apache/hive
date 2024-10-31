@@ -10,7 +10,7 @@ HiveProject(d_date_sk=[$0], d_year=[CAST(2000):INTEGER], d_moy=[CAST(1):INTEGER]
 
 CTE Suggestion:
 HiveProject(i_item_id=[$1])
-  HiveFilter(condition=[IN($17, _UTF-16LE'orchid              ', _UTF-16LE'chiffon             ', _UTF-16LE'lace                ')])
+  HiveFilter(condition=[SEARCH($17, Sarg[_UTF-16LE'chiffon             ', _UTF-16LE'lace                ', _UTF-16LE'orchid              ']:CHAR(20) CHARACTER SET "UTF-16LE")])
     HiveTableScan(table=[[default, item]], table:alias=[item])
 
 CBO PLAN:
