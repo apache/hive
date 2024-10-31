@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo.ForeignKeyCol;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -68,14 +69,18 @@ import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.ColumnStatsList;
 import org.apache.hadoop.hive.ql.parse.ParsedQueryTables;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.stats.BasicStats;
+import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -186,10 +191,6 @@ public class RelOptHiveTable implements RelOptTable {
   @Override
   public List<ColumnStrategy> getColumnStrategies() {
     return RelOptTableImpl.columnStrategies(this);
-  }
-
-  public PrunedPartitionList getPrunedPartitionList() {
-    return partitionList;
   }
 
   public RelOptHiveTable copy(RelDataType newRowType) {
@@ -760,4 +761,32 @@ public class RelOptHiveTable implements RelOptTable {
     return partitionList != null ? partitionList.getKey().orElse(null) : null;
   }
 
+  public @Nullable Double getMaxRowCount() {
+    if (!StatsUtils.areBasicStatsUptoDateForQueryAnswering(hiveTblMetadata, hiveTblMetadata.getParameters())) {
+      return null;
+    }
+    // if basic stats are up-to-date and the table is not dummy, return 0.0D if table is empty
+    // else return infinity. 
+    return !SemanticAnalyzer.DUMMY_DB_DUMMY_TBL.equals(name) && isEmpty() ? 0.0 : Double.POSITIVE_INFINITY;
+  }
+
+  /**
+   * Check whether the table has zero rows.
+   *
+   * @return boolean
+   */
+  public boolean isEmpty() {
+    List<Partish> inputs = new ArrayList<>();
+    if (hiveTblMetadata.isPartitioned()) {
+      for (Partition part : partitionList.getNotDeniedPartns()) {
+        inputs.add(Partish.buildFor(hiveTblMetadata, part));
+      }
+    } else {
+      inputs.add(Partish.buildFor(hiveTblMetadata));
+    }
+
+    List<BasicStats> partStats = inputs.stream().map(BasicStats::new).collect(Collectors.toList());
+    BasicStats aggregateStat = BasicStats.buildFrom(partStats);
+    return aggregateStat.getNumRows() == 0;
+  }
 }

@@ -17,38 +17,30 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
+import org.apache.calcite.rel.metadata.BuiltInMetadata;
+import org.apache.calcite.rel.metadata.MetadataDef;
+import org.apache.calcite.rel.metadata.MetadataHandler;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
-import org.apache.calcite.rel.metadata.RelMdMaxRowCount;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.util.BuiltInMethod;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
-import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
-import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-/**
- * Extends {@link RelMdMaxRowCount} to get max row count for {@link HiveTableScan}
- */
-public class HiveRelMdMaxRowCount extends RelMdMaxRowCount {
+public class HiveRelMdMaxRowCount implements MetadataHandler<BuiltInMetadata.MaxRowCount> {
 
   public static final RelMetadataProvider SOURCE =
       ReflectiveRelMetadataProvider.reflectiveSource(
           BuiltInMethod.MAX_ROW_COUNT.method, new HiveRelMdMaxRowCount()
       );
+  
+  @Override
+  public MetadataDef<BuiltInMetadata.MaxRowCount> getDef() {
+    return BuiltInMetadata.MaxRowCount.DEF;
+  }
 
   public @Nullable Double getMaxRowCount(HiveTableScan hiveTableScan, RelMetadataQuery mq) {
-    RelOptHiveTable table = (RelOptHiveTable) hiveTableScan.getTable();
-    if (!StatsUtils.areBasicStatsUptoDateForQueryAnswering(
-        table.getHiveTableMD(), table.getHiveTableMD().getParameters())) {
-      return null;
-    }
-    // if basic stats are up-to-date and the table is not dummy, return 0.0D if table is empty
-    // super returns infinity. 
-    return !table.getName().equals(SemanticAnalyzer.DUMMY_DATABASE + "." + SemanticAnalyzer.DUMMY_TABLE) &&
-        StatsUtils.isTableEmpty(table) ?
-        Double.valueOf(0.0) :
-        super.getMaxRowCount(hiveTableScan, mq);
+    return ((RelOptHiveTable) hiveTableScan.getTable()).getMaxRowCount();
   }
 }

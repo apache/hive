@@ -61,7 +61,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.parse.ColumnStatsList;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
@@ -236,27 +235,6 @@ public class StatsUtils {
     aggregateStat.apply(new BasicStats.SetMinRowNumber01());
 
     return aggregateStat.getNumRows();
-  }
-
-  /**
-   * Check whether a table has zero rows.
-   * 
-   * @param table table to check
-   * @return boolean
-   */
-  public static boolean isTableEmpty(RelOptHiveTable table) {
-    List<Partish> inputs = new ArrayList<>();
-    if (table.getHiveTableMD().isPartitioned()) {
-      for (Partition part : table.getPrunedPartitionList().getNotDeniedPartns()) {
-        inputs.add(Partish.buildFor(table.getHiveTableMD(), part));
-      }
-    } else {
-      inputs.add(Partish.buildFor(table.getHiveTableMD()));
-    }
-
-    List<BasicStats> partStats = inputs.stream().map(BasicStats::new).collect(Collectors.toList());
-    BasicStats aggregateStat = BasicStats.buildFrom(partStats);
-    return aggregateStat.getNumRows() == 0;
   }
 
   private static void estimateStatsForMissingCols(List<String> neededColumns, List<ColStatistics> columnStats,
