@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.util.Preconditions;
 import org.apache.hive.iceberg.com.fasterxml.jackson.core.JsonProcessingException;
-import org.apache.iceberg.BaseMetastoreOperations;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.ClientPool;
 import org.apache.iceberg.PartitionSpecParser;
@@ -185,8 +184,8 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
     boolean hiveEngineEnabled = hiveEngineEnabled(metadata, conf);
     boolean keepHiveStats = conf.getBoolean(ConfigProperties.KEEP_HIVE_STATS, false);
 
-    BaseMetastoreOperations.CommitStatus commitStatus =
-            BaseMetastoreOperations.CommitStatus.FAILURE;
+    BaseMetastoreTableOperations.CommitStatus commitStatus =
+            BaseMetastoreTableOperations.CommitStatus.FAILURE;
     boolean updateHiveTable = false;
 
     HiveLock lock = lockObject(base);
@@ -249,9 +248,9 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
             tbl, updateHiveTable, hiveLockEnabled(base, conf) ? null : baseMetadataLocation);
         lock.ensureActive();
 
-        commitStatus = BaseMetastoreOperations.CommitStatus.SUCCESS;
+        commitStatus = BaseMetastoreTableOperations.CommitStatus.SUCCESS;
       } catch (LockException le) {
-        commitStatus = BaseMetastoreOperations.CommitStatus.UNKNOWN;
+        commitStatus = BaseMetastoreTableOperations.CommitStatus.UNKNOWN;
         throw new CommitStateUnknownException(
             "Failed to heartbeat for hive lock while " +
               "committing changes. This can lead to a concurrent commit attempt be able to overwrite this commit. " +
@@ -287,7 +286,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
         LOG.error("Cannot tell if commit to {}.{} succeeded, attempting to reconnect and check.",
             database, tableName, e);
         commitStatus =
-                BaseMetastoreOperations.CommitStatus.valueOf(
+                BaseMetastoreTableOperations.CommitStatus.valueOf(
                         checkCommitStatus(newMetadataLocation, metadata).name());
         switch (commitStatus) {
           case SUCCESS:
@@ -301,19 +300,29 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
     } catch (TException e) {
       throw new RuntimeException(
           String.format("Metastore operation failed for %s.%s", database, tableName), e);
-
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new RuntimeException("Interrupted during commit", e);
-
     } catch (LockException e) {
       throw new CommitFailedException(e);
-
     } finally {
-      HiveOperationsBase.cleanupMetadataAndUnlock(io(), commitStatus, newMetadataLocation, lock);
+      cleanupMetadataAndUnlock(io(), commitStatus, newMetadataLocation, lock);
     }
 
     LOG.info("Committed to table {} with the new metadata location {}", fullName, newMetadataLocation);
+  }
+
+
+  static void cleanupMetadataAndUnlock(
+          FileIO io,
+          BaseMetastoreTableOperations.CommitStatus commitStatus,
+          String metadataLocation,
+          HiveLock lock) {
+    try {
+      HiveOperationsBase.cleanupMetadata(io, commitStatus.name(), metadataLocation);
+    } finally {
+      lock.unlock();
+    }
   }
 
   public void persistTable(Table hmsTable, boolean updateHiveTable, String expectedMetadataLocation)
@@ -329,7 +338,8 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
     }
   }
 
-  Table loadHmsTable() throws TException, InterruptedException {
+  @Override
+  public Table loadHmsTable() throws TException, InterruptedException {
     try {
       return actor.getTable(database, tableName);
     } catch (NoSuchObjectException nte) {

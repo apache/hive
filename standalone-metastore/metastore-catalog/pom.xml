@@ -10,23 +10,25 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
-    <artifactId>hive</artifactId>
+    <artifactId>hive-standalone-metastore</artifactId>
     <groupId>org.apache.hive</groupId>
     <version>4.1.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>hms-catalog</artifactId>
-  <version>1.0.1-SNAPSHOT</version>
+  <artifactId>hive-metastore-icecat</artifactId>
+  <name>Hive Metastore Iceberg Catalog</name>
   <properties>
-    <hive.path.to.root>..</hive.path.to.root>
+    <standalone.metastore.path.to.root>..</standalone.metastore.path.to.root>
     <maven.compiler.source>8</maven.compiler.source>
     <maven.compiler.target>8</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <log4j2.debug>false</log4j2.debug>
     <hive.version>${project.parent.version}</hive.version>
     <revision>${hive.version}</revision>
+    <iceberg.version>1.6.1</iceberg.version>
   </properties>
   <dependencies>
     <dependency>
@@ -37,11 +39,6 @@
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-common</artifactId>
-      <version>${revision}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-metastore</artifactId>
       <version>${revision}</version>
     </dependency>
     <dependency>
@@ -65,7 +62,7 @@
       <version>${iceberg.version}</version>
     </dependency>
     <!-- Intellij dislikes shaded Iceberg: uncomment the following block helps when coding/debugging -->
-    <!--
+
     <dependency>
       <groupId>org.apache.iceberg</groupId>
       <artifactId>iceberg-api</artifactId>
@@ -78,7 +75,7 @@
       <version>${iceberg.version}</version>
       <optional>true</optional>
     </dependency>
-    -->
+
     <dependency>
       <groupId>org.apache.httpcomponents.core5</groupId>
       <artifactId>httpcore5</artifactId>
@@ -229,6 +226,54 @@
   </dependencies>
   <build>
     <plugins>
+      <!-- Suppress source assembly -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>assemble</id>
+            <phase>none</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <excludes>
+            <exclude>*.patch</exclude>
+            <exclude>DEV-README</exclude>
+            <exclude>**/src/main/sql/**</exclude>
+            <exclude>**/README.md</exclude>
+            <exclude>**/*.iml</exclude>
+            <exclude>**/*.txt</exclude>
+            <exclude>**/*.log</exclude>
+            <exclude>**/package-info.java</exclude>
+            <exclude>**/*.properties</exclude>
+            <exclude>**/*.q</exclude>
+            <exclude>**/*.q.out</exclude>
+            <exclude>**/*.xml</exclude>
+            <exclude>**/gen/**</exclude>
+            <exclude>**/patchprocess/**</exclude>
+            <exclude>**/metastore_db/**</exclude>
+            <exclude>**/test/resources/**/*.ldif</exclude>
+            <exclude>**/test/resources/**/*.sql</exclude>
+            <exclude>**/test/resources/**/*.json</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
@@ -267,18 +312,22 @@
             <phase>generate-test-sources</phase>
             <configuration>
               <target>
-                <copy todir="${project.basedir}/src/test/java/org/apache/hadoop/hive/metastore/utils" overwrite="true" verbose="true">
-                  <fileset dir="${project.basedir}/../standalone-metastore/metastore-server/src/test/java/org/apache/hadoop/hive/metastore/utils">
+                <copy todir="${project.basedir}/src/test/java/org/apache/hadoop/hive/metastore/utils" overwrite="true"
+                      verbose="true">
+                  <fileset
+                      dir="${project.basedir}/../metastore-server/src/test/java/org/apache/hadoop/hive/metastore/utils">
                     <include name="TestTxnDbUtil.java"/>
                   </fileset>
                 </copy>
-                <copy todir="${project.basedir}/src/test/java/org/apache/hadoop/hive/metastore" overwrite="true" verbose="true">
-                  <fileset dir="${project.basedir}/../standalone-metastore/metastore-server/src/test/java/org/apache/hadoop/hive/metastore">
+                <copy todir="${project.basedir}/src/test/java/org/apache/hadoop/hive/metastore" overwrite="true"
+                      verbose="true">
+                  <fileset dir="${project.basedir}/../metastore-server/src/test/java/org/apache/hadoop/hive/metastore">
                     <include name="MetaStoreTestUtils.java"/>
                   </fileset>
                 </copy>
-                <copy todir="${project.basedir}/src/test/resources/scripts/metastore/upgrade/derby" overwrite="true" verbose="true">
-                  <fileset dir="${project.basedir}/../standalone-metastore/metastore-server/src/main/sql/derby">
+                <copy todir="${project.basedir}/src/test/resources/scripts/metastore/upgrade/derby" overwrite="true"
+                      verbose="true">
+                  <fileset dir="${project.basedir}/../metastore-server/src/main/sql/derby">
                     <include name="hive-schema-4.1.0.derby.sql"/>
                   </fileset>
                 </copy>

@@ -212,7 +212,7 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
   private List<TableIdentifier> listIcebergTables(
           List<String> tableNames, Namespace namespace, String tableTypeProp)
           throws TException, InterruptedException {
-    List<Table> tableObjects = clients.run(client -> client.getTableObjectsByName(namespace.level(0), tableNames));
+    List<Table> tableObjects = actor.listTables(namespace.level(0), tableNames);
     return tableObjects.stream()
             .filter(table -> table.getParameters() != null && tableTypeProp
                 .equalsIgnoreCase(table.getParameters().get(BaseMetastoreTableOperations.TABLE_TYPE_PROP)))
@@ -240,13 +240,13 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
     String fromName = from.name();
 
     try {
-      Table table = clients.run(client -> client.getTable(fromDatabase, fromName));
-      validateTableIsIcebergTableOrView(contentType, table, CatalogUtil.fullTableName(name, from));
+      Table table = actor.getTable(fromDatabase, fromName);
+      validateTableIsIcebergTableOrView(contentType, table, TableIdentifier.of(from.namespace(), fromName).name());
 
       table.setDbName(toDatabase);
       table.setTableName(to.name());
 
-      actor.alterTable(fromDatabase, fromName, table);   
+      actor.alterTable(fromDatabase, fromName, table);
       LOG.info("Renamed {} from {}, to {}", contentType.value(), from, to);
     } catch (NoSuchObjectException e) {
       throw new NoSuchTableException("Table does not exist: %s", from);

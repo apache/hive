@@ -20,6 +20,7 @@
 package org.apache.iceberg.rest;
 
 import com.codahale.metrics.Counter;
+import com.codahale.metrics.MetricRegistry;
 import com.google.gson.Gson;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
@@ -146,6 +147,8 @@ public abstract class HMSTestBase {
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.CAPABILITY_CHECK, false);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
+    // new 2024-10-02
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.SCHEMA_VERIFICATION, false);
 
     conf.setBoolean(MetastoreConf.ConfVars.METRICS_ENABLED.getVarname(), true);
     // "hive.metastore.warehouse.dir"
@@ -216,7 +219,7 @@ public abstract class HMSTestBase {
    */
   static Map<String, Long> reportMetricCounters(String... apis) {
     Map<String, Long> map = new LinkedHashMap<>();
-    com.codahale.metrics.MetricRegistry registry = Metrics.getRegistry();
+    MetricRegistry registry = Metrics.getRegistry();
     List<String> names = HMSCatalogAdapter.getMetricNames(apis);
     for(String name : names) {
       Counter counter = registry.counter(name);

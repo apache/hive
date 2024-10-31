@@ -195,6 +195,7 @@ public class HMSCatalogActor implements HiveActor {
     }
     GetTablesRequest query = new GetTablesRequest();
     query.setDbName(database);
+    query.setCatName(name);
     query.setTblNames(tableNames);
     GetTablesResult result = run(h -> h.get_table_objects_by_name_req(query));
     return result.getTables();
@@ -213,7 +214,11 @@ public class HMSCatalogActor implements HiveActor {
   @Override
   public Table getTable(String databaseName, String tableName) throws TException {
     GetTableRequest request = new GetTableRequest();
+    if (databaseName == null) {
+      throw new NullPointerException("no db name!");
+    }
     request.setDbName(databaseName);
+    request.setCatName(name);
     request.setTblName(tableName);
     return run(h -> h.get_table_core(request));
   }

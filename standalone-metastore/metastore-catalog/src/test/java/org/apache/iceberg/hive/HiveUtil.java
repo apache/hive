@@ -55,7 +55,7 @@ public class HiveUtil {
   }
 
   public static void setSchema(HiveTableOperations ops, TableMetadata metadata, Map<String, String> parameters) {
-    ops.setSchema(metadata, parameters);
+    ops.setSchema(metadata.schema(), parameters);
   }
 
   public static void setPartitionSpec(HiveTableOperations ops, TableMetadata metadata, Map<String, String> parameters) {

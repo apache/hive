@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.iceberg.BaseMetastoreOperations;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.ClientPool;
 import org.apache.iceberg.Schema;
@@ -185,18 +184,6 @@ public interface HiveOperationsBase {
       }
     } catch (RuntimeException e) {
       LOG.error("Failed to cleanup metadata file at {}", metadataLocation, e);
-    }
-  }
-
-  static void cleanupMetadataAndUnlock(
-          FileIO io,
-          BaseMetastoreOperations.CommitStatus commitStatus,
-          String metadataLocation,
-          HiveLock lock) {
-    try {
-      cleanupMetadata(io, commitStatus.name(), metadataLocation);
-    } finally {
-      lock.unlock();
     }
   }
 

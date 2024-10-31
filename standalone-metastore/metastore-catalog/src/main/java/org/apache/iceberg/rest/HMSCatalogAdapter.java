@@ -20,6 +20,7 @@
 package org.apache.iceberg.rest;
 
 import com.codahale.metrics.Counter;
+import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,7 +29,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.BaseTransaction;
 import org.apache.iceberg.Table;
