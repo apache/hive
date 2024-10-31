@@ -27,14 +27,8 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
 @Unstable
 public interface PartitionAwareSplit {
   /**
-   * Returns the bucket hash code. OptionalInt.empty() if this is not a bucketed split.
+   * Returns the bucket number of this split. OptionalInt.empty if this is not a bucketed split.
    */
   @Unstable
-  OptionalInt getBucketHashCode();
-
-  /**
-   * Returns the number of buckets.
-   */
-  @Unstable
-  int getNumBuckets();
+  OptionalInt getBucketId();
 }

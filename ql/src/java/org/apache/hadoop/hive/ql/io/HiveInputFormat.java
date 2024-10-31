@@ -59,7 +59,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
@@ -175,11 +174,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
     public OptionalInt getBucketId() {
       if (inputSplit instanceof PartitionAwareSplit) {
-        final PartitionAwareSplit split = (PartitionAwareSplit) inputSplit;
-        final OptionalInt bucketHashCode = split.getBucketHashCode();
-        return bucketHashCode.isPresent()
-            ? OptionalInt.of(ObjectInspectorUtils.getBucketNumber(bucketHashCode.getAsInt(), split.getNumBuckets()))
-            : OptionalInt.empty();
+        return ((PartitionAwareSplit) inputSplit).getBucketId();
       }
 
       final int bucketId = Utilities.parseSplitBucket(inputSplit);
