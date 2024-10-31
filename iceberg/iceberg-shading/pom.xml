@@ -19,7 +19,6 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>hive-iceberg-shading</artifactId>
-  <groupId>org.apache.hive</groupId>
   <packaging>jar</packaging>
   <name>Hive Iceberg Shading</name>
   <description>
@@ -38,25 +37,21 @@
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>patched-iceberg-core</artifactId>
-      <version>patched-${iceberg.version}-${project.parent.version}</version>
       <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.iceberg</groupId>
       <artifactId>iceberg-data</artifactId>
-      <version>${iceberg.version}</version>
       <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.iceberg</groupId>
       <artifactId>iceberg-parquet</artifactId>
-      <version>${iceberg.version}</version>
       <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.iceberg</groupId>
       <artifactId>iceberg-orc</artifactId>
-      <version>${iceberg.version}</version>
       <optional>true</optional>
     </dependency>
   </dependencies>
