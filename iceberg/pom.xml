@@ -40,8 +40,6 @@
     <immutables.value.version>2.10.0</immutables.value.version>
     <validate.skip>false</validate.skip>
     <caffeine.version>2.9.3</caffeine.version>
-    <hive.version>${project.parent.version}</hive.version>
-    <revision>${hive.version}</revision>
   </properties>
   <modules>
     <module>patched-iceberg-api</module>

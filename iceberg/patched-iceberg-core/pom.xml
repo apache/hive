@@ -22,16 +22,20 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>patched-iceberg-core</artifactId>
   <name>Patched Iceberg Core</name>
-  <version>${revision}</version>
   <!-- Temporary package until we need unreleased Iceberg changes for development purposes. -->
   <!-- We should periodically clean this package during rebasing to newer Iceberg releases. -->
   <!-- We should remove the package for good when Iceberg integration has been stabilized. -->
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
     <path.to.iceberg.root>..</path.to.iceberg.root>
-    <revision>patched-${iceberg.version}-${project.parent.version}</revision>
   </properties>
   <dependencies>
+    <dependency>
+      <groupId>com.github.ben-manes.caffeine</groupId>
+      <artifactId>caffeine</artifactId>
+      <version>${caffeine.version}</version>
+      <optional>true</optional>
+    </dependency>
     <dependency>
       <groupId>org.apache.iceberg</groupId>
       <artifactId>iceberg-core</artifactId>
@@ -50,18 +54,10 @@
       <artifactId>iceberg-common</artifactId>
       <version>${iceberg.version}</version>
       <optional>true</optional>
-      <exclusions>
-        <exclusion>
-          <!-- in favor of patched-iceberg-api, the original is excluded here -->
-          <groupId>org.apache.iceberg</groupId>
-          <artifactId>iceberg-api</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>patched-iceberg-api</artifactId>
-      <version>${revision}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.iceberg</groupId>
@@ -71,12 +67,6 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>com.github.ben-manes.caffeine</groupId>
-      <artifactId>caffeine</artifactId>
-      <version>${caffeine.version}</version>
       <optional>true</optional>
     </dependency>
   </dependencies>
