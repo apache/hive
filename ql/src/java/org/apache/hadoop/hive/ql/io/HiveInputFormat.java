@@ -276,7 +276,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       }
     }
 
-    public byte[] getBytesForIdentity() {
+    public byte[] getBytesForEquality() {
       if (inputSplit instanceof HashableInputSplit) {
         return ((HashableInputSplit) inputSplit).getBytesForHash();
       } else {

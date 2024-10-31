@@ -79,7 +79,7 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
 
     @Override
     public int compare(HiveInputSplit inp1, HiveInputSplit inp2) {
-      return UnsignedBytes.lexicographicalComparator().compare(inp1.getBytesForIdentity(), inp2.getBytesForIdentity());
+      return UnsignedBytes.lexicographicalComparator().compare(inp1.getBytesForEquality(), inp2.getBytesForEquality());
     }
   }
 
