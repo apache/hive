@@ -776,7 +776,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
     final List<TransformSpec> specs = getPartitionTransformSpec(table);
     // Currently, we support the only bucket transform
-    return specs.stream().anyMatch(HiveIcebergStorageHandler::isBucket);
+    return specs.stream().anyMatch(IcebergTableUtil::isBucket);
   }
 
   @Override
@@ -785,7 +785,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     // Currently, we support the only bucket transform
     final List<String> bucketColumnNames = Lists.newArrayList();
     final List<Integer> numBuckets = Lists.newArrayList();
-    getPartitionTransformSpec(table).stream().filter(HiveIcebergStorageHandler::isBucket).forEach(spec -> {
+    getPartitionTransformSpec(table).stream().filter(IcebergTableUtil::isBucket).forEach(spec -> {
       bucketColumnNames.add(spec.getColumnName());
       numBuckets.add(spec.getTransformParam().get());
     });
@@ -795,10 +795,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
     final IcebergBucketFunction bucketFunction = new IcebergBucketFunction(bucketColumnNames, numBuckets);
     return new PartitionAwareOptimizationCtx(bucketFunction);
-  }
-
-  private static boolean isBucket(TransformSpec spec) {
-    return spec.getTransformType() == TransformSpec.TransformType.BUCKET && spec.getTransformParam().isPresent();
   }
 
   @Override
