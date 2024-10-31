@@ -1965,27 +1965,40 @@ public class CalcitePlanner extends SemanticAnalyzer {
         generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
                 HiveAntiSemiJoinRule.INSTANCE);
       }
+      
+      List<RelOptRule> removeEmptySingleRules = new ArrayList<>(Arrays.asList(
+          HiveRemoveEmptySingleRules.PROJECT_INSTANCE,
+          HiveRemoveEmptySingleRules.FILTER_INSTANCE,
+          HiveRemoveEmptySingleRules.JOIN_LEFT_INSTANCE,
+          HiveRemoveEmptySingleRules.SEMI_JOIN_LEFT_INSTANCE,
+          HiveRemoveEmptySingleRules.JOIN_RIGHT_INSTANCE,
+          HiveRemoveEmptySingleRules.SEMI_JOIN_RIGHT_INSTANCE,
+          HiveRemoveEmptySingleRules.ANTI_JOIN_RIGHT_INSTANCE,
+          HiveRemoveEmptySingleRules.SORT_INSTANCE,
+          HiveRemoveEmptySingleRules.SORT_FETCH_ZERO_INSTANCE,
+          HiveRemoveEmptySingleRules.AGGREGATE_INSTANCE,
+          HiveRemoveEmptySingleRules.UNION_INSTANCE,
+          HiveRemoveEmptySingleRules.CORRELATE_LEFT_INSTANCE,
+          HiveRemoveEmptySingleRules.CORRELATE_RIGHT_INSTANCE
+      ));
 
-      generatePartialProgram(program, true, HepMatchOrder.DEPTH_FIRST,
-              HiveRemoveEmptySingleRules.PROJECT_INSTANCE,
-              HiveRemoveEmptySingleRules.FILTER_INSTANCE,
-              HiveRemoveEmptySingleRules.JOIN_LEFT_INSTANCE,
-              HiveRemoveEmptySingleRules.SEMI_JOIN_LEFT_INSTANCE,
-              HiveRemoveEmptySingleRules.JOIN_RIGHT_INSTANCE,
-              HiveRemoveEmptySingleRules.SEMI_JOIN_RIGHT_INSTANCE,
-              HiveRemoveEmptySingleRules.ANTI_JOIN_RIGHT_INSTANCE,
-              HiveRemoveEmptySingleRules.SORT_INSTANCE,
-              HiveRemoveEmptySingleRules.SORT_FETCH_ZERO_INSTANCE,
-              HiveRemoveEmptySingleRules.AGGREGATE_INSTANCE,
-              HiveRemoveEmptySingleRules.UNION_INSTANCE,
-              HiveRemoveEmptySingleRules.CORRELATE_LEFT_INSTANCE,
-              HiveRemoveEmptySingleRules.CORRELATE_RIGHT_INSTANCE,
-              HiveRemoveEmptySingleRules.EMPTY_TABLE_INSTANCE);
+      if (pruneEmptyTable()) {
+        removeEmptySingleRules.add(HiveRemoveEmptySingleRules.EMPTY_TABLE_INSTANCE);
+      }
+
+      generatePartialProgram(program, true, HepMatchOrder.DEPTH_FIRST, 
+          removeEmptySingleRules.toArray(new RelOptRule[0]));
 
       // Trigger program
       basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
 
       return basePlan;
+    }
+    
+    private boolean pruneEmptyTable () {
+      return !(ctx.isExplainPlan() &&
+          HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST) &&
+          !HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_EXPLAIN_PRUNE_EMPTY_TABLE));
     }
 
     /**
