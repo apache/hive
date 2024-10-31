@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,17 @@ import java.util.Stack;
 
 public class UnionDistinctMerger extends Transform {
   private static final Logger LOG = LoggerFactory.getLogger(UnionDistinctMerger.class);
+
+  private static final String patternString = new StringBuilder()
+      .append(UnionOperator.getOperatorName()).append("%")
+      .append(GroupByOperator.getOperatorName()).append("%")
+      .append(ReduceSinkOperator.getOperatorName()).append("%")
+      .append(GroupByOperator.getOperatorName()).append("%")
+      .append(UnionOperator.getOperatorName()).append("%")
+      .append(GroupByOperator.getOperatorName()).append("%")
+      .append(ReduceSinkOperator.getOperatorName()).append("%")
+      .append(GroupByOperator.getOperatorName()).append("%")
+      .toString();
 
   private static class UnionMergeContext implements NodeProcessorCtx {
     public final ParseContext pCtx;
@@ -63,10 +75,10 @@ public class UnionDistinctMerger extends Transform {
 
       // The stack contains at least 8 operators, UNION-GBY-RS-GBY-UNION-GBY-RS-GBY.
       // The leftmost UNION is on stack.size() - 8 and the rightmost GBY is on stack.size() - 1.
-      Collection<Operator> allOps = context.pCtx.getAllOps();
+      HashSet<Operator> allOps = new HashSet<>(context.pCtx.getAllOps());
       for (int i = 1; i <= 8; i ++) {
         Operator<?> op = (Operator<?>) stack.get(stack.size() - i);
-        
+
         // We do not apply the optimization if some operators do not belong to query plan.
         // This can be happened when we already merged some UNIONs before.
         // For example, Suppose that a query plan looks like the below graph:
@@ -77,7 +89,7 @@ public class UnionDistinctMerger extends Transform {
         if (!allOps.contains(op)) {
           return null;
         }
-        
+
         // We do not apply the optimization if intermediate outputs are used by other operators.
         if (i != 1 && op.getChildOperators().size() > 1) {
           return null;
@@ -96,7 +108,7 @@ public class UnionDistinctMerger extends Transform {
 
         // Step 0. UNION1->GBY1->RS1->GBY2->UNION2->GBY3->RS2->GBY4
 
-        // Step 1. Cut GBY2->UNINO1
+        // Step 1. Cut GBY2->UNION2
         lowerUnionOperator.removeParent(upperFinalGroupByOperator);
 
         // Step 2. Redirect the output of the parents of lowerUnionOperator to upperUnionOperator.
@@ -116,17 +128,13 @@ public class UnionDistinctMerger extends Transform {
         }
         lowerUnionOperator.setParentOperators(new ArrayList<>());
 
-        // Step 3. Redirect the output of lowerFinalGroupByOperator to children of
+        // Step 3. Redirect the output of lowerFinalGroupByOperator to children of upperFinalGroupByOperator.
         // Before step 3:
-        //    OP1-UNION1->GBY1->RS1->GBY2
-        //    OP2-
-        //    OP3-UNION2->GBY3->RS2->GBY4
-        //    OP4-
+        //    {OP1, 2, ...}-UNION1->GBY1->RS1->GBY2-{}
+        //               {}-UNION2->GBY3->RS2->GBY4-{OP5, 6, ...}
         // After step 3:
-        //    OP1-UNION1->GBY1->RS1->GBY2
-        //    OP2-
-        //    OP3-
-        //    OP4-
+        //    {OP1, 2, ...}-UNION1->GBY1->RS1->GBY2-{OP5, 6, ...}
+        //               {}-UNION2->GBY3->RS2->GBY4-{}
         for (Operator<?> lowerFinalGroupByChild: lowerFinalGroupByOperator.getChildOperators()) {
           lowerFinalGroupByChild.replaceParent(lowerFinalGroupByOperator, upperFinalGroupByOperator);
           upperFinalGroupByOperator.getChildOperators().add(lowerFinalGroupByChild);
@@ -159,18 +167,7 @@ public class UnionDistinctMerger extends Transform {
 
   public ParseContext transform(ParseContext pCtx) throws SemanticException {
     Map<SemanticRule, SemanticNodeProcessor> testRules = new LinkedHashMap<>();
-    StringBuilder pattern = new StringBuilder();
-    pattern.append(UnionOperator.getOperatorName()).append("%")
-        .append(GroupByOperator.getOperatorName()).append("%")
-        .append(ReduceSinkOperator.getOperatorName()).append("%")
-        .append(GroupByOperator.getOperatorName()).append("%")
-        .append(UnionOperator.getOperatorName()).append("%")
-        .append(GroupByOperator.getOperatorName()).append("%")
-        .append(ReduceSinkOperator.getOperatorName()).append("%")
-        .append(GroupByOperator.getOperatorName()).append("%");
-
-    testRules.put(new RuleRegExp("AdjacentDistinctUnion", pattern.toString()), new UnionMergeProcessor());
-
+    testRules.put(new RuleRegExp("AdjacentDistinctUnion", patternString), new UnionMergeProcessor());
     SemanticDispatcher disp = new DefaultRuleDispatcher(null, testRules, new UnionMergeContext(pCtx));
     SemanticGraphWalker ogw = new NoSkipGraphWalker(disp);
 
