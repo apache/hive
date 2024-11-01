@@ -331,13 +331,15 @@ public class PersistenceManagerProvider {
         if (pmf == null && ds instanceof AutoCloseable) {
           try (AutoCloseable close1 = (AutoCloseable) ds;
                AutoCloseable close2 = (AutoCloseable) ds2 ) {
+            LOG.debug("Trying to close the dangling datasource as the pmf is null");
           } catch (Exception e) {
             LOG.warn("Failed to close the DataSource", e);
           }
         }
       }
     }
-    DataStoreCache dsc = pmf != null ? pmf.getDataStoreCache() : null;
+    assert pmf != null;
+    DataStoreCache dsc = pmf.getDataStoreCache();
     if (dsc != null) {
       String objTypes = MetastoreConf.getVar(conf, ConfVars.CACHE_PINOBJTYPES);
       LOG.info(
