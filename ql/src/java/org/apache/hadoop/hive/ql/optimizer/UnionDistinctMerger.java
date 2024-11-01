@@ -49,7 +49,7 @@ import java.util.Stack;
 public class UnionDistinctMerger extends Transform {
   private static final Logger LOG = LoggerFactory.getLogger(UnionDistinctMerger.class);
 
-  private static final String PatternString = new StringBuilder()
+  private static final String PATTERN_STRING = new StringBuilder()
       .append(UnionOperator.getOperatorName()).append("%")
       .append(GroupByOperator.getOperatorName()).append("%")
       .append(ReduceSinkOperator.getOperatorName()).append("%")
@@ -171,7 +171,7 @@ public class UnionDistinctMerger extends Transform {
 
   public ParseContext transform(ParseContext pCtx) throws SemanticException {
     Map<SemanticRule, SemanticNodeProcessor> testRules = new LinkedHashMap<>();
-    testRules.put(new RuleRegExp("AdjacentDistinctUnion", PatternString), new UnionMergeProcessor());
+    testRules.put(new RuleRegExp("AdjacentDistinctUnion", PATTERN_STRING), new UnionMergeProcessor());
     SemanticDispatcher disp = new DefaultRuleDispatcher(null, testRules, new UnionMergeContext(pCtx));
     SemanticGraphWalker ogw = new NoSkipGraphWalker(disp);
 
