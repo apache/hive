@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
+import org.apache.hadoop.hive.ql.parse.TransformSpec.TransformType;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
@@ -276,6 +277,11 @@ public class IcebergTableUtil {
 
   public static boolean isBucketed(Table table) {
     return table.spec().fields().stream().anyMatch(f -> f.transform().toString().startsWith("bucket["));
+  }
+
+  public static boolean isBucket(TransformSpec spec) {
+    // Iceberg's bucket transform requires a bucket number to be specified
+    return spec.getTransformType() == TransformType.BUCKET && spec.getTransformParam().isPresent();
   }
 
   /**
