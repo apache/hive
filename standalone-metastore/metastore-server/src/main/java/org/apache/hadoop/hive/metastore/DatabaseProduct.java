@@ -94,7 +94,7 @@ public class DatabaseProduct implements Configurable {
       String s = conn.getMetaData().getDatabaseProductName();
       return determineDatabaseProduct(s, conf);
     } catch (SQLException e) {
-      throw new RuntimeException("Unable to get database product name", e);
+      throw new IllegalStateException("Unable to get database product name", e);
     }
   }
 
