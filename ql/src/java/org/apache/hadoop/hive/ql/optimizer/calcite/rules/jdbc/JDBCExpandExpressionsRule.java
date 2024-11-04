@@ -19,6 +19,10 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import com.google.common.collect.Range;
 import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcFilter;
 import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcJoin;
 import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcProject;
@@ -28,13 +32,18 @@ import org.apache.calcite.plan.RelOptRuleOperand;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.Project;
+import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
+import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexUtil;
+import org.apache.calcite.runtime.FlatLists;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.util.Sarg;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.RexNodeConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -182,11 +191,74 @@ public abstract class JDBCExpandExpressionsRule extends RelOptRule {
         switch (call.getKind()) {
           case IN:
             return transformIntoOrAndClause(rexBuilder, call);
+          case SEARCH:
+            return expandSearchAndRemoveRowOperator(rexBuilder, call);
           default:
             break;
         }
       }
       return RexUtil.isFlat(node) ? node : RexUtil.flatten(rexBuilder, node);
+    }
+    
+    private RexNode expandSearchAndRemoveRowOperator(RexBuilder rexBuilder, RexCall expression) {
+      RexLiteral literal = (RexLiteral) expression.getOperands().get(1);
+      Sarg<?> sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
+
+      if (sarg.isPoints()) {
+        // if it is a row operator, we'll have 
+        // SEARCH(ROW($1, $2), Sarg[[1, 2], [3, 4]]
+        // To match with previous behaviour, we need to transform Sarg to ROWs
+        // Earlier it would have been something like: IN(ROW($1, $2), [ROW(1, 2), ROW(3, 4)])
+        if (expression.getOperands().get(0).getKind() == SqlKind.ROW) {
+          RexCall rowOperand = (RexCall) expression.getOperands().get(0);
+          // size of operands in a ROW. For ROW($1, $2, $3), rowSize = 3
+          int rowSize = rowOperand.getOperands().size();
+          List<RelDataType> rowTypes = rowOperand.getType().getFieldList().stream()
+              .map(RelDataTypeField::getType).collect(Collectors.toList());
+          List<RexNode> rowsFromSarg = new ArrayList<>();
+          
+          for (Range<?> range : sarg.rangeSet.asRanges()) {
+            List<RexNode> literalsInRange = new ArrayList<>();
+            // In inner for loop, construct RexLiterals from Sarg
+            for (int i = 0; i < rowSize; i++) {
+              literalsInRange.add(
+                  rexBuilder.makeLiteral(((FlatLists.ComparableList<?>)range.lowerEndpoint()).get(i), rowTypes.get(i))
+              );
+            }
+            //Construct a ROW from all the literals
+            rowsFromSarg.add(rexBuilder.makeCall(SqlStdOperatorTable.ROW, literalsInRange));
+          }
+          
+          List<RexNode> newOperandsList = new ArrayList<>();
+          newOperandsList.add(rowOperand);
+          newOperandsList.addAll(rowsFromSarg);
+          
+          final List<RexNode> disjuncts = RexNodeConverter.transformInToOrOperands(
+              newOperandsList, rexBuilder);
+          if (disjuncts == null) {
+            return expression.accept(RexUtil.searchShuttle(rexBuilder, null, -1));
+          }
+
+          if (disjuncts.size() > 1) {
+            return rexBuilder.makeCall(SqlStdOperatorTable.OR, disjuncts);
+          } else {
+            return disjuncts.get(0);
+          }
+        }
+        
+        // If row operator is not present, simply create ORs of EQUALS.
+        return RexUtil.composeDisjunction(
+            rexBuilder,
+            sarg.rangeSet.asRanges().stream()
+                .map(range -> rexBuilder.makeLiteral(
+                    range.lowerEndpoint(), literal.getType(), true, true))
+                .map(rexNode -> rexBuilder.makeCall(
+                    SqlStdOperatorTable.EQUALS, expression.getOperands().get(0), rexNode))
+                .collect(Collectors.toList())
+        );
+      }
+      
+      return expression.accept(RexUtil.searchShuttle(rexBuilder, null, -1));
     }
 
     private RexNode transformIntoOrAndClause(RexBuilder rexBuilder, RexCall expression) {
