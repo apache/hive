@@ -121,8 +121,8 @@ public class UnionDistinctMerger extends Transform {
         //    {OP1, 2}-UNION1->GBY1->RS1->GBY2-{}
         //    {OP3, 4}-UNION2->GBY3->RS2->GBY4-{OP5, 6, ...}
         // After step 2:
-        //    {OP1, 2}-UNION1->GBY1->RS1->GBY2-{}
-        //          {}-UNION2->GBY3->RS2->GBY4-{OP5, 6, ...}
+        //    {OP1, 2, 3, 4}-UNION1->GBY1->RS1->GBY2-{}
+        //                {}-UNION2->GBY3->RS2->GBY4-{OP5, 6, ...}
         for (Operator<?> lowerUnionParent: lowerUnionOperator.getParentOperators()) {
           lowerUnionParent.replaceChild(lowerUnionOperator, upperUnionOperator);
           upperUnionOperator.getParentOperators().add(lowerUnionParent);
