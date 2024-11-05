@@ -724,6 +724,9 @@ public class MetastoreConf {
     DATANUCLEUS_AUTOSTART("datanucleus.autoStartMechanismMode",
         "datanucleus.autoStartMechanismMode", "ignored", new StringSetValidator("ignored"),
         "Autostart mechanism for datanucleus.  Currently ignored is the only option supported."),
+    DATANUCLEUS_CACHE_LEVEL1_TYPE("datanucleus.cache.level1.type", "datanucleus.cache.level1.type", "soft",
+        "Stores instances within a PersistenceManager, there are DataNucleus-provided plugins for weak, soft, strong referenced caches, \n" +
+        "none to turn off this cache."),
     DATANUCLEUS_CACHE_LEVEL2("datanucleus.cache.level2", "datanucleus.cache.level2", false,
         "Use a level 2 cache. Turn this off if metadata is changed independently of Hive metastore server"),
     DATANUCLEUS_CACHE_LEVEL2_TYPE("datanucleus.cache.level2.type",
@@ -2047,6 +2050,7 @@ public class MetastoreConf {
       ConfVars.CONNECT_URL_KEY,
       ConfVars.CONNECTION_USER_NAME,
       ConfVars.DATANUCLEUS_AUTOSTART,
+      ConfVars.DATANUCLEUS_CACHE_LEVEL1_TYPE,
       ConfVars.DATANUCLEUS_CACHE_LEVEL2,
       ConfVars.DATANUCLEUS_CACHE_LEVEL2_TYPE,
       ConfVars.DATANUCLEUS_INIT_COL_INFO,
