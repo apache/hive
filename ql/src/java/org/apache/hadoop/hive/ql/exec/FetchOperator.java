@@ -211,35 +211,6 @@ public class FetchOperator implements Serializable {
     this.work = work;
   }
 
-  /**
-   * A cache of InputFormat instances.
-   */
-  private static final Map<String, InputFormat> inputFormats = new HashMap<String, InputFormat>();
-
-  public static InputFormat getInputFormatFromCache(
-      Class<? extends InputFormat> inputFormatClass, Configuration conf) throws IOException {
-    if (Configurable.class.isAssignableFrom(inputFormatClass) ||
-        JobConfigurable.class.isAssignableFrom(inputFormatClass)) {
-      return ReflectionUtil.newInstance(inputFormatClass, conf);
-    }
-    // TODO: why is this copy-pasted from HiveInputFormat?
-    InputFormat format = inputFormats.get(inputFormatClass.getName());
-    if (format == null) {
-      try {
-        format = ReflectionUtil.newInstance(inputFormatClass, conf);
-        // HBase input formats are not thread safe today. See HIVE-8808.
-        String inputFormatName = inputFormatClass.getName().toLowerCase();
-        if (!inputFormatName.contains("hbase")) {
-          inputFormats.put(inputFormatClass.getName(), format);
-        }
-      } catch (Exception e) {
-        throw new IOException("Cannot create an instance of InputFormat class "
-                                  + inputFormatClass.getName() + " as specified in mapredWork!", e);
-      }
-    }
-    return format;
-  }
-
   private StructObjectInspector getPartitionKeyOI(TableDesc tableDesc) throws Exception {
     String pcols = tableDesc.getProperties().getProperty(
         org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS);
@@ -375,11 +346,7 @@ public class FetchOperator implements Serializable {
 
       Class<? extends InputFormat> formatter = currDesc.getInputFileFormatClass();
       Utilities.copyTableJobPropertiesToConf(currDesc.getTableDesc(), job);
-      InputFormat inputFormat = getInputFormatFromCache(formatter, job);
-      if(inputFormat instanceof HiveSequenceFileInputFormat) {
-        // input format could be cached, in which case we need to reset the list of files to fetch
-        ((HiveSequenceFileInputFormat) inputFormat).setFiles(null);
-      }
+      InputFormat inputFormat = InputFormatCache.getInputFormatFromCache(formatter, job);
 
       List<Path> dirs = new ArrayList<>(), dirsWithOriginals = new ArrayList<>();
       processCurrPathForMmWriteIds(inputFormat, dirs, dirsWithOriginals);

@@ -23,45 +23,50 @@ import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.hive.ql.exec.InputFormatCache;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 
 /**
  * HiveSequenceFileInputFormat.
- *  This input format is used by Fetch Operator. This input format does list status
- *    on list of files (kept in listsToFetch) instead of doing list on whole directory
- *    as done by previously used SequenceFileFormat.
- *    To use this FileFormat make sure to provide the list of files
+ * This input format is used by Fetch Operator. This input format does list status
+ * on list of files (kept in listsToFetch) instead of doing list on whole directory
+ * as done by previously used SequenceFileFormat.
+ * To use this FileFormat make sure to provide the list of files
+ *
  * @param <K>
  * @param <V>
  */
 public class HiveSequenceFileInputFormat<K extends LongWritable, V extends BytesRefArrayWritable>
-    extends SequenceFileInputFormat<K, V> {
+    extends SequenceFileInputFormat<K, V> implements InputFormatCache.CacheableInputFormat<K, V> {
 
-  private static final ThreadLocal<Set<FileStatus>> fileStatuses = new ThreadLocal<>();
+  private Set<FileStatus> fileStatuses = null;
 
   public HiveSequenceFileInputFormat() {
     setMinSplitSize(SequenceFile.SYNC_INTERVAL);
   }
 
-  public void setFiles(Set<FileStatus> files) {
-    fileStatuses.set(files);
+  public void setFiles(Set<FileStatus> fileStatuses) {
+    this.fileStatuses = fileStatuses;
   }
 
   @Override
   protected FileStatus[] listStatus(JobConf job) throws IOException {
-    try {
-      if (CollectionUtils.isEmpty(fileStatuses.get())) {
-        // In cases where list of files to fetch is not provided we will use SequenceFileInputFormat
-        // e.g. SELECT without a job
-        return super.listStatus(job);
-      }
-      return fileStatuses.get().toArray(new FileStatus[0]);
-    } finally {
-      fileStatuses.remove();
+    if (fileStatuses == null || fileStatuses.isEmpty()) {
+      // In cases where list of files to fetch is not provided we will use SequenceFileInputFormat
+      // e.g. SELECT without a job
+      return super.listStatus(job);
     }
+    FileStatus[] fsStatusArray = new FileStatus[fileStatuses.size()];
+    return fileStatuses.toArray(fsStatusArray);
+  }
+
+  @Override
+  public InputFormat<K, V> newInstance(InputFormat<K, V> cached){
+    return new HiveSequenceFileInputFormat();
   }
 }
