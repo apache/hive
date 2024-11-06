@@ -371,9 +371,9 @@ public abstract class Operation {
     }
   }
 
-  protected HiveSQLException toSQLException(String prefix, CommandProcessorException e, QueryState queryState) {
+  protected HiveSQLException toSQLException(String prefix, CommandProcessorException e, String queryId) {
     HiveSQLException ex =
-        new HiveSQLException(prefix + ": " + e.getMessage(), e.getSqlState(), e.getResponseCode(), queryState.getQueryId());
+        new HiveSQLException(prefix + ": " + e.getMessage(), e.getSqlState(), e.getResponseCode(), queryId);
     if (e.getCause() != null) {
       ex.initCause(e.getCause());
     }

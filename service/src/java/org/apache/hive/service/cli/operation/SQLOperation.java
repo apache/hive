@@ -209,7 +209,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       setHasResultSet(driver.hasResultSet());
     } catch (CommandProcessorException e) {
       setState(OperationState.ERROR);
-      throw toSQLException("Error while compiling statement", e, queryState);
+      throw toSQLException("Error while compiling statement", e, queryState.getQueryId());
     } catch (Throwable e) {
       setState(OperationState.ERROR);
       if (e instanceof OutOfMemoryError) {
@@ -244,7 +244,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       }
       setState(OperationState.ERROR);
       if (e instanceof CommandProcessorException) {
-        throw toSQLException("Error while compiling statement", (CommandProcessorException) e, queryState);
+        throw toSQLException("Error while compiling statement", (CommandProcessorException) e, queryState.getQueryId());
       } else if (e instanceof HiveSQLException) {
         throw new HiveSQLException(e, queryState.getQueryId());
       } else if (e instanceof OutOfMemoryError) {

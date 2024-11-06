@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.ServiceContext;
+import org.apache.hadoop.hive.ql.hooks.HiveProtoLoggingHook.ExecutionMode;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -139,7 +140,7 @@ public class TestExceptionMessageWithJdbc {
 
   private static HiveConf getNewHiveConf() {
     HiveConf conf = new HiveConfForTest(TestExceptionMessageWithJdbc.class);
-    conf.setVar(ConfVars.HIVE_EXECUTION_ENGINE, "mr");
+    conf.setVar(ConfVars.HIVE_EXECUTION_ENGINE, ExecutionMode.TEZ.name());
     return conf;
   }
 

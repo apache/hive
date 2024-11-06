@@ -72,4 +72,5 @@ public class ServiceUtils {
     return "tez".equals(hiveConf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE)) && hiveConf
         .getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_INPLACE_PROGRESS);
   }
+
 }
