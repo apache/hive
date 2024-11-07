@@ -404,6 +404,11 @@ public class LlapRecordReaderUtils {
     }
 
     @Override
+    public boolean isOpen() {
+      return isOpen;
+    }
+
+    @Override
     public boolean isTrackingDiskRanges() {
       return zcr != null;
     }

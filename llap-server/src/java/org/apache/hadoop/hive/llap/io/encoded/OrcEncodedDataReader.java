@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -172,7 +173,6 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private Path path;
   private Reader orcReader;
   private LlapDataReader rawDataReader;
-  private boolean isRawDataReaderOpen = false;
   private EncodedReader stripeReader;
   private CompressionCodec codec;
   private Object fileKey;
@@ -222,7 +222,6 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     this.useObjectPools = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_IO_SHARE_OBJECT_POOLS);
 
     // LlapInputFormat needs to know the file schema to decide if schema evolution is supported.
-    orcReader = null;
     PartitionDesc partitionDesc = LlapHiveUtils.partitionDescForPath(split.getPath(), parts);
     cacheTag = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_TRACK_CACHE_USAGE)
         ? LlapHiveUtils.getDbAndTableNameForMetrics(split.getPath(), true, partitionDesc) : null;
@@ -279,7 +278,11 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     return ugi.doAs(new PrivilegedExceptionAction<Void>() {
       @Override
       public Void run() throws Exception {
-        return performDataRead();
+        try {
+          return performDataRead();
+        } finally {
+          cleanupReaders();
+        }
       }
     });
   }
@@ -446,16 +449,18 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
 
     LlapIoImpl.LOG.trace("done processing {}", split);
     tracePool.offer(trace);
-    // Close the stripe reader, we are done reading.
-    cleanupReaders();
     return null;
   }
 
+  /*
+   * Basic error handling logic in case of any errors while performDataRead.
+   * Reader cleanup is not supposed to be done here as long as performDataRead is enclosed with a safe try-finally
+   * that takes care of the same.
+   */
   private void handleReaderError(long startTime, Throwable t) throws InterruptedException {
     recordReaderTime(startTime);
     consumer.setError(t);
     trace.dumpLog(LOG);
-    cleanupReaders();
     tracePool.offer(trace);
   }
 
@@ -523,7 +528,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         // Ignore.
       }
     }
-    if (rawDataReader != null && isRawDataReaderOpen) {
+    if (rawDataReader != null) {
       try {
         rawDataReader.close();
         rawDataReader = null;
@@ -531,6 +536,9 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         // Ignore.
       }
     }
+
+    IOUtils.closeQuietly(orcReader);
+    orcReader = null;
   }
 
   /**
@@ -598,11 +606,11 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       throwIfCacheOnlyRead(HiveConf.getBoolVar(jobConf, ConfVars.LLAP_IO_CACHE_ONLY));
 
       ReaderOptions opts = EncodedOrcFile.readerOptions(jobConf).filesystem(fsSupplier);
-      Reader reader = EncodedOrcFile.createReader(path, opts);
-      ByteBuffer tailBufferBb = reader.getSerializedFileFooter();
-      tailBuffers = metadataCache.putFileMetadata(fileKey, tailBufferBb, tag, new AtomicBoolean(false));
-      return getOrcTailFromLlapBuffers(tailBuffers);
-
+      try (Reader reader = EncodedOrcFile.createReader(path, opts)) {
+        ByteBuffer tailBufferBb = reader.getSerializedFileFooter();
+        tailBuffers = metadataCache.putFileMetadata(fileKey, tailBufferBb, tag, new AtomicBoolean(false));
+        return getOrcTailFromLlapBuffers(tailBuffers);
+      }
     } finally {
       // By this time buffers got locked at either cache look up or cache insert times.
       if (tailBuffers != null) {
@@ -835,7 +843,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private void ensureRawDataReader(boolean isOpen) throws IOException {
     ensureOrcReader();
     if (rawDataReader != null) {
-      if (!isRawDataReaderOpen && isOpen) {
+      if (!rawDataReader.isOpen() && isOpen) {
         long startTime = counters.startTimeCounter();
         rawDataReader.open();
         counters.incrWallClockCounter(LlapIOCounters.HDFS_TIME_NS, startTime);
@@ -859,7 +867,6 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
 
     if (isOpen) {
       rawDataReader.open();
-      isRawDataReaderOpen = true;
     }
     counters.incrWallClockCounter(LlapIOCounters.HDFS_TIME_NS, startTime);
   }
@@ -1010,6 +1017,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private class DataWrapperForOrc implements LlapDataReader, DataCache, BufferObjectFactory {
     /** A reference to parent DataReader not owned by this object. */
     private final LlapDataReader orcDataReaderRef;
+    private boolean isOpen;
 
     public DataWrapperForOrc() throws IOException {
       ensureRawDataReader(false);
@@ -1076,6 +1084,11 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     }
 
     @Override
+    public boolean isOpen() {
+      return isOpen;
+    }
+
+    @Override
     public DiskRangeList readFileData(DiskRangeList range, long baseOffset,
         boolean doForceDirect) throws IOException {
       long startTime = counters.startTimeCounter();
@@ -1109,6 +1122,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       long startTime = counters.startTimeCounter();
       orcDataReaderRef.open();
       counters.recordHdfsTime(startTime);
+      isOpen = true;
     }
 
     @Override

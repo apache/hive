@@ -84,6 +84,8 @@ public interface LlapDataReader extends AutoCloseable, Cloneable {
   @Override
   void close() throws IOException;
 
+  boolean isOpen();
+
   /**
    * Returns the compression codec used by this datareader.
    * We should consider removing this from the interface.
