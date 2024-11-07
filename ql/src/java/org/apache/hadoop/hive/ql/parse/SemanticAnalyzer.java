@@ -1832,7 +1832,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               && ch.getChild(0) instanceof ASTNode) {
             ch = (ASTNode) ch.getChild(0);
             isTmpFileDest = ch.getToken().getType() == HiveParser.TOK_TMP_FILE;
-            qbp.setDestToOpType(ctx_1.dest, true);
             if (ch.getToken().getType() == HiveParser.StringLiteral) {
               qbp.setInsertOverwriteDirectory(true);
             }
@@ -8056,7 +8055,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             destTableIsFullAcid ?//there is a change here - prev version had 'transactional', one before 'acid'
                 Operation.INSERT : Operation.NOT_ACID,
             isMmCreate);
-        if (qb.getParseInfo().isDestToOpTypeInsertOverwrite(dest)) {
+        if (qb.getParseInfo().isInsertOverwriteDirectory()) {
           loadFileDesc.setIsOverwrite(true);
         }
         loadFileDesc.setMoveTaskId(moveTaskId);

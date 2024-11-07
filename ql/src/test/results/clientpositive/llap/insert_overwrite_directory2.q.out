@@ -1,49 +1,51 @@
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: database:default
 PREHOOK: Output: default@result_n0
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@result_n0
 #### A masked pattern was here ####
 select key from src group by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 #### A masked pattern was here ####
 select key from src group by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: select count(*) from result_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@result_n0
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from result_n0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@result_n0
-#### A masked pattern was here ####
-309
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
 #### A masked pattern was here ####
 select key from src group by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 #### A masked pattern was here ####
 select key from src group by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: select count(*) from result_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@result_n0
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from result_n0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@result_n0
-#### A masked pattern was here ####
-309
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
 PREHOOK: query: drop table result_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@result_n0
@@ -54,3 +56,61 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@result_n0
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@result_n0
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iow_directory_src
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iow_directory_src
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iow_directory_dst
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iow_directory_dst
+PREHOOK: query: insert into iow_directory_dst (c1) values (1), (2), (3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@iow_directory_dst
+POSTHOOK: query: insert into iow_directory_dst (c1) values (1), (2), (3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@iow_directory_dst
+POSTHOOK: Lineage: iow_directory_dst.c1 SCRIPT []
+#### A masked pattern was here ####
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iow_directory_src
+PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iow_directory_src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
+PREHOOK: query: drop table iow_directory_src
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@iow_directory_src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iow_directory_src
+POSTHOOK: query: drop table iow_directory_src
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@iow_directory_src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iow_directory_src
+PREHOOK: query: drop table iow_directory_dst
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@iow_directory_dst
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iow_directory_dst
+POSTHOOK: query: drop table iow_directory_dst
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@iow_directory_dst
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iow_directory_dst
