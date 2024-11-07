@@ -5150,7 +5150,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       // rename cannot overwrite non empty destination directory, so deleting the destination before renaming.
       destFs.delete(destFile);
-      LOG.info("Deleted destination file" + destFile.toUri());
+      LOG.info("Deleted destination file: " + destFile.toUri());
     } catch (FileNotFoundException e) {
       // no worries
     }
