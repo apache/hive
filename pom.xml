@@ -126,7 +126,7 @@
     <commons-compress.version>1.26.0</commons-compress.version>
     <commons-configuration.version>1.10</commons-configuration.version>
     <commons-exec.version>1.1</commons-exec.version>
-    <commons-io.version>2.12.0</commons-io.version>
+    <commons-io.version>2.14.0</commons-io.version>
     <commons-lang3.version>3.12.0</commons-lang3.version>
     <commons-math3.version>3.6.1</commons-math3.version>
     <commons-dbcp2.version>2.12.0</commons-dbcp2.version>
@@ -179,6 +179,7 @@
     <thrift.home>/usr/local</thrift.home>
     -->
     <log4j2.version>2.24.1</log4j2.version>
+    <log4j2.version>2.18.0</log4j2.version>
     <mariadb.version>2.5.0</mariadb.version>
     <mssql.version>6.2.1.jre8</mssql.version>
     <mysql.version>8.0.31</mysql.version>
@@ -1801,6 +1802,7 @@
             </log4j.configurationFile>
             <hive.test.console.log.level>${test.console.log.level}</hive.test.console.log.level>
             <hive.cluster.id>hive-test-cluster-id-cli</hive.cluster.id>
+            <log4j.debug>true</log4j.debug>
             <!-- don't dirty up /tmp -->
             <java.io.tmpdir>${test.tmp.dir}</java.io.tmpdir>
             <!-- Hadoop's minidfs class uses this -->

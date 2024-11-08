@@ -1670,9 +1670,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
               ast, calcitePlan, optCluster, mdProvider.getMetadataProvider());
 
       // We need to get the ColumnAccessInfo and viewToTableSchema for views.
-      HiveRelFieldTrimmer.get()
-          .trim(HiveRelFactories.HIVE_BUILDER.create(optCluster, null),
-              calcitePlan, this.columnAccessInfo, this.viewProjectToTableSchema);
+      if (conf.getBoolVar(ConfVars.HIVE_STATS_COLLECT_SCANCOLS) || !skipAuthorization()) {
+        HiveRelFieldTrimmer.get()
+            .trim(HiveRelFactories.HIVE_BUILDER.create(optCluster, null), calcitePlan, this.columnAccessInfo,
+                this.viewProjectToTableSchema);
+      }
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.MV_REWRITE_FIELD_TRIMMER);
 
       //Remove subquery
