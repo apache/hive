@@ -37,7 +37,7 @@ import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
-
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.TableName;
@@ -174,7 +174,6 @@ public class SharedWorkOptimizer extends Transform {
     gatherDPPTableScanOps(pctx, optimizerCache);
 
     final int batchSize = HiveConf.getIntVar(pctx.getConf(), ConfVars.HIVE_SHARED_WORK_MAX_SIBLINGS);
-    Preconditions.checkArgument(batchSize == -1 || batchSize > 0);
     for (List<TableScanOperator> scans : groupTableScanOperators(sortedTables, tableNameToOps, batchSize)) {
       // Execute shared work optimization
       runSharedWorkOptimization(pctx, optimizerCache, scans, Mode.SubtreeMerge);
@@ -254,14 +253,16 @@ public class SharedWorkOptimizer extends Transform {
 
   private static List<List<TableScanOperator>> groupTableScanOperators(List<Entry<String, Long>> sortedTables,
       ArrayListMultimap<String, TableScanOperator> tableNameToOps, int batchSize) {
+    if (batchSize == -1) {
+      return Collections.singletonList(sortedTables.stream().map(Entry::getKey)
+          .flatMap(tableName -> tableNameToOps.get(tableName).stream()).collect(Collectors.toList()));
+    }
+
+    Preconditions.checkArgument(batchSize > 0);
     final List<List<TableScanOperator>> batches = new ArrayList<>();
     for (Entry<String, Long> tablePair : sortedTables) {
       final String tableName = tablePair.getKey();
       final List<TableScanOperator> scans = tableNameToOps.get(tableName);
-      if (batchSize == -1) {
-        batches.add(scans);
-        continue;
-      }
 
       final int limit = scans.size();
       int from = 0;
@@ -269,7 +270,6 @@ public class SharedWorkOptimizer extends Transform {
         final int to = Math.min(limit, from + batchSize);
         // We have to copy the list because it is mutated later
         final List<TableScanOperator> subList = new ArrayList<>(scans.subList(from, to));
-        Preconditions.checkState(!subList.isEmpty());
         batches.add(subList);
         from = to;
       }
