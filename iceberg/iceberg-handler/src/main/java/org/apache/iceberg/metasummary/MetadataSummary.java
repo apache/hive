@@ -21,9 +21,10 @@ package org.apache.iceberg.metasummary;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.hadoop.hive.metastore.metasummary.MetadataTableSummary;
 import org.apache.hadoop.hive.metastore.metasummary.SummaryMapBuilder;
@@ -51,19 +52,19 @@ import static org.apache.iceberg.TableProperties.SNAPSHOT_COUNT;
  */
 public class MetadataSummary extends IcebergSummaryRetriever {
   private static final Logger LOG = LoggerFactory.getLogger(MetadataSummary.class);
-  private static final String SNAPSHOT_MAX_AGE = "snapshotMaxAge";
-  private static final String SNAPSHOT_MIN_KEEP = "snapshotMinKeep";
-  private static final String NUM_SNAPSHOTS = "numSnapshots";
-  private static final String NUM_MANIFESTS = "numManifests";
-  private static final String NUM_METADATA_FILES = "numMetadataFiles";
-  private static final String MANIFESTS_SIZE = "manifestsSize";
-  private static final String NUM_BRANCHES = "numBranches";
-  private static final String NUM_TAGS = "numTags";
+  public static final String SNAPSHOT_MAX_AGE = "snapshotMaxAge";
+  public static final String SNAPSHOT_MIN_KEEP = "snapshotMinKeep";
+  public static final String NUM_SNAPSHOTS = "numSnapshots";
+  public static final String NUM_MANIFESTS = "numManifests";
+  public static final String NUM_METADATA_FILES = "numMetadataFiles";
+  public static final String MANIFESTS_SIZE = "manifestsSize";
+  public static final String NUM_BRANCHES = "numBranches";
+  public static final String NUM_TAGS = "numTags";
 
   @Override
   public List<String> getFieldNames() {
     if (formatJson) {
-      return Arrays.asList("metadata");
+      return Collections.singletonList("metadata");
     }
     return Arrays.asList(NUM_SNAPSHOTS, NUM_METADATA_FILES, NUM_MANIFESTS,
         MANIFESTS_SIZE, SNAPSHOT_MAX_AGE, SNAPSHOT_MIN_KEEP, NUM_BRANCHES, NUM_TAGS);
@@ -77,10 +78,10 @@ public class MetadataSummary extends IcebergSummaryRetriever {
     metaSummary.setPartitionColumnCount(table.spec().fields().size());
     metaSummary.setNumFiles(Long.parseLong(summary.getOrDefault(SnapshotSummary.TOTAL_DATA_FILES_PROP, "0")));
     List<Types.NestedField> columns = table.schema().columns();
-    metaSummary.setColCount(columns.size());
-    metaSummary.setStructColumnCount((int) columns.stream().filter(col -> col.type().isStructType()).count());
-    metaSummary.setArrayColumnCount((int) columns.stream().filter(col -> col.type().isListType()).count());
-    metaSummary.setMapColumnCount((int) columns.stream().filter(col -> col.type().isMapType()).count());
+    metaSummary.columnSummary(columns.size(),
+            (int) columns.stream().filter(col -> col.type().isListType()).count(),
+            (int) columns.stream().filter(col -> col.type().isStructType()).count(),
+            (int) columns.stream().filter(col -> col.type().isMapType()).count());
 
     Table partitions = MetadataTableUtils
         .createMetadataTableInstance(table, MetadataTableType.PARTITIONS);
@@ -111,8 +112,8 @@ public class MetadataSummary extends IcebergSummaryRetriever {
     }
 
     Map<String, SnapshotRef> refs = table.refs();
-    AtomicLong numBranches = new AtomicLong(0);
-    AtomicLong numTags = new AtomicLong(0);
+    AtomicInteger numBranches = new AtomicInteger(0);
+    AtomicInteger numTags = new AtomicInteger(0);
     if (refs != null) {
       refs.forEach((key, value) -> {
         if (value.isBranch()) {

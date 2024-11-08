@@ -20,6 +20,7 @@
 package org.apache.iceberg.metasummary;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.hadoop.hive.metastore.metasummary.MetadataTableSummary;
@@ -39,7 +40,7 @@ public class PuffinStatisticsSummary extends IcebergSummaryRetriever {
   @Override
   public List<String> getFieldNames() {
     if (formatJson) {
-      return Arrays.asList(STATS);
+      return Collections.singletonList(STATS);
     }
     return Arrays.asList(PUFFIN_STATS_ENABLED, PUFFIN_STATS_BLOB);
   }
@@ -66,5 +67,4 @@ public class PuffinStatisticsSummary extends IcebergSummaryRetriever {
       summary.addExtra(builder);
     }
   }
-
 }

@@ -289,7 +289,7 @@ import com.google.common.collect.Sets;
  * filestore.
  */
 public class ObjectStore implements RawStore, Configurable {
-  private int batchSize = Batchable.NO_BATCHING;
+  protected int batchSize = Batchable.NO_BATCHING;
 
   private static final DateTimeFormatter YMDHMS_FORMAT = DateTimeFormatter.ofPattern(
       "yyyy_MM_dd_HH_mm_ss");
@@ -337,7 +337,7 @@ public class ObjectStore implements RawStore, Configurable {
   protected PersistenceManager pm = null;
   protected SQLGenerator sqlGenerator = null;
   private MetaStoreDirectSql directSql = null;
-  private DatabaseProduct dbType = null;
+  protected DatabaseProduct dbType = null;
   private PartitionExpressionProxy expressionProxy = null;
   protected Configuration conf;
   private volatile int openTrasactionCalls = 0;

@@ -26,7 +26,9 @@ import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.metasummary.MetadataTableSummary;
 import org.apache.hadoop.hive.metastore.metasummary.SummaryMapBuilder;
+import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 
@@ -35,13 +37,13 @@ import org.apache.iceberg.relocated.com.google.common.collect.Maps;
  * It could be the version, write mode or compression, etc.
  */
 public class TablePropertySummary extends IcebergSummaryRetriever {
+  private static final String VERSION = "version";
   private List<PropertyRetriever> retrievers;
 
   @Override
   public void initialize(Configuration conf, boolean formatJson) {
     super.initialize(conf, formatJson);
-    this.retrievers = Arrays.asList(
-        new BasicValueSummary(),
+    this.retrievers = Arrays.asList(new BasicValueSummary(),
         new WriteFormatSummary(),
         new DistributionModeSummary(),
         new UpdateModeSummary());
@@ -50,6 +52,7 @@ public class TablePropertySummary extends IcebergSummaryRetriever {
   @Override
   public List<String> getFieldNames() {
     List<String> fields = Lists.newArrayList();
+    fields.add(VERSION);
     retrievers.forEach(propertyRetriever -> fields.addAll(propertyRetriever.getFieldNames()));
     return fields;
   }
@@ -59,17 +62,22 @@ public class TablePropertySummary extends IcebergSummaryRetriever {
     Map<String, String> properties = table.properties();
     retrievers.forEach(propertyRetriever ->
         propertyRetriever.getMetaSummary(properties, summary));
+    TableMetadata metadata = ((BaseTable) table).operations().current();
+    assert metadata != null;
+    int version = metadata.formatVersion();
+    summary.addExtra(new SummaryMapBuilder().add(VERSION, version));
   }
 
   public class UpdateModeSummary implements PropertyRetriever {
     private static final String WRITE_MERGE_MODE = "write.merge.mode";
     private static final String WRITE_DELETE_MODE = "write.delete.mode";
     private static final String WRITE_UPDATE_MODE = "write.update.mode";
+    private static final String COPY_ON_WRITE = "copy-on-write";
 
     @Override
     public List<String> getFieldNames() {
       if (formatJson) {
-        return Arrays.asList("CoW/MoR");
+        return Collections.singletonList("CoW/MoR");
       }
       return Arrays.asList(WRITE_MERGE_MODE, WRITE_DELETE_MODE, WRITE_UPDATE_MODE);
     }
@@ -77,9 +85,9 @@ public class TablePropertySummary extends IcebergSummaryRetriever {
     @Override
     public void getMetaSummary(Map<String, String> properties, MetadataTableSummary summary) {
       SummaryMapBuilder builder = new SummaryMapBuilder()
-          .add(WRITE_MERGE_MODE, properties.getOrDefault(WRITE_MERGE_MODE, "copy-on-write"))
-          .add(WRITE_DELETE_MODE, properties.getOrDefault(WRITE_DELETE_MODE, "copy-on-write"))
-          .add(WRITE_UPDATE_MODE, properties.getOrDefault(WRITE_UPDATE_MODE, "copy-on-write"));
+          .add(WRITE_MERGE_MODE, properties.getOrDefault(WRITE_MERGE_MODE, COPY_ON_WRITE))
+          .add(WRITE_DELETE_MODE, properties.getOrDefault(WRITE_DELETE_MODE, COPY_ON_WRITE))
+          .add(WRITE_UPDATE_MODE, properties.getOrDefault(WRITE_UPDATE_MODE, COPY_ON_WRITE));
       if (formatJson) {
         summary.addExtra("CoW/MoR", builder.build());
       } else {
@@ -92,6 +100,8 @@ public class TablePropertySummary extends IcebergSummaryRetriever {
     private static final String WRITE_FORMAT_DEFAULT = "write.format.default";
     private static final String WRITE_DELETE_FORMAT_DEFAULT = "write.delete.format.default";
     private static final String WRITE_COMPRESSION_CODEC = "write.compression-codec";
+    private static final String WRITE_FORMAT = "writeFormat";
+    private static final String DEFAULT_PARQUET = "parquet";
     private final Map<String, String> defaultCompressionCodec;
 
     public WriteFormatSummary() {
@@ -102,14 +112,27 @@ public class TablePropertySummary extends IcebergSummaryRetriever {
     }
 
     @Override
+    public List<String> getFieldNames() {
+      if (formatJson) {
+        return Collections.singletonList(WRITE_FORMAT);
+      }
+      return Arrays.asList(WRITE_FORMAT_DEFAULT, WRITE_DELETE_FORMAT_DEFAULT, WRITE_COMPRESSION_CODEC);
+    }
+
+    @Override
     public void getMetaSummary(Map<String, String> properties, MetadataTableSummary summary) {
       SummaryMapBuilder builder = new SummaryMapBuilder()
-          .add(WRITE_FORMAT_DEFAULT, properties.getOrDefault(WRITE_FORMAT_DEFAULT, "parquet"))
-          .add(WRITE_DELETE_FORMAT_DEFAULT, properties.getOrDefault(WRITE_DELETE_FORMAT_DEFAULT, "parquet"));
+          .add(WRITE_FORMAT_DEFAULT, properties.getOrDefault(WRITE_FORMAT_DEFAULT, DEFAULT_PARQUET))
+          .add(WRITE_DELETE_FORMAT_DEFAULT, properties.getOrDefault(WRITE_DELETE_FORMAT_DEFAULT, DEFAULT_PARQUET));
       String fileFormat = builder.get(WRITE_FORMAT_DEFAULT, String.class);
       String compression = "write." + fileFormat + ".compression-codec";
       builder.add(WRITE_COMPRESSION_CODEC,
           properties.getOrDefault(compression, defaultCompressionCodec.get(fileFormat)));
+      if (formatJson) {
+        summary.addExtra(WRITE_FORMAT, builder);
+      } else {
+        summary.addExtra(builder);
+      }
       summary.setCompressionType(builder.get(WRITE_COMPRESSION_CODEC, String.class));
       summary.setFileFormat(fileFormat);
     }
@@ -120,11 +143,13 @@ public class TablePropertySummary extends IcebergSummaryRetriever {
     private static final String WRITE_UPDATE_DISTRIBUTION_MODE = "write.update.distribution-mode";
     private static final String WRITE_DELETE_DISTRIBUTION_MODE = "write.delete.distribution-mode";
     private static final String WRITE_MERGE_DISTRIBUTION_MODE = "write.merge.distribution-mode";
+    private static final String HASH_MODE = "hash";
+    private static final String NONE = "none";
 
     @Override
     public List<String> getFieldNames() {
       if (formatJson) {
-        return Arrays.asList("distribution-mode");
+        return Collections.singletonList("distribution-mode");
       }
       return Arrays.asList(WRITE_DISTRIBUTION_MODE, WRITE_UPDATE_DISTRIBUTION_MODE,
           WRITE_DELETE_DISTRIBUTION_MODE, WRITE_MERGE_DISTRIBUTION_MODE);
@@ -133,10 +158,10 @@ public class TablePropertySummary extends IcebergSummaryRetriever {
     @Override
     public void getMetaSummary(Map<String, String> properties, MetadataTableSummary summary) {
       SummaryMapBuilder builder = new SummaryMapBuilder()
-          .add(WRITE_DISTRIBUTION_MODE, properties.getOrDefault(WRITE_DISTRIBUTION_MODE, "none"))
-          .add(WRITE_UPDATE_DISTRIBUTION_MODE, properties.getOrDefault(WRITE_UPDATE_DISTRIBUTION_MODE, "hash"))
-          .add(WRITE_DELETE_DISTRIBUTION_MODE, properties.getOrDefault(WRITE_DELETE_DISTRIBUTION_MODE, "hash"))
-          .add(WRITE_MERGE_DISTRIBUTION_MODE, properties.getOrDefault(WRITE_MERGE_DISTRIBUTION_MODE, "none"));
+          .add(WRITE_DISTRIBUTION_MODE, properties.getOrDefault(WRITE_DISTRIBUTION_MODE, NONE))
+          .add(WRITE_UPDATE_DISTRIBUTION_MODE, properties.getOrDefault(WRITE_UPDATE_DISTRIBUTION_MODE, HASH_MODE))
+          .add(WRITE_DELETE_DISTRIBUTION_MODE, properties.getOrDefault(WRITE_DELETE_DISTRIBUTION_MODE, HASH_MODE))
+          .add(WRITE_MERGE_DISTRIBUTION_MODE, properties.getOrDefault(WRITE_MERGE_DISTRIBUTION_MODE, NONE));
       if (formatJson) {
         summary.addExtra("distribution-mode", builder.build());
       } else {
@@ -148,14 +173,12 @@ public class TablePropertySummary extends IcebergSummaryRetriever {
   public class BasicValueSummary implements PropertyRetriever {
     @Override
     public List<String> getFieldNames() {
-      return Arrays.asList("format-version", "write.wap.enabled");
+      return Collections.singletonList("write.wap.enabled");
     }
     @Override
     public void getMetaSummary(Map<String, String> properties, MetadataTableSummary summary) {
-      String version = properties.get("format-version");
       String wap = properties.get("write.wap.enabled");
-      summary.addExtra(new SummaryMapBuilder().add("format-version", version)
-          .add("write.wap.enabled", wap == null ? "-" : wap));
+      summary.addExtra(new SummaryMapBuilder().add("write.wap.enabled", wap == null ? "-" : wap));
     }
   }
 

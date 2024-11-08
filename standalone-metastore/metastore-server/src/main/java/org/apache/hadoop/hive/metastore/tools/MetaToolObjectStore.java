@@ -39,7 +39,9 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.Batchable;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -54,6 +56,8 @@ import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.commons.lang3.StringUtils.repeat;
+import static org.apache.hadoop.hive.metastore.Batchable.runBatched;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 /**
@@ -581,6 +585,8 @@ public class MetaToolObjectStore extends ObjectStore {
     }
 
     JDOConnection jdoConn = null;
+    Map<Long, MetadataTableSummary> partedTabs = new HashMap<>();
+    Map<Long, MetadataTableSummary> nonPartedTabs = new HashMap<>();
     try {
       try {
         jdoConn = pm.getDataStoreConnection();
@@ -610,13 +616,17 @@ public class MetaToolObjectStore extends ObjectStore {
               int partitionColumnCount = (partitionColumn == null) ? 0 : (partitionColumn.split(",")).length;
               summary
                   .partitionSummary(partitionColumnCount, rs.getInt("PARTITION_CNT"))
-                  .basicStatsSummary(rs.getLong("TOTAL_SIZE"), rs.getLong("NUM_ROWS"), rs.getLong("NUM_FILES"))
                   .columnSummary(
                       rs.getInt("TOTAL_COLUMN_COUNT"),
                       rs.getInt("ARRAY_COLUMN_COUNT"),
                       rs.getInt("STRUCT_COLUMN_COUNT"),
                       rs.getInt("MAP_COLUMN_COUNT"));
-
+              long tableId = rs.getLong("TBL_ID");
+              if (summary.getPartitionCount() > 0) {
+                partedTabs.put(tableId, summary);
+              } else if (summary.getPartitionColumnCount() == 0) {
+                nonPartedTabs.put(tableId, summary);
+              }
               String tblType = rs.getString("TBL_TYPE");
               String fileType = extractFileFormat(rs.getString("SLIB"));
               Set<String> nonNativeTabTypes = new HashSet<>(Arrays.asList("jdbc", "kudu", "hbase", "iceberg"));
@@ -638,7 +648,7 @@ public class MetaToolObjectStore extends ObjectStore {
                 if (transactionalProperties == null) {
                   transactionalProperties = "null";
                 }
-                tblType = "insert_only".equalsIgnoreCase(transactionalProperties) ?
+                tblType = "insert_only".equalsIgnoreCase(transactionalProperties.trim()) ?
                     "HIVE_ACID_INSERT_ONLY" : "HIVE_ACID_FULL";
               } else if (TableType.EXTERNAL_TABLE.name().equalsIgnoreCase(tblType)) {
                 tblType = "HIVE_EXTERNAL";
@@ -662,7 +672,76 @@ public class MetaToolObjectStore extends ObjectStore {
         jdoConn.close();
       }
     }
+    feedBasicStats(nonPartedTabs, partedTabs);
     return metadataTableSummaryList;
+  }
+
+  private void feedBasicStats(final Map<Long, MetadataTableSummary> nonPartedTabs,
+      final Map<Long, MetadataTableSummary> partedTabs) throws MetaException {
+    runBatched(batchSize, new ArrayList<>(nonPartedTabs.keySet()), new Batchable<Long, Void>() {
+      final String queryText0 = "select \"TBL_ID\", \"PARAM_KEY\", \"PARAM_VALUE\" from \"TABLE_PARAMS\" where \"PARAM_KEY\" " +
+          "in ('" + StatsSetupConst.TOTAL_SIZE + "', '" + StatsSetupConst.NUM_FILES + "', '" + StatsSetupConst.ROW_COUNT + "') and \"TBL_ID\" in (";
+      @Override
+      public List<Void> run(List<Long> input) throws Exception {
+        feedBasicStats(queryText0, input, nonPartedTabs, "");
+        return null;
+      }
+    });
+
+   runBatched(batchSize, new ArrayList<>(partedTabs.keySet()), new Batchable<Long, Void>() {
+      final String queryText0 = "select \"TBL_ID\", \"PARAM_KEY\", sum(CAST(\"PARAM_VALUE\" AS decimal(21,0))) from \"PARTITIONS\" t join \"PARTITION_PARAMS\" p on p.\"PART_ID\" = t.\"PART_ID\" " +
+          "where \"PARAM_KEY\" " +
+          "in ('" + StatsSetupConst.TOTAL_SIZE + "', '" + StatsSetupConst.NUM_FILES + "', '" + StatsSetupConst.ROW_COUNT + "') and t.\"TBL_ID\" in (";
+      @Override
+      public List<Void> run(List<Long> input) throws Exception {
+        feedBasicStats(queryText0, input, partedTabs, " group by \"TBL_ID\", \"PARAM_KEY\"");
+        return Collections.emptyList();
+      }
+    });
+  }
+
+  private void feedBasicStats(String queryText0, List<Long> input, Map<Long, MetadataTableSummary> summaryMap, String subQ) {
+    int size = input.size();
+    String queryText = queryText0 + (size == 0 ? "" : repeat(",?", size).substring(1)) + ")" + subQ;
+    if (dbType.isMYSQL()) {
+      queryText = queryText.replace("\"", "");
+    }
+    Object[] params = new Object[size];
+    for (int i = 0; i < input.size(); ++i) {
+      params[i] = input.get(i);
+    }
+    Query<?> query = pm.newQuery("javax.jdo.query.SQL", queryText);
+    try {
+      List<Object[]> result = (List<Object[]>) query.executeWithArray(params);
+      if (result != null) {
+        for (Object[] fields : result) {
+          Long tabId = Long.parseLong(String.valueOf(fields[0]));
+          MetadataTableSummary summary = summaryMap.get(tabId);
+          feedBasicStats(summary, String.valueOf(fields[1]), fields[2]);
+        }
+      }
+    } finally {
+      query.closeAll();
+    }
+  }
+
+  private void feedBasicStats(MetadataTableSummary summary, String key, Object value) {
+    if (summary == null || value == null ||
+        !org.apache.commons.lang3.StringUtils.isNumeric(value.toString())) {
+      return;
+    }
+    long val = Long.parseLong(value.toString());
+    switch (key) {
+    case StatsSetupConst.TOTAL_SIZE:
+      summary.setTotalSize(summary.getTotalSize() + val);
+      break;
+    case StatsSetupConst.ROW_COUNT:
+      summary.setNumRows(summary.getNumRows() + val);
+      break;
+    case StatsSetupConst.NUM_FILES:
+      summary.setNumFiles(summary.getNumFiles() + val);
+      break;
+    }
   }
 
   /**
