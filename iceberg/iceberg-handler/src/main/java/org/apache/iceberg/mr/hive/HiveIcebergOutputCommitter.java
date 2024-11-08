@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorContext;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.JobContextImpl;
@@ -506,7 +507,13 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
             .map(x -> x.getJobConf().get(IcebergCompactionService.PARTITION_PATH))
             .orElse(null);
 
-        commitCompaction(table, snapshotId, startTime, filesForCommit, partitionPath);
+        long fileSizeThreshold = jobContexts.stream()
+            .findAny()
+            .map(x -> x.getJobConf().get(CompactorContext.COMPACTION_FILE_SIZE_THRESHOLD))
+            .map(Long::parseLong)
+            .orElse(-1L);
+
+        commitCompaction(table, snapshotId, startTime, filesForCommit, partitionPath, fileSizeThreshold);
       } else {
         commitOverwrite(table, branchName, snapshotId, startTime, filesForCommit);
       }
@@ -598,9 +605,10 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * @param partitionPath The path of the compacted partition
    */
   private void commitCompaction(Table table, Long snapshotId, long startTime, FilesForCommit results,
-      String partitionPath) {
-    List<DataFile> existingDataFiles = IcebergCompactionUtil.getDataFiles(table, partitionPath);
-    List<DeleteFile> existingDeleteFiles = IcebergCompactionUtil.getDeleteFiles(table, partitionPath);
+      String partitionPath, long fileSizeThreshold) {
+    List<DataFile> existingDataFiles = IcebergCompactionUtil.getDataFiles(table, partitionPath, fileSizeThreshold);
+    List<DeleteFile> existingDeleteFiles = fileSizeThreshold == -1 ?
+        IcebergCompactionUtil.getDeleteFiles(table, partitionPath) : Collections.emptyList();
 
     RewriteFiles rewriteFiles = table.newRewrite();
     existingDataFiles.forEach(rewriteFiles::deleteFile);
