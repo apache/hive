@@ -174,6 +174,8 @@ public class SharedWorkOptimizer extends Transform {
     gatherDPPTableScanOps(pctx, optimizerCache);
 
     final int batchSize = HiveConf.getIntVar(pctx.getConf(), ConfVars.HIVE_SHARED_WORK_MAX_SIBLINGS);
+    Preconditions.checkArgument(batchSize == -1 || batchSize > 0, "%s must be -1 or greater than 0",
+        ConfVars.HIVE_SHARED_WORK_MAX_SIBLINGS.varname);
     for (List<TableScanOperator> scans : groupTableScanOperators(sortedTables, tableNameToOps, batchSize)) {
       // Execute shared work optimization
       runSharedWorkOptimization(pctx, optimizerCache, scans, Mode.SubtreeMerge);
@@ -258,7 +260,6 @@ public class SharedWorkOptimizer extends Transform {
           .flatMap(tableName -> tableNameToOps.get(tableName).stream()).collect(Collectors.toList()));
     }
 
-    Preconditions.checkArgument(batchSize > 0);
     final List<List<TableScanOperator>> batches = new ArrayList<>();
     for (Entry<String, Long> tablePair : sortedTables) {
       final String tableName = tablePair.getKey();
