@@ -21,12 +21,14 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -46,6 +48,7 @@ import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.TableScan;
+import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
@@ -56,8 +59,11 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -67,6 +73,7 @@ import org.apache.hadoop.hive.common.MaterializationSnapshot;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.MaterializedViewMetadata;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteCteException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
@@ -74,12 +81,15 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.DruidSqlOperatorConverter;
+import org.apache.hadoop.hive.ql.parse.QueryTables;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hive.common.util.TxnIdUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -535,5 +545,34 @@ public class HiveMaterializedViewUtils {
       }
     }
     return snapshot;
+  }
+
+  public static RelOptMaterialization createCTEMaterialization(String viewName, RelNode body, HiveConf conf) {
+    RelOptCluster cluster = body.getCluster();
+    List<ColumnInfo> columns = new ArrayList<>();
+    for (RelDataTypeField f : body.getRowType().getFieldList()) {
+      TypeInfo info = TypeConverter.convert(f.getType());
+      columns.add(new ColumnInfo(f.getName(), info, f.getType().isNullable(), viewName, false, false));
+    }
+    List<String> fullName = Arrays.asList("cte", viewName);
+    org.apache.hadoop.hive.metastore.api.Table metaTable = Table.getEmptyTable("cte", viewName);
+    metaTable.setTemporary(true);
+    try {
+      // Setting a location avoids a NPE when fetching statistics
+      metaTable.getSd().setLocation(SessionState.generateTempTableLocation(conf));
+    } catch (MetaException e) {
+      throw new CalciteCteException("Failed to create temporary location", e);
+    }
+    Table hiveTable = new Table(metaTable);
+    hiveTable.setMaterializedTable(true);
+    RelOptHiveTable optTable =
+        new RelOptHiveTable(null, cluster.getTypeFactory(), fullName, body.getRowType(), hiveTable, columns,
+            Collections.emptyList(), Collections.emptyList(), new HiveConf(), new QueryTables(true), new HashMap<>(),
+            new HashMap<>(), new AtomicInteger());
+    optTable.setRowCount(cluster.getMetadataQuery().getRowCount(body));
+    final TableScan scan =
+        new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable, viewName, null, false, false);
+
+    return new RelOptMaterialization(scan, body, null, fullName);
   }
 }

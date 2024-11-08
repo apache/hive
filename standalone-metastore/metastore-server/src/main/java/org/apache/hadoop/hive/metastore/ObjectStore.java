@@ -434,12 +434,10 @@ public class ObjectStore implements RawStore, Configurable {
     LOG.info("RawStore: {}, with PersistenceManager: {}" +
         " created in the thread with id: {}", this, pm, Thread.currentThread().getId());
 
-    String productName = MetaStoreDirectSql.getProductName(pm);
-    sqlGenerator = new SQLGenerator(DatabaseProduct.determineDatabaseProduct(productName, conf), conf);
-
     isInitialized = pm != null;
     if (isInitialized) {
-      dbType = determineDatabaseProduct();
+      dbType = PersistenceManagerProvider.getDatabaseProduct();
+      sqlGenerator = new SQLGenerator(dbType, conf);
       expressionProxy = PartFilterExprUtil.createExpressionProxy(conf);
       if (MetastoreConf.getBoolVar(getConf(), ConfVars.TRY_DIRECT_SQL)) {
         String schema = PersistenceManagerProvider.getProperty("javax.jdo.mapping.Schema");
@@ -458,22 +456,6 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public PropertyStore getPropertyStore() {
     return propertyStore;
-  }
-
-  private DatabaseProduct determineDatabaseProduct() {
-      return DatabaseProduct.determineDatabaseProduct(getProductName(pm), conf);
-  }
-
-  private static String getProductName(PersistenceManager pm) {
-    JDOConnection jdoConn = pm.getDataStoreConnection();
-    try {
-      return ((Connection)jdoConn.getNativeConnection()).getMetaData().getDatabaseProductName();
-    } catch (Throwable t) {
-      LOG.warn("Error retrieving product name", t);
-      return null;
-    } finally {
-      jdoConn.close(); // We must release the connection before we call other pm methods.
-    }
   }
 
   /**
@@ -4449,7 +4431,6 @@ public class ObjectStore implements RawStore, Configurable {
       boolean isConfigEnabled = MetastoreConf.getBoolVar(getConf(), ConfVars.TRY_DIRECT_SQL)
           && (MetastoreConf.getBoolVar(getConf(), ConfVars.TRY_DIRECT_SQL_DDL) || !isInTxn);
       if (isConfigEnabled && directSql == null) {
-        dbType = determineDatabaseProduct();
         directSql = new MetaStoreDirectSql(pm, getConf(), "");
       }
 

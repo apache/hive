@@ -26,6 +26,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.ql.Context.RewritePolicy;
 import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -54,25 +55,27 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
     LOG.debug("Initiating compaction for the {} table", compactTableName);
 
     HiveConf conf = new HiveConf(context.getConf());
-    String partSpec = context.getCompactionInfo().partName;
+    CompactionInfo ci = context.getCompactionInfo();
+    String partSpec = ci.partName;
     org.apache.hadoop.hive.ql.metadata.Table table = Hive.get(conf).getTable(context.getTable().getDbName(),
         context.getTable().getTableName());
     Table icebergTable = IcebergTableUtil.getTable(conf, table.getTTable());
     String compactionQuery;
+    String orderBy = ci.orderByClause == null ? "" : ci.orderByClause;
 
     if (partSpec == null) {
       if (!icebergTable.spec().isPartitioned()) {
         HiveConf.setVar(conf, ConfVars.REWRITE_POLICY, RewritePolicy.FULL_TABLE.name());
-        compactionQuery = String.format("insert overwrite table %s select * from %<s", compactTableName);
+        compactionQuery = String.format("insert overwrite table %s select * from %<s %2$s", compactTableName, orderBy);
       } else if (icebergTable.specs().size() > 1) {
         // Compacting partitions of old partition specs on a partitioned table with partition evolution
         HiveConf.setVar(conf, ConfVars.REWRITE_POLICY, RewritePolicy.PARTITION.name());
         // A single filter on a virtual column causes errors during compilation,
         // added another filter on file_path as a workaround.
         compactionQuery = String.format("insert overwrite table %1$s select * from %1$s " +
-                "where %2$s != %3$d and %4$s is not null",
+                "where %2$s != %3$d and %4$s is not null %5$s",
             compactTableName, VirtualColumn.PARTITION_SPEC_ID.getName(), icebergTable.spec().specId(),
-            VirtualColumn.FILE_PATH.getName());
+            VirtualColumn.FILE_PATH.getName(), orderBy);
       } else {
         // Partitioned table without partition evolution with partition spec as null in the compaction request - this
         // code branch is not supposed to be reachable
@@ -87,11 +90,11 @@ public class IcebergMajorQueryCompactor extends QueryCompactor  {
       Warehouse.makeSpecFromName(partSpecMap, new Path(partSpec), null);
 
       compactionQuery = String.format("insert overwrite table %1$s select * from %1$s where %2$s=%3$d " +
-              "and %4$s is not null", compactTableName, VirtualColumn.PARTITION_HASH.getName(), partitionHash,
-          VirtualColumn.FILE_PATH.getName());
+              "and %4$s is not null %5$s", compactTableName, VirtualColumn.PARTITION_HASH.getName(), partitionHash,
+          VirtualColumn.FILE_PATH.getName(), orderBy);
     }
 
-    SessionState sessionState = setupQueryCompactionSession(conf, context.getCompactionInfo(), tblProperties);
+    SessionState sessionState = setupQueryCompactionSession(conf, ci, tblProperties);
     String compactionTarget = "table " + HiveUtils.unparseIdentifier(compactTableName) +
         (partSpec != null ? ", partition " + HiveUtils.unparseIdentifier(partSpec) : "");
 

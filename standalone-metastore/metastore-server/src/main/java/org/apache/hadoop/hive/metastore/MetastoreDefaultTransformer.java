@@ -24,6 +24,7 @@ import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.CTAS_
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_TRANSACTIONAL;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.EXTERNAL_TABLE_PURGE;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.isIcebergTable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -750,7 +751,8 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
 
     Database oldDb = getDbForTable(oldTable);
     boolean isTranslatedToExternalFollowsRenames = MetastoreConf.getBoolVar(hmsHandler.getConf(),
-        ConfVars.METASTORE_METADATA_TRANSFORMER_TRANSLATED_TO_EXTERNAL_FOLLOWS_RENAMES);
+        ConfVars.METASTORE_METADATA_TRANSFORMER_TRANSLATED_TO_EXTERNAL_FOLLOWS_RENAMES) &&
+        !isIcebergTable(newTable.getParameters());
 
     if (isTranslatedToExternalFollowsRenames && isTableRename(oldTable, newTable)
         && isTranslatedToExternalTable(oldTable)

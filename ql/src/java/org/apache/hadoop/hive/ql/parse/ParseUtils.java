@@ -580,7 +580,7 @@ public final class ParseUtils {
     String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
     Map<String, String> colTypes = new HashMap<>();
     List<FieldSchema> partitionKeys = table.getStorageHandler() != null && table.getStorageHandler().alwaysUnpartitioned() ?
-            table.getStorageHandler().getPartitionKeys(table) : table.getPartitionKeys();
+            table.getStorageHandler().getPartitionKeys(table, true) : table.getPartitionKeys();
     for (FieldSchema fs : partitionKeys) {
       colTypes.put(fs.getName().toLowerCase(), fs.getType());
     }

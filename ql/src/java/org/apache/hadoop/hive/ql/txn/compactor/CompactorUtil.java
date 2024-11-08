@@ -17,7 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import com.google.common.collect.Maps;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -25,6 +28,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
@@ -76,6 +80,7 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -337,6 +342,7 @@ public class CompactorUtil {
     }
     compactionRequest.setInitiatorVersion(ci.initiatorVersion);
     compactionRequest.setPoolName(ci.poolName);
+    compactionRequest.setOrderByClause(ci.orderByClause);
     LOG.info("Requesting compaction: " + compactionRequest);
     CompactionResponse resp = txnHandler.compact(compactionRequest);
     if (resp.isAccepted()) {
@@ -548,5 +554,27 @@ public class CompactorUtil {
       throw new RuntimeException(e);
     }
     return compactionResponse;
+  }
+
+  public static Map<String, Integer> getPoolConf(HiveConf hiveConf) {
+    Map<String, Integer> poolConf = Maps.newHashMap();
+    for (Map.Entry<String, String> entry : hiveConf) {
+      Matcher matcher = Constants.COMPACTION_POOLS_PATTERN.matcher(entry.getKey());
+      if (matcher.matches()) {
+        poolConf.put(matcher.group(1), NumberUtils.toInt(entry.getValue(), 0));
+      }
+    }
+    return poolConf;
+  }
+
+  public static String getPoolName(HiveConf conf, Table t, MetadataCache metadataCache) throws Exception {
+    Map<String, String> params = ObjectUtils.defaultIfNull(t.getParameters(), Collections.emptyMap());
+    String poolName = params.get(Constants.HIVE_COMPACTOR_WORKER_POOL);
+    if (StringUtils.isBlank(poolName)) {
+      params = ObjectUtils.defaultIfNull(metadataCache.computeIfAbsent(t.getDbName(), 
+          () -> resolveDatabase(conf, t.getDbName())).getParameters(), Collections.emptyMap());
+      poolName = params.get(Constants.HIVE_COMPACTOR_WORKER_POOL);
+    }
+    return poolName;
   }
 }

@@ -425,6 +425,10 @@ public class RelOptHiveTable implements RelOptTable {
             columnPositions.build());
   }
 
+  public void setRowCount(double rowCount){
+    this.rowCount = rowCount;
+  }
+
   @Override
   public double getRowCount() {
     if (rowCount == -1) {

@@ -25,7 +25,7 @@ backtrack=false;
 k=3;
 }
 
-import AlterClauseParser, SelectClauseParser, FromClauseParser, IdentifiersParser, ResourcePlanParser, CreateDDLParser, PrepareStatementParser, ReplClauseParser;
+import AlterClauseParser, SelectClauseParser, FromClauseParser, IdentifiersParser, ResourcePlanParser, CreateDDLParser, PrepareStatementParser, ReplClauseParser, LockParser;
 
 tokens {
 TOK_INSERT;
@@ -263,11 +263,8 @@ TOK_TABLEROWFORMATLINES;
 TOK_TABLEROWFORMATNULL;
 TOK_TABLEFILEFORMAT;
 TOK_FILEFORMAT_GENERIC;
-TOK_OFFLINE;
 TOK_ENABLE;
 TOK_DISABLE;
-TOK_READONLY;
-TOK_NO_DROP;
 TOK_STORAGEHANDLER;
 TOK_NOT_CLUSTERED;
 TOK_NOT_SORTED;
@@ -1023,10 +1020,7 @@ ddlStatement
     | reloadFunctionsStatement
     | dropMacroStatement
     | analyzeStatement
-    | lockStatement
-    | unlockStatement
-    | lockDatabase
-    | unlockDatabase
+    | lockStatements
     | createRoleStatement
     | dropRoleStatement
     | (grantPrivileges) => grantPrivileges
@@ -1312,36 +1306,6 @@ showTablesFilterExpr
     -> ^(TOK_TABLE_TYPE identifier StringLiteral)
     | KW_LIKE showStmtIdentifier|showStmtIdentifier
     -> showStmtIdentifier
-    ;
-
-lockStatement
-@init { pushMsg("lock statement", state); }
-@after { popMsg(state); }
-    : KW_LOCK KW_TABLE tableName partitionSpec? lockMode -> ^(TOK_LOCKTABLE tableName lockMode partitionSpec?)
-    ;
-
-lockDatabase
-@init { pushMsg("lock database statement", state); }
-@after { popMsg(state); }
-    : KW_LOCK (KW_DATABASE|KW_SCHEMA) (dbName=identifier) lockMode -> ^(TOK_LOCKDB $dbName lockMode)
-    ;
-
-lockMode
-@init { pushMsg("lock mode", state); }
-@after { popMsg(state); }
-    : KW_SHARED | KW_EXCLUSIVE
-    ;
-
-unlockStatement
-@init { pushMsg("unlock statement", state); }
-@after { popMsg(state); }
-    : KW_UNLOCK KW_TABLE tableName partitionSpec?  -> ^(TOK_UNLOCKTABLE tableName partitionSpec?)
-    ;
-
-unlockDatabase
-@init { pushMsg("unlock database statement", state); }
-@after { popMsg(state); }
-    : KW_UNLOCK (KW_DATABASE|KW_SCHEMA) (dbName=identifier) -> ^(TOK_UNLOCKDB $dbName)
     ;
 
 createRoleStatement
@@ -2438,9 +2402,7 @@ primitiveType
     | KW_DATETIME      ->    TOK_DATETIME
     | KW_TIMESTAMP     ->    TOK_TIMESTAMP
     | KW_TIMESTAMPLOCALTZ   ->    TOK_TIMESTAMPLOCALTZ
-    //| KW_TIMESTAMPTZ   ->    TOK_TIMESTAMPTZ
     | KW_TIMESTAMP KW_WITH KW_LOCAL KW_TIME KW_ZONE -> TOK_TIMESTAMPLOCALTZ
-    //| KW_TIMESTAMP KW_WITH KW_TIME KW_ZONE -> TOK_TIMESTAMPTZ
     // Uncomment to allow intervals as table column types
     //| KW_INTERVAL KW_YEAR KW_TO KW_MONTH -> TOK_INTERVAL_YEAR_MONTH
     //| KW_INTERVAL KW_DAY KW_TO KW_SECOND -> TOK_INTERVAL_DAY_TIME

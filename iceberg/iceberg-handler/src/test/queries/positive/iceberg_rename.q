@@ -63,3 +63,10 @@ create table iceorginpart (id int) partitioned by (part string) Stored by Iceber
 insert into iceorginpart values (22, 'DER'),(2, 'KLM');
 
 select * from iceorginpart order by id;
+
+set metastore.metadata.transformer.class=org.apache.hadoop.hive.metastore.MetastoreDefaultTransformer;
+create table xtoy(a int) stored by iceberg stored as parquet tblproperties ('format-version'='2');
+insert into xtoy values (1),(2),(3);
+delete from xtoy where a=1;
+alter table xtoy rename to ytox;
+select count(*) from ytox;

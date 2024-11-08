@@ -27,6 +27,7 @@ import java.util.Stack;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.ColumnType;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -342,6 +343,11 @@ public class ExpressionTree {
       operator = node.operator;
       value = node.value;
       isReverseOrder = node.isReverseOrder;
+      if (node.keyName.startsWith(hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS)
+          && DatabaseProduct.isDerbyOracle() && node.operator == Operator.EQUALS) {
+        // Rewrite the EQUALS operator to LIKE
+        operator = Operator.LIKE;
+      }
       if (partitionKeys != null) {
         generateJDOFilterOverPartitions(conf, params, filterBuilder, partitionKeys);
       } else {

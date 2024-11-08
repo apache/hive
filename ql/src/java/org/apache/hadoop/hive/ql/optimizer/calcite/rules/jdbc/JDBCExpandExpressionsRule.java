@@ -35,7 +35,6 @@ import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.RexNodeConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -187,7 +186,7 @@ public abstract class JDBCExpandExpressionsRule extends RelOptRule {
             break;
         }
       }
-      return node;
+      return RexUtil.isFlat(node) ? node : RexUtil.flatten(rexBuilder, node);
     }
 
     private RexNode transformIntoOrAndClause(RexBuilder rexBuilder, RexCall expression) {

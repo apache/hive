@@ -459,6 +459,17 @@
       <artifactId>hbase-hadoop-compat</artifactId>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId>
+      <version>${otel.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-exporter-otlp</artifactId>
+      <version>${otel.version}</version>
+    </dependency>
   </dependencies>
   <build>
     <sourceDirectory>${basedir}/src/java</sourceDirectory>

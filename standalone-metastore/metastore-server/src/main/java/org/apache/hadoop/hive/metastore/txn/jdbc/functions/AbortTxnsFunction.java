@@ -129,6 +129,13 @@ public class AbortTxnsFunction implements TransactionalFunction<Integer> {
       prefix.append("DELETE FROM \"HIVE_LOCKS\" WHERE ");
       TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "\"HL_TXNID\"", false, false);
 
+      // add delete mv rebuild locks queries to query list
+      prefix.setLength(0);
+      suffix.setLength(0);
+      prefix.append("DELETE FROM \"MATERIALIZATION_REBUILD_LOCKS\" WHERE ");
+      TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "\"MRL_TXN_ID\"", false, false);
+
+
       //If this abort is for REPL_CREATED TXN initiated outside the replication flow, then clean the corresponding entry
       //from REPL_TXN_MAP and mark that database as replication incompatible.
       if (!isReplReplayed) {

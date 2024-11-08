@@ -6,7 +6,7 @@ PREHOOK: query: create table ice_orc (
  )
 partitioned by (company_id bigint)
 stored by iceberg stored as orc 
-tblproperties ('format-version'='2')
+tblproperties ('format-version'='2', 'hive.compactor.worker.pool'='iceberg')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ice_orc
@@ -18,7 +18,7 @@ POSTHOOK: query: create table ice_orc (
  )
 partitioned by (company_id bigint)
 stored by iceberg stored as orc 
-tblproperties ('format-version'='2')
+tblproperties ('format-version'='2', 'hive.compactor.worker.pool'='iceberg')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice_orc
@@ -243,6 +243,7 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"company_id\",\"transform\":\"identity\",\"source-id\":5,\"field-id\":1000},{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1001}]}
 	format-version      	2                   
+	hive.compactor.worker.pool	iceberg             
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	14                  
@@ -344,6 +345,7 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"company_id\",\"transform\":\"identity\",\"source-id\":5,\"field-id\":1000},{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1001}]}
 	format-version      	2                   
+	hive.compactor.worker.pool	iceberg             
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	2                   
@@ -374,6 +376,6 @@ PREHOOK: type: SHOW COMPACTIONS
 POSTHOOK: query: show compactions order by 'partition'
 POSTHOOK: type: SHOW COMPACTIONS
 CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
-#Masked#	default	ice_orc	company_id=100/dept_id=1	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
-#Masked#	default	ice_orc	company_id=100/dept_id=2	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
-#Masked#	default	ice_orc	 --- 	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	ice_orc	company_id=100/dept_id=1	MAJOR	succeeded	#Masked#	manual	iceberg	0	0	0	 --- 
+#Masked#	default	ice_orc	company_id=100/dept_id=2	MAJOR	succeeded	#Masked#	manual	iceberg	0	0	0	 --- 
+#Masked#	default	ice_orc	 --- 	MAJOR	succeeded	#Masked#	manual	iceberg	0	0	0	 --- 

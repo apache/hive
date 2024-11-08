@@ -263,3 +263,48 @@ POSTHOOK: Input: default@iceorginpart
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	KLM
 22	DER
+PREHOOK: query: create table xtoy(a int) stored by iceberg stored as parquet tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@xtoy
+POSTHOOK: query: create table xtoy(a int) stored by iceberg stored as parquet tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@xtoy
+PREHOOK: query: insert into xtoy values (1),(2),(3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@xtoy
+POSTHOOK: query: insert into xtoy values (1),(2),(3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@xtoy
+PREHOOK: query: delete from xtoy where a=1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@xtoy
+PREHOOK: Output: default@xtoy
+POSTHOOK: query: delete from xtoy where a=1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@xtoy
+POSTHOOK: Output: default@xtoy
+PREHOOK: query: alter table xtoy rename to ytox
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@xtoy
+PREHOOK: Output: database:default
+PREHOOK: Output: default@xtoy
+PREHOOK: Output: default@ytox
+POSTHOOK: query: alter table xtoy rename to ytox
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: default@xtoy
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@xtoy
+POSTHOOK: Output: default@ytox
+PREHOOK: query: select count(*) from ytox
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ytox
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from ytox
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ytox
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2

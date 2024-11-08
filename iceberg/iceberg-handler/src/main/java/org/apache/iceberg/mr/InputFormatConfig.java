@@ -39,6 +39,7 @@ public class InputFormatConfig {
   public static final String SKIP_RESIDUAL_FILTERING = "skip.residual.filtering";
   public static final String AS_OF_TIMESTAMP = "iceberg.mr.as.of.time";
   public static final String FILTER_EXPRESSION = "iceberg.mr.filter.expression";
+  public static final String GROUPING_PARTITION_COLUMNS = "iceberg.mr.grouping.partition.columns";
   public static final String IN_MEMORY_DATA_MODEL = "iceberg.mr.in.memory.data.model";
   public static final String READ_SCHEMA = "iceberg.mr.read.schema";
   public static final String SNAPSHOT_ID = "iceberg.mr.snapshot.id";

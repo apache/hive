@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.ql.parse.StorageFormat.StorageHandlerTypes;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.UpdateSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.plan.PartitionAwareOptimizationCtx;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
@@ -549,6 +550,29 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
+   * Checks whether the table supports Partition-Aware Optimization.
+   * @param table the table
+   * @return true if the table has partition definitions which potentially optimize query plans
+   * @throws SemanticException in case of any error.
+   */
+  default boolean supportsPartitionAwareOptimization(org.apache.hadoop.hive.ql.metadata.Table table)
+      throws SemanticException {
+    return false;
+  }
+
+  /**
+   * Creates a PartitionAwareOptimizationCtx that retains partition definitions applicable to query plan optimization.
+   * Hive can apply special optimization such as Bucket Map Join based on the storage layouts provided by this context.
+   * @param table the table
+   * @return the created PartitionAwareOptimizationCtx, null if this table doesn't support Partition-Aware Optimization
+   * @throws SemanticException in case of any error.
+   */
+  default PartitionAwareOptimizationCtx createPartitionAwareOptimizationContext(
+      org.apache.hadoop.hive.ql.metadata.Table table) throws SemanticException {
+    return null;
+  }
+
+  /**
    * Get file format property key, if the file format is configured through a table property.
    * @return table property key, can be null
    */
@@ -796,7 +820,7 @@ public interface HiveStorageHandler extends Configurable {
     SearchArgument searchArgument) {
     return false;
   }
-  default List<FieldSchema> getPartitionKeys(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+  default List<FieldSchema> getPartitionKeys(org.apache.hadoop.hive.ql.metadata.Table hmsTable, boolean latestSpecOnly) {
     throw new UnsupportedOperationException("Storage handler does not support getting partition keys " +
             "for a table.");
   }
