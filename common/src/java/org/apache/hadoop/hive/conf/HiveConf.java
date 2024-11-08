@@ -4353,6 +4353,13 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_PLAIN_LDAP_BIND_PASSWORD("hive.server2.authentication.ldap.bindpw", null,
         "The password for the bind user, to be used to search for the full name of the user being authenticated.\n" +
         "If the username is specified, this parameter must also be specified."),
+    HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS(
+        "hive.server2.authentication.ldap.enableGroupCheckAfterKerberos", false,
+        "If set to true, LDAP user and group filters are applied to Kerberos-authenticated users.\n" +
+            "Uses the same filter resolution as LDAP authentication (userSearchFilter, groupSearchFilter,\n" +
+            "customLDAPQuery, userFilter, groupFilter). Filters are not applied to authorized proxy users.\n" +
+            "Requires valid LDAP bind credentials to be configured.\n" +
+            "Default value is false."),
     HIVE_SERVER2_CUSTOM_AUTHENTICATION_CLASS("hive.server2.custom.authentication.class", null,
         "Custom authentication class. Used when property\n" +
         "'hive.server2.authentication' is set to 'CUSTOM'. Provided class\n" +

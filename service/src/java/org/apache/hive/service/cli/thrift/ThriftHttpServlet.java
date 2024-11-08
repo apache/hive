@@ -33,6 +33,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import javax.security.sasl.AuthenticationException;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -57,10 +58,19 @@ import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.HttpAuthUtils;
 import org.apache.hive.service.auth.HttpAuthenticationException;
+import org.apache.hive.service.auth.LdapAuthenticationProviderImpl;
 import org.apache.hive.service.auth.PasswdAuthenticationProvider;
 import org.apache.hive.service.auth.PlainSaslHelper;
 import org.apache.hive.service.auth.jwt.JWTValidator;
+import org.apache.hive.service.auth.ldap.CustomQueryFilterFactory;
+import org.apache.hive.service.auth.ldap.DirSearch;
+import org.apache.hive.service.auth.ldap.DirSearchFactory;
+import org.apache.hive.service.auth.ldap.Filter;
+import org.apache.hive.service.auth.ldap.FilterFactory;
+import org.apache.hive.service.auth.ldap.GroupFilterFactory;
 import org.apache.hive.service.auth.ldap.HttpEmptyAuthenticationException;
+import org.apache.hive.service.auth.ldap.LdapSearchFactory;
+import org.apache.hive.service.auth.ldap.UserGroupSearchFilterFactory;
 import org.apache.hive.service.auth.HttpAuthService;
 import org.apache.hive.service.auth.saml.HiveSaml2Client;
 import org.apache.hive.service.auth.saml.HiveSamlRelayStateStore;
@@ -290,7 +300,7 @@ public class ThriftHttpServlet extends TServlet {
           LOG.error("Login attempt is failed for user : " +
               httpAuthService.getUsername(request) + ". Error Message :" + e.getMessage());
         } catch (Exception ex) {
-          // Failed logging an exception message, ignoring exception, but response status is set to 401/unauthorized  
+          // Failed logging an exception message, ignoring exception, but response status is set to 401/unauthorized
         }
       }
       response.getWriter().println("Authentication Error: " + e.getMessage());
@@ -516,7 +526,10 @@ public class ThriftHttpServlet extends TServlet {
               "unable to establish context with the service ticket " +
               "provided by the client.");
         } else {
-          return getPrincipalWithoutRealmAndHost(gssContext.getSrcName().toString());
+          String shortName = getPrincipalWithoutRealmAndHost(gssContext.getSrcName().toString());
+          LOG.debug("Kerberos authentication successful");
+          enforceLdapFilters(shortName);
+          return shortName;
         }
       } catch (GSSException e) {
         if (gssContext != null) {
@@ -537,6 +550,54 @@ public class ThriftHttpServlet extends TServlet {
             // No-op
           }
         }
+      }
+    }
+
+    private void enforceLdapFilters(String shortName) throws HttpAuthenticationException {
+      boolean enableGroupCheck = hiveConf.getBoolVar(
+          HiveConf.ConfVars.HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS);
+      if (!enableGroupCheck) {
+        LOG.debug("No LDAP group check is enabled; skipping.");
+        return;
+      }
+      // Check if this is a proxy user - we don't apply LDAP filters to proxy users
+      String proxyUser = SessionManager.getProxyUserName();
+      if (proxyUser != null && !proxyUser.isEmpty()) {
+        LOG.debug("Skipping LDAP filters for proxy user authentication");
+        return;
+      }
+
+      Filter filter = LdapAuthenticationProviderImpl.resolveFilter(hiveConf);
+      if (filter == null) {
+        LOG.warn("LDAP group check enabled but no filters configured");
+        throw new HttpAuthenticationException("LDAP filters not configured");
+      }
+
+      String bindDN = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_USER);
+      String bindPassword = null;
+      try {
+        char[] rawPassword = hiveConf.getPassword(
+            HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_PASSWORD.varname);
+        bindPassword = (rawPassword == null) ? null : new String(rawPassword);
+      } catch (IOException e) {
+        LOG.error("Failed to retrieve LDAP bind password", e);
+      }
+
+      if (StringUtils.isBlank(bindDN) || StringUtils.isBlank(bindPassword)) {
+        LOG.error("LDAP bind DN or password is not configured");
+        throw new HttpAuthenticationException("LDAP bind credentials not configured");
+      }
+
+      try {
+        DirSearchFactory factory = new LdapSearchFactory();
+        DirSearch dirSearch = factory.getInstance(hiveConf, bindDN, bindPassword);
+
+        filter.apply(dirSearch, shortName);
+        LOG.debug("User {} passed LDAP filter validation", shortName);
+
+      } catch (AuthenticationException e) {
+        LOG.warn("User {} failed LDAP filter: {}", shortName, e.getMessage());
+        throw new HttpAuthenticationException("LDAP filter check failed for user " + shortName, e);
       }
     }
 

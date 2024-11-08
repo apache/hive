@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import java.io.IOException;
 import java.util.HashMap;
 
+import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
 import javax.security.sasl.AuthenticationException;
 
