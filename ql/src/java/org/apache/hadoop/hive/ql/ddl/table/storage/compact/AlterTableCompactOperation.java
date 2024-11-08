@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
@@ -39,6 +40,7 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorContext;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
 import org.apache.hadoop.hive.ql.txn.compactor.MetadataCache;
 
@@ -103,6 +105,13 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
 
     if (desc.getNumberOfBuckets() > 0) {
       compactionRequest.setNumberOfBuckets(desc.getNumberOfBuckets());
+    }
+
+    if (desc.getFileSizeThreshold() != null) {
+      if (!DDLUtils.isIcebergTable(table) || compactionRequest.getType() != CompactionType.MINOR) {
+        throw new HiveException(ErrorMsg.UNSUPPORTED_COMPACTION_REQUEST_WITH_FILE_SIZE_THRESHOLD);
+      }
+      compactionRequest.putToProperties(CompactorContext.COMPACTION_FILE_SIZE_THRESHOLD, desc.getFileSizeThreshold());
     }
 
     // End if filter doesn't match any data on the unpartitioned table    

@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -343,6 +346,15 @@ public class CompactorUtil {
     compactionRequest.setInitiatorVersion(ci.initiatorVersion);
     compactionRequest.setPoolName(ci.poolName);
     compactionRequest.setOrderByClause(ci.orderByClause);
+    Map<String, String> map = null;
+    try {
+      if (ci.properties != null) {
+        map = new ObjectMapper().readValue(ci.properties, new TypeReference<Map<String, String>>() {}); 
+      }
+    } catch (JsonProcessingException e) {
+      throw new MetaException(String.format("Error occurred while attempting to convert %s to a map", ci.properties));
+    }
+    compactionRequest.setProperties(map);
     LOG.info("Requesting compaction: " + compactionRequest);
     CompactionResponse resp = txnHandler.compact(compactionRequest);
     if (resp.isAccepted()) {
@@ -541,6 +553,9 @@ public class CompactorUtil {
     }
     compactionInfo.poolName = compactionRequest.getPoolName();
     try {
+      if (compactionRequest.getProperties() != null) {
+        compactionInfo.properties = new ObjectMapper().writeValueAsString(compactionRequest.getProperties());
+      }
       StorageDescriptor sd = resolveStorageDescriptor(table, partition);
       String runAs = TxnUtils.findUserToRunAs(sd.getLocation(), table, conf);
       LOG.info("Checking to see if we should compact partition {} of table {}.{}", compactionInfo.partName,

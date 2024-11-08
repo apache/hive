@@ -108,14 +108,22 @@ alterTblPartitionStatementSuffix[boolean partition]
 optimizeTableStatementSuffix
 @init { gParent.pushMsg("optimize table statement suffix", state); }
 @after { gParent.popMsg(state); }
-    : optimizeTblRewriteDataSuffix
+    : optimizeTblRewriteDataSuffixMajorCompaction
+    | optimizeTblRewriteDataSuffixMinorCompaction
     ;
 
-optimizeTblRewriteDataSuffix
-@init { gParent.msgs.push("compaction request"); }
+optimizeTblRewriteDataSuffixMajorCompaction
+@init { gParent.msgs.push("major compaction request"); }
 @after { gParent.msgs.pop(); }
-    : KW_REWRITE KW_DATA orderByClause? whereClause? compactPool?
+    : KW_REWRITE KW_DATA compactPool? whereClause? orderByClause?
     -> ^(TOK_ALTERTABLE_COMPACT Identifier["'MAJOR'"] TOK_BLOCKING orderByClause? whereClause? compactPool?)
+    ;
+
+optimizeTblRewriteDataSuffixMinorCompaction
+@init { gParent.msgs.push("minor compaction request"); }
+@after { gParent.msgs.pop(); }
+    : KW_REWRITE KW_DATA fileSizeThresholdClause compactPool? whereClause? orderByClause?
+    -> ^(TOK_ALTERTABLE_COMPACT Identifier["'MINOR'"] TOK_BLOCKING fileSizeThresholdClause compactPool? whereClause? orderByClause?)
     ;
 
 alterStatementPartitionKeyType
@@ -460,11 +468,16 @@ compactPool
   -> ^(TOK_COMPACT_POOL $poolName)
   ;
 
+fileSizeThresholdClause
+  : KW_FILE_SIZE_THRESHOLD EQUAL value=StringLiteral 
+  -> ^(TOK_FILE_SIZE_THRESHOLD $value)
+  ;
+
 alterStatementSuffixCompact
 @init { gParent.msgs.push("compaction request"); }
 @after { gParent.msgs.pop(); }
-    : KW_COMPACT compactType=StringLiteral tableImplBuckets? blocking? compactPool? (KW_WITH KW_OVERWRITE KW_TBLPROPERTIES tableProperties)? orderByClause? whereClause?
-    -> ^(TOK_ALTERTABLE_COMPACT $compactType tableImplBuckets? blocking? compactPool? tableProperties? orderByClause? whereClause?)
+    : KW_COMPACT compactType=StringLiteral tableImplBuckets? blocking? fileSizeThresholdClause? compactPool? (KW_WITH KW_OVERWRITE KW_TBLPROPERTIES tableProperties)? whereClause? orderByClause?
+    -> ^(TOK_ALTERTABLE_COMPACT $compactType tableImplBuckets? blocking? fileSizeThresholdClause? compactPool? tableProperties? whereClause? orderByClause?)
     ;
 
 alterStatementSuffixSetOwner

@@ -97,4 +97,26 @@ public class TestParseOptimizeTable {
         " optimize table tbl0 rewrite data pool 'iceberg'", null).getTree();
     assertThat(tree.dump(), is(expectedWithCompactPool));
   }
+
+  @Test
+  public void testOptimizeTableFileSizeThreshold() throws Exception {
+
+    String expectedFileSizeThreshold = "\n" +
+        "nil\n" +
+        "   TOK_ALTERTABLE\n" +
+        "      TOK_TABNAME\n" +
+        "         tbl0\n" +
+        "      TOK_ALTERTABLE_COMPACT\n" +
+        "         'MINOR'\n" +
+        "         TOK_BLOCKING\n" +
+        "         TOK_FILE_SIZE_THRESHOLD\n" +
+        "            '1kb'\n" +
+        "         TOK_COMPACT_POOL\n" +
+        "            'iceberg'\n" +
+        "   <EOF>\n";
+
+    ASTNode tree = parseDriver.parse(
+        " optimize table tbl0 rewrite data file_size_threshold = '1kb' pool 'iceberg'", null).getTree();
+    assertThat(tree.dump(), is(expectedFileSizeThreshold));
+  }
 }

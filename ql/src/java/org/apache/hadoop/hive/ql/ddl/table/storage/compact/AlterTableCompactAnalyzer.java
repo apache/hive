@@ -70,6 +70,7 @@ public class AlterTableCompactAnalyzer extends AbstractAlterTableAnalyzer {
     String poolName = null;
     String orderBy = null;
     ExprNodeDesc filterExpr = null;
+    String fileSizeThreshold = null; 
     for (int i = 0; i < command.getChildCount(); i++) {
       Tree node = command.getChild(i);
       switch (node.getType()) {
@@ -114,13 +115,16 @@ public class AlterTableCompactAnalyzer extends AbstractAlterTableAnalyzer {
             throw new SemanticException(ErrorMsg.ALTER_TABLE_COMPACTION_NON_PARTITIONED_COLUMN_NOT_ALLOWED);
           }
           break;
+        case HiveParser.TOK_FILE_SIZE_THRESHOLD:
+          fileSizeThreshold = unescapeSQLString(node.getChild(0).getText());
+          break;
         default:
           break;
       }
     }
 
     AlterTableCompactDesc desc = new AlterTableCompactDesc(tableName, partitionSpec, type, isBlocking, poolName,
-        numberOfBuckets, mapProp, orderBy, filterExpr);
+        numberOfBuckets, mapProp, orderBy, filterExpr, fileSizeThreshold);
     addInputsOutputsAlterTable(tableName, partitionSpec, desc, desc.getType(), false);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }

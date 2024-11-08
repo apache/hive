@@ -403,6 +403,7 @@ KW_ORPHAN_FILES: 'ORPHAN-FILES';
 KW_OLDER: 'OLDER';
 KW_THAN: 'THAN';
 KW_OPTIMIZE: 'OPTIMIZE';
+KW_FILE_SIZE_THRESHOLD: 'FILE_SIZE_THRESHOLD';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

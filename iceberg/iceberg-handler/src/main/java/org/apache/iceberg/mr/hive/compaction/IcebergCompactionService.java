@@ -40,8 +40,8 @@ public class IcebergCompactionService extends CompactionService {
 
   public Boolean compact(Table table, CompactionInfo ci) throws Exception {
 
-    if (!ci.isMajorCompaction()) {
-      ci.errorMessage = "Presently Iceberg tables support only Major compaction";
+    if (!ci.isMajorCompaction() && !ci.isMinorCompaction()) {
+      ci.errorMessage = String.format("Iceberg tables do not support %s compaction type", ci.type.name());
       LOG.error(ci.errorMessage + " Compaction info: {}", ci);
       try {
         msc.markRefused(CompactionInfo.compactionInfoToStruct(ci));
@@ -53,7 +53,7 @@ public class IcebergCompactionService extends CompactionService {
     CompactorUtil.checkInterrupt(CLASS_NAME);
 
     org.apache.iceberg.Table icebergTable = IcebergTableUtil.getTable(conf, table);
-    if (!IcebergCompactionEvaluator.isEligibleForCompaction(icebergTable, ci.partName, ci.type, conf)) {
+    if (!IcebergCompactionEvaluator.isEligibleForCompaction(icebergTable, ci, conf)) {
       LOG.info("Table={}{} doesn't meet requirements for compaction", table.getTableName(),
           ci.partName == null ? "" : ", partition=" + ci.partName);
       msc.markRefused(CompactionInfo.compactionInfoToStruct(ci));
