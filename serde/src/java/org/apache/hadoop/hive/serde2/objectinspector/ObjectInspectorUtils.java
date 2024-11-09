@@ -1661,13 +1661,20 @@ public final class ObjectInspectorUtils {
    * @return
    */
   private static int getSlotValue(Field field) {
+    Field slotField = null;
+    boolean originalAccessible = false;
     try {
-      Field slotField = Field.class.getDeclaredField("slot");
+      slotField = Field.class.getDeclaredField("slot");
+      originalAccessible = slotField.isAccessible();
       slotField.setAccessible(true);
       return slotField.getInt(field);
     } catch (NoSuchFieldException | IllegalAccessException | IllegalArgumentException e) {
       LOG.error("Error getting a slot value:", e);
       throw new RuntimeException("Error getting a slot value");
+    } finally {
+      if (slotField != null) {
+        slotField.setAccessible(originalAccessible);
+      }
     }
   }
 }
