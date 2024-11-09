@@ -1666,8 +1666,8 @@ public final class ObjectInspectorUtils {
       slotField.setAccessible(true);
       return slotField.getInt(field);
     } catch (NoSuchFieldException | IllegalAccessException | IllegalArgumentException e) {
-      LOG.info("Field not found:", e);
-      return 0; // Default value if there's an error
+      LOG.error("Error getting a slot value:", e);
+      throw new RuntimeException("Error getting a slot value");
     }
   }
 }
