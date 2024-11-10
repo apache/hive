@@ -646,7 +646,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             getMetaData(getQB(), true);
 
             disableJoinMerge = defaultJoinMerge;
-            sinkOp = genPlan(getQB());
+            sinkOp = genPlan(getQB(), getQB());
             LOG.info("CBO Succeeded; optimized logical plan.");
 
             this.ctx.setCboInfo(getOptimizedByCboInfo());
@@ -1430,9 +1430,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
     String dest = getQB().getParseInfo().getClauseNames().iterator().next();
     if (isInsertInto(getQB().getParseInfo(), dest)) {
       Operator<?> selOp = handleInsertStatement(dest, hiveRoot, hiveRootRR, getQB());
-      return genFileSinkPlan(dest, getQB(), selOp);
+      return genFileSinkPlan(getQB(), dest, getQB(), selOp);
     } else {
-      return genFileSinkPlan(dest, getQB(), hiveRoot);
+      return genFileSinkPlan(getQB(), dest, getQB(), hiveRoot);
     }
   }
 
