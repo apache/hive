@@ -34,6 +34,7 @@ import com.google.common.annotations.VisibleForTesting;
  */
 public class HiveSQLException extends SQLException {
 
+  public static final String QUERY_ID = "Query ID";
   private static final long serialVersionUID = -6095254671958748095L;
   private String queryId;
 
@@ -214,7 +215,7 @@ public class HiveSQLException extends SQLException {
   @Override
   public String getMessage(){
     String errorMsg = super.getMessage() == null ? "Error" : super.getMessage();
-    if (!errorMsg.contains(ServiceContext.QUERY_ID) && queryId != null) {
+    if (!errorMsg.contains(QUERY_ID) && queryId != null) {
       return String.format("%s; Query ID: %s", errorMsg, queryId);
     } else {
       return errorMsg;

@@ -21,9 +21,9 @@ package org.apache.hive.jdbc;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConfForTest;
-import org.apache.hadoop.hive.ql.ServiceContext;
 import org.apache.hadoop.hive.ql.hooks.HiveProtoLoggingHook.ExecutionMode;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
+import org.apache.hive.service.cli.HiveSQLException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -151,7 +151,7 @@ public class TestExceptionMessageWithJdbc {
         stmt.execute("select * from foo");
         fail("Expected to be unreachable");
       } catch (Exception e) {
-        assertTrue(e.getMessage().toLowerCase().contains(ServiceContext.QUERY_ID.toLowerCase()));
+        assertTrue(e.getMessage().toLowerCase().contains(HiveSQLException.QUERY_ID.toLowerCase()));
       }
     }
   }
