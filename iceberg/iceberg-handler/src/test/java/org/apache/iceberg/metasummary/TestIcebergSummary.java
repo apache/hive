@@ -107,7 +107,7 @@ public class TestIcebergSummary {
 
     Assert.assertEquals(1, tableSummary.getPartitionColumnCount());
     Assert.assertEquals(2, tableSummary.getNumFiles());
-    // Assert.assertEquals(2, tableSummary.getPartitionCount());
+    Assert.assertEquals(2, tableSummary.getPartitionCount());
     Assert.assertEquals(3, tableSummary.getNumRows());
     Assert.assertEquals(4, tableSummary.getColCount());
     Assert.assertEquals(1, tableSummary.getArrayColumnCount());

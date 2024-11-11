@@ -32,12 +32,11 @@ import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.ManifestFile;
 import org.apache.iceberg.MetadataTableType;
 import org.apache.iceberg.MetadataTableUtils;
+import org.apache.iceberg.PartitionsTable;
 import org.apache.iceberg.ScanTask;
 import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.SnapshotSummary;
 import org.apache.iceberg.Table;
-import org.apache.iceberg.data.IcebergGenerics;
-import org.apache.iceberg.data.Record;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Types;
@@ -72,26 +71,7 @@ public class MetadataSummary extends IcebergSummaryRetriever {
 
   @Override
   public void getMetaSummary(Table table, MetadataTableSummary metaSummary) {
-    Map<String, String> summary = table.currentSnapshot().summary();
-    metaSummary.setNumRows(Long.parseLong(summary.getOrDefault(SnapshotSummary.TOTAL_RECORDS_PROP, "0")));
-    metaSummary.setTotalSize(Long.parseLong(summary.getOrDefault(SnapshotSummary.TOTAL_FILE_SIZE_PROP, "0")));
-    metaSummary.setPartitionColumnCount(table.spec().fields().size());
-    metaSummary.setNumFiles(Long.parseLong(summary.getOrDefault(SnapshotSummary.TOTAL_DATA_FILES_PROP, "0")));
-    List<Types.NestedField> columns = table.schema().columns();
-    metaSummary.columnSummary(columns.size(),
-            (int) columns.stream().filter(col -> col.type().isListType()).count(),
-            (int) columns.stream().filter(col -> col.type().isStructType()).count(),
-            (int) columns.stream().filter(col -> col.type().isMapType()).count());
-
-    Table partitions = MetadataTableUtils
-        .createMetadataTableInstance(table, MetadataTableType.PARTITIONS);
-    try (CloseableIterable<Record> parts = IcebergGenerics.read(partitions).select("partition").build()) {
-      metaSummary.setPartitionCount(IteratorUtils.size(parts.iterator()));
-    } catch (Exception e) {
-      LOG.warn("Error listing the partitions in table: " + table.name(), e);
-      metaSummary.setPartitionCount(0);
-    }
-
+    basicMetadataSummary(table, metaSummary);
     SummaryMapBuilder builder = new SummaryMapBuilder();
     Table metadataEntries = MetadataTableUtils
         .createMetadataTableInstance(table, MetadataTableType.METADATA_LOG_ENTRIES);
@@ -111,6 +91,53 @@ public class MetadataSummary extends IcebergSummaryRetriever {
       manifestsSize = manifests.stream().map(ManifestFile::length).mapToLong(Long::longValue).sum();
     }
 
+    branchOrTagSummary(table, builder);
+    Map<String, String> properties = table.properties();
+    builder
+        .add(NUM_SNAPSHOTS, Integer.parseInt(properties.getOrDefault(SNAPSHOT_COUNT,
+            "" + IteratorUtils.size(table.snapshots().iterator()))))
+        .add(NUM_MANIFESTS, numManifests)
+        .add(MANIFESTS_SIZE, manifestsSize)
+        .add(SNAPSHOT_MAX_AGE,
+            Long.parseLong(properties.getOrDefault("history.expire.max-snapshot-age-ms", "-1")))
+        .add(SNAPSHOT_MIN_KEEP,
+            Long.parseLong(properties.getOrDefault("history.expire.min-snapshots-to-keep", "-1")));
+    if (formatJson) {
+      metaSummary.addExtra("metadata", builder.build());
+    } else {
+      metaSummary.addExtra(builder);
+    }
+  }
+
+  private void basicMetadataSummary(Table table, MetadataTableSummary metaSummary) {
+    Map<String, String> summary = table.currentSnapshot().summary();
+    metaSummary.setNumRows(Long.parseLong(summary.getOrDefault(SnapshotSummary.TOTAL_RECORDS_PROP, "0")));
+    metaSummary.setTotalSize(Long.parseLong(summary.getOrDefault(SnapshotSummary.TOTAL_FILE_SIZE_PROP, "0")));
+    metaSummary.setPartitionColumnCount(table.spec().fields().size());
+    metaSummary.setNumFiles(Long.parseLong(summary.getOrDefault(SnapshotSummary.TOTAL_DATA_FILES_PROP, "0")));
+    List<Types.NestedField> columns = table.schema().columns();
+    metaSummary.columnSummary(columns.size(),
+        (int) columns.stream().filter(col -> col.type().isListType()).count(),
+        (int) columns.stream().filter(col -> col.type().isStructType()).count(),
+        (int) columns.stream().filter(col -> col.type().isMapType()).count());
+
+    if (table.spec().isPartitioned()) {
+      PartitionsTable partitionsTable =
+          (PartitionsTable) MetadataTableUtils.createMetadataTableInstance(table, MetadataTableType.PARTITIONS);
+      try (CloseableIterable<FileScanTask> iterable = partitionsTable.newScan().planFiles()) {
+        long partitionCount = 0;
+        for (FileScanTask fileScanTask : iterable) {
+          partitionCount += fileScanTask.file().recordCount();
+        }
+        metaSummary.setPartitionCount((int) partitionCount);
+      } catch (Exception e) {
+        LOG.warn("Error listing the partitions in table: " + table.name(), e);
+        metaSummary.setPartitionCount(0);
+      }
+    }
+  }
+
+  private void branchOrTagSummary(Table table, SummaryMapBuilder builder) {
     Map<String, SnapshotRef> refs = table.refs();
     AtomicInteger numBranches = new AtomicInteger(0);
     AtomicInteger numTags = new AtomicInteger(0);
@@ -123,23 +150,6 @@ public class MetadataSummary extends IcebergSummaryRetriever {
         }
       });
     }
-
-    Map<String, String> properties = table.properties();
-    builder
-        .add(NUM_SNAPSHOTS, Integer.parseInt(properties.getOrDefault(SNAPSHOT_COUNT,
-            "" + IteratorUtils.size(table.snapshots().iterator()))))
-        .add(NUM_MANIFESTS, numManifests)
-        .add(MANIFESTS_SIZE, manifestsSize)
-        .add(SNAPSHOT_MAX_AGE,
-            Long.parseLong(properties.getOrDefault("history.expire.max-snapshot-age-ms", "-1")))
-        .add(SNAPSHOT_MIN_KEEP,
-            Long.parseLong(properties.getOrDefault("history.expire.min-snapshots-to-keep", "-1")))
-        .add(NUM_BRANCHES, numBranches.get())
-        .add(NUM_TAGS, numTags.get());
-    if (formatJson) {
-      metaSummary.addExtra("metadata", builder.build());
-    } else {
-      metaSummary.addExtra(builder);
-    }
+    builder.add(NUM_BRANCHES, numBranches.get()).add(NUM_TAGS, numTags.get());
   }
 }
