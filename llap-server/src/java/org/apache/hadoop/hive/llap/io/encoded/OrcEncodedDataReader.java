@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 import org.apache.commons.io.IOUtils;
@@ -187,7 +188,17 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
    * Contains only stripes that are read, and only columns included. null => read all RGs.
    */
   private boolean[][] stripeRgs;
-  private AtomicBoolean isStopped = new AtomicBoolean(false);
+
+  private static final int STATE_IDLING = 0;
+  private static final int STATE_PROCESSING = 1;
+  private static final int STATE_STOPPED = 2;
+
+  private final AtomicInteger state = new AtomicInteger(STATE_IDLING);
+
+  // This is equivalent to state.get() == STATE_STOPPED, but it cannot be removed
+  // because it is needed as AtomicBoolean in other calls.
+  private final AtomicBoolean isStopped = new AtomicBoolean(false);
+
   @SuppressWarnings("unused")
   private volatile boolean isPaused = false;
 
@@ -259,6 +270,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   public void stop() {
     LOG.debug("Encoded reader is being stopped");
     isStopped.set(true);
+    cleanup();
   }
 
   @Override
@@ -276,17 +288,20 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   @Override
   protected Void callInternal() throws IOException, InterruptedException {
     return ugi.doAs((PrivilegedExceptionAction<Void>) () -> {
-      long startTime = counters.startTimeCounter();
-      try {
-        performDataRead();
-        consumer.setDone();
-      } catch (Throwable t) {
-        consumer.setError(t);
-        trace.dumpLog(LOG);
-      } finally {
-        cleanupReaders();
-        recordReaderTime(startTime);
-        tracePool.offer(trace);
+      if (state.compareAndSet(STATE_IDLING, STATE_PROCESSING)) {
+        long startTime = counters.startTimeCounter();
+        try {
+          performDataRead();
+          consumer.setDone();
+        } catch (Throwable t) {
+          consumer.setError(t);
+          trace.dumpLog(LOG);
+        } finally {
+          recordReaderTime(startTime);
+          if (state.compareAndSet(STATE_PROCESSING, STATE_IDLING)) { // Always true here.
+            cleanup();
+          }
+        }
       }
       return null;
     });
@@ -468,16 +483,23 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   }
 
   /**
-   * Closes the stripe readers (on error).
+   * Cleanup all ORC Reader data.
    */
-  private void cleanupReaders() {
-    try {
-      IOUtils.close(stripeReader, rawDataReader, orcReader);
-    } catch (IOException e) {
-      LOG.warn("Error while closing readers: ", e);
+  private void cleanup() {
+    // This is called from both stop and callInternal, ensure that only one of the can cleanup and only once.
+    if (state.compareAndSet(STATE_IDLING, STATE_STOPPED)) {
+      // Return the trace, should happen only once.
+      tracePool.offer(trace);
+      // Cleanup readers
+      try {
+        IOUtils.close(stripeReader, rawDataReader, orcReader);
+      } catch (IOException e) {
+        LOG.warn("Error while closing readers: ", e);
+      }
+      stripeReader = null;
+      rawDataReader = null;
+      orcReader = null;
     }
-    rawDataReader = null;
-    orcReader = null;
   }
 
   /**
