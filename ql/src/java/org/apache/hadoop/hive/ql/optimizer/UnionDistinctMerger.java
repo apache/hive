@@ -70,7 +70,7 @@ public class UnionDistinctMerger extends Transform {
 
   private class UnionMergeProcessor implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Void process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       UnionMergeContext context = (UnionMergeContext) procCtx;
 
