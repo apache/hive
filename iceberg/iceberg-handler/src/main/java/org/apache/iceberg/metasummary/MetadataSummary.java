@@ -103,7 +103,7 @@ public class MetadataSummary extends IcebergSummaryRetriever {
         .add(SNAPSHOT_MIN_KEEP,
             Long.parseLong(properties.getOrDefault("history.expire.min-snapshots-to-keep", "-1")));
     if (formatJson) {
-      metaSummary.addExtra("metadata", builder.build());
+      metaSummary.addExtra("metadata", builder);
     } else {
       metaSummary.addExtra(builder);
     }

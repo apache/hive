@@ -32,7 +32,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -110,48 +110,30 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
       System.out.println("Return set of tables is empty or null");
       return null;
     }
-    ArrayListMultimap<Class<? extends MetaSummaryHandler>,
-        Pair<TableName, MetadataTableSummary>> nonNativeHandlers = ArrayListMultimap.create();
-    Map<String, Class<? extends MetaSummaryHandler>> visitedClz = new HashMap<>();
-    allSummaries
-        .stream().filter(summary -> summary.getTableType() != null
-            && NON_NATIVE_SUMMARY_HANDLER.containsKey(summary.getTableType().toLowerCase()))
-        .forEach(summary -> {
-          Class<? extends MetaSummaryHandler> handler;
-          String tableType = summary.getTableType().toLowerCase();
-          String className = NON_NATIVE_SUMMARY_HANDLER.get(tableType);
-          TableName tableName = new TableName(MetaStoreUtils.getDefaultCatalog(getObjectStore().getConf()),
-              summary.getDbName(), summary.getTblName());
-          try {
-            handler = visitedClz.get(className);
-            if (handler == null) {
-              handler = JavaUtils.getClass(className, MetaSummaryHandler.class);
-              visitedClz.put(className, handler);
-            }
-            nonNativeHandlers.put(handler, Pair.of(tableName, summary));
-          } catch (Exception e) {
-            LOG.error("Unable to load the class: " + className
-                + ", will ignore the non-native summary for the table: " + tableName, e);
-          }
-        });
-
+    ArrayListMultimap<Class<? extends MetaSummaryHandler>, Pair<TableName, MetadataTableSummary>> nonNativeSummaries =
+        findNonNativeSummaries(allSummaries);
     Integer lastUpdatedDays = inputParams.length >= 3 ? Integer.valueOf(inputParams[2]) : null;
     Integer tablesLimit = inputParams.length >= 4 ? Integer.valueOf(inputParams[3]) : null;
-    Set<MetadataTableSummary> filteredSummary = new HashSet<>();
+    Map<MetadataTableSummary, Void> filteredSummary = new IdentityHashMap<>();
     MetaSummarySchema extraSchema = new MetaSummarySchema();
-    for (Class<? extends MetaSummaryHandler> handler : nonNativeHandlers.keys()) {
+    for (Class<? extends MetaSummaryHandler> handler : nonNativeSummaries.keys()) {
       Configuration conf = getObjectStore().getConf();
       try (MetaSummaryHandler summaryHandler = JavaUtils.newInstance(handler)) {
         summaryHandler.setConf(conf);
         summaryHandler.initialize(MetaStoreUtils.getDefaultCatalog(conf), formatJson, extraSchema);
-        List<Pair<TableName, MetadataTableSummary>> tableSummaries = nonNativeHandlers.get(handler);
+        List<Pair<TableName, MetadataTableSummary>> tableSummaries = nonNativeSummaries.get(handler);
         // Filter those we don't want to collect
         Set<TableName> tableNames = getObjectStore().filterTablesForSummary(tableSummaries, lastUpdatedDays, tablesLimit);
         for (Pair<TableName, MetadataTableSummary> ts : tableSummaries) {
+          MetadataTableSummary summary = ts.getRight();
           if (tableNames.contains(ts.getLeft())) {
-            summaryHandler.appendSummary(ts.getLeft(), ts.getRight());
+            summaryHandler.appendSummary(ts.getLeft(), summary);
           } else {
-            filteredSummary.add(ts.getRight());
+            filteredSummary.put(summary, null);
+          }
+          // If there is an exception while collecting the summary, remove it
+          if (summary.isDropped()) {
+            filteredSummary.put(summary, null);
           }
         }
       } catch (Exception e) {
@@ -162,9 +144,38 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
     // Filter the table summary from the output
     if (!filteredSummary.isEmpty()) {
       allSummaries = allSummaries.stream()
-          .filter(s -> !filteredSummary.contains(s)).collect(Collectors.toList());
+          .filter(s -> !filteredSummary.containsKey(s)).collect(Collectors.toList());
     }
     return Pair.of(extraSchema, allSummaries);
+  }
+
+
+  private ArrayListMultimap<Class<? extends MetaSummaryHandler>,
+      Pair<TableName, MetadataTableSummary>> findNonNativeSummaries(List<MetadataTableSummary> summaries) {
+    ArrayListMultimap<Class<? extends MetaSummaryHandler>,
+        Pair<TableName, MetadataTableSummary>> summaryHandlers = ArrayListMultimap.create();
+    Map<String, Class<? extends MetaSummaryHandler>> visitedClz = new HashMap<>();
+    summaries.stream().filter(summary -> summary.getTableType() != null && NON_NATIVE_SUMMARY_HANDLER.containsKey(
+        summary.getTableType().toLowerCase())).forEach(summary -> {
+      Class<? extends MetaSummaryHandler> handler;
+      String tableType = summary.getTableType().toLowerCase();
+      String className = NON_NATIVE_SUMMARY_HANDLER.get(tableType);
+      TableName tableName = new TableName(MetaStoreUtils.getDefaultCatalog(getObjectStore().getConf()),
+          summary.getDbName(), summary.getTblName());
+      try {
+        handler = visitedClz.get(className);
+        if (handler == null) {
+          handler = JavaUtils.getClass(className, MetaSummaryHandler.class);
+          visitedClz.put(className, handler);
+        }
+        summaryHandlers.put(handler, Pair.of(tableName, summary));
+      } catch (Exception e) {
+        LOG.error(
+            "Unable to load the class: " + className + ", will ignore the non-native summary for the table: " + tableName,
+            e);
+      }
+    });
+    return summaryHandlers;
   }
 
   /**

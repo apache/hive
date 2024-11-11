@@ -577,96 +577,37 @@ public class MetaToolObjectStore extends ObjectStore {
    */
   public List<MetadataTableSummary> getMetadataSummary(String catalogFilter, String dbFilter, String tableFilter)
       throws MetaException {
-    List<MetadataTableSummary> metadataTableSummaryList = new ArrayList<MetadataTableSummary>();
-    List<String> querySet = sqlGenerator.getCreateQueriesForMetastoreSummary();
-    if (querySet == null || querySet.isEmpty()) {
-      LOG.warn("Metadata summary has not been implemented for dbtype {}", DatabaseProduct.dbType);
-      return null;
-    }
-
     JDOConnection jdoConn = null;
     Map<Long, MetadataTableSummary> partedTabs = new HashMap<>();
     Map<Long, MetadataTableSummary> nonPartedTabs = new HashMap<>();
+    List<MetadataTableSummary> metadataTableSummaryList = new ArrayList<>();
+    final String query = sqlGenerator.getSelectQueryForMetastoreSummary();
     try {
-      try {
-        jdoConn = pm.getDataStoreConnection();
-        try (Statement stmt = ((Connection) jdoConn.getNativeConnection()).createStatement()) {
-          long startTime = System.currentTimeMillis();
-          for (String q : querySet) {
-            stmt.addBatch(q);
-          }
-          stmt.executeBatch();
-          long endTime = System.currentTimeMillis();
-          LOG.info("Total query time for generating HMS Summary: {} (ms)", endTime - startTime);
-        }
-      } catch (SQLException e) {
-        LOG.error("Exception during computing HMS Summary", e);
-        throw new MetaException("Error preparing the context for computing the summary: " + e.getMessage());
+      jdoConn = pm.getDataStoreConnection();
+      if (!prepareGetMetaSummary(jdoConn)) {
+        return metadataTableSummaryList;
       }
-
-      final String query = sqlGenerator.getSelectQueryForMetastoreSummary();
-      try {
-        try (Statement stmt = ((Connection) jdoConn.getNativeConnection()).createStatement()) {
-          stmt.setFetchSize(0);
-          try (ResultSet rs = stmt.executeQuery(query)) {
-            while (rs.next()) {
-              MetadataTableSummary summary = new MetadataTableSummary(rs.getString("CTLG"),
-                  rs.getString("NAME"), rs.getString("TBL_NAME"));
-              String partitionColumn = rs.getString("PARTITION_COLUMN");
-              int partitionColumnCount = (partitionColumn == null) ? 0 : (partitionColumn.split(",")).length;
-              summary
-                  .partitionSummary(partitionColumnCount, rs.getInt("PARTITION_CNT"))
-                  .columnSummary(
-                      rs.getInt("TOTAL_COLUMN_COUNT"),
-                      rs.getInt("ARRAY_COLUMN_COUNT"),
-                      rs.getInt("STRUCT_COLUMN_COUNT"),
-                      rs.getInt("MAP_COLUMN_COUNT"));
-              long tableId = rs.getLong("TBL_ID");
-              if (summary.getPartitionCount() > 0) {
-                partedTabs.put(tableId, summary);
-              } else if (summary.getPartitionColumnCount() == 0) {
-                nonPartedTabs.put(tableId, summary);
-              }
-              String tblType = rs.getString("TBL_TYPE");
-              String fileType = extractFileFormat(rs.getString("SLIB"));
-              Set<String> nonNativeTabTypes = new HashSet<>(Arrays.asList("jdbc", "kudu", "hbase", "iceberg"));
-              if (nonNativeTabTypes.contains(fileType)) {
-                tblType = fileType.toUpperCase();
-                if ("iceberg".equalsIgnoreCase(tblType)) {
-                  String writeFormatDefault = rs.getString("WRITE_FORMAT_DEFAULT");
-                  if (writeFormatDefault == null) {
-                    writeFormatDefault = "null";
-                  }
-                  if (writeFormatDefault.equals("null")) {
-                    fileType = "parquet";
-                  } else {
-                    fileType = writeFormatDefault;
-                  }
-                }
-              } else if (TableType.MANAGED_TABLE.name().equalsIgnoreCase(tblType)) {
-                String transactionalProperties = rs.getString("TRANSACTIONAL_PROPERTIES");
-                if (transactionalProperties == null) {
-                  transactionalProperties = "null";
-                }
-                tblType = "insert_only".equalsIgnoreCase(transactionalProperties.trim()) ?
-                    "HIVE_ACID_INSERT_ONLY" : "HIVE_ACID_FULL";
-              } else if (TableType.EXTERNAL_TABLE.name().equalsIgnoreCase(tblType)) {
-                tblType = "HIVE_EXTERNAL";
-              } else {
-                tblType = tblType != null ? tblType.toUpperCase() : "NULL";
-              }
-              String compressionType = rs.getString("IS_COMPRESSED");
-              if (compressionType.equals("0") || compressionType.equals("f")) {
-                compressionType = "None";
-              }
-              metadataTableSummaryList.add(summary.tableFormatSummary(tblType, compressionType, fileType));
+      try (Statement stmt = ((Connection) jdoConn.getNativeConnection()).createStatement()) {
+        stmt.setFetchSize(0);
+        try (ResultSet rs = stmt.executeQuery(query)) {
+          while (rs.next()) {
+            MetadataTableSummary summary = new MetadataTableSummary(rs.getString("CTLG"),
+                rs.getString("NAME"), rs.getString("TBL_NAME"));
+            feedColumnSummary(summary, rs);
+            feedTabFormatSummary(summary, rs);
+            metadataTableSummaryList.add(summary);
+            long tableId = rs.getLong("TBL_ID");
+            if (summary.getPartitionCount() > 0) {
+              partedTabs.put(tableId, summary);
+            } else if (summary.getPartitionColumnCount() == 0) {
+              nonPartedTabs.put(tableId, summary);
             }
           }
         }
-      } catch (Exception e) {
-        LOG.error("Exception while running the query " + query, e);
-        throw new MetaException("Exception while computing the summary: " + e.getMessage());
       }
+    } catch (SQLException e) {
+      LOG.error("Exception while running the query " + query, e);
+      throw new MetaException("Exception while computing the summary: " + e.getMessage());
     } finally {
       if (jdoConn != null) {
         jdoConn.close();
@@ -676,25 +617,96 @@ public class MetaToolObjectStore extends ObjectStore {
     return metadataTableSummaryList;
   }
 
+  private void feedColumnSummary(MetadataTableSummary summary, ResultSet rs) throws SQLException {
+    String partitionColumn = rs.getString("PARTITION_COLUMN");
+    int partitionColumnCount = (partitionColumn == null) ? 0 : (partitionColumn.split(",")).length;
+    summary
+        .partitionSummary(partitionColumnCount, rs.getInt("PARTITION_CNT"))
+        .columnSummary(
+            rs.getInt("TOTAL_COLUMN_COUNT"),
+            rs.getInt("ARRAY_COLUMN_COUNT"),
+            rs.getInt("STRUCT_COLUMN_COUNT"),
+            rs.getInt("MAP_COLUMN_COUNT"));
+  }
+
+  private void feedTabFormatSummary(MetadataTableSummary summary, ResultSet rs) throws SQLException {
+    String tblType = rs.getString("TBL_TYPE");
+    String fileType = extractFileFormat(rs.getString("SLIB"));
+    Set<String> nonNativeTabTypes = new HashSet<>(Arrays.asList("jdbc", "kudu", "hbase", "iceberg"));
+    if (nonNativeTabTypes.contains(fileType)) {
+      tblType = fileType.toUpperCase();
+      if ("iceberg".equalsIgnoreCase(tblType)) {
+        String writeFormatDefault = rs.getString("WRITE_FORMAT_DEFAULT");
+        if (writeFormatDefault == null) {
+          writeFormatDefault = "null";
+        }
+        if (writeFormatDefault.equals("null")) {
+          fileType = "parquet";
+        } else {
+          fileType = writeFormatDefault;
+        }
+      }
+    } else if (TableType.MANAGED_TABLE.name().equalsIgnoreCase(tblType)) {
+      String transactionalProperties = rs.getString("TRANSACTIONAL_PROPERTIES");
+      if (transactionalProperties == null) {
+        transactionalProperties = "null";
+      }
+      tblType = "insert_only".equalsIgnoreCase(transactionalProperties.trim()) ?
+          "HIVE_ACID_INSERT_ONLY" : "HIVE_ACID_FULL";
+    } else if (TableType.EXTERNAL_TABLE.name().equalsIgnoreCase(tblType)) {
+      tblType = "HIVE_EXTERNAL";
+    } else {
+      tblType = tblType != null ? tblType.toUpperCase() : "NULL";
+    }
+    String compressionType = rs.getString("IS_COMPRESSED");
+    if (compressionType.equals("0") || compressionType.equals("f")) {
+      compressionType = "None";
+    }
+    summary.tableFormatSummary(tblType, compressionType, fileType);
+  }
+
+  private boolean prepareGetMetaSummary(JDOConnection jdoConn) throws MetaException {
+    try {
+      List<String> prepareQueries = sqlGenerator.getCreateQueriesForMetastoreSummary();
+      if (prepareQueries == null || prepareQueries.isEmpty()) {
+        LOG.warn("Metadata summary has not been implemented for dbtype {}", DatabaseProduct.dbType);
+        return false;
+      }
+      try (Statement stmt = ((Connection) jdoConn.getNativeConnection()).createStatement()) {
+        long startTime = System.currentTimeMillis();
+        for (String q : prepareQueries) {
+          stmt.addBatch(q);
+        }
+        stmt.executeBatch();
+        long endTime = System.currentTimeMillis();
+        LOG.info("Total query time for generating HMS Summary: {} (ms)", endTime - startTime);
+      }
+    } catch (SQLException e) {
+      LOG.error("Exception during computing HMS Summary", e);
+      throw new MetaException("Error preparing the context for computing the summary: " + e.getMessage());
+    }
+    return true;
+  }
+
   private void feedBasicStats(final Map<Long, MetadataTableSummary> nonPartedTabs,
       final Map<Long, MetadataTableSummary> partedTabs) throws MetaException {
     runBatched(batchSize, new ArrayList<>(nonPartedTabs.keySet()), new Batchable<Long, Void>() {
-      final String queryText0 = "select \"TBL_ID\", \"PARAM_KEY\", \"PARAM_VALUE\" from \"TABLE_PARAMS\" where \"PARAM_KEY\" " +
+      static final String QUERY_TEXT0 = "select \"TBL_ID\", \"PARAM_KEY\", \"PARAM_VALUE\" from \"TABLE_PARAMS\" where \"PARAM_KEY\" " +
           "in ('" + StatsSetupConst.TOTAL_SIZE + "', '" + StatsSetupConst.NUM_FILES + "', '" + StatsSetupConst.ROW_COUNT + "') and \"TBL_ID\" in (";
       @Override
       public List<Void> run(List<Long> input) throws Exception {
-        feedBasicStats(queryText0, input, nonPartedTabs, "");
-        return null;
+        feedBasicStats(QUERY_TEXT0, input, nonPartedTabs, "");
+        return Collections.emptyList();
       }
     });
 
    runBatched(batchSize, new ArrayList<>(partedTabs.keySet()), new Batchable<Long, Void>() {
-      final String queryText0 = "select \"TBL_ID\", \"PARAM_KEY\", sum(CAST(\"PARAM_VALUE\" AS decimal(21,0))) from \"PARTITIONS\" t join \"PARTITION_PARAMS\" p on p.\"PART_ID\" = t.\"PART_ID\" " +
-          "where \"PARAM_KEY\" " +
+     static final String QUERY_TEXT0 = "select \"TBL_ID\", \"PARAM_KEY\", sum(CAST(\"PARAM_VALUE\" AS decimal(21,0))) from \"PARTITIONS\" t " +
+         "join \"PARTITION_PARAMS\" p on p.\"PART_ID\" = t.\"PART_ID\" where \"PARAM_KEY\" " +
           "in ('" + StatsSetupConst.TOTAL_SIZE + "', '" + StatsSetupConst.NUM_FILES + "', '" + StatsSetupConst.ROW_COUNT + "') and t.\"TBL_ID\" in (";
       @Override
       public List<Void> run(List<Long> input) throws Exception {
-        feedBasicStats(queryText0, input, partedTabs, " group by \"TBL_ID\", \"PARAM_KEY\"");
+        feedBasicStats(QUERY_TEXT0, input, partedTabs, " group by \"TBL_ID\", \"PARAM_KEY\"");
         return Collections.emptyList();
       }
     });
@@ -710,8 +722,9 @@ public class MetaToolObjectStore extends ObjectStore {
     for (int i = 0; i < input.size(); ++i) {
       params[i] = input.get(i);
     }
-    Query<?> query = pm.newQuery("javax.jdo.query.SQL", queryText);
+    Query<?> query = null;
     try {
+      query = pm.newQuery("javax.jdo.query.SQL", queryText);
       List<Object[]> result = (List<Object[]>) query.executeWithArray(params);
       if (result != null) {
         for (Object[] fields : result) {
@@ -721,7 +734,9 @@ public class MetaToolObjectStore extends ObjectStore {
         }
       }
     } finally {
-      query.closeAll();
+      if (query != null) {
+        query.closeAll();
+      }
     }
   }
 
@@ -741,6 +756,8 @@ public class MetaToolObjectStore extends ObjectStore {
     case StatsSetupConst.NUM_FILES:
       summary.setNumFiles(summary.getNumFiles() + val);
       break;
+    default:
+      throw new AssertionError("This should never happen!");
     }
   }
 
@@ -804,6 +821,7 @@ public class MetaToolObjectStore extends ObjectStore {
       if (tablesLimit != null && tablesLimit >= 0) {
         query.setRange(0, tablesLimit);
       }
+      assert lastUpdatedDays != null;
       List<Object[]> result = (List<Object[]>) query.executeWithArray(catalog, dbs, tableType.toUpperCase(),
           System.currentTimeMillis() - lastUpdatedDays * 24 * 3600000L);
       if (result == null || result.isEmpty()) {

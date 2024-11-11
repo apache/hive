@@ -62,7 +62,7 @@ public class PuffinStatisticsSummary extends IcebergSummaryRetriever {
       builder.add(PUFFIN_STATS_BLOB, null);
     }
     if (formatJson) {
-      summary.addExtra(STATS, builder.build());
+      summary.addExtra(STATS, builder);
     } else {
       summary.addExtra(builder);
     }

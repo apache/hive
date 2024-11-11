@@ -39,6 +39,7 @@ public class MetadataTableSummary {
   private int structColumnCount;
   private int mapColumnCount;
   private Map<String, Object> summary;
+  private transient boolean dropped = false;
 
   public MetadataTableSummary(String owner, String db, String tableName) {
     this.owner = owner;
@@ -61,13 +62,6 @@ public class MetadataTableSummary {
   public MetadataTableSummary partitionSummary(int partColCount, int partCount) {
     this.partitionCount = partCount;
     this.partitionColumnCount = partColCount;
-    return this;
-  }
-
-  public MetadataTableSummary basicStatsSummary(long totalSize, long rows,  long files) {
-    this.totalSize = totalSize;
-    this.numRows = rows;
-    this.numFiles = files;
     return this;
   }
 
@@ -202,11 +196,11 @@ public class MetadataTableSummary {
     return summary;
   }
 
-  public MetadataTableSummary addExtra(String key, Object object) {
+  public MetadataTableSummary addExtra(String key, SummaryMapBuilder builder) {
     if (summary == null) {
       summary = new HashMap<>();
     }
-    summary.put(key, object);
+    summary.put(key, builder.build());
     return this;
   }
 
@@ -243,5 +237,13 @@ public class MetadataTableSummary {
       csv.append(",");
     }
     return csv.toString();
+  }
+
+  public boolean isDropped() {
+    return dropped;
+  }
+
+  public void setDropped(boolean dropped) {
+    this.dropped = dropped;
   }
 }

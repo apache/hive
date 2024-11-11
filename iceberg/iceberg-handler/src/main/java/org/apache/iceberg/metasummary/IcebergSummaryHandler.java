@@ -36,7 +36,6 @@ import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.TableIdentifier;
-import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
@@ -128,12 +127,12 @@ public class IcebergSummaryHandler implements MetaSummaryHandler {
       Table table;
       try {
         table = catalog.loadTable(tblId);
-      } catch (NoSuchTableException e) {
-        LOG.info("No such table: {} found, will return an empty summary for this table", tableName);
-        return null;
+        this.summaryRetrievers.forEach(retriever ->
+            retriever.getMetaSummary(table, tableSummary));
+      } catch (Exception e) {
+        LOG.warn("Error while loading the table: " + tableName, e);
+        tableSummary.setDropped(true);
       }
-      this.summaryRetrievers.forEach(retriever ->
-          retriever.getMetaSummary(table, tableSummary));
       return System.currentTimeMillis() - start;
     };
     long timeSpent = ugi != null ? ugi.doAs(action) : action.run();
