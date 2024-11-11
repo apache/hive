@@ -956,7 +956,6 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private class DataWrapperForOrc implements LlapDataReader, DataCache, BufferObjectFactory {
     /** A reference to parent DataReader not owned by this object. */
     private final LlapDataReader orcDataReaderRef;
-    private boolean isOpen;
 
     public DataWrapperForOrc() throws IOException {
       ensureRawDataReader(false);
@@ -1024,7 +1023,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
 
     @Override
     public boolean isOpen() {
-      return isOpen;
+      return orcDataReaderRef.isOpen();
     }
 
     @Override
@@ -1061,7 +1060,6 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       long startTime = counters.startTimeCounter();
       orcDataReaderRef.open();
       counters.recordHdfsTime(startTime);
-      isOpen = true;
     }
 
     @Override
