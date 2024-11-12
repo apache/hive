@@ -230,7 +230,7 @@ public class TestSemanticAnalyzer {
       Operator<?> fileSinkOperator = (Operator<?>) invocation.callRealMethod(); // Call the actual method
       capturedValues.add(fileSinkOperator);
       return fileSinkOperator;
-    }).when(analyzer).genFileSinkPlan(any(QB.class), anyString(), any(QB.class), any(Operator.class));
+    }).when(analyzer).genFileSinkPlan(anyString(), any(QB.class), any(Operator.class));
 
     analyzer.analyze(astNode, ctx);
 

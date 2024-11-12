@@ -3610,7 +3610,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Phase1Ctx ctx_1 = initPhase1Ctx();
     doPhase1(subQueryPredicate.getSubQueryAST(), qbSQ, ctx_1, null);
     getMetaData(qbSQ);
-    return genPlan(qbSQ, qbSQ);
+    return genPlan(qbSQ);
   }
 
   @SuppressWarnings("nls")
@@ -6511,7 +6511,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings({"nls"})
-  private Operator genGroupByPlan1ReduceMultiGBY(QB rootQB, List<String> dests, QB qb, Operator input,
+  private Operator genGroupByPlan1ReduceMultiGBY(List<String> dests, QB qb, Operator input,
                                                  Map<String, Operator> aliasToOpInfo)
       throws SemanticException {
 
@@ -6607,7 +6607,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           dest, curr, reduceSinkOperatorInfo, GroupByDesc.Mode.COMPLETE, null);
 
       // TODO: should we pass curr instead of null?
-      curr = genPostGroupByBodyPlan(rootQB, groupByOperatorInfo, dest, qb, aliasToOpInfo, null);
+      curr = genPostGroupByBodyPlan(groupByOperatorInfo, dest, qb, aliasToOpInfo, null);
     }
 
     return curr;
@@ -7453,7 +7453,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("nls")
-  protected Operator genFileSinkPlan(QB rootQB, String dest, QB qb, Operator input)
+  protected Operator genFileSinkPlan(String dest, QB qb, Operator input)
       throws SemanticException {
 
     RowResolver inputRR = opParseCtx.get(input).getRowResolver();
@@ -7775,7 +7775,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       isLocal = true;
       // fall through
     case QBMetaData.DEST_DFS_FILE: {
-      destinationPath = getDestinationFilePath(rootQB, qbm.getDestFileForAlias(dest), isMmTable);
+      destinationPath = getDestinationFilePath(qb, qbm.getDestFileForAlias(dest), isMmTable);
 
       // CTAS case: the file output format and serde are defined by the create
       // table command rather than taking the default value
@@ -11380,7 +11380,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("nls")
-  private Operator genBodyPlan(QB rootQB, QB qb, Operator input, Map<String, Operator> aliasToOpInfo)
+  private Operator genBodyPlan(QB qb, Operator input, Map<String, Operator> aliasToOpInfo)
       throws SemanticException {
     QBParseInfo qbp = qb.getParseInfo();
 
@@ -11486,10 +11486,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                   + " after GB " + opParseCtx.get(curr).getRowResolver());
             }
 
-            curr = genPostGroupByBodyPlan(rootQB, curr, dest, qb, aliasToOpInfo, gbySource);
+            curr = genPostGroupByBodyPlan(curr, dest, qb, aliasToOpInfo, gbySource);
           }
         } else {
-          curr = genGroupByPlan1ReduceMultiGBY(rootQB, commonGroupByDestGroup, qb, input, aliasToOpInfo);
+          curr = genGroupByPlan1ReduceMultiGBY(commonGroupByDestGroup, qb, input, aliasToOpInfo);
         }
       }
     }
@@ -11509,7 +11509,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return inputs;
   }
 
-  private Operator genPostGroupByBodyPlan(QB rootQB, Operator curr, String dest, QB qb,
+  private Operator genPostGroupByBodyPlan(Operator curr, String dest, QB qb,
                                           Map<String, Operator> aliasToOpInfo, Operator gbySource)
       throws SemanticException {
 
@@ -11623,7 +11623,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         qb.getParseInfo().setOuterQueryLimit(limit);
       }
       if (!queryState.getHiveOperation().equals(HiveOperation.CREATEVIEW)) {
-        curr = genFileSinkPlan(rootQB, dest, qb, curr);
+        curr = genFileSinkPlan(dest, qb, curr);
       }
     }
 
@@ -12267,7 +12267,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private Operator genPlan(QB rootQB, QB parent, QBExpr qbexpr) throws SemanticException {
+  private Operator genPlan(QB parent, QBExpr qbexpr) throws SemanticException {
     if (qbexpr.getOpcode() == QBExpr.Opcode.EXCEPT || qbexpr.getOpcode() == QBExpr.Opcode.EXCEPTALL
         || qbexpr.getOpcode() == QBExpr.Opcode.INTERSECT || qbexpr.getOpcode() == QBExpr.Opcode.INTERSECTALL) {
       throw new SemanticException(
@@ -12275,11 +12275,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     if (qbexpr.getOpcode() == QBExpr.Opcode.NULLOP) {
       boolean skipAmbiguityCheck = viewSelect == null && parent.isTopLevelSelectStarQuery();
-      return genPlan(rootQB, qbexpr.getQB(), skipAmbiguityCheck);
+      return genPlan(qbexpr.getQB(), skipAmbiguityCheck);
     }
     if (qbexpr.getOpcode() == QBExpr.Opcode.UNION) {
-      Operator qbexpr1Ops = genPlan(rootQB, parent, qbexpr.getQBExpr1());
-      Operator qbexpr2Ops = genPlan(rootQB, parent, qbexpr.getQBExpr2());
+      Operator qbexpr1Ops = genPlan(parent, qbexpr.getQBExpr1());
+      Operator qbexpr2Ops = genPlan(parent, qbexpr.getQBExpr2());
 
       return genUnionPlan(qbexpr.getAlias(), qbexpr.getQBExpr1().getAlias(),
           qbexpr1Ops, qbexpr.getQBExpr2().getAlias(), qbexpr2Ops);
@@ -12287,24 +12287,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return null;
   }
 
-  /**
-   * Convenience method for codepaths that are not involved genPlan's inner behavior:
-   * the recursive loop always calls genPlan with the subquery QB, whereas some properties were applied only on the
-   * root QB. As setQB is called in the end of genPlan in all iteration, the root QB is not reachable from the qb field.
-   */
   Operator genPlan(QB qb) throws SemanticException {
-    return genPlan(qb, qb);
-  }
-
-  protected Operator genPlan(QB rootQB, QB qb) throws SemanticException {
-    return genPlan(rootQB, qb, false);
+    return genPlan(qb, false);
   }
 
   @SuppressWarnings("nls")
-  private Operator genPlan(QB rootQB, QB qb, boolean skipAmbiguityCheck)
+  private Operator genPlan(QB qpParam, boolean skipAmbiguityCheck)
       throws SemanticException {
 
-    if (!ctx.isCboSucceeded() && qb.getParseInfo().hasQualifyClause()) {
+    if (!ctx.isCboSucceeded() && qpParam.getParseInfo().hasQualifyClause()) {
       throw new SemanticException(ErrorMsg.CBO_IS_REQUIRED.getErrorCodedMsg("Qualify clause"));
     }
 
@@ -12313,11 +12304,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Map<String, Operator> aliasToOpInfo = new LinkedHashMap<String, Operator>();
 
     // Recurse over the subqueries to fill the subquery part of the plan
-    for (String alias : qb.getSubqAliases()) {
-      QBExpr qbexpr = qb.getSubqForAlias(alias);
-      Operator<?> operator = genPlan(rootQB, qb, qbexpr);
+    for (String alias : qpParam.getSubqAliases()) {
+      QBExpr qbexpr = qpParam.getSubqForAlias(alias);
+      Operator<?> operator = genPlan(qpParam, qbexpr);
       aliasToOpInfo.put(alias, operator);
-      if (qb.getViewToTabSchema().containsKey(alias)) {
+      if (qpParam.getViewToTabSchema().containsKey(alias)) {
         // we set viewProjectToTableSchema so that we can leverage ColumnPruner.
         if (operator instanceof LimitOperator) {
           // If create view has LIMIT operator, this can happen
@@ -12328,7 +12319,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (this.viewProjectToTableSchema == null) {
             this.viewProjectToTableSchema = new LinkedHashMap<>();
           }
-          viewProjectToTableSchema.put((SelectOperator) operator, qb.getViewToTabSchema()
+          viewProjectToTableSchema.put((SelectOperator) operator, qpParam.getViewToTabSchema()
               .get(alias));
         } else {
           throw new SemanticException("View " + alias + " is corresponding to "
@@ -12338,20 +12329,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // Recurse over all the source tables
-    for (String alias : qb.getTabAliases()) {
+    for (String alias : qpParam.getTabAliases()) {
       if(alias.equals(DUMMY_TABLE)) {
         continue;
       }
-      Operator op = genTablePlan(alias, qb);
+      Operator op = genTablePlan(alias, qpParam);
       aliasToOpInfo.put(alias, op);
     }
 
     if (aliasToOpInfo.isEmpty()) {
-      qb.getMetaData().setSrcForAlias(DUMMY_TABLE, getDummyTable());
-      TableScanOperator op = (TableScanOperator) genTablePlan(DUMMY_TABLE, qb);
+      qpParam.getMetaData().setSrcForAlias(DUMMY_TABLE, getDummyTable());
+      TableScanOperator op = (TableScanOperator) genTablePlan(DUMMY_TABLE, qpParam);
       op.getConf().setRowLimit(1);
-      qb.addAlias(DUMMY_TABLE);
-      qb.setTabAlias(DUMMY_TABLE, DUMMY_TABLE);
+      qpParam.addAlias(DUMMY_TABLE);
+      qpParam.setTabAlias(DUMMY_TABLE, DUMMY_TABLE);
       aliasToOpInfo.put(DUMMY_TABLE, op);
     }
 
@@ -12362,7 +12353,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       //After processing subqueries and source tables, process
       // partitioned table functions
 
-      Map<ASTNode, PTFInvocationSpec> ptfNodeToSpec = qb.getPTFNodeToSpec();
+      Map<ASTNode, PTFInvocationSpec> ptfNodeToSpec = qpParam.getPTFNodeToSpec();
       if ( ptfNodeToSpec != null ) {
         for(Entry<ASTNode, PTFInvocationSpec> entry : ptfNodeToSpec.entrySet()) {
           ASTNode ast = entry.getKey();
@@ -12385,27 +12376,27 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // For all the source tables that have a lateral view, attach the
     // appropriate operators to the TS
-    genLateralViewPlans(aliasToOpInfo, qb);
+    genLateralViewPlans(aliasToOpInfo, qpParam);
 
 
     // process join
-    if (qb.getParseInfo().getJoinExpr() != null) {
-      ASTNode joinExpr = qb.getParseInfo().getJoinExpr();
+    if (qpParam.getParseInfo().getJoinExpr() != null) {
+      ASTNode joinExpr = qpParam.getParseInfo().getJoinExpr();
 
       if (joinExpr.getToken().getType() == HiveParser.TOK_UNIQUEJOIN) {
-        QBJoinTree joinTree = genUniqueJoinTree(qb, joinExpr, aliasToOpInfo);
-        qb.setQbJoinTree(joinTree);
+        QBJoinTree joinTree = genUniqueJoinTree(qpParam, joinExpr, aliasToOpInfo);
+        qpParam.setQbJoinTree(joinTree);
       } else {
-        QBJoinTree joinTree = genJoinTree(qb, joinExpr, aliasToOpInfo);
-        qb.setQbJoinTree(joinTree);
+        QBJoinTree joinTree = genJoinTree(qpParam, joinExpr, aliasToOpInfo);
+        qpParam.setQbJoinTree(joinTree);
         /*
          * if there is only one destination in Query try to push where predicates
          * as Join conditions
          */
-        Set<String> dests = qb.getParseInfo().getClauseNames();
+        Set<String> dests = qpParam.getParseInfo().getClauseNames();
         if ( dests.size() == 1 && joinTree.getNoOuterJoin()) {
           String dest = dests.iterator().next();
-          ASTNode whereClause = qb.getParseInfo().getWhrForClause(dest);
+          ASTNode whereClause = qpParam.getParseInfo().getWhrForClause(dest);
           if ( whereClause != null ) {
             extractJoinCondsFromWhereClause(joinTree,
                 (ASTNode) whereClause.getChild(0),
@@ -12414,14 +12405,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
 
         if (!disableJoinMerge) {
-          mergeJoinTree(qb);
+          mergeJoinTree(qpParam);
         }
       }
 
       // if any filters are present in the join tree, push them on top of the
       // table
-      pushJoinFilters(qb, qb.getQbJoinTree(), aliasToOpInfo);
-      srcOpInfo = genJoinPlan(qb, aliasToOpInfo);
+      pushJoinFilters(qpParam, qpParam.getQbJoinTree(), aliasToOpInfo);
+      srcOpInfo = genJoinPlan(qpParam, aliasToOpInfo);
     } else {
       // Now if there are more than 1 sources then we have a join case
       // later we can extend this to the union all case as well
@@ -12431,17 +12422,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       srcOpInfo = lastPTFOp != null ? lastPTFOp : srcOpInfo;
     }
 
-    Operator bodyOpInfo = genBodyPlan(rootQB, qb, srcOpInfo, aliasToOpInfo);
+    Operator bodyOpInfo = genBodyPlan(qpParam, srcOpInfo, aliasToOpInfo);
 
     if (LOG.isDebugEnabled()) {
-      LOG.debug("Created Plan for Query Block " + qb.getId());
+      LOG.debug("Created Plan for Query Block " + qpParam.getId());
     }
 
-    if (qb.getAlias() != null) {
-      rewriteRRForSubQ(qb.getAlias(), bodyOpInfo, skipAmbiguityCheck);
+    if (qpParam.getAlias() != null) {
+      rewriteRRForSubQ(qpParam.getAlias(), bodyOpInfo, skipAmbiguityCheck);
     }
 
-    setQB(qb);
+    setQB(qpParam);
     return bodyOpInfo;
   }
 
@@ -13050,7 +13041,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     List<ASTNode> hintsList = new ArrayList<>();
     getHintsFromQB(qb, hintsList);
     getQB().getParseInfo().setHintList(hintsList);
-    return genPlan(qb, qb);
+    return genPlan(qb);
   }
 
   private void removeOBInSubQuery(QBExpr qbExpr) {
@@ -15875,7 +15866,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return false;
     }
 
-    LOG.debug("Query type can use cache");
     return true;
   }
 
