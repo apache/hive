@@ -26,11 +26,12 @@ import org.apache.orc.StripeInformation;
 import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.OrcIndex;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /** An abstract data reader that IO formats can use to read bytes from underlying storage. */
-public interface LlapDataReader extends AutoCloseable, Cloneable {
+public interface LlapDataReader extends Closeable, Cloneable {
 
   /** Opens the DataReader, making it ready to use. */
   void open() throws IOException;
@@ -81,8 +82,10 @@ public interface LlapDataReader extends AutoCloseable, Cloneable {
    */
   LlapDataReader clone();
 
-  @Override
-  void close() throws IOException;
+  /**
+   * @return true if the reader was opened.
+   */
+  boolean isOpen();
 
   /**
    * Returns the compression codec used by this datareader.
