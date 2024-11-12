@@ -22,6 +22,9 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
+import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
+import org.apache.hadoop.hive.metastore.client.builder.GetPartitionProjectionsSpecBuilder;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -33,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -89,7 +93,18 @@ public abstract class ShowTableStatusFormatter {
     List<Path> locations = new ArrayList<Path>();
     if (table.isPartitioned()) {
       if (partition == null) {
-        for (Partition currPartition : db.getPartitions(table)) {
+      List<Partition> partitions;
+      GetProjectionsSpec getProjectionsSpec = new GetPartitionProjectionsSpecBuilder()
+              .addProjectFieldList(Arrays.asList("sd.location")).build();
+        GetPartitionsRequest request = new GetPartitionsRequest(table.getDbName(), table.getTableName(), getProjectionsSpec, null);
+        request.setCatName(table.getCatName());
+        try {
+          partitions = db.getPartitionsWithSpecs(table, request);
+        } catch (Exception e) {
+          throw new HiveException(e);
+        }
+
+        for (Partition currPartition : partitions) {
           if (currPartition.getLocation() != null) {
             locations.add(new Path(currPartition.getLocation()));
           }

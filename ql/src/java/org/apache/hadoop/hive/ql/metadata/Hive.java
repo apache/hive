@@ -118,10 +118,13 @@ import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
 import org.apache.hadoop.hive.metastore.api.GetFunctionsRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsResponse;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.Batchable;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
 import org.apache.hadoop.hive.ql.Context;
@@ -162,6 +165,7 @@ import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsResponse;
 import org.apache.hadoop.hive.metastore.api.GetPartitionRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetPartitionResponse;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthResponse;
@@ -177,6 +181,7 @@ import org.apache.hadoop.hive.metastore.api.Materialization;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetadataPpdResult;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.PartitionFilterMode;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionWithoutSD;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
@@ -4053,7 +4058,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public List<String> getPartitionNames(String dbName, String tblName,
       Map<String, String> partSpec, short max) throws HiveException {
-    List<String> names = null;
     Table t = getTable(dbName, tblName);
     if (t.getStorageHandler() != null && t.getStorageHandler().alwaysUnpartitioned()) {
       return t.getStorageHandler().getPartitionNames(t, partSpec);
@@ -4061,11 +4065,20 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     List<String> pvals = MetaStoreUtils.getPvals(t.getPartCols(), partSpec);
 
+    return getPartitionNamesByPartitionVals(dbName, tblName, pvals, max);
+  }
+
+  // get partition names from provided partition values
+  public List<String> getPartitionNamesByPartitionVals(String dbName, String tblName,
+      List<String> pVals, short max) throws HiveException {
+    List<String> names = null;
+    Table t = getTable(dbName, tblName);
+
     try {
       GetPartitionNamesPsRequest req = new GetPartitionNamesPsRequest();
       req.setTblName(tblName);
       req.setDbName(dbName);
-      req.setPartValues(pvals);
+      req.setPartValues(pVals);
       req.setMaxParts(max);
       if (AcidUtils.isTransactionalTable(t)) {
         ValidWriteIdList validWriteIdList = getValidWriteIdList(dbName, tblName);
@@ -4075,10 +4088,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
       GetPartitionNamesPsResponse res = getMSC().listPartitionNamesRequest(req);
       names = res.getNames();
     } catch (NoSuchObjectException nsoe) {
-      // this means no partition exists for the given partition spec
+      // this means the catName/dbName/tblName are invalid or the table does not exist for the given partition spec
       // key value pairs - thrift cannot handle null return values, hence
-      // listPartitionNames() throws NoSuchObjectException to indicate null partitions
-      return Lists.newArrayList();
+      // listPartitionNames() throws NoSuchObjectException
+      throw new HiveException("Invalid catName/dbName/tableName or table doesn't exist.", nsoe);
     } catch (Exception e) {
       LOG.error("Failed getPartitionNames", e);
       throw new HiveException(e);
@@ -4218,6 +4231,30 @@ private void constructOneLBLocationMap(FileStatus fSta,
         result.clear();
         PartitionIterable partitionIterable = new PartitionIterable(Hive.get(), tbl, partialPartitionSpec, size,
             isAuthRequired, userName, groupNames);
+        partitionIterable.forEach(result::add);
+        return null;
+      }
+    };
+    try {
+      batchTask.run();
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+    return result;
+  }
+
+  public Set<Partition> getAllPartitionsWithSpecsInBatches(Table tbl, int batchSize, int decayingFactor,
+      int maxRetries, GetPartitionsRequest request) throws HiveException, TException {
+    if (!tbl.isPartitioned()) {
+      return Sets.newHashSet(new Partition(tbl));
+    }
+    Set<Partition> result = new LinkedHashSet<>();
+    RetryUtilities.ExponentiallyDecayingBatchWork batchTask = new RetryUtilities
+        .ExponentiallyDecayingBatchWork<Void>(batchSize, decayingFactor, maxRetries) {
+      @Override
+      public Void execute(int size) throws HiveException, TException {
+        result.clear();
+        PartitionIterable partitionIterable = new PartitionIterable(Hive.get(), request, size);
         partitionIterable.forEach(result::add);
         return null;
       }
@@ -4466,6 +4503,69 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return convertFromMetastore(tbl, tParts);
   }
 
+  public List<Partition> getPartitionsWithSpecs(Table tbl, GetPartitionsRequest request)
+      throws HiveException, TException {
+
+    if (!tbl.isPartitioned()) {
+      throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, tbl.getTableName());
+    }
+    int batchSize = MetastoreConf.getIntVar(Hive.get().getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+    if (batchSize > 0) {
+      return new ArrayList<>(getAllPartitionsWithSpecsInBatches(tbl, batchSize, DEFAULT_BATCH_DECAYING_FACTOR, MetastoreConf.getIntVar(
+          Hive.get().getConf(), MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES), request));
+    } else {
+      return getPartitionsWithSpecsInternal(tbl, request);
+    }
+  }
+
+  List<Partition> getPartitionsWithSpecsInternal(Table tbl, GetPartitionsRequest request)
+      throws HiveException, TException {
+
+    if (!tbl.isPartitioned()) {
+      throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, tbl.getTableName());
+    }
+    GetPartitionsResponse response = getMSC().getPartitionsWithSpecs(request);
+    List<org.apache.hadoop.hive.metastore.api.PartitionSpec> partitionSpecs = response.getPartitionSpec();
+    List<Partition> partitions = new ArrayList<>();
+    partitions.addAll(convertFromPartSpec(partitionSpecs.iterator(), tbl));
+
+    return partitions;
+  }
+
+  List<Partition> getPartitionsWithSpecsByNames(Table tbl, List<String> partNames, GetPartitionsRequest request)
+      throws HiveException, TException {
+
+    if (!tbl.isPartitioned()) {
+      throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, tbl.getTableName());
+    }
+    List<Partition> partitions = new ArrayList<Partition>(partNames.size());
+
+    int batchSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX);
+    // I do not want to modify the original request when implementing batching, hence we will know what actual request was being made
+    GetPartitionsRequest req = request;
+    if (!req.isSetFilterSpec()) {
+      req.setFilterSpec(new GetPartitionsFilterSpec());
+    }
+
+    try {
+      Batchable.runBatched(batchSize, partNames, new Batchable<String, Void>() {
+        @Override
+        public List<Void> run(List<String> list) throws Exception {
+          req.getFilterSpec().setFilters(list);
+          req.getFilterSpec().setFilterMode(PartitionFilterMode.BY_NAMES);
+          List<Partition> tParts = getPartitionsWithSpecsInternal(tbl, req);
+          if (tParts != null) {
+            partitions.addAll(tParts);
+          }
+          return Collections.emptyList();
+        }
+      });
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+    return partitions;
+  }
+
   private static List<Partition> convertFromMetastore(Table tbl,
       List<org.apache.hadoop.hive.metastore.api.Partition> partitions) throws HiveException {
     if (partitions == null) {
@@ -4482,7 +4582,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   // This method converts PartitionSpec to Partiton.
   // This is required because listPartitionsSpecByExpr return set of PartitionSpec but hive
   // require Partition
-  private static List<Partition> convertFromPartSpec(Iterator<PartitionSpec> iterator, Table tbl)
+  static List<Partition> convertFromPartSpec(Iterator<PartitionSpec> iterator, Table tbl)
       throws HiveException, TException {
     if(!iterator.hasNext()) {
       return Collections.emptyList();

@@ -270,11 +270,10 @@ public class HiveMetaStoreChecker {
             MetastoreConf.getVar(conf, MetastoreConf.ConfVars.DEFAULTPARTITIONNAME), results);
         parts = new PartitionIterable(results);
       } else {
+        GetProjectionsSpec projectionsSpec = new GetPartitionProjectionsSpecBuilder()
+                .addProjectFieldList(Arrays.asList("sd.location","createTime","values")).build();
         GetPartitionsRequest request = new GetPartitionsRequest(table.getDbName(), table.getTableName(),
-            null, null);
-        request.setProjectionSpec(new GetPartitionProjectionsSpecBuilder().addProjectField("sd.location")
-            .addProjectField("createTime").addProjectField("tableName")
-            .addProjectField("values").build());
+                projectionsSpec, null);
         request.setCatName(table.getCatName());
         int batchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
         if (batchSize > 0) {

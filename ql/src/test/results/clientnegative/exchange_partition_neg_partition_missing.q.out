@@ -20,4 +20,4 @@ PREHOOK: Input: default@exchange_part_test1
 POSTHOOK: query: SHOW PARTITIONS exchange_part_test1
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@exchange_part_test1
-FAILED: SemanticException [Error 10006]: Partition not found {ds=2013-04-05}
+FAILED: SemanticException [Error 10006]: Partition not found GetPartitionsFilterSpec(filterMode:BY_VALUES, filters:[2013-04-05]) for the following partition keys: [FieldSchema(name:ds, type:string, comment:null)]
