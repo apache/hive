@@ -12292,10 +12292,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("nls")
-  private Operator genPlan(QB qpParam, boolean skipAmbiguityCheck)
+  private Operator genPlan(QB qbParam, boolean skipAmbiguityCheck)
       throws SemanticException {
 
-    if (!ctx.isCboSucceeded() && qpParam.getParseInfo().hasQualifyClause()) {
+    if (!ctx.isCboSucceeded() && qbParam.getParseInfo().hasQualifyClause()) {
       throw new SemanticException(ErrorMsg.CBO_IS_REQUIRED.getErrorCodedMsg("Qualify clause"));
     }
 
@@ -12304,11 +12304,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Map<String, Operator> aliasToOpInfo = new LinkedHashMap<String, Operator>();
 
     // Recurse over the subqueries to fill the subquery part of the plan
-    for (String alias : qpParam.getSubqAliases()) {
-      QBExpr qbexpr = qpParam.getSubqForAlias(alias);
-      Operator<?> operator = genPlan(qpParam, qbexpr);
+    for (String alias : qbParam.getSubqAliases()) {
+      QBExpr qbexpr = qbParam.getSubqForAlias(alias);
+      Operator<?> operator = genPlan(qbParam, qbexpr);
       aliasToOpInfo.put(alias, operator);
-      if (qpParam.getViewToTabSchema().containsKey(alias)) {
+      if (qbParam.getViewToTabSchema().containsKey(alias)) {
         // we set viewProjectToTableSchema so that we can leverage ColumnPruner.
         if (operator instanceof LimitOperator) {
           // If create view has LIMIT operator, this can happen
@@ -12319,7 +12319,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (this.viewProjectToTableSchema == null) {
             this.viewProjectToTableSchema = new LinkedHashMap<>();
           }
-          viewProjectToTableSchema.put((SelectOperator) operator, qpParam.getViewToTabSchema()
+          viewProjectToTableSchema.put((SelectOperator) operator, qbParam.getViewToTabSchema()
               .get(alias));
         } else {
           throw new SemanticException("View " + alias + " is corresponding to "
@@ -12329,20 +12329,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // Recurse over all the source tables
-    for (String alias : qpParam.getTabAliases()) {
+    for (String alias : qbParam.getTabAliases()) {
       if(alias.equals(DUMMY_TABLE)) {
         continue;
       }
-      Operator op = genTablePlan(alias, qpParam);
+      Operator op = genTablePlan(alias, qbParam);
       aliasToOpInfo.put(alias, op);
     }
 
     if (aliasToOpInfo.isEmpty()) {
-      qpParam.getMetaData().setSrcForAlias(DUMMY_TABLE, getDummyTable());
-      TableScanOperator op = (TableScanOperator) genTablePlan(DUMMY_TABLE, qpParam);
+      qbParam.getMetaData().setSrcForAlias(DUMMY_TABLE, getDummyTable());
+      TableScanOperator op = (TableScanOperator) genTablePlan(DUMMY_TABLE, qbParam);
       op.getConf().setRowLimit(1);
-      qpParam.addAlias(DUMMY_TABLE);
-      qpParam.setTabAlias(DUMMY_TABLE, DUMMY_TABLE);
+      qbParam.addAlias(DUMMY_TABLE);
+      qbParam.setTabAlias(DUMMY_TABLE, DUMMY_TABLE);
       aliasToOpInfo.put(DUMMY_TABLE, op);
     }
 
@@ -12353,7 +12353,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       //After processing subqueries and source tables, process
       // partitioned table functions
 
-      Map<ASTNode, PTFInvocationSpec> ptfNodeToSpec = qpParam.getPTFNodeToSpec();
+      Map<ASTNode, PTFInvocationSpec> ptfNodeToSpec = qbParam.getPTFNodeToSpec();
       if ( ptfNodeToSpec != null ) {
         for(Entry<ASTNode, PTFInvocationSpec> entry : ptfNodeToSpec.entrySet()) {
           ASTNode ast = entry.getKey();
@@ -12376,27 +12376,27 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // For all the source tables that have a lateral view, attach the
     // appropriate operators to the TS
-    genLateralViewPlans(aliasToOpInfo, qpParam);
+    genLateralViewPlans(aliasToOpInfo, qbParam);
 
 
     // process join
-    if (qpParam.getParseInfo().getJoinExpr() != null) {
-      ASTNode joinExpr = qpParam.getParseInfo().getJoinExpr();
+    if (qbParam.getParseInfo().getJoinExpr() != null) {
+      ASTNode joinExpr = qbParam.getParseInfo().getJoinExpr();
 
       if (joinExpr.getToken().getType() == HiveParser.TOK_UNIQUEJOIN) {
-        QBJoinTree joinTree = genUniqueJoinTree(qpParam, joinExpr, aliasToOpInfo);
-        qpParam.setQbJoinTree(joinTree);
+        QBJoinTree joinTree = genUniqueJoinTree(qbParam, joinExpr, aliasToOpInfo);
+        qbParam.setQbJoinTree(joinTree);
       } else {
-        QBJoinTree joinTree = genJoinTree(qpParam, joinExpr, aliasToOpInfo);
-        qpParam.setQbJoinTree(joinTree);
+        QBJoinTree joinTree = genJoinTree(qbParam, joinExpr, aliasToOpInfo);
+        qbParam.setQbJoinTree(joinTree);
         /*
          * if there is only one destination in Query try to push where predicates
          * as Join conditions
          */
-        Set<String> dests = qpParam.getParseInfo().getClauseNames();
+        Set<String> dests = qbParam.getParseInfo().getClauseNames();
         if ( dests.size() == 1 && joinTree.getNoOuterJoin()) {
           String dest = dests.iterator().next();
-          ASTNode whereClause = qpParam.getParseInfo().getWhrForClause(dest);
+          ASTNode whereClause = qbParam.getParseInfo().getWhrForClause(dest);
           if ( whereClause != null ) {
             extractJoinCondsFromWhereClause(joinTree,
                 (ASTNode) whereClause.getChild(0),
@@ -12405,14 +12405,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
 
         if (!disableJoinMerge) {
-          mergeJoinTree(qpParam);
+          mergeJoinTree(qbParam);
         }
       }
 
       // if any filters are present in the join tree, push them on top of the
       // table
-      pushJoinFilters(qpParam, qpParam.getQbJoinTree(), aliasToOpInfo);
-      srcOpInfo = genJoinPlan(qpParam, aliasToOpInfo);
+      pushJoinFilters(qbParam, qbParam.getQbJoinTree(), aliasToOpInfo);
+      srcOpInfo = genJoinPlan(qbParam, aliasToOpInfo);
     } else {
       // Now if there are more than 1 sources then we have a join case
       // later we can extend this to the union all case as well
@@ -12422,17 +12422,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       srcOpInfo = lastPTFOp != null ? lastPTFOp : srcOpInfo;
     }
 
-    Operator bodyOpInfo = genBodyPlan(qpParam, srcOpInfo, aliasToOpInfo);
+    Operator bodyOpInfo = genBodyPlan(qbParam, srcOpInfo, aliasToOpInfo);
 
     if (LOG.isDebugEnabled()) {
-      LOG.debug("Created Plan for Query Block " + qpParam.getId());
+      LOG.debug("Created Plan for Query Block " + qbParam.getId());
     }
 
-    if (qpParam.getAlias() != null) {
-      rewriteRRForSubQ(qpParam.getAlias(), bodyOpInfo, skipAmbiguityCheck);
+    if (qbParam.getAlias() != null) {
+      rewriteRRForSubQ(qbParam.getAlias(), bodyOpInfo, skipAmbiguityCheck);
     }
 
-    setQB(qpParam);
+    setQB(qbParam);
     return bodyOpInfo;
   }
 
