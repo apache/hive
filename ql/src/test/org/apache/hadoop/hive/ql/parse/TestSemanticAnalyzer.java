@@ -76,7 +76,7 @@ public class TestSemanticAnalyzer {
   }
 
   @AfterClass
-  public static void afterClass() throws Exception {
+  public static void afterClass() {
     db.close(true);
   }
 
