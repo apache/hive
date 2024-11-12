@@ -189,11 +189,11 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
    */
   private boolean[][] stripeRgs;
 
-  private static final int STATE_IDLING = 0;
+  private static final int STATE_IDLE = 0;
   private static final int STATE_PROCESSING = 1;
   private static final int STATE_STOPPED = 2;
 
-  private final AtomicInteger state = new AtomicInteger(STATE_IDLING);
+  private final AtomicInteger state = new AtomicInteger(STATE_IDLE);
 
   // This is equivalent to state.get() == STATE_STOPPED, but it cannot be removed
   // because it is needed as AtomicBoolean in other calls.
@@ -288,7 +288,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   @Override
   protected Void callInternal() throws IOException, InterruptedException {
     return ugi.doAs((PrivilegedExceptionAction<Void>) () -> {
-      if (state.compareAndSet(STATE_IDLING, STATE_PROCESSING)) {
+      if (state.compareAndSet(STATE_IDLE, STATE_PROCESSING)) {
         long startTime = counters.startTimeCounter();
         try {
           performDataRead();
@@ -298,7 +298,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
           trace.dumpLog(LOG);
         } finally {
           recordReaderTime(startTime);
-          if (state.compareAndSet(STATE_PROCESSING, STATE_IDLING)) { // Always true here.
+          if (state.compareAndSet(STATE_PROCESSING, STATE_IDLE)) { // Always true here.
             cleanup();
           }
         }
@@ -318,7 +318,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     };
   }
 
-  protected void performDataRead() throws IOException, InterruptedException {
+  private void performDataRead() throws IOException {
     LlapIoImpl.LOG.info("Processing data for file {}: {}", fileKey, split.getPath());
     if (processStop()) {
       return;
@@ -487,7 +487,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
    */
   private void cleanup() {
     // This is called from both stop and callInternal, ensure that only one of the can cleanup and only once.
-    if (state.compareAndSet(STATE_IDLING, STATE_STOPPED)) {
+    if (state.compareAndSet(STATE_IDLE, STATE_STOPPED)) {
       // Return the trace, should happen only once.
       tracePool.offer(trace);
       // Cleanup readers
