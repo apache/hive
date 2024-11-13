@@ -20,6 +20,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -78,7 +79,7 @@ class MetastoreDirectSqlUtils {
       }
       LOG.warn(errorBuilder.toString() + "]", ex);
       // We just logged an exception with (in case of JDO) a humongous callstack. Make a new one.
-      throw new MetaException("See previous errors; " + ex.getMessage() + errorBuilder.toString() + "]");
+      throw new MetaException("See previous errors; " + ExceptionUtils.getRootCauseMessage(ex) + " " +  errorBuilder.toString() + "]");
     }
   }
 
@@ -144,6 +145,7 @@ class MetastoreDirectSqlUtils {
         if (fields == null && !iter.hasNext())
           break;
         long id = entry.getKey();
+        T value = entry.getValue();
         while (fields != null || iter.hasNext()) {
           if (fields == null) {
             fields = iter.next();
@@ -152,9 +154,18 @@ class MetastoreDirectSqlUtils {
           if (nestedId < id) {
             throw new MetaException("Found entries for unknown ID " + nestedId);
           }
-          if (nestedId > id)
+          if (nestedId > id) {
+            if (!tree.containsKey(nestedId)) {
+              Throwable throwable = (new Throwable()).fillInStackTrace();
+              LOG.warn("Multi-value fields are missing for the {}:{}, method: {}", value.getClass().getSimpleName(), id,
+                  throwable.getStackTrace()[2]);
+              if (LOG.isDebugEnabled()) {
+                LOG.debug("loopJoinOrderedResult full stack trace:", throwable);
+              }
+            }
             break; // fields belong to one of the next entries
-          func.apply(entry.getValue(), fields);
+          }
+          func.apply(value, fields);
           fields = null;
         }
         Deadline.checkTimeout();
