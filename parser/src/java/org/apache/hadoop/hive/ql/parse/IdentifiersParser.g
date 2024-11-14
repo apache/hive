@@ -997,6 +997,8 @@ nonReserved
     | KW_PKFK_JOIN
     | KW_THAN
     | KW_TIMESTAMPLOCALTZ
+    | KW_ORDERED
+    | KW_LOCALLY
 ;
 
 //The following SQL2011 reserved keywords are used as function name only, but not as identifiers.
