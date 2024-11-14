@@ -256,8 +256,7 @@ public class SharedWorkOptimizer extends Transform {
   private static List<List<TableScanOperator>> groupTableScanOperators(List<Entry<String, Long>> sortedTables,
       ArrayListMultimap<String, TableScanOperator> tableNameToOps, int batchSize) {
     if (batchSize == -1) {
-      return Collections.singletonList(sortedTables.stream().map(Entry::getKey)
-          .flatMap(tableName -> tableNameToOps.get(tableName).stream()).collect(Collectors.toList()));
+      return sortedTables.stream().map(entry -> tableNameToOps.get(entry.getKey())).collect(Collectors.toList());
     }
 
     final List<List<TableScanOperator>> batches = new ArrayList<>();
