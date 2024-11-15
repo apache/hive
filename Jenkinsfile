@@ -135,10 +135,10 @@ def hdbPodTemplate(closure) {
         resourceRequestMemory: '6400Mi',
         resourceLimitMemory: '12000Mi',
         envVars: [
-            envVar(key: 'DOCKER_HOST', value: 'tcp://localhost:2375')
+            envVar(key: 'DOCKER_HOST', value: 'tcp://localhost:2376')
         ]
     ),
-    containerTemplate(name: 'dind', image: 'docker:18.05-dind',
+    containerTemplate(name: 'dind', image: 'docker:20.10-dind',
         alwaysPullImage: true,
         privileged: true,
     ),
