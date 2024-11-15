@@ -26,7 +26,6 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -100,7 +99,6 @@ import org.apache.hadoop.hive.ql.optimizer.SetReducerParallelism;
 import org.apache.hadoop.hive.ql.optimizer.SharedWorkOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.SortedDynPartitionOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.topnkey.TopNKeyProcessor;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkDeDuplication;
 import org.apache.hadoop.hive.ql.optimizer.topnkey.TopNKeyPushdownProcessor;
 import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkJoinDeDuplication;
@@ -117,7 +115,6 @@ import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
 import org.apache.hadoop.hive.ql.optimizer.physical.SerializeFilter;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
-import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.optimizer.stats.annotation.AnnotateWithStatistics;
 import org.apache.hadoop.hive.ql.optimizer.UnionDistinctMerger;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
@@ -140,7 +137,6 @@ import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.mapper.AuxOpTreeSignature;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
-import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
@@ -997,35 +993,6 @@ public class TezCompiler extends TaskCompiler {
     topNodes.addAll(procCtx.parseContext.getTopOps().values());
     SemanticGraphWalker ogw = new PreOrderOnceWalker(disp);
     ogw.startWalking(topNodes, null);
-  }
-
-  private static class CollectAll implements SemanticNodeProcessor {
-    private PlanMapper planMapper;
-
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
-        throws SemanticException {
-      ParseContext pCtx = ((OptimizeTezProcContext) procCtx).parseContext;
-      planMapper = pCtx.getContext().getPlanMapper();
-      FilterOperator fop = (FilterOperator) nd;
-      OpTreeSignature sig = planMapper.getSignatureOf(fop);
-      List<EquivGroup> ar = getGroups(planMapper, HiveFilter.class);
-
-
-      return nd;
-    }
-
-    private List<EquivGroup> getGroups(PlanMapper planMapper2, Class<HiveFilter> class1) {
-      Iterator<EquivGroup> it = planMapper.iterateGroups();
-      List<EquivGroup> ret = new ArrayList<PlanMapper.EquivGroup>();
-      while (it.hasNext()) {
-        EquivGroup g = it.next();
-        if (g.getAll(class1).size() > 0) {
-          ret.add(g);
-        }
-      }
-      return ret;
-    }
   }
 
   private static class MarkRuntimeStatsAsIncorrect implements SemanticNodeProcessor {
