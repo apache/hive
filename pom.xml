@@ -26,6 +26,7 @@
   <name>Hive</name>
   <url>https://hive.apache.org</url>
   <inceptionYear>2008</inceptionYear>
+  
   <modules>
     <module>storage-api</module>
     <module>accumulo-handler</module>
