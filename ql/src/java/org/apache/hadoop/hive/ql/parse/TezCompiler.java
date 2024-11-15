@@ -119,6 +119,7 @@ import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.optimizer.stats.annotation.AnnotateWithStatistics;
+import org.apache.hadoop.hive.ql.optimizer.UnionDistinctMerger;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
@@ -212,6 +213,13 @@ public class TezCompiler extends TaskCompiler {
       new SortedDynPartitionOptimizer().transform(procCtx.parseContext);
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Sorted dynamic partition optimization");
     }
+
+    perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+    if (procCtx.conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_MERGE_ADJACENT_UNION_DISTINCT)) {
+      // This should be run before ReduceSinkDeDuplication in order not to merge irrelevant GroupBy operators.
+      new UnionDistinctMerger().transform(procCtx.parseContext);
+    }
+    perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run adjacent union distinct merger");
 
     if(HiveConf.getBoolVar(procCtx.conf, HiveConf.ConfVars.HIVE_OPT_REDUCE_DEDUPLICATION)) {
       perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -47,7 +48,7 @@ public class TestTempAcidTable {
   @BeforeClass
   public static void setUp() throws Exception {
     hive = Hive.get();
-    HiveConf hiveConf = hive.getConf();
+    HiveConf hiveConf = new HiveConfForTest(TestTempAcidTable.class);
     hiveConf.setVar(ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     hiveConf.setBoolVar(ConfVars.HIVE_IN_TEST, true);
