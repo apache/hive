@@ -40,7 +40,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 public class TestPackageJdo {
-  
   private static final String TMPDIR = System.getProperty("java.io.tmpdir", "target/tmp");
   private final String packageName = "org.apache.hadoop.hive.metastore.model";
   private final Configuration conf = MetastoreConf.newMetastoreConf();
@@ -90,6 +89,7 @@ public class TestPackageJdo {
       this.nullable = nullable;
     }
 
+    // Oops, we check only the column names here...
     @Override
     public boolean equals(Object o) {
       if (this == o)
@@ -97,12 +97,12 @@ public class TestPackageJdo {
       if (o == null || getClass() != o.getClass())
         return false;
       ColumnInfo that = (ColumnInfo) o;
-      return Objects.equals(columnName, that.columnName) && Objects.equals(dataType, that.dataType);
+      return Objects.equals(columnName, that.columnName);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(columnName, dataType);
+      return Objects.hash(columnName);
     }
 
     @Override

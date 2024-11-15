@@ -73,7 +73,7 @@
         <column name="DB_MANAGED_LOCATION_URI" length="4000" jdbc-type="VARCHAR" allows-null="true"/>
       </field>
       <field name="type">
-        <column name="TYPE" length="32" jdbc-type="VARCHAR" allows-null="true"/>
+        <column name="TYPE" length="128" jdbc-type="VARCHAR" allows-null="true"/>
       </field>
       <field name="connectorName">
         <column name="DATACONNECTOR_NAME" length="128" jdbc-type="VARCHAR" allows-null="true"/>
@@ -215,7 +215,7 @@
            <column name="PARAM_KEY" length="256" jdbc-type="VARCHAR"/>
         </key>
         <value>
-           <column name="PARAM_VALUE" jdbc-type="CLOB"/>
+           <column name="PARAM_VALUE" length="32672" jdbc-type="VARCHAR"/>
         </value>
       </field>
       <field name="viewOriginalText" default-fetch-group="false">
@@ -258,7 +258,7 @@
         <foreign-key name="MV_TABLES_USED_FK1" delete-action="cascade"/>
       </field>
       <field name="txnList">
-        <column name="TXN_LIST" jdbc-type="CLOB" allows-null="true"/>
+        <column name="TXN_LIST" length="32672" jdbc-type="VARCHAR" allows-null="true"/>
       </field>
     </class>
 
@@ -338,7 +338,7 @@
            <column name="PARAM_KEY" length="256" jdbc-type="VARCHAR"/>
         </key>
         <value>
-           <column name="PARAM_VALUE" jdbc-type="CLOB"/>
+           <column name="PARAM_VALUE" length="32672" jdbc-type="VARCHAR"/>
         </value>
       </field>
       <field name="description">
@@ -383,10 +383,10 @@
               <column name="COLUMN_NAME" length="767" jdbc-type="VARCHAR" allows-null="false"/>
             </field>
             <field name="type">
-              <column name="TYPE_NAME" jdbc-type="CLOB" allows-null="false"/>
+              <column name="TYPE_NAME" length="32672" jdbc-type="VARCHAR" allows-null="false"/>
             </field>
             <field name="comment">
-              <column name="COMMENT" length="4000" jdbc-type="VARCHAR" allows-null="true"/>
+              <column name="COMMENT" length="256" jdbc-type="VARCHAR" allows-null="true"/>
             </field>
           </embedded>
         </element>
@@ -471,7 +471,7 @@
            <column name="PARAM_KEY" length="256" jdbc-type="VARCHAR"/>
         </key>
         <value>
-           <column name="PARAM_VALUE" jdbc-type="CLOB"/>
+           <column name="PARAM_VALUE" length="32672" jdbc-type="VARCHAR"/>
         </value>
       </field>
       <field name="skewedColNames" table="SKEWED_COL_NAMES">
@@ -538,7 +538,7 @@
            <column name="PARAM_KEY" length="256" jdbc-type="VARCHAR"/>
         </key>
         <value>
-           <column name="PARAM_VALUE" jdbc-type="CLOB"/>
+           <column name="PARAM_VALUE" length="32672" jdbc-type="VARCHAR"/>
         </value>
       </field>
       <field name="writeId">
@@ -961,10 +961,10 @@
         <column name="DOUBLE_HIGH_VALUE" jdbc-type="DOUBLE" allows-null="true"/>
       </field>
       <field name="decimalLowValue">
-        <column name="BIG_DECIMAL_LOW_VALUE" length="4000" jdbc-type="VARCHAR" allows-null="true"/>
+        <column name="BIG_DECIMAL_LOW_VALUE"  jdbc-type="VARCHAR" allows-null="true"/>
       </field>
       <field name="decimalHighValue">
-        <column name="BIG_DECIMAL_HIGH_VALUE" length="4000" jdbc-type="VARCHAR" allows-null="true"/>
+        <column name="BIG_DECIMAL_HIGH_VALUE" jdbc-type="VARCHAR" allows-null="true"/>
       </field>
       <field name="numNulls">
         <column name="NUM_NULLS" jdbc-type="BIGINT" allows-null="false"/>
@@ -1026,10 +1026,10 @@
         <column name="DOUBLE_HIGH_VALUE" jdbc-type="DOUBLE" allows-null="true"/>
       </field>
       <field name="decimalLowValue">
-        <column name="BIG_DECIMAL_LOW_VALUE"  length="4000" jdbc-type="VARCHAR" allows-null="true"/>
+        <column name="BIG_DECIMAL_LOW_VALUE"  jdbc-type="VARCHAR" allows-null="true"/>
       </field>
       <field name="decimalHighValue">
-        <column name="BIG_DECIMAL_HIGH_VALUE" length="4000" jdbc-type="VARCHAR" allows-null="true"/>
+        <column name="BIG_DECIMAL_HIGH_VALUE" jdbc-type="VARCHAR" allows-null="true"/>
       </field>
       <field name="numNulls">
         <column name="NUM_NULLS" jdbc-type="BIGINT" allows-null="false"/>
@@ -1171,7 +1171,7 @@
         <column name="TBL_NAME" length="256" jdbc-type="VARCHAR" allows-null="true"/>
       </field>
       <field name="message">
-        <column name="MESSAGE" jdbc-type="CLOB"/>
+        <column name="MESSAGE" jdbc-type="LONGVARCHAR"/>
       </field>
       <field name="messageFormat">
         <column name="MESSAGE_FORMAT" length="16" jdbc-type="VARCHAR" allows-null="true"/>
@@ -1204,19 +1204,19 @@
         <column name="WNL_DATABASE" length="128" jdbc-type="VARCHAR" allows-null="false"/>
       </field>
       <field name="table">
-        <column name="WNL_TABLE" length="256" jdbc-type="VARCHAR" allows-null="false"/>
+        <column name="WNL_TABLE" length="128" jdbc-type="VARCHAR" allows-null="false"/>
       </field>
       <field name="partition">
-        <column name="WNL_PARTITION" length="767" jdbc-type="VARCHAR" allows-null="false"/>
+        <column name="WNL_PARTITION" length="1024" jdbc-type="VARCHAR" allows-null="false"/>
       </field>
       <field name="tableObject">
-        <column name="WNL_TABLE_OBJ" jdbc-type="CLOB"/>
+        <column name="WNL_TABLE_OBJ" jdbc-type="LONGVARCHAR"/>
       </field>
       <field name="partObject">
-        <column name="WNL_PARTITION_OBJ" jdbc-type="CLOB"/>
+        <column name="WNL_PARTITION_OBJ" jdbc-type="LONGVARCHAR"/>
       </field>
       <field name="files">
-        <column name="WNL_FILES" jdbc-type="CLOB"/>
+        <column name="WNL_FILES" jdbc-type="LONGVARCHAR"/>
       </field>
       <field name="eventTime">
         <column name="WNL_EVENT_TIME" jdbc-type="INTEGER" allows-null="false"/>
@@ -1237,7 +1237,7 @@
         <column name="QUERY_PARALLELISM" jdbc-type="integer" allows-null="true"/>
       </field>
       <field name="status">
-        <column name="STATUS" length="20" jdbc-type="VARCHAR" allows-null="false"/>
+        <column name="STATUS" jdbc-type="string" allows-null="false"/>
       </field>
       <field name="defaultPool">
         <column name="DEFAULT_POOL_ID" jdbc-type="integer" allows-null="true"/>
@@ -1275,7 +1275,7 @@
         <column name="QUERY_PARALLELISM" jdbc-type="integer" allows-null="true"/>
       </field>
       <field name="schedulingPolicy">
-        <column name="SCHEDULING_POLICY" length="1024" jdbc-type="VARCHAR"  allows-null="true"/>
+        <column name="SCHEDULING_POLICY" jdbc-type="string" allows-null="true"/>
       </field>
       <field name="triggers" table="WM_POOL_TO_TRIGGER">
         <collection element-type="MWMTrigger" />
@@ -1303,10 +1303,10 @@
         <column name="NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
       </field>
       <field name="triggerExpression">
-        <column name="TRIGGER_EXPRESSION" length="1024" jdbc-type="VARCHAR" allows-null="true"/>
+        <column name="TRIGGER_EXPRESSION" jdbc-type="string" allows-null="true"/>
       </field>
       <field name="actionExpression">
-        <column name="ACTION_EXPRESSION" length="1024" jdbc-type="VARCHAR" allows-null="true"/>
+        <column name="ACTION_EXPRESSION" jdbc-type="string" allows-null="true"/>
       </field>
       <field name="isInUnmanaged">
         <column name="IS_IN_UNMANAGED" allows-null="false"/>
@@ -1399,7 +1399,7 @@
         <column name="DESCRIPTION" jdbc-type="varchar" length="4000" allows-null="true"/>
       </field>
       <field name="schemaText" default-fetch-group="false">
-        <column name="SCHEMA_TEXT" jdbc-type="CLOB"/>
+        <column name="SCHEMA_TEXT" jdbc-type="LONGVARCHAR"/>
       </field>
       <field name="fingerprint">
         <column name="FINGERPRINT" jdbc-type="varchar" length="256" allows-null="true"/>
@@ -1442,7 +1442,7 @@
         <column name="SCHEDULE" jdbc-type="varchar" length="256" allows-null="true"/>
       </field>
       <field name="user">
-        <column name="USER" jdbc-type="varchar" length="128" allows-null="true"/>
+        <column name="USER" jdbc-type="varchar" length="256" allows-null="true"/>
       </field>
       <field name="query">
         <column name="QUERY" jdbc-type="varchar" length="4000" allows-null="true"/>
@@ -1584,7 +1584,7 @@
          <column name="NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
        </field>
        <field name="type">
-         <column name="TYPE" length="32" jdbc-type="VARCHAR" allows-null="false"/>
+         <column name="TYPE" length="128" jdbc-type="VARCHAR" allows-null="false"/>
        </field>
        <field name="url">
          <column name="URL" length="4000" jdbc-type="VARCHAR" allows-null="false"/>
@@ -1593,7 +1593,7 @@
          <column name="COMMENT" length="256" jdbc-type="VARCHAR"/>
        </field>
        <field name="ownerName">
-         <column name="OWNER_NAME" length="256" jdbc-type="VARCHAR" allows-null="true"/>
+         <column name="OWNER_NAME" length="128" jdbc-type="VARCHAR" allows-null="true"/>
        </field>
        <field name="ownerType">
          <column name="OWNER_TYPE" length="10" jdbc-type="VARCHAR" allows-null="true"/>
@@ -1610,7 +1610,7 @@
             <column name="PARAM_KEY" length="180" jdbc-type="VARCHAR"/>
           </key>
           <value>
-           <column name="PARAM_VALUE" length="4000" jdbc-type="VARCHAR"/>
+           <column name="PARAM_VALUE" length="32672" jdbc-type="VARCHAR"/>
           </value>
        </field>
     </class>
