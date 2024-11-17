@@ -22,6 +22,7 @@ package org.apache.iceberg.mr.hive.vector;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.NoSuchElementException;
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.iceberg.FileScanTask;
@@ -142,7 +143,7 @@ public class HiveDeleteFilter extends DeleteFilter<HiveRow> {
 
           @Override
           public void close() throws IOException {
-            srcIterator.close();
+            IOUtils.close(srcIterator, deleteInputIterable, deleteOutputIterable);
           }
         };
       }
