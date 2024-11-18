@@ -36,11 +36,17 @@ public class LoginServlet extends HttpServlet {
 
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) {
-    ldapAuthService.authenticate(request, response);
-    RequestDispatcher dispatcher = request.getRequestDispatcher(HiveServer2.HS2_WEBUI_ROOT_URI);
+    boolean success = ldapAuthService.authenticate(request, response);
     PrintWriter out = null;
     try {
       out = response.getWriter();
+      final RequestDispatcher dispatcher;
+      if (success) {
+        dispatcher = request.getRequestDispatcher(HiveServer2.HS2_WEBUI_ROOT_URI);
+      } else {
+        request.setAttribute("login_failure_message", "Invalid username or password");
+        dispatcher = request.getRequestDispatcher(LDAPAuthenticationFilter.LOGIN_FORM_URI);
+      }
       dispatcher.forward(request, response);
     } catch (Exception e) {
       if (out == null) {

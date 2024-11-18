@@ -43,6 +43,14 @@
                 <div class="form-group">
                     <input id="password" name="password" type="password" class="form-control" placeholder="Password" required="required">
                 </div>
+                 <%
+                        String status = (String)request.getAttribute("login_failure_message");
+                        if(status != null) {
+                 %>
+                          <p style="color:red;"><%= status %></p>
+                 <%
+                        }
+                 %>
                 <input id="redirectPath" name="redirectPath" type="hidden">
                 <div class="form-group">
                     <button id="submit" type="submit" class="btn btn-primary btn-block">Log In</button>

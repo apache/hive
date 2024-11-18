@@ -138,10 +138,8 @@ import org.apache.zookeeper.ZooDefs.Perms;
 import org.apache.zookeeper.data.ACL;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
-import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletHolder;
 
-import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -488,23 +486,17 @@ public class HiveServer2 extends CompositeService {
           builder.addServlet("jdbcjar", JdbcJarDownloadServlet.class);
           builder.setContextRootRewriteTarget(HS2_WEBUI_ROOT_URI);
 
+          String webUIAuthMethodConfig = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_AUTH_METHOD);
+          WebUIAuthMethod webUIAuthMethod = getWebUIAuthMethod(webUIAuthMethodConfig);
+          if (WebUIAuthMethod.LDAP == webUIAuthMethod) {
+            ldapAuthService = new LdapAuthService(hiveConf, passwdAuthenticationProvider);
+            builder.addGlobalFilter("ldap", "/*", new LDAPAuthenticationFilter(ldapAuthService));
+          }
           webServer = builder.build();
           webServer.addServlet("query_page", "/query_page.html", QueryProfileServlet.class);
           webServer.addServlet("api", "/api/*", QueriesRESTfulAPIServlet.class);
-
-          String webUIAuthMethodConfig = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_AUTH_METHOD);
-          WebUIAuthMethod webUIAuthMethod = getWebUIAuthMethod(webUIAuthMethodConfig);
-              
-          switch (webUIAuthMethod) {
-            case LDAP:
-              if (passwdAuthenticationProvider == null) {
-                ldapAuthService = new LdapAuthService(hiveConf);
-              } else {
-                ldapAuthService = new LdapAuthService(hiveConf, passwdAuthenticationProvider);
-              }
-              webServer.addServlet("login", "/login", new ServletHolder(new LoginServlet(ldapAuthService)));
-              webServer.addFilter("ldap", new FilterHolder(new LDAPAuthenticationFilter(ldapAuthService)));
-              break;
+          if (ldapAuthService != null) {
+            webServer.addServlet("login", "/login", new ServletHolder(new LoginServlet(ldapAuthService)));
           }
         }
       }
