@@ -856,10 +856,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         tableExecutor.shutdown();
       }
     }
-    return Stream.concat(
-        parentDirToDataFile.values().stream(),
-        parentDirToDeleteFile.values().stream())
-      .flatMap(List::stream)
+    return Stream.of(parentDirToDataFile, parentDirToDeleteFile)
+      .flatMap(map -> map.values().stream().flatMap(List::stream))
       .collect(Collectors.toList());
   }
 

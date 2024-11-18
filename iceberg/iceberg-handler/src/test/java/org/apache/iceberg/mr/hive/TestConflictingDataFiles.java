@@ -288,8 +288,10 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
           .build(),
         formatVersion);
 
-    String[] singleFilterQuery = new String[] { "INSERT INTO ice_t SELECT i*100, p*100 FROM ice_t",
-        "INSERT OVERWRITE TABLE ice_t SELECT i+1, p+1 FROM ice_t" };
+    shell.executeStatement("ALTER TABLE customers CREATE BRANCH test_branch");
+
+    String[] singleFilterQuery = new String[] { "INSERT INTO default.ice_t.test_branch SELECT i*100, p*100 FROM ice_t",
+        "INSERT OVERWRITE TABLE default.ice_t.test_branch SELECT i+1, p+1 FROM ice_t" };
 
     Tasks.range(2).executeWith(Executors.newFixedThreadPool(2)).run(i -> {
       if (i == 1) {

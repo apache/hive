@@ -626,7 +626,7 @@ public class Table implements Serializable {
 
   public List<String> getPartColNames() {
     List<FieldSchema> partCols = alwaysUnpartitioned() ?
-      getStorageHandler().getPartitionKeys(this) : getPartCols();
+        getStorageHandler().getPartitionKeys(this) : getPartCols();
     return partCols.stream().map(FieldSchema::getName)
       .collect(Collectors.toList());
   }

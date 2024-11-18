@@ -139,10 +139,11 @@ public class PartitionPruner extends Transform {
 
     return true;
   }
-  
+
   private static boolean isPartitionKey(Table table, String columnName) {
     return table.getPartColNames().stream().anyMatch(item -> item.equalsIgnoreCase(columnName));
   }
+
   /**
    * Get the partition list for the TS operator that satisfies the partition pruner
    * condition.
