@@ -1,0 +1,1 @@
+{"binarycolumn1" : -2, "binarycolumn2" : false, "binarycolumn3" : null, "binarycolumn4" : true, "binarycolumn5" : 1.23e45, "binarycolumn6" : "value", "booleancaseinsensitive" : "TrUE", "booleanstring" : "true", "booleanboolean" : true, "stringfalse" : "FaLSE", "somestring" : "somestringhere", "booleannull" : null, "booleannumfalse" : 0, "booleannumtrue" : -1}

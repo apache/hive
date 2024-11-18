@@ -112,8 +112,10 @@ public class HiveJsonReader {
   private final ObjectMapper objectMapper;
 
   private final TimestampParser tsParser;
-  private BinaryEncoding binaryEncoding;
   private final ObjectInspector oi;
+  private static final Pattern BASE64_PATTERN = Pattern.compile(
+          "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+  );
 
   /**
    * Enumeration that defines all on/off features for this reader.
@@ -168,7 +170,6 @@ public class HiveJsonReader {
    * @param tsParser Custom timestamp parser
    */
   public HiveJsonReader(ObjectInspector oi, TimestampParser tsParser) {
-    this.binaryEncoding = BinaryEncoding.BASE64;
     this.tsParser = tsParser;
     this.oi = oi;
     this.objectMapper = new ObjectMapper();
@@ -397,7 +398,11 @@ public class HiveJsonReader {
     case LONG:
       return Long.valueOf(leafNode.asLong());
     case BOOLEAN:
-      return Boolean.valueOf(leafNode.asBoolean());
+      if ("false".equalsIgnoreCase(leafNode.asText())) {
+        return Boolean.FALSE;
+      } else {
+        return Boolean.valueOf(leafNode.asBoolean(true));
+      }
     case FLOAT:
       return Float.valueOf((float) leafNode.asDouble());
     case DOUBLE:
@@ -450,20 +455,34 @@ public class HiveJsonReader {
    */
   private byte[] getByteValue(final JsonNode binaryNode) throws SerDeException {
     try {
-      switch (this.binaryEncoding) {
+      BinaryEncoding binaryEncoding = getBinaryEncodingForNode(binaryNode);
+      switch (binaryEncoding) {
       case RAWSTRING:
-        final String byteText = binaryNode.textValue();
+        final String byteText = binaryNode.asText();
+        if (byteText == null) {
+          return null;
+        }
         return byteText.getBytes(StandardCharsets.UTF_8);
       case BASE64:
         return binaryNode.binaryValue();
       default:
         throw new SerDeException(
-            "No such binary encoding: " + this.binaryEncoding);
+            "No such binary encoding: " + binaryEncoding);
       }
     } catch (IOException e) {
       throw new SerDeException("Error generating JSON binary type from record.",
           e);
     }
+  }
+
+  private BinaryEncoding getBinaryEncodingForNode(JsonNode binaryNode) {
+    String jsonValue = binaryNode.textValue();
+
+    if (jsonValue == null || jsonValue.length() % 4 != 0 || !BASE64_PATTERN.matcher(jsonValue).matches()) {
+      return BinaryEncoding.RAWSTRING;
+    }
+
+    return BinaryEncoding.BASE64;
   }
 
   /**
@@ -560,18 +579,8 @@ public class HiveJsonReader {
     return oi;
   }
 
-  public BinaryEncoding getBinaryEncodingType() {
-    return binaryEncoding;
-  }
-
-  public void setBinaryEncoding(BinaryEncoding encoding) {
-    this.binaryEncoding = encoding;
-  }
-
   @Override
   public String toString() {
-    return "HiveJsonReader [features=" + features + ", tsParser=" + tsParser
-        + ", binaryEncoding=" + binaryEncoding + "]";
+    return "HiveJsonReader [features=" + features + ", tsParser=" + tsParser;
   }
-
 }
