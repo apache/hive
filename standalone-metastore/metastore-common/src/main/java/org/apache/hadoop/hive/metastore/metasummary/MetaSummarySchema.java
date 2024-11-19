@@ -28,16 +28,16 @@ public class MetaSummarySchema {
 
   private final LinkedHashSet<String> fields = new LinkedHashSet<>();
 
-  public MetaSummarySchema addFields(List<String> fields) {
-    if (fields != null) {
-      addFields(fields.toArray(new String[0]));
+  public MetaSummarySchema addFields(List<String> fieldNames) {
+    if (fieldNames != null) {
+      this.fields.addAll(fieldNames);
     }
     return this;
   }
 
-  public MetaSummarySchema addFields(String... fields) {
-    if (fields != null) {
-      this.fields.addAll(Arrays.asList(fields));
+  public MetaSummarySchema addFields(String... fieldNames) {
+    if (fieldNames != null) {
+      this.fields.addAll(Arrays.asList(fieldNames));
     }
     return this;
   }

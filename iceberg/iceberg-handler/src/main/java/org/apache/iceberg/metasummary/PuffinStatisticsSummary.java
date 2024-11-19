@@ -34,8 +34,8 @@ import org.apache.iceberg.Table;
  */
 public class PuffinStatisticsSummary extends IcebergSummaryRetriever {
   private static final String STATS = "stats";
-  private static final String PUFFIN_STATS_ENABLED = "puffin_stats_enabled";
-  private static final String PUFFIN_STATS_BLOB = "puffin_stats_blob";
+  private static final String PUFFIN_STATS_ENABLED = "puffin_enabled";
+  private static final String PUFFIN_STATS_BLOB = "puffin_blobs";
 
   @Override
   public List<String> getFieldNames() {
