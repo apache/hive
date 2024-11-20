@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.tools;
 
 import javax.jdo.Query;
 import javax.jdo.datastore.JDOConnection;
+import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -43,6 +44,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.Batchable;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
+import org.apache.hadoop.hive.metastore.Deadline;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -66,6 +68,69 @@ import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdenti
 public class MetaToolObjectStore extends ObjectStore {
 
   private static final Logger LOG = LoggerFactory.getLogger(MetaToolObjectStore.class);
+
+  public static class TableFormat {
+    public static final String PARQUET = "parquet";
+    public static final String ORC = "orc";
+    public static final String AVRO = "avro";
+    public static final String JSON = "json";
+    public static final String HBASE = "hbase";
+    public static final String JDBC = "jdbc";
+    public static final String KUDU = "kudu";
+    public static final String ICEBERG = "iceberg";
+    public static final String TEXT = "text";
+    public static final String SEQUENCE = "sequence";
+    public static final String OPENCSV = "opencsv";
+    public static final String LAZY_SIMPLE = "lazysimple";
+    public static final String PASS_THROUGH = "passthrough";
+
+    private static final Set<String> AVAILABLE_FORMATS = new HashSet<>();
+    static {
+      Arrays.stream(TableFormat.class.getDeclaredFields())
+          .filter(field -> Modifier.isStatic(field.getModifiers()) && Modifier.isPublic(field.getModifiers()))
+          .map(field -> {
+            try {
+              return field.get(null);
+            } catch (IllegalAccessException e) {
+              throw new RuntimeException(e);
+            }
+          })
+          .filter(res -> res instanceof String)
+          .forEach(res -> AVAILABLE_FORMATS.add((String) res));
+    }
+
+    public static Set<String> getNonNativeFormats() {
+      return new HashSet<>(Arrays.asList(HBASE, JDBC, KUDU, ICEBERG));
+    }
+
+    /**
+     * Helper method for getMetadataSummary. Extracting the format of the file from the long string.
+     * @param fileFormat - fileFormat. A long String which indicates the type of the file.
+     * @return String A short String which indicates the type of the file.
+     */
+    public static String extractFileFormat(String fileFormat) {
+      if (fileFormat == null) {
+        return "NULL";
+      }
+      final String lowerCaseFileFormat = fileFormat.toLowerCase();
+      Optional<String> result = AVAILABLE_FORMATS.stream().filter(lowerCaseFileFormat::contains).findFirst();
+      if (result.isPresent()) {
+        String file = result.get();
+        if (OPENCSV.equals(file)) {
+          return "openCSV";
+        } else if (LAZY_SIMPLE.equals(file)) {
+          return TEXT;
+        }
+        return file;
+      }
+      return fileFormat;
+    }
+
+    public static boolean isIcebergFormat(String tableFormat) {
+      return ICEBERG.equalsIgnoreCase(tableFormat);
+    }
+  }
+
 
   /** The following API
    *
@@ -577,13 +642,12 @@ public class MetaToolObjectStore extends ObjectStore {
    */
   public List<MetadataTableSummary> getMetadataSummary(String catalogFilter, String dbFilter, String tableFilter)
       throws MetaException {
-    JDOConnection jdoConn = null;
     Map<Long, MetadataTableSummary> partedTabs = new HashMap<>();
     Map<Long, MetadataTableSummary> nonPartedTabs = new HashMap<>();
     List<MetadataTableSummary> metadataTableSummaryList = new ArrayList<>();
     final String query = sqlGenerator.getSelectQueryForMetastoreSummary();
+    JDOConnection jdoConn = pm.getDataStoreConnection();
     try {
-      jdoConn = pm.getDataStoreConnection();
       if (!prepareGetMetaSummary(jdoConn)) {
         return metadataTableSummaryList;
       }
@@ -591,6 +655,7 @@ public class MetaToolObjectStore extends ObjectStore {
         stmt.setFetchSize(0);
         try (ResultSet rs = stmt.executeQuery(query)) {
           while (rs.next()) {
+            Deadline.checkTimeout();
             MetadataTableSummary summary = new MetadataTableSummary(rs.getString("CTLG"),
                 rs.getString("NAME"), rs.getString("TBL_NAME"));
             feedColumnSummary(summary, rs);
@@ -609,9 +674,7 @@ public class MetaToolObjectStore extends ObjectStore {
       LOG.error("Exception while running the query " + query, e);
       throw new MetaException("Exception while computing the summary: " + e.getMessage());
     } finally {
-      if (jdoConn != null) {
-        jdoConn.close();
-      }
+      jdoConn.close();
     }
     feedBasicStats(nonPartedTabs, partedTabs);
     return metadataTableSummaryList;
@@ -631,11 +694,11 @@ public class MetaToolObjectStore extends ObjectStore {
 
   private void feedTabFormatSummary(MetadataTableSummary summary, ResultSet rs) throws SQLException {
     String tblType = rs.getString("TBL_TYPE");
-    String fileType = extractFileFormat(rs.getString("SLIB"));
-    Set<String> nonNativeTabTypes = new HashSet<>(Arrays.asList("jdbc", "kudu", "hbase", "iceberg"));
+    String fileType = TableFormat.extractFileFormat(rs.getString("SLIB"));
+    Set<String> nonNativeTabTypes = TableFormat.getNonNativeFormats();
     if (nonNativeTabTypes.contains(fileType)) {
       tblType = fileType.toUpperCase();
-      if ("iceberg".equalsIgnoreCase(tblType)) {
+      if (TableFormat.isIcebergFormat(tblType)) {
         String writeFormatDefault = rs.getString("WRITE_FORMAT_DEFAULT");
         if (writeFormatDefault == null) {
           writeFormatDefault = "null";
@@ -712,7 +775,8 @@ public class MetaToolObjectStore extends ObjectStore {
     });
   }
 
-  private void feedBasicStats(String queryText0, List<Long> input, Map<Long, MetadataTableSummary> summaryMap, String subQ) {
+  private void feedBasicStats(String queryText0, List<Long> input, Map<Long, MetadataTableSummary> summaryMap, String subQ)
+      throws MetaException {
     int size = input.size();
     String queryText = queryText0 + (size == 0 ? "" : repeat(",?", size).substring(1)) + ")" + subQ;
     if (dbType.isMYSQL()) {
@@ -722,21 +786,19 @@ public class MetaToolObjectStore extends ObjectStore {
     for (int i = 0; i < input.size(); ++i) {
       params[i] = input.get(i);
     }
-    Query<?> query = null;
+    Query<?> query = pm.newQuery("javax.jdo.query.SQL", queryText);
     try {
-      query = pm.newQuery("javax.jdo.query.SQL", queryText);
       List<Object[]> result = (List<Object[]>) query.executeWithArray(params);
       if (result != null) {
         for (Object[] fields : result) {
+          Deadline.checkTimeout();
           Long tabId = Long.parseLong(String.valueOf(fields[0]));
           MetadataTableSummary summary = summaryMap.get(tabId);
           feedBasicStats(summary, String.valueOf(fields[1]), fields[2]);
         }
       }
     } finally {
-      if (query != null) {
-        query.closeAll();
-      }
+      query.closeAll();
     }
   }
 
@@ -761,33 +823,8 @@ public class MetaToolObjectStore extends ObjectStore {
     }
   }
 
-  /**
-   * Helper method for getMetadataSummary. Extracting the format of the file from the long string.
-   * @param fileFormat - fileFormat. A long String which indicates the type of the file.
-   * @return String A short String which indicates the type of the file.
-   */
-  private static String extractFileFormat(String fileFormat) {
-    if (fileFormat == null) {
-      return "NULL";
-    }
-    final String lowerCaseFileFormat = fileFormat.toLowerCase();
-    Set<String> fileTypes = new HashSet<>(Arrays.asList("iceberg", "parquet", "orc", "avro", "json", "hbase", "jdbc",
-        "kudu", "text", "sequence", "opencsv", "lazysimple", "passthrough"));
-    Optional<String> result = fileTypes.stream().filter(lowerCaseFileFormat::contains).findFirst();
-    if (result.isPresent()) {
-      String file = result.get();
-      if ("opencsv".equals(file)) {
-        return "openCSV";
-      } else if ("lazysimple".equals(file)) {
-        return "text";
-      }
-      return file;
-    }
-    return fileFormat;
-  }
-
   public Set<TableName> filterTablesForSummary(List<Pair<TableName, MetadataTableSummary>> tableSummaries,
-      Integer lastUpdatedDays, Integer tablesLimit) {
+      Integer lastUpdatedDays, Integer tablesLimit) throws MetaException {
     if (tableSummaries == null || tableSummaries.isEmpty()) {
       return Collections.emptySet();
     }
@@ -796,7 +833,7 @@ public class MetaToolObjectStore extends ObjectStore {
       return tableNames;
     }
     String tableType = tableSummaries.get(0).getRight().getTableType();
-    if (!"iceberg".equalsIgnoreCase(tableType)) {
+    if (!TableFormat.isIcebergFormat(tableType)) {
       // we don't support filtering this type yet, ignore...
       LOG.warn("This table type: {} hasn't been supported selecting the summary yet, ignore...", tableType);
       return tableNames;
@@ -811,6 +848,7 @@ public class MetaToolObjectStore extends ObjectStore {
       if (StringUtils.isEmpty(catalog)) {
         catalog = MetaStoreUtils.getDefaultCatalog(conf);
       }
+      Deadline.checkTimeout();
       openTransaction();
       String filter = "database.catalogName == t1 && t2.contains(database.name) && " +
           "parameters.get(\"table_type\") == t3 && parameters.get(\"current-snapshot-timestamp-ms\") > t4";
@@ -829,6 +867,7 @@ public class MetaToolObjectStore extends ObjectStore {
       }
       Set<TableName> qr = new HashSet<>();
       for (Object[] fields : result) {
+        Deadline.checkTimeout();
         qr.add(new TableName(catalog, (String)fields[0], (String) fields[1]));
       }
       tableNames = tableNames.stream().filter(qr::contains).collect(Collectors.toSet());
@@ -838,4 +877,5 @@ public class MetaToolObjectStore extends ObjectStore {
     }
     return tableNames;
   }
+
 }

@@ -36,13 +36,19 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.Deadline;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metasummary.MetaSummaryHandler;
 import org.apache.hadoop.hive.metastore.metasummary.MetaSummarySchema;
 import org.apache.hadoop.hive.metastore.metasummary.MetadataTableSummary;
@@ -60,26 +66,29 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
     NON_NATIVE_SUMMARY_HANDLER.put("iceberg", "org.apache.iceberg.metasummary.IcebergSummaryHandler");
   }
 
+  private boolean formatJson;
+  private boolean formatCsv;
+  private boolean formatConsole;
+  private long taskTimeout;
+
   @Override
   void execute() {
+    String[] inputParams = validateInput();
+    if (inputParams == null) {
+      return;
+    }
+    ExecutorService service = Executors.newSingleThreadExecutor();
+    Future<Pair<MetaSummarySchema, List<MetadataTableSummary>>> resFuture =
+        service.submit(() -> obtainAndFilterSummary(inputParams, formatJson));
     try {
-      String[] inputParams = getCl().getMetadataSummaryParams();
-      String formatOption = inputParams[0].toLowerCase().trim();
-      boolean formatJson = formatOption.equalsIgnoreCase("-json");
-      boolean formatCsv = formatOption.equalsIgnoreCase("-csv");
-      boolean formatConsole = formatOption.equalsIgnoreCase("-console");
-      if (!formatJson && !formatCsv && !formatConsole) {
-        System.err.println("Invalid option to -metadataSummary");
-        return;
-      }
-
+      service.shutdown();
       Pair<MetaSummarySchema, List<MetadataTableSummary>> result =
-          obtainAndFilterSummary(inputParams, formatJson);
+          resFuture.get(taskTimeout, TimeUnit.MILLISECONDS);
       if (result == null) {
         System.err.println("Oops, no summary is generated...");
         return;
       }
-
+      // If we are here but the timeout is reached, let's perform the rest of the work
       MetaSummarySchema extraSchema = result.getLeft();
       List<MetadataTableSummary> summaries = result.getRight();
       String fileName = null;
@@ -87,68 +96,89 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
         fileName = inputParams[1].toLowerCase().trim();
       }
       if (formatJson) {
-        exportInJson(summaries,
-            fileName == null ? "./MetastoreSummary.json" : fileName);
+        exportInJson(summaries, fileName == null ? "./MetastoreSummary.json" : fileName);
       } else if (formatConsole) {
         printToConsole(summaries, extraSchema);
       } else {
-        exportInCsv(summaries, extraSchema,
-            fileName == null ? "./MetastoreSummary.csv" : fileName);
+        exportInCsv(summaries, extraSchema, fileName == null ? "./MetastoreSummary.csv" : fileName);
       }
-    } catch (MetaException e) {
-      System.out.println("Generating HMS Summary failed: \n" + e.getMessage());
     } catch (Exception e) {
+      e.printStackTrace();
       throw new RuntimeException(e);
+    } finally {
+      service.shutdownNow();
     }
   }
 
-  Pair<MetaSummarySchema, List<MetadataTableSummary>> obtainAndFilterSummary
-      (String[] inputParams, boolean formatJson) throws MetaException {
-    MetaToolObjectStore objectStore = getObjectStore();
-    List<MetadataTableSummary> allSummaries = objectStore.getMetadataSummary(null, null, null);
-    if (allSummaries == null || allSummaries.isEmpty()) {
-      System.out.println("Return set of tables is empty or null");
+  private String[] validateInput() {
+    String[] inputParams = getCl().getMetadataSummaryParams();
+    String formatOption = inputParams[0].toLowerCase().trim();
+    this.formatJson = formatOption.equalsIgnoreCase("-json");
+    this.formatCsv = formatOption.equalsIgnoreCase("-csv");
+    this.formatConsole = formatOption.equalsIgnoreCase("-console");
+    if (!formatJson && !formatCsv && !formatConsole) {
+      System.err.println("Invalid format option: " + formatOption + 
+          " to -metadataSummary, only -json, -csv and -console are allowed");
       return null;
     }
-    ArrayListMultimap<Class<? extends MetaSummaryHandler>, Pair<TableName, MetadataTableSummary>> nonNativeSummaries =
-        findNonNativeSummaries(allSummaries);
-    Integer lastUpdatedDays = inputParams.length >= 3 ? Integer.valueOf(inputParams[2]) : null;
-    Integer tablesLimit = inputParams.length >= 4 ? Integer.valueOf(inputParams[3]) : null;
-    Map<MetadataTableSummary, Void> filteredSummary = new IdentityHashMap<>();
-    MetaSummarySchema extraSchema = new MetaSummarySchema();
-    for (Class<? extends MetaSummaryHandler> handler : nonNativeSummaries.keys()) {
-      Configuration conf = getObjectStore().getConf();
-      try (MetaSummaryHandler summaryHandler = JavaUtils.newInstance(handler)) {
-        summaryHandler.setConf(conf);
-        summaryHandler.initialize(MetaStoreUtils.getDefaultCatalog(conf), formatJson, extraSchema);
-        List<Pair<TableName, MetadataTableSummary>> tableSummaries = nonNativeSummaries.get(handler);
-        // Filter those we don't want to collect
-        Set<TableName> tableNames = getObjectStore().filterTablesForSummary(tableSummaries, lastUpdatedDays, tablesLimit);
-        for (Pair<TableName, MetadataTableSummary> ts : tableSummaries) {
-          MetadataTableSummary summary = ts.getRight();
-          if (tableNames.contains(ts.getLeft())) {
-            summaryHandler.appendSummary(ts.getLeft(), summary);
-          } else {
-            filteredSummary.put(summary, null);
-          }
-          // If there is an exception while collecting the summary, remove it
-          if (summary.isDropped()) {
-            filteredSummary.put(summary, null);
-          }
-        }
-      } catch (Exception e) {
-        System.err.println(ExceptionUtils.getStackTrace(e));
-        LOG.warn("Error collecting the summary from handler: " + handler.getName(), e);
-      }
-    }
-    // Filter the table summary from the output
-    if (!filteredSummary.isEmpty()) {
-      allSummaries = allSummaries.stream()
-          .filter(s -> !filteredSummary.containsKey(s)).collect(Collectors.toList());
-    }
-    return Pair.of(extraSchema, allSummaries);
+    return inputParams;
   }
 
+  Pair<MetaSummarySchema, List<MetadataTableSummary>> obtainAndFilterSummary(String[] inputParams,
+      boolean formatJson) throws MetaException {
+    Deadline.registerIfNot(taskTimeout);
+    boolean isTimerStarted = false;
+    try {
+      isTimerStarted = Deadline.startTimer("obtainAndFilterSummary");
+      MetaToolObjectStore objectStore = getObjectStore();
+      List<MetadataTableSummary> allSummaries = objectStore.getMetadataSummary(null, null, null);
+      if (allSummaries == null || allSummaries.isEmpty()) {
+        System.out.println("Return set of tables is empty or null");
+        return null;
+      }
+      ArrayListMultimap<Class<? extends MetaSummaryHandler>, Pair<TableName, MetadataTableSummary>> nonNativeSummaries =
+          findNonNativeSummaries(allSummaries);
+      Integer lastUpdatedDays = inputParams.length >= 3 ? Integer.valueOf(inputParams[2]) : null;
+      Integer tablesLimit = inputParams.length >= 4 ? Integer.valueOf(inputParams[3]) : null;
+      Map<MetadataTableSummary, Void> filteredSummary = new IdentityHashMap<>();
+      MetaSummarySchema extraSchema = new MetaSummarySchema();
+      for (Class<? extends MetaSummaryHandler> handler : nonNativeSummaries.keys()) {
+        Configuration conf = getObjectStore().getConf();
+        try (MetaSummaryHandler summaryHandler = JavaUtils.newInstance(handler)) {
+          summaryHandler.setConf(conf);
+          summaryHandler.initialize(MetaStoreUtils.getDefaultCatalog(conf), formatJson, extraSchema);
+          List<Pair<TableName, MetadataTableSummary>> tableSummaries = nonNativeSummaries.get(handler);
+          // Filter those we don't want to collect
+          Set<TableName> tableNames = getObjectStore().filterTablesForSummary(tableSummaries, lastUpdatedDays, tablesLimit);
+          for (Pair<TableName, MetadataTableSummary> ts : tableSummaries) {
+            MetadataTableSummary summary = ts.getRight();
+            if (tableNames.contains(ts.getLeft())) {
+              summaryHandler.appendSummary(ts.getLeft(), summary);
+            } else {
+              filteredSummary.put(summary, null);
+            }
+            // If there is an exception while collecting the summary, remove it
+            if (summary.isDropped()) {
+              filteredSummary.put(summary, null);
+            }
+          }
+        } catch (Exception e) {
+          System.err.println(ExceptionUtils.getStackTrace(e));
+          LOG.warn("Error collecting the summary from handler: " + handler.getName(), e);
+        }
+      }
+      // Filter the table summary from the output
+      if (!filteredSummary.isEmpty()) {
+        allSummaries = allSummaries.stream()
+            .filter(s -> !filteredSummary.containsKey(s)).collect(Collectors.toList());
+      }
+      return Pair.of(extraSchema, allSummaries);
+    } finally {
+      if (isTimerStarted) {
+        Deadline.stopTimer();
+      }
+    }
+  }
 
   private ArrayListMultimap<Class<? extends MetaSummaryHandler>,
       Pair<TableName, MetadataTableSummary>> findNonNativeSummaries(List<MetadataTableSummary> summaries) {
@@ -361,5 +391,12 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
     // Make sure the handler is in classpath
     Class.forName(handlerName);
     NON_NATIVE_SUMMARY_HANDLER.put(tableType, handlerName);
+  }
+
+  @Override
+  void setObjectStore(MetaToolObjectStore objectStore) {
+    super.setObjectStore(objectStore);
+    this.taskTimeout = MetastoreConf.getTimeVar(objectStore.getConf(), MetastoreConf.ConfVars.METADATA_SUMMARY_TIMEOUT,
+        TimeUnit.MILLISECONDS);
   }
 }
