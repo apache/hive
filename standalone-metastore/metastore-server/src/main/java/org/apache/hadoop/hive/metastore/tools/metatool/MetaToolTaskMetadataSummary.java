@@ -102,6 +102,8 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
       } else {
         exportInCsv(summaries, extraSchema, fileName == null ? "./MetastoreSummary.csv" : fileName);
       }
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException(e);

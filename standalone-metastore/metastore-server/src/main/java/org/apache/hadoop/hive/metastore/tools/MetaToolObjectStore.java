@@ -70,6 +70,11 @@ public class MetaToolObjectStore extends ObjectStore {
   private static final Logger LOG = LoggerFactory.getLogger(MetaToolObjectStore.class);
 
   public static class TableFormat {
+
+    private TableFormat() {
+      // private constructor
+    }
+
     public static final String PARQUET = "parquet";
     public static final String ORC = "orc";
     public static final String AVRO = "avro";
@@ -92,10 +97,10 @@ public class MetaToolObjectStore extends ObjectStore {
             try {
               return field.get(null);
             } catch (IllegalAccessException e) {
-              throw new RuntimeException(e);
+              throw new AssertionError("This should not happen");
             }
           })
-          .filter(res -> res instanceof String)
+          .filter(String.class::isInstance)
           .forEach(res -> AVAILABLE_FORMATS.add((String) res));
     }
 
