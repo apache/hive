@@ -2014,7 +2014,7 @@ public class ObjectStore implements RawStore, Configurable {
     return appendCondition(filterBuilder, fieldName, elements, true, parameterVals);
   }
 
-  private StringBuilder appendPatternCondition(StringBuilder builder,
+  protected StringBuilder appendPatternCondition(StringBuilder builder,
       String fieldName, String elements, List<String> parameters) {
       elements = normalizeIdentifier(elements);
     return appendCondition(builder, fieldName, elements.split("\\|"), true, parameters);

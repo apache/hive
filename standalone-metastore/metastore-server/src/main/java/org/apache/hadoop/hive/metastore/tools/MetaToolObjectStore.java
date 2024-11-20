@@ -19,13 +19,8 @@
 package org.apache.hadoop.hive.metastore.tools;
 
 import javax.jdo.Query;
-import javax.jdo.datastore.JDOConnection;
 import java.lang.reflect.Modifier;
 import java.net.URI;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -43,9 +38,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.Batchable;
-import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.Deadline;
 import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.metastore.QueryWrapper;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
@@ -649,114 +644,213 @@ public class MetaToolObjectStore extends ObjectStore {
       throws MetaException {
     Map<Long, MetadataTableSummary> partedTabs = new HashMap<>();
     Map<Long, MetadataTableSummary> nonPartedTabs = new HashMap<>();
+    Map<Long, MetadataTableSummary> allSummaries = new HashMap<>();
     List<MetadataTableSummary> metadataTableSummaryList = new ArrayList<>();
-    final String query = sqlGenerator.getSelectQueryForMetastoreSummary();
-    JDOConnection jdoConn = pm.getDataStoreConnection();
-    try {
-      if (!prepareGetMetaSummary(jdoConn)) {
-        return metadataTableSummaryList;
-      }
-      try (Statement stmt = ((Connection) jdoConn.getNativeConnection()).createStatement()) {
-        stmt.setFetchSize(0);
-        try (ResultSet rs = stmt.executeQuery(query)) {
-          while (rs.next()) {
-            Deadline.checkTimeout();
-            MetadataTableSummary summary = new MetadataTableSummary(rs.getString("CTLG"),
-                rs.getString("NAME"), rs.getString("TBL_NAME"));
-            feedColumnSummary(summary, rs);
-            feedTabFormatSummary(summary, rs);
-            metadataTableSummaryList.add(summary);
-            long tableId = rs.getLong("TBL_ID");
-            if (summary.getPartitionCount() > 0) {
-              partedTabs.put(tableId, summary);
-            } else if (summary.getPartitionColumnCount() == 0) {
-              nonPartedTabs.put(tableId, summary);
-            }
-          }
-        }
-      }
-    } catch (SQLException e) {
-      LOG.error("Exception while running the query " + query, e);
-      throw new MetaException("Exception while computing the summary: " + e.getMessage());
-    } finally {
-      jdoConn.close();
+    StringBuilder filter = new StringBuilder();
+    List<String> parameterVals = new ArrayList<>();
+    if (!StringUtils.isEmpty(dbFilter)) {
+      appendPatternCondition(filter, "database.name", dbFilter, parameterVals);
     }
-    feedBasicStats(nonPartedTabs, partedTabs);
+    if (!StringUtils.isEmpty(tableFilter)) {
+      appendPatternCondition(filter, "tableName", tableFilter, parameterVals);
+    }
+    try (QueryWrapper query = new QueryWrapper(filter.length() > 0 ?
+        pm.newQuery(MTable.class, filter.toString()) : pm.newQuery(MTable.class))){
+      query.setResult("id, database.catalogName, database.name, tableName, owner, tableType");
+      List<Object[]> tables = (List<Object[]>) query.executeWithArray(parameterVals.toArray(new String[0]));
+      for (Object[] table : tables) {
+        Deadline.checkTimeout();
+        long tableId = Long.parseLong(table[0].toString());
+        MetadataTableSummary summary = new MetadataTableSummary(String.valueOf(table[1]),
+            String.valueOf(table[2]), String.valueOf(table[3]), String.valueOf(table[4]));
+        summary.setTableType(String.valueOf(table[5]));
+        allSummaries.put(tableId, summary);
+        metadataTableSummaryList.add(summary);
+      }
+    }
+    collectPartitionSummary(allSummaries, partedTabs, nonPartedTabs);
+    collectColumnSummary(allSummaries);
+    collectTabFormatSummary(allSummaries);
+    collectBasicStats(nonPartedTabs, partedTabs);
     return metadataTableSummaryList;
   }
 
-  private void feedColumnSummary(MetadataTableSummary summary, ResultSet rs) throws SQLException {
-    String partitionColumn = rs.getString("PARTITION_COLUMN");
-    int partitionColumnCount = (partitionColumn == null) ? 0 : (partitionColumn.split(",")).length;
-    summary
-        .partitionSummary(partitionColumnCount, rs.getInt("PARTITION_CNT"))
-        .columnSummary(
-            rs.getInt("TOTAL_COLUMN_COUNT"),
-            rs.getInt("ARRAY_COLUMN_COUNT"),
-            rs.getInt("STRUCT_COLUMN_COUNT"),
-            rs.getInt("MAP_COLUMN_COUNT"));
+  private void collectPartitionSummary(Map<Long, MetadataTableSummary> summaries,  Map<Long, MetadataTableSummary> partedTabs,
+      Map<Long, MetadataTableSummary> nonPartedTabs) throws MetaException {
+    runBatched(batchSize, new ArrayList<>(summaries.keySet()), new Batchable<Long, Void>() {
+      static final String QUERY_TEXT0 = "select t.\"TBL_ID\", count(1) from \"TBLS\" t join \"PARTITION_KEYS\" p on t.\"TBL_ID\" = p.\"TBL_ID\" where t.\"TBL_ID\" in (";
+      @Override
+      public List<Void> run(List<Long> input) throws Exception {
+        Pair<Query<?>, List<Object[]>> qResult = getResultFromInput(input, QUERY_TEXT0, " group by t.\"TBL_ID\"");
+        try {
+          List<Object[]> result = qResult.getRight();
+          if (result != null) {
+            for (Object[] fields : result) {
+              Deadline.checkTimeout();
+              Long tabId = Long.parseLong(String.valueOf(fields[0]));
+              MetadataTableSummary summary = summaries.get(tabId);
+              summary.setPartitionColumnCount(Integer.parseInt(fields[1].toString()));
+              partedTabs.put(tabId, summary);
+            }
+          }
+          summaries.keySet().stream().filter(k -> !partedTabs.containsKey(k))
+              .forEach(k -> nonPartedTabs.put(k, summaries.get(k)));
+        } finally {
+          qResult.getLeft().closeAll();
+        }
+        return Collections.emptyList();
+      }
+    });
+
+    runBatched(batchSize, new ArrayList<>(partedTabs.keySet()), new Batchable<Long, Void>() {
+      static final String QUERY_TEXT0 = "select t.\"TBL_ID\", count(1) from \"TBLS\" t join \"PARTITIONS\" p on t.\"TBL_ID\" = p.\"TBL_ID\" where t.\"TBL_ID\" in (";
+      @Override
+      public List<Void> run(List<Long> input) throws Exception {
+        Pair<Query<?>, List<Object[]>> qResult = getResultFromInput(input, QUERY_TEXT0, " group by t.\"TBL_ID\"");
+        try {
+          List<Object[]> result = qResult.getRight();
+          if (result != null) {
+            for (Object[] fields : result) {
+              Deadline.checkTimeout();
+              Long tabId = Long.parseLong(String.valueOf(fields[0]));
+              MetadataTableSummary summary = summaries.get(tabId);
+              summary.setPartitionCount(Integer.parseInt(fields[1].toString()));
+            }
+          }
+        } finally {
+          qResult.getLeft().closeAll();
+        }
+        return Collections.emptyList();
+      }
+    });
   }
 
-  private void feedTabFormatSummary(MetadataTableSummary summary, ResultSet rs) throws SQLException {
-    String tblType = rs.getString("TBL_TYPE");
-    String fileType = TableFormat.extractFileFormat(rs.getString("SLIB"));
+  private void collectColumnSummary(Map<Long, MetadataTableSummary> summaries) throws MetaException {
+    runBatched(batchSize, new ArrayList<>(summaries.keySet()), new Batchable<Long, Void>() {
+      static final String QUERY_TEXT0 = "select \"TBL_ID\", count(*), sum(CASE WHEN \"TYPE_NAME\" like 'array%' THEN 1 ELSE 0 END)," +
+          " sum(CASE WHEN \"TYPE_NAME\" like 'struct%' THEN 1 ELSE 0 END), sum(CASE WHEN \"TYPE_NAME\" like 'map%' THEN 1 ELSE 0 END)" +
+          " from \"TBLS\" t join \"SDS\" s on t.\"SD_ID\" = s.\"SD_ID\" join \"CDS\" c on s.\"CD_ID\" = c.\"CD_ID\" join \"COLUMNS_V2\" v on c.\"CD_ID\" = v.\"CD_ID\"" +
+          " where \"TBL_ID\" in (";
+      @Override
+      public List<Void> run(List<Long> input) throws Exception {
+        Pair<Query<?>, List<Object[]>> qResult = getResultFromInput(input, QUERY_TEXT0, " group by \"TBL_ID\"");
+        try {
+          List<Object[]> result = qResult.getRight();
+          if (result != null) {
+            for (Object[] fields : result) {
+              Deadline.checkTimeout();
+              Long tabId = Long.parseLong(String.valueOf(fields[0]));
+              MetadataTableSummary summary = summaries.get(tabId);
+              summary.columnSummary(Integer.parseInt(fields[1].toString()), Integer.parseInt(fields[2].toString()),
+                  Integer.parseInt(fields[3].toString()), Integer.parseInt(fields[4].toString()));
+            }
+          }
+        } finally {
+          qResult.getLeft().closeAll();
+        }
+        return Collections.emptyList();
+      }
+    });
+  }
+
+  private void collectTabFormatSummary(Map<Long, MetadataTableSummary> summaries) throws MetaException {
+    runBatched(batchSize, new ArrayList<>(summaries.keySet()), new Batchable<Long, Void>() {
+      static final String QUERY_TEXT0 = "select t.\"TBL_ID\", d.\"SLIB\", s.\"IS_COMPRESSED\" from \"TBLS\" t left join \"SDS\" s on t.\"SD_ID\" = s.\"SD_ID\" left join \"SERDES\" d on d.\"SERDE_ID\" = s.\"SERDE_ID\"" +
+          " where t.\"TBL_ID\" in (";
+      static final String QUERY_TEXT1 = "select t.\"TBL_ID\", p.\"PARAM_VALUE\" from \"TBLS\" t join \"TABLE_PARAMS\" p on t.\"TBL_ID\" = p.\"TBL_ID\" where p.\"PARAM_KEY\" = 'transactional_properties'" +
+          " and t.\"TBL_ID\" in (";
+      @Override
+      public List<Void> run(List<Long> input) throws Exception {
+        Pair<Query<?>, List<Object[]>> qResult = getResultFromInput(input, QUERY_TEXT0, "");
+        List<Long> transactionTables = new ArrayList<>();
+        try {
+          List<Object[]> result = qResult.getRight();
+          if (result != null) {
+            for (Object[] fields : result) {
+              Deadline.checkTimeout();
+              Long tabId = Long.parseLong(String.valueOf(fields[0]));
+              MetadataTableSummary summary = summaries.get(tabId);
+              String lib = String.valueOf(fields[1]);
+              String compressionType = String.valueOf(fields[2]);
+              collectTabFormatSummary(transactionTables, tabId, summary, lib, compressionType);
+            }
+          }
+        } finally {
+          qResult.getLeft().closeAll();
+        }
+
+        if (!transactionTables.isEmpty()) {
+          qResult = getResultFromInput(input, QUERY_TEXT1, "");
+          try {
+            List<Object[]> result = qResult.getRight();
+            if (result != null) {
+              for (Object[] fields : result) {
+                Deadline.checkTimeout();
+                Long tabId = Long.parseLong(String.valueOf(fields[0]));
+                MetadataTableSummary summary = summaries.get(tabId);
+                String transactionalProperties = String.valueOf(fields[1]);
+                if("insert_only".equalsIgnoreCase(transactionalProperties.trim())) {
+                  summary.setTableType("HIVE_ACID_INSERT_ONLY");
+                }
+              }
+            }
+          } finally {
+            qResult.getLeft().closeAll();
+          }
+        }
+
+        return Collections.emptyList();
+      }
+    });
+  }
+
+  private Pair<Query<?>, List<Object[]>> getResultFromInput(List<Long> input, String queryText0,
+      String subQ) throws MetaException {
+    int size = input.size();
+    String queryText = queryText0 + (size == 0 ? "" : repeat(",?", size).substring(1)) + ") " + subQ;
+    if (dbType.isMYSQL()) {
+      queryText = queryText.replace("\"", "");
+    }
+    Object[] params = new Object[size];
+    for (int i = 0; i < input.size(); ++i) {
+      params[i] = input.get(i);
+    }
+    Deadline.checkTimeout();
+    boolean success = false;
+    Query<?> query = pm.newQuery("javax.jdo.query.SQL", queryText);
+    try {
+      List<Object[]> result = (List<Object[]>) query.executeWithArray(params);
+      success = true;
+      return Pair.of(query, result);
+    } finally {
+      if (!success) {
+        query.closeAll();
+      }
+    }
+  }
+
+  private void collectTabFormatSummary(List<Long> transactionalTables, Long tableId,
+      MetadataTableSummary summary, String slib, String compressionType) {
+    String tblType = summary.getTableType();
+    String fileType = TableFormat.extractFileFormat(slib);
     Set<String> nonNativeTabTypes = TableFormat.getNonNativeFormats();
     if (nonNativeTabTypes.contains(fileType)) {
       tblType = fileType.toUpperCase();
-      if (TableFormat.isIcebergFormat(tblType)) {
-        String writeFormatDefault = rs.getString("WRITE_FORMAT_DEFAULT");
-        if (writeFormatDefault == null) {
-          writeFormatDefault = "null";
-        }
-        if (writeFormatDefault.equals("null")) {
-          fileType = "parquet";
-        } else {
-          fileType = writeFormatDefault;
-        }
-      }
     } else if (TableType.MANAGED_TABLE.name().equalsIgnoreCase(tblType)) {
-      String transactionalProperties = rs.getString("TRANSACTIONAL_PROPERTIES");
-      if (transactionalProperties == null) {
-        transactionalProperties = "null";
-      }
-      tblType = "insert_only".equalsIgnoreCase(transactionalProperties.trim()) ?
-          "HIVE_ACID_INSERT_ONLY" : "HIVE_ACID_FULL";
+      tblType = "HIVE_ACID_FULL";
+      transactionalTables.add(tableId);
     } else if (TableType.EXTERNAL_TABLE.name().equalsIgnoreCase(tblType)) {
       tblType = "HIVE_EXTERNAL";
     } else {
       tblType = tblType != null ? tblType.toUpperCase() : "NULL";
     }
-    String compressionType = rs.getString("IS_COMPRESSED");
     if (compressionType.equals("0") || compressionType.equals("f")) {
       compressionType = "None";
     }
     summary.tableFormatSummary(tblType, compressionType, fileType);
   }
 
-  private boolean prepareGetMetaSummary(JDOConnection jdoConn) throws MetaException {
-    try {
-      List<String> prepareQueries = sqlGenerator.getCreateQueriesForMetastoreSummary();
-      if (prepareQueries == null || prepareQueries.isEmpty()) {
-        LOG.warn("Metadata summary has not been implemented for dbtype {}", DatabaseProduct.dbType);
-        return false;
-      }
-      try (Statement stmt = ((Connection) jdoConn.getNativeConnection()).createStatement()) {
-        long startTime = System.currentTimeMillis();
-        for (String q : prepareQueries) {
-          stmt.addBatch(q);
-        }
-        stmt.executeBatch();
-        long endTime = System.currentTimeMillis();
-        LOG.info("Total query time for generating HMS Summary: {} (ms)", endTime - startTime);
-      }
-    } catch (SQLException e) {
-      LOG.error("Exception during computing HMS Summary", e);
-      throw new MetaException("Error preparing the context for computing the summary: " + e.getMessage());
-    }
-    return true;
-  }
-
-  private void feedBasicStats(final Map<Long, MetadataTableSummary> nonPartedTabs,
+  private void collectBasicStats(final Map<Long, MetadataTableSummary> nonPartedTabs,
       final Map<Long, MetadataTableSummary> partedTabs) throws MetaException {
     runBatched(batchSize, new ArrayList<>(nonPartedTabs.keySet()), new Batchable<Long, Void>() {
       static final String QUERY_TEXT0 = "select \"TBL_ID\", \"PARAM_KEY\", \"PARAM_VALUE\" from \"TABLE_PARAMS\" where \"PARAM_KEY\" " +
@@ -782,18 +876,9 @@ public class MetaToolObjectStore extends ObjectStore {
 
   private void feedBasicStats(String queryText0, List<Long> input, Map<Long, MetadataTableSummary> summaryMap, String subQ)
       throws MetaException {
-    int size = input.size();
-    String queryText = queryText0 + (size == 0 ? "" : repeat(",?", size).substring(1)) + ")" + subQ;
-    if (dbType.isMYSQL()) {
-      queryText = queryText.replace("\"", "");
-    }
-    Object[] params = new Object[size];
-    for (int i = 0; i < input.size(); ++i) {
-      params[i] = input.get(i);
-    }
-    Query<?> query = pm.newQuery("javax.jdo.query.SQL", queryText);
+    Pair<Query<?>, List<Object[]>> qResult = getResultFromInput(input, queryText0, subQ);
     try {
-      List<Object[]> result = (List<Object[]>) query.executeWithArray(params);
+      List<Object[]> result = qResult.getRight();
       if (result != null) {
         for (Object[] fields : result) {
           Deadline.checkTimeout();
@@ -803,7 +888,7 @@ public class MetaToolObjectStore extends ObjectStore {
         }
       }
     } finally {
-      query.closeAll();
+      qResult.getLeft().closeAll();
     }
   }
 

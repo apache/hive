@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class MetadataTableSummary {
+  private String catalogName;
   private String dbName;
   private String tblName;
   private String owner;
@@ -41,7 +42,9 @@ public class MetadataTableSummary {
   private Map<String, Object> summary;
   private transient boolean dropped = false;
 
-  public MetadataTableSummary(String owner, String db, String tableName) {
+  public MetadataTableSummary(String catalogName,
+       String db, String tableName, String owner) {
+    this.catalogName = catalogName;
     this.owner = owner;
     this.dbName = db;
     this.tblName = tableName;
@@ -245,5 +248,13 @@ public class MetadataTableSummary {
 
   public void setDropped(boolean dropped) {
     this.dropped = dropped;
+  }
+
+  public String getCatalogName() {
+    return catalogName;
+  }
+
+  public void setCatalogName(String catalogName) {
+    this.catalogName = catalogName;
   }
 }
