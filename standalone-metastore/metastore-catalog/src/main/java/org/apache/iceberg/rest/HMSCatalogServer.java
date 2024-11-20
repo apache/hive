@@ -33,16 +33,27 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.iceberg.HiveCachingCatalog;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.hive.HiveCatalog;
+import org.eclipse.jetty.server.ConnectionFactory;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 public class HMSCatalogServer {
   private static final String CACHE_EXPIRY = "hive.metastore.catalog.cache.expiry";
+  private static final String CACHE_AUTHORIZATION = "hive.metastore.catalog.cache.authorization";
+  private static final String JETTY_THREADPOOL_MIN = "hive.metastore.catalog.jetty.threadpool.min";
+  private static final String JETTY_THREADPOOL_MAX = "hive.metastore.catalog.jetty.threadpool.max";
+  private static final String JETTY_THREADPOOL_IDLE = "hive.metastore.catalog.jetty.threadpool.idle";
   /**
    * The metric names prefix.
    */
@@ -59,9 +70,7 @@ public class HMSCatalogServer {
   }
 
   public static HttpServlet createServlet(SecureServletCaller security, Catalog catalog) throws IOException {
-    try (HMSCatalogAdapter adapter = new HMSCatalogAdapter(catalog)) {
-      return new HMSCatalogServlet(security, adapter);
-    }
+    return new HMSCatalogServlet(security, new HMSCatalogAdapter(catalog));
   }
 
   public static Catalog createCatalog(Configuration configuration) {
@@ -119,12 +128,35 @@ public class HMSCatalogServer {
     context.setVirtualHosts(null);
     context.setGzipHandler(new GzipHandler());
 
-    final Server httpServer = new Server(port);
+    final Server httpServer = createHttpServer(conf, port);
     httpServer.setHandler(context);
     LOG.info("Starting HMS REST Catalog Server with context path:/{}/ on port:{}", cli, port);
     httpServer.start();
     return httpServer;
   }
+
+  private static Server createHttpServer(Configuration conf, int port) throws IOException {
+    final int maxThreads = conf.getInt(JETTY_THREADPOOL_MAX, 256);
+    final int minThreads = conf.getInt(JETTY_THREADPOOL_MIN, 8);
+    final int idleTimeout = conf.getInt(JETTY_THREADPOOL_IDLE, 60_000);
+    final QueuedThreadPool threadPool = new QueuedThreadPool(maxThreads, minThreads, idleTimeout);
+    final Server httpServer = new Server(threadPool);
+    final SslContextFactory sslContextFactory = ServletSecurity.createSslContextFactory(conf);
+    final ServerConnector connector = new ServerConnector(httpServer, sslContextFactory);
+    connector.setPort(port);
+    connector.setReuseAddress(true);
+    httpServer.setConnectors(new Connector[] {connector});
+    for (ConnectionFactory factory : connector.getConnectionFactories()) {
+      if (factory instanceof HttpConnectionFactory) {
+        HttpConnectionFactory httpFactory = (HttpConnectionFactory) factory;
+        HttpConfiguration httpConf = httpFactory.getHttpConfiguration();
+        httpConf.setSendServerVersion(false);
+        httpConf.setSendXPoweredBy(false);
+      }
+    }
+    return httpServer;
+  }
+
 
   /**
    * Convenience method to start a http server that only serves this servlet.

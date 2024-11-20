@@ -153,21 +153,17 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
       if (table != null) {
         HiveOperationsBase.validateTableIsIceberg(table, fullName);
         metadataLocation = table.getParameters().get(METADATA_LOCATION_PROP);
-      } else {
-        if (currentMetadataLocation() != null) {
-          throw new NoSuchTableException("No such table: %s.%s", database, tableName);
-        }
+      } else if (currentMetadataLocation() != null) {
+        throw new NoSuchTableException("No such table: %s.%s", database, tableName);
       }
     } catch (NoSuchObjectException e) {
       if (currentMetadataLocation() != null) {
         throw new NoSuchTableException("No such table: %s.%s", database, tableName);
       }
-
     } catch (TException e) {
       String errMsg =
           String.format("Failed to get table info from metastore %s.%s", database, tableName);
       throw new RuntimeException(errMsg, e);
-
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new RuntimeException("Interrupted during refresh", e);

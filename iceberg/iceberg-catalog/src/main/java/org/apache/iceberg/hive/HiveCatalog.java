@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.iceberg.BaseMetastoreCatalog;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.CatalogProperties;
@@ -241,7 +242,7 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
 
     try {
       Table table = actor.getTable(fromDatabase, fromName);
-      validateTableIsIcebergTableOrView(contentType, table, TableIdentifier.of(from.namespace(), fromName).name());
+      validateTableIsIcebergTableOrView(contentType, table, CatalogUtil.fullTableName(name, from));
 
       table.setDbName(toDatabase);
       table.setTableName(to.name());
@@ -507,24 +508,24 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
   }
 
   private String databaseLocation(String databaseName) {
-    String warehouseLocation = conf.get("metastore.warehouse.dir");
+    String warehouseLocation = conf.get(MetastoreConf.ConfVars.WAREHOUSE.getVarname());
     if (warehouseLocation == null) {
-      warehouseLocation = conf.get(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname);
+      warehouseLocation =  conf.get(MetastoreConf.ConfVars.WAREHOUSE.getHiveName());
     }
     Preconditions.checkNotNull(warehouseLocation,
-        "Warehouse location is not set: hive.metastore.warehouse.dir=null");
+            "Warehouse location is not set: hive.metastore.warehouse.dir=null");
     warehouseLocation = LocationUtil.stripTrailingSlash(warehouseLocation);
     return String.format("%s/%s.db", warehouseLocation, databaseName.toLowerCase());
   }
 
 
   private String databaseLocationInExternalWarehouse(String databaseName) {
-    String warehouseLocation = conf.get("metastore.warehouse.external.dir");
+    String warehouseLocation = conf.get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname());
     if (warehouseLocation == null) {
-      warehouseLocation = conf.get(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname);
+      warehouseLocation = conf.get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getHiveName());
     }
     Preconditions.checkNotNull(warehouseLocation,
-        "Warehouse location is not set: hive.metastore.warehouse.external.dir=null");
+            "Warehouse location is not set: hive.metastore.warehouse.external.dir=null");
     warehouseLocation = LocationUtil.stripTrailingSlash(warehouseLocation);
     return String.format("%s/%s.db", warehouseLocation, databaseName);
   }

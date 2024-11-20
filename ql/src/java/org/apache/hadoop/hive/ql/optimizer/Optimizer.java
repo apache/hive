@@ -192,9 +192,7 @@ public class Optimizer {
       transformations.add(new FixedBucketPruningOptimizer(compatMode));
     }
 
-    if (!isTezExecEngine) {
-      transformations.add(new BucketVersionPopulator());
-    }
+    transformations.add(new BucketVersionPopulator());
 
     if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPT_REDUCE_DEDUPLICATION) &&
         !isTezExecEngine) {

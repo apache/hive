@@ -61,8 +61,8 @@
       <artifactId>iceberg-bundled-guava</artifactId>
       <version>${iceberg.version}</version>
     </dependency>
-    <!-- Intellij dislikes shaded Iceberg: uncomment the following block helps when coding/debugging -->
-
+    <!-- Intellij dislikes shaded Iceberg: uncomment the following 2 blocks helps when coding/debugging -->
+    <!--
     <dependency>
       <groupId>org.apache.iceberg</groupId>
       <artifactId>iceberg-api</artifactId>
@@ -75,7 +75,7 @@
       <version>${iceberg.version}</version>
       <optional>true</optional>
     </dependency>
-
+    -->
     <dependency>
       <groupId>org.apache.httpcomponents.core5</groupId>
       <artifactId>httpcore5</artifactId>

@@ -45,7 +45,7 @@ import java.util.Optional;
  * Secures servlet processing.
  */
 public class ServletSecurity implements SecureServletCaller {
-  private static final Logger LOG = LoggerFactory.getLogger(SecureServletCaller.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ServletSecurity.class);
   static final String X_USER = MetaStoreUtils.USER_NAME_HTTP_HEADER;
   private final boolean isSecurityEnabled;
   private final boolean jwtAuthEnabled;
@@ -193,29 +193,33 @@ public class ServletSecurity implements SecureServletCaller {
    * @return null if no ssl in config, an instance otherwise
    * @throws IOException if getting password fails
    */
-  static SslContextFactory createSslContextFactory(Configuration conf) throws IOException {
+  public static SslContextFactory createSslContextFactory(Configuration conf) throws IOException {
     final boolean useSsl  = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_SSL);
     if (!useSsl) {
       return null;
     }
-    String keyStorePath = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PATH).trim();
+    final String keyStorePath = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PATH).trim();
     if (keyStorePath.isEmpty()) {
       throw new IllegalArgumentException(MetastoreConf.ConfVars.SSL_KEYSTORE_PATH.toString()
           + " Not configured for SSL connection");
     }
-    String keyStorePassword =
+    final String keyStorePassword =
         MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PASSWORD);
-    String keyStoreType =
+    final String keyStoreType =
         MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_TYPE).trim();
-    String keyStoreAlgorithm =
+    final String keyStoreAlgorithm =
         MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_KEYMANAGERFACTORY_ALGORITHM).trim();
-
+    final String[] excludedProtocols =
+        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_PROTOCOL_BLACKLIST).split(",");
+    if (LOG.isInfoEnabled()) {
+      LOG.info("HTTP Server SSL: adding excluded protocols: {}", Arrays.toString(excludedProtocols));
+    }
     SslContextFactory factory = new SslContextFactory.Server();
-    String[] excludedProtocols = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_PROTOCOL_BLACKLIST).split(",");
-    LOG.info("HTTP Server SSL: adding excluded protocols: " + Arrays.toString(excludedProtocols));
     factory.addExcludeProtocols(excludedProtocols);
-    LOG.info("HTTP Server SSL: SslContextFactory.getExcludeProtocols = "
-        + Arrays.toString(factory.getExcludeProtocols()));
+    if (LOG.isInfoEnabled()) {
+      LOG.info("HTTP Server SSL: SslContextFactory.getExcludeProtocols = {}",
+        Arrays.toString(factory.getExcludeProtocols()));
+    }
     factory.setKeyStorePath(keyStorePath);
     factory.setKeyStorePassword(keyStorePassword);
     factory.setKeyStoreType(keyStoreType);

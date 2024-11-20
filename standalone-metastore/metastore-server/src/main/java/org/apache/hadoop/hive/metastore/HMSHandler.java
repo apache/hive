@@ -1315,9 +1315,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                   return null;
                 }
               });
-            } catch (SnapshotException e) {
-              LOG.error(
-                  "Couldn't delete managed directory " + dbMgdPath + " after " + "it was created for database " + db.getName() + " " + e.getMessage());
             } catch (IOException | InterruptedException e) {
               LOG.error(
                   "Couldn't delete managed directory " + dbMgdPath + " after " + "it was created for database " + db.getName() + " " + e.getMessage());
