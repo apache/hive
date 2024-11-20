@@ -41,7 +41,7 @@ public class TestIcebergSummaryHandler {
       schema = new MetaSummarySchema();
       handler.initialize("hive", false, schema);
       fields = Sets.newHashSet(schema.getFields());
-      Assert.assertTrue(fields.containsAll(Arrays.asList("puffin_stats_enabled", "numSnapshots",
+      Assert.assertTrue(fields.containsAll(Arrays.asList("puffin_enabled", "numSnapshots",
           "manifestsSize", "version", "write.distribution-mode", "write.format.default", "write.merge.mode")));
     }
   }
