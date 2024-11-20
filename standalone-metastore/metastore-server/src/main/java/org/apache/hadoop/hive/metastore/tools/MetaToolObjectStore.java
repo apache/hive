@@ -642,8 +642,8 @@ public class MetaToolObjectStore extends ObjectStore {
    */
   public List<MetadataTableSummary> getMetadataSummary(String catalogFilter, String dbFilter, String tableFilter)
       throws MetaException {
-    Map<Long, MetadataTableSummary> partedTabs = new HashMap<>();
-    Map<Long, MetadataTableSummary> nonPartedTabs = new HashMap<>();
+    Set<Long> partedTabs = new HashSet<>();
+    Set<Long> nonPartedTabs = new HashSet<>();
     Map<Long, MetadataTableSummary> allSummaries = new HashMap<>();
     List<MetadataTableSummary> metadataTableSummaryList = new ArrayList<>();
     StringBuilder filter = new StringBuilder();
@@ -671,12 +671,12 @@ public class MetaToolObjectStore extends ObjectStore {
     collectPartitionSummary(allSummaries, partedTabs, nonPartedTabs);
     collectColumnSummary(allSummaries);
     collectTabFormatSummary(allSummaries);
-    collectBasicStats(nonPartedTabs, partedTabs);
+    collectBasicStats(allSummaries, nonPartedTabs, partedTabs);
     return metadataTableSummaryList;
   }
 
-  private void collectPartitionSummary(Map<Long, MetadataTableSummary> summaries,  Map<Long, MetadataTableSummary> partedTabs,
-      Map<Long, MetadataTableSummary> nonPartedTabs) throws MetaException {
+  private void collectPartitionSummary(Map<Long, MetadataTableSummary> summaries,  Set<Long> partedTabs,
+      Set<Long> nonPartedTabs) throws MetaException {
     runBatched(batchSize, new ArrayList<>(summaries.keySet()), new Batchable<Long, Void>() {
       static final String QUERY_TEXT0 = "select t.\"TBL_ID\", count(1) from \"TBLS\" t join \"PARTITION_KEYS\" p on t.\"TBL_ID\" = p.\"TBL_ID\" where t.\"TBL_ID\" in (";
       @Override
@@ -690,11 +690,11 @@ public class MetaToolObjectStore extends ObjectStore {
               Long tabId = Long.parseLong(String.valueOf(fields[0]));
               MetadataTableSummary summary = summaries.get(tabId);
               summary.setPartitionColumnCount(Integer.parseInt(fields[1].toString()));
-              partedTabs.put(tabId, summary);
+              partedTabs.add(tabId);
             }
           }
-          summaries.keySet().stream().filter(k -> !partedTabs.containsKey(k))
-              .forEach(k -> nonPartedTabs.put(k, summaries.get(k)));
+          summaries.keySet().stream().filter(k -> !partedTabs.contains(k))
+              .forEach(nonPartedTabs::add);
         } finally {
           qResult.getLeft().closeAll();
         }
@@ -702,7 +702,7 @@ public class MetaToolObjectStore extends ObjectStore {
       }
     });
 
-    runBatched(batchSize, new ArrayList<>(partedTabs.keySet()), new Batchable<Long, Void>() {
+    runBatched(batchSize, new ArrayList<>(partedTabs), new Batchable<Long, Void>() {
       static final String QUERY_TEXT0 = "select t.\"TBL_ID\", count(1) from \"TBLS\" t join \"PARTITIONS\" p on t.\"TBL_ID\" = p.\"TBL_ID\" where t.\"TBL_ID\" in (";
       @Override
       public List<Void> run(List<Long> input) throws Exception {
@@ -850,31 +850,31 @@ public class MetaToolObjectStore extends ObjectStore {
     summary.tableFormatSummary(tblType, compressionType, fileType);
   }
 
-  private void collectBasicStats(final Map<Long, MetadataTableSummary> nonPartedTabs,
-      final Map<Long, MetadataTableSummary> partedTabs) throws MetaException {
-    runBatched(batchSize, new ArrayList<>(nonPartedTabs.keySet()), new Batchable<Long, Void>() {
+  private void collectBasicStats(Map<Long, MetadataTableSummary> summaries, Set<Long> nonPartedTabs,
+      Set<Long> partedTabs) throws MetaException {
+    runBatched(batchSize, new ArrayList<>(nonPartedTabs), new Batchable<Long, Void>() {
       static final String QUERY_TEXT0 = "select \"TBL_ID\", \"PARAM_KEY\", \"PARAM_VALUE\" from \"TABLE_PARAMS\" where \"PARAM_KEY\" " +
           "in ('" + StatsSetupConst.TOTAL_SIZE + "', '" + StatsSetupConst.NUM_FILES + "', '" + StatsSetupConst.ROW_COUNT + "') and \"TBL_ID\" in (";
       @Override
       public List<Void> run(List<Long> input) throws Exception {
-        feedBasicStats(QUERY_TEXT0, input, nonPartedTabs, "");
+        collectBasicStats(QUERY_TEXT0, input, summaries, "");
         return Collections.emptyList();
       }
     });
 
-   runBatched(batchSize, new ArrayList<>(partedTabs.keySet()), new Batchable<Long, Void>() {
+   runBatched(batchSize, new ArrayList<>(partedTabs), new Batchable<Long, Void>() {
      static final String QUERY_TEXT0 = "select \"TBL_ID\", \"PARAM_KEY\", sum(CAST(\"PARAM_VALUE\" AS decimal(21,0))) from \"PARTITIONS\" t " +
          "join \"PARTITION_PARAMS\" p on p.\"PART_ID\" = t.\"PART_ID\" where \"PARAM_KEY\" " +
           "in ('" + StatsSetupConst.TOTAL_SIZE + "', '" + StatsSetupConst.NUM_FILES + "', '" + StatsSetupConst.ROW_COUNT + "') and t.\"TBL_ID\" in (";
       @Override
       public List<Void> run(List<Long> input) throws Exception {
-        feedBasicStats(QUERY_TEXT0, input, partedTabs, " group by \"TBL_ID\", \"PARAM_KEY\"");
+        collectBasicStats(QUERY_TEXT0, input, summaries, " group by \"TBL_ID\", \"PARAM_KEY\"");
         return Collections.emptyList();
       }
     });
   }
 
-  private void feedBasicStats(String queryText0, List<Long> input, Map<Long, MetadataTableSummary> summaryMap, String subQ)
+  private void collectBasicStats(String queryText0, List<Long> input, Map<Long, MetadataTableSummary> summaries, String subQ)
       throws MetaException {
     Pair<Query<?>, List<Object[]>> qResult = getResultFromInput(input, queryText0, subQ);
     try {
@@ -883,7 +883,7 @@ public class MetaToolObjectStore extends ObjectStore {
         for (Object[] fields : result) {
           Deadline.checkTimeout();
           Long tabId = Long.parseLong(String.valueOf(fields[0]));
-          MetadataTableSummary summary = summaryMap.get(tabId);
+          MetadataTableSummary summary = summaries.get(tabId);
           feedBasicStats(summary, String.valueOf(fields[1]), fields[2]);
         }
       }
