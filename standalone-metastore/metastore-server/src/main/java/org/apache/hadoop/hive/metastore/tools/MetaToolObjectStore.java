@@ -804,8 +804,8 @@ public class MetaToolObjectStore extends ObjectStore {
     });
   }
 
-  private Pair<Query<?>, List<Object[]>> getResultFromInput(List<Long> input, String queryText0,
-      String subQ) throws MetaException {
+  private Pair<Query<?>, List<Object[]>> getResultFromInput(List<Long> input,
+      String queryText0, String subQ) throws MetaException {
     int size = input.size();
     String queryText = queryText0 + (size == 0 ? "" : repeat(",?", size).substring(1)) + ") " + subQ;
     if (dbType.isMYSQL()) {
