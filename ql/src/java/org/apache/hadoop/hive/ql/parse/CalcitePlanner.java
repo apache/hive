@@ -1995,10 +1995,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return basePlan;
     }
     
-    private boolean pruneEmptyTable () {
-      return !(ctx.isExplainPlan() &&
-          HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST) &&
-          !HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_EXPLAIN_PRUNE_EMPTY_TABLE));
+    private boolean pruneEmptyTable() {
+      return !HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST) ||
+          HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_PRUNE_EMPTY_TABLES_IN_TEST);
     }
 
     /**

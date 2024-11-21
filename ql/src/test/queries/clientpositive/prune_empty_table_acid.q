@@ -1,7 +1,9 @@
+set hive.support.concurrency=true;
+set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.cli.print.header=true;
 
-create table tmp1 (a int, b string);
-create table tmp2 (a int, b string);
+create table tmp1 (a int, b string) stored as orc TBLPROPERTIES ('transactional'='true');
+create table tmp2 (a int, b string) stored as orc TBLPROPERTIES ('transactional'='true');
 insert into table tmp1 values (3, "a");
 
 explain cbo

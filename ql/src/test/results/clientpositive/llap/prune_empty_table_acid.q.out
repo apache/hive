@@ -1,16 +1,16 @@
-PREHOOK: query: create table tmp1 (a int, b string)
+PREHOOK: query: create table tmp1 (a int, b string) stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp1
-POSTHOOK: query: create table tmp1 (a int, b string)
+POSTHOOK: query: create table tmp1 (a int, b string) stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp1
-PREHOOK: query: create table tmp2 (a int, b string)
+PREHOOK: query: create table tmp2 (a int, b string) stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp2
-POSTHOOK: query: create table tmp2 (a int, b string)
+POSTHOOK: query: create table tmp2 (a int, b string) stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp2
