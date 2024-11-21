@@ -65,7 +65,6 @@ public class MetaToolObjectStore extends ObjectStore {
   private static final Logger LOG = LoggerFactory.getLogger(MetaToolObjectStore.class);
 
   public static class TableFormat {
-
     private TableFormat() {
       // private constructor
     }
