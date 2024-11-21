@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.DatabaseRule;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Mysql;
+import org.apache.hadoop.hive.metastore.dbinstall.rules.Derby;
 import org.apache.hadoop.hive.metastore.metasummary.MetaSummaryHandler;
 import org.apache.hadoop.hive.metastore.metasummary.MetaSummarySchema;
 import org.apache.hadoop.hive.metastore.metasummary.MetadataTableSummary;
@@ -69,7 +69,7 @@ public class TestMetaTookTaskMetadataSummary {
   private static Configuration conf;
   private static final String DB = "test_metasore_summary_1";
   private static final String TBL_PREFIX = "tbl";
-  private static final DatabaseRule RULE = new Mysql();
+  private static final DatabaseRule RULE = new Derby();
 
   @BeforeClass
   public static void setup() throws Exception {
@@ -225,7 +225,6 @@ public class TestMetaTookTaskMetadataSummary {
       Assert.assertEquals(i, summary.getNumFiles());
       Assert.assertEquals(i * 10, summary.getNumRows());
       Assert.assertEquals(i * 1000, summary.getTotalSize());
-      // Assert.assertEquals("parquet", summary.getFileFormat());
       Assert.assertEquals("ICEBERG", summary.getTableType());
       Assert.assertEquals("v2", summary.getExtraSummary().remove(FakeIcebergSummaryHandler.VERSION));
       Map<String, Object> icebergSummary = FakeIcebergSummaryHandler.TABLE_TO_SUMMARY.get(tableName);

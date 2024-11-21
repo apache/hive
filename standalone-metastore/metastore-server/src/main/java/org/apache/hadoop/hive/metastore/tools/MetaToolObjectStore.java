@@ -68,7 +68,6 @@ public class MetaToolObjectStore extends ObjectStore {
     private TableFormat() {
       // private constructor
     }
-
     public static final String PARQUET = "parquet";
     public static final String ORC = "orc";
     public static final String AVRO = "avro";
@@ -639,8 +638,8 @@ public class MetaToolObjectStore extends ObjectStore {
    * @return MetadataSummary
    * @throws MetaException
    */
-  public List<MetadataTableSummary> getMetadataSummary(String catalogFilter, String dbFilter, String tableFilter)
-      throws MetaException {
+  public List<MetadataTableSummary> getMetadataSummary(String catalogFilter,
+      String dbFilter, String tableFilter) throws MetaException {
     Set<Long> partedTabs = new HashSet<>();
     Set<Long> nonPartedTabs = new HashSet<>();
     Map<Long, MetadataTableSummary> allSummaries = new HashMap<>();
@@ -676,11 +675,11 @@ public class MetaToolObjectStore extends ObjectStore {
 
   private void collectPartitionSummary(Map<Long, MetadataTableSummary> summaries,  Set<Long> partedTabs,
       Set<Long> nonPartedTabs) throws MetaException {
+    String queryText0 = "select t.\"TBL_ID\", count(1) from \"TBLS\" t join \"PARTITION_KEYS\" p on t.\"TBL_ID\" = p.\"TBL_ID\" where t.\"TBL_ID\" in (";
     runBatched(batchSize, new ArrayList<>(summaries.keySet()), new Batchable<Long, Void>() {
-      static final String QUERY_TEXT0 = "select t.\"TBL_ID\", count(1) from \"TBLS\" t join \"PARTITION_KEYS\" p on t.\"TBL_ID\" = p.\"TBL_ID\" where t.\"TBL_ID\" in (";
       @Override
       public List<Void> run(List<Long> input) throws Exception {
-        Pair<Query<?>, List<Object[]>> qResult = getResultFromInput(input, QUERY_TEXT0, " group by t.\"TBL_ID\"");
+        Pair<Query<?>, List<Object[]>> qResult = getResultFromInput(input, queryText0, " group by t.\"TBL_ID\"");
         try {
           List<Object[]> result = qResult.getRight();
           if (result != null) {
@@ -700,12 +699,11 @@ public class MetaToolObjectStore extends ObjectStore {
         return Collections.emptyList();
       }
     });
-
+    String queryText1 = "select t.\"TBL_ID\", count(1) from \"TBLS\" t join \"PARTITIONS\" p on t.\"TBL_ID\" = p.\"TBL_ID\" where t.\"TBL_ID\" in (";
     runBatched(batchSize, new ArrayList<>(partedTabs), new Batchable<Long, Void>() {
-      static final String QUERY_TEXT0 = "select t.\"TBL_ID\", count(1) from \"TBLS\" t join \"PARTITIONS\" p on t.\"TBL_ID\" = p.\"TBL_ID\" where t.\"TBL_ID\" in (";
       @Override
       public List<Void> run(List<Long> input) throws Exception {
-        Pair<Query<?>, List<Object[]>> qResult = getResultFromInput(input, QUERY_TEXT0, " group by t.\"TBL_ID\"");
+        Pair<Query<?>, List<Object[]>> qResult = getResultFromInput(input, queryText1, " group by t.\"TBL_ID\"");
         try {
           List<Object[]> result = qResult.getRight();
           if (result != null) {
@@ -725,14 +723,14 @@ public class MetaToolObjectStore extends ObjectStore {
   }
 
   private void collectColumnSummary(Map<Long, MetadataTableSummary> summaries) throws MetaException {
+    String queryText0 = "select \"TBL_ID\", count(*), sum(CASE WHEN \"TYPE_NAME\" like 'array%' THEN 1 ELSE 0 END)," +
+        " sum(CASE WHEN \"TYPE_NAME\" like 'struct%' THEN 1 ELSE 0 END), sum(CASE WHEN \"TYPE_NAME\" like 'map%' THEN 1 ELSE 0 END)" +
+        " from \"TBLS\" t join \"SDS\" s on t.\"SD_ID\" = s.\"SD_ID\" join \"CDS\" c on s.\"CD_ID\" = c.\"CD_ID\" join \"COLUMNS_V2\" v on c.\"CD_ID\" = v.\"CD_ID\"" +
+        " where \"TBL_ID\" in (";
     runBatched(batchSize, new ArrayList<>(summaries.keySet()), new Batchable<Long, Void>() {
-      static final String QUERY_TEXT0 = "select \"TBL_ID\", count(*), sum(CASE WHEN \"TYPE_NAME\" like 'array%' THEN 1 ELSE 0 END)," +
-          " sum(CASE WHEN \"TYPE_NAME\" like 'struct%' THEN 1 ELSE 0 END), sum(CASE WHEN \"TYPE_NAME\" like 'map%' THEN 1 ELSE 0 END)" +
-          " from \"TBLS\" t join \"SDS\" s on t.\"SD_ID\" = s.\"SD_ID\" join \"CDS\" c on s.\"CD_ID\" = c.\"CD_ID\" join \"COLUMNS_V2\" v on c.\"CD_ID\" = v.\"CD_ID\"" +
-          " where \"TBL_ID\" in (";
       @Override
       public List<Void> run(List<Long> input) throws Exception {
-        Pair<Query<?>, List<Object[]>> qResult = getResultFromInput(input, QUERY_TEXT0, " group by \"TBL_ID\"");
+        Pair<Query<?>, List<Object[]>> qResult = getResultFromInput(input, queryText0, " group by \"TBL_ID\"");
         try {
           List<Object[]> result = qResult.getRight();
           if (result != null) {
@@ -753,14 +751,14 @@ public class MetaToolObjectStore extends ObjectStore {
   }
 
   private void collectTabFormatSummary(Map<Long, MetadataTableSummary> summaries) throws MetaException {
+    String queryText0 = "select t.\"TBL_ID\", d.\"SLIB\", s.\"IS_COMPRESSED\" from \"TBLS\" t left join \"SDS\" s on t.\"SD_ID\" = s.\"SD_ID\" left join \"SERDES\" d on d.\"SERDE_ID\" = s.\"SERDE_ID\"" +
+        " where t.\"TBL_ID\" in (";
+    String queryText1 = "select t.\"TBL_ID\", " + dbType.toVarChar("p.\"PARAM_VALUE\"") + " from \"TBLS\" t join \"TABLE_PARAMS\" p on t.\"TBL_ID\" = p.\"TBL_ID\"" +
+        " where p.\"PARAM_KEY\" = 'transactional_properties' and t.\"TBL_ID\" in (";
     runBatched(batchSize, new ArrayList<>(summaries.keySet()), new Batchable<Long, Void>() {
-      static final String QUERY_TEXT0 = "select t.\"TBL_ID\", d.\"SLIB\", s.\"IS_COMPRESSED\" from \"TBLS\" t left join \"SDS\" s on t.\"SD_ID\" = s.\"SD_ID\" left join \"SERDES\" d on d.\"SERDE_ID\" = s.\"SERDE_ID\"" +
-          " where t.\"TBL_ID\" in (";
-      static final String QUERY_TEXT1 = "select t.\"TBL_ID\", p.\"PARAM_VALUE\" from \"TBLS\" t join \"TABLE_PARAMS\" p on t.\"TBL_ID\" = p.\"TBL_ID\" where p.\"PARAM_KEY\" = 'transactional_properties'" +
-          " and t.\"TBL_ID\" in (";
       @Override
       public List<Void> run(List<Long> input) throws Exception {
-        Pair<Query<?>, List<Object[]>> qResult = getResultFromInput(input, QUERY_TEXT0, "");
+        Pair<Query<?>, List<Object[]>> qResult = getResultFromInput(input, queryText0, "");
         List<Long> transactionTables = new ArrayList<>();
         try {
           List<Object[]> result = qResult.getRight();
@@ -779,7 +777,7 @@ public class MetaToolObjectStore extends ObjectStore {
         }
 
         if (!transactionTables.isEmpty()) {
-          qResult = getResultFromInput(input, QUERY_TEXT1, "");
+          qResult = getResultFromInput(input, queryText1, "");
           try {
             List<Object[]> result = qResult.getRight();
             if (result != null) {
@@ -815,17 +813,9 @@ public class MetaToolObjectStore extends ObjectStore {
       params[i] = input.get(i);
     }
     Deadline.checkTimeout();
-    boolean success = false;
     Query<?> query = pm.newQuery("javax.jdo.query.SQL", queryText);
-    try {
-      List<Object[]> result = (List<Object[]>) query.executeWithArray(params);
-      success = true;
-      return Pair.of(query, result);
-    } finally {
-      if (!success) {
-        query.closeAll();
-      }
-    }
+    List<Object[]> result = (List<Object[]>) query.executeWithArray(params);
+    return Pair.of(query, result);
   }
 
   private void collectTabFormatSummary(List<Long> transactionalTables, Long tableId,
@@ -851,23 +841,23 @@ public class MetaToolObjectStore extends ObjectStore {
 
   private void collectBasicStats(Map<Long, MetadataTableSummary> summaries, Set<Long> nonPartedTabs,
       Set<Long> partedTabs) throws MetaException {
+    String queryText0 = "select \"TBL_ID\", \"PARAM_KEY\", CAST(" + dbType.toVarChar("\"PARAM_VALUE\"") + " AS decimal(21,0)) from \"TABLE_PARAMS\" where \"PARAM_KEY\" " +
+        "in ('" + StatsSetupConst.TOTAL_SIZE + "', '" + StatsSetupConst.NUM_FILES + "', '" + StatsSetupConst.ROW_COUNT + "') and \"TBL_ID\" in (";
     runBatched(batchSize, new ArrayList<>(nonPartedTabs), new Batchable<Long, Void>() {
-      static final String QUERY_TEXT0 = "select \"TBL_ID\", \"PARAM_KEY\", \"PARAM_VALUE\" from \"TABLE_PARAMS\" where \"PARAM_KEY\" " +
-          "in ('" + StatsSetupConst.TOTAL_SIZE + "', '" + StatsSetupConst.NUM_FILES + "', '" + StatsSetupConst.ROW_COUNT + "') and \"TBL_ID\" in (";
       @Override
       public List<Void> run(List<Long> input) throws Exception {
-        collectBasicStats(QUERY_TEXT0, input, summaries, "");
+        collectBasicStats(queryText0, input, summaries, "");
         return Collections.emptyList();
       }
     });
 
+   String queryText1 = "select \"TBL_ID\", \"PARAM_KEY\", sum(CAST(" + dbType.toVarChar("\"PARAM_VALUE\"") + " AS decimal(21,0))) from \"PARTITIONS\" t " +
+       "join \"PARTITION_PARAMS\" p on p.\"PART_ID\" = t.\"PART_ID\" where \"PARAM_KEY\" " +
+       "in ('" + StatsSetupConst.TOTAL_SIZE + "', '" + StatsSetupConst.NUM_FILES + "', '" + StatsSetupConst.ROW_COUNT + "') and t.\"TBL_ID\" in (";
    runBatched(batchSize, new ArrayList<>(partedTabs), new Batchable<Long, Void>() {
-     static final String QUERY_TEXT0 = "select \"TBL_ID\", \"PARAM_KEY\", sum(CAST(\"PARAM_VALUE\" AS decimal(21,0))) from \"PARTITIONS\" t " +
-         "join \"PARTITION_PARAMS\" p on p.\"PART_ID\" = t.\"PART_ID\" where \"PARAM_KEY\" " +
-          "in ('" + StatsSetupConst.TOTAL_SIZE + "', '" + StatsSetupConst.NUM_FILES + "', '" + StatsSetupConst.ROW_COUNT + "') and t.\"TBL_ID\" in (";
       @Override
       public List<Void> run(List<Long> input) throws Exception {
-        collectBasicStats(QUERY_TEXT0, input, summaries, " group by \"TBL_ID\", \"PARAM_KEY\"");
+        collectBasicStats(queryText1, input, summaries, " group by \"TBL_ID\", \"PARAM_KEY\"");
         return Collections.emptyList();
       }
     });
@@ -899,13 +889,13 @@ public class MetaToolObjectStore extends ObjectStore {
     long val = Long.parseLong(value.toString());
     switch (key) {
     case StatsSetupConst.TOTAL_SIZE:
-      summary.setTotalSize(summary.getTotalSize() + val);
+      summary.setTotalSize(val);
       break;
     case StatsSetupConst.ROW_COUNT:
-      summary.setNumRows(summary.getNumRows() + val);
+      summary.setNumRows(val);
       break;
     case StatsSetupConst.NUM_FILES:
-      summary.setNumFiles(summary.getNumFiles() + val);
+      summary.setNumFiles(val);
       break;
     default:
       throw new AssertionError("This should never happen!");
@@ -928,43 +918,47 @@ public class MetaToolObjectStore extends ObjectStore {
       return tableNames;
     }
 
-    Set<String> dbs = new HashSet<>();
-    tableSummaries.forEach(ts -> dbs.add(normalizeIdentifier(ts.getLeft().getDb())));
-    boolean success = false;
-    Query<?> query = null;
-    try {
-      String catalog = normalizeIdentifier(tableSummaries.get(0).getLeft().getCat());
-      if (StringUtils.isEmpty(catalog)) {
-        catalog = MetaStoreUtils.getDefaultCatalog(conf);
-      }
-      Deadline.checkTimeout();
-      openTransaction();
-      String filter = "database.catalogName == t1 && t2.contains(database.name) && " +
-          "parameters.get(\"table_type\") == t3 && parameters.get(\"current-snapshot-timestamp-ms\") > t4";
-      query = pm.newQuery(MTable.class, filter) ;
-      query.declareParameters("java.lang.String t1, java.util.Collection t2, java.lang.String t3, java.lang.Long t4");
-      query.setResult("database.name, tableName");
-      query.setOrdering("parameters.get(\"current-snapshot-timestamp-ms\") DESC");
-      if (tablesLimit != null && tablesLimit >= 0) {
-        query.setRange(0, tablesLimit);
-      }
-      assert lastUpdatedDays != null;
-      List<Object[]> result = (List<Object[]>) query.executeWithArray(catalog, dbs, tableType.toUpperCase(),
-          System.currentTimeMillis() - lastUpdatedDays * 24 * 3600000L);
-      if (result == null || result.isEmpty()) {
-        return Collections.emptySet();
-      }
-      Set<TableName> qr = new HashSet<>();
-      for (Object[] fields : result) {
-        Deadline.checkTimeout();
-        qr.add(new TableName(catalog, (String)fields[0], (String) fields[1]));
-      }
-      tableNames = tableNames.stream().filter(qr::contains).collect(Collectors.toSet());
-      success = commitTransaction();
-    } finally {
-      rollbackAndCleanup(success, query);
+    String catalog = normalizeIdentifier(tableSummaries.get(0).getLeft().getCat());
+    if (StringUtils.isEmpty(catalog)) {
+      catalog = MetaStoreUtils.getDefaultCatalog(conf);
     }
-    return tableNames;
+    Deadline.checkTimeout();
+    String finalCatalog = catalog;
+    List<TableName> tables = Batchable.runBatched(batchSize, new ArrayList<>(tableNames), new Batchable<TableName, TableName>() {
+      @Override
+      public List<TableName> run(List<TableName> input) throws Exception {
+        String queryText =
+            "\"NAME\", \"TBL_NAME\" from (select d.\"NAME\", t.\"TBL_NAME\", CAST(" + dbType.toVarChar("\"PARAM_VALUE\"") + " AS decimal(21,0)) AS \"ORD0\" "
+                + "from \"TBLS\" t join \"DBS\" d on t.\"DB_ID\" = d.\"DB_ID\" and d.\"CTLG_NAME\" = '" + finalCatalog + "' and  (" + getTableFilter(input) + ")"
+                + " join \"TABLE_PARAMS\" p on p.\"TBL_ID\" = t.\"TBL_ID\" and p.\"PARAM_KEY\" = 'current-snapshot-timestamp-ms') tmp"
+                + (lastUpdatedDays != null ? (" where \"ORD0\" > " + (System.currentTimeMillis() - lastUpdatedDays * 24 * 3600000L)) : "") + " order by \"ORD0\" DESC";
+        if (dbType.isMYSQL()) {
+          queryText = queryText.replace("\"", "");
+        }
+        if (tablesLimit != null && tablesLimit >= 0) {
+          queryText = sqlGenerator.addLimitClause(tablesLimit, queryText);
+        } else {
+          queryText = "select " + queryText;
+        }
+        Query<?> query = pm.newQuery("javax.jdo.query.SQL", queryText);
+        List<TableName> tables = new ArrayList<>();
+        try {
+          List<Object[]> result = (List<Object[]>) query.execute();
+          for (Object[] fields : result) {
+            Deadline.checkTimeout();
+            tables.add(new TableName(finalCatalog, (String)fields[0], (String)fields[1]));
+          }
+        } finally {
+          query.closeAll();
+        }
+        return tables;
+      }
+    });
+    return new HashSet<>(tables);
   }
 
+  private String getTableFilter(List<TableName> inputs) {
+    return inputs.stream().map(tab -> "(d.\"NAME\" = '" + tab.getDb() + "' and t.\"TBL_NAME\" = '" + tab.getTable() + "')")
+        .collect(Collectors.joining(" or "));
+  }
 }
