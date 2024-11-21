@@ -1,1 +1,1 @@
-Need to force creation of a directory.
+Need to force creation of the data/conf directory.
