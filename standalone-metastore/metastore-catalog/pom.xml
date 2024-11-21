@@ -10,8 +10,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <artifactId>hive-standalone-metastore</artifactId>
     <groupId>org.apache.hive</groupId>
@@ -312,21 +311,17 @@
             <phase>generate-test-sources</phase>
             <configuration>
               <target>
-                <copy todir="${project.basedir}/src/test/java/org/apache/hadoop/hive/metastore/utils" overwrite="true"
-                      verbose="true">
-                  <fileset
-                      dir="${project.basedir}/../metastore-server/src/test/java/org/apache/hadoop/hive/metastore/utils">
+                <copy todir="${project.basedir}/src/test/java/org/apache/hadoop/hive/metastore/utils" overwrite="true" verbose="true">
+                  <fileset dir="${project.basedir}/../metastore-server/src/test/java/org/apache/hadoop/hive/metastore/utils">
                     <include name="TestTxnDbUtil.java"/>
                   </fileset>
                 </copy>
-                <copy todir="${project.basedir}/src/test/java/org/apache/hadoop/hive/metastore" overwrite="true"
-                      verbose="true">
+                <copy todir="${project.basedir}/src/test/java/org/apache/hadoop/hive/metastore" overwrite="true" verbose="true">
                   <fileset dir="${project.basedir}/../metastore-server/src/test/java/org/apache/hadoop/hive/metastore">
                     <include name="MetaStoreTestUtils.java"/>
                   </fileset>
                 </copy>
-                <copy todir="${project.basedir}/src/test/resources/scripts/metastore/upgrade/derby" overwrite="true"
-                      verbose="true">
+                <copy todir="${project.basedir}/src/test/resources/scripts/metastore/upgrade/derby" overwrite="true" verbose="true">
                   <fileset dir="${project.basedir}/../metastore-server/src/main/sql/derby">
                     <include name="hive-schema-4.1.0.derby.sql"/>
                   </fileset>
