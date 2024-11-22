@@ -241,4 +241,143 @@ public class TestMurmurHashExpression {
           ((LongColumnVector) vrb.cols[2]).vector[i]);
     }
   }
+
+  @Test
+  public void testMurmurHashStringColStringColSingleRepeating() throws HiveException {
+    BytesColumnVector cvString1 = (BytesColumnVector) ColumnVectorGenUtil.generateColumnVector(
+        TypeInfoFactory.getPrimitiveTypeInfo("string"), false, false, SIZE, rand);
+
+    byte[] repeatedValue = new byte[10];
+    rand.nextBytes(repeatedValue);
+
+    BytesColumnVector cvString2 = new BytesColumnVector(SIZE);
+    cvString2.initBuffer(10);
+    cvString2.noNulls = false;
+    cvString2.isRepeating = true;
+    cvString2.setRef(0, repeatedValue, 0, 10);
+
+    for (int i = 1; i < SIZE; i++) {
+      cvString2.length[i] = 10;
+    }
+
+    VectorizedRowBatch vrb = new VectorizedRowBatch(3, SIZE);
+    vrb.cols[0] = cvString1;
+    vrb.cols[1] = cvString2;
+    vrb.cols[2] = new LongColumnVector(SIZE);
+
+    new MurmurHashStringColStringCol(0, 1, 2).evaluate(vrb);
+
+    Assert.assertEquals(false, vrb.cols[2].isRepeating);
+
+    Text t2 = new Text(repeatedValue);
+    for (int i = 0; i < SIZE; i++) {
+      Text t1 = new Text();
+      t1.set(cvString1.vector[i], cvString1.start[i], cvString1.length[i]);
+
+      Assert.assertEquals(
+          ObjectInspectorUtils.getBucketHashCode(
+              new Object[] { t1, t2 },
+              new ObjectInspector[] { PrimitiveObjectInspectorFactory.writableStringObjectInspector,
+                  PrimitiveObjectInspectorFactory.writableStringObjectInspector }),
+          ((LongColumnVector) vrb.cols[2]).vector[i]);
+    }
+  }
+
+  @Test
+  public void testMurmurHashIntColIntColSingleRepeating() throws HiveException {
+    LongColumnVector cvInt1 = (LongColumnVector) ColumnVectorGenUtil
+        .generateColumnVector(TypeInfoFactory.getPrimitiveTypeInfo("int"), false, false, SIZE, rand);
+
+    long repeatedValue = rand.nextLong();
+
+    LongColumnVector cvInt2 = new LongColumnVector(SIZE);
+    cvInt2.noNulls = false;
+    cvInt2.isRepeating = true;
+    cvInt2.vector[0] = repeatedValue;
+
+    VectorizedRowBatch vrb = new VectorizedRowBatch(3, SIZE);
+    vrb.cols[0] = cvInt1;
+    vrb.cols[1] = cvInt2;
+    vrb.cols[2] = new LongColumnVector(SIZE);
+
+    new MurmurHashIntColIntCol(0, 1, 2).evaluate(vrb);
+
+    Assert.assertEquals(false, vrb.cols[2].isRepeating);
+
+    LongWritable l = new LongWritable(repeatedValue);
+    for (int i = 0; i < SIZE; i++) {
+      Assert.assertEquals(ObjectInspectorUtils.getBucketHashCode(
+              new Object[] { new LongWritable(cvInt1.vector[i]), l },
+              new ObjectInspector[] { PrimitiveObjectInspectorFactory.writableLongObjectInspector,
+                  PrimitiveObjectInspectorFactory.writableLongObjectInspector }),
+          ((LongColumnVector) vrb.cols[2]).vector[i]);
+    }
+  }
+
+  @Test
+  public void testMurmurHashNonRepeatingStringColRepeatingIntCol() throws HiveException {
+    BytesColumnVector cvString = (BytesColumnVector) ColumnVectorGenUtil.generateColumnVector(
+        TypeInfoFactory.getPrimitiveTypeInfo("string"), false, false, SIZE, rand);
+    long repeatedValue = rand.nextLong();
+
+    LongColumnVector cvInt2 = new LongColumnVector(SIZE);
+    cvInt2.noNulls = false;
+    cvInt2.isRepeating = true;
+    cvInt2.vector[0] = repeatedValue;
+
+    VectorizedRowBatch vrb1 = new VectorizedRowBatch(3, SIZE);
+    vrb1.cols[0] = cvString;
+    vrb1.cols[1] = cvInt2;
+    vrb1.cols[2] = new LongColumnVector(SIZE);
+
+    new MurmurHashStringColIntCol(0, 1, 2).evaluate(vrb1);
+
+    LongWritable l = new LongWritable(repeatedValue);
+    for (int i = 0; i < SIZE; i++) {
+      Text t = new Text();
+      t.set(cvString.vector[i], cvString.start[i], cvString.length[i]);
+      Assert.assertEquals(
+          ObjectInspectorUtils.getBucketHashCode(
+              new Object[] { t, l },
+              new ObjectInspector[] { PrimitiveObjectInspectorFactory.writableStringObjectInspector,
+                  PrimitiveObjectInspectorFactory.writableLongObjectInspector }),
+          ((LongColumnVector) vrb1.cols[2]).vector[i]);
+    }
+
+  }
+
+  @Test
+  public void testMurmurHashRepeatingStringColNonRepeatingIntCol() throws HiveException {
+    byte[] repeatedValue = new byte[10];
+    rand.nextBytes(repeatedValue);
+
+    BytesColumnVector cvString = new BytesColumnVector(SIZE);
+    cvString.initBuffer(10);
+    cvString.noNulls = false;
+    cvString.isRepeating = true;
+    cvString.setRef(0, repeatedValue, 0, 10);
+
+    for (int i = 1; i < SIZE; i++) {
+      cvString.length[i] = 10;
+    }
+    LongColumnVector cvInt = (LongColumnVector) ColumnVectorGenUtil.generateColumnVector(
+        TypeInfoFactory.getPrimitiveTypeInfo("int"), false, false, SIZE, rand);
+
+    VectorizedRowBatch vrb2 = new VectorizedRowBatch(3, SIZE);
+    vrb2.cols[0] = cvString;
+    vrb2.cols[1] = cvInt;
+    vrb2.cols[2] = new LongColumnVector(SIZE);
+
+    new MurmurHashStringColIntCol(0, 1, 2).evaluate(vrb2);
+
+    Text t = new Text(repeatedValue);
+    for (int i = 0; i < SIZE; i++) {
+      Assert.assertEquals(
+          ObjectInspectorUtils.getBucketHashCode(
+              new Object[] { t, new LongWritable(cvInt.vector[i]) },
+              new ObjectInspector[] { PrimitiveObjectInspectorFactory.writableStringObjectInspector,
+                  PrimitiveObjectInspectorFactory.writableLongObjectInspector }),
+          ((LongColumnVector) vrb2.cols[2]).vector[i]);
+    }
+  }
 }
