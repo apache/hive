@@ -41,6 +41,7 @@ public class MetadataTableSummary {
   private int mapColumnCount;
   private Map<String, Object> summary;
   private transient boolean dropped = false;
+  private transient long tableId;
 
   public MetadataTableSummary(String catalogName,
        String db, String tableName, String owner) {
@@ -256,5 +257,13 @@ public class MetadataTableSummary {
 
   public void setCatalogName(String catalogName) {
     this.catalogName = catalogName;
+  }
+
+  public long getTableId() {
+    return tableId;
+  }
+
+  public void setTableId(long tableId) {
+    this.tableId = tableId;
   }
 }

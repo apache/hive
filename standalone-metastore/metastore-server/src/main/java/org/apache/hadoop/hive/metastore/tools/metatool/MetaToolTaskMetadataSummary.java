@@ -104,7 +104,7 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
       }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-    } catch (Exception e) {
+    } catch (Throwable e) {
       e.printStackTrace();
       throw new RuntimeException(e);
     } finally {
@@ -138,7 +138,7 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
         System.out.println("Return set of tables is empty or null");
         return null;
       }
-      ArrayListMultimap<Class<? extends MetaSummaryHandler>, Pair<TableName, MetadataTableSummary>> nonNativeSummaries =
+      ArrayListMultimap<Class<? extends MetaSummaryHandler>, MetadataTableSummary> nonNativeSummaries =
           findNonNativeSummaries(allSummaries);
       Integer lastUpdatedDays = inputParams.length >= 3 ? Integer.valueOf(inputParams[2]) : null;
       Integer tablesLimit = inputParams.length >= 4 ? Integer.valueOf(inputParams[3]) : null;
@@ -149,13 +149,14 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
         try (MetaSummaryHandler summaryHandler = JavaUtils.newInstance(handler)) {
           summaryHandler.setConf(conf);
           summaryHandler.initialize(MetaStoreUtils.getDefaultCatalog(conf), formatJson, extraSchema);
-          List<Pair<TableName, MetadataTableSummary>> tableSummaries = nonNativeSummaries.get(handler);
+          List<MetadataTableSummary> tableSummaries = nonNativeSummaries.get(handler);
           // Filter those we don't want to collect
-          Set<TableName> tableNames = getObjectStore().filterTablesForSummary(tableSummaries, lastUpdatedDays, tablesLimit);
-          for (Pair<TableName, MetadataTableSummary> ts : tableSummaries) {
-            MetadataTableSummary summary = ts.getRight();
-            if (tableNames.contains(ts.getLeft())) {
-              summaryHandler.appendSummary(ts.getLeft(), summary);
+          Set<Long> tableIds = getObjectStore().filterTablesForSummary(tableSummaries, lastUpdatedDays, tablesLimit);
+          for (MetadataTableSummary summary : tableSummaries) {
+            if (tableIds.contains(summary.getTableId())) {
+              TableName tableName = new TableName(summary.getCatalogName(),
+                  summary.getDbName(), summary.getTblName());
+              summaryHandler.appendSummary(tableName, summary);
             } else {
               filteredSummary.put(summary, null);
             }
@@ -183,25 +184,25 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
   }
 
   private ArrayListMultimap<Class<? extends MetaSummaryHandler>,
-      Pair<TableName, MetadataTableSummary>> findNonNativeSummaries(List<MetadataTableSummary> summaries) {
+      MetadataTableSummary> findNonNativeSummaries(List<MetadataTableSummary> summaries) {
     ArrayListMultimap<Class<? extends MetaSummaryHandler>,
-        Pair<TableName, MetadataTableSummary>> summaryHandlers = ArrayListMultimap.create();
+        MetadataTableSummary> summaryHandlers = ArrayListMultimap.create();
     Map<String, Class<? extends MetaSummaryHandler>> visitedClz = new HashMap<>();
     summaries.stream().filter(summary -> summary.getTableType() != null && NON_NATIVE_SUMMARY_HANDLER.containsKey(
         summary.getTableType().toLowerCase())).forEach(summary -> {
       Class<? extends MetaSummaryHandler> handler;
       String tableType = summary.getTableType().toLowerCase();
       String className = NON_NATIVE_SUMMARY_HANDLER.get(tableType);
-      TableName tableName = new TableName(MetaStoreUtils.getDefaultCatalog(getObjectStore().getConf()),
-          summary.getDbName(), summary.getTblName());
       try {
         handler = visitedClz.get(className);
         if (handler == null) {
           handler = JavaUtils.getClass(className, MetaSummaryHandler.class);
           visitedClz.put(className, handler);
         }
-        summaryHandlers.put(handler, Pair.of(tableName, summary));
+        summaryHandlers.put(handler, summary);
       } catch (Exception e) {
+        TableName tableName = new TableName(summary.getCatalogName(),
+            summary.getDbName(), summary.getTblName());
         LOG.error(
             "Unable to load the class: " + className + ", will ignore the non-native summary for the table: " + tableName,
             e);

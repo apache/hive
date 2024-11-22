@@ -1855,7 +1855,7 @@ public class MetastoreConf {
         "Whether to retain column statistics during column removals in partitioned tables - disabling this "
             + "purges all column statistics data "
             + "for all partition to retain working consistency"),
-    METADATA_SUMMARY_TIMEOUT("hive.metatool.summary.timeout", "hive.metatool.summary.timeout", 1200, TimeUnit.MINUTES,
+    METADATA_SUMMARY_TIMEOUT("hive.metatool.summary.timeout", "hive.metatool.summary.timeout", 20, TimeUnit.MINUTES,
         "The maximum time in minutes to wait for the metadata summary task to complete, otherwise the task will be cancelled."),
 
     // These are all values that we put here just for testing
