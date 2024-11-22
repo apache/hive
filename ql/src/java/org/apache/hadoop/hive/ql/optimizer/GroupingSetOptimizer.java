@@ -64,6 +64,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 public class GroupingSetOptimizer extends Transform {
   private static final Logger LOG = LoggerFactory.getLogger(GroupingSetOptimizer.class);
@@ -180,13 +181,15 @@ public class GroupingSetOptimizer extends Transform {
     }
 
     private String selectPartitionColumn(GroupByOperator gby, Operator<?> parentOp) {
-      if (!(parentOp.getSchema() != null && parentOp.getSchema().getSignature() != null)) {
+      if (parentOp.getSchema() == null || parentOp.getSchema().getSignature() == null) {
         LOG.debug("Skip grouping-set optimization as the parent operator {} does not provide signature",
             parentOp);
         return null;
       }
 
-      if (!(parentOp.getStatistics() != null && parentOp.getStatistics().getColumnStats() != null)) {
+      if (parentOp.getStatistics() == null ||
+          parentOp.getStatistics().getNumRows() <= 0 ||
+          parentOp.getStatistics().getColumnStats() == null) {
         LOG.debug("Skip grouping-set optimization as the parent operator {} does not provide statistics",
             parentOp);
         return null;
@@ -214,18 +217,11 @@ public class GroupingSetOptimizer extends Transform {
       }
       candidates.retainAll(colNamesInSignature);
 
-      List<ColStatistics> columnStatistics = new ArrayList<>(parentOp.getStatistics().getColumnStats());;
-      columnStatistics.sort(new Comparator<ColStatistics>() {
-        @Override
-        public int compare(ColStatistics o1, ColStatistics o2) {
-          if (o1.getCountDistint() == o2.getCountDistint()) {
-            return 0;
-          } else {
-            // sort in reversed order, i.e., the largest comes the first
-            return (o1.getCountDistint() < o2.getCountDistint()) ? 1 : -1;
-          }
-        }
-      });
+      List<ColStatistics> columnStatistics =
+          new ArrayList<>(parentOp.getStatistics().getColumnStats()).stream()
+              .filter(cs -> cs.getCountDistint() > 0)
+              .sorted(Comparator.comparingLong(ColStatistics::getCountDistint).reversed())
+              .collect(Collectors.toList());
 
       String partitionCol = null;
       for (ColStatistics col: columnStatistics) {
@@ -280,8 +276,12 @@ public class GroupingSetOptimizer extends Transform {
       List<String> keyColumnNames = new ArrayList<>();
       List<List<Integer>> distinctColumnIndices = new ArrayList<>();
 
+      // If we run SetReducerParallelism after this optimization, then we don't have to compute numReducers.
+      int numReducers = Utilities.estimateReducers(
+          parentOp.getStatistics().getDataSize(), context.bytesPerReducer, context.maxReducers, false);
+
       ReduceSinkDesc rsConf = new ReduceSinkDesc(keyColumns, 0, valueColumns, keyColumnNames,
-          distinctColumnIndices, valueColumnNames, -1, partCols, -1, keyTable, valueTable,
+          distinctColumnIndices, valueColumnNames, -1, partCols, numReducers, keyTable, valueTable,
           AcidUtils.Operation.NOT_ACID);
 
       ReduceSinkOperator rs =
@@ -289,9 +289,6 @@ public class GroupingSetOptimizer extends Transform {
       rs.setColumnExprMap(colExprMap);
 
       // If we run SetReducerParallelism after this optimization, the following code becomes unnecessary.
-      int numReducers = Utilities.estimateReducers(
-          parentOp.getStatistics().getDataSize(), context.bytesPerReducer, context.maxReducers, false);
-      rsConf.setNumReducers(numReducers);
       rsConf.setReducerTraits(EnumSet.of(ReduceSinkDesc.ReducerTraits.AUTOPARALLEL));
 
       return rs;
@@ -309,7 +306,7 @@ public class GroupingSetOptimizer extends Transform {
 
         ColumnInfo selColInfo = new ColumnInfo(pColInfo);
 
-        ExprNodeDesc selExpr = new ExprNodeColumnDesc(pColInfo.getType(), rsColName, rsColName, false);
+        ExprNodeDesc selExpr = new ExprNodeColumnDesc(pColInfo.getType(), rsColName, null, false);
 
         selSignature.add(selColInfo);
         selColumns.add(selExpr);

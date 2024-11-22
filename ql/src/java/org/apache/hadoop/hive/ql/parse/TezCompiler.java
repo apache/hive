@@ -230,12 +230,6 @@ public class TezCompiler extends TaskCompiler {
     runStatsDependentOptimizations(procCtx);
     perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run the optimizations that use stats for optimization");
 
-    perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
-    if (procCtx.conf.getLongVar(ConfVars.HIVE_OPTIMIZE_GROUPING_SET_THRESHOLD) > 0) {
-      new GroupingSetOptimizer().transform(pCtx);
-    }
-    perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run GroupingSet optimizer");
-
     // repopulate bucket versions; join conversion may have created some new reducesinks
     new BucketVersionPopulator().transform(pCtx);
 
@@ -501,6 +495,10 @@ public class TezCompiler extends TaskCompiler {
     topNodes.addAll(procCtx.parseContext.getTopOps().values());
     SemanticGraphWalker ogw = new ForwardWalker(disp);
     ogw.startWalking(topNodes, null);
+
+    if (procCtx.conf.getLongVar(ConfVars.HIVE_OPTIMIZE_GROUPING_SET_THRESHOLD) > 0) {
+      new GroupingSetOptimizer().transform(procCtx.parseContext);
+    }
   }
 
   private void extendParentReduceSinkOfMapJoin(OptimizeTezProcContext procCtx) throws SemanticException {
