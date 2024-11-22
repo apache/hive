@@ -70,6 +70,7 @@ import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.ColumnStatsList;
 import org.apache.hadoop.hive.ql.parse.ParsedQueryTables;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
@@ -764,35 +765,32 @@ public class RelOptHiveTable implements RelOptTable {
       try {
         // get all partitions
         if (partitionList == null) {
-          partitionList = PartitionPruner.prune(hiveTblMetadata, null, hiveConf, getName(),
-              partitionCache);
+          partitionList = PartitionPruner.prune(hiveTblMetadata, null, hiveConf, getName(), partitionCache);
         }
-        
-        for (Partition p : partitionList.getNotDeniedPartns()) {
-          if (!StatsUtils.areBasicStatsUptoDateForQueryAnswering(hiveTblMetadata, p.getParameters())) {
-            LOG.debug("Returning null from getMaxRowCount, which will disable empty table pruning, because " +
-                "basic stats are not up to date.");
-            return null;
-          }
-          // if any partition contain rows, return early
-          if (Long.parseLong(p.getParameters().get(StatsSetupConst.ROW_COUNT)) > 0) {
-            return Double.POSITIVE_INFINITY;
-          }
-        }
-        
-        return 0.0;
-      } catch (Exception e) {
-        LOG.warn("Returning null from getMaxRowCount, which will disable empty table pruning, because of: \n", e);
-        return null;
+      } catch (SemanticException e) {
+        LOG.warn("Returning POSITIVE_INFINITY from getMaxRowCount, because of: \n", e);
+        return Double.POSITIVE_INFINITY;
       }
+
+      for (Partition p : partitionList.getNotDeniedPartns()) {
+        if (!StatsUtils.areBasicStatsUptoDateForQueryAnswering(hiveTblMetadata, p.getParameters())) {
+          LOG.debug("Returning POSITIVE_INFINITY from getMaxRowCount, because basic stats are not up to date.");
+          return Double.POSITIVE_INFINITY;
+        }
+        // if any partition contains rows, return early
+        if (Long.parseLong(p.getParameters().get(StatsSetupConst.ROW_COUNT)) > 0) {
+          return Double.POSITIVE_INFINITY;
+        }
+      }
+
+      return 0.0;
     } else {
       if (!StatsUtils.areBasicStatsUptoDateForQueryAnswering(hiveTblMetadata, hiveTblMetadata.getParameters())) {
-        LOG.debug("Returning null from getMaxRowCount, which will disable empty table pruning, because" +
-            " basic stats are not up to date");
-        return null;
+        LOG.debug("Returning POSITIVE_INFINITY from getMaxRowCount, because basic stats are not up to date");
+        return Double.POSITIVE_INFINITY;
       }
-      
-      return Long.parseLong(hiveTblMetadata.getParameters().get(StatsSetupConst.ROW_COUNT)) > 0 ? 
+
+      return Long.parseLong(hiveTblMetadata.getParameters().get(StatsSetupConst.ROW_COUNT)) > 0 ?
           Double.POSITIVE_INFINITY : 0.0;
     }
   }

@@ -1963,10 +1963,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // to right join in some cases before converting back again to left outer.
       if (conf.getBoolVar(ConfVars.HIVE_CONVERT_ANTI_JOIN)) {
         generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-                HiveAntiSemiJoinRule.INSTANCE);
+            HiveAntiSemiJoinRule.INSTANCE);
       }
-      
-      List<RelOptRule> removeEmptySingleRules = new ArrayList<>(Arrays.asList(
+      generatePartialProgram(program, true, HepMatchOrder.DEPTH_FIRST,
           HiveRemoveEmptySingleRules.PROJECT_INSTANCE,
           HiveRemoveEmptySingleRules.FILTER_INSTANCE,
           HiveRemoveEmptySingleRules.JOIN_LEFT_INSTANCE,
@@ -1979,25 +1978,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
           HiveRemoveEmptySingleRules.AGGREGATE_INSTANCE,
           HiveRemoveEmptySingleRules.UNION_INSTANCE,
           HiveRemoveEmptySingleRules.CORRELATE_LEFT_INSTANCE,
-          HiveRemoveEmptySingleRules.CORRELATE_RIGHT_INSTANCE
-      ));
-
-      if (pruneEmptyTable()) {
-        removeEmptySingleRules.add(HiveRemoveEmptySingleRules.EMPTY_TABLE_INSTANCE);
-      }
-
-      generatePartialProgram(program, true, HepMatchOrder.DEPTH_FIRST, 
-          removeEmptySingleRules.toArray(new RelOptRule[0]));
+          HiveRemoveEmptySingleRules.CORRELATE_RIGHT_INSTANCE,
+          HiveRemoveEmptySingleRules.EMPTY_TABLE_INSTANCE);
 
       // Trigger program
       basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
 
       return basePlan;
-    }
-    
-    private boolean pruneEmptyTable() {
-      return !HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST) ||
-          HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_PRUNE_EMPTY_TABLES_IN_TEST);
     }
 
     /**

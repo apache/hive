@@ -24,8 +24,10 @@ import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.util.BuiltInMethod;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class HiveRelMdMaxRowCount implements MetadataHandler<BuiltInMetadata.MaxRowCount> {
@@ -41,6 +43,14 @@ public class HiveRelMdMaxRowCount implements MetadataHandler<BuiltInMetadata.Max
   }
 
   public @Nullable Double getMaxRowCount(HiveTableScan hiveTableScan, RelMetadataQuery mq) {
+    // This method may be called while pruning empty tables or trimming fields, and this may
+    // cause plan and lineage changes. Disabling in test mode.
+    // Can be enabled in test mode by HIVE_PRUNE_EMPTY_TABLES_IN_TEST
+    if (HiveConf.getBoolVar(SessionState.getSessionConf(), HiveConf.ConfVars.HIVE_IN_TEST) &&
+        !HiveConf.getBoolVar(SessionState.getSessionConf(), HiveConf.ConfVars.HIVE_PRUNE_EMPTY_TABLES_IN_TEST)) {
+      return Double.POSITIVE_INFINITY;
+    }
+    
     return ((RelOptHiveTable) hiveTableScan.getTable()).getMaxRowCount();
   }
 }
