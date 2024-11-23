@@ -24,6 +24,7 @@ import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.CTAS_
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import java.util.Comparator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -589,8 +590,8 @@ public class DDLPlanUtils {
                                                              String ptName,
                                                              String dbName) {
     List<String> alterTableStmt = new ArrayList<>();
-    ColumnStatisticsObj[] columnStatisticsObj = columnStatisticsObjList.toArray(new ColumnStatisticsObj[0]);
-    for (ColumnStatisticsObj statisticsObj : columnStatisticsObj) {
+    final Comparator<ColumnStatisticsObj> colNameComparator = Comparator.comparing(ColumnStatisticsObj::getColName);
+    columnStatisticsObjList.stream().sorted(colNameComparator).forEach(statisticsObj -> {
       alterTableStmt.add(getAlterTableStmtPartitionColStat(
           statisticsObj.getStatsData(), statisticsObj.getColName(), tblName, ptName, dbName));
       String base64BitVectors = checkBitVectors(statisticsObj.getStatsData());
@@ -613,7 +614,7 @@ public class DDLPlanUtils {
         command.add(BASE_64_VALUE, base64Histogram);
         alterTableStmt.add(command.render());
       }
-    }
+    });
     return alterTableStmt;
   }
 
