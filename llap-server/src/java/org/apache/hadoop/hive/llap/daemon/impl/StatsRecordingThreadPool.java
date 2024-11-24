@@ -33,6 +33,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.statistics.IOStatistics;
+import org.apache.hadoop.fs.statistics.IOStatisticsContext;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.hadoop.hive.llap.io.encoded.TezCounterSource;
@@ -236,6 +238,8 @@ public class StatsRecordingThreadPool extends ThreadPoolExecutor {
             tezCounters.findCounter(scheme, FileSystemCounter.WRITE_OPS)
                 .increment(writeOpsDelta);
 
+            putIOStatisticsIntoCounters(tezCounters);
+
             if (LOG.isDebugEnabled()) {
               LOG.debug("Updated stats: instance: {} thread name: {} thread id: {} scheme: {} " +
                       "bytesRead: {} bytesWritten: {} readOps: {} largeReadOps: {} writeOps: {}",
@@ -254,5 +258,32 @@ public class StatsRecordingThreadPool extends ThreadPoolExecutor {
             actualCallable.getClass().getSimpleName());
       }
     }
+  }
+
+  private static void putIOStatisticsIntoCounters(TezCounters tezCounters) {
+    IOStatistics ioStats = IOStatisticsContext.getCurrentIOStatisticsContext().getIOStatistics();
+    ioStats.counters().forEach((key, value) -> {
+      if (value > 0) {
+        tezCounters.findCounter("Storage Statistics", key.toUpperCase()).setValue(value);
+      }
+    });
+    ioStats.minimums().forEach((key, value) -> {
+      if (value > 0) {
+        tezCounters.findCounter("Storage Statistics", key.toUpperCase()).setValue(value);
+      }
+    });
+    ioStats.maximums().forEach((key, value) -> {
+      if (value > 0) {
+        tezCounters.findCounter("Storage Statistics", key.toUpperCase()).setValue(value);
+      }
+    });
+    ioStats.meanStatistics().forEach((key, value) -> {
+      double mean = value.mean();
+      if (mean > 0){
+        // double mean is intentionally truncated here to long as counters are long/integer based things
+        // it's fair enough to see 26 instead of 26.1320 for e.g. average request duration
+        tezCounters.findCounter("Storage Statistics", key.toUpperCase()).setValue((long)mean);
+      }
+    });
   }
 }
