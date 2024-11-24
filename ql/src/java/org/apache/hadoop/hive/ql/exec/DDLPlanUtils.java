@@ -651,7 +651,7 @@ public class DDLPlanUtils {
 
   public List<String> getDDLPlanForPartitionWithStats(Table table,
                                                       Map<String, List<Partition>> tableToPartitionList
-  ) throws MetaException, HiveException {
+  ) throws HiveException {
     List<String> alterTableStmt = new ArrayList<String>();
     String tableName = table.getTableName();
     for (Partition pt : tableToPartitionList.get(tableName)) {
@@ -662,19 +662,18 @@ public class DDLPlanUtils {
     List<String> partNames = new ArrayList<String>();
     //TODO : Check if only Accessed Column Statistics Can be Retrieved From the HMS.
     List<String> columnNames = getTableColumnNames(table);
-    tableToPartitionList.get(tableName).stream().forEach(p -> partNames.add(p.getName()));
+    tableToPartitionList.get(tableName).forEach(p -> partNames.add(p.getName()));
     Map<String, List<ColumnStatisticsObj>> partitionColStats =
       Hive.get().getPartitionColumnStatistics(databaseName,
         tableName, partNames, columnNames,
         true);
     Map<String, String> partitionToActualName = new HashMap<>();
-    tableToPartitionList.get(tableName).stream().forEach(p -> partitionToActualName.put(p.getName(),
-      getPartitionActualName(p)));
-    for (String partitionName : partitionColStats.keySet()) {
+    tableToPartitionList.get(tableName).forEach(p -> partitionToActualName.put(p.getName(), getPartitionActualName(p)));
+    partitionColStats.keySet().stream().sorted().forEach(partitionName ->
       alterTableStmt.addAll(getAlterTableStmtPartitionStatsColsAll(partitionColStats.get(partitionName),
         tableName, partitionToActualName.get(partitionName),
-        databaseName));
-    }
+        databaseName))
+    );
     return alterTableStmt;
   }
 
