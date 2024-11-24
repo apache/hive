@@ -78,6 +78,7 @@ import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.util.Time;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -688,7 +689,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     Map<Path, Utilities.PartitionDetails> dps = Utilities.getFullDPSpecs(conf, dpCtx, dynamicPartitionSpecs);
 
     console.printInfo(System.getProperty("line.separator"));
-    long startTime = System.currentTimeMillis();
+    long startTime = Time.monotonicNow();
     // load the list of DP partitions and return the list of partition specs
     // TODO: In a follow-up to HIVE-1361, we should refactor loadDynamicPartitions
     // to use Utilities.getFullDPSpecs() to get the list of full partSpecs.
@@ -714,7 +715,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
 
     String loadTime = String.format("Time taken to load dynamic partitions:\t %.3f seconds",
-        (System.currentTimeMillis() - startTime) / 1000.0);
+        (Time.monotonicNow() - startTime) / 1000.0);
     console.printInfo(loadTime);
     LOG.info(loadTime);
 
@@ -723,7 +724,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           " To turn off this error, set hive.error.on.empty.partition=false.");
     }
 
-    startTime = System.currentTimeMillis();
+    startTime = Time.monotonicNow();
     // for each partition spec, get the partition
     // and put it to WriteEntity for post-exec hook
     for(Map.Entry<Map<String, String>, Partition> entry : dp.entrySet()) {
@@ -762,7 +763,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       LOG.info("Loading partition " + entry.getKey());
     }
     console.printInfo(String.format("Time taken for adding to write entity:\t %.3f seconds",
-        (System.currentTimeMillis() - startTime) / 1000.0));
+        (Time.monotonicNow() - startTime) / 1000.0));
     dc = null; // reset data container to prevent it being added again.
     return dc;
   }
