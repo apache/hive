@@ -9,20 +9,20 @@ insert overwrite table source select id, id2 from csv_table;
 
 -- Test MurmurHashStringColStringCol
 explain vectorization detail
-select murmur_hash(id, id2) from source;
-select murmur_hash(id, id2) from source;
+select sum(murmur_hash(id, id2)) from source;
+select sum(murmur_hash(id, id2)) from source;
 
 -- Test MurmurHashIntColIntCol
 explain vectorization detail
-select murmur_hash(cast(id as BIGINT), cast(id2 as BIGINT)) from source;
-select murmur_hash(cast(id as BIGINT), cast(id2 as BIGINT)) from source;
+select sum(murmur_hash(cast(id as BIGINT), cast(id2 as BIGINT))) from source;
+select sum(murmur_hash(cast(id as BIGINT), cast(id2 as BIGINT))) from source;
 
 -- Test MurmurHashStringColIntCol: string is repeating
 explain vectorization detail
-select murmur_hash(id, cast(id2 as BIGINT)) from source;
-select murmur_hash(id, cast(id2 as BIGINT)) from source;
+select sum(murmur_hash(id, cast(id2 as BIGINT))) from source;
+select sum(murmur_hash(id, cast(id2 as BIGINT))) from source;
 
 -- Test MurmurHashStringColIntCol: long is repeating
 explain vectorization detail
-select murmur_hash(id2, cast(id as BIGINT)) from source;
-select murmur_hash(id2, cast(id as BIGINT)) from source;
+select sum(murmur_hash(id2, cast(id as BIGINT))) from source;
+select sum(murmur_hash(id2, cast(id as BIGINT))) from source;
