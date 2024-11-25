@@ -61,13 +61,8 @@ import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class TxnCommandsBaseForTests {
+public abstract class TxnCommandsBaseForTests extends TezBaseForTests {
   private static final Logger LOG = LoggerFactory.getLogger(TxnCommandsBaseForTests.class);
-
-  private static final String TEST_DATA_DIR = new File(
-          System.getProperty("java.io.tmpdir") + File.separator +
-                  DbTxnManagerEndToEndTestBase.class.getCanonicalName() + "-" + System.currentTimeMillis())
-          .getPath().replaceAll("\\\\", "/");
 
   //bucket count for test tables; set it to 1 for easier debugging
   final static int BUCKET_COUNT = 2;
@@ -114,23 +109,6 @@ public abstract class TxnCommandsBaseForTests {
   void initHiveConf() {
     hiveConf = new HiveConf(this.getClass());
     setupTez(hiveConf);
-  }
-
-  private void setupTez(HiveConf conf) {
-    conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "tez");
-    conf.setVar(HiveConf.ConfVars.HIVE_USER_INSTALL_DIR, TEST_DATA_DIR);
-    conf.set("tez.am.resource.memory.mb", "128");
-    conf.set("tez.am.dag.scheduler.class",
-            "org.apache.tez.dag.app.dag.impl.DAGSchedulerNaturalOrderControlled");
-    conf.setBoolean("tez.local.mode", true);
-    conf.setBoolean("tez.local.mode.without.network", true);
-    conf.set("fs.defaultFS", "file:///");
-    conf.setBoolean("tez.runtime.optimize.local.fetch", true);
-    conf.set("tez.staging-dir", TEST_DATA_DIR);
-    conf.setBoolean("tez.ignore.lib.uris", true);
-    conf.set("hive.tez.container.size", "128");
-    conf.setBoolean("hive.merge.tezfiles", false);
-    conf.setBoolean("hive.in.tez.test", true);
   }
 
   void setUpInternal() throws Exception {

@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.TezBaseForTests;
 import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.After;
@@ -40,12 +41,7 @@ import java.io.File;
 /**
  * Base class for "end-to-end" tests for DbTxnManager and simulate concurrent queries.
  */
-public abstract class DbTxnManagerEndToEndTestBase {
-
-  private static final String TEST_DATA_DIR = new File(
-    System.getProperty("java.io.tmpdir") + File.separator +
-      DbTxnManagerEndToEndTestBase.class.getCanonicalName() + "-" + System.currentTimeMillis())
-    .getPath().replaceAll("\\\\", "/");
+public abstract class DbTxnManagerEndToEndTestBase extends TezBaseForTests {
 
   protected static HiveConf conf = new HiveConf(Driver.class);
   protected HiveTxnManager txnMgr;
@@ -54,8 +50,6 @@ public abstract class DbTxnManagerEndToEndTestBase {
   protected TxnStore txnHandler;
 
   public DbTxnManagerEndToEndTestBase() {
-    //TODO: HIVE-28029: Make unit tests based on DbTxnManagerEndToEndTestBase run on Tez
-    conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
       "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
@@ -107,23 +101,6 @@ public abstract class DbTxnManagerEndToEndTestBase {
     }
   }
 
-  private void setupTez(HiveConf conf) {
-    conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "tez");
-    conf.setVar(HiveConf.ConfVars.HIVE_USER_INSTALL_DIR, TEST_DATA_DIR);
-    conf.set("tez.am.resource.memory.mb", "128");
-    conf.set("tez.am.dag.scheduler.class",
-            "org.apache.tez.dag.app.dag.impl.DAGSchedulerNaturalOrderControlled");
-    conf.setBoolean("tez.local.mode", true);
-    conf.setBoolean("tez.local.mode.without.network", true);
-    conf.set("fs.defaultFS", "file:///");
-    conf.setBoolean("tez.runtime.optimize.local.fetch", true);
-    conf.set("tez.staging-dir", TEST_DATA_DIR);
-    conf.setBoolean("tez.ignore.lib.uris", true);
-    conf.set("hive.tez.container.size", "128");
-    conf.setBoolean("hive.merge.tezfiles", false);
-    conf.setBoolean("hive.in.tez.test", true);
-  }
-  
   @After
   public void tearDown() throws Exception {
     driver.close();
