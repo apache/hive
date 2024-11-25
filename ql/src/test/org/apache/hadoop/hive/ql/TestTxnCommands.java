@@ -304,6 +304,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       this.cdlIn = cdlIn;
       this.cdlOut = cdlOut;
       this.hiveConf = new HiveConf(hiveConf);
+      this.hiveConf.unset(HiveConf.ConfVars.HIVE_SESSION_ID.varname);
     }
 
     @Override
