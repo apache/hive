@@ -8,7 +8,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 5 (BROADCAST_EDGE), Map 6 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -44,10 +44,11 @@ STAGE PLANS:
                           1 Map 6
                         Statistics: Num rows: 321094889 Data size: 125864702465 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
-                          null sort order: 
-                          sort order: 
+                          key expressions: _col8 (type: char(50))
+                          null sort order: z
+                          sort order: +
                           Map-reduce partition columns: _col8 (type: char(50))
-                          value expressions: _col2 (type: int), _col5 (type: char(50)), _col6 (type: char(50)), _col7 (type: char(50)), _col8 (type: char(50))
+                          value expressions: _col2 (type: int), _col5 (type: char(50)), _col6 (type: char(50)), _col7 (type: char(50))
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 5 
@@ -93,7 +94,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col2 (type: int), VALUE._col5 (type: char(50)), VALUE._col6 (type: char(50)), VALUE._col7 (type: char(50)), VALUE._col8 (type: char(50))
+                expressions: VALUE._col2 (type: int), VALUE._col5 (type: char(50)), VALUE._col6 (type: char(50)), VALUE._col7 (type: char(50)), KEY._col8 (type: char(50))
                 outputColumnNames: _col2, _col5, _col6, _col7, _col8
                 Group By Operator
                   aggregations: sum(_col2), count(_col2)

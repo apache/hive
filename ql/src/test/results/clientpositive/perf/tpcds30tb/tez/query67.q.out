@@ -8,7 +8,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 6 (BROADCAST_EDGE), Map 7 (BROADCAST_EDGE), Map 8 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
         Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
@@ -59,10 +59,11 @@ STAGE PLANS:
                               1 Map 8
                             Statistics: Num rows: 15840066266 Data size: 9709960621058 Basic stats: COMPLETE Column stats: COMPLETE
                             Reduce Output Operator
-                              null sort order: 
-                              sort order: 
+                              key expressions: _col14 (type: char(50))
+                              null sort order: z
+                              sort order: +
                               Map-reduce partition columns: _col14 (type: char(50))
-                              value expressions: _col3 (type: decimal(18,2)), _col5 (type: int), _col6 (type: int), _col7 (type: int), _col9 (type: string), _col11 (type: char(50)), _col12 (type: char(50)), _col13 (type: char(50)), _col14 (type: char(50))
+                              value expressions: _col3 (type: decimal(18,2)), _col5 (type: int), _col6 (type: int), _col7 (type: int), _col9 (type: string), _col11 (type: char(50)), _col12 (type: char(50)), _col13 (type: char(50))
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 6 
@@ -143,7 +144,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col3 (type: decimal(18,2)), VALUE._col5 (type: int), VALUE._col6 (type: int), VALUE._col7 (type: int), VALUE._col9 (type: string), VALUE._col11 (type: char(50)), VALUE._col12 (type: char(50)), VALUE._col13 (type: char(50)), VALUE._col14 (type: char(50))
+                expressions: VALUE._col3 (type: decimal(18,2)), VALUE._col5 (type: int), VALUE._col6 (type: int), VALUE._col7 (type: int), VALUE._col9 (type: string), VALUE._col11 (type: char(50)), VALUE._col12 (type: char(50)), VALUE._col13 (type: char(50)), KEY._col14 (type: char(50))
                 outputColumnNames: _col3, _col5, _col6, _col7, _col9, _col11, _col12, _col13, _col14
                 Group By Operator
                   aggregations: sum(_col3)

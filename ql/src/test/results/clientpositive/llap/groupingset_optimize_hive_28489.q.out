@@ -296,7 +296,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
@@ -310,17 +310,18 @@ STAGE PLANS:
                     outputColumnNames: col0, col1, col2, col3
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      null sort order: 
-                      sort order: 
+                      key expressions: col2 (type: int)
+                      null sort order: z
+                      sort order: +
                       Map-reduce partition columns: col2 (type: int)
-                      value expressions: col0 (type: int), col1 (type: int), col2 (type: int), col3 (type: int)
+                      value expressions: col0 (type: int), col1 (type: int), col3 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE.col0 (type: int), VALUE.col1 (type: int), VALUE.col2 (type: int), VALUE.col3 (type: int)
+                expressions: VALUE.col0 (type: int), VALUE.col1 (type: int), KEY.col2 (type: int), VALUE.col3 (type: int)
                 outputColumnNames: col0, col1, col2, col3
                 Group By Operator
                   aggregations: sum(col3)
@@ -407,7 +408,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
@@ -421,17 +422,18 @@ STAGE PLANS:
                     outputColumnNames: col0, col1, col2, col3
                     Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      null sort order: 
-                      sort order: 
+                      key expressions: col2 (type: int)
+                      null sort order: z
+                      sort order: +
                       Map-reduce partition columns: col2 (type: int)
-                      value expressions: col0 (type: int), col1 (type: int), col2 (type: int), col3 (type: int)
+                      value expressions: col0 (type: int), col1 (type: int), col3 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE.col0 (type: int), VALUE.col1 (type: int), VALUE.col2 (type: int), VALUE.col3 (type: int)
+                expressions: VALUE.col0 (type: int), VALUE.col1 (type: int), KEY.col2 (type: int), VALUE.col3 (type: int)
                 outputColumnNames: col0, col1, col2, col3
                 Group By Operator
                   aggregations: count(DISTINCT col3)

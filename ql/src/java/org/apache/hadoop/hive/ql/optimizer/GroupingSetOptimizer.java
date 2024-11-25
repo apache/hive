@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
+import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.slf4j.Logger;
@@ -113,7 +114,7 @@ public class GroupingSetOptimizer extends Transform {
       //  or insert a new SEL that renames columns. The following code implements the later one as it is
       //  easier to implement.
 
-      SelectOperator sel = createSelect(parentOp.getSchema().getSignature(), rs);
+      SelectOperator sel = createSelect(parentOp.getSchema().getSignature(), partitionCol, rs);
 
       sel.setChildOperators(Arrays.asList(gby));
       gby.setParentOperators(Arrays.asList(sel));
@@ -243,6 +244,8 @@ public class GroupingSetOptimizer extends Transform {
     private ReduceSinkOperator createReduceSink(Operator<?> parentOp, String partitionColName,
         GroupingSetProcessorContext context) {
       Map<String, ExprNodeDesc> colExprMap = new HashMap<>();
+      List<ExprNodeDesc> keyColumns = new ArrayList<>();
+      List<String> keyColumnNames = new ArrayList<>();
       List<ExprNodeDesc> valueColumns = new ArrayList<>();
       List<String> valueColumnNames = new ArrayList<>();
       List<ColumnInfo> signature = new ArrayList<>();
@@ -251,18 +254,29 @@ public class GroupingSetOptimizer extends Transform {
       for (ColumnInfo pColInfo: parentOp.getSchema().getSignature()) {
         ColumnInfo cColInfo = new ColumnInfo(pColInfo);
         String pColName = pColInfo.getInternalName();
-        valueColumnNames.add(pColName);
-
-        String cColName = Utilities.ReduceField.VALUE + "." + pColName;
-        cColInfo.setInternalName(cColName);
-        signature.add(cColInfo);
-
-        ExprNodeDesc valueExpr = new ExprNodeColumnDesc(pColInfo);
-        valueColumns.add(valueExpr);
-        colExprMap.put(cColName, valueExpr);
 
         if (pColName.equals(partitionColName)) {
-          partCols.add(valueExpr);
+          keyColumnNames.add(pColName);
+
+          String cColName = Utilities.ReduceField.KEY + "." + pColName;
+          cColInfo.setInternalName(cColName);
+          signature.add(cColInfo);
+
+          ExprNodeDesc keyExpr = new ExprNodeColumnDesc(pColInfo);
+          keyColumns.add(keyExpr);
+          colExprMap.put(cColName, keyExpr);
+
+          partCols.add(keyExpr);
+        } else {
+          valueColumnNames.add(pColName);
+
+          String cColName = Utilities.ReduceField.VALUE + "." + pColName;
+          cColInfo.setInternalName(cColName);
+          signature.add(cColInfo);
+
+          ExprNodeDesc valueExpr = new ExprNodeColumnDesc(pColInfo);
+          valueColumns.add(valueExpr);
+          colExprMap.put(cColName, valueExpr);
         }
       }
 
@@ -270,10 +284,9 @@ public class GroupingSetOptimizer extends Transform {
           PlanUtils.getFieldSchemasFromColumnList(valueColumns, valueColumnNames, 0, "");
       TableDesc valueTable = PlanUtils.getReduceValueTableDesc(valueFields);
 
-      TableDesc keyTable = PlanUtils.getReduceKeyTableDesc(new ArrayList<>(), "", "");
-
-      List<ExprNodeDesc> keyColumns = new ArrayList<>();
-      List<String> keyColumnNames = new ArrayList<>();
+      List<FieldSchema> keyFields =
+          PlanUtils.getFieldSchemasFromColumnList(keyColumns, keyColumnNames, 0, "");
+      TableDesc keyTable = PlanUtils.getReduceKeyTableDesc(keyFields, "+", "z");
       List<List<Integer>> distinctColumnIndices = new ArrayList<>();
 
       // If we run SetReducerParallelism after this optimization, then we don't have to compute numReducers.
@@ -289,12 +302,13 @@ public class GroupingSetOptimizer extends Transform {
       rs.setColumnExprMap(colExprMap);
 
       // If we run SetReducerParallelism after this optimization, the following code becomes unnecessary.
-      rsConf.setReducerTraits(EnumSet.of(ReduceSinkDesc.ReducerTraits.AUTOPARALLEL));
+      rsConf.setReducerTraits(EnumSet.of(ReducerTraits.UNIFORM, ReducerTraits.AUTOPARALLEL));
 
       return rs;
     }
 
-    private SelectOperator createSelect(List<ColumnInfo> signature, Operator<?> parentOp) {
+    private SelectOperator createSelect(List<ColumnInfo> signature,  String partitionColName,
+        Operator<?> parentOp) {
       List<String> selColNames = new ArrayList<>();
       List<ExprNodeDesc> selColumns = new ArrayList<>();
       List<ColumnInfo> selSignature = new ArrayList<>();
@@ -302,7 +316,13 @@ public class GroupingSetOptimizer extends Transform {
 
       for (ColumnInfo pColInfo: signature) {
         String origColName = pColInfo.getInternalName();
-        String rsColName = Utilities.ReduceField.VALUE + "." + origColName;
+        String rsColName;
+
+        if (origColName.equals(partitionColName)) {
+          rsColName = Utilities.ReduceField.KEY + "." + origColName;
+        } else {
+          rsColName = Utilities.ReduceField.VALUE + "." + origColName;
+        }
 
         ColumnInfo selColInfo = new ColumnInfo(pColInfo);
 
