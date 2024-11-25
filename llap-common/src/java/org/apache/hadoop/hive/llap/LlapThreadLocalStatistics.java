@@ -70,8 +70,8 @@ public class LlapThreadLocalStatistics {
    * 2. FileSystem.Statistics (scheme: hdfs)
    * 3. FileSystem.Statistics (scheme: hdfs)
    * Output map:
-   * "file" -> LlapThreadLocalStatistics.StatisticsData (1)
-   * "hdfs" -> LlapThreadLocalStatistics.StatisticsData (2 + 3)
+   * file : LlapThreadLocalStatistics.StatisticsData (1)
+   * hdfs : LlapThreadLocalStatistics.StatisticsData (2 + 3)
    */
   public LlapThreadLocalStatistics(ThreadMXBean mxBean, List<FileSystem.Statistics> allStatistics) {
     cpuTime = mxBean == null ? -1 : mxBean.getCurrentThreadCpuTime();
