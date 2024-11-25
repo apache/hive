@@ -293,9 +293,9 @@ public class GroupingSetOptimizer extends Transform {
       int numReducers = Utilities.estimateReducers(
           parentOp.getStatistics().getDataSize(), context.bytesPerReducer, context.maxReducers, false);
 
-      ReduceSinkDesc rsConf = new ReduceSinkDesc(keyColumns, 0, valueColumns, keyColumnNames,
-          distinctColumnIndices, valueColumnNames, -1, partCols, numReducers, keyTable, valueTable,
-          AcidUtils.Operation.NOT_ACID);
+      ReduceSinkDesc rsConf = new ReduceSinkDesc(keyColumns, keyColumns.size(), valueColumns,
+          keyColumnNames, distinctColumnIndices, valueColumnNames, -1, partCols, numReducers, keyTable,
+          valueTable, AcidUtils.Operation.NOT_ACID);
 
       ReduceSinkOperator rs =
           (ReduceSinkOperator) OperatorFactory.getAndMakeChild(rsConf, new RowSchema(signature), parentOp);
