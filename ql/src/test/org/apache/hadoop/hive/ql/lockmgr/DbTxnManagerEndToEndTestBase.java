@@ -74,6 +74,8 @@ public abstract class DbTxnManagerEndToEndTestBase {
 
   @Before
   public void setUp() throws Exception {
+    setupTez(conf);
+
     // set up metastore client cache
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.MSC_CACHE_ENABLED)) {
       HiveMetaStoreClientWithLocalCache.init(conf);
@@ -103,6 +105,23 @@ public abstract class DbTxnManagerEndToEndTestBase {
     if (!(new File(getWarehouseDir()).mkdirs())) {
       throw new RuntimeException("Could not create " + getWarehouseDir());
     }
+  }
+
+  private void setupTez(HiveConf conf) {
+    conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "tez");
+    conf.setVar(HiveConf.ConfVars.HIVE_USER_INSTALL_DIR, TEST_DATA_DIR);
+    conf.set("tez.am.resource.memory.mb", "128");
+    conf.set("tez.am.dag.scheduler.class",
+            "org.apache.tez.dag.app.dag.impl.DAGSchedulerNaturalOrderControlled");
+    conf.setBoolean("tez.local.mode", true);
+    conf.setBoolean("tez.local.mode.without.network", true);
+    conf.set("fs.defaultFS", "file:///");
+    conf.setBoolean("tez.runtime.optimize.local.fetch", true);
+    conf.set("tez.staging-dir", TEST_DATA_DIR);
+    conf.setBoolean("tez.ignore.lib.uris", true);
+    conf.set("hive.tez.container.size", "128");
+    conf.setBoolean("hive.merge.tezfiles", false);
+    conf.setBoolean("hive.in.tez.test", true);
   }
   
   @After

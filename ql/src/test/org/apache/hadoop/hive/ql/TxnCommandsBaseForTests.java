@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
+import org.apache.hadoop.hive.ql.lockmgr.DbTxnManagerEndToEndTestBase;
 import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -62,7 +63,12 @@ import org.slf4j.LoggerFactory;
 
 public abstract class TxnCommandsBaseForTests {
   private static final Logger LOG = LoggerFactory.getLogger(TxnCommandsBaseForTests.class);
-  
+
+  private static final String TEST_DATA_DIR = new File(
+          System.getProperty("java.io.tmpdir") + File.separator +
+                  DbTxnManagerEndToEndTestBase.class.getCanonicalName() + "-" + System.currentTimeMillis())
+          .getPath().replaceAll("\\\\", "/");
+
   //bucket count for test tables; set it to 1 for easier debugging
   final static int BUCKET_COUNT = 2;
   @Rule
@@ -107,9 +113,26 @@ public abstract class TxnCommandsBaseForTests {
   }
   void initHiveConf() {
     hiveConf = new HiveConf(this.getClass());
-    //TODO: HIVE-28029: Make unit tests based on TxnCommandsBaseForTests run on Tez
-    hiveConf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
+    setupTez(hiveConf);
   }
+
+  private void setupTez(HiveConf conf) {
+    conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "tez");
+    conf.setVar(HiveConf.ConfVars.HIVE_USER_INSTALL_DIR, TEST_DATA_DIR);
+    conf.set("tez.am.resource.memory.mb", "128");
+    conf.set("tez.am.dag.scheduler.class",
+            "org.apache.tez.dag.app.dag.impl.DAGSchedulerNaturalOrderControlled");
+    conf.setBoolean("tez.local.mode", true);
+    conf.setBoolean("tez.local.mode.without.network", true);
+    conf.set("fs.defaultFS", "file:///");
+    conf.setBoolean("tez.runtime.optimize.local.fetch", true);
+    conf.set("tez.staging-dir", TEST_DATA_DIR);
+    conf.setBoolean("tez.ignore.lib.uris", true);
+    conf.set("hive.tez.container.size", "128");
+    conf.setBoolean("hive.merge.tezfiles", false);
+    conf.setBoolean("hive.in.tez.test", true);
+  }
+
   void setUpInternal() throws Exception {
     initHiveConf();
     Path workDir = new Path(System.getProperty("test.tmp.dir",
