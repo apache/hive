@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.hadoop.hive.llap.io.encoded.TezCounterSource;
 import org.apache.tez.common.CallableWithNdc;
+import org.apache.tez.common.counters.CounterGroup;
 import org.apache.tez.common.counters.FileSystemCounter;
 import org.apache.tez.common.counters.TezCounters;
 import org.apache.tez.runtime.task.TaskRunner2Callable;
@@ -262,19 +263,20 @@ public class StatsRecordingThreadPool extends ThreadPoolExecutor {
 
   private static void putIOStatisticsIntoCounters(TezCounters tezCounters) {
     IOStatistics ioStats = IOStatisticsContext.getCurrentIOStatisticsContext().getIOStatistics();
+    CounterGroup group = tezCounters.getGroup("Storage Statistics");
     ioStats.counters().forEach((key, value) -> {
       if (value > 0) {
-        tezCounters.findCounter("Storage Statistics", key.toUpperCase()).setValue(value);
+        group.findCounter(key.toUpperCase()).setValue(value);
       }
     });
     ioStats.minimums().forEach((key, value) -> {
       if (value > 0) {
-        tezCounters.findCounter("Storage Statistics", key.toUpperCase()).setValue(value);
+        group.findCounter(key.toUpperCase()).setValue(value);
       }
     });
     ioStats.maximums().forEach((key, value) -> {
       if (value > 0) {
-        tezCounters.findCounter("Storage Statistics", key.toUpperCase()).setValue(value);
+        group.findCounter(key.toUpperCase()).setValue(value);
       }
     });
     ioStats.meanStatistics().forEach((key, value) -> {
@@ -282,7 +284,7 @@ public class StatsRecordingThreadPool extends ThreadPoolExecutor {
       if (mean > 0){
         // double mean is intentionally truncated here to long as counters are long/integer based things
         // it's fair enough to see 26 instead of 26.1320 for e.g. average request duration
-        tezCounters.findCounter("Storage Statistics", key.toUpperCase()).setValue((long)mean);
+        group.findCounter(key.toUpperCase()).setValue((long)mean);
       }
     });
   }
