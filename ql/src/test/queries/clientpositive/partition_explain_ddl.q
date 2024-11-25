@@ -1,4 +1,3 @@
---! qt:disabled:HIVE-28640
 set hive.cbo.enable = True;
 set hive.vectorized.execution.enabled = True;
 
