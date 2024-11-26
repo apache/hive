@@ -261,30 +261,40 @@ public class StatsRecordingThreadPool extends ThreadPoolExecutor {
     }
   }
 
+  /**
+   * Puts the thread local IOStatistics into the given TezCounters. IOStatistics provides metrics in multiple groups
+   * such as: counters, gauges, minimums, maximums, means, out of which the counters and means.sum can be simply
+   * aggregated. The counters are automatically aggregated on DAG-level in the AM, so here we just need to take care
+   * of the actual values. Regarding minimums/maximums: they are very useful but cannot be added here, because when
+   * it comes to DAG-level aggregation, they don't really work (e.g. sum(minimums) and sum(maximums) don't make
+   * much sense).
+   *
+   * @param tezCounters the counters to put the stats into
+   */
   private static void putIOStatisticsIntoCounters(TezCounters tezCounters) {
     IOStatistics ioStats = IOStatisticsContext.getCurrentIOStatisticsContext().getIOStatistics();
     CounterGroup group = tezCounters.getGroup("Storage Statistics");
+
+    // aggregate counters
+    // for example: action_http_head_request=14578, action_http_head_request.failures=290
     ioStats.counters().forEach((key, value) -> {
       if (value > 0) {
+        // action_http_head_request -> ACTION_HTTP_HEAD_REQUEST
+        // action_http_head_request.failures -> ACTION_HTTP_HEAD_REQUEST.FAILURES
         group.findCounter(key.toUpperCase()).setValue(value);
       }
     });
-    ioStats.minimums().forEach((key, value) -> {
-      if (value > 0) {
-        group.findCounter(key.toUpperCase()).setValue(value);
-      }
-    });
-    ioStats.maximums().forEach((key, value) -> {
-      if (value > 0) {
-        group.findCounter(key.toUpperCase()).setValue(value);
-      }
-    });
+
+    // aggregate sums from mean statistics
+    // for example: action_http_head_request.failures.mean=(samples=290, sum=257010, mean=886.2414)
+    // in this case: "samples" is visible from the "counters" above, and the sum can be further aggregated on
+    // DAG-level to get full duration
     ioStats.meanStatistics().forEach((key, value) -> {
-      double mean = value.mean();
-      if (mean > 0){
-        // double mean is intentionally truncated here to long as counters are long/integer based things
-        // it's fair enough to see 26 instead of 26.1320 for e.g. average request duration
-        group.findCounter(key.toUpperCase()).setValue((long)mean);
+      long sum = value.getSum();
+      if (sum > 0) {
+        // to preserve the original metric name and imply we consider only the sum, convert it like below:
+        // action_http_head_request.failures.mean -> ACTION_HTTP_HEAD_REQUEST.FAILURES.MEAN.SUM
+        group.findCounter(key.toUpperCase() + ".SUM").setValue(sum);
       }
     });
   }
