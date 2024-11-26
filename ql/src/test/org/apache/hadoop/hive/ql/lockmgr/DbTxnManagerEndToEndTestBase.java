@@ -21,6 +21,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -28,7 +29,6 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.TezBaseForTests;
 import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.After;
@@ -41,9 +41,9 @@ import java.io.File;
 /**
  * Base class for "end-to-end" tests for DbTxnManager and simulate concurrent queries.
  */
-public abstract class DbTxnManagerEndToEndTestBase extends TezBaseForTests {
+public abstract class DbTxnManagerEndToEndTestBase {
 
-  protected static HiveConf conf = new HiveConf(Driver.class);
+  protected static HiveConfForTest conf = new HiveConfForTest(DbTxnManagerEndToEndTestBase.class);
   protected HiveTxnManager txnMgr;
   protected Context ctx;
   protected Driver driver, driver2;
@@ -68,8 +68,6 @@ public abstract class DbTxnManagerEndToEndTestBase extends TezBaseForTests {
 
   @Before
   public void setUp() throws Exception {
-    setupTez(conf);
-
     // set up metastore client cache
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.MSC_CACHE_ENABLED)) {
       HiveMetaStoreClientWithLocalCache.init(conf);
@@ -110,10 +108,10 @@ public abstract class DbTxnManagerEndToEndTestBase extends TezBaseForTests {
     if (txnMgr != null) {
       txnMgr.closeTxnManager();
     }
-    FileUtils.deleteDirectory(new File(TEST_DATA_DIR));
+    FileUtils.deleteDirectory(new File(conf.getTestDataDir()));
   }
 
   protected String getWarehouseDir() {
-    return TEST_DATA_DIR + "/warehouse";
+    return conf.getTestDataDir() + "/warehouse";
   }
 }

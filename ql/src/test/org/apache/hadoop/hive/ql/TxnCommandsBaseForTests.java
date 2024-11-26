@@ -37,6 +37,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -61,7 +62,7 @@ import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class TxnCommandsBaseForTests extends TezBaseForTests {
+public abstract class TxnCommandsBaseForTests {
   private static final Logger LOG = LoggerFactory.getLogger(TxnCommandsBaseForTests.class);
 
   //bucket count for test tables; set it to 1 for easier debugging
@@ -107,8 +108,7 @@ public abstract class TxnCommandsBaseForTests extends TezBaseForTests {
     }
   }
   void initHiveConf() {
-    hiveConf = new HiveConf(this.getClass());
-    setupTez(hiveConf);
+    hiveConf = new HiveConfForTest(this.getClass());
   }
 
   void setUpInternal() throws Exception {
