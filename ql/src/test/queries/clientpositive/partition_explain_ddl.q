@@ -2,8 +2,6 @@
 set hive.cbo.enable = True;
 set hive.vectorized.execution.enabled = True;
 
--- SORT_QUERY_RESULTS
-
 CREATE TABLE add_part_test (key STRING, value STRING) PARTITIONED BY (ds STRING);
 explain ddl select * from add_part_test;
 
