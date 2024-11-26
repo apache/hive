@@ -120,8 +120,7 @@ abstract class AbstractAddPartitionAnalyzer extends AbstractAlterTableAnalyzer {
     Map<String, String> params = null;
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER) && location == null) {
       params = new HashMap<String, String>();
-      StatsSetupConst.setStatsStateForCreateTable(params,
-          MetaStoreUtils.getColumnNames(table.getCols()), StatsSetupConst.TRUE);
+      StatsSetupConst.setStatsStateForCreateTable(params,null, StatsSetupConst.TRUE);
     }
     return new AlterTableAddPartitionDesc.PartitionDesc(partitionSpec, location, params);
   }
