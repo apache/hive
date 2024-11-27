@@ -174,7 +174,7 @@ public class TestJdbcWithSQLAuthorization {
           "not have following privileges for operation LLAP_CACHE_PURGE [[ADMIN PRIVILEGE] on Object " +
           "[type=COMMAND_PARAMS, name=[llap, cache, -purge]], [ADMIN PRIVILEGE] on Object " +
           "[type=SERVICE_NAME, name=localhost]]";
-        assertEquals(msg, e.getMessage());
+        assertTrue(e.getMessage().contains(msg));
       } finally {
         stmt.close();
         hs2Conn.close();

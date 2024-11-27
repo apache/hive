@@ -56,9 +56,7 @@ import org.apache.hadoop.hive.ql.QueryDisplay;
 import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
-import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -211,13 +209,13 @@ public class SQLOperation extends ExecuteStatementOperation {
       setHasResultSet(driver.hasResultSet());
     } catch (CommandProcessorException e) {
       setState(OperationState.ERROR);
-      throw toSQLException("Error while compiling statement", e);
+      throw toSQLException("Error while compiling statement", e, queryState.getQueryId());
     } catch (Throwable e) {
       setState(OperationState.ERROR);
       if (e instanceof OutOfMemoryError) {
         throw e;
       }
-      throw new HiveSQLException("Error running query", e);
+      throw new HiveSQLException("Error running query", e, queryState.getQueryId());
     }
   }
 
@@ -246,13 +244,13 @@ public class SQLOperation extends ExecuteStatementOperation {
       }
       setState(OperationState.ERROR);
       if (e instanceof CommandProcessorException) {
-        throw toSQLException("Error while compiling statement", (CommandProcessorException)e);
+        throw toSQLException("Error while compiling statement", (CommandProcessorException) e, queryState.getQueryId());
       } else if (e instanceof HiveSQLException) {
-        throw (HiveSQLException) e;
+        throw new HiveSQLException(e, queryState.getQueryId());
       } else if (e instanceof OutOfMemoryError) {
         throw (OutOfMemoryError) e;
       } else {
-        throw new HiveSQLException("Error running query", e);
+        throw new HiveSQLException("Error running query", e, queryState.getQueryId());
       }
     }
     setState(OperationState.FINISHED);
@@ -287,7 +285,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       } catch (RejectedExecutionException rejected) {
         setState(OperationState.ERROR);
         throw new HiveSQLException("The background threadpool cannot accept" +
-            " new task for execution, please retry the operation", rejected);
+            " new task for execution, please retry the operation", rejected, queryState.getQueryId());
       }
     }
   }
@@ -383,7 +381,7 @@ public class SQLOperation extends ExecuteStatementOperation {
     try {
       return Utils.getUGI();
     } catch (Exception e) {
-      throw new HiveSQLException("Unable to get current user", e);
+      throw new HiveSQLException("Unable to get current user", e, queryState.getQueryId());
     }
   }
 
@@ -494,7 +492,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       }
       return rowSet;
     } catch (Exception e) {
-      throw new HiveSQLException("Unable to get the next row set with exception: " + e.getMessage(), e);
+      throw new HiveSQLException("Unable to get the next row set with exception: " + e.getMessage(), e, queryState.getQueryId());
     } finally {
       convey.clear();
     }
@@ -509,7 +507,7 @@ public class SQLOperation extends ExecuteStatementOperation {
           QueryDisplay.OBJECT_MAPPER.writeValue(out, statuses);
           return out.toString(StandardCharsets.UTF_8.name());
         } catch (Exception e) {
-          throw new HiveSQLException(e);
+          throw new HiveSQLException(e, queryState.getQueryId());
         }
       }
     }

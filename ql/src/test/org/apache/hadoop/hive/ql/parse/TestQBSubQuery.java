@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Assert;
@@ -49,8 +50,8 @@ public class TestQBSubQuery {
   @BeforeClass
   public static void initialize() {
     queryState =
-        new QueryState.Builder().withHiveConf(new HiveConf(SemanticAnalyzer.class)).build();
-    conf = queryState.getConf();
+        new QueryState.Builder().build();
+    conf = new HiveConfForTest(TestQBSubQuery.class);
     SessionState.start(conf);
   }
 

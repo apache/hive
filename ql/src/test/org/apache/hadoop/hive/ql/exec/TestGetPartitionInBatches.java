@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
@@ -64,9 +65,9 @@ public class TestGetPartitionInBatches {
 
     @BeforeClass
     public static void setupClass() throws HiveException {
-        hiveConf = new HiveConf(TestGetPartitionInBatches.class);
-        hive = Hive.get();
-        SessionState.start(hiveConf);
+        hiveConf = new HiveConfForTest(TestGetPartitionInBatches.class);
+        SessionState ss = SessionState.start(hiveConf);
+        hive = ss.getHiveDb();
         try {
             msc = new HiveMetaStoreClient(hiveConf);
         } catch (MetaException e) {

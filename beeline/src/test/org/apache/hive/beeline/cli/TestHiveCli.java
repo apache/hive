@@ -169,8 +169,11 @@ public class TestHiveCli {
 
   @Test
   public void testSqlFromCmdWithEmbeddedQuotes() {
+  // In Beeline.java, after upgrading the Maven SureFire plugin to 3.0.0-M5, InputStream inputStream = System.in
+  // no longer contains an EOT byte[]. This change causes an indefinite loop when calling
+  // beeLine.getConsoleReader().readLine(prompt.toString()). To resolve this, a delimiter has been added.
     verifyCMD(null, "hive", out,
-        new String[] { "-e", "select \"hive\"" }, ERRNO_OK, true);
+        new String[] { "-e", "select \"hive\";" }, ERRNO_OK, true);
   }
 
   @Test

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.metadata;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -62,7 +63,7 @@ public class TestHiveCopyFiles {
 
   @BeforeClass
   public static void setUp() {
-    hiveConf = new HiveConf(TestHiveCopyFiles.class);
+    hiveConf = new HiveConfForTest(TestHiveCopyFiles.class);
     SessionState.start(hiveConf);
   }
 

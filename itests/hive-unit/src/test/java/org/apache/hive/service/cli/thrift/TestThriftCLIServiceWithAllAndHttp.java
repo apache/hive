@@ -22,7 +22,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.service.Service;
 import org.apache.hive.service.auth.HiveAuthConstants;
 
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 import static org.junit.Assert.assertNotNull;
@@ -43,7 +42,7 @@ public class TestThriftCLIServiceWithAllAndHttp extends ThriftCLIServiceTest {
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     // Set up the base class
-    ThriftCLIServiceTest.setUpBeforeClass();
+    initConf(TestThriftCLIServiceWithAllAndHttp.class);
 
     assertNotNull(port);
     assertNotNull(hiveServer2);
@@ -61,13 +60,6 @@ public class TestThriftCLIServiceWithAllAndHttp extends ThriftCLIServiceTest {
     client = getHttpServiceClientInternal();
   }
 
-  /**
-   * @throws Exception
-   */
-  @AfterClass
-  public static void tearDownAfterClass() throws Exception {
-    ThriftCLIServiceTest.tearDownAfterClass();
-  }
   static ThriftCLIServiceClient getHttpServiceClientInternal() {
     for (Service service : hiveServer2.getServices()) {
       if (service instanceof ThriftBinaryCLIService) {

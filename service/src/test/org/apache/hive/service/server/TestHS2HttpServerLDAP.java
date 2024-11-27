@@ -61,7 +61,7 @@ public class TestHS2HttpServerLDAP {
     HiveConf hiveConf = new HiveConf();
     hiveConf.setBoolVar(ConfVars.HIVE_IN_TEST, true);
     hiveConf.set(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname, webUIPort.toString());
-    hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_WEBUI_AUTH_METHOD, true);
+    hiveConf.set(ConfVars.HIVE_SERVER2_WEBUI_AUTH_METHOD.varname, "LDAP");
     hiveConf.set(ConfVars.METASTORE_PWD.varname, METASTORE_PASSWD);
     hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");

@@ -47,9 +47,6 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.THttpClient;
 import org.apache.thrift.transport.TTransport;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -71,7 +68,7 @@ public class TestThriftCLIServiceWithHttp extends ThriftCLIServiceTest {
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     // Set up the base class
-    ThriftCLIServiceTest.setUpBeforeClass();
+    initConf(TestThriftCLIServiceWithHttp.class);
 
     assertNotNull(port);
     assertNotNull(hiveServer2);
@@ -88,14 +85,4 @@ public class TestThriftCLIServiceWithHttp extends ThriftCLIServiceTest {
 
     client = getServiceClientInternal();
   }
-
-  /**
-   * @throws java.lang.Exception
-   */
-  @AfterClass
-  public static void tearDownAfterClass() throws Exception {
-    ThriftCLIServiceTest.tearDownAfterClass();
-  }
-
-  
 }

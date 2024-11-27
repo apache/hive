@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.ServiceContext;
 import org.apache.hive.service.rpc.thrift.TStatus;
 import org.apache.hive.service.rpc.thrift.TStatusCode;
 
@@ -33,7 +34,9 @@ import com.google.common.annotations.VisibleForTesting;
  */
 public class HiveSQLException extends SQLException {
 
+  public static final String QUERY_ID = "Query ID";
   private static final long serialVersionUID = -6095254671958748095L;
+  private String queryId;
 
   @VisibleForTesting
   public static final List<String> DEFAULT_INFO =
@@ -41,7 +44,9 @@ public class HiveSQLException extends SQLException {
 
   /**
    * Constructor.
+   * @deprecated Use constructor with queryId
    */
+  @Deprecated
   public HiveSQLException() {
     super();
   }
@@ -53,7 +58,9 @@ public class HiveSQLException extends SQLException {
    * Throwable.initCause(java.lang.Throwable) method.
    *
    * @param reason a description of the exception
+   * @deprecated Use constructor with queryId
    */
+  @Deprecated
   public HiveSQLException(String reason) {
     super(reason);
   }
@@ -65,32 +72,63 @@ public class HiveSQLException extends SQLException {
    *
    * @param cause the underlying reason for this SQLException - may be null
    *          indicating the cause is non-existent or unknown
+   * @deprecated Use constructor with queryId
    */
+  @Deprecated
   public HiveSQLException(Throwable cause) {
     super(cause);
+  }
+
+  public HiveSQLException(Throwable cause, String queryId) {
+    super(cause);
+    this.queryId = queryId;
   }
 
   /**
    * @param reason
    * @param sqlState
+   * @deprecated Use constructor with queryId
    */
+  @Deprecated
   public HiveSQLException(String reason, String sqlState) {
     super(reason, sqlState);
   }
 
   /**
    * @param reason
-   * @param cause
+   * @param sqlState
    */
+  public HiveSQLException(String reason, String sqlState, String queryId) {
+    super(reason, sqlState);
+    this.queryId = queryId;
+  }
+
+  /**
+   * @param reason
+   * @param cause
+   * @deprecated Use constructor with queryId
+   */
+  @Deprecated
   public HiveSQLException(String reason, Throwable cause) {
     super(reason, cause);
   }
 
   /**
    * @param reason
+   * @param cause
+   */
+  public HiveSQLException(String reason, Throwable cause, String queryId) {
+    super(reason, cause);
+    this.queryId = queryId;
+  }
+
+  /**
+   * @param reason
    * @param sqlState
    * @param vendorCode
+   * @deprecated Use constructor with queryId
    */
+  @Deprecated
   public HiveSQLException(String reason, String sqlState, int vendorCode) {
     super(reason, sqlState, vendorCode);
   }
@@ -98,10 +136,28 @@ public class HiveSQLException extends SQLException {
   /**
    * @param reason
    * @param sqlState
-   * @param cause
+   * @param vendorCode
+   * @param queryId
    */
+  public HiveSQLException(String reason, String sqlState, int vendorCode, String queryId) {
+    super(reason, sqlState, vendorCode);
+    this.queryId = queryId;
+  }
+
+  /**
+   * @param reason
+   * @param sqlState
+   * @param cause
+   * @deprecated Use constructor with queryId
+   */
+  @Deprecated
   public HiveSQLException(String reason, String sqlState, Throwable cause) {
     super(reason, sqlState, cause);
+  }
+
+  public HiveSQLException(String reason, String sqlState, Throwable cause, String queryId) {
+    super(reason, sqlState, cause);
+    this.queryId = queryId;
   }
 
   /**
@@ -109,11 +165,17 @@ public class HiveSQLException extends SQLException {
    * @param sqlState
    * @param vendorCode
    * @param cause
+   * @deprecated Use constructor with queryId
    */
+  @Deprecated
   public HiveSQLException(String reason, String sqlState, int vendorCode, Throwable cause) {
     super(reason, sqlState, vendorCode, cause);
   }
 
+  /**
+   * @deprecated Use constructor with queryId
+   */
+  @Deprecated
   public HiveSQLException(TStatus status) {
     super(status.getErrorMessage(), status.getSqlState(), status.getErrorCode());
   }
@@ -150,4 +212,13 @@ public class HiveSQLException extends SQLException {
     return tStatus;
   }
 
+  @Override
+  public String getMessage(){
+    String errorMsg = super.getMessage() == null ? "Error" : super.getMessage();
+    if (!errorMsg.contains(QUERY_ID) && queryId != null) {
+      return String.format("%s; Query ID: %s", errorMsg, queryId);
+    } else {
+      return errorMsg;
+    }
+  }
 }

@@ -124,7 +124,7 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
       }
     } catch (CommandProcessorException e) {
       setState(OperationState.ERROR);
-      throw toSQLException("Error while processing statement", e);
+      throw toSQLException("Error while processing statement", e, queryState.getQueryId());
     } catch (Exception e) {
       setState(OperationState.ERROR);
       throw new HiveSQLException("Error running query: " + e.toString(), e);
