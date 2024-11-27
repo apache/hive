@@ -49,7 +49,7 @@ public class LlapThreadLocalStatistics {
   }
 
   @VisibleForTesting
-  Map<String, LlapThreadLocalStatistics.StatisticsData> schemeToThreadLocalStats = new HashMap<>();
+  Map<String, LlapFileSystemStatisticsData> schemeToThreadLocalStats = new HashMap<>();
   @VisibleForTesting
   long cpuTime;
   @VisibleForTesting
@@ -79,7 +79,7 @@ public class LlapThreadLocalStatistics {
 
     for (FileSystem.Statistics statistics : allStatistics) {
       schemeToThreadLocalStats.merge(statistics.getScheme(),
-          new StatisticsData(statistics.getThreadStatistics()),
+          new LlapFileSystemStatisticsData(statistics.getThreadStatistics()),
           (statsCurrent, statsNew) -> statsCurrent.merge(statistics.getThreadStatistics()));
     }
   }
@@ -87,7 +87,7 @@ public class LlapThreadLocalStatistics {
   // This method iterates on the other LlapThreadLocalStatistics's schemes, and subtract them from this one if it's
   // present here too.
   public LlapThreadLocalStatistics subtract(LlapThreadLocalStatistics other) {
-    for (Map.Entry<String, LlapThreadLocalStatistics.StatisticsData> otherStats :
+    for (Map.Entry<String, LlapFileSystemStatisticsData> otherStats :
         other.schemeToThreadLocalStats.entrySet()){
       schemeToThreadLocalStats.computeIfPresent(otherStats.getKey(),
           (thisScheme, stats) -> stats.subtract(otherStats.getValue()));
@@ -100,10 +100,10 @@ public class LlapThreadLocalStatistics {
   }
 
   public void fill(TezCounters tezCounters) {
-    for (Map.Entry<String, LlapThreadLocalStatistics.StatisticsData> threadLocalStats :
+    for (Map.Entry<String, LlapFileSystemStatisticsData> threadLocalStats :
         schemeToThreadLocalStats.entrySet()){
       String scheme = threadLocalStats.getKey();
-      StatisticsData stats = threadLocalStats.getValue();
+      LlapFileSystemStatisticsData stats = threadLocalStats.getValue();
       tezCounters.findCounter(scheme, FileSystemCounter.BYTES_READ).increment(stats.bytesRead);
       tezCounters.findCounter(scheme, FileSystemCounter.BYTES_WRITTEN).increment(stats.bytesWritten);
       tezCounters.findCounter(scheme, FileSystemCounter.READ_OPS).increment(stats.readOps);
@@ -126,14 +126,14 @@ public class LlapThreadLocalStatistics {
    * Unfortunately, neither the fields, nor the convenience methods (e.g. StatisticsData.add, StatisticsData.negate)
    * are available here as they are package protected, so we cannot reuse them.
    */
-  public static class StatisticsData {
+  public static class LlapFileSystemStatisticsData {
     long bytesRead;
     long bytesWritten;
     int readOps;
     int largeReadOps;
     int writeOps;
 
-    public StatisticsData(FileSystem.Statistics.StatisticsData fsStats) {
+    public LlapFileSystemStatisticsData(FileSystem.Statistics.StatisticsData fsStats) {
       this.bytesRead = fsStats.getBytesRead();
       this.bytesWritten = fsStats.getBytesWritten();
       this.readOps = fsStats.getReadOps();
@@ -152,7 +152,7 @@ public class LlapThreadLocalStatistics {
       return sb.toString();
     }
 
-    public StatisticsData merge(FileSystem.Statistics.StatisticsData other) {
+    public LlapFileSystemStatisticsData merge(FileSystem.Statistics.StatisticsData other) {
       this.bytesRead += other.getBytesRead();
       this.bytesWritten += other.getBytesWritten();
       this.readOps += other.getReadOps();
@@ -161,7 +161,7 @@ public class LlapThreadLocalStatistics {
       return this;
     }
 
-    public StatisticsData subtract(StatisticsData other) {
+    public LlapFileSystemStatisticsData subtract(LlapFileSystemStatisticsData other) {
       if (other == null){
         return this;
       }
