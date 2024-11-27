@@ -182,11 +182,12 @@ public class TestMetaTookTaskMetadataSummary {
 
   @Test
   public void testObtainAndFilterSummary() throws Exception {
-    boolean formatJson = inputParams[0].equalsIgnoreCase("-json");
+    TASK.validateInput(inputParams);
+    Assert.assertEquals(TASK.formatJson, "-json".equals(inputParams[0]));
     Pair<MetaSummarySchema, List<MetadataTableSummary>> result =
-        TASK.obtainAndFilterSummary(inputParams, formatJson);
+        TASK.obtainAndFilterSummary();
     MetaSummarySchema schema = result.getLeft();
-    if (formatJson) {
+    if (TASK.formatJson) {
       Assert.assertEquals(Arrays.asList(FakeIcebergSummaryHandler.METADATA, FakeIcebergSummaryHandler.VERSION), schema.getFields());
     } else {
       Assert.assertEquals(Arrays.asList(FakeIcebergSummaryHandler.NUM_BRANCHES, FakeIcebergSummaryHandler.NUM_TAGS,
@@ -229,7 +230,7 @@ public class TestMetaTookTaskMetadataSummary {
       Assert.assertEquals("v2", summary.getExtraSummary().remove(FakeIcebergSummaryHandler.VERSION));
       Map<String, Object> icebergSummary = FakeIcebergSummaryHandler.TABLE_TO_SUMMARY.get(tableName);
       Assert.assertFalse(icebergSummary.isEmpty());
-      if (formatJson) {
+      if (TASK.formatJson) {
         Assert.assertEquals(icebergSummary,
             summary.getExtraSummary().get(FakeIcebergSummaryHandler.METADATA));
       } else {

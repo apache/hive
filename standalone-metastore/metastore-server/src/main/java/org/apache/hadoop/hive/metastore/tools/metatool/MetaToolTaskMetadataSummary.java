@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.metastore.metasummary.MetadataTableSummary;
 import org.apache.hadoop.hive.metastore.tools.MetaToolObjectStore;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,20 +67,21 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
     NON_NATIVE_SUMMARY_HANDLER.put("iceberg", "org.apache.iceberg.metasummary.IcebergSummaryHandler");
   }
 
-  private boolean formatJson;
-  private boolean formatCsv;
-  private boolean formatConsole;
+  boolean formatJson;
+  boolean formatConsole;
   private long taskTimeout;
+  private Integer recentUpdatedDays;
+  private Integer maxNonNativeTables;
 
   @Override
   void execute() {
-    String[] inputParams = validateInput();
+    String[] inputParams = validateInput(getCl().getMetadataSummaryParams());
     if (inputParams == null) {
       return;
     }
     ExecutorService service = Executors.newSingleThreadExecutor();
     Future<Pair<MetaSummarySchema, List<MetadataTableSummary>>> resFuture =
-        service.submit(() -> obtainAndFilterSummary(inputParams, formatJson));
+        service.submit(this::obtainAndFilterSummary);
     try {
       service.shutdown();
       Pair<MetaSummarySchema, List<MetadataTableSummary>> result =
@@ -112,22 +114,29 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
     }
   }
 
-  private String[] validateInput() {
-    String[] inputParams = getCl().getMetadataSummaryParams();
+  String[] validateInput(String[] inputParams) {
     String formatOption = inputParams[0].toLowerCase().trim();
     this.formatJson = formatOption.equalsIgnoreCase("-json");
-    this.formatCsv = formatOption.equalsIgnoreCase("-csv");
     this.formatConsole = formatOption.equalsIgnoreCase("-console");
+    boolean formatCsv = formatOption.equalsIgnoreCase("-csv");
     if (!formatJson && !formatCsv && !formatConsole) {
       System.err.println("Invalid format option: " + formatOption + 
           " to -metadataSummary, only -json, -csv and -console are allowed");
       return null;
     }
+    this.recentUpdatedDays = inputParams.length >= 3 ? Integer.parseInt(inputParams[2]) :
+        (int) MetastoreConf.getTimeVar(getObjectStore().getConf(), MetastoreConf.ConfVars.METADATA_SUMMARY_RECENT_UPDATED, TimeUnit.DAYS);
+    this.maxNonNativeTables = inputParams.length >= 4 ? Integer.parseInt(inputParams[3]) : null;
+    if (this.maxNonNativeTables == null) {
+      String val = MetastoreConf.getVar(getObjectStore().getConf(), MetastoreConf.ConfVars.METADATA_SUMMARY_MAX_NONNATIVE_TABLES);
+      if (!StringUtils.isEmpty(val)) {
+        this.maxNonNativeTables = Integer.parseInt(val);
+      }
+    }
     return inputParams;
   }
 
-  Pair<MetaSummarySchema, List<MetadataTableSummary>> obtainAndFilterSummary(String[] inputParams,
-      boolean formatJson) throws MetaException {
+  Pair<MetaSummarySchema, List<MetadataTableSummary>> obtainAndFilterSummary() throws MetaException {
     Deadline.registerIfNot(taskTimeout);
     boolean isTimerStarted = false;
     try {
@@ -140,8 +149,6 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
       }
       ArrayListMultimap<Class<? extends MetaSummaryHandler>, MetadataTableSummary> nonNativeSummaries =
           findNonNativeSummaries(allSummaries);
-      Integer lastUpdatedDays = inputParams.length >= 3 ? Integer.valueOf(inputParams[2]) : null;
-      Integer tablesLimit = inputParams.length >= 4 ? Integer.valueOf(inputParams[3]) : null;
       Map<MetadataTableSummary, Void> filteredSummary = new IdentityHashMap<>();
       MetaSummarySchema extraSchema = new MetaSummarySchema();
       for (Class<? extends MetaSummaryHandler> handler : nonNativeSummaries.keys()) {
@@ -151,7 +158,7 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
           summaryHandler.initialize(MetaStoreUtils.getDefaultCatalog(conf), formatJson, extraSchema);
           List<MetadataTableSummary> tableSummaries = nonNativeSummaries.get(handler);
           // Filter those we don't want to collect
-          Set<Long> tableIds = getObjectStore().filterTablesForSummary(tableSummaries, lastUpdatedDays, tablesLimit);
+          Set<Long> tableIds = getObjectStore().filterTablesForSummary(tableSummaries, recentUpdatedDays, maxNonNativeTables);
           for (MetadataTableSummary summary : tableSummaries) {
             if (tableIds.contains(summary.getTableId())) {
               TableName tableName = new TableName(summary.getCatalogName(),

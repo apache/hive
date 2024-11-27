@@ -1857,6 +1857,10 @@ public class MetastoreConf {
             + "for all partition to retain working consistency"),
     METADATA_SUMMARY_TIMEOUT("hive.metatool.summary.timeout", "hive.metatool.summary.timeout", 20, TimeUnit.MINUTES,
         "The maximum time in minutes to wait for the metadata summary task to complete, otherwise the task will be cancelled."),
+    METADATA_SUMMARY_RECENT_UPDATED("hive.metatool.summary.newerThan", "hive.metatool.summary.newerThan", 30, TimeUnit.DAYS,
+        "Only collect the non-native table's summary that has been updated/changed in configured recent days."),
+    METADATA_SUMMARY_MAX_NONNATIVE_TABLES("hive.metatool.summary.maxNonNativeTables", "hive.metatool.summary.maxNonNativeTables", "",
+        "The maximum non-native tables allowed per table type during collecting the summary."),
 
     // These are all values that we put here just for testing
     STR_TEST_ENTRY("test.str", "hive.test.str", "defaultval", "comment"),
