@@ -88,6 +88,7 @@ import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcCtx.ConstantProp
 import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
 import org.apache.hadoop.hive.ql.optimizer.DynamicPartitionPruningOptimization;
 import org.apache.hadoop.hive.ql.optimizer.FiltertagAppenderProc;
+import org.apache.hadoop.hive.ql.optimizer.GroupingSetOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.MergeJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.NonBlockingOpDeDupProc;
 import org.apache.hadoop.hive.ql.optimizer.ParallelEdgeFixer;
@@ -498,6 +499,10 @@ public class TezCompiler extends TaskCompiler {
     topNodes.addAll(procCtx.parseContext.getTopOps().values());
     SemanticGraphWalker ogw = new ForwardWalker(disp);
     ogw.startWalking(topNodes, null);
+
+    if (procCtx.conf.getLongVar(ConfVars.HIVE_OPTIMIZE_GROUPING_SET_THRESHOLD) > 0) {
+      new GroupingSetOptimizer().transform(procCtx.parseContext);
+    }
   }
 
   private void extendParentReduceSinkOfMapJoin(OptimizeTezProcContext procCtx) throws SemanticException {
