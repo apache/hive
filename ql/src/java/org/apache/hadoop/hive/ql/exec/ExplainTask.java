@@ -42,6 +42,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import com.google.common.base.Joiner;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.jsonexplain.JsonParser;
@@ -515,11 +516,10 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     //process the databases
     List<String> createDatabaseStmt = ddlPlanUtils.getCreateDatabaseStmt(createDatabase);
     //process the tables
-    for (String tableName : tableMap.keySet()) {
+    for (String tableName : tableMap.keySet().stream().sorted().collect(Collectors.toList())) {
       Table table = tableMap.get(tableName);
       if (table.isView()) {
         createViewList.add(ddlPlanUtils.getCreateViewStmt(table));
-        continue;
       } else {
         addCreateTableStatement(table, tableCreateStmt, ddlPlanUtils);
         addPKandBasicStats(table, tableBasicDef, ddlPlanUtils);
