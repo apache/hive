@@ -18,11 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.create.like;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -74,7 +70,9 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
 
     if (desc.getLocation() == null && !tbl.isPartitioned() &&
         context.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER)) {
-      StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(),null, StatsSetupConst.TRUE);
+      List<String> colNames = context.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STATS_COL_AUTOGATHER) ?
+          MetaStoreUtils.getColumnNames(tbl.getCols()) : null;
+      StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(), colNames, StatsSetupConst.TRUE);
     }
 
     // create the table
