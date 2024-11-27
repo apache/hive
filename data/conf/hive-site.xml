@@ -25,6 +25,12 @@
     <description>This property enables a Caffeiene Cache for Metastore client</description>
   </property>
 
+  <property>
+    <name>hive.cbo.rule.exclusion.regex</name>
+    <value>HivePruneZeroRowsTable</value>
+    <description>Disable pruning empty tables in tests</description>
+  </property>
+
 <property>
   <name>hive.in.test</name>
   <value>true</value>

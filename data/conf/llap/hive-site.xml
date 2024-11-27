@@ -18,6 +18,12 @@
 -->
 
 <configuration>
+  
+  <property>
+    <name>hive.cbo.rule.exclusion.regex</name>
+    <value>HivePruneZeroRowsTable</value>
+    <description>Disable pruning empty tables in tests</description>
+  </property>
 
   <property>
     <name>hive.metastore.client.cache.enabled</name>

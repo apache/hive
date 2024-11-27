@@ -32,33 +32,7 @@ explain cbo
 select * from tmp1 join tmp2 using(c) where tmp1.c=40;
 select * from tmp1 join tmp2 using(c) where tmp1.c=40;
 
-set hive.prune.empty.tables.in.test=true;
-
-explain cbo
-select count(*) from tmp1;
-select count(*) from tmp1;
-
-explain cbo
-select count(*) from tmp2;
-select count(*) from tmp2;
-
-explain cbo
-select count(*) from tmp3;
-select count(*) from tmp3;
-
-explain cbo 
-select * from tmp1 join tmp2 using(a);
-select * from tmp1 join tmp2 using(a);
-
-explain cbo
-select * from tmp1 join tmp2 using(c) where tmp1.c=30;
-select * from tmp1 join tmp2 using(c) where tmp1.c=30;
-
-explain cbo
-select * from tmp1 join tmp2 using(c) where tmp1.c=40;
-select * from tmp1 join tmp2 using(c) where tmp1.c=40;
-
-set hive.cbo.rule.exclusion.regex=HivePruneZeroRowsTable;
+set hive.cbo.rule.exclusion.regex=;
 
 explain cbo
 select count(*) from tmp1;

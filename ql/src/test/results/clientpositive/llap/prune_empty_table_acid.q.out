@@ -36,6 +36,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp1
 #### A masked pattern was here ####
 Explain
+Excluded rules: HivePruneZeroRowsTable
+
 CBO PLAN:
 HiveAggregate(group=[{}], agg#0=[count()])
   HiveTableScan(table=[[default, tmp1]], table:alias=[tmp1])
@@ -61,6 +63,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp2
 #### A masked pattern was here ####
 Explain
+Excluded rules: HivePruneZeroRowsTable
+
 CBO PLAN:
 HiveAggregate(group=[{}], agg#0=[count()])
   HiveTableScan(table=[[default, tmp2]], table:alias=[tmp2])
@@ -88,6 +92,8 @@ POSTHOOK: Input: default@tmp1
 POSTHOOK: Input: default@tmp2
 #### A masked pattern was here ####
 Explain
+Excluded rules: HivePruneZeroRowsTable
+
 CBO PLAN:
 HiveProject(a=[$0], b=[$1], b1=[$3])
   HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
@@ -178,96 +184,6 @@ POSTHOOK: Input: default@tmp2
 Explain
 CBO PLAN:
 HiveValues(tuples=[[]])
-
-PREHOOK: query: select * from tmp1 join tmp2 using(a)
-PREHOOK: type: QUERY
-PREHOOK: Input: default@tmp1
-PREHOOK: Input: default@tmp2
-#### A masked pattern was here ####
-POSTHOOK: query: select * from tmp1 join tmp2 using(a)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tmp1
-POSTHOOK: Input: default@tmp2
-#### A masked pattern was here ####
-tmp1.a	tmp1.b	tmp2.b
-PREHOOK: query: explain cbo
-select count(*) from tmp1
-PREHOOK: type: QUERY
-PREHOOK: Input: default@tmp1
-#### A masked pattern was here ####
-POSTHOOK: query: explain cbo
-select count(*) from tmp1
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tmp1
-#### A masked pattern was here ####
-Explain
-Excluded rules: HivePruneZeroRowsTable
-
-CBO PLAN:
-HiveAggregate(group=[{}], agg#0=[count()])
-  HiveTableScan(table=[[default, tmp1]], table:alias=[tmp1])
-
-PREHOOK: query: select count(*) from tmp1
-PREHOOK: type: QUERY
-PREHOOK: Input: default@tmp1
-#### A masked pattern was here ####
-POSTHOOK: query: select count(*) from tmp1
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tmp1
-#### A masked pattern was here ####
-_c0
-1
-PREHOOK: query: explain cbo
-select count(*) from tmp2
-PREHOOK: type: QUERY
-PREHOOK: Input: default@tmp2
-#### A masked pattern was here ####
-POSTHOOK: query: explain cbo
-select count(*) from tmp2
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tmp2
-#### A masked pattern was here ####
-Explain
-Excluded rules: HivePruneZeroRowsTable
-
-CBO PLAN:
-HiveAggregate(group=[{}], agg#0=[count()])
-  HiveTableScan(table=[[default, tmp2]], table:alias=[tmp2])
-
-PREHOOK: query: select count(*) from tmp2
-PREHOOK: type: QUERY
-PREHOOK: Input: default@tmp2
-#### A masked pattern was here ####
-POSTHOOK: query: select count(*) from tmp2
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tmp2
-#### A masked pattern was here ####
-_c0
-0
-PREHOOK: query: explain cbo 
-select * from tmp1 join tmp2 using(a)
-PREHOOK: type: QUERY
-PREHOOK: Input: default@tmp1
-PREHOOK: Input: default@tmp2
-#### A masked pattern was here ####
-POSTHOOK: query: explain cbo 
-select * from tmp1 join tmp2 using(a)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tmp1
-POSTHOOK: Input: default@tmp2
-#### A masked pattern was here ####
-Explain
-Excluded rules: HivePruneZeroRowsTable
-
-CBO PLAN:
-HiveProject(a=[$0], b=[$1], b1=[$3])
-  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
-    HiveProject(a=[$0], b=[$1])
-      HiveFilter(condition=[IS NOT NULL($0)])
-        HiveTableScan(table=[[default, tmp1]], table:alias=[tmp1])
-    HiveProject(a=[$0], b=[$1])
-      HiveFilter(condition=[IS NOT NULL($0)])
-        HiveTableScan(table=[[default, tmp2]], table:alias=[tmp2])
 
 PREHOOK: query: select * from tmp1 join tmp2 using(a)
 PREHOOK: type: QUERY
