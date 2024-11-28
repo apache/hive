@@ -267,6 +267,7 @@ import org.apache.thrift.TException;
 import org.datanucleus.ExecutionContext;
 import org.datanucleus.api.jdo.JDOPersistenceManager;
 import org.datanucleus.api.jdo.JDOTransaction;
+import org.datanucleus.exceptions.NucleusDataStoreException;
 import org.datanucleus.store.rdbms.exceptions.MissingTableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10262,7 +10263,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return statsMap;
   }
-  
+
   @Override
   public Map<String, String> updateTableColumnStatistics(ColumnStatistics colStats, String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
@@ -10270,7 +10271,7 @@ public class ObjectStore implements RawStore, Configurable {
 
     List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
     ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
-    
+
     Lock tableLock = getTableLockFor(statsDesc.getDbName(), statsDesc.getTableName());
     tableLock.lock();
     try {
@@ -10296,18 +10297,23 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       // TODO: (HIVE-20109) ideally the col stats stats should be in colstats, not in the table!
-      // Set the table properties
-      // No need to check again if it exists.
-      String dbname = table.getDbName();
-      String name = table.getTableName();
-      MTable oldt = mTable;
       Map<String, String> newParams = new HashMap<>(table.getParameters());
-      StatsSetupConst.setColumnStatsState(newParams, colNames);
-      boolean isTxn = TxnUtils.isTransactionalTable(oldt.getParameters());
-      if (isTxn) {
-        if (!areTxnStatsSupported) {
-          StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
-        } else {
+
+      int retries = 3;
+      boolean success = false;
+      while (!success && retries > 0) {
+        // TODO## ideally the col stats stats should be in colstats, not in the table!
+        // Set the table properties
+        // No need to check again if it exists.
+        String dbname = table.getDbName();
+        String name = table.getTableName();
+        MTable oldt = mTable;
+        StatsSetupConst.setColumnStatsState(newParams, colNames);
+        boolean isTxn = TxnUtils.isTransactionalTable(oldt.getParameters());
+        if (isTxn) {
+          if (!areTxnStatsSupported) {
+            StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
+          } else {
           String errorMsg = verifyStatsChangeCtx(TableName.getDbTable(dbname, name),
             oldt.getParameters(), newParams, writeId, validWriteIds, true);
           if (errorMsg != null) {
@@ -10322,12 +10328,27 @@ public class ObjectStore implements RawStore, Configurable {
           oldt.setWriteId(writeId);
         }
       }
-      oldt.setParameters(newParams);
+        try {
+          oldt.setParameters(newParams);
+          success = true;
+        }
+        catch (NucleusDataStoreException e) {
+          retries--;
+
+          if (retries == 0) {
+            throw e;
+          }
+
+          newParams.clear();
+          LOG.info("Retry on updateTableColumnStatistics: {}", retries);
+        }
+      }
 
       committed = commitTransaction();
       // TODO: similar to update...Part, this used to do "return committed;"; makes little sense.
       return committed ? newParams : null;
-    } finally {
+    }
+    finally {
       try {
         if (!committed) {
           rollbackTransaction();
