@@ -220,14 +220,14 @@ public class Statistics implements Serializable {
   }
 
   public void addBasicStats(Statistics stats) {
-    dataSize = StatsUtils.safeAdd(dataSize,stats.dataSize);
+    dataSize = StatsUtils.safeAdd(dataSize, stats.dataSize);
     numRows += stats.numRows;
     basicStatsState = inferColumnStatsState(basicStatsState, stats.basicStatsState);
   }
 
   @Deprecated
   public void addToDataSize(long rds) {
-    dataSize = StatsUtils.safeAdd(dataSize,rds);
+    dataSize = StatsUtils.safeAdd(dataSize, rds);
   }
 
   public void setColumnStats(Map<String, ColStatistics> colStats) {
