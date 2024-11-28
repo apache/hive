@@ -679,7 +679,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     checkExpected(rs, expected, "After conversion");
     Assert.assertEquals(Integer.toString(6), rs.get(0));
     Assert.assertEquals(Integer.toString(9), rs.get(1));
-    assertVectorized(shouldVectorize(), query);
+    assertMappersAreVectorized(query);
 
     //why isn't PPD working.... - it is working but storage layer doesn't do row level filtering; only row group level
     //this uses VectorizedOrcAcidRowBatchReader
@@ -690,7 +690,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":4}", "9"}
     };
     checkExpected(rs, expected1, "After conversion with VC1");
-    assertVectorized(shouldVectorize(), query);
+    assertMappersAreVectorized(query);
 
     //this uses VectorizedOrcAcidRowBatchReader
     query = "select ROW__ID, a from T where b > 0 order by a";
@@ -703,7 +703,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":4}", "9"}
     };
     checkExpected(rs, expected2, "After conversion with VC2");
-    assertVectorized(shouldVectorize(), query);
+    assertMappersAreVectorized(query);
 
     //doesn't vectorize (uses neither of the Vectorzied Acid readers)
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
@@ -717,7 +717,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     checkExpected(rs, expected3, "After non-vectorized read");
     Assert.assertEquals(0, BucketCodec.determineVersion(536870912).decodeWriterId(536870912));
     //vectorized because there is INPUT__FILE__NAME
-    assertVectorized(false, query);
+    assertMappersAreNotVectorized(query);
 
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
     runStatementOnDriver("update T set b = 17 where a = 1");
@@ -732,7 +732,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":4}","10"}
     };
     checkExpected(rs, expected4, "After conversion with VC4");
-    assertVectorized(shouldVectorize(), query);
+    assertMappersAreVectorized(query);
 
     runStatementOnDriver("alter table T compact 'major'");
     TestTxnCommands2.runWorker(hiveConf);
@@ -759,7 +759,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     };
     checkExpected(rs, expected5, "After major compaction");
     //vectorized because there is INPUT__FILE__NAME
-    assertVectorized(false, query);
+    assertMappersAreNotVectorized(query);
   }
   private void checkExpected(List<String> rs, String[][] expected, String msg) {
     super.checkExpected(rs, expected, msg, LOG, true);

@@ -23,12 +23,17 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.esotericsoftware.kryo.util.ObjectMap;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
@@ -61,6 +66,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public abstract class TxnCommandsBaseForTests {
   private static final Logger LOG = LoggerFactory.getLogger(TxnCommandsBaseForTests.class);
@@ -323,6 +331,63 @@ public abstract class TxnCommandsBaseForTests {
       }
     }
     Assert.assertTrue("Din't find expected 'vectorized' in plan", !vectorized);
+  }
+  /**
+   * Runs Vectorized Explain on the query and checks if the plan is vectorized as expected
+   */
+  protected void assertVectorized(String query) throws Exception {
+    List<String> rs = runStatementOnDriver("EXPLAIN VECTORIZATION DETAIL " + query);
+    for (String line : rs) {
+      if (line != null && line.contains("vectorized: false")) {
+        Assert.fail("Execution is not vectorized");
+        return;
+      }
+    }
+    Assert.fail("Didn't find expected 'vectorized' in plan");
+  }
+
+  protected void assertMappersAreVectorized(String query) throws Exception {
+    assertMapperExecutionMode(query, "Mapper was not vectorized: ",
+            executionMode -> isBlank(executionMode) || !executionMode.contains("vectorized"));
+  }
+
+  protected void assertMappersAreNotVectorized(String query) throws Exception {
+    assertMapperExecutionMode(query, "Mapper was vectorized but was not expected: ",
+            executionMode -> isNotBlank(executionMode) && executionMode.contains("vectorized"));
+  }
+
+  protected void assertMapperExecutionMode(String query, String message, Predicate<String> predicate)
+          throws Exception {
+    List<String> rs = runStatementOnDriver("EXPLAIN FORMATTED VECTORIZATION DETAIL " + query);
+    ObjectMapper objectMapper = new ObjectMapper();
+    Map<String, Object> plan = objectMapper.readValue(rs.get(0), Map.class);
+    Map<String, Object> stages = (Map<String, Object>) plan.get("STAGE PLANS");
+    Map<String, Object> tezStage = null;
+    if (stages == null) {
+      Assert.fail("Execution plan of query does not have have stages: " + rs.get(0));
+    }
+    for (Map.Entry<String, Object> stageEntry : stages.entrySet()) {
+      Map<String, Object> stage = (Map<String, Object>) stageEntry.getValue();
+      tezStage = (Map<String, Object>) stage.get("Tez");
+      if (tezStage != null) {
+        break;
+      }
+    }
+    if (tezStage == null) {
+      Assert.fail("Execution plan of query does not contain a Tez stage: " + rs.get(0));
+    }
+    Map<String, Object> vertices = (Map<String, Object>) tezStage.get("Vertices:");
+    if (vertices == null) {
+      Assert.fail("Execution plan of query does not contain Tez vertices: " + rs.get(0));
+    }
+    for (Map.Entry<String, Object> vertexEntry : stages.entrySet()) {
+      if (vertexEntry.getKey() == null || !vertexEntry.getKey().startsWith("Map")) {
+        continue;
+      }
+      Map<String, Object> mapVertex = (Map<String, Object>) vertexEntry.getValue();
+      String executionMode = (String) mapVertex.get("Execution mode");
+      Assert.assertTrue(message + rs.get(0), predicate.test(executionMode));
+    }
   }
   /**
    * Will assert that actual files match expected.
