@@ -155,6 +155,11 @@ public abstract class TxnCommandsBaseForTests {
     setUpSchema();
   }
 
+  protected void useSmallGrouping() {
+    hiveConf.set("tez.grouping.max-size", "10");
+    hiveConf.set("tez.grouping.min-size", "1");
+  }
+
   protected void setUpSchema() throws Exception {
     runStatementOnDriver("create table " + Table.ACIDTBL + "(a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
     runStatementOnDriver("create table " + Table.ACIDTBLPART + "(a int, b int) partitioned by (p string) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
