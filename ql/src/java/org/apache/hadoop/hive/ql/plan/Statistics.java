@@ -255,7 +255,7 @@ public class Statistics implements Serializable {
           if (columnStats.containsKey(key) && columnStats.get(key) != null) {
             updatedCS = columnStats.get(key);
             updatedCS.setAvgColLen(Math.max(updatedCS.getAvgColLen(), cs.getAvgColLen()));
-            updatedCS.setNumNulls(updatedCS.getNumNulls() + cs.getNumNulls());
+            updatedCS.setNumNulls(StatsUtils.safeAdd(updatedCS.getNumNulls(), cs.getNumNulls()));
             updatedCS.setCountDistint(Math.max(updatedCS.getCountDistint(), cs.getCountDistint()));
             columnStats.put(key, updatedCS);
           } else {
