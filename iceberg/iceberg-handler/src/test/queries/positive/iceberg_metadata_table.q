@@ -1,5 +1,8 @@
 -- SORT_QUERY_RESULTS
 -- MASK_TIMESTAMP
+-- Mask column_size
+--! qt:replace:/(\S\"column_size":)(\d+)(,)/$1#Masked#$3/
+
 create table ice_ts_4 (id int, ts timestamp ) stored by iceberg stored as parquet tblproperties ('format-version'='2');
 insert into ice_ts_4 values (1, cast('2023-07-20 00:00:00' as timestamp)), (2, cast('2023-07-20 00:00:00' as timestamp));
 select * from ice_ts_4;
