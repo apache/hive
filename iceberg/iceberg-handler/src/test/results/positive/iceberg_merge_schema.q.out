@@ -159,12 +159,11 @@ STAGE PLANS:
   Stage: Stage-4
     Tez
       Edges:
-        Reducer 2 <- Map 1 (XPROD_EDGE), Map 9 (XPROD_EDGE)
+        Reducer 2 <- Map 1 (XPROD_EDGE), Map 8 (XPROD_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Union 4 (CONTAINS)
-        Reducer 5 <- Map 9 (SIMPLE_EDGE), Union 4 (SIMPLE_EDGE)
+        Reducer 5 <- Map 8 (SIMPLE_EDGE), Union 4 (SIMPLE_EDGE)
         Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
-        Reducer 7 <- Map 1 (XPROD_EDGE), Map 9 (XPROD_EDGE)
-        Reducer 8 <- Reducer 7 (SIMPLE_EDGE), Union 4 (CONTAINS)
+        Reducer 7 <- Reducer 2 (SIMPLE_EDGE), Union 4 (CONTAINS)
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -199,7 +198,7 @@ STAGE PLANS:
                     dataColumns: s_key:bigint, year:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
-        Map 9 
+        Map 8 
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
@@ -327,10 +326,6 @@ STAGE PLANS:
                           className: VectorFileSinkOperator
                           native: false
         Reducer 7 
-            MergeJoin Vectorization:
-                enabled: false
-                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
-        Reducer 8 
             Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
