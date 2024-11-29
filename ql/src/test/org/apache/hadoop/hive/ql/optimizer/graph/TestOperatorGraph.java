@@ -15,10 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.ql.optimizer.graph;
 
 import static org.junit.Assert.assertEquals;
-
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -166,6 +166,7 @@ public class TestOperatorGraph {
     connectOperators(gby, fs);
 
     HiveConf conf = new HiveConf();
+    conf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
     SessionState.start(conf);
     QueryState queryState = QueryState.getNewQueryState(conf, null);
     SemanticAnalyzer sem = new SemanticAnalyzer(queryState);
