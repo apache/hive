@@ -205,7 +205,8 @@ public class TezCompiler extends TaskCompiler {
     // run Sorted dynamic partition optimization
     if(HiveConf.getBoolVar(procCtx.conf, HiveConf.ConfVars.DYNAMIC_PARTITIONING) &&
         HiveConf.getVar(procCtx.conf, HiveConf.ConfVars.DYNAMIC_PARTITIONING_MODE).equals("nonstrict") &&
-        !HiveConf.getBoolVar(procCtx.conf, HiveConf.ConfVars.HIVE_OPT_LIST_BUCKETING)) {
+        !HiveConf.getBoolVar(procCtx.conf, HiveConf.ConfVars.HIVE_OPT_LIST_BUCKETING) &&
+         HiveConf.getBoolVar(procCtx.conf, HiveConf.ConfVars.HIVE_CBO_ENABLED)) {
       perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
       new SortedDynPartitionOptimizer().transform(procCtx.parseContext);
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Sorted dynamic partition optimization");
