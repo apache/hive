@@ -280,6 +280,7 @@ public class TezJobMonitor {
             // best effort
           }
           console.printError("Execution has failed. stack trace: " + ExceptionUtils.getStackTrace(e));
+          diagnostics.append(e.getMessage());
           rc = 1;
           done = true;
         } else {
