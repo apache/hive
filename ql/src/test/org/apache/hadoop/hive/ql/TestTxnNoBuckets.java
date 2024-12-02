@@ -445,9 +445,9 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     Assert.assertEquals(2, BucketCodec.determineVersion(537001984).decodeWriterId(537001984));
     Assert.assertEquals(1, BucketCodec.determineVersion(536936448).decodeWriterId(536936448));
 
-    assertVectorized(shouldVectorize(), "update T set b = 88 where b = 80");
+    assertVectorized("update T set b = 88 where b = 80");
     runStatementOnDriver("update T set b = 88 where b = 80");
-    assertVectorized(shouldVectorize(), "delete from T where b = 8");
+    assertVectorized("delete from T where b = 8");
     runStatementOnDriver("delete from T where b = 8");
     String expected3[][] = {
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":1}\t1\t2",  "warehouse/t/HIVE_UNION_SUBDIR_1/000000_0"},
@@ -492,6 +492,11 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     };
     checkExpected(rs, expected4,"after major compact");
   }
+
+  protected void assertVectorized(String query) throws Exception {
+    assertMappersAreNotVectorized(query);
+  }
+
   @Test
   public void testInsertFromUnion() throws Exception {
     int[][] values = {{1,2},{2,4},{5,6},{6,8},{9,10}};

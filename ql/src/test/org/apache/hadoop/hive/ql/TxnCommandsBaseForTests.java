@@ -318,21 +318,6 @@ public abstract class TxnCommandsBaseForTests {
     throw new RuntimeException("Didn't get expected failure!");
   }
 
-  /**
-   * Runs Vectorized Explain on the query and checks if the plan is vectorized as expected
-   * @param vectorized {@code true} - assert that it's vectorized
-   */
-  void assertVectorized(boolean vectorized, String query) throws Exception {
-    List<String> rs = runStatementOnDriver("EXPLAIN VECTORIZATION DETAIL " + query);
-    for(String line : rs) {
-      if(line != null && line.contains("Execution mode: vectorized")) {
-        Assert.assertTrue("Was vectorized when it wasn't expected", vectorized);
-        return;
-      }
-    }
-    Assert.assertTrue("Din't find expected 'vectorized' in plan", !vectorized);
-  }
-
   protected void assertMappersAreVectorized(String query) throws Exception {
     if (!hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)) {
       return;
@@ -431,7 +416,11 @@ public abstract class TxnCommandsBaseForTests {
   protected void checkResult(String[][] expectedResult, String query, boolean isVectorized, String msg, Logger LOG) throws Exception{
     List<String> rs = runStatementOnDriver(query);
     checkExpected(rs, expectedResult, msg + (isVectorized ? " vect" : ""), LOG, !isVectorized);
-    assertVectorized(isVectorized, query);
+    if (isVectorized) {
+      assertMappersAreVectorized(query);
+    } else {
+      assertMappersAreNotVectorized(query);
+    }
   }
   void dropTables(String... tables) throws Exception {
     HiveConf queryConf = d.getQueryState().getConf();
