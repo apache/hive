@@ -345,7 +345,7 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
   'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"i","required":false,"type":"int"},{"id":2,"name":"s","required":false,"type":"string"}]}', 
   'current-snapshot-id'='#SnapshotId#', 
-  'current-snapshot-summary'='{"added-data-files":"1","added-records":"3","added-files-size":"628","changed-partition-count":"1","total-records":"3","total-files-size":"628","total-data-files":"1","total-delete-files":"0","total-position-deletes":"0","total-equality-deletes":"0","iceberg-version":"#Masked#"}', 
+  'current-snapshot-summary'='{"added-data-files":"1","added-records":"3","added-files-size":"#Masked#","changed-partition-count":"1","total-records":"3","total-files-size":"#Masked#","total-data-files":"1","total-delete-files":"0","total-position-deletes":"0","total-equality-deletes":"0","iceberg-version":"#Masked#"}', 
   'current-snapshot-timestamp-ms'='#Masked#', 
   'format-version'='2', 
   'iceberg.orc.files.only'='false', 

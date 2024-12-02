@@ -111,7 +111,8 @@ public class OTELExporter extends Thread {
                 .setStartTimestamp(lQuery.getBeginTime(), TimeUnit.MILLISECONDS).startSpan()
                 .setAttribute("QueryId", queryID)
                 .setAttribute("QueryString", lQuery.getQueryDisplay().getQueryString())
-                .setAttribute("UserName", lQuery.getUserName());
+                .setAttribute("UserName", lQuery.getUserName())
+                .setAttribute("ExecutionEngine", lQuery.getExecutionEngine());
         if (lQuery.getQueryDisplay().getErrorMessage() != null) {
           initSpan.setAttribute("ErrorMessage", lQuery.getQueryDisplay().getErrorMessage());
         }
@@ -168,7 +169,8 @@ public class OTELExporter extends Thread {
                 .setStartTimestamp(hQuery.getBeginTime(), TimeUnit.MILLISECONDS).startSpan()
                 .setAttribute("QueryId", hQueryId)
                 .setAttribute("QueryString", hQuery.getQueryDisplay().getQueryString())
-                .setAttribute("UserName", hQuery.getUserName());
+                .setAttribute("UserName", hQuery.getUserName())
+                .setAttribute("ExecutionEngine", hQuery.getExecutionEngine());
         if (hQuery.getQueryDisplay().getErrorMessage() != null) {
           initSpan.setAttribute("ErrorMessage", hQuery.getQueryDisplay().getErrorMessage());
         }
