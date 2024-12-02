@@ -117,6 +117,11 @@ public abstract class TxnCommandsBaseForTests {
   }
   void initHiveConf() {
     hiveConf = new HiveConfForTest(this.getClass());
+    // Multiple tests requires more than one buckets per write. Use a very small value for grouping size to create
+    // multiple mapper instances with FileSinkOperators. The number of buckets are depends on the size of the data
+    // written and the grouping size. Most test cases expects 2 buckets.
+    hiveConf.set("tez.grouping.max-size", "10");
+    hiveConf.set("tez.grouping.min-size", "1");
   }
 
   void setUpInternal() throws Exception {
@@ -161,11 +166,6 @@ public abstract class TxnCommandsBaseForTests {
     d.setMaxRows(10000);
     dropTables();
     setUpSchema();
-  }
-
-  protected void useSmallGrouping() {
-    hiveConf.set("tez.grouping.max-size", "10");
-    hiveConf.set("tez.grouping.min-size", "1");
   }
 
   protected void setUpSchema() throws Exception {
@@ -332,21 +332,11 @@ public abstract class TxnCommandsBaseForTests {
     }
     Assert.assertTrue("Din't find expected 'vectorized' in plan", !vectorized);
   }
-  /**
-   * Runs Vectorized Explain on the query and checks if the plan is vectorized as expected
-   */
-  protected void assertVectorized(String query) throws Exception {
-    List<String> rs = runStatementOnDriver("EXPLAIN VECTORIZATION DETAIL " + query);
-    for (String line : rs) {
-      if (line != null && line.contains("vectorized: false")) {
-        Assert.fail("Execution is not vectorized");
-        return;
-      }
-    }
-    Assert.fail("Didn't find expected 'vectorized' in plan");
-  }
 
   protected void assertMappersAreVectorized(String query) throws Exception {
+    if (!hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)) {
+      return;
+    }
     assertMapperExecutionMode(query, "Mapper was not vectorized: ",
             executionMode -> isBlank(executionMode) || !executionMode.contains("vectorized"));
   }

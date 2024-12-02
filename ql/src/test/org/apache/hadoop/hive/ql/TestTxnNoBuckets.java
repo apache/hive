@@ -62,7 +62,6 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
     setUpInternal();
     //see TestTxnNoBucketsVectorized for vectorized version
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
-    useSmallGrouping();
   }
 
   private boolean shouldVectorize() {

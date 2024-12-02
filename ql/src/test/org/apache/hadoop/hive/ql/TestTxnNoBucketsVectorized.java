@@ -18,10 +18,18 @@
 package org.apache.hadoop.hive.ql;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.BucketCodec;
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 public class TestTxnNoBucketsVectorized extends TestTxnNoBuckets {
   @Before
+  @Override
   public void setUp() throws Exception {
     setUpInternal();
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
