@@ -2434,6 +2434,9 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     // Keep an open txn which refers to the aborted txn.
     Context ctx = new Context(hiveConf);
     HiveTxnManager txnMgr = TxnManagerFactory.getTxnManagerFactory().getTxnManager(hiveConf);
+    // Txn is not considered committed or aborted until TXN_OPENTXN_TIMEOUT expires
+    // See MinOpenTxnIdWaterMarkFunction, OpenTxnTimeoutLowBoundaryTxnIdHandler
+    waitUntilAllTxnFinished();
     txnMgr.openTxn(ctx, "u1");
     txnMgr.getValidTxns();
 

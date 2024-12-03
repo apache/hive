@@ -28,11 +28,9 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.esotericsoftware.kryo.util.ObjectMap;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileSystem;
@@ -43,12 +41,13 @@ import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfForTest;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.entities.TxnStatus;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
-import org.apache.hadoop.hive.ql.lockmgr.DbTxnManagerEndToEndTestBase;
 import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -69,6 +68,8 @@ import org.slf4j.LoggerFactory;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.determineDatabaseProduct;
+import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
 
 public abstract class TxnCommandsBaseForTests {
   private static final Logger LOG = LoggerFactory.getLogger(TxnCommandsBaseForTests.class);
@@ -434,5 +435,21 @@ public abstract class TxnCommandsBaseForTests {
     Driver tmp = d;
     d = otherDriver;
     return tmp;
+  }
+
+  protected void waitUntilAllTxnFinished() throws Exception {
+    long openTxnTimeOutMillis = MetastoreConf.getTimeVar(
+            hiveConf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS);
+    while (getOpenTxnCount(openTxnTimeOutMillis) > 0) {
+      Thread.sleep(openTxnTimeOutMillis);
+    }
+  }
+
+  protected int getOpenTxnCount(long openTxnTimeOutMillis) throws Exception {
+    int counted = TestTxnDbUtil.countQueryAgent(hiveConf,
+            "select count(*) from TXNS where TXN_STATE = '" + TxnStatus.OPEN.getSqlConst() + "' " +
+                    "or TXN_STARTED >= (" + getEpochFn(determineDatabaseProduct(DatabaseProduct.DERBY_NAME, hiveConf)) +
+                    " - " + openTxnTimeOutMillis + ")");
+    return counted;
   }
 }
