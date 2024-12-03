@@ -205,7 +205,8 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
    * @throws Exception
    */
   private void testOrcPPD(boolean enablePPD) throws Exception {
-    boolean originalPpd = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_OPT_INDEX_FILTER);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_EXPLAIN_USER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_OPT_PPD, enablePPD);//enables PPD
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_OPT_INDEX_FILTER, enablePPD);//enables ORC PPD
     //create delta_0001_0001_0000 (should push predicate here)
     runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(new int[][]{{1, 2}, {3, 4}}));
@@ -264,7 +265,6 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     List<String> rs1 = runStatementOnDriver(query);
     int [][] resultData = new int[][] {{3, 5}, {5, 6}, {9, 10}};
     Assert.assertEquals("Update failed", stringifyValues(resultData), rs1);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_OPT_INDEX_FILTER, originalPpd);
   }
 
   static void assertExplainHasString(String string, List<String> queryPlan, String errMsg) {
