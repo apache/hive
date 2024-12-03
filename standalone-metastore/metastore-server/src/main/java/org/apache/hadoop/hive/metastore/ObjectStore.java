@@ -10306,30 +10306,29 @@ public class ObjectStore implements RawStore, Configurable {
         // Set the table properties
         // No need to check again if it exists.
         String dbname = table.getDbName();
-        String name = table.getTableName();
-        MTable oldt = mTable;
+        String tableName = table.getTableName();
         StatsSetupConst.setColumnStatsState(newParams, colNames);
-        boolean isTxn = TxnUtils.isTransactionalTable(oldt.getParameters());
+        boolean isTxn = TxnUtils.isTransactionalTable(mTable.getParameters());
         if (isTxn) {
           if (!areTxnStatsSupported) {
             StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
           } else {
-          String errorMsg = verifyStatsChangeCtx(TableName.getDbTable(dbname, name),
-            oldt.getParameters(), newParams, writeId, validWriteIds, true);
+            String errorMsg = verifyStatsChangeCtx(TableName.getDbTable(dbname, tableName),
+            mTable.getParameters(), newParams, writeId, validWriteIds, true);
           if (errorMsg != null) {
             throw new MetaException(errorMsg);
           }
-          if (!isCurrentStatsValidForTheQuery(oldt, validWriteIds, true)) {
+          if (!isCurrentStatsValidForTheQuery(mTable, validWriteIds, true)) {
             // Make sure we set the flag to invalid regardless of the current value.
             StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
             LOG.info("Removed COLUMN_STATS_ACCURATE from the parameters of the table "
-              + dbname + "." + name);
+              + dbname + "." + tableName);
           }
-          oldt.setWriteId(writeId);
+          mTable.setWriteId(writeId);
         }
       }
         try {
-          oldt.setParameters(newParams);
+          mTable.setParameters(newParams);
           success = true;
         }
         catch (NucleusDataStoreException e) {
