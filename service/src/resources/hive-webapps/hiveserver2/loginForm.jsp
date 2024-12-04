@@ -17,7 +17,9 @@
  * limitations under the License.
  */
 --%>
-<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8"
+  import="org.apache.hive.service.servlet.LoginServlet"
+%>
 <!--[if IE]>
 <!DOCTYPE html>
 <![endif]-->
@@ -44,7 +46,7 @@
                     <input id="password" name="password" type="password" class="form-control" placeholder="Password" required="required">
                 </div>
                  <%
-                        String status = (String)request.getAttribute("login_failure_message");
+                        String status = (String)request.getAttribute(LoginServlet.LOGIN_FAILURE_MESSAGE);
                         if(status != null) {
                  %>
                           <p style="color:red;"><%= status %></p>

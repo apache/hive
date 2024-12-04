@@ -20,6 +20,7 @@ package org.apache.hive.service.servlet;
 
 import org.apache.hive.service.auth.ldap.LdapAuthService;
 import org.apache.hive.service.server.HiveServer2;
+import org.eclipse.jetty.http.HttpMethod;
 
 import java.io.IOException;
 import javax.servlet.Filter;
@@ -64,7 +65,7 @@ public class LDAPAuthenticationFilter implements Filter {
     String method = request.getMethod();
     String servletPath = request.getServletPath();
     return LOGIN_FORM_URI.equals(servletPath) ||
-        "post".equalsIgnoreCase(method) && LOGIN_SERVLET_URI.equals(servletPath);
+        HttpMethod.POST.name().equalsIgnoreCase(method) && LOGIN_SERVLET_URI.equals(servletPath);
   }
 
   public void destroy() {
