@@ -40,6 +40,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -48,11 +49,16 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.Deadline;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
+import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.leader.LeaderElection;
+import org.apache.hadoop.hive.metastore.leader.LeaseLeaderElection;
 import org.apache.hadoop.hive.metastore.metasummary.MetaSummaryHandler;
 import org.apache.hadoop.hive.metastore.metasummary.MetaSummarySchema;
 import org.apache.hadoop.hive.metastore.metasummary.MetadataTableSummary;
 import org.apache.hadoop.hive.metastore.tools.MetaToolObjectStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
@@ -72,6 +78,9 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
   private long taskTimeout;
   private Integer recentUpdatedDays;
   private Integer maxNonNativeTables;
+  private Configuration configuration;
+  private static final TableName MUTEX = new TableName("__METATOOL__", "__METATOOL_METADATA_SUMMARY__TASK__",
+      "__metadata__summary__task__");
 
   @Override
   void execute() {
@@ -79,10 +88,30 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
     if (inputParams == null) {
       return;
     }
+
     ExecutorService service = Executors.newSingleThreadExecutor();
-    Future<Pair<MetaSummarySchema, List<MetadataTableSummary>>> resFuture =
-        service.submit(this::obtainAndFilterSummary);
-    try {
+    try (LeaderElection<TableName> election = new LeaseLeaderElection()) {
+      election.setName("MetaSummaryTask");
+      AtomicBoolean acquiredLock = new AtomicBoolean(false);
+      election.addStateListener(new LeaderElection.LeadershipStateListener() {
+        @Override
+        public void takeLeadership(LeaderElection election) throws Exception {
+          acquiredLock.set(true);
+        }
+        @Override
+        public void lossLeadership(LeaderElection election) throws Exception {
+          acquiredLock.set(false);
+        }
+      });
+      election.tryBeLeader(configuration, MUTEX);
+      if (!acquiredLock.get()) {
+        // The mutex has taken by others in the same warehouse, print the lock and return
+        System.out.println("Another metadata summary task is running in the same warehouse, skipping this one...");
+        showLocks();
+        return;
+      }
+      Future<Pair<MetaSummarySchema, List<MetadataTableSummary>>> resFuture =
+          service.submit(this::obtainAndFilterSummary);
       service.shutdown();
       Pair<MetaSummarySchema, List<MetadataTableSummary>> result =
           resFuture.get(taskTimeout, TimeUnit.MILLISECONDS);
@@ -124,11 +153,12 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
           " to -metadataSummary, only -json, -csv and -console are allowed");
       return null;
     }
+    this.configuration = getObjectStore().getConf();
     this.recentUpdatedDays = inputParams.length >= 3 ? Integer.parseInt(inputParams[2]) :
-        (int) MetastoreConf.getTimeVar(getObjectStore().getConf(), MetastoreConf.ConfVars.METADATA_SUMMARY_RECENT_UPDATED, TimeUnit.DAYS);
+        (int) MetastoreConf.getTimeVar(configuration, MetastoreConf.ConfVars.METADATA_SUMMARY_RECENT_UPDATED, TimeUnit.DAYS);
     this.maxNonNativeTables = inputParams.length >= 4 ? Integer.parseInt(inputParams[3]) : null;
     if (this.maxNonNativeTables == null) {
-      String val = MetastoreConf.getVar(getObjectStore().getConf(), MetastoreConf.ConfVars.METADATA_SUMMARY_MAX_NONNATIVE_TABLES);
+      String val = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.METADATA_SUMMARY_MAX_NONNATIVE_TABLES);
       if (!StringUtils.isEmpty(val)) {
         this.maxNonNativeTables = Integer.parseInt(val);
       }
@@ -408,5 +438,22 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
     super.setObjectStore(objectStore);
     this.taskTimeout = MetastoreConf.getTimeVar(objectStore.getConf(), MetastoreConf.ConfVars.METADATA_SUMMARY_TIMEOUT,
         TimeUnit.MILLISECONDS);
+  }
+
+  private void showLocks() throws Exception {
+    ShowLocksRequest request = new ShowLocksRequest();
+    request.setDbname(MUTEX.getDb());
+    request.setTablename(MUTEX.getTable());
+    ShowLocksResponse response = TxnUtils.getTxnStore(configuration).showLocks(request);
+    if (response.getLocks() != null) {
+      System.out.println("The host which holds the mutex is running the metadata summary task");
+      response.getLocks().forEach(lock -> {
+        StringBuilder builder = new StringBuilder("Mutex: ").append(MUTEX).append(", host: ")
+            .append(lock.getHostname()).append(", agent: ").append(lock.getAgentInfo()).append(", state: ")
+            .append(lock.getState()).append(", user: ").append(lock.getUser()).append(", acquired at: ")
+            .append(lock.getAcquiredat());
+        System.out.println(builder.toString());
+      });
+    }
   }
 }
