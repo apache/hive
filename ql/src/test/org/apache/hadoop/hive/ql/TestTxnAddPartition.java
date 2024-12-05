@@ -249,7 +249,7 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
     runStatementOnDriver("create table Tstage (a int, b int)  clustered by (a) into 2 " +
         "buckets stored as orc tblproperties('transactional'='false')");
 
-    runStatementOnDriver("insert into Tstage values(0,2),(1,4)");
+    runStatementOnDriver("insert into Tstage values(0,2),(2,4)");
     runStatementOnDriver("export table Tstage to '" + getWarehouseDir() + "/1'");
     FileSystem fs = FileSystem.get(hiveConf);
     fs.rename(new Path(getWarehouseDir() + "/1/data/000000_0"), new Path(getWarehouseDir() + "/1/data/part-m000"));
@@ -261,9 +261,9 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
     List<String> rs = runStatementOnDriver(
         "select ROW__ID, p, a, b, INPUT__FILE__NAME from T order by p, ROW__ID");
     String[][] expected = new String[][]{
+            {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t0\t2\t4",
+                    "warehouse/t/p=0/delta_0000001_0000001_0000/000000_0"},
         {"{\"writeid\":1,\"bucketid\":536936448,\"rowid\":0}\t0\t0\t2",
-            "warehouse/t/p=0/delta_0000001_0000001_0000/000001_0"},
-        {"{\"writeid\":1,\"bucketid\":536936448,\"rowid\":1}\t0\t1\t4",
             "warehouse/t/p=0/delta_0000001_0000001_0000/000001_0"}};
     checkExpected(rs, expected, "add partition (p=0)");
   }
