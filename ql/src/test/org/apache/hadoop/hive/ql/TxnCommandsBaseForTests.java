@@ -423,6 +423,10 @@ public abstract class TxnCommandsBaseForTests {
       assertMappersAreNotVectorized(query);
     }
   }
+  protected void checkResult(String[][] expectedResult, String query, String msg, Logger LOG) throws Exception{
+    List<String> rs = runStatementOnDriver(query);
+    checkExpected(rs, expectedResult, msg, LOG, true);
+  }
   void dropTables(String... tables) throws Exception {
     HiveConf queryConf = d.getQueryState().getConf();
     queryConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);

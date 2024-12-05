@@ -338,8 +338,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
             "t/delta_0000001_0000001_0000/bucket_00000_0"},
         {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t1\t4",
             "t/delta_0000002_0000002_0000/bucket_00000_0"}};
-    checkResult(expected, testQuery, false, "check data", LOG);
-
+    checkResult(expected, testQuery, "check data", LOG);
 
     txnMgr2 = swapTxnManager(txnMgr1);
     driver2 = swapDrivers(driver1);
