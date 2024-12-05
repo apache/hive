@@ -33,6 +33,8 @@ import java.util.stream.IntStream;
 public class TestLlapThreadLocalStatistics {
 
   private static final ThreadMXBean mxBean = LlapUtil.initThreadMxBean();
+  private static final String FILE = "file";
+  private static final String HDFS = "hdfs";
 
   @Test
   public void testEmptyStatistics() {
@@ -57,29 +59,29 @@ public class TestLlapThreadLocalStatistics {
   @Test
   public void testCountersMergedForTheSameScheme() {
     LlapThreadLocalStatistics stats = new LlapThreadLocalStatistics(mxBean,
-        createMockStatistics(new String[]{"file", "hdfs", "hdfs"}, new Integer[]{1, 1, 1}));
-    Assert.assertEquals(1, stats.schemeToThreadLocalStats.get("file").bytesRead);
-    Assert.assertEquals(2, stats.schemeToThreadLocalStats.get("hdfs").bytesRead);
+        createMockStatistics(new String[]{FILE, HDFS, HDFS}, new Integer[]{1, 1, 1}));
+    Assert.assertEquals(1, stats.schemeToThreadLocalStats.get(FILE).bytesRead);
+    Assert.assertEquals(2, stats.schemeToThreadLocalStats.get(HDFS).bytesRead);
   }
 
   @Test
   public void testCountersBeforeAfter() {
     LlapThreadLocalStatistics before = new LlapThreadLocalStatistics(mxBean,
-        createMockStatistics(new String[]{"file", "hdfs", "hdfs"}, new Integer[]{1, 1, 1}));
+        createMockStatistics(new String[]{FILE, HDFS, HDFS}, new Integer[]{1, 1, 1}));
     LlapThreadLocalStatistics after = new LlapThreadLocalStatistics(mxBean,
-        createMockStatistics(new String[]{"file", "hdfs", "hdfs"}, new Integer[]{3, 1, 4}));
+        createMockStatistics(new String[]{FILE, HDFS, HDFS}, new Integer[]{3, 1, 4}));
 
-    Assert.assertEquals(1, before.schemeToThreadLocalStats.get("file").bytesRead);
-    Assert.assertEquals(2, before.schemeToThreadLocalStats.get("hdfs").bytesRead);
-    Assert.assertEquals(3, after.schemeToThreadLocalStats.get("file").bytesRead);
-    Assert.assertEquals(5, after.schemeToThreadLocalStats.get("hdfs").bytesRead);
+    Assert.assertEquals(1, before.schemeToThreadLocalStats.get(FILE).bytesRead);
+    Assert.assertEquals(2, before.schemeToThreadLocalStats.get(HDFS).bytesRead);
+    Assert.assertEquals(3, after.schemeToThreadLocalStats.get(FILE).bytesRead);
+    Assert.assertEquals(5, after.schemeToThreadLocalStats.get(HDFS).bytesRead);
 
     after.subtract(before);
 
     // file: 3 - 1
-    Assert.assertEquals(2, after.schemeToThreadLocalStats.get("file").bytesRead);
+    Assert.assertEquals(2, after.schemeToThreadLocalStats.get(FILE).bytesRead);
     // hdfs: (1 + 4) - (1 + 1)
-    Assert.assertEquals(3, after.schemeToThreadLocalStats.get("hdfs").bytesRead);
+    Assert.assertEquals(3, after.schemeToThreadLocalStats.get(HDFS).bytesRead);
   }
 
   private List<FileSystem.Statistics> createMockStatistics(String[] schemes, Integer[] values) {
