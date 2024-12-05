@@ -134,8 +134,9 @@ public class DriverContext {
     // we don't want to nullify runtimeContext if this method is called with plan=null, which is the case when e.g.
     // driver.releasePlan() tries to release resources/objects that are known to be heavy
     if (plan != null) {
-      TezTask task = Utilities.getFirstTezTask(plan.getRootTasks()).orElse(null);
-      this.runtimeContext = task == null ? null : task.getRuntimeContext();
+      this.runtimeContext = Utilities.getFirstTezTask(plan.getRootTasks())
+          .map(TezTask::getRuntimeContext)
+          .orElse(null);
     }
   }
 

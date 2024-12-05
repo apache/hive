@@ -660,7 +660,7 @@ public class TezTask extends Task<TezWork> {
         console.printInfo("Tez session was closed. Reopening...");
         sessionStateRef.value = sessionState = getNewTezSessionOnError(sessionState);
         console.printInfo("Session re-established.");
-        dagClient = submitInternal(dag, sessionState);
+        dagClient = sessionState.getSession().submitDAG(dag);
       }
     } catch (Exception e) {
       if (this.isShutdown) {
@@ -673,7 +673,7 @@ public class TezTask extends Task<TezWork> {
         console.printInfo("Dag submit failed due to " + e.getMessage() + " stack trace: "
             + Arrays.toString(e.getStackTrace()) + " retrying...");
         sessionStateRef.value = sessionState = getNewTezSessionOnError(sessionState);
-        dagClient = submitInternal(dag, sessionState);
+        dagClient = sessionState.getSession().submitDAG(dag);
       } catch (Exception retryException) {
         // we failed to submit after retrying.
         // If this is a non-pool session, destroy it.
@@ -684,14 +684,8 @@ public class TezTask extends Task<TezWork> {
     }
 
     perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
+    runtimeContext.initFromTezClient(sessionState.getSession());
     return new SyncDagClient(dagClient);
-  }
-
-  private DAGClient submitInternal(DAG dag, TezSessionState sessionState) throws TezException, IOException {
-    TezClient tezClient = sessionState.getSession();
-    DAGClient dagClient = tezClient.submitDAG(dag);
-    runtimeContext.initFromTezClient(tezClient);
-    return dagClient;
   }
 
   private void sessionDestroyOrReturnToPool(Ref<TezSessionState> sessionStateRef,
