@@ -82,6 +82,7 @@ public abstract class TxnCommandsBaseForTests {
   protected HiveConf hiveConf;
   protected Driver d;
   protected TxnStore txnHandler;
+  private DatabaseProduct databaseProduct;
 
   public enum Table {
     ACIDTBL("acidTbl"),
@@ -123,6 +124,7 @@ public abstract class TxnCommandsBaseForTests {
     // written and the grouping size. Most test cases expects 2 buckets.
     hiveConf.set("tez.grouping.max-size", "10");
     hiveConf.set("tez.grouping.min-size", "1");
+    databaseProduct = determineDatabaseProduct(DatabaseProduct.DERBY_NAME, hiveConf);
   }
 
   void setUpInternal() throws Exception {
@@ -450,10 +452,9 @@ public abstract class TxnCommandsBaseForTests {
   }
 
   protected int getOpenTxnCount(long openTxnTimeOutMillis) throws Exception {
-    int counted = TestTxnDbUtil.countQueryAgent(hiveConf,
+    return TestTxnDbUtil.countQueryAgent(hiveConf,
             "select count(*) from TXNS where TXN_STATE = '" + TxnStatus.OPEN.getSqlConst() + "' " +
-                    "or TXN_STARTED >= (" + getEpochFn(determineDatabaseProduct(DatabaseProduct.DERBY_NAME, hiveConf)) +
+                    "or TXN_STARTED >= (" + getEpochFn(databaseProduct) +
                     " - " + openTxnTimeOutMillis + ")");
-    return counted;
   }
 }
