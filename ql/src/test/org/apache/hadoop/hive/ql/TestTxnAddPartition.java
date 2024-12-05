@@ -97,8 +97,7 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
         " PARTITION (p=1) location '" + getWarehouseDir() + "/2/data'" +
         " PARTITION (p=2)");
 
-    String testQuery = isVectorized ? "select ROW__ID, p, a, b from T order by p, ROW__ID" :
-        "select ROW__ID, p, a, b, INPUT__FILE__NAME from T order by p, ROW__ID";
+    String testQuery = "select ROW__ID, p, a, b, INPUT__FILE__NAME from T order by p, ROW__ID";
     String[][] expected = new String[][]{
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t0\t0\t2",
             "warehouse/t/p=0/delta_0000001_0000001_0000/000000_0"},
@@ -175,8 +174,7 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
         " PARTITION (p=1) location '" + getWarehouseDir() + "/2/data'" +
         " PARTITION (p=2)");
 
-    String testQuery = isVectorized ? "select p, a, b from T order by p, a, b" :
-        "select p, a, b, INPUT__FILE__NAME from T order by p, a, b";
+    String testQuery = "select p, a, b, INPUT__FILE__NAME from T order by p, a, b";
     String[][] expected = new String[][]{
         {"0\t0\t2", "warehouse/t/p=0/delta_0000001_0000001_0000/000000_0"},
         {"0\t0\t4", "warehouse/t/p=0/delta_0000001_0000001_0000/000000_0"},
@@ -232,7 +230,7 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
   }
 
   private void checkExpected(List<String> rs, String[][] expected, String msg) {
-    super.checkExpected(rs, expected, msg, LOG, true);
+    super.checkExpected(rs, expected, msg, LOG);
   }
 
   /**

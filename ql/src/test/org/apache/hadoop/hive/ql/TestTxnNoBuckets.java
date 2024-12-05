@@ -766,7 +766,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     assertMappersAreNotVectorized(query);
   }
   private void checkExpected(List<String> rs, String[][] expected, String msg) {
-    super.checkExpected(rs, expected, msg, LOG, true);
+    super.checkExpected(rs, expected, msg, LOG);
   }
   /**
    * HIVE-17900

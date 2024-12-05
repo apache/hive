@@ -320,8 +320,7 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
     //load into existing empty table T
     runStatementOnDriver("import table T from '" + getWarehouseDir() + "/1'");
 
-    String testQuery = isVectorized ? "select ROW__ID, a, b from T order by ROW__ID" :
-        "select ROW__ID, a, b, INPUT__FILE__NAME from T order by ROW__ID";
+    String testQuery = "select ROW__ID, a, b, INPUT__FILE__NAME from T order by ROW__ID";
     String[][] expected = new String[][] {
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
             "t/delta_0000001_0000001_0000/000000_0"},

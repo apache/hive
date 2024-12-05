@@ -387,7 +387,7 @@ public abstract class TxnCommandsBaseForTests {
     }
     Assert.assertEquals("Unexpected file list", expectedFiles, actualFiles);
   }
-  void checkExpected(List<String> rs, String[][] expected, String msg, Logger LOG, boolean checkFileName) {
+  void checkExpected(List<String> rs, String[][] expected, String msg, Logger LOG) {
     LOG.warn(testName.getMethodName() + ": read data(" + msg + "): ");
     logResult(LOG, rs);
     Assert.assertEquals(testName.getMethodName() + ": " + msg + "; " + rs,
@@ -395,9 +395,9 @@ public abstract class TxnCommandsBaseForTests {
     //verify data and layout
     for(int i = 0; i < expected.length; i++) {
       Assert.assertTrue("Actual line (data) " + i + " data: " + rs.get(i) + "; expected " + expected[i][0], rs.get(i).startsWith(expected[i][0]));
-      if(checkFileName) {
+      if (expected.length == 2) {
         Assert.assertTrue("Actual line(file) " + i + " file: " + rs.get(i),
-            rs.get(i).endsWith(expected[i][1]) || rs.get(i).matches(expected[i][1]));
+                rs.get(i).endsWith(expected[i][1]) || rs.get(i).matches(expected[i][1]));
       }
     }
   }
@@ -416,7 +416,7 @@ public abstract class TxnCommandsBaseForTests {
    */
   protected void checkResult(String[][] expectedResult, String query, boolean isVectorized, String msg, Logger LOG) throws Exception{
     List<String> rs = runStatementOnDriver(query);
-    checkExpected(rs, expectedResult, msg + (isVectorized ? " vect" : ""), LOG, !isVectorized);
+    checkExpected(rs, expectedResult, msg + (isVectorized ? " vect" : ""), LOG);
     if (isVectorized) {
       assertMappersAreVectorized(query);
     } else {
@@ -425,7 +425,7 @@ public abstract class TxnCommandsBaseForTests {
   }
   protected void checkResult(String[][] expectedResult, String query, String msg, Logger LOG) throws Exception{
     List<String> rs = runStatementOnDriver(query);
-    checkExpected(rs, expectedResult, msg, LOG, true);
+    checkExpected(rs, expectedResult, msg, LOG);
   }
   void dropTables(String... tables) throws Exception {
     HiveConf queryConf = d.getQueryState().getConf();

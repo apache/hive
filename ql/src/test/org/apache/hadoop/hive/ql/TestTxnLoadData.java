@@ -108,8 +108,7 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     // 'data' is created by export command/
     runStatementOnDriver("load data local inpath '" + getWarehouseDir() + "/1/data' into table T");
 
-    String testQuery = isVectorized ? "select ROW__ID, a, b from T order by ROW__ID" :
-      "select ROW__ID, a, b, INPUT__FILE__NAME from T order by ROW__ID";
+    String testQuery = "select ROW__ID, a, b, INPUT__FILE__NAME from T order by ROW__ID";
     String[][] expected = new String[][]{
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "t/delta_0000001_0000001_0000/000000_0"},
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "t/delta_0000001_0000001_0000/000000_0"}};
@@ -193,8 +192,7 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     // 'data' is created by export command/
     runStatementOnDriver("load data local inpath '" + getWarehouseDir() + "/1/data' into table T");
 
-    String testQuery = isVectorized ? "select ROW__ID, a, b from T order by ROW__ID" :
-      "select ROW__ID, a, b, INPUT__FILE__NAME from T order by ROW__ID";
+    String testQuery = "select ROW__ID, a, b, INPUT__FILE__NAME from T order by ROW__ID";
     String[][] expected = new String[][] {
         //normal insert
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t0\t2", "t/delta_0000001_0000001_0000/bucket_00000_0"},
@@ -271,8 +269,7 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     // (with 000000_0, 000000_0_copy_1, 000000_0_copy_2)
     runStatementOnDriver("load data local inpath '" + getWarehouseDir() + "/1/data' into table T");
 
-    String testQuery = isVectorized ? "select ROW__ID, a, b from T order by ROW__ID" :
-      "select ROW__ID, a, b, INPUT__FILE__NAME from T order by ROW__ID";
+    String testQuery = "select ROW__ID, a, b, INPUT__FILE__NAME from T order by ROW__ID";
 /*
 {"writeid":0,"bucketid":536870912,"rowid":0}     0       2/000000_0
 {"writeid":0,"bucketid":536870912,"rowid":1}     0       4/000000_0
@@ -404,7 +401,7 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
   }
 
   private void checkExpected(List<String> rs, String[][] expected, String msg) {
-    super.checkExpected(rs, expected, msg, LOG, true);
+    super.checkExpected(rs, expected, msg, LOG);
   }
   
   @Test
@@ -438,8 +435,7 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     runStatementOnDriver("load data local inpath '" + getWarehouseDir() + "/1/data' into table T");
     runStatementOnDriver("COMMIT");
 
-    String testQuery = isVectorized ? "select ROW__ID, a, b from T order by ROW__ID" :
-      "select ROW__ID, a, b, INPUT__FILE__NAME from T order by ROW__ID";
+    String testQuery = "select ROW__ID, a, b, INPUT__FILE__NAME from T order by ROW__ID";
     String[][] expected = new String[][] {
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "t/delta_0000001_0000001_0000/bucket_00000_0"},
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "t/delta_0000001_0000001_0000/bucket_00000_0"},

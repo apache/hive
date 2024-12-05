@@ -174,14 +174,12 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
 
     boolean isVectorized =
         hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
-    String testQuery = isVectorized ?
-        "select ROW__ID, a, b from T order by a, b" :
-        "select ROW__ID, a, b, INPUT__FILE__NAME from T order by a, b";
+    String testQuery = "select ROW__ID, a, b, INPUT__FILE__NAME from T order by a, b";
     String[][] expected = new String[][]{
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t4\t5",
-            "warehouse/t/delta_0000001_0000001_0000/bucket_00000"},
+            "warehouse/t/delta_0000001_0000001_0000/bucket_00000_0"},
         {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t4\t6",
-            "warehouse/t/delta_0000002_0000002_0000/bucket_00000"}};
+            "warehouse/t/delta_0000002_0000002_0000/bucket_00000_0"}};
     checkResult(expected, testQuery, isVectorized, "after delete", LOG);
 
     runStatementOnDriver("alter table T compact 'MAJOR'");
@@ -197,9 +195,9 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
 
     String[][] expected2 = new String[][]{
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t4\t5",
-            "warehouse/t/base_0000001/bucket_00000"},
+            "warehouse/t/base_0000003_v0000012/bucket_00000"},
         {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t4\t6",
-            "warehouse/t/base_0000002/bucket_00000"}};
+            "warehouse/t/base_0000003_v0000012/bucket_00000"}};
     checkResult(expected2, testQuery, isVectorized, "after compaction", LOG);
   }
   /**
@@ -256,17 +254,17 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
    */
   @Test
   public void testSdpoBucketed() throws Exception {
-    testSdpoBucketed(true, true, 1);
-    testSdpoBucketed(true, false, 1);
-    testSdpoBucketed(false, true, 1);
-    testSdpoBucketed(false, false,1);
+    testSdpoBucketed(true, 1);
+    testSdpoBucketed(true, 1);
+    testSdpoBucketed(false, 1);
+    testSdpoBucketed(false, 1);
 
-    testSdpoBucketed(true, true, 2);
-    testSdpoBucketed(true, false, 2);
-    testSdpoBucketed(false, true, 2);
-    testSdpoBucketed(false, false,2);
+    testSdpoBucketed(true, 2);
+    testSdpoBucketed(true, 2);
+    testSdpoBucketed(false, 2);
+    testSdpoBucketed(false, 2);
   }
-  private void testSdpoBucketed(boolean isVectorized, boolean isSdpo, int bucketing_version)
+  private void testSdpoBucketed(boolean isVectorized, int bucketing_version)
       throws Exception {
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
     runStatementOnDriver("drop table if exists acid_uap");
@@ -279,9 +277,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
         "values (1, 'bah'),(2, 'yah')");
     runStatementOnDriver("select a,b, ds from acid_uap order by a,b, ds");
 
-    String testQuery = isVectorized ?
-        "select ROW__ID, a, b, ds from acid_uap order by ds, a, b" :
-        "select ROW__ID, a, b, ds, INPUT__FILE__NAME from acid_uap order by ds, a, b";
+    String testQuery = "select ROW__ID, a, b, ds, INPUT__FILE__NAME from acid_uap order by ds, a, b";
     String[][] expected = new String[][]{
         {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":0}\t1\tbah\ttoday",
             "warehouse/acid_uap/ds=today/delta_0000002_0000002_0000/bucket_00001_0"},
