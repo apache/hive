@@ -91,7 +91,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
             "s/delta_0000001_0000001_0000/bucket_00000_0"},
         {"{\"writeid\":2,\"bucketid\":536870913,\"rowid\":0}\t4\t6",
             "s/delta_0000002_0000002_0001/bucket_00000_0"}};
-    checkResult(expected, testQuery, false, "check data", LOG);
+    checkResult(expected, testQuery, "check data", LOG);
 
 
     Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(hiveConf,
