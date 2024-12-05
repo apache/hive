@@ -738,7 +738,8 @@ public class Driver implements IDriver {
   // Close and release resources within a running query process. Since it runs under
   // driver state COMPILING, EXECUTING or INTERRUPT, it would not have race condition
   // with the releases probably running in the other closing thread.
-  private int closeInProcess(boolean destroyed) {
+  @VisibleForTesting
+  int closeInProcess(boolean destroyed) {
     releaseTaskQueue();
     releasePlan();
     releaseCachedResult();
@@ -823,6 +824,8 @@ public class Driver implements IDriver {
           queryCache.clear();
         }
         queryState.disableHMSCache();
+        // Reset the resourceMap to ensure that previous execution's data is not reused during a retry.
+        queryState.clearResourceMap();
         // Remove any query state reference from the session state
         SessionState.get().removeQueryState(queryState.getQueryId());
       }

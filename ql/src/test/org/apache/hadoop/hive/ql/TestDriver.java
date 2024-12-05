@@ -86,6 +86,33 @@ public class TestDriver {
     }
   }
 
+  @Test
+  public void testResourceMapIsClearedAfterCloseInProcess() {
+    SessionState sessionState = SessionState.start(conf);
+
+    Driver driver = getDriver();
+    QueryState queryState = driver.getQueryState();
+
+    // add the queryState object to SessionState
+    String queryId = queryState.getQueryId();
+    sessionState.addQueryState(queryState.getQueryId(), queryState);
+    QueryState sessionQueryStateObject = SessionState.get().getQueryState(queryId);
+
+    // Add a resource to the resourceMap of the queryState and assert that the resource was successfully added.
+    queryState.addResource("test_resource1", "test_value1");
+    Assert.assertEquals("test_value1", driver.getQueryState().getResource("test_resource1"));
+
+    // Invoke closeInProcess to clear the resourceMap
+    driver.closeInProcess(false);
+
+    /* Verify:
+    1. The queryState object in SessionState remains the same (by hashcode)
+    2. The previously added resource is removed after closeInProcess is invoked
+    */
+    Assert.assertEquals(sessionQueryStateObject, driver.getQueryState());
+    Assert.assertNull(driver.getQueryState().getResource("test_resource1"));
+  }
+
   private Driver getDriver() {
     QueryInfo queryInfo = new QueryInfo(null, null, null, null, null);
     return new Driver(new QueryState.Builder().withHiveConf(conf).build(), queryInfo, new DummyTxnManager());
