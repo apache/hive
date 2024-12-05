@@ -26,22 +26,15 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Date;
-import java.util.stream.Collectors;
 
 import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.metastore.api.Schema;
-import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
-import org.apache.hadoop.hive.ql.processors.ShowProcesslistProcessor;
-import org.apache.hadoop.hive.ql.session.ProcessListInfo;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.ServiceUtils;
 import org.apache.hive.service.cli.FetchOrientation;
@@ -51,13 +44,12 @@ import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
-import org.apache.hive.service.cli.session.SessionManager;
 
 /**
  * Executes a HiveCommand
  */
 public class HiveCommandOperation extends ExecuteStatementOperation {
-  private final CommandProcessor commandProcessor;
+  protected final CommandProcessor commandProcessor;
   private TableSchema resultSchema = null;
 
   /**
@@ -118,15 +110,6 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
       String[] tokens = command.split("\\s");
       String commandArgs = command.substring(tokens[0].length()).trim();
 
-      // For ShowProcesslistProcessor , session and operation level details  are fetched
-      // from SessionManager which can not be accessed from commandProcessor. So, we need to create DTO here..
-      if (commandProcessor instanceof ShowProcesslistProcessor) {
-        List<ProcessListInfo> liveQueries = getLiveQueryInfos(parentSession);
-        ShowProcesslistProcessor showProcesslistProcessor = (ShowProcesslistProcessor) commandProcessor;
-        if (liveQueries != null) {
-          showProcesslistProcessor.setup(liveQueries);
-        }
-      }
       CommandProcessorResponse response = commandProcessor.run(commandArgs);
       Schema schema = response.getSchema();
       if (schema != null) {
@@ -147,38 +130,6 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
       throw new HiveSQLException("Error running query: " + e.toString(), e);
     }
     setState(OperationState.FINISHED);
-  }
-
-  private List<ProcessListInfo> getLiveQueryInfos(HiveSession parentSession) {
-    SessionManager sessionManager = parentSession.getSessionManager();
-    if (sessionManager == null) {
-      return null;
-    }
-    long currentTime = System.currentTimeMillis();
-    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-    Collection<Operation> operations = sessionManager.getOperations();
-    return operations.stream()
-        .filter(op -> op instanceof SQLOperation) // Filter for SQLOperation instances
-        .map(op -> {
-          HiveSession session = op.getParentSession();
-          QueryInfo query = sessionManager.getOperationManager()
-              .getQueryInfo(op.getHandle().getHandleIdentifier().toString());
-
-          return new ProcessListInfo.Builder()
-              .setUserName(session.getUserName())
-              .setIpAddr(session.getIpAddress())
-              .setSessionId(session.getSessionHandle().getHandleIdentifier().toString())
-              .setSessionActiveTime((currentTime - session.getCreationTime()) / 1000)
-              .setSessionIdleTime((currentTime - session.getLastAccessTime()) / 1000)
-              .setQueryId(op.getQueryId())
-              .setExecutionEngine(query.getExecutionEngine())
-              .setBeginTime(formatter.format(new Date(query.getBeginTime())))
-              .setRuntime(query.getRuntime() == null ? "Not finished" : String.valueOf(query.getRuntime() / 1000))
-              .setElapsedTime(query.getElapsedTime() / 1000)
-              .setState(query.getState())
-              .build();
-        })
-        .collect(Collectors.toList());
   }
 
   /* (non-Javadoc)

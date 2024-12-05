@@ -24,6 +24,7 @@ import static org.apache.hive.service.cli.operation.hplsql.HplSqlQueryExecutor.Q
 import java.sql.SQLException;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.processors.ShowProcesslistProcessor;
 import org.apache.hive.service.cli.operation.hplsql.BeelineConsole;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -94,6 +95,8 @@ public abstract class ExecuteStatementOperation extends Operation {
       // runAsync, queryTimeout makes sense only for a SQLOperation
       // Pass the original statement to SQLOperation as sql parser can remove comments by itself
       return new SQLOperation(parentSession, statement, confOverlay, runAsync, queryTimeout, hplSqlMode());
+    } else if (processor instanceof ShowProcesslistProcessor) {
+      return new ShowProcessListOperation(parentSession,cleanStatement,processor,confOverlay);
     }
     return new HiveCommandOperation(parentSession, cleanStatement, processor, confOverlay);
   }
