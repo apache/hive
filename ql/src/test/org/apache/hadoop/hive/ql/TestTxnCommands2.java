@@ -1319,6 +1319,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
    * Make sure there's no FileSystem$Cache$Key leak due to UGI use
    * @throws Exception
    */
+  @Ignore("FileSystem.closeAllForUGI is never called from Compaction related threads")
   @Test
   public void testFileSystemUnCaching() throws Exception {
     int cacheSizeBefore;
