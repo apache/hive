@@ -63,15 +63,15 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
 
 
   @Test
-  public void addPartition() throws Exception {
-
-    addPartition(false);
+  public void testAddPartition() throws Exception {
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+    addPartition();
   }
 
   @Test
-  public void addPartitionVectorized() throws Exception {
+  public void testAddPartitionVectorized() throws Exception {
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
-    addPartition(true);
+    addPartition();
   }
 
   /**
@@ -80,7 +80,7 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
    * adding partition when it already exists
    * adding partition when it already exists with "if not exists"
    */
-  private void addPartition(boolean isVectorized) throws Exception {
+  private void addPartition() throws Exception {
     runStatementOnDriver("drop table if exists T");
     runStatementOnDriver("drop table if exists Tstage");
     runStatementOnDriver("create table T (a int, b int) partitioned by (p int) stored as orc" +
@@ -107,7 +107,7 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
             "warehouse/t/p=1/delta_0000001_0000001_0000/000000_0"},
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t1\t0\t4",
             "warehouse/t/p=1/delta_0000001_0000001_0000/000000_0"}};
-    checkResult(expected, testQuery, isVectorized, "add 2 parts w/data and 1 empty", LOG);
+    checkResult(expected, testQuery, "add 2 parts w/data and 1 empty", LOG);
 
     runStatementOnDriver("export table Tstage to '" + getWarehouseDir() + "/3'");
     //should be an error since p=3 exists
@@ -135,18 +135,18 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
             "warehouse/t/p=3/delta_0000003_0000003_0000/000000_0"},
         {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":1}\t3\t0\t4",
             "warehouse/t/p=3/delta_0000003_0000003_0000/000000_0"}};
-    checkResult(expected2, testQuery, isVectorized, "add 2 existing parts and 1 empty", LOG);
+    checkResult(expected2, testQuery, "add 2 existing parts and 1 empty", LOG);
   }
 
   @Test
-  public void addPartitionMM() throws Exception {
-    addPartitionMM(false);
+  public void testAddPartitionMM() throws Exception {
+    addPartitionMM();
   }
 
   @Test
-  public void addPartitionMMVectorized() throws Exception {
+  public void testAddPartitionMMVectorized() throws Exception {
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
-    addPartitionMM(true);
+    addPartitionMM();
   }
 
   /**
@@ -156,7 +156,7 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
    * adding partition when it already exists
    * adding partition when it already exists with "if not exists"
    */
-  private void addPartitionMM(boolean isVectorized) throws Exception {
+  private void addPartitionMM() throws Exception {
     runStatementOnDriver("drop table if exists T");
     runStatementOnDriver("drop table if exists Tstage");
 
@@ -180,7 +180,7 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
         {"0\t0\t4", "warehouse/t/p=0/delta_0000001_0000001_0000/000000_0"},
         {"1\t0\t2", "warehouse/t/p=1/delta_0000001_0000001_0000/000000_0"},
         {"1\t0\t4", "warehouse/t/p=1/delta_0000001_0000001_0000/000000_0"}};
-    checkResult(expected, testQuery, isVectorized, "add 2 parts w/data and 1 empty", LOG);
+    checkResult(expected, testQuery, "add 2 parts w/data and 1 empty", LOG);
 
     runStatementOnDriver("export table Tstage to '" + getWarehouseDir() + "/3'");
     //should be an error since p=3 exists
@@ -201,7 +201,7 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
         {"1\t0\t4", "warehouse/t/p=1/delta_0000001_0000001_0000/000000_0"},
         {"3\t0\t2", "warehouse/t/p=3/delta_0000003_0000003_0000/000000_0"},
         {"3\t0\t4", "warehouse/t/p=3/delta_0000003_0000003_0000/000000_0"}};
-    checkResult(expected2, testQuery, isVectorized, "add 2 existing parts and 1 empty", LOG);
+    checkResult(expected2, testQuery, "add 2 existing parts and 1 empty", LOG);
   }
 
   @Test

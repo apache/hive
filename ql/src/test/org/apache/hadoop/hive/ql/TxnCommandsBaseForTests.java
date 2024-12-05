@@ -364,7 +364,9 @@ public abstract class TxnCommandsBaseForTests {
       }
       Map<String, Object> mapVertex = (Map<String, Object>) vertexEntry.getValue();
       String executionMode = (String) mapVertex.get("Execution mode");
-      Assert.assertTrue(message + rs.get(0), predicate.test(executionMode));
+      boolean vectorized = isNotBlank(executionMode) && executionMode.contains("vectorized");
+      Assert.assertTrue(message + rs.get(0),
+              hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED) ^ vectorized);
     }
   }
   /**
@@ -416,18 +418,14 @@ public abstract class TxnCommandsBaseForTests {
    * which will currently make the query non-vectorizable.  This means we can't check the file name
    * for vectorized version of the test.
    */
-  protected void checkResult(String[][] expectedResult, String query, boolean isVectorized, String msg, Logger LOG) throws Exception{
+  protected void checkResult(String[][] expectedResult, String query, String msg, Logger LOG) throws Exception{
     List<String> rs = runStatementOnDriver(query);
-    checkExpected(rs, expectedResult, msg + (isVectorized ? " vect" : ""), LOG);
-    if (isVectorized) {
+    checkExpected(rs, expectedResult, msg + (shouldVectorize() ? " vect" : ""), LOG);
+    if (shouldVectorize()) {
       assertMappersAreVectorized(query);
     } else {
       assertMappersAreNotVectorized(query);
     }
-  }
-  protected void checkResult(String[][] expectedResult, String query, String msg, Logger LOG) throws Exception{
-    List<String> rs = runStatementOnDriver(query);
-    checkExpected(rs, expectedResult, msg, LOG);
   }
   void dropTables(String... tables) throws Exception {
     HiveConf queryConf = d.getQueryState().getConf();
@@ -456,5 +454,9 @@ public abstract class TxnCommandsBaseForTests {
             "select count(*) from TXNS where TXN_STATE = '" + TxnStatus.OPEN.getSqlConst() + "' " +
                     "or TXN_STARTED >= (" + getEpochFn(databaseProduct) +
                     " - " + openTxnTimeOutMillis + ")");
+  }
+
+  protected boolean shouldVectorize() {
+    return hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
   }
 }

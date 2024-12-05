@@ -63,10 +63,6 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
     //see TestTxnNoBucketsVectorized for vectorized version
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
   }
-
-  private boolean shouldVectorize() {
-    return hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
-  }
   /**
    * Tests that Acid can work with un-bucketed tables.
    */
@@ -172,7 +168,6 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
     checkResult(expected,
         "select ROW__ID, c1, c2, c3" + (shouldVectorize() ? "" : ", INPUT__FILE__NAME")
             + " from " + NO_BUCKETS_TBL_NAME + " order by c1, c2, c3",
-        shouldVectorize(),
         "After Major Compaction", LOG);
 
     expectedFiles.clear();
