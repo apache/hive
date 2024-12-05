@@ -133,6 +133,10 @@ public class TestTxnConcatenate extends TxnCommandsBaseForTests {
 
   @Test
   public void testConcatenateMM() throws Exception {
+    // Only one bucket is expected in this test
+    hiveConf.set("tez.grouping.max-size", "1024");
+    hiveConf.set("tez.grouping.min-size", "1");
+
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY, true);
     dropTables("T");
     runStatementOnDriver("create table T(a int, b int)");
