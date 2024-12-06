@@ -34,9 +34,4 @@ public class TestTxnNoBucketsVectorized extends TestTxnNoBuckets {
     setUpInternal();
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
   }
-
-  @Override
-  protected void assertVectorized(String query) throws Exception {
-    assertMappersAreVectorized(query);
-  }
 }

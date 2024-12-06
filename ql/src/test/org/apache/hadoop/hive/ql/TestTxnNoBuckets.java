@@ -166,7 +166,7 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t3\t3\t3", NO_BUCKETS_TBL_NAME + "/base_0000002_v0000011/bucket_00000"}
     };
     checkResult(expected,
-        "select ROW__ID, c1, c2, c3" + (shouldVectorize() ? "" : ", INPUT__FILE__NAME")
+        "select ROW__ID, c1, c2, c3, INPUT__FILE__NAME"
             + " from " + NO_BUCKETS_TBL_NAME + " order by c1, c2, c3",
         "After Major Compaction", LOG);
 
@@ -440,9 +440,9 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     Assert.assertEquals(2, BucketCodec.determineVersion(537001984).decodeWriterId(537001984));
     Assert.assertEquals(1, BucketCodec.determineVersion(536936448).decodeWriterId(536936448));
 
-    assertVectorized("update T set b = 88 where b = 80");
+    assertMappersAreVectorized("update T set b = 88 where b = 80");
     runStatementOnDriver("update T set b = 88 where b = 80");
-    assertVectorized("delete from T where b = 8");
+    assertMappersAreVectorized("delete from T where b = 8");
     runStatementOnDriver("delete from T where b = 8");
     String expected3[][] = {
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":1}\t1\t2",  "warehouse/t/HIVE_UNION_SUBDIR_1/000000_0"},
@@ -486,10 +486,6 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
             "warehouse/t/base_10000002_v0000015/bucket_00000"},
     };
     checkExpected(rs, expected4,"after major compact");
-  }
-
-  protected void assertVectorized(String query) throws Exception {
-    assertMappersAreNotVectorized(query);
   }
 
   @Test
@@ -716,7 +712,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     checkExpected(rs, expected3, "After non-vectorized read");
     Assert.assertEquals(0, BucketCodec.determineVersion(536870912).decodeWriterId(536870912));
     //vectorized because there is INPUT__FILE__NAME
-    assertMappersAreNotVectorized(query);
+    assertMappersAreVectorized(query);
 
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
     runStatementOnDriver("update T set b = 17 where a = 1");
@@ -758,7 +754,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     };
     checkExpected(rs, expected5, "After major compaction");
     //vectorized because there is INPUT__FILE__NAME
-    assertMappersAreNotVectorized(query);
+    assertMappersAreVectorized(query);
   }
   private void checkExpected(List<String> rs, String[][] expected, String msg) {
     super.checkExpected(rs, expected, msg, LOG);

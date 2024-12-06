@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -66,7 +65,6 @@ import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.hadoop.hive.metastore.DatabaseProduct.determineDatabaseProduct;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
@@ -321,20 +319,7 @@ public abstract class TxnCommandsBaseForTests {
     throw new RuntimeException("Didn't get expected failure!");
   }
 
-  protected void assertMappersAreVectorized(String query) throws Exception {
-    if (!hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)) {
-      return;
-    }
-    assertMapperExecutionMode(query, "Mapper was not vectorized: ",
-            executionMode -> isBlank(executionMode) || !executionMode.contains("vectorized"));
-  }
-
-  protected void assertMappersAreNotVectorized(String query) throws Exception {
-    assertMapperExecutionMode(query, "Mapper was vectorized but was not expected: ",
-            executionMode -> isNotBlank(executionMode) && executionMode.contains("vectorized"));
-  }
-
-  protected void assertMapperExecutionMode(String query, String message, Predicate<String> predicate)
+  protected void assertMappersAreVectorized(String query)
           throws Exception {
     List<String> rs = runStatementOnDriver("EXPLAIN FORMATTED VECTORIZATION DETAIL " + query);
     ObjectMapper objectMapper = new ObjectMapper();
@@ -365,8 +350,9 @@ public abstract class TxnCommandsBaseForTests {
       Map<String, Object> mapVertex = (Map<String, Object>) vertexEntry.getValue();
       String executionMode = (String) mapVertex.get("Execution mode");
       boolean vectorized = isNotBlank(executionMode) && executionMode.contains("vectorized");
+      String message = "Mapper was " + (shouldVectorized() ? "not vectorized: " : "vectorized but was not expected: ");
       Assert.assertTrue(message + rs.get(0),
-              hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED) ^ vectorized);
+              shouldVectorized() ^ vectorized);
     }
   }
   /**
@@ -420,12 +406,8 @@ public abstract class TxnCommandsBaseForTests {
    */
   protected void checkResult(String[][] expectedResult, String query, String msg, Logger LOG) throws Exception{
     List<String> rs = runStatementOnDriver(query);
-    checkExpected(rs, expectedResult, msg + (shouldVectorize() ? " vect" : ""), LOG);
-    if (shouldVectorize()) {
-      assertMappersAreVectorized(query);
-    } else {
-      assertMappersAreNotVectorized(query);
-    }
+    checkExpected(rs, expectedResult, msg + (shouldVectorized() ? " vect" : ""), LOG);
+    assertMappersAreVectorized(query);
   }
   void dropTables(String... tables) throws Exception {
     HiveConf queryConf = d.getQueryState().getConf();
@@ -456,7 +438,7 @@ public abstract class TxnCommandsBaseForTests {
                     " - " + openTxnTimeOutMillis + ")");
   }
 
-  protected boolean shouldVectorize() {
+  protected boolean shouldVectorized() {
     return hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
   }
 }

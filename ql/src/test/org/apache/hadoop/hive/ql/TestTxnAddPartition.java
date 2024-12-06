@@ -140,6 +140,7 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
 
   @Test
   public void testAddPartitionMM() throws Exception {
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     addPartitionMM();
   }
 
