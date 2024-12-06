@@ -61,7 +61,7 @@ public class MinOpenTxnIdWaterMarkFunction implements TransactionalFunction<Long
           return id;
         }));
     long lowWaterMark = jdbcResource.execute(new OpenTxnTimeoutLowBoundaryTxnIdHandler(openTxnTimeOutMillis));
-    LOG.info("MinOpenTxnIdWaterMark calculated with minOpenTxn {}, lowWaterMark {}", minOpenTxn, lowWaterMark);
+    LOG.debug("MinOpenTxnIdWaterMark calculated with minOpenTxn {}, lowWaterMark {}", minOpenTxn, lowWaterMark);
     return Long.min(minOpenTxn, lowWaterMark + 1);
   }
 }
