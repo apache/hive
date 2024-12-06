@@ -1315,50 +1315,6 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     verifyBaseDir(1, tblName, "");
   }
 
-  /**
-   * Make sure there's no FileSystem$Cache$Key leak due to UGI use
-   * @throws Exception
-   */
-  @Ignore("FileSystem.closeAllForUGI is never called from Compaction related threads")
-  @Test
-  public void testFileSystemUnCaching() throws Exception {
-    int cacheSizeBefore;
-    int cacheSizeAfter;
-
-    // get the size of cache BEFORE
-    cacheSizeBefore = getFileSystemCacheSize();
-
-    // Insert a row to ACID table
-    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(1,2)");
-
-    // Perform a major compaction
-    runStatementOnDriver("alter table " + Table.ACIDTBL + " compact 'major'");
-    runWorker(hiveConf);
-    runCleaner(hiveConf);
-
-    // get the size of cache AFTER
-    cacheSizeAfter = getFileSystemCacheSize();
-
-    Assert.assertEquals(cacheSizeBefore, cacheSizeAfter);
-  }
-
-  private int getFileSystemCacheSize() throws Exception {
-    try {
-      Field cache = FileSystem.class.getDeclaredField("CACHE");
-      cache.setAccessible(true);
-      Object o = cache.get(null); // FileSystem.CACHE
-
-      Field mapField = o.getClass().getDeclaredField("map");
-      mapField.setAccessible(true);
-      Map map = (HashMap)mapField.get(o); // FileSystem.CACHE.map
-
-      return map.size();
-    } catch (NoSuchFieldException e) {
-      System.out.println(e);
-    }
-    return 0;
-  }
-
   private static class CompactionsByState {
     private int didNotInitiate;
     private int failed;
