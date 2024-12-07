@@ -440,8 +440,8 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     Assert.assertEquals(2, BucketCodec.determineVersion(537001984).decodeWriterId(537001984));
     Assert.assertEquals(1, BucketCodec.determineVersion(536936448).decodeWriterId(536936448));
 
-    assertMappersAreVectorized("update T set b = 88 where b = 80");
-    runStatementOnDriver("update T set b = 88 where b = 80");
+    assertMappersAreVectorized("update T set b = 88 where b = 80 or b = 60");
+    runStatementOnDriver("update T set b = 88 where b = 80 or b = 60");
     assertMappersAreVectorized("delete from T where b = 8");
     runStatementOnDriver("delete from T where b = 8");
     String expected3[][] = {
@@ -452,8 +452,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":3}\t10\t20", "warehouse/t/HIVE_UNION_SUBDIR_15/000000_0"},
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":0}\t12\t12", "warehouse/t/000000_0"},
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":4}\t20\t40", "warehouse/t/HIVE_UNION_SUBDIR_15/000000_0"},
-        {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":5}\t50\t60", "warehouse/t/HIVE_UNION_SUBDIR_16/000000_0"},
-        // update for "{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t60\t80"
+        {"{\"writeid\":10000001,\"bucketid\":537067521,\"rowid\":0}\t50\t88", "warehouse/t/delta_10000001_10000001_0001/bucket_00003_0"},
         {"{\"writeid\":10000001,\"bucketid\":536870913,\"rowid\":0}\t60\t88", "warehouse/t/delta_10000001_10000001_0001/bucket_00000_0"},
     };
     rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from T order by a, b, INPUT__FILE__NAME");
@@ -480,8 +479,8 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
             "warehouse/t/base_10000002_v0000015/bucket_00000"},
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":4}\t20\t40",
             "warehouse/t/base_10000002_v0000015/bucket_00000"},
-        {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":5}\t50\t60",
-            "warehouse/t/base_10000002_v0000015/bucket_00000"},
+        {"{\"writeid\":10000001,\"bucketid\":537067521,\"rowid\":0}\t50\t88",
+            "warehouse/t/base_10000002_v0000015/bucket_00003"},
         {"{\"writeid\":10000001,\"bucketid\":536870913,\"rowid\":0}\t60\t88",
             "warehouse/t/base_10000002_v0000015/bucket_00000"},
     };
