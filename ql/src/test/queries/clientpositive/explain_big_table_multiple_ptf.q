@@ -11,11 +11,11 @@ create table explain_multiple_ptf_big_table2
     key23       string
 );
 alter table explain_multiple_ptf_big_table
-    update statistics set('numRows' = '9223372036854775',
-                          'rawDataSize' = '9223372036854775807');
+    update statistics set('numRows' = '4611686036854775807',
+                          'rawDataSize' = '922337203685477500');
 alter table explain_multiple_ptf_big_table2
-    update statistics set('numRows' = '9223372036854775',
-                          'rawDataSize' = '9223372036854775807');
+    update statistics set('numRows' = '4611686036854775807',
+                          'rawDataSize' = '9223372036854775800');
 explain
 select *,row_number() over (partition by key order by key2 desc) rn,
        row_number() over (partition by key2 order by key desc) rn2,
