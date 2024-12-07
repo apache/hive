@@ -279,8 +279,9 @@ public class TezJobMonitor {
           } catch (IOException | TezException tezException) {
             // best effort
           }
-          console.printError("Execution has failed. stack trace: " + ExceptionUtils.getStackTrace(e));
-          diagnostics.append(e.getMessage());
+          String reportedException = "Execution has failed, stack trace: " + ExceptionUtils.getStackTrace(e);
+          console.printError(reportedException);
+          diagnostics.append(reportedException);
           rc = 1;
           done = true;
         } else {
