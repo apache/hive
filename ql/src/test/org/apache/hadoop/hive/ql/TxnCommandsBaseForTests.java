@@ -404,10 +404,15 @@ public abstract class TxnCommandsBaseForTests {
    * which will currently make the query non-vectorizable.  This means we can't check the file name
    * for vectorized version of the test.
    */
-  protected void checkResult(String[][] expectedResult, String query, String msg, Logger LOG) throws Exception{
+  protected void checkResultAndVectorization(String[][] expectedResult, String query, String msg, Logger LOG)
+          throws Exception {
+    checkResult(expectedResult, query, msg, LOG);
+    assertMappersAreVectorized(query);
+  }
+  protected void checkResult(String[][] expectedResult, String query, String msg, Logger LOG)
+          throws Exception {
     List<String> rs = runStatementOnDriver(query);
     checkExpected(rs, expectedResult, msg + (shouldVectorized() ? " vect" : ""), LOG);
-    assertMappersAreVectorized(query);
   }
   void dropTables(String... tables) throws Exception {
     HiveConf queryConf = d.getQueryState().getConf();

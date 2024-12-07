@@ -165,7 +165,7 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
         {"{\"writeid\":1,\"bucketid\":536936448,\"rowid\":1}\t2\t2\t2", NO_BUCKETS_TBL_NAME + "/base_0000002_v0000011/bucket_00001"},
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t3\t3\t3", NO_BUCKETS_TBL_NAME + "/base_0000002_v0000011/bucket_00000"}
     };
-    checkResult(expected,
+    checkResultAndVectorization(expected,
         "select ROW__ID, c1, c2, c3, INPUT__FILE__NAME"
             + " from " + NO_BUCKETS_TBL_NAME + " order by c1, c2, c3",
         "After Major Compaction", LOG);

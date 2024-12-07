@@ -91,8 +91,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
             "s/delta_0000001_0000001_0000/bucket_00000_0"},
         {"{\"writeid\":2,\"bucketid\":536870913,\"rowid\":0}\t4\t6",
             "s/delta_0000002_0000002_0001/bucket_00000_0"}};
-    List<String> rs = runStatementOnDriver(testQuery);
-    checkExpected(rs, expected, "check data", LOG);
+    checkResult(expected, testQuery, "check data", LOG);
 
     Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from COMPLETED_TXN_COMPONENTS where CTC_TABLE='t'"));
@@ -178,7 +177,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
             "warehouse/t/delta_0000001_0000001_0000/bucket_00000_0"},
         {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t4\t6",
             "warehouse/t/delta_0000002_0000002_0000/bucket_00000_0"}};
-    checkResult(expected, testQuery, "after delete", LOG);
+    checkResultAndVectorization(expected, testQuery, "after delete", LOG);
 
     runStatementOnDriver("alter table T compact 'MAJOR'");
     runWorker(hiveConf);
@@ -196,7 +195,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
             "warehouse/t/base_0000003_v0000012/bucket_00000"},
         {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t4\t6",
             "warehouse/t/base_0000003_v0000012/bucket_00000"}};
-    checkResult(expected2, testQuery, "after compaction", LOG);
+    checkResultAndVectorization(expected2, testQuery, "after compaction", LOG);
   }
   /**
    * HIVE-19985
@@ -286,7 +285,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
             "warehouse/acid_uap/ds=tomorrow/delta_0000001_0000001_0000/bucket_00001_0"},
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t2\tyah\ttomorrow",
             "warehouse/acid_uap/ds=tomorrow/delta_0000001_0000001_0000/bucket_00000_0"}};
-    checkResult(expected, testQuery, "after insert", LOG);
+    checkResultAndVectorization(expected, testQuery, "after insert", LOG);
 
     runStatementOnDriver("update acid_uap set b = 'fred'");
 
@@ -300,7 +299,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
             "warehouse/acid_uap/ds=tomorrow/delta_0000003_0000003_0001/bucket_00001_0"},
         {"{\"writeid\":3,\"bucketid\":536870913,\"rowid\":0}\t2\tfred\ttomorrow",
             "warehouse/acid_uap/ds=tomorrow/delta_0000003_0000003_0001/bucket_00000_0"}};
-    checkResult(expected2, testQuery, "after update", LOG);
+    checkResultAndVectorization(expected2, testQuery, "after update", LOG);
   }
   @Test
   public void testCleaner2() throws Exception {
@@ -332,8 +331,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
             "t/delta_0000001_0000001_0000/bucket_00000_0"},
         {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t1\t4",
             "t/delta_0000002_0000002_0000/bucket_00000_0"}};
-    List<String> rs = runStatementOnDriver(testQuery);
-    checkExpected(rs, expected, "check data", LOG);
+    checkResult(expected, testQuery, "check data", LOG);
 
     txnMgr2 = swapTxnManager(txnMgr1);
     driver2 = swapDrivers(driver1);

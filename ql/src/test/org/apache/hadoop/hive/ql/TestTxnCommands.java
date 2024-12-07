@@ -1432,7 +1432,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t1\t5", "nonacidorctbl/000001_0_copy_1"},
       {"{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t1\t17", "nonacidorctbl/delta_10000001_10000001_0000/bucket_00001_0"}
     };
-    checkResult(expected, query, "before compact", LOG);
+    checkResultAndVectorization(expected, query, "before compact", LOG);
 
     Assert.assertEquals(536870912,
         BucketCodec.V1.encode(new AcidOutputFormat.Options(hiveConf).bucket(0)));
@@ -1450,7 +1450,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
         {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t1\t5", "nonacidorctbl/base_10000001_v0000009/bucket_00001"},
         {"{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t1\t17", "nonacidorctbl/base_10000001_v0000009/bucket_00001"}
     };
-    checkResult(expected2, query, "after major compact", LOG);
+    checkResultAndVectorization(expected2, query, "after major compact", LOG);
     //make sure they are the same before and after compaction
   }
   //@Ignore("see bucket_num_reducers_acid.q")

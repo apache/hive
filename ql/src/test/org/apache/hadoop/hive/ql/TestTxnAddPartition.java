@@ -107,7 +107,7 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
             "warehouse/t/p=1/delta_0000001_0000001_0000/000000_0"},
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t1\t0\t4",
             "warehouse/t/p=1/delta_0000001_0000001_0000/000000_0"}};
-    checkResult(expected, testQuery, "add 2 parts w/data and 1 empty", LOG);
+    checkResultAndVectorization(expected, testQuery, "add 2 parts w/data and 1 empty", LOG);
 
     runStatementOnDriver("export table Tstage to '" + getWarehouseDir() + "/3'");
     //should be an error since p=3 exists
@@ -135,7 +135,7 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
             "warehouse/t/p=3/delta_0000003_0000003_0000/000000_0"},
         {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":1}\t3\t0\t4",
             "warehouse/t/p=3/delta_0000003_0000003_0000/000000_0"}};
-    checkResult(expected2, testQuery, "add 2 existing parts and 1 empty", LOG);
+    checkResultAndVectorization(expected2, testQuery, "add 2 existing parts and 1 empty", LOG);
   }
 
   @Test
@@ -181,7 +181,7 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
         {"0\t0\t4", "warehouse/t/p=0/delta_0000001_0000001_0000/000000_0"},
         {"1\t0\t2", "warehouse/t/p=1/delta_0000001_0000001_0000/000000_0"},
         {"1\t0\t4", "warehouse/t/p=1/delta_0000001_0000001_0000/000000_0"}};
-    checkResult(expected, testQuery, "add 2 parts w/data and 1 empty", LOG);
+    checkResultAndVectorization(expected, testQuery, "add 2 parts w/data and 1 empty", LOG);
 
     runStatementOnDriver("export table Tstage to '" + getWarehouseDir() + "/3'");
     //should be an error since p=3 exists
@@ -202,7 +202,7 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
         {"1\t0\t4", "warehouse/t/p=1/delta_0000001_0000001_0000/000000_0"},
         {"3\t0\t2", "warehouse/t/p=3/delta_0000003_0000003_0000/000000_0"},
         {"3\t0\t4", "warehouse/t/p=3/delta_0000003_0000003_0000/000000_0"}};
-    checkResult(expected2, testQuery, "add 2 existing parts and 1 empty", LOG);
+    checkResultAndVectorization(expected2, testQuery, "add 2 existing parts and 1 empty", LOG);
   }
 
   @Test

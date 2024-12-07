@@ -483,7 +483,7 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     checkResult(expected, testQuery, "load data inpath");
   }
   void checkResult(String[][] expectedResult, String query, String msg) throws Exception {
-    checkResult(expectedResult, query, msg, LOG);
+    checkResultAndVectorization(expectedResult, query, msg, LOG);
   }
   @Test
   public void testLoadAcidFile() throws Exception {
