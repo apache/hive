@@ -32,3 +32,4 @@ from (select key1 key, value_str1 value_str, key3 key2
       union all
       select key21 key, value_str21 value_str, key23 key2
       from explain_multiple_ptf_big_table2) a1;
+
