@@ -252,13 +252,9 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
   @Test
   public void testSdpoBucketed() throws Exception {
     testSdpoBucketed(true, 1);
-    testSdpoBucketed(true, 1);
-    testSdpoBucketed(false, 1);
     testSdpoBucketed(false, 1);
 
     testSdpoBucketed(true, 2);
-    testSdpoBucketed(true, 2);
-    testSdpoBucketed(false, 2);
     testSdpoBucketed(false, 2);
   }
   private void testSdpoBucketed(boolean isVectorized, int bucketing_version)
