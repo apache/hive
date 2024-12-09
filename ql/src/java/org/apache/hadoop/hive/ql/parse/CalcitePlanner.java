@@ -5365,7 +5365,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     JDBC
   }
 
-  class OrderByRelBuilder {
+  private class OrderByRelBuilder {
     private final CalcitePlannerAction calcitePlannerAction;
     private final List<RexNode> newVCLst = new ArrayList<>();
     private final List<RelFieldCollation> fieldCollations = Lists.newArrayList();
