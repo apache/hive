@@ -116,7 +116,7 @@ STAGE PLANS:
         Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: explain_multiple_ptf_big_table
@@ -134,7 +134,7 @@ STAGE PLANS:
                       value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
-        Map 8
+        Map 8 
             Map Operator Tree:
                 TableScan
                   alias: explain_multiple_ptf_big_table2
@@ -152,7 +152,7 @@ STAGE PLANS:
                       value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
-        Reducer 3
+        Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
@@ -202,7 +202,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 9223372036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
                       value expressions: row_number_window_0 (type: int), max_window_3 (type: string), min_window_5 (type: string), _col1 (type: string)
-        Reducer 4
+        Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
@@ -252,7 +252,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col3 (type: string)
                       Statistics: Num rows: 9223372036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
                       value expressions: row_number_window_1 (type: int), max_window_2 (type: string), min_window_4 (type: string), _col0 (type: int), _col1 (type: string), _col2 (type: string), _col4 (type: string), _col5 (type: string)
-        Reducer 5
+        Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
@@ -290,7 +290,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col8 (type: string)
                       Statistics: Num rows: 9223372036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
                       value expressions: first_value_window_6 (type: string), _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: int), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string)
-        Reducer 6
+        Reducer 6 
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
@@ -328,7 +328,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col7 (type: string)
                       Statistics: Num rows: 9223372036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
                       value expressions: first_value_window_7 (type: string), _col0 (type: string), _col1 (type: int), _col2 (type: string), _col3 (type: string), _col4 (type: int), _col5 (type: string), _col6 (type: string), _col8 (type: string), _col9 (type: string)
-        Reducer 7
+        Reducer 7 
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
@@ -366,7 +366,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Union 2
+        Union 2 
             Vertex: Union 2
 
   Stage: Stage-0
