@@ -39,6 +39,9 @@ import org.apache.hadoop.hive.metastore.api.Package;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.thrift.TException;
 
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependCatalogToDbName;
+
 /**
  * Wrapper around hive metastore thrift api
  */
@@ -2750,6 +2753,18 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   boolean deleteTableColumnStatistics(String catName, String dbName, String tableName, String colName, String engine)
       throws NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
+
+  /**
+   * Delete table or partition level column statistics given catName, dbName, tableName, partName and colNames,
+   * or all columns in a table or partition.
+   * This should be used for tables or partitions
+   * @param req the DeleteColumnStatisticsRequest which including
+   *            catalog name, database name, table name, partition name(optional),
+   *            a list column names(optional), and engine name
+   * @return boolean indicating the outcome of the operation
+   * @throws TException thrift transport error
+   */
+  public boolean deleteColumnStatistics(DeleteColumnStatisticsRequest req) throws TException;
 
   void updateTransactionalStatistics(UpdateTransactionalStatsRequest req) throws TException;
 

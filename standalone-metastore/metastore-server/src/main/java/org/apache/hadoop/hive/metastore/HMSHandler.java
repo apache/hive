@@ -89,6 +89,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.join;
@@ -7416,6 +7417,81 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         getMS().rollbackTransaction();
       }
       endFunction("delete_column_statistics_by_partition", ret != false, null, tableName);
+    }
+    return ret;
+  }
+
+
+  public boolean delete_column_statistics_req(DeleteColumnStatisticsRequest req) throws TException {
+    String dbName = normalizeIdentifier(req.getDb_name());
+    String tableName = normalizeIdentifier(req.getTbl_name());
+    List<String> colNames = req.getCol_names();
+    String engine = req.getEngine();
+    String[] parsedDbName = parseDbName(dbName, conf);
+    if (req.getCat_name() != null) {
+      parsedDbName[CAT_NAME] = normalizeIdentifier(req.getCat_name());
+    }
+    startFunction("delete_column_statistics_req", ": table=" +
+        TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName) +
+        " partition=" + req.getPart_name() + " column=" + colNames + " engine=" + engine);
+    boolean ret = false, committed = false;
+    List<ListenerEvent> events = new ArrayList<>();
+    final RawStore rawStore = getMS();
+    rawStore.openTransaction();
+    try {
+      Table table = rawStore.getTable(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
+      boolean isPartitioned = table.isSetPartitionKeys() && table.getPartitionKeysSize() > 0;
+      List<FieldSchema> keys = table.getPartitionKeys();
+      int size1 = table.getPartitionKeysSize();
+      if (TxnUtils.isTransactionalTable(table)) {
+        throw new MetaException("Cannot delete stats via this API for a transactional table");
+      }
+      if (!isPartitioned){
+        ret = rawStore.deleteTableMultiColumnStatistics(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, colNames, engine);
+        if (ret) {
+          for (String colName :
+              colNames == null ? table.getSd().getCols().stream().map(FieldSchema::getName).collect(Collectors.toList()) : colNames) {
+            events.add(new DeleteTableColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, colName, engine, this));
+          }
+        }
+      } else {
+        List<String> partNames = new ArrayList<>();
+        if (req.getPart_name() != null) {
+          partNames.add(req.getPart_name());
+        } else {
+          partNames.addAll(rawStore.listPartitionNames(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, (short) -1));
+        }
+        ret = rawStore.deletePartitionMultiColumnStatistics(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
+                partNames, colNames, engine);
+        if (ret) {
+          for (String colName : colNames == null ? table.getSd().getCols().stream().map(FieldSchema::getName)
+              .collect(Collectors.toList()) : colNames) {
+            for (String partName : partNames) {
+              List<String> partVals = getPartValsFromName(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, partName);
+              events.add(new DeletePartitionColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
+                  partName, partVals, colName, engine, this));
+            }
+          }
+        }
+      }
+      if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
+        for (ListenerEvent event : events) {
+          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+              EventType.DELETE_TABLE_COLUMN_STAT, event);
+        }
+      }
+      committed = getMS().commitTransaction();
+    } finally {
+      if (!committed) {
+        rawStore.rollbackTransaction();
+      }
+      if (!listeners.isEmpty()) {
+        for (ListenerEvent event : events) {
+          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+              EventType.DELETE_TABLE_COLUMN_STAT, event);
+        }
+      }
+      endFunction("delete_column_statistics_req", ret, null, tableName);
     }
     return ret;
   }

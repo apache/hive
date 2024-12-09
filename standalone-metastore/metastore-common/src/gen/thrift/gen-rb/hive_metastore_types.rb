@@ -875,6 +875,8 @@ class Package; end
 
 class GetAllWriteEventInfoRequest; end
 
+class DeleteColumnStatisticsRequest; end
+
 class MetaException < ::Thrift::Exception; end
 
 class UnknownTableException < ::Thrift::Exception; end
@@ -8338,6 +8340,36 @@ class GetAllWriteEventInfoRequest
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txnId is unset!') unless @txnId
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class DeleteColumnStatisticsRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CAT_NAME = 1
+  DB_NAME = 2
+  TBL_NAME = 3
+  PART_NAME = 4
+  COL_NAMES = 5
+  ENGINE = 6
+
+  FIELDS = {
+    CAT_NAME => {:type => ::Thrift::Types::STRING, :name => 'cat_name'},
+    DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
+    TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
+    PART_NAME => {:type => ::Thrift::Types::STRING, :name => 'part_name', :optional => true},
+    COL_NAMES => {:type => ::Thrift::Types::LIST, :name => 'col_names', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
+    ENGINE => {:type => ::Thrift::Types::STRING, :name => 'engine'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field cat_name is unset!') unless @cat_name
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field db_name is unset!') unless @db_name
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tbl_name is unset!') unless @tbl_name
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field engine is unset!') unless @engine
   end
 
   ::Thrift::Struct.generate_accessors self

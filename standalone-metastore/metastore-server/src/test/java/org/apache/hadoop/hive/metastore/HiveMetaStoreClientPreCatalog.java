@@ -1918,6 +1918,12 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public boolean deleteColumnStatistics(DeleteColumnStatisticsRequest req)
+          throws TException {
+    return client.delete_column_statistics_req(req);
+  }
+
+  @Override
   public void updateTransactionalStatistics(UpdateTransactionalStatsRequest req)  throws TException {
     client.update_transaction_statistics(req);
   }

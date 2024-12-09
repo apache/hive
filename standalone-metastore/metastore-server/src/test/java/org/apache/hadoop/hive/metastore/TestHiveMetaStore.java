@@ -38,19 +38,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.lang.reflect.*;
+
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.mockito.Mockito.mock;
 
 import com.google.common.collect.Sets;
-import org.apache.hadoop.hive.metastore.api.DataConnector;
-import org.apache.hadoop.hive.metastore.api.DatabaseType;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
-import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsResponse;
-import org.apache.hadoop.hive.metastore.api.PartitionSpecWithSharedSD;
-import org.apache.hadoop.hive.metastore.api.PartitionWithoutSD;
-import org.apache.hadoop.hive.metastore.api.SourceTable;
+import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -66,6 +60,7 @@ import org.datanucleus.api.jdo.JDOPersistenceManager;
 import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -73,33 +68,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.metastore.api.AggrStats;
-import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
-import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.Function;
-import org.apache.hadoop.hive.metastore.api.FunctionType;
-import org.apache.hadoop.hive.metastore.api.GetAllFunctionsResponse;
-import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.PrincipalType;
-import org.apache.hadoop.hive.metastore.api.ResourceType;
-import org.apache.hadoop.hive.metastore.api.ResourceUri;
-import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.Type;
-import org.apache.hadoop.hive.metastore.api.UnknownDBException;
-import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 import org.junit.Test;
@@ -1756,6 +1724,7 @@ public abstract class TestHiveMetaStore {
 
     String dbName = "columnstatstestdb";
     String tblName = "tbl";
+    String tblName1 = "tbl1";
     String typeName = "Person";
     String tblOwner = "testowner";
     int lastAccessed = 6796;
@@ -1765,7 +1734,8 @@ public abstract class TestHiveMetaStore {
       new DatabaseBuilder()
           .setName(dbName)
           .create(client, conf);
-      createTableForTestFilter(dbName,tblName, tblOwner, lastAccessed, true);
+      createTableForTestFilter(dbName, tblName, tblOwner, lastAccessed, true);
+      createTableForTestFilter1(dbName, tblName1, tblOwner, lastAccessed, true);
 
       // Create a ColumnStatistics Obj
       String[] colName = new String[]{"income", "name"};
@@ -1779,6 +1749,7 @@ public abstract class TestHiveMetaStore {
       boolean isTblLevel = true;
       String partName = null;
       List<ColumnStatisticsObj> statsObjs = new ArrayList<>();
+      List<ColumnStatisticsObj> statsObjs1 = new ArrayList<>();
 
       ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc();
       statsDesc.setDbName(dbName);
@@ -1786,25 +1757,51 @@ public abstract class TestHiveMetaStore {
       statsDesc.setIsTblLevel(isTblLevel);
       statsDesc.setPartName(partName);
 
+      ColumnStatisticsDesc statsDesc1 = new ColumnStatisticsDesc();
+      statsDesc1.setDbName(dbName);
+      statsDesc1.setTableName(tblName1);
+      statsDesc1.setIsTblLevel(isTblLevel);
+      statsDesc1.setPartName(partName);
+
       ColumnStatisticsObj statsObj = new ColumnStatisticsObj();
       statsObj.setColName(colName[0]);
       statsObj.setColType(colType[0]);
 
+      ColumnStatisticsObj statsObj1 = new ColumnStatisticsObj();
+      statsObj1.setColName(colName[0]);
+      statsObj1.setColType(colType[0]);
+
       ColumnStatisticsData statsData = new ColumnStatisticsData();
       DoubleColumnStatsData numericStats = new DoubleColumnStatsData();
       statsData.setDoubleStats(numericStats);
+
+      ColumnStatisticsData statsData1 = new ColumnStatisticsData();
+      DoubleColumnStatsData numericStats1 = new DoubleColumnStatsData();
+      statsData1.setDoubleStats(numericStats1);
 
       statsData.getDoubleStats().setHighValue(highValue);
       statsData.getDoubleStats().setLowValue(lowValue);
       statsData.getDoubleStats().setNumDVs(numDVs);
       statsData.getDoubleStats().setNumNulls(numNulls);
 
+      statsData1.getDoubleStats().setHighValue(highValue);
+      statsData1.getDoubleStats().setLowValue(lowValue);
+      statsData1.getDoubleStats().setNumDVs(numDVs);
+      statsData1.getDoubleStats().setNumNulls(numNulls);
+
       statsObj.setStatsData(statsData);
       statsObjs.add(statsObj);
+
+      statsObj1.setStatsData(statsData);
+      statsObjs1.add(statsObj1);
 
       statsObj = new ColumnStatisticsObj();
       statsObj.setColName(colName[1]);
       statsObj.setColType(colType[1]);
+
+      statsObj1 = new ColumnStatisticsObj();
+      statsObj1.setColName(colName[1]);
+      statsObj1.setColType(colType[1]);
 
       statsData = new ColumnStatisticsData();
       StringColumnStatsData stringStats = new StringColumnStatsData();
@@ -1814,16 +1811,33 @@ public abstract class TestHiveMetaStore {
       statsData.getStringStats().setNumDVs(numDVs);
       statsData.getStringStats().setNumNulls(numNulls);
 
+      statsData1 = new ColumnStatisticsData();
+      StringColumnStatsData stringStats1 = new StringColumnStatsData();
+      statsData1.setStringStats(stringStats1);
+      statsData1.getStringStats().setAvgColLen(avgColLen);
+      statsData1.getStringStats().setMaxColLen(maxColLen);
+      statsData1.getStringStats().setNumDVs(numDVs);
+      statsData1.getStringStats().setNumNulls(numNulls);
+
       statsObj.setStatsData(statsData);
       statsObjs.add(statsObj);
+
+      statsObj1.setStatsData(statsData1);
+      statsObjs1.add(statsObj1);
 
       ColumnStatistics colStats = new ColumnStatistics();
       colStats.setStatsDesc(statsDesc);
       colStats.setStatsObj(statsObjs);
       colStats.setEngine(ENGINE);
 
+      ColumnStatistics colStats1 = new ColumnStatistics();
+      colStats1.setStatsDesc(statsDesc1);
+      colStats1.setStatsObj(statsObjs1);
+      colStats1.setEngine(ENGINE);
+
       // write stats objs persistently
       client.updateTableColumnStatistics(colStats);
+      client.updateTableColumnStatistics(colStats1);
 
       // retrieve the stats obj that was just written
       ColumnStatisticsObj colStats2 = client.getTableColumnStatistics(
@@ -1839,6 +1853,7 @@ public abstract class TestHiveMetaStore {
 
       // test delete column stats; if no col name is passed all column stats associated with the
       // table is deleted
+      client.updateTableColumnStatistics(colStats);
       boolean status = client.deleteTableColumnStatistics(dbName, tblName, null, ENGINE);
       assertTrue(status);
       // try to query stats for a column for which stats doesn't exist
@@ -1855,6 +1870,51 @@ public abstract class TestHiveMetaStore {
       // query column stats for column whose stats were updated in the previous call
       colStats2 = client.getTableColumnStatistics(
           dbName, tblName, Lists.newArrayList(colName[0]), ENGINE).get(0);
+
+      // test delete column stats; if no col name is passed all column stats associated with the
+      // table is deleted
+      status = client.deleteTableColumnStatistics(dbName, tblName1, colName[0], ENGINE);
+      assertTrue(status);
+      // try to query stats for a column for which stats doesn't exist
+      stats = client.getTableColumnStatistics(
+              dbName, tblName1, Lists.newArrayList(colName[0]), ENGINE);
+      assertTrue("stats are not empty: " + stats, stats.isEmpty());
+
+      // reset the column stats
+      client.updateTableColumnStatistics(colStats1);
+      // test delete multiple column stats(column names can be null, or one, or multiple)
+      // case 1: column names are null, all column stats should be deleted
+      DeleteColumnStatisticsRequest req = new DeleteColumnStatisticsRequest(getDefaultCatalog(conf), dbName, tblName1, ENGINE);
+      status = client.deleteColumnStatistics(req);
+      assertTrue(status);
+      stats = client.getTableColumnStatistics(
+              dbName, tblName1, Lists.newArrayList(colName[0]), ENGINE);
+      assertTrue("stats are not empty: " + stats, stats.isEmpty());
+      stats = client.getTableColumnStatistics(
+              dbName, tblName1, Lists.newArrayList(colName[1]), ENGINE);
+      assertTrue("stats are not empty: " + stats, stats.isEmpty());
+
+      client.updateTableColumnStatistics(colStats1);
+      // case 2: column names only contains one column name, then that column stats should be deleted
+      List<String> singleColNameList = new ArrayList<>();
+      singleColNameList.add(colName[0]);
+      req = new DeleteColumnStatisticsRequest(getDefaultCatalog(conf), dbName, tblName1, ENGINE);
+      req.setCol_names(singleColNameList);
+      status = client.deleteColumnStatistics(req);
+      assertTrue(status);
+      stats = client.getTableColumnStatistics(
+              dbName, tblName1, Lists.newArrayList(colName[0]), ENGINE);
+      assertTrue("stats are not empty: " + stats, stats.isEmpty());
+
+      client.updateTableColumnStatistics(colStats1);
+      //case 3: column names contains multiple column names, then delete the column stats in the column name list
+      req = new DeleteColumnStatisticsRequest(getDefaultCatalog(conf), dbName, tblName1, ENGINE);
+      req.setCol_names(Arrays.asList(colName));
+      status = client.deleteColumnStatistics(req);
+      assertTrue(status);
+      stats = client.getTableColumnStatistics(
+              dbName, tblName1, Lists.newArrayList(colName), ENGINE);
+      assertTrue("stats are not empty: " + stats, stats.isEmpty());
 
       // partition level column statistics test
       // create a table with multiple partitions
@@ -1885,30 +1945,62 @@ public abstract class TestHiveMetaStore {
       colStats.setStatsObj(statsObjs);
       colStats.setEngine(ENGINE);
 
-     client.updatePartitionColumnStatistics(colStats);
+      client.updatePartitionColumnStatistics(colStats);
 
-     colStats2 = client.getPartitionColumnStatistics(dbName, tblName,
-         Lists.newArrayList(partName), Lists.newArrayList(colName[1]), ENGINE).get(partName).get(0);
+      colStats2 = client.getPartitionColumnStatistics(dbName, tblName,
+      Lists.newArrayList(partName), Lists.newArrayList(colName[1]), ENGINE).get(partName).get(0);
 
-     // compare stats obj to ensure what we get is what we wrote
-     assertNotNull(colStats2);
-     assertEquals(colStats.getStatsDesc().getPartName(), partName);
-     assertEquals(colStats2.getColName(), colName[1]);
-     assertEquals(colStats2.getStatsData().getStringStats().getMaxColLen(), maxColLen);
-     assertEquals(colStats2.getStatsData().getStringStats().getAvgColLen(), avgColLen, 0.01);
-     assertEquals(colStats2.getStatsData().getStringStats().getNumNulls(), numNulls);
-     assertEquals(colStats2.getStatsData().getStringStats().getNumDVs(), numDVs);
+      // compare stats obj to ensure what we get is what we wrote
+      assertNotNull(colStats2);
+      assertEquals(colStats.getStatsDesc().getPartName(), partName);
+      assertEquals(colStats2.getColName(), colName[1]);
+      assertEquals(colStats2.getStatsData().getStringStats().getMaxColLen(), maxColLen);
+      assertEquals(colStats2.getStatsData().getStringStats().getAvgColLen(), avgColLen, 0.01);
+      assertEquals(colStats2.getStatsData().getStringStats().getNumNulls(), numNulls);
+      assertEquals(colStats2.getStatsData().getStringStats().getNumDVs(), numDVs);
 
-     // test stats deletion at partition level
-     client.deletePartitionColumnStatistics(dbName, tblName, partName, colName[1], ENGINE);
+      // test stats deletion at partition level
+      status = client.deletePartitionColumnStatistics(dbName, tblName, partName, colName[0], ENGINE);
+      assertTrue(status);
+      Map<String, List<ColumnStatisticsObj>> stats2 = client.getPartitionColumnStatistics(dbName, tblName,
+              Lists.newArrayList(partName), Lists.newArrayList(colName[0]), ENGINE);
+      assertTrue("stats are not empty: " + stats2, stats2.isEmpty());
 
-     colStats2 = client.getPartitionColumnStatistics(dbName, tblName,
-         Lists.newArrayList(partName), Lists.newArrayList(colName[0]), ENGINE).get(partName).get(0);
+      client.updatePartitionColumnStatistics(colStats);
+      // test delete multiple column stats
+      // case 1: it'a partitioned table, but no partition name
+      // so all column stats in all partitions should be deleted
+      //req = new DeleteColumnStatisticsRequest(getDefaultCatalog(conf), dbName, tblName, ENGINE);
+      //status = client.deleteColumnStatistics(req);
+      //assertTrue(status);
+      //stats2 = client.getPartitionColumnStatistics(dbName, tblName,
+      //        Lists.newArrayList(partName), Lists.newArrayList(colName), ENGINE);
+      //assertTrue("stats are not empty: " + stats2, stats2.isEmpty());
 
-     // test get stats on a column for which stats doesn't exist
-     Map<String, List<ColumnStatisticsObj>> stats2 = client.getPartitionColumnStatistics(dbName, tblName,
-         Lists.newArrayList(partName), Lists.newArrayList(colName[1]), ENGINE);
-     assertTrue("stats are not empty: " + stats2, stats2.isEmpty());
+      client.updatePartitionColumnStatistics(colStats);
+      // case 2: column names only contains one column name, then that column stats should be deleted
+      req = new DeleteColumnStatisticsRequest(getDefaultCatalog(conf), dbName, tblName, ENGINE);
+      req.setPart_name(partName);
+      req.setCol_names(Lists.newArrayList(colName[0]));
+      status = client.deleteColumnStatistics(req);
+      assertTrue(status);
+      stats2 = client.getPartitionColumnStatistics(dbName, tblName,
+              Lists.newArrayList(partName), Lists.newArrayList(colName[0]), ENGINE);
+      assertTrue("stats are not empty: " + stats2, stats2.isEmpty());
+
+      client.updatePartitionColumnStatistics(colStats);
+      //case 3: column names contains multiple column names, then delete the column stats in the column name list
+      req = new DeleteColumnStatisticsRequest(getDefaultCatalog(conf), dbName, tblName, ENGINE);
+      req.setPart_name(partName);
+      req.setCol_names(Lists.newArrayList(colName));
+      status = client.deleteColumnStatistics(req);
+      assertTrue(status);
+      stats2 = client.getPartitionColumnStatistics(dbName, tblName,
+              Lists.newArrayList(partName), Lists.newArrayList(colName[0]), ENGINE);
+      assertTrue("stats are not empty: " + stats2, stats2.isEmpty());
+      stats2 = client.getPartitionColumnStatistics(dbName, tblName,
+              Lists.newArrayList(partName), Lists.newArrayList(colName[1]), ENGINE);
+      assertTrue("stats are not empty: " + stats2, stats2.isEmpty());
     } catch (Exception e) {
       System.err.println(StringUtils.stringifyException(e));
       System.err.println("testColumnStatistics() failed.");
@@ -2878,6 +2970,36 @@ public abstract class TestHiveMetaStore {
     }
     return tbl;
   }
+
+  private Table createTableForTestFilter1(String dbName, String tableName, String owner,
+                                         int lastAccessTime, boolean hasSecondParam) throws Exception {
+
+    Map<String, String> tableParams =  new HashMap<>();
+    tableParams.put("test_param_1", "hi");
+    if(hasSecondParam) {
+      tableParams.put("test_param_2", "50");
+    }
+
+    Table tbl = new TableBuilder()
+            .setDbName(dbName)
+            .setTableName(tableName)
+            .addCol("name", ColumnType.STRING_TYPE_NAME)
+            .addCol("income", ColumnType.INT_TYPE_NAME)
+            .setTableParams(tableParams)
+            .setOwner(owner)
+            .setLastAccessTime(lastAccessTime)
+            .create(client, conf);
+
+    if (isThriftClient) {
+      // the createTable() above does not update the location in the 'tbl'
+      // object when the client is a thrift client and the code below relies
+      // on the location being present in the 'tbl' object - so get the table
+      // from the metastore
+      tbl = client.getTable(dbName, tableName);
+    }
+    return tbl;
+  }
+
   /**
    * Verify that if another  client, either a metastore Thrift server or  a Hive CLI instance
    * renames a table recently created by this instance, and hence potentially in its cache, the

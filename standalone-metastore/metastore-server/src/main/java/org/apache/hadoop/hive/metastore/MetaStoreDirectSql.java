@@ -2948,6 +2948,34 @@ class MetaStoreDirectSql {
   }
 
   /**
+   * Drops all column stats in all Partition-s. Should be called with the list short enough to not trip up Oracle/etc.
+   * @param  catName The catalog name
+   * @param  dbName The database name
+   * @param  tblName The table name
+   * @throws MetaException If there is an SQL exception during the execution it converted to
+   * MetaException
+   */
+  protected void dropAllPartitionsColumnStatistics(String catName, String dbName, String tblName) throws MetaException {
+    // Get partition ids
+    List<Long> partitionIdList = getPartitionIdsViaSqlFilter(catName, dbName, tblName,
+            null, Collections.<String>emptyList(), Collections.<String>emptyList(), null);
+    if (partitionIdList.isEmpty()) {
+      return;
+    }
+    String queryText;
+    String partitionIds = getIdListForIn(partitionIdList);
+    try {
+      // Drop partition statistics
+      queryText = "delete from " + PART_COL_STATS + " where \"PART_ID\" in (" + partitionIds + ")";
+      executeNoResult(queryText);
+      Deadline.checkTimeout();
+    } catch (SQLException sqlException) {
+      LOG.warn("SQL error executing query while dropping partitions column statistics", sqlException);
+      throw new MetaException("Encountered error while dropping partitions column statistics.");
+    }
+  }
+
+  /**
    * Drops SD-s. Should be called with the list short enough to not trip up Oracle/etc.
    * @param storageDescriptorIdList The storage descriptor identifiers to drop
    * @throws MetaException If there is an SQL exception during the execution it converted to
@@ -3241,10 +3269,10 @@ class MetaStoreDirectSql {
     }
   }
 
-  public boolean deleteTableColumnStatistics(long tableId, String colName, String engine) {
+  public boolean deleteTableColumnStatistics(long tableId, List<String> colNames, String engine) {
     String deleteSql = "delete from " + TAB_COL_STATS + " where \"TBL_ID\" = " + tableId;
-    if (colName != null) {
-      deleteSql += " and \"COLUMN_NAME\" = '" + colName + "'";
+    if (colNames != null && !colNames.isEmpty()) {
+      deleteSql += " and \"COLUMN_NAME\" in (" + colNames.stream().map(col -> "'" + col + "'").collect(Collectors.joining(",")) + ")";
     }
     if (engine != null) {
       deleteSql += " and \"ENGINE\" = '" + engine + "'";
@@ -3259,25 +3287,31 @@ class MetaStoreDirectSql {
   }
 
   public boolean deletePartitionColumnStats(String catName, String dbName, String tblName,
-      String partName, String colName, String engine) throws MetaException {
-    String sqlFilter = PARTITIONS + ".\"PART_NAME\" = ? ";
-    List<Long> partitionIds = getPartitionIdsViaSqlFilter(catName, dbName, tblName, sqlFilter,
-        Arrays.asList(partName), Collections.emptyList(), -1);
-    assert(partitionIds.size() == 1);
-
-    String deleteSql = "delete from " + PART_COL_STATS + " where \"PART_ID\" = " + partitionIds.get(0);
-    if (colName != null) {
-      deleteSql += " and \"COLUMN_NAME\" = '" + colName + "'";
-    }
-    if (engine != null) {
-      deleteSql += " and \"ENGINE\" = '" + engine + "'";
-    }
-    try {
-      executeNoResult(deleteSql);
-    } catch (SQLException e) {
-      LOG.warn("Error removing partition column stats. ", e);
-      return false;
-    }
+      List<String> partNames, List<String> colNames, String engine) throws MetaException {
+    Batchable.runBatched(batchSize, partNames, new Batchable<String, Void>() {
+      @Override
+      public List<Void> run(List<String> input) throws Exception {
+        String sqlFilter = PARTITIONS + ".\"PART_NAME\" in  (" + makeParams(input.size()) + ")";
+        List<Long> partitionIds = getPartitionIdsViaSqlFilter(catName, dbName, tblName, sqlFilter,
+            input, Collections.emptyList(), -1);
+        if (!partitionIds.isEmpty()) {
+          String deleteSql = "delete from " + PART_COL_STATS + " where \"PART_ID\" in ( " + getIdListForIn(partitionIds) + ")";
+          if (colNames != null && !colNames.isEmpty()) {
+            deleteSql += " and \"COLUMN_NAME\" in (" + colNames.stream().map(col -> "'" + col + "'").collect(Collectors.joining(",")) + ")";
+          }
+          if (engine != null) {
+            deleteSql += " and \"ENGINE\" = '" + engine + "'";
+          }
+          try {
+            executeNoResult(deleteSql);
+          } catch (SQLException e) {
+            LOG.warn("Error removing partition column stats. ", e);
+            throw new MetaException("Error removing partition column stats: " + e.getMessage());
+          }
+        }
+        return null;
+      }
+    });
     return true;
   }
 

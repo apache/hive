@@ -4386,7 +4386,7 @@ public class ObjectStore implements RawStore, Configurable {
     protected abstract String describeResult();
     protected abstract T getSqlResult(GetHelper<T> ctx) throws MetaException;
     protected abstract T getJdoResult(
-        GetHelper<T> ctx) throws MetaException, NoSuchObjectException, InvalidObjectException;
+        GetHelper<T> ctx) throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException;
 
     public T run(boolean initTable) throws MetaException, NoSuchObjectException {
       try {
@@ -10231,168 +10231,156 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
-      String partName, List<String> partVals, String colName, String engine)
+  public boolean deletePartitionMultiColumnStatistics(String catName, String dbName, String tableName,
+      List<String> partNames, List<String> colNames, String engine)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    dbName = org.apache.commons.lang3.StringUtils.defaultString(dbName,
-      Warehouse.DEFAULT_DATABASE_NAME);
+    if (partNames == null || partNames.isEmpty()) {
+      throw new InvalidInputException("No partition is specified for dropping the statistics");
+    }
+    dbName = org.apache.commons.lang3.StringUtils.defaultString(dbName, Warehouse.DEFAULT_DATABASE_NAME);
     catName = normalizeIdentifier(catName);
-    if (tableName == null) {
-      throw new InvalidInputException("Table name is null.");
-    }
-    // Note: this does not verify ACID state; called internally when removing cols/etc.
-    //       Also called via an unused metastore API that checks for ACID tables.
-    MPartition mPartition = getMPartition(catName, dbName, tableName, partName);
-    if (mPartition == null) {
-      throw new NoSuchObjectException("Partition " + partName
-          + " for which stats deletion is requested doesn't exist");
-    }
-
     return new GetHelper<Boolean>(catName, dbName, tableName, true, true) {
       @Override
       protected String describeResult() {
         return "delete partition column stats";
       }
-
       @Override
       protected Boolean getSqlResult(GetHelper<Boolean> ctx) throws MetaException {
-        return directSql.deletePartitionColumnStats(catName, dbName, tableName, partName, colName, engine);
+        return directSql.deletePartitionColumnStats(catName, dbName, tableName, partNames, colNames, engine);
       }
-
       @Override
       protected Boolean getJdoResult(GetHelper<Boolean> ctx)
-          throws MetaException, NoSuchObjectException, InvalidObjectException {
-        return deletePartitionColumnStatisticsVisJDO(catName, dbName, tableName, partName, colName, engine);
+              throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
+        return deletePartitionColumnStatisticsViaJdo(catName, dbName, tableName, partNames, colNames, engine);
       }
     }.run(false);
   }
 
-  private boolean deletePartitionColumnStatisticsVisJDO(String catName, String dbName, String tableName,
-      String partName, String colName, String engine) throws NoSuchObjectException {
+  private boolean deletePartitionColumnStatisticsViaJdo(String catName, String dbName, String tableName,
+      List<String> partNames, List<String> colNames, String engine)
+      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     boolean ret = false;
-    Query query = null;
+    String database = org.apache.commons.lang3.StringUtils.defaultString(dbName,
+      Warehouse.DEFAULT_DATABASE_NAME);
+    String catalog = normalizeIdentifier(catName);
     try {
       openTransaction();
-      MPartitionColumnStatistics mStatsObj;
-      List<MPartitionColumnStatistics> mStatsObjColl;
-      query = pm.newQuery(MPartitionColumnStatistics.class);
-      String filter;
-      String parameters;
-      if (colName != null) {
-        filter =
-            "partition.partitionName == t1 && partition.table.database.name == t2 && partition.table.tableName == t3 && "
-                + "colName == t4 && partition.table.database.catalogName == t5" + (engine != null ? " && engine == t6" : "");
-        parameters =
-            "java.lang.String t1, java.lang.String t2, "
-                + "java.lang.String t3, java.lang.String t4, java.lang.String t5" + (engine != null ? ", java.lang.String t6" : "");
-      } else {
-        filter = "partition.partitionName == t1 && partition.table.database.name == t2 && partition.table.tableName == t3 && partition.table.database.catalogName == t4" + (engine != null ? " && engine == t5" : "");
-        parameters = "java.lang.String t1, java.lang.String t2, java.lang.String t3, java.lang.String t4" + (engine != null ? ", java.lang.String t5" : "");
+      MTable mTable = getMTable(catName, dbName, tableName);
+      if (mTable == null) {
+        throw new NoSuchObjectException("Table " + tableName
+                + "  for which stats deletion is requested doesn't exist");
       }
-      query.setFilter(filter);
-      query.declareParameters(parameters);
-      if (colName != null) {
-        query.setUnique(true);
-        if (engine != null) {
-          mStatsObj =
-              (MPartitionColumnStatistics) query.executeWithArray(partName.trim(),
-                  normalizeIdentifier(dbName),
-                  normalizeIdentifier(tableName),
-                  normalizeIdentifier(colName),
-                  normalizeIdentifier(catName),
-                  engine);
-        } else {
-          mStatsObj =
-              (MPartitionColumnStatistics) query.executeWithArray(partName.trim(),
-                  normalizeIdentifier(dbName),
-                  normalizeIdentifier(tableName),
-                  normalizeIdentifier(colName),
-                  normalizeIdentifier(catName));
+      Batchable<String, Void> b = new Batchable<String, Void>() {
+        @Override
+        public List<Void> run(List<String> input) throws Exception {
+          Query query = pm.newQuery(MPartitionColumnStatistics.class);
+          addQueryAfterUse(query);
+          String filter;
+          String parameters;
+          if (colNames != null && !colNames.isEmpty()) {
+            filter = "t1.contains(partition.partitionName) && partition.table.database.name == t2 && partition.table.tableName == t3 && "
+                + "t4.contains(colName) && partition.table.database.catalogName == t5" + (engine != null ? " && engine == t6" : "");
+            parameters = "java.util.Collection t1, java.lang.String t2, java.lang.String t3, "
+                + "java.util.Collection t4, java.lang.String t5" + (engine != null ? ", java.lang.String t6" : "");
+          } else {
+            filter = "t1.contains(partition.partitionName) && partition.table.database.name == t2 && partition.table.tableName == t3 && " +
+                "partition.table.database.catalogName == t4" + (engine != null ? " && engine == t5" : "");
+            parameters = "java.util.Collection t1, java.lang.String t2, java.lang.String t3, java.lang.String t4" + (engine != null ? ", java.lang.String t5" : "");
+          }
+          query.setFilter(filter);
+          query.declareParameters(parameters);
+          List<Object> params = new ArrayList<>();
+          params.add(input);
+          params.add(normalizeIdentifier(database));
+          params.add(normalizeIdentifier(tableName));
+          if (colNames != null && !colNames.isEmpty()) {
+            List<String> normalizedColNames = new ArrayList<>();
+            for (String colName : colNames){
+              // trim the extra spaces, and change to lowercase
+              normalizedColNames.add(normalizeIdentifier(colName));
+            }
+            params.add(normalizedColNames);
+          }
+          params.add(catalog);
+          if (engine != null) {
+            params.add(engine);
+          }
+          List<MPartitionColumnStatistics> mStatsObjColl =
+              (List<MPartitionColumnStatistics>) query.executeWithArray(params.toArray());
+          pm.retrieveAll(mStatsObjColl);
+          if (mStatsObjColl != null) {
+            pm.deletePersistentAll(mStatsObjColl);
+          } else {
+            throw new NoSuchObjectException("partition stats doesn't exist for db=" + dbName + " table="
+                + tableName + " col=" + String.join(", ", colNames) + " partNames=" + String.join(", ", input));
+          }
+          return null;
         }
-        pm.retrieve(mStatsObj);
-        if (mStatsObj != null) {
-          pm.deletePersistent(mStatsObj);
-        } else {
-          throw new NoSuchObjectException("Column stats doesn't exist for table="
-              + TableName.getQualified(catName, dbName, tableName) +
-              " partition=" + partName + " col=" + colName);
-        }
-      } else {
-        if (engine != null) {
-          mStatsObjColl =
-              (List<MPartitionColumnStatistics>) query.executeWithArray(partName.trim(),
-                  normalizeIdentifier(dbName),
-                  normalizeIdentifier(tableName),
-                  normalizeIdentifier(catName),
-                  engine);
-        } else {
-          mStatsObjColl =
-              (List<MPartitionColumnStatistics>) query.executeWithArray(partName.trim(),
-                  normalizeIdentifier(dbName),
-                  normalizeIdentifier(tableName),
-                  normalizeIdentifier(catName));
-        }
-        pm.retrieveAll(mStatsObjColl);
-        if (mStatsObjColl != null) {
-          pm.deletePersistentAll(mStatsObjColl);
-        } else {
-          throw new NoSuchObjectException("Column stats don't exist for table="
-              + TableName.getQualified(catName, dbName, tableName) + " partition" + partName);
-        }
+      };
+      try {
+        Batchable.runBatched(batchSize, partNames, b);
+      } finally {
+        b.closeAllQueries();
       }
       ret = commitTransaction();
     } finally {
-      rollbackAndCleanup(ret, query);
+      rollbackAndCleanup(ret, null);
     }
     return ret;
   }
 
   @Override
-  public boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
-      String colName, String engine)
+  public boolean deleteTableMultiColumnStatistics(String catName, String dbName, String tableName,
+      List<String> colNames, String engine)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    dbName = org.apache.commons.lang3.StringUtils.defaultString(dbName,
-      Warehouse.DEFAULT_DATABASE_NAME);
+    dbName = org.apache.commons.lang3.StringUtils.defaultString(dbName, Warehouse.DEFAULT_DATABASE_NAME);
     if (tableName == null) {
       throw new InvalidInputException("Table name is null.");
     }
 
-    // Note: this does not verify ACID state; called internally when removing cols/etc.
-    //       Also called via an unused metastore API that checks for ACID tables.
     return new GetHelper<Boolean>(catName, dbName, tableName, true, true) {
-
       @Override
       protected String describeResult() {
         return "delete table column stats";
       }
-
       @Override
       protected Boolean getSqlResult(GetHelper<Boolean> ctx) throws MetaException {
-        return directSql.deleteTableColumnStatistics(getTable().getId(), colName, engine);
+        return directSql.deleteTableColumnStatistics(getTable().getId(), colNames, engine);
       }
-
       @Override
       protected Boolean getJdoResult(GetHelper<Boolean> ctx)
-          throws MetaException, NoSuchObjectException, InvalidObjectException {
-            return deleteTableColumnStatisticsViaJdo(catName, dbName, tableName, colName, engine);
+              throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
+        return deleteTableColumnStatisticsViaJdo(catName, dbName, tableName, colNames, engine);
       }
     }.run(true);
   }
 
   private boolean deleteTableColumnStatisticsViaJdo(String catName, String dbName, String tableName,
-      String colName, String engine) throws NoSuchObjectException {
+      List<String> colNames, String engine) throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     boolean ret = false;
     Query query = null;
+    dbName = org.apache.commons.lang3.StringUtils.defaultString(dbName,
+      Warehouse.DEFAULT_DATABASE_NAME);
+    if (tableName == null) {
+      throw new InvalidInputException("Table name is null.");
+    }
     try {
       openTransaction();
-      MTableColumnStatistics mStatsObj;
+      MTable mTable = getMTable(catName, dbName, tableName);
       List<MTableColumnStatistics> mStatsObjColl;
+      if (mTable == null) {
+        throw new NoSuchObjectException("Table " +
+                TableName.getQualified(catName, dbName, tableName)
+                + "  for which stats deletion is requested doesn't exist");
+      }
+      // Note: this does not verify ACID state; called internally when removing cols/etc.
+      //       Also called via an unused metastore API that checks for ACID tables.
       query = pm.newQuery(MTableColumnStatistics.class);
       String filter;
       String parameters;
-      if (colName != null) {
-        filter = "table.tableName == t1 && table.database.name == t2 && table.database.catalogName == t3 && colName == t4" + (engine != null ? " && engine == t5" : "");
-        parameters = "java.lang.String t1, java.lang.String t2, java.lang.String t3, java.lang.String t4" + (engine != null ? ", java.lang.String t5" : "");
+      if (colNames != null && !colNames.isEmpty()) {
+        filter = "table.tableName == t1 && table.database.name == t2 && table.database.catalogName == t3 && t4.contains(colName)" + (engine != null ? " && engine == t5" : "");
+        parameters = "java.lang.String t1, java.lang.String t2, java.lang.String t3, java.util.Collection t4" + (engine != null ? ", java.lang.String t5" : "");
       } else {
         filter = "table.tableName == t1 && table.database.name == t2 && table.database.catalogName == t3" + (engine != null ? " && engine == t4" : "");
         parameters = "java.lang.String t1, java.lang.String t2, java.lang.String t3" + (engine != null ? ", java.lang.String t4" : "");
@@ -10400,52 +10388,28 @@ public class ObjectStore implements RawStore, Configurable {
 
       query.setFilter(filter);
       query.declareParameters(parameters);
-      if (colName != null) {
-        query.setUnique(true);
-        if (engine != null) {
-          mStatsObj =
-              (MTableColumnStatistics) query.executeWithArray(normalizeIdentifier(tableName),
-                  normalizeIdentifier(dbName),
-                  normalizeIdentifier(catName),
-                  normalizeIdentifier(colName),
-                  engine);
-        } else {
-          mStatsObj =
-              (MTableColumnStatistics) query.executeWithArray(normalizeIdentifier(tableName),
-                  normalizeIdentifier(dbName),
-                  normalizeIdentifier(catName),
-                  normalizeIdentifier(colName));
+      List<Object> params = new ArrayList<>();
+      params.add(normalizeIdentifier(tableName));
+      params.add(normalizeIdentifier(dbName));
+      params.add(normalizeIdentifier(catName));
+      if (colNames != null && !colNames.isEmpty()) {
+        List<String> normalizedColNames = new ArrayList<>();
+        for (String colName : colNames){
+          // trim the extra spaces, and change to lowercase
+          normalizedColNames.add(normalizeIdentifier(colName));
         }
-        pm.retrieve(mStatsObj);
-
-        if (mStatsObj != null) {
-          pm.deletePersistent(mStatsObj);
-        } else {
-          throw new NoSuchObjectException("Column stats doesn't exist for db=" + dbName + " table="
-              + tableName + " col=" + colName);
-        }
+        params.add(normalizedColNames);
+      }
+      if (engine != null) {
+        params.add(engine);
+      }
+      mStatsObjColl = (List<MTableColumnStatistics>) query.executeWithArray(params.toArray());
+      pm.retrieveAll(mStatsObjColl);
+      if (mStatsObjColl != null) {
+        pm.deletePersistentAll(mStatsObjColl);
       } else {
-        if (engine != null) {
-          mStatsObjColl =
-              (List<MTableColumnStatistics>) query.executeWithArray(
-                  normalizeIdentifier(tableName),
-                  normalizeIdentifier(dbName),
-                  normalizeIdentifier(catName),
-                  engine);
-        } else {
-          mStatsObjColl =
-              (List<MTableColumnStatistics>) query.executeWithArray(
-                  normalizeIdentifier(tableName),
-                  normalizeIdentifier(dbName),
-                  normalizeIdentifier(catName));
-        }
-        pm.retrieveAll(mStatsObjColl);
-        if (mStatsObjColl != null) {
-          pm.deletePersistentAll(mStatsObjColl);
-        } else {
-          throw new NoSuchObjectException("Column stats doesn't exist for db=" + dbName + " table="
-              + tableName);
-        }
+        throw new NoSuchObjectException("Column stats doesn't exist for db=" + dbName + " table="
+            + tableName + " col=" + String.join(", ", colNames));
       }
       ret = commitTransaction();
     } finally {
