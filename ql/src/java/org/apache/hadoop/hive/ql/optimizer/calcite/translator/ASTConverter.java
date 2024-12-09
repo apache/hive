@@ -457,7 +457,8 @@ public class ASTConverter {
     if (hiveSortExchange.getDistribution().getType() != RelDistribution.Type.ANY) {
       ASTNode distributeByAst = ASTBuilder.createAST(HiveParser.TOK_DISTRIBUTEBY, "TOK_DISTRIBUTEBY");
       for (int i : hiveSortExchange.getDistribution().getKeys()) {
-        distributeByAst.addChild(convertSortKey(hiveSortExchange, sortExchangeSchema, null, i));
+        distributeByAst.addChild(
+                convertSortKey(hiveSortExchange, sortExchangeSchema, null, sortExchangeSchema.get(i)));
       }
       hiveAST.distributeBy = distributeByAst;
     }
@@ -503,7 +504,11 @@ public class ASTConverter {
 
       // 3 Convert OB expr (OB Expr is usually an input ref except for top
       // level OB; top level OB will have RexCall kept in a map.)
-      ASTNode astCol = convertSortKey(node, schema, obRefToCallMap, c.getFieldIndex());
+      RexNode obExpr = null;
+      if (obRefToCallMap != null) {
+        obExpr = obRefToCallMap.get(c.getFieldIndex());
+      }
+      ASTNode astCol = convertSortKey(node, schema, obExpr, schema.get(c.getFieldIndex()));
 
       // 4 buildup the ob expr AST
       nullDirectionAST.addChild(astCol);
@@ -512,22 +517,16 @@ public class ASTConverter {
     hiveAST.order = orderAst;
   }
 
-  private ASTNode convertSortKey(RelNode node, Schema schema, Map<Integer, RexNode> obRefToCallMap, int fieldIndex) {
-    RexNode obExpr = null;
-    if (obRefToCallMap != null) {
-      obExpr = obRefToCallMap.get(fieldIndex);
-    }
-
+  private ASTNode convertSortKey(RelNode node, Schema schema, RexNode obExpr, ColumnInfo columnInfo) {
     ASTNode astCol;
     if (obExpr != null) {
       astCol = obExpr.accept(new RexVisitor(schema, false, node.getCluster().getRexBuilder()));
     } else {
-      ColumnInfo cI = schema.get(fieldIndex);
       /*
        * The RowResolver setup for Select drops Table associations. So
        * setup ASTNode on unqualified name.
        */
-      astCol = ASTBuilder.unqualifiedName(cI.column);
+      astCol = ASTBuilder.unqualifiedName(columnInfo.column);
     }
     return astCol;
   }
