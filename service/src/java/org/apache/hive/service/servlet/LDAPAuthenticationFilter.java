@@ -48,7 +48,7 @@ public class LDAPAuthenticationFilter implements Filter {
       throws IOException, ServletException {
     HttpServletRequest httpRequest = (HttpServletRequest) request;
     boolean isLoggedIn = ldapAuthService.authenticate(httpRequest, (HttpServletResponse) response);
-    boolean forwardRequest = (isLoginRequest(httpRequest) && isLoggedIn) || (!isLoginRequest(httpRequest) && !isLoggedIn);
+    boolean forwardRequest = isLoginRequest(httpRequest) == isLoggedIn;
     if (forwardRequest) {
       ServletContext rootContext = request.getServletContext().getContext("/");
       // if the request is trying to login, forward to the main homepage in case

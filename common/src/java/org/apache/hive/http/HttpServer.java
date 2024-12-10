@@ -715,11 +715,12 @@ public class HttpServer {
       logCtx.setDisplayName("logs");
     }
 
+    // Define the global filers for each servlet context except the staticCtx(css style).
     Optional<Handler[]> handlers = Optional.ofNullable(contexts.getHandlers());
     handlers.ifPresent(hs -> Arrays.stream(hs)
         .filter(h -> h instanceof ServletContextHandler && !"static".equals(((ServletContextHandler) h).getDisplayName()))
-        .forEach(h -> b.globalFilters.forEach((k, v) -> addFilter(k, v.getFirst(), v.getSecond(),
-            ((ServletContextHandler) h).getServletHandler()))));
+        .forEach(h -> b.globalFilters.forEach((k, v) ->
+            addFilter(k, v.getFirst(), v.getSecond(), ((ServletContextHandler) h).getServletHandler()))));
   }
 
   private Map<String, String> setHeaders() {
