@@ -16,12 +16,15 @@
  */
 package org.apache.hive.service.server;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hive.service.auth.HttpAuthService;
 import org.apache.hive.service.auth.HttpAuthUtils;
 import org.apache.hive.service.auth.PasswdAuthenticationProvider;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.CookieStore;
@@ -34,6 +37,8 @@ import org.apache.http.params.HttpParams;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.util.B64Code;
 import org.eclipse.jetty.util.StringUtil;
+
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import org.junit.AfterClass;
@@ -160,6 +165,28 @@ public class TestHS2HttpServerLDAP {
         httpclient.close();
       }
     }
+  }
+
+  @Test
+  public void testEscapeAuthentication() throws Exception {
+    // Verify any un-authenticated requests are forwarding to the login page
+    try (CloseableHttpClient httpclient = HttpClientBuilder.create().build()) {
+      try (CloseableHttpResponse response =
+               httpclient.execute(new HttpGet("http://" + HOST + ":" + webUIPort + "/hiveserver2.jsp;login"))) {
+        checkForwardToLoginPage(response);
+      }
+      try (CloseableHttpResponse response =
+               httpclient.execute(new HttpGet("http://" + HOST + ":" + webUIPort + "/logs"))) {
+        checkForwardToLoginPage(response);
+      }
+    }
+  }
+
+  private void checkForwardToLoginPage(CloseableHttpResponse response) throws Exception {
+    Assert.assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
+    String content = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
+    Assert.assertTrue(content.contains("<meta name=\"description\" content=\"Login - Hive\">"));
+    Assert.assertTrue(content.contains("<div class=\"login-form\">"));
   }
 
   public static boolean isAuthorized(List<Cookie> cookies) {
