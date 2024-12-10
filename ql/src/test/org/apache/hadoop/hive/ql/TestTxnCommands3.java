@@ -257,13 +257,13 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     testSdpoBucketed(true, 2);
     testSdpoBucketed(false, 2);
   }
-  private void testSdpoBucketed(boolean isVectorized, int bucketing_version)
+  private void testSdpoBucketed(boolean isVectorized, int bucketingVersion)
       throws Exception {
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
     runStatementOnDriver("drop table if exists acid_uap");
     runStatementOnDriver("create transactional table acid_uap(a int, b varchar(128)) " +
         "partitioned by (ds string) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES " +
-        "('bucketing_version'='" + bucketing_version + "')");
+        "('bucketing_version'='" + bucketingVersion + "')");
     runStatementOnDriver("insert into table acid_uap partition (ds='tomorrow') " +
         "values (1, 'bah'),(2, 'yah')");
     runStatementOnDriver("insert into table acid_uap partition (ds='today') " +

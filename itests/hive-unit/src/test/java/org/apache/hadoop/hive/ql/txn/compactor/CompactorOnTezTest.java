@@ -51,9 +51,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -100,9 +98,9 @@ public abstract class CompactorOnTezTest {
     }
     hiveConf.setVar(HiveConf.ConfVars.PRE_EXEC_HOOKS, "");
     hiveConf.setVar(HiveConf.ConfVars.POST_EXEC_HOOKS, "");
-    hiveConf.setVar(HiveConf.ConfVars.METASTORE_WAREHOUSE, testWarehouseDir);
     hiveConf.setVar(HiveConf.ConfVars.HIVE_INPUT_FORMAT, HiveInputFormat.class.getName());
     hiveConf.setVar(HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
+    MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.WAREHOUSE, testWarehouseDir);
     MetastoreConf.setTimeVar(hiveConf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, 2, TimeUnit.SECONDS);
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON, true);
