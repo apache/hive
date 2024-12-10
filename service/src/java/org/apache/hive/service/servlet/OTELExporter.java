@@ -94,7 +94,7 @@ public class OTELExporter extends Thread {
           if (task.getReturnValue() != null && task.getEndTime() != null
                   && queryIdToTasksMap.get(queryID).add(task.getTaskId())) {
             Context parentContext = Context.current().with(rootspan);
-            tracer.spanBuilder(queryID + " - " + task.getTaskId() + " - live")
+            tracer.spanBuilder(queryID + " - " + task.getTaskId())
                     .setParent(parentContext).setAllAttributes(addTaskAttributes(task))
                     .setStartTimestamp(task.getBeginTime(), TimeUnit.MILLISECONDS).startSpan()
                     .end(task.getEndTime(), TimeUnit.MILLISECONDS);
@@ -102,12 +102,12 @@ public class OTELExporter extends Thread {
         }
       } else {
         // In case of live queries being seen for first time and has initialized its queryDisplay
-        rootspan = tracer.spanBuilder(queryID + " - live")
+        rootspan = tracer.spanBuilder(queryID)
                 .setStartTimestamp(lQuery.getBeginTime(), TimeUnit.MILLISECONDS).startSpan();
         Set<String> completedTasks = new HashSet<>();
         Context parentContext = Context.current().with(rootspan);
 
-        Span initSpan = tracer.spanBuilder(queryID + " - live").setParent(parentContext)
+        Span initSpan = tracer.spanBuilder(queryID).setParent(parentContext)
                 .setStartTimestamp(lQuery.getBeginTime(), TimeUnit.MILLISECONDS).startSpan()
                 .setAttribute("QueryId", queryID)
                 .setAttribute("QueryString", lQuery.getQueryDisplay().getQueryString())
@@ -122,7 +122,7 @@ public class OTELExporter extends Thread {
           if (task.getReturnValue() != null && task.getEndTime() != null) {
             completedTasks.add(task.getTaskId());
             parentContext = Context.current().with(rootspan);
-            tracer.spanBuilder(queryID + " - " + task.getTaskId() + " - live")
+            tracer.spanBuilder(queryID + " - " + task.getTaskId())
                     .setParent(parentContext).setAllAttributes(addTaskAttributes(task))
                     .setStartTimestamp(task.getBeginTime(), TimeUnit.MILLISECONDS).startSpan()
                     .end(task.getEndTime(), TimeUnit.MILLISECONDS);
@@ -146,7 +146,7 @@ public class OTELExporter extends Thread {
         for (QueryDisplay.TaskDisplay task : hQuery.getQueryDisplay().getTaskDisplays()) {
           if (!completedTasks.contains(task.getTaskId())) {
             Context parentContext = Context.current().with(rootspan);
-            tracer.spanBuilder(hQueryId + " - " + task.getTaskId() + " - completed")
+            tracer.spanBuilder(hQueryId + " - " + task.getTaskId())
                     .setParent(parentContext).setAllAttributes(addTaskAttributes(task))
                     .setStartTimestamp(task.getBeginTime(), TimeUnit.MILLISECONDS).startSpan()
                     .end(task.getEndTime(), TimeUnit.MILLISECONDS);
@@ -165,7 +165,7 @@ public class OTELExporter extends Thread {
                 .setStartTimestamp(hQuery.getBeginTime(), TimeUnit.MILLISECONDS).startSpan();
         Context parentContext = Context.current().with(rootspan);
 
-        Span initSpan = tracer.spanBuilder(hQueryId + " - completed").setParent(parentContext)
+        Span initSpan = tracer.spanBuilder(hQueryId).setParent(parentContext)
                 .setStartTimestamp(hQuery.getBeginTime(), TimeUnit.MILLISECONDS).startSpan()
                 .setAttribute("QueryId", hQueryId)
                 .setAttribute("QueryString", hQuery.getQueryDisplay().getQueryString())
@@ -178,7 +178,7 @@ public class OTELExporter extends Thread {
 
         for (QueryDisplay.TaskDisplay task : hQuery.getQueryDisplay().getTaskDisplays()) {
           parentContext = Context.current().with(rootspan);
-          tracer.spanBuilder(hQueryId + " - " + task.getTaskId() + " - completed")
+          tracer.spanBuilder(hQueryId + " - " + task.getTaskId())
                   .setParent(parentContext).setAllAttributes(addTaskAttributes(task))
                   .setStartTimestamp(task.getBeginTime(), TimeUnit.MILLISECONDS).startSpan()
                   .end(task.getEndTime(), TimeUnit.MILLISECONDS);
