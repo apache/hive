@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.llap.tezplugins.LlapContainerLauncher;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTaskCommunicator;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTaskSchedulerService;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.tez.DAGStatusObserver;
 import org.apache.hadoop.hive.ql.session.KillQuery;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -81,6 +82,8 @@ import org.apache.tez.dag.api.SessionNotRunning;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.UserPayload;
+import org.apache.tez.dag.api.client.DAGStatus;
+import org.apache.tez.dag.api.client.Progress;
 import org.apache.tez.mapreduce.hadoop.DeprecatedKeys;
 import org.apache.tez.mapreduce.hadoop.MRHelpers;
 import org.apache.tez.mapreduce.hadoop.MRJobConfig;
@@ -102,7 +105,7 @@ import com.google.common.cache.CacheBuilder;
  * Holds session state related to Tez
  */
 @JsonSerialize
-public class TezSessionState {
+public class TezSessionState implements DAGStatusObserver {
 
   protected static final Logger LOG = LoggerFactory.getLogger(TezSessionState.class.getName());
   private static final String TEZ_DIR = "_tez_session_dir";
@@ -155,6 +158,9 @@ public class TezSessionState {
   private KillQuery killQuery;
 
   private static final Cache<String, String> shaCache = CacheBuilder.newBuilder().maximumSize(100).build();
+
+  private DAGStatus dagStatus;
+
   /**
    * Constructor. We do not automatically connect, because we only want to
    * load tez classes when the user has tez installed.
@@ -1013,5 +1019,31 @@ public class TezSessionState {
     return Optional.of(getSession()).map(
             tezClient -> tezClient.getAmHost() + ":" + tezClient.getAmPort())
         .get();
+  }
+
+  /**
+   * This method makes a best-effort attempt to retrieve data from the most recent dagStatus.
+   * An alternative approach would be for Tez to expose a dedicated metrics endpoint for this purpose.
+   * However, as long as TezJobMonitor continues polling the DAG states from the Tez AM, this method
+   * will remain a reliable solution.
+   *
+   * @return A map containing metrics for TezSessionPoolManagerMetrics.
+   */
+  public Map<String, Double> getMetrics() {
+    Map<String, Double> metrics = new HashMap<>();
+    if (dagStatus == null) {
+      return metrics;
+    }
+    Progress progress = dagStatus.getDAGProgress();
+    metrics.put(TezSessionPoolManagerMetrics.TEZ_SESSION_METRIC_RUNNING_TASKS, (double) progress.getRunningTaskCount());
+    // this logic for calculating pending tasks is inline with the one in TezProgressMonitor
+    int pendingTasks = progress.getTotalTaskCount() - progress.getSucceededTaskCount() - progress.getRunningTaskCount();
+    metrics.put(TezSessionPoolManagerMetrics.TEZ_SESSION_METRIC_PENDING_TASKS, (double) pendingTasks);
+    return metrics;
+  }
+
+  @Override
+  public void update(DAGStatus dagStatus) {
+    this.dagStatus = dagStatus;
   }
 }

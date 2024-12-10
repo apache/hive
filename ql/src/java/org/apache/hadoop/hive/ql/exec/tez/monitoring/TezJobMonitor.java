@@ -23,6 +23,7 @@ import static org.apache.tez.dag.api.client.DAGStatus.State.RUNNING;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -39,6 +40,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.tez.DAGStatusObserver;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.exec.tez.Utils;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
@@ -86,6 +88,8 @@ public class TezJobMonitor {
   private final boolean shouldCollectSummaryString;
 
   private StringWriter diagnostics = new StringWriter();
+
+  private final List<DAGStatusObserver> dagStatusObservers = new ArrayList<>();
 
   static {
     shutdownList = new LinkedList<>();
@@ -185,6 +189,7 @@ public class TezJobMonitor {
         }
 
         status = dagClient.getDAGStatus(opts, checkInterval);
+        updateObservers(status);
 
         vertexProgressMap = status.getVertexProgress();
         List<String> vertexNames = vertexProgressMap.keySet()
@@ -493,6 +498,14 @@ public class TezJobMonitor {
         }
       }
     }
+  }
+
+  public void addObserver(DAGStatusObserver observer) {
+    dagStatusObservers.add(observer);
+  }
+
+  private void updateObservers(DAGStatus status) {
+    dagStatusObservers.forEach(o -> o.update(status));
   }
 
   static long getCounterValueByGroupName(TezCounters vertexCounters, String groupNamePattern,
