@@ -1,0 +1,377 @@
+PREHOOK: query: create table explain_multiple_ptf_big_table
+(
+    key1       string,
+    value_str1 string,
+    key3       string
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@explain_multiple_ptf_big_table
+POSTHOOK: query: create table explain_multiple_ptf_big_table
+(
+    key1       string,
+    value_str1 string,
+    key3       string
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@explain_multiple_ptf_big_table
+PREHOOK: query: create table explain_multiple_ptf_big_table2
+(
+    key21       string,
+    value_str21 string,
+    key23       string
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@explain_multiple_ptf_big_table2
+POSTHOOK: query: create table explain_multiple_ptf_big_table2
+(
+    key21       string,
+    value_str21 string,
+    key23       string
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@explain_multiple_ptf_big_table2
+PREHOOK: query: alter table explain_multiple_ptf_big_table
+    update statistics set('numRows' = '4611686036854775807',
+                          'rawDataSize' = '922337203685477500')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@explain_multiple_ptf_big_table
+PREHOOK: Output: default@explain_multiple_ptf_big_table
+POSTHOOK: query: alter table explain_multiple_ptf_big_table
+    update statistics set('numRows' = '4611686036854775807',
+                          'rawDataSize' = '922337203685477500')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@explain_multiple_ptf_big_table
+POSTHOOK: Output: default@explain_multiple_ptf_big_table
+PREHOOK: query: alter table explain_multiple_ptf_big_table2
+    update statistics set('numRows' = '4611686036854775807',
+                          'rawDataSize' = '9223372036854775800')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@explain_multiple_ptf_big_table2
+PREHOOK: Output: default@explain_multiple_ptf_big_table2
+POSTHOOK: query: alter table explain_multiple_ptf_big_table2
+    update statistics set('numRows' = '4611686036854775807',
+                          'rawDataSize' = '9223372036854775800')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@explain_multiple_ptf_big_table2
+POSTHOOK: Output: default@explain_multiple_ptf_big_table2
+PREHOOK: query: explain
+select *,
+       row_number() over (partition by key order by key2 desc)   rn,
+       row_number() over (partition by key2 order by key desc)   rn2,
+       max(value_str) over (partition by key2 order by key desc) max1,
+       max(value_str) over (partition by key order by key2 desc) max3,
+       min(value_str) over (partition by key2 order by key desc) min1,
+       min(value_str) over (partition by key order by key2 desc) min3,
+       last_value(value_str) over (partition by key)             lv,
+       first_value(value_str) over (partition by key2)           fv,
+       max(value_str) over (partition by key)                    fv21
+from (select key1 key, value_str1 value_str, key3 key2
+      from explain_multiple_ptf_big_table
+      union all
+      select key21 key, value_str21 value_str, key23 key2
+      from explain_multiple_ptf_big_table2) a1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@explain_multiple_ptf_big_table
+PREHOOK: Input: default@explain_multiple_ptf_big_table2
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select *,
+       row_number() over (partition by key order by key2 desc)   rn,
+       row_number() over (partition by key2 order by key desc)   rn2,
+       max(value_str) over (partition by key2 order by key desc) max1,
+       max(value_str) over (partition by key order by key2 desc) max3,
+       min(value_str) over (partition by key2 order by key desc) min1,
+       min(value_str) over (partition by key order by key2 desc) min3,
+       last_value(value_str) over (partition by key)             lv,
+       first_value(value_str) over (partition by key2)           fv,
+       max(value_str) over (partition by key)                    fv21
+from (select key1 key, value_str1 value_str, key3 key2
+      from explain_multiple_ptf_big_table
+      union all
+      select key21 key, value_str21 value_str, key23 key2
+      from explain_multiple_ptf_big_table2) a1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@explain_multiple_ptf_big_table
+POSTHOOK: Input: default@explain_multiple_ptf_big_table2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Union 2 (CONTAINS)
+        Map 8 <- Union 2 (CONTAINS)
+        Reducer 3 <- Union 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+        Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
+        Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
+        Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: explain_multiple_ptf_big_table
+                  Statistics: Num rows: 4611686036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key1 (type: string), value_str1 (type: string), key3 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 4611686036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string), _col2 (type: string)
+                      null sort order: aa
+                      sort order: +-
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 9223372036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 8 
+            Map Operator Tree:
+                TableScan
+                  alias: explain_multiple_ptf_big_table2
+                  Statistics: Num rows: 4611686036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key21 (type: string), value_str21 (type: string), key23 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 4611686036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string), _col2 (type: string)
+                      null sort order: aa
+                      sort order: +-
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 9223372036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), KEY.reducesinkkey1 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 9223372036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: string, _col1: string, _col2: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col2 DESC NULLS FIRST
+                        partition by: _col0
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_0
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: max_window_3
+                              arguments: _col1
+                              name: max
+                              window function: GenericUDAFMaxEvaluator
+                              window frame: RANGE PRECEDING(MAX)~CURRENT
+                            window function definition
+                              alias: min_window_5
+                              arguments: _col1
+                              name: min
+                              window function: GenericUDAFMinEvaluator
+                              window frame: RANGE PRECEDING(MAX)~CURRENT
+                  Statistics: Num rows: 9223372036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: row_number_window_0 (type: int), max_window_3 (type: string), min_window_5 (type: string), _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                    outputColumnNames: row_number_window_0, max_window_3, min_window_5, _col0, _col1, _col2
+                    Statistics: Num rows: 9223372036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col2 (type: string), _col0 (type: string)
+                      null sort order: aa
+                      sort order: +-
+                      Map-reduce partition columns: _col2 (type: string)
+                      Statistics: Num rows: 9223372036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: row_number_window_0 (type: int), max_window_3 (type: string), min_window_5 (type: string), _col1 (type: string)
+        Reducer 4 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: string), VALUE._col2 (type: string), KEY.reducesinkkey1 (type: string), VALUE._col3 (type: string), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 9223372036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col1: string, _col2: string, _col3: string, _col4: string, _col5: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col3 DESC NULLS FIRST
+                        partition by: _col5
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_1
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: max_window_2
+                              arguments: _col4
+                              name: max
+                              window function: GenericUDAFMaxEvaluator
+                              window frame: RANGE PRECEDING(MAX)~CURRENT
+                            window function definition
+                              alias: min_window_4
+                              arguments: _col4
+                              name: min
+                              window function: GenericUDAFMinEvaluator
+                              window frame: RANGE PRECEDING(MAX)~CURRENT
+                  Statistics: Num rows: 9223372036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: row_number_window_1 (type: int), max_window_2 (type: string), min_window_4 (type: string), _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
+                    outputColumnNames: row_number_window_1, max_window_2, min_window_4, _col0, _col1, _col2, _col3, _col4, _col5
+                    Statistics: Num rows: 9223372036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col3 (type: string)
+                      null sort order: z
+                      sort order: -
+                      Map-reduce partition columns: _col3 (type: string)
+                      Statistics: Num rows: 9223372036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: row_number_window_1 (type: int), max_window_2 (type: string), min_window_4 (type: string), _col0 (type: int), _col1 (type: string), _col2 (type: string), _col4 (type: string), _col5 (type: string)
+        Reducer 5 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: int), VALUE._col4 (type: string), VALUE._col5 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col6 (type: string), VALUE._col7 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 9223372036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col1: string, _col2: string, _col3: int, _col4: string, _col5: string, _col6: string, _col7: string, _col8: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col6 DESC NULLS LAST
+                        partition by: _col6
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: first_value_window_6
+                              arguments: _col7
+                              name: first_value
+                              window function: GenericUDAFFirstValueEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                  Statistics: Num rows: 9223372036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: first_value_window_6 (type: string), _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: int), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: string)
+                    outputColumnNames: first_value_window_6, _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                    Statistics: Num rows: 9223372036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col8 (type: string)
+                      null sort order: a
+                      sort order: +
+                      Map-reduce partition columns: _col8 (type: string)
+                      Statistics: Num rows: 9223372036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: first_value_window_6 (type: string), _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: int), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string)
+        Reducer 6 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), VALUE._col1 (type: int), VALUE._col2 (type: string), VALUE._col3 (type: string), VALUE._col4 (type: int), VALUE._col5 (type: string), VALUE._col6 (type: string), VALUE._col7 (type: string), VALUE._col8 (type: string), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                Statistics: Num rows: 9223372036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: string, _col1: int, _col2: string, _col3: string, _col4: int, _col5: string, _col6: string, _col7: string, _col8: string, _col9: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col9 ASC NULLS FIRST
+                        partition by: _col9
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: first_value_window_7
+                              arguments: _col8
+                              name: first_value
+                              window function: GenericUDAFFirstValueEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                  Statistics: Num rows: 9223372036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: first_value_window_7 (type: string), _col0 (type: string), _col1 (type: int), _col2 (type: string), _col3 (type: string), _col4 (type: int), _col5 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: string), _col9 (type: string)
+                    outputColumnNames: first_value_window_7, _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                    Statistics: Num rows: 9223372036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col7 (type: string)
+                      null sort order: a
+                      sort order: +
+                      Map-reduce partition columns: _col7 (type: string)
+                      Statistics: Num rows: 9223372036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: first_value_window_7 (type: string), _col0 (type: string), _col1 (type: int), _col2 (type: string), _col3 (type: string), _col4 (type: int), _col5 (type: string), _col6 (type: string), _col8 (type: string), _col9 (type: string)
+        Reducer 7 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: int), VALUE._col3 (type: string), VALUE._col4 (type: string), VALUE._col5 (type: int), VALUE._col6 (type: string), VALUE._col7 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col8 (type: string), VALUE._col9 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                Statistics: Num rows: 9223372036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: string, _col1: string, _col2: int, _col3: string, _col4: string, _col5: int, _col6: string, _col7: string, _col8: string, _col9: string, _col10: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col8 ASC NULLS FIRST
+                        partition by: _col8
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: max_window_8
+                              arguments: _col9
+                              name: max
+                              window function: GenericUDAFMaxEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                  Statistics: Num rows: 9223372036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col8 (type: string), _col9 (type: string), _col10 (type: string), _col5 (type: int), _col2 (type: int), _col3 (type: string), _col6 (type: string), _col4 (type: string), _col7 (type: string), _col1 (type: string), _col0 (type: string), max_window_8 (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                    Statistics: Num rows: 9223372036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 9223372036854775807 Data size: 9223372036854775807 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Union 2 
+            Vertex: Union 2
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
