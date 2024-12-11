@@ -69,7 +69,7 @@ public class OTELExporter extends Thread {
         jvmMetrics.setJvmMetrics();
         exposeMetricsToOTEL();
       } catch (Throwable e) {
-        LOG.error("Exception occurred in OTELExporter thread: " + e);
+        LOG.error("Exception occurred in OTELExporter thread ", e);
       }
       
       try {
