@@ -584,7 +584,7 @@ public class MetastoreConf {
         "it is desirable to configure metastore.thrift.bind.host on the intended leader HMS."),
     METASTORE_HOUSEKEEPING_LEADER_ELECTION("metastore.housekeeping.leader.election",
         "metastore.housekeeping.leader.election",
-        "host", new StringSetValidator("host", "lock"),
+        "lock", new StringSetValidator("host", "lock"),
         "Set to host, HMS will choose the leader by the configured metastore.housekeeping.leader.hostname.\n" +
         "Set to lock, HMS will use the Hive lock to elect the leader."),
     METASTORE_HOUSEKEEPING_LEADER_AUDITTABLE("metastore.housekeeping.leader.auditTable",
@@ -603,7 +603,7 @@ public class MetastoreConf {
         "metastore.housekeeping.leader.lock.namespace", "",
         "The database where the Hive lock sits when metastore.housekeeping.leader.election is set to lock."),
     METASTORE_HOUSEKEEPING_THREADS_ON("metastore.housekeeping.threads.on",
-        "hive.metastore.housekeeping.threads.on", false,
+        "hive.metastore.housekeeping.threads.on", true,
         "Whether to run the tasks under metastore.task.threads.remote on this metastore instance or not.\n" +
             "Set this to true on one instance of the Thrift metastore service as part of turning\n" +
             "on Hive transactions. For a complete list of parameters required for turning on\n" +
@@ -638,12 +638,12 @@ public class MetastoreConf {
         "hive.txn.acid.metrics.delta.pct.threshold", 0.01f,
         "Percentage (fractional) size of the delta files relative to the base directory. Deltas smaller than this threshold " +
             "count as small deltas. Default 0.01 = 1%.)"),
-    COMPACTOR_INITIATOR_ON("metastore.compactor.initiator.on", "hive.compactor.initiator.on", false,
+    COMPACTOR_INITIATOR_ON("metastore.compactor.initiator.on", "hive.compactor.initiator.on", true,
         "Whether to run the initiator thread on this metastore instance or not.\n" +
             "Set this to true on one instance of the Thrift metastore service as part of turning\n" +
             "on Hive transactions. For a complete list of parameters required for turning on\n" +
             "transactions, see hive.txn.manager."),
-    COMPACTOR_CLEANER_ON("metastore.compactor.cleaner.on", "hive.compactor.cleaner.on", false,
+    COMPACTOR_CLEANER_ON("metastore.compactor.cleaner.on", "hive.compactor.cleaner.on", true,
         "Whether to run the cleaner thread on this metastore instance or not.\n" +
             "Set this to true on one instance of the Thrift metastore service as part of turning\n" +
             "on Hive transactions. For a complete list of parameters required for turning on\n" +
