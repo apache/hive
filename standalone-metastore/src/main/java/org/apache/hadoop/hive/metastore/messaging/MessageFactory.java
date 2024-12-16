@@ -25,6 +25,9 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
+import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
@@ -74,6 +77,12 @@ public abstract class MessageFactory {
   public static final String ABORT_TXN_EVENT = "ABORT_TXN";
   public static final String ALLOC_WRITE_ID_EVENT = "ALLOC_WRITE_ID_EVENT";
   public static final String ALTER_CATALOG_EVENT = "ALTER_CATALOG";
+  public static final String CREATE_ROLE_EVENT = "CREATE_ROLE";
+  public static final String DROP_ROLE_EVENT = "DROP_ROLE";
+  public static final String GRANT_ROLE_EVENT = "GRANT_ROLE";
+  public static final String REVOKE_ROLE_EVENT = "REVOKE_ROLE";
+  public static final String GRANT_PRIVILEGES_EVENT = "GRANT_PRIVILEGES";
+  public static final String REVOKE_PRIVILEGES_EVENT = "REVOKE_PRIVILEGES";
 
   private static MessageFactory instance = null;
 
@@ -278,6 +287,65 @@ public abstract class MessageFactory {
    */
   public abstract AllocWriteIdMessage buildAllocWriteIdMessage(List<TxnToWriteId> txnToWriteIdList, String dbName,
                                                                String tableName);
+
+  /**
+   * Factory method for building create role message
+   *
+   * @param roleName role name
+   * @param ownerName owner name
+   * @return instance of CreateRoleMessage
+   */
+  public abstract CreateRoleMessage buildCreateRoleMessage(String roleName, String ownerName);
+
+  /**
+   * Factory method for building drop role message
+   *
+   * @param roleName role name
+   * @return instance of DropRoleMessage
+   */
+  public abstract DropRoleMessage buildDropRoleMessage(String roleName);
+
+  /**
+   * Factory method for building grant role message
+   *
+   * @param role role
+   * @param principalName principal name
+   * @param principalType principal type
+   * @param grantor grantor
+   * @param grantorType grantor type
+   * @param grantOption grant option
+   * @return instance of GrantRoleMessage
+   */
+  public abstract GrantRoleMessage buildGrantRoleMessage(Role role, String principalName, PrincipalType principalType, String grantor,
+      PrincipalType grantorType, boolean grantOption);
+
+  /**
+   * Factory method for building revoke role message
+   *
+   * @param role role
+   * @param userName user name
+   * @param principalType principal type
+   * @param grantOption grant option
+   * @return instance of RevokeRoleMessage
+   */
+  public abstract RevokeRoleMessage buildRevokeRoleMessage(Role role, String userName, PrincipalType principalType, boolean grantOption);
+
+  /**
+   * Factory method for building grant privileges message
+   *
+   * @param privileges privileges
+   * @return instance of GrantPrivilegesMessage
+   */
+  public abstract GrantPrivilegesMessage buildGrantPrivilegesMessage(PrivilegeBag privileges);
+
+  /**
+   * Factory method for building revoke privileges message
+   *
+   * @param privileges privileges
+   * @param grantOption grant option
+   * @return instance of RevokePrivilegesMessage
+   */
+  public abstract RevokePrivilegesMessage buildRevokePrivilegesMessage(PrivilegeBag privileges, boolean grantOption);
 
   /***
    * Factory method for building add primary key message

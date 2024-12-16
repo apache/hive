@@ -33,6 +33,9 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
+import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
@@ -51,13 +54,17 @@ import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateCatalogMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateFunctionMessage;
+import org.apache.hadoop.hive.metastore.messaging.CreateRoleMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropCatalogMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropFunctionMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropPartitionMessage;
+import org.apache.hadoop.hive.metastore.messaging.DropRoleMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropTableMessage;
+import org.apache.hadoop.hive.metastore.messaging.GrantPrivilegesMessage;
+import org.apache.hadoop.hive.metastore.messaging.GrantRoleMessage;
 import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
@@ -66,6 +73,8 @@ import org.apache.hadoop.hive.metastore.messaging.OpenTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.AbortTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.AllocWriteIdMessage;
+import org.apache.hadoop.hive.metastore.messaging.RevokePrivilegesMessage;
+import org.apache.hadoop.hive.metastore.messaging.RevokeRoleMessage;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TException;
@@ -235,6 +244,37 @@ public class JSONMessageFactory extends MessageFactory {
     return new JSONAllocWriteIdMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, txnToWriteIdList, dbName, tableName, now());
   }
 
+  @Override
+  public CreateRoleMessage buildCreateRoleMessage(String roleName, String ownerName) {
+    return new JsonCreateRoleMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, roleName, ownerName, now());
+  }
+
+  @Override
+  public DropRoleMessage buildDropRoleMessage(String roleName) {
+    return new JsonDropRoleMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, roleName, now());
+  }
+
+  @Override
+  public GrantRoleMessage buildGrantRoleMessage(Role role, String principalName, PrincipalType principalType, String grantor,
+      PrincipalType grantorType, boolean grantOption) {
+    return new JsonGrantRoleMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, role, principalName, principalType, grantor, grantorType, grantOption, now());
+  }
+
+  @Override
+  public RevokeRoleMessage buildRevokeRoleMessage(Role role, String userName, PrincipalType principalType, boolean grantOption) {
+    return new JsonRevokeRoleMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, role, userName, principalType, grantOption, now());
+  }
+
+  @Override
+  public GrantPrivilegesMessage buildGrantPrivilegesMessage(PrivilegeBag privileges) {
+    return new JsonGrantPrivilegesMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, privileges, now());
+  }
+
+  @Override
+  public RevokePrivilegesMessage buildRevokePrivilegesMessage(PrivilegeBag privileges, boolean grantOption) {
+    return new JsonRevokePrivilegesMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, privileges, grantOption, now());
+  }
+
   private long now() {
     return System.currentTimeMillis() / 1000;
   }
@@ -301,6 +341,16 @@ public class JSONMessageFactory extends MessageFactory {
   static String createFunctionObjJson(Function functionObj) throws TException {
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
     return serializer.toString(functionObj, "UTF-8");
+  }
+
+  static String createRoleObjJson(Role roleObj) throws TException {
+    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+    return serializer.toString(roleObj, "UTF-8");
+  }
+
+  static String createPrivilegesObjJson(PrivilegeBag privilegeBagObj) throws TException {
+    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+    return serializer.toString(privilegeBagObj, "UTF-8");
   }
 
   public static ObjectNode getJsonTree(NotificationEvent event) throws Exception {
