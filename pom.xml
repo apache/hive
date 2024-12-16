@@ -196,6 +196,8 @@
     <pig.version>0.16.0</pig.version>
     <plexus.version>1.5.6</plexus.version>
     <protobuf.version>3.25.5</protobuf.version>
+    <protoc-jar-maven-plugin.version>3.11.4</protoc-jar-maven-plugin.version>
+    <protoc.path>${env.PROTOC_PATH}</protoc.path>
     <rat.version>0.16.1</rat.version>
     <roaringbit.version>1.2.1</roaringbit.version>
     <stax.version>1.0.1</stax.version>
@@ -1578,6 +1580,11 @@
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>exec-maven-plugin</artifactId>
           <version>${maven.exec.plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>com.github.os72</groupId>
+          <artifactId>protoc-jar-maven-plugin</artifactId>
+          <version>${protoc-jar-maven-plugin.version}</version>
         </plugin>
       </plugins>
     </pluginManagement>
