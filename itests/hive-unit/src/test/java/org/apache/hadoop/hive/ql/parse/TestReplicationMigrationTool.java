@@ -31,6 +31,7 @@ import org.apache.hadoop.util.ToolRunner;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -45,6 +46,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+// Enable the test post fixing HIVE-28608
+@Ignore
 public class TestReplicationMigrationTool extends BaseReplicationAcrossInstances {
 
   String extraPrimaryDb;

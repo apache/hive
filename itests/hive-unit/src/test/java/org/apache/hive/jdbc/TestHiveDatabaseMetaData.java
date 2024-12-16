@@ -18,8 +18,6 @@
 
 package org.apache.hive.jdbc;
 
-import org.apache.hive.jdbc.HiveConnection;
-import org.apache.hive.jdbc.Utils;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 
 import java.util.LinkedHashMap;
@@ -106,5 +104,17 @@ public class TestHiveDatabaseMetaData {
     assertEquals("false", jdbcConnectionParams.getHiveConfs()
         .get(Utils.JdbcConnectionParams.HIVE_CONF_PREFIX + "hive.default.nulls.last"));
 
+  }
+
+  @Test
+  public void testGetUserName() throws SQLException {
+    HiveConnection hiveConnection = new HiveConnection("jdbc:hive2:///;user=foo", new Properties());
+    hiveDatabaseMetaData = new HiveDatabaseMetaData(hiveConnection, null, null);
+    assertEquals("foo", hiveDatabaseMetaData.getUserName());
+  }
+
+  @Test
+  public void testGetURL() {
+    assertEquals(connection.getConnectedUrl(), hiveDatabaseMetaData.getURL());
   }
 }

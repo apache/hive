@@ -49,7 +49,7 @@ POSTHOOK: query: select readable_metrics from default.ice_ts_4.FILES
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_ts_4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"id":{"column_size":46,"value_count":2,"null_value_count":0,"nan_value_count":null,"lower_bound":1,"upper_bound":2},"ts":{"column_size":76,"value_count":2,"null_value_count":0,"nan_value_count":null,"lower_bound":"2023-07-20 00:00:00","upper_bound":"2023-07-20 00:00:00"}}
+{"id":{"column_size":#Masked#,"value_count":2,"null_value_count":0,"nan_value_count":null,"lower_bound":1,"upper_bound":2},"ts":{"column_size":#Masked#,"value_count":2,"null_value_count":0,"nan_value_count":null,"lower_bound":"2023-07-20 00:00:00","upper_bound":"2023-07-20 00:00:00"}}
 {"id":{"column_size":null,"value_count":null,"null_value_count":null,"nan_value_count":null,"lower_bound":null,"upper_bound":null},"ts":{"column_size":null,"value_count":null,"null_value_count":null,"nan_value_count":null,"lower_bound":null,"upper_bound":null}}
 PREHOOK: query: select readable_metrics from default.ice_ts_4.ALL_FILES
 PREHOOK: type: QUERY
@@ -59,7 +59,7 @@ POSTHOOK: query: select readable_metrics from default.ice_ts_4.ALL_FILES
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_ts_4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"id":{"column_size":46,"value_count":2,"null_value_count":0,"nan_value_count":null,"lower_bound":1,"upper_bound":2},"ts":{"column_size":76,"value_count":2,"null_value_count":0,"nan_value_count":null,"lower_bound":"2023-07-20 00:00:00","upper_bound":"2023-07-20 00:00:00"}}
+{"id":{"column_size":#Masked#,"value_count":2,"null_value_count":0,"nan_value_count":null,"lower_bound":1,"upper_bound":2},"ts":{"column_size":#Masked#,"value_count":2,"null_value_count":0,"nan_value_count":null,"lower_bound":"2023-07-20 00:00:00","upper_bound":"2023-07-20 00:00:00"}}
 {"id":{"column_size":null,"value_count":null,"null_value_count":null,"nan_value_count":null,"lower_bound":null,"upper_bound":null},"ts":{"column_size":null,"value_count":null,"null_value_count":null,"nan_value_count":null,"lower_bound":null,"upper_bound":null}}
 PREHOOK: query: select readable_metrics from default.ice_ts_4.DATA_FILES
 PREHOOK: type: QUERY
@@ -69,7 +69,7 @@ POSTHOOK: query: select readable_metrics from default.ice_ts_4.DATA_FILES
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_ts_4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"id":{"column_size":46,"value_count":2,"null_value_count":0,"nan_value_count":null,"lower_bound":1,"upper_bound":2},"ts":{"column_size":76,"value_count":2,"null_value_count":0,"nan_value_count":null,"lower_bound":"2023-07-20 00:00:00","upper_bound":"2023-07-20 00:00:00"}}
+{"id":{"column_size":#Masked#,"value_count":2,"null_value_count":0,"nan_value_count":null,"lower_bound":1,"upper_bound":2},"ts":{"column_size":#Masked#,"value_count":2,"null_value_count":0,"nan_value_count":null,"lower_bound":"2023-07-20 00:00:00","upper_bound":"2023-07-20 00:00:00"}}
 PREHOOK: query: select readable_metrics from default.ice_ts_4.ALL_DATA_FILES
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_ts_4
@@ -78,7 +78,7 @@ POSTHOOK: query: select readable_metrics from default.ice_ts_4.ALL_DATA_FILES
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_ts_4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"id":{"column_size":46,"value_count":2,"null_value_count":0,"nan_value_count":null,"lower_bound":1,"upper_bound":2},"ts":{"column_size":76,"value_count":2,"null_value_count":0,"nan_value_count":null,"lower_bound":"2023-07-20 00:00:00","upper_bound":"2023-07-20 00:00:00"}}
+{"id":{"column_size":#Masked#,"value_count":2,"null_value_count":0,"nan_value_count":null,"lower_bound":1,"upper_bound":2},"ts":{"column_size":#Masked#,"value_count":2,"null_value_count":0,"nan_value_count":null,"lower_bound":"2023-07-20 00:00:00","upper_bound":"2023-07-20 00:00:00"}}
 PREHOOK: query: select readable_metrics from default.ice_ts_4.DELETE_FILES
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_ts_4

@@ -16,6 +16,8 @@
 --! qt:replace:/^[0-9]/#Masked#/
 -- Mask removed file size
 --! qt:replace:/(\S\"removed-files-size\\\":\\\")(\d+)(\\\")/$1#Masked#$3/
+-- Mask iceberg version
+--! qt:replace:/(\S\"iceberg-version\\\":\\\")(\w+\s\w+\s\d+\.\d+\.\d+\s\(\w+\s\w+\))(\\\")/$1#Masked#$3/
 
 set hive.llap.io.enabled=true;
 set hive.vectorized.execution.enabled=true;
@@ -63,11 +65,26 @@ delete from ice_orc where last_name in ('ln1', 'ln9');
 delete from ice_orc where last_name in ('ln3', 'ln11');
 delete from ice_orc where last_name in ('ln5', 'ln13');
 
+alter table ice_orc set partition spec(team_id);
+insert into ice_orc VALUES
+    ('fn17', 'ln17',  1, 10, 100),
+    ('fn18','ln18', 1, 10, 100);
+insert into ice_orc VALUES
+    ('fn19','ln19', 2, 11, 100),
+    ('fn20','ln20', 2, 11, 100);
+insert into ice_orc VALUES
+    ('fn21','ln21', 3, 12, 100),
+    ('fn22','ln22', 3, 12, 100);
+insert into ice_orc VALUES
+    ('fn23','ln23', 4, 13, 100),
+    ('fn24','ln24', 4, 13, 100);
+
+
 select * from ice_orc;
 describe formatted ice_orc;
 
-explain alter table ice_orc COMPACT 'major' and wait where team_id=10 or first_name in ('fn3', 'fn11') or last_name in ('ln7', 'ln15');
-alter table ice_orc COMPACT 'major' and wait where team_id=10 or first_name in ('fn3', 'fn11') or last_name in ('ln7', 'ln15');
+explain alter table ice_orc COMPACT 'major' and wait where company_id=100 or dept_id in (1,2);
+alter table ice_orc COMPACT 'major' and wait where company_id=100 or dept_id in (1,2);
 
 select * from ice_orc;
 describe formatted ice_orc;

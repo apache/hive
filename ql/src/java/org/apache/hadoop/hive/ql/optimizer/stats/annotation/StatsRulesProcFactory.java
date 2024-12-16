@@ -557,14 +557,17 @@ public class StatsRulesProcFactory {
       }
       for (int i = 0; i < columnStats.size(); i++) {
         long dvs = columnStats.get(i) == null ? 0 : columnStats.get(i).getCountDistint();
-        long intersectionSize = estimateIntersectionSize(aspCtx.getConf(), columnStats.get(i), values.get(i));
+        if (dvs == 0) {
+          factor *= 0.5;
+          continue;
+        }
         // (num of distinct vals for col in IN clause  / num of distinct vals for col )
-        double columnFactor = dvs == 0 ? 0.5d : (1.0d / dvs);
+        double columnFactor = 1.0 / dvs;
         if (!multiColumn) {
-          columnFactor *= intersectionSize;
+          columnFactor *= estimateIntersectionSize(aspCtx.getConf(), columnStats.get(i), values.get(i));
         }
         // max can be 1, even when ndv is larger in IN clause than in column stats
-        factor *= columnFactor > 1d ? 1d : columnFactor;
+        factor *= Math.min(columnFactor, 1.0);
       }
 
       // Clamp at 1 to be sure that we don't get out of range.
@@ -3291,8 +3294,7 @@ public class StatsRulesProcFactory {
       return stats;
     }
     LOG.debug("using runtime stats for {}; {}", op, os.get());
-    Statistics outStats = stats.clone();
-    outStats = outStats.scaleToRowCount(os.get().getOutputRecords(), false);
+    Statistics outStats = stats.scaleToRowCount(os.get().getOutputRecords(), false);
     outStats.setRuntimeStats(true);
     return outStats;
   }

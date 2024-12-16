@@ -152,6 +152,16 @@ public class JvmMetrics implements MetricsSource {
   }
 
   private void getThreadUsage(MetricsRecordBuilder rb) {
+    ThreadCountResult result = getThreadCountResult(threadMXBean);
+    rb.addGauge(ThreadsNew, result.threadsNew)
+        .addGauge(ThreadsRunnable, result.threadsRunnable)
+        .addGauge(ThreadsBlocked, result.threadsBlocked)
+        .addGauge(ThreadsWaiting, result.threadsWaiting)
+        .addGauge(ThreadsTimedWaiting, result.threadsTimedWaiting)
+        .addGauge(ThreadsTerminated, result.threadsTerminated);
+  }
+
+  public static ThreadCountResult getThreadCountResult(ThreadMXBean threadMXBean) {
     int threadsNew = 0;
     int threadsRunnable = 0;
     int threadsBlocked = 0;
@@ -170,12 +180,26 @@ public class JvmMetrics implements MetricsSource {
         case TERMINATED:    threadsTerminated++;    break;
       }
     }
-    rb.addGauge(ThreadsNew, threadsNew)
-        .addGauge(ThreadsRunnable, threadsRunnable)
-        .addGauge(ThreadsBlocked, threadsBlocked)
-        .addGauge(ThreadsWaiting, threadsWaiting)
-        .addGauge(ThreadsTimedWaiting, threadsTimedWaiting)
-        .addGauge(ThreadsTerminated, threadsTerminated);
+    return new ThreadCountResult(threadsNew, threadsRunnable, threadsBlocked, threadsWaiting, threadsTimedWaiting, threadsTerminated);
+  }
+
+  public static class ThreadCountResult {
+    public final int threadsNew;
+    public final int threadsRunnable;
+    public final int threadsBlocked;
+    public final int threadsWaiting;
+    public final int threadsTimedWaiting;
+    public final int threadsTerminated;
+
+    public ThreadCountResult(int threadsNew, int threadsRunnable, int threadsBlocked, int threadsWaiting, int threadsTimedWaiting,
+        int threadsTerminated) {
+      this.threadsNew = threadsNew;
+      this.threadsRunnable = threadsRunnable;
+      this.threadsBlocked = threadsBlocked;
+      this.threadsWaiting = threadsWaiting;
+      this.threadsTimedWaiting = threadsTimedWaiting;
+      this.threadsTerminated = threadsTerminated;
+    }
   }
 
   private void getEventCounters(MetricsRecordBuilder rb) {

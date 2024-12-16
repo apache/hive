@@ -20,7 +20,6 @@
 package org.apache.iceberg.mr;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -197,7 +196,7 @@ public class TestHelper {
 
   public static class RecordsBuilder {
 
-    private final List<Record> records = new ArrayList<Record>();
+    private final List<Record> records = Lists.newArrayList();
     private final Schema schema;
 
     private RecordsBuilder(Schema schema) {

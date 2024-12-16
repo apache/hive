@@ -243,7 +243,7 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"event_id\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"event_time\",\"required\":false,\"type\":\"timestamptz\"},{\"id\":3,\"name\":\"event_src\",\"required\":false,\"type\":\"string\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"2\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"26\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"13\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"2\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"26\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"13\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"event_src_trunc\",\"transform\":\"truncate[3]\",\"source-id\":3,\"field-id\":1000},{\"name\":\"event_time_month\",\"transform\":\"month\",\"source-id\":2,\"field-id\":1001}]}
 	format-version      	2                   
@@ -346,7 +346,7 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"event_id\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"event_time\",\"required\":false,\"type\":\"timestamptz\"},{\"id\":3,\"name\":\"event_src\",\"required\":false,\"type\":\"string\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"added-data-files\":\"2\",\"deleted-data-files\":\"4\",\"added-records\":\"8\",\"deleted-records\":\"8\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"4\",\"total-records\":\"26\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"8\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-summary	{\"added-data-files\":\"2\",\"deleted-data-files\":\"4\",\"added-records\":\"8\",\"deleted-records\":\"8\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"4\",\"total-records\":\"26\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"8\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"event_src_trunc\",\"transform\":\"truncate[3]\",\"source-id\":3,\"field-id\":1000},{\"name\":\"event_time_month\",\"transform\":\"month\",\"source-id\":2,\"field-id\":1001}]}
 	format-version      	2                   

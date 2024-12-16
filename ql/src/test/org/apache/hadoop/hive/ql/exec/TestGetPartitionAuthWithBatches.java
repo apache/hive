@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
@@ -67,7 +68,7 @@ public class TestGetPartitionAuthWithBatches {
 
     @BeforeClass
     public static void setupClass() throws HiveException {
-        hiveConf = new HiveConf(TestGetPartitionAuthWithBatches.class);
+        hiveConf = new HiveConfForTest(TestGetPartitionAuthWithBatches.class);
         hiveConf.set("hive.security.authorization.enabled", "true");
         hiveConf.set("hive.security.authorization.manager","org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider");
         hive = Hive.get();

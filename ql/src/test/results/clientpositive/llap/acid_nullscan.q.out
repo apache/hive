@@ -81,7 +81,7 @@ STAGE PLANS:
                           tag: -1
                           value expressions: _col0 (type: bigint)
                           auto parallelism: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
               nullscan://null/_dummy_database._dummy_table/part_ [_dummy_table]

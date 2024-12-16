@@ -258,7 +258,7 @@ POSTHOOK: query: select summary from default.ice_meta_3.snapshots
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"added-data-files":"7","added-records":"15","added-files-size":"1378","changed-partition-count":"7","total-records":"15","total-files-size":"1378","total-data-files":"7","total-delete-files":"0","total-position-deletes":"0","total-equality-deletes":"0"}
+{"added-data-files":"7","added-records":"15","added-files-size":"1378","changed-partition-count":"7","total-records":"15","total-files-size":"1378","total-data-files":"7","total-delete-files":"0","total-position-deletes":"0","total-equality-deletes":"0","iceberg-version":"#Masked#"}
 PREHOOK: query: select summary['changed-partition-count'] from default.ice_meta_2.snapshots
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_meta_2
@@ -558,7 +558,7 @@ POSTHOOK: query: select summary from default.ice_meta_3.snapshots
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"added-data-files":"7","added-records":"15","added-files-size":"1378","changed-partition-count":"7","total-records":"15","total-files-size":"1378","total-data-files":"7","total-delete-files":"0","total-position-deletes":"0","total-equality-deletes":"0"}
+{"added-data-files":"7","added-records":"15","added-files-size":"1378","changed-partition-count":"7","total-records":"15","total-files-size":"1378","total-data-files":"7","total-delete-files":"0","total-position-deletes":"0","total-equality-deletes":"0","iceberg-version":"#Masked#"}
 PREHOOK: query: select summary['changed-partition-count'] from default.ice_meta_2.snapshots
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_meta_2
