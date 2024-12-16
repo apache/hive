@@ -1742,19 +1742,6 @@ POSTHOOK: Input: default@local_rctable
 400	val_400
 200	val_200
 97	val_97
-#### A masked pattern was here ####
-ROW FORMAT DELIMITED
-FIELDS TERMINATED BY '\t'
-select key,value from local_rctable group by key, value
-PREHOOK: type: QUERY
-PREHOOK: Input: default@local_rctable
-#### A masked pattern was here ####
-ROW FORMAT DELIMITED
-FIELDS TERMINATED BY '\t'
-select key,value from local_rctable group by key, value
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@local_rctable
-#### A masked pattern was here ####
 PREHOOK: query: drop table local_rctable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@local_rctable
