@@ -28,6 +28,7 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hive.common.util.ReflectionUtil;
 import org.apache.hive.jdbc.HiveConnection;
 import org.apache.hive.jdbc.Utils;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
@@ -94,11 +95,7 @@ public class TestHttpJwtAuthentication {
   }
 
   private static void removeStaticFinalAndSetValue(Field field, Object value) throws Exception {
-    field.setAccessible(true);
-    VarHandle modifiersHandle = MethodHandles.privateLookupIn(Field.class, MethodHandles.lookup())
-            .findVarHandle(Field.class, "modifiers", int.class);
-    int modifiers = field.getModifiers();
-    modifiersHandle.set(field, modifiers & ~Modifier.FINAL);
+    ReflectionUtil.setStaticFinalFieldsModifiable(field);
     field.set(null, value);
   }
 
