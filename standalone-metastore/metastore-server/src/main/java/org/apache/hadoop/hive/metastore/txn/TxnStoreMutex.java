@@ -35,7 +35,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 
 import static org.apache.hadoop.hive.metastore.txn.TxnStore.POOL_MUTEX;
-import static org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRED;
 
 public class TxnStoreMutex implements TxnStore.MutexAPI {
 
@@ -68,7 +67,7 @@ public class TxnStoreMutex implements TxnStore.MutexAPI {
     TransactionContext context = null;
     try {
       jdbcResource.bindDataSource(POOL_MUTEX);
-      context = jdbcResource.getTransactionManager().getNewTransaction(PROPAGATION_REQUIRED);
+      context = jdbcResource.getTransactionManager().getNewTransaction(null);
       
       MapSqlParameterSource paramSource = new MapSqlParameterSource().addValue("key", key);
       String sqlStmt = sqlGenerator.addForUpdateClause("SELECT \"MT_COMMENT\", \"MT_KEY2\" FROM \"AUX_TABLE\" WHERE \"MT_KEY1\" = :key");
@@ -142,6 +141,7 @@ public class TxnStoreMutex implements TxnStore.MutexAPI {
     private final Semaphore derbySemaphore;
     private final String key;
     private final Long lastUpdateTime;
+    private boolean released = false;
   
     public LockHandleImpl(MultiDataSourceJdbcResource jdbcResource, TransactionContext context,  String key, 
                           Long lastUpdateTime, Semaphore derbySemaphore) {
@@ -166,6 +166,7 @@ public class TxnStoreMutex implements TxnStore.MutexAPI {
           LOG.debug("{} unlocked by {}", key, HOSTNAME);
         }
       } finally {
+        released = true;
         jdbcResource.unbindDataSource();
       }
     }
@@ -196,13 +197,16 @@ public class TxnStoreMutex implements TxnStore.MutexAPI {
           LOG.debug("{} unlocked by {}", key, HOSTNAME);
         }
       } finally {
+        released = true;
         jdbcResource.unbindDataSource();
       }
     }
   
     @Override
     public void close() {
-      releaseLocks();
+      if (!released) {
+        releaseLocks();
+      }
     }
   
   }

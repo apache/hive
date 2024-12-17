@@ -110,7 +110,7 @@ public class TransactionalRetryProxy<T> implements InvocationHandler {
         TransactionContext context = null;
         try {
           jdbcResource.bindDataSource(transactional);
-          context = jdbcResource.getTransactionManager().getNewTransaction(transactional.propagation().value());
+          context = jdbcResource.getTransactionManager().getNewTransaction(transactional);
           Object result = toCall.execute();
           LOG.debug("Successfull method invocation within transactional context: {}, going to commit.", callerId);
           if (context.isRollbackOnly()) {

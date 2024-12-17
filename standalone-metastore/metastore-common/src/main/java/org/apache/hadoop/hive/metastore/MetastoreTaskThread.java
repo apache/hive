@@ -43,4 +43,12 @@ public interface MetastoreTaskThread extends Configurable, Runnable {
   default long initialDelay(TimeUnit unit) {
     return runFrequency(unit);
   }
+
+  /**
+   * Should use mutex support to allow only one copy of this task running across the warehouse.
+   * @param enableMutex true for enabling the mutex, false otherwise
+   */
+  default void shouldUseMutex(boolean enableMutex) {
+    // no-op
+  }
 }

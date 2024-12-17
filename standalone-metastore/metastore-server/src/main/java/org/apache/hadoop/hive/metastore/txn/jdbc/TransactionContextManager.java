@@ -22,6 +22,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 /**
@@ -54,11 +57,17 @@ public class TransactionContextManager {
    * The created transaction is wrapped into a {@link TransactionContext} which is {@link AutoCloseable} and allows using
    * the wrapper inside a try-with-resources block.
    *
-   * @param propagation The transaction propagation to use.
+   * @param transactional the transactional definition.
    */
-  public TransactionContext getNewTransaction(int propagation) {
-    TransactionContext context = new TransactionContext(realTransactionManager.getTransaction(
-        new DefaultTransactionDefinition(propagation)), this);
+  public TransactionContext getNewTransaction(Transactional transactional) {
+    Propagation propagation = transactional == null ? Propagation.REQUIRED : transactional.propagation();
+    DefaultTransactionDefinition transactionDefinition  = new DefaultTransactionDefinition(propagation.value());
+    // Default isolation level is READ_COMMITTED
+    transactionDefinition.setIsolationLevel(Isolation.READ_COMMITTED.value());
+    if (transactional != null && transactional.isolation() != Isolation.DEFAULT) {
+      transactionDefinition.setIsolationLevel(transactional.isolation().value());
+    }
+    TransactionContext context = new TransactionContext(realTransactionManager.getTransaction(transactionDefinition), this);
     contexts.set(context);
     return context;
   }

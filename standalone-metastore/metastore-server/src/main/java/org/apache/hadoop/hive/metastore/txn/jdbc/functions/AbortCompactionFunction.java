@@ -43,8 +43,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRED;
-
 public class AbortCompactionFunction implements TransactionalFunction<AbortCompactResponse> {
 
   private static final Logger LOG = LoggerFactory.getLogger(AbortCompactionFunction.class);
@@ -152,7 +150,7 @@ public class AbortCompactionFunction implements TransactionalFunction<AbortCompa
 
     @Override
     public AbortCompactionResponseElement execute() {
-      try (TransactionContext context = jdbcResource.getTransactionManager().getNewTransaction(PROPAGATION_REQUIRED)) {
+      try (TransactionContext context = jdbcResource.getTransactionManager().getNewTransaction(null)) {
         compactionInfo.state = TxnStore.ABORTED_STATE;
         compactionInfo.errorMessage = "Compaction Aborted by Abort Comapction request.";
         int updCount;

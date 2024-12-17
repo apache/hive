@@ -95,6 +95,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
   private String name;
   private String userName;
   private String hostName;
+  private boolean multipleLeaders;
 
   public LeaseLeaderElection() throws IOException {
     userName = SecurityUtils.getUser();
@@ -152,7 +153,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
   public void tryBeLeader(Configuration conf, TableName table) throws LeaderException {
     requireNonNull(conf, "conf is null");
     requireNonNull(table, "table is null");
-
+    this.multipleLeaders = conf.getBoolean(HAVE_MULTIPLE_LEADERS, true);
     if (store == null) {
       store = TxnUtils.getTxnStore(conf);
     }
@@ -470,5 +471,10 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
   @Override
   public String getName() {
     return name;
+  }
+
+  @Override
+  public boolean hasMultipleLeaders() {
+    return this.multipleLeaders;
   }
 }
