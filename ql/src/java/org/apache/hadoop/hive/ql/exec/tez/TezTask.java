@@ -113,7 +113,7 @@ public class TezTask extends Task<TezWork> {
   private final PerfLogger perfLogger = SessionState.getPerfLogger();
   private static final String TEZ_MEMORY_RESERVE_FRACTION = "tez.task.scale.memory.reserve-fraction";
 
-  private TezCounters counters;
+  private final TezRuntimeContext runtimeContext = new TezRuntimeContext();
 
   private final DagUtils utils;
 
@@ -134,11 +134,15 @@ public class TezTask extends Task<TezWork> {
   }
 
   public TezCounters getTezCounters() {
-    return counters;
+    return runtimeContext.getCounters();
   }
 
   public void setTezCounters(final TezCounters counters) {
-    this.counters = counters;
+    runtimeContext.setCounters(counters);
+  }
+
+  public TezRuntimeContext getRuntimeContext() {
+    return runtimeContext;
   }
 
   /**
@@ -196,6 +200,8 @@ public class TezTask extends Task<TezWork> {
           ss.getHiveVariables().get("wmpool"), ss.getHiveVariables().get("wmapp"));
 
       WmContext wmContext = ctx.getWmContext();
+      String executionMode = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE);
+      runtimeContext.setExecutionMode(executionMode);
       // jobConf will hold all the configuration for hadoop, tez, and hive, which are not set in AM defaults
       JobConf jobConf = utils.createConfiguration(conf, false);
 
@@ -261,13 +267,19 @@ public class TezTask extends Task<TezWork> {
 
         // Log all the info required to find the various logs for this query
         String dagId = this.dagClient.getDagIdentifierString();
-        LOG.info("HS2 Host: [{}], Query ID: [{}], Dag ID: [{}], DAG Session ID: [{}]", ServerUtils.hostname(), queryId,
-            dagId, this.dagClient.getSessionIdentifierString());
+        String appId = this.dagClient.getSessionIdentifierString();
+        LOG.info("HS2 Host: [{}], Query ID: [{}], Dag ID: [{}], DAG App ID: [{}]", ServerUtils.hostname(), queryId,
+            dagId, appId);
         LogUtils.putToMDC(LogUtils.DAGID_KEY, dagId);
         this.jobID = dagId;
+        runtimeContext.setDagId(dagId);
+        runtimeContext.setSessionId(session.getSessionId());
+        runtimeContext.setApplicationId(appId);
 
         // finally monitor will print progress until the job is done
-        TezJobMonitor monitor = new TezJobMonitor(work.getAllWork(), dagClient, conf, dag, ctx, counters, perfLogger);
+        TezJobMonitor monitor = new TezJobMonitor(work.getAllWork(), dagClient, conf, dag, ctx, runtimeContext.counters,
+            perfLogger);
+        runtimeContext.setMonitor(monitor);
         rc = monitor.monitorExecution();
 
         if (rc != 0) {
@@ -283,12 +295,13 @@ public class TezTask extends Task<TezWork> {
           TezCounters dagCounters = dagStatus.getDAGCounters();
 
           // if initial counters exists, merge it with dag counters to get aggregated view
-          TezCounters mergedCounters = counters == null ? dagCounters : Utils.mergeTezCounters(dagCounters, counters);
-          counters = mergedCounters;
+          TezCounters mergedCounters = runtimeContext.counters == null ? dagCounters : Utils.mergeTezCounters(
+              dagCounters, runtimeContext.counters);
+          runtimeContext.counters = mergedCounters;
         } catch (Exception err) {
           // Don't fail execution due to counters - just don't print summary info
           LOG.warn("Failed to get counters. Ignoring, summary info will be incomplete.", err);
-          counters = null;
+          runtimeContext.counters = null;
         }
 
         // save useful commit information into query state, e.g. for custom commit hooks, like Iceberg
@@ -320,10 +333,10 @@ public class TezTask extends Task<TezWork> {
         }
       }
 
-      if (LOG.isInfoEnabled() && counters != null
+      if (LOG.isInfoEnabled() && runtimeContext.counters != null
           && (HiveConf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_SUMMARY) ||
           Utilities.isPerfOrAboveLogging(conf))) {
-        for (CounterGroup group: counters) {
+        for (CounterGroup group : runtimeContext.counters) {
           LOG.info(group.getDisplayName() +":");
           for (TezCounter counter: group) {
             LOG.info("   "+counter.getDisplayName()+": "+counter.getValue());
@@ -407,8 +420,8 @@ public class TezTask extends Task<TezWork> {
   }
 
   private void updateNumRows() {
-    if (counters != null) {
-      TezCounter counter = counters.findCounter(
+    if (runtimeContext.counters != null) {
+      TezCounter counter = runtimeContext.counters.findCounter(
         conf.getVar(HiveConf.ConfVars.HIVE_COUNTER_GROUP), FileSinkOperator.TOTAL_TABLE_ROWS_WRITTEN);
       if (counter != null) {
         queryState.setNumModifiedRows(counter.getValue());
@@ -671,6 +684,7 @@ public class TezTask extends Task<TezWork> {
     }
 
     perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
+    runtimeContext.init(sessionState.getSession());
     return new SyncDagClient(dagClient);
   }
 
