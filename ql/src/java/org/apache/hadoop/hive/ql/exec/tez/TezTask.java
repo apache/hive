@@ -684,7 +684,7 @@ public class TezTask extends Task<TezWork> {
     }
 
     perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
-    runtimeContext.initFromTezClient(sessionState.getSession());
+    runtimeContext.init(sessionState.getSession());
     return new SyncDagClient(dagClient);
   }
 

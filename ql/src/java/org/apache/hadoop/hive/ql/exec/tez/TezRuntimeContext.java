@@ -42,6 +42,10 @@ public class TezRuntimeContext {
   // llap/container
   private String executionMode;
 
+  public void init(TezClient tezClient) {
+    this.amAddress = tezClient.getAmHost() + ":" + tezClient.getAmPort();
+  }
+
   public TezCounters getCounters() {
     return counters;
   }
@@ -84,10 +88,6 @@ public class TezRuntimeContext {
 
   public String getAmAddress() {
     return amAddress;
-  }
-
-  public void initFromTezClient(TezClient tezClient) {
-    this.amAddress = tezClient.getAmHost() + ":" + tezClient.getAmPort();
   }
 
   public TezJobMonitor getMonitor() {
