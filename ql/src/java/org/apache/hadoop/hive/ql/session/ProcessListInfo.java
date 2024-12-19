@@ -33,9 +33,9 @@ public class ProcessListInfo {
   private final long elapsedTime;
   private final String state;
 
-  private ProcessListInfo( String userName, String ipAddr, String sessionId,  long sessionActiveTime,
-      long sessionIdleTime,String queryId, String executionEngine, String beginTime,
-      String runtime, long elapsedTime, String state ) {
+  private ProcessListInfo(String userName, String ipAddr, String sessionId, long sessionActiveTime,
+      long sessionIdleTime, String queryId, String executionEngine, String beginTime,
+      String runtime, long elapsedTime, String state) {
     this.userName = userName;
     this.ipAddr = ipAddr;
     this.sessionId = sessionId;
@@ -44,28 +44,57 @@ public class ProcessListInfo {
     this.queryId = queryId;
     this.executionEngine = executionEngine;
     this.beginTime = beginTime;
-    this.runtime= runtime;
+    this.runtime = runtime;
     this.elapsedTime = elapsedTime;
     this.state = state;
   }
 
-  public String getSessionId() { return sessionId; }
+  public String getSessionId() {
+    return sessionId;
+  }
+
   public String getUserName() {
     return userName;
   }
+
   public String getIpAddr() {
     return ipAddr;
   }
-  public long getSessionActiveTime() { return sessionActiveTime; }
-  public long getSessionIdleTime() { return sessionIdleTime; }
-  public String getExecutionEngine() { return executionEngine; }
-  public String getBeginTime() { return beginTime; }
-  public String getQueryId() { return queryId; }
-  public String getRuntime() { return runtime; }
-  public long getElapsedTime() { return elapsedTime; }
-  public String getState() { return state; }
+
+  public long getSessionActiveTime() {
+    return sessionActiveTime;
+  }
+
+  public long getSessionIdleTime() {
+    return sessionIdleTime;
+  }
+
+  public String getExecutionEngine() {
+    return executionEngine;
+  }
+
+  public String getBeginTime() {
+    return beginTime;
+  }
+
+  public String getQueryId() {
+    return queryId;
+  }
+
+  public String getRuntime() {
+    return runtime;
+  }
+
+  public long getElapsedTime() {
+    return elapsedTime;
+  }
+
+  public String getState() {
+    return state;
+  }
+
   public static class Builder {
-    private String userName ;
+    private String userName;
     private String ipAddr;
     private String sessionId;
     private long sessionActiveTime;
@@ -77,7 +106,7 @@ public class ProcessListInfo {
     private long elapsedTime;
     private String state;
 
-    public Builder setSessionId(String sessionId){
+    public Builder setSessionId(String sessionId) {
       this.sessionId = sessionId;
       return this;
     }

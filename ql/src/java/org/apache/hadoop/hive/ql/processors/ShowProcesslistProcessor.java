@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.processors;
 
 import com.google.common.base.Joiner;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.session.ProcessListInfo;
@@ -33,7 +34,7 @@ import static org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.defaultN
 /**
  * List operations/queries being performed in sessions within hiveserver2
  */
-public class ShowProcesslistProcessor implements CommandProcessor{
+public class ShowProcesslistProcessor implements CommandProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(ShowProcesslistProcessor.class.getName());
   private static final SessionState.LogHelper console = new SessionState.LogHelper(LOG);
   private List<ProcessListInfo> liveQueries = null;
@@ -44,9 +45,10 @@ public class ShowProcesslistProcessor implements CommandProcessor{
 
   /**
    * Creates a Schema object with running operation details
+   *
    * @return
    */
-  private Schema getSchema(){
+  private Schema getSchema() {
     Schema sch = new Schema();
     sch.addToFieldSchemas(new FieldSchema("User Name", "string", ""));
     sch.addToFieldSchemas(new FieldSchema("Ip Addr", "string", ""));
@@ -67,17 +69,17 @@ public class ShowProcesslistProcessor implements CommandProcessor{
   public CommandProcessorResponse run(String command) throws CommandProcessorException {
     try {
       String[] tokens = command.split("\\s+");
-      boolean isCorrectSubCommand = "processlist".equalsIgnoreCase(tokens[0].toLowerCase());
+      boolean isCorrectSubCommand = HiveCommand.PROCESSLIST.name().equalsIgnoreCase(tokens[0]);
 
-      if (tokens.length != 1 || ! isCorrectSubCommand) {
-        throw new CommandProcessorException("ShowProcessList Processor Failed: Unsupported sub-command option");
+      if (tokens.length != 1 || !isCorrectSubCommand) {
+        throw new CommandProcessorException("Show ProcessList Failed: Unsupported sub-command option");
       }
       // TODO : Authorization?
-      if (liveQueries == null || liveQueries.isEmpty()) {
-        return new CommandProcessorResponse(getSchema(),"No queries running currently");
+      if (CollectionUtils.isEmpty(liveQueries)) {
+        return new CommandProcessorResponse(getSchema(), "No queries running currently");
       }
       SessionState ss = SessionState.get();
-      liveQueries.forEach (query -> {
+      liveQueries.forEach(query -> {
             ss.out.println(
                 Joiner.on("\t").join(
                     query.getUserName(),
@@ -99,7 +101,7 @@ public class ShowProcesslistProcessor implements CommandProcessor{
       console.printError("Exception raised from ShowProcessListProcessor.run "
           + e.getLocalizedMessage(), org.apache.hadoop.util.StringUtils
           .stringifyException(e));
-      throw new CommandProcessorException(e.getLocalizedMessage(),e);
+      throw new CommandProcessorException(e.getLocalizedMessage(), e);
     }
   }
 

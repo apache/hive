@@ -65,9 +65,9 @@ public final class CommandProcessorFactory {
       availableCommands.add(availableCommand.toLowerCase().trim());
     }
     // HIVE-27829 : Added another condition for Show Processlist command as "show" is not included in availableCommands.
-    boolean isHiveCommand = availableCommands.contains(cmd[0].trim().toLowerCase()) ||
-        availableCommands.contains(hiveCommand.toString().toLowerCase());
-    if (!isHiveCommand) {
+    boolean isWhitelistedCommand = availableCommands.stream()
+        .anyMatch(c -> cmd[0].trim().equalsIgnoreCase(c) || hiveCommand.name().equalsIgnoreCase(c));
+    if (!isWhitelistedCommand) {
       throw new SQLException("Insufficient privileges to execute " + cmd[0], "42000");
     }
     if (cmd.length > 1 && "reload".equalsIgnoreCase(cmd[0])

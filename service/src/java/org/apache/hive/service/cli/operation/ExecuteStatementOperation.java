@@ -96,7 +96,7 @@ public abstract class ExecuteStatementOperation extends Operation {
       // Pass the original statement to SQLOperation as sql parser can remove comments by itself
       return new SQLOperation(parentSession, statement, confOverlay, runAsync, queryTimeout, hplSqlMode());
     } else if (processor instanceof ShowProcesslistProcessor) {
-      return new ShowProcessListOperation(parentSession,cleanStatement,processor,confOverlay);
+      return new ShowProcessListOperation(parentSession, cleanStatement, processor, confOverlay);
     }
     return new HiveCommandOperation(parentSession, cleanStatement, processor, confOverlay);
   }

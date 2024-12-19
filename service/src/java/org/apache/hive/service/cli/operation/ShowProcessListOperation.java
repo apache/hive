@@ -32,7 +32,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class ShowProcessListOperation extends HiveCommandOperation{
+public class ShowProcessListOperation extends HiveCommandOperation {
+
+  private static final SimpleDateFormat FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+
   protected ShowProcessListOperation(HiveSession parentSession, String statement,
       CommandProcessor commandProcessor, Map<String, String> confOverlay) {
     super(parentSession, statement, commandProcessor, confOverlay);
@@ -41,11 +44,11 @@ public class ShowProcessListOperation extends HiveCommandOperation{
   @Override
   public void runInternal() throws HiveSQLException {
     // For ShowProcesslistProcessor , session and operation level details  are fetched from SessionManager.
-      List<ProcessListInfo> liveQueries = getLiveQueryInfos(parentSession);
-      ShowProcesslistProcessor showProcesslistProcessor = (ShowProcesslistProcessor) commandProcessor;
-      if (liveQueries != null) {
-        showProcesslistProcessor.setup(liveQueries);
-      }
+    List<ProcessListInfo> liveQueries = getLiveQueryInfos(parentSession);
+    ShowProcesslistProcessor showProcesslistProcessor = (ShowProcesslistProcessor) commandProcessor;
+    if (liveQueries != null) {
+      showProcesslistProcessor.setup(liveQueries);
+    }
     super.runInternal();
   }
 
@@ -55,7 +58,6 @@ public class ShowProcessListOperation extends HiveCommandOperation{
       return null;
     }
     long currentTime = System.currentTimeMillis();
-    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     Collection<Operation> operations = sessionManager.getOperations();
     return operations.stream()
         .filter(op -> op instanceof SQLOperation) // Filter for SQLOperation instances
@@ -72,7 +74,7 @@ public class ShowProcessListOperation extends HiveCommandOperation{
               .setSessionIdleTime((currentTime - session.getLastAccessTime()) / 1000)
               .setQueryId(op.getQueryId())
               .setExecutionEngine(query.getExecutionEngine())
-              .setBeginTime(formatter.format(new Date(query.getBeginTime())))
+              .setBeginTime(FORMATTER.format(new Date(query.getBeginTime())))
               .setRuntime(query.getRuntime() == null ? "Not finished" : String.valueOf(query.getRuntime() / 1000))
               .setElapsedTime(query.getElapsedTime() / 1000)
               .setState(query.getState())
