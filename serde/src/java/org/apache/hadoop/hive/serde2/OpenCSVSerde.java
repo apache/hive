@@ -52,7 +52,8 @@ import com.opencsv.CSVWriter;
  */
 @SerDeSpec(schemaProps = {
     serdeConstants.LIST_COLUMNS, serdeConstants.SERIALIZATION_ENCODING,
-    OpenCSVSerde.SEPARATORCHAR, OpenCSVSerde.QUOTECHAR, OpenCSVSerde.ESCAPECHAR})
+    OpenCSVSerde.SEPARATORCHAR, OpenCSVSerde.QUOTECHAR, OpenCSVSerde.ESCAPECHAR,
+    OpenCSVSerde.APPLYQUOTESTOALL})
 public final class OpenCSVSerde extends AbstractEncodingAwareSerDe {
 
   private ObjectInspector inspector;
@@ -63,10 +64,12 @@ public final class OpenCSVSerde extends AbstractEncodingAwareSerDe {
   private char separatorChar;
   private char quoteChar;
   private char escapeChar;
+  private boolean applyQuotesToAll;
 
   public static final String SEPARATORCHAR = "separatorChar";
   public static final String QUOTECHAR = "quoteChar";
   public static final String ESCAPECHAR = "escapeChar";
+  public static final String APPLYQUOTESTOALL = "applyQuotesToAll";
 
   @Override
   public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
@@ -92,6 +95,7 @@ public final class OpenCSVSerde extends AbstractEncodingAwareSerDe {
     separatorChar = getProperty(properties, SEPARATORCHAR, CSVWriter.DEFAULT_SEPARATOR);
     quoteChar = getProperty(properties, QUOTECHAR, CSVWriter.DEFAULT_QUOTE_CHARACTER);
     escapeChar = getProperty(properties, ESCAPECHAR, CSVWriter.DEFAULT_ESCAPE_CHARACTER);
+    applyQuotesToAll = Boolean.parseBoolean(properties.getProperty(APPLYQUOTESTOALL, "true"));
   }
 
   private char getProperty(final Properties tbl, final String property, final char def) {
@@ -136,7 +140,7 @@ public final class OpenCSVSerde extends AbstractEncodingAwareSerDe {
     final CSVWriter csv = newWriter(writer, separatorChar, quoteChar, escapeChar);
 
     try {
-      csv.writeNext(outputFields);
+      csv.writeNext(outputFields, applyQuotesToAll);
       csv.close();
 
       return new Text(writer.toString());

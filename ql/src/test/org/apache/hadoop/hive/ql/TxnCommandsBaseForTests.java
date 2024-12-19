@@ -35,6 +35,7 @@ import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
@@ -246,12 +247,18 @@ public abstract class TxnCommandsBaseForTests {
   public static void runWorker(HiveConf hiveConf) throws Exception {
     runCompactorThread(hiveConf, CompactorThreadType.WORKER);
   }
+  public static void runWorker(HiveConf hiveConf, String poolName) throws Exception {
+    runCompactorThread(hiveConf, CompactorThreadType.WORKER, poolName);
+  }
   public static void runCleaner(HiveConf hiveConf) throws Exception {
     // Wait for the cooldown period so the Cleaner can see the last committed txn as the highest committed watermark
     Thread.sleep(MetastoreConf.getTimeVar(hiveConf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS));
     runCompactorThread(hiveConf, CompactorThreadType.CLEANER);
   }
-  private static void runCompactorThread(HiveConf hiveConf, CompactorThreadType type)
+  private static void runCompactorThread(HiveConf hiveConf, CompactorThreadType type) throws Exception {
+    runCompactorThread(hiveConf, type, Constants.COMPACTION_DEFAULT_POOL);
+  }
+  private static void runCompactorThread(HiveConf hiveConf, CompactorThreadType type, String poolName)
       throws Exception {
     AtomicBoolean stop = new AtomicBoolean(true);
     CompactorThread t;
@@ -261,6 +268,9 @@ public abstract class TxnCommandsBaseForTests {
         break;
       case WORKER:
         t = new Worker();
+        if (poolName != null && !poolName.equals(Constants.COMPACTION_DEFAULT_POOL)) {
+          ((Worker)t).setPoolName(poolName); 
+        }
         break;
       case CLEANER:
         t = new Cleaner();

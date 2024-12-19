@@ -28,6 +28,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -296,7 +297,7 @@ public class QTestUtil {
   }
 
   public void setInputFile(File qf) throws IOException {
-    String query = FileUtils.readFileToString(qf);
+    String query = FileUtils.readFileToString(qf, StandardCharsets.UTF_8);
     inputFile = qf;
     inputContent = query;
     qTestResultProcessor.init(query);
@@ -518,7 +519,7 @@ public class QTestUtil {
   private void cleanupFromFile() throws IOException {
     File cleanupFile = new File(cleanupScript);
     if (cleanupFile.isFile()) {
-      String cleanupCommands = FileUtils.readFileToString(cleanupFile);
+      String cleanupCommands = FileUtils.readFileToString(cleanupFile, StandardCharsets.UTF_8);
       LOG.info("Cleanup (" + cleanupScript + "):\n" + cleanupCommands);
 
       try {
@@ -553,7 +554,7 @@ public class QTestUtil {
       return;
     }
 
-    String initCommands = FileUtils.readFileToString(scriptFile);
+    String initCommands = FileUtils.readFileToString(scriptFile, StandardCharsets.UTF_8);
     LOG.info("Initial setup (" + initScript + "):\n" + initCommands);
 
     try {

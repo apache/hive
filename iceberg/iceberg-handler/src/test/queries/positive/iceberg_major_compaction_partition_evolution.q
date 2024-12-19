@@ -16,6 +16,8 @@
 --! qt:replace:/^[0-9]/#Masked#/
 -- Mask removed file size
 --! qt:replace:/(\S\"removed-files-size\\\":\\\")(\d+)(\\\")/$1#Masked#$3/
+-- Mask iceberg version
+--! qt:replace:/(\S\"iceberg-version\\\":\\\")(\w+\s\w+\s\d+\.\d+\.\d+\s\(\w+\s\w+\))(\\\")/$1#Masked#$3/
 
 set hive.llap.io.enabled=true;
 set hive.vectorized.execution.enabled=true;
@@ -29,7 +31,7 @@ create table ice_orc (
  )
 partitioned by (company_id bigint)
 stored by iceberg stored as orc 
-tblproperties ('format-version'='2');
+tblproperties ('format-version'='2', 'hive.compactor.worker.pool'='iceberg');
 
 insert into ice_orc VALUES ('fn1','ln1', 1, 10, 100);
 insert into ice_orc VALUES ('fn2','ln2', 1, 10, 100);

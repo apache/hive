@@ -83,6 +83,11 @@ public class ReExecDriver implements IDriver {
     return coreDriver.compile(command, resetTaskIds);
   }
 
+  @VisibleForTesting
+  public List<IReExecutionPlugin> getPlugins() {
+    return plugins;
+  }
+
   private boolean firstExecution() {
     return executionIndex == 0;
   }

@@ -1,0 +1,46 @@
+PREHOOK: query: drop table if exists dynpart_bucket
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists dynpart_bucket
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE dynpart_bucket (bn string) PARTITIONED BY (br string) CLUSTERED BY (bn) INTO 2 BUCKETS ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dynpart_bucket
+POSTHOOK: query: CREATE TABLE dynpart_bucket (bn string) PARTITIONED BY (br string) CLUSTERED BY (bn) INTO 2 BUCKETS ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dynpart_bucket
+PREHOOK: query: INSERT into TABLE dynpart_bucket VALUES ('tv_0', 'tv')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@dynpart_bucket
+POSTHOOK: query: INSERT into TABLE dynpart_bucket VALUES ('tv_0', 'tv')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@dynpart_bucket
+POSTHOOK: Output: default@dynpart_bucket@br=tv
+POSTHOOK: Lineage: dynpart_bucket PARTITION(br=tv).bn SCRIPT []
+PREHOOK: query: INSERT into TABLE dynpart_bucket VALUES ('tv_1', 'tv')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@dynpart_bucket
+POSTHOOK: query: INSERT into TABLE dynpart_bucket VALUES ('tv_1', 'tv')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@dynpart_bucket
+POSTHOOK: Output: default@dynpart_bucket@br=tv
+POSTHOOK: Lineage: dynpart_bucket PARTITION(br=tv).bn SCRIPT []
+PREHOOK: query: select * from dynpart_bucket
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dynpart_bucket
+PREHOOK: Input: default@dynpart_bucket@br=tv
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from dynpart_bucket
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dynpart_bucket
+POSTHOOK: Input: default@dynpart_bucket@br=tv
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+tv_0	tv
+tv_1	tv

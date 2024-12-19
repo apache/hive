@@ -217,6 +217,11 @@ public class QueryState {
     return resourceMap.get(resourceIdentifier);
   }
 
+  // Resets the resourceMap by removing all stored resource information.
+  public void clearResourceMap() {
+    resourceMap.clear();
+  }
+
   public ReentrantLock getResolveConditionalTaskLock() {
     return resolveConditionalTaskLock;
   }

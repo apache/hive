@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.parse.rewrite.sql;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 
@@ -38,16 +38,16 @@ public class NonNativeAcidMultiInsertSqlGenerator extends MultiInsertSqlGenerato
   }
 
   @Override
-  public void appendAcidSelectColumns(Context.Operation operation) {
+  public void appendAcidSelectColumns(Operation operation) {
     appendAcidSelectColumns(operation, false, false);
   }
 
   @Override
-  public void appendAcidSelectColumnsForDeletedRecords(Context.Operation operation, boolean skipPrefix) {
+  public void appendAcidSelectColumnsForDeletedRecords(Operation operation, boolean skipPrefix) {
     appendAcidSelectColumns(operation, true, skipPrefix);
   }
 
-  private void appendAcidSelectColumns(Context.Operation operation, boolean markRowIdAsDeleted, boolean skipPrefix) {
+  private void appendAcidSelectColumns(Operation operation, boolean markRowIdAsDeleted, boolean skipPrefix) {
     List<FieldSchema> acidSelectColumns = targetTable.getStorageHandler().acidSelectColumns(targetTable, operation);
     for (FieldSchema fieldSchema : acidSelectColumns) {
       boolean deletedRowId = markRowIdAsDeleted && fieldSchema.equals(targetTable.getStorageHandler().getRowId());
@@ -70,19 +70,18 @@ public class NonNativeAcidMultiInsertSqlGenerator extends MultiInsertSqlGenerato
   }
 
   @Override
-  public List<String> getDeleteValues(Context.Operation operation) {
-    List<FieldSchema> acidSelectColumns = targetTable.getStorageHandler().acidSelectColumns(targetTable, operation);
-    List<String> deleteValues = new ArrayList<>(acidSelectColumns.size());
-    for (FieldSchema fieldSchema : acidSelectColumns) {
-      String prefixedIdentifier = HiveUtils.unparseIdentifier(deletePrefix + fieldSchema.getName(), this.conf);
-      deleteValues.add(qualify(prefixedIdentifier));
-    }
-    return deleteValues;
+  public List<String> getDeleteValues(Operation operation) {
+    return targetTable.getStorageHandler().acidSelectColumns(targetTable, operation)
+        .stream()
+        .map(fieldSchema -> qualify(
+            HiveUtils.unparseIdentifier(deletePrefix + fieldSchema.getName(), this.conf)))
+        .collect(Collectors.toList());
   }
 
   @Override
-  public List<String> getSortKeys() {
-    return targetTable.getStorageHandler().acidSortColumns(targetTable, Context.Operation.DELETE).stream()
+  public List<String> getSortKeys(Operation operation) {
+    return targetTable.getStorageHandler().acidSortColumns(targetTable, operation)
+        .stream()
         .map(fieldSchema -> qualify(
             HiveUtils.unparseIdentifier(deletePrefix + fieldSchema.getName(), this.conf)))
         .collect(Collectors.toList());

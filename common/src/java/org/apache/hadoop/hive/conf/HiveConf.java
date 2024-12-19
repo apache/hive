@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.Validator.PatternSet;
 import org.apache.hadoop.hive.conf.Validator.RangeValidator;
@@ -62,7 +63,6 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -2048,6 +2048,10 @@ public class HiveConf extends Configuration {
         "assumption that the original group by will reduce the data size."),
     HIVE_GROUPBY_LIMIT_EXTRASTEP("hive.groupby.limit.extrastep", true, "This parameter decides if Hive should \n" +
         "create new MR job for sorting final output"),
+    HIVE_OPTIMIZE_GROUPING_SET_THRESHOLD("hive.optimize.grouping.set.threshold", 1_000_000_000L,
+        "If # of estimated rows emitted by GroupBy operator with GroupingSet is larger than the configured value, " +
+        "then the optimizer inserts an extra shuffle to partitioning input data.\n" +
+        "Setting a negative number disables the optimization."),
 
     // Max file num and size used to do a single copy (after that, distcp is used)
     HIVE_EXEC_COPYFILE_MAXNUMFILES("hive.exec.copyfile.maxnumfiles", 1L,
@@ -2655,6 +2659,8 @@ public class HiveConf extends Configuration {
         "By default, when writing data into a table and UNION ALL is the last step of the query, Hive on Tez will\n" +
         "create a subdirectory for each branch of the UNION ALL. When this property is enabled,\n" +
         "the subdirectories are removed, and the files are renamed and moved to the parent directory"),
+    HIVE_OPTIMIZE_MERGE_ADJACENT_UNION_DISTINCT("hive.optimize.merge.adjacent.union.distinct", true,
+        "Whether to merge adjacent binary UNION DISTINCT into a single n-ary UNION DISTINCT."),
     HIVE_OPT_CORRELATION("hive.optimize.correlation", false, "exploit intra-query correlations."),
 
     HIVE_OPTIMIZE_LIMIT_TRANSPOSE("hive.optimize.limittranspose", false,
@@ -2764,6 +2770,9 @@ public class HiveConf extends Configuration {
             + " provides an optimization if it is accurate."),
 
     // CTE
+    @InterfaceStability.Unstable
+    HIVE_CTE_SUGGESTER_CLASS("hive.optimize.cte.suggester.class", "",
+        "Class for finding and suggesting common table expressions (CTEs) based on a given query. The class must implement the CommonTableExpressionSuggester interface."),
     HIVE_CTE_MATERIALIZE_THRESHOLD("hive.optimize.cte.materialize.threshold", 3,
         "If the number of references to a CTE clause exceeds this threshold, Hive will materialize it\n" +
         "before executing the main query block. -1 will disable this feature."),
@@ -5678,12 +5687,14 @@ public class HiveConf extends Configuration {
         "Enable query reexecutions"),
     HIVE_QUERY_REEXECUTION_STRATEGIES("hive.query.reexecution.strategies",
         "overlay,reoptimize,reexecute_lost_am,dagsubmit,recompile_without_cbo,write_conflict",
-        "comma separated list of plugin can be used:\n"
+        "comma separated list of plugin can be used. If custom plugins, specify the class name:\n"
             + "  overlay: hiveconf subtree 'reexec.overlay' is used as an overlay in case of an execution errors out\n"
             + "  reoptimize: collects operator statistics during execution and recompile the query after a failure\n"
             + "  recompile_without_cbo: recompiles query after a CBO failure\n"
             + "  reexecute_lost_am: reexecutes query if it failed due to tez am node gets decommissioned\n "
-            + "  write_conflict: retries the query once if the query failed due to write_conflict"),
+            + "  write_conflict: retries the query once if the query failed due to write_conflict\n"
+            + "  custom plugins: e.g.\n"
+            + "    org.apache.hadoop.hive.ql.reexec.custom.CustomPlugin1"),
     HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE("hive.query.reexecution.stats.persist.scope", "metastore",
         new StringSet("query", "hiveserver", "metastore"),
         "Sets the persistence scope of runtime statistics\n"
@@ -5800,7 +5811,11 @@ public class HiveConf extends Configuration {
                     "tez-site.xml, etc in comma separated list."),
 
     REWRITE_POLICY("hive.rewrite.data.policy", "DEFAULT", 
-        "Defines the rewrite policy, the valid values are those defined in RewritePolicy enum"); 
+        "Defines the rewrite policy, the valid values are those defined in RewritePolicy enum"),
+
+    HIVE_OTEL_METRICS_FREQUENCY_SECONDS("hive.otel.metrics.frequency.seconds", "0s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Frequency at which the OTEL Metrics are refreshed, A value of 0 or less disable the feature");
 
     public final String varname;
     public final String altName;
@@ -6661,7 +6676,7 @@ public class HiveConf extends Configuration {
     // and regex list
     String confVarPatternStr = Joiner.on("|").join(convertVarsToRegex(SQL_STD_AUTH_SAFE_VAR_NAMES));
     String regexPatternStr = Joiner.on("|").join(sqlStdAuthSafeVarNameRegexes);
-    return regexPatternStr + "|" + confVarPatternStr;
+    return regexPatternStr + "|" + confVarPatternStr + "|QUERY_EXECUTOR";
   }
 
   /**
@@ -7240,16 +7255,5 @@ public class HiveConf extends Configuration {
       Map.Entry<String, String> e = iter.next();
       set(e.getKey(), e.getValue());
     }
-  }
-
-  public List<Map.Entry<String, String>> getMatchingEntries(Pattern regex) {
-    List<Map.Entry<String, String>> matchingEntries = new ArrayList<>();
-    for (Map.Entry<String, String> entry : this) {
-      Matcher matcher = regex.matcher(entry.getKey());
-      if (matcher.matches()) {
-        matchingEntries.add(new AbstractMap.SimpleEntry<>(entry.getKey(), matcher.group(0)));
-      }
-    }
-    return matchingEntries;
   }
 }

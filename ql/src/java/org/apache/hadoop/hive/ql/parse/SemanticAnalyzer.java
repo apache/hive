@@ -437,7 +437,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   /*
    * Used to check recursive CTE invocations. Similar to viewsExpanded
    */
-  private List<String> ctesExpanded;
+  private List<String> ctesExpanded = new ArrayList<>();
 
   /*
    * Whether root tasks after materialized CTE linkage have been resolved
@@ -567,7 +567,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     materializedViewUpdateDesc = null;
     viewsExpanded = null;
     viewSelect = null;
-    ctesExpanded = null;
+    ctesExpanded.clear();
     globalLimitCtx.disableOpt();
     viewAliasToInput.clear();
     reduceSinkOperatorsAddedByEnforceBucketingSorting.clear();
@@ -2332,7 +2332,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     getMetaData(qb, false);
   }
 
-  private void getMetaData(QB qb, boolean enableMaterialization) throws SemanticException {
+  void getMetaData(QB qb, boolean enableMaterialization) throws SemanticException {
     try {
       Map<String, CTEClause> materializationAliasToCTEs = null;
       if (enableMaterialization) {
@@ -7436,8 +7436,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private Path getDestinationFilePath(final String destinationFile, boolean isMmTable) {
-    if (this.isResultsCacheEnabled() && this.queryTypeCanUseCache()) {
+  private Path getDestinationFilePath(QB qb, final String destinationFile, boolean isMmTable) {
+    if (this.isResultsCacheEnabled() && this.queryTypeCanUseCache(qb)) {
       assert (!isMmTable);
       QueryResultsCache instance = QueryResultsCache.getInstance();
       // QueryResultsCache should have been initialized by now
@@ -7775,7 +7775,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       isLocal = true;
       // fall through
     case QBMetaData.DEST_DFS_FILE: {
-      destinationPath = getDestinationFilePath(qbm.getDestFileForAlias(dest), isMmTable);
+      destinationPath = getDestinationFilePath(qb, qbm.getDestFileForAlias(dest), isMmTable);
 
       // CTAS case: the file output format and serde are defined by the create
       // table command rather than taking the default value
@@ -12938,7 +12938,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ASTNode child = ast;
     this.ast = ast;
     viewsExpanded = new ArrayList<String>();
-    ctesExpanded = new ArrayList<String>();
 
     // 1. analyze and process the position alias
     // step processPositionAlias out of genResolvedParseTree
@@ -13147,7 +13146,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Otherwise we have to wait until after the masking/filtering step.
     boolean isCacheEnabled = isResultsCacheEnabled();
     QueryResultsCache.LookupInfo lookupInfo = null;
-    if (isCacheEnabled && !needsTransform && queryTypeCanUseCache()) {
+    if (isCacheEnabled && !needsTransform && queryTypeCanUseCache(qb)) {
       lookupInfo = createLookupInfoForQuery(ast);
       if (checkResultsCache(lookupInfo, false)) {
         return;
@@ -13208,7 +13207,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Check query results cache
     // In the case that row or column masking/filtering was required, we do not support caching.
     // TODO: Enable caching for queries with masking/filtering
-    if (isCacheEnabled && needsTransform && !usesMasking && queryTypeCanUseCache()) {
+    if (isCacheEnabled && needsTransform && !usesMasking && queryTypeCanUseCache(qb)) {
       lookupInfo = createLookupInfoForQuery(ast);
       if (checkResultsCache(lookupInfo, false)) {
         return;
@@ -15848,25 +15847,33 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * Some initial checks for a query to see if we can look this query up in the results cache.
    */
-  private boolean queryTypeCanUseCache() {
-    if (this.qb == null || this.qb.getParseInfo() == null) {
+  private boolean queryTypeCanUseCache(QB qb) {
+    if (qb == null || qb.getParseInfo() == null) {
       return false;
     }
     if (this instanceof ColumnStatsSemanticAnalyzer) {
       // Column stats generates "select compute_stats() .." queries.
       // Disable caching for these.
+      LOG.debug("Query type cannot use cache (ColumnStatsSemanticAnalyzer)");
       return false;
     }
     if (queryState.getHiveOperation() != HiveOperation.QUERY) {
+      LOG.debug("Query type cannot use cache (HiveOperation is not a QUERY)");
       return false;
     }
     if (Optional.of(qb.getParseInfo()).filter(pi ->
             pi.isAnalyzeCommand() || pi.hasInsertTables() || pi.isInsertOverwriteDirectory())
         .isPresent()) {
+      LOG.debug("Query type cannot use cache (analyze, insert, or IOWD)");
       return false;
     }
     // HIVE-19096 - disable for explain and explain analyze
-    return ctx.getExplainAnalyze() == null;
+    if (ctx.getExplainAnalyze() != null) {
+      LOG.debug("Query type cannot use cache (explain analyze command)");
+      return false;
+    }
+
+    return true;
   }
 
   private boolean needsTransform() {
@@ -15879,7 +15886,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * can be added to the results cache.
    */
   private boolean queryCanBeCached() {
-    if (!queryTypeCanUseCache()) {
+    if (!queryTypeCanUseCache(qb)) {
       LOG.info("Not eligible for results caching - wrong query type");
       return false;
     }

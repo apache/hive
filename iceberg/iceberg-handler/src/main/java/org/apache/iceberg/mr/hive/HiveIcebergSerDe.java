@@ -73,9 +73,9 @@ public class HiveIcebergSerDe extends AbstractSerDe {
   private Schema tableSchema;
   private Schema projectedSchema;
   private Collection<String> partitionColumns;
-  private Map<ObjectInspector, Deserializer> deserializers = Maps.newHashMapWithExpectedSize(1);
-  private Container<Record> row = new Container<>();
-  private Map<String, String> jobConf =  Maps.newHashMap();
+  private final Map<ObjectInspector, Deserializer> deserializers = Maps.newHashMapWithExpectedSize(1);
+  private final Container<Record> row = new Container<>();
+  private final Map<String, String> jobConf =  Maps.newHashMap();
 
   @Override
   public void initialize(@Nullable Configuration configuration, Properties serDeProperties,
@@ -175,7 +175,8 @@ public class HiveIcebergSerDe extends AbstractSerDe {
         return projectedSchema;
       }
     }
-    if (IcebergTableUtil.isCopyOnWriteMode(operation, configuration::get)) {
+    boolean isCOW = IcebergTableUtil.isCopyOnWriteMode(operation, configuration::get);
+    if (isCOW) {
       return IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns());
     }
     switch (operation) {

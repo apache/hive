@@ -306,7 +306,7 @@ public final class Catalogs {
   private static Schema schema(Properties props) {
     String schemaString = props.getProperty(InputFormatConfig.TABLE_SCHEMA);
     Preconditions.checkNotNull(schemaString, "Table schema not set");
-    return SchemaParser.fromJson(props.getProperty(InputFormatConfig.TABLE_SCHEMA));
+    return SchemaParser.fromJson(schemaString);
   }
 
   /**

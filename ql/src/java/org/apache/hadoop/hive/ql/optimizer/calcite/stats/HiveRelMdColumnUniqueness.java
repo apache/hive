@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
 
+import org.apache.calcite.rel.core.Spool;
 import org.apache.calcite.rel.metadata.BuiltInMetadata;
 import org.apache.calcite.rel.metadata.MetadataDef;
 import org.apache.calcite.rel.metadata.MetadataHandler;
@@ -56,6 +57,10 @@ public final class HiveRelMdColumnUniqueness
       RelOptHiveTable tbl = (RelOptHiveTable)rel.getTable();
       return tbl.isNonNullableKey(columns);
     }
+  }
+
+  public Boolean areColumnsUnique(Spool rel, RelMetadataQuery mq, ImmutableBitSet columns, boolean ignoreNulls) {
+    return mq.areColumnsUnique(rel.getInput(), columns, ignoreNulls);
   }
 }
 

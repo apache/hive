@@ -26,8 +26,6 @@ import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.regex.Pattern;
-
 public class ReExecuteOnWriteConflictPlugin implements IReExecutionPlugin {
   private static final Logger LOG = LoggerFactory.getLogger(ReExecuteOnWriteConflictPlugin.class);
   private static boolean retryPossible;

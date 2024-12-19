@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.reexec;
 
-import java.util.Optional;
-
 public enum ReExecutionStrategyType {
   OVERLAY(ReExecutionOverlayPlugin.class),
   REOPTIMIZE(ReOptimizePlugin.class),

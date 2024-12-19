@@ -1307,7 +1307,7 @@ public class HiveConnection implements java.sql.Connection {
   /**
    * @return username from sessConfMap
    */
-  private String getUserName() {
+  String getUserName() {
     return getSessionValue(JdbcConnectionParams.AUTH_USER, JdbcConnectionParams.ANONYMOUS_USER);
   }
 

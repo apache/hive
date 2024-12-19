@@ -292,11 +292,10 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             }
           }
           if (dbProduct == null) {
-            try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPool)) {
-              determineDatabaseProduct(dbConn);
-            } catch (SQLException e) {
-              LOG.error("Unable to determine database product", e);
-              throw new RuntimeException(e);
+            dbProduct = DatabaseProduct.determineDatabaseProduct(connPool, conf);
+            if (dbProduct.isUNDEFINED()) {
+              String msg = "Unrecognized database product name <" + dbProduct.getProductName() + ">";
+              throw new IllegalStateException(msg);
             }
           }
           if (sqlGenerator == null) {
@@ -1065,22 +1064,6 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         (ResultSet rs, int rowNum) -> rs.getTimestamp(1));
   }
 
-  private void determineDatabaseProduct(Connection conn) {
-    try {
-      String s = conn.getMetaData().getDatabaseProductName();
-      dbProduct = DatabaseProduct.determineDatabaseProduct(s, conf);
-      if (dbProduct.isUNDEFINED()) {
-        String msg = "Unrecognized database product name <" + s + ">";
-        LOG.error(msg);
-        throw new IllegalStateException(msg);
-      }
-    } catch (SQLException e) {
-      String msg = "Unable to get database product name";
-      LOG.error(msg, e);
-      throw new IllegalStateException(msg, e);
-    }
-  }
-  
   private void initJdbcResource() {
     if (jdbcResource == null) {
       jdbcResource = new MultiDataSourceJdbcResource(dbProduct, conf, sqlGenerator);

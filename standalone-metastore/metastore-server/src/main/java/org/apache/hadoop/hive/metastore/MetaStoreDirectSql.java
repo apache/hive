@@ -193,11 +193,7 @@ class MetaStoreDirectSql {
     this.pm = pm;
     this.conf = conf;
     this.schema = schema;
-    DatabaseProduct dbType = null;
-
-    dbType = DatabaseProduct.determineDatabaseProduct(getProductName(pm), conf);
-
-    this.dbType = dbType;
+    this.dbType = PersistenceManagerProvider.getDatabaseProduct();
     int batchSize = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_PARTITION_BATCH_SIZE);
     this.directSqlInsertPart = new DirectSqlInsertPart(pm, dbType, batchSize);
     if (batchSize == DETECT_BATCHING) {
@@ -270,23 +266,6 @@ class MetaStoreDirectSql {
   private static String getFullyQualifiedName(String schema, String tblName) {
     return ((schema == null || schema.isEmpty()) ? "" : "\"" + schema + "\".\"")
         + "\"" + tblName + "\"";
-  }
-
-
-  public MetaStoreDirectSql(PersistenceManager pm, Configuration conf) {
-    this(pm, conf, "");
-  }
-
-  static String getProductName(PersistenceManager pm) {
-    JDOConnection jdoConn = pm.getDataStoreConnection();
-    try {
-      return ((Connection)jdoConn.getNativeConnection()).getMetaData().getDatabaseProductName();
-    } catch (Throwable t) {
-      LOG.warn("Error retrieving product name", t);
-      return null;
-    } finally {
-      jdoConn.close(); // We must release the connection before we call other pm methods.
-    }
   }
 
   private boolean ensureDbInit() {
