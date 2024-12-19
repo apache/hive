@@ -101,7 +101,7 @@ public class HiveAlterHandler implements AlterHandler {
   @Override
   public void alterTable(RawStore msdb, Warehouse wh, String catName, String dbname,
       String name, Table newt, EnvironmentContext environmentContext,
-      IHMSHandler handler, String writeIdList)
+      IHMSHandler handler, String writeIdList, boolean isTruncateOp)
           throws InvalidOperationException, MetaException {
     catName = normalizeIdentifier(catName);
     name = normalizeIdentifier(name);
@@ -448,7 +448,7 @@ public class HiveAlterHandler implements AlterHandler {
       if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
         txnAlterTableEventResponses = MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                   EventMessage.EventType.ALTER_TABLE,
-                  new AlterTableEvent(oldt, newt, false, true,
+                  new AlterTableEvent(oldt, newt, isTruncateOp, true,
                           newt.getWriteId(), handler, isReplicated),
                   environmentContext);
       }
@@ -510,7 +510,7 @@ public class HiveAlterHandler implements AlterHandler {
       // make this call whether the event failed or succeeded. To make this behavior consistent,
       // this call is made for failed events also.
       MetaStoreListenerNotifier.notifyEvent(listeners, EventMessage.EventType.ALTER_TABLE,
-          new AlterTableEvent(oldt, newt, false, success, newt.getWriteId(), handler, isReplicated),
+          new AlterTableEvent(oldt, newt, isTruncateOp, success, newt.getWriteId(), handler, isReplicated),
           environmentContext, txnAlterTableEventResponses, msdb);
     }
   }
@@ -800,7 +800,7 @@ public class HiveAlterHandler implements AlterHandler {
     EnvironmentContext environmentContext)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
     return alterPartitions(msdb, wh, MetaStoreUtils.getDefaultCatalog(conf), dbname, name, new_parts,
-        environmentContext, null, -1, null);
+        environmentContext, null, -1, null, false);
   }
 
   private Map<List<String>, Partition> getExistingPartitions(final RawStore msdb,
@@ -826,11 +826,9 @@ public class HiveAlterHandler implements AlterHandler {
 
   @Override
   public List<Partition> alterPartitions(final RawStore msdb, Warehouse wh, final String catName,
-                                         final String dbname, final String name,
-                                         final List<Partition> new_parts,
-                                         EnvironmentContext environmentContext,
-                                         String writeIdList, long writeId,
-                                         IHMSHandler handler)
+      final String dbname, final String name, final List<Partition> new_parts,
+      EnvironmentContext environmentContext, String writeIdList, long writeId,
+      IHMSHandler handler, boolean isTruncateOp)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
     List<Partition> oldParts = new ArrayList<>();
     List<List<String>> partValsList = new ArrayList<>();
@@ -891,12 +889,12 @@ public class HiveAlterHandler implements AlterHandler {
             MetastoreConf.ConfVars.NOTIFICATION_ALTER_PARTITIONS_V2_ENABLED);
         if (shouldSendSingleEvent) {
           MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventMessage.EventType.ALTER_PARTITIONS,
-              new AlterPartitionsEvent(oldParts, new_parts, tbl, false, true, handler), environmentContext);
+              new AlterPartitionsEvent(oldParts, new_parts, tbl, isTruncateOp, true, handler), environmentContext);
         } else {
           for (Partition newPart : new_parts) {
             Partition oldPart = oldPartMap.get(newPart.getValues());
             MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventMessage.EventType.ALTER_PARTITION,
-                new AlterPartitionEvent(oldPart, newPart, tbl, false, true, newPart.getWriteId(), handler),
+                new AlterPartitionEvent(oldPart, newPart, tbl, isTruncateOp, true, newPart.getWriteId(), handler),
                 environmentContext);
           }
         }

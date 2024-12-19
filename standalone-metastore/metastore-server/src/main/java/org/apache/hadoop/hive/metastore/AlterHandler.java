@@ -62,7 +62,7 @@ public interface AlterHandler extends Configurable {
   default void alterTable(RawStore msdb, Warehouse wh, String catName, String dbname,
     String name, Table newTable, EnvironmentContext envContext)
       throws InvalidOperationException, MetaException {
-    alterTable(msdb, wh, catName, dbname, name, newTable, envContext, null, null);
+    alterTable(msdb, wh, catName, dbname, name, newTable, envContext, null, null, false);
   }
 
   /**
@@ -82,6 +82,8 @@ public interface AlterHandler extends Configurable {
    *          new table object
    * @param handler
    *          HMSHandle object (required to log event notification)
+   * @param writeIdList write id list for the table
+   * @param isTruncateOp boolean flag to specify if this is truncate operation
    * @throws InvalidOperationException
    *           thrown if the newTable object is invalid
    * @throws MetaException
@@ -89,7 +91,7 @@ public interface AlterHandler extends Configurable {
    */
   void alterTable(RawStore msdb, Warehouse wh, String catName, String dbname,
       String name, Table newTable, EnvironmentContext envContext,
-      IHMSHandler handler,  String writeIdList)
+      IHMSHandler handler,  String writeIdList, boolean isTruncateOp)
           throws InvalidOperationException, MetaException;
 
   /**
@@ -200,6 +202,6 @@ public interface AlterHandler extends Configurable {
   List<Partition> alterPartitions(final RawStore msdb, Warehouse wh, final String catName,
     final String dbname, final String name, final List<Partition> new_parts,
     EnvironmentContext environmentContext,  String writeIdList, long writeId,
-    IHMSHandler handler)
+    IHMSHandler handler, boolean isTruncateOp)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException;
 }
