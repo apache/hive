@@ -185,7 +185,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       if (sarg.isPoints()) {
         selectivity = computeFunctionSelectivity(call);
         if (selectivity != null) {
-          selectivity = selectivity * (call.operands.size() - 1);
+          selectivity = selectivity * sarg.pointCount;
           if (selectivity <= 0.0) {
             selectivity = 0.10;
           } else if (selectivity >= 1.0) {
