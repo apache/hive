@@ -28,7 +28,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -71,7 +71,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -123,7 +123,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -226,10 +226,12 @@ POSTHOOK: Input: default@table5_n5
 PREHOOK: query: DROP TABLE table5_n5
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table5_n5
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table5_n5
 POSTHOOK: query: DROP TABLE table5_n5
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table5_n5
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table5_n5
 PREHOOK: query: SELECT * FROM table4_n1
 PREHOOK: type: QUERY
@@ -248,10 +250,12 @@ POSTHOOK: Input: default@table4_n1
 PREHOOK: query: DROP TABLE table4_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table4_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table4_n1
 POSTHOOK: query: DROP TABLE table4_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table4_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table4_n1
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -383,7 +387,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -423,33 +427,11 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"first_name\":\"true\",\"last_name\":\"true\",\"number\":\"true\"}}
-	avro.schema.literal 	{                   
-	                    	  \"namespace\": \"testing.hive.avro.serde\",
-	                    	  \"name\": \"doctors_n2\",
-	                    	  \"type\": \"record\",
-	                    	  \"fields\": [     
-	                    	    {               
-	                    	      \"name\":\"number\",
-	                    	      \"type\":\"int\",
-	                    	      \"doc\":\"Order of playing the role\"
-	                    	    },              
-	                    	    {               
-	                    	      \"name\":\"first_name\",
-	                    	      \"type\":\"string\",
-	                    	      \"doc\":\"first name of actor playing role\"
-	                    	    },              
-	                    	    {               
-	                    	      \"name\":\"last_name\",
-	                    	      \"type\":\"string\",
-	                    	      \"doc\":\"last name of actor playing role\"
-	                    	    }               
-	                    	  ]                 
-	                    	}                   
 	bucketing_version   	2                   
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -499,9 +481,8 @@ Table Parameters:
 	bucketing_version   	2                   
 	numFiles            	0                   
 	numRows             	0                   
-	parquet.compression 	LZO                 
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -544,7 +525,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -587,7 +568,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -598,15 +579,15 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: drop table table6_n4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table6_n4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table6_n4
 POSTHOOK: query: drop table table6_n4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table6_n4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table6_n4
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -646,15 +627,15 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: drop table table5_n5
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table5_n5
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table5_n5
 POSTHOOK: query: drop table table5_n5
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table5_n5
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table5_n5
 PREHOOK: query: create table orc_table_n0 (
 `time` string)
@@ -696,9 +677,8 @@ Table Parameters:
 	bucketing_version   	2                   
 	numFiles            	0                   
 	numRows             	0                   
-	orc.compress        	SNAPPY              
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -714,16 +694,20 @@ Storage Desc Params:
 PREHOOK: query: drop table orc_table_using_like
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_table_using_like
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_table_using_like
 POSTHOOK: query: drop table orc_table_using_like
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_table_using_like
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_table_using_like
 PREHOOK: query: drop table orc_table_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_table_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_table_n0
 POSTHOOK: query: drop table orc_table_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_table_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_table_n0

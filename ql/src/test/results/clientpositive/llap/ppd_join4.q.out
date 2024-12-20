@@ -8,8 +8,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dual
 PREHOOK: query: drop table if exists test_tbl
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_tbl
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table test_tbl (id string,name string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

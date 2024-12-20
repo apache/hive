@@ -185,7 +185,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	55                  
 	rawDataSize         	605                 
-	totalSize           	660                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -204,8 +204,8 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.src_txn	0/0/0               	 
+Table name          	Snapshot            	 
+default.src_txn     	:1:9223372036854775807::	 
 Found 1 items
 #### A masked pattern was here ####
 val_201201
@@ -473,7 +473,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	55                  
 	rawDataSize         	605                 
-	totalSize           	660                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -492,8 +492,8 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.src_txn	0/0/0               	 
+Table name          	Snapshot            	 
+default.src_txn     	:1:9223372036854775807::	 
 Found 1 items
 #### A masked pattern was here ####
 201val_201
@@ -1023,7 +1023,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	117                 
 	rawDataSize         	1291                
-	totalSize           	1408                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1046,9 +1046,9 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.src_txn	0/0/0               	 
-hive.default.src_txn_2	0/0/0               	 
+Table name          	Snapshot            	 
+default.src_txn     	:2:9223372036854775807::	 
+default.src_txn_2   	:1:9223372036854775807::	 
 Found 1 items
 #### A masked pattern was here ####
 val_201201

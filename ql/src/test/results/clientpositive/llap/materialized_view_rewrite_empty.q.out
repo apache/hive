@@ -86,8 +86,10 @@ POSTHOOK: Output: default@emps_mv_rewrite_empty_mv1
 PREHOOK: query: drop table emps_mv_rewrite_empty
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@emps_mv_rewrite_empty
+PREHOOK: Output: database:default
 PREHOOK: Output: default@emps_mv_rewrite_empty
 POSTHOOK: query: drop table emps_mv_rewrite_empty
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@emps_mv_rewrite_empty
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@emps_mv_rewrite_empty

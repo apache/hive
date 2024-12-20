@@ -28,7 +28,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -72,7 +72,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -90,10 +90,12 @@ Storage Desc Params:
 PREHOOK: query: drop table original
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@original
+PREHOOK: Output: database:default
 PREHOOK: Output: default@original
 POSTHOOK: query: drop table original
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@original
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@original
 PREHOOK: query: create database skew_test
 PREHOOK: type: CREATEDATABASE
@@ -131,7 +133,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -175,7 +177,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -193,10 +195,12 @@ Storage Desc Params:
 PREHOOK: query: drop table skew_test.original2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: skew_test@original2
+PREHOOK: Output: database:skew_test
 PREHOOK: Output: skew_test@original2
 POSTHOOK: query: drop table skew_test.original2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: skew_test@original2
+POSTHOOK: Output: database:skew_test
 POSTHOOK: Output: skew_test@original2
 PREHOOK: query: create table skew_test.original3 (key STRING, value STRING) SKEWED BY (key, value) ON ((1,1),(5,6))
 PREHOOK: type: CREATETABLE
@@ -228,7 +232,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -274,7 +278,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -290,10 +294,12 @@ Storage Desc Params:
 PREHOOK: query: drop table skew_test.original3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: skew_test@original3
+PREHOOK: Output: database:skew_test
 PREHOOK: Output: skew_test@original3
 POSTHOOK: query: drop table skew_test.original3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: skew_test@original3
+POSTHOOK: Output: database:skew_test
 POSTHOOK: Output: skew_test@original3
 PREHOOK: query: drop database skew_test
 PREHOOK: type: DROPDATABASE

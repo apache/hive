@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.parse.repl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.hadoop.hive.common.DataCopyStatistics;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
@@ -29,7 +30,9 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.util.Retryable;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
@@ -50,6 +53,7 @@ import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 public class CopyUtils {
@@ -66,6 +70,8 @@ public class CopyUtils {
   private final String copyAsUser;
   private FileSystem destinationFs;
   private final int maxParallelCopyTask;
+
+  private AtomicLong totalBytesCopied = new AtomicLong(0);
   @VisibleForTesting
   public static Callable<Boolean> testCallable;
 
@@ -89,6 +95,14 @@ public class CopyUtils {
     this.destinationFs = destinationFs;
   }
 
+  private void incrementTotalBytesCopied(long bytesCopied) {
+    totalBytesCopied.addAndGet(bytesCopied);
+  }
+
+  public long getTotalBytesCopied() {
+    return totalBytesCopied.get();
+  }
+
   private <T> T retryableFxn(Callable<T> callable) throws IOException {
     Retryable retryable = Retryable.builder()
             .withHiveConf(hiveConf)
@@ -110,10 +124,12 @@ public class CopyUtils {
 
   @VisibleForTesting
   void copyFilesBetweenFS(FileSystem srcFS, Path[] paths, FileSystem dstFS,
-                                  Path dst, boolean deleteSource, boolean overwrite) throws IOException {
+                          Path dst, boolean deleteSource, boolean overwrite,
+                          DataCopyStatistics copyStatistics) throws IOException {
     retryableFxn(() -> {
-      boolean preserveXAttrs = FileUtils.shouldPreserveXAttrs(hiveConf, srcFS, dstFS);
-      FileUtils.copy(srcFS, paths, dstFS, dst, deleteSource, overwrite, preserveXAttrs, hiveConf);
+      boolean preserveXAttrs = FileUtils.shouldPreserveXAttrs(hiveConf, srcFS, dstFS, paths[0]);
+      FileUtils.copy(srcFS, paths, dstFS, dst, deleteSource, overwrite, preserveXAttrs, hiveConf,
+          copyStatistics);
       return null;
     });
   }
@@ -170,7 +186,9 @@ public class CopyUtils {
             List<Callable<Void>> copyList = new ArrayList<>();
             for (Map.Entry<Path, List<ReplChangeManager.FileInfo>> destMapEntry : destMap.entrySet()) {
               copyList.add(() -> {
-                doCopy(destMapEntry, proxyUser, regularCopy(sourceFs, destMapEntry.getValue()), overwrite);
+                DataCopyStatistics copyStatistics = new DataCopyStatistics();
+                doCopy(destMapEntry, proxyUser, regularCopy(sourceFs, destMapEntry.getValue()), overwrite, copyStatistics);
+                incrementTotalBytesCopied(copyStatistics.getBytesCopied());
                 return null;
               });
             }
@@ -178,7 +196,9 @@ public class CopyUtils {
           } else {
             //Since just a single file, just do a copy in the same thread
             for (Map.Entry<Path, List<ReplChangeManager.FileInfo>> destMapEntry : destMap.entrySet()) {
-              doCopy(destMapEntry, proxyUser, regularCopy(sourceFs, destMapEntry.getValue()), overwrite);
+              DataCopyStatistics copyStatistics = new DataCopyStatistics();
+              doCopy(destMapEntry, proxyUser, regularCopy(sourceFs, destMapEntry.getValue()), overwrite, copyStatistics);
+              incrementTotalBytesCopied(copyStatistics.getBytesCopied());
             }
           }
 
@@ -189,7 +209,9 @@ public class CopyUtils {
         // not the srcPath folder itself.
         srcFiles.clear();
         srcFiles.add(new ReplChangeManager.FileInfo(sourceFs, origSrcPath, null));
-        doCopyRetry(sourceFs, srcFiles, destRoot, proxyUser, useRegularCopy, overwrite);
+        DataCopyStatistics copyStatistics = new DataCopyStatistics();
+        doCopyRetry(sourceFs, srcFiles, destRoot, proxyUser, useRegularCopy, overwrite, copyStatistics);
+        incrementTotalBytesCopied(copyStatistics.getBytesCopied());
       }
     } catch (InterruptedException e) {
       LOG.error("Failed to copy ", e);
@@ -208,7 +230,7 @@ public class CopyUtils {
 
   @VisibleForTesting
   void doCopy(Map.Entry<Path, List<ReplChangeManager.FileInfo>> destMapEntry, UserGroupInformation proxyUser,
-                      boolean useRegularCopy, boolean overwrite) throws IOException, LoginException, HiveFatalException {
+                      boolean useRegularCopy, boolean overwrite, DataCopyStatistics copyStatistics) throws IOException, LoginException, HiveFatalException {
     Path destination = destMapEntry.getKey();
     List<ReplChangeManager.FileInfo> fileInfoList = destMapEntry.getValue();
     // Get the file system again from cache. There is a chance that the file system stored in the map is closed.
@@ -219,13 +241,12 @@ public class CopyUtils {
       throw new IOException("Destination directory creation failed");
     }
     // Copy files with retry logic on failure or source file is dropped or changed.
-    doCopyRetry(sourceFsOfFileInfo, fileInfoList, destination, proxyUser, useRegularCopy, overwrite);
+    doCopyRetry(sourceFsOfFileInfo, fileInfoList, destination, proxyUser, useRegularCopy, overwrite, copyStatistics);
   }
 
   private void doCopyRetry(FileSystem sourceFs, List<ReplChangeManager.FileInfo> srcFileList,
                            Path destination, UserGroupInformation proxyUser,
-                           boolean useRegularCopy, boolean overwrite) throws IOException,
-          LoginException, HiveFatalException {
+                           boolean useRegularCopy, boolean overwrite, DataCopyStatistics copyStatistics) throws IOException, LoginException, HiveFatalException {
     int repeat = 0;
     boolean isCopyError = false;
     List<Path> pathList = Lists.transform(srcFileList, ReplChangeManager.FileInfo::getEffectivePath);
@@ -244,7 +265,7 @@ public class CopyUtils {
 
         // if exception happens during doCopyOnce, then need to call getFilesToRetry with copy error as true in retry.
         isCopyError = true;
-        doCopyOnce(sourceFs, pathList, destination, useRegularCopy, proxyUser, overwrite);
+        doCopyOnce(sourceFs, pathList, destination, useRegularCopy, proxyUser, overwrite, copyStatistics);
 
         // if exception happens after doCopyOnce, then need to call getFilesToRetry with copy error as false in retry.
         isCopyError = false;
@@ -252,7 +273,7 @@ public class CopyUtils {
         // If copy fails, fall through the retry logic
         LOG.info("file operation failed", e);
 
-        //Don't retry in the following cases:
+        //Don't retry in the following cases :
         //1. This is last attempt of retry.
         //2. Execution already hit the exception which should not be retried.
         //3. Retry is already exhausted by FS operations.
@@ -436,16 +457,16 @@ public class CopyUtils {
   private void doCopyOnce(FileSystem sourceFs, List<Path> srcList,
                           Path destination,
                           boolean useRegularCopy, UserGroupInformation proxyUser,
-                          boolean overwrite) throws IOException {
+                          boolean overwrite, DataCopyStatistics copyStatistics) throws IOException {
     if (useRegularCopy) {
-      doRegularCopyOnce(sourceFs, srcList, destination, proxyUser, overwrite);
+      doRegularCopyOnce(sourceFs, srcList, destination, proxyUser, overwrite, copyStatistics);
     } else {
-      doDistCpCopyOnce(sourceFs, srcList, destination, proxyUser);
+      doDistCpCopyOnce(sourceFs, srcList, destination, proxyUser, copyStatistics);
     }
   }
 
   private void doDistCpCopyOnce(FileSystem sourceFs, List<Path> srcList, Path destination,
-                                UserGroupInformation proxyUser) throws IOException {
+                                UserGroupInformation proxyUser, DataCopyStatistics copyStatistics) throws IOException {
     if (hiveConf.getBoolVar(HiveConf.ConfVars.REPL_ADD_RAW_RESERVED_NAMESPACE)) {
       srcList = srcList.stream().map(path -> {
         URI uri = path.toUri();
@@ -468,10 +489,18 @@ public class CopyUtils {
       LOG.error("Distcp failed to copy files: " + srcList + " to destination: " + destination);
       throw new IOException("Distcp operation failed.");
     }
+    // increment bytes copied counter by the file length in each path of filesystem
+    if (sourceFs.getUri().getScheme().equals("hdfs")) {
+      for (Path path : srcList) {
+        ContentSummary srcContentSummary = sourceFs.getContentSummary(path);
+        copyStatistics.incrementBytesCopiedCounter(srcContentSummary.getLength());
+      }
+    }
+    LOG.info("CopyUtils copied {} number of bytes by using distcp", copyStatistics.getBytesCopied());
   }
 
   private void doRegularCopyOnce(FileSystem sourceFs, List<Path> srcList,
-      Path destination, UserGroupInformation proxyUser, boolean overWrite) throws IOException {
+      Path destination, UserGroupInformation proxyUser, boolean overWrite, DataCopyStatistics copyStatistics) throws IOException {
   /*
     even for regular copy we have to use the same user permissions that distCp will use since
     hive-server user might be different that the super user required to copy relevant files.
@@ -485,7 +514,7 @@ public class CopyUtils {
           if (overWrite) {
             deleteSubDirs(destinationFs, destination);
           }
-          copyFilesBetweenFS(sourceFs, paths, destinationFs, finalDestination, false, true);
+          copyFilesBetweenFS(sourceFs, paths, destinationFs, finalDestination, false, true, copyStatistics);
           return true;
         });
       } catch (InterruptedException e) {
@@ -496,7 +525,7 @@ public class CopyUtils {
       if (overWrite) {
         deleteSubDirs(destinationFs, destination);
       }
-      copyFilesBetweenFS(sourceFs, paths, destinationFs, destination, false, true);
+      copyFilesBetweenFS(sourceFs, paths, destinationFs, destination, false, true, copyStatistics);
     }
   }
 
@@ -518,7 +547,7 @@ public class CopyUtils {
               path -> new ReplChangeManager.FileInfo(sourceFs, path, null));
       doCopyOnce(sourceFs, entry.getValue(),
               destination,
-              regularCopy(sourceFs, fileList), proxyUser, false);
+              regularCopy(sourceFs, fileList), proxyUser, false, new DataCopyStatistics());
     }
   }
 
@@ -617,6 +646,16 @@ public class CopyUtils {
     String[] subDirs = fileInfo.getSubDir().split(Path.SEPARATOR);
     Path destination = destRoot;
     for (String subDir: subDirs) {
+      if (subDir.startsWith(AcidUtils.BASE_PREFIX)) {
+        AcidUtils.ParsedBaseLight pb = AcidUtils.ParsedBase.parseBase(new Path(subDir));
+        subDir = pb.getVisibilityTxnId() > 0 ? AcidUtils.baseDir(pb.getWriteId()) : subDir;
+      } else if (subDir.startsWith(AcidUtils.DELTA_PREFIX)) {
+        AcidUtils.ParsedDeltaLight pdl = AcidUtils.ParsedDeltaLight.parse(new Path(subDir));
+        subDir = pdl.getVisibilityTxnId() > 0 ? AcidUtils.deltaSubdir(pdl.getMinWriteId(), pdl.getMaxWriteId()) : subDir;
+      } else if (subDir.startsWith(AcidUtils.DELETE_DELTA_PREFIX)) {
+        AcidUtils.ParsedDeltaLight pdl = AcidUtils.ParsedDeltaLight.parse(new Path(subDir));
+        subDir = pdl.getVisibilityTxnId() > 0 ? AcidUtils.deleteDeltaSubdir(pdl.getMinWriteId(), pdl.getMaxWriteId()) : subDir;
+      }
       destination = new Path(destination, subDir);
     }
     return destination;

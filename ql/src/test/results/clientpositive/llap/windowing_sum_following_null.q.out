@@ -1,0 +1,124 @@
+PREHOOK: query: create table sum_window_test_small (id int, tinyint_col tinyint, double_col double, decimal_col decimal(12,2))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sum_window_test_small
+POSTHOOK: query: create table sum_window_test_small (id int, tinyint_col tinyint, double_col double, decimal_col decimal(12,2))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sum_window_test_small
+PREHOOK: query: insert into sum_window_test_small values (3, 17, 17.1, 17.1), (4, 14, 14.1, 14.1), (6, 18, 18.1, 18.1),
+    (7, 19, 19.1, 19.1), (8,NULL, NULL, NULL), (10, NULL, NULL, NULL), (11, 22, 22.0, 22.1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@sum_window_test_small
+POSTHOOK: query: insert into sum_window_test_small values (3, 17, 17.1, 17.1), (4, 14, 14.1, 14.1), (6, 18, 18.1, 18.1),
+    (7, 19, 19.1, 19.1), (8,NULL, NULL, NULL), (10, NULL, NULL, NULL), (11, 22, 22.0, 22.1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@sum_window_test_small
+POSTHOOK: Lineage: sum_window_test_small.decimal_col SCRIPT []
+POSTHOOK: Lineage: sum_window_test_small.double_col SCRIPT []
+POSTHOOK: Lineage: sum_window_test_small.id SCRIPT []
+POSTHOOK: Lineage: sum_window_test_small.tinyint_col SCRIPT []
+PREHOOK: query: select id,
+tinyint_col,
+sum(tinyint_col) over (order by id nulls last rows between 1 following and 2 following),
+sum(double_col) over (order by id nulls last rows between 1 following and 2 following),
+sum(decimal_col) over (order by id nulls last rows between 1 following and 2 following)
+from sum_window_test_small order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sum_window_test_small
+#### A masked pattern was here ####
+POSTHOOK: query: select id,
+tinyint_col,
+sum(tinyint_col) over (order by id nulls last rows between 1 following and 2 following),
+sum(double_col) over (order by id nulls last rows between 1 following and 2 following),
+sum(decimal_col) over (order by id nulls last rows between 1 following and 2 following)
+from sum_window_test_small order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sum_window_test_small
+#### A masked pattern was here ####
+3	17	32	32.2	32.20
+4	14	37	37.2	37.20
+6	18	19	19.1	19.10
+7	19	NULL	NULL	NULL
+8	NULL	22	22.0	22.10
+10	NULL	22	22.0	22.10
+11	22	NULL	NULL	NULL
+PREHOOK: query: insert into sum_window_test_small values (12,NULL, NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@sum_window_test_small
+POSTHOOK: query: insert into sum_window_test_small values (12,NULL, NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@sum_window_test_small
+POSTHOOK: Lineage: sum_window_test_small.decimal_col EXPRESSION []
+POSTHOOK: Lineage: sum_window_test_small.double_col EXPRESSION []
+POSTHOOK: Lineage: sum_window_test_small.id SCRIPT []
+POSTHOOK: Lineage: sum_window_test_small.tinyint_col EXPRESSION []
+PREHOOK: query: select id,
+tinyint_col,
+sum(tinyint_col) over (order by id nulls last rows between 1 following and 2 following),
+sum(double_col) over (order by id nulls last rows between 1 following and 2 following),
+sum(decimal_col) over (order by id nulls last rows between 1 following and 2 following)
+from sum_window_test_small order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sum_window_test_small
+#### A masked pattern was here ####
+POSTHOOK: query: select id,
+tinyint_col,
+sum(tinyint_col) over (order by id nulls last rows between 1 following and 2 following),
+sum(double_col) over (order by id nulls last rows between 1 following and 2 following),
+sum(decimal_col) over (order by id nulls last rows between 1 following and 2 following)
+from sum_window_test_small order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sum_window_test_small
+#### A masked pattern was here ####
+3	17	32	32.2	32.20
+4	14	37	37.2	37.20
+6	18	19	19.1	19.10
+7	19	NULL	NULL	NULL
+8	NULL	22	22.0	22.10
+10	NULL	22	22.0	22.10
+11	22	NULL	NULL	NULL
+12	NULL	NULL	NULL	NULL
+PREHOOK: query: insert into sum_window_test_small values (13,NULL, NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@sum_window_test_small
+POSTHOOK: query: insert into sum_window_test_small values (13,NULL, NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@sum_window_test_small
+POSTHOOK: Lineage: sum_window_test_small.decimal_col EXPRESSION []
+POSTHOOK: Lineage: sum_window_test_small.double_col EXPRESSION []
+POSTHOOK: Lineage: sum_window_test_small.id SCRIPT []
+POSTHOOK: Lineage: sum_window_test_small.tinyint_col EXPRESSION []
+PREHOOK: query: select id,
+tinyint_col,
+sum(tinyint_col) over (order by id nulls last rows between 1 following and 2 following),
+sum(double_col) over (order by id nulls last rows between 1 following and 2 following),
+sum(decimal_col) over (order by id nulls last rows between 1 following and 2 following)
+from sum_window_test_small order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sum_window_test_small
+#### A masked pattern was here ####
+POSTHOOK: query: select id,
+tinyint_col,
+sum(tinyint_col) over (order by id nulls last rows between 1 following and 2 following),
+sum(double_col) over (order by id nulls last rows between 1 following and 2 following),
+sum(decimal_col) over (order by id nulls last rows between 1 following and 2 following)
+from sum_window_test_small order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sum_window_test_small
+#### A masked pattern was here ####
+3	17	32	32.2	32.20
+4	14	37	37.2	37.20
+6	18	19	19.1	19.10
+7	19	NULL	NULL	NULL
+8	NULL	22	22.0	22.10
+10	NULL	22	22.0	22.10
+11	22	NULL	NULL	NULL
+12	NULL	NULL	NULL	NULL
+13	NULL	NULL	NULL	NULL

@@ -98,8 +98,10 @@ POSTHOOK: Input: default@student_acid
 22	NULL
 PREHOOK: query: drop table if exists acid_partitioned
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists acid_partitioned
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table acid_partitioned (a int, c string)
   partitioned by (p int)
   clustered by (a) into 1 buckets

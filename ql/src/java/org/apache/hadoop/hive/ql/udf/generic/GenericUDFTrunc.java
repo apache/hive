@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -105,6 +106,9 @@ public class GenericUDFTrunc extends GenericUDF {
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
+    for (int i = 0; i < arguments.length; i++) {
+      checkArgPrimitive(arguments, i);
+    }
     if (arguments.length == 2) {
       inputType1 = ((PrimitiveObjectInspector) arguments[0]).getPrimitiveCategory();
       inputType2 = ((PrimitiveObjectInspector) arguments[1]).getPrimitiveCategory();
@@ -198,7 +202,10 @@ public class GenericUDFTrunc extends GenericUDF {
     ObjectInspector outputOI = null;
     switch (inputType1) {
     case DECIMAL:
-      outputOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(inputType1);
+      int outputScale = scale > 0 ? scale : 0;
+      int outputPrecision = ((PrimitiveObjectInspector) arguments[0]).precision() - ((PrimitiveObjectInspector) arguments[0]).scale() + outputScale;
+      DecimalTypeInfo t = new DecimalTypeInfo(outputPrecision, outputScale);
+      outputOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(t);
       break;
     case VOID:
     case BYTE:

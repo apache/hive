@@ -383,13 +383,13 @@ public class TestVectorizedOrcAcidRowBatchReader {
   @Test
   public void testDeleteEventFilteringOnWithoutIdx2() throws Exception {
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.FILTER_DELETE_EVENTS, true);
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVETESTMODEACIDKEYIDXSKIP, true);
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_TEST_MODE_ACID_KEY_IDX_SKIP, true);
     testDeleteEventFiltering2();
   }
   @Test
   public void testDeleteEventFilteringOnWithoutIdx3() throws Exception {
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.FILTER_DELETE_EVENTS, true);
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVETESTMODEACIDKEYIDXSKIP, true);
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_TEST_MODE_ACID_KEY_IDX_SKIP, true);
     conf.set("orc.stripe.size", "1000");
     testDeleteEventFiltering();
   }
@@ -398,7 +398,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     boolean filterOn =
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.FILTER_DELETE_EVENTS);
     boolean skipKeyIdx =
-        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVETESTMODEACIDKEYIDXSKIP);
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_TEST_MODE_ACID_KEY_IDX_SKIP);
     int bucket = 1;
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
         .filesystem(fs)
@@ -1185,7 +1185,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
   }
 
   @Test
-  public void testIsQualifiedDeleteDeltaForSplit() throws IOException {
+  public void testIsQualifiedDeleteDeltaForSplit() {
     // Original file
     checkPath("00000_0", "delete_delta_000012_000012_0000", true);
     checkPath("00000_0", "delete_delta_000001_000001", true);
@@ -1231,7 +1231,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     checkPath("delta_0000002_0000002/bucket_00001", "delete_delta_0000002_0000002_0001", true);
   }
 
-  private void checkPath(String splitPath, String deleteDeltaPath, boolean expected) throws IOException {
+  private void checkPath(String splitPath, String deleteDeltaPath, boolean expected) {
     String tableDir = "";//hdfs://localhost:59316/base/warehouse/acid_test/";
     AcidOutputFormat.Options ao = AcidUtils.parseBaseOrDeltaBucketFilename(new Path(tableDir + splitPath), conf);
     ParsedDeltaLight parsedDelta = ParsedDeltaLight.parse(new Path(tableDir + deleteDeltaPath));

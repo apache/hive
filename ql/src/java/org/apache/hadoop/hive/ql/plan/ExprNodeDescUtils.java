@@ -71,7 +71,11 @@ public class ExprNodeDescUtils {
   protected static final Logger LOG = LoggerFactory.getLogger(ExprNodeDescUtils.class);
 
   public static int indexOf(ExprNodeDesc origin, List<ExprNodeDesc> sources) {
-    for (int i = 0; i < sources.size(); i++) {
+    return indexOf(origin, sources, 0);
+  }
+
+  public static int indexOf(ExprNodeDesc origin, List<ExprNodeDesc> sources, int startIndex) {
+    for (int i = startIndex; i < sources.size(); i++) {
       if (origin.isSame(sources.get(i))) {
         return i;
       }
@@ -533,9 +537,9 @@ public class ExprNodeDescUtils {
         if(columnInternalName.startsWith(Utilities.ReduceField.VALUE.toString())) {
           continue;
         }
-        if (source instanceof ExprNodeColumnDesc) {
+        ColumnInfo columnInfo = reduceSinkOp.getSchema().getColumnInfo(columnInternalName);
+        if (source instanceof ExprNodeColumnDesc && columnInfo != null) {
           // The join key is a table column. Create the ExprNodeDesc based on this column.
-          ColumnInfo columnInfo = reduceSinkOp.getSchema().getColumnInfo(columnInternalName);
           return new ExprNodeColumnDesc(columnInfo);
         } else {
           // Join key expression is likely some expression involving functions/operators, so there

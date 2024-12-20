@@ -1,3 +1,5 @@
+DROP table if exists src_hbase_tmp;
+
 CREATE TABLE src_hbase_tmp (key STRING COMMENT 'default', value STRING COMMENT 'default') STORED AS TEXTFILE;
 
 LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/kv1.txt" INTO TABLE src_hbase_tmp;
@@ -5,6 +7,8 @@ LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/kv1.txt" INTO TABLE src_hbase_
 ANALYZE TABLE src_hbase_tmp COMPUTE STATISTICS;
 
 ANALYZE TABLE src_hbase_tmp COMPUTE STATISTICS FOR COLUMNS key,value;
+
+DROP table if exists src_hbase;
 
 CREATE TABLE src_hbase (key INT, value STRING)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'

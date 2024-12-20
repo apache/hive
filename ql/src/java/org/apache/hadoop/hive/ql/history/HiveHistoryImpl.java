@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.history;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -80,7 +79,7 @@ public class HiveHistoryImpl implements HiveHistory{
     try {
       console = new LogHelper(LOG);
       String conf_file_loc = ss.getConf().getVar(
-          HiveConf.ConfVars.HIVEHISTORYFILELOC);
+          HiveConf.ConfVars.HIVE_HISTORY_FILE_LOC);
       if ((conf_file_loc == null) || conf_file_loc.length() == 0) {
         console.printError("No history file location given");
         return;

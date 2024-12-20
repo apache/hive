@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez.monitoring;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import org.apache.hadoop.hive.common.log.InPlaceUpdate;
 import org.apache.hadoop.hive.common.log.ProgressMonitor;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -48,14 +51,14 @@ class RenderStrategy {
     private long lastPrintTime = 0L;
     private String lastReport = null;
 
-    BaseUpdateFunction(TezJobMonitor monitor) {
+    BaseUpdateFunction(TezJobMonitor monitor, PerfLogger perfLogger) {
       this.monitor = monitor;
       print_interval = HiveConf.getTimeVar(
           monitor.getHiveConf(),
           HiveConf.ConfVars.HIVE_LOG_INCREMENTAL_PLAN_PROGRESS_INTERVAL,
           TimeUnit.MILLISECONDS
       );
-      perfLogger = SessionState.getPerfLogger();
+      this.perfLogger = perfLogger;
     }
 
     @Override
@@ -145,10 +148,15 @@ class RenderStrategy {
    */
   static class LogToFileFunction extends BaseUpdateFunction {
     private static final Logger LOGGER = LoggerFactory.getLogger(LogToFileFunction.class);
-    private boolean hiveServer2InPlaceProgressEnabled =
+    private static final DateTimeFormatter REPORT_DATE_TIME_FORMATTER =
+        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss,SSS");
+
+    private final boolean hiveServer2InPlaceProgressEnabled =
         SessionState.get().getConf().getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_INPLACE_PROGRESS);
-    LogToFileFunction(TezJobMonitor monitor) {
-      super(monitor);
+    private final ZoneId localTimeZone = SessionState.get().getConf().getLocalTimeZone();
+
+    LogToFileFunction(TezJobMonitor monitor, PerfLogger perfLogger) {
+      super(monitor, perfLogger);
     }
 
     @Override
@@ -161,7 +169,8 @@ class RenderStrategy {
       if (hiveServer2InPlaceProgressEnabled) {
         LOGGER.info(report);
       } else {
-        monitor.console.printInfo(report);
+        final String time = REPORT_DATE_TIME_FORMATTER.format(LocalDateTime.now(localTimeZone));
+        monitor.console.printInfo(time + "\t" + report);
       }
     }
   }
@@ -177,8 +186,8 @@ class RenderStrategy {
      */
     private final InPlaceUpdate inPlaceUpdate;
 
-    InPlaceUpdateFunction(TezJobMonitor monitor) {
-      super(monitor);
+    InPlaceUpdateFunction(TezJobMonitor monitor, PerfLogger perfLogger) {
+      super(monitor, perfLogger);
       inPlaceUpdate = new InPlaceUpdate(SessionState.LogHelper.getInfoStream());
     }
 

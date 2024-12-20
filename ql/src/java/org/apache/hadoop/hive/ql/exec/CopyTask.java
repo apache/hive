@@ -19,13 +19,16 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.DataCopyStatistics;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.util.StringUtils;
@@ -35,19 +38,50 @@ import org.apache.hadoop.util.StringUtils;
  **/
 public class CopyTask extends Task<CopyWork> implements Serializable {
   private static final long serialVersionUID = 1L;
+  private AtomicLong totalBytesCopied = new AtomicLong(0);
 
   public CopyTask() {
     super();
   }
 
+  public void incrementTotalBytesCopied(long bytesCount) {
+    totalBytesCopied.addAndGet(bytesCount);
+  }
+
+  public long getTotalBytesCopied() {
+    return totalBytesCopied.get();
+  }
+
   @Override
   public int execute() {
+    try {
+      initializeWorkFromDeferredContext();
+    } catch (Exception e) {
+      console.printError("Failed with exception " + e.getMessage(), "\n"
+          + StringUtils.stringifyException(e));
+      LOG.error("CopyTask failed", e);
+      setException(e);
+      return ReplUtils.handleException(work.isReplication(), e, work.getDumpDirectory(), work.getMetricCollector(),
+          getName(), conf);
+    }
+
     Path[] from = work.getFromPaths(), to = work.getToPaths();
     for (int i = 0; i < from.length; ++i) {
       int result = copyOnePath(from[i], to[i]);
-      if (result != 0) return result;
+      if (result != 0)
+        return result;
+    }
+    LOG.debug("CopyUtils copied {} number of bytes", getTotalBytesCopied());
+    if (work.getMetricCollector() != null) {
+      work.getMetricCollector().incrementSizeOfDataReplicated(getTotalBytesCopied());
     }
     return 0;
+  }
+
+  private void initializeWorkFromDeferredContext() throws HiveException {
+    if (null != getDeferredWorkContext()) {
+      work.initializeFromDeferredContext(getDeferredWorkContext());
+    }
   }
 
   protected int copyOnePath(Path fromPath, Path toPath) {
@@ -90,15 +124,18 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
         String oneSrcPathStr = oneSrc.getPath().toString();
         console.printInfo("Copying file: " + oneSrcPathStr);
         Utilities.FILE_OP_LOGGER.debug("Copying file {} to {}", oneSrcPathStr, toPath);
+        DataCopyStatistics copyStatistics = new DataCopyStatistics();
         if (!FileUtils.copy(srcFs, oneSrc.getPath(), dstFs, toPath,
             false, // delete source
             work.isOverwrite(), // overwrite destination
-            conf)) {
+            conf, copyStatistics)) {
           console.printError("Failed to copy: '" + oneSrcPathStr
               + "to: '" + toPath.toString() + "'");
           return 1;
         }
+        incrementTotalBytesCopied(copyStatistics.getBytesCopied());
       }
+
       return 0;
 
     } catch (Exception e) {

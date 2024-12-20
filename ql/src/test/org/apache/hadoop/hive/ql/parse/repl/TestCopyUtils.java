@@ -30,10 +30,9 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -46,21 +45,19 @@ import java.util.concurrent.Executors;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyListOf;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit Test class for CopyUtils class.
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({ CopyUtils.class, FileUtils.class, Utils.class, UserGroupInformation.class, ReplChangeManager.class})
-@PowerMockIgnore({ "javax.management.*" })
+@RunWith(MockitoJUnitRunner.class)
 public class TestCopyUtils {
   /*
   Distcp currently does not copy a single file in a distributed manner hence we dont care about
@@ -68,25 +65,27 @@ public class TestCopyUtils {
    */
   @Test
   public void distcpShouldNotBeCalledOnlyForOneFile() throws Exception {
-    mockStatic(UserGroupInformation.class);
-    when(UserGroupInformation.getCurrentUser()).thenReturn(mock(UserGroupInformation.class));
+    try (MockedStatic<UserGroupInformation> userGroupInformationMockedStatic = mockStatic(UserGroupInformation.class)) {
+      userGroupInformationMockedStatic.when(UserGroupInformation::getCurrentUser).thenReturn(mock(UserGroupInformation.class));
 
-    HiveConf conf = Mockito.spy(new HiveConf());
-    doReturn(1L).when(conf).getLong(HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname, 32L * 1024 * 1024);
-    CopyUtils copyUtils = new CopyUtils("", conf, null);
-    long MB_128 = 128 * 1024 * 1024;
-    assertFalse(copyUtils.limitReachedForLocalCopy(MB_128, 1L));
+      HiveConf conf = Mockito.spy(new HiveConf());
+      doReturn(1L).when(conf).getLong(HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname, 32L * 1024 * 1024);
+      CopyUtils copyUtils = new CopyUtils("", conf, null);
+      long MB_128 = 128 * 1024 * 1024;
+      assertFalse(copyUtils.limitReachedForLocalCopy(MB_128, 1L));
+    }
   }
 
   @Test
   public void distcpShouldNotBeCalledForSmallerFileSize() throws Exception {
-    mockStatic(UserGroupInformation.class);
-    when(UserGroupInformation.getCurrentUser()).thenReturn(mock(UserGroupInformation.class));
+    try (MockedStatic<UserGroupInformation> userGroupInformationMockedStatic = mockStatic(UserGroupInformation.class)) {
+      userGroupInformationMockedStatic.when(UserGroupInformation::getCurrentUser).thenReturn(mock(UserGroupInformation.class));
 
-    HiveConf conf = Mockito.spy(new HiveConf());
-    CopyUtils copyUtils = new CopyUtils("", conf, null);
-    long MB_16 = 16 * 1024 * 1024;
-    assertFalse(copyUtils.limitReachedForLocalCopy(MB_16, 100L));
+      HiveConf conf = Mockito.spy(new HiveConf());
+      CopyUtils copyUtils = new CopyUtils("", conf, null);
+      long MB_16 = 16 * 1024 * 1024;
+      assertFalse(copyUtils.limitReachedForLocalCopy(MB_16, 100L));
+    }
   }
 
   @Test(expected = IOException.class)
@@ -97,151 +96,152 @@ public class TestCopyUtils {
     List<Path> srcPaths = Arrays.asList(source, source);
     HiveConf conf = mock(HiveConf.class);
     CopyUtils copyUtils = Mockito.spy(new CopyUtils(null, conf, fs));
+    doReturn(false).when(copyUtils).regularCopy(same(fs), anyList());
 
-    mockStatic(FileUtils.class);
-    mockStatic(Utils.class);
-    when(destination.getFileSystem(same(conf))).thenReturn(fs);
     when(source.getFileSystem(same(conf))).thenReturn(fs);
-    when(FileUtils.distCp(same(fs), anyListOf(Path.class), same(destination),
-                          anyBoolean(), eq(null), same(conf),
-                          same(ShimLoader.getHadoopShims())))
-        .thenReturn(false);
-    when(Utils.getUGI()).thenReturn(mock(UserGroupInformation.class));
-    doReturn(false).when(copyUtils).regularCopy(same(fs), anyListOf(ReplChangeManager.FileInfo.class));
+    try (MockedStatic<FileUtils> fileUtilsMockedStatic = mockStatic(FileUtils.class);
+         MockedStatic<Utils> utilsMockedStatic = mockStatic(Utils.class)) {
+      fileUtilsMockedStatic.when(
+              () -> FileUtils.distCp(same(fs), anyList(), same(destination), anyBoolean(), eq(null), same(conf),
+                      same(ShimLoader.getHadoopShims()))).thenReturn(false);
+      utilsMockedStatic.when(Utils::getUGI).thenReturn(mock(UserGroupInformation.class));
 
-    copyUtils.doCopy(destination, srcPaths);
+      copyUtils.doCopy(destination, srcPaths);
+    }
   }
 
   @Test
   public void testFSCallsFailOnParentExceptions() throws Exception {
-    mockStatic(UserGroupInformation.class);
-    mockStatic(ReplChangeManager.class);
-    when(UserGroupInformation.getCurrentUser()).thenReturn(mock(UserGroupInformation.class));
-    HiveConf conf = mock(HiveConf.class);
-    conf.set(HiveConf.ConfVars.REPL_RETRY_INTIAL_DELAY.varname, "1s");
-    FileSystem fs = mock(FileSystem.class);
-    Path source = mock(Path.class);
-    Path destination = mock(Path.class);
-    ContentSummary cs = mock(ContentSummary.class);
+    try (MockedStatic<UserGroupInformation> userGroupInformationMockedStatic = mockStatic(UserGroupInformation.class);
+         MockedStatic<ReplChangeManager> replChangeManagerMockedStatic = mockStatic(ReplChangeManager.class)) {
+      userGroupInformationMockedStatic.when(UserGroupInformation::getCurrentUser).thenReturn(mock(UserGroupInformation.class));
+      HiveConf conf = mock(HiveConf.class);
+      conf.set(HiveConf.ConfVars.REPL_RETRY_INTIAL_DELAY.varname, "1s");
+      FileSystem fs = mock(FileSystem.class);
+      Path source = mock(Path.class);
+      Path destination = mock(Path.class);
+      ContentSummary cs = mock(ContentSummary.class);
 
-    Exception exception = new org.apache.hadoop.fs.PathPermissionException("Failed");
-    when(ReplChangeManager.checksumFor(source, fs)).thenThrow(exception).thenReturn("dummy");
-    when(fs.exists(same(source))).thenThrow(exception).thenReturn(true);
-    when(fs.delete(same(source), anyBoolean())).thenThrow(exception).thenReturn(true);
-    when(fs.mkdirs(same(source))).thenThrow(exception).thenReturn(true);
-    when(fs.rename(same(source), same(destination))).thenThrow(exception).thenReturn(true);
-    when(fs.getContentSummary(same(source))).thenThrow(exception).thenReturn(cs);
+      Exception exception = new org.apache.hadoop.fs.PathPermissionException("Failed");
+      replChangeManagerMockedStatic.when(() -> ReplChangeManager.checksumFor(source, fs)).thenThrow(exception).thenReturn("dummy");
+      when(fs.exists(same(source))).thenThrow(exception).thenReturn(true);
+      when(fs.delete(same(source), anyBoolean())).thenThrow(exception).thenReturn(true);
+      when(fs.mkdirs(same(source))).thenThrow(exception).thenReturn(true);
+      when(fs.rename(same(source), same(destination))).thenThrow(exception).thenReturn(true);
+      when(fs.getContentSummary(same(source))).thenThrow(exception).thenReturn(cs);
 
-    CopyUtils copyUtils = new CopyUtils(UserGroupInformation.getCurrentUser().getUserName(), conf, fs);
-    CopyUtils copyUtilsSpy = Mockito.spy(copyUtils);
-    try {
-      copyUtilsSpy.exists(fs, source);
-    } catch (Exception e) {
-      assertEquals(exception.getClass(), e.getCause().getClass());
+      CopyUtils copyUtils = new CopyUtils(UserGroupInformation.getCurrentUser().getUserName(), conf, fs);
+      CopyUtils copyUtilsSpy = Mockito.spy(copyUtils);
+      try {
+        copyUtilsSpy.exists(fs, source);
+      } catch (Exception e) {
+        assertEquals(exception.getClass(), e.getCause().getClass());
+      }
+      Mockito.verify(fs, Mockito.times(1)).exists(source);
+      try {
+        copyUtils.delete(fs, source, true);
+      } catch (Exception e) {
+        assertEquals(exception.getClass(), e.getCause().getClass());
+      }
+      Mockito.verify(fs, Mockito.times(1)).delete(source, true);
+      try {
+        copyUtils.mkdirs(fs, source);
+      } catch (Exception e) {
+        assertEquals(exception.getClass(), e.getCause().getClass());
+      }
+      Mockito.verify(fs, Mockito.times(1)).mkdirs(source);
+      try {
+        copyUtils.rename(fs, source, destination);
+      } catch (Exception e) {
+        assertEquals(exception.getClass(), e.getCause().getClass());
+      }
+      Mockito.verify(fs, Mockito.times(1)).rename(source, destination);
+      try {
+        copyUtilsSpy.getContentSummary(fs, source);
+      } catch (Exception e) {
+        assertEquals(exception.getClass(), e.getCause().getClass());;
+      }
+      Mockito.verify(fs, Mockito.times(1)).getContentSummary(source);
+      try {
+        copyUtilsSpy.checkSumFor(source, fs);
+      } catch (Exception e) {
+        assertEquals(exception.getClass(), e.getCause().getClass());
+      }
+      Mockito.verify(copyUtilsSpy, Mockito.times(1)).checkSumFor(source, fs);
     }
-    Mockito.verify(fs, Mockito.times(1)).exists(source);
-    try {
-      copyUtils.delete(fs, source, true);
-    } catch (Exception e) {
-      assertEquals(exception.getClass(), e.getCause().getClass());
-    }
-    Mockito.verify(fs, Mockito.times(1)).delete(source, true);
-    try {
-      copyUtils.mkdirs(fs, source);
-    } catch (Exception e) {
-      assertEquals(exception.getClass(), e.getCause().getClass());
-    }
-    Mockito.verify(fs, Mockito.times(1)).mkdirs(source);
-    try {
-      copyUtils.rename(fs, source, destination);
-    } catch (Exception e) {
-      assertEquals(exception.getClass(), e.getCause().getClass());
-    }
-    Mockito.verify(fs, Mockito.times(1)).rename(source, destination);
-    try {
-      copyUtilsSpy.getContentSummary(fs, source);
-    } catch (Exception e) {
-      assertEquals(exception.getClass(), e.getCause().getClass());;
-    }
-    Mockito.verify(fs, Mockito.times(1)).getContentSummary(source);
-    try {
-      copyUtilsSpy.checkSumFor(source, fs);
-    } catch (Exception e) {
-      assertEquals(exception.getClass(), e.getCause().getClass());
-    }
-    Mockito.verify(copyUtilsSpy, Mockito.times(1)).checkSumFor(source, fs);
   }
 
   @Test
   public void testRetryableFSCalls() throws Exception {
-    mockStatic(UserGroupInformation.class);
-    mockStatic(ReplChangeManager.class);
-    when(UserGroupInformation.getCurrentUser()).thenReturn(mock(UserGroupInformation.class));
-    HiveConf conf = mock(HiveConf.class);
-    conf.set(HiveConf.ConfVars.REPL_RETRY_INTIAL_DELAY.varname, "1s");
-    FileSystem fs = mock(FileSystem.class);
-    Path source = mock(Path.class);
-    Path destination = mock(Path.class);
-    ContentSummary cs = mock(ContentSummary.class);
+    try (MockedStatic<UserGroupInformation> userGroupInformationMockedStatic = mockStatic(UserGroupInformation.class);
+         MockedStatic<ReplChangeManager> replChangeManagerMockedStatic = mockStatic(ReplChangeManager.class)) {
+      userGroupInformationMockedStatic.when(UserGroupInformation::getCurrentUser).thenReturn(mock(UserGroupInformation.class));
+      HiveConf conf = mock(HiveConf.class);
+      conf.set(HiveConf.ConfVars.REPL_RETRY_INTIAL_DELAY.varname, "1s");
+      FileSystem fs = mock(FileSystem.class);
+      Path source = mock(Path.class);
+      Path destination = mock(Path.class);
+      ContentSummary cs = mock(ContentSummary.class);
 
-    when(ReplChangeManager.checksumFor(source, fs)).thenThrow(new IOException("Failed")).thenReturn("dummy");
-    when(fs.exists(same(source))).thenThrow(new IOException("Failed")).thenReturn(true);
-    when(fs.delete(same(source), anyBoolean())).thenThrow(new IOException("Failed")).thenReturn(true);
-    when(fs.mkdirs(same(source))).thenThrow(new IOException("Failed")).thenReturn(true);
-    when(fs.rename(same(source), same(destination))).thenThrow(new IOException("Failed")).thenReturn(true);
-    when(fs.getContentSummary(same(source))).thenThrow(new IOException("Failed")).thenReturn(cs);
+      replChangeManagerMockedStatic.when(() -> ReplChangeManager.checksumFor(source, fs)).thenThrow(new IOException("Failed")).thenReturn("dummy");
+      when(fs.exists(same(source))).thenThrow(new IOException("Failed")).thenReturn(true);
+      when(fs.delete(same(source), anyBoolean())).thenThrow(new IOException("Failed")).thenReturn(true);
+      when(fs.mkdirs(same(source))).thenThrow(new IOException("Failed")).thenReturn(true);
+      when(fs.rename(same(source), same(destination))).thenThrow(new IOException("Failed")).thenReturn(true);
+      when(fs.getContentSummary(same(source))).thenThrow(new IOException("Failed")).thenReturn(cs);
 
-    CopyUtils copyUtils = new CopyUtils(UserGroupInformation.getCurrentUser().getUserName(), conf, fs);
-    CopyUtils copyUtilsSpy = Mockito.spy(copyUtils);
-    assertEquals (true, copyUtilsSpy.exists(fs, source));
-    Mockito.verify(fs, Mockito.times(2)).exists(source);
-    assertEquals (true, copyUtils.delete(fs, source, true));
-    Mockito.verify(fs, Mockito.times(2)).delete(source, true);
-    assertEquals (true, copyUtils.mkdirs(fs, source));
-    Mockito.verify(fs, Mockito.times(2)).mkdirs(source);
-    assertEquals (true, copyUtils.rename(fs, source, destination));
-    Mockito.verify(fs, Mockito.times(2)).rename(source, destination);
-    assertEquals (cs, copyUtilsSpy.getContentSummary(fs, source));
-    Mockito.verify(fs, Mockito.times(2)).getContentSummary(source);
-    assertEquals ("dummy", copyUtilsSpy.checkSumFor(source, fs));
+      CopyUtils copyUtils = new CopyUtils(UserGroupInformation.getCurrentUser().getUserName(), conf, fs);
+      CopyUtils copyUtilsSpy = Mockito.spy(copyUtils);
+      assertEquals (true, copyUtilsSpy.exists(fs, source));
+      Mockito.verify(fs, Mockito.times(2)).exists(source);
+      assertEquals (true, copyUtils.delete(fs, source, true));
+      Mockito.verify(fs, Mockito.times(2)).delete(source, true);
+      assertEquals (true, copyUtils.mkdirs(fs, source));
+      Mockito.verify(fs, Mockito.times(2)).mkdirs(source);
+      assertEquals (true, copyUtils.rename(fs, source, destination));
+      Mockito.verify(fs, Mockito.times(2)).rename(source, destination);
+      assertEquals (cs, copyUtilsSpy.getContentSummary(fs, source));
+      Mockito.verify(fs, Mockito.times(2)).getContentSummary(source);
+      assertEquals ("dummy", copyUtilsSpy.checkSumFor(source, fs));
+    }
   }
 
   @Test
   public void testParallelCopySuccess() throws Exception {
-    mockStatic(UserGroupInformation.class);
-    when(UserGroupInformation.getCurrentUser()).thenReturn(mock(UserGroupInformation.class));
-    HiveConf conf = Mockito.spy(new HiveConf());
-    when(conf.getIntVar(HiveConf.ConfVars.REPL_PARALLEL_COPY_TASKS)).thenReturn(2);
-    when(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)).thenReturn(true);
-    FileSystem destFs = mock(FileSystem.class);
-    when(destFs.exists(Mockito.any())).thenReturn(true);
-    CopyUtils copyUtils = new CopyUtils(UserGroupInformation.getCurrentUser().getUserName(), conf, destFs);
-    CopyUtils copyUtilsSpy = Mockito.spy(copyUtils);
-    ExecutorService executorService = Executors.newFixedThreadPool(2);
-    ExecutorService mockExecutorService = Mockito.spy(executorService);
-    when(copyUtilsSpy.getExecutorService()).thenReturn(mockExecutorService);
-    Path destination = new Path("dest");
-    Path source = mock(Path.class);
-    FileSystem fs = mock(FileSystem.class);
-    ReplChangeManager.FileInfo srcFileInfo = new ReplChangeManager.FileInfo(fs, source, "path1");
-    List<ReplChangeManager.FileInfo> srcFiles = Arrays.asList(srcFileInfo);
-    doNothing().when(copyUtilsSpy).doCopy(Mockito.any(), Mockito.any(),
-      Mockito.anyBoolean(), Mockito.anyBoolean());
-    copyUtilsSpy.copyAndVerify(destination, srcFiles, source, true, true);
-    Class<Collection<? extends Callable<Void>>> listClass =
-      (Class<Collection<? extends Callable<Void>>>)(Class)List.class;
-    //Thread pool Not invoked as only one target path
-    ArgumentCaptor<Collection<? extends Callable<Void>>> callableCapture = ArgumentCaptor.forClass(listClass);
-    Mockito.verify(mockExecutorService, Mockito.times(0)).invokeAll(callableCapture.capture());
-    ReplChangeManager.FileInfo srcFileInfo1 = new ReplChangeManager.FileInfo(fs, source, "path2");
-    ReplChangeManager.FileInfo srcFileInfo2 = new ReplChangeManager.FileInfo(fs, source, "path3");
-    srcFiles = Arrays.asList(srcFileInfo1, srcFileInfo2);
-    executorService = Executors.newFixedThreadPool(2);
-    mockExecutorService = Mockito.spy(executorService);
-    when(copyUtilsSpy.getExecutorService()).thenReturn(mockExecutorService);
-    copyUtilsSpy.copyAndVerify(destination, srcFiles, source, true, true);
-    //File count is greater than 1 do thread pool invoked
-    Mockito.verify(mockExecutorService,
-      Mockito.times(1)).invokeAll(callableCapture.capture());
+    try (MockedStatic<UserGroupInformation> userGroupInformationMockedStatic =  mockStatic(UserGroupInformation.class)) {
+      userGroupInformationMockedStatic.when(UserGroupInformation::getCurrentUser).thenReturn(mock(UserGroupInformation.class));
+      HiveConf conf = Mockito.spy(new HiveConf());
+      when(conf.getIntVar(HiveConf.ConfVars.REPL_PARALLEL_COPY_TASKS)).thenReturn(2);
+      when(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)).thenReturn(true);
+      FileSystem destFs = mock(FileSystem.class);
+      CopyUtils copyUtils = new CopyUtils(UserGroupInformation.getCurrentUser().getUserName(), conf, destFs);
+      CopyUtils copyUtilsSpy = Mockito.spy(copyUtils);
+      ExecutorService executorService = Executors.newFixedThreadPool(2);
+      ExecutorService mockExecutorService = Mockito.spy(executorService);
+      when(copyUtilsSpy.getExecutorService()).thenReturn(mockExecutorService);
+      Path destination = new Path("dest");
+      Path source = mock(Path.class);
+      FileSystem fs = mock(FileSystem.class);
+      ReplChangeManager.FileInfo srcFileInfo = new ReplChangeManager.FileInfo(fs, source, "path1");
+      List<ReplChangeManager.FileInfo> srcFiles = Arrays.asList(srcFileInfo);
+      doNothing().when(copyUtilsSpy).doCopy(Mockito.any(), Mockito.any(),
+        anyBoolean(), anyBoolean(), Mockito.any());
+      copyUtilsSpy.copyAndVerify(destination, srcFiles, source, true, true);
+      Class<Collection<? extends Callable<Void>>> listClass =
+        (Class<Collection<? extends Callable<Void>>>)(Class)List.class;
+      //Thread pool Not invoked as only one target path
+      ArgumentCaptor<Collection<? extends Callable<Void>>> callableCapture = ArgumentCaptor.forClass(listClass);
+      Mockito.verify(mockExecutorService, Mockito.times(0)).invokeAll(callableCapture.capture());
+      ReplChangeManager.FileInfo srcFileInfo1 = new ReplChangeManager.FileInfo(fs, source, "path2");
+      ReplChangeManager.FileInfo srcFileInfo2 = new ReplChangeManager.FileInfo(fs, source, "path3");
+      srcFiles = Arrays.asList(srcFileInfo1, srcFileInfo2);
+      executorService = Executors.newFixedThreadPool(2);
+      mockExecutorService = Mockito.spy(executorService);
+      when(copyUtilsSpy.getExecutorService()).thenReturn(mockExecutorService);
+      copyUtilsSpy.copyAndVerify(destination, srcFiles, source, true, true);
+      //File count is greater than 1 do thread pool invoked
+      Mockito.verify(mockExecutorService,
+        Mockito.times(1)).invokeAll(callableCapture.capture());
+    }
   }
 }

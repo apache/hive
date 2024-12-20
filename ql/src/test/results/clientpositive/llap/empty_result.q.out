@@ -1,0 +1,249 @@
+PREHOOK: query: create table t1 (a1 int, b1 int, c1 struct<f1:string, f2:string, f3:string>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1 (a1 int, b1 int, c1 struct<f1:string, f2:string, f3:string>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: create table t2 (a2 int, b2 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2
+POSTHOOK: query: create table t2 (a2 int, b2 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2
+PREHOOK: query: explain cbo
+select a1 from t1
+join (select a2 from t2 where 1 = 0) s on s.a2 = t1.a1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select a1 from t1
+join (select a2 from t2 where 1 = 0) s on s.a2 = t1.a1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+Explain
+CBO PLAN:
+HiveValues(tuples=[[]])
+
+PREHOOK: query: explain
+select a1 from t1
+join (select a2 from t2 where 1 = 0) s on s.a2 = t1.a1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select a1 from t1
+join (select a2 from t2 where 1 = 0) s on s.a2 = t1.a1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+Explain
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 0
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select a1 from t1
+join (select a2 from t2 where 1 = 0) s on s.a2 = t1.a1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: select a1 from t1
+join (select a2 from t2 where 1 = 0) s on s.a2 = t1.a1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+a1
+PREHOOK: query: explain cbo
+select y + 1 from (select a1 y, b1 z from t1 where b1 > 10) q WHERE 1=0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select y + 1 from (select a1 y, b1 z from t1 where b1 > 10) q WHERE 1=0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+Explain
+CBO PLAN:
+HiveValues(tuples=[[]])
+
+PREHOOK: query: explain
+select y + 1 from (select a1 y, b1 z from t1 where b1 > 10) q WHERE 1=0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select y + 1 from (select a1 y, b1 z from t1 where b1 > 10) q WHERE 1=0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+Explain
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 0
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select y + 1 from (select a1 y, b1 z from t1 where b1 > 10) q WHERE 1=0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: select y + 1 from (select a1 y, b1 z from t1 where b1 > 10) q WHERE 1=0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+_c0
+PREHOOK: query: create view vw1 as (select t1.b1, t2.b2 from t1, t2 WHERE t1.a1 = t2.a2)
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vw1
+POSTHOOK: query: create view vw1 as (select t1.b1, t2.b2 from t1, t2 WHERE t1.a1 = t2.a2)
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vw1
+POSTHOOK: Lineage: vw1.b1 SIMPLE [(t1)t1.FieldSchema(name:b1, type:int, comment:null), ]
+POSTHOOK: Lineage: vw1.b2 SIMPLE [(t2)t2.FieldSchema(name:b2, type:int, comment:null), ]
+b1	b2
+PREHOOK: query: explain cbo
+select 1 from vw1 where 1=0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+PREHOOK: Input: default@vw1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select 1 from vw1 where 1=0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@vw1
+#### A masked pattern was here ####
+Explain
+CBO PLAN:
+HiveValues(tuples=[[]])
+
+PREHOOK: query: explain
+select 1 from vw1 where 1=0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+PREHOOK: Input: default@vw1
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select 1 from vw1 where 1=0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@vw1
+#### A masked pattern was here ####
+Explain
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 0
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain cbo
+select count(a1) from t1 where 1=0 group by a1 order by a1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select count(a1) from t1 where 1=0 group by a1 order by a1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+Explain
+CBO PLAN:
+HiveValues(tuples=[[]])
+
+PREHOOK: query: explain
+select count(a1) from t1 where 1=0 group by a1 order by a1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select count(a1) from t1 where 1=0 group by a1 order by a1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+Explain
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 0
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain cbo
+select min(c1) from t1 where false
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select min(c1) from t1 where false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+Explain
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[min($0)])
+  HiveValues(tuples=[[]])
+
+PREHOOK: query: explain cbo
+select b1, count(a1) count1 from (select a1, b1 from t1) s where 1=0 group by b1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select b1, count(a1) count1 from (select a1, b1 from t1) s where 1=0 group by b1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+Explain
+CBO PLAN:
+HiveValues(tuples=[[]])
+
+PREHOOK: query: select b1, count(a1) count1 from (select a1, b1 from t1) s where 1=0 group by b1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: select b1, count(a1) count1 from (select a1, b1 from t1) s where 1=0 group by b1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+b1	count1

@@ -102,6 +102,21 @@ class CompactionInfoStruct
             'isRequired' => false,
             'type' => TType::I64,
         ),
+        17 => array(
+            'var' => 'poolname',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
+        18 => array(
+            'var' => 'numberOfBuckets',
+            'isRequired' => false,
+            'type' => TType::I32,
+        ),
+        19 => array(
+            'var' => 'orderByClause',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -168,6 +183,18 @@ class CompactionInfoStruct
      * @var int
      */
     public $retryRetention = null;
+    /**
+     * @var string
+     */
+    public $poolname = null;
+    /**
+     * @var int
+     */
+    public $numberOfBuckets = null;
+    /**
+     * @var string
+     */
+    public $orderByClause = null;
 
     public function __construct($vals = null)
     {
@@ -219,6 +246,15 @@ class CompactionInfoStruct
             }
             if (isset($vals['retryRetention'])) {
                 $this->retryRetention = $vals['retryRetention'];
+            }
+            if (isset($vals['poolname'])) {
+                $this->poolname = $vals['poolname'];
+            }
+            if (isset($vals['numberOfBuckets'])) {
+                $this->numberOfBuckets = $vals['numberOfBuckets'];
+            }
+            if (isset($vals['orderByClause'])) {
+                $this->orderByClause = $vals['orderByClause'];
             }
         }
     }
@@ -354,6 +390,27 @@ class CompactionInfoStruct
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 17:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->poolname);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 18:
+                    if ($ftype == TType::I32) {
+                        $xfer += $input->readI32($this->numberOfBuckets);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 19:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->orderByClause);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -446,6 +503,21 @@ class CompactionInfoStruct
         if ($this->retryRetention !== null) {
             $xfer += $output->writeFieldBegin('retryRetention', TType::I64, 16);
             $xfer += $output->writeI64($this->retryRetention);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->poolname !== null) {
+            $xfer += $output->writeFieldBegin('poolname', TType::STRING, 17);
+            $xfer += $output->writeString($this->poolname);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->numberOfBuckets !== null) {
+            $xfer += $output->writeFieldBegin('numberOfBuckets', TType::I32, 18);
+            $xfer += $output->writeI32($this->numberOfBuckets);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->orderByClause !== null) {
+            $xfer += $output->writeFieldBegin('orderByClause', TType::STRING, 19);
+            $xfer += $output->writeString($this->orderByClause);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

@@ -28,6 +28,7 @@ import org.apache.calcite.rel.core.TableFunctionScan;
 import org.apache.calcite.rel.metadata.RelColumnMapping;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 
 public class HiveTableFunctionScan extends TableFunctionScan implements HiveRelNode {
@@ -48,7 +49,7 @@ public class HiveTableFunctionScan extends TableFunctionScan implements HiveRelN
    * @param columnMappings
    *          columnMappings - Column mappings associated with this function
    */
-  private HiveTableFunctionScan(RelOptCluster cluster, RelTraitSet traitSet, List<RelNode> inputs,
+  protected HiveTableFunctionScan(RelOptCluster cluster, RelTraitSet traitSet, List<RelNode> inputs,
       RexNode rexCall, Type elementType, RelDataType rowType, Set<RelColumnMapping> columnMappings) {
     super(cluster, traitSet, inputs, rexCall, elementType, rowType, columnMappings);
   }
@@ -56,8 +57,8 @@ public class HiveTableFunctionScan extends TableFunctionScan implements HiveRelN
   public static HiveTableFunctionScan create(RelOptCluster cluster, RelTraitSet traitSet,
       List<RelNode> inputs, RexNode rexCall, Type elementType, RelDataType rowType,
       Set<RelColumnMapping> columnMappings) throws CalciteSemanticException {
-    return new HiveTableFunctionScan(cluster, traitSet,
-        inputs, rexCall, elementType, rowType, columnMappings);
+    return new HiveTableFunctionScan(cluster, traitSet, inputs, rexCall, elementType, rowType,
+        columnMappings);
   }
 
   @Override
@@ -67,9 +68,20 @@ public class HiveTableFunctionScan extends TableFunctionScan implements HiveRelN
         elementType, rowType, columnMappings);
   }
 
-  @Override
-  public void implement(Implementor implementor) {
+  /**
+   * Check to see if the inputRef is in the column mappings.
+   */
+  public boolean containsInputRefMapping(int inputRef) {
+    Set<RelColumnMapping> columnMappings = getColumnMappings();
+    if (CollectionUtils.isEmpty(columnMappings)) {
+      return false;
+    }
 
+    for (RelColumnMapping rcm : columnMappings) {
+      if (rcm.iInputColumn == inputRef) {
+        return true;
+      }
+    }
+    return false;
   }
-
 }

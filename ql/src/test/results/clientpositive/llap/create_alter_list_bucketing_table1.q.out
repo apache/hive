@@ -31,7 +31,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -79,7 +79,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -126,7 +126,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -180,7 +180,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -227,7 +227,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -273,7 +273,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -319,7 +319,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -338,16 +338,20 @@ Storage Desc Params:
 PREHOOK: query: drop table stored_as_dirs_single
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stored_as_dirs_single
+PREHOOK: Output: database:default
 PREHOOK: Output: default@stored_as_dirs_single
 POSTHOOK: query: drop table stored_as_dirs_single
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@stored_as_dirs_single
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stored_as_dirs_single
 PREHOOK: query: drop table stored_as_dirs_multiple
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stored_as_dirs_multiple
+PREHOOK: Output: database:default
 PREHOOK: Output: default@stored_as_dirs_multiple
 POSTHOOK: query: drop table stored_as_dirs_multiple
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@stored_as_dirs_multiple
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stored_as_dirs_multiple

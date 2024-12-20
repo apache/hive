@@ -23,6 +23,10 @@ HIVE_FILTER_FIELD_PARAMS = %q"hive_filter_field_params__"
 
 HIVE_FILTER_FIELD_LAST_ACCESS = %q"hive_filter_field_last_access__"
 
+HIVE_FILTER_FIELD_TABLE_NAME = %q"hive_filter_field_tableName__"
+
+HIVE_FILTER_FIELD_TABLE_TYPE = %q"hive_filter_field_tableType__"
+
 IS_ARCHIVED = %q"is_archived"
 
 ORIGINAL_LOCATION = %q"original_location"
@@ -38,6 +42,8 @@ BUCKET_FIELD_NAME = %q"bucket_field_name"
 BUCKET_COUNT = %q"bucket_count"
 
 FIELD_TO_DIMENSION = %q"field_to_dimension"
+
+IF_PURGE = %q"ifPurge"
 
 META_TABLE_NAME = %q"name"
 
@@ -59,7 +65,7 @@ META_TABLE_STORAGE = %q"storage_handler"
 
 TABLE_IS_TRANSACTIONAL = %q"transactional"
 
-TABLE_NO_AUTO_COMPACT = %q"no_auto_compaction"
+NO_AUTO_COMPACT = %q"no_auto_compaction"
 
 TABLE_TRANSACTIONAL_PROPERTIES = %q"transactional_properties"
 
@@ -84,4 +90,8 @@ DEFAULT_TABLE_TYPE = %q"defaultTableType"
 TXN_ID = %q"txnId"
 
 WRITE_ID = %q"writeId"
+
+EXPECTED_PARAMETER_KEY = %q"expected_parameter_key"
+
+EXPECTED_PARAMETER_VALUE = %q"expected_parameter_value"
 

@@ -12,9 +12,16 @@ Ln:10 CREATE TABLE ctl
 AS
 (
         SELECT
-                EBC.SOURCE_ID, MAX(EBC.RUN_ID) AS RUN_ID, EBC.STATUS, EBC.LOAD_START, EBC.LOAD_END
-        FROM EBC
-        WHERE EBC.SOURCE_ID = 451 AND EBC.STATUS = 'R'
+                EBC.SOURCE_ID,
+                MAX(EBC.RUN_ID) AS RUN_ID,
+                EBC.STATUS,
+                EBC.LOAD_START,
+                EBC.LOAD_END
+        FROM
+                EBC
+        WHERE
+                EBC.SOURCE_ID = 451 AND
+                EBC.STATUS = 'R'
         GROUP BY
                 1,3,4,5
 )
@@ -23,9 +30,16 @@ CREATE TEMPORARY TABLE ctl2
 AS
 (
         SELECT
-                EBC.SOURCE_ID, MAX(EBC.RUN_ID) AS RUN_ID, EBC.STATUS, EBC.LOAD_START, EBC.LOAD_END
-        FROM EBC
-        WHERE EBC.SOURCE_ID = 451 AND EBC.STATUS = 'R'
+                EBC.SOURCE_ID,
+                MAX(EBC.RUN_ID) AS RUN_ID,
+                EBC.STATUS,
+                EBC.LOAD_START,
+                EBC.LOAD_END
+        FROM
+                EBC
+        WHERE
+                EBC.SOURCE_ID = 451 AND
+                EBC.STATUS = 'R'
         GROUP BY
                 1,3,4,5
 )

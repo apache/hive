@@ -953,14 +953,14 @@ POSTHOOK: Input: default@cbo_t2@dt=2014
 PREHOOK: query: -- c_int is not null
 select count(*) from cbo_t2 where (cbo_t2.c_int) IN (NULL)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@cbo_t2
-PREHOOK: Input: default@cbo_t2@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: -- c_int is not null
 select count(*) from cbo_t2 where (cbo_t2.c_int) IN (NULL)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@cbo_t2
-POSTHOOK: Input: default@cbo_t2@dt=2014
 #### A masked pattern was here ####
 0
 PREHOOK: query: -- rewrite to NULL

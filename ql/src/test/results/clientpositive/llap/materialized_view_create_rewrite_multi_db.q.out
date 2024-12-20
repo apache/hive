@@ -87,7 +87,7 @@ numFiles	1
 numFilesErasureCoded	0
 numRows	2
 rawDataSize	408
-totalSize	468
+totalSize	#Masked#
 #### A masked pattern was here ####
 PREHOOK: query: create materialized view if not exists cmv_mat_view2_n2
 as select a, c from db1.cmv_basetable_n7 where a = 3
@@ -123,7 +123,7 @@ numFiles	1
 numFilesErasureCoded	0
 numRows	2
 rawDataSize	232
-totalSize	334
+totalSize	#Masked#
 #### A masked pattern was here ####
 PREHOOK: query: create database db3
 PREHOOK: type: CREATEDATABASE

@@ -18,17 +18,15 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.create.like;
 
-import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
-
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.PartitionManagementTask;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -38,13 +36,11 @@ import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableOperation;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.serde2.Deserializer;
-import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
-import org.apache.hive.common.util.AnnotationUtils;
 
 /**
  * Operation process of creating a table like an existing one.
@@ -62,7 +58,13 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     if (oldTable.getTableType() == TableType.VIRTUAL_VIEW || oldTable.getTableType() == TableType.MATERIALIZED_VIEW) {
       tbl = createViewLikeTable(oldTable);
     } else {
-      tbl = createTableLikeTable(oldTable);
+      Map<String, String> originalProperties = new HashMap<>();
+      // Get the storage handler without caching, since the storage handler can get changed when copying the
+      // properties of the target table and
+      if (oldTable.getStorageHandlerWithoutCaching() != null) {
+        originalProperties = new HashMap<>(oldTable.getStorageHandlerWithoutCaching().getNativeProperties(oldTable));
+      }
+      tbl = createTableLikeTable(oldTable, originalProperties);
     }
 
     // If location is specified - ensure that it is a full qualified name
@@ -71,7 +73,7 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     }
 
     if (desc.getLocation() == null && !tbl.isPartitioned() &&
-        context.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+        context.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER)) {
       StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(),
           MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
     }
@@ -111,7 +113,8 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     return table;
   }
 
-  private Table createTableLikeTable(Table table) throws SemanticException, HiveException {
+  private Table createTableLikeTable(Table table, Map<String, String> originalProperties)
+      throws SemanticException, HiveException {
     String[] names = Utilities.getDbTableName(desc.getTableName());
     table.setDbName(names[0]);
     table.setTableName(names[1]);
@@ -119,9 +122,9 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
 
     setUserSpecifiedLocation(table);
 
-    setTableParameters(table);
+    setTableParameters(table, originalProperties);
 
-    if (desc.isUserStorageFormat()) {
+    if (desc.isUserStorageFormat() || (table.getInputFormatClass() == null) || (table.getOutputFormatClass() == null)) {
       setStorage(table);
     }
 
@@ -146,38 +149,25 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     }
   }
 
-  private void setTableParameters(Table tbl) throws HiveException {
-    Set<String> retainer = new HashSet<String>();
-
-    Class<? extends Deserializer> serdeClass;
-    try {
-      serdeClass = tbl.getDeserializerClass();
-    } catch (Exception e) {
-      throw new HiveException(e);
+  private void setTableParameters(Table tbl, Map<String, String> originalProperties) throws HiveException {
+    // With Hive-25813, we'll not copy over table properties from the source.
+    // CTLT should copy column schema but not table properties. It is also consistent
+    // with other query engines like mysql, redshift.
+    originalProperties.putAll(tbl.getParameters());
+    tbl.getParameters().clear();
+    if (desc.getTblProps() != null) {
+      tbl.setParameters(desc.getTblProps());
     }
-    // We should copy only those table parameters that are specified in the config.
-    SerDeSpec spec = AnnotationUtils.getAnnotation(serdeClass, SerDeSpec.class);
-
-    // for non-native table, property storage_handler should be retained
-    retainer.add(META_TABLE_STORAGE);
-    if (spec != null && spec.schemaProps() != null) {
-      retainer.addAll(Arrays.asList(spec.schemaProps()));
-    }
-
     String paramsStr = HiveConf.getVar(context.getConf(), HiveConf.ConfVars.DDL_CTL_PARAMETERS_WHITELIST);
     if (paramsStr != null) {
-      retainer.addAll(Arrays.asList(paramsStr.split(",")));
+      Set<String> retainer = new HashSet<>(Arrays.asList(paramsStr.split(",")));
+      originalProperties.entrySet().stream()
+              .filter(entry -> retainer.contains(entry.getKey()) && !tbl.getParameters().containsKey(entry.getKey()))
+              .forEach(entry -> tbl.getParameters().put(entry.getKey(), entry.getValue()));
     }
-
-    Map<String, String> params = tbl.getParameters();
-    if (!retainer.isEmpty()) {
-      params.keySet().retainAll(retainer);
-    } else {
-      params.clear();
-    }
-
-    if (desc.getTblProps() != null) {
-      params.putAll(desc.getTblProps());
+    HiveStorageHandler storageHandler = tbl.getStorageHandler();
+    if (storageHandler != null) {
+      storageHandler.setTableParametersForCTLT(tbl, desc, originalProperties);
     }
   }
 
@@ -186,7 +176,10 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     table.setOutputFormatClass(desc.getDefaultOutputFormat());
     table.getTTable().getSd().setInputFormat(table.getInputFormatClass().getName());
     table.getTTable().getSd().setOutputFormat(table.getOutputFormatClass().getName());
-
+    if (table.getTTable().getSd().getSerdeInfo() != null &&
+            table.getTTable().getSd().getSerdeInfo().getParameters() != null) {
+      table.getTTable().getSd().getSerdeInfo().getParameters().clear();
+    }
     if (desc.getDefaultSerName() == null) {
       LOG.info("Default to LazySimpleSerDe for table {}", desc.getTableName());
       table.setSerializationLib(LazySimpleSerDe.class.getName());

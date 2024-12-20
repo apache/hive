@@ -52,10 +52,14 @@ public class MetastoreDelegationTokenManager {
       "hive.cluster.delegation.token.store.zookeeper.keystore.location";
   public static final String DELEGATION_TOKEN_STORE_ZK_KEYSTORE_PASSWORD =
       "hive.cluster.delegation.token.store.zookeeper.keystore.password";
+  public static final String DELEGATION_TOKEN_STORE_ZK_KEYSTORE_TYPE =
+      "hive.cluster.delegation.token.store.zookeeper.keystore.type";
   public static final String DELEGATION_TOKEN_STORE_ZK_TRUSTSTORE_LOCATION =
       "hive.cluster.delegation.token.store.zookeeper.truststore.location";
   public static final String DELEGATION_TOKEN_STORE_ZK_TRUSTSTORE_PASSWORD =
       "hive.cluster.delegation.token.store.zookeeper.truststore.password";
+  public static final String DELEGATION_TOKEN_STORE_ZK_TRUSTSTORE_TYPE =
+      "hive.cluster.delegation.token.store.zookeeper.truststore.type";
 
   public MetastoreDelegationTokenManager() {
   }

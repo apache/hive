@@ -21,9 +21,12 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.calcite.adapter.druid.DruidQuery;
@@ -42,8 +45,11 @@ import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.core.TableFunctionScan;
 import org.apache.calcite.rel.core.TableScan;
+import org.apache.calcite.rel.core.TableSpool;
 import org.apache.calcite.rel.core.Union;
+import org.apache.calcite.rel.core.Values;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
+import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
@@ -64,12 +70,16 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveValues;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
@@ -79,13 +89,18 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConvert
 import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
+import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
+import org.apache.hadoop.hive.ql.util.DirectionUtils;
+import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Iterables;
+
+import static org.apache.calcite.rel.core.Values.isEmpty;
 
 public class ASTConverter {
   private static final Logger LOG = LoggerFactory.getLogger(ASTConverter.class);
@@ -100,6 +115,7 @@ public class ASTConverter {
   private Filter           having;
   private RelNode          select;
   private RelNode          orderLimit;
+  private List<ASTNode> ctes;
 
   private Schema           schema;
 
@@ -107,21 +123,149 @@ public class ASTConverter {
 
   private PlanMapper planMapper;
 
-  ASTConverter(RelNode root, long dtCounterInitVal, PlanMapper planMapper) {
+  ASTConverter(RelNode root, long dtCounterInitVal, PlanMapper planMapper, List<ASTNode> ctes) {
     this.root = root;
     hiveAST = new HiveAST();
     this.derivedTableCount = dtCounterInitVal;
     this.planMapper = planMapper;
+    this.ctes = ctes;
   }
 
   public static ASTNode convert(final RelNode relNode, List<FieldSchema> resultSchema, boolean alignColumns, PlanMapper planMapper)
       throws CalciteSemanticException {
     RelNode root = PlanModifierForASTConv.convertOpTree(relNode, resultSchema, alignColumns);
-    ASTConverter c = new ASTConverter(root, 0, planMapper);
-    return c.convert();
+    ASTConverter c = new ASTConverter(root, 0, planMapper, new ArrayList<>());
+    ASTNode r = c.convert();
+    for (ASTNode cte : c.ctes) {
+      r.insertChild(0, cte);
+    }
+    return r;
+  }
+
+  /**
+   * This method generates the abstract syntax tree of a query does not return any rows.
+   * All projected columns are null and the data types are come from the passed {@link RelDataType}.
+   * <pre>
+   * SELECT NULL alias0 ... NULL aliasn LIMIT 0;
+   * </pre>
+   * Due to a subsequent optimization when converting the plan to TEZ tasks
+   * adding a limit 0 enables Hive not submitting the query to TEZ application manager
+   * but returns empty result set immediately.
+   * <pre>
+   * TOK_QUERY
+   *   TOK_INSERT
+   *      TOK_DESTINATION
+   *         TOK_DIR
+   *            TOK_TMP_FILE
+   *      TOK_SELECT
+   *         TOK_SELEXPR
+   *            TOK_FUNCTION
+   *               TOK_&lt;type&gt;
+   *               TOK_NULL
+   *            alias0
+   *         ...
+   *         TOK_SELEXPR
+   *            TOK_FUNCTION
+   *               TOK_&lt;type&gt;
+   *               TOK_NULL
+   *            aliasn
+   *      TOK_LIMIT
+   *         0
+   *         0
+   * </pre>
+   * @param dataType - Schema
+   * @return Root {@link ASTNode} of the result plan.
+   *
+   * @see QueryProperties#getOuterQueryLimit()
+   * @see org.apache.hadoop.hive.ql.parse.TaskCompiler#compile(ParseContext, List, Set, Set)
+   */
+  public static ASTNode emptyPlan(RelDataType dataType) {
+    if (dataType.getFieldCount() == 0) {
+      throw new IllegalArgumentException("Schema is empty.");
+    }
+
+    ASTBuilder select = ASTBuilder.construct(HiveParser.TOK_SELECT, "TOK_SELECT");
+    for (int i = 0; i < dataType.getFieldCount(); ++i) {
+      RelDataTypeField fieldType = dataType.getFieldList().get(i);
+      select.add(ASTBuilder.selectExpr(createNullField(fieldType.getType()), fieldType.getName()));
+    }
+
+    ASTNode insert = ASTBuilder.
+            construct(HiveParser.TOK_INSERT, "TOK_INSERT").
+            add(ASTBuilder.destNode()).
+            add(select).
+            add(ASTBuilder.limit(0, 0)).
+            node();
+
+    return ASTBuilder.
+            construct(HiveParser.TOK_QUERY, "TOK_QUERY").
+            add(insert).
+            node();
+  }
+
+  private static ASTNode createNullField(RelDataType fieldType) {
+    if (fieldType.getSqlTypeName() == SqlTypeName.NULL) {
+      return ASTBuilder.construct(HiveParser.TOK_NULL, "TOK_NULL").node();
+    }
+
+    ASTNode astNode = convertType(fieldType);
+    return ASTBuilder.construct(HiveParser.TOK_FUNCTION, "TOK_FUNCTION")
+        .add(astNode)
+        .add(HiveParser.TOK_NULL, "TOK_NULL")
+        .node();
+  }
+
+  static ASTNode convertType(RelDataType fieldType) {
+    if (fieldType.getSqlTypeName() == SqlTypeName.NULL) {
+      return ASTBuilder.construct(HiveParser.TOK_NULL, "TOK_NULL").node();
+    }
+
+    if (fieldType.getSqlTypeName() == SqlTypeName.ROW) {
+      ASTBuilder columnListNode = ASTBuilder.construct(HiveParser.TOK_TABCOLLIST, "TOK_TABCOLLIST");
+      for (RelDataTypeField structFieldType : fieldType.getFieldList()) {
+        ASTNode colNode = ASTBuilder.construct(HiveParser.TOK_TABCOL, "TOK_TABCOL")
+            .add(HiveParser.Identifier, structFieldType.getName())
+            .add(convertType(structFieldType.getType()))
+            .node();
+        columnListNode.add(colNode);
+      }
+      return ASTBuilder.construct(HiveParser.TOK_STRUCT, "TOK_STRUCT").add(columnListNode).node();
+    }
+
+    if (fieldType.getSqlTypeName() == SqlTypeName.MAP) {
+      ASTBuilder mapCallNode = ASTBuilder.construct(HiveParser.TOK_MAP, "TOK_MAP");
+      mapCallNode.add(convertType(fieldType.getKeyType()));
+      mapCallNode.add(convertType(fieldType.getValueType()));
+      return mapCallNode.node();
+    }
+
+    if (fieldType.getSqlTypeName() == SqlTypeName.ARRAY) {
+      ASTBuilder arrayCallNode = ASTBuilder.construct(HiveParser.TOK_LIST, "TOK_LIST");
+      arrayCallNode.add(convertType(fieldType.getComponentType()));
+      return arrayCallNode.node();
+    }
+
+    HiveToken ht = TypeConverter.hiveToken(fieldType);
+    ASTBuilder astBldr = ASTBuilder.construct(ht.type, ht.text);
+    if (ht.args != null) {
+      for (String castArg : ht.args) {
+        astBldr.add(HiveParser.Identifier, castArg);
+      }
+    }
+
+    return astBldr.node();
   }
 
   private ASTNode convert() throws CalciteSemanticException {
+    if (root instanceof HiveValues) {
+      HiveValues values = (HiveValues) root;
+      if (isEmpty(values)) {
+        select = values;
+        return emptyPlan(values.getRowType());
+      } else {
+        throw new UnsupportedOperationException("Values with non-empty tuples are not supported.");
+      }
+    }
     /*
      * 1. Walk RelNode Graph; note from, where, gBy.. nodes.
      */
@@ -246,8 +390,10 @@ public class ASTConverter {
       ASTBuilder sel = ASTBuilder.construct(HiveParser.TOK_SELEXPR, "TOK_SELEXPR");
       ASTNode function = buildUDTFAST(call.getOperator().getName(), children);
       sel.add(function);
-      for (String alias : udtf.getRowType().getFieldNames()) {
-        sel.add(HiveParser.Identifier, alias);
+
+      List<String> fields = udtf.getRowType().getFieldNames();
+      for (int i = 0; i < udtf.getRowType().getFieldCount(); ++i) {
+        sel.add(HiveParser.Identifier, fields.get(i));
       }
       b.add(sel);
       hiveAST.select = b.node();
@@ -271,7 +417,7 @@ public class ASTConverter {
     b.add(iRef.accept(new RexVisitor(schema, false, root.getCluster().getRexBuilder())));
   }
 
-  private ASTNode buildUDTFAST(String functionName, List<ASTNode> children) {
+  private static ASTNode buildUDTFAST(String functionName, List<ASTNode> children) {
     ASTNode node = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
     node.addChild((ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, functionName));
     for (ASTNode c : children) {
@@ -377,8 +523,10 @@ public class ASTConverter {
   private Schema getRowSchema(String tblAlias) {
     if (select instanceof Project) {
       return new Schema((Project) select, tblAlias);
-    } else {
+    } else if (select instanceof TableFunctionScan) {
       return new Schema((TableFunctionScan) select, tblAlias);
+    } else {
+      return new Schema(tblAlias, select.getRowType().getFieldList());
     }
   }
 
@@ -430,16 +578,36 @@ public class ASTConverter {
       }
     } else if (r instanceof Union) {
       Union u = ((Union) r);
-      ASTNode left = new ASTConverter(((Union) r).getInput(0), this.derivedTableCount, planMapper).convert();
+      ASTNode left = new ASTConverter(((Union) r).getInput(0), this.derivedTableCount, planMapper, this.ctes).convert();
       for (int ind = 1; ind < u.getInputs().size(); ind++) {
         left = getUnionAllAST(left, new ASTConverter(((Union) r).getInput(ind),
-            this.derivedTableCount, planMapper).convert());
+            this.derivedTableCount, planMapper, this.ctes).convert());
         String sqAlias = nextAlias();
         ast = ASTBuilder.subQuery(left, sqAlias);
         s = new Schema((Union) r, sqAlias);
       }
+    } else if (isLateralView(r)) {
+      TableFunctionScan tfs = ((TableFunctionScan) r);
+
+      // retrieve the base table source.
+      QueryBlockInfo tableFunctionSource = convertSource(tfs.getInput(0));
+      String sqAlias = tableFunctionSource.schema.get(0).table;
+      // the schema will contain the base table source fields
+      s = new Schema(tfs, sqAlias);
+
+      ast = createASTLateralView(tfs, s, tableFunctionSource, sqAlias);
+
+    } else if (r instanceof TableSpool) {
+      TableSpool spool = (TableSpool) r;
+      ASTConverter cteConverter =
+          new ASTConverter(spool.getInput(), this.derivedTableCount, planMapper, Collections.emptyList());
+      String cteName = Iterables.getLast(spool.getTable().getQualifiedName());
+      ASTNode cte = ASTBuilder.createAST(HiveParser.TOK_CTE, "TOK_CTE");
+      cte.addChild(ASTBuilder.subQuery(cteConverter.convert(), cteName));
+      ctes.add(cte);
+      return new QueryBlockInfo(cteConverter.getRowSchema(cteName), ASTBuilder.cte(cteName, cteName));
     } else {
-      ASTConverter src = new ASTConverter(r, this.derivedTableCount, planMapper);
+      ASTConverter src = new ASTConverter(r, this.derivedTableCount, planMapper, this.ctes);
       ASTNode srcAST = src.convert();
       String sqAlias = nextAlias();
       s = src.getRowSchema(sqAlias);
@@ -482,6 +650,77 @@ public class ASTConverter {
     }
   }
 
+  private static ASTNode createASTLateralView(TableFunctionScan tfs, Schema s,
+      QueryBlockInfo tableFunctionSource, String sqAlias) {
+    // The structure of the AST LATERAL VIEW will be:
+    //
+    //   TOK_LATERAL_VIEW
+    //     TOK_SELECT
+    //       TOK_SELEXPR
+    //         TOK_FUNCTION
+    //           <udtf func>
+    //           ...
+    //         <col alias for function>
+    //         TOK_TABALIAS
+    //           <table alias for lateral view>
+
+    // set up the select for the parameters of the UDTF
+    List<ASTNode> children = new ArrayList<>();
+    // The UDTF function call within the table function scan will be of the form:
+    // lateral(my_udtf_func(...), $0, $1, ...).  For recreating the AST, we need
+    // the inner "my_udtf_func".
+    RexCall lateralCall = (RexCall) tfs.getCall();
+    RexCall call = (RexCall) lateralCall.getOperands().get(0);
+    for (RexNode rn : call.getOperands()) {
+      ASTNode expr = rn.accept(new RexVisitor(s, rn instanceof RexLiteral,
+          tfs.getCluster().getRexBuilder()));
+      children.add(expr);
+    }
+    ASTNode function = buildUDTFAST(call.getOperator().getName(), children);
+
+    // Add the function to the SELEXPR
+    ASTBuilder selexpr = ASTBuilder.construct(HiveParser.TOK_SELEXPR, "TOK_SELEXPR");
+    selexpr.add(function);
+
+    // Add only the table generated size columns to the select expr for the function,
+    // skipping over the base table columns from the input side of the join.
+    int i = 0;
+    for (ColumnInfo c : s) {
+      if (i++ < tableFunctionSource.schema.size()) {
+        continue;
+      }
+      selexpr.add(HiveParser.Identifier, c.column);
+    }
+    // add the table alias for the lateral view.
+    ASTBuilder tabAlias = ASTBuilder.construct(HiveParser.TOK_TABALIAS, "TOK_TABALIAS");
+    tabAlias.add(HiveParser.Identifier, sqAlias);
+
+    // add the table alias to the SEL_EXPR
+    selexpr.add(tabAlias.node());
+
+    // create the SELECT clause
+    ASTBuilder sel = ASTBuilder.construct(HiveParser.TOK_SELEXPR, "TOK_SELECT");
+    sel.add(selexpr.node());
+
+    // place the SELECT clause under the LATERAL VIEW clause
+    ASTBuilder lateralview = ASTBuilder.construct(HiveParser.TOK_LATERAL_VIEW, "TOK_LATERAL_VIEW");
+    lateralview.add(sel.node());
+
+    // finally, add the LATERAL VIEW clause under the left side source which is the base table.
+    lateralview.add(tableFunctionSource.ast);
+
+    return lateralview.node();
+  }
+
+  private boolean isLateralView(RelNode relNode) {
+    if (!(relNode instanceof TableFunctionScan)) {
+      return false;
+    }
+    TableFunctionScan htfs = (TableFunctionScan) relNode;
+    RexCall call = (RexCall) htfs.getCall();
+    return ((RexCall) htfs.getCall()).getOperator() == SqlStdOperatorTable.LATERAL;
+  }
+
   class QBVisitor extends RelVisitor {
 
     public void handle(Filter filter) {
@@ -509,6 +748,14 @@ public class ASTConverter {
       }
     }
 
+    public void handle(Values values) {
+      if (ASTConverter.this.select == null) {
+        ASTConverter.this.select = values;
+      } else {
+        ASTConverter.this.from = values;
+      }
+    }
+
     @Override
     public void visit(RelNode node, int ordinal, RelNode parent) {
 
@@ -526,6 +773,8 @@ public class ASTConverter {
         ASTConverter.this.from = node;
       } else if (node instanceof Union) {
         ASTConverter.this.from = node;
+      } else if (node instanceof TableSpool) {
+        ASTConverter.this.from = node;
       } else if (node instanceof Aggregate) {
         ASTConverter.this.groupBy = (Aggregate) node;
       } else if (node instanceof Sort || node instanceof Exchange) {
@@ -534,6 +783,8 @@ public class ASTConverter {
         } else {
           ASTConverter.this.orderLimit = node;
         }
+      } else if (node instanceof Values) {
+        handle((HiveValues) node);
       }
       /*
        * once the source node is reached; stop traversal for this QB
@@ -806,22 +1057,7 @@ public class ASTConverter {
           Collections.singletonList(SqlFunctionConverter.buildAST(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, astNodeLst, call.getType())), call.getType());
       case CAST:
         assert(call.getOperands().size() == 1);
-        if (call.getType().isStruct() ||
-            SqlTypeName.MAP.equals(call.getType().getSqlTypeName()) ||
-            SqlTypeName.ARRAY.equals(call.getType().getSqlTypeName())) {
-          // cast for complex types can be ignored safely because explicit casting on such
-          // types are not possible, implicit casting e.g. CAST(ROW__ID as <...>) can be ignored
-          return call.getOperands().get(0).accept(this);
-        }
-
-        HiveToken ht = TypeConverter.hiveToken(call.getType());
-        ASTBuilder astBldr = ASTBuilder.construct(ht.type, ht.text);
-        if (ht.args != null) {
-          for (String castArg : ht.args) {
-            astBldr.add(HiveParser.Identifier, castArg);
-          }
-        }
-        astNodeLst.add(astBldr.node());
+        astNodeLst.add(convertType(call.getType()));
         astNodeLst.add(call.getOperands().get(0).accept(this));
         break;
       case EXTRACT:
@@ -943,10 +1179,22 @@ public class ASTConverter {
             "TOK_FUNCTIONDI") : argCount == 0 ? ASTBuilder.construct(HiveParser.TOK_FUNCTIONSTAR,
             "TOK_FUNCTIONSTAR") : ASTBuilder.construct(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
         b.add(HiveParser.Identifier, agg.getAggregation().getName());
+        Iterator<RelFieldCollation> collationIterator = agg.collation.getFieldCollations().listIterator();
+        RexBuilder rexBuilder = gBy.getCluster().getRexBuilder();
         for (int i : agg.getArgList()) {
           RexInputRef iRef = new RexInputRef(i, gBy.getCluster().getTypeFactory()
               .createSqlType(SqlTypeName.ANY));
           b.add(iRef.accept(new RexVisitor(src, false, gBy.getCluster().getRexBuilder())));
+          if (collationIterator.hasNext()) {
+            RelFieldCollation fieldCollation = collationIterator.next();
+            RexInputRef inputRef = new RexInputRef(fieldCollation.getFieldIndex(),
+                    gBy.getCluster().getTypeFactory().createSqlType(SqlTypeName.ANY));
+            b.add(inputRef.accept(new RexVisitor(src, false, rexBuilder)));
+            b.add(ASTBuilder.createAST(HiveParser.NumberLiteral,
+                    Integer.toString(DirectionUtils.directionToCode(fieldCollation.getDirection()))));
+            b.add(ASTBuilder.createAST(HiveParser.NumberLiteral,
+                    Integer.toString(NullOrdering.fromDirection(fieldCollation.nullDirection).getCode())));
+          }
         }
         add(new ColumnInfo(null, b.node()));
       }

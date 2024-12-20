@@ -2,6 +2,8 @@
 -- VALUES -> array(struct(),struct())
 -- TABLE -> LATERAL VIEW INLINE
 -- SORT_QUERY_RESULTS
+set hive.cbo.fallback.strategy=NEVER;
+
 
 CREATE TABLE mytbl_n1 AS
 SELECT key, value

@@ -18,14 +18,16 @@
 
 package org.apache.hive.jdbc;
 
+import java.io.IOException;
+import java.sql.SQLException;
+
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.token.Token;
+import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.io.IOException;
 
 public class TestHiveConnection {
 
@@ -56,5 +58,23 @@ public class TestHiveConnection {
 
     String tokenStr = fetcher.getTokenFromCredential(creds, EXISTING_TOKEN);
     Assert.assertEquals("Token string form is not as expected.", EXPECTED_TOKEN_STRING_FORM, tokenStr);
+  }
+
+  @Test
+  public void testHiveConnectionParameters() throws SQLException, ZooKeeperHiveClientException {
+    JdbcConnectionParams params = Utils.parseURL(
+        "jdbc:hive2://hello.host:10002/default;transportMode=http;httpPath=cliservice;socketTimeout=60;requestTrack=true;");
+
+    Assert.assertEquals("hello.host", params.getHost());
+    Assert.assertEquals("default", params.getDbName());
+    Assert.assertEquals(10002, params.getPort());
+
+    Assert.assertEquals("http", params.getSessionVars().get(JdbcConnectionParams.TRANSPORT_MODE));
+    Assert.assertEquals("cliservice", params.getSessionVars().get(JdbcConnectionParams.HTTP_PATH));
+    Assert.assertEquals("60", params.getSessionVars().get(JdbcConnectionParams.SOCKET_TIMEOUT));
+    Assert.assertEquals("true", params.getSessionVars().get(JdbcConnectionParams.JDBC_PARAM_REQUEST_TRACK));
+
+    JdbcConnectionParams nonPortParams = Utils.parseURL("jdbc:hive2://hello.host/default");
+    Assert.assertEquals(Integer.parseInt(Utils.DEFAULT_PORT), nonPortParams.getPort());
   }
 }

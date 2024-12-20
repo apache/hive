@@ -82,8 +82,10 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: query: drop table numt
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@numt
+PREHOOK: Output: database:default
 PREHOOK: Output: default@numt
 POSTHOOK: query: drop table numt
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@numt
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@numt

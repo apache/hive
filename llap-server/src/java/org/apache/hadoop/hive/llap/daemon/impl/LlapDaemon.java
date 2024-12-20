@@ -38,12 +38,13 @@ import javax.net.SocketFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JvmPauseMonitor;
 import org.apache.hadoop.hive.common.LogUtils;
-import org.apache.hadoop.hive.common.UgiFactory;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.DaemonId;
 import org.apache.hadoop.hive.llap.LlapDaemonInfo;
 import org.apache.hadoop.hive.llap.LlapOutputFormatService;
+import org.apache.hadoop.hive.llap.LlapUgiManager;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
@@ -63,15 +64,16 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SetCapaci
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SetCapacityResponseProto;
 import org.apache.hadoop.hive.llap.daemon.services.impl.LlapWebServices;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
+import org.apache.hadoop.hive.llap.metrics.LLAPOTELExporter;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonJvmMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.security.LlapExtClientJwtHelper;
-import org.apache.hadoop.hive.llap.security.LlapUgiFactoryFactory;
 import org.apache.hadoop.hive.llap.security.SecretManager;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
+import org.apache.hadoop.hive.ql.ServiceContext;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -88,6 +90,9 @@ import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.logging.log4j.core.config.Configurator;
+
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,6 +127,8 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   private final String[] localDirs;
   private final DaemonId daemonId;
   private final SocketFactory socketFactory;
+  private final LlapTokenManager llapTokenManager;
+  private LLAPOTELExporter otelExporter = null;
 
   // TODO Not the best way to share the address
   private final AtomicReference<InetSocketAddress> srvAddress = new AtomicReference<>(),
@@ -322,17 +329,16 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     SecretManager sm = null;
     if (UserGroupInformation.isSecurityEnabled()) {
       sm = SecretManager.createSecretManager(daemonConf, daemonId.getClusterString());
+      this.llapTokenManager = new DefaultLlapTokenManager(daemonConf, sm);
+    } else {
+      this.llapTokenManager = new DummyTokenManager();
     }
-    this.secretManager = sm;
-    this.server = new LlapProtocolServerImpl(secretManager,
-        numHandlers, this, srvAddress, mngAddress, srvPort, externalClientsRpcPort, mngPort, daemonId, metrics);
 
-    UgiFactory fsUgiFactory = null;
-    try {
-      fsUgiFactory = LlapUgiFactoryFactory.createFsUgiFactory(daemonConf);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    this.secretManager = sm;
+    this.server = new LlapProtocolServerImpl(secretManager, numHandlers, this, srvAddress, mngAddress, srvPort,
+        externalClientsRpcPort, mngPort, daemonId, metrics).withTokenManager(this.llapTokenManager);
+
+    LlapUgiManager llapUgiManager = LlapUgiManager.getInstance(daemonConf);
 
     QueryTracker queryTracker = new QueryTracker(daemonConf, localDirs,
         daemonId.getClusterString());
@@ -348,7 +354,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
     this.containerRunner = new ContainerRunnerImpl(daemonConf, numExecutors,
         this.shufflePort, srvAddress, executorMemoryPerInstance, metrics,
-        amReporter, queryTracker, executorService, daemonId, fsUgiFactory, socketFactory);
+        amReporter, queryTracker, executorService, daemonId, llapUgiManager, socketFactory);
     addIfService(containerRunner);
 
     // Not adding the registry as a service, since we need to control when it is initialized - conf used to pickup properties.
@@ -376,6 +382,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     // AMReporter after the server so that it gets the correct address. It knows how to deal with
     // requests before it is started.
     addIfService(amReporter);
+    addIfService(new LocalDirCleaner(localDirs, daemonConf));
   }
 
   private static long determineXmxHeadroom(
@@ -513,6 +520,17 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         "LlapDaemon serviceStart complete. RPC Port={}, ManagementPort={}, ShuflePort={}, WebPort={}",
         server.getBindAddress().getPort(), server.getManagementBindAddress().getPort(),
         ShuffleHandler.get().getPort(), (webServices == null ? "" : webServices.getPort()));
+
+    long otelExporterFrequency =
+        HiveConf.getTimeVar(getConfig(), ConfVars.HIVE_OTEL_METRICS_FREQUENCY_SECONDS, TimeUnit.MILLISECONDS);
+    if (otelExporterFrequency > 0) {
+      this.otelExporter = new LLAPOTELExporter(GlobalOpenTelemetry.get(), otelExporterFrequency,
+          server.getBindAddress().toString());
+      otelExporter.setName("LLAP OTEL Exporter");
+      otelExporter.setDaemon(true);
+      otelExporter.start();
+      LOG.info("Started OTEL exporter with frequency {}", otelExporterFrequency);
+    }
   }
 
   public void serviceStop() throws Exception {
@@ -528,6 +546,10 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
   public void shutdown() {
     LOG.info("LlapDaemon shutdown invoked");
+
+    // invalidate tokens
+    this.llapTokenManager.close();
+
     if (llapDaemonInfoBean != null) {
       try {
         MBeans.unregister(llapDaemonInfoBean);
@@ -548,6 +570,10 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
     if (fnLocalizer != null) {
       fnLocalizer.close();
+    }
+
+    if (otelExporter != null) {
+      otelExporter.interrupt();
     }
   }
 
@@ -607,6 +633,8 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       long ioMemoryBytes = LlapDaemonInfo.INSTANCE.getCacheSize();
       boolean isDirectCache = LlapDaemonInfo.INSTANCE.isDirectCache();
       boolean isLlapIo = LlapDaemonInfo.INSTANCE.isLlapIo();
+
+      daemonConf.set(Constants.CLUSTER_ID_HIVE_CONF_PROP, ServiceContext.findClusterId());
 
       LlapDaemon.initializeLogging(daemonConf);
       llapDaemon =

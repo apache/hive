@@ -79,7 +79,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n7
-                  filterExpr: (key is not null and key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter))) (type: boolean)
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter))) (type: boolean)
@@ -123,11 +123,11 @@ STAGE PLANS:
                           minReductionHashAggr: 0.95
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             null sort order: 
                             sort order: 
-                            Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
             Execution mode: vectorized
         Reducer 2 
@@ -169,14 +169,14 @@ STAGE PLANS:
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=20)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, 1, expectedEntries=20)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   null sort order: 
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
 
   Stage: Stage-0
@@ -199,16 +199,20 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table srcpart_date_n7
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_date_n7
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_date_n7
 POSTHOOK: query: drop table srcpart_date_n7
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_date_n7
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_date_n7
 PREHOOK: query: drop table srcpart_small_n3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_small_n3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_small_n3
 POSTHOOK: query: drop table srcpart_small_n3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_small_n3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_small_n3

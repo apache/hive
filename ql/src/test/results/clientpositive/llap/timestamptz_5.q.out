@@ -1,11 +1,15 @@
 PREHOOK: query: drop table if exists timestamplocaltz_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists timestamplocaltz_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists timestamplocaltz_n2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists timestamplocaltz_n2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table timestamplocaltz_n1 (key int, dd timestamp with local time zone)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -42,16 +46,20 @@ POSTHOOK: Input: default@timestamplocaltz_n2
 PREHOOK: query: drop table timestamplocaltz_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@timestamplocaltz_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@timestamplocaltz_n1
 POSTHOOK: query: drop table timestamplocaltz_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@timestamplocaltz_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@timestamplocaltz_n1
 PREHOOK: query: drop table timestamplocaltz_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@timestamplocaltz_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@timestamplocaltz_n2
 POSTHOOK: query: drop table timestamplocaltz_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@timestamplocaltz_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@timestamplocaltz_n2

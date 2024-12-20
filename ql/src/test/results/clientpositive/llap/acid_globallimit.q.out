@@ -43,8 +43,10 @@ POSTHOOK: Input: default@acidtest1
 PREHOOK: query: drop table acidtest1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@acidtest1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@acidtest1
 POSTHOOK: query: drop table acidtest1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@acidtest1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acidtest1

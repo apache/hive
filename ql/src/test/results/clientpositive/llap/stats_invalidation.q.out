@@ -50,7 +50,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -95,7 +95,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -111,8 +111,10 @@ Storage Desc Params:
 PREHOOK: query: drop table stats_invalid
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats_invalid
+PREHOOK: Output: database:default
 PREHOOK: Output: default@stats_invalid
 POSTHOOK: query: drop table stats_invalid
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@stats_invalid
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_invalid

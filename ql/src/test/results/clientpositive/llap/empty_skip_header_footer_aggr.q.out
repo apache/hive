@@ -1,8 +1,3 @@
-#### A masked pattern was here ####
-PREHOOK: query: DROP TABLE IF EXISTS `testcase1`
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS `testcase1`
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE EXTERNAL TABLE `testcase1`(id int, name string) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
 #### A masked pattern was here ####
   TBLPROPERTIES ("skip.header.line.count"="1")
@@ -57,11 +52,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testcase1
 #### A masked pattern was here ####
 3
-#### A masked pattern was here ####
-PREHOOK: query: DROP TABLE IF EXISTS `testcase2`
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS `testcase2`
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE EXTERNAL TABLE `testcase2`(id int, name string) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
 #### A masked pattern was here ####
  TBLPROPERTIES ("skip.header.line.count"="1")
@@ -116,3 +106,4 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testcase2
 #### A masked pattern was here ####
 3
+#### A masked pattern was here ####

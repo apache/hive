@@ -190,7 +190,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	253                 
 	rawDataSize         	2703                
-	totalSize           	2956                
+	totalSize           	#Masked#
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -521,10 +521,12 @@ POSTHOOK: Output: two@foo
 PREHOOK: query: DROP TABLE bay
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@bay
+PREHOOK: Output: database:default
 PREHOOK: Output: default@bay
 POSTHOOK: query: DROP TABLE bay
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@bay
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bay
 PREHOOK: query: create table s_n4 as select * from src limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -593,10 +595,12 @@ POSTHOOK: Input: default@s_n4
 PREHOOK: query: drop table s_n4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@s_n4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@s_n4
 POSTHOOK: query: drop table s_n4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@s_n4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@s_n4
 PREHOOK: query: select count(*) from s_n4
 PREHOOK: type: QUERY
@@ -632,8 +636,10 @@ POSTHOOK: Input: default@s_n4
 PREHOOK: query: drop table s_n4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@s_n4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@s_n4
 POSTHOOK: query: drop table s_n4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@s_n4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@s_n4

@@ -25,12 +25,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.KeyStore;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -175,6 +178,7 @@ public class HttpServer {
     private final List<Pair<String, Class<? extends HttpServlet>>> servlets =
         new LinkedList<Pair<String, Class<? extends HttpServlet>>>();
     private boolean disableDirListing = false;
+    private final Map<String, Pair<String, Filter>> globalFilters = new LinkedHashMap<>();
 
     public Builder(String name) {
       Preconditions.checkArgument(name != null && !name.isEmpty(), "Name must be specified");
@@ -304,6 +308,12 @@ public class HttpServer {
       servlets.add(new Pair<String, Class<? extends HttpServlet>>(endpoint, servlet));
       return this;
     }
+
+    public Builder addGlobalFilter(String name, String pathSpec, Filter filter) {
+      globalFilters.put(name, Pair.create(pathSpec, filter));
+      return this;
+    }
+
     /**
      * Adds the ability to control X_FRAME_OPTIONS on HttpServer2.
      * @param xFrameEnabled - True enables X_FRAME_OPTIONS false disables it.
@@ -536,7 +546,7 @@ public class HttpServer {
     if (!b.useSSL) {
       connector = new ServerConnector(webServer, http);
     } else {
-      SslContextFactory sslContextFactory = new SslContextFactory();
+      SslContextFactory sslContextFactory = new SslContextFactory.Server();
       sslContextFactory.setKeyStorePath(b.keyStorePath);
       sslContextFactory.setKeyStoreType(b.keyStoreType == null || b.keyStoreType.isEmpty() ?
           KeyStore.getDefaultType(): b.keyStoreType);
@@ -683,6 +693,8 @@ public class HttpServer {
       addServlet(p.getFirst(), "/" + p.getFirst(), p.getSecond());
     }
 
+    b.globalFilters.forEach((k, v) -> addFilter(k, v.getFirst(), v.getSecond(), webAppContext.getServletHandler()));
+
     ServletContextHandler staticCtx =
       new ServletContextHandler(contexts, "/static");
     staticCtx.setResourceBase(appDir + "/static");
@@ -702,6 +714,13 @@ public class HttpServer {
       logCtx.setResourceBase(logDir);
       logCtx.setDisplayName("logs");
     }
+
+    // Define the global filers for each servlet context except the staticCtx(css style).
+    Optional<Handler[]> handlers = Optional.ofNullable(contexts.getHandlers());
+    handlers.ifPresent(hs -> Arrays.stream(hs)
+        .filter(h -> h instanceof ServletContextHandler && !"static".equals(((ServletContextHandler) h).getDisplayName()))
+        .forEach(h -> b.globalFilters.forEach((k, v) ->
+            addFilter(k, v.getFirst(), v.getSecond(), ((ServletContextHandler) h).getServletHandler()))));
   }
 
   private Map<String, String> setHeaders() {
@@ -792,6 +811,20 @@ public class HttpServer {
     webAppContext.addServlet(holder, pathSpec);
   }
 
+  public void addServlet(String name, String pathSpec, ServletHolder holder) {
+    if (name != null) {
+      holder.setName(name);
+    }
+    webAppContext.addServlet(holder, pathSpec);
+  }
+
+  public void addFilter(String name, String pathSpec, Filter filter, ServletHandler handler) {
+    FilterHolder holder = new FilterHolder(filter);
+    if (name != null) {
+      holder.setName(name);
+    }
+    handler.addFilterWithMapping(holder, pathSpec, FilterMapping.ALL);
+  }
 
   private static void disableDirectoryListingOnServlet(ServletContextHandler contextHandler) {
     contextHandler.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");

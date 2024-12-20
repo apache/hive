@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.exec.repl.util.FileList;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
+import org.apache.hadoop.hive.ql.parse.repl.dump.ExportService;
 import org.apache.hadoop.hive.ql.parse.repl.dump.HiveWrapper;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
@@ -32,10 +33,9 @@ import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -47,13 +47,10 @@ import org.slf4j.LoggerFactory;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
-import static org.powermock.api.mockito.PowerMockito.whenNew;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({ Utils.class, ReplDumpTask.class})
-@PowerMockIgnore({ "javax.management.*" })
+  @RunWith(MockitoJUnitRunner.class)
 public class TestReplDumpTask {
 
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplDumpTask.class);
@@ -108,51 +105,53 @@ public class TestReplDumpTask {
 
   @Test(expected = TestException.class)
   public void removeDBPropertyToPreventRenameWhenBootstrapDumpOfTableFails() throws Exception {
-    List<String> tableList = Arrays.asList("a1", "a2");
-    String dbRandomKey = "akeytoberandom";
-    ReplScope replScope = new ReplScope("default");
+    try (MockedStatic<Utils> utilsMockedStatic = mockStatic(Utils.class)) {
+      List<String> tableList = Arrays.asList("a1", "a2");
+      String dbRandomKey = "akeytoberandom";
+      ReplScope replScope = new ReplScope("default");
 
-    mockStatic(Utils.class);
-    when(Utils.matchesDb(same(hive), eq("default")))
-        .thenReturn(Collections.singletonList("default"));
-    when(Utils.getAllTables(same(hive), eq("default"), eq(replScope))).thenReturn(tableList);
-    when(Utils.setDbBootstrapDumpState(same(hive), eq("default"))).thenReturn(dbRandomKey);
-    when(Utils.matchesTbl(same(hive), eq("default"), eq(replScope))).thenReturn(tableList);
+      utilsMockedStatic.when(() -> Utils.matchesDb(same(hive), eq("default"))).thenReturn(Collections.singletonList("default"));
+      utilsMockedStatic.when(() -> Utils.getAllTables(same(hive), eq("default"), eq(replScope))).thenReturn(tableList);
+      utilsMockedStatic.when(() -> Utils.setDbBootstrapDumpState(same(hive), eq("default"))).thenReturn(dbRandomKey);
+      utilsMockedStatic.when(() -> Utils.matchesTbl(same(hive), eq("default"), eq(replScope))).thenReturn(tableList);
 
+      when(queryState.getConf()).thenReturn(conf);
+      when(conf.getLong("hive.repl.last.repl.id", -1L)).thenReturn(1L);
+      when(conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)).thenReturn(false);
+      when(HiveConf.getVar(conf, HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT)).thenReturn("1h");
 
-    when(hive.getAllFunctions()).thenReturn(Collections.emptyList());
-    when(queryState.getConf()).thenReturn(conf);
-    when(conf.getLong("hive.repl.last.repl.id", -1L)).thenReturn(1L);
-    when(conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)).thenReturn(false);
-    when(HiveConf.getVar(conf, HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT)).thenReturn("1h");
-    whenNew(HiveWrapper.class).withAnyArguments().thenReturn(mock(HiveWrapper.class));
+      ReplDumpTask task = new StubReplDumpTask() {
+        private int tableDumpCount = 0;
 
-    ReplDumpTask task = new StubReplDumpTask() {
-      private int tableDumpCount = 0;
-
-      @Override
-      void dumpTable(String dbName, String tblName, String validTxnList,
-                     Path dbRootMetadata, Path dbRootData,
-                     long lastReplId, Hive hiveDb,
-                     HiveWrapper.Tuple<Table> tuple, FileList managedTableDirFileList, boolean dataCopyAtLoad)
-          throws Exception {
-        tableDumpCount++;
-        if (tableDumpCount > 1) {
-          throw new TestException();
+        @Override
+        void dumpTable(ExportService exportService, String dbName, String tblName, String validTxnList,
+                       Path dbRootMetadata, Path dbRootData,
+                       long lastReplId, Hive hiveDb,
+                       HiveWrapper.Tuple<Table> tuple, FileList managedTableDirFileList, boolean dataCopyAtLoad)
+                throws Exception {
+          tableDumpCount++;
+          if (tableDumpCount > 1) {
+            throw new TestException();
+          }
         }
+
+        @Override
+        HiveWrapper createHiveWrapper(Hive hiveDb, String dbName){
+          return mock(HiveWrapper.class);
+        }
+      };
+
+      task.initialize(queryState, null, null, null);
+      ReplDumpWork replDumpWork = new ReplDumpWork(replScope, "", "");
+      replDumpWork.setMetricCollector(metricCollector);
+      task.setWork(replDumpWork);
+
+      try {
+        task.bootStrapDump(new Path("mock"), new DumpMetaData(new Path("mock"), conf),
+                mock(Path.class), hive);
+      } finally {
+        Utils.resetDbBootstrapDumpState(same(hive), eq("default"), eq(dbRandomKey));
       }
-    };
-
-    task.initialize(queryState, null, null, null);
-    ReplDumpWork replDumpWork = new ReplDumpWork(replScope, "", "");
-    replDumpWork.setMetricCollector(metricCollector);
-    task.setWork(replDumpWork);
-
-    try {
-      task.bootStrapDump(new Path("mock"), new DumpMetaData(new Path("mock"), conf),
-        mock(Path.class), hive);
-    } finally {
-      Utils.resetDbBootstrapDumpState(same(hive), eq("default"), eq(dbRandomKey));
     }
   }
 }

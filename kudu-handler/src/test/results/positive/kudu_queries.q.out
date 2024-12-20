@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS kv_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS kv_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE kv_table(key int, value string)
 STORED BY 'org.apache.hadoop.hive.kudu.KuduStorageHandler'
 TBLPROPERTIES ("kudu.table_name" = "default.kudu_kv")
@@ -84,15 +86,19 @@ POSTHOOK: Input: default@kv_table
 PREHOOK: query: DROP TABLE kv_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@kv_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@kv_table
 POSTHOOK: query: DROP TABLE kv_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@kv_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@kv_table
 PREHOOK: query: DROP TABLE IF EXISTS all_types_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS all_types_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE all_types_table
 STORED BY 'org.apache.hadoop.hive.kudu.KuduStorageHandler'
 TBLPROPERTIES ("kudu.table_name" = "default.kudu_all_types")
@@ -1335,7 +1341,7 @@ Table Parameters:
 	numRows             	2                   
 	rawDataSize         	0                   
 	storage_handler     	org.apache.hadoop.hive.kudu.KuduStorageHandler
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1351,8 +1357,10 @@ Storage Desc Params:
 PREHOOK: query: DROP TABLE all_types_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@all_types_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@all_types_table
 POSTHOOK: query: DROP TABLE all_types_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@all_types_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@all_types_table

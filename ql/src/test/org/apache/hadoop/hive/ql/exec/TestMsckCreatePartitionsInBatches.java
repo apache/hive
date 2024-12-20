@@ -18,24 +18,18 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.CheckResult.PartitionResult;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Msck;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
-import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.stats.StatsUtils;
-import org.apache.hadoop.mapred.TextInputFormat;
-import org.apache.hadoop.util.StringUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -45,14 +39,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doThrow;
@@ -72,7 +63,7 @@ public class TestMsckCreatePartitionsInBatches {
 
   @BeforeClass
   public static void setupClass() throws HiveException, MetaException {
-    hiveConf = new HiveConf(TestMsckCreatePartitionsInBatches.class);
+    hiveConf = new HiveConfForTest(TestMsckCreatePartitionsInBatches.class);
     hiveConf.setIntVar(ConfVars.HIVE_MSCK_REPAIR_BATCH_SIZE, 5);
     hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
@@ -88,59 +79,14 @@ public class TestMsckCreatePartitionsInBatches {
 
   @Before
   public void before() throws Exception {
-    createPartitionedTable(catName, dbName, tableName);
+    PartitionUtil.createPartitionedTable(db, catName, dbName, tableName);
     table = db.getTable(catName, dbName, tableName);
     repairOutput = new ArrayList<String>();
   }
 
   @After
   public void after() throws Exception {
-    cleanUpTableQuietly(catName, dbName, tableName);
-  }
-
-  private Table createPartitionedTable(String catName, String dbName, String tableName) throws Exception {
-    try {
-      db.dropTable(catName, dbName, tableName);
-      Table table = new Table();
-      table.setCatName(catName);
-      table.setDbName(dbName);
-      table.setTableName(tableName);
-      FieldSchema col1 = new FieldSchema("key", "string", "");
-      FieldSchema col2 = new FieldSchema("value", "int", "");
-      FieldSchema col3 = new FieldSchema("city", "string", "");
-      StorageDescriptor sd = new StorageDescriptor();
-      sd.setSerdeInfo(new SerDeInfo());
-      sd.setInputFormat(TextInputFormat.class.getCanonicalName());
-      sd.setOutputFormat(HiveIgnoreKeyTextOutputFormat.class.getCanonicalName());
-      sd.setCols(Arrays.asList(col1, col2));
-      table.setPartitionKeys(Arrays.asList(col3));
-      table.setSd(sd);
-      db.createTable(table);
-      return db.getTable(catName, dbName, tableName);
-    } catch (Exception exception) {
-      fail("Unable to drop and create table " + StatsUtils.getFullyQualifiedTableName(dbName, tableName) + " because "
-          + StringUtils.stringifyException(exception));
-      throw exception;
-    }
-  }
-
-  private void cleanUpTableQuietly(String catName, String dbName, String tableName) {
-    try {
-      db.dropTable(catName, dbName, tableName);
-    } catch (Exception exception) {
-      fail("Unexpected exception: " + StringUtils.stringifyException(exception));
-    }
-  }
-
-  private Set<PartitionResult> createPartsNotInMs(int numOfParts) {
-    Set<PartitionResult> partsNotInMs = new HashSet<>();
-    for (int i = 0; i < numOfParts; i++) {
-      PartitionResult result = new PartitionResult();
-      result.setPartitionName("city=dummyCity_" + String.valueOf(i));
-      result.setTableName("dummyTable");
-      partsNotInMs.add(result);
-    }
-    return partsNotInMs;
+    PartitionUtil.cleanUpTableQuietly(db, catName, dbName, tableName);
   }
 
   /**
@@ -152,7 +98,7 @@ public class TestMsckCreatePartitionsInBatches {
   @Test
   public void testNumberOfCreatePartitionCalls() throws Exception {
     // create 10 dummy partitions
-    Set<PartitionResult> partsNotInMs = createPartsNotInMs(10);
+    Set<PartitionResult> partsNotInMs = PartitionUtil.createPartsNotInMs(10);
     IMetaStoreClient spyDb = spy(db);
     // batch size of 5 and decaying factor of 2
     msck.createPartitionsInBatches(spyDb, repairOutput, partsNotInMs, table, 5, 2, 0);
@@ -181,7 +127,7 @@ public class TestMsckCreatePartitionsInBatches {
   @Test
   public void testUnevenNumberOfCreatePartitionCalls() throws Exception {
     // create 9 dummy partitions
-    Set<PartitionResult> partsNotInMs = createPartsNotInMs(9);
+    Set<PartitionResult> partsNotInMs = PartitionUtil.createPartsNotInMs(9);
     IMetaStoreClient spyDb = spy(db);
     // batch size of 5 and decaying factor of 2
     msck.createPartitionsInBatches(spyDb, repairOutput, partsNotInMs, table, 5, 2, 0);
@@ -210,7 +156,7 @@ public class TestMsckCreatePartitionsInBatches {
   @Test
   public void testEqualNumberOfPartitions() throws Exception {
     // create 13 dummy partitions
-    Set<PartitionResult> partsNotInMs = createPartsNotInMs(13);
+    Set<PartitionResult> partsNotInMs = PartitionUtil.createPartsNotInMs(13);
     IMetaStoreClient spyDb = spy(db);
     // batch size of 13 and decaying factor of 2
     msck.createPartitionsInBatches(spyDb, repairOutput, partsNotInMs, table, 13, 2, 0);
@@ -236,12 +182,12 @@ public class TestMsckCreatePartitionsInBatches {
   @Test
   public void testSmallNumberOfPartitions() throws Exception {
     // create 10 dummy partitions
-    Set<PartitionResult> partsNotInMs = createPartsNotInMs(10);
+    Set<PartitionResult> partsNotInMs = PartitionUtil.createPartsNotInMs(10);
     IMetaStoreClient spyDb = spy(db);
     // batch size of 20 and decaying factor of 2
     msck.createPartitionsInBatches(spyDb, repairOutput, partsNotInMs, table, 20, 2, 0);
     // there should be 1 call to create partitions with batch sizes of 10
-    verify(spyDb, times(1)).add_partitions(Mockito.anyObject(), anyBoolean(), anyBoolean());
+    verify(spyDb, times(1)).add_partitions(Mockito.any(), anyBoolean(), anyBoolean());
     ArgumentCaptor<Boolean> ifNotExistsArg = ArgumentCaptor.forClass(Boolean.class);
     ArgumentCaptor<Boolean> needResultsArg = ArgumentCaptor.forClass(Boolean.class);
     ArgumentCaptor<List<Partition>> argParts = ArgumentCaptor.forClass(List.class);
@@ -263,7 +209,7 @@ public class TestMsckCreatePartitionsInBatches {
   @Test
   public void testBatchingWhenException() throws Exception {
     // create 13 dummy partitions
-    Set<PartitionResult> partsNotInMs = createPartsNotInMs(23);
+    Set<PartitionResult> partsNotInMs = PartitionUtil.createPartsNotInMs(23);
     IMetaStoreClient spyDb = spy(db);
     // first call to createPartitions should throw exception
     doThrow(MetaException.class).doCallRealMethod().doCallRealMethod().when(spyDb)
@@ -302,7 +248,7 @@ public class TestMsckCreatePartitionsInBatches {
    */
   @Test
   public void testRetriesExhaustedBatchSize() throws Exception {
-    Set<PartitionResult> partsNotInMs = createPartsNotInMs(17);
+    Set<PartitionResult> partsNotInMs = PartitionUtil.createPartsNotInMs(17);
     IMetaStoreClient spyDb = spy(db);
     doThrow(MetaException.class).when(spyDb)
       .add_partitions(any(), anyBoolean(), anyBoolean());
@@ -349,7 +295,7 @@ public class TestMsckCreatePartitionsInBatches {
    */
   @Test
   public void testMaxRetriesReached() throws Exception {
-    Set<PartitionResult> partsNotInMs = createPartsNotInMs(17);
+    Set<PartitionResult> partsNotInMs = PartitionUtil.createPartsNotInMs(17);
     IMetaStoreClient spyDb = spy(db);
     doThrow(MetaException.class).when(spyDb)
       .add_partitions(any(), anyBoolean(), anyBoolean());
@@ -385,7 +331,7 @@ public class TestMsckCreatePartitionsInBatches {
    */
   @Test
   public void testOneMaxRetries() throws Exception {
-    Set<PartitionResult> partsNotInMs = createPartsNotInMs(17);
+    Set<PartitionResult> partsNotInMs = PartitionUtil.createPartsNotInMs(17);
     IMetaStoreClient spyDb = spy(db);
     doThrow(MetaException.class).when(spyDb)
       .add_partitions(any(), anyBoolean(), anyBoolean());

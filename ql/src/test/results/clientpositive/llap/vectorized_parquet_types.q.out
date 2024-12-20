@@ -1,15 +1,21 @@
 PREHOOK: query: DROP TABLE parquet_types_staging_n3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE parquet_types_staging_n3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE parquet_types_n2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE parquet_types_n2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS parquet_type_nodict
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS parquet_type_nodict
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE parquet_types_staging_n3 (
   cint int,
   ctinyint tinyint,
@@ -741,16 +747,20 @@ NULL
 PREHOOK: query: DROP TABLE parquet_type_nodict
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@parquet_type_nodict
+PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_type_nodict
 POSTHOOK: query: DROP TABLE parquet_type_nodict
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@parquet_type_nodict
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_type_nodict
 PREHOOK: query: DROP TABLE test_n10
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_n10
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_n10
 POSTHOOK: query: DROP TABLE test_n10
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_n10
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_n10

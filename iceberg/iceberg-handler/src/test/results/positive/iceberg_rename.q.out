@@ -1,0 +1,310 @@
+PREHOOK: query: create table icev1 (id int, name string) Stored by Iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@icev1
+POSTHOOK: query: create table icev1 (id int, name string) Stored by Iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@icev1
+PREHOOK: query: insert into icev1 values (1, 'SSD'),(2, 'RAM')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@icev1
+POSTHOOK: query: insert into icev1 values (1, 'SSD'),(2, 'RAM')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@icev1
+PREHOOK: query: select * from icev1 order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@icev1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from icev1 order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@icev1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	SSD
+2	RAM
+PREHOOK: query: explain alter table icev1 rename to icev1renamed
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@icev1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@icev1
+PREHOOK: Output: default@icev1renamed
+POSTHOOK: query: explain alter table icev1 rename to icev1renamed
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: default@icev1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@icev1
+POSTHOOK: Output: default@icev1renamed
+Stage-0
+  Rename Table{"table name:":"default.icev1","new table name:":"default.icev1renamed"}
+
+PREHOOK: query: alter table icev1 rename to icev1renamed
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@icev1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@icev1
+PREHOOK: Output: default@icev1renamed
+POSTHOOK: query: alter table icev1 rename to icev1renamed
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: default@icev1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@icev1
+POSTHOOK: Output: default@icev1renamed
+PREHOOK: query: select * from icev1renamed order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@icev1renamed
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from icev1renamed order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@icev1renamed
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	SSD
+2	RAM
+PREHOOK: query: create table iceorgin (id int, name string) Stored by Iceberg TBLPROPERTIES ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iceorgin
+POSTHOOK: query: create table iceorgin (id int, name string) Stored by Iceberg TBLPROPERTIES ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iceorgin
+PREHOOK: query: insert into iceorgin values (1, 'ABC'),(2, 'CBS'),(3, null),(4, 'POPI'),(5, 'AQWR'),(6, 'POIU'),
+(9, null),(8,'POIKL'),(10, 'YUIO')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@iceorgin
+POSTHOOK: query: insert into iceorgin values (1, 'ABC'),(2, 'CBS'),(3, null),(4, 'POPI'),(5, 'AQWR'),(6, 'POIU'),
+(9, null),(8,'POIKL'),(10, 'YUIO')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@iceorgin
+PREHOOK: query: delete from iceorgin where id>9 OR id=8
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceorgin
+PREHOOK: Output: default@iceorgin
+POSTHOOK: query: delete from iceorgin where id>9 OR id=8
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceorgin
+POSTHOOK: Output: default@iceorgin
+PREHOOK: query: select * from iceorgin order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceorgin
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from iceorgin order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceorgin
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	ABC
+2	CBS
+3	NULL
+4	POPI
+5	AQWR
+6	POIU
+9	NULL
+PREHOOK: query: alter table iceorgin rename to icerenamed
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@iceorgin
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iceorgin
+PREHOOK: Output: default@icerenamed
+POSTHOOK: query: alter table iceorgin rename to icerenamed
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: default@iceorgin
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iceorgin
+POSTHOOK: Output: default@icerenamed
+PREHOOK: query: select * from icerenamed order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@icerenamed
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from icerenamed order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@icerenamed
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	ABC
+2	CBS
+3	NULL
+4	POPI
+5	AQWR
+6	POIU
+9	NULL
+PREHOOK: query: create table iceorginpart (id int) partitioned by (part string) Stored by Iceberg TBLPROPERTIES ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iceorginpart
+POSTHOOK: query: create table iceorginpart (id int) partitioned by (part string) Stored by Iceberg TBLPROPERTIES ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iceorginpart
+PREHOOK: query: insert into iceorginpart values (1, 'ABC'),(2, 'CBS'),(3,'CBS'),(4, 'ABC'),(5, 'AQWR'),(6, 'ABC'),
+(9, 'AQWR'),(8,'ABC'),(10, 'YUIO')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@iceorginpart
+POSTHOOK: query: insert into iceorginpart values (1, 'ABC'),(2, 'CBS'),(3,'CBS'),(4, 'ABC'),(5, 'AQWR'),(6, 'ABC'),
+(9, 'AQWR'),(8,'ABC'),(10, 'YUIO')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@iceorginpart
+PREHOOK: query: delete from iceorginpart where id<3 OR id=7
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceorginpart
+PREHOOK: Output: default@iceorginpart
+POSTHOOK: query: delete from iceorginpart where id<3 OR id=7
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceorginpart
+POSTHOOK: Output: default@iceorginpart
+PREHOOK: query: select * from iceorginpart order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceorginpart
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from iceorginpart order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceorginpart
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3	CBS
+4	ABC
+5	AQWR
+6	ABC
+8	ABC
+9	AQWR
+10	YUIO
+PREHOOK: query: explain alter table iceorginpart rename to icerenamedpart
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@iceorginpart
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iceorginpart
+PREHOOK: Output: default@icerenamedpart
+POSTHOOK: query: explain alter table iceorginpart rename to icerenamedpart
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: default@iceorginpart
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iceorginpart
+POSTHOOK: Output: default@icerenamedpart
+Stage-0
+  Rename Table{"table name:":"default.iceorginpart","new table name:":"default.icerenamedpart"}
+
+PREHOOK: query: alter table iceorginpart rename to icerenamedpart
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@iceorginpart
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iceorginpart
+PREHOOK: Output: default@icerenamedpart
+POSTHOOK: query: alter table iceorginpart rename to icerenamedpart
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: default@iceorginpart
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iceorginpart
+POSTHOOK: Output: default@icerenamedpart
+PREHOOK: query: select * from icerenamedpart order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@icerenamedpart
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from icerenamedpart order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@icerenamedpart
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3	CBS
+4	ABC
+5	AQWR
+6	ABC
+8	ABC
+9	AQWR
+10	YUIO
+PREHOOK: query: create table iceorgin (id int, name string) Stored by Iceberg TBLPROPERTIES ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iceorgin
+POSTHOOK: query: create table iceorgin (id int, name string) Stored by Iceberg TBLPROPERTIES ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iceorgin
+PREHOOK: query: insert into iceorgin values (100, 'ABCDWC')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@iceorgin
+POSTHOOK: query: insert into iceorgin values (100, 'ABCDWC')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@iceorgin
+PREHOOK: query: select * from iceorgin order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceorgin
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from iceorgin order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceorgin
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+100	ABCDWC
+PREHOOK: query: create table iceorginpart (id int) partitioned by (part string) Stored by Iceberg TBLPROPERTIES ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iceorginpart
+POSTHOOK: query: create table iceorginpart (id int) partitioned by (part string) Stored by Iceberg TBLPROPERTIES ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iceorginpart
+PREHOOK: query: insert into iceorginpart values (22, 'DER'),(2, 'KLM')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@iceorginpart
+POSTHOOK: query: insert into iceorginpart values (22, 'DER'),(2, 'KLM')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@iceorginpart
+PREHOOK: query: select * from iceorginpart order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceorginpart
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from iceorginpart order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceorginpart
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2	KLM
+22	DER
+PREHOOK: query: create table xtoy(a int) stored by iceberg stored as parquet tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@xtoy
+POSTHOOK: query: create table xtoy(a int) stored by iceberg stored as parquet tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@xtoy
+PREHOOK: query: insert into xtoy values (1),(2),(3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@xtoy
+POSTHOOK: query: insert into xtoy values (1),(2),(3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@xtoy
+PREHOOK: query: delete from xtoy where a=1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@xtoy
+PREHOOK: Output: default@xtoy
+POSTHOOK: query: delete from xtoy where a=1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@xtoy
+POSTHOOK: Output: default@xtoy
+PREHOOK: query: alter table xtoy rename to ytox
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@xtoy
+PREHOOK: Output: database:default
+PREHOOK: Output: default@xtoy
+PREHOOK: Output: default@ytox
+POSTHOOK: query: alter table xtoy rename to ytox
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: default@xtoy
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@xtoy
+POSTHOOK: Output: default@ytox
+PREHOOK: query: select count(*) from ytox
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ytox
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from ytox
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ytox
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2

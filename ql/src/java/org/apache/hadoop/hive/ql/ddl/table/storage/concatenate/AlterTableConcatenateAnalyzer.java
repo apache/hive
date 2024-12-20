@@ -24,9 +24,11 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
@@ -71,7 +73,8 @@ public class AlterTableConcatenateAnalyzer extends AbstractAlterTableAnalyzer {
     Table table = getTable(tableName);
 
     if (AcidUtils.isTransactionalTable(table)) {
-      compactAcidTable(tableName, partitionSpec);
+      String poolName = table.getProperty(Constants.HIVE_COMPACTOR_WORKER_POOL);
+      compactAcidTable(tableName, partitionSpec, poolName);
     } else {
       // non-native and non-managed tables are not supported as MoveTask requires filenames to be in specific format,
       // violating which can cause data loss
@@ -95,10 +98,12 @@ public class AlterTableConcatenateAnalyzer extends AbstractAlterTableAnalyzer {
     }
   }
 
-  private void compactAcidTable(TableName tableName, Map<String, String> partitionSpec) throws SemanticException {
+  private void compactAcidTable(TableName tableName, Map<String, String> partitionSpec, String poolName) throws SemanticException {
     boolean isBlocking = !HiveConf.getBoolVar(conf, ConfVars.TRANSACTIONAL_CONCATENATE_NOBLOCK, false);
 
-    AlterTableCompactDesc desc = new AlterTableCompactDesc(tableName, partitionSpec, "MAJOR", isBlocking, null);
+    AlterTableCompactDesc desc = new AlterTableCompactDesc(tableName, partitionSpec, CompactionType.MAJOR.name(), isBlocking,
+        poolName, 0, null, null, null);
+    addInputsOutputsAlterTable(tableName, partitionSpec, desc, desc.getType(), false);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
     setAcidDdlDesc(getTable(tableName), desc);
   }
@@ -183,7 +188,7 @@ public class AlterTableConcatenateAnalyzer extends AbstractAlterTableAnalyzer {
 
   @SuppressWarnings("rawtypes")
   private Task<?> createMergeTask(TableName tableName, Table table, Map<String, String> partitionSpec, Path oldLocation,
-      ListBucketingCtx lbCtx, Class<? extends InputFormat> inputFormatClass, Path queryTmpDir) {
+      ListBucketingCtx lbCtx, Class<? extends InputFormat> inputFormatClass, Path queryTmpDir) throws SemanticException {
     AlterTableConcatenateDesc desc = new AlterTableConcatenateDesc(tableName, partitionSpec, lbCtx, oldLocation,
         queryTmpDir, inputFormatClass, Utilities.getTableDesc(table));
     DDLWork ddlWork = new DDLWork(getInputs(), getOutputs(), desc);
@@ -207,7 +212,7 @@ public class AlterTableConcatenateAnalyzer extends AbstractAlterTableAnalyzer {
 
   private void addStatTask(TableName tableName, Table table, Map<String, String> partitionSpec, Path oldLocation,
       Path newLocation, LoadTableDesc loadTableDesc, Task<MoveWork> moveTask) throws SemanticException {
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER)) {
       BasicStatsWork basicStatsWork;
       if (oldLocation.equals(newLocation)) {
         // If we're merging to the same location, we can avoid some metastore calls

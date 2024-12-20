@@ -48,6 +48,7 @@ public class TestReplAcrossInstancesWithJsonMessageFormat
         "true");
     overrides.put(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname,
             UserGroupInformation.getCurrentUser().getUserName());
+    overrides.put(HiveConf.ConfVars.REPL_BATCH_INCREMENTAL_EVENTS.varname, "false");
     internalBeforeClassSetup(overrides, TestReplicationScenarios.class);
   }
 

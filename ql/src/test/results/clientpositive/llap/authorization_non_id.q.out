@@ -4,8 +4,10 @@ POSTHOOK: query: set role ADMIN
 POSTHOOK: type: SHOW_ROLES
 PREHOOK: query: drop table if exists src_autho_test_n12
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists src_autho_test_n12
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table src_autho_test_n12 (id int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -63,10 +65,12 @@ default	src_autho_test_n12			foo-1	USER	SELECT	false	-1	hive_admin_user
 PREHOOK: query: drop table src_autho_test_n12
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_autho_test_n12
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_autho_test_n12
 POSTHOOK: query: drop table src_autho_test_n12
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_autho_test_n12
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_autho_test_n12
 PREHOOK: query: drop role src_role2
 PREHOOK: type: DROPROLE

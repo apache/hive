@@ -17,20 +17,28 @@ POSTHOOK: Output: default@facts
 POSTHOOK: Lineage: facts.val SCRIPT []
 PREHOOK: query: drop table groupingsets32
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table groupingsets32
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table groupingsets33
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table groupingsets33
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table groupingsets32a
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table groupingsets32a
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table groupingsets33a
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table groupingsets33a
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table groupingsets32 as 
 select 
 c00,c01,c02,c03,c04,c05,c06,c07,c08,c09, 
@@ -582,42 +590,54 @@ a	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NUL
 PREHOOK: query: drop table groupingsets32
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@groupingsets32
+PREHOOK: Output: database:default
 PREHOOK: Output: default@groupingsets32
 POSTHOOK: query: drop table groupingsets32
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@groupingsets32
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@groupingsets32
 PREHOOK: query: drop table groupingsets33
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@groupingsets33
+PREHOOK: Output: database:default
 PREHOOK: Output: default@groupingsets33
 POSTHOOK: query: drop table groupingsets33
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@groupingsets33
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@groupingsets33
 PREHOOK: query: drop table groupingsets32
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table groupingsets32
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table groupingsets33
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table groupingsets33
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table groupingsets32a
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@groupingsets32a
+PREHOOK: Output: database:default
 PREHOOK: Output: default@groupingsets32a
 POSTHOOK: query: drop table groupingsets32a
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@groupingsets32a
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@groupingsets32a
 PREHOOK: query: drop table groupingsets33a
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@groupingsets33a
+PREHOOK: Output: database:default
 PREHOOK: Output: default@groupingsets33a
 POSTHOOK: query: drop table groupingsets33a
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@groupingsets33a
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@groupingsets33a
 PREHOOK: query: create table groupingsets32 as 
 select 

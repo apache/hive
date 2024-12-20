@@ -2355,8 +2355,10 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 PREHOOK: query: DROP TABLE IF EXISTS struct_table_example
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS struct_table_example
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE struct_table_example (a int, s1 struct<f1: boolean, f2: string, f3: int, f4: int> ) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

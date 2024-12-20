@@ -1013,15 +1013,19 @@ POSTHOOK: Input: default@t_n12
 PREHOOK: query: drop table t_n12
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t_n12
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t_n12
 POSTHOOK: query: drop table t_n12
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t_n12
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_n12
 PREHOOK: query: drop table if exists tx1_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tx1_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table tx1_n0 (a integer,b integer)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -1182,10 +1186,12 @@ STAGE PLANS:
 PREHOOK: query: drop table tx1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tx1_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tx1_n0
 POSTHOOK: query: drop table tx1_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tx1_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tx1_n0
 PREHOOK: query: create table t1_n68(i int, j int)
 PREHOOK: type: CREATETABLE
@@ -1339,16 +1345,20 @@ POSTHOOK: Input: default@t2_n41
 PREHOOK: query: drop table t1_n68
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n68
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_n68
 POSTHOOK: query: drop table t1_n68
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_n68
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n68
 PREHOOK: query: drop table t2_n41
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t2_n41
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t2_n41
 POSTHOOK: query: drop table t2_n41
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t2_n41
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2_n41

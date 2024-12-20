@@ -24,7 +24,7 @@ public class Oracle extends DatabaseRule {
 
   @Override
   public String getDockerImageName() {
-    return "pvargacl/oracle-xe-18.4.0";
+    return "abstractdog/oracle-xe:18.4.0-slim";
   }
 
   @Override
@@ -32,7 +32,9 @@ public class Oracle extends DatabaseRule {
     return buildArray(
         "-p",
         "1521:1521",
-        "-d"
+        "-d",
+        "-e",
+        "ORACLE_PASSWORD=" + getDbRootPassword()
     );
   }
 

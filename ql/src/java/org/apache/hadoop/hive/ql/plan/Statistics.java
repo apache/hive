@@ -220,14 +220,14 @@ public class Statistics implements Serializable {
   }
 
   public void addBasicStats(Statistics stats) {
-    dataSize += stats.dataSize;
-    numRows += stats.numRows;
+    dataSize = StatsUtils.safeAdd(dataSize, stats.dataSize);
+    numRows = StatsUtils.safeAdd(numRows, stats.numRows);
     basicStatsState = inferColumnStatsState(basicStatsState, stats.basicStatsState);
   }
 
   @Deprecated
   public void addToDataSize(long rds) {
-    dataSize += rds;
+    dataSize = StatsUtils.safeAdd(dataSize, rds);
   }
 
   public void setColumnStats(Map<String, ColStatistics> colStats) {
@@ -255,7 +255,7 @@ public class Statistics implements Serializable {
           if (columnStats.containsKey(key) && columnStats.get(key) != null) {
             updatedCS = columnStats.get(key);
             updatedCS.setAvgColLen(Math.max(updatedCS.getAvgColLen(), cs.getAvgColLen()));
-            updatedCS.setNumNulls(updatedCS.getNumNulls() + cs.getNumNulls());
+            updatedCS.setNumNulls(StatsUtils.safeAdd(updatedCS.getNumNulls(), cs.getNumNulls()));
             updatedCS.setCountDistint(Math.max(updatedCS.getCountDistint(), cs.getCountDistint()));
             columnStats.put(key, updatedCS);
           } else {

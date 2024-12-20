@@ -4447,48 +4447,60 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table srcpart_iceberg
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_iceberg
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_iceberg
 POSTHOOK: query: drop table srcpart_iceberg
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_iceberg
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_iceberg
 PREHOOK: query: drop table srcpart_date_hour_n0_iceberg
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_date_hour_n0_iceberg
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_date_hour_n0_iceberg
 POSTHOOK: query: drop table srcpart_date_hour_n0_iceberg
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_date_hour_n0_iceberg
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_date_hour_n0_iceberg
 PREHOOK: query: drop table srcpart_date_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_date_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_date_n2
 POSTHOOK: query: drop table srcpart_date_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_date_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_date_n2
 PREHOOK: query: drop table srcpart_hour_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_hour_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_hour_n0
 POSTHOOK: query: drop table srcpart_hour_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_hour_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_hour_n0
 PREHOOK: query: drop table srcpart_date_hour_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_date_hour_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_date_hour_n0
 POSTHOOK: query: drop table srcpart_date_hour_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_date_hour_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_date_hour_n0
 PREHOOK: query: drop table srcpart_double_hour_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_double_hour_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_double_hour_n0
 POSTHOOK: query: drop table srcpart_double_hour_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_double_hour_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_double_hour_n0

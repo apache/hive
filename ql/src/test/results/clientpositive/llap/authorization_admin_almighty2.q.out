@@ -26,8 +26,10 @@ POSTHOOK: Input: default@a_table1
 POSTHOOK: Output: default@a_table1
 PREHOOK: query: drop table a_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table a_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TEMPORARY FUNCTION Pyth as 'Pyth'
 PREHOOK: type: CREATEFUNCTION
 PREHOOK: Output: pyth

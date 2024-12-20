@@ -146,7 +146,8 @@ public final class OrcFile extends org.apache.orc.OrcFile {
   /**
    * Options for creating ORC file writers.
    */
-  public static class WriterOptions extends org.apache.orc.OrcFile.WriterOptions {
+  public static class WriterOptions extends org.apache.orc.OrcFile.WriterOptions
+          implements Cloneable {
     private boolean explicitSchema = false;
     private ObjectInspector inspector = null;
     // Setting the default batch size to 1000 makes the memory check at 5000
@@ -164,6 +165,10 @@ public final class OrcFile extends org.apache.orc.OrcFile {
         memory(getThreadLocalOrcLlapMemoryManager(conf));
       }
       isCompaction = AcidUtils.isCompactionTable(tableProperties);
+    }
+
+    public WriterOptions clone() {
+        return (WriterOptions) super.clone();
     }
 
    /**

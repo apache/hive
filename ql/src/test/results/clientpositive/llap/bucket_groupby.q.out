@@ -1218,10 +1218,12 @@ STAGE PLANS:
 PREHOOK: query: drop table clustergroupby
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@clustergroupby
+PREHOOK: Output: database:default
 PREHOOK: Output: default@clustergroupby
 POSTHOOK: query: drop table clustergroupby
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@clustergroupby
 PREHOOK: query: create table clustergroupby(key string, value string) partitioned by(ds string)
 PREHOOK: type: CREATETABLE
@@ -1510,30 +1512,79 @@ POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Input: default@clustergroupby@ds=102
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: clustergroupby
+                  filterExpr: (ds = '102') (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Top N Key Operator
+                    sort order: ++
+                    keys: key (type: string), value (type: string)
+                    null sort order: zz
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    top n: 10
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: key, value
+                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        bucketGroup: true
+                        keys: key (type: string), value (type: string)
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 316 Data size: 58776 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string), _col1 (type: string)
+                          null sort order: zz
+                          sort order: ++
+                          Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                          Statistics: Num rows: 316 Data size: 58776 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col2 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 316 Data size: 58776 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 10 Data size: 1860 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: string), _col2 (type: bigint)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 10 Data size: 950 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
   Stage: Stage-0
     Fetch Operator
       limit: 10
       Processor Tree:
-        TableScan
-          alias: clustergroupby
-          filterExpr: (ds = '102') (type: boolean)
-          Select Operator
-            expressions: key (type: string), value (type: string)
-            outputColumnNames: key, value
-            Group By Operator
-              aggregations: count()
-              keys: key (type: string), value (type: string)
-              mode: final
-              outputColumnNames: _col0, _col1, _col2
-              Limit
-                Number of rows: 10
-                Select Operator
-                  expressions: _col0 (type: string), _col2 (type: bigint)
-                  outputColumnNames: _col0, _col1
-                  ListSink
+        ListSink
 
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='102'  group by key, value limit 10
 PREHOOK: type: QUERY
@@ -1545,7 +1596,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Input: default@clustergroupby@ds=102
 #### A masked pattern was here ####
-0	3
 10	1
 100	2
 103	2
@@ -1553,15 +1603,18 @@ POSTHOOK: Input: default@clustergroupby@ds=102
 105	1
 11	1
 111	1
-113	2
 114	1
+0	3
+113	2
 PREHOOK: query: drop table clustergroupby
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@clustergroupby
+PREHOOK: Output: database:default
 PREHOOK: Output: default@clustergroupby
 POSTHOOK: query: drop table clustergroupby
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@clustergroupby
 PREHOOK: query: create table clustergroupby(key string, value string) partitioned by(ds string)
 PREHOOK: type: CREATETABLE

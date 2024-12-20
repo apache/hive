@@ -4,6 +4,7 @@ set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 ;
 
 set hive.exec.reducers.max = 1;
+set hive.cbo.fallback.strategy=NEVER;
 
 CREATE TABLE bucket4_1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
 

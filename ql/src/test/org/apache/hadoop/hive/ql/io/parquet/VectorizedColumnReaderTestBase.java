@@ -1067,4 +1067,24 @@ public class VectorizedColumnReaderTestBase {
       reader.close();
     }
   }
+
+  protected void verifyBatchOffsets() throws Exception {
+    Configuration c = new Configuration();
+    c.set(IOConstants.COLUMNS, "int64_field");
+    c.set(IOConstants.COLUMNS_TYPES, "bigint");
+    c.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
+    c.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0");
+    VectorizedParquetRecordReader reader =
+        createTestParquetReader("message test { required int64 int64_field;}", c);
+    VectorizedRowBatch previous = reader.createValue();
+    try {
+      int batchCount = 0;
+      while (reader.next(NullWritable.get(), previous)) {
+        assertEquals(VectorizedRowBatch.DEFAULT_SIZE * batchCount++, reader.getRowNumber());
+      }
+      assertEquals(reader.getRowNumber(), nElements);
+    } finally {
+      reader.close();
+    }
+  }
 }

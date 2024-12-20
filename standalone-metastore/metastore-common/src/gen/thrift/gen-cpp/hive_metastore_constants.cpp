@@ -27,6 +27,10 @@ hive_metastoreConstants::hive_metastoreConstants() {
 
   HIVE_FILTER_FIELD_LAST_ACCESS = "hive_filter_field_last_access__";
 
+  HIVE_FILTER_FIELD_TABLE_NAME = "hive_filter_field_tableName__";
+
+  HIVE_FILTER_FIELD_TABLE_TYPE = "hive_filter_field_tableType__";
+
   IS_ARCHIVED = "is_archived";
 
   ORIGINAL_LOCATION = "original_location";
@@ -42,6 +46,8 @@ hive_metastoreConstants::hive_metastoreConstants() {
   BUCKET_COUNT = "bucket_count";
 
   FIELD_TO_DIMENSION = "field_to_dimension";
+
+  IF_PURGE = "ifPurge";
 
   META_TABLE_NAME = "name";
 
@@ -63,7 +69,7 @@ hive_metastoreConstants::hive_metastoreConstants() {
 
   TABLE_IS_TRANSACTIONAL = "transactional";
 
-  TABLE_NO_AUTO_COMPACT = "no_auto_compaction";
+  NO_AUTO_COMPACT = "no_auto_compaction";
 
   TABLE_TRANSACTIONAL_PROPERTIES = "transactional_properties";
 
@@ -88,6 +94,10 @@ hive_metastoreConstants::hive_metastoreConstants() {
   TXN_ID = "txnId";
 
   WRITE_ID = "writeId";
+
+  EXPECTED_PARAMETER_KEY = "expected_parameter_key";
+
+  EXPECTED_PARAMETER_VALUE = "expected_parameter_value";
 
 }
 

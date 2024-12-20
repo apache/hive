@@ -185,7 +185,7 @@ public class MapReduceCompiler extends TaskCompiler {
       return mrwork.getReduceWork().getNumReduceTasks();
     }
 
-    return conf.getIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS);
+    return conf.getIntVar(HiveConf.ConfVars.HADOOP_NUM_REDUCERS);
   }
 
   @Override
@@ -200,7 +200,7 @@ public class MapReduceCompiler extends TaskCompiler {
 
     // user has told us to run in local mode or doesn't want auto-local mode
     if (ctx.isLocalOnlyExecutionMode() ||
-        !conf.getBoolVar(HiveConf.ConfVars.LOCALMODEAUTO)) {
+        !conf.getBoolVar(HiveConf.ConfVars.LOCAL_MODE_AUTO)) {
       return;
     }
 
@@ -230,11 +230,11 @@ public class MapReduceCompiler extends TaskCompiler {
           // estimated Input = (num_limit * max_size_per_row) * (estimated_map + 2)
           //
           long sizePerRow = HiveConf.getLongVar(conf,
-              HiveConf.ConfVars.HIVELIMITMAXROWSIZE);
+              HiveConf.ConfVars.HIVE_LIMIT_MAX_ROW_SIZE);
           estimatedInput = (globalLimitCtx.getGlobalOffset() +
               globalLimitCtx.getGlobalLimit()) * sizePerRow;
           long minSplitSize = HiveConf.getLongVar(conf,
-              HiveConf.ConfVars.MAPREDMINSPLITSIZE);
+              HiveConf.ConfVars.MAPRED_MIN_SPLIT_SIZE);
           long estimatedNumMap = inputSummary.getLength() / minSplitSize + 1;
           estimatedInput = estimatedInput * (estimatedNumMap + 1);
         } else {

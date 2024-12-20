@@ -1,0 +1,281 @@
+PREHOOK: query: create table part_params_xin (customer int) partitioned by (dt string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@part_params_xin
+POSTHOOK: query: create table part_params_xin (customer int) partitioned by (dt string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@part_params_xin
+PREHOOK: query: insert into part_params_xin partition(dt='2001-01-01') values(1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@part_params_xin@dt=2001-01-01
+POSTHOOK: query: insert into part_params_xin partition(dt='2001-01-01') values(1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@part_params_xin@dt=2001-01-01
+POSTHOOK: Lineage: part_params_xin PARTITION(dt=2001-01-01).customer SCRIPT []
+PREHOOK: query: insert into part_params_xin partition(dt='2001-01-03') values(3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@part_params_xin@dt=2001-01-03
+POSTHOOK: query: insert into part_params_xin partition(dt='2001-01-03') values(3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@part_params_xin@dt=2001-01-03
+POSTHOOK: Lineage: part_params_xin PARTITION(dt=2001-01-03).customer SCRIPT []
+PREHOOK: query: create table params(key string, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@params
+POSTHOOK: query: create table params(key string, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@params
+PREHOOK: query: insert into table params values('key1', 'value1'), ('akey1', 'avalue1'), ('akey10', 'avalue10'), ('excludekey1', 'value1'),('excludekey2', 'value1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@params
+POSTHOOK: query: insert into table params values('key1', 'value1'), ('akey1', 'avalue1'), ('akey10', 'avalue10'), ('excludekey1', 'value1'),('excludekey2', 'value1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@params
+POSTHOOK: Lineage: params.key SCRIPT []
+POSTHOOK: Lineage: params.value SCRIPT []
+PREHOOK: query: create temporary function alter_partition_params as 'org.apache.hadoop.hive.udf.example.AlterPartitionParamsExample'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: alter_partition_params
+POSTHOOK: query: create temporary function alter_partition_params as 'org.apache.hadoop.hive.udf.example.AlterPartitionParamsExample'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: alter_partition_params
+PREHOOK: query: select alter_partition_params('part_params_xin', 'dt=2001-01-01', key, value) from params
+PREHOOK: type: QUERY
+PREHOOK: Input: default@params
+#### A masked pattern was here ####
+POSTHOOK: query: select alter_partition_params('part_params_xin', 'dt=2001-01-01', key, value) from params
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@params
+#### A masked pattern was here ####
+true
+true
+true
+true
+true
+PREHOOK: query: explain extended select * from part_params_xin where nvl(dt='2001-01-01' and customer=1, false)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_params_xin
+PREHOOK: Input: default@part_params_xin@dt=2001-01-01
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select * from part_params_xin where nvl(dt='2001-01-01' and customer=1, false)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_params_xin
+POSTHOOK: Input: default@part_params_xin@dt=2001-01-01
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `customer`, `dt`
+FROM `default`.`part_params_xin`
+WHERE NVL(`dt` = '2001-01-01' AND `customer` = 1, FALSE)
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Partition Description:
+          Partition
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              dt 2001-01-01
+            properties:
+              akey1 avalue1
+              akey10 avalue10
+              column.name.delimiter ,
+              columns customer
+              columns.types int
+              excludekey1 value1
+              excludekey2 value1
+#### A masked pattern was here ####
+              key1 value1
+#### A masked pattern was here ####
+              name default.part_params_xin
+              partition_columns dt
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns customer
+                columns.comments 
+                columns.types int
+#### A masked pattern was here ####
+                name default.part_params_xin
+                partition_columns dt
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.part_params_xin
+            name: default.part_params_xin
+      Processor Tree:
+        TableScan
+          alias: part_params_xin
+          filterExpr: COALESCE((customer = 1),false) (type: boolean)
+          GatherStats: false
+          Filter Operator
+            isSamplingPred: false
+            predicate: COALESCE((customer = 1),false) (type: boolean)
+            Select Operator
+              expressions: customer (type: int), dt (type: string)
+              outputColumnNames: _col0, _col1
+              ListSink
+
+PREHOOK: query: explain extended select * from part_params_xin where nvl(dt='2001-01-01' and customer=1, false)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_params_xin
+PREHOOK: Input: default@part_params_xin@dt=2001-01-01
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select * from part_params_xin where nvl(dt='2001-01-01' and customer=1, false)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_params_xin
+POSTHOOK: Input: default@part_params_xin@dt=2001-01-01
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `customer`, `dt`
+FROM `default`.`part_params_xin`
+WHERE NVL(`dt` = '2001-01-01' AND `customer` = 1, FALSE)
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Partition Description:
+          Partition
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              dt 2001-01-01
+            properties:
+              akey1 avalue1
+              column.name.delimiter ,
+              columns customer
+              columns.types int
+#### A masked pattern was here ####
+              key1 value1
+#### A masked pattern was here ####
+              name default.part_params_xin
+              partition_columns dt
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns customer
+                columns.comments 
+                columns.types int
+#### A masked pattern was here ####
+                name default.part_params_xin
+                partition_columns dt
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.part_params_xin
+            name: default.part_params_xin
+      Processor Tree:
+        TableScan
+          alias: part_params_xin
+          filterExpr: COALESCE((customer = 1),false) (type: boolean)
+          GatherStats: false
+          Filter Operator
+            isSamplingPred: false
+            predicate: COALESCE((customer = 1),false) (type: boolean)
+            Select Operator
+              expressions: customer (type: int), dt (type: string)
+              outputColumnNames: _col0, _col1
+              ListSink
+
+PREHOOK: query: explain extended select * from part_params_xin where nvl(dt='2001-01-01' and customer=1, false)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_params_xin
+PREHOOK: Input: default@part_params_xin@dt=2001-01-01
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select * from part_params_xin where nvl(dt='2001-01-01' and customer=1, false)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_params_xin
+POSTHOOK: Input: default@part_params_xin@dt=2001-01-01
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `customer`, `dt`
+FROM `default`.`part_params_xin`
+WHERE NVL(`dt` = '2001-01-01' AND `customer` = 1, FALSE)
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Partition Description:
+          Partition
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              dt 2001-01-01
+            properties:
+              akey1 avalue1
+              column.name.delimiter ,
+              columns customer
+              columns.types int
+              excludekey1 value1
+              excludekey2 value1
+#### A masked pattern was here ####
+              key1 value1
+#### A masked pattern was here ####
+              name default.part_params_xin
+              partition_columns dt
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns customer
+                columns.comments 
+                columns.types int
+#### A masked pattern was here ####
+                name default.part_params_xin
+                partition_columns dt
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.part_params_xin
+            name: default.part_params_xin
+      Processor Tree:
+        TableScan
+          alias: part_params_xin
+          filterExpr: COALESCE((customer = 1),false) (type: boolean)
+          GatherStats: false
+          Filter Operator
+            isSamplingPred: false
+            predicate: COALESCE((customer = 1),false) (type: boolean)
+            Select Operator
+              expressions: customer (type: int), dt (type: string)
+              outputColumnNames: _col0, _col1
+              ListSink
+

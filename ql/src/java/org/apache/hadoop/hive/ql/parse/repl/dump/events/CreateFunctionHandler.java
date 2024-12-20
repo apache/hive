@@ -75,7 +75,7 @@ class CreateFunctionHandler extends AbstractEventHandler<CreateFunctionMessage> 
   }
 
   private void copyFunctionBinaries(List<DataCopyPath> functionBinaryCopyPaths, HiveConf hiveConf)
-          throws MetaException, IOException, LoginException, HiveFatalException {
+          throws IOException, LoginException, HiveFatalException {
     if (!functionBinaryCopyPaths.isEmpty()) {
       String distCpDoAsUser = hiveConf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
       List<ReplChangeManager.FileInfo> filePaths = new ArrayList<>();

@@ -22,8 +22,8 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +45,8 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
 
   @Override
   public DataSource create(Configuration hdpConfig, int maxPoolSize) throws SQLException {
-    LOG.debug("Creating Hikari connection pool for the MetaStore");
+    String poolName = DataSourceProvider.getDataSourceName(hdpConfig);
+    LOG.info("Creating Hikari connection pool for the MetaStore, maxPoolSize: {}, name: {}", maxPoolSize, poolName);
 
     String driverUrl = DataSourceProvider.getMetastoreJdbcDriverUrl(hdpConfig);
     String user = DataSourceProvider.getMetastoreJdbcUser(hdpConfig);
@@ -67,6 +68,20 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     config.setUsername(user);
     config.setPassword(passwd);
     config.setLeakDetectionThreshold(leakDetectionThreshold);
+    if (!StringUtils.isEmpty(poolName)) {
+      config.setPoolName(poolName);
+    }
+
+    // It's kind of a waste to create a fixed size connection pool as same as the TxnHandler#connPool,
+    // TxnHandler#connPoolMutex is mostly used for MutexAPI that is primarily designed to
+    // provide coarse-grained mutex support to maintenance tasks running inside the Metastore,
+    // add minimumIdle=2 and idleTimeout=10min(default, can be set by hikaricp.idleTimeout) to the pool,
+    // so that the connection pool can retire the idle connection aggressively,
+    // this will make Metastore more scalable especially if there is a leader in the warehouse.
+    if ("mutex".equals(poolName)) {
+      int minimumIdle = Integer.valueOf(hdpConfig.get(HIKARI + ".minimumIdle", "2"));
+      config.setMinimumIdle(Math.min(maxPoolSize, minimumIdle));
+    }
 
     //https://github.com/brettwooldridge/HikariCP
     config.setConnectionTimeout(connectionTimeout);

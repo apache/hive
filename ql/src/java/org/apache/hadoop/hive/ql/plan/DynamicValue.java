@@ -24,10 +24,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.DynamicValueRegistry;
 import org.apache.hadoop.hive.ql.exec.ObjectCache;
 import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.sarg.LiteralDelegate;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -113,7 +110,7 @@ public class DynamicValue implements LiteralDelegate, Serializable {
 
     try {
       // Get object cache
-      String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
+      String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID);
       ObjectCache cache = ObjectCacheFactory.getCache(conf, queryId, false, true);
 
       if (cache == null) {

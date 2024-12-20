@@ -20,10 +20,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
-import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -98,7 +96,7 @@ public class JdbcInputFormat extends HiveInputFormat<LongWritable, MapWritable> 
         if (!columnNames.contains(partitionColumn)) {
           throw new IOException("Cannot find partitionColumn:" + partitionColumn + " in " + columnNames);
         }
-        List<TypeInfo> hiveColumnTypesList = TypeInfoUtils.getTypeInfosFromTypeString(job.get(serdeConstants.LIST_COLUMN_TYPES));
+        List<TypeInfo> hiveColumnTypesList = dbAccessor.getColumnTypes(job);
         TypeInfo typeInfo = hiveColumnTypesList.get(columnNames.indexOf(partitionColumn));
         if (!(typeInfo instanceof PrimitiveTypeInfo)) {
           throw new IOException(partitionColumn + " is a complex type, only primitive type can be a partition column");

@@ -54,8 +54,10 @@ POSTHOOK: Input: default@parquet_tbl@lyear=2016
 PREHOOK: query: drop table parquet_tbl
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@parquet_tbl
+PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_tbl
 POSTHOOK: query: drop table parquet_tbl
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@parquet_tbl
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_tbl

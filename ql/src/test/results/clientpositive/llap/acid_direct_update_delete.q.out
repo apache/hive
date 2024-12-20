@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS test_update_bucketed
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS test_update_bucketed
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE test_update_bucketed(id string, value string) CLUSTERED BY(id) INTO 10 BUCKETS STORED AS ORC TBLPROPERTIES('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -137,8 +139,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DROP TABLE IF EXISTS test_update_bucketed
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_update_bucketed
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_update_bucketed
 POSTHOOK: query: DROP TABLE IF EXISTS test_update_bucketed
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_update_bucketed
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_update_bucketed

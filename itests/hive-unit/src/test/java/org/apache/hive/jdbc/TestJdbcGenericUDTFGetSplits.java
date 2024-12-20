@@ -38,15 +38,25 @@ import static org.junit.Assert.assertTrue;
 public class TestJdbcGenericUDTFGetSplits extends AbstractTestJdbcGenericUDTFGetSplits {
 
   @Test(timeout = 200000)
-  @Ignore("HIVE-23394")
-  public void testGenericUDTFOrderBySplitCount1() throws Exception {
-    super.testGenericUDTFOrderBySplitCount1("get_splits", new int[]{10, 1, 0, 2, 2, 2, 1, 10});
+  public void testGetSplitsOrderBySplitCount1() throws Exception {
+    testGenericUDTFOrderBySplitCount1("get_splits", new int[] { 10, 5, 0, 2, 2, 2, 5 });
   }
 
   @Test(timeout = 200000)
-  public void testGenericUDTFOrderBySplitCount1OnPartitionedTable() throws Exception {
-    super.testGenericUDTFOrderBySplitCount1OnPartitionedTable("get_splits", new int[]{5, 5, 1, 1, 1});
+  public void testGetLlapSplitsOrderBySplitCount1() throws Exception {
+    testGenericUDTFOrderBySplitCount1("get_llap_splits", new int[] { 12, 7, 1, 4, 4, 4, 7 });
   }
+
+  @Test(timeout = 200000)
+  public void testGetSplitsOrderBySplitCount1OnPartitionedTable() throws Exception {
+    testGenericUDTFOrderBySplitCount1OnPartitionedTable("get_splits", new int[]{5, 5, 1, 1, 1});
+  }
+
+  @Test(timeout = 200000)
+  public void testGetLlapSplitsOrderBySplitCount1OnPartitionedTable() throws Exception {
+    testGenericUDTFOrderBySplitCount1OnPartitionedTable("get_llap_splits", new int[]{7, 7, 3, 3, 3});
+  }
+
 
 
   @Test

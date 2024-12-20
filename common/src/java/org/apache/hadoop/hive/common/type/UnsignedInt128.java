@@ -215,7 +215,9 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128>, Seriali
    */
   public void setV0(int val) {
     v[0] = val;
-    updateCount();
+    if (count < 2) {
+      updateCount();
+    }
   }
 
   /**
@@ -226,7 +228,9 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128>, Seriali
    */
   public void setV1(int val) {
     v[1] = val;
-    updateCount();
+    if (count < 3) {
+      updateCount();
+    }
   }
 
   /**
@@ -237,7 +241,9 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128>, Seriali
    */
   public void setV2(int val) {
     v[2] = val;
-    updateCount();
+    if (count < 4) {
+      updateCount();
+    }
   }
 
   /**

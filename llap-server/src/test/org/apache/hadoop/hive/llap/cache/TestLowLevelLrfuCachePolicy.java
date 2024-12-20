@@ -44,6 +44,7 @@ import java.util.stream.IntStream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
+import org.apache.hadoop.hive.llap.daemon.impl.LlapPooledIOThread;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.junit.Assume;
 import org.junit.Test;
@@ -272,40 +273,46 @@ public class TestLowLevelLrfuCachePolicy {
   }
 
   @Test
-  public void testBPWrapperFlush() {
-    int heapSize = 20;
-    LOG.info("Testing bp wrapper flush logic");
-    ArrayList<LlapDataBuffer> inserted = new ArrayList<LlapDataBuffer>(heapSize);
-    EvictionTracker et = new EvictionTracker();
-    Configuration conf = new Configuration();
-    conf.setInt(HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname, 10);
-    LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(1, heapSize, conf);
-    LowLevelCacheMemoryManager mm = new LowLevelCacheMemoryManager(heapSize, lrfu,
-        LlapDaemonCacheMetrics.create("test", "1"));
-    lrfu.setEvictionListener(et);
+  public void testBPWrapperFlush() throws Exception {
+    // LlapPooledIOThread type of thread is needed in order to verify BPWrapper functionality as it is deliberately
+    // turned off for other threads, potentially ephemeral in nature.
+    LlapPooledIOThread thread = new LlapPooledIOThread(() -> {
+      int heapSize = 20;
+      LOG.info("Testing bp wrapper flush logic");
+      ArrayList<LlapDataBuffer> inserted = new ArrayList<LlapDataBuffer>(heapSize);
+      EvictionTracker et = new EvictionTracker();
+      Configuration conf = new Configuration();
+      conf.setInt(HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname, 10);
+      LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(1, heapSize, conf);
+      LowLevelCacheMemoryManager mm = new LowLevelCacheMemoryManager(heapSize, lrfu,
+          LlapDaemonCacheMetrics.create("test", "1"));
+      lrfu.setEvictionListener(et);
 
-    // Test with 4 buffers: they should all remain in BP wrapper and not go to heap upon insertion.
-    // .. but after purging, they need to show up as 4 evicted bytes.
-    for (int i = 0; i < 4; ++i) {
-      LlapDataBuffer buffer = LowLevelCacheImpl.allocateFake();
-      assertTrue(cache(mm, lrfu, et, buffer));
-      inserted.add(buffer);
-    }
-    assertArrayEquals(new long[] {0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 0}, lrfu.metrics.getUsageStats());
-    assertEquals(4, mm.purge());
-    assertArrayEquals(new long[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, lrfu.metrics.getUsageStats());
+      // Test with 4 buffers: they should all remain in BP wrapper and not go to heap upon insertion.
+      // .. but after purging, they need to show up as 4 evicted bytes.
+      for (int i = 0; i < 4; ++i) {
+        LlapDataBuffer buffer = LowLevelCacheImpl.allocateFake();
+        assertTrue(cache(mm, lrfu, et, buffer));
+        inserted.add(buffer);
+      }
+      assertArrayEquals(new long[] {0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 0}, lrfu.metrics.getUsageStats());
+      assertEquals(4, mm.purge());
+      assertArrayEquals(new long[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, lrfu.metrics.getUsageStats());
 
-    // Testing with 8 buffers: on the 6th buffer BP wrapper content should be flushed into heap, next 2 buffers won't
-    for (int i = 0; i < 8; ++i) {
-      LlapDataBuffer buffer = LowLevelCacheImpl.allocateFake();
-      assertTrue(cache(mm, lrfu, et, buffer));
-      inserted.add(buffer);
-    }
-    assertArrayEquals(new long[] {6, 0, 0, 0, 0, 0, 0, 2, 2, 2, 0}, lrfu.metrics.getUsageStats());
-    assertEquals(8, mm.purge());
-    assertArrayEquals(new long[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, lrfu.metrics.getUsageStats());
+      // Testing with 8 buffers: on the 6th buffer BP wrapper content should be flushed into heap, next 2 buffers won't
+      for (int i = 0; i < 8; ++i) {
+        LlapDataBuffer buffer = LowLevelCacheImpl.allocateFake();
+        assertTrue(cache(mm, lrfu, et, buffer));
+        inserted.add(buffer);
+      }
+      assertArrayEquals(new long[] {6, 0, 0, 0, 0, 0, 0, 2, 2, 2, 0}, lrfu.metrics.getUsageStats());
+      assertEquals(8, mm.purge());
+      assertArrayEquals(new long[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, lrfu.metrics.getUsageStats());
 
-    assertTrue(et.evicted.containsAll(inserted));
+      assertTrue(et.evicted.containsAll(inserted));
+    });
+    thread.start();
+    thread.join(30000);
   }
 
   @Test

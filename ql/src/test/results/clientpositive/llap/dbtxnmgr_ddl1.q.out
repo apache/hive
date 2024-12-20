@@ -227,7 +227,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t1_n50
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@V1_n5
-POSTHOOK: Lineage: V1_n5.key SIMPLE [(t1_n50)t1_n50.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v1_n5.key SIMPLE [(t1_n50)t1_n50.FieldSchema(name:key, type:string, comment:null), ]
 PREHOOK: query: alter view V1_n5 set tblproperties ('test'='thisisatest')
 PREHOOK: type: ALTERVIEW_PROPERTIES
 PREHOOK: Input: default@v1_n5
@@ -247,24 +247,30 @@ POSTHOOK: Output: default@v1_n5
 PREHOOK: query: drop table T1_n50
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n50
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_n50
 POSTHOOK: query: drop table T1_n50
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_n50
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n50
 PREHOOK: query: drop table T2_n31
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t2_n31
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t2_n31
 POSTHOOK: query: drop table T2_n31
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t2_n31
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2_n31
 PREHOOK: query: drop table newT3_n11
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@newt3_n11
+PREHOOK: Output: database:default
 PREHOOK: Output: default@newt3_n11
 POSTHOOK: query: drop table newT3_n11
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@newt3_n11
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@newt3_n11

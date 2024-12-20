@@ -184,8 +184,13 @@ public class GenericUDFIn extends GenericUDF {
         break;
       }
       case STRUCT: {
-        if (constantInSet.contains(((StructObjectInspector) compareOI).getStructFieldsDataAsList(conversionHelper
-           .convertIfNecessary(arguments[0].get(), argumentOIs[0])))) {
+        Object value;
+        if (argumentOIs[0] instanceof ConstantObjectInspector) {
+          value = ((ConstantObjectInspector) argumentOIs[0]).getWritableConstantValue();
+        } else {
+          value = conversionHelper.convertIfNecessary(arguments[0].get(), argumentOIs[0]);
+        }
+        if (constantInSet.contains(((StructObjectInspector) compareOI).getStructFieldsDataAsList(value))) {
           bw.set(true);
           return bw;
         }

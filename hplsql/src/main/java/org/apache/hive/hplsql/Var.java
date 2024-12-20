@@ -31,7 +31,7 @@ import org.apache.hive.hplsql.executor.QueryResult;
 public class Var {
   // Data types
 	public enum Type {BOOL, CURSOR, DATE, DECIMAL, DERIVED_TYPE, DERIVED_ROWTYPE, DOUBLE, FILE, IDENT, BIGINT, INTERVAL, ROW, 
-	                  RS_LOCATOR, STRING, STRINGLIST, TIMESTAMP, NULL, HPL_OBJECT}
+	                  RS_LOCATOR, STRING, STRINGLIST, TIMESTAMP, NULL, HPL_OBJECT, HPL_SQL_UDF, SQL_STRING, VARIABLE}
 	public static final String DERIVED_TYPE = "DERIVED%TYPE";
 	public static final String DERIVED_ROWTYPE = "DERIVED%ROWTYPE";
 	public static Var Empty = new Var();
@@ -181,6 +181,7 @@ public class Var {
       } else if (type == Type.DECIMAL) {
         if (val.type == Type.STRING) {
           value = new BigDecimal((String) val.value);
+          value = ((BigDecimal)value).setScale(scale);
         } else if (val.type == Type.BIGINT) {
           value = BigDecimal.valueOf(val.longValue());
         } else if (val.type == Type.DOUBLE) {
@@ -255,11 +256,11 @@ public class Var {
       cast(new Var(queryResult.column(idx, String.class)));
     } else if (type == java.sql.Types.INTEGER || type == java.sql.Types.BIGINT ||
             type == java.sql.Types.SMALLINT || type == java.sql.Types.TINYINT) {
-      cast(new Var(Long.valueOf(queryResult.column(idx, Long.class))));
+      cast(new Var(queryResult.column(idx, Long.class)));
     } else if (type == java.sql.Types.DECIMAL || type == java.sql.Types.NUMERIC) {
       cast(new Var(queryResult.column(idx, BigDecimal.class)));
     } else if (type == java.sql.Types.FLOAT || type == java.sql.Types.DOUBLE) {
-      cast(new Var(Double.valueOf(queryResult.column(idx, Double.class))));
+      cast(new Var(queryResult.column(idx, Double.class)));
     }
     return this;
   }
@@ -621,11 +622,27 @@ public class Var {
    * Convert value to SQL string - string literals are quoted and escaped, ab'c -&gt; 'ab''c'
    */
   public String toSqlString() {
-    if (value == null) {
+    if (type == Type.IDENT) {
+      return name;
+    }
+    else if (value == null) {
       return "NULL";
     }
     else if (type == Type.STRING) {
       return Utils.quoteString((String)value);
+    }
+    else if (type == Type.TIMESTAMP) {
+      int len = 19;
+      String t = ((Timestamp) value).toString();   // .0 returned if the fractional part not set
+      if (scale > 0) {
+        len += scale + 1;
+      }
+      if (t.length() > len) {
+        t = t.substring(0, len);
+      }
+      return String.format("TIMESTAMP '%s'", t);
+    } else if (type == Type.DATE) {
+      return String.format("DATE '%s'", ((Date) value).toString());
     }
     return toString();
   }

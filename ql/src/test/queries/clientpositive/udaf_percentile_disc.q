@@ -76,6 +76,11 @@ SELECT CAST(key AS INT) DIV 10,
 FROM src
 GROUP BY CAST(key AS INT) DIV 10;
 
+explain cbo
+select percentile_disc(cast(key as bigint), 0.5),
+       percentile_disc(0.5) within group (order by cast(key as bigint))
+from src where false;
+
 select percentile_disc(cast(key as bigint), 0.5),
        percentile_disc(0.5) within group (order by cast(key as bigint))
 from src where false;

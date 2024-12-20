@@ -1,0 +1,650 @@
+PREHOOK: query: create table part_source(key string, value string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@part_source
+POSTHOOK: query: create table part_source(key string, value string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@part_source
+PREHOOK: query: create table source(key string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@source
+POSTHOOK: query: create table source(key string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@source
+PREHOOK: query: create table one_part_source(key string, value string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@one_part_source
+POSTHOOK: query: create table one_part_source(key string, value string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@one_part_source
+PREHOOK: query: insert overwrite table part_source partition(ds='102') select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@part_source@ds=102
+POSTHOOK: query: insert overwrite table part_source partition(ds='102') select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@part_source@ds=102
+POSTHOOK: Lineage: part_source PARTITION(ds=102).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: part_source PARTITION(ds=102).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert into table part_source partition(ds='102') select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@part_source@ds=102
+POSTHOOK: query: insert into table part_source partition(ds='102') select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@part_source@ds=102
+POSTHOOK: Lineage: part_source PARTITION(ds=102).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: part_source PARTITION(ds=102).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table part_source partition(ds='103') select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@part_source@ds=103
+POSTHOOK: query: insert overwrite table part_source partition(ds='103') select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@part_source@ds=103
+POSTHOOK: Lineage: part_source PARTITION(ds=103).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: part_source PARTITION(ds=103).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert into table part_source partition(ds='103') select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@part_source@ds=103
+POSTHOOK: query: insert into table part_source partition(ds='103') select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@part_source@ds=103
+POSTHOOK: Lineage: part_source PARTITION(ds=103).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: part_source PARTITION(ds=103).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table source select key from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@source
+POSTHOOK: query: insert overwrite table source select key from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@source
+POSTHOOK: Lineage: source.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: insert into table source select key from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@source
+POSTHOOK: query: insert into table source select key from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@source
+POSTHOOK: Lineage: source.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table one_part_source partition(ds='102') select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@one_part_source@ds=102
+POSTHOOK: query: insert overwrite table one_part_source partition(ds='102') select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@one_part_source@ds=102
+POSTHOOK: Lineage: one_part_source PARTITION(ds=102).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: one_part_source PARTITION(ds=102).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table one_part_source partition(ds='103') select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@one_part_source@ds=103
+POSTHOOK: query: insert overwrite table one_part_source partition(ds='103') select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@one_part_source@ds=103
+POSTHOOK: Lineage: one_part_source PARTITION(ds=103).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: one_part_source PARTITION(ds=103).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert into table one_part_source partition(ds='103') select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@one_part_source@ds=103
+POSTHOOK: query: insert into table one_part_source partition(ds='103') select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@one_part_source@ds=103
+POSTHOOK: Lineage: one_part_source PARTITION(ds=103).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: one_part_source PARTITION(ds=103).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select count(*) from source
+PREHOOK: type: QUERY
+PREHOOK: Input: default@source
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from source
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source
+#### A masked pattern was here ####
+1000
+PREHOOK: query: select count(*) from part_source
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_source
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from part_source
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_source
+#### A masked pattern was here ####
+2000
+PREHOOK: query: select count(*) from one_part_source
+PREHOOK: type: QUERY
+PREHOOK: Input: default@one_part_source
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from one_part_source
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@one_part_source
+#### A masked pattern was here ####
+1500
+PREHOOK: query: create external table ctas_table stored as orc as select * from source
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@source
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas_table
+POSTHOOK: query: create external table ctas_table stored as orc as select * from source
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@source
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas_table
+POSTHOOK: Lineage: ctas_table.key SIMPLE [(source)source.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: create external table ctas_part_table partitioned by (ds) stored as orc as select * from part_source
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@part_source
+PREHOOK: Input: default@part_source@ds=102
+PREHOOK: Input: default@part_source@ds=103
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas_part_table
+PREHOOK: Output: default@ctas_part_table
+POSTHOOK: query: create external table ctas_part_table partitioned by (ds) stored as orc as select * from part_source
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@part_source
+POSTHOOK: Input: default@part_source@ds=102
+POSTHOOK: Input: default@part_source@ds=103
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas_part_table
+POSTHOOK: Output: default@ctas_part_table
+POSTHOOK: Output: default@ctas_part_table@ds=102
+POSTHOOK: Output: default@ctas_part_table@ds=103
+POSTHOOK: Lineage: ctas_part_table.key SIMPLE [(part_source)part_source.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part_table.value SIMPLE [(part_source)part_source.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part_table PARTITION(ds=102).key SIMPLE [(part_source)part_source.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part_table PARTITION(ds=102).value SIMPLE [(part_source)part_source.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part_table PARTITION(ds=103).key SIMPLE [(part_source)part_source.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part_table PARTITION(ds=103).value SIMPLE [(part_source)part_source.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: create external table ctas_one_part_table partitioned by (ds) stored as orc as select * from one_part_source
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@one_part_source
+PREHOOK: Input: default@one_part_source@ds=102
+PREHOOK: Input: default@one_part_source@ds=103
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas_one_part_table
+PREHOOK: Output: default@ctas_one_part_table
+POSTHOOK: query: create external table ctas_one_part_table partitioned by (ds) stored as orc as select * from one_part_source
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@one_part_source
+POSTHOOK: Input: default@one_part_source@ds=102
+POSTHOOK: Input: default@one_part_source@ds=103
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas_one_part_table
+POSTHOOK: Output: default@ctas_one_part_table
+POSTHOOK: Output: default@ctas_one_part_table@ds=102
+POSTHOOK: Output: default@ctas_one_part_table@ds=103
+POSTHOOK: Lineage: ctas_one_part_table.key SIMPLE [(one_part_source)one_part_source.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_one_part_table.value SIMPLE [(one_part_source)one_part_source.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_one_part_table PARTITION(ds=102).key SIMPLE [(one_part_source)one_part_source.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_one_part_table PARTITION(ds=102).value SIMPLE [(one_part_source)one_part_source.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_one_part_table PARTITION(ds=103).key SIMPLE [(one_part_source)one_part_source.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_one_part_table PARTITION(ds=103).value SIMPLE [(one_part_source)one_part_source.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select count(*) from ctas_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_table
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ctas_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_table
+#### A masked pattern was here ####
+1000
+PREHOOK: query: select count(*) from ctas_part_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_part_table
+PREHOOK: Input: default@ctas_part_table@ds=102
+PREHOOK: Input: default@ctas_part_table@ds=103
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ctas_part_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_part_table
+POSTHOOK: Input: default@ctas_part_table@ds=102
+POSTHOOK: Input: default@ctas_part_table@ds=103
+#### A masked pattern was here ####
+2000
+PREHOOK: query: select count(*) from ctas_one_part_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_one_part_table
+PREHOOK: Input: default@ctas_one_part_table@ds=102
+PREHOOK: Input: default@ctas_one_part_table@ds=103
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ctas_one_part_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_one_part_table
+POSTHOOK: Input: default@ctas_one_part_table@ds=102
+POSTHOOK: Input: default@ctas_one_part_table@ds=103
+#### A masked pattern was here ####
+1500
+PREHOOK: query: select count(distinct(INPUT__FILE__NAME)) from ctas_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_table
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct(INPUT__FILE__NAME)) from ctas_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_table
+#### A masked pattern was here ####
+1
+PREHOOK: query: select count(distinct(INPUT__FILE__NAME)) from ctas_part_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_part_table
+PREHOOK: Input: default@ctas_part_table@ds=102
+PREHOOK: Input: default@ctas_part_table@ds=103
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct(INPUT__FILE__NAME)) from ctas_part_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_part_table
+POSTHOOK: Input: default@ctas_part_table@ds=102
+POSTHOOK: Input: default@ctas_part_table@ds=103
+#### A masked pattern was here ####
+2
+PREHOOK: query: select count(distinct(INPUT__FILE__NAME)) from ctas_one_part_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_one_part_table
+PREHOOK: Input: default@ctas_one_part_table@ds=102
+PREHOOK: Input: default@ctas_one_part_table@ds=103
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct(INPUT__FILE__NAME)) from ctas_one_part_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_one_part_table
+POSTHOOK: Input: default@ctas_one_part_table@ds=102
+POSTHOOK: Input: default@ctas_one_part_table@ds=103
+#### A masked pattern was here ####
+2
+PREHOOK: query: create external table ctas_table_non_orc as select * from source
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@source
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas_table_non_orc
+POSTHOOK: query: create external table ctas_table_non_orc as select * from source
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@source
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas_table_non_orc
+POSTHOOK: Lineage: ctas_table_non_orc.key SIMPLE [(source)source.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: create external table ctas_part_table_non_orc partitioned by (ds) as select * from part_source
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@part_source
+PREHOOK: Input: default@part_source@ds=102
+PREHOOK: Input: default@part_source@ds=103
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas_part_table_non_orc
+PREHOOK: Output: default@ctas_part_table_non_orc
+POSTHOOK: query: create external table ctas_part_table_non_orc partitioned by (ds) as select * from part_source
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@part_source
+POSTHOOK: Input: default@part_source@ds=102
+POSTHOOK: Input: default@part_source@ds=103
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas_part_table_non_orc
+POSTHOOK: Output: default@ctas_part_table_non_orc
+POSTHOOK: Output: default@ctas_part_table_non_orc@ds=102
+POSTHOOK: Output: default@ctas_part_table_non_orc@ds=103
+POSTHOOK: Lineage: ctas_part_table_non_orc.key SIMPLE [(part_source)part_source.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part_table_non_orc.value SIMPLE [(part_source)part_source.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part_table_non_orc PARTITION(ds=102).key SIMPLE [(part_source)part_source.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part_table_non_orc PARTITION(ds=102).value SIMPLE [(part_source)part_source.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part_table_non_orc PARTITION(ds=103).key SIMPLE [(part_source)part_source.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part_table_non_orc PARTITION(ds=103).value SIMPLE [(part_source)part_source.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: create external table ctas_one_part_table_non_orc partitioned by (ds) stored as orc as select * from one_part_source
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@one_part_source
+PREHOOK: Input: default@one_part_source@ds=102
+PREHOOK: Input: default@one_part_source@ds=103
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas_one_part_table_non_orc
+PREHOOK: Output: default@ctas_one_part_table_non_orc
+POSTHOOK: query: create external table ctas_one_part_table_non_orc partitioned by (ds) stored as orc as select * from one_part_source
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@one_part_source
+POSTHOOK: Input: default@one_part_source@ds=102
+POSTHOOK: Input: default@one_part_source@ds=103
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas_one_part_table_non_orc
+POSTHOOK: Output: default@ctas_one_part_table_non_orc
+POSTHOOK: Output: default@ctas_one_part_table_non_orc@ds=102
+POSTHOOK: Output: default@ctas_one_part_table_non_orc@ds=103
+POSTHOOK: Lineage: ctas_one_part_table_non_orc.key SIMPLE [(one_part_source)one_part_source.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_one_part_table_non_orc.value SIMPLE [(one_part_source)one_part_source.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_one_part_table_non_orc PARTITION(ds=102).key SIMPLE [(one_part_source)one_part_source.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_one_part_table_non_orc PARTITION(ds=102).value SIMPLE [(one_part_source)one_part_source.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_one_part_table_non_orc PARTITION(ds=103).key SIMPLE [(one_part_source)one_part_source.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_one_part_table_non_orc PARTITION(ds=103).value SIMPLE [(one_part_source)one_part_source.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select count(*) from ctas_table_non_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_table_non_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ctas_table_non_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_table_non_orc
+#### A masked pattern was here ####
+1000
+PREHOOK: query: select count(*) from ctas_part_table_non_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_part_table_non_orc
+PREHOOK: Input: default@ctas_part_table_non_orc@ds=102
+PREHOOK: Input: default@ctas_part_table_non_orc@ds=103
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ctas_part_table_non_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_part_table_non_orc
+POSTHOOK: Input: default@ctas_part_table_non_orc@ds=102
+POSTHOOK: Input: default@ctas_part_table_non_orc@ds=103
+#### A masked pattern was here ####
+2000
+PREHOOK: query: select count(*) from ctas_one_part_table_non_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_one_part_table_non_orc
+PREHOOK: Input: default@ctas_one_part_table_non_orc@ds=102
+PREHOOK: Input: default@ctas_one_part_table_non_orc@ds=103
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ctas_one_part_table_non_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_one_part_table_non_orc
+POSTHOOK: Input: default@ctas_one_part_table_non_orc@ds=102
+POSTHOOK: Input: default@ctas_one_part_table_non_orc@ds=103
+#### A masked pattern was here ####
+1500
+PREHOOK: query: select count(distinct(INPUT__FILE__NAME)) from ctas_table_non_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_table_non_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct(INPUT__FILE__NAME)) from ctas_table_non_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_table_non_orc
+#### A masked pattern was here ####
+1
+PREHOOK: query: select count(distinct(INPUT__FILE__NAME)) from ctas_part_table_non_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_part_table_non_orc
+PREHOOK: Input: default@ctas_part_table_non_orc@ds=102
+PREHOOK: Input: default@ctas_part_table_non_orc@ds=103
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct(INPUT__FILE__NAME)) from ctas_part_table_non_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_part_table_non_orc
+POSTHOOK: Input: default@ctas_part_table_non_orc@ds=102
+POSTHOOK: Input: default@ctas_part_table_non_orc@ds=103
+#### A masked pattern was here ####
+2
+PREHOOK: query: select count(distinct(INPUT__FILE__NAME)) from ctas_one_part_table_non_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_one_part_table_non_orc
+PREHOOK: Input: default@ctas_one_part_table_non_orc@ds=102
+PREHOOK: Input: default@ctas_one_part_table_non_orc@ds=103
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct(INPUT__FILE__NAME)) from ctas_one_part_table_non_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_one_part_table_non_orc
+POSTHOOK: Input: default@ctas_one_part_table_non_orc@ds=102
+POSTHOOK: Input: default@ctas_one_part_table_non_orc@ds=103
+#### A masked pattern was here ####
+2
+PREHOOK: query: create external table ctas_table_orc_union stored as orc as ((select * from part_source where ds = '102') union (select * from part_source where ds = '103'))
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@part_source
+PREHOOK: Input: default@part_source@ds=102
+PREHOOK: Input: default@part_source@ds=103
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas_table_orc_union
+POSTHOOK: query: create external table ctas_table_orc_union stored as orc as ((select * from part_source where ds = '102') union (select * from part_source where ds = '103'))
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@part_source
+POSTHOOK: Input: default@part_source@ds=102
+POSTHOOK: Input: default@part_source@ds=103
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas_table_orc_union
+POSTHOOK: Lineage: ctas_table_orc_union.ds EXPRESSION []
+POSTHOOK: Lineage: ctas_table_orc_union.key EXPRESSION [(part_source)part_source.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_table_orc_union.value EXPRESSION [(part_source)part_source.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: create external table ctas_table_part_orc_union partitioned by (ds) stored as orc as ((select * from part_source where ds = '102') union (select * from part_source where ds = '103'))
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@part_source
+PREHOOK: Input: default@part_source@ds=102
+PREHOOK: Input: default@part_source@ds=103
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas_table_part_orc_union
+PREHOOK: Output: default@ctas_table_part_orc_union
+POSTHOOK: query: create external table ctas_table_part_orc_union partitioned by (ds) stored as orc as ((select * from part_source where ds = '102') union (select * from part_source where ds = '103'))
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@part_source
+POSTHOOK: Input: default@part_source@ds=102
+POSTHOOK: Input: default@part_source@ds=103
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas_table_part_orc_union
+POSTHOOK: Output: default@ctas_table_part_orc_union
+POSTHOOK: Output: default@ctas_table_part_orc_union@ds=102
+POSTHOOK: Output: default@ctas_table_part_orc_union@ds=103
+POSTHOOK: Lineage: ctas_table_part_orc_union.key EXPRESSION [(part_source)part_source.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_table_part_orc_union.value EXPRESSION [(part_source)part_source.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_table_part_orc_union PARTITION(ds=102).key EXPRESSION [(part_source)part_source.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_table_part_orc_union PARTITION(ds=102).value EXPRESSION [(part_source)part_source.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_table_part_orc_union PARTITION(ds=103).key EXPRESSION [(part_source)part_source.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_table_part_orc_union PARTITION(ds=103).value EXPRESSION [(part_source)part_source.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select count(*) from ((select * from part_source where ds = '102') union (select * from part_source where ds = '103')) count_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_source
+PREHOOK: Input: default@part_source@ds=102
+PREHOOK: Input: default@part_source@ds=103
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ((select * from part_source where ds = '102') union (select * from part_source where ds = '103')) count_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_source
+POSTHOOK: Input: default@part_source@ds=102
+POSTHOOK: Input: default@part_source@ds=103
+#### A masked pattern was here ####
+618
+PREHOOK: query: select count(*) from ctas_table_orc_union
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_table_orc_union
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ctas_table_orc_union
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_table_orc_union
+#### A masked pattern was here ####
+618
+PREHOOK: query: select count(*) from ctas_table_part_orc_union
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_table_part_orc_union
+PREHOOK: Input: default@ctas_table_part_orc_union@ds=102
+PREHOOK: Input: default@ctas_table_part_orc_union@ds=103
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ctas_table_part_orc_union
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_table_part_orc_union
+POSTHOOK: Input: default@ctas_table_part_orc_union@ds=102
+POSTHOOK: Input: default@ctas_table_part_orc_union@ds=103
+#### A masked pattern was here ####
+618
+PREHOOK: query: select count(distinct(INPUT__FILE__NAME)) from ctas_table_orc_union
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_table_orc_union
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct(INPUT__FILE__NAME)) from ctas_table_orc_union
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_table_orc_union
+#### A masked pattern was here ####
+1
+PREHOOK: query: select count(distinct(INPUT__FILE__NAME)) from ctas_table_part_orc_union
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_table_part_orc_union
+PREHOOK: Input: default@ctas_table_part_orc_union@ds=102
+PREHOOK: Input: default@ctas_table_part_orc_union@ds=103
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct(INPUT__FILE__NAME)) from ctas_table_part_orc_union
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_table_part_orc_union
+POSTHOOK: Input: default@ctas_table_part_orc_union@ds=102
+POSTHOOK: Input: default@ctas_table_part_orc_union@ds=103
+#### A masked pattern was here ####
+2
+PREHOOK: query: create external table ctas_table_non_orc_union as ((select * from part_source where ds = '102') union (select * from part_source where ds = '103'))
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@part_source
+PREHOOK: Input: default@part_source@ds=102
+PREHOOK: Input: default@part_source@ds=103
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas_table_non_orc_union
+POSTHOOK: query: create external table ctas_table_non_orc_union as ((select * from part_source where ds = '102') union (select * from part_source where ds = '103'))
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@part_source
+POSTHOOK: Input: default@part_source@ds=102
+POSTHOOK: Input: default@part_source@ds=103
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas_table_non_orc_union
+POSTHOOK: Lineage: ctas_table_non_orc_union.ds EXPRESSION []
+POSTHOOK: Lineage: ctas_table_non_orc_union.key EXPRESSION [(part_source)part_source.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_table_non_orc_union.value EXPRESSION [(part_source)part_source.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: create external table ctas_table_part_non_orc_union partitioned by (ds) as ((select * from part_source where ds = '102') union (select * from part_source where ds = '103'))
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@part_source
+PREHOOK: Input: default@part_source@ds=102
+PREHOOK: Input: default@part_source@ds=103
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas_table_part_non_orc_union
+PREHOOK: Output: default@ctas_table_part_non_orc_union
+POSTHOOK: query: create external table ctas_table_part_non_orc_union partitioned by (ds) as ((select * from part_source where ds = '102') union (select * from part_source where ds = '103'))
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@part_source
+POSTHOOK: Input: default@part_source@ds=102
+POSTHOOK: Input: default@part_source@ds=103
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas_table_part_non_orc_union
+POSTHOOK: Output: default@ctas_table_part_non_orc_union
+POSTHOOK: Output: default@ctas_table_part_non_orc_union@ds=102
+POSTHOOK: Output: default@ctas_table_part_non_orc_union@ds=103
+POSTHOOK: Lineage: ctas_table_part_non_orc_union.key EXPRESSION [(part_source)part_source.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_table_part_non_orc_union.value EXPRESSION [(part_source)part_source.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_table_part_non_orc_union PARTITION(ds=102).key EXPRESSION [(part_source)part_source.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_table_part_non_orc_union PARTITION(ds=102).value EXPRESSION [(part_source)part_source.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_table_part_non_orc_union PARTITION(ds=103).key EXPRESSION [(part_source)part_source.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_table_part_non_orc_union PARTITION(ds=103).value EXPRESSION [(part_source)part_source.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select count(*) from ctas_table_non_orc_union
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_table_non_orc_union
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ctas_table_non_orc_union
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_table_non_orc_union
+#### A masked pattern was here ####
+618
+PREHOOK: query: select count(*) from ctas_table_part_non_orc_union
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_table_part_non_orc_union
+PREHOOK: Input: default@ctas_table_part_non_orc_union@ds=102
+PREHOOK: Input: default@ctas_table_part_non_orc_union@ds=103
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ctas_table_part_non_orc_union
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_table_part_non_orc_union
+POSTHOOK: Input: default@ctas_table_part_non_orc_union@ds=102
+POSTHOOK: Input: default@ctas_table_part_non_orc_union@ds=103
+#### A masked pattern was here ####
+618
+PREHOOK: query: select count(distinct(INPUT__FILE__NAME)) from ctas_table_non_orc_union
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_table_non_orc_union
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct(INPUT__FILE__NAME)) from ctas_table_non_orc_union
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_table_non_orc_union
+#### A masked pattern was here ####
+1
+PREHOOK: query: select count(distinct(INPUT__FILE__NAME)) from ctas_table_part_non_orc_union
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_table_part_non_orc_union
+PREHOOK: Input: default@ctas_table_part_non_orc_union@ds=102
+PREHOOK: Input: default@ctas_table_part_non_orc_union@ds=103
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct(INPUT__FILE__NAME)) from ctas_table_part_non_orc_union
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_table_part_non_orc_union
+POSTHOOK: Input: default@ctas_table_part_non_orc_union@ds=102
+POSTHOOK: Input: default@ctas_table_part_non_orc_union@ds=103
+#### A masked pattern was here ####
+2
+PREHOOK: query: create external table ctas_table_orc_union_all stored as orc as ((select * from part_source where ds = '102') union all (select * from part_source where ds = '103'))
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@part_source
+PREHOOK: Input: default@part_source@ds=102
+PREHOOK: Input: default@part_source@ds=103
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas_table_orc_union_all
+POSTHOOK: query: create external table ctas_table_orc_union_all stored as orc as ((select * from part_source where ds = '102') union all (select * from part_source where ds = '103'))
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@part_source
+POSTHOOK: Input: default@part_source@ds=102
+POSTHOOK: Input: default@part_source@ds=103
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas_table_orc_union_all
+POSTHOOK: Lineage: ctas_table_orc_union_all.ds EXPRESSION []
+POSTHOOK: Lineage: ctas_table_orc_union_all.key EXPRESSION [(part_source)part_source.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_table_orc_union_all.value EXPRESSION [(part_source)part_source.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: create external table ctas_table_non_orc_union_all as ((select * from part_source where ds = '102') union all (select * from part_source where ds = '103'))
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@part_source
+PREHOOK: Input: default@part_source@ds=102
+PREHOOK: Input: default@part_source@ds=103
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas_table_non_orc_union_all
+POSTHOOK: query: create external table ctas_table_non_orc_union_all as ((select * from part_source where ds = '102') union all (select * from part_source where ds = '103'))
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@part_source
+POSTHOOK: Input: default@part_source@ds=102
+POSTHOOK: Input: default@part_source@ds=103
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas_table_non_orc_union_all
+POSTHOOK: Lineage: ctas_table_non_orc_union_all.ds EXPRESSION []
+POSTHOOK: Lineage: ctas_table_non_orc_union_all.key EXPRESSION [(part_source)part_source.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_table_non_orc_union_all.value EXPRESSION [(part_source)part_source.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select count(*) from ctas_table_orc_union_all
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_table_orc_union_all
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ctas_table_orc_union_all
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_table_orc_union_all
+#### A masked pattern was here ####
+2000
+PREHOOK: query: select count(*) from ctas_table_non_orc_union_all
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_table_non_orc_union_all
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ctas_table_non_orc_union_all
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_table_non_orc_union_all
+#### A masked pattern was here ####
+2000
+PREHOOK: query: select count(distinct(INPUT__FILE__NAME)) from ctas_table_orc_union_all
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_table_orc_union_all
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct(INPUT__FILE__NAME)) from ctas_table_orc_union_all
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_table_orc_union_all
+#### A masked pattern was here ####
+1
+PREHOOK: query: select count(distinct(INPUT__FILE__NAME)) from ctas_table_non_orc_union_all
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_table_non_orc_union_all
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct(INPUT__FILE__NAME)) from ctas_table_non_orc_union_all
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_table_non_orc_union_all
+#### A masked pattern was here ####
+1

@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import java.util.ArrayList;
-
 /**
  * ParseException.
  *
@@ -27,10 +25,15 @@ import java.util.ArrayList;
 public class ParseException extends Exception {
 
   private static final long serialVersionUID = 1L;
-  ArrayList<ParseError> errors;
+  private final Iterable<ParseError> errors;
 
-  public ParseException(ArrayList<ParseError> errors) {
+  public ParseException(Iterable<ParseError> errors) {
     super();
+    this.errors = errors;
+  }
+
+  public ParseException(Iterable<ParseError> errors, Throwable cause) {
+    super(cause);
     this.errors = errors;
   }
 

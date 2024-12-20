@@ -87,6 +87,7 @@ public class MiniHS2 extends AbstractHiveService {
   private boolean usePortsFromConf = false;
   private PamAuthenticator pamAuthenticator;
   private boolean createTransactionalTables;
+  private int hmsPort = 0;
 
   public enum MiniClusterType {
     MR,
@@ -96,7 +97,7 @@ public class MiniHS2 extends AbstractHiveService {
   }
 
   public static class Builder {
-    private HiveConf hiveConf = new HiveConf();
+    private HiveConf hiveConf = null;
     private MiniClusterType miniClusterType = MiniClusterType.LOCALFS_ONLY;
     private boolean useMiniKdc = false;
     private String serverPrincipal;
@@ -192,6 +193,9 @@ public class MiniHS2 extends AbstractHiveService {
     public MiniHS2 build() throws Exception {
       if (miniClusterType == MiniClusterType.MR && useMiniKdc) {
         throw new IOException("Can't create secure miniMr ... yet");
+      }
+      if (hiveConf == null) {
+        this.hiveConf = new HiveConf();
       }
       Iterator<Map.Entry<String, String>> iter = hiveConf.iterator();
       while (iter.hasNext()) {
@@ -303,7 +307,7 @@ public class MiniHS2 extends AbstractHiveService {
       }
       // store the config in system properties
       mr.setupConfiguration(getHiveConf());
-      baseFsDir = new Path(new Path(fs.getUri()), "/base");
+      baseFsDir = new Path(new Path(fs.getUri()), HiveConf.ConfVars.SCRATCH_DIR.getDefaultValue());
     } else {
       // This is FS only mode, just initialize the dfs root directory.
       fs = FileSystem.getLocal(hiveConf);
@@ -347,12 +351,12 @@ public class MiniHS2 extends AbstractHiveService {
     Path scratchDir = new Path(baseFsDir, "scratch");
     // Create root scratchdir with write all, so that user impersonation has no issues.
     Utilities.createDirsWithPermission(hiveConf, scratchDir, WRITE_ALL_PERM, true);
-    System.setProperty(HiveConf.ConfVars.SCRATCHDIR.varname, scratchDir.toString());
-    hiveConf.setVar(ConfVars.SCRATCHDIR, scratchDir.toString());
+    System.setProperty(HiveConf.ConfVars.SCRATCH_DIR.varname, scratchDir.toString());
+    hiveConf.setVar(ConfVars.SCRATCH_DIR, scratchDir.toString());
 
     String localScratchDir = baseDir.getPath() + File.separator + "scratch";
-    System.setProperty(HiveConf.ConfVars.LOCALSCRATCHDIR.varname, localScratchDir);
-    hiveConf.setVar(ConfVars.LOCALSCRATCHDIR, localScratchDir);
+    System.setProperty(HiveConf.ConfVars.LOCAL_SCRATCH_DIR.varname, localScratchDir);
+    hiveConf.setVar(ConfVars.LOCAL_SCRATCH_DIR, localScratchDir);
   }
 
   public MiniHS2(HiveConf hiveConf) throws Exception {
@@ -372,7 +376,7 @@ public class MiniHS2 extends AbstractHiveService {
 
   public void start(Map<String, String> confOverlay) throws Exception {
     if (isMetastoreRemote) {
-      MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), getHiveConf(),
+      hmsPort = MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), getHiveConf(),
               false, false, false, false, createTransactionalTables);
       setWareHouseDir(MetastoreConf.getVar(getHiveConf(), MetastoreConf.ConfVars.WAREHOUSE));
     }
@@ -436,6 +440,11 @@ public class MiniHS2 extends AbstractHiveService {
   private boolean isSAMLAuth() {
     return "SAML"
         .equals(HiveConf.getVar(getHiveConf(), ConfVars.HIVE_SERVER2_SAML_CALLBACK_URL));
+  }
+
+  public void graceful_stop() {
+    verifyStarted();
+    hiveServer2.graceful_stop();
   }
 
   public void stop() {
@@ -722,5 +731,9 @@ public class MiniHS2 extends AbstractHiveService {
     } catch (FileNotFoundException e) {
       // Ignore. Safe if it does not exist.
     }
+  }
+
+  public int getHmsPort() {
+    return hmsPort;
   }
 }

@@ -68,13 +68,13 @@ class ThriftHiveMetastore_get_master_keys_result
                 case 0:
                     if ($ftype == TType::LST) {
                         $this->success = array();
-                        $_size1761 = 0;
-                        $_etype1764 = 0;
-                        $xfer += $input->readListBegin($_etype1764, $_size1761);
-                        for ($_i1765 = 0; $_i1765 < $_size1761; ++$_i1765) {
-                            $elem1766 = null;
-                            $xfer += $input->readString($elem1766);
-                            $this->success []= $elem1766;
+                        $_size1890 = 0;
+                        $_etype1893 = 0;
+                        $xfer += $input->readListBegin($_etype1893, $_size1890);
+                        for ($_i1894 = 0; $_i1894 < $_size1890; ++$_i1894) {
+                            $elem1895 = null;
+                            $xfer += $input->readString($elem1895);
+                            $this->success []= $elem1895;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -101,8 +101,8 @@ class ThriftHiveMetastore_get_master_keys_result
             }
             $xfer += $output->writeFieldBegin('success', TType::LST, 0);
             $output->writeListBegin(TType::STRING, count($this->success));
-            foreach ($this->success as $iter1767) {
-                $xfer += $output->writeString($iter1767);
+            foreach ($this->success as $iter1896) {
+                $xfer += $output->writeString($iter1896);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

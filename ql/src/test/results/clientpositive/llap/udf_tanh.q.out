@@ -1,0 +1,37 @@
+PREHOOK: query: DESCRIBE FUNCTION tanh
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION tanh
+POSTHOOK: type: DESCFUNCTION
+tanh(x) - returns the hyperbolic tangent of x (x is in radians)
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED tanh
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED tanh
+POSTHOOK: type: DESCFUNCTION
+tanh(x) - returns the hyperbolic tangent of x (x is in radians)
+Example:
+   > SELECT tanh(0) FROM src LIMIT 1;
+  1
+Function class:org.apache.hadoop.hive.ql.udf.UDFTanh
+Function type:BUILTIN
+PREHOOK: query: SELECT tanh(null)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tanh(null)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT tanh(1), tanh(6), tanh(-1.0)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tanh(1), tanh(6), tanh(-1.0)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0.7615941559557649	0.9999877116507956	-0.7615941559557649

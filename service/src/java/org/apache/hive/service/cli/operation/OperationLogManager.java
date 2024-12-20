@@ -22,19 +22,16 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.annotations.VisibleForTesting;
+import java.util.stream.Collectors;
 import org.apache.hadoop.hive.common.ServerUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,11 +39,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryInfo;
-import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.hive.service.cli.OperationHandle;
-import org.apache.hive.service.cli.session.HiveSession;
 import org.apache.hive.service.cli.session.HiveSessionImpl;
 import org.apache.hive.service.cli.session.SessionManager;
 
@@ -81,16 +74,14 @@ public class OperationLogManager {
   private static long maxBytesToFetch;
 
   private final HiveConf hiveConf;
-  private final SessionManager sessionManager;
   private final OperationManager operationManager;
   private OperationLogDirCleaner cleaner;
   private String historicParentLogDir;
   private String serverInstance;
 
-  public OperationLogManager(SessionManager sessionManager, HiveConf hiveConf) {
-    this.operationManager = sessionManager.getOperationManager();
+  public OperationLogManager(OperationManager operationManager, HiveConf hiveConf) {
+    this.operationManager = operationManager;
     this.hiveConf = hiveConf;
-    this.sessionManager = sessionManager;
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_SERVER2_HISTORIC_OPERATION_LOG_ENABLED)
         && hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED)
         && hiveConf.isWebUiQueryInfoCacheEnabled()) {
@@ -143,167 +134,38 @@ public class OperationLogManager {
     historicLogRootDir = logRootDir;
   }
 
-  public static OperationLog createOperationLog(Operation operation, QueryState queryState) {
-    HiveSession session = operation.getParentSession();
-    File parentFile = session.getOperationLogSessionDir();
-    boolean isHistoricLogEnabled = historicLogRootDir != null;
-    if (isHistoricLogEnabled && operation instanceof SQLOperation) {
-      String sessionId = session.getSessionHandle().getHandleIdentifier().toString();
-      parentFile = new File(historicLogRootDir + "/" + sessionId);
-      if (!parentFile.exists()) {
-        if (!parentFile.mkdirs()) {
-          LOG.warn("Unable to create the historic operation log session dir: " + parentFile +
-              ", fall back to the original operation log session dir.");
-          parentFile = session.getOperationLogSessionDir();
-          isHistoricLogEnabled = false;
-        }
-      } else if (!parentFile.isDirectory()) {
-        LOG.warn("The historic operation log session dir: " + parentFile + " is exist, but it's not a directory, " +
-            "fall back to the original operation log session dir.");
-        parentFile = session.getOperationLogSessionDir();
-        isHistoricLogEnabled = false;
-      }
-    }
-
-    OperationHandle opHandle = operation.getHandle();
-    File operationLogFile = new File(parentFile, queryState.getQueryId());
-    OperationLog operationLog;
-    HiveConf.setBoolVar(queryState.getConf(),
-        HiveConf.ConfVars.HIVE_SERVER2_HISTORIC_OPERATION_LOG_ENABLED, isHistoricLogEnabled);
-    if (isHistoricLogEnabled) {
-      // dynamically setting the log location to route the operation log
-      HiveConf.setVar(queryState.getConf(),
-          HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LOG_LOCATION, historicLogRootDir);
-      if (HiveConf.getBoolVar(queryState.getConf(), HiveConf.ConfVars.HIVE_IN_TEST)) {
-        HiveConf.setBoolVar(queryState.getConf(), HiveConf.ConfVars.HIVE_TESTING_REMOVE_LOGS, false);
-      }
-      LOG.info("The operation log location changes from {} to {}.", new File(session.getOperationLogSessionDir(),
-          queryState.getQueryId()), operationLogFile);
-    }
-    operationLog = new OperationLog(opHandle.toString(), operationLogFile, queryState.getConf());
-    return operationLog;
-  }
-
-  private Set<String> getLiveSessions() {
-    Collection<HiveSession> hiveSessions = sessionManager.getSessions();
-    Set<String> liveSessions = new HashSet<>();
-    for (HiveSession session : hiveSessions) {
-      liveSessions.add(session.getSessionHandle().getHandleIdentifier().toString());
-    }
-    return liveSessions;
-  }
-
-  private Set<String> getHistoricSessions() {
-    assert historicLogRootDir != null;
-    File logDir = new File(historicLogRootDir);
-    Set<String> results = new HashSet<>();
-    if (logDir.exists() && logDir.isDirectory()) {
-      File[] subFiles = logDir.listFiles();
-      if (subFiles != null) {
-        for (File f : subFiles) {
-          results.add(f.getName());
-        }
-      }
-    }
-    return results;
-  }
-
-
-  @VisibleForTesting
-  public List<File> getExpiredOperationLogFiles() {
-    if (historicLogRootDir == null) {
-      return Collections.emptyList();
-    }
-
-    List<File> results = new ArrayList<>();
-    Collection<File> files = FileUtils.listFiles(new File(historicLogRootDir)
-        , null, true);
-    Set<String> queryIds = operationManager.getAllCachedQueryIds();
-    for (File logFile : files) {
-      if (queryIds.contains(logFile.getName())) {
-        continue;
-      }
-      // if the query info is not cached,
-      // add the corresponding historic operation log file into the results.
-      results.add(logFile);
-    }
-    return results;
-  }
-
-  @VisibleForTesting
-  public List<File> getExpiredSessionLogDirs() {
-    if (historicLogRootDir == null) {
-      return Collections.emptyList();
-    }
-    List<File> results = new ArrayList<>();
-    // go through the original log root dir and historic log root dir for dead sessions
-    Set<String> liveSessions = getLiveSessions();
-    Set<String> historicSessions = getHistoricSessions();
-    historicSessions.removeAll(liveSessions);
-    Set<String> queryIds = operationManager.getAllCachedQueryIds();
-    // add the historic log session dir into the results if the session is dead and
-    // no historic operation log under the dir
-    for (String sessionId : historicSessions) {
-      File sessionLogDir = new File(historicLogRootDir, sessionId);
-      if (sessionLogDir.exists()) {
-        File[] logFiles = sessionLogDir.listFiles();
-        if (logFiles == null || logFiles.length == 0) {
-          results.add(sessionLogDir);
-        } else {
-          boolean found = false;
-          for (File logFile : logFiles) {
-            if (queryIds.contains(logFile.getName())) {
-              found = true;
-              break;
-            }
-          }
-          if (!found) {
-            results.add(sessionLogDir);
-          }
-        }
-      }
-    }
-    return results;
-  }
-
-  private List<String> getFileNames(List<File> fileList) {
-    List<String> results = new ArrayList<>();
-    for (File file : fileList) {
-      results.add(file.getName());
-    }
-    return results;
-  }
-
-  @VisibleForTesting
-  public void removeExpiredOperationLogAndDir() {
+  // Delete historical query logs that are not in use by Web UI.
+  public void deleteHistoricQueryLogs() {
     if (historicLogRootDir == null) {
       return;
     }
-    // remove the expired operation logs firstly
-    List<File> operationLogFiles = getExpiredOperationLogFiles();
-    if (operationLogFiles.isEmpty()) {
-      LOG.info("No expired operation logs found under the dir: {}", historicLogRootDir);
-    } else {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Trying to delete the expired operation logs: {} ", getFileNames(operationLogFiles));
-      }
-      for (File logFile : operationLogFiles) {
-        FileUtils.deleteQuietly(logFile);
-      }
-      LOG.info("Deleted {} expired operation logs", operationLogFiles.size());
+    File logDir = new File(historicLogRootDir);
+    if (!logDir.exists() || !logDir.isDirectory()) {
+      return;
     }
-    // remove the historic operation log session dirs
-    List<File> sessionLogDirs = getExpiredSessionLogDirs();
-    if (sessionLogDirs.isEmpty()) {
-      LOG.info("No expired operation log session dir under the dir: {}", historicLogRootDir);
-    } else {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Trying to delete the expired operation log session dirs: {} ", getFileNames(sessionLogDirs));
+    File[] subDirs = logDir.listFiles();
+    if (subDirs == null || subDirs.length==0) {
+      return;
+    }
+
+    Set<String> sessionIds = operationManager.getHistoricalQueryInfos().stream()
+        .map(QueryInfo::getSessionId).collect(Collectors.toSet());
+    Set<String> queryIds = operationManager.getHistoricalQueryInfos().stream()
+        .map(queryInfo -> queryInfo.getQueryDisplay().getQueryId()).collect(Collectors.toSet());
+
+    for (File dir : subDirs) {
+      if (dir.isDirectory()) {
+        if (sessionIds.contains(dir.getName())) {
+          for (File f : dir.listFiles()) {
+            if (!queryIds.contains(f.getName()) ) {
+              LOG.debug("delete file not in hist: " + f.getName());
+              FileUtils.deleteQuietly(f);
+            }
+          }
+        } else {
+          FileUtils.deleteQuietly(dir);
+        }
       }
-      for (File logDir : sessionLogDirs) {
-        FileUtils.deleteQuietly(logDir);
-      }
-      LOG.info("Deleted {} expired operation log session dirs", sessionLogDirs.size());
     }
   }
 
@@ -346,7 +208,7 @@ public class OperationLogManager {
       sleepFor(interval);
       while (!shutdown) {
         try {
-          removeExpiredOperationLogAndDir();
+          deleteHistoricQueryLogs();
           sleepFor(interval);
         } catch (Exception e) {
           LOG.warn("OperationLogDir cleaner caught exception: " + e.getMessage(), e);
@@ -389,13 +251,41 @@ public class OperationLogManager {
     return logLocation.startsWith(historicLogRootDir);
   }
 
+  public static void closeOperation(Operation operation) {
+    String queryId = operation.getQueryId();
+    File originOpLogFile = new File(operation.parentSession.getOperationLogSessionDir(), queryId);
+    if (!originOpLogFile.exists()) {
+      return;
+    }
+    HiveConf hiveConf = operation.queryState.getConf();
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_HISTORIC_OPERATION_LOG_ENABLED)
+        && operation instanceof SQLOperation) {
+      String sessionHandle = operation.getParentSession().getSessionHandle().getHandleIdentifier().toString();
+      String histOpLogFileLocation = new StringBuilder(historicLogRootDir)
+          .append("/").append(sessionHandle)
+          .append("/").append(queryId).toString();
+      try {
+        FileUtils.moveFile(originOpLogFile, new File(histOpLogFileLocation));
+        QueryInfo queryInfo = ((SQLOperation) operation).getQueryInfo();
+        queryInfo.setOperationLogLocation(histOpLogFileLocation);
+        LOG.info("The operation log location changes from {} to {}.", originOpLogFile, histOpLogFileLocation);
+      } catch (IOException e) {
+        LOG.error("Failed to move operation log location from {} to {}: {}.",
+            originOpLogFile, histOpLogFileLocation, e.getMessage());
+      }
+    } else {
+      FileUtils.deleteQuietly(originOpLogFile);
+    }
+    LOG.debug(queryId + ": closeOperation");
+  }
+
   public static String getOperationLog(QueryInfo queryInfo) {
     String logLocation = queryInfo.getOperationLogLocation();
     StringBuilder builder = new StringBuilder();
-    if (!isHistoricOperationLogEnabled(logLocation)) {
-      if (logLocation == null) {
-        return "Operation log is disabled, please set hive.server2.logging.operation.enabled = true to enable it";
-      }
+    if (logLocation == null) {
+      return "Operation log is disabled, please set hive.server2.logging.operation.enabled = true to enable it";
+    }
+    if (historicLogRootDir == null) {
       builder.append("Operation Log - will be deleted after query completes, ")
           .append("set hive.server2.historic.operation.log.enabled = true ")
           .append("and hive.server2.webui.max.historic.queries > 0 to disable it")

@@ -1,19 +1,27 @@
 PREHOOK: query: DROP TABLE IF EXISTS repairtable_n7
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n7
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS repairtable_n8
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n8
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS repairtable_n9
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n9
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS repairtable_n10
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n10
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE repairtable_n7(col STRING) PARTITIONED BY (p1 STRING, p2 STRING)
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -54,7 +62,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -123,7 +131,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -193,7 +201,7 @@ Table Parameters:
 	numRows             	0                   
 	partition.retention.period	10s                 
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -293,7 +301,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -358,7 +366,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -408,7 +416,7 @@ Table Parameters:
 	numPartitions       	2                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -457,7 +465,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -507,7 +515,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -523,32 +531,40 @@ Storage Desc Params:
 PREHOOK: query: DROP TABLE default.repairtable_n7
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@repairtable_n7
+PREHOOK: Output: database:default
 PREHOOK: Output: default@repairtable_n7
 POSTHOOK: query: DROP TABLE default.repairtable_n7
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@repairtable_n7
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@repairtable_n7
 PREHOOK: query: DROP TABLE default.repairtable_n8
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@repairtable_n8
+PREHOOK: Output: database:default
 PREHOOK: Output: default@repairtable_n8
 POSTHOOK: query: DROP TABLE default.repairtable_n8
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@repairtable_n8
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@repairtable_n8
 PREHOOK: query: DROP TABLE default.repairtable_n9
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@repairtable_n9
+PREHOOK: Output: database:default
 PREHOOK: Output: default@repairtable_n9
 POSTHOOK: query: DROP TABLE default.repairtable_n9
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@repairtable_n9
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@repairtable_n9
 PREHOOK: query: DROP TABLE default.repairtable_n10
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@repairtable_n10
+PREHOOK: Output: database:default
 PREHOOK: Output: default@repairtable_n10
 POSTHOOK: query: DROP TABLE default.repairtable_n10
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@repairtable_n10
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@repairtable_n10

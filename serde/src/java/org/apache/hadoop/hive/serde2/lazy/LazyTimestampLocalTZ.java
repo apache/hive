@@ -20,11 +20,10 @@ package org.apache.hadoop.hive.serde2.lazy;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.DateTimeException;
 import java.time.ZoneId;
-import java.time.format.DateTimeParseException;
 
 import org.apache.hadoop.hive.common.type.TimestampTZ;
-import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyTimestampLocalTZObjectInspector;
@@ -70,10 +69,10 @@ public class LazyTimestampLocalTZ extends
         logExceptionMessage(bytes, start, length,
             serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME.toUpperCase());
       } else {
-        t = TimestampTZUtil.parse(s, timeZone);
+        t = getInspector().getParser().parseTimestamp(s, timeZone);
         isNull = false;
       }
-    } catch (DateTimeParseException e) {
+    } catch (DateTimeException e) {
       isNull = true;
       logExceptionMessage(bytes, start, length, serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME.toUpperCase());
     }

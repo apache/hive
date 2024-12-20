@@ -73,11 +73,12 @@ import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
+import org.apache.hadoop.hive.metastore.txn.service.AcidHouseKeeperService;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
@@ -110,12 +111,14 @@ import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Ignore("HIVE-24219")
 public class TestStreaming {
   private static final Logger LOG = LoggerFactory.getLogger(TestStreaming.class);
 
@@ -1317,10 +1320,14 @@ public class TestStreaming {
     connection.close();
   }
 
+  /**
+   * Starting with HDFS 3.3.1, the underlying system NOW SUPPORTS hflush so there should
+   * be no exception.
+   */
   @Test
   public void testTransactionBatchSizeValidation() throws Exception {
     final String schemes = conf.get(HiveConf.ConfVars.HIVE_BLOBSTORE_SUPPORTED_SCHEMES.varname);
-    // the output stream of this FS doesn't support hflush, so the below test will fail
+    // the output stream of this FS doesn't used to support hflush earlier, now it shouldn't throw any exception
     conf.setVar(HiveConf.ConfVars.HIVE_BLOBSTORE_SUPPORTED_SCHEMES, "raw");
 
     StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
@@ -1337,10 +1344,6 @@ public class TestStreaming {
           .withHiveConf(conf)
           .connect();
 
-      Assert.fail();
-    } catch (ConnectionError e) {
-      Assert.assertTrue("Expected connection error due to batch sizes",
-          e.getMessage().contains("only supports transaction batch"));
     } finally {
       conf.setVar(HiveConf.ConfVars.HIVE_BLOBSTORE_SUPPORTED_SCHEMES, schemes);
     }
@@ -1363,13 +1366,15 @@ public class TestStreaming {
       .withRecordWriter(writer)
       .withHiveConf(conf)
       .connect();
+    
+    HiveConf houseKeeperConf = new HiveConf(conf);
+    //ensure txn timesout
+    houseKeeperConf.setTimeVar(HiveConf.ConfVars.HIVE_TXN_TIMEOUT, 100, TimeUnit.MILLISECONDS);
+    AcidHouseKeeperService houseKeeperService = new AcidHouseKeeperService();
+    houseKeeperService.setConf(houseKeeperConf);
 
     connection.beginTransaction();
-    conf.setTimeVar(HiveConf.ConfVars.HIVE_TIMEDOUT_TXN_REAPER_START, 0, TimeUnit.SECONDS);
-    //ensure txn timesout
-    conf.setTimeVar(HiveConf.ConfVars.HIVE_TXN_TIMEOUT, 2, TimeUnit.MILLISECONDS);
-    AcidHouseKeeperService houseKeeperService = new AcidHouseKeeperService();
-    houseKeeperService.setConf(conf);
+    Thread.sleep(150);
     houseKeeperService.run();
     try {
       //should fail because the TransactionBatch timed out
@@ -1388,6 +1393,7 @@ public class TestStreaming {
     connection.beginTransaction();
     connection.commitTransaction();
     connection.beginTransaction();
+    Thread.sleep(150);
     houseKeeperService.run();
     try {
       //should fail because the TransactionBatch timed out

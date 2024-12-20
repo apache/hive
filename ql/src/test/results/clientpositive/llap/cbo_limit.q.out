@@ -369,12 +369,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveSortLimit(fetch=[0])
-  HiveProject(_o__c0=[$1])
-    HiveAggregate(group=[{0}], agg#0=[count()])
-      HiveProject($f0=[true])
-        HiveFilter(condition=[>($3, 1E0)])
-          HiveTableScan(table=[[default, cbo_t1]], table:alias=[cbo_t1])
+HiveValues(tuples=[[]])
 
 PREHOOK: query: select count(*) from cbo_t1 where c_float > 1.0 group by true limit 0
 PREHOOK: type: QUERY

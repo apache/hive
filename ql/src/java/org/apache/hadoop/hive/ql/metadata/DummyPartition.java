@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,13 +46,13 @@ public class DummyPartition extends Partition {
   public DummyPartition() {
   }
   
-  public DummyPartition(Table tbl, String name) throws HiveException {
+  public DummyPartition(Table tbl, String name) {
     setTable(tbl);
     this.name = name;
   }  
 
   public DummyPartition(Table tbl, String name,
-      Map<String, String> partSpec) throws HiveException {
+      Map<String, String> partSpec) {
     setTable(tbl);
     this.name = name;
     this.partSpec = new LinkedHashMap<String, String>(partSpec);
@@ -83,4 +84,17 @@ public class DummyPartition extends Partition {
     return values;
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (obj instanceof DummyPartition) {
+      DummyPartition o = (DummyPartition) obj;
+      return Objects.equals(name, o.name) && Objects.equals(partSpec, o.partSpec);
+    }
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(name) + Objects.hashCode(partSpec);
+  }
 }

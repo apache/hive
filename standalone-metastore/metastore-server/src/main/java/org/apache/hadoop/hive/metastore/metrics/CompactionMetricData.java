@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableList;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,11 @@ final class CompactionMetricData {
 
   private Map<String, Long> stateCount;
 
+  private Map<String, Integer> initiatedCountPerPool;
+  private Map<String, Integer> workingCountPerPool;
+  private Map<String, Integer> longestEnqueueDurationPerPool;
+  private Map<String, Integer> longestWorkingDurationPerPool;
+
   private Double failedCompactionPercentage;
 
   private long initiatorsCount;
@@ -65,10 +71,16 @@ final class CompactionMetricData {
 
   private void init() {
     final Map<String, ShowCompactResponseElement> lastElements = new HashMap<>();
+    initiatedCountPerPool = new HashMap<>();
+    workingCountPerPool = new HashMap<>();
+    longestEnqueueDurationPerPool = new HashMap<>();
+    longestWorkingDurationPerPool = new HashMap<>();
 
     oldestEnqueueTime = OLDEST_TIME_NO_VALUE;
     oldestWorkingTime = OLDEST_TIME_NO_VALUE;
     oldestCleaningTime = OLDEST_TIME_NO_VALUE;
+
+    long currentTime = System.currentTimeMillis();
     for (ShowCompactResponseElement element : compacts) {
       final String key = element.getDbname() + "/" + element.getTablename() +
           (element.getPartitionname() != null ? "/" + element.getPartitionname() : "");
@@ -76,15 +88,28 @@ final class CompactionMetricData {
       // If new key, add the element, if there is an existing one, change to the element if the element.id is greater than old.id
       lastElements.compute(key, (k, old) -> (old == null) ? element : (element.getId() > old.getId() ? element : old));
 
-      // find the oldest elements with initiated and working states
       String state = element.getState();
-      if (TxnStore.INITIATED_RESPONSE.equals(state) && (oldestEnqueueTime > element.getEnqueueTime())) {
-        oldestEnqueueTime = element.getEnqueueTime();
+      if (TxnStore.INITIATED_RESPONSE.equals(state)) {
+        final int enqueueSeconds = (int) ((currentTime - element.getEnqueueTime()) / 1000);
+        longestEnqueueDurationPerPool.compute(element.getPoolName(), (k, old) -> (old == null) ? enqueueSeconds : Math.max(enqueueSeconds, old));
+
+        initiatedCountPerPool.compute(element.getPoolName(), (k, old) -> (old == null) ? 1 : old + 1);
+        // find the oldest element
+        if (oldestEnqueueTime > element.getEnqueueTime()) {
+          oldestEnqueueTime = element.getEnqueueTime();
+        }
       }
 
       if (element.isSetStart()) {
-        if (TxnStore.WORKING_RESPONSE.equals(state) && (oldestWorkingTime > element.getStart())) {
-          oldestWorkingTime = element.getStart();
+        if (TxnStore.WORKING_RESPONSE.equals(state)) {
+          final int startSeconds = (int) ((currentTime - element.getStart()) / 1000);
+          longestWorkingDurationPerPool.compute(element.getPoolName(), (k, old) -> (old == null) ? startSeconds : Math.max(startSeconds, old));
+
+          workingCountPerPool.compute(element.getPoolName(), (k, old) -> (old == null) ? 1 : old + 1);
+          // find the oldest element
+          if (oldestWorkingTime > element.getStart()) {
+            oldestWorkingTime = element.getStart();
+          }
         }
       }
 
@@ -145,7 +170,23 @@ final class CompactionMetricData {
   }
 
   Map<String, Long> getStateCount() {
-    return new HashMap<>(stateCount);
+    return Collections.unmodifiableMap(stateCount);
+  }
+
+  public Map<String, Integer> getInitiatedCountPerPool() {
+    return Collections.unmodifiableMap(initiatedCountPerPool);
+  }
+
+  public Map<String, Integer> getWorkingCountPerPool() {
+    return Collections.unmodifiableMap(workingCountPerPool);
+  }
+
+  public Map<String, Integer> getLongestEnqueueDurationPerPool() {
+    return Collections.unmodifiableMap(longestEnqueueDurationPerPool);
+  }
+
+  public Map<String, Integer> getLongestWorkingDurationPerPool() {
+    return Collections.unmodifiableMap(longestWorkingDurationPerPool);
   }
 
   Long getOldestEnqueueTime() {

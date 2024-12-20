@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.metastore.ldap.FilterFactory;
 import org.apache.hadoop.hive.metastore.ldap.GroupFilterFactory;
 import org.apache.hadoop.hive.metastore.ldap.LdapUtils;
 import org.apache.hadoop.hive.metastore.ldap.UserFilterFactory;
+import org.apache.hadoop.hive.metastore.ldap.UserGroupSearchFilterFactory;
 import org.apache.hadoop.hive.metastore.ldap.UserSearchFilterFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +52,7 @@ public class MetaStoreLdapAuthenticationProviderImpl implements MetaStorePasswdA
           LoggerFactory.getLogger(MetaStoreLdapAuthenticationProviderImpl.class);
 
   private static final List<FilterFactory> FILTER_FACTORIES = ImmutableList.<FilterFactory>of(
+      new UserGroupSearchFilterFactory(),
       new CustomQueryFilterFactory(),
       new ChainFilterFactory(new UserSearchFilterFactory(), new UserFilterFactory(),
           new GroupFilterFactory())

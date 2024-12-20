@@ -124,6 +124,10 @@ public class SerializationUtilities {
     private Hook globalHook;
     // this should be set on-the-fly after borrowing this instance and needs to be reset on release
     private Configuration configuration;
+    // default false, should be reset on release
+    private boolean isExprNodeFirst = false;
+    // total classes we have met during (de)serialization, should be reset on release
+    private long classCounter = 0;
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static final class SerializerWithHook extends com.esotericsoftware.kryo.Serializer {
@@ -228,6 +232,32 @@ public class SerializationUtilities {
     public Configuration getConf() {
       return configuration;
     }
+
+    @Override
+    public com.esotericsoftware.kryo.Registration getRegistration(Class type) {
+      // If PartitionExpressionForMetastore performs deserialization at remote HMS,
+      // the first class encountered during deserialization must be an ExprNodeDesc,
+      // throw exception to avoid potential security problem if it is not.
+      if (isExprNodeFirst && classCounter == 0) {
+        if (!ExprNodeDesc.class.isAssignableFrom(type)) {
+          throw new UnsupportedOperationException(
+              "The object to be deserialized must be an ExprNodeDesc, but encountered: " + type);
+        }
+      }
+      classCounter++;
+      return super.getRegistration(type);
+    }
+
+    public void setExprNodeFirst(boolean isPartFilter) {
+      this.isExprNodeFirst = isPartFilter;
+    }
+
+    // reset the fields on release
+    public void restore() {
+      setConf(null);
+      isExprNodeFirst = false;
+      classCounter = 0;
+    }
   }
 
   private static final Object FAKE_REFERENCE = new Object();
@@ -294,7 +324,7 @@ public class SerializationUtilities {
    */
   public static void releaseKryo(Kryo kryo) {
     if (kryo != null){
-      ((KryoWithHooks) kryo).setConf(null);
+      ((KryoWithHooks) kryo).restore();
     }
     kryoPool.free(kryo);
   }
@@ -830,10 +860,13 @@ public class SerializationUtilities {
   /**
    * Deserializes expression from Kryo.
    * @param bytes Bytes containing the expression.
+   * @param isPartFilter ture if it is a partition filter
    * @return Expression; null if deserialization succeeded, but the result type is incorrect.
    */
-  public static <T> T deserializeObjectWithTypeInformation(byte[] bytes) {
-    Kryo kryo = borrowKryo();
+  public static <T> T deserializeObjectWithTypeInformation(byte[] bytes,
+      boolean isPartFilter) {
+    KryoWithHooks kryo = (KryoWithHooks) borrowKryo();
+    kryo.setExprNodeFirst(isPartFilter);
     try (Input inp = new Input(new ByteArrayInputStream(bytes))) {
       return (T) kryo.readClassAndObject(inp);
     } finally {
@@ -864,7 +897,7 @@ public class SerializationUtilities {
     return baos.toByteArray();
   }
 
-  private static <T extends Serializable> T deserializeObjectFromKryo(byte[] bytes, Class<T> clazz) {
+  public static <T extends Serializable> T deserializeObjectFromKryo(byte[] bytes, Class<T> clazz) {
     Input inp = new Input(new ByteArrayInputStream(bytes));
     Kryo kryo = borrowKryo();
     T func = null;

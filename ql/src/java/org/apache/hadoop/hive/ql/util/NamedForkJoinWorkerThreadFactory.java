@@ -25,7 +25,7 @@ import java.util.concurrent.ForkJoinWorkerThread;
  */
 public class NamedForkJoinWorkerThreadFactory implements ForkJoinPool.ForkJoinWorkerThreadFactory {
 
-  NamedForkJoinWorkerThreadFactory(String namePrefix) {
+  public NamedForkJoinWorkerThreadFactory(String namePrefix) {
     this.namePrefix = namePrefix;
   }
 

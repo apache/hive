@@ -24,14 +24,18 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
+
+import static org.apache.hadoop.hive.ql.io.AcidUtils.COMPACTOR_TABLE_PROPERTY;
 
 /**
  * FileSinkDesc.
@@ -104,7 +108,6 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   private transient Table table;
   private Path destPath;
   private boolean isHiveServerQuery;
-  private Long mmWriteId;
   private boolean isMerge;
   private boolean isMmCtas;
 
@@ -139,7 +142,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
    */
   public FileSinkDesc(final Path dirName, final TableDesc tableInfo, final boolean compressed, final int destTableId,
       final boolean multiFileSpray, final boolean canBeMerged, final int numFiles, final int totalFiles,
-      final List<ExprNodeDesc> partitionCols, final DynamicPartitionCtx dpCtx, Path destPath, Long mmWriteId,
+      final List<ExprNodeDesc> partitionCols, final DynamicPartitionCtx dpCtx, Path destPath,
       boolean isMmCtas, boolean isInsertOverwrite, boolean isQuery, boolean isCTASorCM, boolean isDirectInsert,
       AcidUtils.Operation acidOperation, boolean deleteOfSplitUpdate) {
     this.dirName = dirName;
@@ -154,7 +157,6 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
     this.dpCtx = dpCtx;
     this.dpSortState = DPSortState.NONE;
     this.destPath = destPath;
-    this.mmWriteId = mmWriteId;
     this.isMmCtas = isMmCtas;
     this.isInsertOverwrite = isInsertOverwrite;
     this.isQuery = isQuery;
@@ -182,7 +184,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   @Override
   public Object clone() throws CloneNotSupportedException {
     FileSinkDesc ret = new FileSinkDesc(dirName, tableInfo, compressed, destTableId, multiFileSpray, canBeMerged,
-        numFiles, totalFiles, partitionCols, dpCtx, destPath, mmWriteId, isMmCtas, isInsertOverwrite, isQuery,
+        numFiles, totalFiles, partitionCols, dpCtx, destPath, isMmCtas, isInsertOverwrite, isQuery,
         isCTASorCM, isDirectInsert, acidOperation, deleteOfSplitUpdate);
     ret.setCompressCodec(compressCodec);
     ret.setCompressType(compressType);
@@ -390,6 +392,17 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
         : AcidUtils.isCompactionTable(getTableInfo().getProperties());
   }
 
+  /**
+   * @return true if the compaction type is 'REBALANCE', false otherwise.
+   */
+  public boolean isRebalanceRequested() {
+    String compactionType = getTable() != null
+        ? table.getParameters().get(COMPACTOR_TABLE_PROPERTY)
+        : getTableInfo().getProperties().getProperty(COMPACTOR_TABLE_PROPERTY);
+    return StringUtils.isNotBlank(compactionType) &&
+        CompactionType.valueOf(compactionType).equals(CompactionType.REBALANCE);
+  }
+
   public boolean isMaterialization() {
     return materialization;
   }
@@ -498,7 +511,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
    */
   @Override
   @Explain(displayName = "Stats Publishing Key Prefix", explainLevels = { Level.EXTENDED })
-  // FIXME: including this in the signature will almost certenly differ even if the operator is doing the same
+  // FIXME: including this in the signature will almost certainly differ even if the operator is doing the same
   // there might be conflicting usages of logicalCompare?
   @Signature
   public String getStatsAggPrefix() {
@@ -649,10 +662,6 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
     this.statsTmpDir = statsCollectionTempDir;
   }
 
-  public void setMmWriteId(Long mmWriteId) {
-    this.mmWriteId = mmWriteId;
-  }
-
   public void setIsMerge(boolean b) {
     this.isMerge = b;
   }
@@ -670,7 +679,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
     return getBucketingVersion();
   }
   /**
-   * Whether this is CREATE TABLE SELECT or CREATE MATERIALIZED VIEW statemet
+   * Whether this is CREATE TABLE SELECT or CREATE MATERIALIZED VIEW statement
    * Set by semantic analyzer this is required because CTAS/CM requires some special logic
    * in mvFileToFinalPath
    */

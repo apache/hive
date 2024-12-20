@@ -113,8 +113,10 @@ POSTHOOK: Input: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%
 PREHOOK: query: drop table src_orc_merge_test_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_orc_merge_test_part
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_orc_merge_test_part
 POSTHOOK: query: drop table src_orc_merge_test_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_orc_merge_test_part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_orc_merge_test_part

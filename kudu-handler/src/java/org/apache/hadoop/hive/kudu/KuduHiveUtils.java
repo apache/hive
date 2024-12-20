@@ -115,7 +115,7 @@ public final class KuduHiveUtils {
     }
   }
 
-  /* This method converts a Kudu type to to the corresponding Hive type */
+  /* This method converts a Kudu type to the corresponding Hive type */
   public static PrimitiveTypeInfo toHiveType(Type kuduType, ColumnTypeAttributes attributes)
       throws SerDeException {
     switch (kuduType) {

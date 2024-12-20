@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists sequential_update
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists sequential_update
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create transactional table sequential_update(ctime timestamp, seq bigint, mtime timestamp, prev_writeid bigint, prev_dirname string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -95,8 +97,12 @@ POSTHOOK: Input: default@sequential_update
 LOOKS OKAY	delta_0000004_0000004_0001
 PREHOOK: query: alter table sequential_update compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@sequential_update
+PREHOOK: Output: default@sequential_update
 POSTHOOK: query: alter table sequential_update compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@sequential_update
+POSTHOOK: Output: default@sequential_update
 PREHOOK: query: select distinct IF(seq==1, 'LOOKS OKAY', 'BROKEN'), regexp_extract(INPUT__FILE__NAME, '.*/(.*)/[^/]*', 1) from sequential_update
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sequential_update
@@ -147,8 +153,10 @@ POSTHOOK: Input: default@sequential_update
 LOOKS OKAY	base_0000005
 PREHOOK: query: drop table if exists orc_test_txn
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists orc_test_txn
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table  orc_test_txn (`id` integer, name string, dept string) partitioned by(year integer) stored as orc TBLPROPERTIES('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -243,16 +251,28 @@ POSTHOOK: Input: default@orc_test_txn@year=2018
 LOOKS OKAY
 PREHOOK: query: alter table orc_test_txn partition(year='2016') compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@orc_test_txn
+PREHOOK: Output: default@orc_test_txn@year=2016
 POSTHOOK: query: alter table orc_test_txn partition(year='2016') compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@orc_test_txn
+POSTHOOK: Output: default@orc_test_txn@year=2016
 PREHOOK: query: alter table orc_test_txn partition(year='2017') compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@orc_test_txn
+PREHOOK: Output: default@orc_test_txn@year=2017
 POSTHOOK: query: alter table orc_test_txn partition(year='2017') compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@orc_test_txn
+POSTHOOK: Output: default@orc_test_txn@year=2017
 PREHOOK: query: alter table orc_test_txn partition(year='2018') compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@orc_test_txn
+PREHOOK: Output: default@orc_test_txn@year=2018
 POSTHOOK: query: alter table orc_test_txn partition(year='2018') compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@orc_test_txn
+POSTHOOK: Output: default@orc_test_txn@year=2018
 PREHOOK: query: select distinct IF(id==1, 'LOOKS OKAY', 'BROKEN') from orc_test_txn
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_test_txn

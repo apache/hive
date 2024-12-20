@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.session;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +54,9 @@ import org.slf4j.LoggerFactory;
  *    lease after 10 min, ie, the HDFS file hold by the dead HiveCli/HiveServer2 is writable
  *    again after 10 min. Once it become writable, cleardanglingscratchDir will be able to
  *    remove it
+ * 4. Additional functionality; once it is decided which session scratch dirs are residual,
+ *    while removing them from hdfs, we will remove them from local tmp location as well.
+ *    Please see {@link ClearDanglingScratchDir#removeLocalTmpFiles(String, String)}.
  */
 public class ClearDanglingScratchDir implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(ClearDanglingScratchDir.class);
@@ -95,7 +99,7 @@ public class ClearDanglingScratchDir implements Runnable {
     if (cli.hasOption("s")) {
       rootHDFSDir = cli.getOptionValue("s");
     } else {
-      rootHDFSDir = HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR);
+      rootHDFSDir = HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCH_DIR);
     }
     ClearDanglingScratchDir clearDanglingScratchDirMain = new ClearDanglingScratchDir(dryRun,
         verbose, true, rootHDFSDir, conf);
@@ -141,24 +145,25 @@ public class ClearDanglingScratchDir implements Runnable {
             // if the file is currently held by a writer
             if(AlreadyBeingCreatedException.class.getName().equals(eAppend.getClassName())){
               inuse = true;
-            } else if (UnsupportedOperationException.class.getName().equals(eAppend.getClassName())) {
-              // Append is not supported in the cluster, try to use create
-              try {
-                IOUtils.closeStream(fs.create(lockFilePath, false));
-              } catch (RemoteException eCreate) {
-                if (AlreadyBeingCreatedException.class.getName().equals(eCreate.getClassName())){
-                  // If the file is held by a writer, will throw AlreadyBeingCreatedException
-                  inuse = true;
-                }  else {
-                  consoleMessage("Unexpected error:" + eCreate.getMessage());
-                }
-              } catch (FileAlreadyExistsException eCreateNormal) {
-                  // Otherwise, throw FileAlreadyExistsException, which means the file owner is
-                  // dead
-                  removable = true;
-              }
             } else {
               consoleMessage("Unexpected error:" + eAppend.getMessage());
+            }
+          } catch (UnsupportedOperationException eUnsupported) {
+            // In Hadoop-3, append method is not supported.
+            // This is an alternative check to make sure whether a file is in use or not.
+            // Trying to open the file. If it is in use, it will throw IOException.
+            try {
+              IOUtils.closeStream(fs.create(lockFilePath, false));
+            } catch (RemoteException eCreate) {
+              if (AlreadyBeingCreatedException.class.getName().equals(eCreate.getClassName())){
+                // If the file is held by a writer, will throw AlreadyBeingCreatedException
+                inuse = true;
+              }  else {
+                consoleMessage("Unexpected error:" + eCreate.getMessage());
+              }
+            } catch (FileAlreadyExistsException eCreateNormal) {
+              // Otherwise, throw FileAlreadyExistsException, which means the file owner is dead
+              removable = true;
             }
           }
           if (inuse) {
@@ -179,6 +184,7 @@ public class ClearDanglingScratchDir implements Runnable {
         return;
       }
       consoleMessage("Removing " + scratchDirToRemove.size() + " scratch directories");
+      String localTmpDir = HiveConf.getVar(conf, HiveConf.ConfVars.LOCAL_SCRATCH_DIR);
       for (Path scratchDir : scratchDirToRemove) {
         if (dryRun) {
           System.out.println(scratchDir);
@@ -192,6 +198,8 @@ public class ClearDanglingScratchDir implements Runnable {
               consoleMessage(message);
             }
           }
+          // cleaning up on local file system as well
+          removeLocalTmpFiles(scratchDir.getName(), localTmpDir);
         }
       }
     } catch (IOException e) {
@@ -235,5 +243,25 @@ public class ClearDanglingScratchDir implements Runnable {
         .create('h'));
 
     return result;
+  }
+
+  /**
+   * While deleting dangling scratch dirs from hdfs, we can clean corresponding local files as well
+   * @param sessionName prefix to determine removable tmp files
+   * @param localTmpdir local tmp file location
+   */
+  private void removeLocalTmpFiles(String sessionName, String localTmpdir) {
+    File[] files = new File(localTmpdir).listFiles(fn -> fn.getName().startsWith(sessionName));
+    if (files != null) {
+      for (File file : files) {
+        if (file.canWrite() && file.delete()) {
+          consoleMessage("While removing '" + sessionName + "' dangling scratch dir from HDFS, "
+                  + "local tmp session file '" + file.getPath() + "' has been cleaned as well.");
+        } else {
+          consoleMessage("Even though '" + sessionName + "' is marked as dangling session dir, "
+                  + "local tmp session file '" + file.getPath() + "' could not be removed.");
+        }
+      }
+    }
   }
 }

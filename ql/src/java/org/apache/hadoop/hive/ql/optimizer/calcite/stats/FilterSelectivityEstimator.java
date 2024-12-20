@@ -17,7 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Set;
 
@@ -38,6 +41,8 @@ import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.datasketches.kll.KllFloatsSketch;
+import org.apache.datasketches.memory.Memory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -46,6 +51,8 @@ import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.calcite.sql.fun.SqlStdOperatorTable.NOT_BETWEEN;
 
 public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
 
@@ -90,7 +97,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       return 1.0;
     }
 
-    Double selectivity = null;
+    Double selectivity;
     SqlKind op = getOp(call);
 
     switch (op) {
@@ -139,9 +146,13 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     case GREATER_THAN_OR_EQUAL:
     case LESS_THAN:
     case GREATER_THAN: {
-      selectivity = ((double) 1 / (double) 3);
+      selectivity = computeRangePredicateSelectivity(call, op);
       break;
     }
+
+    case BETWEEN:
+      selectivity = computeBetweenPredicateSelectivity(call);
+      break;
 
     case IN: {
       // TODO: 1) check for duplicates 2) We assume in clause values to be
@@ -165,6 +176,127 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     }
 
     return selectivity;
+  }
+
+  private double computeRangePredicateSelectivity(RexCall call, SqlKind op) {
+    final boolean isLiteralLeft = call.getOperands().get(0).getKind().equals(SqlKind.LITERAL);
+    final boolean isLiteralRight = call.getOperands().get(1).getKind().equals(SqlKind.LITERAL);
+    final boolean isInputRefLeft = call.getOperands().get(0).getKind().equals(SqlKind.INPUT_REF);
+    final boolean isInputRefRight = call.getOperands().get(1).getKind().equals(SqlKind.INPUT_REF);
+
+    if (childRel instanceof HiveTableScan && isLiteralLeft != isLiteralRight && isInputRefLeft != isInputRefRight) {
+      final HiveTableScan t = (HiveTableScan) childRel;
+      final int inputRefIndex = ((RexInputRef) call.getOperands().get(isInputRefLeft ? 0 : 1)).getIndex();
+      final List<ColStatistics> colStats = t.getColStat(Collections.singletonList(inputRefIndex));
+
+      if (!colStats.isEmpty() && isHistogramAvailable(colStats.get(0))) {
+        final KllFloatsSketch kll = KllFloatsSketch.heapify(Memory.wrap(colStats.get(0).getHistogram()));
+        final Object boundValueObject = ((RexLiteral) call.getOperands().get(isLiteralLeft ? 0 : 1)).getValue();
+        final SqlTypeName typeName = call.getOperands().get(isInputRefLeft ? 0 : 1).getType().getSqlTypeName();
+        float value = extractLiteral(typeName, boundValueObject);
+        boolean closedBound = op.equals(SqlKind.LESS_THAN_OR_EQUAL) || op.equals(SqlKind.GREATER_THAN_OR_EQUAL);
+
+        double selectivity;
+        if (op.equals(SqlKind.LESS_THAN_OR_EQUAL) || op.equals(SqlKind.LESS_THAN)) {
+          selectivity = closedBound ? lessThanOrEqualSelectivity(kll, value) : lessThanSelectivity(kll, value);
+        } else {
+          selectivity = closedBound ? greaterThanOrEqualSelectivity(kll, value) : greaterThanSelectivity(kll, value);
+        }
+
+        // selectivity does not account for null values, we multiply for the number of non-null values (getN)
+        // and we divide by the total (non-null + null values) to get the overall selectivity.
+        //
+        // Example: consider a filter "col < 3", and the following table rows:
+        //  _____
+        // | col |
+        // |_____|
+        // |1    |
+        // |null |
+        // |null |
+        // |3    |
+        // |4    |
+        // -------
+        // kll.getN() would be 3, selectivity 1/3, t.getTable().getRowCount() 5
+        // so the final result would be 3 * 1/3 / 5 = 1/5, as expected.
+        return kll.getN() * selectivity / t.getTable().getRowCount();
+      }
+    }
+    return ((double) 1 / (double) 3);
+  }
+
+  private Double computeBetweenPredicateSelectivity(RexCall call) {
+    final boolean hasLiteralBool = call.getOperands().get(0).getKind().equals(SqlKind.LITERAL);
+    final boolean hasInputRef = call.getOperands().get(1).getKind().equals(SqlKind.INPUT_REF);
+    final boolean hasLiteralLeft = call.getOperands().get(2).getKind().equals(SqlKind.LITERAL);
+    final boolean hasLiteralRight = call.getOperands().get(3).getKind().equals(SqlKind.LITERAL);
+
+    if (childRel instanceof HiveTableScan && hasLiteralBool && hasInputRef && hasLiteralLeft && hasLiteralRight) {
+      final HiveTableScan t = (HiveTableScan) childRel;
+      final int inputRefIndex = ((RexInputRef) call.getOperands().get(1)).getIndex();
+      final List<ColStatistics> colStats = t.getColStat(Collections.singletonList(inputRefIndex));
+
+      if (!colStats.isEmpty() && isHistogramAvailable(colStats.get(0))) {
+        final KllFloatsSketch kll = KllFloatsSketch.heapify(Memory.wrap(colStats.get(0).getHistogram()));
+        final SqlTypeName typeName = call.getOperands().get(1).getType().getSqlTypeName();
+        final Object inverseBoolValueObject = ((RexLiteral) call.getOperands().get(0)).getValue();
+        boolean inverseBool = Boolean.parseBoolean(inverseBoolValueObject.toString());
+        final Object leftBoundValueObject = ((RexLiteral) call.getOperands().get(2)).getValue();
+        float leftValue = extractLiteral(typeName, leftBoundValueObject);
+        final Object rightBoundValueObject = ((RexLiteral) call.getOperands().get(3)).getValue();
+        float rightValue = extractLiteral(typeName, rightBoundValueObject);
+        // when inverseBool == true, this is a NOT_BETWEEN and selectivity must be inverted
+        if (inverseBool) {
+          if (rightValue == leftValue) {
+            return computeNotEqualitySelectivity(call);
+          } else if (rightValue < leftValue) {
+            return 1.0;
+          }
+          return 1.0 - (kll.getN() * betweenSelectivity(kll, leftValue, rightValue) / t.getTable().getRowCount());
+        }
+        // when they are equal it's an equality predicate, we cannot handle it as "between"
+        if (Double.compare(leftValue, rightValue) != 0) {
+          return kll.getN() * betweenSelectivity(kll, leftValue, rightValue) / t.getTable().getRowCount();
+        }
+      }
+    }
+    return computeFunctionSelectivity(call);
+  }
+
+  private float extractLiteral(SqlTypeName typeName, Object boundValueObject) {
+    final String boundValueString = boundValueObject.toString();
+
+    float value;
+    switch (typeName) {
+    case TINYINT:
+      value = Byte.parseByte(boundValueString);
+      break;
+    case SMALLINT:
+      value = Short.parseShort(boundValueString);
+      break;
+    case INTEGER:
+      value = Integer.parseInt(boundValueString);
+      break;
+    case BIGINT:
+      value = Long.parseLong(boundValueString);
+      break;
+    case FLOAT:
+      value = Float.parseFloat(boundValueString);
+      break;
+    case DOUBLE:
+      value = (float) Double.parseDouble(boundValueString);
+      break;
+    case DECIMAL:
+      value = new BigDecimal(boundValueString).floatValue();
+      break;
+    case DATE:
+    case TIMESTAMP:
+      value = ((GregorianCalendar) boundValueObject).toInstant().getEpochSecond();
+      break;
+    default:
+      throw new IllegalStateException(
+          "Unsupported type for comparator selectivity evaluation using histogram: " + typeName);
+    }
+    return value;
   }
 
   /**
@@ -192,9 +324,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   /**
    * Selectivity of f(X,y,z) -> 1/maxNDV(x,y,z).
    * <p>
-   * Note that >, >=, <, <=, = ... are considered generic functions and uses
-   * this method to find their selectivity.
-   *
+   * Note that = is considered a generic function and uses this method to find its selectivity.
    * @param call
    * @return
    */
@@ -366,5 +496,102 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       assert false;
     }
     return null;
+  }
+
+  private static double rangedSelectivity(KllFloatsSketch kll, float val1, float val2) {
+    float[] splitPoints = new float[] { val1, val2 };
+    double[] boundaries = kll.getCDF(splitPoints);
+    return boundaries[1] - boundaries[0];
+  }
+
+  /**
+   * Returns the selectivity of a predicate "column &gt; value" in the range [0, 1]
+   * @param kll the KLL sketch for the involved column
+   * @param value the literal used in the comparison
+   * @return the selectivity of a predicate "column &gt; value" in the range [0, 1]
+   */
+  public static double greaterThanSelectivity(KllFloatsSketch kll, float value) {
+    float max = kll.getMaxValue();
+    if (value > max) {
+      return 0;
+    }
+    float nextValue = Math.nextUp(value);
+    if (Double.compare(value, max) == 0 || Double.compare(nextValue, max) == 0) {
+      return 0;
+    }
+    return rangedSelectivity(kll, nextValue, Math.nextUp(max));
+  }
+
+  /**
+   * Returns the selectivity of a predicate "column &gt;= value" in the range [0, 1]
+   * @param kll the KLL sketch for the involved column
+   * @param value the literal used in the comparison
+   * @return the selectivity of a predicate "column &gt;= value" in the range [0, 1]
+   */
+  public static double greaterThanOrEqualSelectivity(KllFloatsSketch kll, float value) {
+    if (value > kll.getMaxValue()) {
+      return 0;
+    }
+    return rangedSelectivity(kll, value, Math.nextUp(kll.getMaxValue()));
+  }
+
+  /**
+   * Returns the selectivity of a predicate "column &lt;= value" in the range [0, 1]
+   * @param kll the KLL sketch for the involved column
+   * @param value the literal used in the comparison
+   * @return the selectivity of a predicate "column &lt;= value" in the range [0, 1]
+   */
+  public static double lessThanOrEqualSelectivity(KllFloatsSketch kll, float value) {
+    if (value < kll.getMinValue()) {
+      return 0;
+    }
+    return kll.getCDF(new float[] { Math.nextUp(value) })[0];
+  }
+
+  /**
+   * Returns the selectivity of a predicate "column &lt; value" in the range [0, 1]
+   * @param kll the KLL sketch for the involved column
+   * @param value the literal used in the comparison
+   * @return the selectivity of a predicate "column &lt; value" in the range [0, 1]
+   */
+  public static double lessThanSelectivity(KllFloatsSketch kll, float value) {
+    float min = kll.getMinValue();
+    if (value < min) {
+      return 0;
+    }
+    if (Double.compare(value, min) == 0 || Double.compare(Math.nextUp(value), min) == 0) {
+      return 0;
+    }
+    return kll.getCDF(new float[] { value })[0];
+  }
+
+  /**
+   * Returns the selectivity of a predicate "column BETWEEN leftValue AND rightValue" in the range [0, 1]
+   * @param kll the KLL sketch for the involved column
+   * @param leftValue the LHS literal in the BETWEEN statement
+   * @param rightValue the RHS literal in the BETWEEN statement
+   * @return the selectivity of a predicate "column BETWEEN leftValue AND rightValue" in the range [0, 1]
+   * @throws IllegalArgumentException if leftValue is equal to rightValue
+   */
+  public static double betweenSelectivity(KllFloatsSketch kll, float leftValue, float rightValue) {
+    // column >= leftValue AND column <= rightValue
+    if (rightValue < leftValue) {
+      return 0;
+    }
+    if (Double.compare(leftValue, rightValue) == 0) {
+      throw new IllegalArgumentException(
+          "Selectivity for BETWEEN leftValue AND rightValue when the two values coincide is not supported, found: "
+          + "leftValue = " + leftValue + " and rightValue = " + rightValue);
+    }
+    return rangedSelectivity(kll, Math.nextDown(leftValue), Math.nextUp(rightValue));
+  }
+
+  /**
+   * Returns true if histogram statistics are available in the column statistics information, false otherwise.
+   * @param colStats the input column statistics information
+   * @return true if histogram statistics are available in the column statistics information, false otherwise.
+   */
+  public static boolean isHistogramAvailable(ColStatistics colStats) {
+    return colStats != null && colStats.getHistogram() != null && colStats.getHistogram().length > 0;
   }
 }

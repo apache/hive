@@ -54,7 +54,14 @@ public class DefaultMetaStoreFilterHookImpl implements MetaStoreFilterHook {
   }
 
   @Override
-  public List<TableMeta> filterTableMetas(String catName, String dbName,List<TableMeta> tableMetas) throws MetaException {
+  @Deprecated
+  public List<TableMeta> filterTableMetas(String catName, String dbName, List<TableMeta> tableMetas)
+      throws MetaException {
+    return filterTableMetas(tableMetas);
+  }
+
+  @Override
+  public List<TableMeta> filterTableMetas(List<TableMeta> tableMetas) throws MetaException {
     return tableMetas;
   }
 
@@ -88,6 +95,11 @@ public class DefaultMetaStoreFilterHookImpl implements MetaStoreFilterHook {
   public List<String> filterPartitionNames(String catName, String dbName, String tblName,
       List<String> partitionNames) throws MetaException {
     return partitionNames;
+  }
+
+  @Override
+  public List<String> filterDataConnectors(List<String> dcList) throws MetaException {
+    return dcList;
   }
 
 }

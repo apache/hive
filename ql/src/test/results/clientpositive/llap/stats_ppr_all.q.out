@@ -1,7 +1,9 @@
 PREHOOK: query: drop table ss
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table ss
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE ss (
     sales_order_id  BIGINT,
     order_amount    FLOAT)

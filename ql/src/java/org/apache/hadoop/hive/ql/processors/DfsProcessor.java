@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Map;
 
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -56,7 +57,7 @@ public class DfsProcessor implements CommandProcessor {
   public DfsProcessor(Configuration conf, boolean addSchema) {
     dfs = new FsShell(conf);
     dfsSchema = new Schema();
-    dfsSchema.addToFieldSchemas(new FieldSchema(DFS_RESULT_HEADER, "string", ""));
+    dfsSchema.addToFieldSchemas(new FieldSchema(DFS_RESULT_HEADER, serdeConstants.STRING_TYPE_NAME, ""));
   }
 
   @Override

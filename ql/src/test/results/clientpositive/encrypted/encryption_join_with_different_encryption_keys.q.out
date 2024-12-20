@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS table_key_1 PURGE
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS table_key_1 PURGE
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 PREHOOK: Input: hdfs://### HDFS PATH ###
@@ -16,8 +18,10 @@ Encryption key created: 'key_1'
 Encryption zone created: '/build/ql/test/data/warehouse/table_key_1' using key: 'key_1'
 PREHOOK: query: DROP TABLE IF EXISTS table_key_2 PURGE
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS table_key_2 PURGE
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 PREHOOK: Input: hdfs://### HDFS PATH ###
@@ -1280,18 +1284,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DROP TABLE table_key_1 PURGE
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_key_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table_key_1
 POSTHOOK: query: DROP TABLE table_key_1 PURGE
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_key_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_key_1
 PREHOOK: query: DROP TABLE table_key_2 PURGE
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_key_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table_key_2
 POSTHOOK: query: DROP TABLE table_key_2 PURGE
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_key_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_key_2
 Encryption key deleted: 'key_1'
 Encryption key deleted: 'key_2'

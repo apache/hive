@@ -167,6 +167,8 @@ public class StatsSetupConst {
 
   public static final String CASCADE = "CASCADE";
 
+  public static final String  STATS_FOR_CREATE_TABLE = "setStatsStateForCreateTable";
+
   public static final String TRUE = "true";
 
   public static final String FALSE = "false";
@@ -217,6 +219,55 @@ public class StatsSetupConst {
     @JsonDeserialize(contentUsing = BooleanDeserializer.class)
     TreeMap<String, Boolean> columnStats = new TreeMap<>();
 
+  }
+
+  /**
+   * Class for marking the column statistics when creating tables.
+   */
+  public static class ColumnStatsSetup {
+    private static ObjectReader objectReader;
+    private static ObjectWriter objectWriter;
+    static {
+      ObjectMapper objectMapper = new ObjectMapper();
+      objectReader = objectMapper.readerFor(ColumnStatsSetup.class);
+      objectWriter = objectMapper.writerFor(ColumnStatsSetup.class);
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    public boolean enabled;
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    public boolean isIcebergTable;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    public List<String> columnNames = new ArrayList<>();
+
+    public static ColumnStatsSetup parseStatsSetup(String statsSetup) {
+      if (statsSetup == null) {
+        return new ColumnStatsSetup();
+      }
+      try {
+        return objectReader.readValue(statsSetup);
+      } catch (Exception e) {
+         return new ColumnStatsSetup();
+      }
+    }
+
+    /**
+     * Get json representation of the ColumnStatsSetup
+     */
+    public static String getStatsSetupAsString(boolean enabled,
+        boolean isIcebergTable,
+        List<String> columns) {
+      try {
+        ColumnStatsSetup statsSetup = new ColumnStatsSetup();
+        statsSetup.enabled = enabled;
+        statsSetup.isIcebergTable = isIcebergTable;
+        statsSetup.columnNames = new ArrayList<>(columns);
+        return objectWriter.writeValueAsString(statsSetup);
+      } catch (Exception e) {
+        // this should not happen
+        throw new RuntimeException(e);
+      }
+    }
   }
 
   public static boolean areBasicStatsUptoDate(Map<String, String> params) {

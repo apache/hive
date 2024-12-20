@@ -50,10 +50,14 @@ import static org.apache.iceberg.types.Types.NestedField.optional;
  */
 public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase {
 
+  @Override
+  protected void validateTestParams() {
+    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG &&
+        isVectorized && formatVersion == 1);
+  }
+
   @Test
   public void testCTASFromHiveTable() {
-    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
-
     shell.executeStatement("CREATE TABLE source (id bigint, name string) PARTITIONED BY (dept string) STORED AS ORC");
     shell.executeStatement(testTables.getInsertQuery(
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, TableIdentifier.of("default", "source"), false));
@@ -71,8 +75,6 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
 
   @Test
   public void testCTASPartitionedFromHiveTable() throws TException, InterruptedException {
-    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
-
     shell.executeStatement("CREATE TABLE source (id bigint, name string) PARTITIONED BY (dept string) STORED AS ORC");
     shell.executeStatement(testTables.getInsertQuery(
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, TableIdentifier.of("default", "source"), false));
@@ -92,7 +94,8 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
     org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", "target");
     Assert.assertEquals(3, hmsTable.getSd().getColsSize());
     Assert.assertTrue(hmsTable.getPartitionKeys().isEmpty());
-    Assert.assertEquals(fileFormat.toString(), hmsTable.getParameters().get(TableProperties.DEFAULT_FILE_FORMAT));
+    Assert.assertEquals(
+            fileFormat.toString().toLowerCase(), hmsTable.getParameters().get(TableProperties.DEFAULT_FILE_FORMAT));
 
     // check Iceberg table has correct partition spec
     Table table = testTables.loadTable(TableIdentifier.of("default", "target"));
@@ -103,8 +106,6 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
 
   @Test
   public void testCTASTblPropsAndLocationClause() throws Exception {
-    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
-
     shell.executeStatement("CREATE TABLE source (id bigint, name string) PARTITIONED BY (dept string) STORED AS ORC");
     shell.executeStatement(testTables.getInsertQuery(
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, TableIdentifier.of("default", "source"), false));
@@ -132,8 +133,6 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
 
   @Test
   public void testCTASPartitionedBySpec() throws TException, InterruptedException {
-    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
-
     Schema schema = new Schema(
         optional(1, "id", Types.LongType.get()),
         optional(2, "year_field", Types.DateType.get()),
@@ -167,7 +166,8 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
     org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", "target");
     Assert.assertEquals(8, hmsTable.getSd().getColsSize());
     Assert.assertTrue(hmsTable.getPartitionKeys().isEmpty());
-    Assert.assertEquals(fileFormat.toString(), hmsTable.getParameters().get(TableProperties.DEFAULT_FILE_FORMAT));
+    Assert.assertEquals(
+            fileFormat.toString().toLowerCase(), hmsTable.getParameters().get(TableProperties.DEFAULT_FILE_FORMAT));
 
     // check Iceberg table has correct partition spec
     Table table = testTables.loadTable(TableIdentifier.of("default", "target"));
@@ -185,8 +185,6 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
 
   @Test
   public void testCTASFailureRollback() throws IOException {
-    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
-
     // force an execution error by passing in a committer class that Tez won't be able to load
     shell.setHiveSessionValue("hive.tez.mapreduce.output.committer.class", "org.apache.NotExistingClass");
 
@@ -207,13 +205,11 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
 
   @Test
   public void testCTASFollowedByTruncate() throws IOException {
-    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
-
     testTables.createTable(shell, "source", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, fileFormat,
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
 
     shell.executeStatement(String.format(
-        "CREATE TABLE target STORED BY ICEBERG STORED AS %s %s AS SELECT * FROM source",
+        "CREATE EXTERNAL TABLE target STORED BY ICEBERG STORED AS %s %s AS SELECT * FROM source",
         fileFormat, testTables.locationForCreateTableSQL(TableIdentifier.of("default", "target"))));
 
     List<Object[]> objects = shell.executeStatement("SELECT * FROM target ORDER BY customer_id");
@@ -228,7 +224,6 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
 
   @Test
   public void testCTASUnsupportedTypeWithoutAutoConversion() {
-    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
     Map<String, Type> notSupportedTypes = ImmutableMap.of(
         "TINYINT", Types.IntegerType.get(),
         "SMALLINT", Types.IntegerType.get(),
@@ -239,7 +234,7 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
     for (String notSupportedType : notSupportedTypes.keySet()) {
       shell.executeStatement(String.format("CREATE TABLE source (s %s) STORED AS ORC", notSupportedType));
       AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
-          "Unsupported Hive type: ", () -> {
+          "Unsupported Hive type ", () -> {
             shell.executeStatement(String.format(
                 "CREATE TABLE target STORED BY ICEBERG %s %s AS SELECT * FROM source",
                 testTables.locationForCreateTableSQL(TableIdentifier.of("default", "target")),
@@ -254,7 +249,6 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
 
   @Test
   public void testCTASUnsupportedTypeWithAutoConversion() {
-    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
     Map<String, Type> notSupportedTypes = ImmutableMap.of(
         "TINYINT", Types.IntegerType.get(),
         "SMALLINT", Types.IntegerType.get(),
@@ -282,7 +276,6 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
 
   @Test
   public void testCTASForAllColumnTypes() {
-    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
     shell.setHiveSessionValue(InputFormatConfig.SCHEMA_AUTO_CONVERSION, "true");
     String sourceCreate = "CREATE EXTERNAL TABLE source (" +
         "timestamp_col_1 TIMESTAMP, " +
@@ -378,5 +371,26 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
 
     String ctas = "CREATE TABLE target STORED BY ICEBERG STORED AS orc AS SELECT * FROM source";
     shell.executeStatement(ctas);
+  }
+
+  @Test
+  public void testCTASAndCTLTWithAuth() {
+    shell.setHiveSessionValue("hive.security.authorization.enabled", true);
+    shell.setHiveSessionValue("hive.security.authorization.manager",
+            "org.apache.iceberg.mr.hive.CustomTestHiveAuthorizerFactory");
+    shell.setHiveSessionValue("hive.security.authorization.tables.on.storagehandlers", true);
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    String query = String.format("CREATE EXTERNAL TABLE customers (" +
+                    "customer_id BIGINT," +
+                    "first_name STRING, " +
+                    "last_name STRING," +
+                    "primary key (customer_id, first_name) disable novalidate) " +
+                    "STORED BY ICEBERG %s TBLPROPERTIES ('%s'='%s')",
+            testTables.locationForCreateTableSQL(identifier),
+            InputFormatConfig.CATALOG_NAME,
+            testTables.catalogName());
+    shell.executeStatement(query);
+    shell.executeStatement("create table target_ctas stored by iceberg stored as orc as select * from customers");
+    shell.executeStatement("create table target_ctlt like customers stored by iceberg");
   }
 }

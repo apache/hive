@@ -469,7 +469,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
    */
   private int numOfCorrelationExprsAddedToSQSelect;
 
-  private boolean groupbyAddedToSQ;
+  private boolean groupByAddedToSQ;
 
   private int numOuterCorrExprsForHaving;
 
@@ -497,7 +497,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
         originalSQAST.getTokenStartIndex(), originalSQAST.getTokenStopIndex());
     originalSQASTOrigin = new ASTNodeOrigin("SubQuery", alias, s, alias, originalSQAST);
     numOfCorrelationExprsAddedToSQSelect = 0;
-    groupbyAddedToSQ = false;
+    groupByAddedToSQ = false;
 
     if ( operator.getType() == SubQueryType.NOT_IN ) {
       notInCheck = new NotInCheck();
@@ -529,7 +529,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
    */
   void subqueryRestrictionsCheck(RowResolver parentQueryRR,
                                  boolean forHavingClause,
-                                 String outerQueryAlias, boolean [] subqueryConfig)
+                                 String outerQueryAlias)
           throws SemanticException {
     ASTNode insertClause = getChildFromSubqueryAST("Insert", HiveParser.TOK_INSERT);
 
@@ -554,25 +554,20 @@ public class QBSubQuery implements ISubQueryJoinInfo {
           subQueryAST, "SubQuery can contain only 1 item in Select List."));
     }
 
-    boolean hasAggregateExprs = false;
     boolean hasWindowing = false;
 
     // we need to know if aggregate is COUNT since IN corr subq with count aggregate
     // is not special cased later in subquery remove rule
-    boolean hasCount = false;
     for(int i= selectExprStart; i < selectClause.getChildCount(); i++ ) {
 
       ASTNode selectItem = (ASTNode) selectClause.getChild(i);
       int r = SubQueryUtils.checkAggOrWindowing(selectItem);
 
       hasWindowing = hasWindowing | ( r == 3);
-      hasAggregateExprs = hasAggregateExprs | ( r == 1 | r== 2 );
-      hasCount = hasCount | ( r == 2 );
     }
 
     // figure out correlation and presence of non-equi join predicate
     boolean hasCorrelation = false;
-    boolean hasNonEquiJoinPred = false;
 
     ASTNode whereClause = SubQueryUtils.subQueryWhere(insertClause);
     if ( whereClause != null ) {
@@ -588,18 +583,6 @@ public class QBSubQuery implements ISubQueryJoinInfo {
         if (conjunct.isCorrelated()) {
           hasCorrelation = true;
         }
-        if (conjunct.eitherSideRefersBoth() && conjunctAST.getType() != HiveParser.EQUAL) {
-          hasNonEquiJoinPred = true;
-        }
-      }
-    }
-
-    // figure out if there is group by
-    boolean hasExplicitGby = false;
-    for(int i=0; i<insertClause.getChildCount(); i++) {
-      if(insertClause.getChild(i).getType() == HiveParser.TOK_GROUPBY) {
-        hasExplicitGby = true;
-        break;
       }
     }
 
@@ -613,39 +596,6 @@ public class QBSubQuery implements ISubQueryJoinInfo {
           subQueryAST, "Only Correlated Exists/Not exists Sub Queries can contain Windowing clauses."));
     }
 
-    /*
-     * Restriction.13.m :: In the case of an implied Group By on a
-     * correlated SubQuery, the SubQuery always returns 1 row.
-     */
-      // Following is special cases for different type of subqueries which have aggregate and implicit group by
-      // and are correlatd
-      // * SCALAR - This should return true since later in subquery remove
-      //              rule we need to know about this case.
-      // * IN - always allowed, BUT returns true for cases with aggregate other than COUNT since later in subquery remove
-      //        rule we need to know about this case.
-      // * NOT IN - always allow, but always return true because later subq remove rule will generate diff plan for this case
-      if (hasAggregateExprs &&
-              !hasExplicitGby) {
-
-        if(operator.getType() == SubQueryType.SCALAR) {
-            if(!hasWindowing) {
-              subqueryConfig[1] = true;
-            }
-            if(hasCorrelation) {
-              subqueryConfig[0] = true;
-            }
-        }
-        else if(operator.getType() == SubQueryType.IN) {
-          if(hasCount && hasCorrelation) {
-            subqueryConfig[0] = true;
-          }
-        }
-        else if (operator.getType() == SubQueryType.NOT_IN) {
-            if(hasCorrelation) {
-              subqueryConfig[0] = true;
-            }
-        }
-      }
   }
 
   void validateAndRewriteAST(RowResolver outerQueryRR,
@@ -720,7 +670,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
      */
     if ( operator.getType() == SubQueryType.EXISTS  &&
         containsAggregationExprs &&
-        groupbyAddedToSQ ) {
+            groupByAddedToSQ) {
       throw new SemanticException(ASTErrorUtils.getMsg(
           ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(),
           subQueryAST,
@@ -729,7 +679,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     }
     if ( operator.getType() == SubQueryType.NOT_EXISTS  &&
         containsAggregationExprs &&
-        groupbyAddedToSQ ) {
+            groupByAddedToSQ) {
       throw new SemanticException(ASTErrorUtils.getMsg(
           ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(),
           subQueryAST,
@@ -811,7 +761,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
                   "Correlating expression contains ambiguous column references."));
         }
       }
-      
+
       parentQueryJoinCond = SubQueryUtils.buildOuterQryToSQJoinCond(
          parentExpr,
          alias,
@@ -953,9 +903,9 @@ public class QBSubQuery implements ISubQueryJoinInfo {
             rewriteCorrConjunctForHaving(conjunctAST, false, outerQueryAlias,
                 parentQueryRR, conjunct.getRightOuterColInfo());
           }
-          ASTNode joinPredciate = SubQueryUtils.alterCorrelatedPredicate(
+          ASTNode joinPredicate = SubQueryUtils.alterCorrelatedPredicate(
               conjunctAST, sqExprForCorr, true);
-          joinConditionAST = SubQueryUtils.andAST(joinConditionAST, joinPredciate);
+          joinConditionAST = SubQueryUtils.andAST(joinConditionAST, joinPredicate);
           subQueryJoinAliasExprs.add(sqExprForCorr);
           ASTNode selExpr = SubQueryUtils.createSelectItem(conjunct.getLeftExpr(), sqExprAlias);
           selectClause.addChild(selExpr);
@@ -977,9 +927,9 @@ public class QBSubQuery implements ISubQueryJoinInfo {
             rewriteCorrConjunctForHaving(conjunctAST, true, outerQueryAlias,
                 parentQueryRR, conjunct.getLeftOuterColInfo());
           }
-          ASTNode joinPredciate = SubQueryUtils.alterCorrelatedPredicate(
+          ASTNode joinPredicate = SubQueryUtils.alterCorrelatedPredicate(
               conjunctAST, sqExprForCorr, false);
-          joinConditionAST = SubQueryUtils.andAST(joinConditionAST, joinPredciate);
+          joinConditionAST = SubQueryUtils.andAST(joinConditionAST, joinPredicate);
           subQueryJoinAliasExprs.add(sqExprForCorr);
           ASTNode selExpr = SubQueryUtils.createSelectItem(conjunct.getRightExpr(), sqExprAlias);
           selectClause.addChild(selExpr);
@@ -1032,7 +982,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     }
 
     groupBy = SubQueryUtils.buildGroupBy();
-    groupbyAddedToSQ = true;
+    groupByAddedToSQ = true;
 
     List<ASTNode> newChildren = new ArrayList<ASTNode>();
     newChildren.add(groupBy);

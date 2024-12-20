@@ -158,6 +158,11 @@ public class TestIncrementalObjectSizeEstimator {
     }
 
     @Override
+    public boolean isOpen() {
+      return false;
+    }
+
+    @Override
     public CompressionCodec getCompressionCodec() {
       return null;
     }

@@ -60,7 +60,7 @@ POSTHOOK: Input: default@smb_bucket_1_n3
 	numRows             	0                   
 	rawDataSize         	0                   
 	serialization.format	1                   
-	totalSize           	208                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 # Detailed Table Information	NULL	NULL
 # Storage Information	NULL	NULL
@@ -69,7 +69,6 @@ Compressed:         	No                  	NULL
 #### A masked pattern was here ####
 Database:           	test_db_smb_mapjoin_1	NULL
 InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	NULL
-LastAccessTime:     	UNKNOWN             	NULL
 #### A masked pattern was here ####
 Num Buckets:        	1                   	NULL
 OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	NULL

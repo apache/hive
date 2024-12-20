@@ -274,11 +274,11 @@ STAGE PLANS:
                           minReductionHashAggr: 0.4
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             null sort order: 
                             sort order: 
-                            Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -377,19 +377,19 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=1)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, 1, expectedEntries=1)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   null sort order: 
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
                 Reduce Output Operator
                   null sort order: 
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
 
   Stage: Stage-0
@@ -401,24 +401,30 @@ STAGE PLANS:
 PREHOOK: query: drop table srcpart_date_n6
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_date_n6
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_date_n6
 POSTHOOK: query: drop table srcpart_date_n6
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_date_n6
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_date_n6
 PREHOOK: query: drop table srcpart_small_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_small_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_small_n2
 POSTHOOK: query: drop table srcpart_small_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_small_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_small_n2
 PREHOOK: query: drop table alltypesorc_int_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alltypesorc_int_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alltypesorc_int_n0
 POSTHOOK: query: drop table alltypesorc_int_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alltypesorc_int_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alltypesorc_int_n0

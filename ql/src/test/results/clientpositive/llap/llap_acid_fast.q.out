@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE orc_llap_acid_fast
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orc_llap_acid_fast
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE orc_llap_acid_fast (
     cint INT,
     cbigint BIGINT,
@@ -279,7 +281,7 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [5, 2, 3, 4]
+                          projectedOutputColumnNums: [5, 4, 2, 3]
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
@@ -550,8 +552,10 @@ POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=3
 PREHOOK: query: DROP TABLE orc_llap_acid_fast
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_llap_acid_fast
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_llap_acid_fast
 POSTHOOK: query: DROP TABLE orc_llap_acid_fast
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_llap_acid_fast
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_llap_acid_fast

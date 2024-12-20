@@ -26,7 +26,6 @@ import org.apache.calcite.rel.RelShuttle;
 import org.apache.calcite.rel.core.Intersect;
 import org.apache.calcite.rel.core.SetOp;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode.Implementor;
 
 public class HiveIntersect extends Intersect {
 
@@ -37,9 +36,6 @@ public class HiveIntersect extends Intersect {
   @Override
   public SetOp copy(RelTraitSet traitSet, List<RelNode> inputs, boolean all) {
     return new HiveIntersect(this.getCluster(), traitSet, inputs, all);
-  }
-
-  public void implement(Implementor implementor) {
   }
 
   //required for HiveRelDecorrelator

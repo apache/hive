@@ -98,15 +98,12 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\"}}
 	EXTERNAL            	TRUE                
 	TRANSLATED_TO_EXTERNAL	TRUE                
 	bucketing_version   	2                   
 	external.table.purge	TRUE                
 	numFiles            	2                   
-	numRows             	1                   
-	rawDataSize         	1                   
-	totalSize           	4                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -142,7 +139,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	1                   
-	totalSize           	2                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

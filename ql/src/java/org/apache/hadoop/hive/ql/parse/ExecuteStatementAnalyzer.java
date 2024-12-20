@@ -205,9 +205,11 @@ public class ExecuteStatementAnalyzer extends SemanticAnalyzer{
       this.prepareQuery = false;
 
       // reset config
-      String queryId = this.conf.getVar(HiveConf.ConfVars.HIVEQUERYID);
+      String queryId = this.conf.getVar(HiveConf.ConfVars.HIVE_QUERY_ID);
+      String queryString = this.conf.getVar(HiveConf.ConfVars.HIVE_QUERY_STRING);
       this.conf.syncFromConf(cachedPlan.getQueryState().getConf());
-      this.conf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
+      this.conf.setVar(HiveConf.ConfVars.HIVE_QUERY_ID, queryId);
+      this.conf.setVar(HiveConf.ConfVars.HIVE_QUERY_STRING, queryString);
 
       // set rest of the params
       this.inputs = cachedPlan.getInputs();

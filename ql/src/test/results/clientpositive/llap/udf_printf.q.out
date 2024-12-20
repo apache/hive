@@ -106,10 +106,12 @@ timestamp: 2011-05-06 07:08:09.1234567
 PREHOOK: query: drop table timestamp_udf
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@timestamp_udf
+PREHOOK: Output: database:default
 PREHOOK: Output: default@timestamp_udf
 POSTHOOK: query: drop table timestamp_udf
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@timestamp_udf
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@timestamp_udf
 PREHOOK: query: CREATE TABLE binay_udf(key binary, value int)
 ROW FORMAT DELIMITED
@@ -172,12 +174,16 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table dest1_n110
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest1_n110
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dest1_n110
 POSTHOOK: query: drop table dest1_n110
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest1_n110
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1_n110
 PREHOOK: query: drop table binary_udf
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table binary_udf
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default

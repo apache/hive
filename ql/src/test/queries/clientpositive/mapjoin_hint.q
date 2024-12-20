@@ -66,7 +66,7 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY ","
 
 LOAD DATA LOCAL INPATH '../../data/files/part_tiny_nulls.txt' overwrite into table part_null_n1;
 
-insert into part_null_n1 values(78487,NULL,'Manufacturer#6','Brand#52','LARGE BRUSHED BRASS', 23, 'MED BAG',1464.48,'hely blith');
+insert into part_null_n1 values(78487,'any','Manufacturer#6','Brand#52','LARGE BRUSHED BRASS', 23, 'MED BAG',1464.48,'hely blith');
 
-explain select /*+ mapjoin(None)*/ * from part where p_name = (select p_name from part_null_n1 where p_name is null);
-explain select * from part where p_name = (select p_name from part_null_n1 where p_name is null);
+explain select /*+ mapjoin(None)*/ * from part where p_name = (select p_name from part_null_n1 where p_name = 'any');
+explain select * from part where p_name = (select p_name from part_null_n1 where p_name = 'any');

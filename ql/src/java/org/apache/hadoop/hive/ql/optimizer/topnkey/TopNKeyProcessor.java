@@ -75,6 +75,15 @@ public class TopNKeyProcessor implements SemanticNodeProcessor {
       return null;
     }
 
+    // HIVE-26671: We do not want to create a TopNKey processor when the reduce sink
+    // operator contains a count distinct. This would result in a topnkey operator
+    // with an extra group in its sort order. The TopNKey Pushdown Processor could then
+    // push down this operator and it would be incorrect since the count distinct adds
+    // a group that is only temporarily used for calculating a value.
+    if (reduceSinkDesc.hasADistinctColumnIndex()) {
+      return null;
+    }
+
     // Check whether there already is a top n key operator
     Operator<? extends OperatorDesc> parentOperator = reduceSinkOperator.getParentOperators().get(0);
     if (parentOperator instanceof TopNKeyOperator) {

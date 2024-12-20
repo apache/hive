@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists src_orc_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists src_orc_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table src_orc_n1 stored as orc as select * from srcpart limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@srcpart
@@ -442,8 +444,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table if exists src_orc_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_orc_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_orc_n1
 POSTHOOK: query: drop table if exists src_orc_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_orc_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_orc_n1

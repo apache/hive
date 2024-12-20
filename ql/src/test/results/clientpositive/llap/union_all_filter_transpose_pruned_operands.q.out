@@ -1,0 +1,140 @@
+PREHOOK: query: CREATE EXTERNAL TABLE t (a string, b string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: CREATE EXTERNAL TABLE t (a string, b string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: INSERT INTO t VALUES ('1000', 'b1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t
+POSTHOOK: query: INSERT INTO t VALUES ('1000', 'b1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.a SCRIPT []
+POSTHOOK: Lineage: t.b SCRIPT []
+PREHOOK: query: INSERT INTO t VALUES ('1001', 'b1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t
+POSTHOOK: query: INSERT INTO t VALUES ('1001', 'b1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.a SCRIPT []
+POSTHOOK: Lineage: t.b SCRIPT []
+PREHOOK: query: INSERT INTO t VALUES ('1002', 'b1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t
+POSTHOOK: query: INSERT INTO t VALUES ('1002', 'b1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.a SCRIPT []
+POSTHOOK: Lineage: t.b SCRIPT []
+PREHOOK: query: INSERT INTO t VALUES ('2000', 'b2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t
+POSTHOOK: query: INSERT INTO t VALUES ('2000', 'b2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.a SCRIPT []
+POSTHOOK: Lineage: t.b SCRIPT []
+PREHOOK: query: SELECT * FROM (
+  SELECT
+   a,
+   b
+  FROM t
+   UNION ALL
+  SELECT
+   a,
+   b
+   FROM t
+   WHERE a = '1001'
+    UNION ALL
+   SELECT
+   a,
+   b
+   FROM t
+   WHERE a = '1002') AS t2
+WHERE a = '1000'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM (
+  SELECT
+   a,
+   b
+  FROM t
+   UNION ALL
+  SELECT
+   a,
+   b
+   FROM t
+   WHERE a = '1001'
+    UNION ALL
+   SELECT
+   a,
+   b
+   FROM t
+   WHERE a = '1002') AS t2
+WHERE a = '1000'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+1000	b1
+PREHOOK: query: EXPLAIN CBO
+SELECT * FROM (
+  SELECT
+   a,
+   b
+  FROM t
+   UNION ALL
+  SELECT
+   a,
+   b
+   FROM t
+   WHERE a = '1001'
+    UNION ALL
+   SELECT
+   a,
+   b
+   FROM t
+   WHERE a = '1002') AS t2
+WHERE a = '1000'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT * FROM (
+  SELECT
+   a,
+   b
+  FROM t
+   UNION ALL
+  SELECT
+   a,
+   b
+   FROM t
+   WHERE a = '1001'
+    UNION ALL
+   SELECT
+   a,
+   b
+   FROM t
+   WHERE a = '1002') AS t2
+WHERE a = '1000'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(a=[CAST(_UTF-16LE'1000':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], b=[$1])
+  HiveFilter(condition=[=($0, _UTF-16LE'1000')])
+    HiveTableScan(table=[[default, t]], table:alias=[t])
+

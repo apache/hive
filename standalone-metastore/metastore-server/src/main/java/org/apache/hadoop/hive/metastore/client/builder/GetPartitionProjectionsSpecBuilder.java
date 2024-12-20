@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.client.builder;
 
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,19 +28,16 @@ import java.util.List;
  */
 public class GetPartitionProjectionsSpecBuilder {
 
-    private List<String> partitionList = null;
+    private List<String> fieldList = new ArrayList<>();
     private String includePartitionPattern = null;
     private String excludePartitionPattern = null;
 
-    public GetPartitionProjectionsSpecBuilder(List<String> partitionList, String includePartitionPattern,
-                                              String excludePartitionPattern) {
-        this.partitionList = partitionList;
-        this.includePartitionPattern = includePartitionPattern;
-        this.excludePartitionPattern = excludePartitionPattern;
+    public GetPartitionProjectionsSpecBuilder() {
+
     }
 
-    public GetPartitionProjectionsSpecBuilder setPartitionList(List<String> partitionList) {
-        this.partitionList = partitionList;
+    public GetPartitionProjectionsSpecBuilder addProjectField(String field) {
+        fieldList.add(field);
         return this;
     }
 
@@ -54,6 +52,6 @@ public class GetPartitionProjectionsSpecBuilder {
     }
 
     public GetProjectionsSpec build() {
-        return new GetProjectionsSpec(partitionList, includePartitionPattern, excludePartitionPattern);
+        return new GetProjectionsSpec(fieldList, includePartitionPattern, excludePartitionPattern);
     }
 }

@@ -19,14 +19,8 @@
 package org.apache.hive.jdbc.saml;
 
 import com.google.common.base.Preconditions;
-import com.google.errorprone.annotations.Immutable;
 import java.io.Closeable;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
 import org.apache.hive.service.auth.saml.HiveSamlUtils;
 
 /**
@@ -111,7 +105,6 @@ public interface IJdbcBrowserClient extends Closeable {
   /**
    * Util class which can be used to parse the response received from the server.
    */
-  @Immutable
   class HiveJdbcBrowserServerResponse {
     private final String msg;
     private final boolean status;

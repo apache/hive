@@ -34,4 +34,5 @@ PREHOOK: Input: default@citl_table@part=1
 PREHOOK: query: DROP TABLE citl_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@citl_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@citl_table

@@ -1,11 +1,15 @@
 PREHOOK: query: drop table hive_test_src_n3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table hive_test_src_n3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table hive_test_dst_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table hive_test_dst_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table hive_test_src_n3 ( col1 string ) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -82,7 +86,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	11                  
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -222,7 +226,7 @@ Table Parameters:
 	numPartitions       	1                   
 	numRows             	6                   
 	rawDataSize         	6                   
-	totalSize           	171                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -238,16 +242,20 @@ Storage Desc Params:
 PREHOOK: query: drop table hive_test_src_n3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hive_test_src_n3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hive_test_src_n3
 POSTHOOK: query: drop table hive_test_src_n3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hive_test_src_n3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hive_test_src_n3
 PREHOOK: query: drop table hive_test_dst_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hive_test_dst_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hive_test_dst_n0
 POSTHOOK: query: drop table hive_test_dst_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hive_test_dst_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hive_test_dst_n0

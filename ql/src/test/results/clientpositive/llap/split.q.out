@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE tmp_jo_tab_test
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE tmp_jo_tab_test
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE table tmp_jo_tab_test (message_line STRING)
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE

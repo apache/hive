@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS testAvroComments1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS testAvroComments1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE testAvroComments1
 ROW FORMAT
 SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
@@ -89,15 +91,19 @@ extra_field         	string              	an extra field not in the original fil
 PREHOOK: query: DROP TABLE testAvroComments1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testavrocomments1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testavrocomments1
 POSTHOOK: query: DROP TABLE testAvroComments1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testavrocomments1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testavrocomments1
 PREHOOK: query: DROP TABLE IF EXISTS testAvroComments2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS testAvroComments2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE testAvroComments2
 ROW FORMAT
 SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
@@ -181,15 +187,19 @@ extra_field         	string
 PREHOOK: query: DROP TABLE testAvroComments2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testavrocomments2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testavrocomments2
 POSTHOOK: query: DROP TABLE testAvroComments2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testavrocomments2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testavrocomments2
 PREHOOK: query: DROP TABLE IF EXISTS testAvroComments3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS testAvroComments3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE testAvroComments3
 ROW FORMAT
 SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
@@ -269,15 +279,19 @@ extra_field         	string
 PREHOOK: query: DROP TABLE testAvroComments3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testavrocomments3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testavrocomments3
 POSTHOOK: query: DROP TABLE testAvroComments3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testavrocomments3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testavrocomments3
 PREHOOK: query: DROP TABLE IF EXISTS testAvroComments4
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS testAvroComments4
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE testAvroComments4 (
   number int COMMENT "Order of playing the role",
   first_name string COMMENT "first name of actor playing role",
@@ -309,15 +323,19 @@ extra_field         	string              	an extra field not in the original fil
 PREHOOK: query: DROP TABLE testAvroComments4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testavrocomments4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testavrocomments4
 POSTHOOK: query: DROP TABLE testAvroComments4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testavrocomments4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testavrocomments4
 PREHOOK: query: DROP TABLE IF EXISTS testAvroComments5
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS testAvroComments5
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE testAvroComments5 (
   number int COMMENT "Order of playing the role",
   first_name string,
@@ -349,15 +367,19 @@ extra_field         	string
 PREHOOK: query: DROP TABLE testAvroComments5
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testavrocomments5
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testavrocomments5
 POSTHOOK: query: DROP TABLE testAvroComments5
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testavrocomments5
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testavrocomments5
 PREHOOK: query: DROP TABLE IF EXISTS testAvroComments6
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS testAvroComments6
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE testAvroComments6 (
   number int,
   first_name string,
@@ -389,8 +411,10 @@ extra_field         	string
 PREHOOK: query: DROP TABLE testAvroComments6
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testavrocomments6
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testavrocomments6
 POSTHOOK: query: DROP TABLE testAvroComments6
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testavrocomments6
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testavrocomments6

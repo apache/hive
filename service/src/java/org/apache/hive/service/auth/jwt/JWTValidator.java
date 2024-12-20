@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.security.sasl.AuthenticationException;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.security.Key;
 import java.text.ParseException;
 import java.util.Date;
@@ -51,7 +52,7 @@ public class JWTValidator {
 
   private final URLBasedJWKSProvider jwksProvider;
 
-  public JWTValidator(HiveConf conf) throws IOException, ParseException {
+  public JWTValidator(HiveConf conf) throws IOException, ParseException, GeneralSecurityException {
     this.jwksProvider = new URLBasedJWKSProvider(conf);
   }
 

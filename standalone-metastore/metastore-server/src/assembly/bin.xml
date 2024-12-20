@@ -36,12 +36,13 @@
       <outputDirectory>lib</outputDirectory>
       <unpack>false</unpack>
       <useProjectArtifact>true</useProjectArtifact>
-      <useStrictFiltering>true</useStrictFiltering>
+      <useStrictFiltering>false</useStrictFiltering>
       <useTransitiveFiltering>true</useTransitiveFiltering>
       <excludes>
         <exclude>org.apache.hadoop:*</exclude>
         <exclude>org.slf4j:*</exclude>
         <exclude>log4j:*</exclude>
+        <exclude>ch.qos.reload4j:*</exclude>
         <exclude>com.oracle.database.jdbc:*</exclude>
         <exclude>mysql:mysql-connector-java:*</exclude>
         <exclude>org.mariadb.jdbc:*</exclude>
@@ -66,17 +67,6 @@
         <include>NOTICE</include>
       </includes>
       <outputDirectory>/</outputDirectory>
-    </fileSet>
-
-    <fileSet>
-      <directory>${project.basedir}/binary-package-licenses</directory>
-      <includes>
-        <include>/*</include>
-      </includes>
-      <excludes>
-        <exclude>/README</exclude>
-      </excludes>
-      <outputDirectory>binary-package-licenses</outputDirectory>
     </fileSet>
 
     <fileSet>

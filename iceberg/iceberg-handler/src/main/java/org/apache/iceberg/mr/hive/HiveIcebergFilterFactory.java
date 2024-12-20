@@ -80,6 +80,9 @@ public class HiveIcebergFilterFactory {
       case NOT:
         return not(translate(childNodes.get(0), leaves));
       case LEAF:
+        if (tree.getLeaf() >= leaves.size()) {
+          throw new UnsupportedOperationException("No more leaves are available");
+        }
         return translateLeaf(leaves.get(tree.getLeaf()));
       case CONSTANT:
         throw new UnsupportedOperationException("CONSTANT operator is not supported");

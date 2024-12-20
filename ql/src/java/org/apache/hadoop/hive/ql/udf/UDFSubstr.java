@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.stats.estimator.StatEstimator;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimatorProvider;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -55,7 +56,6 @@ import org.apache.hadoop.io.Text;
     + "  'b'")
 @VectorizedExpressions({StringSubstrColStart.class, StringSubstrColStartLen.class})
 public class UDFSubstr extends UDF implements StatEstimatorProvider {
-
   private final int[] index;
   private final Text r;
 
@@ -64,19 +64,40 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
     r = new Text();
   }
 
-  public Text evaluate(Text t, IntWritable pos, IntWritable len) {
-
+  public Text evaluate(Text t, LongWritable pos, LongWritable len) {
     if ((t == null) || (pos == null) || (len == null)) {
       return null;
     }
 
+    long longPos = pos.get();
+    long longLen = len.get();
+    // If an unsupported value is seen, we don't want to return a string
+    // that doesn't match what the user expects, so we return NULL (still
+    // unexpected, of course, but probably better than a bad string).
+    if (longPos > Integer.MAX_VALUE || longLen > Integer.MAX_VALUE ||
+        longPos < Integer.MIN_VALUE || longLen < Integer.MIN_VALUE) {
+      return null;
+    }
+
+    return evaluateInternal(t, (int) longPos, (int) longLen);
+  }
+
+  public Text evaluate(Text t, IntWritable pos, IntWritable len) {
+    if ((t == null) || (pos == null) || (len == null)) {
+      return null;
+    }
+
+    return evaluateInternal(t, pos.get(), len.get());
+  }
+
+  private Text evaluateInternal(Text t, int pos, int len) {
     r.clear();
-    if ((len.get() <= 0)) {
+    if ((len <= 0)) {
       return r;
     }
 
     String s = t.toString();
-    int[] index = makeIndex(pos.get(), len.get(), s.length());
+    int[] index = makeIndex(pos, len, s.length());
     if (index == null) {
       return r;
     }
@@ -112,21 +133,51 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
 
   private final IntWritable maxValue = new IntWritable(Integer.MAX_VALUE);
 
+  // Even though we are using longs, substr can only deal with ints, so we use
+  // the maximum int value as the maxValue
+  private final LongWritable maxLongValue = new LongWritable(Integer.MAX_VALUE);
+
   public Text evaluate(Text s, IntWritable pos) {
     return evaluate(s, pos, maxValue);
   }
 
-  public BytesWritable evaluate(BytesWritable bw, IntWritable pos, IntWritable len) {
+  public Text evaluate(Text s, LongWritable pos) {
+    return evaluate(s, pos, maxLongValue);
+  }
 
+  public BytesWritable evaluate(BytesWritable bw, LongWritable pos, LongWritable len) {
     if ((bw == null) || (pos == null) || (len == null)) {
       return null;
     }
 
-    if ((len.get() <= 0)) {
+    long longPos = pos.get();
+    long longLen = len.get();
+    // If an unsupported value is seen, we don't want to return a string
+    // that doesn't match what the user expects, so we return NULL (still
+    // unexpected, of course, but probably better than a bad string).
+    if (longPos > Integer.MAX_VALUE || longLen > Integer.MAX_VALUE ||
+        longPos < Integer.MIN_VALUE || longLen < Integer.MIN_VALUE) {
+      return null;
+    }
+
+    return evaluateInternal(bw, (int) longPos, (int) longLen);
+  }
+
+  public BytesWritable evaluate(BytesWritable bw, IntWritable pos, IntWritable len) {
+    if ((bw == null) || (pos == null) || (len == null)) {
+      return null;
+    }
+
+    return evaluateInternal(bw, pos.get(), len.get());
+  }
+
+  private BytesWritable evaluateInternal(BytesWritable bw, int pos, int len) {
+
+    if (len <= 0) {
       return new BytesWritable();
     }
 
-    int[] index = makeIndex(pos.get(), len.get(), bw.getLength());
+    int[] index = makeIndex(pos, len, bw.getLength());
     if (index == null) {
       return new BytesWritable();
     }
@@ -136,6 +187,10 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
 
   public BytesWritable evaluate(BytesWritable bw, IntWritable pos){
     return evaluate(bw, pos, maxValue);
+  }
+
+  public BytesWritable evaluate(BytesWritable bw, LongWritable pos){
+    return evaluate(bw, pos, maxLongValue);
   }
 
   @Override

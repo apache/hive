@@ -37,3 +37,8 @@ describe formatted test31;
 create table test32 as select * from test31;
 show create table test32;
 describe formatted test32;
+
+-- create table with empty characters within quotes
+create table ` default`.` table41`(i int);
+show create table ` default`.` table41`;
+describe formatted ` default`.` table41`;

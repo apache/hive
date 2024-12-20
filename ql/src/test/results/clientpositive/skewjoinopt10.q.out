@@ -16,8 +16,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t1_n88
 PREHOOK: query: drop table array_valued_T1_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table array_valued_T1_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table array_valued_T1_n0 (key string, value array<string>) SKEWED BY (key) ON ((8))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -65,12 +67,16 @@ STAGE PLANS:
             Filter Operator
               predicate: (key is not null and (key = '8')) (type: boolean)
               Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: key (type: string)
-                null sort order: z
-                sort order: +
-                Map-reduce partition columns: key (type: string)
+              Select Operator
+                expressions: key (type: string)
+                outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: b
             filterExpr: key is not null (type: boolean)
@@ -78,24 +84,28 @@ STAGE PLANS:
             Filter Operator
               predicate: (key is not null and (key = '8')) (type: boolean)
               Statistics: Num rows: 6 Data size: 12624 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: key (type: string)
-                null sort order: z
-                sort order: +
-                Map-reduce partition columns: key (type: string)
+              Select Operator
+                expressions: key (type: string), value (type: array<string>)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 6 Data size: 12624 Basic stats: COMPLETE Column stats: NONE
-                value expressions: value (type: array<string>)
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 6 Data size: 12624 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: array<string>)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           keys:
-            0 key (type: string)
-            1 key (type: string)
-          outputColumnNames: _col0, _col7
+            0 _col0 (type: string)
+            1 _col0 (type: string)
+          outputColumnNames: _col0, _col2
           Statistics: Num rows: 6 Data size: 13886 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col7 (type: array<string>)
+            expressions: _col0 (type: string), _col2 (type: array<string>)
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 6 Data size: 13886 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -190,36 +200,44 @@ STAGE PLANS:
             Filter Operator
               predicate: (key is not null and (not (key = '8'))) (type: boolean)
               Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: key (type: string)
-                null sort order: z
-                sort order: +
-                Map-reduce partition columns: key (type: string)
+              Select Operator
+                expressions: key (type: string)
+                outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: b
             Statistics: Num rows: 6 Data size: 12624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key is not null and (not (key = '8'))) (type: boolean)
               Statistics: Num rows: 1 Data size: 2104 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: key (type: string)
-                null sort order: z
-                sort order: +
-                Map-reduce partition columns: key (type: string)
+              Select Operator
+                expressions: key (type: string), value (type: array<string>)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 2104 Basic stats: COMPLETE Column stats: NONE
-                value expressions: value (type: array<string>)
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 1 Data size: 2104 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: array<string>)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           keys:
-            0 key (type: string)
-            1 key (type: string)
-          outputColumnNames: _col0, _col7
+            0 _col0 (type: string)
+            1 _col0 (type: string)
+          outputColumnNames: _col0, _col2
           Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), _col7 (type: array<string>)
+            expressions: _col0 (type: string), _col2 (type: array<string>)
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
             File Output Operator

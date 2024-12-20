@@ -1,0 +1,96 @@
+Hive MetaStore Upgrade HowTo
+============================
+
+This document describes how to upgrade the schema of a PostgreSQL backed
+Hive MetaStore instance from one release version of Hive to another
+release version of Hive. For example, by following the steps listed
+below it is possible to upgrade a Hive 3.1.0 MetaStore schema to a
+Hive 4.0.0 MetaStore schema. Before attempting this project we
+strongly recommend that you read through all of the steps in this
+document and familiarize yourself with the required tools.
+
+MetaStore Upgrade Steps
+=======================
+
+1) Shutdown your MetaStore instance and restrict access to the
+   MetaStore's PostgreSQL database. It is very important that no one else
+   accesses or modifies the contents of database while you are
+   performing the schema upgrade.
+
+2) Create a backup of your PostgreSQL metastore database. This will allow
+   you to revert any changes made during the upgrade process if
+   something goes wrong. The pg_dump utility is the easiest way to
+   create a backup of a PostgreSQL database:
+
+   % pg_dump --opt <metastore_db_name> > metastore_backup.sql
+
+   Note that you may need also need to specify a hostname and username
+   using the --host and --username command line switches.
+
+3) Dump your metastore database schema to a file. We use the pg_dump
+   utility again, but this time with a command line option that
+   specifies we are only interested in dumping the DDL statements
+   required to create the schema:
+
+   % pg_dump --schema-only  <metastore_db_name> > my-schema-x.y.z.postgres.sql
+
+4) The schema upgrade scripts assume that the schema you are upgrading
+   closely matches the official schema for your particular version of
+   Hive. The files in this directory with names like
+   "hive-schema-x.y.z.postgres.sql" contain dumps of the official schemas
+   corresponding to each of the released versions of Hive. You can
+   determine differences between your schema and the official schema
+   by diffing the contents of the official dump with the schema dump
+   you created in the previous step. Some differences are acceptable
+   and will not interfere with the upgrade process, but others need to
+   be resolved manually or the upgrade scripts will fail to complete.
+
+  * Missing Tables: Hive's default configuration causes the MetaStore
+    to create schema elements only when they are needed. Some tables
+    may be missing from your MetaStore schema if you have not created
+    the corresponding Hive catalog objects, e.g. the PARTITIONS table
+    will probably not exist if you have not created any table
+    partitions in your MetaStore. You MUST create these missing tables
+    before running the upgrade scripts. The easiest way to do this is
+    by executing the official schema DDL script against your
+    schema.
+
+  * Extra Tables: Your schema may include a table named NUCLEUS_TABLES
+    or a table named SEQUENCE_TABLE. These tables are managed
+    by the DataNucleus ORM layer and will be created automatically if
+    they don't exist. No action on your part is required.
+
+  * Reversed Column Constraint Names in the Same Table: Tables with
+    multiple constraints may have the names of the constraints
+    reversed. For example, the PARTITIONS table contains two foreign
+    key constraints named PARTITIONS_FK1 and PARTITIONS_FK2 which
+    reference SDS.SD_ID and TBLS.TBL_ID respectively. However, in your
+    schema you may find that PARTITIONS_FK1 references TBLS.TBL_ID and
+    PARTITIONS_FK2 references SDS.SD_ID. Either version is acceptable
+    -- the only requirement is that these constraints actually exist.
+
+  * Differences in Column/Constraint Names: Your schema may contain
+    tables with columns named "IDX" or unique keys named
+    "UNIQUE<tab_name>". If you find either of these in your schema you
+    will need to change the names to "INTEGER_IDX" and
+    "UNIQUE_<tab_name>" before running the upgrade scripts. For more
+    background on this issue please refer to HIVE-1435.
+
+5) You are now ready to run the schema upgrade script, make sure the db
+   driver is included in the CLASSPATH,
+
+   bin/schematool -initOrUpgradeSchema -dbType postgres \
+   -driver org.postgresql.Driver -userName connect_username  \
+   -url 'jdbc:postgresql://postgres_host:5432/hive' -passWord connect_password
+
+   The command should run to completion without any errors. If you
+   do encounter errors you need to analyze the cause and attempt to
+   trace it back to one of the preceding steps.
+
+6) The final step of the upgrade process is validating your freshly
+   upgraded schema against the official schema for your particular
+   version of Hive. This is accomplished by repeating steps (3) and
+   (4), but this time comparing against the official version of the
+   upgraded schema, e.g. if you upgraded the schema to Hive 4.0.0 then
+   you will want to compare your schema dump against the contents of
+   hive-schema-4.0.0.postgres.sql

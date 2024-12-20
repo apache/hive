@@ -76,10 +76,12 @@ POSTHOOK: Input: default@exim_employee_n8@emp_country=us/emp_state=tn
 PREHOOK: query: drop table exim_employee_n8
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@exim_employee_n8
+PREHOOK: Output: database:default
 PREHOOK: Output: default@exim_employee_n8
 POSTHOOK: query: drop table exim_employee_n8
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@exim_employee_n8
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@exim_employee_n8
 PREHOOK: query: create database importer
 PREHOOK: type: CREATEDATABASE
@@ -199,10 +201,12 @@ POSTHOOK: Input: importer@exim_employee_n8@emp_country=us/emp_state=tn
 PREHOOK: query: drop table exim_employee_n8
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: importer@exim_employee_n8
+PREHOOK: Output: database:importer
 PREHOOK: Output: importer@exim_employee_n8
 POSTHOOK: query: drop table exim_employee_n8
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: importer@exim_employee_n8
+POSTHOOK: Output: database:importer
 POSTHOOK: Output: importer@exim_employee_n8
 #### A masked pattern was here ####
 PREHOOK: query: drop database importer

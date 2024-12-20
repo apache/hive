@@ -1,0 +1,292 @@
+PREHOOK: query: create table source(a int) stored by iceberg tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@source
+POSTHOOK: query: create table source(a int) stored by iceberg tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@source
+PREHOOK: query: insert into source values (1), (2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@source
+POSTHOOK: query: insert into source values (1), (2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@source
+PREHOOK: query: create table target like source stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@target
+POSTHOOK: query: create table target like source stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@target
+PREHOOK: query: show create table target
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@target
+POSTHOOK: query: show create table target
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@target
+CREATE EXTERNAL TABLE `target`(
+  `a` int)
+ROW FORMAT SERDE 
+  'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
+STORED BY 
+  'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' 
+
+LOCATION
+  'hdfs://### HDFS PATH ###'
+TBLPROPERTIES (
+  'TRANSLATED_TO_EXTERNAL'='TRUE', 
+  'bucketing_version'='2', 
+  'created_with_ctlt'='true', 
+  'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"a","required":false,"type":"int"}]}', 
+  'format-version'='2', 
+  'iceberg.orc.files.only'='false', 
+  'metadata_location'='hdfs://### HDFS PATH ###', 
+  'parquet.compression'='zstd', 
+  'snapshot-count'='0', 
+  'table_type'='ICEBERG', 
+#### A masked pattern was here ####
+  'uuid'='#Masked#', 
+  'write.delete.mode'='merge-on-read', 
+  'write.merge.mode'='merge-on-read', 
+  'write.update.mode'='merge-on-read')
+PREHOOK: query: select count(*) from target
+PREHOOK: type: QUERY
+PREHOOK: Input: default@target
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from target
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@target
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+PREHOOK: query: insert into target values (1), (2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@target
+POSTHOOK: query: insert into target values (1), (2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@target
+PREHOOK: query: select a from target order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@target
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select a from target order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@target
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+2
+PREHOOK: query: delete from target where a=2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@target
+PREHOOK: Output: default@target
+POSTHOOK: query: delete from target where a=2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@target
+POSTHOOK: Output: default@target
+PREHOOK: query: select a from target order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@target
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select a from target order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@target
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+PREHOOK: query: create table emp_iceberg (id int) partitioned by (company string) stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@emp_iceberg
+POSTHOOK: query: create table emp_iceberg (id int) partitioned by (company string) stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@emp_iceberg
+PREHOOK: query: show create table emp_iceberg
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@emp_iceberg
+POSTHOOK: query: show create table emp_iceberg
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@emp_iceberg
+CREATE EXTERNAL TABLE `emp_iceberg`(
+  `id` int, 
+  `company` string)
+PARTITIONED BY SPEC ( 
+`company`)
+ROW FORMAT SERDE 
+  'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
+STORED BY 
+  'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' 
+
+LOCATION
+  'hdfs://### HDFS PATH ###'
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"id","required":false,"type":"int"},{"id":2,"name":"company","required":false,"type":"string"}]}', 
+  'default-partition-spec'='{"spec-id":0,"fields":[{"name":"company","transform":"identity","source-id":2,"field-id":1000}]}', 
+  'format-version'='2', 
+  'iceberg.orc.files.only'='false', 
+  'metadata_location'='hdfs://### HDFS PATH ###', 
+  'parquet.compression'='zstd', 
+  'serialization.format'='1', 
+  'snapshot-count'='0', 
+  'table_type'='ICEBERG', 
+#### A masked pattern was here ####
+  'uuid'='#Masked#', 
+  'write.delete.mode'='merge-on-read', 
+  'write.merge.mode'='merge-on-read', 
+  'write.update.mode'='merge-on-read')
+PREHOOK: query: create table emp_like1 like emp_iceberg stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@emp_like1
+POSTHOOK: query: create table emp_like1 like emp_iceberg stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@emp_like1
+PREHOOK: query: show create table emp_like1
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@emp_like1
+POSTHOOK: query: show create table emp_like1
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@emp_like1
+CREATE EXTERNAL TABLE `emp_like1`(
+  `id` int, 
+  `company` string)
+PARTITIONED BY SPEC ( 
+`company`)
+ROW FORMAT SERDE 
+  'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
+STORED BY 
+  'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' 
+
+LOCATION
+  'hdfs://### HDFS PATH ###'
+TBLPROPERTIES (
+  'TRANSLATED_TO_EXTERNAL'='TRUE', 
+  'bucketing_version'='2', 
+  'created_with_ctlt'='true', 
+  'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"id","required":false,"type":"int"},{"id":2,"name":"company","required":false,"type":"string"}]}', 
+  'default-partition-spec'='{"spec-id":0,"fields":[{"name":"company","transform":"identity","source-id":2,"field-id":1000}]}', 
+  'format-version'='2', 
+  'iceberg.orc.files.only'='false', 
+  'metadata_location'='hdfs://### HDFS PATH ###', 
+  'parquet.compression'='zstd', 
+  'snapshot-count'='0', 
+  'table_type'='ICEBERG', 
+#### A masked pattern was here ####
+  'uuid'='#Masked#', 
+  'write.delete.mode'='merge-on-read', 
+  'write.merge.mode'='merge-on-read', 
+  'write.update.mode'='merge-on-read')
+PREHOOK: query: create table emp (id int) partitioned by (company string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@emp
+POSTHOOK: query: create table emp (id int) partitioned by (company string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@emp
+PREHOOK: query: show create table emp
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@emp
+POSTHOOK: query: show create table emp
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@emp
+CREATE TABLE `emp`(
+  `id` int)
+PARTITIONED BY ( 
+  `company` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+  'hdfs://### HDFS PATH ###'
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: create table emp_like2 like emp stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@emp_like2
+POSTHOOK: query: create table emp_like2 like emp stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@emp_like2
+PREHOOK: query: show create table emp_like2
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@emp_like2
+POSTHOOK: query: show create table emp_like2
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@emp_like2
+CREATE EXTERNAL TABLE `emp_like2`(
+  `id` int, 
+  `company` string)
+PARTITIONED BY SPEC ( 
+`company`)
+ROW FORMAT SERDE 
+  'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
+STORED BY 
+  'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' 
+
+LOCATION
+  'hdfs://### HDFS PATH ###'
+TBLPROPERTIES (
+  'TRANSLATED_TO_EXTERNAL'='TRUE', 
+  'bucketing_version'='2', 
+  'created_with_ctlt'='true', 
+  'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"id","required":false,"type":"int"},{"id":2,"name":"company","required":false,"type":"string"}]}', 
+  'default-partition-spec'='{"spec-id":0,"fields":[{"name":"company","transform":"identity","source-id":2,"field-id":1000}]}', 
+  'format-version'='2', 
+  'iceberg.orc.files.only'='false', 
+  'metadata_location'='hdfs://### HDFS PATH ###', 
+  'parquet.compression'='zstd', 
+  'snapshot-count'='0', 
+  'table_type'='ICEBERG', 
+#### A masked pattern was here ####
+  'uuid'='#Masked#', 
+  'write.delete.mode'='merge-on-read', 
+  'write.merge.mode'='merge-on-read', 
+  'write.update.mode'='merge-on-read')
+PREHOOK: query: create managed table man_table (id int) Stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@man_table
+POSTHOOK: query: create managed table man_table (id int) Stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@man_table
+PREHOOK: query: create table like_man_table like man_table stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@like_man_table
+POSTHOOK: query: create table like_man_table like man_table stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@like_man_table
+PREHOOK: query: insert into like_man_table values (1), (2), (3), (4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@like_man_table
+POSTHOOK: query: insert into like_man_table values (1), (2), (3), (4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@like_man_table
+PREHOOK: query: select * from like_man_table order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@like_man_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from like_man_table order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@like_man_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+2
+3
+4

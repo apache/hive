@@ -1,27 +1,39 @@
 PREHOOK: query: drop table varchar_nested_1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table varchar_nested_1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table varchar_nested_array
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table varchar_nested_array
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table varchar_nested_map
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table varchar_nested_map
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table varchar_nested_struct
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table varchar_nested_struct
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table varchar_nested_cta
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table varchar_nested_cta
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table varchar_nested_view
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table varchar_nested_view
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table varchar_nested_1 (key int, value varchar(20))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -214,48 +226,60 @@ POSTHOOK: Input: default@varchar_nested_view
 PREHOOK: query: drop table varchar_nested_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@varchar_nested_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@varchar_nested_1
 POSTHOOK: query: drop table varchar_nested_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@varchar_nested_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_nested_1
 PREHOOK: query: drop table varchar_nested_array
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@varchar_nested_array
+PREHOOK: Output: database:default
 PREHOOK: Output: default@varchar_nested_array
 POSTHOOK: query: drop table varchar_nested_array
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@varchar_nested_array
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_nested_array
 PREHOOK: query: drop table varchar_nested_map
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@varchar_nested_map
+PREHOOK: Output: database:default
 PREHOOK: Output: default@varchar_nested_map
 POSTHOOK: query: drop table varchar_nested_map
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@varchar_nested_map
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_nested_map
 PREHOOK: query: drop table varchar_nested_struct
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@varchar_nested_struct
+PREHOOK: Output: database:default
 PREHOOK: Output: default@varchar_nested_struct
 POSTHOOK: query: drop table varchar_nested_struct
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@varchar_nested_struct
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_nested_struct
 PREHOOK: query: drop table varchar_nested_cta
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@varchar_nested_cta
+PREHOOK: Output: database:default
 PREHOOK: Output: default@varchar_nested_cta
 POSTHOOK: query: drop table varchar_nested_cta
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@varchar_nested_cta
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_nested_cta
 PREHOOK: query: drop table varchar_nested_view
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@varchar_nested_view
+PREHOOK: Output: database:default
 PREHOOK: Output: default@varchar_nested_view
 POSTHOOK: query: drop table varchar_nested_view
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@varchar_nested_view
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_nested_view

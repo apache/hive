@@ -44,7 +44,6 @@ import org.apache.iceberg.Schema;
 import org.apache.iceberg.expressions.Binder;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.mapping.MappingUtil;
-import org.apache.iceberg.mr.hive.HiveIcebergInputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -134,7 +133,8 @@ public class VectorizedReadUtils {
    * @param fileSchema - ORC file schema of the input file
    * @throws IOException - errors relating to accessing the ORC file
    */
-  public static void handleIcebergProjection(FileScanTask task, JobConf job, TypeDescription fileSchema)
+  public static void handleIcebergProjection(FileScanTask task, JobConf job,
+      TypeDescription fileSchema, Expression residual)
       throws IOException {
 
     // We need to map with the current (i.e. current Hive table columns) full schema (without projections),
@@ -163,7 +163,6 @@ public class VectorizedReadUtils {
     job.set(ColumnProjectionUtils.ORC_SCHEMA_STRING, readOrcSchema.toString());
 
     // Predicate pushdowns needs to be adjusted too in case of column renames, we let Iceberg generate this into job
-    Expression residual = HiveIcebergInputFormat.residualForTask(task, job);
     Expression boundFilter = Binder.bind(currentSchema.asStruct(), residual, false);
 
     // Note the use of the unshaded version of this class here (required for SARG deseralization later)

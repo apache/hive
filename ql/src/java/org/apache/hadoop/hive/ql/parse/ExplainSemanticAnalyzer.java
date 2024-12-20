@@ -221,7 +221,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         ctx.getCalcitePlan());
 
     work.setAppendTaskType(
-        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEEXPLAINDEPENDENCYAPPENDTASKTYPES));
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_EXPLAIN_DEPENDENCY_APPEND_TASK_TYPES));
 
     ExplainTask explTask = (ExplainTask) TaskFactory.get(work);
 
@@ -281,5 +281,12 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
       return true;
     }
     return super.skipAuthorization();
+  }
+
+  @Override
+  public void startAnalysis() {
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_HMS_QUERY_CACHE_ENABLED)) {
+      queryState.createHMSCache();
+    }
   }
 }

@@ -233,24 +233,30 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table srcorc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcorc
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcorc
 POSTHOOK: query: drop table srcorc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcorc
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcorc
 PREHOOK: query: drop table vectororc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@vectororc
+PREHOOK: Output: database:default
 PREHOOK: Output: default@vectororc
 POSTHOOK: query: drop table vectororc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@vectororc
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@vectororc
 PREHOOK: query: drop table testorc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testorc
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testorc
 POSTHOOK: query: drop table testorc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testorc
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testorc

@@ -1,7 +1,9 @@
 PREHOOK: query: drop table tbl_orc
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table tbl_orc
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table tbl_orc (a int, b string) stored as orc tblproperties('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -10,8 +12,9 @@ POSTHOOK: query: create table tbl_orc (a int, b string) stored as orc tblpropert
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_orc
-PREHOOK: query: alter table tbl_orc set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: query: alter table tbl_orc convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
 PREHOOK: Input: default@tbl_orc
-PREHOOK: Output: default@tbl_orc
-FAILED: Execution Error, return code 40013 from org.apache.hadoop.hive.ql.ddl.DDLTask. Unable to alter table. Converting non-external, temporary or transactional hive table to iceberg table is not allowed.
+FAILED: Execution Error, return code 40013 from org.apache.hadoop.hive.ql.ddl.DDLTask. Unable to alter table. MetaException(message:Converting non-external, temporary or transactional hive table to iceberg table is not allowed.)
+#### A masked pattern was here ####
+

@@ -823,16 +823,20 @@ POSTHOOK: Input: default@stats_tbl_part
 PREHOOK: query: drop table stats_tbl
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats_tbl
+PREHOOK: Output: database:default
 PREHOOK: Output: default@stats_tbl
 POSTHOOK: query: drop table stats_tbl
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@stats_tbl
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_tbl
 PREHOOK: query: drop table stats_tbl_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats_tbl_part
+PREHOOK: Output: database:default
 PREHOOK: Output: default@stats_tbl_part
 POSTHOOK: query: drop table stats_tbl_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@stats_tbl_part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_tbl_part

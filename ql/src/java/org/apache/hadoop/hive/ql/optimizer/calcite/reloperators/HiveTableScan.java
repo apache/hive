@@ -50,6 +50,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSet;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 
 /**
  * Relational expression representing a scan of a HiveDB collection.
@@ -148,7 +150,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
       String alias, String concatQbIDAlias, RelDataType newRowtype, boolean useQBIdInDigest, boolean insideView,
       HiveTableScanTrait tableScanTrait) {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), table);
-    assert getConvention() == HiveRelNode.CONVENTION;
+    assert getTraitSet().containsIfApplicable(HiveRelNode.CONVENTION);
     this.tblAlias = alias;
     this.concatQbIDAlias = concatQbIDAlias;
     this.hiveTableScanRowType = newRowtype;
@@ -207,16 +209,13 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
       .itemIf("plKey", ((RelOptHiveTable) table).getPartitionListKey(), pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
       .itemIf("table:alias", tblAlias, !this.useQBIdInDigest)
       .itemIf("tableScanTrait", this.tableScanTrait,
-          pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES);
+          pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
+      .itemIf("fromVersion", ((RelOptHiveTable) table).getHiveTableMD().getVersionIntervalFrom(),
+          isNotBlank(((RelOptHiveTable) table).getHiveTableMD().getVersionIntervalFrom()));
   }
 
   @Override
   public void register(RelOptPlanner planner) {
-
-  }
-
-  @Override
-  public void implement(Implementor implementor) {
 
   }
 

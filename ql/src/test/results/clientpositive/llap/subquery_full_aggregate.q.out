@@ -60,9 +60,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypestiny
 #### A masked pattern was here ####
 CBO PLAN:
-HiveSortLimit(fetch=[0])
-  HiveProject(bigint_col=[$4])
-    HiveTableScan(table=[[default, alltypestiny]], table:alias=[t1])
+HiveValues(tuples=[[]])
 
 PREHOOK: query: SELECT t1.bigint_col
 FROM alltypestiny t1

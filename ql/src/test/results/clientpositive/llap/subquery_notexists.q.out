@@ -1507,8 +1507,10 @@ empno	NULL
 PREHOOK: query: drop table tschema
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tschema
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tschema
 POSTHOOK: query: drop table tschema
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tschema
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tschema

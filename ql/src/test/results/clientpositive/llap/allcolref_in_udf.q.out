@@ -168,15 +168,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 4val_45val_5	4val_4	5val_5
-4val_45	NULL	5val_5
+4val_45	45val_5	NULL
 4val_45val_5	4val_4	5val_5
-4val_45	NULL	5val_5
+4val_45	45val_5	NULL
 4val_45val_5	4val_4	5val_5
-4val_45	NULL	5val_5
+4val_45	45val_5	NULL
 8val_89val_9	8val_8	9val_9
-8val_89	NULL	9val_9
+8val_89	89val_9	NULL
 9val_910val_10	9val_9	10val_10
-9val_910	NULL	10val_10
+9val_910	910val_10	NULL
 PREHOOK: query: create table allcolref as select array(key, value) from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src

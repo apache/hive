@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS repairtable
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS repairtable
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE repairtable(col STRING) PARTITIONED BY (p1 STRING, p2 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -19,4 +21,4 @@ POSTHOOK: Output: default@repairtable
 PREHOOK: query: MSCK REPAIR TABLE default.repairtable
 PREHOOK: type: MSCK
 PREHOOK: Output: default@repairtable
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask
+#### A masked pattern was here ####

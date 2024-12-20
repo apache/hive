@@ -1,0 +1,55 @@
+PREHOOK: query: create table testhivemask(name string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testhivemask
+POSTHOOK: query: create table testhivemask(name string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testhivemask
+PREHOOK: query: insert into testhivemask values('name1'),('name2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@testhivemask
+POSTHOOK: query: insert into testhivemask values('name1'),('name2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@testhivemask
+POSTHOOK: Lineage: testhivemask.name SCRIPT []
+PREHOOK: query: select mask_hash(name) from testhivemask
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testhivemask
+#### A masked pattern was here ####
+POSTHOOK: query: select mask_hash(name) from testhivemask
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testhivemask
+#### A masked pattern was here ####
+4e7c69b50c61f811ae81af0edaecc1af8445e153426f1ba831ff79e04ea68d4df3984ab80f2f45100e22a1132846628a70b9f6c064399393050e19296e6ec63b
+32084f67e470f79d7525e0329753a53cf6319e50592899ee6b5a2f72c974ff432e26729d14de7b519fadb358892a680cb9c9193916500db8f5753b6e90421cff
+PREHOOK: query: select mask_hash('01-28-2021')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select mask_hash('01-28-2021')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+7b375ec2327810383a3c6cfb871b5e433feda829cb882b8880a38f17039a34d71900de20b17884e703e411c483c47bec54fd9e8ef06adf1269202776e5b3c607
+PREHOOK: query: select mask_hash(name) from testhivemask
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testhivemask
+#### A masked pattern was here ####
+POSTHOOK: query: select mask_hash(name) from testhivemask
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testhivemask
+#### A masked pattern was here ####
+9367417d63903350aeb7e092bca792263d4fd82d4912252e014e073a8931b4c1
+069587dcb8f8b63329ae53051ba79ba34ba0deb41c7a1e044280d7b6bb15e4f0
+PREHOOK: query: select mask_hash('01-28-2021')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select mask_hash('01-28-2021')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+995bb88e7a32d9028c50d47cc4711e8bae0c94d5a746c0daa9fda1cc9dc41093

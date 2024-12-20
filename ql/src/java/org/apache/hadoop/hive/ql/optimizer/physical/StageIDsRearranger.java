@@ -48,11 +48,11 @@ public class StageIDsRearranger implements PhysicalPlanResolver {
     for (Task task : getExplainOrder(pctx)) {
       task.setId(PREFIX + (++counter));
     }
-    return null;
+    return pctx;
   }
 
   private static List<Task> getExplainOrder(PhysicalContext pctx) {
-    List<Task> tasks = getExplainOrder(pctx.getRootTasks(), pctx.getConf().getVar(HiveConf.ConfVars.HIVESTAGEIDREARRANGE));
+    List<Task> tasks = getExplainOrder(pctx.getRootTasks(), pctx.getConf().getVar(HiveConf.ConfVars.HIVE_STAGE_ID_REARRANGE));
     if (pctx.getFetchTask() != null) {
       tasks.add(pctx.getFetchTask());
     }

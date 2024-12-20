@@ -1,7 +1,9 @@
 PREHOOK: query: drop table foo_n5_temp
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table foo_n5_temp
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create temporary table foo_n5_temp (i int) partitioned by (s string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -77,8 +79,10 @@ POSTHOOK: Input: default@foo_n5_temp@s=foo_n5_temp
 PREHOOK: query: drop table foo_n5_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@foo_n5_temp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@foo_n5_temp
 POSTHOOK: query: drop table foo_n5_temp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@foo_n5_temp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@foo_n5_temp

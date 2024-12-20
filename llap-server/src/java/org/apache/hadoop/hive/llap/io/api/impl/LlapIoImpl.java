@@ -27,16 +27,22 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
+import javax.annotation.Nullable;
 import javax.management.ObjectName;
 
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CacheTag;
+import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
 import org.apache.hadoop.hive.llap.ProactiveEviction;
 import org.apache.hadoop.hive.llap.cache.LlapCacheHydration;
 import org.apache.hadoop.hive.llap.cache.MemoryLimitedPathCache;
 import org.apache.hadoop.hive.llap.cache.PathCache;
 import org.apache.hadoop.hive.llap.cache.ProactiveEvictingCachePolicy;
+import org.apache.hadoop.hive.llap.daemon.impl.LlapPooledIOThread;
 import org.apache.hadoop.hive.llap.daemon.impl.StatsRecordingThreadPool;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -80,6 +86,8 @@ import org.apache.hadoop.hive.ql.io.LlapCacheOnlyInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.orc.OrcSplit;
 import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.parquet.vector.ParquetFooterInputFromCache;
+import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.io.NullWritable;
@@ -91,11 +99,18 @@ import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hive.common.util.FixedSizedObjectPool;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.orc.impl.OrcTail;
+import org.apache.parquet.bytes.BytesUtils;
+import org.apache.parquet.hadoop.ParquetFileWriter;
+import org.apache.parquet.hadoop.util.HadoopStreams;
+import org.apache.parquet.io.SeekableInputStream;
 
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
+import static org.apache.hadoop.hive.llap.LlapHiveUtils.throwIfCacheOnlyRead;
 
 public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   public static final Logger LOG = LoggerFactory.getLogger("LlapIoImpl");
@@ -237,14 +252,16 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     int numThreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_IO_THREADPOOL_SIZE);
     executor = new StatsRecordingThreadPool(numThreads, numThreads, 0L, TimeUnit.MILLISECONDS,
         new LinkedBlockingQueue<Runnable>(),
-        new ThreadFactoryBuilder().setNameFormat("IO-Elevator-Thread-%d").setDaemon(true).build());
+        new ThreadFactoryBuilder().setNameFormat("IO-Elevator-Thread-%d").setDaemon(true)
+            .setThreadFactory(r -> new LlapPooledIOThread(r)).build());
     tracePool = IoTrace.createTracePool(conf);
     if (isEncodeEnabled) {
       int encodePoolMultiplier = HiveConf.getIntVar(conf, ConfVars.LLAP_IO_ENCODE_THREADPOOL_MULTIPLIER);
       int encodeThreads = numThreads * encodePoolMultiplier;
       encodeExecutor = new StatsRecordingThreadPool(encodeThreads, encodeThreads, 0L, TimeUnit.MILLISECONDS,
           new LinkedBlockingQueue<Runnable>(),
-          new ThreadFactoryBuilder().setNameFormat("IO-Elevator-Thread-OrcEncode-%d").setDaemon(true).build());
+          new ThreadFactoryBuilder().setNameFormat("IO-Elevator-Thread-OrcEncode-%d").setDaemon(true)
+              .setThreadFactory(r -> new LlapPooledIOThread(r)).build());
     } else {
       encodeExecutor = null;
     }
@@ -293,7 +310,9 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
 
     long markedBytes = dataCache.markBuffersForProactiveEviction(predicate, isInstantDeallocation);
     markedBytes += fileMetadataCache.markBuffersForProactiveEviction(predicate, isInstantDeallocation);
-    markedBytes += serdeCache.markBuffersForProactiveEviction(predicate, isInstantDeallocation);
+    if (serdeCache != null) {
+      markedBytes += serdeCache.markBuffersForProactiveEviction(predicate, isInstantDeallocation);
+    }
 
     // Signal mark phase of proactive eviction was done
     if (markedBytes > 0) {
@@ -452,6 +471,50 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   }
 
   @Override
+  public MemoryBufferOrBuffers getParquetFooterBuffersFromCache(Path path, JobConf conf, @Nullable Object fileKey)
+      throws IOException {
+
+    Preconditions.checkNotNull(fileMetadataCache, "Metadata cache must not be null");
+
+    boolean isReadCacheOnly = HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_CACHE_ONLY);
+    CacheTag tag = VectorizedParquetRecordReader.cacheTagOfParquetFile(path, daemonConf, conf);
+
+    MemoryBufferOrBuffers footerData = (fileKey == null ) ? null
+        : fileMetadataCache.getFileMetadata(fileKey);
+    if (footerData != null) {
+      LOG.info("Found the footer in cache for " + fileKey);
+      try {
+        return footerData;
+      } finally {
+        fileMetadataCache.decRefBuffer(footerData);
+      }
+    } else {
+      throwIfCacheOnlyRead(isReadCacheOnly);
+    }
+
+    final FileSystem fs = path.getFileSystem(conf);
+    final FileStatus stat = fs.getFileStatus(path);
+
+    // To avoid reading the footer twice, we will cache it first and then read from cache.
+    // Parquet calls protobuf methods directly on the stream and we can't get bytes after the fact.
+    try (SeekableInputStream stream = HadoopStreams.wrap(fs.open(path))) {
+      long footerLengthIndex = stat.getLen()
+          - ParquetFooterInputFromCache.FOOTER_LENGTH_SIZE - ParquetFileWriter.MAGIC.length;
+      stream.seek(footerLengthIndex);
+      int footerLength = BytesUtils.readIntLittleEndian(stream);
+      stream.seek(footerLengthIndex - footerLength);
+      LOG.info("Caching the footer of length " + footerLength + " for " + fileKey);
+      // Note: we don't pass in isStopped here - this is not on an IO thread.
+      footerData = fileMetadataCache.putFileMetadata(fileKey, footerLength, stream, tag, null);
+      try {
+        return footerData;
+      } finally {
+        fileMetadataCache.decRefBuffer(footerData);
+      }
+    }
+  }
+
+  @Override
   public LlapDaemonProtocolProtos.CacheEntryList fetchCachedContentInfo() {
     if (useLowLevelCache) {
       GenericDataCache cache = new GenericDataCache(dataCache, bufferManager);
@@ -475,4 +538,10 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       LOG.warn("Cannot load data into the cache. Low level cache is disabled.");
     }
   }
+
+  @Override
+  public boolean usingLowLevelCache() {
+    return useLowLevelCache;
+  }
+
 }

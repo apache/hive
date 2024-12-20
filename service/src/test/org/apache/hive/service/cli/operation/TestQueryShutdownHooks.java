@@ -20,6 +20,7 @@ package org.apache.hive.service.cli.operation;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.util.ShutdownHookManagerInspector;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationHandle;
@@ -53,7 +54,9 @@ public class TestQueryShutdownHooks {
   public void setUp() throws Exception {
 
     service = new EmbeddedThriftBinaryCLIService();
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = new HiveConfForTest(getClass());
+    //TODO: HIVE-28298: TestQueryShutdownHooks to run on Tez
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
     hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
             "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
@@ -99,7 +102,11 @@ public class TestQueryShutdownHooks {
       assertEquals("Query should be finished", OperationState.FINISHED, state);
     }
 
-    ShutdownHookManagerInspector.assertShutdownHookCount(shutdownHooksBeforeQueries);
+    //TODO: HIVE-28298: TestQueryShutdownHooks to run on Tez
+    // the query starts a Tez session, which involves a TezJobMonitor hook
+    // int expectedHooks = shutdownHooksBeforeQueries + 1;
+    int expectedHooks = shutdownHooksBeforeQueries;
+    ShutdownHookManagerInspector.assertShutdownHookCount(expectedHooks);
   }
 
   @Test

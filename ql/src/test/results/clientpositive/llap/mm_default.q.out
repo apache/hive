@@ -115,7 +115,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	insert_only         
 #### A masked pattern was here ####
@@ -151,7 +151,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	insert_only         
 #### A masked pattern was here ####
@@ -187,7 +187,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	3                   
-	totalSize           	4                   
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	insert_only         
 #### A masked pattern was here ####
@@ -223,7 +223,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	insert_only         
 #### A masked pattern was here ####
@@ -259,7 +259,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	3                   
-	totalSize           	4                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -293,7 +293,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -327,7 +327,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -343,80 +343,100 @@ Sort Columns:       	[]
 PREHOOK: query: drop table non_mm0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@non_mm0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@non_mm0
 POSTHOOK: query: drop table non_mm0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@non_mm0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@non_mm0
 PREHOOK: query: drop table non_mm1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@non_mm1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@non_mm1
 POSTHOOK: query: drop table non_mm1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@non_mm1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@non_mm1
 PREHOOK: query: drop table mm0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@mm0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@mm0
 POSTHOOK: query: drop table mm0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@mm0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mm0
 PREHOOK: query: drop table mm1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@mm1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@mm1
 POSTHOOK: query: drop table mm1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@mm1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mm1
 PREHOOK: query: drop table mm2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@mm2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@mm2
 POSTHOOK: query: drop table mm2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@mm2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mm2
 PREHOOK: query: drop table mm3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@mm3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@mm3
 POSTHOOK: query: drop table mm3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@mm3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mm3
 PREHOOK: query: drop table mm4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@mm4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@mm4
 POSTHOOK: query: drop table mm4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@mm4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mm4
 PREHOOK: query: drop table acid0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@acid0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@acid0
 POSTHOOK: query: drop table acid0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@acid0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid0
 PREHOOK: query: drop table acid1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@acid1_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@acid1_n0
 POSTHOOK: query: drop table acid1_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@acid1_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid1_n0
 PREHOOK: query: drop table acid2_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@acid2_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@acid2_n0
 POSTHOOK: query: drop table acid2_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@acid2_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid2_n0

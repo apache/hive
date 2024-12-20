@@ -1,0 +1,215 @@
+PREHOOK: query: create database t3
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:t3
+POSTHOOK: query: create database t3
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:t3
+PREHOOK: query: use t3
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:t3
+POSTHOOK: query: use t3
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:t3
+PREHOOK: query: create table vector1k(
+        t int,
+        si int,
+        i int,
+        b bigint,
+        f float,
+        d double,
+        dc decimal(38,18),
+        bo boolean,
+        s string,
+        s2 string,
+        ts timestamp,
+        ts2 timestamp,
+        dt date)
+     row format delimited fields terminated by ','
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:t3
+PREHOOK: Output: t3@vector1k
+POSTHOOK: query: create table vector1k(
+        t int,
+        si int,
+        i int,
+        b bigint,
+        f float,
+        d double,
+        dc decimal(38,18),
+        bo boolean,
+        s string,
+        s2 string,
+        ts timestamp,
+        ts2 timestamp,
+        dt date)
+     row format delimited fields terminated by ','
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:t3
+POSTHOOK: Output: t3@vector1k
+PREHOOK: query: load data local inpath "../../data/files/query-hive-28087.csv" OVERWRITE into table vector1k
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: t3@vector1k
+POSTHOOK: query: load data local inpath "../../data/files/query-hive-28087.csv" OVERWRITE into table vector1k
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: t3@vector1k
+PREHOOK: query: create table vectortab10k(
+        t int,
+        si int,
+        i int,
+        b bigint,
+        f float,
+        d double,
+        dc decimal(38,18),
+        bo boolean,
+        s string,
+        s2 string,
+        ts timestamp,
+        ts2 timestamp,
+        dt date)
+    stored by iceberg
+    stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:t3
+PREHOOK: Output: t3@vectortab10k
+POSTHOOK: query: create table vectortab10k(
+        t int,
+        si int,
+        i int,
+        b bigint,
+        f float,
+        d double,
+        dc decimal(38,18),
+        bo boolean,
+        s string,
+        s2 string,
+        ts timestamp,
+        ts2 timestamp,
+        dt date)
+    stored by iceberg
+    stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:t3
+POSTHOOK: Output: t3@vectortab10k
+PREHOOK: query: insert into vectortab10k select * from vector1k
+PREHOOK: type: QUERY
+PREHOOK: Input: t3@vector1k
+PREHOOK: Output: t3@vectortab10k
+POSTHOOK: query: insert into vectortab10k select * from vector1k
+POSTHOOK: type: QUERY
+POSTHOOK: Input: t3@vector1k
+POSTHOOK: Output: t3@vectortab10k
+PREHOOK: query: select count(*) from vectortab10k
+PREHOOK: type: QUERY
+PREHOOK: Input: t3@vectortab10k
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from vectortab10k
+POSTHOOK: type: QUERY
+POSTHOOK: Input: t3@vectortab10k
+#### A masked pattern was here ####
+47
+PREHOOK: query: create table partition_transform_year(t int, ts timestamp) partitioned by spec(year(ts)) stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:t3
+PREHOOK: Output: t3@partition_transform_year
+POSTHOOK: query: create table partition_transform_year(t int, ts timestamp) partitioned by spec(year(ts)) stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:t3
+POSTHOOK: Output: t3@partition_transform_year
+PREHOOK: query: insert into table partition_transform_year select t, ts from vectortab10k
+PREHOOK: type: QUERY
+PREHOOK: Input: t3@vectortab10k
+PREHOOK: Output: t3@partition_transform_year
+POSTHOOK: query: insert into table partition_transform_year select t, ts from vectortab10k
+POSTHOOK: type: QUERY
+POSTHOOK: Input: t3@vectortab10k
+POSTHOOK: Output: t3@partition_transform_year
+PREHOOK: query: create table partition_transform_month(t int, ts timestamp) partitioned by spec(month(ts)) stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:t3
+PREHOOK: Output: t3@partition_transform_month
+POSTHOOK: query: create table partition_transform_month(t int, ts timestamp) partitioned by spec(month(ts)) stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:t3
+POSTHOOK: Output: t3@partition_transform_month
+PREHOOK: query: insert into table partition_transform_month select t, ts from vectortab10k
+PREHOOK: type: QUERY
+PREHOOK: Input: t3@vectortab10k
+PREHOOK: Output: t3@partition_transform_month
+POSTHOOK: query: insert into table partition_transform_month select t, ts from vectortab10k
+POSTHOOK: type: QUERY
+POSTHOOK: Input: t3@vectortab10k
+POSTHOOK: Output: t3@partition_transform_month
+PREHOOK: query: create table partition_transform_day(t int, ts timestamp) partitioned by spec(day(ts)) stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:t3
+PREHOOK: Output: t3@partition_transform_day
+POSTHOOK: query: create table partition_transform_day(t int, ts timestamp) partitioned by spec(day(ts)) stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:t3
+POSTHOOK: Output: t3@partition_transform_day
+PREHOOK: query: insert into table partition_transform_day select t, ts from vectortab10k
+PREHOOK: type: QUERY
+PREHOOK: Input: t3@vectortab10k
+PREHOOK: Output: t3@partition_transform_day
+POSTHOOK: query: insert into table partition_transform_day select t, ts from vectortab10k
+POSTHOOK: type: QUERY
+POSTHOOK: Input: t3@vectortab10k
+POSTHOOK: Output: t3@partition_transform_day
+PREHOOK: query: create table partition_transform_hour(t int, ts timestamp) partitioned by spec(hour(ts)) stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:t3
+PREHOOK: Output: t3@partition_transform_hour
+POSTHOOK: query: create table partition_transform_hour(t int, ts timestamp) partitioned by spec(hour(ts)) stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:t3
+POSTHOOK: Output: t3@partition_transform_hour
+PREHOOK: query: insert into table partition_transform_hour select t, ts from vectortab10k
+PREHOOK: type: QUERY
+PREHOOK: Input: t3@vectortab10k
+PREHOOK: Output: t3@partition_transform_hour
+POSTHOOK: query: insert into table partition_transform_hour select t, ts from vectortab10k
+POSTHOOK: type: QUERY
+POSTHOOK: Input: t3@vectortab10k
+POSTHOOK: Output: t3@partition_transform_hour
+PREHOOK: query: drop table partition_transform_month
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: t3@partition_transform_month
+PREHOOK: Output: database:t3
+PREHOOK: Output: t3@partition_transform_month
+POSTHOOK: query: drop table partition_transform_month
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: t3@partition_transform_month
+POSTHOOK: Output: database:t3
+POSTHOOK: Output: t3@partition_transform_month
+PREHOOK: query: drop table partition_transform_year
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: t3@partition_transform_year
+PREHOOK: Output: database:t3
+PREHOOK: Output: t3@partition_transform_year
+POSTHOOK: query: drop table partition_transform_year
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: t3@partition_transform_year
+POSTHOOK: Output: database:t3
+POSTHOOK: Output: t3@partition_transform_year
+PREHOOK: query: drop table partition_transform_day
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: t3@partition_transform_day
+PREHOOK: Output: database:t3
+PREHOOK: Output: t3@partition_transform_day
+POSTHOOK: query: drop table partition_transform_day
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: t3@partition_transform_day
+POSTHOOK: Output: database:t3
+POSTHOOK: Output: t3@partition_transform_day
+PREHOOK: query: drop table partition_transform_hour
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: t3@partition_transform_hour
+PREHOOK: Output: database:t3
+PREHOOK: Output: t3@partition_transform_hour
+POSTHOOK: query: drop table partition_transform_hour
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: t3@partition_transform_hour
+POSTHOOK: Output: database:t3
+POSTHOOK: Output: t3@partition_transform_hour

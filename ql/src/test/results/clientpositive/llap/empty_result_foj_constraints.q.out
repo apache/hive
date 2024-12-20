@@ -1,0 +1,106 @@
+PREHOOK: query: create table t1 (a int not null, b varchar(10) not null)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1 (a int not null, b varchar(10) not null)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: create table t2 (c int not null, d varchar(10) not null)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2
+POSTHOOK: query: create table t2 (c int not null, d varchar(10) not null)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2
+PREHOOK: query: insert into t1 values (2, 'four'), (1, 'four')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into t1 values (2, 'four'), (1, 'four')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.a SCRIPT []
+POSTHOOK: Lineage: t1.b SCRIPT []
+_col0	_col1
+PREHOOK: query: insert into t2 values (1, 'three'), (3, 'three')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t2
+POSTHOOK: query: insert into t2 values (1, 'three'), (3, 'three')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t2
+POSTHOOK: Lineage: t2.c SCRIPT []
+POSTHOOK: Lineage: t2.d SCRIPT []
+_col0	_col1
+PREHOOK: query: explain cbo
+select * from (select a, b from t1 where 0=1) s
+full outer join t2 on s.a = t2.c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from (select a, b from t1 where 0=1) s
+full outer join t2 on s.a = t2.c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+Explain
+CBO PLAN:
+HiveProject(a=[null:INTEGER], b=[null:VARCHAR(10) CHARACTER SET "UTF-16LE"], c=[CAST($0):INTEGER], d=[CAST($1):VARCHAR(10) CHARACTER SET "UTF-16LE"])
+  HiveTableScan(table=[[default, t2]], table:alias=[t2])
+
+PREHOOK: query: select * from (select a, b from t1 where 0=1) s
+full outer join t2 on s.a = t2.c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select a, b from t1 where 0=1) s
+full outer join t2 on s.a = t2.c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+s.a	s.b	t2.c	t2.d
+NULL	NULL	1	three
+NULL	NULL	3	three
+PREHOOK: query: explain cbo
+select * from t1
+full outer join (select c, d from t2 where 0=1) s on t1.a = s.c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from t1
+full outer join (select c, d from t2 where 0=1) s on t1.a = s.c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+Explain
+CBO PLAN:
+HiveProject(a=[CAST($0):INTEGER], b=[CAST($1):VARCHAR(10) CHARACTER SET "UTF-16LE"], c=[null:INTEGER], d=[null:VARCHAR(10) CHARACTER SET "UTF-16LE"])
+  HiveTableScan(table=[[default, t1]], table:alias=[t1])
+
+PREHOOK: query: select * from t1
+full outer join (select c, d from t2 where 0=1) s on t1.a = s.c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t1
+full outer join (select c, d from t2 where 0=1) s on t1.a = s.c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+t1.a	t1.b	s.c	s.d
+2	four	NULL	NULL
+1	four	NULL	NULL

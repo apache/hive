@@ -24,3 +24,5 @@ standalone-metastore/metastore-common/src/gen/version
 kafka-handler/src/test/gen
 **/.vscode/
 /.recommenders/
+dependency-reduced-pom.xml
+**/.mvn/.develocity*

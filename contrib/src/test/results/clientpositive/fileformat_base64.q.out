@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE base64_test
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE base64_test
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: EXPLAIN
 CREATE TABLE base64_test(key INT, value STRING) STORED AS
   INPUTFORMAT 'org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextInputFormat'
@@ -116,8 +118,10 @@ POSTHOOK: Input: default@base64_test
 PREHOOK: query: DROP TABLE base64_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@base64_test
+PREHOOK: Output: database:default
 PREHOOK: Output: default@base64_test
 POSTHOOK: query: DROP TABLE base64_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@base64_test
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@base64_test

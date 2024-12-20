@@ -31,7 +31,6 @@ import org.apache.calcite.util.TimeString;
 import org.apache.calcite.util.TimestampString;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
-import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
@@ -78,11 +77,16 @@ public class ASTBuilder {
 
     assert hts != null;
     RelOptHiveTable hTbl = (RelOptHiveTable) hts.getTable();
+    if (hTbl.getHiveTableMD().isMaterializedTable()) {
+      return cte(hTbl.getHiveTableMD().getTableName(), hts.getTableAlias());
+    }
     ASTBuilder tableNameBuilder = ASTBuilder.construct(HiveParser.TOK_TABNAME, "TOK_TABNAME")
         .add(HiveParser.Identifier, hTbl.getHiveTableMD().getDbName())
         .add(HiveParser.Identifier, hTbl.getHiveTableMD().getTableName());
     if (hTbl.getHiveTableMD().getMetaTable() != null) {
       tableNameBuilder.add(HiveParser.Identifier, hTbl.getHiveTableMD().getMetaTable());
+    } else if (hTbl.getHiveTableMD().getSnapshotRef() != null) {
+      tableNameBuilder.add(HiveParser.Identifier, hTbl.getHiveTableMD().getSnapshotRef());
     }
 
     ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_TABREF, "TOK_TABREF").add(tableNameBuilder);
@@ -96,6 +100,12 @@ public class ASTBuilder {
     if (hTbl.getHiveTableMD().getAsOfVersion() != null) {
       ASTBuilder asOfBuilder = ASTBuilder.construct(HiveParser.TOK_AS_OF_VERSION, "TOK_AS_OF_VERSION")
           .add(HiveParser.Number, hTbl.getHiveTableMD().getAsOfVersion());
+      b.add(asOfBuilder);
+    }
+
+    if (hTbl.getHiveTableMD().getVersionIntervalFrom() != null) {
+      ASTBuilder asOfBuilder = ASTBuilder.construct(HiveParser.TOK_FROM_VERSION, "TOK_FROM_VERSION")
+          .add(HiveParser.Number, hTbl.getHiveTableMD().getVersionIntervalFrom());
       b.add(asOfBuilder);
     }
 
@@ -173,11 +183,20 @@ public class ASTBuilder {
     // NOTE: Calcite considers tbls to be equal if their names are the same. Hence
     // we need to provide Calcite the fully qualified table name (dbname.tblname)
     // and not the user provided aliases.
-    // However in HIVE DB name can not appear in select list; in case of join
+    // However, in HIVE DB name can not appear in select list; in case of join
     // where table names differ only in DB name, Hive would require user
     // introducing explicit aliases for tbl.
     b.add(HiveParser.Identifier, hts.getTableAlias());
     return b.node();
+  }
+
+  /**
+   * @return an ASTNode representing a (table) reference to a CTE with the specified name and alias.
+   */
+  public static ASTNode cte(String name, final String alias) {
+    return ASTBuilder.construct(HiveParser.TOK_TABREF, "TOK_TABREF")
+        .add(ASTBuilder.construct(HiveParser.TOK_TABNAME, "TOK_TABNAME").add(HiveParser.Identifier, name))
+        .add(HiveParser.Identifier, alias).node();
   }
 
   public static ASTNode join(ASTNode left, ASTNode right, JoinRelType joinType, ASTNode cond) {

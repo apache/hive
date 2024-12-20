@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE src_null
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE src_null
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE hbase_null
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE hbase_null
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE src_null(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -96,16 +100,20 @@ POSTHOOK: Input: default@hbase_null
 PREHOOK: query: DROP TABLE src_null
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_null
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_null
 POSTHOOK: query: DROP TABLE src_null
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_null
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_null
 PREHOOK: query: DROP TABLE hbase_null
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbase_null
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_null
 POSTHOOK: query: DROP TABLE hbase_null
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_null
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_null

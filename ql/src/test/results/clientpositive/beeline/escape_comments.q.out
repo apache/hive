@@ -87,7 +87,6 @@ p1	string	a\nb
 # Detailed Table Information	NULL	NULL
 Database:           	escape_comments_db  	NULL
 #### A masked pattern was here ####
-LastAccessTime:     	UNKNOWN             	NULL
 Retention:          	0                   	NULL
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	NULL
@@ -99,7 +98,7 @@ Table Parameters:	NULL	NULL
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	NULL	NULL
 # Storage Information	NULL	NULL
@@ -142,7 +141,6 @@ col1	string	a\nb
 # Detailed Table Information	NULL	NULL
 Database:           	escape_comments_db  	NULL
 #### A masked pattern was here ####
-LastAccessTime:     	UNKNOWN             	NULL
 Retention:          	0                   	NULL
 Table Type:         	VIRTUAL_VIEW        	NULL
 Table Parameters:	NULL	NULL

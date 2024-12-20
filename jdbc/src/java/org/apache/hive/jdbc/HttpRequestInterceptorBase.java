@@ -19,21 +19,33 @@
 package org.apache.hive.jdbc;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
+import org.apache.hadoop.hive.conf.Constants;
+import org.apache.hadoop.util.Time;
 import org.apache.http.Header;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.client.CookieStore;
 import org.apache.http.protocol.HttpContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class HttpRequestInterceptorBase implements HttpRequestInterceptor {
+  protected final Logger LOG = LoggerFactory.getLogger(getClass());
+
   CookieStore cookieStore;
   boolean isCookieEnabled;
   String cookieName;
   boolean isSSL;
   Map<String, String> additionalHeaders;
   Map<String, String> customCookies;
+  private Supplier<String> sessionId = null;
+  private boolean requestTrackingEnabled;
+  private final AtomicLong requestTrackCounter = new AtomicLong();
 
   // Abstract function to add HttpAuth Header
   protected abstract void addHttpAuthHeader(HttpRequest httpRequest, HttpContext httpContext)
@@ -45,7 +57,7 @@ public abstract class HttpRequestInterceptorBase implements HttpRequestIntercept
     this.isCookieEnabled = (cs != null);
     this.cookieName = cn;
     this.isSSL = isSSL;
-    this.additionalHeaders = additionalHeaders;
+    this.additionalHeaders = additionalHeaders == null ? new HashMap<>() : additionalHeaders;
     this.customCookies = customCookies;
   }
 
@@ -77,6 +89,14 @@ public abstract class HttpRequestInterceptorBase implements HttpRequestIntercept
       if (isCookieEnabled) {
         httpContext.setAttribute(Utils.HIVE_SERVER2_RETRY_KEY, Utils.HIVE_SERVER2_CONST_FALSE);
       }
+
+      if (requestTrackingEnabled) {
+        String trackHeader = getNewTrackHeader();
+        LOG.info("{}:{}", Constants.HTTP_HEADER_REQUEST_TRACK, trackHeader);
+        additionalHeaders.put(Constants.HTTP_HEADER_REQUEST_TRACK, trackHeader);
+        httpContext.setAttribute(Constants.HTTP_HEADER_REQUEST_TRACK, trackHeader);
+        httpContext.setAttribute(trackHeader + Constants.TIME_POSTFIX_REQUEST_TRACK, Time.monotonicNow());
+      }
       // Insert the additional http headers
       if (additionalHeaders != null) {
         for (Map.Entry<String, String> entry : additionalHeaders.entrySet()) {
@@ -84,7 +104,7 @@ public abstract class HttpRequestInterceptorBase implements HttpRequestIntercept
         }
       }
       // Add custom cookies if passed to the jdbc driver
-      if (customCookies != null) {
+      if (customCookies != null && !customCookies.isEmpty()) {
         String cookieHeaderKeyValues = "";
         Header cookieHeaderServer = httpRequest.getFirstHeader("Cookie");
         if ((cookieHeaderServer != null) && (cookieHeaderServer.getValue() != null)) {
@@ -101,5 +121,18 @@ public abstract class HttpRequestInterceptorBase implements HttpRequestIntercept
     } catch (Exception e) {
       throw new HttpException(e.getMessage(), e);
     }
+  }
+
+  protected String getNewTrackHeader() {
+    return String.format("HIVE_%s_%020d", sessionId.get(), requestTrackCounter.incrementAndGet());
+  }
+
+  public HttpRequestInterceptor sessionId(Supplier<String> sessionId) {
+    this.sessionId = sessionId;
+    return this;
+  }
+
+  public void setRequestTrackingEnabled(boolean requestTrackingEnabled) {
+    this.requestTrackingEnabled = requestTrackingEnabled;
   }
 }

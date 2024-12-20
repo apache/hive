@@ -52,7 +52,7 @@ public class LockDatabaseAnalyzer extends BaseSemanticAnalyzer {
     outputs.add(new WriteEntity(getDatabase(databaseName), WriteType.DDL_NO_LOCK));
 
     LockDatabaseDesc desc =
-        new LockDatabaseDesc(databaseName, mode, HiveConf.getVar(conf, ConfVars.HIVEQUERYID), ctx.getCmd());
+        new LockDatabaseDesc(databaseName, mode, HiveConf.getVar(conf, ConfVars.HIVE_QUERY_ID), ctx.getCmd());
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
     ctx.setNeedLockMgr(true);
   }

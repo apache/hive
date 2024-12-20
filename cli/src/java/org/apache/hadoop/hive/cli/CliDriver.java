@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.cli;
 
+import static org.apache.hadoop.hive.shims.HadoopShims.USER_ID;
 import static org.apache.hadoop.util.StringUtils.stringifyException;
 
 import java.io.BufferedReader;
@@ -250,12 +251,14 @@ public class CliDriver {
         }
 
         // Set HDFS CallerContext to queryId and reset back to sessionId after the query is done
-        ShimLoader.getHadoopShims().setHadoopQueryContext(qp.getQueryState().getQueryId());
+        ShimLoader.getHadoopShims()
+            .setHadoopQueryContext(String.format(USER_ID, qp.getQueryState().getQueryId(), ss.getUserName()));
         try {
           response = qp.run(cmd);
         } catch (CommandProcessorException e) {
           qp.close();
-          ShimLoader.getHadoopShims().setHadoopSessionContext(ss.getSessionId());
+          ShimLoader.getHadoopShims()
+              .setHadoopSessionContext(String.format(USER_ID, ss.getSessionId(), ss.getUserName()));
           throw e;
         }
 
@@ -292,7 +295,8 @@ public class CliDriver {
           throw new CommandProcessorException(1);
         } finally {
           qp.close();
-          ShimLoader.getHadoopShims().setHadoopSessionContext(ss.getSessionId());
+          ShimLoader.getHadoopShims()
+              .setHadoopSessionContext(String.format(USER_ID, ss.getSessionId(), ss.getUserName()));
 
           if (out instanceof FetchConverter) {
             ((FetchConverter) out).fetchFinished();
@@ -421,7 +425,7 @@ public class CliDriver {
           ret = processCmd(command.toString());
           lastRet = ret;
         } catch (CommandProcessorException e) {
-          boolean ignoreErrors = HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLIIGNOREERRORS);
+          boolean ignoreErrors = HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLI_IGNORE_ERRORS);
           if (!ignoreErrors) {
             throw e;
           }
@@ -736,7 +740,7 @@ public class CliDriver {
       logInitDetailMessage = e.getMessage();
     }
 
-    CliSessionState ss = new CliSessionState(new HiveConf(SessionState.class));
+    CliSessionState ss = new CliSessionState(getConf());
     ss.in = System.in;
     try {
       ss.out =
@@ -769,7 +773,7 @@ public class CliDriver {
     }
 
     // read prompt configuration and substitute variables.
-    prompt = conf.getVar(HiveConf.ConfVars.CLIPROMPT);
+    prompt = conf.getVar(HiveConf.ConfVars.CLI_PROMPT);
     prompt = new VariableSubstitution(new HiveVariableSource() {
       @Override
       public Map<String, String> getHiveVariable() {
@@ -805,9 +809,14 @@ public class CliDriver {
     } catch (CommandProcessorException e) {
       return e.getResponseCode();
     } finally {
+      SessionState.endStart(ss);
       ss.resetThreadName();
       ss.close();
     }
+  }
+
+  protected HiveConf getConf() {
+    return new HiveConf(SessionState.class);
   }
 
   /**
@@ -932,7 +941,7 @@ public class CliDriver {
    * @return String to show user for current db value
    */
   private static String getFormattedDb(HiveConf conf, CliSessionState ss) {
-    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLIPRINTCURRENTDB)) {
+    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLI_PRINT_CURRENT_DB)) {
       return "";
     }
     //BUG: This will not work in remote mode - HIVE-5153

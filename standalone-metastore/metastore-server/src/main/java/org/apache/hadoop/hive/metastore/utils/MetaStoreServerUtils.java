@@ -22,9 +22,12 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -32,10 +35,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -60,12 +63,14 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.ColumnType;
+import org.apache.hadoop.hive.metastore.ExceptionHandler;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -75,6 +80,8 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsResponse;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetastoreException;
@@ -89,6 +96,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregator;
 import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregatorFactory;
@@ -505,6 +513,56 @@ public class MetaStoreServerUtils {
     params.remove(StatsSetupConst.NUM_ERASURE_CODED_FILES);
   }
 
+  public static void updateTableStatsForCreateTable(Warehouse wh, Database db, Table tbl,
+      EnvironmentContext envContext, Configuration conf, Path tblPath, boolean newDir)
+      throws MetaException {
+    // If the created table is a view, skip generating the stats
+    if (MetaStoreUtils.isView(tbl)) {
+      return;
+    }
+    assert tblPath != null;
+    if (tbl.isSetDictionary() && tbl.getDictionary().getValues() != null) {
+      List<ByteBuffer> values = tbl.getDictionary().getValues().
+          remove(StatsSetupConst.STATS_FOR_CREATE_TABLE);
+      ByteBuffer buffer;
+      if (values != null && values.size() > 0 && (buffer = values.get(0)).hasArray()) {
+        String val = new String(buffer.array(), StandardCharsets.UTF_8);
+        StatsSetupConst.ColumnStatsSetup statsSetup = StatsSetupConst.ColumnStatsSetup.parseStatsSetup(val);
+        if (statsSetup.enabled) {
+          try {
+            // For an Iceberg table, a new snapshot is generated, so any leftover files would be ignored
+            // Set the column stats true in order to make it merge-able
+            if (newDir || statsSetup.isIcebergTable ||
+                wh.isEmptyDir(tblPath, FileUtils.HIDDEN_FILES_PATH_FILTER)) {
+              List<String> columns = statsSetup.columnNames;
+              if (columns == null || columns.isEmpty()) {
+                columns = getColumnNames(tbl.getSd().getCols());
+              }
+              StatsSetupConst.setStatsStateForCreateTable(tbl.getParameters(), columns, StatsSetupConst.TRUE);
+            }
+          } catch (IOException e) {
+            LOG.error("Error while checking the table directory: " + tblPath, e);
+            throw ExceptionHandler.newMetaException(e);
+          }
+        }
+      }
+    }
+
+    if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_AUTO_GATHER) && 
+            !getBooleanEnvProp(envContext, StatsSetupConst.DO_NOT_UPDATE_STATS)) {
+      LOG.debug("Calling updateTableStatsSlow for table {}.{}.{}", tbl.getCatName(), tbl.getDbName(), tbl.getTableName());
+      updateTableStatsSlow(db, tbl, wh, newDir, false, envContext);
+    }
+  }
+
+  public static boolean getBooleanEnvProp(EnvironmentContext envContext, String key) {
+    return Optional.ofNullable(envContext)
+            .map(EnvironmentContext::getProperties)
+            .map(props -> props.getOrDefault(key, StatsSetupConst.FALSE))
+            .map(Boolean::parseBoolean)
+            .orElse(false);
+  }
+
   /**
    * Compare the names, types and comments of two lists of {@link FieldSchema}.
    * <p>
@@ -606,7 +664,8 @@ public class MetaStoreServerUtils {
     if (!madeDir) {
       // The partition location already existed and may contain data. Lets try to
       // populate those statistics that don't require a full scan of the data.
-      LOG.info("Updating partition stats fast for: {}", part.getTableName());
+      LOG.info("Updating partition stats fast for: catalog: {} database: {} table: {} partition: {}",
+              part.getCatName(), part.getDbName(), part.getTableName(), part.getCurrent().getValues());
       List<FileStatus> fileStatus = wh.getFileStatusesForLocation(part.getLocation());
       // TODO: this is invalid for ACID tables, and we cannot access AcidUtils here.
       populateQuickStats(fileStatus, params);
@@ -763,7 +822,7 @@ public class MetaStoreServerUtils {
         assert (statsObjNew.getStatsData().getSetField() == statsObjOld.getStatsData()
             .getSetField());
         // If statsObjOld is found, we can merge.
-        ColumnStatsMerger merger = ColumnStatsMergerFactory.getColumnStatsMerger(statsObjNew,
+        ColumnStatsMerger<?> merger = ColumnStatsMergerFactory.getColumnStatsMerger(statsObjNew,
             statsObjOld);
         merger.merge(statsObjNew, statsObjOld);
       }
@@ -792,7 +851,15 @@ public class MetaStoreServerUtils {
     Map<String, Collection<String>> proxyHosts = sip.getProxyHosts();
     Collection<String> hostEntries = proxyHosts.get(sip.getProxySuperuserIpConfKey(user));
     MachineList machineList = new MachineList(hostEntries);
-    ipAddress = (ipAddress == null) ? StringUtils.EMPTY : ipAddress;
+    // when schematool or metatool use this, its possible that the saslServer.getRemoteAddress() returns null
+    // use localhost address first to see if it part of hadoop.proxyuser hosts.
+    if (ipAddress == null) {
+      try {
+        ipAddress = InetAddress.getLocalHost().getHostAddress();
+      } catch (UnknownHostException e) {
+        ipAddress = StringUtils.EMPTY;
+      }
+    }
     return machineList.includes(ipAddress);
   }
 
@@ -1217,8 +1284,8 @@ public class MetaStoreServerUtils {
       }
       PropertyUtils.setNestedProperty(bean, propertyName, value);
     } catch (Exception e) {
-      throw new MetaException(
-          org.apache.hadoop.hive.metastore.utils.StringUtils.stringifyException(e));
+      LOG.error("Failed to set nested property", e);
+      throw new MetaException(e.getMessage());
     }
   }
 
@@ -1396,6 +1463,43 @@ public class MetaStoreServerUtils {
     }
   }
 
+  public static List<Partition> getPartitionsByProjectSpec(IMetaStoreClient msc, GetPartitionsRequest request)
+      throws MetastoreException {
+    try {
+      GetPartitionsResponse response = msc.getPartitionsWithSpecs(request);
+      List<PartitionSpec> partitionSpecList = response.getPartitionSpec();
+      List<Partition> result = new ArrayList<>();
+      for (PartitionSpec spec : partitionSpecList) {
+        if (spec.getPartitionList() != null && spec.getPartitionList().getPartitions() != null) {
+          spec.getPartitionList().getPartitions().forEach(partition -> {
+            partition.setCatName(spec.getCatName());
+            partition.setDbName(spec.getDbName());
+            partition.setTableName(spec.getTableName());
+            result.add(partition);
+          });
+        }
+        PartitionSpecWithSharedSD pSpecWithSharedSD = spec.getSharedSDPartitionSpec();
+        if (pSpecWithSharedSD == null) {
+          continue;
+        }
+        List<PartitionWithoutSD> withoutSDList = pSpecWithSharedSD.getPartitions();
+        StorageDescriptor descriptor = pSpecWithSharedSD.getSd();
+        if (withoutSDList != null) {
+          for (PartitionWithoutSD psd : withoutSDList) {
+            StorageDescriptor newSD = new StorageDescriptor(descriptor);
+            Partition partition = new Partition(psd.getValues(), spec.getDbName(), spec.getTableName(),
+                psd.getCreateTime(), psd.getLastAccessTime(), newSD, psd.getParameters());
+            partition.getSd().setLocation(newSD.getLocation() + psd.getRelativePath());
+            result.add(partition);
+          }
+        }
+      }
+      return result;
+    } catch (Exception e) {
+      throw new MetastoreException(e);
+    }
+  }
+
   public static void getPartitionListByFilterExp(IMetaStoreClient msc, Table table, byte[] filterExp,
                                                  String defaultPartName, List<Partition> results)
       throws MetastoreException {
@@ -1533,6 +1637,10 @@ public class MetaStoreServerUtils {
 
   public static String getNormalisedPartitionValue(String partitionValue, String type) {
 
+    if (!NumberUtils.isParsable(partitionValue)) {
+      return partitionValue;
+    }
+
     LOG.debug("Converting '" + partitionValue + "' to type: '" + type + "'.");
 
     if (type.equalsIgnoreCase("tinyint")
@@ -1616,5 +1724,9 @@ public class MetaStoreServerUtils {
       return cols.stream().map(FieldSchema::getName).map(String::toLowerCase).collect(Collectors.toList());
     }
     return null;
+  }
+
+  public static boolean isCompactionTxn(TxnType txnType) {
+    return TxnType.COMPACTION.equals(txnType) || TxnType.REBALANCE_COMPACTION.equals(txnType);
   }
 }

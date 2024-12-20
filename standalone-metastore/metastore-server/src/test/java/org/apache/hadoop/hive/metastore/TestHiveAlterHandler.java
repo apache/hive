@@ -22,12 +22,12 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
@@ -37,7 +37,7 @@ public class TestHiveAlterHandler {
   private Configuration conf = MetastoreConf.newMetastoreConf();
 
   @Test
-  public void testAlterTableAddColNotUpdateStats() throws MetaException, InvalidObjectException, NoSuchObjectException {
+  public void testAlterTableAddColNotUpdateStats() throws MetaException, InvalidObjectException, NoSuchObjectException, InvalidInputException {
     FieldSchema col1 = new FieldSchema("col1", "string", "col1 comment");
     FieldSchema col2 = new FieldSchema("col2", "string", "col2 comment");
     FieldSchema col3 = new FieldSchema("col3", "string", "col3 comment");
@@ -56,13 +56,14 @@ public class TestHiveAlterHandler {
     newTable.setSd(newSd);
 
     RawStore msdb = Mockito.mock(RawStore.class);
-    Mockito.doThrow(new RuntimeException("shouldn't be called")).when(msdb).getTableColumnStatistics(
-        getDefaultCatalog(conf), oldTable.getDbName(), oldTable.getTableName(), Arrays.asList("col1", "col2", "col3"));
+    Mockito.doThrow(new RuntimeException("shouldn't be called")).when(msdb).updateTableColumnStatistics(
+        Mockito.any(), Mockito.eq(null), Mockito.anyLong());
     HiveAlterHandler handler = new HiveAlterHandler();
     handler.setConf(conf);
     Deadline.registerIfNot(100_000);
-    Deadline.startTimer("alterTableUpdateTableColumnStats");
-    handler.alterTableUpdateTableColumnStats(msdb, oldTable, newTable, null, null, conf, null);
+    Deadline.startTimer("updateTableColumnStats");
+    List<ColumnStatistics> colstats = handler.deleteTableColumnStats(msdb, oldTable, newTable, handler.getColumnStats(msdb, oldTable));
+    handler.updateTableColumnStats(msdb, newTable, null, colstats);
   }
 
   @Test
@@ -88,9 +89,10 @@ public class TestHiveAlterHandler {
     HiveAlterHandler handler = new HiveAlterHandler();
     handler.setConf(conf);
     Deadline.registerIfNot(100_000);
-    Deadline.startTimer("alterTableUpdateTableColumnStats");
+    Deadline.startTimer("updateTableColumnStats");
     try {
-      handler.alterTableUpdateTableColumnStats(msdb, oldTable, newTable, null, null, conf, null);
+      List<ColumnStatistics> colstats = handler.deleteTableColumnStats(msdb, oldTable, newTable, handler.getColumnStats(msdb, oldTable));
+      handler.updateTableColumnStats(msdb, newTable, null, colstats);
     } catch (Throwable t) {
       System.err.println(t);
       t.printStackTrace(System.err);
@@ -102,7 +104,7 @@ public class TestHiveAlterHandler {
   }
 
   @Test
-  public void testAlterTableChangePosNotUpdateStats() throws MetaException, InvalidObjectException, NoSuchObjectException {
+  public void testAlterTableChangePosNotUpdateStats() throws MetaException, InvalidObjectException, NoSuchObjectException, InvalidInputException {
     FieldSchema col1 = new FieldSchema("col1", "string", "col1 comment");
     FieldSchema col2 = new FieldSchema("col2", "string", "col2 comment");
     FieldSchema col3 = new FieldSchema("col3", "string", "col3 comment");
@@ -121,13 +123,14 @@ public class TestHiveAlterHandler {
     newTable.setSd(newSd);
 
     RawStore msdb = Mockito.mock(RawStore.class);
-    Mockito.doThrow(new RuntimeException("shouldn't be called")).when(msdb).getTableColumnStatistics(
-        getDefaultCatalog(conf), oldTable.getDbName(), oldTable.getTableName(), Arrays.asList("col1", "col2", "col3", "col4"));
+    Mockito.doThrow(new RuntimeException("shouldn't be called")).when(msdb).updateTableColumnStatistics(
+        Mockito.any(), Mockito.eq(null), Mockito.anyLong());
     HiveAlterHandler handler = new HiveAlterHandler();
     handler.setConf(conf);
     Deadline.registerIfNot(100_000);
-    Deadline.startTimer("alterTableUpdateTableColumnStats");
-    handler.alterTableUpdateTableColumnStats(msdb, oldTable, newTable, null, null, conf, null);
+    Deadline.startTimer("updateTableColumnStats");
+    List<ColumnStatistics> colstats = handler.deleteTableColumnStats(msdb, oldTable, newTable, handler.getColumnStats(msdb, oldTable));
+    handler.updateTableColumnStats(msdb, newTable, null, colstats);
   }
 
 }

@@ -1,11 +1,15 @@
 PREHOOK: query: drop table if exists timestamp_1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists timestamp_1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists timestamp_2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists timestamp_2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table timestamp_1 (key int, dd timestamp)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -43,16 +47,20 @@ POSTHOOK: Input: default@timestamp_2
 PREHOOK: query: drop table timestamp_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@timestamp_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@timestamp_1
 POSTHOOK: query: drop table timestamp_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@timestamp_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@timestamp_1
 PREHOOK: query: drop table timestamp_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@timestamp_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@timestamp_2
 POSTHOOK: query: drop table timestamp_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@timestamp_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@timestamp_2

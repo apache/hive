@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hive.common.util.Ref;
 import org.apache.hadoop.hive.ql.exec.tez.UserPoolMapping.MappingInput;
@@ -39,6 +38,7 @@ import javax.annotation.Nullable;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
@@ -94,6 +94,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import static org.apache.hadoop.hive.shims.HadoopShims.USER_ID;
+
 /**
  *
  * TezTask handles the execution of TezWork. Currently it executes a graph of map and reduce work
@@ -111,7 +113,7 @@ public class TezTask extends Task<TezWork> {
   private final PerfLogger perfLogger = SessionState.getPerfLogger();
   private static final String TEZ_MEMORY_RESERVE_FRACTION = "tez.task.scale.memory.reserve-fraction";
 
-  private TezCounters counters;
+  private final TezRuntimeContext runtimeContext = new TezRuntimeContext();
 
   private final DagUtils utils;
 
@@ -132,11 +134,23 @@ public class TezTask extends Task<TezWork> {
   }
 
   public TezCounters getTezCounters() {
-    return counters;
+    return runtimeContext.getCounters();
   }
 
   public void setTezCounters(final TezCounters counters) {
-    this.counters = counters;
+    runtimeContext.setCounters(counters);
+  }
+
+  public TezRuntimeContext getRuntimeContext() {
+    return runtimeContext;
+  }
+
+  /**
+   * Making TezTask backward compatible with the old MR-based Task API (ExecDriver/MapRedTask)
+   */
+  @Override
+  public String getExternalHandle() {
+    return this.jobID;
   }
 
   @Override
@@ -146,7 +160,7 @@ public class TezTask extends Task<TezWork> {
     Context ctx = null;
     Ref<TezSessionState> sessionRef = Ref.from(null);
 
-    final String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
+    final String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID);
 
     try {
       // Get or create Context object. If we create it we have to clean it later as well.
@@ -186,6 +200,8 @@ public class TezTask extends Task<TezWork> {
           ss.getHiveVariables().get("wmpool"), ss.getHiveVariables().get("wmapp"));
 
       WmContext wmContext = ctx.getWmContext();
+      String executionMode = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE);
+      runtimeContext.setExecutionMode(executionMode);
       // jobConf will hold all the configuration for hadoop, tez, and hive, which are not set in AM defaults
       JobConf jobConf = utils.createConfiguration(conf, false);
 
@@ -197,8 +213,9 @@ public class TezTask extends Task<TezWork> {
       // DAG scratch dir. We get a session from the pool so it may be different from Tez one.
       // TODO: we could perhaps reuse the same directory for HiveResources?
       Path scratchDir = utils.createTezDir(ctx.getMRScratchDir(), conf);
-      CallerContext callerContext = CallerContext.create(
-          "HIVE", queryPlan.getQueryId(), "HIVE_QUERY_ID", queryPlan.getQueryStr());
+      CallerContext callerContext =
+          CallerContext.create("HIVE", String.format(USER_ID, queryPlan.getQueryId(), userName), "HIVE_QUERY_ID",
+              queryPlan.getQueryStr());
 
       perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.TEZ_GET_SESSION);
       session = sessionRef.value = WorkloadManagerFederation.getSession(
@@ -249,29 +266,42 @@ public class TezTask extends Task<TezWork> {
         }
 
         // Log all the info required to find the various logs for this query
-        LOG.info("HS2 Host: [{}], Query ID: [{}], Dag ID: [{}], DAG Session ID: [{}]", ServerUtils.hostname(), queryId,
-            this.dagClient.getDagIdentifierString(), this.dagClient.getSessionIdentifierString());
+        String dagId = this.dagClient.getDagIdentifierString();
+        String appId = this.dagClient.getSessionIdentifierString();
+        LOG.info("HS2 Host: [{}], Query ID: [{}], Dag ID: [{}], DAG App ID: [{}]", ServerUtils.hostname(), queryId,
+            dagId, appId);
+        LogUtils.putToMDC(LogUtils.DAGID_KEY, dagId);
+        this.jobID = dagId;
+        runtimeContext.setDagId(dagId);
+        runtimeContext.setSessionId(session.getSessionId());
+        runtimeContext.setApplicationId(appId);
 
         // finally monitor will print progress until the job is done
-        TezJobMonitor monitor = new TezJobMonitor(work.getAllWork(), dagClient, conf, dag, ctx, counters);
+        TezJobMonitor monitor = new TezJobMonitor(work.getAllWork(), dagClient, conf, dag, ctx, runtimeContext.counters,
+            perfLogger);
+        runtimeContext.setMonitor(monitor);
         rc = monitor.monitorExecution();
 
         if (rc != 0) {
-          this.setException(new HiveException(monitor.getDiagnostics()));
+          this.setException(new TezRuntimeException(dagId, monitor.getDiagnostics()));
         }
 
         try {
           // fetch the counters
           Set<StatusGetOpts> statusGetOpts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
-          TezCounters dagCounters = dagClient.getDAGStatus(statusGetOpts).getDAGCounters();
+          DAGStatus dagStatus = dagClient.getDAGStatus(statusGetOpts);
+          this.setStatusMessage(dagStatus.getState().name());
+
+          TezCounters dagCounters = dagStatus.getDAGCounters();
 
           // if initial counters exists, merge it with dag counters to get aggregated view
-          TezCounters mergedCounters = counters == null ? dagCounters : Utils.mergeTezCounters(dagCounters, counters);
-          counters = mergedCounters;
+          TezCounters mergedCounters = runtimeContext.counters == null ? dagCounters : Utils.mergeTezCounters(
+              dagCounters, runtimeContext.counters);
+          runtimeContext.counters = mergedCounters;
         } catch (Exception err) {
           // Don't fail execution due to counters - just don't print summary info
           LOG.warn("Failed to get counters. Ignoring, summary info will be incomplete.", err);
-          counters = null;
+          runtimeContext.counters = null;
         }
 
         // save useful commit information into query state, e.g. for custom commit hooks, like Iceberg
@@ -303,10 +333,10 @@ public class TezTask extends Task<TezWork> {
         }
       }
 
-      if (LOG.isInfoEnabled() && counters != null
+      if (LOG.isInfoEnabled() && runtimeContext.counters != null
           && (HiveConf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_SUMMARY) ||
           Utilities.isPerfOrAboveLogging(conf))) {
-        for (CounterGroup group: counters) {
+        for (CounterGroup group : runtimeContext.counters) {
           LOG.info(group.getDisplayName() +":");
           for (TezCounter counter: group) {
             LOG.info("   "+counter.getDisplayName()+": "+counter.getValue());
@@ -390,9 +420,9 @@ public class TezTask extends Task<TezWork> {
   }
 
   private void updateNumRows() {
-    if (counters != null) {
-      TezCounter counter = counters.findCounter(
-        conf.getVar(HiveConf.ConfVars.HIVECOUNTERGROUP), FileSinkOperator.TOTAL_TABLE_ROWS_WRITTEN);
+    if (runtimeContext.counters != null) {
+      TezCounter counter = runtimeContext.counters.findCounter(
+        conf.getVar(HiveConf.ConfVars.HIVE_COUNTER_GROUP), FileSinkOperator.TOTAL_TABLE_ROWS_WRITTEN);
       if (counter != null) {
         queryState.setNumModifiedRows(counter.getValue());
       }
@@ -481,11 +511,12 @@ public class TezTask extends Task<TezWork> {
         .put("description", ctx.getCmd());
     String dagInfo = json.toString();
 
-    String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
-    dag.setConf(HiveConf.ConfVars.HIVEQUERYID.varname, queryId);
+    String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID);
+    dag.setConf(HiveConf.ConfVars.HIVE_QUERY_ID.varname, queryId);
 
     LOG.debug("DagInfo: {}", dagInfo);
 
+    TezConfigurationFactory.addProgrammaticallyAddedTezOptsToDagConf(dag.getDagConf(), conf);
     dag.setDAGInfo(dagInfo);
 
     dag.setCredentials(conf.getCredentials());
@@ -590,7 +621,7 @@ public class TezTask extends Task<TezWork> {
     String loginUser =
         loginUserUgi == null ? null : loginUserUgi.getShortUserName();
     boolean addHs2User =
-        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVETEZHS2USERACCESS);
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_TEZ_HS2_USER_ACCESS);
 
     // Temporarily re-using the TEZ AM View ACLs property for individual dag access control.
     // Hive may want to setup it's own parameters if it wants to control per dag access.
@@ -653,6 +684,7 @@ public class TezTask extends Task<TezWork> {
     }
 
     perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
+    runtimeContext.init(sessionState.getSession());
     return new SyncDagClient(dagClient);
   }
 
@@ -865,6 +897,13 @@ public class TezTask extends Task<TezWork> {
         throws IOException, TezException, InterruptedException {
       synchronized (dagClient) {
         return dagClient.waitForCompletionWithStatusUpdates(statusGetOpts);
+      }
+    }
+
+    @Override
+    public String getWebUIAddress() throws IOException, TezException {
+      synchronized (dagClient) {
+        return dagClient.getWebUIAddress();
       }
     }
   }

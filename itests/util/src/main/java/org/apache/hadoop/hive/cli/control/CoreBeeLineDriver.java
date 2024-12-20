@@ -38,11 +38,13 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
+import org.apache.hadoop.hive.ql.QOutProcessor;
 import org.apache.hadoop.hive.ql.dataset.Dataset;
 import org.apache.hadoop.hive.ql.dataset.DatasetCollection;
 import org.apache.hadoop.hive.ql.dataset.QTestDatasetHandler;
 import org.apache.hadoop.hive.ql.hooks.PreExecutePrinter;
 import org.apache.hadoop.hive.ql.qoption.QTestOptionDispatcher;
+import org.apache.hadoop.hive.ql.qoption.QTestReplaceHandler;
 import org.apache.hive.beeline.ConvertedOutputFile.Converter;
 import org.apache.hive.beeline.QFile;
 import org.apache.hive.beeline.QFile.QFileBuilder;
@@ -56,6 +58,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ObjectArrays;
 
 public class CoreBeeLineDriver extends CliAdapter {
+
   private final File hiveRootDirectory = new File(AbstractCliConfig.HIVE_ROOT);
   private final File queryDirectory;
   private final File logDirectory;
@@ -71,6 +74,8 @@ public class CoreBeeLineDriver extends CliAdapter {
   private QFileClientBuilder clientBuilder;
   private QFileBuilder fileBuilder;
   private final Map<String, Set<String>> datasets = new HashMap<String, Set<String>>();
+  protected QTestReplaceHandler replaceHandler;
+  private final QOutProcessor qOutProcessor;
 
   public CoreBeeLineDriver(AbstractCliConfig testCliConfig) {
     super(testCliConfig);
@@ -97,10 +102,14 @@ public class CoreBeeLineDriver extends CliAdapter {
       initScript = new File(testScriptDirectory, testCliConfig.getInitScript());
     }
     cleanupScript = new File(testScriptDirectory, testCliConfig.getCleanupScript());
+    this.replaceHandler = new QTestReplaceHandler();
+    this.qOutProcessor = new QOutProcessor(null, replaceHandler);
   }
 
   private static MiniHS2 createMiniServer() throws Exception {
     HiveConf hiveConf = new HiveConf();
+    // TODO: HIVE-28031: Adapt some cli driver tests to Tez where it's applicable
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
     // We do not need Zookeeper at the moment
     hiveConf.set(HiveConf.ConfVars.HIVE_LOCK_MANAGER.varname,
         "org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager");
@@ -230,6 +239,7 @@ public class CoreBeeLineDriver extends CliAdapter {
           + "ms");
 
       if (!overwrite) {
+        qOutProcessor.maskPatterns(qFile.getOutputFile().getPath());
         QTestProcessExecResult result = qFile.compareResults();
 
         long compareEndTime = System.currentTimeMillis();
@@ -280,6 +290,7 @@ public class CoreBeeLineDriver extends CliAdapter {
     QTestOptionDispatcher dispatcher = new QTestOptionDispatcher();
     QTestDatasetHandler datasetHandler = new QTestDatasetHandler(miniHS2.getHiveConf());
     dispatcher.register("dataset", datasetHandler);
+    dispatcher.register("replace", replaceHandler);
     dispatcher.process(qFile.getInputFile());
 
     List<Callable<Void>> commands = new ArrayList<>();

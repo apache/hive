@@ -55,8 +55,10 @@ public class ZooKeeperStorage implements TempletonStorage {
   public static final String ZK_SSL_ENABLE = "templeton.zookeeper.ssl.client.enable";
   public static final String ZK_KEYSTORE_LOCATION = "templeton.zookeeper.keystore.location";
   public static final String ZK_KEYSTORE_PASSWORD = "templeton.zookeeper.keystore.password";
+  public static final String ZK_KEYSTORE_TYPE = "templeton.zookeeper.keystore.type";
   public static final String ZK_TRUSTSTORE_LOCATION = "templeton.zookeeper.truststore.location";
   public static final String ZK_TRUSTSTORE_PASSWORD = "templeton.zookeeper.truststore.password";
+  public static final String ZK_TRUSTSTORE_TYPE = "templeton.zookeeper.truststore.type";
 
   public static final String ENCODING = "UTF-8";
 
@@ -77,8 +79,10 @@ public class ZooKeeperStorage implements TempletonStorage {
         .sslEnabled(conf.getBoolean(ZK_SSL_ENABLE, false))
         .keyStoreLocation(conf.get(ZK_KEYSTORE_LOCATION, ""))
         .keyStorePassword(conf.get(ZK_KEYSTORE_PASSWORD, ""))
+        .keyStoreType(conf.get(ZK_KEYSTORE_TYPE, ""))
         .trustStoreLocation(conf.get(ZK_TRUSTSTORE_LOCATION, ""))
         .trustStorePassword(conf.get(ZK_TRUSTSTORE_PASSWORD, ""))
+        .trustStoreType(conf.get(ZK_TRUSTSTORE_TYPE, ""))
         .build();
     CuratorFramework zk = xkHelper.getNewZookeeperClient();
     zk.start();

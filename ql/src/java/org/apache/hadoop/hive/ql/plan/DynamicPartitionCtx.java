@@ -52,6 +52,7 @@ public class DynamicPartitionCtx implements Serializable {
   private String defaultPartName; // default partition name in case of null or empty value
   private int maxPartsPerNode;    // maximum dynamic partitions created per mapper/reducer
   private Pattern whiteListPattern;
+  private boolean hasCustomSortExprs = false;
   /**
    * Expressions describing a custom way of sorting the table before write. Expressions can reference simple
    * column descriptions or a tree of expressions containing more columns and UDFs.
@@ -60,6 +61,8 @@ public class DynamicPartitionCtx implements Serializable {
    * schema and returns a single expression. Example for simply just referencing column 3: cols -> cols.get(3).clone()
    */
   private transient List<Function<List<ExprNodeDesc>, ExprNodeDesc>> customSortExpressions;
+  private transient List<Integer> customSortOrder;
+  private transient List<Integer> customSortNullOrder;
 
   public DynamicPartitionCtx() {
   }
@@ -93,6 +96,8 @@ public class DynamicPartitionCtx implements Serializable {
     }
     this.whiteListPattern = confVal == null || confVal.isEmpty() ? null : Pattern.compile(confVal);
     this.customSortExpressions = new LinkedList<>();
+    this.customSortOrder = new LinkedList<>();
+    this.customSortNullOrder = new LinkedList<>();
   }
 
   public DynamicPartitionCtx(Map<String, String> partSpec, String defaultPartName,
@@ -126,6 +131,8 @@ public class DynamicPartitionCtx implements Serializable {
     }
     this.whiteListPattern = confVal == null || confVal.isEmpty() ? null : Pattern.compile(confVal);
     this.customSortExpressions = new LinkedList<>();
+    this.customSortOrder = new LinkedList<>();
+    this.customSortNullOrder = new LinkedList<>();
   }
 
   public DynamicPartitionCtx(DynamicPartitionCtx dp) {
@@ -141,6 +148,9 @@ public class DynamicPartitionCtx implements Serializable {
     this.maxPartsPerNode = dp.maxPartsPerNode;
     this.whiteListPattern = dp.whiteListPattern;
     this.customSortExpressions = dp.customSortExpressions;
+    this.hasCustomSortExprs = dp.customSortExpressions != null && !dp.customSortExpressions.isEmpty();
+    this.customSortOrder = dp.customSortOrder;
+    this.customSortNullOrder = dp.customSortNullOrder;
   }
 
   public Pattern getWhiteListPattern() {
@@ -233,5 +243,29 @@ public class DynamicPartitionCtx implements Serializable {
 
   public void setCustomSortExpressions(List<Function<List<ExprNodeDesc>, ExprNodeDesc>> customSortExpressions) {
     this.customSortExpressions = customSortExpressions;
+  }
+
+  public List<Integer> getCustomSortOrder() {
+    return customSortOrder;
+  }
+
+  public void setCustomSortOrder(List<Integer> customSortOrder) {
+    this.customSortOrder = customSortOrder;
+  }
+
+  public List<Integer> getCustomSortNullOrder() {
+    return customSortNullOrder;
+  }
+
+  public void setCustomSortNullOrder(List<Integer> customSortNullOrder) {
+    this.customSortNullOrder = customSortNullOrder;
+  }
+
+  public boolean hasCustomSortExprs() {
+    return hasCustomSortExprs;
+  }
+
+  public void setHasCustomSortExprs(boolean hasCustomSortExprs) {
+    this.hasCustomSortExprs = hasCustomSortExprs;
   }
 }

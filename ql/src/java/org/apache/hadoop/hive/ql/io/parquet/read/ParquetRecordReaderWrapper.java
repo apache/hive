@@ -22,8 +22,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordReader;
-import org.apache.hadoop.hive.ql.io.parquet.ProjectionPusher;
-import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
@@ -35,7 +33,6 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 
 import org.apache.parquet.hadoop.ParquetInputFormat;
-import org.apache.parquet.hadoop.ParquetInputSplit;
 import org.apache.parquet.hadoop.util.ContextUtil;
 
 public class ParquetRecordReaderWrapper extends ParquetRecordReaderBase
@@ -59,7 +56,7 @@ public class ParquetRecordReaderWrapper extends ParquetRecordReaderBase
           throws IOException, InterruptedException {
     super(oldJobConf, oldSplit);
 
-    setupMetadataAndParquetSplit(oldJobConf);
+    setupMetadataAndParquetSplit(oldJobConf, null);
 
     this.splitLen = oldSplit.getLength();
 

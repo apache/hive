@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -104,7 +105,14 @@ public class TestFilterHooks {
     }
 
     @Override
-    public List<TableMeta> filterTableMetas(String catName, String dbName,List<TableMeta> tableMetas) throws MetaException {
+    @Deprecated
+    public List<TableMeta> filterTableMetas(String catName, String dbName,List<TableMeta> tableMetas)
+        throws MetaException {
+      return filterTableMetas(tableMetas);
+    }
+
+    @Override
+    public List<TableMeta> filterTableMetas(List<TableMeta> tableMetas) throws MetaException {
       return tableMetas;
     }
 
@@ -141,6 +149,14 @@ public class TestFilterHooks {
       }
       return partitionNames;
     }
+
+    @Override
+    public List<String> filterDataConnectors(List<String> dcList) throws MetaException {
+      if (blockResults) {
+        return new ArrayList<>();
+      }
+      return dcList;
+    }
   }
 
   protected static HiveMetaStoreClient client;
@@ -153,6 +169,12 @@ public class TestFilterHooks {
   private static String DBNAME2 = "testdb2";
   private static final String TAB1 = "tab1";
   private static final String TAB2 = "tab2";
+  private static String DCNAME1 = "test_connector1";
+  private static String DCNAME2 = "test_connector2";
+  private static String mysql_type = "mysql";
+  private static String mysql_url = "jdbc:mysql://localhost:3306/hive";
+  private static String postgres_type = "postgres";
+  private static String postgres_url = "jdbc:postgresql://localhost:5432";
 
 
   protected HiveMetaStoreClient createClient(Configuration metaStoreConf) throws Exception {
@@ -210,6 +232,8 @@ public class TestFilterHooks {
 
     client.dropDatabase(DBNAME1, true, true, true);
     client.dropDatabase(DBNAME2, true, true, true);
+    client.dropDataConnector(DCNAME1, true, true);
+    client.dropDataConnector(DCNAME2, true, true);
     Database db1 = new DatabaseBuilder()
         .setName(DBNAME1)
         .setCatalogName(Warehouse.DEFAULT_CATALOG_NAME)
@@ -238,6 +262,10 @@ public class TestFilterHooks {
         .inTable(tab2)
         .addValue("value2")
         .addToTable(client, conf);
+    DataConnector dc1 = new DataConnector(DCNAME1, mysql_type, mysql_url);
+    DataConnector dc2 = new DataConnector(DCNAME2, postgres_type, postgres_url);
+    client.createDataConnector(dc1);
+    client.createDataConnector(dc2);
 
     TestTxnDbUtil.cleanDb(conf);
     TestTxnDbUtil.prepDb(conf);
@@ -271,6 +299,8 @@ public class TestFilterHooks {
     assertEquals(1, client.getPartitionsByNames(DBNAME1, TAB2, Lists.newArrayList("name=value1")).size());
 
     assertEquals(2, client.showCompactions().getCompacts().size());
+
+    assertEquals(2, client.getAllDataConnectorNames().size());
   }
 
   /**
@@ -290,6 +320,7 @@ public class TestFilterHooks {
     testFilterForTables(true);
     testFilterForPartition(true);
     testFilterForCompaction();
+    testFilterForDataConnector();
   }
 
   /**
@@ -318,6 +349,8 @@ public class TestFilterHooks {
     assertEquals(1, client.getPartitionsByNames(DBNAME1, TAB2, Lists.newArrayList("name=value1")).size());
 
     assertEquals(2, client.showCompactions().getCompacts().size());
+
+    assertEquals(2, client.getAllDataConnectorNames().size());
   }
 
   /**
@@ -336,6 +369,7 @@ public class TestFilterHooks {
     testFilterForTables(false);
     testFilterForPartition(false);
     testFilterForCompaction();
+    testFilterForDataConnector();
   }
 
   protected void testFilterForDb(boolean filterAtServer) throws Exception {
@@ -403,5 +437,10 @@ public class TestFilterHooks {
 
   protected void testFilterForCompaction() throws Exception {
     assertEquals(0, client.showCompactions().getCompacts().size());
+  }
+
+  protected void testFilterForDataConnector() throws Exception {
+    assertNotNull(client.getDataConnector(DCNAME1));
+    assertEquals(0, client.getAllDataConnectorNames().size());
   }
 }

@@ -1,0 +1,13 @@
+DROP TABLE IF EXISTS selfjoin1;
+DROP TABLE IF EXISTS t1;
+DROP TABLE IF EXISTS t2;
+
+CREATE TABLE selfjoin1(c1 int, c2 double);
+INSERT INTO selfjoin1 VALUES(0, '-0');
+SELECT * FROM selfjoin1 sj1, selfjoin1 sj2 WHERE sj1.c1 = sj2.c2;
+
+CREATE TABLE t0(c0 int);
+CREATE TABLE t1(c0 double);
+INSERT INTO t0 VALUES(0);
+INSERT INTO t1 VALUES('-0');
+SELECT * FROM t0, t1 WHERE t0.c0 = t1.c0;

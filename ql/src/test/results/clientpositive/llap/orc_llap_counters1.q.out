@@ -239,7 +239,7 @@ Table Parameters:
 	orc.bloom.filter.columns	*                   
 	orc.row.index.stride	1000                
 	rawDataSize         	1139514             
-	totalSize           	55696               
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -257,7 +257,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 17727
+   HDFS_BYTES_READ: 18150
    HDFS_BYTES_WRITTEN: 104
    HDFS_READ_OPS: 5
    HDFS_LARGE_READ_OPS: 0
@@ -279,9 +279,9 @@ Stage-1 HIVE COUNTERS:
    TOTAL_TABLE_ROWS_WRITTEN: 0
 Stage-1 LLAP IO COUNTERS:
    ALLOCATED_BYTES: 1310720
-   ALLOCATED_USED_BYTES: 2757
+   ALLOCATED_USED_BYTES: 4005
    CACHE_HIT_BYTES: 0
-   CACHE_MISS_BYTES: 1071
+   CACHE_MISS_BYTES: 1495
    METADATA_CACHE_MISS: 2
    NUM_DECODED_BATCHES: 3
    NUM_VECTOR_BATCHES: 3
@@ -319,7 +319,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_TS_0: 2100
    TOTAL_TABLE_ROWS_WRITTEN: 0
 Stage-1 LLAP IO COUNTERS:
-   CACHE_HIT_BYTES: 1071
+   CACHE_HIT_BYTES: 1495
    CACHE_MISS_BYTES: 0
    METADATA_CACHE_HIT: 2
    NUM_DECODED_BATCHES: 3
@@ -335,12 +335,15 @@ Stage-1 INPUT COUNTERS:
 PREHOOK: query: DROP TABLE staging
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@staging
+PREHOOK: Output: database:default
 PREHOOK: Output: default@staging
 PREHOOK: query: DROP TABLE orc_ppd_staging
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_ppd_staging
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_ppd_staging
 PREHOOK: query: DROP TABLE orc_ppd
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_ppd
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_ppd

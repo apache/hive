@@ -30,6 +30,11 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField INITIATOR_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("initiatorId", org.apache.thrift.protocol.TType.STRING, (short)17);
   private static final org.apache.thrift.protocol.TField INITIATOR_VERSION_FIELD_DESC = new org.apache.thrift.protocol.TField("initiatorVersion", org.apache.thrift.protocol.TType.STRING, (short)18);
   private static final org.apache.thrift.protocol.TField CLEANER_START_FIELD_DESC = new org.apache.thrift.protocol.TField("cleanerStart", org.apache.thrift.protocol.TType.I64, (short)19);
+  private static final org.apache.thrift.protocol.TField POOL_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("poolName", org.apache.thrift.protocol.TType.STRING, (short)20);
+  private static final org.apache.thrift.protocol.TField NEXT_TXN_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("nextTxnId", org.apache.thrift.protocol.TType.I64, (short)21);
+  private static final org.apache.thrift.protocol.TField TXN_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("txnId", org.apache.thrift.protocol.TType.I64, (short)22);
+  private static final org.apache.thrift.protocol.TField COMMIT_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("commitTime", org.apache.thrift.protocol.TType.I64, (short)23);
+  private static final org.apache.thrift.protocol.TField HIGHTEST_WRITE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("hightestWriteId", org.apache.thrift.protocol.TType.I64, (short)24);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new ShowCompactResponseElementStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new ShowCompactResponseElementTupleSchemeFactory();
@@ -53,6 +58,11 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable java.lang.String initiatorId; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String initiatorVersion; // optional
   private long cleanerStart; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String poolName; // optional
+  private long nextTxnId; // optional
+  private long txnId; // optional
+  private long commitTime; // optional
+  private long hightestWriteId; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -78,7 +88,12 @@ package org.apache.hadoop.hive.metastore.api;
     WORKER_VERSION((short)16, "workerVersion"),
     INITIATOR_ID((short)17, "initiatorId"),
     INITIATOR_VERSION((short)18, "initiatorVersion"),
-    CLEANER_START((short)19, "cleanerStart");
+    CLEANER_START((short)19, "cleanerStart"),
+    POOL_NAME((short)20, "poolName"),
+    NEXT_TXN_ID((short)21, "nextTxnId"),
+    TXN_ID((short)22, "txnId"),
+    COMMIT_TIME((short)23, "commitTime"),
+    HIGHTEST_WRITE_ID((short)24, "hightestWriteId");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -132,6 +147,16 @@ package org.apache.hadoop.hive.metastore.api;
           return INITIATOR_VERSION;
         case 19: // CLEANER_START
           return CLEANER_START;
+        case 20: // POOL_NAME
+          return POOL_NAME;
+        case 21: // NEXT_TXN_ID
+          return NEXT_TXN_ID;
+        case 22: // TXN_ID
+          return TXN_ID;
+        case 23: // COMMIT_TIME
+          return COMMIT_TIME;
+        case 24: // HIGHTEST_WRITE_ID
+          return HIGHTEST_WRITE_ID;
         default:
           return null;
       }
@@ -179,8 +204,12 @@ package org.apache.hadoop.hive.metastore.api;
   private static final int __ID_ISSET_ID = 3;
   private static final int __ENQUEUETIME_ISSET_ID = 4;
   private static final int __CLEANERSTART_ISSET_ID = 5;
-  private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.PARTITIONNAME,_Fields.WORKERID,_Fields.START,_Fields.RUN_AS,_Fields.HIGHTEST_TXN_ID,_Fields.META_INFO,_Fields.END_TIME,_Fields.HADOOP_JOB_ID,_Fields.ID,_Fields.ERROR_MESSAGE,_Fields.ENQUEUE_TIME,_Fields.WORKER_VERSION,_Fields.INITIATOR_ID,_Fields.INITIATOR_VERSION,_Fields.CLEANER_START};
+  private static final int __NEXTTXNID_ISSET_ID = 6;
+  private static final int __TXNID_ISSET_ID = 7;
+  private static final int __COMMITTIME_ISSET_ID = 8;
+  private static final int __HIGHTESTWRITEID_ISSET_ID = 9;
+  private short __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.PARTITIONNAME,_Fields.WORKERID,_Fields.START,_Fields.RUN_AS,_Fields.HIGHTEST_TXN_ID,_Fields.META_INFO,_Fields.END_TIME,_Fields.HADOOP_JOB_ID,_Fields.ID,_Fields.ERROR_MESSAGE,_Fields.ENQUEUE_TIME,_Fields.WORKER_VERSION,_Fields.INITIATOR_ID,_Fields.INITIATOR_VERSION,_Fields.CLEANER_START,_Fields.POOL_NAME,_Fields.NEXT_TXN_ID,_Fields.TXN_ID,_Fields.COMMIT_TIME,_Fields.HIGHTEST_WRITE_ID};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -221,6 +250,16 @@ package org.apache.hadoop.hive.metastore.api;
     tmpMap.put(_Fields.INITIATOR_VERSION, new org.apache.thrift.meta_data.FieldMetaData("initiatorVersion", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.CLEANER_START, new org.apache.thrift.meta_data.FieldMetaData("cleanerStart", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.POOL_NAME, new org.apache.thrift.meta_data.FieldMetaData("poolName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.NEXT_TXN_ID, new org.apache.thrift.meta_data.FieldMetaData("nextTxnId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.TXN_ID, new org.apache.thrift.meta_data.FieldMetaData("txnId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.COMMIT_TIME, new org.apache.thrift.meta_data.FieldMetaData("commitTime", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.HIGHTEST_WRITE_ID, new org.apache.thrift.meta_data.FieldMetaData("hightestWriteId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ShowCompactResponseElement.class, metaDataMap);
@@ -294,6 +333,13 @@ package org.apache.hadoop.hive.metastore.api;
       this.initiatorVersion = other.initiatorVersion;
     }
     this.cleanerStart = other.cleanerStart;
+    if (other.isSetPoolName()) {
+      this.poolName = other.poolName;
+    }
+    this.nextTxnId = other.nextTxnId;
+    this.txnId = other.txnId;
+    this.commitTime = other.commitTime;
+    this.hightestWriteId = other.hightestWriteId;
   }
 
   public ShowCompactResponseElement deepCopy() {
@@ -328,6 +374,15 @@ package org.apache.hadoop.hive.metastore.api;
     this.initiatorVersion = null;
     setCleanerStartIsSet(false);
     this.cleanerStart = 0;
+    this.poolName = null;
+    setNextTxnIdIsSet(false);
+    this.nextTxnId = 0;
+    setTxnIdIsSet(false);
+    this.txnId = 0;
+    setCommitTimeIsSet(false);
+    this.commitTime = 0;
+    setHightestWriteIdIsSet(false);
+    this.hightestWriteId = 0;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -782,6 +837,118 @@ package org.apache.hadoop.hive.metastore.api;
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __CLEANERSTART_ISSET_ID, value);
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getPoolName() {
+    return this.poolName;
+  }
+
+  public void setPoolName(@org.apache.thrift.annotation.Nullable java.lang.String poolName) {
+    this.poolName = poolName;
+  }
+
+  public void unsetPoolName() {
+    this.poolName = null;
+  }
+
+  /** Returns true if field poolName is set (has been assigned a value) and false otherwise */
+  public boolean isSetPoolName() {
+    return this.poolName != null;
+  }
+
+  public void setPoolNameIsSet(boolean value) {
+    if (!value) {
+      this.poolName = null;
+    }
+  }
+
+  public long getNextTxnId() {
+    return this.nextTxnId;
+  }
+
+  public void setNextTxnId(long nextTxnId) {
+    this.nextTxnId = nextTxnId;
+    setNextTxnIdIsSet(true);
+  }
+
+  public void unsetNextTxnId() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __NEXTTXNID_ISSET_ID);
+  }
+
+  /** Returns true if field nextTxnId is set (has been assigned a value) and false otherwise */
+  public boolean isSetNextTxnId() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __NEXTTXNID_ISSET_ID);
+  }
+
+  public void setNextTxnIdIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __NEXTTXNID_ISSET_ID, value);
+  }
+
+  public long getTxnId() {
+    return this.txnId;
+  }
+
+  public void setTxnId(long txnId) {
+    this.txnId = txnId;
+    setTxnIdIsSet(true);
+  }
+
+  public void unsetTxnId() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __TXNID_ISSET_ID);
+  }
+
+  /** Returns true if field txnId is set (has been assigned a value) and false otherwise */
+  public boolean isSetTxnId() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __TXNID_ISSET_ID);
+  }
+
+  public void setTxnIdIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TXNID_ISSET_ID, value);
+  }
+
+  public long getCommitTime() {
+    return this.commitTime;
+  }
+
+  public void setCommitTime(long commitTime) {
+    this.commitTime = commitTime;
+    setCommitTimeIsSet(true);
+  }
+
+  public void unsetCommitTime() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __COMMITTIME_ISSET_ID);
+  }
+
+  /** Returns true if field commitTime is set (has been assigned a value) and false otherwise */
+  public boolean isSetCommitTime() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __COMMITTIME_ISSET_ID);
+  }
+
+  public void setCommitTimeIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __COMMITTIME_ISSET_ID, value);
+  }
+
+  public long getHightestWriteId() {
+    return this.hightestWriteId;
+  }
+
+  public void setHightestWriteId(long hightestWriteId) {
+    this.hightestWriteId = hightestWriteId;
+    setHightestWriteIdIsSet(true);
+  }
+
+  public void unsetHightestWriteId() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __HIGHTESTWRITEID_ISSET_ID);
+  }
+
+  /** Returns true if field hightestWriteId is set (has been assigned a value) and false otherwise */
+  public boolean isSetHightestWriteId() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __HIGHTESTWRITEID_ISSET_ID);
+  }
+
+  public void setHightestWriteIdIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __HIGHTESTWRITEID_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case DBNAME:
@@ -936,6 +1103,46 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case POOL_NAME:
+      if (value == null) {
+        unsetPoolName();
+      } else {
+        setPoolName((java.lang.String)value);
+      }
+      break;
+
+    case NEXT_TXN_ID:
+      if (value == null) {
+        unsetNextTxnId();
+      } else {
+        setNextTxnId((java.lang.Long)value);
+      }
+      break;
+
+    case TXN_ID:
+      if (value == null) {
+        unsetTxnId();
+      } else {
+        setTxnId((java.lang.Long)value);
+      }
+      break;
+
+    case COMMIT_TIME:
+      if (value == null) {
+        unsetCommitTime();
+      } else {
+        setCommitTime((java.lang.Long)value);
+      }
+      break;
+
+    case HIGHTEST_WRITE_ID:
+      if (value == null) {
+        unsetHightestWriteId();
+      } else {
+        setHightestWriteId((java.lang.Long)value);
+      }
+      break;
+
     }
   }
 
@@ -999,6 +1206,21 @@ package org.apache.hadoop.hive.metastore.api;
     case CLEANER_START:
       return getCleanerStart();
 
+    case POOL_NAME:
+      return getPoolName();
+
+    case NEXT_TXN_ID:
+      return getNextTxnId();
+
+    case TXN_ID:
+      return getTxnId();
+
+    case COMMIT_TIME:
+      return getCommitTime();
+
+    case HIGHTEST_WRITE_ID:
+      return getHightestWriteId();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -1048,6 +1270,16 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetInitiatorVersion();
     case CLEANER_START:
       return isSetCleanerStart();
+    case POOL_NAME:
+      return isSetPoolName();
+    case NEXT_TXN_ID:
+      return isSetNextTxnId();
+    case TXN_ID:
+      return isSetTxnId();
+    case COMMIT_TIME:
+      return isSetCommitTime();
+    case HIGHTEST_WRITE_ID:
+      return isSetHightestWriteId();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -1236,6 +1468,51 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_poolName = true && this.isSetPoolName();
+    boolean that_present_poolName = true && that.isSetPoolName();
+    if (this_present_poolName || that_present_poolName) {
+      if (!(this_present_poolName && that_present_poolName))
+        return false;
+      if (!this.poolName.equals(that.poolName))
+        return false;
+    }
+
+    boolean this_present_nextTxnId = true && this.isSetNextTxnId();
+    boolean that_present_nextTxnId = true && that.isSetNextTxnId();
+    if (this_present_nextTxnId || that_present_nextTxnId) {
+      if (!(this_present_nextTxnId && that_present_nextTxnId))
+        return false;
+      if (this.nextTxnId != that.nextTxnId)
+        return false;
+    }
+
+    boolean this_present_txnId = true && this.isSetTxnId();
+    boolean that_present_txnId = true && that.isSetTxnId();
+    if (this_present_txnId || that_present_txnId) {
+      if (!(this_present_txnId && that_present_txnId))
+        return false;
+      if (this.txnId != that.txnId)
+        return false;
+    }
+
+    boolean this_present_commitTime = true && this.isSetCommitTime();
+    boolean that_present_commitTime = true && that.isSetCommitTime();
+    if (this_present_commitTime || that_present_commitTime) {
+      if (!(this_present_commitTime && that_present_commitTime))
+        return false;
+      if (this.commitTime != that.commitTime)
+        return false;
+    }
+
+    boolean this_present_hightestWriteId = true && this.isSetHightestWriteId();
+    boolean that_present_hightestWriteId = true && that.isSetHightestWriteId();
+    if (this_present_hightestWriteId || that_present_hightestWriteId) {
+      if (!(this_present_hightestWriteId && that_present_hightestWriteId))
+        return false;
+      if (this.hightestWriteId != that.hightestWriteId)
+        return false;
+    }
+
     return true;
   }
 
@@ -1318,6 +1595,26 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetCleanerStart()) ? 131071 : 524287);
     if (isSetCleanerStart())
       hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(cleanerStart);
+
+    hashCode = hashCode * 8191 + ((isSetPoolName()) ? 131071 : 524287);
+    if (isSetPoolName())
+      hashCode = hashCode * 8191 + poolName.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetNextTxnId()) ? 131071 : 524287);
+    if (isSetNextTxnId())
+      hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(nextTxnId);
+
+    hashCode = hashCode * 8191 + ((isSetTxnId()) ? 131071 : 524287);
+    if (isSetTxnId())
+      hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(txnId);
+
+    hashCode = hashCode * 8191 + ((isSetCommitTime()) ? 131071 : 524287);
+    if (isSetCommitTime())
+      hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(commitTime);
+
+    hashCode = hashCode * 8191 + ((isSetHightestWriteId()) ? 131071 : 524287);
+    if (isSetHightestWriteId())
+      hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(hightestWriteId);
 
     return hashCode;
   }
@@ -1520,6 +1817,56 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetPoolName(), other.isSetPoolName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetPoolName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.poolName, other.poolName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetNextTxnId(), other.isSetNextTxnId());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetNextTxnId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.nextTxnId, other.nextTxnId);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetTxnId(), other.isSetTxnId());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTxnId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.txnId, other.txnId);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetCommitTime(), other.isSetCommitTime());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCommitTime()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.commitTime, other.commitTime);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetHightestWriteId(), other.isSetHightestWriteId());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetHightestWriteId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.hightestWriteId, other.hightestWriteId);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1696,6 +2043,40 @@ package org.apache.hadoop.hive.metastore.api;
       if (!first) sb.append(", ");
       sb.append("cleanerStart:");
       sb.append(this.cleanerStart);
+      first = false;
+    }
+    if (isSetPoolName()) {
+      if (!first) sb.append(", ");
+      sb.append("poolName:");
+      if (this.poolName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.poolName);
+      }
+      first = false;
+    }
+    if (isSetNextTxnId()) {
+      if (!first) sb.append(", ");
+      sb.append("nextTxnId:");
+      sb.append(this.nextTxnId);
+      first = false;
+    }
+    if (isSetTxnId()) {
+      if (!first) sb.append(", ");
+      sb.append("txnId:");
+      sb.append(this.txnId);
+      first = false;
+    }
+    if (isSetCommitTime()) {
+      if (!first) sb.append(", ");
+      sb.append("commitTime:");
+      sb.append(this.commitTime);
+      first = false;
+    }
+    if (isSetHightestWriteId()) {
+      if (!first) sb.append(", ");
+      sb.append("hightestWriteId:");
+      sb.append(this.hightestWriteId);
       first = false;
     }
     sb.append(")");
@@ -1911,6 +2292,46 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 20: // POOL_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.poolName = iprot.readString();
+              struct.setPoolNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 21: // NEXT_TXN_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.nextTxnId = iprot.readI64();
+              struct.setNextTxnIdIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 22: // TXN_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.txnId = iprot.readI64();
+              struct.setTxnIdIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 23: // COMMIT_TIME
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.commitTime = iprot.readI64();
+              struct.setCommitTimeIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 24: // HIGHTEST_WRITE_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.hightestWriteId = iprot.readI64();
+              struct.setHightestWriteIdIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -2037,6 +2458,33 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeI64(struct.cleanerStart);
         oprot.writeFieldEnd();
       }
+      if (struct.poolName != null) {
+        if (struct.isSetPoolName()) {
+          oprot.writeFieldBegin(POOL_NAME_FIELD_DESC);
+          oprot.writeString(struct.poolName);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.isSetNextTxnId()) {
+        oprot.writeFieldBegin(NEXT_TXN_ID_FIELD_DESC);
+        oprot.writeI64(struct.nextTxnId);
+        oprot.writeFieldEnd();
+      }
+      if (struct.isSetTxnId()) {
+        oprot.writeFieldBegin(TXN_ID_FIELD_DESC);
+        oprot.writeI64(struct.txnId);
+        oprot.writeFieldEnd();
+      }
+      if (struct.isSetCommitTime()) {
+        oprot.writeFieldBegin(COMMIT_TIME_FIELD_DESC);
+        oprot.writeI64(struct.commitTime);
+        oprot.writeFieldEnd();
+      }
+      if (struct.isSetHightestWriteId()) {
+        oprot.writeFieldBegin(HIGHTEST_WRITE_ID_FIELD_DESC);
+        oprot.writeI64(struct.hightestWriteId);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -2104,7 +2552,22 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetCleanerStart()) {
         optionals.set(14);
       }
-      oprot.writeBitSet(optionals, 15);
+      if (struct.isSetPoolName()) {
+        optionals.set(15);
+      }
+      if (struct.isSetNextTxnId()) {
+        optionals.set(16);
+      }
+      if (struct.isSetTxnId()) {
+        optionals.set(17);
+      }
+      if (struct.isSetCommitTime()) {
+        optionals.set(18);
+      }
+      if (struct.isSetHightestWriteId()) {
+        optionals.set(19);
+      }
+      oprot.writeBitSet(optionals, 20);
       if (struct.isSetPartitionname()) {
         oprot.writeString(struct.partitionname);
       }
@@ -2150,6 +2613,21 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetCleanerStart()) {
         oprot.writeI64(struct.cleanerStart);
       }
+      if (struct.isSetPoolName()) {
+        oprot.writeString(struct.poolName);
+      }
+      if (struct.isSetNextTxnId()) {
+        oprot.writeI64(struct.nextTxnId);
+      }
+      if (struct.isSetTxnId()) {
+        oprot.writeI64(struct.txnId);
+      }
+      if (struct.isSetCommitTime()) {
+        oprot.writeI64(struct.commitTime);
+      }
+      if (struct.isSetHightestWriteId()) {
+        oprot.writeI64(struct.hightestWriteId);
+      }
     }
 
     @Override
@@ -2163,7 +2641,7 @@ package org.apache.hadoop.hive.metastore.api;
       struct.setTypeIsSet(true);
       struct.state = iprot.readString();
       struct.setStateIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(15);
+      java.util.BitSet incoming = iprot.readBitSet(20);
       if (incoming.get(0)) {
         struct.partitionname = iprot.readString();
         struct.setPartitionnameIsSet(true);
@@ -2223,6 +2701,26 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(14)) {
         struct.cleanerStart = iprot.readI64();
         struct.setCleanerStartIsSet(true);
+      }
+      if (incoming.get(15)) {
+        struct.poolName = iprot.readString();
+        struct.setPoolNameIsSet(true);
+      }
+      if (incoming.get(16)) {
+        struct.nextTxnId = iprot.readI64();
+        struct.setNextTxnIdIsSet(true);
+      }
+      if (incoming.get(17)) {
+        struct.txnId = iprot.readI64();
+        struct.setTxnIdIsSet(true);
+      }
+      if (incoming.get(18)) {
+        struct.commitTime = iprot.readI64();
+        struct.setCommitTimeIsSet(true);
+      }
+      if (incoming.get(19)) {
+        struct.hightestWriteId = iprot.readI64();
+        struct.setHightestWriteIdIsSet(true);
       }
     }
   }

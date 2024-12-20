@@ -13,6 +13,7 @@ grant select on table src_auth_tmp_n1 to user hive_test_user;
 grant Create on table authorization_part_n1 to user hive_test_user;
 grant Update on table authorization_part_n1 to user hive_test_user;
 grant Drop on table authorization_part_n1 to user hive_test_user;
+GRANT drop ON DATABASE default TO USER hive_test_user;
 
 show grant user hive_test_user on table authorization_part_n1;
 grant select(key) on table authorization_part_n1 to user hive_test_user;

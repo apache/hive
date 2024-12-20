@@ -181,24 +181,30 @@ public class TestMetastoreExpr {
 
   public void checkExpr(int numParts,
       String dbName, String tblName, ExprNodeGenericFuncDesc expr, Table t) throws Exception {
-    List<Partition> parts = new ArrayList<Partition>();
-    client.listPartitionsByExpr(dbName, tblName,
-        SerializationUtilities.serializeObjectWithTypeInformation(expr), null, (short)-1, parts);
-    assertEquals("Partition check failed: " + expr.getExprString(), numParts, parts.size());
+    List<byte[]> exprBytes = new ArrayList<>();
+    exprBytes.add(SerializationUtilities.serializeObjectWithTypeInformation(expr));
+    // old client
+    exprBytes.add(SerializationUtilities.serializeObjectToKryo(expr));
+    for (int i = 0; i < exprBytes.size(); i++) {
+      List<Partition> parts = new ArrayList<Partition>();
+      client.listPartitionsByExpr(dbName, tblName,
+          exprBytes.get(i), null, (short)-1, parts);
+      assertEquals("Partition check failed: " + expr.getExprString(), numParts, parts.size());
 
-    // check with partition spec as well
-    PartitionsByExprRequest req = new PartitionsByExprRequest(dbName, tblName,
-        ByteBuffer.wrap(SerializationUtilities.serializeObjectWithTypeInformation(expr)));
-    req.setMaxParts((short)-1);
-    req.setId(t.getId());
+      // check with partition spec as well
+      PartitionsByExprRequest req = new PartitionsByExprRequest(dbName, tblName,
+          ByteBuffer.wrap(exprBytes.get(i)));
+      req.setMaxParts((short)-1);
+      req.setId(t.getId());
 
-    List<PartitionSpec> partSpec = new ArrayList<>();
-    client.listPartitionsSpecByExpr(req, partSpec);
-    int partSpecSize = 0;
-    if(!partSpec.isEmpty()) {
-      partSpecSize = partSpec.iterator().next().getSharedSDPartitionSpec().getPartitionsSize();
+      List<PartitionSpec> partSpec = new ArrayList<>();
+      client.listPartitionsSpecByExpr(req, partSpec);
+      int partSpecSize = 0;
+      if(!partSpec.isEmpty()) {
+        partSpecSize = partSpec.iterator().next().getSharedSDPartitionSpec().getPartitionsSize();
+      }
+      assertEquals("Partition Spec check failed: " + expr.getExprString(), numParts, partSpecSize);
     }
-    assertEquals("Partition Spec check failed: " + expr.getExprString(), numParts, partSpecSize);
   }
 
 

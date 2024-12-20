@@ -35,10 +35,6 @@ public class HiveSamlUtils {
   public static final String STATUS_KEY = "status";
   public static final String MESSAGE_KEY = "message";
 
-  public static boolean isSamlAuthMode(String authType) {
-    return authType.toLowerCase().contains(HiveAuthConstants.AuthTypes.SAML.toString().toLowerCase());
-  }
-
   /**
    * Gets the configured callback url path for the SAML service provider. Also, makes sure
    * that the port number is same as the HTTP thrift port.

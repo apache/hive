@@ -29,6 +29,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.google.common.annotations.VisibleForTesting;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.api.ACLProvider;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
@@ -55,6 +57,7 @@ import org.apache.hadoop.registry.client.types.ServiceRecord;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.KeeperException.InvalidACLException;
 import org.apache.zookeeper.KeeperException.NodeExistsException;
 import org.apache.zookeeper.ZooDefs;
@@ -114,6 +117,8 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   private PersistentNode znode;
   private String znodePath; // unique identity for this instance
 
+  final String namespace;
+
   private PathChildrenCache instancesCache; // Created on demand.
 
   /** Local hostname. */
@@ -160,7 +165,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
     this.stateChangeListeners = new HashSet<>();
     this.pathToInstanceCache = new ConcurrentHashMap<>();
     this.nodeToInstanceCache = new ConcurrentHashMap<>();
-    final String namespace = getRootNamespace(conf, rootNs, nsPrefix);
+    this.namespace = getRootNamespace(conf, rootNs, nsPrefix);
     ACLProvider aclProvider;
     // get acl provider for most outer path that is non-null
     if (userPathPrefix == null) {
@@ -238,8 +243,10 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
         .sslEnabled(HiveConf.getBoolVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_ENABLE))
         .keyStoreLocation(HiveConf.getVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_LOCATION))
         .keyStorePassword(keyStorePassword)
+        .keyStoreType(HiveConf.getVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_TYPE))
         .trustStoreLocation(HiveConf.getVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION))
         .trustStorePassword(trustStorePassword)
+        .trustStoreType(HiveConf.getVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_TYPE))
         .build().getNewZookeeperClient(zooKeeperAclProvider, namespace);
   }
 
@@ -351,6 +358,30 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
     }
   }
 
+  @VisibleForTesting
+  public String getPersistentNodePath() {
+    return "/" + PATH_JOINER.join(namespace, StringUtils.substringBetween(workersPath, "/", "/"), "pnode0");
+  }
+
+  protected void ensurePersistentNodePath(ServiceRecord srv) throws IOException {
+    String pNodePath = getPersistentNodePath();
+    try {
+      LOG.info("Check if persistent node  path {}  exists, create if not", pNodePath);
+      if (zooKeeperClient.checkExists().forPath(pNodePath) == null) {
+        zooKeeperClient.create().creatingParentsIfNeeded().withMode(CreateMode.PERSISTENT)
+            .forPath(pNodePath, encoder.toBytes(srv));
+        LOG.info("Created persistent path at: {}", pNodePath);
+      }
+    } catch (Exception e) {
+      // throw exception if it is other than NODEEXISTS.
+      if (!(e instanceof KeeperException) || ((KeeperException) e).code() != KeeperException.Code.NODEEXISTS) {
+        LOG.error("Unable to create a persistent znode for this server instance", e);
+        throw new IOException(e);
+      } else {
+        LOG.debug("Ignoring KeeperException while ensuring path as the parent node {} already exists.", pNodePath);
+      }
+    }
+  }
 
   final protected void initializeWithoutRegisteringInternal() throws IOException {
     // Create a znode under the rootNamespace parent for this instance of the server

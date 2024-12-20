@@ -389,16 +389,20 @@ POSTHOOK: Output: default@mv1_n10
 PREHOOK: query: drop table emps_n10
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@emps_n10
+PREHOOK: Output: database:default
 PREHOOK: Output: default@emps_n10
 POSTHOOK: query: drop table emps_n10
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@emps_n10
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@emps_n10
 PREHOOK: query: drop table emps_n10_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@emps_n10_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@emps_n10_2
 POSTHOOK: query: drop table emps_n10_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@emps_n10_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@emps_n10_2

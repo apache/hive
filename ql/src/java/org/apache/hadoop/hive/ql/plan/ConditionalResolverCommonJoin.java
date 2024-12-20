@@ -169,7 +169,7 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
     Map<String, Long> aliasToKnownSize = ctx.getAliasToKnownSize();
     Map<Task<?>, Set<String>> taskToAliases = ctx.getTaskToAliases();
 
-    long threshold = HiveConf.getLongVar(conf, HiveConf.ConfVars.HIVESMALLTABLESFILESIZE);
+    long threshold = HiveConf.getLongVar(conf, HiveConf.ConfVars.HIVE_SMALL_TABLES_FILESIZE);
 
     Long bigTableSize = null;
     Long smallTablesSize = null;

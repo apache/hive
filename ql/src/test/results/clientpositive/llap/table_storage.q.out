@@ -62,10 +62,10 @@ POSTHOOK: Input: default@t
 CREATE TABLE `t`(
   `key` string, 
   `val` string)
-CLUSTERED BY ( 
-  key) 
+CLUSTERED BY (
+  `key`)
 SORTED BY ( 
-  key ASC) 
+  `key` ASC) 
 INTO 2 BUCKETS
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
@@ -109,10 +109,10 @@ POSTHOOK: Input: default@t
 CREATE TABLE `t`(
   `key` string, 
   `val` string)
-CLUSTERED BY ( 
-  key) 
+CLUSTERED BY (
+  `key`)
 SORTED BY ( 
-  key ASC) 
+  `key` ASC) 
 INTO 3 BUCKETS
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
@@ -158,8 +158,8 @@ POSTHOOK: Input: default@t
 CREATE TABLE `t`(
   `key` string, 
   `val` string)
-CLUSTERED BY ( 
-  key) 
+CLUSTERED BY (
+  `key`)
 INTO 3 BUCKETS
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
@@ -252,7 +252,7 @@ POSTHOOK: Input: default@t
 CREATE TABLE `t`(
   `key` string, 
   `val` string)
-SKEWED BY (key)
+SKEWED BY (`key`)
   ON (('a'),('b'))
   STORED AS DIRECTORIES
 ROW FORMAT SERDE 
@@ -301,7 +301,7 @@ POSTHOOK: Input: default@t
 CREATE TABLE `t`(
   `key` string, 
   `val` string)
-SKEWED BY (key)
+SKEWED BY (`key`)
   ON (('a'),('b'))
   STORED AS DIRECTORIES
 ROW FORMAT SERDE 

@@ -1415,8 +1415,10 @@ _c0	_c1
 PREHOOK: query: drop table interval_arithmetic_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@interval_arithmetic_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@interval_arithmetic_1
 POSTHOOK: query: drop table interval_arithmetic_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@interval_arithmetic_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@interval_arithmetic_1

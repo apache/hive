@@ -1,0 +1,20 @@
+PREHOOK: query: create table iceTbl (id int, name string) Stored by Iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iceTbl
+POSTHOOK: query: create table iceTbl (id int, name string) Stored by Iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iceTbl
+PREHOOK: query: insert into iceTbl values(1, 'jack')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@icetbl
+POSTHOOK: query: insert into iceTbl values(1, 'jack')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@icetbl
+PREHOOK: query: alter table iceTbl drop branch test_branch
+PREHOOK: type: ALTERTABLE_DROPBRANCH
+PREHOOK: Input: default@icetbl
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. java.lang.IllegalArgumentException: Branch does not exist: test_branch

@@ -36,13 +36,11 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorGroupByOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFCountStar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFSumLong;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncAbsLongToLong;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer.VectorizerCannotVectorizeException;
 import org.apache.hadoop.hive.ql.plan.*;
 import org.apache.hadoop.hive.ql.plan.VectorGroupByDesc.ProcessingMode;
 import org.apache.hadoop.hive.ql.udf.generic.*;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum.GenericUDAFSumLong;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Before;
@@ -111,13 +109,16 @@ public class TestVectorizer {
     vectorDesc.setProcessingMode(ProcessingMode.HASH);
     vectorDesc.setVecAggrDescs(
         new VectorAggregationDesc[] {
-          new VectorAggregationDesc(
-              aggDesc.getGenericUDAFName(),
-              new GenericUDAFSum.GenericUDAFSumLong(),
-              aggDesc.getMode(),
-              TypeInfoFactory.longTypeInfo, ColumnVector.Type.LONG, null,
-              TypeInfoFactory.longTypeInfo, ColumnVector.Type.LONG, VectorUDAFCountStar.class)});
-
+            new VectorAggregationDesc.VectorAggregationDescBuilder()
+                .aggregationName(aggDesc.getGenericUDAFName())
+                .evaluator(new GenericUDAFSum.GenericUDAFSumLong())
+                .udafEvaluatorMode(aggDesc.getMode())
+                .inputTypeInfo(TypeInfoFactory.longTypeInfo)
+                .inputColVectorType(ColumnVector.Type.LONG)
+                .outputTypeInfo(TypeInfoFactory.longTypeInfo)
+                .outputColVectorType(ColumnVector.Type.LONG)
+                .vectorAggregationClass(VectorUDAFCountStar.class)
+                .build()});
     desc.setOutputColumnNames(outputColumnNames);
     ArrayList<AggregationDesc> aggDescList = new ArrayList<AggregationDesc>();
     aggDescList.add(aggDesc);

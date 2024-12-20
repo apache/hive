@@ -43,7 +43,7 @@ class HiveSchemaConverter {
   private static final Logger LOG = LoggerFactory.getLogger(HiveSchemaConverter.class);
 
   private int id;
-  private boolean autoConvert;
+  private final boolean autoConvert;
 
   private HiveSchemaConverter(boolean autoConvert) {
     this.autoConvert = autoConvert;
@@ -85,7 +85,7 @@ class HiveSchemaConverter {
             return Types.BooleanType.get();
           case BYTE:
           case SHORT:
-            Preconditions.checkArgument(autoConvert, "Unsupported Hive type: %s, use integer " +
+            Preconditions.checkArgument(autoConvert, "Unsupported Hive type %s, use integer " +
                     "instead or enable automatic type conversion, set 'iceberg.mr.schema.auto.conversion' to true",
                 ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory());
 
@@ -99,7 +99,7 @@ class HiveSchemaConverter {
             return Types.BinaryType.get();
           case CHAR:
           case VARCHAR:
-            Preconditions.checkArgument(autoConvert, "Unsupported Hive type: %s, use integer " +
+            Preconditions.checkArgument(autoConvert, "Unsupported Hive type %s, use string " +
                     "instead or enable automatic type conversion, set 'iceberg.mr.schema.auto.conversion' to true",
                 ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory());
 

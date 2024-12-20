@@ -18,8 +18,7 @@ TBLPROPERTIES ("hbase.table.name" = "hbase_table_0", "external.table.purge" = "t
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:hbasedb
 POSTHOOK: Output: hbaseDB@hbase_table_0
-Found 3 items
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+Found 2 items
 drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
 drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: DROP DATABASE IF EXISTS hbaseDB CASCADE

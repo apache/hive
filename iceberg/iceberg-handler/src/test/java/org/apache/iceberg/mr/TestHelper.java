@@ -20,7 +20,6 @@
 package org.apache.iceberg.mr;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -29,8 +28,10 @@ import org.apache.iceberg.DataFile;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.PartitionSpec;
+import org.apache.iceberg.RowLevelOperationMode;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
+import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
@@ -54,6 +55,7 @@ public class TestHelper {
   private final FileFormat fileFormat;
   private final TemporaryFolder tmp;
   private final Map<String, String> tblProps;
+  private SortOrder order;
 
   private Table table;
 
@@ -79,6 +81,10 @@ public class TestHelper {
     conf.set(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(table.schema()));
   }
 
+  public void setOrder(SortOrder order) {
+    this.order = order;
+  }
+
   public Table table() {
     return table;
   }
@@ -87,17 +93,27 @@ public class TestHelper {
     Map<String, String> props = Maps.newHashMap(tblProps);
     props.put(TableProperties.DEFAULT_FILE_FORMAT, fileFormat.name());
     props.put(TableProperties.ENGINE_HIVE_ENABLED, "true");
+    props.put(TableProperties.DELETE_MODE, RowLevelOperationMode.MERGE_ON_READ.modeName());
     return props;
   }
 
   public Table createTable(Schema theSchema, PartitionSpec theSpec) {
-    Table tbl = tables.create(theSchema, theSpec, properties(), tableIdentifier);
+    return createTable(theSchema, theSpec, null);
+  }
+
+  public Table createTable(Schema theSchema, PartitionSpec theSpec, SortOrder theOrder) {
+    Table tbl;
+    if (theOrder != null) {
+      tbl = tables.create(theSchema, theSpec, theOrder, properties(), tableIdentifier);
+    } else {
+      tbl = tables.create(theSchema, theSpec, properties(), tableIdentifier);
+    }
     setTable(tbl);
     return tbl;
   }
 
   public Table createTable() {
-    return createTable(schema, spec);
+    return createTable(schema, spec, order);
   }
 
   public Table createUnpartitionedTable() {
@@ -180,7 +196,7 @@ public class TestHelper {
 
   public static class RecordsBuilder {
 
-    private final List<Record> records = new ArrayList<Record>();
+    private final List<Record> records = Lists.newArrayList();
     private final Schema schema;
 
     private RecordsBuilder(Schema schema) {

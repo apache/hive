@@ -155,7 +155,7 @@ public abstract class UnenclosedBaseJsonRecordReader extends RecordReader<LongWr
       if (chr < 0) {
         if (first_brace_found) {
           // last record was invalid
-          LOG.error("Parsing error : EOF occured before record ended");
+          LOG.error("Parsing error : EOF occurred before record ended");
         }
         return false;
       }

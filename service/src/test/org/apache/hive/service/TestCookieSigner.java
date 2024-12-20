@@ -70,7 +70,7 @@ public class TestCookieSigner {
     try {
       cs.verifyAndExtract(modifedSignedStr);
     } catch (IllegalArgumentException e) {
-      assertTrue(e.getMessage().startsWith("Invalid sign, original = "));
+      assertTrue(e.getMessage().startsWith("Invalid sign= "));
       return;
     }
     fail("Expected IllegalArgumentException checking signature");

@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS hf1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS hf1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE hf1 (a string, b string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' TBLPROPERTIES('skip.header.line.count'='1')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -32,8 +34,10 @@ a	b
 c	d
 PREHOOK: query: DROP TABLE IF EXISTS hf2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS hf2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE hf2 (a string, b string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' TBLPROPERTIES('skip.footer.line.count'='2')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -63,8 +67,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 x	y
 PREHOOK: query: DROP TABLE IF EXISTS hf3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS hf3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE hf3 (a string, b string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' TBLPROPERTIES('skip.header.line.count'='3')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -93,8 +99,10 @@ POSTHOOK: Input: default@hf3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DROP TABLE IF EXISTS hf4
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS hf4
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE hf4 (a string, b string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' TBLPROPERTIES('skip.header.line.count'='1','skip.footer.line.count'='2')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

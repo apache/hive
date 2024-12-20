@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.parse.type;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -64,13 +66,13 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseBinary;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCoalesce;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualNS;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqualNS;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -87,6 +89,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.IntWritable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -368,20 +371,30 @@ public class HiveFunctionHelper implements FunctionHelper {
    */
   @Override
   public AggregateInfo getAggregateFunctionInfo(boolean isDistinct, boolean isAllColumns,
-      String aggregateName, List<RexNode> aggregateParameters)
+                                                String aggregateName, List<RexNode> aggregateParameters,
+                                                List<FieldCollation> fieldCollations)
       throws SemanticException {
     Mode udafMode = SemanticAnalyzer.groupByDescModeToUDAFMode(
         GroupByDesc.Mode.COMPLETE, isDistinct);
     List<ObjectInspector> aggParameterOIs = new ArrayList<>();
+    Iterator<FieldCollation> obKeyIterator = fieldCollations.iterator();
     for (RexNode aggParameter : aggregateParameters) {
       aggParameterOIs.add(createObjectInspector(aggParameter));
+      if (obKeyIterator.hasNext()) {
+        FieldCollation fieldCollation = obKeyIterator.next();
+        aggParameterOIs.add(createObjectInspector(fieldCollation.getSortExpression()));
+        aggParameterOIs.add(PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
+                TypeInfoFactory.intTypeInfo, new IntWritable(fieldCollation.getSortDirection())));
+        aggParameterOIs.add(PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
+                TypeInfoFactory.intTypeInfo, new IntWritable(fieldCollation.getNullOrdering().getCode())));
+      }
     }
     GenericUDAFEvaluator genericUDAFEvaluator = SemanticAnalyzer.getGenericUDAFEvaluator2(
         aggregateName, aggParameterOIs, null, isDistinct, isAllColumns);
     assert (genericUDAFEvaluator != null);
     GenericUDAFInfo udaf = SemanticAnalyzer.getGenericUDAFInfo2(
         genericUDAFEvaluator, udafMode, aggParameterOIs);
-    return new AggregateInfo(aggregateParameters, udaf.returnType, aggregateName, isDistinct);
+    return new AggregateInfo(aggregateParameters, udaf.returnType, aggregateName, isDistinct, fieldCollations);
   }
 
   /**
@@ -436,6 +449,23 @@ public class HiveFunctionHelper implements FunctionHelper {
 
     return returnType != null ?
         new AggregateInfo(aggregateParameters, returnType, aggregateName, isDistinct) : null;
+  }
+
+  public RexCall getUDTFFunction(String functionName, List<RexNode> operands)
+      throws SemanticException {
+    // Extract the argument types for the operands into a list
+    List<RelDataType> operandTypes = Lists.transform(operands, RexNode::getType);
+
+    FunctionInfo functionInfo = FunctionRegistry.getFunctionInfo(functionName);
+    GenericUDTF genericUDTF = functionInfo.getGenericUDTF();
+    Preconditions.checkNotNull(genericUDTF, "Generic UDTF not found: " + functionName);
+
+    RelDataType udtfRetType = getReturnType(functionInfo, operands);
+
+    SqlOperator calciteOp = SqlFunctionConverter.getCalciteOperator(functionName, genericUDTF,
+        ImmutableList.copyOf(operandTypes), udtfRetType);
+
+    return (RexCall) rexBuilder.makeCall(calciteOp, operands);
   }
 
   private ObjectInspector createObjectInspector(RexNode expr) {

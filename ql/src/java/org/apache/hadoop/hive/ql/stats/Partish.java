@@ -141,9 +141,9 @@ public abstract class Partish {
     private Partition partition;
 
     // FIXME: possibly the distinction between table/partition is not need; however it was like this before....will change it later
-    public PPart(Table table, Partition partiton) {
+    public PPart(Table table, Partition partition) {
       this.table = table;
-      partition = partiton;
+      this.partition = partition;
     }
 
     @Override

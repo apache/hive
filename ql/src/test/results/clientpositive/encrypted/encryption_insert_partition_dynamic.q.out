@@ -1,11 +1,15 @@
 PREHOOK: query: drop table IF EXISTS encryptedTable_n0 PURGE
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table IF EXISTS encryptedTable_n0 PURGE
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table IF EXISTS unencryptedTable_n0 PURGE
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table IF EXISTS unencryptedTable_n0 PURGE
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table encryptedTable_n0(value string)
     partitioned by (key string) clustered by (value) into 2 buckets stored as orc
 #### A masked pattern was here ####
@@ -149,17 +153,21 @@ val_86	86
 PREHOOK: query: drop table encryptedTable_n0 PURGE
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@encryptedtable_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@encryptedtable_n0
 POSTHOOK: query: drop table encryptedTable_n0 PURGE
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@encryptedtable_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@encryptedtable_n0
 Encryption key deleted: 'key_1'
 PREHOOK: query: drop table unencryptedTable_n0 PURGE
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@unencryptedtable_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@unencryptedtable_n0
 POSTHOOK: query: drop table unencryptedTable_n0 PURGE
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@unencryptedtable_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@unencryptedtable_n0

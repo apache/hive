@@ -1,10 +1,10 @@
 PREHOOK: query: explain
-select radians(57.2958) FROM src tablesample (1 rows)
+select round(radians(57.2958), 15) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
-select radians(57.2958) FROM src tablesample (1 rows)
+select round(radians(57.2958), 15) FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -24,11 +24,11 @@ STAGE PLANS:
             outputColumnNames: _col0
             ListSink
 
-PREHOOK: query: select radians(57.2958) FROM src tablesample (1 rows)
+PREHOOK: query: select round(radians(57.2958), 15) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select radians(57.2958) FROM src tablesample (1 rows)
+POSTHOOK: query: select round(radians(57.2958), 15) FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -59,12 +59,12 @@ Example:
 Function class:org.apache.hadoop.hive.ql.udf.UDFRadians
 Function type:BUILTIN
 PREHOOK: query: explain 
-select radians(57.2958) FROM src tablesample (1 rows)
+select round(radians(57.2958), 15) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain 
-select radians(57.2958) FROM src tablesample (1 rows)
+select round(radians(57.2958), 15) FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -84,11 +84,11 @@ STAGE PLANS:
             outputColumnNames: _col0
             ListSink
 
-PREHOOK: query: select radians(57.2958) FROM src tablesample (1 rows)
+PREHOOK: query: select round(radians(57.2958), 15) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select radians(57.2958) FROM src tablesample (1 rows)
+POSTHOOK: query: select round(radians(57.2958), 15) FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

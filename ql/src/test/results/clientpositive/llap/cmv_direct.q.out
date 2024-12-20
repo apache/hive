@@ -1,0 +1,311 @@
+PREHOOK: query: DROP TABLE IF EXISTS source
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS source
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP MATERIALIZED VIEW IF EXISTS test_orc_cmv
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: query: DROP MATERIALIZED VIEW IF EXISTS test_orc_cmv
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: query: DROP MATERIALIZED VIEW IF EXISTS test_orc_mmcmv
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: query: DROP MATERIALIZED VIEW IF EXISTS test_orc_mmcmv
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: query: DROP MATERIALIZED VIEW IF EXISTS test_parquet_mmcmv
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: query: DROP MATERIALIZED VIEW IF EXISTS test_parquet_mmcmv
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: query: DROP MATERIALIZED VIEW IF EXISTS test_avro_mmcmv
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: query: DROP MATERIALIZED VIEW IF EXISTS test_avro_mmcmv
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: query: DROP MATERIALIZED VIEW IF EXISTS test_textfile_mmcmv
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: query: DROP MATERIALIZED VIEW IF EXISTS test_textfile_mmcmv
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: query: CREATE TABLE source STORED AS ORC TBLPROPERTIES('transactional'='true') AS (SELECT cint, cfloat, cdouble, cstring1, ctimestamp1 FROM alltypesorc)
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@source
+POSTHOOK: query: CREATE TABLE source STORED AS ORC TBLPROPERTIES('transactional'='true') AS (SELECT cint, cfloat, cdouble, cstring1, ctimestamp1 FROM alltypesorc)
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@source
+POSTHOOK: Lineage: source.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: source.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: source.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: source.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: source.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+Only query text based automatic rewriting is available for materialized view. Statement has unsupported operator: union.
+PREHOOK: query: CREATE MATERIALIZED VIEW test_orc_cmv STORED AS ORC TBLPROPERTIES('transactional'='true') AS ((SELECT * FROM source WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM source WHERE cint < -100 LIMIT 10))
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@source
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_orc_cmv
+POSTHOOK: query: CREATE MATERIALIZED VIEW test_orc_cmv STORED AS ORC TBLPROPERTIES('transactional'='true') AS ((SELECT * FROM source WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM source WHERE cint < -100 LIMIT 10))
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@source
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_orc_cmv
+POSTHOOK: Lineage: test_orc_cmv.cdouble EXPRESSION [(source)source.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: test_orc_cmv.cfloat EXPRESSION [(source)source.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: test_orc_cmv.cint EXPRESSION [(source)source.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: test_orc_cmv.cstring1 EXPRESSION [(source)source.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: test_orc_cmv.ctimestamp1 EXPRESSION [(source)source.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+Only query text based automatic rewriting is available for materialized view. Statement has unsupported operator: union.
+PREHOOK: query: CREATE MATERIALIZED VIEW test_orc_mmcmv STORED AS ORC TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM source WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM source WHERE cint < -100 LIMIT 10))
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@source
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_orc_mmcmv
+POSTHOOK: query: CREATE MATERIALIZED VIEW test_orc_mmcmv STORED AS ORC TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM source WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM source WHERE cint < -100 LIMIT 10))
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@source
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_orc_mmcmv
+POSTHOOK: Lineage: test_orc_mmcmv.cdouble EXPRESSION [(source)source.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: test_orc_mmcmv.cfloat EXPRESSION [(source)source.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: test_orc_mmcmv.cint EXPRESSION [(source)source.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: test_orc_mmcmv.cstring1 EXPRESSION [(source)source.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: test_orc_mmcmv.ctimestamp1 EXPRESSION [(source)source.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+Only query text based automatic rewriting is available for materialized view. Statement has unsupported operator: union.
+PREHOOK: query: CREATE MATERIALIZED VIEW test_parquet_mmcmv STORED AS PARQUET TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM source WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM source WHERE cint < -100 LIMIT 10))
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@source
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_mmcmv
+POSTHOOK: query: CREATE MATERIALIZED VIEW test_parquet_mmcmv STORED AS PARQUET TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM source WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM source WHERE cint < -100 LIMIT 10))
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@source
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_mmcmv
+POSTHOOK: Lineage: test_parquet_mmcmv.cdouble EXPRESSION [(source)source.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: test_parquet_mmcmv.cfloat EXPRESSION [(source)source.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: test_parquet_mmcmv.cint EXPRESSION [(source)source.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: test_parquet_mmcmv.cstring1 EXPRESSION [(source)source.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: test_parquet_mmcmv.ctimestamp1 EXPRESSION [(source)source.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+Only query text based automatic rewriting is available for materialized view. Statement has unsupported operator: union.
+PREHOOK: query: CREATE MATERIALIZED VIEW test_avro_mmcmv STORED AS AVRO TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM source WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM source WHERE cint < -100 LIMIT 10))
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@source
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_avro_mmcmv
+POSTHOOK: query: CREATE MATERIALIZED VIEW test_avro_mmcmv STORED AS AVRO TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM source WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM source WHERE cint < -100 LIMIT 10))
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@source
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_avro_mmcmv
+POSTHOOK: Lineage: test_avro_mmcmv.cdouble EXPRESSION [(source)source.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: test_avro_mmcmv.cfloat EXPRESSION [(source)source.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: test_avro_mmcmv.cint EXPRESSION [(source)source.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: test_avro_mmcmv.cstring1 EXPRESSION [(source)source.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: test_avro_mmcmv.ctimestamp1 EXPRESSION [(source)source.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+Only query text based automatic rewriting is available for materialized view. Statement has unsupported operator: union.
+PREHOOK: query: CREATE MATERIALIZED VIEW test_textfile_mmcmv STORED AS TEXTFILE TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM source WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM source WHERE cint < -100 LIMIT 10))
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@source
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_textfile_mmcmv
+POSTHOOK: query: CREATE MATERIALIZED VIEW test_textfile_mmcmv STORED AS TEXTFILE TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM source WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM source WHERE cint < -100 LIMIT 10))
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@source
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_textfile_mmcmv
+POSTHOOK: Lineage: test_textfile_mmcmv.cdouble EXPRESSION [(source)source.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: test_textfile_mmcmv.cfloat EXPRESSION [(source)source.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: test_textfile_mmcmv.cint EXPRESSION [(source)source.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: test_textfile_mmcmv.cstring1 EXPRESSION [(source)source.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: test_textfile_mmcmv.ctimestamp1 EXPRESSION [(source)source.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+PREHOOK: query: SELECT * FROM test_orc_cmv ORDER BY cint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_orc_cmv
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM test_orc_cmv ORDER BY cint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_orc_cmv
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+-109813638	-51.0	NULL	t32s57Cjt4a250qQgVNAB5T	1969-12-31 16:00:08.451
+-164031131	-51.0	NULL	AwVW3sV2gsM	1969-12-31 16:00:08.451
+-204359131	-51.0	NULL	21UE6fJyy	1969-12-31 16:00:08.451
+-285355633	-51.0	NULL	LFgU5WT87C2yJ4W4YU0r8Pp	1969-12-31 16:00:08.451
+-468112720	-51.0	NULL	XWIExC7NI3bqu6VhR14g2	1969-12-31 16:00:08.451
+-497211600	-51.0	NULL	m4eSLx4qihVg1e32	1969-12-31 16:00:08.451
+-552134813	-51.0	NULL	7342q5oFQL8QIl7cO	1969-12-31 16:00:08.451
+-601502867	-51.0	NULL	M152O	1969-12-31 16:00:08.451
+-660174857	-51.0	NULL	VkXY4IOSO	1969-12-31 16:00:08.451
+-881630661	-51.0	NULL	3e27C1jTdTQPdvCWi4if	1969-12-31 16:00:08.451
+528534767	-11.0	-15431.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:52.176
+528534767	-28.0	-15813.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:55.787
+528534767	-34.0	15007.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:50.434
+528534767	-50.0	-13326.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:46.674
+528534767	27.0	-7824.0	cvLH6Eat2yFsyy7p	1969-12-31 16:00:04.963
+528534767	29.0	7021.0	cvLH6Eat2yFsyy7p	1969-12-31 16:00:15.007
+528534767	31.0	-9566.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:44.187
+528534767	31.0	4963.0	cvLH6Eat2yFsyy7p	1969-12-31 16:00:07.021
+528534767	61.0	-15549.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:44.569
+528534767	NULL	-4213.0	cvLH6Eat2yFsyy7p	NULL
+PREHOOK: query: SELECT * FROM test_orc_mmcmv ORDER BY cint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_orc_mmcmv
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM test_orc_mmcmv ORDER BY cint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_orc_mmcmv
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+-109813638	-51.0	NULL	t32s57Cjt4a250qQgVNAB5T	1969-12-31 16:00:08.451
+-164031131	-51.0	NULL	AwVW3sV2gsM	1969-12-31 16:00:08.451
+-204359131	-51.0	NULL	21UE6fJyy	1969-12-31 16:00:08.451
+-285355633	-51.0	NULL	LFgU5WT87C2yJ4W4YU0r8Pp	1969-12-31 16:00:08.451
+-468112720	-51.0	NULL	XWIExC7NI3bqu6VhR14g2	1969-12-31 16:00:08.451
+-497211600	-51.0	NULL	m4eSLx4qihVg1e32	1969-12-31 16:00:08.451
+-552134813	-51.0	NULL	7342q5oFQL8QIl7cO	1969-12-31 16:00:08.451
+-601502867	-51.0	NULL	M152O	1969-12-31 16:00:08.451
+-660174857	-51.0	NULL	VkXY4IOSO	1969-12-31 16:00:08.451
+-881630661	-51.0	NULL	3e27C1jTdTQPdvCWi4if	1969-12-31 16:00:08.451
+528534767	-11.0	-15431.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:52.176
+528534767	-28.0	-15813.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:55.787
+528534767	-34.0	15007.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:50.434
+528534767	-50.0	-13326.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:46.674
+528534767	27.0	-7824.0	cvLH6Eat2yFsyy7p	1969-12-31 16:00:04.963
+528534767	29.0	7021.0	cvLH6Eat2yFsyy7p	1969-12-31 16:00:15.007
+528534767	31.0	-9566.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:44.187
+528534767	31.0	4963.0	cvLH6Eat2yFsyy7p	1969-12-31 16:00:07.021
+528534767	61.0	-15549.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:44.569
+528534767	NULL	-4213.0	cvLH6Eat2yFsyy7p	NULL
+PREHOOK: query: SELECT * FROM test_parquet_mmcmv ORDER BY cint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_mmcmv
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM test_parquet_mmcmv ORDER BY cint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_mmcmv
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+-109813638	-51.0	NULL	t32s57Cjt4a250qQgVNAB5T	1969-12-31 16:00:08.451
+-164031131	-51.0	NULL	AwVW3sV2gsM	1969-12-31 16:00:08.451
+-204359131	-51.0	NULL	21UE6fJyy	1969-12-31 16:00:08.451
+-285355633	-51.0	NULL	LFgU5WT87C2yJ4W4YU0r8Pp	1969-12-31 16:00:08.451
+-468112720	-51.0	NULL	XWIExC7NI3bqu6VhR14g2	1969-12-31 16:00:08.451
+-497211600	-51.0	NULL	m4eSLx4qihVg1e32	1969-12-31 16:00:08.451
+-552134813	-51.0	NULL	7342q5oFQL8QIl7cO	1969-12-31 16:00:08.451
+-601502867	-51.0	NULL	M152O	1969-12-31 16:00:08.451
+-660174857	-51.0	NULL	VkXY4IOSO	1969-12-31 16:00:08.451
+-881630661	-51.0	NULL	3e27C1jTdTQPdvCWi4if	1969-12-31 16:00:08.451
+528534767	-11.0	-15431.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:52.176
+528534767	-28.0	-15813.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:55.787
+528534767	-34.0	15007.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:50.434
+528534767	-50.0	-13326.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:46.674
+528534767	27.0	-7824.0	cvLH6Eat2yFsyy7p	1969-12-31 16:00:04.963
+528534767	29.0	7021.0	cvLH6Eat2yFsyy7p	1969-12-31 16:00:15.007
+528534767	31.0	-9566.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:44.187
+528534767	31.0	4963.0	cvLH6Eat2yFsyy7p	1969-12-31 16:00:07.021
+528534767	61.0	-15549.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:44.569
+528534767	NULL	-4213.0	cvLH6Eat2yFsyy7p	NULL
+PREHOOK: query: SELECT * FROM test_avro_mmcmv ORDER BY cint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_avro_mmcmv
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM test_avro_mmcmv ORDER BY cint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_avro_mmcmv
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+-109813638	-51.0	NULL	t32s57Cjt4a250qQgVNAB5T	1969-12-31 16:00:08.451
+-164031131	-51.0	NULL	AwVW3sV2gsM	1969-12-31 16:00:08.451
+-204359131	-51.0	NULL	21UE6fJyy	1969-12-31 16:00:08.451
+-285355633	-51.0	NULL	LFgU5WT87C2yJ4W4YU0r8Pp	1969-12-31 16:00:08.451
+-468112720	-51.0	NULL	XWIExC7NI3bqu6VhR14g2	1969-12-31 16:00:08.451
+-497211600	-51.0	NULL	m4eSLx4qihVg1e32	1969-12-31 16:00:08.451
+-552134813	-51.0	NULL	7342q5oFQL8QIl7cO	1969-12-31 16:00:08.451
+-601502867	-51.0	NULL	M152O	1969-12-31 16:00:08.451
+-660174857	-51.0	NULL	VkXY4IOSO	1969-12-31 16:00:08.451
+-881630661	-51.0	NULL	3e27C1jTdTQPdvCWi4if	1969-12-31 16:00:08.451
+528534767	-11.0	-15431.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:52.176
+528534767	-28.0	-15813.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:55.787
+528534767	-34.0	15007.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:50.434
+528534767	-50.0	-13326.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:46.674
+528534767	27.0	-7824.0	cvLH6Eat2yFsyy7p	1969-12-31 16:00:04.963
+528534767	29.0	7021.0	cvLH6Eat2yFsyy7p	1969-12-31 16:00:15.007
+528534767	31.0	-9566.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:44.187
+528534767	31.0	4963.0	cvLH6Eat2yFsyy7p	1969-12-31 16:00:07.021
+528534767	61.0	-15549.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:44.569
+528534767	NULL	-4213.0	cvLH6Eat2yFsyy7p	NULL
+PREHOOK: query: SELECT * FROM test_textfile_mmcmv ORDER BY cint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_textfile_mmcmv
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM test_textfile_mmcmv ORDER BY cint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_textfile_mmcmv
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+-109813638	-51.0	NULL	t32s57Cjt4a250qQgVNAB5T	1969-12-31 16:00:08.451
+-164031131	-51.0	NULL	AwVW3sV2gsM	1969-12-31 16:00:08.451
+-204359131	-51.0	NULL	21UE6fJyy	1969-12-31 16:00:08.451
+-285355633	-51.0	NULL	LFgU5WT87C2yJ4W4YU0r8Pp	1969-12-31 16:00:08.451
+-468112720	-51.0	NULL	XWIExC7NI3bqu6VhR14g2	1969-12-31 16:00:08.451
+-497211600	-51.0	NULL	m4eSLx4qihVg1e32	1969-12-31 16:00:08.451
+-552134813	-51.0	NULL	7342q5oFQL8QIl7cO	1969-12-31 16:00:08.451
+-601502867	-51.0	NULL	M152O	1969-12-31 16:00:08.451
+-660174857	-51.0	NULL	VkXY4IOSO	1969-12-31 16:00:08.451
+-881630661	-51.0	NULL	3e27C1jTdTQPdvCWi4if	1969-12-31 16:00:08.451
+528534767	-11.0	-15431.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:52.176
+528534767	-28.0	-15813.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:55.787
+528534767	-34.0	15007.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:50.434
+528534767	-50.0	-13326.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:46.674
+528534767	27.0	-7824.0	cvLH6Eat2yFsyy7p	1969-12-31 16:00:04.963
+528534767	29.0	7021.0	cvLH6Eat2yFsyy7p	1969-12-31 16:00:15.007
+528534767	31.0	-9566.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:44.187
+528534767	31.0	4963.0	cvLH6Eat2yFsyy7p	1969-12-31 16:00:07.021
+528534767	61.0	-15549.0	cvLH6Eat2yFsyy7p	1969-12-31 15:59:44.569
+528534767	NULL	-4213.0	cvLH6Eat2yFsyy7p	NULL
+PREHOOK: query: DROP MATERIALIZED VIEW IF EXISTS test_orc_cmv
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@test_orc_cmv
+PREHOOK: Output: default@test_orc_cmv
+POSTHOOK: query: DROP MATERIALIZED VIEW IF EXISTS test_orc_cmv
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@test_orc_cmv
+POSTHOOK: Output: default@test_orc_cmv
+PREHOOK: query: DROP MATERIALIZED VIEW IF EXISTS test_orc_mmcmv
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@test_orc_mmcmv
+PREHOOK: Output: default@test_orc_mmcmv
+POSTHOOK: query: DROP MATERIALIZED VIEW IF EXISTS test_orc_mmcmv
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@test_orc_mmcmv
+POSTHOOK: Output: default@test_orc_mmcmv
+PREHOOK: query: DROP MATERIALIZED VIEW IF EXISTS test_parquet_mmcmv
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@test_parquet_mmcmv
+PREHOOK: Output: default@test_parquet_mmcmv
+POSTHOOK: query: DROP MATERIALIZED VIEW IF EXISTS test_parquet_mmcmv
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@test_parquet_mmcmv
+POSTHOOK: Output: default@test_parquet_mmcmv
+PREHOOK: query: DROP MATERIALIZED VIEW IF EXISTS test_avro_mmcmv
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@test_avro_mmcmv
+PREHOOK: Output: default@test_avro_mmcmv
+POSTHOOK: query: DROP MATERIALIZED VIEW IF EXISTS test_avro_mmcmv
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@test_avro_mmcmv
+POSTHOOK: Output: default@test_avro_mmcmv
+PREHOOK: query: DROP MATERIALIZED VIEW IF EXISTS test_textfile_mmcmv
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@test_textfile_mmcmv
+PREHOOK: Output: default@test_textfile_mmcmv
+POSTHOOK: query: DROP MATERIALIZED VIEW IF EXISTS test_textfile_mmcmv
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@test_textfile_mmcmv
+POSTHOOK: Output: default@test_textfile_mmcmv
+PREHOOK: query: DROP TABLE IF EXISTS source
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@source
+PREHOOK: Output: database:default
+PREHOOK: Output: default@source
+POSTHOOK: query: DROP TABLE IF EXISTS source
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@source
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@source

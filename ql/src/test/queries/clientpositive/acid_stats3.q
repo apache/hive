@@ -15,6 +15,7 @@ set hive.fetch.task.conversion=none;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.query.results.cache.enabled=false;
+set hive.acid.truncate.usebase=false;
 
 -- test truncate
 

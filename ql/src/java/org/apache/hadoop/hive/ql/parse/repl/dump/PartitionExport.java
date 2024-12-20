@@ -34,8 +34,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -46,8 +44,9 @@ import static org.apache.hadoop.hive.ql.parse.repl.dump.TableExport.Paths;
 
 /**
  * This class manages writing multiple partitions _data files simultaneously.
- * it has a blocking queue that stores partitions to be dumped via a producer thread.
- * it has a worker thread pool that reads of the queue to perform the various tasks.
+ * It creates a worker thread pool. Each thread in pool is assigned the task
+ * of dumping or writing each partition _data files in parallel manner.
+ *
  */
 // TODO: this object is created once to call one method and then immediately destroyed.
 //       So it's basically just a roundabout way to pass arguments to a static method. Simplify?
@@ -61,7 +60,6 @@ class PartitionExport {
   private final MmContext mmCtx;
 
   private static final Logger LOG = LoggerFactory.getLogger(PartitionExport.class);
-  private BlockingQueue<Partition> queue;
 
   PartitionExport(Paths paths, PartitionIterable partitionIterable, String distCpDoAsUser,
       HiveConf hiveConf, MmContext mmCtx) {
@@ -71,7 +69,6 @@ class PartitionExport {
     this.hiveConf = hiveConf;
     this.mmCtx = mmCtx;
     this.nThreads = hiveConf.getIntVar(HiveConf.ConfVars.REPL_PARTITIONS_DUMP_PARALLELISM);
-    this.queue = new ArrayBlockingQueue<>(2 * nThreads);
     this.callersSession = SessionState.get();
   }
 
@@ -80,66 +77,43 @@ class PartitionExport {
           throws InterruptedException, HiveException {
     List<Future<?>> futures = new LinkedList<>();
     List<DataCopyPath> managedTableCopyPaths = new LinkedList<>();
-    ExecutorService producer = Executors.newFixedThreadPool(1,
-        new ThreadFactoryBuilder().setNameFormat("partition-submitter-thread-%d").build());
-    futures.add(producer.submit(() -> {
-      SessionState.setCurrentSessionState(callersSession);
-      for (Partition partition : partitionIterable) {
-        try {
-          queue.put(partition);
-        } catch (InterruptedException e) {
-          throw new RuntimeException(
-              "Error while queuing up the partitions for export of data files", e);
-        }
-      }
-    }));
-    producer.shutdown();
 
     ThreadFactory namingThreadFactory =
         new ThreadFactoryBuilder().setNameFormat("partition-dump-thread-%d").build();
     ExecutorService consumer = Executors.newFixedThreadPool(nThreads, namingThreadFactory);
 
-    while (!producer.isTerminated() || !queue.isEmpty()) {
-      /*
-      This is removed using a poll because there can be a case where there partitions iterator is empty
-      but because both the producer and consumer are started simultaneously the while loop will execute
-      because producer is not terminated but it wont produce anything so queue will be empty and then we
-      should only wait for a specific time before continuing, as the next loop cycle will fail.
-       */
-      Partition partition = queue.poll(1, TimeUnit.SECONDS);
-      if (partition == null) {
-        continue;
-      }
-      LOG.debug("scheduling partition dump {}", partition.getName());
-      futures.add(consumer.submit(() -> {
-        String partitionName = partition.getName();
+    for (Partition part : partitionIterable) {
+      LOG.debug("scheduling partition dump {}", part.getName());
+      Runnable r = () -> {
+        String partitionName = part.getName();
         String threadName = Thread.currentThread().getName();
         LOG.debug("Thread: {}, start partition dump {}", threadName, partitionName);
         try {
           // Data Copy in case of ExportTask or when dataCopyAtLoad is true
-          List<Path> dataPathList = Utils.getDataPathList(partition.getDataLocation(),
-                  forReplicationSpec, hiveConf);
+          List<Path> dataPathList = Utils.getDataPathList(part.getDataLocation(),
+              forReplicationSpec, hiveConf);
           Path rootDataDumpDir = isExportTask
-                  ? paths.partitionMetadataExportDir(partitionName) : paths.partitionDataExportDir(partitionName);
+              ? paths.partitionMetadataExportDir(partitionName) : paths.partitionDataExportDir(partitionName);
           new FileOperations(dataPathList, rootDataDumpDir, distCpDoAsUser, hiveConf, mmCtx)
-                  .export(isExportTask, dataCopyAtLoad);
+              .export(isExportTask, dataCopyAtLoad);
           Path dataDumpDir = new Path(paths.dataExportRootDir(), partitionName);
           LOG.debug("Thread: {}, finish partition dump {}", threadName, partitionName);
           if (!(isExportTask || dataCopyAtLoad)) {
-            fileList.add(new DataCopyPath(forReplicationSpec, partition.getDataLocation(),
-                    dataDumpDir).convertToString());
+            fileList.add(new DataCopyPath(forReplicationSpec, part.getDataLocation(),
+                dataDumpDir).convertToString());
           }
         } catch (Exception e) {
           throw new RuntimeException(e.getMessage(), e);
         }
-      }));
+      };
+      futures.add(consumer.submit(r));
     }
     consumer.shutdown();
     for (Future<?> future : futures) {
       try {
         future.get();
       } catch (Exception e) {
-        LOG.error("failed", e.getCause());
+        LOG.error("Partition dump thread failed", e.getCause());
         throw new HiveException(e.getCause().getMessage(), e.getCause());
       }
     }

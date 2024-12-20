@@ -23,13 +23,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mat1
 POSTHOOK: Lineage: mat1.col0 EXPRESSION [(t1)t1.FieldSchema(name:col0, type:int, comment:null), ]
 PREHOOK: query: create materialized view mat2 as
-select col0 from t1 where col0 > 30
+select col0 from t1 where col0 > 15
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@t1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mat2
 POSTHOOK: query: create materialized view mat2 as
-select col0 from t1 where col0 > 30
+select col0 from t1 where col0 > 15
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: database:default
@@ -37,27 +37,27 @@ POSTHOOK: Output: default@mat2
 POSTHOOK: Lineage: mat2.col0 SIMPLE [(t1)t1.FieldSchema(name:col0, type:int, comment:null), ]
 PREHOOK: query: explain cbo
 select col0 from
-  (select col0 from t1 where col0 > 30) sub
-where col0 = 10
+  (select col0 from t1 where col0 > 15) sub
+where col0 = 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select col0 from
-  (select col0 from t1 where col0 > 30) sub
-where col0 = 10
+  (select col0 from t1 where col0 > 15) sub
+where col0 = 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveSortLimit(fetch=[0])
-  HiveProject(col0=[$0])
+HiveProject($f0=[CAST(20):INTEGER])
+  HiveFilter(condition=[=($0, 20)])
     HiveTableScan(table=[[default, t1]], table:alias=[t1])
 
 PREHOOK: query: explain cbo
 select col0 from
   (select col0 from t1 where col0 between 1 and 10 union select col0 from t1 where col0 = 20) sub
-where col0 = 10
+where col0 = 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@t1
@@ -65,14 +65,14 @@ PREHOOK: Input: default@t1
 POSTHOOK: query: explain cbo
 select col0 from
   (select col0 from t1 where col0 between 1 and 10 union select col0 from t1 where col0 = 20) sub
-where col0 = 10
+where col0 = 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(col0=[CAST(10):INTEGER])
-  HiveFilter(condition=[=($0, 10)])
+HiveProject(col0=[CAST(20):INTEGER])
+  HiveFilter(condition=[=($0, 20)])
     HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
 
 PREHOOK: query: drop materialized view mat1

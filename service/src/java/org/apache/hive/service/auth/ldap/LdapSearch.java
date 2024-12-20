@@ -21,13 +21,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
+import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ldap.support.LdapEncoder;
 
 /**
  * Implements search for LDAP.
@@ -104,6 +107,28 @@ public final class LdapSearch implements DirSearch {
     }
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public String findUserDn(String user, final String userSearchFilter, final String baseDn) throws NamingException {
+    List<String> allLdapNames;
+    String userRdn = user;
+    if (LdapUtils.isDn(user)) {
+      userRdn = LdapUtils.extractUserName(user);
+    }
+    Query query = queries.findUserDnBySearch(userRdn, userSearchFilter);
+    allLdapNames = execute(Collections.singletonList(baseDn), query).getAllLdapNames();
+
+    if (allLdapNames.size() == 1) {
+      return allLdapNames.get(0);
+    } else {
+      LOG.info("Expected exactly one userSearchFilter result for the userSearchFilter: {}, but got {}. Returning null",
+          userSearchFilter, allLdapNames.size());
+      return null;
+    }
+  }
+
   private List<String> findDnByPattern(List<String> patterns, String name) throws NamingException {
     for (String pattern : patterns) {
       String baseDnFromPattern = LdapUtils.extractBaseDn(pattern);
@@ -150,6 +175,16 @@ public final class LdapSearch implements DirSearch {
   public List<String> executeCustomQuery(String query) throws NamingException {
     return execute(Collections.singletonList(baseDn), queries.customQuery(query))
         .getAllLdapNamesAndAttributes();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public List<String> executeUserAndGroupFilterQuery(String user, String userDn, String groupSearchFilter, String groupBaseDn) throws NamingException {
+    String userDnTransformed = Matcher.quoteReplacement(LdapEncoder.filterEncode(userDn));
+    Query query = queries.findDnByUserAndGroupSearch(user, userDnTransformed, groupSearchFilter);
+    return execute(Collections.singletonList(groupBaseDn), query).getAllLdapNames();
   }
 
   private SearchResultHandler execute(Collection<String> baseDns, Query query) {

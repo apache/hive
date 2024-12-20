@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists testhbaseb
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists testhbaseb
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE testhbaseb (key int, val binary)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
@@ -49,8 +51,10 @@ POSTHOOK: Input: default@testhbaseb
 PREHOOK: query: drop table testhbaseb
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testhbaseb
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testhbaseb
 POSTHOOK: query: drop table testhbaseb
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testhbaseb
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testhbaseb

@@ -299,6 +299,8 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:string:string
 #### A masked pattern was here ####
+                    file.sink.merge.task.enabled.default.dest_j1_n4 true
+#### A masked pattern was here ####
                     name default.dest_j1_n4
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -365,6 +367,8 @@ STAGE PLANS:
                     columns key,value,val2
                     columns.comments 
                     columns.types string:string:string
+#### A masked pattern was here ####
+                    file.sink.merge.task.enabled.default.dest_j1_n4 true
 #### A masked pattern was here ####
                     name default.dest_j1_n4
                     serialization.format 1
@@ -887,6 +891,8 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:string:string
 #### A masked pattern was here ####
+                    file.sink.merge.task.enabled.default.dest_j1_n4 true
+#### A masked pattern was here ####
                     name default.dest_j1_n4
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -953,6 +959,8 @@ STAGE PLANS:
                     columns key,value,val2
                     columns.comments 
                     columns.types string:string:string
+#### A masked pattern was here ####
+                    file.sink.merge.task.enabled.default.dest_j1_n4 true
 #### A masked pattern was here ####
                     name default.dest_j1_n4
                     serialization.format 1

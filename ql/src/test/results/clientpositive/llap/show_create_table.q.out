@@ -1,11 +1,11 @@
 PREHOOK: query: CREATE TABLE TEST(
   col1 varchar(100) NOT NULL COMMENT "comment for column 1",
   col2 timestamp DEFAULT CURRENT_TIMESTAMP() COMMENT "comment for column 2",
-  col3 decimal CHECK (col3 + col4 > 1) enable novalidate rely,
+  `col 3` decimal CHECK (`col 3` + col4 > 1) enable novalidate rely,
   col4 decimal NOT NULL,
   col5 varchar(100),
   primary key(col1, col2) disable novalidate rely,
-  constraint c3_c4_check CHECK((col3 + col4)/(col3 - col4) > 3) enable novalidate norely,
+  constraint c3_c4_check CHECK((`col 3` + col4)/(`col 3` - col4) > 3) enable novalidate norely,
   constraint c4_unique UNIQUE(col4) disable novalidate rely)
 ROW FORMAT SERDE
   'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
@@ -19,11 +19,11 @@ PREHOOK: Output: default@TEST
 POSTHOOK: query: CREATE TABLE TEST(
   col1 varchar(100) NOT NULL COMMENT "comment for column 1",
   col2 timestamp DEFAULT CURRENT_TIMESTAMP() COMMENT "comment for column 2",
-  col3 decimal CHECK (col3 + col4 > 1) enable novalidate rely,
+  `col 3` decimal CHECK (`col 3` + col4 > 1) enable novalidate rely,
   col4 decimal NOT NULL,
   col5 varchar(100),
   primary key(col1, col2) disable novalidate rely,
-  constraint c3_c4_check CHECK((col3 + col4)/(col3 - col4) > 3) enable novalidate norely,
+  constraint c3_c4_check CHECK((`col 3` + col4)/(`col 3` - col4) > 3) enable novalidate norely,
   constraint c4_unique UNIQUE(col4) disable novalidate rely)
 ROW FORMAT SERDE
   'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
@@ -97,7 +97,7 @@ POSTHOOK: Input: default@test
 CREATE TABLE `test`(
   `col1` varchar(100) COMMENT 'comment for column 1', 
   `col2` timestamp COMMENT 'comment for column 2', 
-  `col3` decimal(10,0), 
+  `col 3` decimal(10,0), 
   `col4` decimal(10,0), 
   `col5` varchar(100))
 ROW FORMAT SERDE 
@@ -111,13 +111,13 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.test ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (col1,col2) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.test ADD CONSTRAINT c4_unique UNIQUE (col4) DISABLE NOVALIDATE RELY;
-ALTER TABLE test.test CHANGE COLUMN col2 col2 timestamp CONSTRAINT  DEFAULT CURRENT_TIMESTAMP() ENABLE NOVALIDATE RELY;
-ALTER TABLE default.test ADD CONSTRAINT c3_c4_check CHECK ((col3 + col4)/(col3 - col4) > 3) ENABLE NOVALIDATE NORELY;
-ALTER TABLE default.test ADD CONSTRAINT #### A masked pattern was here #### CHECK (col3 + col4 > 1) ENABLE NOVALIDATE RELY;
-ALTER TABLE default.test CHANGE COLUMN col1 col1 varchar(100) CONSTRAINT #### A masked pattern was here #### NOT NULL ENABLE NOVALIDATE RELY;
-ALTER TABLE default.test CHANGE COLUMN col4 col4 decimal(10,0) CONSTRAINT #### A masked pattern was here #### NOT NULL ENABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`test` ADD CONSTRAINT `#### A masked pattern was here ####` PRIMARY KEY (`col1`,`col2`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`test` ADD CONSTRAINT `c4_unique` UNIQUE (`col4`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `test`.`test` CHANGE COLUMN `col2` `col2` timestamp CONSTRAINT  DEFAULT CURRENT_TIMESTAMP() ENABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`test` ADD CONSTRAINT `c3_c4_check` CHECK ((`col 3` + `col4`)/(`col 3` - `col4`) > 3) ENABLE NOVALIDATE NORELY;
+ALTER TABLE `default`.`test` ADD CONSTRAINT `#### A masked pattern was here ####` CHECK (`col 3` + `col4` > 1) ENABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`test` CHANGE COLUMN `col1` `col1` varchar(100) CONSTRAINT `#### A masked pattern was here ####` NOT NULL ENABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`test` CHANGE COLUMN `col4` `col4` decimal(10,0) CONSTRAINT `#### A masked pattern was here ####` NOT NULL ENABLE NOVALIDATE RELY;
 PREHOOK: query: SHOW CREATE TABLE TEST2
 PREHOOK: type: SHOW_CREATETABLE
 PREHOOK: Input: default@test2
@@ -137,7 +137,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.test2 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (col) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`test2` ADD CONSTRAINT `#### A masked pattern was here ####` PRIMARY KEY (`col`) DISABLE NOVALIDATE RELY;
 PREHOOK: query: SHOW CREATE TABLE TEST3
 PREHOOK: type: SHOW_CREATETABLE
 PREHOOK: Input: default@test3
@@ -159,5 +159,57 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.test3 ADD CONSTRAINT #### A masked pattern was here #### FOREIGN KEY (col1) REFERENCES default.test(col1) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.test3 ADD CONSTRAINT #### A masked pattern was here #### FOREIGN KEY (col2) REFERENCES default.test(col2) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`test3` ADD CONSTRAINT `#### A masked pattern was here ####` FOREIGN KEY (`col1`, `col2`) REFERENCES `default`.`test`(`col1`, `col2`) DISABLE NOVALIDATE RELY;
+PREHOOK: query: CREATE TABLE TEST_RESERVED (
+`member_nr` varchar(8),
+`plan_nr` varchar(11),
+`timestamp` timestamp,
+`shared_ind` varchar(1))
+CLUSTERED BY (
+member_nr,
+plan_nr,
+`timestamp`)
+INTO 4 BUCKETS
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@TEST_RESERVED
+POSTHOOK: query: CREATE TABLE TEST_RESERVED (
+`member_nr` varchar(8),
+`plan_nr` varchar(11),
+`timestamp` timestamp,
+`shared_ind` varchar(1))
+CLUSTERED BY (
+member_nr,
+plan_nr,
+`timestamp`)
+INTO 4 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TEST_RESERVED
+PREHOOK: query: SHOW CREATE TABLE TEST_RESERVED
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@test_reserved
+POSTHOOK: query: SHOW CREATE TABLE TEST_RESERVED
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@test_reserved
+CREATE TABLE `test_reserved`(
+  `member_nr` varchar(8), 
+  `plan_nr` varchar(11), 
+  `timestamp` timestamp, 
+  `shared_ind` varchar(1))
+CLUSTERED BY (
+  `member_nr`,
+  `plan_nr`,
+  `timestamp`)
+INTO 4 BUCKETS
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####

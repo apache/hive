@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql;
 
 import java.io.DataInput;
 
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Schema;
@@ -27,6 +28,9 @@ import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache.CacheEntry;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.tez.TezRuntimeContext;
+import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 
@@ -68,17 +72,16 @@ public class DriverContext {
 
   private CacheUsage cacheUsage;
   private CacheEntry usedCacheEntry;
-  private ValidWriteIdList compactionWriteIds = null;
-  private long compactorTxnId = 0;
-  private long analyzeTableWriteId = 0;
 
-  private Context backupContext = null;
   private boolean retrial = false;
 
   private DataInput resStream;
 
   // HS2 operation handle guid string
   private String operationId;
+  private String queryErrorMessage;
+
+  private TezRuntimeContext runtimeContext;
 
   public DriverContext(QueryState queryState, QueryInfo queryInfo, HookRunner hookRunner,
       HiveTxnManager initTxnManager) {
@@ -127,6 +130,18 @@ public class DriverContext {
 
   public void setPlan(QueryPlan plan) {
     this.plan = plan;
+    // only set runtimeContext if the plan is not null
+    // we don't want to nullify runtimeContext if this method is called with plan=null, which is the case when e.g.
+    // driver.releasePlan() tries to release resources/objects that are known to be heavy
+    if (plan != null) {
+      this.runtimeContext = Utilities.getFirstTezTask(plan.getRootTasks())
+          .map(TezTask::getRuntimeContext)
+          .orElse(null);
+    }
+  }
+
+  public TezRuntimeContext getRuntimeContext() {
+    return runtimeContext;
   }
 
   public Schema getSchema() {
@@ -201,38 +216,6 @@ public class DriverContext {
     this.usedCacheEntry = usedCacheEntry;
   }
 
-  public ValidWriteIdList getCompactionWriteIds() {
-    return compactionWriteIds;
-  }
-
-  public void setCompactionWriteIds(ValidWriteIdList compactionWriteIds) {
-    this.compactionWriteIds = compactionWriteIds;
-  }
-
-  public long getCompactorTxnId() {
-    return compactorTxnId;
-  }
-
-  public void setCompactorTxnId(long compactorTxnId) {
-    this.compactorTxnId = compactorTxnId;
-  }
-
-  public long getAnalyzeTableWriteId() {
-    return analyzeTableWriteId;
-  }
-
-  public void setAnalyzeTableWriteId(long analyzeTableWriteId) {
-    this.analyzeTableWriteId = analyzeTableWriteId;
-  }
-
-  public Context getBackupContext() {
-    return backupContext;
-  }
-
-  public void setBackupContext(Context backupContext) {
-    this.backupContext = backupContext;
-  }
-
   public boolean isRetrial() {
     return retrial;
   }
@@ -255,5 +238,13 @@ public class DriverContext {
 
   public void setOperationId(String operationId) {
     this.operationId = operationId;
+  }
+
+  public String getQueryErrorMessage() {
+    return queryErrorMessage;
+  }
+
+  public void setQueryErrorMessage(String queryErrorMessage) {
+    this.queryErrorMessage = queryErrorMessage;
   }
 }

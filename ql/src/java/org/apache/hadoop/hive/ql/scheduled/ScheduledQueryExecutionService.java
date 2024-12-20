@@ -80,7 +80,7 @@ public class ScheduledQueryExecutionService implements Closeable {
     synchronized (ScheduledQueryExecutionService.class) {
       if (INSTANCE != null) {
         throw new IllegalStateException(
-            "There is already a ScheduledQueryExecutionService in service; check it and close it explicitly if neccessary");
+            "There is already a ScheduledQueryExecutionService in service; check it and close it explicitly if necessary");
       }
       INSTANCE = new ScheduledQueryExecutionService(ctx);
       return INSTANCE;
@@ -227,7 +227,7 @@ public class ScheduledQueryExecutionService implements Closeable {
         conf.set(Constants.SCHEDULED_QUERY_SCHEDULENAME, q.getScheduleKey().getScheduleName());
         conf.set(Constants.SCHEDULED_QUERY_USER, q.getUser());
         conf.set(Constants.SCHEDULED_QUERY_EXECUTIONID, Long.toString(q.getExecutionId()));
-        conf.unset(HiveConf.ConfVars.HIVESESSIONID.varname);
+        conf.unset(HiveConf.ConfVars.HIVE_SESSION_ID.varname);
         state = new SessionState(conf, q.getUser());
         state.setIsHiveServerQuery(true);
         SessionState.start(state);

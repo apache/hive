@@ -129,7 +129,7 @@ Table Parameters:
 	numPartitions       	2                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -225,7 +225,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -298,7 +298,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -350,10 +350,12 @@ POSTHOOK: Lineage: v.value SIMPLE [(srcpart_temp)srcpart_temp.FieldSchema(name:v
 PREHOOK: query: drop table srcpart_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_temp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_temp
 POSTHOOK: query: drop table srcpart_temp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_temp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_temp
 PREHOOK: query: -- vt.v is now invalid
 create or replace view vt.v partitioned on (ds, hr) as select * from srcpart
@@ -394,7 +396,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS encrypted_table_n4 PURGE
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS encrypted_table_n4 PURGE
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 PREHOOK: Input: hdfs://### HDFS PATH ###
@@ -34,8 +36,10 @@ POSTHOOK: Input: default@encrypted_table_n4
 PREHOOK: query: drop table encrypted_table_n4 PURGE
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@encrypted_table_n4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@encrypted_table_n4
 POSTHOOK: query: drop table encrypted_table_n4 PURGE
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@encrypted_table_n4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@encrypted_table_n4

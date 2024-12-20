@@ -213,11 +213,11 @@ public class PartitionDesc implements Serializable, Cloneable {
 
   @Explain(displayName = "properties", explainLevels = { Level.EXTENDED })
   public Map getPropertiesExplain() {
-    return PlanUtils.getPropertiesExplain(getProperties());
+    return PlanUtils.getPropertiesForExplain(getProperties());
   }
 
   public void setProperties(final Properties properties) {
-    properties.remove("columns.comments");
+    properties.remove(serdeConstants.LIST_COLUMN_COMMENTS);
     if (properties instanceof CopyOnFirstWriteProperties) {
       this.properties = properties;
     } else {

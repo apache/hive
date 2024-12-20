@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE blobstore_source
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE blobstore_source
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE blobstore_source (
     key int
 ) 
@@ -28,8 +30,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@blobstore_source
 PREHOOK: query: DROP TABLE blobstore_target
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE blobstore_target
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE blobstore_target (
     key int
 ) 
@@ -75,13 +79,15 @@ POSTHOOK: Input: default@blobstore_target
 100
 PREHOOK: query: INSERT OVERWRITE TABLE blobstore_target SELECT key FROM blobstore_source WHERE FALSE
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@blobstore_source
 PREHOOK: Output: default@blobstore_target
 POSTHOOK: query: INSERT OVERWRITE TABLE blobstore_target SELECT key FROM blobstore_source WHERE FALSE
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@blobstore_source
 POSTHOOK: Output: default@blobstore_target
-POSTHOOK: Lineage: blobstore_target.key SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: blobstore_target.key SIMPLE []
 PREHOOK: query: SELECT COUNT(*) FROM blobstore_target
 PREHOOK: type: QUERY
 PREHOOK: Input: default@blobstore_target

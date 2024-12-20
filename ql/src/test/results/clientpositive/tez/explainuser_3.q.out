@@ -72,7 +72,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-Plan not optimized by CBO because the statement has lateral views
+Plan optimized by CBO.
 
 Stage-0
   Fetch Operator
@@ -187,21 +187,25 @@ Stage-0
 PREHOOK: query: explain drop table tab_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: newdb@tab_n1
+PREHOOK: Output: database:newdb
 PREHOOK: Output: newdb@tab_n1
 POSTHOOK: query: explain drop table tab_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: newdb@tab_n1
+POSTHOOK: Output: database:newdb
 POSTHOOK: Output: newdb@tab_n1
 Stage-0
-  Drop Table{"table:":"tab_n1"}
+  Drop Table{"table:":"newDB.tab_n1"}
 
 PREHOOK: query: drop table tab_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: newdb@tab_n1
+PREHOOK: Output: database:newdb
 PREHOOK: Output: newdb@tab_n1
 POSTHOOK: query: drop table tab_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: newdb@tab_n1
+POSTHOOK: Output: database:newdb
 POSTHOOK: Output: newdb@tab_n1
 PREHOOK: query: explain use default
 PREHOOK: type: SWITCHDATABASE
@@ -519,10 +523,12 @@ POSTHOOK: type: DROPROLE
 PREHOOK: query: drop table src_autho_test_n3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_autho_test_n3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_autho_test_n3
 POSTHOOK: query: drop table src_autho_test_n3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_autho_test_n3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_autho_test_n3
 PREHOOK: query: explain drop view v_n1
 PREHOOK: type: DROPVIEW
@@ -656,10 +662,12 @@ Stage-3
 PREHOOK: query: drop table orc_merge5_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_merge5_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_merge5_n0
 POSTHOOK: query: drop table orc_merge5_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_merge5_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_merge5_n0
 PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n3(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE

@@ -175,10 +175,12 @@ POSTHOOK: Input: default@outputtbl1_n5
 PREHOOK: query: DROP TABLE T1_n6
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n6
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_n6
 POSTHOOK: query: DROP TABLE T1_n6
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_n6
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n6
 PREHOOK: query: CREATE TABLE T1_n6(key STRING, val STRING)
 CLUSTERED BY (val, key) SORTED BY (key, val) INTO 2 BUCKETS STORED AS TEXTFILE
@@ -349,10 +351,12 @@ POSTHOOK: Input: default@outputtbl1_n5
 PREHOOK: query: DROP TABLE T1_n6
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n6
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_n6
 POSTHOOK: query: DROP TABLE T1_n6
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_n6
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n6
 PREHOOK: query: CREATE TABLE T1_n6(key STRING, val STRING)
 CLUSTERED BY (val) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
@@ -548,8 +552,10 @@ POSTHOOK: Input: default@outputtbl2_n1
 PREHOOK: query: DROP TABLE T1_n6
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n6
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_n6
 POSTHOOK: query: DROP TABLE T1_n6
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_n6
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n6

@@ -1,0 +1,37 @@
+PREHOOK: query: DESCRIBE FUNCTION cosh
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION cosh
+POSTHOOK: type: DESCFUNCTION
+cosh(x) - returns the hyperbolic cosine of x (x is in radians)
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED cosh
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED cosh
+POSTHOOK: type: DESCFUNCTION
+cosh(x) - returns the hyperbolic cosine of x (x is in radians)
+Example:
+   > SELECT cosh(0) FROM src LIMIT 1;
+  1
+Function class:org.apache.hadoop.hive.ql.udf.UDFCosh
+Function type:BUILTIN
+PREHOOK: query: SELECT cosh(null)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cosh(null)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT cosh(0.98), cosh(1.57), cosh(-0.5)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cosh(0.98), cosh(1.57), cosh(-0.5)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1.5198836703904084	2.5073466880660993	1.1276259652063807

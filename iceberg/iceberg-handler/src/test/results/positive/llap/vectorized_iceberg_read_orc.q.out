@@ -1,12 +1,16 @@
 PREHOOK: query: drop table if exists tbl_ice_orc
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tbl_ice_orc
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table tbl_ice_orc(a int, b string) stored by iceberg stored as orc
+TBLPROPERTIES ('iceberg.decimal64.vectorization'='true',"format-version"='1')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_ice_orc
 POSTHOOK: query: create external table tbl_ice_orc(a int, b string) stored by iceberg stored as orc
+TBLPROPERTIES ('iceberg.decimal64.vectorization'='true',"format-version"='1')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice_orc
@@ -109,6 +113,99 @@ four	44444
 one	111
 three	3
 two	22
+PREHOOK: query: explain vectorization only detail select b, max(a) from tbl_ice_orc group by b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice_orc
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization only detail select b, max(a) from tbl_ice_orc group by b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice_orc
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:PARTITION__SPEC__ID:int, 3:PARTITION__HASH:bigint, 4:FILE__PATH:string, 5:ROW__POSITION:bigint, 6:PARTITION__PROJECTION:string]
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1]
+                      Group By Vectorization:
+                          aggregators: VectorUDAFMaxLong(col 0:int) -> int
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          keyExpressions: col 1:string
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: [0]
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkStringOperator
+                            keyColumns: 0:string
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: 1:int
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0, 1]
+                    dataColumns: a:int, b:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                reduceColumnNullOrder: z
+                reduceColumnSortOrder: +
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    dataColumns: KEY._col0:string, VALUE._col0:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+                Group By Vectorization:
+                    aggregators: VectorUDAFMaxLong(col 1:int) -> int
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:string
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: [0]
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+
+  Stage: Stage-0
+    Fetch Operator
+
 PREHOOK: query: create external table tbl_ice_orc_all_types (
     t_float FLOAT,
     t_double DOUBLE,
@@ -121,6 +218,7 @@ PREHOOK: query: create external table tbl_ice_orc_all_types (
     t_date DATE,
     t_decimal DECIMAL(4,2)
     ) stored by iceberg stored as orc
+    TBLPROPERTIES ('iceberg.decimal64.vectorization'='true',"format-version"='1')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_ice_orc_all_types
@@ -136,6 +234,7 @@ POSTHOOK: query: create external table tbl_ice_orc_all_types (
     t_date DATE,
     t_decimal DECIMAL(4,2)
     ) stored by iceberg stored as orc
+    TBLPROPERTIES ('iceberg.decimal64.vectorization'='true',"format-version"='1')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice_orc_all_types
@@ -232,11 +331,111 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_ice_orc_all_types
 #### A masked pattern was here ####
 1.1	1.2	false	4	567890123456789	6	col7	2012-10-03 19:58:08	1234-09-02	10.01
+PREHOOK: query: explain vectorization only detail select max(t_float), t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal from tbl_ice_orc_all_types
+group by t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice_orc_all_types
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization only detail select max(t_float), t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal from tbl_ice_orc_all_types
+group by t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice_orc_all_types
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:t_float:float, 1:t_double:double, 2:t_boolean:boolean, 3:t_int:int, 4:t_bigint:bigint, 5:t_binary:binary, 6:t_string:string, 7:t_timestamp:timestamp, 8:t_date:date, 9:t_decimal:decimal(4,2)/DECIMAL_64, 10:PARTITION__SPEC__ID:int, 11:PARTITION__HASH:bigint, 12:FILE__PATH:string, 13:ROW__POSITION:bigint, 14:PARTITION__PROJECTION:string]
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+                      Group By Vectorization:
+                          aggregators: VectorUDAFMaxDouble(col 0:float) -> float
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          keyExpressions: col 1:double, col 2:boolean, col 3:int, col 4:bigint, col 5:binary, col 6:string, col 7:timestamp, col 8:date, ConvertDecimal64ToDecimal(col 9:decimal(4,2)/DECIMAL_64) -> 15:decimal(4,2)
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: [0]
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkMultiKeyOperator
+                            keyColumns: 0:double, 1:boolean, 2:int, 3:bigint, 4:binary, 5:string, 6:timestamp, 7:date, 8:decimal(4,2)
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: 9:float
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 10
+                    includeColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+                    dataColumns: t_float:float, t_double:double, t_boolean:boolean, t_int:int, t_bigint:bigint, t_binary:binary, t_string:string, t_timestamp:timestamp, t_date:date, t_decimal:decimal(4,2)/DECIMAL_64
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [decimal(4,2)]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                reduceColumnNullOrder: zzzzzzzzz
+                reduceColumnSortOrder: +++++++++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 10
+                    dataColumns: KEY._col0:double, KEY._col1:boolean, KEY._col2:int, KEY._col3:bigint, KEY._col4:binary, KEY._col5:string, KEY._col6:timestamp, KEY._col7:date, KEY._col8:decimal(4,2), VALUE._col0:float
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+                Group By Vectorization:
+                    aggregators: VectorUDAFMaxDouble(col 9:float) -> float
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:double, col 1:boolean, col 2:int, col 3:bigint, col 4:binary, col 5:string, col 6:timestamp, col 7:date, col 8:decimal(4,2)
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: [0]
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [9, 0, 1, 2, 3, 4, 5, 6, 7, 8]
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
+
+  Stage: Stage-0
+    Fetch Operator
+
 PREHOOK: query: create external table tbl_ice_orc_parted (
     a int,
     b string
     ) partitioned by (p1 string, p2 string)
 #### A masked pattern was here ####
+    TBLPROPERTIES ('iceberg.decimal64.vectorization'='true',"format-version"='1')
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
@@ -246,6 +445,7 @@ POSTHOOK: query: create external table tbl_ice_orc_parted (
     b string
     ) partitioned by (p1 string, p2 string)
 #### A masked pattern was here ####
+    TBLPROPERTIES ('iceberg.decimal64.vectorization'='true',"format-version"='1')
 POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 POSTHOOK: Output: database:default
@@ -294,6 +494,103 @@ POSTHOOK: Input: default@tbl_ice_orc_parted
 #### A masked pattern was here ####
 Europe	1	aa
 America	2	aa
+PREHOOK: query: explain vectorization only detail select p1, a, min(b) from tbl_ice_orc_parted group by p1, a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice_orc_parted
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization only detail select p1, a, min(b) from tbl_ice_orc_parted group by p1, a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice_orc_parted
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:a:int, 1:p1:string, 2:b:string, 3:p2:string, 4:PARTITION__SPEC__ID:int, 5:PARTITION__HASH:bigint, 6:FILE__PATH:string, 7:ROW__POSITION:bigint, 8:PARTITION__PROJECTION:string]
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2]
+                      Group By Vectorization:
+                          aggregators: VectorUDAFMinString(col 2:string) -> string
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          keyExpressions: col 0:int, col 1:string
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: [0]
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkMultiKeyOperator
+                            keyColumns: 0:int, 1:string
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: 2:string
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    includeColumns: [0, 1, 2]
+                    dataColumns: a:int, p1:string, b:string, p2:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                reduceColumnNullOrder: zz
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY._col0:int, KEY._col1:string, VALUE._col0:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+                Group By Vectorization:
+                    aggregators: VectorUDAFMinString(col 2:string) -> string
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:int, col 1:string
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: [0]
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [1, 0, 2]
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
+
+  Stage: Stage-0
+    Fetch Operator
+
 PREHOOK: query: alter table tbl_ice_orc_parted change column a a int after b
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@tbl_ice_orc_parted
@@ -327,6 +624,99 @@ POSTHOOK: Input: default@tbl_ice_orc_parted
 #### A masked pattern was here ####
 America	2	aa
 Europe	1	aa
+PREHOOK: query: explain vectorization only detail select p1, a, min(b) from tbl_ice_orc_parted group by p1, a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice_orc_parted
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization only detail select p1, a, min(b) from tbl_ice_orc_parted group by p1, a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice_orc_parted
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:p1:string, 1:b:string, 2:a:int, 3:p2:string, 4:PARTITION__SPEC__ID:int, 5:PARTITION__HASH:bigint, 6:FILE__PATH:string, 7:ROW__POSITION:bigint, 8:PARTITION__PROJECTION:string]
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2]
+                      Group By Vectorization:
+                          aggregators: VectorUDAFMinString(col 1:string) -> string
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          keyExpressions: col 0:string, col 2:int
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: [0]
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkMultiKeyOperator
+                            keyColumns: 0:string, 1:int
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: 2:string
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    includeColumns: [0, 1, 2]
+                    dataColumns: p1:string, b:string, a:int, p2:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                reduceColumnNullOrder: zz
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY._col0:string, KEY._col1:int, VALUE._col0:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+                Group By Vectorization:
+                    aggregators: VectorUDAFMinString(col 2:string) -> string
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:string, col 1:int
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: [0]
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+
+  Stage: Stage-0
+    Fetch Operator
+
 PREHOOK: query: insert into tbl_ice_orc_parted values ('Europe', 'cc', 3, 'Austria')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -347,6 +737,103 @@ America	Canada	2	bb
 America	USA	2	aa
 Europe	Hungary	1	aa
 Europe	Austria	3	cc
+PREHOOK: query: explain vectorization only detail select p1, p2, a, min(b) from tbl_ice_orc_parted group by p1, p2, a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice_orc_parted
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization only detail select p1, p2, a, min(b) from tbl_ice_orc_parted group by p1, p2, a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice_orc_parted
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:p1:string, 1:b:string, 2:a:int, 3:p2:string, 4:PARTITION__SPEC__ID:int, 5:PARTITION__HASH:bigint, 6:FILE__PATH:string, 7:ROW__POSITION:bigint, 8:PARTITION__PROJECTION:string]
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2, 3]
+                      Group By Vectorization:
+                          aggregators: VectorUDAFMinString(col 1:string) -> string
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          keyExpressions: col 0:string, col 2:int, col 3:string
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: [0]
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkMultiKeyOperator
+                            keyColumns: 0:string, 1:int, 2:string
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: 3:string
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    includeColumns: [0, 1, 2, 3]
+                    dataColumns: p1:string, b:string, a:int, p2:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                reduceColumnNullOrder: zzz
+                reduceColumnSortOrder: +++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    dataColumns: KEY._col0:string, KEY._col1:int, KEY._col2:string, VALUE._col0:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+                Group By Vectorization:
+                    aggregators: VectorUDAFMinString(col 3:string) -> string
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:string, col 1:int, col 2:string
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: [0]
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [0, 2, 1, 3]
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
+
+  Stage: Stage-0
+    Fetch Operator
+
 PREHOOK: query: create external table tbl_ice_orc_complex (
     a int,
     arrayofprimitives array<string>,
@@ -361,6 +848,7 @@ PREHOOK: query: create external table tbl_ice_orc_complex (
     structofarrays struct<names:array<string>, birthdays:array<string>>,
     structofmaps struct<map1:map<string, string>, map2:map<string, string>>
     ) stored by iceberg stored as orc
+    TBLPROPERTIES ('iceberg.decimal64.vectorization'='true',"format-version"='1')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_ice_orc_complex
@@ -378,6 +866,7 @@ POSTHOOK: query: create external table tbl_ice_orc_complex (
     structofarrays struct<names:array<string>, birthdays:array<string>>,
     structofmaps struct<map1:map<string, string>, map2:map<string, string>>
     ) stored by iceberg stored as orc
+    TBLPROPERTIES ('iceberg.decimal64.vectorization'='true',"format-version"='1')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice_orc_complex
@@ -422,35 +911,124 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_ice_orc_complex
 #### A masked pattern was here ####
 1	["a","b","c"]	[["a"],["b","c"]]	[{"a":"b"},{"e":"f"}]	[{"something":"a","someone":"b","somewhere":"c"},{"something":"e","someone":"f","somewhere":"g"}]	{"a":"b"}	{"a":["b","c"]}	{"a":{"b":"c"}}	{"a":{"something":"b","someone":"c","somewhere":"d"}}	{"something":"a","somewhere":"b"}	{"names":["a","b"],"birthdays":["c","d","e"]}	{"map1":{"a":"b"},"map2":{"c":"d"}}
+PREHOOK: query: explain vectorization only detail select * from tbl_ice_orc_complex order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice_orc_complex
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization only detail select * from tbl_ice_orc_complex order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice_orc_complex
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:a:int, 1:arrayofprimitives:array<string>, 2:arrayofarrays:array<array<string>>, 3:arrayofmaps:array<map<string,string>>, 4:arrayofstructs:array<struct<something:string,someone:string,somewhere:string>>, 5:mapofprimitives:map<string,string>, 6:mapofarrays:map<string,array<string>>, 7:mapofmaps:map<string,map<string,string>>, 8:mapofstructs:map<string,struct<something:string,someone:string,somewhere:string>>, 9:structofprimitives:struct<something:string,somewhere:string>, 10:structofarrays:struct<names:array<string>,birthdays:array<string>>, 11:structofmaps:struct<map1:map<string,string>,map2:map<string,string>>, 12:PARTITION__SPEC__ID:int, 13:PARTITION__HASH:bigint, 14:FILE__PATH:string, 15:ROW__POSITION:bigint, 16:PARTITION__PROJECTION:string]
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                      Reduce Sink Vectorization:
+                          className: VectorReduceSinkObjectHashOperator
+                          keyColumns: 0:int
+                          native: true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          valueColumns: 1:array<string>, 2:array<array<string>>, 3:array<map<string,string>>, 4:array<struct<something:string,someone:string,somewhere:string>>, 5:map<string,string>, 6:map<string,array<string>>, 7:map<string,map<string,string>>, 8:map<string,struct<something:string,someone:string,somewhere:string>>, 9:struct<something:string,somewhere:string>, 10:struct<names:array<string>,birthdays:array<string>>, 11:struct<map1:map<string,string>,map2:map<string,string>>
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 12
+                    includeColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                    dataColumns: a:int, arrayofprimitives:array<string>, arrayofarrays:array<array<string>>, arrayofmaps:array<map<string,string>>, arrayofstructs:array<struct<something:string,someone:string,somewhere:string>>, mapofprimitives:map<string,string>, mapofarrays:map<string,array<string>>, mapofmaps:map<string,map<string,string>>, mapofstructs:map<string,struct<something:string,someone:string,somewhere:string>>, structofprimitives:struct<something:string,somewhere:string>, structofarrays:struct<names:array<string>,birthdays:array<string>>, structofmaps:struct<map1:map<string,string>,map2:map<string,string>>
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                reduceColumnNullOrder: z
+                reduceColumnSortOrder: +
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 12
+                    dataColumns: KEY.reducesinkkey0:int, VALUE._col0:array<string>, VALUE._col1:array<array<string>>, VALUE._col2:array<map<string,string>>, VALUE._col3:array<struct<something:string,someone:string,somewhere:string>>, VALUE._col4:map<string,string>, VALUE._col5:map<string,array<string>>, VALUE._col6:map<string,map<string,string>>, VALUE._col7:map<string,struct<something:string,someone:string,somewhere:string>>, VALUE._col8:struct<something:string,somewhere:string>, VALUE._col9:struct<names:array<string>,birthdays:array<string>>, VALUE._col10:struct<map1:map<string,string>,map2:map<string,string>>
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+
+  Stage: Stage-0
+    Fetch Operator
+
 PREHOOK: query: drop table tbl_ice_orc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_ice_orc
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_ice_orc
 POSTHOOK: query: drop table tbl_ice_orc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_ice_orc
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice_orc
 PREHOOK: query: drop table tbl_ice_orc_all_types
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_ice_orc_all_types
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_ice_orc_all_types
 POSTHOOK: query: drop table tbl_ice_orc_all_types
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_ice_orc_all_types
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice_orc_all_types
 PREHOOK: query: drop table tbl_ice_orc_parted
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_ice_orc_parted
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_ice_orc_parted
 POSTHOOK: query: drop table tbl_ice_orc_parted
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_ice_orc_parted
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice_orc_parted
 PREHOOK: query: drop table tbl_ice_orc_complex
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_ice_orc_complex
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_ice_orc_complex
 POSTHOOK: query: drop table tbl_ice_orc_complex
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_ice_orc_complex
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice_orc_complex

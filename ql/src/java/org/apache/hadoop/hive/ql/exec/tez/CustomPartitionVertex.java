@@ -18,24 +18,25 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import com.google.common.primitives.UnsignedBytes;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.Map.Entry;
 
 import com.google.common.collect.LinkedListMultimap;
+import org.apache.hadoop.hive.ql.io.HiveInputFormat.HiveInputSplit;
 import org.apache.hadoop.mapred.split.SplitLocationProvider;
 import org.apache.tez.runtime.api.events.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.TezWork.VertexType;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.serializer.SerializationFactory;
-import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.split.TezGroupedSplit;
@@ -74,23 +75,11 @@ import com.google.protobuf.ByteString;
  */
 public class CustomPartitionVertex extends VertexManagerPlugin {
 
-  public class PathComparatorForSplit implements Comparator<InputSplit> {
+  private static class HiveInputSplitComparator implements Comparator<HiveInputSplit> {
 
     @Override
-    public int compare(InputSplit inp1, InputSplit inp2) {
-      FileSplit fs1 = (FileSplit) inp1;
-      FileSplit fs2 = (FileSplit) inp2;
-
-      int retval = fs1.getPath().compareTo(fs2.getPath());
-      if (retval != 0) {
-        return retval;
-      }
-
-      if (fs1.getStart() != fs2.getStart()) {
-        return (int) (fs1.getStart() - fs2.getStart());
-      }
-
-      return 0;
+    public int compare(HiveInputSplit inp1, HiveInputSplit inp2) {
+      return UnsignedBytes.lexicographicalComparator().compare(inp1.getBytesForEquality(), inp2.getBytesForEquality());
     }
   }
 
@@ -168,7 +157,7 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
     LOG.info("On root vertex initialized " + inputName);
     try {
       // This is using the payload from the RootVertexInitializer corresponding
-      // to InputName. Ideally it should be using it's own configuration class -
+      // to InputName. Ideally it should be using its own configuration class -
       // but that
       // means serializing another instance.
       MRInputUserPayloadProto protoPayload =
@@ -198,7 +187,7 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
     }
 
     boolean dataInformationEventSeen = false;
-    Map<String, Set<FileSplit>> pathFileSplitsMap = new TreeMap<String, Set<FileSplit>>();
+    Map<Integer, Set<HiveInputSplit>> bucketFileSplitsMap = new TreeMap<>();
 
     for (Event event : events) {
       if (event instanceof InputConfigureVertexTasksEvent) {
@@ -220,28 +209,25 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
       } else if (event instanceof InputDataInformationEvent) {
         dataInformationEventSeen = true;
         InputDataInformationEvent diEvent = (InputDataInformationEvent) event;
-        FileSplit fileSplit;
+        HiveInputSplit inputSplit;
         try {
-          fileSplit = getFileSplitFromEvent(diEvent);
+          inputSplit = getInputSplitFromEvent(diEvent);
         } catch (IOException e) {
           throw new RuntimeException("Failed to get file split for event: " + diEvent, e);
         }
-        Set<FileSplit> fsList =
-            pathFileSplitsMap.get(Utilities.getBucketFileNameFromPathSubString(fileSplit.getPath()
-                .getName()));
-        if (fsList == null) {
-          fsList = new TreeSet<FileSplit>(new PathComparatorForSplit());
-          pathFileSplitsMap.put(
-              Utilities.getBucketFileNameFromPathSubString(fileSplit.getPath().getName()), fsList);
-        }
-        fsList.add(fileSplit);
+        final int bucketId = inputSplit.getBucketId().orElse(-1);
+        Set<HiveInputSplit> inputSplits = bucketFileSplitsMap.computeIfAbsent(bucketId,
+            k -> new TreeSet<>(new HiveInputSplitComparator()));
+        inputSplits.add(inputSplit);
       }
     }
 
-    LOG.debug("Path file splits map for input name: {} is {}", inputName, pathFileSplitsMap);
+    LOG.debug("Bucket splits map for input name: {} is {}", inputName, bucketFileSplitsMap);
 
     Multimap<Integer, InputSplit> bucketToInitialSplitMap =
-        getBucketSplitMapForPath(inputName, pathFileSplitsMap);
+        getBucketSplitMapForBucket(inputName, bucketFileSplitsMap);
+    Preconditions.checkState(
+        bucketToInitialSplitMap.keySet().stream().allMatch(i -> 0 <= i && i < numBuckets));
 
     try {
       int totalResource = context.getTotalAvailableResource().getMemory();
@@ -356,7 +342,7 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
           diEvent.setTargetIndex(task);
           taskEvents.add(diEvent);
         }
-        numSplitsForTask[task] = count;
+        numSplitsForTask[task] += count;
       }
     }
 
@@ -509,8 +495,8 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
     return UserPayload.create(ByteBuffer.wrap(serialized));
   }
 
-  private FileSplit getFileSplitFromEvent(InputDataInformationEvent event) throws IOException {
-    InputSplit inputSplit = null;
+  private HiveInputSplit getInputSplitFromEvent(InputDataInformationEvent event) throws IOException {
+    final InputSplit inputSplit;
     if (event.getDeserializedUserPayload() != null) {
       inputSplit = (InputSplit) event.getDeserializedUserPayload();
     } else {
@@ -519,97 +505,80 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
       inputSplit = MRInputHelpers.createOldFormatSplitFromUserPayload(splitProto, serializationFactory);
     }
 
-    if (!(inputSplit instanceof FileSplit)) {
+    if (!(inputSplit instanceof HiveInputSplit)) {
       throw new UnsupportedOperationException(
-          "Cannot handle splits other than FileSplit for the moment. Current input split type: "
+          "Cannot handle splits other than HiveInputSplit for the moment. Current input split type: "
               + inputSplit.getClass().getSimpleName());
     }
-    return (FileSplit) inputSplit;
+    return (HiveInputSplit) inputSplit;
   }
 
   /*
    * This method generates the map of bucket to file splits.
    */
-  private Multimap<Integer, InputSplit> getBucketSplitMapForPath(String inputName,
-      Map<String, Set<FileSplit>> pathFileSplitsMap) {
+  private Multimap<Integer, InputSplit> getBucketSplitMapForBucket(String inputName,
+      Map<Integer, Set<HiveInputSplit>> bucketSplitsMap) {
 
+    boolean isSMBJoin = numInputsAffectingRootInputSpecUpdate != 1;
+    boolean isMainWork = mainWorkName.isEmpty() || inputName.compareTo(mainWorkName) == 0;
+    Preconditions.checkState(
+        isMainWork || isSMBJoin && inputToBucketMap != null && inputToBucketMap.containsKey(inputName),
+        "CustomPartitionVertex.inputToBucketMap is not defined for {}", inputName);
+    int inputBucketSize = isMainWork ? numBuckets : inputToBucketMap.get(inputName);
 
-    Multimap<Integer, InputSplit> bucketToInitialSplitMap =
-        ArrayListMultimap.create();
+    Multimap<Integer, InputSplit> bucketToSplitMap = ArrayListMultimap.create();
 
     boolean fallback = false;
-    Map<Integer, Integer> bucketIds = new HashMap<>();
-    for (Map.Entry<String, Set<FileSplit>> entry : pathFileSplitsMap.entrySet()) {
-      // Extract the buckedID from pathFilesMap, this is more accurate method,
-      // however. it may not work in certain cases where buckets are named
-      // after files used while loading data. In such case, fallback to old
-      // potential inaccurate method.
-      // The accepted file names are such as 000000_0, 000001_0_copy_1.
-      String bucketIdStr =
-              Utilities.getBucketFileNameFromPathSubString(entry.getKey());
-      int bucketId = Utilities.getBucketIdFromFile(bucketIdStr);
-      if (bucketId == -1) {
+    for (Map.Entry<Integer, Set<HiveInputSplit>> entry : bucketSplitsMap.entrySet()) {
+      int bucketId = entry.getKey();
+      if (bucketId < 0) {
         fallback = true;
-        LOG.info("Fallback to using older sort based logic to assign " +
-                "buckets to splits.");
-        bucketIds.clear();
+        LOG.info("Fallback to using older sort based logic to assign buckets to splits.");
+        bucketToSplitMap.clear();
         break;
       }
+
       // Make sure the bucketId is at max the numBuckets
-      bucketId = bucketId % numBuckets;
-      bucketIds.put(bucketId, bucketId);
-      for (FileSplit fsplit : entry.getValue()) {
-        bucketToInitialSplitMap.put(bucketId, fsplit);
-      }
+      bucketId %= inputBucketSize;
+
+      bucketToSplitMap.putAll(bucketId, entry.getValue());
     }
 
-    int bucketNum = 0;
     if (fallback) {
       // This is the old logic which assumes that the filenames are sorted in
       // alphanumeric order and mapped to appropriate bucket number.
-      for (Map.Entry<String, Set<FileSplit>> entry : pathFileSplitsMap.entrySet()) {
-        int bucketId = bucketNum % numBuckets;
-        for (FileSplit fsplit : entry.getValue()) {
-          bucketToInitialSplitMap.put(bucketId, fsplit);
-        }
-        bucketNum++;
+      int curSplitIndex = 0;
+      for (Map.Entry<Integer, Set<HiveInputSplit>> entry : bucketSplitsMap.entrySet()) {
+        int bucketId = curSplitIndex % inputBucketSize;
+        bucketToSplitMap.putAll(bucketId, entry.getValue());
+        curSplitIndex++;
       }
     }
 
-    // this is just for SMB join use-case. The numBuckets would be equal to that of the big table
-    // and the small table could have lesser number of buckets. In this case, we want to send the
-    // data from the right buckets to the big table side. For e.g. Big table has 8 buckets and small
-    // table has 4 buckets, bucket 0 of small table needs to be sent to bucket 4 of the big table as
-    // well.
-    if (numInputsAffectingRootInputSpecUpdate != 1) {
-      // small table
-      if (fallback && bucketNum < numBuckets) {
-        // Old logic.
-        int loopedBucketId = 0;
-        for (; bucketNum < numBuckets; bucketNum++) {
-          for (InputSplit fsplit : bucketToInitialSplitMap.get(loopedBucketId)) {
-            bucketToInitialSplitMap.put(bucketNum, fsplit);
-          }
-          loopedBucketId++;
-        }
-      } else {
-        // new logic.
-        if (inputToBucketMap.containsKey(inputName)) {
-          int inputNumBuckets = inputToBucketMap.get(inputName);
-          if (inputNumBuckets < numBuckets) {
-            // Need to send the splits to multiple buckets
-            for (int i = 1; i < numBuckets / inputNumBuckets; i++) {
-              int bucketIdBase = i * inputNumBuckets;
-              for (Integer bucketId : bucketIds.keySet()) {
-                for (InputSplit fsplit : bucketToInitialSplitMap.get(bucketId)) {
-                  bucketToInitialSplitMap.put(bucketIdBase + bucketId, fsplit);
-                }
-              }
-            }
-          }
-        }
+    if (isSMBJoin && numBuckets != inputBucketSize) {
+      // This is just for SMB join use-case. The numBuckets would be equal to that of the big table
+      // and the small table could have different number of buckets. In this case, we want to send the
+      // data from the right buckets to the big table side. For e.g. Big table has 6 buckets and small
+      // table has 4 buckets, bucket 1 of small table needs to be sent to bucket 1, 3, 5 of the big table
+      // because (4*n + 1) % 6 can be 1, 3, or 5.
+
+      int gcd = BigInteger.valueOf(numBuckets).gcd(BigInteger.valueOf(inputBucketSize)).intValue();
+      Multimap<Integer, InputSplit> bucketIdRemainderSplitMap = ArrayListMultimap.create();
+      for (Entry<Integer, Collection<InputSplit>> entry: bucketToSplitMap.asMap().entrySet()) {
+        int smallTableBucketId = entry.getKey();
+        int remainder = smallTableBucketId % gcd;
+        bucketIdRemainderSplitMap.putAll(remainder, entry.getValue());
       }
+
+      Multimap<Integer, InputSplit> redistributedBucketSplitMap = ArrayListMultimap.create();
+      for (int bigTableBucketId = 0; bigTableBucketId < numBuckets; bigTableBucketId++) {
+        int remainder = bigTableBucketId % gcd;
+        redistributedBucketSplitMap.putAll(bigTableBucketId, bucketIdRemainderSplitMap.get(remainder));
+      }
+
+      bucketToSplitMap = redistributedBucketSplitMap;
     }
-    return bucketToInitialSplitMap;
+
+    return bucketToSplitMap;
   }
 }

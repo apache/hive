@@ -26,15 +26,15 @@ import org.apache.hadoop.hive.ql.QTestUtil;
  */
 public class AccumuloQTestUtil extends QTestUtil {
 
-  public AccumuloQTestUtil(String outDir, String logDir, MiniClusterType miniMr,
-      AccumuloTestSetup setup, String initScript, String cleanupScript) throws Exception {
+  public AccumuloQTestUtil(String outDir, String logDir, MiniClusterType miniMr, AccumuloTestSetup setup,
+      String hiveConfDir, String initScript, String cleanupScript) throws Exception {
 
     super(
         QTestArguments.QTestArgumentsBuilder.instance()
           .withOutDir(outDir)
           .withLogDir(logDir)
           .withClusterType(miniMr)
-          .withConfDir(null)
+          .withConfDir(hiveConfDir)
           .withInitScript(initScript)
           .withCleanupScript(cleanupScript)
           .withLlapIo(false)

@@ -22,7 +22,6 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper;
@@ -76,8 +75,14 @@ public class HiveSchemaTool extends MetastoreSchemaTool {
     // write out the buffer into a file. Add beeline commands for autocommit and close
     FileWriter fstream = new FileWriter(tmpFile.getPath());
     BufferedWriter out = new BufferedWriter(fstream);
-    out.write("!autocommit on" + System.getProperty("line.separator"));
-    out.write(sqlCommands);
+    if (!dbType.equalsIgnoreCase(HiveSchemaHelper.DB_HIVE)) {
+      out.write("!autocommit off" + System.getProperty("line.separator"));
+      out.write(sqlCommands);
+      out.write("!commit" + System.getProperty("line.separator"));
+    } else {
+      out.write("!autocommit on" + System.getProperty("line.separator"));
+      out.write(sqlCommands);
+    }
     out.write("!closeall" + System.getProperty("line.separator"));
     out.close();
     execSql(tmpFile.getPath());
@@ -135,7 +140,7 @@ public class HiveSchemaTool extends MetastoreSchemaTool {
         .create("metaDbType");
     additionalGroup.addOption(metaDbTypeOpt);
     System.setProperty(MetastoreConf.ConfVars.SCHEMA_VERIFICATION.getVarname(), "true");
-    System.exit(tool.run(System.getenv("HIVE_HOME"), args, additionalGroup,
-        new HiveConf(HiveSchemaTool.class)));
+    System.exit(tool.run(findHomeDir(), args, additionalGroup,
+        MetastoreConf.newMetastoreConf()));
   }
 }

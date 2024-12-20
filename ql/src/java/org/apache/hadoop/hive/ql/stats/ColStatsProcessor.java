@@ -23,7 +23,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.hadoop.hive.common.HiveStatsUtils;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -32,10 +36,10 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -119,6 +123,7 @@ public class ColStatsProcessor implements IStatsProcessor {
         String columnType = colType.get(i);
         PrimitiveTypeInfo typeInfo = (PrimitiveTypeInfo) TypeInfoUtils.getTypeInfoFromTypeString(columnType);
         List<ColumnStatsField> columnStatsFields = ColumnStatsType.getColumnStats(typeInfo);
+        columnStatsFields = ColumnStatsType.removeDisabledStatistics(conf, columnStatsFields);
         try {
           ColumnStatisticsObj statObj = ColumnStatisticsObjTranslator.readHiveColumnStatistics(
               columnName, columnType, columnStatsFields, pos, fields, values);
@@ -143,7 +148,7 @@ public class ColStatsProcessor implements IStatsProcessor {
             Object partVal = ((PrimitiveObjectInspector) fields.get(i).getFieldObjectInspector())
                 .getPrimitiveJavaObject(values.get(i));
             partVals.add(partVal == null ? // could be null for default partition
-              this.conf.getVar(ConfVars.DEFAULTPARTITIONNAME) : partVal.toString());
+              this.conf.getVar(ConfVars.DEFAULT_PARTITION_NAME) : partVal.toString());
           }
           partName = Warehouse.makePartName(partColSchema, partVals);
         }
@@ -206,7 +211,7 @@ public class ColStatsProcessor implements IStatsProcessor {
       if (colStats.isEmpty()) {
         continue;
       }
-      SetPartitionsStatsRequest request = new SetPartitionsStatsRequest(colStats, Constants.HIVE_ENGINE);
+      SetPartitionsStatsRequest request = new SetPartitionsStatsRequest(colStats);
       request.setNeedMerge(colStatDesc.isNeedMerge());
       if (txnMgr != null) {
         request.setWriteId(writeId);
@@ -216,6 +221,13 @@ public class ColStatsProcessor implements IStatsProcessor {
       }
 
       start = System. currentTimeMillis();
+      if (tbl != null && tbl.isNonNative() && tbl.getStorageHandler().canSetColStatistics(tbl)) {
+        boolean success = tbl.getStorageHandler().setColStatistics(tbl, colStats);
+        if (!(tbl.isMaterializedView() || tbl.isView() || tbl.isTemporary())) {
+          setOrRemoveColumnStatsAccurateProperty(db, tbl, colStatDesc.getColName(), success);
+        }
+      }
+      // TODO: Write stats for native tables only (See HIVE-27421)
       db.setPartitionColumnStatistics(request);
       end = System.currentTimeMillis();
       LOG.info("Time taken to update " + colStats.size() + " stats : " + ((end - start)/1000F) + " seconds.");
@@ -225,6 +237,20 @@ public class ColStatsProcessor implements IStatsProcessor {
 
   @Override
   public void setDpPartSpecs(Collection<Partition> dpPartSpecs) {
+  }
+
+  private void setOrRemoveColumnStatsAccurateProperty(Hive db, Table tbl, List<String> colNames, boolean success) throws HiveException {
+    if (CollectionUtils.isEmpty(colNames) || !colStatDesc.isTblLevel()) {
+      return;
+    }
+    EnvironmentContext environmentContext = new EnvironmentContext();
+    environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
+    if (success) {
+      StatsSetupConst.setColumnStatsState(tbl.getParameters(), colNames);
+    } else {
+      StatsSetupConst.removeColumnStatsState(tbl.getParameters(), colNames);
+    }
+    db.alterTable(tbl.getFullyQualifiedName(), tbl, environmentContext, false);
   }
 
   /**
@@ -240,6 +266,7 @@ public class ColStatsProcessor implements IStatsProcessor {
     MAX("max"),
     NDV("numdistinctvalues"),
     BITVECTOR("ndvbitvector"),
+    KLL_SKETCH("kllsketch"),
     MAX_LENGTH("maxlength"),
     AVG_LENGTH("avglength");
 
@@ -274,7 +301,8 @@ public class ColStatsProcessor implements IStatsProcessor {
             ColumnStatsField.MAX,
             ColumnStatsField.COUNT_NULLS,
             ColumnStatsField.NDV,
-            ColumnStatsField.BITVECTOR)),
+            ColumnStatsField.BITVECTOR,
+            ColumnStatsField.KLL_SKETCH)),
     DOUBLE(
         ImmutableList.of(
             ColumnStatsField.COLUMN_STATS_TYPE,
@@ -282,7 +310,8 @@ public class ColStatsProcessor implements IStatsProcessor {
             ColumnStatsField.MAX,
             ColumnStatsField.COUNT_NULLS,
             ColumnStatsField.NDV,
-            ColumnStatsField.BITVECTOR)),
+            ColumnStatsField.BITVECTOR,
+            ColumnStatsField.KLL_SKETCH)),
     STRING(
         ImmutableList.of(
             ColumnStatsField.COLUMN_STATS_TYPE,
@@ -304,7 +333,8 @@ public class ColStatsProcessor implements IStatsProcessor {
             ColumnStatsField.MAX,
             ColumnStatsField.COUNT_NULLS,
             ColumnStatsField.NDV,
-            ColumnStatsField.BITVECTOR)),
+            ColumnStatsField.BITVECTOR,
+            ColumnStatsField.KLL_SKETCH)),
     DATE(
         ImmutableList.of(
             ColumnStatsField.COLUMN_STATS_TYPE,
@@ -312,7 +342,8 @@ public class ColStatsProcessor implements IStatsProcessor {
             ColumnStatsField.MAX,
             ColumnStatsField.COUNT_NULLS,
             ColumnStatsField.NDV,
-            ColumnStatsField.BITVECTOR)),
+            ColumnStatsField.BITVECTOR,
+            ColumnStatsField.KLL_SKETCH)),
     TIMESTAMP(
         ImmutableList.of(
             ColumnStatsField.COLUMN_STATS_TYPE,
@@ -320,7 +351,8 @@ public class ColStatsProcessor implements IStatsProcessor {
             ColumnStatsField.MAX,
             ColumnStatsField.COUNT_NULLS,
             ColumnStatsField.NDV,
-            ColumnStatsField.BITVECTOR));
+            ColumnStatsField.BITVECTOR,
+            ColumnStatsField.KLL_SKETCH));
 
 
     private final List<ColumnStatsField> columnStats;
@@ -370,5 +402,13 @@ public class ColStatsProcessor implements IStatsProcessor {
       return getColumnStatsType(typeInfo).getColumnStats();
     }
 
+    public static List<ColumnStatsField> removeDisabledStatistics(HiveConf conf, List<ColumnStatsField> columnStatsFields) {
+      if (!HiveStatsUtils.computeHistograms(conf)) {
+        return columnStatsFields.stream()
+            .filter(f -> f != ColumnStatsField.KLL_SKETCH)
+            .collect(Collectors.toList());
+      }
+      return columnStatsFields;
+    }
   }
 }

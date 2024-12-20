@@ -86,7 +86,7 @@ public abstract class OperationLoggingAPITestBase {
     client.executeStatement(sessionHandle, queryString, null);
     // verify whether the sql operation log is generated and fetch correctly.
     OperationHandle operationHandle = client.executeStatement(sessionHandle, sqlCntStar, null);
-    RowSet rowSetLog = client.fetchResults(operationHandle, FetchOrientation.FETCH_FIRST, 1000,
+    RowSet rowSetLog = client.fetchResults(operationHandle, FetchOrientation.FETCH_FIRST, 100000,
       FetchType.LOG);
     // Verbose Logs should contain everything, including execution and performance
     verifyFetchedLog(rowSetLog, expectedLogsVerbose);
@@ -101,7 +101,7 @@ public abstract class OperationLoggingAPITestBase {
       client.executeStatement(sessionHandle, queryString, null);
       // verify whether the sql operation log is generated and fetch correctly.
       OperationHandle operationHandle = client.executeStatement(sessionHandle, sqlCntStar, null);
-      RowSet rowSetLog = client.fetchResults(operationHandle, FetchOrientation.FETCH_FIRST, 1000,
+      RowSet rowSetLog = client.fetchResults(operationHandle, FetchOrientation.FETCH_FIRST, 100000,
         FetchType.LOG);
       // rowSetLog should contain execution as well as performance logs
       verifyFetchedLog(rowSetLog, expectedLogsExecution);

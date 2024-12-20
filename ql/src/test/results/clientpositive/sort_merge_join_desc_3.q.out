@@ -1,11 +1,15 @@
 PREHOOK: query: drop table table_desc1_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table table_desc1_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table table_desc2_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table table_desc2_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table table_desc1_n0(key string, value string) clustered by (key, value)
 sorted by (key DESC, value ASC) into 1 BUCKETS
 PREHOOK: type: CREATETABLE

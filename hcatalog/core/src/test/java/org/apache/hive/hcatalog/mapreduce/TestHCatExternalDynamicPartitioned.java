@@ -28,7 +28,7 @@ public class TestHCatExternalDynamicPartitioned extends TestHCatDynamicPartition
       throws Exception {
     super(formatName, serdeClass, inputFormatClass, outputFormatClass);
     tableName = "testHCatExternalDynamicPartitionedTable_" + formatName;
-    generateWriteRecords(NUM_RECORDS, NUM_PARTITIONS, 0);
+    generateWriteRecords(NUM_RECORDS, NUM_TOP_PARTITIONS, 0);
     generateDataColumns();
   }
 
@@ -43,7 +43,7 @@ public class TestHCatExternalDynamicPartitioned extends TestHCatDynamicPartition
    */
   @Test
   public void testHCatExternalDynamicCustomLocation() throws Exception {
-    runHCatDynamicPartitionedTable(true, "mapred/externalDynamicOutput/${p1}");
+    runHCatDynamicPartitionedTable(true, "mapred/externalDynamicOutput/${p1}/${p2}");
   }
 
 }

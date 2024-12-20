@@ -20,8 +20,12 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.calcite.adapter.druid.DruidQuery;
+import org.apache.calcite.adapter.jdbc.JdbcConvention;
+import org.apache.calcite.adapter.jdbc.JdbcRel;
+import org.apache.calcite.adapter.jdbc.JdbcRules;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.plan.volcano.RelSubset;
@@ -35,6 +39,7 @@ import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.SetOp;
 import org.apache.calcite.rel.core.Sort;
+import org.apache.calcite.rel.core.Spool;
 import org.apache.calcite.rel.core.Window.RexWinAggCall;
 import org.apache.calcite.rel.rules.MultiJoin;
 import org.apache.calcite.rel.type.RelDataType;
@@ -42,6 +47,7 @@ import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.sql.SqlAggFunction;
+import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
@@ -49,11 +55,13 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveValues;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelColumnsAlignment;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -69,6 +77,11 @@ public class PlanModifierForASTConv {
 
   public static RelNode convertOpTree(RelNode rel, List<FieldSchema> resultSchema, boolean alignColumns)
       throws CalciteSemanticException {
+    if (rel instanceof HiveValues) {
+      List<String> fieldNames = resultSchema.stream().map(FieldSchema::getName).collect(Collectors.toList());
+      return ((HiveValues) rel).copy(fieldNames);
+    }
+
     RelNode newTopNode = rel;
     if (LOG.isDebugEnabled()) {
       LOG.debug("Original plan for PlanModifier\n " + RelOptUtil.toString(newTopNode));
@@ -164,6 +177,10 @@ public class PlanModifierForASTConv {
           introduceDerivedTable(inputRel, setop);
         }
       }
+    } else if (rel instanceof HiveTableFunctionScan) {
+      if (!validTableFunctionScanChild((HiveTableFunctionScan)rel)) {
+        introduceDerivedTable(rel.getInput(0), rel);
+      }
     } else if (rel instanceof SingleRel) {
       if (rel instanceof HiveJdbcConverter) {
         introduceDerivedTable(rel, parent);
@@ -191,7 +208,17 @@ public class PlanModifierForASTConv {
         // this should only happen when newParent is constant.
         if (isEmptyGrpAggr(rel)) {
           replaceEmptyGroupAggr(rel, newParent);
+          // Since the aggregate gets replaced, we need to change rel
+          // to be the new aggregate so that when convertOpTree gets
+          // called recursively, it will have the correct parent.
+          rel = newParent.getInputs().get(0);
         }
+      } else if (rel instanceof Spool) {
+        Spool spool = (Spool) rel;
+        RelBuilder b = HiveRelFactories.HIVE_BUILDER.create(spool.getCluster(),null);
+        b.push(spool.getInput());
+        b.project(b.fields(), spool.getTable().getRowType().getFieldNames(), true);
+        spool.replaceInput(0, b.build());
       }
     }
 
@@ -250,8 +277,12 @@ public class PlanModifierForASTConv {
   private static RelNode introduceDerivedTable(final RelNode rel) {
     List<RexNode> projectList = HiveCalciteUtil.getProjsFromBelowAsInputRef(rel);
 
-    HiveProject select = HiveProject.create(rel.getCluster(), rel, projectList,
+    RelNode select = HiveProject.create(rel.getCluster(), rel, projectList,
         rel.getRowType(), Collections.emptyList());
+    
+    if (rel instanceof JdbcRel) {
+      select = JdbcRules.JdbcProjectRule.create((JdbcConvention) rel.getConvention()).convert(select);
+    }
 
     return select;
   }
@@ -369,6 +400,11 @@ public class PlanModifierForASTConv {
 
   private static boolean validExchangeChild(HiveSortExchange sortNode) {
     return sortNode.getInput() instanceof Project;
+  }
+
+  private static boolean validTableFunctionScanChild(HiveTableFunctionScan htfsNode) {
+    return htfsNode.getInputs().size() == 1 &&
+        (htfsNode.getInput(0) instanceof Project || htfsNode.getInput(0) instanceof HiveTableScan);
   }
 
   private static boolean validSetopParent(RelNode setop, RelNode parent) {

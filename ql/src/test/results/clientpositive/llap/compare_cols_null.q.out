@@ -93,9 +93,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ccn_table
 #### A masked pattern was here ####
 CBO PLAN:
-HiveSortLimit(fetch=[0])
-  HiveProject(key=[$0], value=[$1])
-    HiveTableScan(table=[[default, ccn_table]], table:alias=[ccn_table])
+HiveValues(tuples=[[]])
 
 PREHOOK: query: select * from ccn_table where key > '123a'
 PREHOOK: type: QUERY
@@ -130,8 +128,10 @@ NULL	t1
 PREHOOK: query: drop table ccn_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ccn_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ccn_table
 POSTHOOK: query: drop table ccn_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ccn_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ccn_table

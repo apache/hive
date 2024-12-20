@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists tbl_orc
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tbl_orc
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table tbl_orc(a int, b string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -33,7 +35,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	#Masked#                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -69,12 +71,20 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	three
 4	four
 5	five
-PREHOOK: query: alter table tbl_orc set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: query: explain alter table tbl_orc convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
 PREHOOK: Input: default@tbl_orc
-PREHOOK: Output: default@tbl_orc
-POSTHOOK: query: alter table tbl_orc set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: query: explain alter table tbl_orc convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@tbl_orc
+Stage-0
+  Convert operation{"table name:":"default.tbl_orc","spec:":"AlterTableConvertSpec{ConvertTo=iceberg, TBLProperties={}}"}
+
+PREHOOK: query: alter table tbl_orc convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@tbl_orc
+POSTHOOK: query: alter table tbl_orc convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
 POSTHOOK: Input: default@tbl_orc
 POSTHOOK: Output: default@tbl_orc
 PREHOOK: query: describe formatted tbl_orc
@@ -98,11 +108,17 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
-	engine.hive.enabled 	true                
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"a\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"b\",\"required\":false,\"type\":\"string\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"5\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"5\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"1\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	format-version      	2                   
+	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	1                   
 	numRows             	5                   
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	rawDataSize         	455                 
 	schema.name-mapping.default	[ {                 
@@ -112,12 +128,16 @@ Table Parameters:
 	                           	  \"field-id\" : 2, 
 	                           	  \"names\" : [ \"b\" ]
 	                           	} ]                 
+	snapshot-count      	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	#Masked#                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
 	write.format.default	orc                 
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -141,15 +161,19 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table tbl_orc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_orc
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_orc
 POSTHOOK: query: drop table tbl_orc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_orc
 PREHOOK: query: drop table if exists tbl_parquet
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tbl_parquet
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table tbl_parquet(a int, b string) stored as parquet
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -181,7 +205,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	#Masked#                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -217,12 +241,20 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	three
 4	four
 5	five
-PREHOOK: query: alter table tbl_parquet set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: query: explain alter table tbl_parquet convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
 PREHOOK: Input: default@tbl_parquet
-PREHOOK: Output: default@tbl_parquet
-POSTHOOK: query: alter table tbl_parquet set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: query: explain alter table tbl_parquet convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@tbl_parquet
+Stage-0
+  Convert operation{"table name:":"default.tbl_parquet","spec:":"AlterTableConvertSpec{ConvertTo=iceberg, TBLProperties={}}"}
+
+PREHOOK: query: alter table tbl_parquet convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@tbl_parquet
+POSTHOOK: query: alter table tbl_parquet convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
 POSTHOOK: Input: default@tbl_parquet
 POSTHOOK: Output: default@tbl_parquet
 PREHOOK: query: describe formatted tbl_parquet
@@ -246,11 +278,17 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
-	engine.hive.enabled 	true                
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"a\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"b\",\"required\":false,\"type\":\"string\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"5\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"5\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"1\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	format-version      	2                   
+	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	1                   
 	numRows             	5                   
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	rawDataSize         	116                 
 	schema.name-mapping.default	[ {                 
@@ -260,12 +298,16 @@ Table Parameters:
 	                           	  \"field-id\" : 2, 
 	                           	  \"names\" : [ \"b\" ]
 	                           	} ]                 
+	snapshot-count      	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	#Masked#                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
 	write.format.default	parquet             
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -289,15 +331,19 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table tbl_parquet
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_parquet
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_parquet
 POSTHOOK: query: drop table tbl_parquet
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_parquet
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_parquet
 PREHOOK: query: drop table if exists tbl_avro
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tbl_avro
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table tbl_avro(a int, b string) stored as avro
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -329,7 +375,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	#Masked#                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -365,12 +411,20 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	three
 4	four
 5	five
-PREHOOK: query: alter table tbl_avro set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: query: explain alter table tbl_avro convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
 PREHOOK: Input: default@tbl_avro
-PREHOOK: Output: default@tbl_avro
-POSTHOOK: query: alter table tbl_avro set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: query: explain alter table tbl_avro convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@tbl_avro
+Stage-0
+  Convert operation{"table name:":"default.tbl_avro","spec:":"AlterTableConvertSpec{ConvertTo=iceberg, TBLProperties={}}"}
+
+PREHOOK: query: alter table tbl_avro convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@tbl_avro
+POSTHOOK: query: alter table tbl_avro convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
 POSTHOOK: Input: default@tbl_avro
 POSTHOOK: Output: default@tbl_avro
 PREHOOK: query: describe formatted tbl_avro
@@ -394,11 +448,17 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
-	engine.hive.enabled 	true                
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"a\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"b\",\"required\":false,\"type\":\"string\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"5\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"5\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"1\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	format-version      	2                   
+	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	1                   
 	numRows             	5                   
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	rawDataSize         	0                   
 	schema.name-mapping.default	[ {                 
@@ -408,12 +468,16 @@ Table Parameters:
 	                           	  \"field-id\" : 2, 
 	                           	  \"names\" : [ \"b\" ]
 	                           	} ]                 
+	snapshot-count      	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	#Masked#                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
 	write.format.default	avro                
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -437,8 +501,71 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table tbl_avro
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_avro
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_avro
 POSTHOOK: query: drop table tbl_avro
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_avro
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_avro
+PREHOOK: query: drop table if exists part_tbl_parquet
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists part_tbl_parquet
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table part_tbl_parquet (a int) partitioned by (s string) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@part_tbl_parquet
+POSTHOOK: query: create external table part_tbl_parquet (a int) partitioned by (s string) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@part_tbl_parquet
+PREHOOK: query: insert into part_tbl_parquet partition (s) values (1, '2023/05/18')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@part_tbl_parquet
+POSTHOOK: query: insert into part_tbl_parquet partition (s) values (1, '2023/05/18')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@part_tbl_parquet
+POSTHOOK: Output: default@part_tbl_parquet@s=2023%2F05%2F18
+POSTHOOK: Lineage: part_tbl_parquet PARTITION(s=2023/05/18).a SCRIPT []
+PREHOOK: query: select * from part_tbl_parquet
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_tbl_parquet
+PREHOOK: Input: default@part_tbl_parquet@s=2023%2F05%2F18
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from part_tbl_parquet
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_tbl_parquet
+POSTHOOK: Input: default@part_tbl_parquet@s=2023%2F05%2F18
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	2023/05/18
+PREHOOK: query: alter table part_tbl_parquet convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@part_tbl_parquet
+POSTHOOK: query: alter table part_tbl_parquet convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@part_tbl_parquet
+POSTHOOK: Output: default@part_tbl_parquet
+PREHOOK: query: select * from part_tbl_parquet
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_tbl_parquet
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from part_tbl_parquet
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_tbl_parquet
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	2023/05/18
+PREHOOK: query: drop table part_tbl_parquet
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@part_tbl_parquet
+PREHOOK: Output: database:default
+PREHOOK: Output: default@part_tbl_parquet
+POSTHOOK: query: drop table part_tbl_parquet
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@part_tbl_parquet
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@part_tbl_parquet

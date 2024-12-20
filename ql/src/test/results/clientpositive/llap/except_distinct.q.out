@@ -46,18 +46,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table a_n16
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@a_n16
+PREHOOK: Output: database:default
 PREHOOK: Output: default@a_n16
 POSTHOOK: query: drop table a_n16
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@a_n16
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@a_n16
 PREHOOK: query: drop table b_n12
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@b_n12
+PREHOOK: Output: database:default
 PREHOOK: Output: default@b_n12
 POSTHOOK: query: drop table b_n12
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@b_n12
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@b_n12
 PREHOOK: query: create table a_n16(key int, value int)
 PREHOOK: type: CREATETABLE

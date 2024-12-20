@@ -1,5 +1,6 @@
 --! qt:dataset:src
 set hive.mapred.mode=nonstrict;
+set hive.auto.convert.anti.join=true;
 -- SORT_QUERY_RESULTS
 
 -- data setup

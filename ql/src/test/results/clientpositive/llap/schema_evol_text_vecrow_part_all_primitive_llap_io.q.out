@@ -366,7 +366,7 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: false
                 enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
-                enabledConditionsNotMet: Could not enable vectorization. LLAP I/O is enabled wbich automatically deserializes into VECTORIZED_INPUT_FILE_FORMAT. A partition requires data type conversion and that is not supported IS false
+                enabledConditionsNotMet: Could not enable vectorization. LLAP I/O is enabled which automatically deserializes into VECTORIZED_INPUT_FILE_FORMAT. A partition requires data type conversion and that is not supported IS false
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
 
   Stage: Stage-0
@@ -378,10 +378,12 @@ STAGE PLANS:
 PREHOOK: query: drop table part_change_various_various_boolean_to_bigint
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_change_various_various_boolean_to_bigint
+PREHOOK: Output: database:default
 PREHOOK: Output: default@part_change_various_various_boolean_to_bigint
 POSTHOOK: query: drop table part_change_various_various_boolean_to_bigint
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_change_various_various_boolean_to_bigint
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_change_various_various_boolean_to_bigint
 PREHOOK: query: CREATE TABLE part_change_various_various_decimal_to_double(insert_num int,
             c1 BOOLEAN, c2 TINYINT, c3 SMALLINT, c4 INT, c5 BIGINT, c6 FLOAT, c7 DOUBLE, c8 STRING, c9 CHAR(25), c10 VARCHAR(25), c11 TIMESTAMP,
@@ -659,7 +661,7 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: false
                 enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
-                enabledConditionsNotMet: Could not enable vectorization. LLAP I/O is enabled wbich automatically deserializes into VECTORIZED_INPUT_FILE_FORMAT. A partition requires data type conversion and that is not supported IS false
+                enabledConditionsNotMet: Could not enable vectorization. LLAP I/O is enabled which automatically deserializes into VECTORIZED_INPUT_FILE_FORMAT. A partition requires data type conversion and that is not supported IS false
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
 
   Stage: Stage-0
@@ -671,10 +673,12 @@ STAGE PLANS:
 PREHOOK: query: drop table part_change_various_various_decimal_to_double
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_change_various_various_decimal_to_double
+PREHOOK: Output: database:default
 PREHOOK: Output: default@part_change_various_various_decimal_to_double
 POSTHOOK: query: drop table part_change_various_various_decimal_to_double
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_change_various_various_decimal_to_double
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_change_various_various_decimal_to_double
 PREHOOK: query: CREATE TABLE part_change_various_various_timestamp(insert_num int, c1 BOOLEAN, c2 TINYINT, c3 SMALLINT, c4 INT, c5 BIGINT, c6 FLOAT, c7 DOUBLE, c8 DECIMAL(38,18), c9 STRING, c10 CHAR(25), c11 VARCHAR(25), c12 DATE, b STRING) PARTITIONED BY(part INT)
 PREHOOK: type: CREATETABLE
@@ -862,7 +866,7 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: false
                 enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
-                enabledConditionsNotMet: Could not enable vectorization. LLAP I/O is enabled wbich automatically deserializes into VECTORIZED_INPUT_FILE_FORMAT. A partition requires data type conversion and that is not supported IS false
+                enabledConditionsNotMet: Could not enable vectorization. LLAP I/O is enabled which automatically deserializes into VECTORIZED_INPUT_FILE_FORMAT. A partition requires data type conversion and that is not supported IS false
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
 
   Stage: Stage-0
@@ -874,10 +878,12 @@ STAGE PLANS:
 PREHOOK: query: drop table part_change_various_various_timestamp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_change_various_various_timestamp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@part_change_various_various_timestamp
 POSTHOOK: query: drop table part_change_various_various_timestamp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_change_various_various_timestamp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_change_various_various_timestamp
 PREHOOK: query: CREATE TABLE part_change_various_various_date(insert_num int, c1 STRING, c2 CHAR(25), c3 VARCHAR(25), c4 TIMESTAMP, b STRING) PARTITIONED BY(part INT)
 PREHOOK: type: CREATETABLE
@@ -1049,7 +1055,7 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: false
                 enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
-                enabledConditionsNotMet: Could not enable vectorization. LLAP I/O is enabled wbich automatically deserializes into VECTORIZED_INPUT_FILE_FORMAT. A partition requires data type conversion and that is not supported IS false
+                enabledConditionsNotMet: Could not enable vectorization. LLAP I/O is enabled which automatically deserializes into VECTORIZED_INPUT_FILE_FORMAT. A partition requires data type conversion and that is not supported IS false
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
 
   Stage: Stage-0
@@ -1061,10 +1067,12 @@ STAGE PLANS:
 PREHOOK: query: drop table part_change_various_various_date
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_change_various_various_date
+PREHOOK: Output: database:default
 PREHOOK: Output: default@part_change_various_various_date
 POSTHOOK: query: drop table part_change_various_various_date
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_change_various_various_date
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_change_various_various_date
 PREHOOK: query: CREATE TABLE part_change_same_type_different_params(insert_num int, c1 CHAR(12), c2 CHAR(25), c3 VARCHAR(25), c4 VARCHAR(10), c5 DECIMAL(12,4), c6 DECIMAL(20,10), b STRING) PARTITIONED BY(part INT)
 PREHOOK: type: CREATETABLE
@@ -1319,7 +1327,7 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: false
                 enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
-                enabledConditionsNotMet: Could not enable vectorization. LLAP I/O is enabled wbich automatically deserializes into VECTORIZED_INPUT_FILE_FORMAT. A partition requires data type conversion and that is not supported IS false
+                enabledConditionsNotMet: Could not enable vectorization. LLAP I/O is enabled which automatically deserializes into VECTORIZED_INPUT_FILE_FORMAT. A partition requires data type conversion and that is not supported IS false
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
 
   Stage: Stage-0
@@ -1331,8 +1339,10 @@ STAGE PLANS:
 PREHOOK: query: drop table part_change_same_type_different_params
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_change_same_type_different_params
+PREHOOK: Output: database:default
 PREHOOK: Output: default@part_change_same_type_different_params
 POSTHOOK: query: drop table part_change_same_type_different_params
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_change_same_type_different_params
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_change_same_type_different_params

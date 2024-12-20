@@ -35,6 +35,7 @@ import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
@@ -53,6 +54,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,6 +96,7 @@ public abstract class TxnCommandsBaseForTests {
   }
 
   @Before
+  @BeforeEach
   public void setUp() throws Exception {
     setUpInternal();
 
@@ -103,6 +107,8 @@ public abstract class TxnCommandsBaseForTests {
   }
   void initHiveConf() {
     hiveConf = new HiveConf(this.getClass());
+    //TODO: HIVE-28029: Make unit tests based on TxnCommandsBaseForTests run on Tez
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
   }
   void setUpInternal() throws Exception {
     initHiveConf();
@@ -116,22 +122,23 @@ public abstract class TxnCommandsBaseForTests {
         + File.separator + "mapred" + File.separator + "staging");
     hiveConf.set("mapred.temp.dir", workDir + File.separator + this.getClass().getSimpleName()
         + File.separator + "mapred" + File.separator + "temp");
-    hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
-    hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
-    hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, getWarehouseDir());
-    hiveConf.setVar(HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
+    hiveConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
+    hiveConf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
+    hiveConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname, getWarehouseDir());
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_INPUT_FORMAT, HiveInputFormat.class.getName());
     hiveConf
       .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     hiveConf.setBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK, true);
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.SPLIT_UPDATE, true);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_COL_AUTOGATHER, false);
     hiveConf.setBoolean("mapred.input.dir.recursive", true);
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON, true);
       
     TestTxnDbUtil.setConfValues(hiveConf);
-    txnHandler = TxnUtils.getTxnStore(hiveConf);
     TestTxnDbUtil.prepDb(hiveConf);
+    txnHandler = TxnUtils.getTxnStore(hiveConf);
     File f = new File(getWarehouseDir());
     if (f.exists()) {
       FileUtil.fullyDelete(f);
@@ -162,6 +169,7 @@ public abstract class TxnCommandsBaseForTests {
     }
   }
   @After
+  @AfterEach
   public void tearDown() throws Exception {
     try {
       if (d != null) {
@@ -239,12 +247,18 @@ public abstract class TxnCommandsBaseForTests {
   public static void runWorker(HiveConf hiveConf) throws Exception {
     runCompactorThread(hiveConf, CompactorThreadType.WORKER);
   }
+  public static void runWorker(HiveConf hiveConf, String poolName) throws Exception {
+    runCompactorThread(hiveConf, CompactorThreadType.WORKER, poolName);
+  }
   public static void runCleaner(HiveConf hiveConf) throws Exception {
     // Wait for the cooldown period so the Cleaner can see the last committed txn as the highest committed watermark
     Thread.sleep(MetastoreConf.getTimeVar(hiveConf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS));
     runCompactorThread(hiveConf, CompactorThreadType.CLEANER);
   }
-  private static void runCompactorThread(HiveConf hiveConf, CompactorThreadType type)
+  private static void runCompactorThread(HiveConf hiveConf, CompactorThreadType type) throws Exception {
+    runCompactorThread(hiveConf, type, Constants.COMPACTION_DEFAULT_POOL);
+  }
+  private static void runCompactorThread(HiveConf hiveConf, CompactorThreadType type, String poolName)
       throws Exception {
     AtomicBoolean stop = new AtomicBoolean(true);
     CompactorThread t;
@@ -254,6 +268,9 @@ public abstract class TxnCommandsBaseForTests {
         break;
       case WORKER:
         t = new Worker();
+        if (poolName != null && !poolName.equals(Constants.COMPACTION_DEFAULT_POOL)) {
+          ((Worker)t).setPoolName(poolName); 
+        }
         break;
       case CLEANER:
         t = new Cleaner();
@@ -355,10 +372,13 @@ public abstract class TxnCommandsBaseForTests {
     checkExpected(rs, expectedResult, msg + (isVectorized ? " vect" : ""), LOG, !isVectorized);
     assertVectorized(isVectorized, query);
   }
-  void dropTable(String[] tabs) throws Exception {
-    for(String tab : tabs) {
-      d.run("drop table if exists " + tab);
+  void dropTables(String... tables) throws Exception {
+    HiveConf queryConf = d.getQueryState().getConf();
+    queryConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
+    for (String table : tables) {
+      d.run("drop table if exists " + table);
     }
+    queryConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
   }
   Driver swapDrivers(Driver otherDriver) {
     Driver tmp = d;

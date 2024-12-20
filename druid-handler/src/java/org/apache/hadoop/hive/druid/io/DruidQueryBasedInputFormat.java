@@ -101,7 +101,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
 
   protected HiveDruidSplit[] getInputSplits(Configuration conf) throws IOException {
     String address = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DRUID_BROKER_DEFAULT_ADDRESS);
-    String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
+    String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID);
     if (StringUtils.isEmpty(address)) {
       throw new IOException("Druid broker address not specified in configuration");
     }

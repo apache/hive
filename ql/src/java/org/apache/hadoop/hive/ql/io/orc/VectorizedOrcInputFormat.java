@@ -27,6 +27,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketIdentifier;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
+import org.apache.hadoop.hive.ql.io.RowPositionAwareVectorizedRecordReader;
 import org.apache.hadoop.hive.ql.io.SelfDescribingInputFormatInterface;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.io.NullWritable;
@@ -55,7 +57,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
     SelfDescribingInputFormatInterface {
 
   static class VectorizedOrcRecordReader
-      implements RecordReader<NullWritable, VectorizedRowBatch> {
+      implements RecordReader<NullWritable, VectorizedRowBatch>, RowPositionAwareVectorizedRecordReader {
     private final org.apache.hadoop.hive.ql.io.orc.RecordReader reader;
     private final long offset;
     private final long length;
@@ -121,6 +123,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
     public boolean next(NullWritable key, VectorizedRowBatch value) throws IOException {
 
       try {
+        VectorizedBatchUtil.resetNonPartitionColumns(value);
         // Check and update partition cols if necessary. Ideally, this should be done
         // in CreateValue as the partition is constant per split. But since Hive uses
         // CombineHiveRecordReader and
@@ -170,6 +173,11 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
     @Override
     public float getProgress() throws IOException {
       return progress;
+    }
+
+    @Override
+    public long getRowNumber() throws IOException {
+      return reader.getRowNumber();
     }
   }
 

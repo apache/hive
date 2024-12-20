@@ -56,6 +56,7 @@ public class HookRunner {
   HookRunner(HiveConf conf, SessionState.LogHelper console) {
     this.conf = conf;
     this.hooks = new HiveHooks(conf, console);
+    addLifeTimeHook(new HiveQueryLifeTimeHook());
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
       addLifeTimeHook(new MetricsQueryLifeTimeHook());
     }

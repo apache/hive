@@ -1,0 +1,3617 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+syntax = "proto3";
+
+package org.apache.hadoop.hive.metastore.grpc;
+
+message GetMetaConfRequest {
+  string key = 1;
+}
+
+message GetMetaConfResponse {
+  string response = 1;
+}
+
+message SetMetaConfRequest {
+  string key = 1;
+  string value = 2;
+}
+
+message SetMetaConfResponse {
+}
+
+message Catalog {
+  string name = 1;
+  string description = 2;
+  string location_uri = 3;
+  int32 create_time = 4;
+}
+
+message CreateCatalogRequest {
+  Catalog catalog = 1;
+}
+
+message CreateCatalogResponse {
+}
+
+message AlterCatalogRequest {
+  string name = 1;
+  Catalog new_cat = 2;
+}
+
+message AlterCatalogResponse {
+}
+
+message GetCatalogRequest {
+  string name = 1;
+}
+
+message GetCatalogResponse {
+  Catalog catalog = 1;
+}
+
+message GetCatalogsRequest {
+}
+
+message GetCatalogsResponse {
+  repeated string names = 1;
+}
+
+message DropCatalogRequest {
+  string name = 1;
+}
+
+message DropCatalogResponse {
+}
+
+message PrivilegeGrantInfo {
+  string privilege = 1;
+  int32 create_time = 2;
+  string grantor = 3;
+  PrincipalType grantor_type = 4;
+  bool grant_option = 5;
+}
+
+message PrivilegeGrantInfoList {
+  repeated PrivilegeGrantInfo privilege_grant_info_lists = 1;
+}
+
+message PrincipalPrivilegeSet {
+  map<string, PrivilegeGrantInfoList> user_privileges = 1;
+  map<string, PrivilegeGrantInfoList> group_privileges = 2;
+  map<string, PrivilegeGrantInfoList> role_privileges = 3;
+}
+
+enum PrincipalType {
+  PRINCIPAL_TYPE_UNSPECIFIED = 0;
+  PRINCIPAL_TYPE_USER = 1;
+  PRINCIPAL_TYPE_ROLE = 2;
+  PRINCIPAL_TYPE_GROUP = 3;
+}
+
+message Timestamp {
+  int64 seconds_since_epoch = 1;
+}
+
+enum DatabaseType {
+  DATABASE_TYPE_UNSPECIFIED = 0;
+  DATABASE_TYPE_NATIVE = 1;
+  DATABASE_TYPE_REMOTE = 2;
+}
+
+message Database {
+  string name = 1;
+  string description = 2;
+  string location_uri = 3;
+  map<string, string> parameters = 4;
+  PrincipalPrivilegeSet privileges = 5;
+  string owner_name = 6;
+  PrincipalType owner_type = 7;
+  string catalog_name = 8;
+  int32 create_time = 9;
+  // epoch
+  string managed_location_uri = 10;
+  DatabaseType type = 11;
+  string connector_name = 12;
+  string remote_dbname = 13;
+}
+
+// empty message fields included in case fields added to response in future
+message CreateDatabaseResponse {
+}
+
+
+message GetDatabaseReqRequest {
+  string name = 1;
+  string catalog_name = 2;
+  repeated string processor_capabilities = 3;
+  string processor_identifier = 4;
+}
+
+message DropDatabaseReqRequest {
+  string name = 1;
+  string catalog_name = 2;
+  bool ignore_unknown_db = 3;
+  bool delete_data = 4;
+  bool cascade = 5;
+  bool soft_delete = 6;
+  int64 txn_id = 7;
+  bool delete_managed_dir = 8;
+}
+
+message DropDatabaseReqResponse {
+}
+
+message GetDatabasesRequest {
+  string pattern = 1;
+}
+
+message GetDatabasesResponse {
+  repeated string string_lists = 1;
+}
+
+message GetAllDatabasesRequest {
+}
+
+message GetAllDatabasesResponse {
+  repeated string string_lists = 1;
+}
+
+message AlterDatabaseRequest {
+  string dbname = 1;
+  Database db = 2;
+}
+
+message AlterDatabaseResponse {
+}
+
+message DataConnector {
+  string name = 1;
+  string type = 2;
+  string url = 3;
+  string description = 4;
+  map<string, string> parameters = 5;
+  string owner_name = 6;
+  PrincipalType owner_type = 7;
+  int32 create_time = 8;
+}
+
+message CreateDataConnectorResponse {
+}
+
+message GetDataConnectorReqRequest {
+  string connector_name = 1;
+}
+
+message DropDataConnectorRequest {
+  string name = 1;
+  bool if_not_exists = 2;
+  bool check_references = 3;
+}
+
+message DropDataConnectorResponse {
+}
+
+message GetDataConnectorsRequest {
+}
+
+message GetDataConnectorsResponse {
+  repeated string responses = 1;
+}
+
+message AlterDataConnectorRequest {
+  string name = 1;
+  DataConnector connector = 2;
+}
+
+message AlterDataConnectorResponse {
+}
+
+message Type {
+  string name = 1;
+  string type1 = 2;
+  string type2 = 3;
+  repeated FieldSchema fields = 4;
+}
+
+message GetTypeRequest {
+  string name = 1;
+}
+
+message CreateTypeResponse {
+  bool response = 1;
+}
+
+message DropTypeRequest {
+  string type = 1;
+}
+
+message DropTypeResponse {
+  bool response = 1;
+}
+
+message GetTypeAllRequest {
+  string name = 1;
+}
+
+message GetTypeAllResponse {
+  map<string, Type> response = 1;
+}
+
+message GetFieldsReqRequest {
+  string cat_name = 1;
+  string db_name = 2;
+  string tbl_name = 3;
+  EnvironmentContext env_context = 4;
+  string valid_write_id_list = 5;
+  int64 id = 6;    // table id
+}
+
+message GetFieldsReqResponse {
+  repeated FieldSchema fields = 1;
+}
+
+message GetSchemaReqRequest {
+  string cat_name = 1;
+  string db_name = 2;
+  string tbl_name = 3;
+  EnvironmentContext env_context = 4;
+  string valid_write_id_list = 5;
+  int64 id = 6;    // table id
+}
+
+message GetSchemaReqResponse {
+  repeated FieldSchema fields = 1;
+}
+
+message FieldSchema {
+  string name = 1;
+  string type = 2;
+  string comment = 3;
+}
+
+enum SerdeType {
+  SERDE_TYPE_UNSPECIFIED = 0;
+  SERDE_TYPE_HIVE = 1;
+  SERDE_TYPE_SCHEMA_REGISTRY = 2;
+}
+
+message SerDeInfo {
+  string name = 1;
+  string serialization_lib = 2;
+  map<string, string> parameters = 3;
+  string description = 4;
+  string serializer_class = 5;
+  SerdeType serde_type = 6;
+}
+
+message Order {
+  string col = 1;
+  int32 order = 2;
+}
+
+message StringList {
+  repeated string string_lists = 1;
+}
+
+message MapStringListStringEntry {
+  StringList key = 1;
+  string value = 2;
+}
+
+message SkewedInfo {
+  repeated string skewed_col_names = 1;
+  repeated StringList skewed_col_values = 2;
+  repeated MapStringListStringEntry skewed_col_value_location_maps = 3;
+}
+
+message StorageDescriptor {
+  repeated FieldSchema cols = 1;
+  string location = 2;
+  string input_format = 3;
+  string output_format = 4;
+  bool compressed = 5;
+  int32 num_buckets = 6;
+  SerDeInfo serde_info = 7;
+  repeated string bucket_cols = 8;
+  repeated Order sor_cols = 9;
+  map<string, string> parameters = 10;
+  SkewedInfo skewed_info = 11;
+  bool stored_as_sub_directories = 12;
+}
+
+message SourceTable {
+  Table table = 1;
+  int64 inserted_count = 2;
+  int64 updated_count = 3;
+  int64 deleted_count = 4;
+}
+
+message CreationMetadata {
+  string cat_name = 1;
+  string db_name = 2;
+  string tbl_name = 3;
+  repeated string tables_useds = 4;
+  string valid_txn_list = 5;
+  int64 materialization_time = 6;
+  repeated SourceTable source_tables = 7;
+}
+
+message BooleanColumnStatsData {
+  int64 num_trues = 1;
+  int64 num_falses = 2;
+  int64 num_nulls = 3;
+  bytes bit_vectors = 5;
+}
+
+message DoubleColumnStatsData {
+  double low_value = 1;
+  double high_value = 2;
+  int64 num_nulls = 3;
+  int64 num_dvs = 4;
+  bytes bit_vectors = 5;
+  bytes histogram = 6;
+}
+
+message LongColumnStatsData {
+  int64 low_value = 1;
+  int64 high_value = 2;
+  int64 num_nulls = 3;
+  int64 num_dvs = 4;
+  bytes bit_vectors = 5;
+  bytes histogram = 6;
+}
+
+message StringColumnStatsData {
+  int64 max_col_len = 1;
+  double avg_col_len = 2;
+  int64 num_nulls = 3;
+  int64 nu_mdvs = 4;
+  bytes bit_vectors = 5;
+}
+
+message BinaryColumnStatsData {
+  int64 max_col_len = 1;
+  double avg_col_len = 2;
+  int64 num_nulls = 3;
+  bytes bit_vectors = 4;
+}
+
+message Decimal {
+  int32 scale = 1;
+  bytes unscaled = 2;
+}
+
+message DecimalColumnStatsData {
+  Decimal low_value = 1;
+  Decimal high_value = 2;
+  int64 num_nulls = 3;
+  int64 num_dvs = 4;
+  bytes bit_vectors = 5;
+  bytes histogram = 6;
+}
+
+message Date {
+  int64 days_since_epoch = 1;
+}
+
+message DateColumnStatsData {
+  Date low_value = 1;
+  Date high_value = 2;
+  int64 num_nulls = 3;
+  int64 num_dvs = 4;
+  bytes bit_vectors = 5;
+  bytes histogram = 6;
+}
+
+message TimestampColumnStatsData {
+  Timestamp low_value = 1;
+  Timestamp high_value = 2;
+  int64 num_nulls = 3;
+  int64 num_dvs = 4;
+  bytes bit_vectors = 5;
+  bytes histogram = 6;
+}
+
+message ColumnStatisticsData {
+  oneof colStatsData {
+    BooleanColumnStatsData boolean_stats = 1;
+    LongColumnStatsData long_stats = 2;
+    DoubleColumnStatsData double_stats = 3;
+    StringColumnStatsData string_stats = 4;
+    BinaryColumnStatsData binary_stats = 5;
+    DecimalColumnStatsData decimal_stats = 6;
+    DateColumnStatsData date_stats = 7;
+    TimestampColumnStatsData timestamp_stats = 8;
+  }
+}
+
+message ColumnStatisticsObj {
+  string col_name = 1;
+  string col_type = 2;
+  ColumnStatisticsData stats_data = 3;
+}
+
+message ColumnStatisticsDesc {
+  bool is_tbl_level = 1;
+  string db_name = 2;
+  string table_name = 3;
+  string part_name = 4;
+  int64 last_analyzed = 5;
+  string cat_name = 6;
+}
+
+message ColumnStatistics {
+  ColumnStatisticsDesc stats_desc = 1;
+  repeated ColumnStatisticsObj stats_objs = 2;
+  bool is_stats_compliant = 3;
+  string engine = 4;
+}
+
+message ByteList {
+  repeated bytes byte_lists = 1;
+}
+
+message FileMetadata {
+  int32 type = 1;
+  int32 version = 2;
+  ByteList data = 3;
+}
+
+message ObjectDictionary {
+  map<string, ByteList> values = 1;
+}
+
+message Table {
+  string table_name = 1;
+  string db_name = 2;
+  int32 create_time = 3;
+  int32 last_access_time = 4;
+  int32 retention = 5;
+  StorageDescriptor sd = 6;
+  repeated FieldSchema partition_keys = 7;
+  map<string, string> parameters = 8;
+  string view_original_text = 9;
+  string view_expanded_text = 10;
+  string table_type = 11;
+  PrincipalPrivilegeSet privileges = 12;
+  bool temporary = 13;
+  bool rewrite_enabled = 14;
+  CreationMetadata creation_metadata = 15;
+  string cat_name = 16;
+  PrincipalType owner_type = 17;
+  int64 write_id = 18;
+  bool is_stats_compliant = 19;
+  ColumnStatistics col_stats = 20;
+  int32 access_type = 21;
+  repeated string required_read_capabilities = 22;
+  repeated string required_write_capabilities = 23;
+  int64 id = 24;
+  FileMetadata file_metadata = 25;
+  ObjectDictionary dictionary = 26;
+  int64 txn_id = 27;
+}
+
+message EnvironmentContext {
+  map<string, string> properties = 1;
+}
+
+message SQLPrimaryKey {
+  string table_db = 1;
+  string table_name = 2;
+  string column_name = 3;
+  int32 key_seq = 4;
+  string pk_name = 5;
+  bool enable_cstr = 6;
+  bool validate_cstr = 7;
+  bool rely_cstr = 8;
+  string cat_name = 9;
+}
+
+message SQLForeignKey {
+  string pktable_db = 1;
+  string pktable_name = 2;
+  string pkcolumn_name = 3;
+  string fktable_db = 4;
+  string fktable_name = 5;
+  string fkcolumn_name = 6;
+  int32 key_seq = 7;
+  int32 update_rule = 8;
+  int32 delete_rule = 9;
+  string fk_name = 10;
+  string pk_name = 11;
+  bool enable_cstr = 12;
+  bool validate_cstr = 13;
+  bool rely_cstr = 14;
+  string cat_name = 15;
+}
+
+message SQLUniqueConstraint {
+  string cat_name = 1;
+  string table_db = 2;
+  string table_name = 3;
+  string column_name = 4;
+  int32 key_seq = 5;
+  string uk_name = 6;
+  bool enable_cstr = 7;
+  bool validate_cstr = 8;
+  bool rely_cstr = 9;
+}
+
+message SQLNotNullConstraint {
+  string cat_name = 1;
+  string table_db = 2;
+  string table_name = 3;
+  string column_name = 4;
+  string nn_name = 5;
+  bool enable_cstr = 6;
+  bool validate_cstr = 7;
+  bool rely_cstr = 8;
+}
+
+message SQLDefaultConstraint {
+  string cat_name = 1;
+  string table_db = 2;
+  string table_name = 3;
+  string column_name = 4;
+  string default_value = 5;
+  string dc_name = 6;
+  bool enable_cstr = 7;
+  bool validate_cstr = 8;
+  bool rely_cstr = 9;
+}
+
+message SQLCheckConstraint {
+  string cat_name = 1;
+  string table_db = 2;
+  string table_name = 3;
+  string column_name = 4;
+  string check_expression = 5;
+  string dc_name = 6;
+  bool enable_cstr = 7;
+  bool validate_cstr = 8;
+  bool rely_cstr = 9;
+}
+
+message SQLAllTableConstraints {
+  repeated SQLPrimaryKey primary_keys = 1;
+  repeated SQLForeignKey foreign_keys = 2;
+  repeated SQLUniqueConstraint unique_constraints = 3;
+  repeated SQLNotNullConstraint not_null_constraints = 4;
+  repeated SQLDefaultConstraint default_constraints = 5;
+  repeated SQLCheckConstraint check_constraints = 6;
+}
+
+message CreateTableReqRequest {
+  Table table = 1;
+  EnvironmentContext env_context = 2;
+  repeated SQLPrimaryKey primary_keys = 3;
+  repeated SQLForeignKey foreign_keys = 4;
+  repeated SQLUniqueConstraint unique_constraints = 5;
+  repeated SQLNotNullConstraint not_null_constraints = 6;
+  repeated SQLDefaultConstraint default_constraints = 7;
+  repeated SQLCheckConstraint check_constraints = 8;
+  repeated string processor_capabilities = 9;
+  string processor_identifier = 10;
+}
+
+message CreateTableReqResponse {
+}
+
+message DropConstraintRequest {
+  string dbname = 1;
+  string tablename = 2;
+  string constraint_name = 3;
+  string cat_name = 4;
+}
+
+message DropConstraintResponse {
+}
+
+message AddPrimaryKeyRequest {
+  repeated SQLPrimaryKey primary_key_cols = 1;
+}
+
+message AddPrimaryKeyResponse {
+}
+
+message AddForeignKeyRequest {
+  repeated SQLForeignKey foreign_key_cols = 1;
+}
+
+message AddForeignKeyResponse {
+}
+
+message AddUniqueConstraintRequest {
+  repeated SQLUniqueConstraint unique_constraint_cols = 1;
+}
+
+message AddUniqueConstraintResponse {
+}
+
+message AddNotNullConstraintRequest {
+  repeated SQLNotNullConstraint not_null_constraint_cols = 1;
+}
+
+message AddNotNullConstraintResponse {
+}
+
+message AddDefaultConstraintRequest {
+  repeated SQLDefaultConstraint default_constraint_cols = 1;
+}
+
+message AddDefaultConstraintResponse {
+}
+
+message AddCheckConstraintRequest {
+  repeated SQLCheckConstraint check_constraint_cols = 1;
+}
+
+message AddCheckConstraintResponse {
+}
+
+message DropTableRequest {
+  string dbname = 1;
+  string name = 2;
+  bool delete_data = 3;
+}
+
+message DropTableResponse {
+}
+
+message DropTableWithEnvironmentContextRequest {
+  string dbname = 1;
+  string name = 2;
+  bool delete_data = 3;
+  EnvironmentContext environment_context = 4;
+}
+
+message DropTableWithEnvironmentContextResponse {
+}
+
+message TruncateTableRequest {
+  string db_name = 1;
+  string table_name = 2;
+  repeated string part_names = 3;
+  int64 write_id = 4;
+  string valid_write_id_list = 5;
+  EnvironmentContext evironment_context = 6;
+}
+
+message TruncateTableResponse {
+}
+
+message GetTablesRequest {
+  string db_name = 1;
+  string pattern = 2;
+}
+
+message GetTablesResponse {
+  repeated string responses = 1;
+}
+
+message GetTablesByTypeRequest {
+  string db_name = 1;
+  string pattern = 2;
+  string table_type = 3;
+}
+
+message GetTablesByTypeResponse {
+  repeated string responses = 1;
+}
+
+message GetAllMaterializedViewObjectsForRewritingRequest {
+}
+
+message GetAllMaterializedViewObjectsForRewritingResponse {
+  repeated Table responses = 1;
+}
+
+message TableMeta {
+  string db_name = 1;
+  string table_name = 2;
+  string table_type = 3;
+  string comments = 4;
+  string cat_name = 5;
+}
+
+message GetTableMetaRequest {
+  string db_patterns = 1;
+  string tbl_patterns = 2;
+  repeated string tbl_types = 3;
+}
+
+message GetTableMetaResponse {
+  repeated TableMeta responses = 1;
+}
+
+message GetAllTablesRequest {
+  string db_name = 1;
+}
+
+message GetAllTablesResponse {
+  repeated string responses = 1;
+}
+
+message GetTablesExtRequest {
+  string catalog = 1;
+  string database = 2;
+  string table_name_pattern = 3;
+  int32 requested_fields = 4;
+  int32 limit = 5;
+  repeated string processor_capabilities = 6;
+  string processor_identifier = 7;
+}
+
+message ExtendedTableInfo {
+  string tbl_name = 1;
+  int32 access_type = 2;
+  repeated string required_read_capabilities = 3;
+  repeated string required_write_capabilities = 4;
+}
+
+message GetTablesExtResponse {
+  repeated ExtendedTableInfo responses = 1;
+}
+
+enum ClientCapability {
+  CLIENT_CAPABILITY_UNSPECIFIED = 0;
+  CLIENT_CAPABILITY_TEST_CAPABILITY = 1;
+  CLIENT_CAPABILITY_INSERT_ONLY_TABLES = 2;
+}
+
+message ClientCapabilities {
+  repeated ClientCapability values = 1;
+}
+
+message GetTableReqRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  ClientCapabilities capabilities = 3;
+  string cat_name = 4;
+  string valid_write_id_list = 5;
+  bool get_column_stats = 6;
+  repeated string processor_capabilities = 7;
+  string processor_identifier = 8;
+  string engine = 9;
+  int64 id = 10;
+}
+
+message GetTableReqResponse {
+  Table table = 1;
+  bool is_stats_compliant = 2;
+}
+
+message GetTableObjectsByNameReqRequest {
+  string db_name = 1;
+  repeated string tbl_names = 2;
+  ClientCapabilities capabilities = 3;
+  string cat_name = 4;
+  repeated string processor_capabilities = 5;
+  string processor_identifier = 6;
+  GetProjectionsSpec projection_spec = 7;
+  string tables_pattern = 8;
+}
+
+message GetTableObjectsByNameReqResponse {
+  repeated Table tables = 1;
+}
+
+message GetMaterializationInvalidationInfoRequest {
+  CreationMetadata creation_metadata = 1;
+  string valid_txn_list = 2;
+}
+
+message Materialization {
+  bool source_tables_update_delete_modified = 1;
+  bool source_tables_compacted = 2;
+}
+
+message UpdateCreationMetadataRequest {
+  string cat_name = 1;
+  string dbname = 2;
+  string tbl_name = 3;
+  CreationMetadata creation_metadata = 4;
+}
+
+message UpdateCreationMetadataResponse {
+}
+
+message GetTableNamesByFilterRequest {
+  string dbname = 1;
+  string filter = 2;
+  int32 max_tables = 3;
+}
+
+message GetTableNamesByFilterResponse {
+  repeated string responses = 1;
+}
+
+message AlterTableReqRequest {
+  string cat_name = 1;
+  string db_name = 2;
+  string table_name = 3;
+  Table table = 4;
+  EnvironmentContext evironment_context = 5;
+  int64 write_id = 6;
+  string valid_write_id_list = 7;
+  repeated string processor_capabilities = 8;
+  string processor_identifier = 9;
+}
+
+message AlterTableReqResponse {
+}
+
+
+message Partition {
+  repeated string values = 1;
+  string db_name = 2;
+  string table_name = 3;
+  int32 create_time = 4;
+  int32 last_access_time = 5;
+  StorageDescriptor sd = 6;
+  map<string, string> parameters = 7;
+  PrincipalPrivilegeSet privileges = 8;
+  string cat_name = 9;
+  int64 write_id = 10;
+  bool is_stats_compliant = 11;
+  ColumnStatistics col_stats = 12;
+  FileMetadata file_metadata = 13;
+}
+
+message PartitionWithoutSD {
+  repeated string values = 1;
+  int32 create_time = 2;
+  int32 last_access_time = 3;
+  string relative_path = 4;
+  map<string, string> parameters = 5;
+  PrincipalPrivilegeSet privileges = 6;
+}
+
+message PartitionSpecWithSharedSD {
+  repeated PartitionWithoutSD partitions = 1;
+  StorageDescriptor sd = 2;
+}
+
+message PartitionListComposingSpec {
+  repeated Partition partitions = 1;
+}
+
+message PartitionSpec {
+  string db_name = 1;
+  string table_name = 2;
+  string root_path = 3;
+  PartitionSpecWithSharedSD shared_sdpartition_spec = 4;
+  PartitionListComposingSpec partition_list = 5;
+  string cat_name = 6;
+  int64 write_id = 7;
+  bool is_stats_compliant = 8;
+}
+
+message AddPartitionWithEnvironmentContextRequest {
+  Partition new_part = 1;
+  EnvironmentContext environment_context = 2;
+}
+
+message AddPartitionWithEnvironmentContextResponse {
+  Partition response = 1;
+}
+
+// Request type for add_partitions_req
+message AddPartitionsReqRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  repeated Partition parts = 3;
+  bool if_not_exists = 4;
+  bool need_result = 5;
+  string cat_name = 6;
+  string valid_write_id_list = 7;
+}
+
+// Return type for add_partitions_req
+message AddPartitionsReqResponse {
+  repeated Partition partitions = 1;
+  bool is_stats_compliant = 2;
+}
+
+message AddPartitionsPSpecRequest {
+  repeated PartitionSpec new_parts = 1;
+}
+
+message AddPartitionsPSpecResponse {
+  int32 response = 1;
+}
+
+message AppendPartitionRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  repeated string part_vals = 3;
+}
+
+message AppendPartitionWithEnvironmentContextRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  repeated string part_vals = 3;
+  EnvironmentContext environment_context = 4;
+}
+
+message AppendPartitionByNameRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  string part_name = 3;
+}
+
+message AppendPartitionByNameWithEnvironmentContextRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  string part_name = 3;
+  EnvironmentContext environment_context = 4;
+}
+
+message DropPartitionsExpr {
+  bytes expr = 1;
+  int32 part_archive_level = 2;
+}
+
+message DropPartitionsExprList {
+  repeated DropPartitionsExpr exprs_lists = 1;
+}
+
+message RequestPartsSpec {
+  oneof reqPartsSpec {
+    StringList names = 1;
+    DropPartitionsExprList exprs = 2;
+  }
+}
+
+message DropPartitionRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  repeated string part_vals = 3;
+  bool delete_data = 4;
+}
+
+message DropPartitionResponse {
+  bool response = 1;
+}
+
+message DropPartitionWithEnvironmentContextRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  repeated string part_vals = 3;
+  bool delete_data = 4;
+  EnvironmentContext environment_context = 5;
+}
+
+message DropPartitionWithEnvironmentContextResponse {
+  bool response = 1;
+}
+
+message DropPartitionByNameRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  string part_name = 3;
+  bool delete_data = 4;
+}
+
+message DropPartitionByNameResponse {
+  bool response = 1;
+}
+
+message DropPartitionByNameWithEnvironmentContextRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  string part_name = 3;
+  bool delete_data = 4;
+  EnvironmentContext environment_context = 5;
+}
+
+message DropPartitionByNameWithEnvironmentContextResponse {
+  bool response = 1;
+}
+
+message DropPartitionsReqRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  RequestPartsSpec parts = 3;
+  bool delete_data = 4;
+  bool if_exists = 5;
+  bool ignore_protection = 6;
+  EnvironmentContext environment_context = 7;
+  bool need_result = 8;
+  string cat_name = 9;
+}
+
+message DropPartitionsReqResponse {
+  repeated Partition partitions = 1;
+}
+
+message GetPartitionReqRequest {
+  string cat_name = 1;
+  string db_name = 2;
+  string tbl_name = 3;
+  repeated string part_vals = 4;
+  string valid_write_id_list = 5;
+  int64 id = 6;
+}
+
+message GetPartitionReqResponse {
+  Partition partition = 1;
+}
+
+message ExchangePartitionRequest {
+  map<string, string> partition_specs = 1;
+  string source_db = 2;
+  string source_table_name = 3;
+  string dest_db = 4;
+  string dest_table_name = 5;
+}
+
+message ExchangePartitionsRequest {
+  map<string, string> partition_specs = 1;
+  string source_db = 2;
+  string source_table_name = 3;
+  string dest_db = 4;
+  string dest_table_name = 5;
+}
+
+message ExchangePartitionsResponse {
+  repeated Partition responses = 1;
+}
+
+message GetPartitionWithAuthRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  repeated string part_vals = 3;
+  string user_name = 4;
+  repeated string group_names = 5;
+}
+
+message GetPartitionByNameRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  string part_name = 3;
+}
+
+message GetPartitionsReqRequest {
+  string cat_name = 1;
+  string db_name = 2;
+  string tbl_name = 3;
+  int32 max_parts = 4;
+  string valid_write_id_list = 5;
+  int64 id = 6;
+}
+
+message GetPartitionsReqResponse {
+  repeated Partition partitions = 1;
+}
+
+message GetPartitionsWithAuthRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  int32 max_parts = 3;
+  string user_name = 4;
+  repeated string group_names = 5;
+}
+
+message GetPartitionsWithAuthResponse {
+  repeated Partition responses = 1;
+}
+
+message GetPartitionsPSpecRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  int32 max_parts = 3;
+}
+
+message GetPartitionsPSpecResponse {
+  repeated PartitionSpec responses = 1;
+}
+
+message GetPartitionValuesRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  repeated FieldSchema partition_keys = 3;
+  bool apply_distinct = 4;
+  string filter = 5;
+  repeated FieldSchema partition_orders = 6;
+  bool ascending = 7;
+  int64 max_parts = 8;
+  string cat_name = 9;
+  string valid_write_id_list = 10;
+}
+
+message PartitionValuesRow {
+  repeated string rows = 1;
+}
+
+message GetPartitionValuesResponse {
+  repeated PartitionValuesRow partition_values = 1;
+}
+
+message GetPartitionsPSWithAuthReqRequest {
+  string cat_name = 1;
+  string db_name = 2;
+  string tbl_name = 3;
+  repeated string part_vals = 4;
+  int32 max_parts = 5;
+  string user_name = 6;
+  repeated string group_names = 7;
+  string valid_write_id_list = 8;
+  int64 id = 9;
+}
+
+message GetPartitionsPSWithAuthReqResponse {
+  repeated Partition partitions = 1;
+}
+
+message GetPartitionNamesPSReqRequest {
+  string cat_name = 1;
+  string db_name = 2;
+  string tbl_name = 3;
+  repeated string part_values = 4;
+  int32 max_parts = 5;
+  string valid_write_id_list = 6;
+  int64 id = 7;
+}
+
+message GetPartitionNamesPSReqResponse {
+  repeated string names = 1;
+}
+
+message GetPartitionNamesReqRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  bytes expr = 3;
+  string default_partition_name = 4;
+  int32 max_parts = 5;
+  string cat_name = 6;
+  string order = 7;
+  string valid_write_id_list = 8;
+  int64 id = 9;
+}
+
+message GetPartitionNamesReqResponse {
+  repeated string responses = 1;
+}
+
+message GetPartitionsByFilterRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  string filter = 3;
+  int32 max_parts = 4;
+}
+
+message GetPartitionsByFilterResponse {
+  repeated Partition responses = 1;
+}
+
+message GetPartSpecsByFilterRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  string filter = 3;
+  int32 max_parts = 4;
+}
+
+message GetPartSpecsByFilterResponse {
+  repeated PartitionSpec responses = 1;
+}
+
+message GetPartitionsByExprRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  bytes expr = 3;
+  string default_partition_name = 4;
+  int32 max_parts = 5;
+  string cat_name = 6;
+  string order = 7;
+  string valid_write_id_list = 8;
+  int64 id = 9;
+}
+
+message GetPartitionsByExprResponse {
+  repeated Partition partitions = 1;
+  bool has_unknown_partitions = 2;
+}
+
+message GetPartitionsSpecByExprRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  bytes expr = 3;
+  string default_partition_name = 4;
+  int32 max_parts = 5;
+  string cat_name = 6;
+  string order = 7;
+  string valid_write_id_list = 8;
+  int64 id = 9;
+}
+
+message GetPartitionsSpecByExprResponse {
+  repeated PartitionSpec partition_specs = 1;
+  bool has_unknown_partitions = 2;
+}
+
+message GetNumPartitionsByFilterRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  string filter = 3;
+}
+
+message GetNumPartitionsByFilterResponse {
+  int32 response = 1;
+}
+
+message GetPartitionsByNamesReqRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  repeated string names = 3;
+  bool get_col_stats = 4;
+  repeated string processor_capabilities = 5;
+  string processor_identifier = 6;
+  string engine = 7;
+  string valid_write_id_list = 8;
+  bool get_file_metadata = 9;
+  int64 id = 10;
+}
+
+message GetPartitionsByNamesReqResponse {
+  repeated Partition partitions = 1;
+  ObjectDictionary dictionary = 2;
+}
+
+message AlterPartitionRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  Partition new_part = 3;
+}
+
+message AlterPartitionResponse {
+}
+
+message AlterPartitionsReqRequest {
+  string cat_name = 1;
+  string db_name = 2;
+  string table_name = 3;
+  repeated Partition partitions = 4;
+  EnvironmentContext environment_context = 5;
+  int64 write_id = 6;
+  string valid_write_id_list = 7;
+}
+
+message AlterPartitionsReqResponse {
+}
+
+message AlterPartitionWithEnvironmentContextRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  Partition new_part = 3;
+  EnvironmentContext environment_context = 4;
+}
+
+message AlterPartitionWithEnvironmentContextResponse {
+}
+
+message RenamePartitionReqRequest {
+  string cat_name = 1;
+  string db_name = 2;
+  string table_name = 3;
+  repeated string part_vals = 4;
+  Partition new_part = 5;
+  string valid_write_id_list = 6;
+  int64 txn_id = 7;
+  bool clone_part = 8;
+}
+
+message RenamePartitionReqResponse {
+}
+
+message PartitionNameHasValidCharactersRequest {
+  repeated string part_vals = 1;
+  bool throw_exception = 2;
+}
+
+message PartitionNameHasValidCharactersResponse {
+  bool response = 1;
+}
+
+message GetConfigValueRequest {
+  string name = 1;
+  string default_value = 2;
+}
+
+message GetConfigValueResponse {
+  string response = 1;
+}
+
+message PartitionNameToValsRequest {
+  string part_name = 1;
+}
+
+message PartitionNameToValsResponse {
+  repeated string responses = 1;
+}
+
+message PartitionNameToSpecRequest {
+  string part_name = 1;
+}
+
+message PartitionNameToSpecResponse {
+  map<string, string> response = 1;
+}
+
+enum PartitionEventType {
+  PARTITION_EVENT_TYPE_UNSPECIFIED = 0;
+  PARTITION_EVENT_TYPE_LOAD_DONE = 1;
+}
+
+message MarkPartitionForEventRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  map<string, string> part_vals = 3;
+  PartitionEventType event_type = 4;
+}
+
+message MarkPartitionForEventResponse {
+}
+
+
+message IsPartitionMarkedForEventRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  map<string, string> part_vals = 3;
+  PartitionEventType event_type = 4;
+}
+
+message IsPartitionMarkedForEventResponse {
+  bool response = 1;
+}
+
+message GetPrimaryKeysRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  string cat_name = 3;
+  string valid_write_id_list = 4;
+  int64 table_id = 5;
+}
+
+message GetPrimaryKeysResponse {
+  repeated SQLPrimaryKey primary_keys = 1;
+}
+
+message GetForeignKeysRequest {
+  string parent_db_name = 1;
+  string parent_tbl_name = 2;
+  string foreign_db_name = 3;
+  string foreign_tbl_name = 4;
+  string cat_name = 5;
+  string valid_write_id_list = 6;
+  int64 table_id = 7;
+}
+
+message GetForeignkeysResponse {
+  repeated SQLForeignKey foreign_keys = 1;
+}
+
+message GetUniqueConstraintsRequest {
+  string cat_name = 1;
+  string db_name = 2;
+  string tbl_name = 3;
+  string valid_write_id_list = 4;
+  int64 table_id = 5;
+}
+
+message GetUniqueConstraintsResponse {
+  repeated SQLUniqueConstraint unique_constraints = 1;
+}
+
+message GetNotNullConstraintsRequest {
+  string cat_name = 1;
+  string db_name = 2;
+  string tbl_name = 3;
+  string valid_write_id_list = 4;
+  int64 table_id = 5;
+}
+
+message GetNotNullConstraintsResponse {
+  repeated SQLNotNullConstraint not_null_constraints = 1;
+}
+
+message GetDefaultConstraintsRequest {
+  string cat_name = 1;
+  string db_name = 2;
+  string tbl_name = 3;
+  string valid_write_id_list = 4;
+  int64 table_id = 5;
+}
+
+message GetDefaultConstraintsResponse {
+  repeated SQLDefaultConstraint default_constraints = 1;
+}
+
+message GetCheckConstraintsRequest {
+  string cat_name = 1;
+  string db_name = 2;
+  string tbl_name = 3;
+  string valid_write_id_list = 4;
+  int64 table_id = 5;
+}
+
+message GetCheckConstraintsResponse {
+  repeated SQLCheckConstraint check_constraints = 1;
+}
+
+message GetAllTableConstraintsRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  string cat_name = 3;
+  string valid_write_id_list = 4;
+  int64 table_id = 5;
+}
+
+message GetAllTableConstraintsResponse {
+  SQLAllTableConstraints all_table_constraints = 1;
+}
+
+message UpdateTableColumnStatisticsReqRequest {
+  repeated ColumnStatistics col_stats = 1;
+  bool need_merge = 2;
+  int64 write_id = 3;
+  string valid_write_id_list = 4;
+  string engine = 5;
+}
+
+message UpdateTableColumnStatisticsReqResponse {
+  bool result = 1;
+}
+
+message UpdatePartitionColumnStatisticsReqRequest {
+  repeated ColumnStatistics col_stats = 1;
+  bool need_merge = 2;
+  int64 write_id = 3;
+  string valid_write_id_list = 4;
+  string engine = 5;
+}
+
+message UpdatePartitionColumnStatisticsReqResponse {
+  bool result = 1;
+}
+
+message UpdateTransactionStatisticsRequest {
+  int64 table_id = 1;
+  int64 inserted_count = 2;
+  int64 updated_count = 3;
+  int64 deleted_count = 4;
+}
+
+message UpdateTransactionStatisticsResponse {
+}
+
+message GetTableColumnStatisticsRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  string col_name = 3;
+}
+
+message GetPartitionColumnStatisticsRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  string part_name = 3;
+  string col_name = 4;
+}
+
+message ColumnStatisticsObjList {
+  repeated ColumnStatisticsObj column_statistics_obj_lists = 1;
+}
+
+message GetTableStatisticsReqRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  repeated string col_names = 3;
+  string cat_name = 4;
+  string valid_write_id_list = 5;
+  string engine = 6;
+  int64 id = 7;
+}
+
+message GetTableStatisticsReqResponse {
+  repeated ColumnStatisticsObj table_stats = 1;
+  bool is_stats_compliant = 2;
+}
+
+message GetPartitionsStatisticsReqRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  repeated string col_names = 3;
+  repeated string part_names = 4;
+  string cat_name = 5;
+  string valid_write_id_list = 6;
+  string engine = 7;
+}
+
+message GetPartitionsStatisticsReqResponse {
+  map<string, ColumnStatisticsObjList> part_stats = 1;
+  bool is_stats_compliant = 2;
+}
+
+message GetAggrStatsForRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  repeated string col_names = 3;
+  repeated string part_names = 4;
+  string cat_name = 5;
+  string valid_write_id_list = 6;
+  string engine = 7;
+}
+
+message AggrStats {
+  repeated ColumnStatisticsObj col_stats = 1;
+  int64 parts_found = 2;
+  bool is_stats_compliant = 3;
+}
+
+message SetAggrStatsForRequest {
+  repeated ColumnStatistics col_stats = 1;
+  bool need_merge = 2;
+  int64 write_id = 3;
+  string valid_write_id_list = 4;
+  string engine = 5;
+}
+
+message SetAggrStatsForResponse {
+  bool response = 1;
+}
+
+message DeletePartitionColumnStatisticsRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  string part_name = 3;
+  string col_name = 4;
+  string engine = 5;
+}
+
+message DeletePartitionColumnStatisticsResponse {
+  bool response = 1;
+}
+
+message DeleteTableColumnStatisticsRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  string col_name = 3;
+  string engine = 4;
+}
+
+message DeleteTableColumnStatisticsResponse {
+  bool response = 1;
+}
+
+enum FunctionType {
+  FUNCTION_TYPE_UNSPECIFIED = 0;
+  FUNCTION_TYPE_JAVA = 1;
+}
+
+enum ResourceType {
+  RESOURCE_TYPE_UNSPECIFIED = 0;
+  RESOURCE_TYPE_JAR = 1;
+  RESOURCE_TYPE_FILE = 2;
+  RESOURCE_TYPE_ARCHIVE = 3;
+}
+
+enum TxnType {
+  TXN_TYPE_UNSPECIFIED = 0;
+  TXN_TYPE_REPLCREATED = 1;
+  TXN_TYPE_READONLY = 2;
+  TXN_TYPE_COMPACTION = 3;
+  TXN_TYPE_MATERVIEWREBUILD = 4;
+  TXN_TYPE_SOFTDELETE = 5;
+}
+
+enum GetTablesExtRequestFields {
+  GET_TABLES_EXT_REQUEST_FIELDS_UNSPECIFIED = 0;
+  GET_TABLES_EXT_REQUEST_FIELDS_ACCESSTYPE = 1;
+  GET_TABLES_EXT_REQUEST_FIELDS_PROCESSORCAPABILITIES = 2;
+  GET_TABLES_EXT_REQUEST_FIELDS_ALL = 2147483647;
+}
+
+message ResourceUri {
+  ResourceType resource_type = 1;
+  string uri = 2;
+}
+
+message Function {
+  string function_name = 1;
+  string db_name = 2;
+  string class_name = 3;
+  string owner_name = 4;
+  PrincipalType owner_type = 5;
+  int32 create_time = 6;
+  FunctionType function_type = 7;
+  repeated ResourceUri resource_urises = 8;
+  string cat_name = 9;
+}
+
+message CreateFunctionResponse {
+}
+
+message DropFunctionRequest {
+  string db_name = 1;
+  string func_name = 2;
+}
+
+message DropFunctionResponse {
+}
+
+message AlterFunctionRequest {
+  string db_name = 1;
+  string func_name = 2;
+  Function new_func = 3;
+}
+
+message AlterFunctionResponse {
+}
+
+message GetFunctionsRequest {
+  string db_name = 1;
+  string pattern = 2;
+}
+
+message GetFunctionsResponse {
+  repeated string responses = 1;
+}
+
+message GetFunctionRequest {
+  string db_name = 1;
+  string func_name = 2;
+}
+
+message GetAllFunctionsRequest {
+}
+
+message GetAllFunctionsResponse {
+  repeated Function functions = 1;
+}
+
+message Role {
+  string role_name = 1;
+  int32 create_time = 2;
+  string owner_name = 3;
+}
+
+message CreateRoleResponse {
+  bool response = 1;
+}
+
+message DropRoleRequest {
+  string role_name = 1;
+}
+
+message DropRoleResponse {
+  bool response = 1;
+}
+
+message GetRoleNamesRequest {
+}
+
+message GetRoleNamesResponse {
+  repeated string responses = 1;
+}
+
+message ListRolesRequest {
+  string principal_name = 1;
+  PrincipalType principal_type = 2;
+}
+
+message ListRolesResponse {
+  repeated Role responses = 1;
+}
+
+enum GrantRevokeType {
+  GRANT_REVOKE_TYPE_UNSPECIFIED = 0;
+  GRANT_REVOKE_TYPE_GRANT = 1;
+  GRANT_REVOKE_TYPE_REVOKE = 2;
+}
+
+message GrantRevokeRoleRequest {
+  GrantRevokeType request_type = 1;
+  string role_name = 2;
+  string principal_name = 3;
+  PrincipalType principal_type = 4;
+  string grantor = 5;
+  PrincipalType grantor_type = 6;
+  bool grant_option = 7;
+}
+
+message GrantRevokeRoleResponse {
+  bool success = 1;
+}
+
+message GetPrincipalsInRoleRequest {
+  string role_name = 1;
+}
+
+message RolePrincipalGrant {
+  string role_name = 1;
+  string principal_name = 2;
+  PrincipalType principal_type = 3;
+  bool grant_option = 4;
+  int32 grant_time = 5;
+  string grantor_name = 6;
+  PrincipalType grantor_principal_type = 7;
+}
+
+message GetPrincipalsInRoleResponse {
+  repeated RolePrincipalGrant principal_grants = 1;
+}
+
+message GetRoleGrantsForPrincipalRequest {
+  string principal_name = 1;
+  PrincipalType principal_type = 2;
+}
+
+message GetRoleGrantsForPrincipalResponse {
+  repeated RolePrincipalGrant principal_grants = 1;
+}
+
+enum HiveObjectType {
+  HIVE_OBJECT_TYPE_UNSPECIFIED = 0;
+  HIVE_OBJECT_TYPE_GLOBAL = 1;
+  HIVE_OBJECT_TYPE_DATABASE = 2;
+  HIVE_OBJECT_TYPE_TABLE = 3;
+  HIVE_OBJECT_TYPE_PARTITION = 4;
+  HIVE_OBJECT_TYPE_COLUMN = 5;
+  HIVE_OBJECT_TYPE_DATACONNECTOR = 6;
+}
+
+message HiveObjectRef {
+  HiveObjectType object_type = 1;
+  string db_name = 2;
+  string object_name = 3;
+  repeated string part_values = 4;
+  string column_name = 5;
+  string cat_name = 6;
+}
+
+message GetPrivilegeSetRequest {
+  HiveObjectRef hive_object = 1;
+  string user_name = 2;
+  repeated string group_names = 3;
+}
+
+message ListPrivilegesRequest {
+  string principal_name = 1;
+  PrincipalType principal_type = 2;
+  HiveObjectRef hive_object = 3;
+}
+
+message HiveObjectPrivilege {
+  HiveObjectRef hive_object = 1;
+  string principal_name = 2;
+  PrincipalType principal_type = 3;
+  PrivilegeGrantInfo grant_info = 4;
+  string authorizer = 5;
+}
+
+message ListPrivilegesResponse {
+  repeated HiveObjectPrivilege responses = 1;
+}
+
+message PrivilegeBag {
+  repeated HiveObjectPrivilege privileges = 1;
+}
+
+message GrantRevokePrivilegesRequest {
+  GrantRevokeType request_type = 1;
+  PrivilegeBag privileges = 2;
+  bool revoke_grant_option = 3;
+}
+
+message GrantRevokePrivilegesResponse {
+  bool success = 1;
+}
+
+message RefreshPrivilegesRequest {
+  HiveObjectRef obj_to_refresh = 1;
+  string authorizer = 2;
+  GrantRevokePrivilegesRequest grant_request = 3;
+}
+
+message RefreshPrivilegesResponse {
+  bool success = 1;
+}
+
+message SetUgiRequest {
+  string user_name = 1;
+  repeated string group_names = 2;
+}
+
+message SetUgiResponse {
+  repeated string responses = 1;
+}
+
+message GetDelegationTokenRequest {
+  string token_owner = 1;
+  string renewer_kerberos_principal_name = 2;
+}
+
+message GetDelegationTokenResponse {
+  string response = 1;
+}
+
+message RenewDelegationTokenRequest {
+  string token_str_form = 1;
+}
+
+message RenewDelegationTokenResponse {
+  int64 response = 1;
+}
+
+message CancelDelegationTokenRequest {
+  string token_str_form = 1;
+}
+
+message CancelDelegationTokenResponse {
+}
+
+message AddTokenRequest {
+  string token_identifier = 1;
+  string delegation_token = 2;
+}
+
+message AddTokenResponse {
+  bool response = 1;
+}
+
+message RemoveTokenRequest {
+  string token_identifier = 1;
+}
+
+message RemoveTokenResponse {
+  bool response = 1;
+}
+
+message GetAllTokenIdentifiersRequest {
+}
+
+message GetAllTokenIdentifiersResponse {
+  repeated string responses = 1;
+}
+
+message AddMasterKeyRequest {
+  string key = 1;
+}
+
+message AddMasterKeyResponse {
+  int32 response = 1;
+}
+
+message UpdateMasterKeyRequest {
+  int32 seq_number = 1;
+  string key = 2;
+}
+
+message UpdateMasterKeyResponse {
+}
+
+message RemoveMasterKeyRequest {
+  int32 key_seq = 1;
+}
+
+message RemoveMasterKeyResponse {
+  bool response = 1;
+}
+
+message GetMasterKeysRequest {
+}
+
+message GetMasterKeysResponse {
+  repeated string responses = 1;
+}
+
+message GetOpenTxnsInfoRequest {
+}
+
+message GetOpenTxnsInfoResponse {
+  int64 txn_high_water_mark = 1;
+  repeated TxnInfo open_txns = 2;
+}
+
+enum TxnState {
+  TXN_STATE_UNSPECIFIED = 0;
+  TXN_STATE_COMMITTED = 1;
+  TXN_STATE_ABORTED = 2;
+  TXN_STATE_OPEN = 3;
+}
+
+message TxnInfo {
+  int64 info = 1;
+  TxnState state = 2;
+  string user = 3;
+  string hostname = 4;
+  string agent_info = 5;
+  int32 heartbeat_count = 6;
+  string meta_info = 7;
+  int64 started_time = 8;
+  int64 last_heartbeat_time = 9;
+}
+
+message OpenTxnsRequest {
+  int32 num_txns = 1;
+  string user = 2;
+  string hostname = 3;
+  string agent_info = 4;
+  string repl_policy = 5;
+  repeated int64 repl_src_txn_ids = 6;
+  TxnType txn_type = 7;
+}
+
+message OpenTxnsResponse {
+  repeated int64 txn_ids = 1;
+}
+
+message AbortTxnRequest {
+  int64 txnid = 1;
+  string repl_policy = 2;
+  TxnType txn_type = 3;
+  optional int64 errorCode = 4;
+}
+
+message AbortTxnResponse {
+}
+
+message AbortTxnsRequest {
+  repeated int64 txn_ids = 1;
+  optional int64 errorCode = 2;
+}
+
+message AbortTxnsResponse {
+}
+
+message WriteEventInfo {
+  int64 write_id = 1;
+  string database = 2;
+  string table = 3;
+  string files = 4;
+  string partition = 5;
+  string table_obj = 6;
+  string partition_obj = 7;
+}
+
+message ReplLastIdInfo {
+  string database = 1;
+  int64 last_repl_id = 2;
+  string table = 3;
+  string catalog = 4;
+  repeated string partition_lists = 5;
+}
+
+message CommitTxnKeyValue {
+  int64 table_id = 1;
+  string key = 2;
+  string value = 3;
+}
+
+message CommitTxnRequest {
+  int64 txnid = 1;
+  string repl_policy = 2;
+  repeated WriteEventInfo write_event_infos = 3;
+  ReplLastIdInfo repl_last_id_info = 4;
+  CommitTxnKeyValue key_value = 5;
+  bool excl_write_enabled = 6;
+  TxnType txn_type = 7;
+}
+
+message CommitTxnResponse {
+}
+
+message GetLatestTxnidInConflictRequest {
+  int64 txn_id = 1;
+}
+
+message GetLatestTxnidInConflictResponse {
+  int64 response = 1;
+}
+
+message ReplTblWriteidStateRequest {
+  string valid_write_id_list = 1;
+  string user = 2;
+  string host_name = 3;
+  string db_name = 4;
+  repeated string part_names = 5;
+}
+
+message ReplTblWriteidStateResponse {
+}
+
+message GetValidWriteIdsRequest {
+  repeated string full_table_names = 1;
+  string valid_txn_list = 2;
+  int64 write_id = 3;
+}
+
+message TableValidWriteIds {
+  string full_table_name = 1;
+  int64 write_id_high_water_mark = 2;
+  repeated int64 invalid_write_ids = 3;
+  int64 min_open_write_id = 4;
+  bytes aborted_bits = 5;
+}
+
+message GetValidWriteIdsResponse {
+  repeated TableValidWriteIds tbl_valid_write_ids = 1;
+}
+
+message TxnToWriteId {
+  int64 txn_id = 1;
+  int64 write_id = 2;
+}
+
+message AllocateTableWriteIdsRequest {
+  string db_name = 1;
+  string table_name = 2;
+  repeated int64 txn_ids = 3;
+  string repl_policy = 4;
+  repeated TxnToWriteId src_txn_to_write_id_lists = 5;
+}
+
+message AllocateTableWriteIdsResponse {
+  repeated TxnToWriteId txn_to_write_ids = 1;
+}
+
+message GetMaxAllocatedTableWriteIdRequest {
+  string db_name = 1;
+  string table_name = 2;
+}
+message GetMaxAllocatedTableWriteIdResponse {
+  int64 max_write_id = 1;
+}
+
+message SeedWriteIdRequest {
+  string db_name = 1;
+  string table_name = 2;
+  int64 seed_write_id = 3;
+}
+
+message SeedWriteIdResponse {
+}
+
+message SeedTxnIdRequest {
+  int64 seed_txn_id = 1;
+}
+
+message SeedTxnIdResponse {
+}
+
+enum LockState {
+  LOCK_STATE_UNSPECIFIED = 0;
+  LOCK_STATE_ACQUIRED = 1;
+  LOCK_STATE_WAITING = 2;
+  LOCK_STATE_ABORT = 3;
+  LOCK_STATE_NOTACQUIRED = 4;
+}
+
+enum LockType {
+  LOCK_TYPE_UNSPECIFIED = 0;
+  LOCK_TYPE_SHAREDREAD = 1;
+  LOCK_TYPE_SHAREDWRITE = 2;
+  LOCK_TYPE_EXCLUSIVE = 3;
+  LOCK_TYPE_EXCLWRITE = 4;
+}
+
+enum CompactionType {
+  COMPACTION_TYPE_UNSPECIFIED = 0;
+  COMPACTION_TYPE_MINOR = 1;
+  COMPACTION_TYPE_MAJOR = 2;
+  COMPACTION_TYPE_REBALANCE = 3;
+  COMPACTION_TYPE_ABORT_TXN_CLEANUP = 4;
+}
+
+enum DataOperationType {
+  DATA_OPERATION_TYPE_UNSPECIFIED = 0;
+  DATA_OPERATION_TYPE_SELECT = 1;
+  DATA_OPERATION_TYPE_INSERT = 2;
+  DATA_OPERATION_TYPE_UPDATE = 3;
+  DATA_OPERATION_TYPE_DELETE = 4;
+  DATA_OPERATION_TYPE_UNSET = 5;
+  DATA_OPERATION_TYPE_NOTXN = 6;
+}
+
+enum LockLevel {
+  LOCK_LEVEL_UNSPECIFIED = 0;
+  LOCK_LEVEL_DB = 1;
+  LOCK_LEVEL_TABLE = 2;
+  LOCK_LEVEL_PARTITION = 3;
+}
+
+message LockComponent {
+  LockType type = 1;
+  LockLevel level = 2;
+  string dbname = 3;
+  string tablename = 4;
+  string partitionname = 5;
+  DataOperationType operation_type = 6;
+  bool is_transactional = 7;
+  bool is_dynamic_partition_write = 8;
+}
+
+message LockRequest {
+  repeated LockComponent components = 1;
+  int64 txnid = 2;
+  string user = 3;
+  string hostname = 4;
+  string agent_info = 5;
+  bool zero_wait_read_enabled = 6;
+  bool exclusive_ctas = 7;
+}
+
+message LockResponse {
+  int64 lockid = 1;
+  LockState state = 2;
+  string error_message = 3;
+}
+
+message CheckLockRequest {
+  int64 lockid = 1;
+  int64 txnid = 2;
+  int64 elapsed_ms = 3;
+}
+
+message CheckLockResponse {
+  int64 lockid = 1;
+  LockState state = 2;
+  string error_message = 3;
+}
+
+message UnlockRequest {
+  int64 lockid = 1;
+}
+
+message UnlockResponse {
+}
+
+message ShowLocksRequest {
+  string dbname = 1;
+  string tablename = 2;
+  string partname = 3;
+  bool is_extended = 4;
+  int64 txnid = 5;
+}
+
+message ShowLocksResponseElement {
+  int64 lockid = 1;
+  string dbname = 2;
+  string tablename = 3;
+  string partname = 4;
+  LockState state = 5;
+  LockType type = 6;
+  int64 txnid = 7;
+  int64 lastheartbeat = 8;
+  int64 acquiredat = 9;
+  string user = 10;
+  string hostname = 11;
+  int32 heartbeat_count = 12;
+  string agent_info = 13;
+  int64 blocked_by_ext_id = 14;
+  int64 blocked_by_int_id = 15;
+  int64 lock_id_internal = 16;
+}
+
+message ShowLocksResponse {
+  repeated ShowLocksResponseElement locks = 1;
+}
+
+message HeartbeatRequest {
+  int64 lockid = 1;
+  int64 txnid = 2;
+}
+
+message HeartbeatResponse {
+}
+
+message HeartbeatTxnRangeRequest {
+  int64 min = 1;
+  int64 max = 2;
+}
+
+message HeartbeatTxnRangeResponse {
+  repeated int64 aborteds = 1;
+  repeated int64 nosuches = 2;
+}
+
+message CompactRequest {
+  string dbname = 1;
+  string tablename = 2;
+  string partitionname = 3;
+  CompactionType type = 4;
+  string runas = 5;
+  map<string, string> properties = 6;
+  string initiator_id = 7;
+  string initiator_version = 8;
+}
+
+message CompactResponse {
+}
+
+message Compact2Request {
+  string dbname = 1;
+  string tablename = 2;
+  string partitionname = 3;
+  CompactionType type = 4;
+  string runas = 5;
+  map<string, string> properties = 6;
+  string initiator_id = 7;
+  string initiator_version = 8;
+}
+
+message Compact2Response {
+  int64 id = 1;
+  string state = 2;
+  bool accepted = 3;
+  string errormessage = 4;
+}
+
+message ShowCompactRequest {
+}
+
+message ShowCompactResponseElement {
+  string dbname = 1;
+  string tablename = 2;
+  string partitionname = 3;
+  CompactionType type = 4;
+  string state = 5;
+  string workerid = 6;
+  int64 start = 7;
+  string run_as = 8;
+  int64 highest_txn_id = 9;
+  string meta_info = 10;
+  int64 end_time = 11;
+  string hadoop_job_id = 12;
+  int64 id = 13;
+  string error_message = 14;
+  int64 enqueue_time = 15;
+  string worker_version = 16;
+  string initiator_id = 17;
+  string initiator_version = 18;
+  int64 cleaner_start = 19;
+}
+
+message ShowCompactResponse {
+  repeated ShowCompactResponseElement compacts = 1;
+}
+
+message AddDynamicPartitionsRequest {
+  int64 txnid = 1;
+  int64 writeid = 2;
+  string dbname = 3;
+  string tablename = 4;
+  repeated string partitionnames = 5;
+  DataOperationType operation_type = 6;
+}
+
+message AddDynamicPartitionsResponse {
+}
+
+message FindNextCompactRequest {
+  string worker_id = 1;
+}
+
+message CompactionInfoStruct {
+  int64 id = 1;
+  string dbname = 2;
+  string tablename = 3;
+  string partitionname = 4;
+  CompactionType type = 5;
+  string runas = 6;
+  string properties = 7;
+  bool toomanyaborts = 8;
+  string state = 9;
+  string worker_id = 10;
+  int64 start = 11;
+  int64 highest_write_id = 12;
+  string error_message = 13;
+  bool hasoldabort = 14;
+  int64 enqueue_time = 15;
+  int64 retry_retention = 16;
+}
+
+message OptionalCompactionInfoStruct {
+  CompactionInfoStruct ci = 1;
+}
+
+message FindNextCompact2Request {
+  string worker_id = 1;
+  string worker_version = 2;
+}
+
+message UpdateCompactorStateResponse {
+}
+
+message FindColumnsWithStatsResponse {
+  repeated string responses = 1;
+}
+
+message MarkCleanedResponse {
+}
+
+message MarkCompactedResponse {
+}
+
+message MarkFailedResponse {
+}
+
+message MarkRefusedResponse {
+}
+
+enum CompactionMetricsMetricType {
+  COMPACTION_METRICS_METRIC_TYPE_UNSPECIFIED = 0;
+  COMPACTION_METRICS_METRIC_TYPE_NUM_OBSOLETE_DELTAS = 1;
+  COMPACTION_METRICS_METRIC_TYPE_NUM_DELTAS = 2;
+  COMPACTION_METRICS_METRIC_TYPE_NUM_SMALL_DELTAS = 3;
+}
+
+message CompactionMetricsDataStruct {
+  string dbname = 1;
+  string tblname = 2;
+  string partitionname = 3;
+  CompactionMetricsMetricType type = 4;
+  int32 metricvalue = 5;
+  int32 version = 6;
+  int32 threshold = 7;
+}
+
+message UpdateCompactionMetricsDataResponse {
+  bool response = 1;
+}
+
+message RemoveCompactionMetricsDataRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  string partition_name = 3;
+  CompactionMetricsMetricType type = 4;
+}
+
+message RemoveCompactionMetricsDataResponse {
+}
+
+message SetHadoopJobidRequest {
+  string job_id = 1;
+  string cq_id = 2;
+}
+
+message SetHadoopJobidResponse {
+}
+
+message GetLatestCommittedCompactionInfoRequest {
+  string dbname = 1;
+  string tablename = 2;
+  repeated string partionnames = 3;
+  int64 last_compaction_id = 4;
+}
+
+message GetLatestCommittedCompactionInfoResponse {
+  repeated CompactionInfoStruct compactions = 1;
+}
+
+message GetNextNotificationRequest {
+  int64 last_event = 1;
+  int32 max_events = 2;
+  repeated string event_type_skip_lists = 3;
+}
+
+message NotificationEvent {
+  int64 event_id = 1;
+  int32 event_time = 2;
+  string event_type = 3;
+  string db_name = 4;
+  string table_name = 5;
+  string message = 6;
+  string message_format = 7;
+  string cat_name = 8;
+}
+
+message GetNextNotificationResponse {
+  repeated NotificationEvent events = 1;
+}
+
+message GetCurrentNotificationEventIdRequest {
+}
+
+message GetCurrentNotificationEventIdResponse {
+  int64 event_id = 1;
+}
+
+message GetNotficationEventsCountRequest {
+  int64 from_event_id = 1;
+  string db_name = 2;
+  string cat_name = 3;
+  int64 to_event_id = 4;
+  int64 limit = 5;
+}
+
+message GetNotficationEventsCountResponse {
+  int64 events_count = 1;
+}
+
+message InsertEventRequestData {
+  bool replace = 1;
+  repeated string files_addeds = 2;
+  repeated string files_added_checksums = 3;
+  repeated string sub_directory_lists = 4;
+  repeated string partition_vals = 5;
+}
+
+message InsertEventRequestDataList {
+  repeated InsertEventRequestData insert_event_request_data_lists = 1;
+}
+
+message FireEventRequestData {
+  oneof fireEventRequestData {
+    InsertEventRequestData insert_data = 1;
+    InsertEventRequestDataList insert_datas = 2;
+    bool refresh_event = 3;
+  }
+}
+
+message FireListenerEventRequest {
+  bool successful = 1;
+  FireEventRequestData data = 2;
+  string db_name = 3;
+  string table_name = 4;
+  repeated string partition_vals = 5;
+  string cat_name = 6;
+  map<string, string> tblParams = 7;
+}
+
+message FireListenerEventResponse {
+  repeated int64 event_ids = 1;
+}
+
+message FlushCacheRequest {
+}
+
+message FlushCacheResponse {
+}
+
+message AddWriteNotificationLogRequest {
+  int64 txn_id = 1;
+  int64 write_id = 2;
+  string db = 3;
+  string table = 4;
+  InsertEventRequestData file_info = 5;
+  repeated string partition_vals = 6;
+}
+
+message AddWriteNotificationLogResponse {
+}
+
+message AddWriteNotificationLogInBatchRequest {
+  string catalog = 1;
+  string db = 2;
+  string table = 3;
+  repeated AddWriteNotificationLogRequest request_lists = 4;
+}
+
+message AddWriteNotificationLogInBatchResponse {
+}
+
+message CmRecycleRequest {
+  string data_path = 1;
+  bool purge = 2;
+}
+
+message CmRecycleResponse {
+}
+
+message MetadataPpdResult {
+  bytes metadata = 1;
+  bytes include_bitset = 2;
+}
+
+message GetFileMetadataByExprResponse {
+  map<int64, MetadataPpdResult> metadata = 1;
+  bool is_supported = 2;
+}
+
+enum FileMetadataExprType {
+  FILE_METADATA_EXPR_TYPE_UNSPECIFIED = 0;
+  FILE_METADATA_EXPR_TYPE_ORCSARG = 1;
+}
+
+message GetFileMetadataByExprRequest {
+  repeated int64 file_ids = 1;
+  bytes expr = 2;
+  bool do_get_footers = 3;
+  FileMetadataExprType type = 4;
+}
+
+message GetFileMetadataResponse {
+  map<int64, bytes> metadata = 1;
+  bool is_supported = 2;
+}
+
+message GetFileMetadataRequest {
+  repeated int64 file_ids = 1;
+}
+
+message PutFileMetadataResponse {
+}
+
+message PutFileMetadataRequest {
+  repeated int64 file_ids = 1;
+  repeated bytes metadata = 2;
+  FileMetadataExprType type = 3;
+}
+
+message ClearFileMetadataResponse {
+}
+
+message ClearFileMetadataRequest {
+  repeated int64 file_ids = 1;
+}
+
+message CacheFileMetadataResponse {
+  bool is_supported = 1;
+}
+
+message CacheFileMetadataRequest {
+  string db_name = 1;
+  string tbl_name = 2;
+  string part_name = 3;
+  bool is_all_parts = 4;
+}
+
+message GetMetastoreDbUuidRequest {
+}
+
+message GetMetastoreDbUuidResponse {
+  string response = 1;
+}
+
+enum WMPoolSchedulingPolicy {
+  WMPOOL_SCHEDULING_POLICY_UNSPECIFIED = 0;
+  WMPOOL_SCHEDULING_POLICY_FAIR = 1;
+  WMPOOL_SCHEDULING_POLICY_FIFO = 2;
+}
+
+enum WMResourcePlanStatus {
+  WMRESOURCE_PLAN_STATUS_UNSPECIFIED = 0;
+  WMRESOURCE_PLAN_STATUS_ACTIVE = 1;
+  WMRESOURCE_PLAN_STATUS_ENABLED = 2;
+  WMRESOURCE_PLAN_STATUS_DISABLED = 3;
+}
+
+message WMResourcePlan {
+  string name = 1;
+  WMResourcePlanStatus status = 2;
+  int32 query_parallelism = 3;
+  string default_pool_path = 4;
+  string ns = 5;
+}
+
+message WMNullableResourcePlan {
+  string name = 1;
+  WMResourcePlanStatus status = 2;
+  int32 query_parallelism = 4;
+  bool is_set_query_parallelism = 5;
+  string default_pool_path = 6;
+  bool is_set_default_pool_path = 7;
+  string ns = 8;
+}
+
+message WMPool {
+  string resource_plan_name = 1;
+  string pool_path = 2;
+  double alloc_fraction = 3;
+  int32 query_parallelism = 4;
+  string scheduling_policy = 5;
+  string ns = 6;
+}
+
+
+message WMNullablePool {
+  string resource_plan_name = 1;
+  string pool_path = 2;
+  double alloc_fraction = 3;
+  int32 query_parallelism = 4;
+  string scheduling_policy = 5;
+  bool is_set_scheduling_policy = 6;
+  string ns = 7;
+}
+
+message WMTrigger {
+  string resource_plan_name = 1;
+  string trigger_name = 2;
+  string trigger_expression = 3;
+  string action_expression = 4;
+  bool is_in_unmanaged = 5;
+  string ns = 6;
+}
+
+message WMMapping {
+  string resource_plan_name = 1;
+  string entity_type = 2;
+  string entity_name = 3;
+  string pool_path = 4;
+  int32 ordering = 5;
+  string ns = 6;
+}
+
+message WMPoolTrigger {
+  string pool = 1;
+  string trigger = 2;
+  string ns = 3;
+}
+
+message WMFullResourcePlan {
+  WMResourcePlan plan = 1;
+  repeated WMPool pools = 2;
+  repeated WMMapping mappings = 3;
+  repeated WMTrigger triggers = 4;
+  repeated WMPoolTrigger pool_triggers = 5;
+}
+
+// Request response for workload management API's.
+
+message WMCreateResourcePlanRequest {
+  WMResourcePlan resource_plan = 1;
+  string copy_from = 2;
+}
+
+message WMCreateResourcePlanResponse {
+}
+
+message WMGetActiveResourcePlanRequest {
+  string ns = 1;
+}
+
+message WMGetActiveResourcePlanResponse {
+  WMFullResourcePlan resource_plan = 1;
+}
+
+message WMGetResourcePlanRequest {
+  string resource_plan_name = 1;
+  string ns = 2;
+}
+
+message WMGetResourcePlanResponse {
+  WMFullResourcePlan resource_plan = 1;
+}
+
+message WMGetAllResourcePlanRequest {
+  string ns = 1;
+}
+
+message WMGetAllResourcePlanResponse {
+  repeated WMResourcePlan resource_plans = 1;
+}
+
+message WMAlterResourcePlanRequest {
+  string resource_plan_name = 1;
+  WMNullableResourcePlan resource_plan = 2;
+  bool is_enable_and_activate = 3;
+  bool is_force_deactivate = 4;
+  bool is_replace = 5;
+  string ns = 6;
+}
+
+message WMAlterResourcePlanResponse {
+  WMFullResourcePlan full_resource_plan = 1;
+}
+
+message WMValidateResourcePlanRequest {
+  string resource_plan_name = 1;
+  string ns = 2;
+}
+
+message WMValidateResourcePlanResponse {
+  repeated string errors = 1;
+  repeated string warnings = 2;
+}
+
+message WMDropResourcePlanRequest {
+  string resource_plan_name = 1;
+  string ns = 2;
+}
+
+message WMDropResourcePlanResponse {
+}
+
+message WMCreateTriggerRequest {
+  WMTrigger trigger = 1;
+}
+
+message WMCreateTriggerResponse {
+}
+
+message WMAlterTriggerRequest {
+  WMTrigger trigger = 1;
+}
+
+message WMAlterTriggerResponse {
+}
+
+message WMDropTriggerRequest {
+  string resource_plan_name = 1;
+  string trigger_name = 2;
+  string ns = 3;
+}
+
+message WMDropTriggerResponse {
+}
+
+message WMGetTriggersForResourcePlanRequest {
+  string resource_plan_name = 1;
+  string ns = 2;
+}
+
+message WMGetTriggersForResourcePlanResponse {
+  repeated WMTrigger triggers = 1;
+}
+
+message WMCreatePoolRequest {
+  WMPool pool = 1;
+}
+
+message WMCreatePoolResponse {
+}
+
+message WMAlterPoolRequest {
+  WMNullablePool pool = 1;
+  string pool_path = 2;
+}
+
+message WMAlterPoolResponse {
+}
+
+message WMDropPoolRequest {
+  string resource_plan_name = 1;
+  string pool_path = 2;
+  string ns = 3;
+}
+
+message WMDropPoolResponse {
+}
+
+message WMCreateOrUpdateMappingRequest {
+  WMMapping mapping = 1;
+  bool update = 2;
+}
+
+message WMCreateOrUpdateMappingResponse {
+}
+
+message WMDropMappingRequest {
+  WMMapping mapping = 1;
+}
+
+message WMDropMappingResponse {
+}
+
+message WMCreateOrDropTriggerToPoolMappingRequest {
+  string resource_plan_name = 1;
+  string trigger_name = 2;
+  string pool_path = 3;
+  bool drop = 4;
+  string ns = 5;
+}
+
+message WMCreateOrDropTriggerToPoolMappingResponse {
+}
+
+enum SchemaCompatibility {
+  SCHEMA_COMPATIBILITY_UNSPECIFIED = 0;
+  SCHEMA_COMPATIBILITY_NONE = 1;
+  SCHEMA_COMPATIBILITY_BACKWARD = 2;
+  SCHEMA_COMPATIBILITY_FORWARD = 3;
+  SCHEMA_COMPATIBILITY_BOTH = 4;
+}
+
+enum SchemaVersionState {
+  SCHEMA_VERSION_STATE_UNSPECIFIED = 0;
+  SCHEMA_VERSION_STATE_INITIATED = 1;
+  SCHEMA_VERSION_STATE_STARTREVIEW = 2;
+  SCHEMA_VERSION_STATE_CHANGESREQUIRED = 3;
+  SCHEMA_VERSION_STATE_REVIEWED = 4;
+  SCHEMA_VERSION_STATE_ENABLED = 5;
+  SCHEMA_VERSION_STATE_DISABLED = 6;
+  SCHEMA_VERSION_STATE_ARCHIVED = 7;
+  SCHEMA_VERSION_STATE_DELETED = 8;
+}
+
+enum SchemaType {
+  SCHEMA_TYPE_UNSPECIFIED = 0;
+  SCHEMA_TYPE_HIVE = 1;
+  SCHEMA_TYPE_AVRO = 2;
+}
+
+enum SchemaValidation {
+  SCHEMA_VALIDATION_UNSPECIFIED = 0;
+  SCHEMA_VALIDATION_LATEST = 1;
+  SCHEMA_VALIDATION_ALL = 2;
+}
+
+message ISchema {
+  SchemaType schema_type = 1;
+  string name = 2;
+  string cat_name = 3;
+  string db_name = 4;
+  SchemaCompatibility compatibility = 5;
+  SchemaValidation validation_level = 6;
+  bool can_evolve = 7;
+  string schema_group = 8;
+  string description = 9;
+}
+
+message CreateISchemaResponse {
+}
+
+message ISchemaName {
+  string cat_name = 1;
+  string db_name = 2;
+  string schema_name = 3;
+}
+
+message AlterISchemaRequest {
+  ISchemaName name = 1;
+  ISchema new_schema = 3;
+}
+
+message AlterISchemaResponse {
+}
+
+message DropISchemaResponse {
+}
+
+message AddSchemaVersionResponse {
+}
+
+message GetSchemaAllVersionsResponse {
+  repeated SchemaVersion responses = 1;
+}
+
+message DropSchemaVersionResponse {
+}
+
+message GetSchemasByColsRequest {
+  string col_name = 1;
+  string col_namespace = 2;
+  string type = 3;
+}
+
+message GetSchemasByColsResponse {
+  repeated SchemaVersionDescriptor schema_versions = 1;
+}
+
+message MapSchemaVersionToSerdeRequest {
+  SchemaVersionDescriptor schema_version = 1;
+  string serde_name = 2;
+}
+
+message MapSchemaVersionToSerdeResponse {
+}
+
+message SetSchemaVersionStateRequest {
+  SchemaVersionDescriptor schema_version = 1;
+  SchemaVersionState state = 2;
+}
+
+message SetSchemaVersionStateResponse {
+}
+
+message SchemaVersion {
+  ISchemaName schema = 1;
+  int32 version = 2;
+  int64 created_at = 3;
+  repeated FieldSchema cols = 4;
+  SchemaVersionState state = 5;
+  string description = 6;
+  string schema_text = 7;
+  string fingerprint = 8;
+  string name = 9;
+  SerDeInfo ser_de = 10;
+}
+
+message SchemaVersionDescriptor {
+  ISchemaName schema = 1;
+  int32 version = 2;
+}
+
+message AddSerdeResponse {
+}
+
+message GetSerdeRequest {
+  string serde_name = 1;
+}
+
+message GetLockMaterializationRebuildRequest {
+  string db_name = 1;
+  string table_name = 2;
+  int64 txn_id = 3;
+}
+
+message GetLockMaterializationRebuildResponse {
+  int64 lockid = 1;
+  LockState state = 2;
+  string error_message = 3;
+}
+
+message HeartbeatLockMaterializationRebuildRequest {
+  string db_name = 1;
+  string table_name = 2;
+  int64 txn_id = 3;
+}
+
+message HeartbeatLockMaterializationRebuildResponse {
+  bool response = 1;
+}
+
+message RuntimeStat {
+  int32 create_time = 1;
+  int32 weight = 2;
+  bytes payload = 3;
+}
+
+message AddRuntimeStatsResponse {
+}
+
+message GetRuntimeStatsRequest {
+  int32 max_weight = 1;
+  int32 max_create_time = 2;
+}
+
+message GetRuntimeStatsResponse {
+  repeated RuntimeStat responses = 1;
+}
+
+message GetProjectionsSpec {
+  repeated string field_lists = 1;
+  string include_param_key_pattern = 2;
+  string exclude_param_key_pattern = 3;
+}
+
+enum PartitionFilterMode {
+  PARTITION_FILTER_MODE_UNSPECIFIED = 0;
+  PARTITION_FILTER_MODE_BY_NAMES = 1;
+  PARTITION_FILTER_MODE_BY_VALUES = 2;
+  PARTITION_FILTER_MODE_BY_EXPR = 3;
+}
+
+message GetPartitionsFilterSpec {
+  PartitionFilterMode filter_mode = 1;
+  repeated string filters = 2;
+}
+
+message GetPartitionsWithSpecsRequest {
+  string cat_name = 1;
+  string db_name = 2;
+  string tbl_name = 3;
+  bool with_auth = 4;
+  string user = 5;
+  repeated string group_names = 6;
+  GetProjectionsSpec projection_spec = 7;
+  GetPartitionsFilterSpec filter_spec = 8;
+  repeated string processor_capabilities = 9;
+  string processor_identifier = 10;
+  string valid_write_id_list = 11;
+}
+
+message GetPartitionsWithSpecsResponse {
+  repeated PartitionSpec partition_specs = 1;
+}
+
+message ScheduledQueryPollRequest {
+  string cluster_namespace = 1;
+}
+
+message ScheduledQueryKey {
+  string schedule_name = 1;
+  string cluster_namespace = 2;
+}
+
+message ScheduledQueryPollResponse {
+  ScheduledQueryKey schedule_key = 1;
+  int64 execution_id = 2;
+  string query = 3;
+  string user = 4;
+}
+
+message ScheduledQuery {
+  ScheduledQueryKey schedule_key = 1;
+  bool enabled = 2;
+  string schedule = 4;
+  string user = 5;
+  string query = 6;
+  int32 next_execution = 7;
+}
+
+enum ScheduledQueryMaintenanceRequestType {
+  SCHEDULED_QUERY_MAINTENANCE_REQUEST_TYPE_UNSPECIFIED = 0;
+  SCHEDULED_QUERY_MAINTENANCE_REQUEST_TYPE_CREATE = 1;
+  SCHEDULED_QUERY_MAINTENANCE_REQUEST_TYPE_ALTER = 2;
+  SCHEDULED_QUERY_MAINTENANCE_REQUEST_TYPE_DROP = 3;
+}
+
+message ScheduledQueryMaintenanceRequest {
+  ScheduledQueryMaintenanceRequestType type = 1;
+  ScheduledQuery scheduled_query = 2;
+}
+
+message ScheduledQueryMaintenanceResponse {
+}
+
+enum QueryState {
+  QUERY_STATE_INITED_UNSPECIFIED = 0;
+  QUERY_STATE_EXECUTING = 1;
+  QUERY_STATE_FAILED = 2;
+  QUERY_STATE_FINISHED = 3;
+  QUERY_STATE_TIMEDOUT = 4;
+  QUERY_STATE_AUTODISABLED = 5;
+}
+
+message ScheduledQueryProgressInfo {
+  int64 scheduled_execution_id = 1;
+  QueryState state = 2;
+  string executor_query_id = 3;
+  string error_message = 4;
+}
+
+message ScheduledQueryProgressResponse {
+}
+
+message ReplicationMetrics {
+  int64 scheduled_execution_id = 1;
+  string policy = 2;
+  int64 dump_execution_id = 3;
+  string metadata = 4;
+  string progress = 5;
+  string message_format = 6;
+}
+
+message ReplicationMetricsList {
+  repeated ReplicationMetrics replication_metric_lists = 1;
+}
+
+message AddReplicationMetricsResponse {
+}
+
+message GetReplicationMetricsRequest {
+  int64 scheduled_execution_id = 1;
+  string policy = 2;
+  int64 dump_execution_id = 3;
+}
+
+message GetOpenTxnsReqRequest {
+  repeated TxnType exclude_txn_types = 1;
+}
+
+message GetOpenTxnsReqResponse {
+  int64 txn_high_water_mark = 1;
+  repeated int64 open_txns = 2;
+  int64 min_open_txn = 3;
+  bytes aborted_bits = 4;
+}
+
+message GetStoredProcedureRequest {
+  string cat_name = 1;
+  string db_name = 2;
+  string proc_name = 3;
+}
+
+message DropStoredProcedureRequest {
+  string cat_name = 1;
+  string db_name = 2;
+  string proc_name = 3;
+}
+
+message DropStoredProcedureResponse {
+}
+
+message GetAllStoredProceduresRequest {
+  string cat_name = 1;
+  string db_name = 2;
+}
+
+message GetAllStoredProceduresResponse {
+  repeated string responses = 1;
+}
+
+message StoredProcedure {
+  string name = 1;
+  string db_name = 2;
+  string cat_name = 3;
+  string owner_name = 4;
+  string source = 5;
+}
+
+message CreateStoredProcedureResponse {
+}
+
+message AddPackageRequest {
+  string cat_name = 1;
+  string db_name = 2;
+  string package_name = 3;
+  string owner_name = 4;
+  string header = 5;
+  string body = 6;
+}
+
+message AddPackageResponse {
+}
+
+message FindPackageRequest {
+  string cat_name = 1;
+  string db_name = 2;
+  string package_name = 3;
+}
+
+message DropPackageRequest {
+  string cat_name = 1;
+  string db_name = 2;
+  string package_name = 3;
+}
+
+message DropPackageResponse {
+}
+
+message GetAllPackagesRequest {
+  string cat_name = 1;
+  string db_name = 2;
+}
+
+message GetAllPackagesResponse {
+  repeated string responses = 1;
+}
+
+message Package {
+  string cat_name = 1;
+  string db_name = 2;
+  string package_name = 3;
+  string owner_name = 4;
+  string header = 5;
+  string body = 6;
+}
+
+message GetAllWriteEventInfoRequest {
+  int64 txn_id = 1;
+  string db_name = 2;
+  string table_name = 3;
+}
+
+message GetAllWriteEventInfoResponse {
+  repeated WriteEventInfo responses = 1;
+}
+
+service GrpcHiveMetastore {
+  rpc GetMetaConf(GetMetaConfRequest) returns (GetMetaConfResponse);
+  rpc SetMetaConf(SetMetaConfRequest) returns (SetMetaConfResponse);
+
+  rpc CreateCatalog(CreateCatalogRequest) returns (CreateCatalogResponse);
+  rpc AlterCatalog(AlterCatalogRequest) returns (AlterCatalogResponse);
+  rpc GetCatalog(GetCatalogRequest) returns (GetCatalogResponse);
+  rpc GetCatalogs(GetCatalogsRequest) returns (GetCatalogsResponse);
+  rpc DropCatalog(DropCatalogRequest) returns (DropCatalogResponse);
+
+  rpc CreateDatabase(Database) returns (CreateDatabaseResponse);
+
+  rpc GetDatabaseReq(GetDatabaseReqRequest) returns (Database);
+
+  rpc DropDatabaseReq(DropDatabaseReqRequest) returns (DropDatabaseReqResponse);
+
+  rpc GetDatabases(GetDatabasesRequest) returns (GetDatabasesResponse);
+  rpc GetAllDatabases(GetAllDatabasesRequest) returns (GetAllDatabasesResponse);
+
+  rpc AlterDatabase(AlterDatabaseRequest) returns (AlterDatabaseResponse);
+
+
+  rpc CreateDataConnector(DataConnector) returns (CreateDataConnectorResponse);
+  rpc GetDataConnectorReq(GetDataConnectorReqRequest) returns (DataConnector);
+  rpc DropDataConnector(DropDataConnectorRequest) returns
+      (DropDataConnectorResponse);
+  rpc GetDataConnectors(GetDataConnectorsRequest) returns
+      (GetDataConnectorsResponse);
+  rpc AlterDataConnector(AlterDataConnectorRequest) returns
+      (AlterDataConnectorResponse);
+
+  rpc GetType(GetTypeRequest) returns (Type);
+  rpc CreateType(Type) returns (CreateTypeResponse);
+  rpc DropType(DropTypeRequest) returns (DropTypeResponse);
+  rpc GetTypeAll(GetTypeAllRequest) returns (GetTypeAllResponse);
+
+
+  rpc GetFieldsReq(GetFieldsReqRequest) returns (GetFieldsReqResponse);
+
+  rpc GetSchemaReq(GetSchemaReqRequest) returns (GetSchemaReqResponse);
+
+  rpc CreateTableReq(CreateTableReqRequest) returns (CreateTableReqResponse);
+
+  rpc DropConstraint(DropConstraintRequest) returns (DropConstraintResponse);
+  rpc AddPrimaryKey(AddPrimaryKeyRequest) returns (AddPrimaryKeyResponse);
+  rpc AddForeignKey(AddForeignKeyRequest) returns (AddForeignKeyResponse);
+  rpc AddUniqueConstraint(AddUniqueConstraintRequest) returns
+      (AddUniqueConstraintResponse);
+  rpc AddNotNullConstraint(AddNotNullConstraintRequest) returns
+      (AddNotNullConstraintResponse);
+  rpc AddDefaultConstraint(AddDefaultConstraintRequest) returns
+      (AddDefaultConstraintResponse);
+  rpc AddCheckConstraint(AddCheckConstraintRequest) returns
+      (AddCheckConstraintResponse);
+
+  rpc TranslateTableDryrun(CreateTableReqRequest) returns (Table);
+
+  rpc DropTable(DropTableRequest) returns (DropTableResponse);
+  rpc DropTableWithEnvironmentContext(DropTableWithEnvironmentContextRequest)
+      returns (DropTableWithEnvironmentContextResponse);
+
+  rpc TruncateTable(TruncateTableRequest) returns (TruncateTableResponse);
+
+  rpc GetTables(GetTablesRequest) returns (GetTablesResponse);
+  rpc GetTablesByType(GetTablesByTypeRequest) returns (GetTablesByTypeResponse);
+  rpc GetAllMaterializedViewObjectsForRewriting
+      (GetAllMaterializedViewObjectsForRewritingRequest) returns
+      (GetAllMaterializedViewObjectsForRewritingResponse);
+  rpc GetTableMeta(GetTableMetaRequest) returns (GetTableMetaResponse);
+  rpc GetAllTables(GetAllTablesRequest) returns (GetAllTablesResponse);
+  rpc GetTablesExt(GetTablesExtRequest) returns (GetTablesExtResponse);
+  rpc GetTableReq(GetTableReqRequest) returns (GetTableReqResponse);
+  rpc GetTableObjectsByNameReq(GetTableObjectsByNameReqRequest) returns
+      (GetTableObjectsByNameReqResponse);
+  rpc GetMaterializationInvalidationInfo
+      (GetMaterializationInvalidationInfoRequest) returns (Materialization);
+  rpc UpdateCreationMetadata(UpdateCreationMetadataRequest) returns
+      (UpdateCreationMetadataResponse);
+  rpc GetTableNamesByFilter(GetTableNamesByFilterRequest) returns
+      (GetTableNamesByFilterResponse);
+  rpc AlterTableReq(AlterTableReqRequest) returns (AlterTableReqResponse);
+
+  rpc AddPartition(Partition) returns (Partition);
+  rpc AddPartitionWithEnvironmentContext
+      (AddPartitionWithEnvironmentContextRequest) returns
+      (AddPartitionWithEnvironmentContextResponse);
+  rpc AddPartitionsReq(AddPartitionsReqRequest) returns
+      (AddPartitionsReqResponse);
+  rpc AddPartitionsPSpec(AddPartitionsPSpecRequest) returns
+      (AddPartitionsPSpecResponse);
+  rpc AppendPartition(AppendPartitionRequest) returns (Partition);
+  rpc AppendPartitionWithEnvironmentContext
+      (AppendPartitionWithEnvironmentContextRequest) returns (Partition);
+  rpc AppendPartitionByName(AppendPartitionByNameRequest) returns (Partition);
+  rpc AppendPartitionByNameWithEnvironmentContext
+      (AppendPartitionByNameWithEnvironmentContextRequest) returns (Partition);
+
+  rpc DropPartition(DropPartitionRequest) returns (DropPartitionResponse);
+  rpc DropPartitionWithEnvironmentContext
+      (DropPartitionWithEnvironmentContextRequest) returns
+      (DropPartitionWithEnvironmentContextResponse);
+  rpc DropPartitionByName(DropPartitionByNameRequest) returns
+      (DropPartitionByNameResponse);
+  rpc DropPartitionByNameWithEnvironmentContext
+      (DropPartitionByNameWithEnvironmentContextRequest) returns
+      (DropPartitionByNameWithEnvironmentContextResponse);
+  rpc DropPartitionsReq(DropPartitionsReqRequest) returns
+      (DropPartitionsReqResponse);
+
+  rpc GetPartitionReq(GetPartitionReqRequest) returns (GetPartitionReqResponse);
+
+  rpc ExchangePartition(ExchangePartitionRequest) returns (Partition);
+  rpc ExchangePartitions(ExchangePartitionsRequest) returns
+      (ExchangePartitionsResponse);
+
+  rpc GetPartitionWithAuth(GetPartitionWithAuthRequest) returns (Partition);
+  rpc GetPartitionByName(GetPartitionByNameRequest) returns (Partition);
+  rpc GetPartitionsReq(GetPartitionsReqRequest) returns
+      (GetPartitionsReqResponse);
+  rpc GetPartitionsWithAuth(GetPartitionsWithAuthRequest) returns
+      (GetPartitionsWithAuthResponse);
+  rpc GetPartitionsPSpec(GetPartitionsPSpecRequest) returns
+      (GetPartitionsPSpecResponse);
+  rpc GetPartitionValues(GetPartitionValuesRequest) returns
+      (GetPartitionValuesResponse);
+  rpc GetPartitionsPSWithAuthReq(GetPartitionsPSWithAuthReqRequest) returns
+      (GetPartitionsPSWithAuthReqResponse);
+  rpc GetPartitionNamesPSReq(GetPartitionNamesPSReqRequest) returns
+      (GetPartitionNamesPSReqResponse);
+  rpc GetPartitionNamesReq(GetPartitionNamesReqRequest) returns
+      (GetPartitionNamesReqResponse);
+  rpc GetPartitionsByFilter(GetPartitionsByFilterRequest) returns
+      (GetPartitionsByFilterResponse);
+  rpc GetPartSpecsByFilter(GetPartSpecsByFilterRequest) returns
+      (GetPartSpecsByFilterResponse);
+  rpc GetPartitionsByExpr(GetPartitionsByExprRequest) returns
+      (GetPartitionsByExprResponse);
+  rpc GetPartitionsSpecByExpr(GetPartitionsSpecByExprRequest) returns
+      (GetPartitionsSpecByExprResponse);
+  rpc GetNumPartitionsByFilter(GetNumPartitionsByFilterRequest) returns
+      (GetNumPartitionsByFilterResponse);
+  rpc GetPartitionsByNamesReq(GetPartitionsByNamesReqRequest) returns
+      (GetPartitionsByNamesReqResponse);
+
+  rpc AlterPartition(AlterPartitionRequest) returns (AlterPartitionResponse);
+  rpc AlterPartitionsReq(AlterPartitionsReqRequest) returns
+      (AlterPartitionsReqResponse);
+  rpc AlterPartitionWithEnvironmentContext
+      (AlterPartitionWithEnvironmentContextRequest) returns
+      (AlterPartitionWithEnvironmentContextResponse);
+
+  rpc RenamePartitionReq(RenamePartitionReqRequest) returns
+      (RenamePartitionReqResponse);
+  rpc PartitionNameHasValidCharacters(PartitionNameHasValidCharactersRequest)
+      returns (PartitionNameHasValidCharactersResponse);
+  rpc GetConfigValue(GetConfigValueRequest) returns (GetConfigValueResponse);
+  rpc PartitionNameToVals(PartitionNameToValsRequest) returns
+      (PartitionNameToValsResponse);
+  rpc PartitionNameToSpec(PartitionNameToSpecRequest) returns
+      (PartitionNameToSpecResponse);
+  rpc MarkPartitionForEvent(MarkPartitionForEventRequest) returns
+      (MarkPartitionForEventResponse);
+  rpc IsPartitionMarkedForEvent(IsPartitionMarkedForEventRequest) returns
+      (IsPartitionMarkedForEventResponse);
+
+  rpc GetPrimaryKeys(GetPrimaryKeysRequest) returns (GetPrimaryKeysResponse);
+  rpc GetForeignKeys(GetForeignKeysRequest) returns (GetForeignkeysResponse);
+  rpc GetUniqueConstraints(GetUniqueConstraintsRequest) returns
+      (GetUniqueConstraintsResponse);
+  rpc GetNotNullConstraints(GetNotNullConstraintsRequest) returns
+      (GetNotNullConstraintsResponse);
+  rpc GetDefaultConstraints(GetDefaultConstraintsRequest) returns
+      (GetDefaultConstraintsResponse);
+  rpc GetCheckConstraints(GetCheckConstraintsRequest) returns
+      (GetCheckConstraintsResponse);
+  rpc GetAllTableConstraints(GetAllTableConstraintsRequest) returns
+      (GetAllTableConstraintsResponse);
+
+  rpc UpdateTableColumnStatisticsReq(UpdateTableColumnStatisticsReqRequest)
+      returns (UpdateTableColumnStatisticsReqResponse);
+  rpc UpdatePartitionColumnStatisticsReq
+      (UpdatePartitionColumnStatisticsReqRequest) returns
+      (UpdatePartitionColumnStatisticsReqResponse);
+  rpc UpdateTransactionStatistics(UpdateTransactionStatisticsRequest) returns
+      (UpdateTransactionStatisticsResponse);
+
+  rpc GetTableColumnStatistics(GetTableColumnStatisticsRequest) returns
+      (ColumnStatistics);
+  rpc GetPartitionColumnStatistics(GetPartitionColumnStatisticsRequest) returns
+      (ColumnStatistics);
+  rpc GetTableStatisticsReq(GetTableStatisticsReqRequest) returns
+      (GetTableStatisticsReqResponse);
+  rpc GetPartitionsStatisticsReq(GetPartitionsStatisticsReqRequest) returns
+      (GetPartitionsStatisticsReqResponse);
+  rpc GetAggrStatsFor(GetAggrStatsForRequest) returns (AggrStats);
+  rpc SetAggrStatsFor(SetAggrStatsForRequest) returns (SetAggrStatsForResponse);
+
+  rpc DeletePartitionColumnStatistics(DeletePartitionColumnStatisticsRequest)
+      returns (DeletePartitionColumnStatisticsResponse);
+  rpc DeleteTableColumnStatistics(DeleteTableColumnStatisticsRequest) returns
+      (DeleteTableColumnStatisticsResponse);
+
+  rpc CreateFunction(Function) returns (CreateFunctionResponse);
+  rpc DropFunction(DropFunctionRequest) returns (DropFunctionResponse);
+  rpc AlterFunction(AlterFunctionRequest) returns (AlterFunctionResponse);
+  rpc GetFunctions(GetFunctionsRequest) returns (GetFunctionsResponse);
+  rpc GetFunction(GetFunctionRequest) returns (Function);
+  rpc GetAllFunctions(GetAllFunctionsRequest) returns (GetAllFunctionsResponse);
+
+  rpc CreateRole(Role) returns (CreateRoleResponse);
+  rpc DropRole(DropRoleRequest) returns (DropRoleResponse);
+  rpc GetRoleNames(GetRoleNamesRequest) returns (GetRoleNamesResponse);
+  rpc ListRoles(ListRolesRequest) returns (ListRolesResponse);
+  rpc GrantRevokeRole(GrantRevokeRoleRequest) returns (GrantRevokeRoleResponse);
+
+  rpc GetPrincipalsInRole(GetPrincipalsInRoleRequest) returns
+      (GetPrincipalsInRoleResponse);
+  rpc GetRoleGrantsForPrincipal(GetRoleGrantsForPrincipalRequest) returns
+      (GetRoleGrantsForPrincipalResponse);
+  rpc GetPrivilegeSet(GetPrivilegeSetRequest) returns (PrincipalPrivilegeSet);
+  rpc ListPrivileges(ListPrivilegesRequest) returns (ListPrivilegesResponse);
+  rpc GrantRevokePrivileges(GrantRevokePrivilegesRequest) returns
+      (GrantRevokePrivilegesResponse);
+  rpc RefreshPrivileges(RefreshPrivilegesRequest) returns
+      (RefreshPrivilegesResponse);
+
+  rpc SetUgi(SetUgiRequest) returns (SetUgiResponse);
+
+  rpc GetDelegationToken(GetDelegationTokenRequest) returns
+      (GetDelegationTokenResponse);
+  rpc RenewDelegationToken(RenewDelegationTokenRequest) returns
+      (RenewDelegationTokenResponse);
+  rpc CancelDelegationToken(CancelDelegationTokenRequest) returns
+      (CancelDelegationTokenResponse);
+  rpc AddToken(AddTokenRequest) returns (AddTokenResponse);
+  rpc RemoveToken(RemoveTokenRequest) returns (RemoveTokenResponse);
+  rpc GetAllTokenIdentifiers(GetAllTokenIdentifiersRequest) returns
+      (GetAllTokenIdentifiersResponse);
+
+  rpc AddMasterKey(AddMasterKeyRequest) returns (AddMasterKeyResponse);
+  rpc UpdateMasterKey(UpdateMasterKeyRequest) returns (UpdateMasterKeyResponse);
+  rpc RemoveMasterKey(RemoveMasterKeyRequest) returns (RemoveMasterKeyResponse);
+  rpc GetMasterKeys(GetMasterKeysRequest) returns (GetMasterKeysResponse);
+
+  rpc GetOpenTxnsInfo(GetOpenTxnsInfoRequest) returns (GetOpenTxnsInfoResponse);
+  rpc OpenTxns(OpenTxnsRequest) returns (OpenTxnsResponse);
+  rpc AbortTxn(AbortTxnRequest) returns (AbortTxnResponse);
+  rpc AbortTxns(AbortTxnsRequest) returns (AbortTxnsResponse);
+  rpc CommitTxn(CommitTxnRequest) returns (CommitTxnResponse);
+  rpc GetLatestTxnidInConflict(GetLatestTxnidInConflictRequest) returns
+      (GetLatestTxnidInConflictResponse);
+  rpc ReplTblWriteidState(ReplTblWriteidStateRequest) returns
+      (ReplTblWriteidStateResponse);
+  rpc GetValidWriteIds(GetValidWriteIdsRequest) returns
+      (GetValidWriteIdsResponse);
+  rpc AllocateTableWriteIds(AllocateTableWriteIdsRequest) returns
+      (AllocateTableWriteIdsResponse);
+  rpc GetMaxAllocatedTableWriteId(GetMaxAllocatedTableWriteIdRequest) returns
+      (GetMaxAllocatedTableWriteIdResponse);
+  rpc SeedWriteId(SeedWriteIdRequest) returns (SeedWriteIdResponse);
+  rpc SeedTxnId(SeedTxnIdRequest) returns (SeedTxnIdResponse);
+  rpc Lock(LockRequest) returns (LockResponse);
+  rpc CheckLock(CheckLockRequest) returns (CheckLockResponse);
+  rpc Unlock(UnlockRequest) returns (UnlockResponse);
+  rpc ShowLocks(ShowLocksRequest) returns (ShowLocksResponse);
+  rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+  rpc HeartbeatTxnRange(HeartbeatTxnRangeRequest) returns
+      (HeartbeatTxnRangeResponse);
+  rpc Compact(CompactRequest) returns (CompactResponse);
+  rpc Compact2(Compact2Request) returns (Compact2Response);
+  rpc ShowCompact(ShowCompactRequest) returns (ShowCompactResponse);
+  rpc AddDynamicPartitions(AddDynamicPartitionsRequest) returns
+      (AddDynamicPartitionsResponse);
+  rpc FindNextCompact(FindNextCompactRequest) returns
+      (OptionalCompactionInfoStruct);
+  rpc FindNextCompact2(FindNextCompact2Request) returns
+      (OptionalCompactionInfoStruct);
+  rpc UpdateCompactorState(CompactionInfoStruct) returns
+      (UpdateCompactorStateResponse);
+  rpc FindColumnsWithStats(CompactionInfoStruct) returns
+      (FindColumnsWithStatsResponse);
+  rpc MarkCleaned(CompactionInfoStruct) returns (MarkCleanedResponse);
+  rpc MarkCompacted(CompactionInfoStruct) returns (MarkCompactedResponse);
+  rpc MarkFailed(CompactionInfoStruct) returns (MarkFailedResponse);
+  rpc MarkRefused(CompactionInfoStruct) returns (MarkRefusedResponse);
+  rpc UpdateCompactionMetricsData(CompactionMetricsDataStruct) returns
+      (UpdateCompactionMetricsDataResponse);
+  rpc RemoveCompactionMetricsData(RemoveCompactionMetricsDataRequest) returns
+      (RemoveCompactionMetricsDataResponse);
+  rpc SetHadoopJobid(SetHadoopJobidRequest) returns (SetHadoopJobidResponse);
+  rpc GetLatestCommittedCompactionInfo
+      (GetLatestCommittedCompactionInfoRequest) returns
+      (GetLatestCommittedCompactionInfoResponse);
+
+  rpc GetNextNotification(GetNextNotificationRequest) returns
+      (GetNextNotificationResponse);
+  rpc GetCurrentNotificationEventId
+      (GetCurrentNotificationEventIdRequest) returns
+      (GetCurrentNotificationEventIdResponse);
+  rpc GetNotificationEventsCount(GetNotficationEventsCountRequest) returns
+      (GetNotficationEventsCountResponse);
+  rpc FireListenerEvent(FireListenerEventRequest) returns
+      (FireListenerEventResponse);
+  rpc FlushCache(FlushCacheRequest) returns (FlushCacheResponse);
+  rpc AddWriteNotificationLog(AddWriteNotificationLogRequest) returns
+      (AddWriteNotificationLogResponse);
+  rpc AddWriteNotificationLogInBatch
+      (AddWriteNotificationLogInBatchRequest) returns
+      (AddWriteNotificationLogInBatchResponse);
+
+  rpc CmRecycle(CmRecycleRequest) returns (CmRecycleResponse);
+
+  rpc GetFileMetadataByExpr(GetFileMetadataByExprRequest) returns
+      (GetFileMetadataByExprResponse);
+  rpc GetFileMetadata(GetFileMetadataRequest) returns
+      (GetFileMetadataResponse);
+  rpc PutFileMetadata(PutFileMetadataRequest) returns
+      (PutFileMetadataResponse);
+  rpc ClearFileMetadata(ClearFileMetadataRequest) returns
+      (ClearFileMetadataResponse);
+  rpc CacheFileMetadata(CacheFileMetadataRequest) returns
+      (CacheFileMetadataResponse);
+
+  rpc GetMetastoreDbUuid(GetMetastoreDbUuidRequest) returns
+      (GetMetastoreDbUuidResponse);
+
+  rpc CreateResourcePlan(WMCreateResourcePlanRequest) returns
+      (WMCreateResourcePlanResponse);
+  rpc GetResourcePlan(WMGetResourcePlanRequest) returns
+      (WMGetResourcePlanResponse);
+  rpc GetActiveResourcePlan(WMGetActiveResourcePlanRequest) returns
+      (WMGetActiveResourcePlanResponse);
+  rpc GetAllResourcePlans(WMGetAllResourcePlanRequest) returns
+      (WMGetAllResourcePlanResponse);
+  rpc AlterResourcePlan(WMAlterResourcePlanRequest) returns
+      (WMAlterResourcePlanResponse);
+  rpc ValidateResourcePlan(WMValidateResourcePlanRequest) returns
+      (WMValidateResourcePlanResponse);
+  rpc DropResourcePlan(WMDropResourcePlanRequest) returns
+      (WMDropResourcePlanResponse);
+  rpc CreateWmTrigger(WMCreateTriggerRequest) returns
+      (WMCreateTriggerResponse);
+  rpc AlterWmTrigger(WMAlterTriggerRequest) returns
+      (WMAlterTriggerResponse);
+  rpc DropWmTrigger(WMDropTriggerRequest) returns
+      (WMDropTriggerResponse);
+  rpc GetTriggersForResourcePlan(WMGetTriggersForResourcePlanRequest) returns
+      (WMGetTriggersForResourcePlanResponse);
+  rpc CreateWmPool(WMCreatePoolRequest) returns (WMCreatePoolResponse);
+  rpc AlterWmPool(WMAlterPoolRequest) returns (WMAlterPoolResponse);
+  rpc DropWmPool(WMDropPoolRequest) returns (WMDropPoolResponse);
+  rpc CreateOrUpdateWmMapping(WMCreateOrUpdateMappingRequest) returns
+      (WMCreateOrUpdateMappingResponse);
+  rpc DropWmMapping(WMDropMappingRequest) returns (WMDropMappingResponse);
+  rpc CreateOrDropWmTriggerToPoolMapping
+      (WMCreateOrDropTriggerToPoolMappingRequest) returns
+      (WMCreateOrDropTriggerToPoolMappingResponse);
+
+  rpc CreateISchema(ISchema) returns (CreateISchemaResponse);
+  rpc AlterISchema(AlterISchemaRequest) returns (AlterISchemaResponse);
+  rpc GetISchema(ISchemaName) returns (ISchema);
+  rpc DropISchema(ISchemaName) returns (DropISchemaResponse);
+  rpc AddSchemaVersion(SchemaVersion) returns (AddSchemaVersionResponse);
+  rpc GetSchemaVersion(SchemaVersionDescriptor) returns (SchemaVersion);
+  rpc GetSchemaLatestVersion(ISchemaName) returns (SchemaVersion);
+  rpc GetSchemaAllVersions(ISchemaName) returns (GetSchemaAllVersionsResponse);
+  rpc DropSchemaVersion(SchemaVersionDescriptor) returns
+      (DropSchemaVersionResponse);
+  rpc GetSchemasByCols(GetSchemasByColsRequest) returns
+      (GetSchemasByColsResponse);
+  rpc MapSchemaVersionToSerde(MapSchemaVersionToSerdeRequest) returns
+      (MapSchemaVersionToSerdeResponse);
+  rpc SetSchemaVersionState(SetSchemaVersionStateRequest) returns
+      (SetSchemaVersionStateResponse);
+
+  rpc AddSerde(SerDeInfo) returns (AddSerdeResponse);
+  rpc GetSerde(GetSerdeRequest) returns (SerDeInfo);
+
+  rpc GetLockMaterializationRebuild
+      (GetLockMaterializationRebuildRequest) returns
+      (GetLockMaterializationRebuildResponse);
+  rpc HeartbeatLockMaterializationRebuild
+      (HeartbeatLockMaterializationRebuildRequest) returns
+      (HeartbeatLockMaterializationRebuildResponse);
+
+  rpc AddRuntimeStats(RuntimeStat) returns (AddRuntimeStatsResponse);
+  rpc GetRuntimeStats(GetRuntimeStatsRequest) returns (GetRuntimeStatsResponse);
+
+  rpc GetPartitionsWithSpecs(GetPartitionsWithSpecsRequest) returns
+      (GetPartitionsWithSpecsResponse);
+
+  rpc ScheduledQueryPoll(ScheduledQueryPollRequest) returns
+      (ScheduledQueryPollResponse);
+  rpc ScheduledQueryMaintenance(ScheduledQueryMaintenanceRequest) returns
+      (ScheduledQueryMaintenanceResponse);
+  rpc ScheduledQueryProgress(ScheduledQueryProgressInfo) returns
+      (ScheduledQueryProgressResponse);
+  rpc GetScheduledQuery(ScheduledQueryKey) returns (ScheduledQuery);
+
+  rpc AddReplicationMetrics(ReplicationMetricsList) returns
+      (AddReplicationMetricsResponse);
+  rpc GetReplicationMetrics(GetReplicationMetricsRequest) returns
+      (ReplicationMetricsList);
+  rpc GetOpenTxnsReq(GetOpenTxnsReqRequest) returns (GetOpenTxnsReqResponse);
+
+  rpc CreateStoredProcedure(StoredProcedure) returns
+      (CreateStoredProcedureResponse);
+  rpc GetStoredProcedure(GetStoredProcedureRequest) returns (StoredProcedure);
+  rpc DropStoredProcedure(DropStoredProcedureRequest) returns
+      (DropStoredProcedureResponse);
+  rpc GetAllStoredProcedures(GetAllStoredProceduresRequest) returns
+      (GetAllStoredProceduresResponse);
+
+  rpc FindPackage(FindPackageRequest) returns (Package);
+  rpc AddPackage(AddPackageRequest) returns (AddPackageResponse);
+  rpc GetAllPackages(GetAllPackagesRequest) returns (GetAllPackagesResponse);
+  rpc DropPackage(DropPackageRequest) returns (DropPackageResponse);
+  rpc GetAllWriteEventInfo(GetAllWriteEventInfoRequest) returns
+      (GetAllWriteEventInfoResponse);
+}
+

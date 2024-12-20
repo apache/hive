@@ -18,25 +18,15 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.ConstantVectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.AggregationDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFVariance;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hive.common.util.AnnotationUtils;
-
-import com.google.common.base.Preconditions;
 
 /**
  * VectorAggregationDesc.
@@ -86,21 +76,31 @@ public class VectorAggregationDesc implements java.io.Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private final String aggregationName;
+  private String aggregationName;
 
-  private final TypeInfo inputTypeInfo;
-  private final ColumnVector.Type inputColVectorType;
-  private final VectorExpression inputExpression;
+  private TypeInfo inputTypeInfo;
+  private ColumnVector.Type inputColVectorType;
+  private VectorExpression inputExpression;
 
-  private final TypeInfo outputTypeInfo;
-  private final ColumnVector.Type outputColVectorType;
-  private final DataTypePhysicalVariation outputDataTypePhysicalVariation;
+  private TypeInfo outputTypeInfo;
+  private ColumnVector.Type outputColVectorType;
+  private DataTypePhysicalVariation outputDataTypePhysicalVariation;
 
-  private final Class<? extends VectorAggregateExpression> vecAggrClass;
+  private Class<? extends VectorAggregateExpression> vecAggrClass;
+
+  private List<ConstantVectorExpression> constants;
 
   private GenericUDAFEvaluator evaluator;
   private GenericUDAFEvaluator.Mode udafEvaluatorMode;
 
+  public VectorAggregationDesc() {
+    // empty constructor used by the builder
+  }
+
+  /**
+   * @deprecated use VectorAggregationDescBuilder
+   */
+  @Deprecated
   public VectorAggregationDesc(String aggregationName, GenericUDAFEvaluator evaluator,
       GenericUDAFEvaluator.Mode udafEvaluatorMode,
       TypeInfo inputTypeInfo, ColumnVector.Type inputColVectorType,
@@ -132,6 +132,92 @@ public class VectorAggregationDesc implements java.io.Serializable {
 
   public GenericUDAFEvaluator.Mode getUdafEvaluatorMode() {
     return udafEvaluatorMode;
+  }
+
+  public static class VectorAggregationDescBuilder {
+    private String aggregationName;
+    private TypeInfo inputTypeInfo;
+    private ColumnVector.Type inputColVectorType;
+    private VectorExpression inputExpression;
+    private TypeInfo outputTypeInfo;
+    private ColumnVector.Type outputColVectorType;
+    private DataTypePhysicalVariation outputDataTypePhysicalVariation;
+    private Class<? extends VectorAggregateExpression> vecAggrClass;
+    private List<ConstantVectorExpression> constants;
+    private GenericUDAFEvaluator evaluator;
+    private GenericUDAFEvaluator.Mode udafEvaluatorMode;
+
+    public VectorAggregationDescBuilder aggregationName(String aggregationName) {
+      this.aggregationName = aggregationName;
+      return this;
+    }
+
+    public VectorAggregationDescBuilder evaluator(GenericUDAFEvaluator evaluator) {
+      this.evaluator = evaluator;
+      return this;
+    }
+
+    public VectorAggregationDescBuilder udafEvaluatorMode(GenericUDAFEvaluator.Mode udafEvaluatorMode) {
+      this.udafEvaluatorMode = udafEvaluatorMode;
+      return this;
+    }
+
+    public VectorAggregationDescBuilder inputTypeInfo(TypeInfo inputTypeInfo) {
+      this.inputTypeInfo = inputTypeInfo;
+      return this;
+    }
+
+    public VectorAggregationDescBuilder inputColVectorType(ColumnVector.Type inputColVectorType) {
+      this.inputColVectorType = inputColVectorType;
+      return this;
+    }
+
+    public VectorAggregationDescBuilder inputExpression(VectorExpression inputExpression) {
+      this.inputExpression = inputExpression;
+      return this;
+    }
+
+    public VectorAggregationDescBuilder outputTypeInfo(TypeInfo outputTypeInfo) {
+      this.outputTypeInfo = outputTypeInfo;
+      return this;
+    }
+
+    public VectorAggregationDescBuilder outputColVectorType(ColumnVector.Type outputColVectorType) {
+      this.outputColVectorType = outputColVectorType;
+      this.outputDataTypePhysicalVariation =
+          (outputColVectorType == ColumnVector.Type.DECIMAL_64 ?
+              DataTypePhysicalVariation.DECIMAL_64 : DataTypePhysicalVariation.NONE);
+      return this;
+    }
+
+    public VectorAggregationDescBuilder vectorAggregationClass(
+        Class<? extends VectorAggregateExpression> vecAggrClass) {
+      this.vecAggrClass = vecAggrClass;
+      return this;
+    }
+
+    public VectorAggregationDescBuilder constants(List<ConstantVectorExpression> constants) {
+      this.constants = constants;
+      return this;
+    }
+
+    public VectorAggregationDesc build() {
+      final VectorAggregationDesc vectorAggregationDesc = new VectorAggregationDesc();
+
+      vectorAggregationDesc.aggregationName = aggregationName;
+      vectorAggregationDesc.evaluator = evaluator;
+      vectorAggregationDesc.udafEvaluatorMode = udafEvaluatorMode;
+      vectorAggregationDesc.inputTypeInfo = inputTypeInfo;
+      vectorAggregationDesc.inputColVectorType = inputColVectorType;
+      vectorAggregationDesc.inputExpression = inputExpression;
+      vectorAggregationDesc.outputTypeInfo = outputTypeInfo;
+      vectorAggregationDesc.outputColVectorType = outputColVectorType;
+      vectorAggregationDesc.outputDataTypePhysicalVariation = outputDataTypePhysicalVariation;
+      vectorAggregationDesc.vecAggrClass = vecAggrClass;
+      vectorAggregationDesc.constants = constants;
+
+      return vectorAggregationDesc;
+    }
   }
 
   public TypeInfo getInputTypeInfo() {
@@ -166,13 +252,17 @@ public class VectorAggregationDesc implements java.io.Serializable {
     return vecAggrClass;
   }
 
+  public List<ConstantVectorExpression> getConstants() {
+    return constants;
+  }
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append(vecAggrClass.getSimpleName());
     if (inputExpression != null) {
       sb.append("(");
-      sb.append(inputExpression.toString());
+      sb.append(inputExpression);
       sb.append(") -> ");
     } else {
       sb.append("(*) -> ");

@@ -26,10 +26,8 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
 import org.apache.hadoop.hive.metastore.Deadline;
 import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
@@ -38,10 +36,11 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.*;
-import org.apache.hadoop.hive.metastore.api.utils.DecimalUtils;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
+import org.apache.hadoop.hive.metastore.columnstats.ColStatsBuilder;
 import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -49,6 +48,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.assertEqualStatistics;
+import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.createColumnStatistics;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
 /**
@@ -178,7 +179,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     cachedStore.shutdown();
   }
 
-  @Test public void testPrewarmBlackList() throws Exception {
+  @Test public void testPrewarmBlackList() {
     Configuration conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CACHED_RAW_STORE_MAX_CACHE_MEMORY, "-1Kb");
@@ -201,7 +202,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     cachedStore.shutdown();
   }
 
-  @Test public void testPrewarmWhiteList() throws Exception {
+  @Test public void testPrewarmWhiteList() {
     Configuration conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CACHED_RAW_STORE_MAX_CACHE_MEMORY, "-1Kb");
@@ -225,9 +226,9 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
   }
 
   //@Test
-  // Note: the 44Kb approximation has been determined based on trial/error. 
+  // Note: the 44Kb approximation has been determined based on trial/error.
   // If this starts failing on different env, might need another look.
-  public void testPrewarmMemoryEstimation() throws Exception {
+  public void testPrewarmMemoryEstimation() {
     Configuration conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CACHED_RAW_STORE_MAX_CACHE_MEMORY, "44Kb");
@@ -289,7 +290,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     List<Partition> db2PtnsOS =
         objectStore.getPartitions(DEFAULT_CATALOG_NAME, db2.getName(), db2Ptbl1.getTableName(), -1);
     Assert.assertTrue(db2Ptns.containsAll(db2PtnsOS));
-    // Create a new unpartitioned table under basedb1 
+    // Create a new unpartitioned table under basedb1
     Table db1Utbl2 = createUnpartitionedTableObject(db1);
     db1Utbl2.setTableName(db1.getName() + "_unptntbl2");
     objectStore.createTable(db1Utbl2);
@@ -343,12 +344,17 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     List<FieldSchema> columns = Arrays.asList(soldDateCol, customerCol);
     List<FieldSchema> partitionsColumns = Collections.singletonList(soldDateCol);
     Table salesTable =
-        createTable(tpcdsdb.getName(), "store_sales", columns, partitionsColumns);
+        createTable(tpcdsdb.getName(), "store_sales", createStorageDescriptor(columns), partitionsColumns);
     objectStore.createTable(salesTable);
+    MTable salesMTable = objectStore.ensureGetMTable(salesTable.getCatName(), salesTable.getDbName(), salesTable.getTableName());
 
     Map<String, ColumnStatisticsData> partitionStats = new HashMap<>();
-    partitionStats.put("1999", createLongStats(100, 50, null, null));
-    partitionStats.put("2000", createLongStats(200, 100, null, null));
+    ColumnStatisticsData data1 = new ColStatsBuilder<>(long.class).numNulls(100).numDVs(50)
+        .hll(1, 2, 3).kll(1, 2, 3).build();
+    partitionStats.put("1999", data1);
+    ColumnStatisticsData data2 = new ColStatsBuilder<>(long.class).numNulls(200).numDVs(100)
+        .hll(1, 2, 3, 4).kll(1, 2, 3, 4).build();
+    partitionStats.put("2000", data2);
 
     List<String> partNames = new ArrayList<>();
     for (Map.Entry<String, ColumnStatisticsData> pStat : partitionStats.entrySet()) {
@@ -357,8 +363,9 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
       objectStore.addPartition(p);
       String pName = FileUtils.makePartName(Collections.singletonList(soldDateCol.getName()), partitionValue);
       partNames.add(pName);
-      ColumnStatistics stats = createColStats(pStat.getValue(), salesTable, soldDateCol, pName);
-      objectStore.updatePartitionColumnStatistics(stats, partitionValue, null, -1);
+
+      ColumnStatistics stats = createColumnStatistics(pStat.getValue(), salesTable, soldDateCol, pName);
+      objectStore.updatePartitionColumnStatistics(salesTable, salesMTable, stats, partitionValue, null, -1);
     }
 
     List<ColumnStatistics> rawStats = objectStore
@@ -527,7 +534,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     List<String> db2Tables = cachedStore.getAllTables(DEFAULT_CATALOG_NAME, db2.getName());
     Assert.assertEquals(2, db2Tables.size());
     // Add a new table to db1 via CachedStore
-    // Create a new unpartitioned table under db1 
+    // Create a new unpartitioned table under db1
     Table db1Utbl2 = createUnpartitionedTableObject(db1);
     db1Utbl2.setTableName(db1.getName() + "_unptntbl2");
     cachedStore.createTable(db1Utbl2);
@@ -553,7 +560,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     cachedStore.shutdown();
   }
 
-  // Note: the 44Kb approximation has been determined based on trial/error. 
+  // Note: the 44Kb approximation has been determined based on trial/error.
   // If this starts failing on different env, might need another look.
   public void testGetAllTablesPrewarmMemoryLimit() throws Exception {
     Configuration conf = MetastoreConf.newMetastoreConf();
@@ -736,11 +743,9 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
   /**********************************************************************************************
    * Methods that test SharedCache
-   * @throws MetaException
-   * @throws NoSuchObjectException
    *********************************************************************************************/
 
-  @Test public void testSharedStoreDb() throws NoSuchObjectException, MetaException {
+  @Test public void testSharedStoreDb() {
     Configuration conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CACHED_RAW_STORE_MAX_CACHE_MEMORY, "-1Kb");
@@ -757,13 +762,13 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     sharedCache.addDatabaseToCache(localDb1);
     sharedCache.addDatabaseToCache(localDb2);
     sharedCache.addDatabaseToCache(localDb3);
-    Assert.assertEquals(sharedCache.getCachedDatabaseCount(), 3);
+    Assert.assertEquals(3, sharedCache.getCachedDatabaseCount());
     sharedCache.alterDatabaseInCache(DEFAULT_CATALOG_NAME, "db1", newDb1);
-    Assert.assertEquals(sharedCache.getCachedDatabaseCount(), 3);
+    Assert.assertEquals(3, sharedCache.getCachedDatabaseCount());
     sharedCache.removeDatabaseFromCache(DEFAULT_CATALOG_NAME, "db2");
-    Assert.assertEquals(sharedCache.getCachedDatabaseCount(), 2);
+    Assert.assertEquals(2, sharedCache.getCachedDatabaseCount());
     List<String> dbs = sharedCache.listCachedDatabases(DEFAULT_CATALOG_NAME);
-    Assert.assertEquals(dbs.size(), 2);
+    Assert.assertEquals(2, dbs.size());
     Assert.assertTrue(dbs.contains("newdb1"));
     Assert.assertTrue(dbs.contains("db3"));
     cachedStore.shutdown();
@@ -824,7 +829,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     Map<String, String> newParams1 = new HashMap<>();
     newParams1.put("key", "value");
     newSd1.setCols(newCols1);
-    newSd1.setParameters(params1);
+    newSd1.setParameters(newParams1);
     newSd1.setLocation("loc1");
     newTbl1.setSd(newSd1);
     newTbl1.setPartitionKeys(new ArrayList<>());
@@ -834,23 +839,23 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     sharedCache.addTableToCache(DEFAULT_CATALOG_NAME, "db1", "tbl3", tbl3);
     sharedCache.addTableToCache(DEFAULT_CATALOG_NAME, "db2", "tbl1", tbl1);
 
-    Assert.assertEquals(sharedCache.getCachedTableCount(), 4);
-    Assert.assertEquals(sharedCache.getSdCache().size(), 2);
+    Assert.assertEquals(4, sharedCache.getCachedTableCount());
+    Assert.assertEquals(2, sharedCache.getSdCache().size());
 
     Table t = sharedCache.getTableFromCache(DEFAULT_CATALOG_NAME, "db1", "tbl1");
-    Assert.assertEquals(t.getSd().getLocation(), "loc1");
+    Assert.assertEquals("loc1", t.getSd().getLocation());
 
     sharedCache.removeTableFromCache(DEFAULT_CATALOG_NAME, "db1", "tbl1");
-    Assert.assertEquals(sharedCache.getCachedTableCount(), 3);
-    Assert.assertEquals(sharedCache.getSdCache().size(), 2);
+    Assert.assertEquals(3, sharedCache.getCachedTableCount());
+    Assert.assertEquals(2, sharedCache.getSdCache().size());
 
     sharedCache.alterTableInCache(DEFAULT_CATALOG_NAME, "db2", "tbl1", newTbl1);
-    Assert.assertEquals(sharedCache.getCachedTableCount(), 3);
-    Assert.assertEquals(sharedCache.getSdCache().size(), 3);
+    Assert.assertEquals(3, sharedCache.getCachedTableCount());
+    Assert.assertEquals(3, sharedCache.getSdCache().size());
 
     sharedCache.removeTableFromCache(DEFAULT_CATALOG_NAME, "db1", "tbl2");
-    Assert.assertEquals(sharedCache.getCachedTableCount(), 2);
-    Assert.assertEquals(sharedCache.getSdCache().size(), 2);
+    Assert.assertEquals(2, sharedCache.getCachedTableCount());
+    Assert.assertEquals(2, sharedCache.getSdCache().size());
     cachedStore.shutdown();
   }
 
@@ -871,13 +876,14 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     sharedCache.addDatabaseToCache(db);
     FieldSchema col1 = new FieldSchema("col1", "int", "integer column");
     FieldSchema col2 = new FieldSchema("col2", "string", "string column");
-    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    List<FieldSchema> cols = new ArrayList<>();
     cols.add(col1);
     cols.add(col2);
-    List<FieldSchema> ptnCols = new ArrayList<FieldSchema>();
-    Table tbl1 = createTable(dbName, tbl1Name, cols, ptnCols);
+    List<FieldSchema> ptnCols = new ArrayList<>();
+    StorageDescriptor sd = createStorageDescriptor(cols);
+    Table tbl1 = createTable(dbName, tbl1Name, sd, ptnCols);
     sharedCache.addTableToCache(DEFAULT_CATALOG_NAME, dbName, tbl1Name, tbl1);
-    Table tbl2 = createTable(dbName, tbl2Name, cols, ptnCols);
+    Table tbl2 = createTable(dbName, tbl2Name, sd, ptnCols);
     sharedCache.addTableToCache(DEFAULT_CATALOG_NAME, dbName, tbl2Name, tbl2);
 
     Partition part1 = new Partition();
@@ -890,7 +896,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     sd1.setParameters(params1);
     sd1.setLocation("loc1");
     part1.setSd(sd1);
-    part1.setValues(Arrays.asList("201701"));
+    part1.setValues(Collections.singletonList("201701"));
 
     Partition part2 = new Partition();
     StorageDescriptor sd2 = new StorageDescriptor();
@@ -902,7 +908,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     sd2.setParameters(params2);
     sd2.setLocation("loc2");
     part2.setSd(sd2);
-    part2.setValues(Arrays.asList("201702"));
+    part2.setValues(Collections.singletonList("201702"));
 
     Partition part3 = new Partition();
     StorageDescriptor sd3 = new StorageDescriptor();
@@ -914,7 +920,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     sd3.setParameters(params3);
     sd3.setLocation("loc3");
     part3.setSd(sd3);
-    part3.setValues(Arrays.asList("201703"));
+    part3.setValues(Collections.singletonList("201703"));
 
     Partition newPart1 = new Partition();
     newPart1.setDbName(dbName);
@@ -925,26 +931,27 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     Map<String, String> newParams1 = new HashMap<>();
     newParams1.put("key", "value");
     newSd1.setCols(newCols1);
-    newSd1.setParameters(params1);
+    newSd1.setParameters(newParams1);
     newSd1.setLocation("loc1new");
     newPart1.setSd(newSd1);
-    newPart1.setValues(Arrays.asList("201701"));
+    newPart1.setValues(Collections.singletonList("201701"));
 
     sharedCache.addPartitionToCache(DEFAULT_CATALOG_NAME, dbName, tbl1Name, part1);
     sharedCache.addPartitionToCache(DEFAULT_CATALOG_NAME, dbName, tbl1Name, part2);
     sharedCache.addPartitionToCache(DEFAULT_CATALOG_NAME, dbName, tbl1Name, part3);
     sharedCache.addPartitionToCache(DEFAULT_CATALOG_NAME, dbName, tbl2Name, part1);
 
-    Partition t = sharedCache.getPartitionFromCache(DEFAULT_CATALOG_NAME, dbName, tbl1Name, Arrays.asList("201701"));
-    Assert.assertEquals(t.getSd().getLocation(), "loc1");
+    Partition t = sharedCache.getPartitionFromCache(DEFAULT_CATALOG_NAME, dbName, tbl1Name,
+        Collections.singletonList("201701"));
+    Assert.assertEquals("loc1", t.getSd().getLocation());
 
-    sharedCache.removePartitionFromCache(DEFAULT_CATALOG_NAME, dbName, tbl2Name, Arrays.asList("201701"));
-    t = sharedCache.getPartitionFromCache(DEFAULT_CATALOG_NAME, dbName, tbl2Name, Arrays.asList("201701"));
+    sharedCache.removePartitionFromCache(DEFAULT_CATALOG_NAME, dbName, tbl2Name, Collections.singletonList("201701"));
+    t = sharedCache.getPartitionFromCache(DEFAULT_CATALOG_NAME, dbName, tbl2Name, Collections.singletonList("201701"));
     Assert.assertNull(t);
 
-    sharedCache.alterPartitionInCache(DEFAULT_CATALOG_NAME, dbName, tbl1Name, Arrays.asList("201701"), newPart1);
-    t = sharedCache.getPartitionFromCache(DEFAULT_CATALOG_NAME, dbName, tbl1Name, Arrays.asList("201701"));
-    Assert.assertEquals(t.getSd().getLocation(), "loc1new");
+    sharedCache.alterPartitionInCache(DEFAULT_CATALOG_NAME, dbName, tbl1Name, Collections.singletonList("201701"), newPart1);
+    t = sharedCache.getPartitionFromCache(DEFAULT_CATALOG_NAME, dbName, tbl1Name, Collections.singletonList("201701"));
+    Assert.assertEquals("loc1new", t.getSd().getLocation());
     cachedStore.shutdown();
   }
 
@@ -982,10 +989,10 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     List<String> partVals2 = new ArrayList<>();
     partVals2.add("2");
 
-    Partition ptn1 = new Partition(partVals1, dbName, tblName, 0, 0, sd, new HashMap<>());
+    Partition ptn1 = createPartition(tbl, partVals1);
     ptn1.setCatName(DEFAULT_CATALOG_NAME);
     cachedStore.addPartition(ptn1);
-    Partition ptn2 = new Partition(partVals2, dbName, tblName, 0, 0, sd, new HashMap<>());
+    Partition ptn2 = createPartition(tbl, partVals2);
     ptn2.setCatName(DEFAULT_CATALOG_NAME);
     cachedStore.addPartition(ptn2);
 
@@ -1017,9 +1024,9 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     aggrPartVals.add("1");
     aggrPartVals.add("2");
     AggrStats aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames, CacheUtils.HIVE_ENGINE);
-    Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumNulls(), 100);
+    Assert.assertEquals(100, aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumNulls());
     aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames, CacheUtils.HIVE_ENGINE);
-    Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumNulls(), 100);
+    Assert.assertEquals(100, aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumNulls());
 
     objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName(),
         Warehouse.makePartName(tbl.getPartitionKeys(), partVals1), partVals1, colName, CacheUtils.HIVE_ENGINE);
@@ -1032,7 +1039,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     cachedStore.shutdown();
   }
 
-  //@Test
+  @Test
   public void testPartitionAggrStats() throws Exception {
     Configuration conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
@@ -1049,70 +1056,51 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     db.setCatalogName(DEFAULT_CATALOG_NAME);
     cachedStore.createDatabase(db);
 
-    List<FieldSchema> cols = new ArrayList<>();
-    cols.add(new FieldSchema(colName, "int", null));
-    List<FieldSchema> partCols = new ArrayList<>();
-    partCols.add(new FieldSchema("col", "int", null));
-    StorageDescriptor sd = new StorageDescriptor(cols, null, "input", "output", false, 0,
-        new SerDeInfo("serde", "seriallib", new HashMap<>()), null, null, null);
+    FieldSchema col = new FieldSchema(colName, "int", null);
+    List<FieldSchema> cols = Collections.singletonList(col);
+    List<FieldSchema> partCols = Collections.singletonList(new FieldSchema("col", "int", null));
+    StorageDescriptor sd = createStorageDescriptor(cols);
 
-    Table tbl = new Table(tblName, dbName, null, 0, 0, 0, sd, partCols, new HashMap<>(), null, null,
-        TableType.MANAGED_TABLE.toString());
-    tbl.setCatName(DEFAULT_CATALOG_NAME);
-    cachedStore.createTable(tbl);
+    Table table = createTable(dbName, tblName, sd, partCols);
+    cachedStore.createTable(table);
 
-    List<String> partVals1 = new ArrayList<>();
-    partVals1.add("1");
-    List<String> partVals2 = new ArrayList<>();
-    partVals2.add("2");
+    List<String> partVals1 = Collections.singletonList("1");
+    cachedStore.addPartition(createPartition(table, partVals1));
 
-    Partition ptn1 = new Partition(partVals1, dbName, tblName, 0, 0, sd, new HashMap<>());
-    ptn1.setCatName(DEFAULT_CATALOG_NAME);
-    cachedStore.addPartition(ptn1);
-    Partition ptn2 = new Partition(partVals2, dbName, tblName, 0, 0, sd, new HashMap<>());
-    ptn2.setCatName(DEFAULT_CATALOG_NAME);
-    cachedStore.addPartition(ptn2);
+    ColumnStatisticsData data = new ColStatsBuilder<>(long.class).numNulls(50).numDVs(30)
+        .low(0L).high(100L).build();
+    ColumnStatistics stats = createColumnStatistics(data, table, col, "part1");
+    cachedStore.updatePartitionColumnStatistics(stats, partVals1, null, -1);
 
-    ColumnStatistics stats = new ColumnStatistics();
-    ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc(true, dbName, tblName);
-    statsDesc.setPartName("col");
-    List<ColumnStatisticsObj> colStatObjs = new ArrayList<>();
+    List<String> partVals2 = Collections.singletonList("2");
+    cachedStore.addPartition(createPartition(table, partVals2));
 
-    ColumnStatisticsData data = new ColumnStatisticsData();
-    ColumnStatisticsObj colStats = new ColumnStatisticsObj(colName, "int", data);
-    LongColumnStatsDataInspector longStats = new LongColumnStatsDataInspector();
-    longStats.setLowValue(0);
-    longStats.setHighValue(100);
-    longStats.setNumNulls(50);
-    longStats.setNumDVs(30);
-    data.setLongStats(longStats);
-    colStatObjs.add(colStats);
+    data = new ColStatsBuilder<>(long.class).numNulls(50).numDVs(40)
+        .low(0L).high(100L).build();
+    stats = createColumnStatistics(data, table, col, "part2");
+    cachedStore.updatePartitionColumnStatistics(stats, partVals2, null, -1);
 
-    stats.setStatsDesc(statsDesc);
-    stats.setStatsObj(colStatObjs);
-    stats.setEngine(CacheUtils.HIVE_ENGINE);
+    List<String> colNames = Collections.singletonList(colName);
+    List<String> aggrPartVals = Arrays.asList("1", "2");
 
-    cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals1, null, -1);
+    AggrStats aggrStats = cachedStore.get_aggr_stats_for(
+        DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames, CacheUtils.HIVE_ENGINE);
+    ColumnStatisticsData computedData = aggrStats.getColStats().get(0).getStatsData();
+    ColumnStatisticsData expectedData = new ColStatsBuilder<>(long.class).numNulls(100).numDVs(40)
+        .low(0L).high(100L).build();
+    Assert.assertEquals(expectedData, computedData);
 
-    longStats.setNumDVs(40);
-    cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals2, null, -1);
+    // read a second time, the result should not change
+    aggrStats = cachedStore.get_aggr_stats_for(
+        DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames, CacheUtils.HIVE_ENGINE);
+    computedData = aggrStats.getColStats().get(0).getStatsData();
+    Assert.assertEquals(expectedData, computedData);
 
-    List<String> colNames = new ArrayList<>();
-    colNames.add(colName);
-    List<String> aggrPartVals = new ArrayList<>();
-    aggrPartVals.add("1");
-    aggrPartVals.add("2");
-    AggrStats aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames, CacheUtils.HIVE_ENGINE);
-    Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumNulls(), 100);
-    Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumDVs(), 40);
-    aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames, CacheUtils.HIVE_ENGINE);
-    Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumNulls(), 100);
-    Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumDVs(), 40);
     cachedStore.shutdown();
   }
 
-  //@Test
-  public void testPartitionAggrStatsBitVector() throws Exception {
+  @Test
+  public void testPartitionAggrStatsBitVectorKll() throws Exception {
     Configuration conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CACHED_RAW_STORE_MAX_CACHE_MEMORY, "-1Kb");
@@ -1129,79 +1117,46 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     db.setCatalogName(DEFAULT_CATALOG_NAME);
     cachedStore.createDatabase(db);
 
-    List<FieldSchema> cols = new ArrayList<>();
-    cols.add(new FieldSchema(colName, "int", null));
-    List<FieldSchema> partCols = new ArrayList<>();
-    partCols.add(new FieldSchema("col", "int", null));
-    StorageDescriptor sd = new StorageDescriptor(cols, null, "input", "output", false, 0,
-        new SerDeInfo("serde", "seriallib", new HashMap<>()), null, null, null);
+    FieldSchema col = new FieldSchema(colName, "int", null);
+    List<FieldSchema> cols = Collections.singletonList(col);
+    List<FieldSchema> partCols = Collections.singletonList(new FieldSchema("col", "int", null));
+    StorageDescriptor sd = createStorageDescriptor(cols);
 
-    Table tbl = new Table(tblName, dbName, null, 0, 0, 0, sd, partCols, new HashMap<>(), null, null,
-        TableType.MANAGED_TABLE.toString());
-    tbl.setCatName(DEFAULT_CATALOG_NAME);
-    cachedStore.createTable(tbl);
+    Table table = createTable(dbName, tblName, sd, partCols);
+    cachedStore.createTable(table);
 
-    List<String> partVals1 = new ArrayList<>();
-    partVals1.add("1");
-    List<String> partVals2 = new ArrayList<>();
-    partVals2.add("2");
+    List<String> partVals1 = Collections.singletonList("1");
+    cachedStore.addPartition(createPartition(table, partVals1));
 
-    Partition ptn1 = new Partition(partVals1, dbName, tblName, 0, 0, sd, new HashMap<>());
-    ptn1.setCatName(DEFAULT_CATALOG_NAME);
-    cachedStore.addPartition(ptn1);
-    Partition ptn2 = new Partition(partVals2, dbName, tblName, 0, 0, sd, new HashMap<>());
-    ptn2.setCatName(DEFAULT_CATALOG_NAME);
-    cachedStore.addPartition(ptn2);
+    ColumnStatisticsData data = new ColStatsBuilder<>(long.class).numNulls(50).numDVs(30)
+        .low(0L).high(100L).hll(1, 2, 3).kll(1, 2, 3).build();
+    ColumnStatistics stats = createColumnStatistics(data, table, col, "part1");
+    cachedStore.updatePartitionColumnStatistics(stats, partVals1, null, -1);
 
-    ColumnStatistics stats = new ColumnStatistics();
-    ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc(true, dbName, tblName);
-    statsDesc.setPartName("col");
-    List<ColumnStatisticsObj> colStatObjs = new ArrayList<>();
+    List<String> partVals2 = Collections.singletonList("2");
+    cachedStore.addPartition(createPartition(table, partVals2));
+    data = new ColStatsBuilder<>(long.class).numNulls(50).numDVs(30)
+        .low(0L).high(100L).hll(1, 2, 3, 4).kll(2, 3, 4, 5).build();
+    stats = createColumnStatistics(data, table, col, "part2");
+    cachedStore.updatePartitionColumnStatistics(stats, partVals2, null, -1);
 
-    ColumnStatisticsData data = new ColumnStatisticsData();
-    ColumnStatisticsObj colStats = new ColumnStatisticsObj(colName, "int", data);
-    LongColumnStatsDataInspector longStats = new LongColumnStatsDataInspector();
-    longStats.setLowValue(0);
-    longStats.setHighValue(100);
-    longStats.setNumNulls(50);
-    longStats.setNumDVs(30);
+    List<String> colNames = Collections.singletonList(colName);
+    List<String> aggrPartVals = Arrays.asList("1", "2");
 
-    HyperLogLog hll = HyperLogLog.builder().build();
-    hll.addLong(1);
-    hll.addLong(2);
-    hll.addLong(3);
-    longStats.setBitVectors(hll.serialize());
+    AggrStats aggrStats = cachedStore.get_aggr_stats_for(
+        DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames, CacheUtils.HIVE_ENGINE);
 
-    data.setLongStats(longStats);
-    colStatObjs.add(colStats);
+    ColumnStatisticsData columnStatsData = aggrStats.getColStats().get(0).getStatsData();
+    ColumnStatisticsData expectedData = new ColStatsBuilder<>(long.class).numNulls(100).numDVs(4)
+        .low(0L).high(100L).hll(1, 2, 3)
+        .kll(1, 2, 3, 2, 3, 4, 5).build();
+    assertEqualStatistics(expectedData, columnStatsData);
 
-    stats.setStatsDesc(statsDesc);
-    stats.setStatsObj(colStatObjs);
-    stats.setEngine(CacheUtils.HIVE_ENGINE);
+    aggrStats = cachedStore.get_aggr_stats_for(
+        DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames, CacheUtils.HIVE_ENGINE);
+    columnStatsData = aggrStats.getColStats().get(0).getStatsData();
+    assertEqualStatistics(expectedData, columnStatsData);
 
-    cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals1, null, -1);
-
-    longStats.setNumDVs(40);
-    hll = HyperLogLog.builder().build();
-    hll.addLong(2);
-    hll.addLong(3);
-    hll.addLong(4);
-    hll.addLong(5);
-    longStats.setBitVectors(hll.serialize());
-
-    cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals2, null, -1);
-
-    List<String> colNames = new ArrayList<>();
-    colNames.add(colName);
-    List<String> aggrPartVals = new ArrayList<>();
-    aggrPartVals.add("1");
-    aggrPartVals.add("2");
-    AggrStats aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames, CacheUtils.HIVE_ENGINE);
-    Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumNulls(), 100);
-    Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumDVs(), 5);
-    aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames, CacheUtils.HIVE_ENGINE);
-    Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumNulls(), 100);
-    Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumDVs(), 5);
     cachedStore.shutdown();
   }
 
@@ -1215,24 +1170,20 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     cachedStore.setConfForTest(conf);
     SharedCache sharedCache = CachedStore.getSharedCache();
 
-    List<String> dbNames = new ArrayList<String>(Arrays.asList("db1", "db2", "db3", "db4", "db5"));
-    List<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
-    ExecutorService executor = Executors.newFixedThreadPool(50, new ThreadFactory() {
-      @Override public Thread newThread(Runnable r) {
-        Thread t = Executors.defaultThreadFactory().newThread(r);
-        t.setDaemon(true);
-        return t;
-      }
+    List<String> dbNames = new ArrayList<>(Arrays.asList("db1", "db2", "db3", "db4", "db5"));
+    List<Callable<Object>> tasks = new ArrayList<>();
+    ExecutorService executor = Executors.newFixedThreadPool(50, r -> {
+      Thread t = Executors.defaultThreadFactory().newThread(r);
+      t.setDaemon(true);
+      return t;
     });
 
     // Create 5 dbsConstraintConstraint
     for (String dbName : dbNames) {
-      Callable<Object> c = new Callable<Object>() {
-        public Object call() {
-          Database db = createDatabaseObject(dbName, "user1");
-          sharedCache.addDatabaseToCache(db);
-          return null;
-        }
+      Callable<Object> c = () -> {
+        Database db = createDatabaseObject(dbName, "user1");
+        sharedCache.addDatabaseToCache(db);
+        return null;
       };
       tasks.add(c);
     }
@@ -1244,23 +1195,21 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     }
 
     // Created 5 tables under "db1"
-    List<String> tblNames = new ArrayList<String>(Arrays.asList("tbl1", "tbl2", "tbl3", "tbl4", "tbl5"));
+    List<String> tblNames = new ArrayList<>(Arrays.asList("tbl1", "tbl2", "tbl3", "tbl4", "tbl5"));
     tasks.clear();
     for (String tblName : tblNames) {
       FieldSchema col1 = new FieldSchema("col1", "int", "integer column");
       FieldSchema col2 = new FieldSchema("col2", "string", "string column");
-      List<FieldSchema> cols = new ArrayList<FieldSchema>();
+      List<FieldSchema> cols = new ArrayList<>();
       cols.add(col1);
       cols.add(col2);
       FieldSchema ptnCol1 = new FieldSchema("part1", "string", "string partition column");
-      List<FieldSchema> ptnCols = new ArrayList<FieldSchema>();
+      List<FieldSchema> ptnCols = new ArrayList<>();
       ptnCols.add(ptnCol1);
-      Callable<Object> c = new Callable<Object>() {
-        public Object call() {
-          Table tbl = createTable(dbNames.get(0), tblName, cols, ptnCols);
-          sharedCache.addTableToCache(DEFAULT_CATALOG_NAME, dbNames.get(0), tblName, tbl);
-          return null;
-        }
+      Callable<Object> c = () -> {
+        Table tbl = createTable(dbNames.get(0), tblName, createStorageDescriptor(cols), ptnCols);
+        sharedCache.addTableToCache(DEFAULT_CATALOG_NAME, dbNames.get(0), tblName, tbl);
+        return null;
       };
       tasks.add(c);
     }
@@ -1272,19 +1221,15 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     }
 
     // Add 5 partitions to all tables
-    List<String> ptnVals = new ArrayList<String>(Arrays.asList("aaa", "bbb", "ccc", "ddd", "eee"));
+    List<String> ptnVals = new ArrayList<>(Arrays.asList("aaa", "bbb", "ccc", "ddd", "eee"));
     tasks.clear();
     for (String tblName : tblNames) {
       Table tbl = sharedCache.getTableFromCache(DEFAULT_CATALOG_NAME, dbNames.get(0), tblName);
       for (String ptnVal : ptnVals) {
-        Map<String, String> partParams = new HashMap<String, String>();
-        Callable<Object> c = new Callable<Object>() {
-          public Object call() {
-            Partition ptn =
-                new Partition(Arrays.asList(ptnVal), dbNames.get(0), tblName, 0, 0, tbl.getSd(), partParams);
-            sharedCache.addPartitionToCache(DEFAULT_CATALOG_NAME, dbNames.get(0), tblName, ptn);
-            return null;
-          }
+        Callable<Object> c = () -> {
+          Partition ptn = createPartition(tbl, Collections.singletonList(ptnVal));
+          sharedCache.addPartitionToCache(DEFAULT_CATALOG_NAME, dbNames.get(0), tblName, ptn);
+          return null;
         };
         tasks.add(c);
       }
@@ -1293,26 +1238,26 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     for (String tblName : tblNames) {
       for (String ptnVal : ptnVals) {
         Partition ptn =
-            sharedCache.getPartitionFromCache(DEFAULT_CATALOG_NAME, dbNames.get(0), tblName, Arrays.asList(ptnVal));
+            sharedCache.getPartitionFromCache(DEFAULT_CATALOG_NAME, dbNames.get(0), tblName,
+                Collections.singletonList(ptnVal));
         Assert.assertNotNull(ptn);
         Assert.assertEquals(tblName, ptn.getTableName());
         Assert.assertEquals(tblName, ptn.getTableName());
-        Assert.assertEquals(Arrays.asList(ptnVal), ptn.getValues());
+        Assert.assertEquals(Collections.singletonList(ptnVal), ptn.getValues());
       }
     }
 
     // Drop all partitions from "tbl1", "tbl2", "tbl3" and add 2 new partitions to "tbl4" and "tbl5"
-    List<String> newPtnVals = new ArrayList<String>(Arrays.asList("fff", "ggg"));
-    List<String> dropPtnTblNames = new ArrayList<String>(Arrays.asList("tbl1", "tbl2", "tbl3"));
-    List<String> addPtnTblNames = new ArrayList<String>(Arrays.asList("tbl4", "tbl5"));
+    List<String> newPtnVals = new ArrayList<>(Arrays.asList("fff", "ggg"));
+    List<String> dropPtnTblNames = new ArrayList<>(Arrays.asList("tbl1", "tbl2", "tbl3"));
+    List<String> addPtnTblNames = new ArrayList<>(Arrays.asList("tbl4", "tbl5"));
     tasks.clear();
     for (String tblName : dropPtnTblNames) {
       for (String ptnVal : ptnVals) {
-        Callable<Object> c = new Callable<Object>() {
-          public Object call() {
-            sharedCache.removePartitionFromCache(DEFAULT_CATALOG_NAME, dbNames.get(0), tblName, Arrays.asList(ptnVal));
-            return null;
-          }
+        Callable<Object> c = () -> {
+          sharedCache.removePartitionFromCache(DEFAULT_CATALOG_NAME, dbNames.get(0), tblName,
+              Collections.singletonList(ptnVal));
+          return null;
         };
         tasks.add(c);
       }
@@ -1320,14 +1265,10 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     for (String tblName : addPtnTblNames) {
       Table tbl = sharedCache.getTableFromCache(DEFAULT_CATALOG_NAME, dbNames.get(0), tblName);
       for (String ptnVal : newPtnVals) {
-        Map<String, String> partParams = new HashMap<String, String>();
-        Callable<Object> c = new Callable<Object>() {
-          public Object call() {
-            Partition ptn =
-                new Partition(Arrays.asList(ptnVal), dbNames.get(0), tblName, 0, 0, tbl.getSd(), partParams);
-            sharedCache.addPartitionToCache(DEFAULT_CATALOG_NAME, dbNames.get(0), tblName, ptn);
-            return null;
-          }
+        Callable<Object> c = () -> {
+          Partition ptn = createPartition(tbl, Collections.singletonList(ptnVal));
+          sharedCache.addPartitionToCache(DEFAULT_CATALOG_NAME, dbNames.get(0), tblName, ptn);
+          return null;
         };
         tasks.add(c);
       }
@@ -1336,11 +1277,12 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     for (String tblName : addPtnTblNames) {
       for (String ptnVal : newPtnVals) {
         Partition ptn =
-            sharedCache.getPartitionFromCache(DEFAULT_CATALOG_NAME, dbNames.get(0), tblName, Arrays.asList(ptnVal));
+            sharedCache.getPartitionFromCache(DEFAULT_CATALOG_NAME, dbNames.get(0), tblName,
+                Collections.singletonList(ptnVal));
         Assert.assertNotNull(ptn);
         Assert.assertEquals(tblName, ptn.getTableName());
         Assert.assertEquals(tblName, ptn.getTableName());
-        Assert.assertEquals(Arrays.asList(ptnVal), ptn.getValues());
+        Assert.assertEquals(Collections.singletonList(ptnVal), ptn.getValues());
       }
     }
     for (String tblName : dropPtnTblNames) {
@@ -1367,12 +1309,13 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
     FieldSchema col1 = new FieldSchema("col1", "int", "integer column");
     FieldSchema col2 = new FieldSchema("col2", "string", "string column");
-    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    List<FieldSchema> cols = new ArrayList<>();
     cols.add(col1);
     cols.add(col2);
-    List<FieldSchema> ptnCols = new ArrayList<FieldSchema>();
-    Table tbl1 = createTable(dbName, tbl1Name, cols, ptnCols);
-    Table tbl2 = createTable(dbName, tbl2Name, cols, ptnCols);
+    StorageDescriptor sd = createStorageDescriptor(cols);
+    List<FieldSchema> ptnCols = new ArrayList<>();
+    Table tbl1 = createTable(dbName, tbl1Name, sd, ptnCols);
+    Table tbl2 = createTable(dbName, tbl2Name, sd, ptnCols);
 
     Map<String, Integer> tableSizeMap = new HashMap<>();
     String tbl1Key = CacheUtils.buildTableKey(DEFAULT_CATALOG_NAME, dbName, tbl1Name);
@@ -1390,7 +1333,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     sd1.setParameters(params1);
     sd1.setLocation("loc1");
     part1.setSd(sd1);
-    part1.setValues(Arrays.asList("201701"));
+    part1.setValues(Collections.singletonList("201701"));
 
     Partition part2 = new Partition();
     StorageDescriptor sd2 = new StorageDescriptor();
@@ -1402,7 +1345,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     sd2.setParameters(params2);
     sd2.setLocation("loc2");
     part2.setSd(sd2);
-    part2.setValues(Arrays.asList("201702"));
+    part2.setValues(Collections.singletonList("201702"));
 
     Partition part3 = new Partition();
     StorageDescriptor sd3 = new StorageDescriptor();
@@ -1414,7 +1357,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     sd3.setParameters(params3);
     sd3.setLocation("loc3");
     part3.setSd(sd3);
-    part3.setValues(Arrays.asList("201703"));
+    part3.setValues(Collections.singletonList("201703"));
 
     Partition newPart1 = new Partition();
     newPart1.setDbName(dbName);
@@ -1425,12 +1368,12 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     Map<String, String> newParams1 = new HashMap<>();
     newParams1.put("key", "value");
     newSd1.setCols(newCols1);
-    newSd1.setParameters(params1);
+    newSd1.setParameters(newParams1);
     newSd1.setLocation("loc1new");
     newPart1.setSd(newSd1);
-    newPart1.setValues(Arrays.asList("201701"));
+    newPart1.setValues(Collections.singletonList("201701"));
 
-    SharedCache sharedCache = cachedStore.getSharedCache();
+    SharedCache sharedCache = CachedStore.getSharedCache();
     sharedCache.setConcurrencyLevel(1);
     sharedCache.setTableSizeMap(tableSizeMap);
     sharedCache.initialize(conf);
@@ -1443,11 +1386,12 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     sharedCache.addPartitionToCache(DEFAULT_CATALOG_NAME, dbName, tbl1Name, part2);
     sharedCache.addPartitionToCache(DEFAULT_CATALOG_NAME, dbName, tbl1Name, part3);
 
-    Partition p = sharedCache.getPartitionFromCache(DEFAULT_CATALOG_NAME, dbName, tbl1Name, Arrays.asList("201701"));
+    Partition p = sharedCache.getPartitionFromCache(DEFAULT_CATALOG_NAME, dbName, tbl1Name,
+        Collections.singletonList("201701"));
     Assert.assertNull(p);
 
     sharedCache.addPartitionToCache(DEFAULT_CATALOG_NAME, dbName, tbl2Name, newPart1);
-    p = sharedCache.getPartitionFromCache(DEFAULT_CATALOG_NAME, dbName, tbl2Name, Arrays.asList("201701"));
+    p = sharedCache.getPartitionFromCache(DEFAULT_CATALOG_NAME, dbName, tbl2Name, Collections.singletonList("201701"));
     Assert.assertNotNull(p);
     cachedStore.shutdown();
   }
@@ -1477,7 +1421,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     tableSizeMap.put(db2Utbl1TblKey, 4000);
     tableSizeMap.put(db2Ptbl1TblKey, 4000);
 
-    SharedCache sc = cachedStore.getSharedCache();
+    SharedCache sc = CachedStore.getSharedCache();
     sc.setConcurrencyLevel(1);
     sc.setTableSizeMap(tableSizeMap);
     sc.initialize(conf);
@@ -1523,7 +1467,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     Table tblDb2Utbl1 = objectStore.getTable(DEFAULT_CATALOG_NAME, db2Utbl1.getDbName(), db2Utbl1.getTableName());
     Table tblDb2Ptbl1 = objectStore.getTable(DEFAULT_CATALOG_NAME, db2Ptbl1.getDbName(), db2Ptbl1.getTableName());
 
-    SharedCache sc = cachedStore.getSharedCache();
+    SharedCache sc = CachedStore.getSharedCache();
     sc.setConcurrencyLevel(1);
     sc.setTableSizeMap(tableSizeMap);
     sc.initialize(conf);
@@ -1558,7 +1502,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     Table tbl = createUnpartitionedTableObject(db);
 
     sharedCache.addTableToCache(DEFAULT_CATALOG_NAME, "db", tbl.getTableName(), tbl);
-    Assert.assertEquals(sharedCache.getCachedTableCount(), 1);
+    Assert.assertEquals(1, sharedCache.getCachedTableCount());
 
     List<SQLPrimaryKey> origKeys = createPrimaryKeys(tbl);
     SQLAllTableConstraints constraints = new SQLAllTableConstraints();
@@ -1576,7 +1520,8 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     modifiedKey.setPk_name("pk_modified");
 
     sharedCache
-        .addPrimaryKeysToCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), Arrays.asList(modifiedKey));
+        .addPrimaryKeysToCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(),
+            Collections.singletonList(modifiedKey));
     constraints = new SQLAllTableConstraints();
     List<SQLPrimaryKey> list = new ArrayList<>();
     list.add(origKeys.get(0));
@@ -1589,11 +1534,11 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
     sharedCache.removeConstraintFromCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), "pk1");
     constraints = new SQLAllTableConstraints();
-    constraints.setPrimaryKeys(Arrays.asList(modifiedKey));
+    constraints.setPrimaryKeys(Collections.singletonList(modifiedKey));
     sharedCache
         .refreshAllTableConstraintsInCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), constraints);
     cachedKeys = sharedCache.listCachedPrimaryKeys(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName());
-    Assert.assertEquals(Arrays.asList(modifiedKey), cachedKeys);
+    Assert.assertEquals(Collections.singletonList(modifiedKey), cachedKeys);
 
     cachedStore.shutdown();
   }
@@ -1613,7 +1558,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     Table tbl = createUnpartitionedTableObject(db);
 
     sharedCache.addTableToCache(DEFAULT_CATALOG_NAME, "db", tbl.getTableName(), tbl);
-    Assert.assertEquals(sharedCache.getCachedTableCount(), 1);
+    Assert.assertEquals(1, sharedCache.getCachedTableCount());
 
     List<SQLNotNullConstraint> origKeys = createNotNullConstraint(tbl);
     SQLAllTableConstraints constraints = new SQLAllTableConstraints();
@@ -1631,7 +1576,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     modifiedKey.setNn_name("nn_modified");
 
     sharedCache.addNotNullConstraintsToCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(),
-        Arrays.asList(modifiedKey));
+        Collections.singletonList(modifiedKey));
     constraints = new SQLAllTableConstraints();
     List<SQLNotNullConstraint> list = new ArrayList<>();
     list.add(origKeys.get(0));
@@ -1644,11 +1589,11 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
     sharedCache.removeConstraintFromCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), "nn1");
     constraints = new SQLAllTableConstraints();
-    constraints.setNotNullConstraints(Arrays.asList(modifiedKey));
+    constraints.setNotNullConstraints(Collections.singletonList(modifiedKey));
     sharedCache
         .refreshAllTableConstraintsInCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), constraints);
     cachedKeys = sharedCache.listCachedNotNullConstraints(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName());
-    Assert.assertEquals(Arrays.asList(modifiedKey), cachedKeys);
+    Assert.assertEquals(Collections.singletonList(modifiedKey), cachedKeys);
 
     cachedStore.shutdown();
   }
@@ -1668,7 +1613,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     Table tbl = createUnpartitionedTableObject(db);
 
     sharedCache.addTableToCache(DEFAULT_CATALOG_NAME, "db", tbl.getTableName(), tbl);
-    Assert.assertEquals(sharedCache.getCachedTableCount(), 1);
+    Assert.assertEquals(1, sharedCache.getCachedTableCount());
 
     List<SQLUniqueConstraint> origKeys = createUniqueConstraint(tbl);
     SQLAllTableConstraints constraints = new SQLAllTableConstraints();
@@ -1686,7 +1631,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     modifiedKey.setUk_name("uk_modified");
 
     sharedCache.addUniqueConstraintsToCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(),
-        Arrays.asList(modifiedKey));
+        Collections.singletonList(modifiedKey));
     cachedKeys = sharedCache.listCachedUniqueConstraint(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName());
     Assert.assertEquals(cachedKeys, new ArrayList<>());
 
@@ -1702,11 +1647,11 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
     sharedCache.removeConstraintFromCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), "uk1");
     constraints = new SQLAllTableConstraints();
-    constraints.setUniqueConstraints(Arrays.asList(modifiedKey));
+    constraints.setUniqueConstraints(Collections.singletonList(modifiedKey));
     sharedCache
         .refreshAllTableConstraintsInCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), constraints);
     cachedKeys = sharedCache.listCachedUniqueConstraint(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName());
-    Assert.assertEquals(Arrays.asList(modifiedKey), cachedKeys);
+    Assert.assertEquals(Collections.singletonList(modifiedKey), cachedKeys);
 
     cachedStore.shutdown();
   }
@@ -1730,7 +1675,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     sharedCache.addTableToCache(DEFAULT_CATALOG_NAME, "db", tbl.getTableName(), tbl);
     sharedCache.addTableToCache(DEFAULT_CATALOG_NAME, "db1", tbl1.getTableName(), tbl1);
 
-    Assert.assertEquals(sharedCache.getCachedTableCount(), 2);
+    Assert.assertEquals(2, sharedCache.getCachedTableCount());
 
     List<SQLForeignKey> origKeys = createForeignKeys(tbl, tbl, "fk1");
 
@@ -1746,16 +1691,17 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     Assert.assertEquals(origKeys, cachedKeys);
 
     // List operation with different parent table
-    cachedKeys = sharedCache
-        .listCachedForeignKeys(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), "dummyDB", "dummyTable");
-    Assert.assertEquals(cachedKeys.size(), 0);
+    cachedKeys = sharedCache.listCachedForeignKeys(
+        DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), "dummyDB", "dummyTable");
+    Assert.assertEquals(0, cachedKeys.size());
 
     SQLForeignKey modifiedKey = origKeys.get(0).deepCopy();
     modifiedKey.setFkcolumn_name("col3");
     modifiedKey.setFk_name("fk_modified");
 
     sharedCache
-        .addForeignKeysToCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), Arrays.asList(modifiedKey));
+        .addForeignKeysToCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(),
+            Collections.singletonList(modifiedKey));
     cachedKeys = sharedCache
         .listCachedForeignKeys(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), tbl.getDbName(),
             tbl.getTableName());
@@ -1776,13 +1722,13 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
     sharedCache.removeConstraintFromCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), "fk1");
     constraints = new SQLAllTableConstraints();
-    constraints.setForeignKeys(Arrays.asList(modifiedKey));
+    constraints.setForeignKeys(Collections.singletonList(modifiedKey));
     sharedCache
         .refreshAllTableConstraintsInCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), constraints);
     cachedKeys = sharedCache
         .listCachedForeignKeys(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), tbl.getDbName(),
             tbl.getTableName());
-    Assert.assertEquals(Arrays.asList(modifiedKey), cachedKeys);
+    Assert.assertEquals(Collections.singletonList(modifiedKey), cachedKeys);
 
     cachedStore.shutdown();
   }
@@ -1803,7 +1749,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
     sharedCache.addTableToCache(DEFAULT_CATALOG_NAME, "db", tbl.getTableName(), tbl);
 
-    Assert.assertEquals(sharedCache.getCachedTableCount(), 1);
+    Assert.assertEquals(1, sharedCache.getCachedTableCount());
 
     List<SQLDefaultConstraint> origKeys = createDefaultConstraint(tbl);
     SQLAllTableConstraints constraints = new SQLAllTableConstraints();
@@ -1820,7 +1766,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     modifiedKey.setDc_name("dc_modified");
 
     sharedCache.addDefaultConstraintsToCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(),
-        Arrays.asList(modifiedKey));
+        Collections.singletonList(modifiedKey));
     cachedKeys = sharedCache.listCachedDefaultConstraint(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName());
     Assert.assertEquals(cachedKeys, new ArrayList<>());
 
@@ -1836,11 +1782,11 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
     sharedCache.removeConstraintFromCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), "dc1");
     constraints = new SQLAllTableConstraints();
-    constraints.setDefaultConstraints(Arrays.asList(modifiedKey));
+    constraints.setDefaultConstraints(Collections.singletonList(modifiedKey));
     sharedCache
         .refreshAllTableConstraintsInCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), constraints);
     cachedKeys = sharedCache.listCachedDefaultConstraint(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName());
-    Assert.assertEquals(Arrays.asList(modifiedKey), cachedKeys);
+    Assert.assertEquals(Collections.singletonList(modifiedKey), cachedKeys);
 
     cachedStore.shutdown();
   }
@@ -1861,7 +1807,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
     sharedCache.addTableToCache(DEFAULT_CATALOG_NAME, "db", tbl.getTableName(), tbl);
 
-    Assert.assertEquals(sharedCache.getCachedTableCount(), 1);
+    Assert.assertEquals(1, sharedCache.getCachedTableCount());
 
     List<SQLCheckConstraint> origKeys = createCheckConstraint(tbl);
     SQLAllTableConstraints constraints = new SQLAllTableConstraints();
@@ -1879,7 +1825,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     modifiedKey.setDc_name("cc_modified");
 
     sharedCache.addCheckConstraintsToCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(),
-        Arrays.asList(modifiedKey));
+        Collections.singletonList(modifiedKey));
     cachedKeys = sharedCache.listCachedCheckConstraint(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName());
     Assert.assertEquals(cachedKeys, new ArrayList<>());
 
@@ -1898,7 +1844,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     Assert.assertEquals(cachedKeys, new ArrayList<>());
 
     constraints = new SQLAllTableConstraints();
-    constraints.setCheckConstraints(Arrays.asList(modifiedKey));
+    constraints.setCheckConstraints(Collections.singletonList(modifiedKey));
     sharedCache
         .refreshAllTableConstraintsInCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), constraints);
     cachedKeys = sharedCache.listCachedCheckConstraint(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName());
@@ -1923,7 +1869,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
     sharedCache.addTableToCache(DEFAULT_CATALOG_NAME, "db", tbl.getTableName(), tbl);
 
-    Assert.assertEquals(sharedCache.getCachedTableCount(), 1);
+    Assert.assertEquals(1, sharedCache.getCachedTableCount());
 
     SQLAllTableConstraints originalConstraints = new SQLAllTableConstraints();
     originalConstraints.setPrimaryKeys(createPrimaryKeys(tbl));
@@ -1950,7 +1896,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     originalConstraints.setCheckConstraints(cc);
 
     sharedCache.addCheckConstraintsToCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(),
-        Arrays.asList(checkConstraint));
+        Collections.singletonList(checkConstraint));
     cachedConstraints =
         sharedCache.listCachedAllTableConstraints(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName());
     Assert.assertEquals(new SQLAllTableConstraints(), cachedConstraints);
@@ -1988,23 +1934,24 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
             1, "pk1",false, false, false);
     key.setCatName(DEFAULT_CATALOG_NAME);
 
-    return Arrays.asList(key);
+    return Collections.singletonList(key);
   }
 
   private List<SQLNotNullConstraint> createNotNullConstraint(Table tbl) {
     SQLNotNullConstraint key = new SQLNotNullConstraint(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(),
             "col1", "nn1",false, false, false);
 
-    return Arrays.asList(key);
+    return Collections.singletonList(key);
   }
 
   private List<SQLUniqueConstraint> createUniqueConstraint(Table tbl) {
     SQLUniqueConstraint key = new SQLUniqueConstraint(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(),
             "col1", 1, "uk1",false, false, false);
 
-    return Arrays.asList(key);
+    return Collections.singletonList(key);
   }
 
+  @SuppressWarnings("SameParameterValue")
   private List<SQLForeignKey> createForeignKeys(Table primaryKeytbl, Table foreignKeyTbl, String fKeyName) {
     String foreignKeyColumn;
     if (primaryKeytbl == foreignKeyTbl) {
@@ -2017,26 +1964,23 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
             1,1,1, fKeyName, "pk1", false, false, false);
     key.setCatName(DEFAULT_CATALOG_NAME);
 
-    return Arrays.asList(key);
+    return Collections.singletonList(key);
   }
 
   private List<SQLDefaultConstraint> createDefaultConstraint(Table tbl) {
     SQLDefaultConstraint dc =
         new SQLDefaultConstraint(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), "col1", "1",
             "dc1", false, false, false);
-    return Arrays.asList(dc);
+    return Collections.singletonList(dc);
   }
 
   private List<SQLCheckConstraint> createCheckConstraint(Table tbl) {
     SQLCheckConstraint cc = new SQLCheckConstraint(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), "col1", "1",
         "cc1", false, false, false);
-    return Arrays.asList(cc);
+    return Collections.singletonList(cc);
   }
 
-  private Table createTable(String dbName, String tblName, List<FieldSchema> cols, List<FieldSchema> ptnCols) {
-    SerDeInfo serdeInfo = new SerDeInfo("serde", "seriallib", new HashMap<>());
-    StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 0, serdeInfo, null, null,
-        Collections.emptyMap());
+  private Table createTable(String dbName, String tblName, StorageDescriptor sd, List<FieldSchema> ptnCols) {
     sd.setStoredAsSubDirectories(false);
     Table tbl = new Table(tblName, dbName, "hive", 0, 0, 0, sd, ptnCols, Collections.emptyMap(), null, null,
         TableType.MANAGED_TABLE.toString());
@@ -2044,11 +1988,15 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     return tbl;
   }
 
+  private StorageDescriptor createStorageDescriptor(List<FieldSchema> cols) {
+    return new StorageDescriptor(cols, null, "input", "output", false, 0,
+        new SerDeInfo("serde", "seriallib", new HashMap<>()), null, null, Collections.emptyMap());
+  }
+
   private Database createDatabaseObject(String dbName, String dbOwner) {
-    String dbDescription = dbName;
     String dbLocation = "file:/tmp";
     Map<String, String> dbParams = new HashMap<>();
-    Database db = new Database(dbName, dbDescription, dbLocation, dbParams);
+    Database db = new Database(dbName, dbName, dbLocation, dbParams);
     db.setOwnerName(dbOwner);
     db.setOwnerType(PrincipalType.USER);
     db.setCatalogName(DEFAULT_CATALOG_NAME);
@@ -2064,36 +2012,11 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     return ptn;
   }
 
-  private ColumnStatisticsData createLongStats(long numNulls, long numDVs, Long low, Long high) {
-    ColumnStatisticsData data = new ColumnStatisticsData();
-    LongColumnStatsDataInspector stats = new LongColumnStatsDataInspector();
-    if (low != null) {
-      stats.setLowValue(low.longValue());
-    }
-    if (high != null) {
-      stats.setHighValue(high.longValue());
-    }
-    stats.setNumNulls(numNulls);
-    stats.setNumDVs(numDVs);
-    data.setLongStats(stats);
-    return data;
-  }
-
-  private ColumnStatistics createColStats(ColumnStatisticsData data, Table tbl, FieldSchema column, String partName) {
-    ColumnStatisticsObj statObj = new ColumnStatisticsObj(column.getName(), column.getType(), data);
-    ColumnStatistics colStats = new ColumnStatistics();
-    ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc(true, tbl.getDbName(), tbl.getTableName());
-    statsDesc.setPartName(partName);
-    colStats.setStatsDesc(statsDesc);
-    colStats.setStatsObj(Collections.singletonList(statObj));
-    colStats.setEngine(CacheUtils.HIVE_ENGINE);
-    return colStats;
-  }
   /**
    * Create an unpartitoned table object for the given db.
    * The table has 9 types of columns
-   * @param db
-   * @return
+   * @param db the database for which the unpartitioned table is created
+   * @return the unpartitioned table just created
    */
   private Table createUnpartitionedTableObject(Database db) {
     String dbName = db.getName();
@@ -2125,8 +2048,8 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
    * Create a partitoned table object for the given db.
    * The table has 9 types of columns.
    * The partition columns are string and integer
-   * @param db
-   * @return
+   * @param db the database into which the partitioned table is created
+   * @return the partitioned table just created
    */
   private Table createPartitionedTableObject(Database db) {
     FieldSchema ptnCol1 = new FieldSchema("partCol1", "string", "string partition column");
@@ -2141,8 +2064,8 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
   /**
    * Create 25 partition objects for table returned by createPartitionedTableObject
    * Partitions are: a/1, a/2, ... e/4, e/5
-   * @param table
-   * @return
+   * @param table the table for which the partitions are created
+   * @return an object encapsulating the partition objects and names
    */
   private PartitionObjectsAndNames createPartitionObjects(Table table) {
     List<String> partColNames = new ArrayList<>();
@@ -2151,15 +2074,12 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     }
     List<Partition> ptns = new ArrayList<>();
     List<String> ptnNames = new ArrayList<>();
-    String dbName = table.getDbName();
-    String tblName = table.getTableName();
-    StorageDescriptor sd = table.getSd();
     List<String> ptnCol1Vals = Arrays.asList("a", "b", "c", "d", "e");
     List<String> ptnCol2Vals = Arrays.asList("1", "2", "3", "4", "5");
     for (String ptnCol1Val : ptnCol1Vals) {
       for (String ptnCol2Val : ptnCol2Vals) {
         List<String> partVals = Arrays.asList(ptnCol1Val, ptnCol2Val);
-        Partition ptn = new Partition(partVals, dbName, tblName, 0, 0, sd, new HashMap<String, String>());
+        Partition ptn = createPartition(table, partVals);
         ptn.setCatName(DEFAULT_CATALOG_NAME);
         ptns.add(ptn);
         ptnNames.add(FileUtils.makePartName(partColNames, partVals));
@@ -2168,9 +2088,9 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     return new PartitionObjectsAndNames(ptns, ptnNames);
   }
 
-  class PartitionObjectsAndNames {
-    private List<Partition> ptns;
-    private List<String> ptnNames;
+  static class PartitionObjectsAndNames {
+    private final List<Partition> ptns;
+    private final List<String> ptnNames;
 
     PartitionObjectsAndNames(List<Partition> ptns, List<String> ptnNames) {
       this.ptns = ptns;

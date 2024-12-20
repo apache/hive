@@ -69,9 +69,8 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.junit.Ignore;
 
-@Ignore("HIVE-23548")
+
 public class TestActivePassiveHA {
   private MiniHS2 miniHS2_1 = null;
   private MiniHS2 miniHS2_2 = null;
@@ -619,6 +618,8 @@ public class TestActivePassiveHA {
 
   private String sendAuthMethod(HttpRequestBase method, boolean enableAuth, boolean enableCORS) throws Exception {
     CloseableHttpResponse httpResponse = null;
+    String response = null;
+    int statusCode = -1;
 
     try (
         CloseableHttpClient client = HttpClients.createDefault();
@@ -641,8 +642,8 @@ public class TestActivePassiveHA {
         if (httpResponse != null) {
           StatusLine statusLine = httpResponse.getStatusLine();
           if (statusLine != null) {
-            String response = httpResponse.getStatusLine().getReasonPhrase();
-            int statusCode = httpResponse.getStatusLine().getStatusCode();
+            response = httpResponse.getStatusLine().getReasonPhrase();
+            statusCode = httpResponse.getStatusLine().getStatusCode();
 
             if (statusCode == 200) {
               Header originHeader = httpResponse.getFirstHeader("Access-Control-Allow-Origin");
@@ -665,7 +666,18 @@ public class TestActivePassiveHA {
 
       httpResponse = client.execute(method);
 
-      return EntityUtils.toString(httpResponse.getEntity());
+      if (httpResponse != null) {
+        StatusLine statusLine = httpResponse.getStatusLine();
+        if (statusLine != null) {
+           response = httpResponse.getStatusLine().getReasonPhrase();
+           statusCode = httpResponse.getStatusLine().getStatusCode();
+          if (statusCode == 200) {
+            return EntityUtils.toString(httpResponse.getEntity());
+          }
+        }
+      }
+
+        return response;
     } finally {
       httpResponse.close();
     }

@@ -17,10 +17,10 @@ POSTHOOK: Input: default@tmp_showcrt1_n1
 CREATE EXTERNAL TABLE `tmp_showcrt1_n1`(
   `key` smallint, 
   `value` float)
-CLUSTERED BY ( 
-  key) 
+CLUSTERED BY (
+  `key`)
 SORTED BY ( 
-  value DESC) 
+  `value` DESC) 
 INTO 5 BUCKETS
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
@@ -51,10 +51,10 @@ CREATE TABLE `tmp_showcrt1_n1`(
   `key` smallint, 
   `value` float)
 COMMENT 'temporary table'
-CLUSTERED BY ( 
-  key) 
+CLUSTERED BY (
+  `key`)
 SORTED BY ( 
-  value DESC) 
+  `value` DESC) 
 INTO 5 BUCKETS
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
@@ -85,10 +85,10 @@ CREATE EXTERNAL TABLE `tmp_showcrt1_n1`(
   `key` smallint, 
   `value` float)
 COMMENT 'changed comment'
-CLUSTERED BY ( 
-  key) 
+CLUSTERED BY (
+  `key`)
 SORTED BY ( 
-  value DESC) 
+  `value` DESC) 
 INTO 5 BUCKETS
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
@@ -119,10 +119,10 @@ CREATE EXTERNAL TABLE `tmp_showcrt1_n1`(
   `key` smallint, 
   `value` float)
 COMMENT 'changed comment'
-CLUSTERED BY ( 
-  key) 
+CLUSTERED BY (
+  `key`)
 SORTED BY ( 
-  value DESC) 
+  `value` DESC) 
 INTO 5 BUCKETS
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
@@ -153,10 +153,10 @@ CREATE EXTERNAL TABLE `tmp_showcrt1_n1`(
   `key` smallint, 
   `value` float)
 COMMENT 'changed comment'
-CLUSTERED BY ( 
-  key) 
+CLUSTERED BY (
+  `key`)
 SORTED BY ( 
-  value DESC) 
+  `value` DESC) 
 INTO 5 BUCKETS
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
@@ -172,8 +172,10 @@ TBLPROPERTIES (
 PREHOOK: query: DROP TABLE tmp_showcrt1_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmp_showcrt1_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp_showcrt1_n1
 POSTHOOK: query: DROP TABLE tmp_showcrt1_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tmp_showcrt1_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_showcrt1_n1

@@ -1,11 +1,15 @@
 PREHOOK: query: drop table if exists mydim
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists mydim
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists updates_staging_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists updates_staging_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop view if exists updates_staging_view
 PREHOOK: type: DROPVIEW
 POSTHOOK: query: drop view if exists updates_staging_view

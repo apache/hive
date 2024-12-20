@@ -22,9 +22,15 @@ final class CompactionType
 
     const MAJOR = 2;
 
+    const REBALANCE = 3;
+
+    const ABORT_TXN_CLEANUP = 4;
+
     static public $__names = array(
         1 => 'MINOR',
         2 => 'MAJOR',
+        3 => 'REBALANCE',
+        4 => 'ABORT_TXN_CLEANUP',
     );
 }
 

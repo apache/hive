@@ -1,7 +1,9 @@
 PREHOOK: query: drop table tstsrc_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table tstsrc_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table tstsrc_n0 as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -46,15 +48,19 @@ value               	string
 PREHOOK: query: drop table tstsrc_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tstsrc_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tstsrc_n0
 POSTHOOK: query: drop table tstsrc_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tstsrc_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tstsrc_n0
 PREHOOK: query: drop table tstsrcpart_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table tstsrcpart_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table tstsrcpart_n1 like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -205,10 +211,12 @@ hr                  	string
 PREHOOK: query: drop table tstsrcpart_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tstsrcpart_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tstsrcpart_n1
 POSTHOOK: query: drop table tstsrcpart_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tstsrcpart_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tstsrcpart_n1
 PREHOOK: query: ANALYZE TABLE src COMPUTE STATISTICS
 PREHOOK: type: QUERY

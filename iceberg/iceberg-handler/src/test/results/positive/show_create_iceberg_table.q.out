@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS ice_t
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS ice_t
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE ice_t (i int, s string, ts timestamp, d date) STORED BY ICEBERG
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -30,16 +32,116 @@ LOCATION
   'hdfs://### HDFS PATH ###'
 TBLPROPERTIES (
   'bucketing_version'='2', 
-  'engine.hive.enabled'='true', 
+  'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"i","required":false,"type":"int"},{"id":2,"name":"s","required":false,"type":"string"},{"id":3,"name":"ts","required":false,"type":"timestamp"},{"id":4,"name":"d","required":false,"type":"date"}]}', 
+  'format-version'='2', 
+  'iceberg.orc.files.only'='false', 
   'metadata_location'='hdfs://### HDFS PATH ###', 
+  'parquet.compression'='zstd', 
   'serialization.format'='1', 
+  'snapshot-count'='0', 
+  'table_type'='ICEBERG', 
+#### A masked pattern was here ####
+  'uuid'='#Masked#', 
+  'write.delete.mode'='merge-on-read', 
+  'write.merge.mode'='merge-on-read', 
+  'write.update.mode'='merge-on-read')
+PREHOOK: query: DROP TABLE IF EXISTS ice_tv1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS ice_tv1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE EXTERNAL TABLE ice_tv1 (i int, s string, ts timestamp, d date) STORED BY ICEBERG TBLPROPERTIES('format-version'='1')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_tv1
+POSTHOOK: query: CREATE EXTERNAL TABLE ice_tv1 (i int, s string, ts timestamp, d date) STORED BY ICEBERG TBLPROPERTIES('format-version'='1')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_tv1
+PREHOOK: query: SHOW CREATE TABLE ice_tv1
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@ice_tv1
+POSTHOOK: query: SHOW CREATE TABLE ice_tv1
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@ice_tv1
+CREATE EXTERNAL TABLE `ice_tv1`(
+  `i` int, 
+  `s` string, 
+  `ts` timestamp, 
+  `d` date)
+ROW FORMAT SERDE 
+  'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
+STORED BY 
+  'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' 
+
+LOCATION
+  'hdfs://### HDFS PATH ###'
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"i","required":false,"type":"int"},{"id":2,"name":"s","required":false,"type":"string"},{"id":3,"name":"ts","required":false,"type":"timestamp"},{"id":4,"name":"d","required":false,"type":"date"}]}', 
+  'format-version'='1', 
+  'iceberg.orc.files.only'='false', 
+  'metadata_location'='hdfs://### HDFS PATH ###', 
+  'parquet.compression'='zstd', 
+  'serialization.format'='1', 
+  'snapshot-count'='0', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
   'uuid'='#Masked#')
+PREHOOK: query: DROP TABLE IF EXISTS ice_tv2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS ice_tv2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE EXTERNAL TABLE ice_tv2 (i int, s string, ts timestamp, d date) STORED BY ICEBERG TBLPROPERTIES('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_tv2
+POSTHOOK: query: CREATE EXTERNAL TABLE ice_tv2 (i int, s string, ts timestamp, d date) STORED BY ICEBERG TBLPROPERTIES('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_tv2
+PREHOOK: query: SHOW CREATE TABLE ice_tv2
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@ice_tv2
+POSTHOOK: query: SHOW CREATE TABLE ice_tv2
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@ice_tv2
+CREATE EXTERNAL TABLE `ice_tv2`(
+  `i` int, 
+  `s` string, 
+  `ts` timestamp, 
+  `d` date)
+ROW FORMAT SERDE 
+  'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
+STORED BY 
+  'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' 
+
+LOCATION
+  'hdfs://### HDFS PATH ###'
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"i","required":false,"type":"int"},{"id":2,"name":"s","required":false,"type":"string"},{"id":3,"name":"ts","required":false,"type":"timestamp"},{"id":4,"name":"d","required":false,"type":"date"}]}', 
+  'format-version'='2', 
+  'iceberg.orc.files.only'='false', 
+  'metadata_location'='hdfs://### HDFS PATH ###', 
+  'parquet.compression'='zstd', 
+  'serialization.format'='1', 
+  'snapshot-count'='0', 
+  'table_type'='ICEBERG', 
+#### A masked pattern was here ####
+  'uuid'='#Masked#', 
+  'write.delete.mode'='merge-on-read', 
+  'write.merge.mode'='merge-on-read', 
+  'write.update.mode'='merge-on-read')
 PREHOOK: query: DROP TABLE IF EXISTS ice_t_transform
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS ice_t_transform
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE ice_t_transform (year_field date, month_field date, day_field date, hour_field timestamp, truncate_field string, bucket_field int, identity_field int) PARTITIONED BY SPEC (year(year_field), month(month_field), day(day_field), hour(hour_field), truncate(2, truncate_field), bucket(2, bucket_field), identity_field) STORED BY ICEBERG
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -63,13 +165,13 @@ CREATE EXTERNAL TABLE `ice_t_transform`(
   `bucket_field` int, 
   `identity_field` int)
 PARTITIONED BY SPEC ( 
-YEAR(year_field), 
-MONTH(month_field), 
-DAY(day_field), 
-HOUR(hour_field), 
-TRUNCATE(2, truncate_field), 
-BUCKET(2, bucket_field), 
-identity_field)
+YEAR(`year_field`), 
+MONTH(`month_field`), 
+DAY(`day_field`), 
+HOUR(`hour_field`), 
+TRUNCATE(2, `truncate_field`), 
+BUCKET(2, `bucket_field`), 
+`identity_field`)
 ROW FORMAT SERDE 
   'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
 STORED BY 
@@ -79,16 +181,26 @@ LOCATION
   'hdfs://### HDFS PATH ###'
 TBLPROPERTIES (
   'bucketing_version'='2', 
-  'engine.hive.enabled'='true', 
+  'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"year_field","required":false,"type":"date"},{"id":2,"name":"month_field","required":false,"type":"date"},{"id":3,"name":"day_field","required":false,"type":"date"},{"id":4,"name":"hour_field","required":false,"type":"timestamp"},{"id":5,"name":"truncate_field","required":false,"type":"string"},{"id":6,"name":"bucket_field","required":false,"type":"int"},{"id":7,"name":"identity_field","required":false,"type":"int"}]}', 
+  'default-partition-spec'='{"spec-id":0,"fields":[{"name":"year_field_year","transform":"year","source-id":1,"field-id":1000},{"name":"month_field_month","transform":"month","source-id":2,"field-id":1001},{"name":"day_field_day","transform":"day","source-id":3,"field-id":1002},{"name":"hour_field_hour","transform":"hour","source-id":4,"field-id":1003},{"name":"truncate_field_trunc","transform":"truncate[2]","source-id":5,"field-id":1004},{"name":"bucket_field_bucket","transform":"bucket[2]","source-id":6,"field-id":1005},{"name":"identity_field","transform":"identity","source-id":7,"field-id":1006}]}', 
+  'format-version'='2', 
+  'iceberg.orc.files.only'='false', 
   'metadata_location'='hdfs://### HDFS PATH ###', 
+  'parquet.compression'='zstd', 
   'serialization.format'='1', 
+  'snapshot-count'='0', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
-  'uuid'='#Masked#')
+  'uuid'='#Masked#', 
+  'write.delete.mode'='merge-on-read', 
+  'write.merge.mode'='merge-on-read', 
+  'write.update.mode'='merge-on-read')
 PREHOOK: query: DROP TABLE IF EXISTS ice_t_transform_prop
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS ice_t_transform_prop
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE ice_t_transform_prop (id int, year_field date, month_field date, day_field date, hour_field timestamp, truncate_field string, bucket_field int, identity_field int) STORED BY ICEBERG TBLPROPERTIES ('iceberg.mr.table.partition.spec'='{"spec-id":0,"fields":[{"name":"year_field_year","transform":"year","source-id":2,"field-id":1000},{"name":"month_field_month","transform":"month","source-id":3,"field-id":1001},{"name":"day_field_day","transform":"day","source-id":4,"field-id":1002},{"name":"hour_field_hour","transform":"hour","source-id":5,"field-id":1003},{"name":"truncate_field_trunc","transform":"truncate[2]","source-id":6,"field-id":1004},{"name":"bucket_field_bucket","transform":"bucket[2]","source-id":7,"field-id":1005},{"name":"identity_field","transform":"identity","source-id":8,"field-id":1006}]}')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -113,13 +225,13 @@ CREATE EXTERNAL TABLE `ice_t_transform_prop`(
   `bucket_field` int, 
   `identity_field` int)
 PARTITIONED BY SPEC ( 
-YEAR(year_field), 
-MONTH(month_field), 
-DAY(day_field), 
-HOUR(hour_field), 
-TRUNCATE(2, truncate_field), 
-BUCKET(2, bucket_field), 
-identity_field)
+YEAR(`year_field`), 
+MONTH(`month_field`), 
+DAY(`day_field`), 
+HOUR(`hour_field`), 
+TRUNCATE(2, `truncate_field`), 
+BUCKET(2, `bucket_field`), 
+`identity_field`)
 ROW FORMAT SERDE 
   'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
 STORED BY 
@@ -129,16 +241,26 @@ LOCATION
   'hdfs://### HDFS PATH ###'
 TBLPROPERTIES (
   'bucketing_version'='2', 
-  'engine.hive.enabled'='true', 
+  'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"id","required":false,"type":"int"},{"id":2,"name":"year_field","required":false,"type":"date"},{"id":3,"name":"month_field","required":false,"type":"date"},{"id":4,"name":"day_field","required":false,"type":"date"},{"id":5,"name":"hour_field","required":false,"type":"timestamp"},{"id":6,"name":"truncate_field","required":false,"type":"string"},{"id":7,"name":"bucket_field","required":false,"type":"int"},{"id":8,"name":"identity_field","required":false,"type":"int"}]}', 
+  'default-partition-spec'='{"spec-id":0,"fields":[{"name":"year_field_year","transform":"year","source-id":2,"field-id":1000},{"name":"month_field_month","transform":"month","source-id":3,"field-id":1001},{"name":"day_field_day","transform":"day","source-id":4,"field-id":1002},{"name":"hour_field_hour","transform":"hour","source-id":5,"field-id":1003},{"name":"truncate_field_trunc","transform":"truncate[2]","source-id":6,"field-id":1004},{"name":"bucket_field_bucket","transform":"bucket[2]","source-id":7,"field-id":1005},{"name":"identity_field","transform":"identity","source-id":8,"field-id":1006}]}', 
+  'format-version'='2', 
+  'iceberg.orc.files.only'='false', 
   'metadata_location'='hdfs://### HDFS PATH ###', 
+  'parquet.compression'='zstd', 
   'serialization.format'='1', 
+  'snapshot-count'='0', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
-  'uuid'='#Masked#')
+  'uuid'='#Masked#', 
+  'write.delete.mode'='merge-on-read', 
+  'write.merge.mode'='merge-on-read', 
+  'write.update.mode'='merge-on-read')
 PREHOOK: query: DROP TABLE IF EXISTS ice_t_identity_part
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS ice_t_identity_part
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE ice_t_identity_part (a int) PARTITIONED BY (b string) STORED BY ICEBERG
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -157,7 +279,7 @@ CREATE EXTERNAL TABLE `ice_t_identity_part`(
   `a` int, 
   `b` string)
 PARTITIONED BY SPEC ( 
-b)
+`b`)
 ROW FORMAT SERDE 
   'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
 STORED BY 
@@ -167,9 +289,138 @@ LOCATION
   'hdfs://### HDFS PATH ###'
 TBLPROPERTIES (
   'bucketing_version'='2', 
-  'engine.hive.enabled'='true', 
+  'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"a","required":false,"type":"int"},{"id":2,"name":"b","required":false,"type":"string"}]}', 
+  'default-partition-spec'='{"spec-id":0,"fields":[{"name":"b","transform":"identity","source-id":2,"field-id":1000}]}', 
+  'format-version'='2', 
+  'iceberg.orc.files.only'='false', 
   'metadata_location'='hdfs://### HDFS PATH ###', 
+  'parquet.compression'='zstd', 
   'serialization.format'='1', 
+  'snapshot-count'='0', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
-  'uuid'='#Masked#')
+  'uuid'='#Masked#', 
+  'write.delete.mode'='merge-on-read', 
+  'write.merge.mode'='merge-on-read', 
+  'write.update.mode'='merge-on-read')
+PREHOOK: query: DROP TABLE IF EXISTS ice_data
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS ice_data
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE EXTERNAL TABLE ice_data (i int, s string) STORED BY ICEBERG
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_data
+POSTHOOK: query: CREATE EXTERNAL TABLE ice_data (i int, s string) STORED BY ICEBERG
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_data
+PREHOOK: query: INSERT INTO ice_data VALUES (1, 'ABC'),(2, 'CCC'),(3, 'DBD')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_data
+POSTHOOK: query: INSERT INTO ice_data VALUES (1, 'ABC'),(2, 'CCC'),(3, 'DBD')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_data
+PREHOOK: query: SHOW CREATE TABLE ice_data
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@ice_data
+POSTHOOK: query: SHOW CREATE TABLE ice_data
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@ice_data
+CREATE EXTERNAL TABLE `ice_data`(
+  `i` int, 
+  `s` string)
+ROW FORMAT SERDE 
+  'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
+STORED BY 
+  'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' 
+
+LOCATION
+  'hdfs://### HDFS PATH ###'
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"i","required":false,"type":"int"},{"id":2,"name":"s","required":false,"type":"string"}]}', 
+  'current-snapshot-id'='#SnapshotId#', 
+  'current-snapshot-summary'='{"added-data-files":"1","added-records":"3","added-files-size":"#Masked#","changed-partition-count":"1","total-records":"3","total-files-size":"#Masked#","total-data-files":"1","total-delete-files":"0","total-position-deletes":"0","total-equality-deletes":"0","iceberg-version":"#Masked#"}', 
+  'current-snapshot-timestamp-ms'='#Masked#', 
+  'format-version'='2', 
+  'iceberg.orc.files.only'='false', 
+  'metadata_location'='hdfs://### HDFS PATH ###', 
+  'parquet.compression'='zstd', 
+  'previous_metadata_location'='hdfs://### HDFS PATH ###', 
+  'serialization.format'='1', 
+  'snapshot-count'='1', 
+  'table_type'='ICEBERG', 
+#### A masked pattern was here ####
+  'uuid'='#Masked#', 
+  'write.delete.mode'='merge-on-read', 
+  'write.merge.mode'='merge-on-read', 
+  'write.update.mode'='merge-on-read')
+PREHOOK: query: DROP TABLE IF EXISTS ice_noHive
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS ice_noHive
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE EXTERNAL TABLE ice_noHive (i int, s string) STORED BY ICEBERG
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_noHive
+POSTHOOK: query: CREATE EXTERNAL TABLE ice_noHive (i int, s string) STORED BY ICEBERG
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_noHive
+PREHOOK: query: SHOW CREATE TABLE ice_noHive
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@ice_nohive
+POSTHOOK: query: SHOW CREATE TABLE ice_noHive
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@ice_nohive
+CREATE EXTERNAL TABLE `ice_nohive`(
+  `i` int, 
+  `s` string)
+ROW FORMAT SERDE 
+  'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
+STORED BY 
+  'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' 
+
+LOCATION
+  'hdfs://### HDFS PATH ###'
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"i","required":false,"type":"int"},{"id":2,"name":"s","required":false,"type":"string"}]}', 
+  'format-version'='2', 
+  'iceberg.orc.files.only'='false', 
+  'metadata_location'='hdfs://### HDFS PATH ###', 
+  'parquet.compression'='zstd', 
+  'serialization.format'='1', 
+  'snapshot-count'='0', 
+  'table_type'='ICEBERG', 
+#### A masked pattern was here ####
+  'uuid'='#Masked#', 
+  'write.delete.mode'='merge-on-read', 
+  'write.merge.mode'='merge-on-read', 
+  'write.update.mode'='merge-on-read')
+PREHOOK: query: INSERT INTO ice_noHive VALUES (1, 'ABC'),(2, 'CCC'),(3, 'DBD')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_nohive
+POSTHOOK: query: INSERT INTO ice_noHive VALUES (1, 'ABC'),(2, 'CCC'),(3, 'DBD')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_nohive
+PREHOOK: query: SELECT * FROM ice_noHive
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_nohive
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM ice_noHive
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_nohive
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	ABC
+2	CCC
+3	DBD

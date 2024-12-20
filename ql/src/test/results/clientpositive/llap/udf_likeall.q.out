@@ -45,8 +45,10 @@ Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFLikeAll
 Function type:BUILTIN
 PREHOOK: query: DROP TABLE IF EXISTS like_all_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS like_all_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE like_all_table
 STORED AS TEXTFILE
 AS

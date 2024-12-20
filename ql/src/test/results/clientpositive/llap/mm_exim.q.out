@@ -1,7 +1,9 @@
 PREHOOK: query: drop table intermediate_n4
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table intermediate_n4
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table intermediate_n4(key int) partitioned by (p int) stored as orc tblproperties("transactional"="false")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -39,16 +41,22 @@ POSTHOOK: Output: default@intermediate_n4@p=457
 POSTHOOK: Lineage: intermediate_n4 PARTITION(p=457).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: drop table intermediate_nonpart
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table intermediate_nonpart
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table intermmediate_part
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table intermmediate_part
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table intermmediate_nonpart
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table intermmediate_nonpart
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table intermediate_nonpart(key int, p int) tblproperties("transactional"="false")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -168,27 +176,35 @@ POSTHOOK: Input: default@intermmediate@p=457
 PREHOOK: query: drop table intermediate_nonpart
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@intermediate_nonpart
+PREHOOK: Output: database:default
 PREHOOK: Output: default@intermediate_nonpart
 POSTHOOK: query: drop table intermediate_nonpart
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@intermediate_nonpart
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@intermediate_nonpart
 PREHOOK: query: drop table intermmediate_part
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table intermmediate_part
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table intermmediate_nonpart
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@intermmediate_nonpart
+PREHOOK: Output: database:default
 PREHOOK: Output: default@intermmediate_nonpart
 POSTHOOK: query: drop table intermmediate_nonpart
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@intermmediate_nonpart
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@intermmediate_nonpart
 PREHOOK: query: drop table import0_mm
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table import0_mm
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table import0_mm(key int, p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -222,15 +238,19 @@ POSTHOOK: Input: default@import0_mm
 PREHOOK: query: drop table import0_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@import0_mm
+PREHOOK: Output: database:default
 PREHOOK: Output: default@import0_mm
 POSTHOOK: query: drop table import0_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@import0_mm
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@import0_mm
 PREHOOK: query: drop table import1_mm
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table import1_mm
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table import1_mm(key int) partitioned by (p int)
   stored as orc tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
@@ -275,15 +295,19 @@ POSTHOOK: Input: default@import1_mm@p=457
 PREHOOK: query: drop table import1_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@import1_mm
+PREHOOK: Output: database:default
 PREHOOK: Output: default@import1_mm
 POSTHOOK: query: drop table import1_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@import1_mm
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@import1_mm
 PREHOOK: query: drop table import2_mm
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table import2_mm
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: import table import2_mm from 'ql/test/data/exports/intermmediate_nonpart'
 PREHOOK: type: IMPORT
 #### A masked pattern was here ####
@@ -312,9 +336,9 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	bucketing_version   	2                   
 	numFiles            	3                   
-	numRows             	0                   
-	rawDataSize         	0                   
-	totalSize           	43                  
+	numRows             	6                   
+	rawDataSize         	37                  
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	insert_only         
 #### A masked pattern was here ####
@@ -346,15 +370,19 @@ POSTHOOK: Input: default@import2_mm
 PREHOOK: query: drop table import2_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@import2_mm
+PREHOOK: Output: database:default
 PREHOOK: Output: default@import2_mm
 POSTHOOK: query: drop table import2_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@import2_mm
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@import2_mm
 PREHOOK: query: drop table import3_mm
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table import3_mm
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: import table import3_mm from 'ql/test/data/exports/intermmediate_part'
 PREHOOK: type: IMPORT
 #### A masked pattern was here ####
@@ -392,7 +420,7 @@ Table Parameters:
 	numPartitions       	3                   
 	numRows             	6                   
 	rawDataSize         	13                  
-	totalSize           	19                  
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	insert_only         
 #### A masked pattern was here ####
@@ -430,15 +458,19 @@ POSTHOOK: Input: default@import3_mm@p=457
 PREHOOK: query: drop table import3_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@import3_mm
+PREHOOK: Output: database:default
 PREHOOK: Output: default@import3_mm
 POSTHOOK: query: drop table import3_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@import3_mm
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@import3_mm
 PREHOOK: query: drop table import4_mm
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table import4_mm
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table import4_mm(key int, p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -472,15 +504,19 @@ POSTHOOK: Input: default@import4_mm
 PREHOOK: query: drop table import4_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@import4_mm
+PREHOOK: Output: database:default
 PREHOOK: Output: default@import4_mm
 POSTHOOK: query: drop table import4_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@import4_mm
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@import4_mm
 PREHOOK: query: drop table import5_mm
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table import5_mm
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table import5_mm(key int) partitioned by (p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -513,15 +549,19 @@ POSTHOOK: Input: default@import5_mm@p=455
 PREHOOK: query: drop table import5_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@import5_mm
+PREHOOK: Output: database:default
 PREHOOK: Output: default@import5_mm
 POSTHOOK: query: drop table import5_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@import5_mm
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@import5_mm
 PREHOOK: query: drop table import6_mm
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table import6_mm
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table import6_mm(key int, p int) tblproperties("transactional"="false")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -555,15 +595,19 @@ POSTHOOK: Input: default@import6_mm
 PREHOOK: query: drop table import6_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@import6_mm
+PREHOOK: Output: database:default
 PREHOOK: Output: default@import6_mm
 POSTHOOK: query: drop table import6_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@import6_mm
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@import6_mm
 PREHOOK: query: drop table import7_mm
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table import7_mm
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table import7_mm(key int) partitioned by (p int) tblproperties("transactional"="false")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -606,15 +650,19 @@ POSTHOOK: Input: default@import7_mm@p=457
 PREHOOK: query: drop table import7_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@import7_mm
+PREHOOK: Output: database:default
 PREHOOK: Output: default@import7_mm
 POSTHOOK: query: drop table import7_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@import7_mm
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@import7_mm
 PREHOOK: query: drop table import8_mm
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table import8_mm
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: import external table import8_mm from 'ql/test/data/exports/intermmediate_nonpart'
 PREHOOK: type: IMPORT
 #### A masked pattern was here ####
@@ -646,7 +694,7 @@ Table Parameters:
 	numFiles            	3                   
 	numRows             	6                   
 	rawDataSize         	37                  
-	totalSize           	43                  
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -676,8 +724,10 @@ POSTHOOK: Input: default@import8_mm
 PREHOOK: query: drop table import8_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@import8_mm
+PREHOOK: Output: database:default
 PREHOOK: Output: default@import8_mm
 POSTHOOK: query: drop table import8_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@import8_mm
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@import8_mm

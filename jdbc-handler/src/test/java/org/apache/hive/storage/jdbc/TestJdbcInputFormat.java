@@ -17,21 +17,25 @@ package org.apache.hive.storage.jdbc;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hive.storage.jdbc.dao.DatabaseAccessor;
 import org.apache.hive.storage.jdbc.dao.DatabaseAccessorFactory;
 import org.apache.hive.storage.jdbc.exception.HiveJdbcDatabaseAccessException;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.BDDMockito;
 import org.mockito.Mock;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.MockedStatic;
+import org.mockito.junit.MockitoJUnitRunner;
+
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -41,20 +45,34 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(DatabaseAccessorFactory.class)
+@RunWith(MockitoJUnitRunner.class)
 public class TestJdbcInputFormat {
 
   @Mock
   private DatabaseAccessor mockDatabaseAccessor;
+  private MockedStatic<DatabaseAccessorFactory> hiveDatabaseAccessorFactory;
+
+  @Before
+  public void setup() throws Exception{
+
+    hiveDatabaseAccessorFactory = mockStatic(DatabaseAccessorFactory.class);
+    hiveDatabaseAccessorFactory.when(() -> DatabaseAccessorFactory.getAccessor(any(Configuration.class))).
+      thenReturn(mockDatabaseAccessor);
+  }
+
+  @After
+  public void tearDown() throws InterruptedException {
+
+    hiveDatabaseAccessorFactory.close();
+  }
 
 
   @Test
   public void testLimitSplit_noSpillOver() throws HiveJdbcDatabaseAccessException, IOException {
-    PowerMockito.mockStatic(DatabaseAccessorFactory.class);
-    BDDMockito.given(DatabaseAccessorFactory.getAccessor(any(Configuration.class))).willReturn(mockDatabaseAccessor);
+
     JdbcInputFormat f = new JdbcInputFormat();
     when(mockDatabaseAccessor.getTotalNumberOfRecords(any(Configuration.class))).thenReturn(15);
 
@@ -67,13 +85,12 @@ public class TestJdbcInputFormat {
     assertThat(splits.length, is(3));
 
     assertThat(splits[0].getLength(), is(5L));
+
   }
 
 
   @Test
   public void testLimitSplit_withSpillOver() throws HiveJdbcDatabaseAccessException, IOException {
-    PowerMockito.mockStatic(DatabaseAccessorFactory.class);
-    BDDMockito.given(DatabaseAccessorFactory.getAccessor(any(Configuration.class))).willReturn(mockDatabaseAccessor);
     JdbcInputFormat f = new JdbcInputFormat();
     when(mockDatabaseAccessor.getTotalNumberOfRecords(any(Configuration.class))).thenReturn(15);
 
@@ -96,14 +113,13 @@ public class TestJdbcInputFormat {
 
   @Test
   public void testIntervalSplit_Long() throws HiveJdbcDatabaseAccessException, IOException {
-    PowerMockito.mockStatic(DatabaseAccessorFactory.class);
-    BDDMockito.given(DatabaseAccessorFactory.getAccessor(any(Configuration.class))).willReturn(mockDatabaseAccessor);
     JdbcInputFormat f = new JdbcInputFormat();
     when(mockDatabaseAccessor.getColumnNames(any(Configuration.class))).thenReturn(Lists.newArrayList("a"));
+    List<TypeInfo> columnTypes = Collections.singletonList(TypeInfoFactory.intTypeInfo);
+    when(mockDatabaseAccessor.getColumnTypes(any(Configuration.class))).thenReturn(columnTypes);
 
     JobConf conf = new JobConf();
     conf.set("mapred.input.dir", "/temp");
-    conf.set(serdeConstants.LIST_COLUMN_TYPES, "int");
     conf.set("hive.sql.partitionColumn", "a");
     conf.set("hive.sql.numPartitions", "3");
     conf.set("hive.sql.lowerBound", "1");
@@ -123,14 +139,13 @@ public class TestJdbcInputFormat {
 
   @Test
   public void testIntervalSplit_Double() throws HiveJdbcDatabaseAccessException, IOException {
-    PowerMockito.mockStatic(DatabaseAccessorFactory.class);
-    BDDMockito.given(DatabaseAccessorFactory.getAccessor(any(Configuration.class))).willReturn(mockDatabaseAccessor);
     JdbcInputFormat f = new JdbcInputFormat();
     when(mockDatabaseAccessor.getColumnNames(any(Configuration.class))).thenReturn(Lists.newArrayList("a"));
+    List<TypeInfo> columnTypes = Collections.singletonList(TypeInfoFactory.doubleTypeInfo);
+    when(mockDatabaseAccessor.getColumnTypes(any(Configuration.class))).thenReturn(columnTypes);
 
     JobConf conf = new JobConf();
     conf.set("mapred.input.dir", "/temp");
-    conf.set(serdeConstants.LIST_COLUMN_TYPES, "double");
     conf.set("hive.sql.partitionColumn", "a");
     conf.set("hive.sql.numPartitions", "3");
     conf.set("hive.sql.lowerBound", "0");
@@ -154,14 +169,13 @@ public class TestJdbcInputFormat {
 
   @Test
   public void testIntervalSplit_Decimal() throws HiveJdbcDatabaseAccessException, IOException {
-    PowerMockito.mockStatic(DatabaseAccessorFactory.class);
-    BDDMockito.given(DatabaseAccessorFactory.getAccessor(any(Configuration.class))).willReturn(mockDatabaseAccessor);
     JdbcInputFormat f = new JdbcInputFormat();
     when(mockDatabaseAccessor.getColumnNames(any(Configuration.class))).thenReturn(Lists.newArrayList("a"));
+    List<TypeInfo> columnTypes = Collections.singletonList(TypeInfoFactory.getDecimalTypeInfo(10, 5));
+    when(mockDatabaseAccessor.getColumnTypes(any(Configuration.class))).thenReturn(columnTypes);
 
     JobConf conf = new JobConf();
     conf.set("mapred.input.dir", "/temp");
-    conf.set(serdeConstants.LIST_COLUMN_TYPES, "decimal(10,5)");
     conf.set("hive.sql.partitionColumn", "a");
     conf.set("hive.sql.numPartitions", "4");
     conf.set("hive.sql.lowerBound", "5");
@@ -183,17 +197,16 @@ public class TestJdbcInputFormat {
 
   @Test
   public void testIntervalSplit_Timestamp() throws HiveJdbcDatabaseAccessException, IOException {
-    PowerMockito.mockStatic(DatabaseAccessorFactory.class);
-    BDDMockito.given(DatabaseAccessorFactory.getAccessor(any(Configuration.class))).willReturn(mockDatabaseAccessor);
     JdbcInputFormat f = new JdbcInputFormat();
     when(mockDatabaseAccessor.getColumnNames(any(Configuration.class))).thenReturn(Lists.newArrayList("a"));
     when(mockDatabaseAccessor.getBounds(any(Configuration.class), any(String.class), anyBoolean(), anyBoolean()))
             .thenReturn(new ImmutablePair<String, String>("2010-01-01 00:00:00.000000000", "2018-01-01 " +
             "12:00:00.000000000"));
+    List<TypeInfo> columnTypes = Collections.singletonList(TypeInfoFactory.timestampTypeInfo);
+    when(mockDatabaseAccessor.getColumnTypes(any(Configuration.class))).thenReturn(columnTypes);
 
     JobConf conf = new JobConf();
     conf.set("mapred.input.dir", "/temp");
-    conf.set(serdeConstants.LIST_COLUMN_TYPES, "timestamp");
     conf.set("hive.sql.partitionColumn", "a");
     conf.set("hive.sql.numPartitions", "2");
     InputSplit[] splits = f.getSplits(conf, -1);
@@ -209,16 +222,15 @@ public class TestJdbcInputFormat {
 
   @Test
   public void testIntervalSplit_Date() throws HiveJdbcDatabaseAccessException, IOException {
-    PowerMockito.mockStatic(DatabaseAccessorFactory.class);
-    BDDMockito.given(DatabaseAccessorFactory.getAccessor(any(Configuration.class))).willReturn(mockDatabaseAccessor);
     JdbcInputFormat f = new JdbcInputFormat();
     when(mockDatabaseAccessor.getColumnNames(any(Configuration.class))).thenReturn(Lists.newArrayList("a"));
     when(mockDatabaseAccessor.getBounds(any(Configuration.class), any(String.class), anyBoolean(), anyBoolean()))
             .thenReturn(new ImmutablePair<String, String>("2010-01-01", "2018-01-01"));
+    List<TypeInfo> columnTypes = Collections.singletonList(TypeInfoFactory.dateTypeInfo);
+    when(mockDatabaseAccessor.getColumnTypes(any(Configuration.class))).thenReturn(columnTypes);
 
     JobConf conf = new JobConf();
     conf.set("mapred.input.dir", "/temp");
-    conf.set(serdeConstants.LIST_COLUMN_TYPES, "date");
     conf.set("hive.sql.partitionColumn", "a");
     conf.set("hive.sql.numPartitions", "3");
     InputSplit[] splits = f.getSplits(conf, -1);
@@ -236,14 +248,13 @@ public class TestJdbcInputFormat {
 
   @Test
   public void testIntervalSplit_AutoShrink() throws HiveJdbcDatabaseAccessException, IOException {
-    PowerMockito.mockStatic(DatabaseAccessorFactory.class);
-    BDDMockito.given(DatabaseAccessorFactory.getAccessor(any(Configuration.class))).willReturn(mockDatabaseAccessor);
     JdbcInputFormat f = new JdbcInputFormat();
     when(mockDatabaseAccessor.getColumnNames(any(Configuration.class))).thenReturn(Lists.newArrayList("a"));
+    List<TypeInfo> columnTypes = Collections.singletonList(TypeInfoFactory.intTypeInfo);
+    when(mockDatabaseAccessor.getColumnTypes(any(Configuration.class))).thenReturn(columnTypes);
 
     JobConf conf = new JobConf();
     conf.set("mapred.input.dir", "/temp");
-    conf.set(serdeConstants.LIST_COLUMN_TYPES, "int");
     conf.set("hive.sql.partitionColumn", "a");
     conf.set("hive.sql.numPartitions", "5");
     conf.set("hive.sql.lowerBound", "2");
@@ -261,14 +272,13 @@ public class TestJdbcInputFormat {
 
   @Test
   public void testIntervalSplit_NoSplit() throws HiveJdbcDatabaseAccessException, IOException {
-    PowerMockito.mockStatic(DatabaseAccessorFactory.class);
-    BDDMockito.given(DatabaseAccessorFactory.getAccessor(any(Configuration.class))).willReturn(mockDatabaseAccessor);
     JdbcInputFormat f = new JdbcInputFormat();
     when(mockDatabaseAccessor.getColumnNames(any(Configuration.class))).thenReturn(Lists.newArrayList("a"));
+    List<TypeInfo> columnTypes = Collections.singletonList(TypeInfoFactory.intTypeInfo);
+    when(mockDatabaseAccessor.getColumnTypes(any(Configuration.class))).thenReturn(columnTypes);
 
     JobConf conf = new JobConf();
     conf.set("mapred.input.dir", "/temp");
-    conf.set(serdeConstants.LIST_COLUMN_TYPES, "int");
     conf.set("hive.sql.partitionColumn", "a");
     conf.set("hive.sql.numPartitions", "5");
     conf.set("hive.sql.lowerBound", "1");

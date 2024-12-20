@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE IF EXISTS ttest1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS ttest1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS ttest2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS ttest2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE ttest1 (
   `id1` bigint COMMENT 'from deserializer',
   `ts1` string COMMENT 'from deserializer',
@@ -1843,16 +1847,20 @@ STAGE PLANS:
 PREHOOK: query: DROP TABLE ttest1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ttest1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ttest1
 POSTHOOK: query: DROP TABLE ttest1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ttest1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ttest1
 PREHOOK: query: DROP TABLE ttest2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ttest2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ttest2
 POSTHOOK: query: DROP TABLE ttest2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ttest2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ttest2

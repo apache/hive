@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
+import static org.apache.hadoop.hive.ql.exec.FunctionRegistry.BLOOM_FILTER_FUNCTION;
 import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.UNIFORM;
 
 import java.io.IOException;
@@ -38,12 +39,17 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
+import com.google.common.annotations.VisibleForTesting;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.ConvertDecimal64ToDecimal;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.ConstantVectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorCoalesce;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFComputeDsKllSketchDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFComputeDsKllSketchFinal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColDivideDecimalScalar;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinAntiJoinLongOperator;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinAntiJoinMultiKeyOperator;
@@ -211,6 +217,9 @@ import org.apache.hadoop.hive.ql.udf.UDFToLong;
 import org.apache.hadoop.hive.ql.udf.UDFToShort;
 import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
+import org.apache.hadoop.hive.ql.udf.UDFSinh;
+import org.apache.hadoop.hive.ql.udf.UDFCosh;
+import org.apache.hadoop.hive.ql.udf.UDFTanh;
 import org.apache.hadoop.hive.ql.udf.generic.*;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -243,7 +252,7 @@ import com.google.common.base.Preconditions;
 
 public class Vectorizer implements PhysicalPlanResolver {
 
-  protected static transient final Logger LOG = LoggerFactory.getLogger(Vectorizer.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(Vectorizer.class);
 
   private static final Pattern supportedDataTypesPattern;
 
@@ -251,60 +260,96 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   static {
     StringBuilder patternBuilder = new StringBuilder();
-    patternBuilder.append("int");
-    patternBuilder.append("|smallint");
-    patternBuilder.append("|tinyint");
-    patternBuilder.append("|bigint");
-    patternBuilder.append("|integer");
-    patternBuilder.append("|long");
-    patternBuilder.append("|short");
-    patternBuilder.append("|timestamp");
-    patternBuilder.append("|" + serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME);
-    patternBuilder.append("|" + serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
-    patternBuilder.append("|boolean");
-    patternBuilder.append("|binary");
-    patternBuilder.append("|string");
-    patternBuilder.append("|byte");
-    patternBuilder.append("|float");
-    patternBuilder.append("|double");
-    patternBuilder.append("|date");
-    patternBuilder.append("|void");
+    patternBuilder.append(serdeConstants.INT_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.SMALLINT_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.TINYINT_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.BIGINT_TYPE_NAME);
+    patternBuilder.append("|").append("integer");
+    patternBuilder.append("|").append("long");
+    patternBuilder.append("|").append("short");
+    patternBuilder.append("|").append(serdeConstants.TIMESTAMP_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.BOOLEAN_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.BINARY_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.STRING_TYPE_NAME);
+    patternBuilder.append("|").append("byte");
+    patternBuilder.append("|").append(serdeConstants.FLOAT_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.DOUBLE_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.DATE_TYPE_NAME);
+    patternBuilder.append("|").append(serdeConstants.VOID_TYPE_NAME);
 
-    // Decimal types can be specified with different precision and scales e.g. decimal(10,5),
-    // as opposed to other data types which can be represented by constant strings.
-    // The regex matches only the "decimal" prefix of the type.
-    patternBuilder.append("|decimal.*");
+    /** Decimal types can be specified with different precision and scales e.g. decimal(10,5),
+     * as opposed to other data types which can be represented by constant strings.
+     * The regex matches only the {@link serdeConstants#DECIMAL_TYPE_NAME} prefix of the type.
+     */
+    patternBuilder.append("|").append(serdeConstants.DECIMAL_TYPE_NAME).append(".*");
 
     // CHAR and VARCHAR types can be specified with maximum length.
-    patternBuilder.append("|char.*");
-    patternBuilder.append("|varchar.*");
+    patternBuilder.append("|").append(serdeConstants.CHAR_TYPE_NAME).append(".*");
+    patternBuilder.append("|").append(serdeConstants.VARCHAR_TYPE_NAME).append(".*");
 
     supportedDataTypesPattern = Pattern.compile(patternBuilder.toString());
   }
 
-  private Set<Class<?>> supportedGenericUDFs = new HashSet<Class<?>>();
+  private final Set<Class<?>> supportedGenericUDFs = new HashSet<>();
 
-  private Set<String> supportedAggregationUdfs = new HashSet<String>();
+  private final Set<String> supportedAggregationUdfs = Arrays.stream(VECTORIZABLE_UDAF.values())
+      .map(e -> e.name().toLowerCase())
+      .collect(Collectors.toSet());
 
   // The set of virtual columns that vectorized readers *MAY* support.
-  public static final ImmutableSet<VirtualColumn> vectorizableVirtualColumns =
-      ImmutableSet.of(VirtualColumn.ROWID, VirtualColumn.ROWISDELETED);
-
+  public static final ImmutableSet<VirtualColumn> vectorizableVirtualColumns = 
+      ImmutableSet.of(
+        VirtualColumn.ROWID, 
+        VirtualColumn.ROWISDELETED,
+        VirtualColumn.PARTITION_SPEC_ID, 
+        VirtualColumn.PARTITION_HASH, 
+        VirtualColumn.FILE_PATH, 
+        VirtualColumn.ROW_POSITION,
+        VirtualColumn.PARTITION_PROJECTION);
   private HiveConf hiveConf;
+
+  private enum VECTORIZABLE_UDAF {
+    MIN,
+    MAX,
+    COUNT,
+    SUM,
+    AVG,
+    VARIANCE,
+    VAR_POP,
+    VAR_SAMP,
+    STD,
+    STDDEV,
+    STDDEV_POP,
+    STDDEV_SAMP,
+    BLOOM_FILTER,
+    COMPUTE_BIT_VECTOR_HLL,
+    DS_KLL_SKETCH;
+
+    @Override
+    public String toString() {
+      return name().toLowerCase();
+    }
+  }
 
   public enum EnabledOverride {
     NONE,
     DISABLE,
     ENABLE;
 
-    public static final Map<String, EnabledOverride> nameMap =
-        new HashMap<String, EnabledOverride>();
+    public static final Map<String, EnabledOverride> NAME_MAP = new HashMap<>();
     static {
       for (EnabledOverride vectorizationEnabledOverride : values()) {
-        nameMap.put(
-            vectorizationEnabledOverride.name().toLowerCase(), vectorizationEnabledOverride);
+        NAME_MAP.put(
+            vectorizationEnabledOverride.toString(), vectorizationEnabledOverride);
       }
-    };
+    }
+
+    @Override
+    public String toString() {
+      return name().toLowerCase();
+    }
   }
 
   private boolean isVectorizationEnabled;
@@ -334,12 +379,12 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   private HiveVectorAdaptorUsageMode hiveVectorAdaptorUsageMode;
 
-  private static final Set<Support> vectorDeserializeTextSupportSet = new TreeSet<Support>();
+  private static final Set<Support> vectorDeserializeTextSupportSet = new TreeSet<>();
   static {
     vectorDeserializeTextSupportSet.addAll(Arrays.asList(Support.values()));
   }
 
-  private static final Set<String> supportedAcidInputFormats = new TreeSet<String>();
+  private static final Set<String> supportedAcidInputFormats = new TreeSet<>();
   static {
     supportedAcidInputFormats.add(OrcInputFormat.class.getName());
     // For metadataonly or empty rows optimizations, null/onerow input format can be selected.
@@ -354,7 +399,7 @@ public class Vectorizer implements PhysicalPlanResolver {
   private Operator<? extends OperatorDesc> currentOperator;
   private Collection<Class<?>> vectorizedInputFormatExcludes;
   private Map<Operator<? extends OperatorDesc>, Set<ImmutablePair<Operator<? extends OperatorDesc>, Operator<? extends OperatorDesc>>>> delayedFixups =
-      new IdentityHashMap<Operator<? extends OperatorDesc>, Set<ImmutablePair<Operator<?>, Operator<?>>>>();
+      new IdentityHashMap<>();
 
   public void testSetCurrentBaseWork(BaseWork testBaseWork) {
     currentBaseWork = testBaseWork;
@@ -446,8 +491,11 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(GenericUDFTrim.class);
 
     supportedGenericUDFs.add(UDFSin.class);
+    supportedGenericUDFs.add(UDFSinh.class);
     supportedGenericUDFs.add(UDFCos.class);
+    supportedGenericUDFs.add(UDFCosh.class);
     supportedGenericUDFs.add(UDFTan.class);
+    supportedGenericUDFs.add(UDFTanh.class);
     supportedGenericUDFs.add(UDFAsin.class);
     supportedGenericUDFs.add(UDFAcos.class);
     supportedGenericUDFs.add(UDFAtan.class);
@@ -504,21 +552,6 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     // For conditional expressions
     supportedGenericUDFs.add(GenericUDFIf.class);
-
-    supportedAggregationUdfs.add("min");
-    supportedAggregationUdfs.add("max");
-    supportedAggregationUdfs.add("count");
-    supportedAggregationUdfs.add("sum");
-    supportedAggregationUdfs.add("avg");
-    supportedAggregationUdfs.add("variance");
-    supportedAggregationUdfs.add("var_pop");
-    supportedAggregationUdfs.add("var_samp");
-    supportedAggregationUdfs.add("std");
-    supportedAggregationUdfs.add("stddev");
-    supportedAggregationUdfs.add("stddev_pop");
-    supportedAggregationUdfs.add("stddev_samp");
-    supportedAggregationUdfs.add("bloom_filter");
-    supportedAggregationUdfs.add("compute_bit_vector_hll");
   }
 
   private class VectorTaskColumnInfo {
@@ -1258,16 +1291,16 @@ public class Vectorizer implements PhysicalPlanResolver {
       }
     }
 
-    private Support[] getVectorizedInputFormatSupports(
-      Class<? extends InputFormat> inputFileFormatClass) {
+    private Support[] getVectorizedInputFormatSupports(Class<? extends InputFormat> inputFileFormatClass,
+        TableDesc properties) {
 
       try {
         InputFormat inputFormat = FetchOperator.getInputFormatFromCache(inputFileFormatClass, hiveConf);
         if (inputFormat instanceof VectorizedInputFormatInterface) {
-          return ((VectorizedInputFormatInterface) inputFormat).getSupportedFeatures();
+          return ((VectorizedInputFormatInterface) inputFormat).getSupportedFeatures(hiveConf, properties);
         }
       } catch (IOException e) {
-        LOG.error("Unable to instantiate {} input format class. Cannot determine vectorization support.", e);
+        LOG.error("Unable to instantiate input format class. Cannot determine vectorization support.", e);
       }
       // FUTURE: Decide how to ask an input file format what vectorization features it supports.
       return null;
@@ -1276,13 +1309,12 @@ public class Vectorizer implements PhysicalPlanResolver {
     /*
      * Add the support of the VectorizedInputFileFormatInterface.
      */
-    private void addVectorizedInputFileFormatSupport(
-        Set<Support> newSupportSet,
-        boolean isInputFileFormatVectorized, Class<? extends InputFormat>inputFileFormatClass) {
+    private void addVectorizedInputFileFormatSupport(Set<Support> newSupportSet, boolean isInputFileFormatVectorized,
+        Class<? extends InputFormat> inputFileFormatClass, TableDesc tableDesc) {
 
       final Support[] supports;
       if (isInputFileFormatVectorized) {
-        supports = getVectorizedInputFormatSupports(inputFileFormatClass);
+        supports = getVectorizedInputFormatSupports(inputFileFormatClass, tableDesc);
       } else {
         supports = null;
       }
@@ -1374,7 +1406,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         }
 
         addVectorizedInputFileFormatSupport(
-            newSupportSet, isInputFileFormatVectorized, inputFileFormatClass);
+            newSupportSet, isInputFileFormatVectorized, inputFileFormatClass, pd.getTableDesc());
 
         addVectorPartitionDesc(
             pd,
@@ -1402,7 +1434,7 @@ public class Vectorizer implements PhysicalPlanResolver {
                 allTypeInfoList)) {
 
           addVectorizedInputFileFormatSupport(
-              newSupportSet, isInputFileFormatVectorized, inputFileFormatClass);
+              newSupportSet, isInputFileFormatVectorized, inputFileFormatClass, pd.getTableDesc());
 
           addVectorPartitionDesc(
               pd,
@@ -1799,7 +1831,8 @@ public class Vectorizer implements PhysicalPlanResolver {
         // (e.g. Avro provides the table schema and ignores the partition schema..).
         //
         String nextDataColumnsString = ObjectInspectorUtils.getFieldNames(partObjectInspector);
-        String[] nextDataColumns = nextDataColumnsString.split(",");
+        String[] nextDataColumns = StringUtils.isBlank(nextDataColumnsString) ?
+            new String[0] : nextDataColumnsString.split(",");
         List<String> nextDataColumnList = Arrays.asList(nextDataColumns);
 
         /*
@@ -1872,7 +1905,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         if (isPartitionRowConversion && isLlapIoEnabled) {
           enabledConditionsNotMetList.add(
               "Could not enable vectorization. " +
-              "LLAP I/O is enabled wbich automatically deserializes into " +
+              "LLAP I/O is enabled which automatically deserializes into " +
               "VECTORIZED_INPUT_FILE_FORMAT. " +
               "A partition requires data type conversion and that is not supported");
 
@@ -1967,7 +2000,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         supportRemovedReasons.add(removeString);
       }
 
-      // Now rememember what is supported for this query and any support that was
+      // Now remember what is supported for this query and any support that was
       // removed.
       vectorTaskColumnInfo.setSupportSetInUse(supportSet);
       vectorTaskColumnInfo.setSupportRemovedReasons(supportRemovedReasons);
@@ -2390,7 +2423,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         HiveConf.getVar(hiveConf,
             HiveConf.ConfVars.HIVE_TEST_VECTORIZATION_ENABLED_OVERRIDE);
     vectorizationEnabledOverride =
-        EnabledOverride.nameMap.get(vectorizationEnabledOverrideString);
+        EnabledOverride.NAME_MAP.get(vectorizationEnabledOverrideString);
 
     isVectorizationEnabled = HiveConf.getBoolVar(hiveConf,
         HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
@@ -3224,7 +3257,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     type = type.toLowerCase();
     boolean result = supportedDataTypesPattern.matcher(type).matches();
     if (result && !allowVoidProjection &&
-        mode == VectorExpressionDescriptor.Mode.PROJECTION && type.equals("void")) {
+        mode == VectorExpressionDescriptor.Mode.PROJECTION && type.equals(serdeConstants.VOID_TYPE_NAME)) {
       return false;
     }
 
@@ -3252,7 +3285,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     type = type.toLowerCase();
     boolean result = supportedDataTypesPattern.matcher(type).matches();
     if (result && !allowVoidProjection &&
-        mode == VectorExpressionDescriptor.Mode.PROJECTION && type.equals("void")) {
+        mode == VectorExpressionDescriptor.Mode.PROJECTION && type.equals(serdeConstants.VOID_TYPE_NAME)) {
       return "Vectorizing data type void not supported when mode = PROJECTION";
     }
 
@@ -3881,7 +3914,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     vectorMapJoinInfo.setBigTableFilterExpressions(bigTableFilterExpressions);
 
     boolean useOptimizedTable =
-        HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE);
+        HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_MAPJOIN_USE_OPTIMIZED_TABLE);
 
     // Remember the condition variables for EXPLAIN regardless of whether we specialize or not.
     vectorDesc.setVectorMapJoinInfo(vectorMapJoinInfo);
@@ -4354,6 +4387,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     return false;
   }
 
+  @VisibleForTesting
   public static Operator<? extends OperatorDesc> vectorizeFilterOperator(
       Operator<? extends OperatorDesc> filterOp, VectorizationContext vContext,
       VectorFilterDesc vectorFilterDesc)
@@ -4374,9 +4408,10 @@ public class Vectorizer implements PhysicalPlanResolver {
         vContext, vectorFilterDesc);
   }
 
-  private static Operator<? extends OperatorDesc> vectorizeTopNKeyOperator(
-      Operator<? extends OperatorDesc> topNKeyOperator, VectorizationContext vContext,
-      VectorTopNKeyDesc vectorTopNKeyDesc) throws HiveException {
+  @VisibleForTesting
+  public static Operator<? extends OperatorDesc> vectorizeTopNKeyOperator(
+          Operator<? extends OperatorDesc> topNKeyOperator, VectorizationContext vContext,
+          VectorTopNKeyDesc vectorTopNKeyDesc) throws HiveException {
 
     TopNKeyDesc topNKeyDesc = (TopNKeyDesc) topNKeyOperator.getConf();
     VectorExpression[] keyExpressions = getVectorExpressions(vContext, topNKeyDesc.getKeyColumns());
@@ -4465,17 +4500,23 @@ public class Vectorizer implements PhysicalPlanResolver {
       VectorizationContext vContext)
           throws HiveException {
 
-    VectorizedUDAFs annotation =
-        AnnotationUtils.getAnnotation(evaluator.getClass(), VectorizedUDAFs.class);
-    if (annotation == null) {
-      String issue =
-          "Evaluator " + evaluator.getClass().getSimpleName() + " does not have a " +
-          "vectorized UDAF annotation (aggregation: \"" + aggregationName + "\"). " +
-          "Vectorization not supported";
-      return new ImmutablePair<VectorAggregationDesc,String>(null, issue);
+    Class<? extends VectorAggregateExpression>[] vecAggrClasses;
+    // "ds_kll_sketch" needs special treatment because the UDAF is coming from data
+    // sketches library, we cannot add annotations there
+    if (aggregationName.equals(VECTORIZABLE_UDAF.DS_KLL_SKETCH.toString())) {
+      vecAggrClasses = new Class[] {
+          VectorUDAFComputeDsKllSketchDouble.class, VectorUDAFComputeDsKllSketchFinal.class
+      };
+    } else {
+      VectorizedUDAFs annotation =
+          AnnotationUtils.getAnnotation(evaluator.getClass(), VectorizedUDAFs.class);
+      if (annotation == null) {
+        String issue = "Evaluator " + evaluator.getClass().getSimpleName() + " does not have a "
+            + "vectorized UDAF annotation (aggregation: \"" + aggregationName + "\"). " + "Vectorization not supported";
+        return new ImmutablePair<>(null, issue);
+      }
+      vecAggrClasses = annotation.value();
     }
-    final Class<? extends VectorAggregateExpression>[] vecAggrClasses = annotation.value();
-
 
     // Not final since it may change later due to DECIMAL_64.
     ColumnVector.Type outputColVectorType =
@@ -4491,21 +4532,20 @@ public class Vectorizer implements PhysicalPlanResolver {
     ColumnVector.Type inputColVectorType;
 
     final int parameterCount = parameterList.size();
-    if (parameterCount == 0) {
+    final List<ConstantVectorExpression> constants = new ArrayList<>();
 
+    if (parameterCount == 0) {
       // COUNT(*)
       inputTypeInfo = null;
       inputColVectorType = null;
       inputExpression = null;
-
-    } else if (parameterCount == 1) {
-
+    } else {
       ExprNodeDesc exprNodeDesc = parameterList.get(0);
       inputTypeInfo = exprNodeDesc.getTypeInfo();
       if (inputTypeInfo == null) {
         String issue ="Aggregations with null parameter type not supported " +
-            aggregationName + "(" + parameterList.toString() + ")";
-        return new ImmutablePair<VectorAggregationDesc,String>(null, issue);
+            aggregationName + "(" + parameterList + ")";
+        return new ImmutablePair<>(null, issue);
       }
 
       /*
@@ -4517,24 +4557,27 @@ public class Vectorizer implements PhysicalPlanResolver {
           vContext.getVectorExpression(
               exprNodeDesc, VectorExpressionDescriptor.Mode.PROJECTION);
       if (inputExpression == null) {
-        String issue ="Parameter expression " + exprNodeDesc.toString() + " not supported " +
-            aggregationName + "(" + parameterList.toString() + ")";
-        return new ImmutablePair<VectorAggregationDesc,String>(null, issue);
+        String issue ="Parameter expression " + exprNodeDesc + " not supported " +
+            aggregationName + "(" + parameterList + ")";
+        return new ImmutablePair<>(null, issue);
       }
       if (inputExpression.getOutputTypeInfo() == null) {
-        String issue ="Parameter expression " + exprNodeDesc.toString() + " with null type not supported " +
-            aggregationName + "(" + parameterList.toString() + ")";
-        return new ImmutablePair<VectorAggregationDesc,String>(null, issue);
+        String issue ="Parameter expression " + exprNodeDesc + " with null type not supported " +
+            aggregationName + "(" + parameterList + ")";
+        return new ImmutablePair<>(null, issue);
       }
       inputColVectorType = inputExpression.getOutputColumnVectorType();
-    } else {
 
-      // No multi-parameter aggregations supported.
-      String issue ="Aggregations with > 1 parameter are not supported " +
-          aggregationName + "(" + parameterList.toString() + ")";
-      return new ImmutablePair<VectorAggregationDesc,String>(null, issue);
+      // ignore the first param as it's supposed to be a column expression
+      constants.addAll(getConstantParams(vContext, parameterList));
+
+      if (constants.size() != parameterCount - 1) {
+        // No multi-parameter aggregations supported unless all the extra parameters are constants.
+        String issue = "Aggregations with > 1 parameter are not supported unless all the extra "
+            + "parameters are constants " + aggregationName + "(" + parameterList + ")";
+        return new ImmutablePair<>(null, issue);
+      }
     }
-
 
     /*
      * When we have DECIMAL_64 as the input parameter then we have to see if there is a special
@@ -4553,11 +4596,19 @@ public class Vectorizer implements PhysicalPlanResolver {
                   ColumnVector.Type.DECIMAL_64, udafEvaluatorMode);
           if (vecAggrClass != null) {
             final VectorAggregationDesc vecAggrDesc =
-                new VectorAggregationDesc(
-                    aggregationName, evaluator, udafEvaluatorMode,
-                    inputTypeInfo, inputColVectorType, inputExpression,
-                    outputTypeInfo, ColumnVector.Type.DECIMAL_64, vecAggrClass);
-            return new ImmutablePair<VectorAggregationDesc,String>(vecAggrDesc, null);
+                new VectorAggregationDesc.VectorAggregationDescBuilder()
+                    .aggregationName(aggregationName)
+                    .evaluator(evaluator)
+                    .udafEvaluatorMode(udafEvaluatorMode)
+                    .inputTypeInfo(inputTypeInfo)
+                    .inputColVectorType(inputColVectorType)
+                    .inputExpression(inputExpression)
+                    .outputTypeInfo(outputTypeInfo)
+                    .outputColVectorType(ColumnVector.Type.DECIMAL_64)
+                    .vectorAggregationClass(vecAggrClass)
+                    .constants(constants)
+                    .build();
+            return new ImmutablePair<>(vecAggrDesc, null);
           }
         }
 
@@ -4568,11 +4619,19 @@ public class Vectorizer implements PhysicalPlanResolver {
                 outputColVectorType, udafEvaluatorMode);
         if (vecAggrClass != null) {
           final VectorAggregationDesc vecAggrDesc =
-              new VectorAggregationDesc(
-                  aggregationName, evaluator, udafEvaluatorMode,
-                  inputTypeInfo, inputColVectorType, inputExpression,
-                  outputTypeInfo, outputColVectorType, vecAggrClass);
-          return new ImmutablePair<VectorAggregationDesc,String>(vecAggrDesc, null);
+              new VectorAggregationDesc.VectorAggregationDescBuilder()
+                  .aggregationName(aggregationName)
+                  .evaluator(evaluator)
+                  .udafEvaluatorMode(udafEvaluatorMode)
+                  .inputTypeInfo(inputTypeInfo)
+                  .inputColVectorType(inputColVectorType)
+                  .inputExpression(inputExpression)
+                  .outputTypeInfo(outputTypeInfo)
+                  .outputColVectorType(outputColVectorType)
+                  .vectorAggregationClass(vecAggrClass)
+                  .constants(constants)
+                  .build();
+          return new ImmutablePair<>(vecAggrDesc, null);
         }
 
         // No support for DECIMAL_64 input.  We must convert.
@@ -4582,7 +4641,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         // Fall through...
       } else {
 
-        // Try with with DECIMAL_64 input and desired output type.
+        // Try with DECIMAL_64 input and desired output type.
         final Class<? extends VectorAggregateExpression> vecAggrClass =
             findVecAggrClass(
                 vecAggrClasses, aggregationName, inputColVectorType,
@@ -4591,16 +4650,24 @@ public class Vectorizer implements PhysicalPlanResolver {
           // for now, disable operating on decimal64 column vectors for semijoin reduction as
           // we have to make sure same decimal type should be used during bloom filter creation
           // and bloom filter probing
-          if (aggregationName.equals("bloom_filter")) {
+          if (aggregationName.equals(BLOOM_FILTER_FUNCTION)) {
             inputExpression = vContext.wrapWithDecimal64ToDecimalConversion(inputExpression);
             inputColVectorType = ColumnVector.Type.DECIMAL;
           }
           final VectorAggregationDesc vecAggrDesc =
-              new VectorAggregationDesc(
-                  aggregationName, evaluator, udafEvaluatorMode,
-                  inputTypeInfo, inputColVectorType, inputExpression,
-                  outputTypeInfo, outputColVectorType, vecAggrClass);
-          return new ImmutablePair<VectorAggregationDesc,String>(vecAggrDesc, null);
+              new VectorAggregationDesc.VectorAggregationDescBuilder()
+                  .aggregationName(aggregationName)
+                  .evaluator(evaluator)
+                  .udafEvaluatorMode(udafEvaluatorMode)
+                  .inputTypeInfo(inputTypeInfo)
+                  .inputColVectorType(inputColVectorType)
+                  .inputExpression(inputExpression)
+                  .outputTypeInfo(outputTypeInfo)
+                  .outputColVectorType(outputColVectorType)
+                  .vectorAggregationClass(vecAggrClass)
+                  .constants(constants)
+                  .build();
+          return new ImmutablePair<>(vecAggrDesc, null);
         }
 
         // No support for DECIMAL_64 input.  We must convert.
@@ -4620,11 +4687,19 @@ public class Vectorizer implements PhysicalPlanResolver {
             outputColVectorType, udafEvaluatorMode);
     if (vecAggrClass != null) {
       final VectorAggregationDesc vecAggrDesc =
-          new VectorAggregationDesc(
-              aggregationName, evaluator, udafEvaluatorMode,
-              inputTypeInfo, inputColVectorType, inputExpression,
-              outputTypeInfo, outputColVectorType, vecAggrClass);
-      return new ImmutablePair<VectorAggregationDesc,String>(vecAggrDesc, null);
+          new VectorAggregationDesc.VectorAggregationDescBuilder()
+              .aggregationName(aggregationName)
+              .evaluator(evaluator)
+              .udafEvaluatorMode(udafEvaluatorMode)
+              .inputTypeInfo(inputTypeInfo)
+              .inputColVectorType(inputColVectorType)
+              .inputExpression(inputExpression)
+              .outputTypeInfo(outputTypeInfo)
+              .outputColVectorType(outputColVectorType)
+              .vectorAggregationClass(vecAggrClass)
+              .constants(constants)
+              .build();
+      return new ImmutablePair<>(vecAggrDesc, null);
     }
 
     // No match?
@@ -4635,7 +4710,26 @@ public class Vectorizer implements PhysicalPlanResolver {
             "and output type: \"" + outputColVectorType + "\" " +
             "and mode: " + udafEvaluatorMode + " not supported for " +
             "evaluator " + evaluator.getClass().getSimpleName();
-    return new ImmutablePair<VectorAggregationDesc,String>(null, issue);
+    return new ImmutablePair<>(null, issue);
+  }
+
+  private static List<ConstantVectorExpression> getConstantParams(
+      VectorizationContext vContext, List<ExprNodeDesc> parameterList) throws HiveException {
+    if (parameterList.isEmpty()) {
+      return Collections.emptyList();
+    }
+
+    final List<ConstantVectorExpression> res = new ArrayList<>(parameterList.size() - 1);
+
+    // skip the first parameter as it is not a constant
+    for (ExprNodeDesc exprNodeDesc : parameterList.subList(1, parameterList.size())) {
+      VectorExpression vectorExpression =
+          vContext.getVectorExpression(exprNodeDesc, VectorExpressionDescriptor.Mode.PROJECTION);
+      if (vectorExpression instanceof ConstantVectorExpression) {
+        res.add((ConstantVectorExpression) vectorExpression);
+      }
+    }
+    return res;
   }
 
   public static Operator<? extends OperatorDesc> vectorizeGroupByOperator(
@@ -5238,7 +5332,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
                 // TEMPORARY Until Native Vector Map Join with Hybrid passes tests...
                 // HiveConf.setBoolVar(physicalContext.getConf(),
-                //    HiveConf.ConfVars.HIVEUSEHYBRIDGRACEHASHJOIN, false);
+                //    HiveConf.ConfVars.HIVE_USE_HYBRIDGRACE_HASHJOIN, false);
 
                 vectorOp = specializeMapJoinOperator(op, vContext, desc, vectorMapJoinDesc);
                 isNative = true;

@@ -1,11 +1,15 @@
 PREHOOK: query: drop table if exists target
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists target
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists source
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists source
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table target (a int, b int) partitioned by (p int, q int) clustered by (a) into 2  buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -159,18 +163,22 @@ POSTHOOK: Input: default@source
 PREHOOK: query: drop table if exists target
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@target
+PREHOOK: Output: database:default
 PREHOOK: Output: default@target
 POSTHOOK: query: drop table if exists target
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@target
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@target
 PREHOOK: query: drop table if exists source
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@source
+PREHOOK: Output: database:default
 PREHOOK: Output: default@source
 POSTHOOK: query: drop table if exists source
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@source
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@source
 PREHOOK: query: create table target (a int, b int) partitioned by (p int, q int) clustered by (a) into 2  buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
@@ -249,7 +257,7 @@ POSTHOOK: Output: default@target@p=1/q=2
 POSTHOOK: Output: default@target@p=1/q=3
 POSTHOOK: Output: default@target@p=111/q=111
 POSTHOOK: Output: default@target@p=2/q=2
-POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(target)t.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), (target)t.FieldSchema(name:p, type:int, comment:null), (target)t.FieldSchema(name:q, type:int, comment:null), ]
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(target)target.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), (target)target.FieldSchema(name:p, type:int, comment:null), (target)target.FieldSchema(name:q, type:int, comment:null), ]
 POSTHOOK: Lineage: target PARTITION(p=1,q=2).a SIMPLE [(source)s.FieldSchema(name:a1, type:int, comment:null), ]
 POSTHOOK: Lineage: target PARTITION(p=1,q=2).b SIMPLE [(source)s.FieldSchema(name:b1, type:int, comment:null), ]
 POSTHOOK: Lineage: target PARTITION(p=111,q=111).a SIMPLE [(source)s.FieldSchema(name:a1, type:int, comment:null), ]
@@ -257,16 +265,20 @@ POSTHOOK: Lineage: target PARTITION(p=111,q=111).b SIMPLE [(source)s.FieldSchema
 PREHOOK: query: drop table if exists target
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@target
+PREHOOK: Output: database:default
 PREHOOK: Output: default@target
 POSTHOOK: query: drop table if exists target
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@target
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@target
 PREHOOK: query: drop table if exists source
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@source
+PREHOOK: Output: database:default
 PREHOOK: Output: default@source
 POSTHOOK: query: drop table if exists source
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@source
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@source

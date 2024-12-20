@@ -32,6 +32,8 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.Set;
 
+import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
+import org.apache.hadoop.security.authentication.server.KerberosAuthenticationHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -249,7 +251,7 @@ public class Main {
     low.setLowResourcesIdleTimeout(10000);
     server.addBean(low);
 
-    server.addConnector(createChannelConnector());
+    server.setConnectors(new Connector[]{ createChannelConnector(server) });
 
     // Start the server
     server.start();
@@ -276,7 +278,7 @@ public class Main {
    Create a channel connector for "http/https" requests.
    */
 
-  private Connector createChannelConnector() {
+  private Connector createChannelConnector(Server server) {
     ServerConnector connector;
     final HttpConfiguration httpConf = new HttpConfiguration();
     httpConf.setRequestHeaderSize(1024 * 64);
@@ -284,7 +286,7 @@ public class Main {
 
     if (conf.getBoolean(AppConfig.USE_SSL, false)) {
       LOG.info("Using SSL for templeton.");
-      SslContextFactory sslContextFactory = new SslContextFactory();
+      SslContextFactory sslContextFactory = new SslContextFactory.Server();
       sslContextFactory.setKeyStorePath(conf.get(AppConfig.KEY_STORE_PATH, DEFAULT_KEY_STORE_PATH));
       sslContextFactory.setKeyStorePassword(conf.get(AppConfig.KEY_STORE_PASSWORD, DEFAULT_KEY_STORE_PASSWORD));
       Set<String> excludedSSLProtocols = Sets.newHashSet(Splitter.on(",").trimResults().omitEmptyStrings()
@@ -306,18 +308,23 @@ public class Main {
   public FilterHolder makeAuthFilter() throws IOException {
     FilterHolder authFilter = new FilterHolder(AuthFilter.class);
     UserNameHandler.allowAnonymous(authFilter);
+  
+    String confPrefix = "dfs.web.authentication";
+    String prefix = confPrefix + ".";
+    authFilter.setInitParameter(AuthenticationFilter.CONFIG_PREFIX, confPrefix);
+    authFilter.setInitParameter(prefix + AuthenticationFilter.COOKIE_PATH, "/");
+    
     if (UserGroupInformation.isSecurityEnabled()) {
-      //http://hadoop.apache.org/docs/r1.1.1/api/org/apache/hadoop/security/authentication/server/AuthenticationFilter.html
-      authFilter.setInitParameter("dfs.web.authentication.signature.secret",
-        conf.kerberosSecret());
-      //https://svn.apache.org/repos/asf/hadoop/common/branches/branch-1.2/src/packages/templates/conf/hdfs-site.xml
+      authFilter.setInitParameter(prefix + AuthenticationFilter.AUTH_TYPE, KerberosAuthenticationHandler.TYPE);
+      
       String serverPrincipal = SecurityUtil.getServerPrincipal(conf.kerberosPrincipal(), "0.0.0.0");
-      authFilter.setInitParameter("dfs.web.authentication.kerberos.principal",
-        serverPrincipal);
-      //http://https://svn.apache.org/repos/asf/hadoop/common/branches/branch-1.2/src/packages/templates/conf/hdfs-site.xml
-      authFilter.setInitParameter("dfs.web.authentication.kerberos.keytab",
-        conf.kerberosKeytab());
+      authFilter.setInitParameter(prefix + KerberosAuthenticationHandler.PRINCIPAL, serverPrincipal);
+      authFilter.setInitParameter(prefix + KerberosAuthenticationHandler.KEYTAB, conf.kerberosKeytab());
+      authFilter.setInitParameter(prefix + AuthenticationFilter.SIGNATURE_SECRET, conf.kerberosSecret());
+    } else {
+      authFilter.setInitParameter(prefix + AuthenticationFilter.AUTH_TYPE, PseudoAuthenticationHandler.TYPE);
     }
+    
     return authFilter;
   }
 

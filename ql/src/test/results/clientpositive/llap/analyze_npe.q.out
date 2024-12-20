@@ -1,15 +1,21 @@
 PREHOOK: query: drop table if exists explain_npe_map
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists explain_npe_map
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists explain_npe_array
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists explain_npe_array
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists explain_npe_struct
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists explain_npe_struct
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table explain_npe_map    ( c1 map<string, string> )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -108,6 +114,7 @@ STAGE PLANS:
           Filter Operator
             predicate: c1 is null (type: boolean)
             Select Operator
+              expressions: null (type: struct<name:string,age:int>)
               outputColumnNames: _col0
               ListSink
 
@@ -133,7 +140,7 @@ STAGE PLANS:
           Filter Operator
             predicate: c1 is null (type: boolean)
             Select Operator
-              expressions: null (type: void)
+              expressions: Const map<string,string> null (type: map<string,string>)
               outputColumnNames: _col0
               ListSink
 
@@ -159,7 +166,7 @@ STAGE PLANS:
           Filter Operator
             predicate: c1 is null (type: boolean)
             Select Operator
-              expressions: null (type: void)
+              expressions: Const array<string> null (type: array<string>)
               outputColumnNames: _col0
               ListSink
 
@@ -185,31 +192,37 @@ STAGE PLANS:
           Filter Operator
             predicate: c1 is null (type: boolean)
             Select Operator
-              expressions: null (type: void)
+              expressions: null (type: struct<name:string,age:int>)
               outputColumnNames: _col0
               ListSink
 
 PREHOOK: query: drop table if exists explain_npe_map
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@explain_npe_map
+PREHOOK: Output: database:default
 PREHOOK: Output: default@explain_npe_map
 POSTHOOK: query: drop table if exists explain_npe_map
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@explain_npe_map
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@explain_npe_map
 PREHOOK: query: drop table if exists explain_npe_array
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@explain_npe_array
+PREHOOK: Output: database:default
 PREHOOK: Output: default@explain_npe_array
 POSTHOOK: query: drop table if exists explain_npe_array
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@explain_npe_array
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@explain_npe_array
 PREHOOK: query: drop table if exists explain_npe_struct
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@explain_npe_struct
+PREHOOK: Output: database:default
 PREHOOK: Output: default@explain_npe_struct
 POSTHOOK: query: drop table if exists explain_npe_struct
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@explain_npe_struct
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@explain_npe_struct

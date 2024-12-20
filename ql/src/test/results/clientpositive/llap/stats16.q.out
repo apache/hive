@@ -1,7 +1,9 @@
 PREHOOK: query: drop table stats16
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table stats16
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table stats16 (key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -80,7 +82,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -96,8 +98,10 @@ Storage Desc Params:
 PREHOOK: query: drop table stats16
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats16
+PREHOOK: Output: database:default
 PREHOOK: Output: default@stats16
 POSTHOOK: query: drop table stats16
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@stats16
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats16

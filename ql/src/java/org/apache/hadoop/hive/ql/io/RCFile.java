@@ -1057,7 +1057,7 @@ public class RCFile {
       this.out = out;
       this.codec = codec;
       this.metadata = metadata;
-      this.useNewMagic = conf.getBoolean(HIVEUSEEXPLICITRCFILEHEADER.varname, true);
+      this.useNewMagic = conf.getBoolean(HIVE_USE_EXPLICIT_RCFILE_HEADER.varname, true);
     }
 
     /** Returns the compression codec of data in this file. */

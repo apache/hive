@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists partcolstats
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists partcolstats
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table partcolstats (key int, value string) partitioned by (ds date, hr int, part string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -471,15 +473,19 @@ comment             	from deserializer
 PREHOOK: query: drop table partcolstats
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partcolstats
+PREHOOK: Output: database:default
 PREHOOK: Output: default@partcolstats
 POSTHOOK: query: drop table partcolstats
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@partcolstats
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partcolstats
 PREHOOK: query: drop table if exists partcolstatsnum
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists partcolstatsnum
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table partcolstatsnum (key int, value string) partitioned by (tint tinyint, sint smallint, bint bigint)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -533,15 +539,19 @@ comment             	from deserializer
 PREHOOK: query: drop table partcolstatsnum
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partcolstatsnum
+PREHOOK: Output: database:default
 PREHOOK: Output: default@partcolstatsnum
 POSTHOOK: query: drop table partcolstatsnum
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@partcolstatsnum
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partcolstatsnum
 PREHOOK: query: drop table if exists partcolstatsdec
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists partcolstatsdec
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table partcolstatsdec (key int, value string) partitioned by (decpart decimal(8,4))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -595,15 +605,19 @@ comment             	from deserializer
 PREHOOK: query: drop table partcolstatsdec
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partcolstatsdec
+PREHOOK: Output: database:default
 PREHOOK: Output: default@partcolstatsdec
 POSTHOOK: query: drop table partcolstatsdec
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@partcolstatsdec
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partcolstatsdec
 PREHOOK: query: drop table if exists partcolstatschar
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists partcolstatschar
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table partcolstatschar (key int, value string) partitioned by (varpart varchar(5), charpart char(3))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -657,8 +671,10 @@ comment             	from deserializer
 PREHOOK: query: drop table partcolstatschar
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partcolstatschar
+PREHOOK: Output: database:default
 PREHOOK: Output: default@partcolstatschar
 POSTHOOK: query: drop table partcolstatschar
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@partcolstatschar
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partcolstatschar

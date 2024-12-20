@@ -31,8 +31,7 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.SourceTable;
-import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLDescWithTableProperties;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -40,24 +39,23 @@ import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
-import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.hadoop.hive.ql.ddl.DDLUtils.setColumnsAndStorePartitionTransformSpecOfTable;
 
 /**
  * DDL task description for CREATE VIEW commands.
  */
 @Explain(displayName = "Create Materialized View", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class CreateMaterializedViewDesc implements DDLDesc, Serializable {
+public class CreateMaterializedViewDesc extends DDLDescWithTableProperties implements Serializable {
   private static final long serialVersionUID = 1L;
   private static final Logger LOG = LoggerFactory.getLogger(CreateMaterializedViewDesc.class);
 
   private String viewName;
   private List<FieldSchema> schema;
   private String comment;
-  private Map<String, String> tblProps;
-  private List<String> partColNames;
   private boolean ifNotExists;
 
   private String originalText;
@@ -66,7 +64,6 @@ public class CreateMaterializedViewDesc implements DDLDesc, Serializable {
   private List<FieldSchema> partCols;
   private String inputFormat;
   private String outputFormat;
-  private String location;
   private String serde;
   private String storageHandler;
   private Map<String, String> serdeProps;
@@ -75,11 +72,6 @@ public class CreateMaterializedViewDesc implements DDLDesc, Serializable {
   private List<FieldSchema> sortCols;
   private List<String> distributeColNames;
   private List<FieldSchema> distributeCols;
-  private Long initialMmWriteId; // Initial MM write ID for CMV and import.
-  // The FSOP configuration for the FSOP that is going to write initial data during cmv.
-  // This is not needed beyond compilation, so it is transient.
-  private transient FileSinkDesc writer;
-  private String ownerName = null;
 
   /**
    * Used to create a materialized view descriptor.
@@ -89,11 +81,11 @@ public class CreateMaterializedViewDesc implements DDLDesc, Serializable {
       List<String> distributeColNames, boolean ifNotExists, boolean rewriteEnabled,
       String inputFormat, String outputFormat, String location,
       String serde, String storageHandler, Map<String, String> serdeProps) {
+    super(partColNames, tblProps, location);
+    
     this.viewName = viewName;
     this.schema = schema;
     this.comment = comment;
-    this.tblProps = tblProps;
-    this.partColNames = partColNames;
     this.sortColNames = sortColNames;
     this.distributeColNames = distributeColNames;
     this.ifNotExists = ifNotExists;
@@ -101,7 +93,6 @@ public class CreateMaterializedViewDesc implements DDLDesc, Serializable {
     this.rewriteEnabled = rewriteEnabled;
     this.inputFormat = inputFormat;
     this.outputFormat = outputFormat;
-    this.location = location;
     this.serde = serde;
     this.storageHandler = storageHandler;
     this.serdeProps = serdeProps;
@@ -110,6 +101,10 @@ public class CreateMaterializedViewDesc implements DDLDesc, Serializable {
   @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getViewName() {
     return viewName;
+  }
+  
+  public TableName getFullTableName() {
+    return TableName.fromString(viewName, null, null);
   }
 
   public void setViewName(String viewName) {
@@ -169,14 +164,6 @@ public class CreateMaterializedViewDesc implements DDLDesc, Serializable {
     this.partCols = partCols;
   }
 
-  public List<String> getPartColNames() {
-    return partColNames;
-  }
-
-  public void setPartColNames(List<String> partColNames) {
-    this.partColNames = partColNames;
-  }
-
   public boolean isOrganized() {
     return (sortColNames != null && !sortColNames.isEmpty()) ||
         (distributeColNames != null && !distributeColNames.isEmpty());
@@ -233,15 +220,6 @@ public class CreateMaterializedViewDesc implements DDLDesc, Serializable {
     this.comment = comment;
   }
 
-  public void setTblProps(Map<String, String> tblProps) {
-    this.tblProps = tblProps;
-  }
-
-  @Explain(displayName = "table properties")
-  public Map<String, String> getTblProps() {
-    return tblProps;
-  }
-
   @Explain(displayName = "if not exists", displayOnlyOnTrue = true)
   public boolean getIfNotExists() {
     return ifNotExists;
@@ -275,13 +253,6 @@ public class CreateMaterializedViewDesc implements DDLDesc, Serializable {
     this.outputFormat = outputFormat;
   }
 
-  public void setLocation(String location) {
-    this.location = location;
-  }
-  public String getLocation() {
-    return location;
-  }
-
   public String getSerde() {
     return serde;
   }
@@ -306,17 +277,13 @@ public class CreateMaterializedViewDesc implements DDLDesc, Serializable {
     tbl.setTableType(TableType.MATERIALIZED_VIEW);
     tbl.setSerializationLib(null);
     tbl.clearSerDeInfo();
-    tbl.setFields(getSchema());
+
     if (getComment() != null) {
       tbl.setProperty("comment", getComment());
     }
 
     if (tblProps != null) {
       tbl.getParameters().putAll(tblProps);
-    }
-
-    if (!CollectionUtils.isEmpty(partCols)) {
-      tbl.setPartCols(partCols);
     }
 
     if (!CollectionUtils.isEmpty(sortColNames)) {
@@ -345,7 +312,15 @@ public class CreateMaterializedViewDesc implements DDLDesc, Serializable {
           org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE,
           getStorageHandler());
     }
+    if (getSerdeProps() != null) {
+      for (Map.Entry<String, String> entry : getSerdeProps().entrySet()) {
+        tbl.setSerdeParam(entry.getKey(), entry.getValue());
+      }
+    }
+
     HiveStorageHandler storageHandler = tbl.getStorageHandler();
+
+    setColumnsAndStorePartitionTransformSpecOfTable(getSchema(), getPartCols(), conf, tbl);
 
     /*
      * If the user didn't specify a SerDe, we use the default.
@@ -388,31 +363,4 @@ public class CreateMaterializedViewDesc implements DDLDesc, Serializable {
 
     return tbl;
   }
-
-  public void setInitialMmWriteId(Long mmWriteId) {
-    this.initialMmWriteId = mmWriteId;
-  }
-
-  public Long getInitialMmWriteId() {
-    return initialMmWriteId;
-  }
-
-  public FileSinkDesc getAndUnsetWriter() {
-    FileSinkDesc fsd = writer;
-    writer = null;
-    return fsd;
-  }
-
-  public void setWriter(FileSinkDesc writer) {
-    this.writer = writer;
-  }
-
-  public void setOwnerName(String ownerName) {
-    this.ownerName = ownerName;
-  }
-
-  public String getOwnerName() {
-    return this.ownerName;
-  }
-
 }

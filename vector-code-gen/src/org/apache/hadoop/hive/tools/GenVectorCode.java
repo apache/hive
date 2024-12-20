@@ -1084,28 +1084,34 @@ public class GenVectorCode extends Task {
         "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n, true);", ""},
       // Log(base, Col) is a special case and will be implemented separately from this template
       // Pow(col, P) and Power(col, P) are special cases implemented separately from this template
-      {"ColumnUnaryFunc", "FuncSqrt", "double", "double", "Math.sqrt", "", "",
+      {"ColumnUnaryFunc", "FuncSqrt", "double", "double", "StrictMath.sqrt", "", "",
         "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);", ""},
-      {"ColumnUnaryFunc", "FuncSqrt", "double", "long", "Math.sqrt", "(double)", "",
+      {"ColumnUnaryFunc", "FuncSqrt", "double", "long", "StrictMath.sqrt", "(double)", "",
         "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);", ""},
-      {"ColumnUnaryFunc", "FuncASin", "double", "double", "Math.asin", "", "",
+      {"ColumnUnaryFunc", "FuncASin", "double", "double", "StrictMath.asin", "", "",
         "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);", ""},
-      {"ColumnUnaryFunc", "FuncASin", "double", "long", "Math.asin", "(double)", "",
+      {"ColumnUnaryFunc", "FuncASin", "double", "long", "StrictMath.asin", "(double)", "",
         "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);", ""},
-      {"ColumnUnaryFunc", "FuncACos", "double", "double", "Math.acos", "", "",
+      {"ColumnUnaryFunc", "FuncACos", "double", "double", "StrictMath.acos", "", "",
         "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);", ""},
-      {"ColumnUnaryFunc", "FuncACos", "double", "long", "Math.acos", "(double)", "",
+      {"ColumnUnaryFunc", "FuncACos", "double", "long", "StrictMath.acos", "(double)", "",
         "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);", ""},
       {"ColumnUnaryFunc", "FuncAbs", "double", "double", "Math.abs", "", "", "", ""},
       {"ColumnUnaryFunc", "FuncAbs", "long", "long", "MathExpr.abs", "", "", "", ""},
-      {"ColumnUnaryFunc", "FuncSin", "double", "double", "Math.sin", "", "", "", ""},
-      {"ColumnUnaryFunc", "FuncSin", "double", "long", "Math.sin", "(double)", "", "", ""},
+      {"ColumnUnaryFunc", "FuncSin", "double", "double", "StrictMath.sin", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncSin", "double", "long", "StrictMath.sin", "(double)", "", "", ""},
+      {"ColumnUnaryFunc", "FuncSinh", "double", "double", "StrictMath.sinh", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncSinh", "double", "long", "StrictMath.sinh", "(double)", "", "", ""},
       {"ColumnUnaryFunc", "FuncCos", "double", "double", "StrictMath.cos", "", "", "", ""},
       {"ColumnUnaryFunc", "FuncCos", "double", "long", "StrictMath.cos", "(double)", "", "", ""},
-      {"ColumnUnaryFunc", "FuncTan", "double", "double", "Math.tan", "", "", "", ""},
-      {"ColumnUnaryFunc", "FuncTan", "double", "long", "Math.tan", "(double)", "", "", ""},
-      {"ColumnUnaryFunc", "FuncATan", "double", "double", "Math.atan", "", "", "", ""},
-      {"ColumnUnaryFunc", "FuncATan", "double", "long", "Math.atan", "(double)", "", "", ""},
+      {"ColumnUnaryFunc", "FuncCosh", "double", "double", "StrictMath.cosh", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncCosh", "double", "long", "StrictMath.cosh", "(double)", "", "", ""},
+      {"ColumnUnaryFunc", "FuncTan", "double", "double", "StrictMath.tan", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncTan", "double", "long", "StrictMath.tan", "(double)", "", "", ""},
+      {"ColumnUnaryFunc", "FuncTanh", "double", "double", "StrictMath.tanh", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncTanh", "double", "long", "StrictMath.tanh", "(double)", "", "", ""},
+      {"ColumnUnaryFunc", "FuncATan", "double", "double", "StrictMath.atan", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncATan", "double", "long", "StrictMath.atan", "(double)", "", "", ""},
       {"ColumnUnaryFunc", "FuncDegrees", "double", "double", "Math.toDegrees", "", "", "", ""},
       {"ColumnUnaryFunc", "FuncDegrees", "double", "long", "Math.toDegrees", "(double)", "", "", ""},
       {"ColumnUnaryFunc", "FuncRadians", "double", "double", "Math.toRadians", "", "", "", ""},
@@ -1208,9 +1214,14 @@ public class GenVectorCode extends Task {
       {"VectorUDAFSum", "VectorUDAFSumLong", "long"},
       {"VectorUDAFSum", "VectorUDAFSumDouble", "double"},
 
+      // "long" as <ValueType> for "MERGING" is ignored
       {"VectorUDAFComputeBitVector", "VectorUDAFComputeBitVectorFinal", "long", "MERGING"},
       {"VectorUDAFComputeBitVector", "VectorUDAFComputeBitVectorLong", "long", "COMPLETE"},
       {"VectorUDAFComputeBitVector", "VectorUDAFComputeBitVectorDouble", "double", "COMPLETE"},
+
+      // "double" as <ValueType> for "MERGING" is ignored
+      {"VectorUDAFComputeDsKllSketch", "VectorUDAFComputeDsKllSketchFinal", "double", "MERGING"},
+      {"VectorUDAFComputeDsKllSketch", "VectorUDAFComputeDsKllSketchDouble", "double", "COMPLETE"},
 
 
       // Template, <ClassName>, <ValueType>, <IfDefined>
@@ -1465,7 +1476,9 @@ public class GenVectorCode extends Task {
       } else if (tdesc[0].equals("VectorUDAFAvgDecimalMerge")) {
         generateVectorUDAFAvgMerge(tdesc);
       } else if (tdesc[0].equals("VectorUDAFComputeBitVector")) {
-        generateVectorUDAFComputeBitVector(tdesc);
+        generateVectorUDAFDataSummary(tdesc);
+      } else if (tdesc[0].equals("VectorUDAFComputeDsKllSketch")) {
+        generateVectorUDAFDataSummary(tdesc);
       } else if (tdesc[0].equals("VectorUDAFVar")) {
         generateVectorUDAFVar(tdesc);
       } else if (tdesc[0].equals("VectorUDAFVarDecimal")) {
@@ -1934,7 +1947,7 @@ public class GenVectorCode extends Task {
         className, templateString);
   }
 
-  private void generateVectorUDAFComputeBitVector(String[] tdesc) throws Exception {
+  private void generateVectorUDAFDataSummary(String[] tdesc) throws Exception {
     String className = tdesc[1];
     String valueType = tdesc[2];
     String columnType = getColumnVectorType(valueType);

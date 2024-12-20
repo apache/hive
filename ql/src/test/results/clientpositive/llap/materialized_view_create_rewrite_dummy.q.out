@@ -63,7 +63,7 @@ numFiles	1
 numFilesErasureCoded	0
 numRows	2
 rawDataSize	408
-totalSize	468
+totalSize	#Masked#
 #### A masked pattern was here ####
 PREHOOK: query: create materialized view if not exists cmv_mat_view2
 as select a, c from cmv_basetable_n0 where a = 3
@@ -99,7 +99,7 @@ numFiles	1
 numFilesErasureCoded	0
 numRows	2
 rawDataSize	232
-totalSize	334
+totalSize	#Masked#
 #### A masked pattern was here ####
 PREHOOK: query: explain
 select a, c from cmv_basetable_n0 where a = 3

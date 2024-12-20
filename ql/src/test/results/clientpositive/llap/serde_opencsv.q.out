@@ -12,7 +12,8 @@ ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
 WITH SERDEPROPERTIES(
   "separatorChar" = ",",
   "quoteChar"     = "\'",
-  "escapeChar"    = "\\"
+  "escapeChar"    = "\\",
+  "serialization.encoding" = "ISO8859_1"
 ) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -31,7 +32,8 @@ ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
 WITH SERDEPROPERTIES(
   "separatorChar" = ",",
   "quoteChar"     = "\'",
-  "escapeChar"    = "\\"
+  "escapeChar"    = "\\",
+  "serialization.encoding" = "ISO8859_1"
 ) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -51,6 +53,7 @@ STAGE PLANS:
         escapeChar \
         quoteChar '
         separatorChar ,
+        serialization.encoding ISO8859_1
 
 PREHOOK: query: CREATE TABLE serde_opencsv(
                           words STRING,
@@ -65,7 +68,8 @@ ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
 WITH SERDEPROPERTIES(
   "separatorChar" = ",",
   "quoteChar"     = "\'",
-  "escapeChar"    = "\\"
+  "escapeChar"    = "\\",
+  "serialization.encoding" = "ISO8859_1"
 ) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -83,7 +87,8 @@ ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
 WITH SERDEPROPERTIES(
   "separatorChar" = ",",
   "quoteChar"     = "\'",
-  "escapeChar"    = "\\"
+  "escapeChar"    = "\\",
+  "serialization.encoding" = "ISO8859_1"
 ) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -104,4 +109,16 @@ POSTHOOK: query: SELECT count(*) FROM serde_opencsv
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@serde_opencsv
 #### A masked pattern was here ####
-3
+4
+PREHOOK: query: SELECT * FROM serde_opencsv
+PREHOOK: type: QUERY
+PREHOOK: Input: default@serde_opencsv
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM serde_opencsv
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@serde_opencsv
+#### A masked pattern was here ####
+why hello there	42	3	100	1412341	true	42.43	85.23423424
+another record	98	4	101	9999999	false	99.89	0.00000009
+third record	45	5	102	999999999	true	89.99	0.00000000000009
+MÃ¼ller Thomas	42	3	100	1412341	true	42.43	85.23423424

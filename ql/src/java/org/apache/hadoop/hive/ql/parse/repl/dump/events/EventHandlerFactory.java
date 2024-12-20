@@ -36,6 +36,7 @@ public class EventHandlerFactory {
     register(MessageBuilder.ADD_PARTITION_EVENT, AddPartitionHandler.class);
     register(MessageBuilder.ALTER_DATABASE_EVENT, AlterDatabaseHandler.class);
     register(MessageBuilder.ALTER_PARTITION_EVENT, AlterPartitionHandler.class);
+    register(MessageBuilder.ALTER_PARTITIONS_EVENT, AlterPartitionsHandler.class);
     register(MessageBuilder.ALTER_TABLE_EVENT, AlterTableHandler.class);
     register(MessageBuilder.CREATE_FUNCTION_EVENT, CreateFunctionHandler.class);
     register(MessageBuilder.CREATE_TABLE_EVENT, CreateTableHandler.class);

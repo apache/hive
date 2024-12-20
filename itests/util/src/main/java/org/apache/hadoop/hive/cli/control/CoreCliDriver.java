@@ -71,6 +71,7 @@ public class CoreCliDriver extends CliAdapter {
             .withCleanupScript(cleanupScript)
             .withLlapIo(true)
             .withFsType(cliConfig.getFsType())
+            .withCustomConfigValueMap(this.cliConfig.getCustomConfigValueMap())
             .build());
   }
 
@@ -91,6 +92,7 @@ public class CoreCliDriver extends CliAdapter {
   @AfterClass
   public void shutdown() throws Exception {
     qt.shutdown();
+    metaStoreHandler.getRule().after();
   }
 
   @Override

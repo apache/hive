@@ -99,7 +99,7 @@ public abstract class AbstractMetaStoreService {
    * @return The client connected to this service
    * @throws MetaException if any Exception occurs during client configuration
    */
-  public IMetaStoreClient getClient() throws MetaException {
+  public HiveMetaStoreClient getClient() throws MetaException {
     return new HiveMetaStoreClient(configuration);
   }
 

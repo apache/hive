@@ -98,52 +98,6 @@ public class TestScheduledQueryService {
     return res.size();
   }
 
-
-  public static class MockScheduledQueryService implements IScheduledQueryMaintenanceService {
-    // Use notify/wait on this object to indicate when the scheduled query has finished executing.
-    Object notifier = new Object();
-
-    int id = 0;
-    private String stmt;
-    ScheduledQueryProgressInfo lastProgressInfo;
-
-    public MockScheduledQueryService(String string) {
-      stmt = string;
-    }
-
-    @Override
-    public ScheduledQueryPollResponse scheduledQueryPoll() {
-      ScheduledQueryPollResponse r = new ScheduledQueryPollResponse();
-      r.setExecutionId(id++);
-      r.setQuery(stmt);
-      r.setScheduleKey(new ScheduledQueryKey("sch1", getClusterNamespace()));
-      r.setUser("nobody");
-      if (id == 1) {
-        return r;
-      } else {
-        return null;
-      }
-    }
-
-    @Override
-    public void scheduledQueryProgress(ScheduledQueryProgressInfo info) {
-      System.out.printf("%d, state: %s, error: %s", info.getScheduledExecutionId(), info.getState(),
-          info.getErrorMessage());
-      lastProgressInfo = info;
-      if (info.getState() == QueryState.FINISHED || info.getState() == QueryState.FAILED) {
-        // Query is done, notify any waiters
-        synchronized (notifier) {
-          notifier.notifyAll();
-        }
-      }
-    }
-
-    @Override
-    public String getClusterNamespace() {
-      return "default";
-    }
-  }
-
   @Test
   public void testScheduledQueryExecution() throws ParseException, Exception {
     IDriver driver = createDriver();

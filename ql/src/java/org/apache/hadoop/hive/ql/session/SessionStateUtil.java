@@ -31,6 +31,7 @@ public class SessionStateUtil {
 
   private static final Logger LOG = LoggerFactory.getLogger(SessionStateUtil.class);
   private static final String COMMIT_INFO_PREFIX = "COMMIT_INFO.";
+  public static final String DEFAULT_TABLE_LOCATION = "defaultLocation";
 
   private SessionStateUtil() {
 
@@ -72,6 +73,12 @@ public class SessionStateUtil {
     }
   }
 
+  public static void addResourceOrThrow(Configuration conf, String key, Object resource) {
+    getQueryState(conf)
+            .orElseThrow(() -> new IllegalStateException("Query state is missing; failed to add resource for " + key))
+            .addResource(key, resource);
+  }
+
   /**
    * @param conf Configuration object used for getting the query state, should contain the query id
    * @param tableName Name of the table for which the commit info should be retrieved
@@ -109,9 +116,8 @@ public class SessionStateUtil {
     return addResource(conf, COMMIT_INFO_PREFIX + tableName, newCommitInfoMap);
   }
 
-  private static Optional<QueryState> getQueryState(Configuration conf) {
-    return Optional.ofNullable(SessionState.get())
-        .map(session -> session.getQueryState(conf.get(HiveConf.ConfVars.HIVEQUERYID.varname, "")));
+  public static Optional<QueryState> getQueryState(Configuration conf) {
+    return Optional.ofNullable(SessionState.get()).map(ss -> ss.getQueryState(HiveConf.getQueryId(conf)));
   }
 
   /**

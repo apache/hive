@@ -52,6 +52,7 @@ alterStatement
     | KW_ALTER KW_MATERIALIZED KW_VIEW tableNameTree=tableName alterMaterializedViewStatementSuffix[$tableNameTree.tree] -> alterMaterializedViewStatementSuffix
     | KW_ALTER (KW_DATABASE|KW_SCHEMA) alterDatabaseStatementSuffix -> alterDatabaseStatementSuffix
     | KW_ALTER KW_DATACONNECTOR alterDataConnectorStatementSuffix -> alterDataConnectorStatementSuffix
+    | KW_OPTIMIZE KW_TABLE tableName optimizeTableStatementSuffix -> ^(TOK_ALTERTABLE tableName optimizeTableStatementSuffix)
     | KW_ALTER KW_CATALOG alterCatalogStatementSuffix -> alterCatalogStatementSuffix
     ;
 
@@ -75,6 +76,15 @@ alterTableStatementSuffix
     | alterStatementSuffixSetOwner
     | alterStatementSuffixSetPartSpec
     | alterStatementSuffixExecute
+    | (KW_CREATE KW_OR KW_REPLACE KW_TAG) => alterStatementSuffixCreateOrReplaceTag
+    | alterStatementSuffixCreateBranch
+    | alterStatementSuffixDropBranch
+    | alterStatementSuffixCreateTag
+    | alterStatementSuffixDropTag
+    | alterStatementSuffixConvert
+    | alterStatementSuffixRenameBranch
+    | alterStatementSuffixReplaceBranch
+    | alterStatementSuffixReplaceTag
     ;
 
 alterTblPartitionStatementSuffix[boolean partition]
@@ -95,6 +105,19 @@ alterTblPartitionStatementSuffix[boolean partition]
   | alterStatementSuffixAddCol
   | alterStatementSuffixUpdateColumns
   ;
+
+optimizeTableStatementSuffix
+@init { gParent.pushMsg("optimize table statement suffix", state); }
+@after { gParent.popMsg(state); }
+    : optimizeTblRewriteDataSuffix
+    ;
+
+optimizeTblRewriteDataSuffix
+@init { gParent.msgs.push("compaction request"); }
+@after { gParent.msgs.pop(); }
+    : KW_REWRITE KW_DATA orderByClause? whereClause? compactPool?
+    -> ^(TOK_ALTERTABLE_COMPACT Identifier["'MAJOR'"] TOK_BLOCKING orderByClause? whereClause? compactPool?)
+    ;
 
 alterStatementPartitionKeyType
 @init {gParent.msgs.push("alter partition key type"); }
@@ -446,11 +469,16 @@ blocking
   -> TOK_BLOCKING
   ;
 
+compactPool
+  : KW_POOL poolName=StringLiteral
+  -> ^(TOK_COMPACT_POOL $poolName)
+  ;
+
 alterStatementSuffixCompact
 @init { gParent.msgs.push("compaction request"); }
 @after { gParent.msgs.pop(); }
-    : KW_COMPACT compactType=StringLiteral blocking? (KW_WITH KW_OVERWRITE KW_TBLPROPERTIES tableProperties)?
-    -> ^(TOK_ALTERTABLE_COMPACT $compactType blocking? tableProperties?)
+    : KW_COMPACT compactType=StringLiteral tableImplBuckets? blocking? compactPool? (KW_WITH KW_OVERWRITE KW_TBLPROPERTIES tableProperties)? orderByClause? whereClause?
+    -> ^(TOK_ALTERTABLE_COMPACT $compactType tableImplBuckets? blocking? compactPool? tableProperties? orderByClause? whereClause?)
     ;
 
 alterStatementSuffixSetOwner
@@ -467,14 +495,118 @@ alterStatementSuffixSetPartSpec
     -> ^(TOK_ALTERTABLE_SETPARTSPEC $spec)
     ;
 
+alterStatementSuffixConvert
+@init { gParent.pushMsg("alter table convert to", state); }
+@after { gParent.popMsg(state); }
+    : KW_CONVERT KW_TO genericSpec=identifier tablePropertiesPrefixed?
+    -> ^(TOK_ALTERTABLE_CONVERT $genericSpec tablePropertiesPrefixed?)
+    ;
+
 alterStatementSuffixExecute
 @init { gParent.pushMsg("alter table execute", state); }
 @after { gParent.popMsg(state); }
     : KW_EXECUTE KW_ROLLBACK LPAREN (rollbackParam=(StringLiteral | Number)) RPAREN
     -> ^(TOK_ALTERTABLE_EXECUTE KW_ROLLBACK $rollbackParam)
-    | KW_EXECUTE KW_EXPIRE_SNAPSHOTS LPAREN (expireParam=StringLiteral) RPAREN
-    -> ^(TOK_ALTERTABLE_EXECUTE KW_EXPIRE_SNAPSHOTS $expireParam)
+    | KW_EXECUTE KW_EXPIRE_SNAPSHOTS (LPAREN (expireParam=StringLiteral) RPAREN)?
+    -> ^(TOK_ALTERTABLE_EXECUTE KW_EXPIRE_SNAPSHOTS $expireParam?)
+    | KW_EXECUTE KW_SET_CURRENT_SNAPSHOT LPAREN (snapshotParam=expression) RPAREN
+    -> ^(TOK_ALTERTABLE_EXECUTE KW_SET_CURRENT_SNAPSHOT $snapshotParam)
+    | KW_EXECUTE KW_FAST_FORWARD sourceBranch=StringLiteral (targetBranch=StringLiteral)?
+    -> ^(TOK_ALTERTABLE_EXECUTE KW_FAST_FORWARD $sourceBranch $targetBranch?)
+    | KW_EXECUTE KW_CHERRY_PICK snapshotId=Number
+    -> ^(TOK_ALTERTABLE_EXECUTE KW_CHERRY_PICK $snapshotId)
+    | KW_EXECUTE KW_EXPIRE_SNAPSHOTS KW_BETWEEN (fromTimestamp=StringLiteral) KW_AND (toTimestamp=StringLiteral)
+    -> ^(TOK_ALTERTABLE_EXECUTE KW_EXPIRE_SNAPSHOTS $fromTimestamp $toTimestamp)
+    | KW_EXECUTE KW_EXPIRE_SNAPSHOTS KW_RETAIN KW_LAST numToRetain=Number
+    -> ^(TOK_ALTERTABLE_EXECUTE KW_EXPIRE_SNAPSHOTS KW_RETAIN $numToRetain)
+    | KW_EXECUTE KW_DELETE KW_ORPHAN_FILES (KW_OLDER KW_THAN LPAREN (timestamp=StringLiteral) RPAREN)?
+    -> ^(TOK_ALTERTABLE_EXECUTE KW_ORPHAN_FILES $timestamp?)
     ;
+
+alterStatementSuffixRenameBranch
+@init { gParent.pushMsg("alter table rename branch", state); }
+@after { gParent.popMsg(state); }
+    : KW_RENAME KW_BRANCH sourceBranch=identifier KW_TO targetBranch=identifier
+    -> ^(TOK_ALTERTABLE_RENAME_BRANCH $sourceBranch $targetBranch)
+    ;
+
+alterStatementSuffixReplaceBranch
+@init { gParent.pushMsg("alter table replace branch", state); }
+@after { gParent.popMsg(state); }
+    : KW_REPLACE KW_BRANCH sourceBranch=Identifier KW_AS KW_OF ((KW_SYSTEM_VERSION snapshotId=Number) | (KW_BRANCH branch=identifier)) refRetain? retentionOfSnapshots?
+    -> ^(TOK_ALTERTABLE_REPLACE_SNAPSHOTREF KW_BRANCH $sourceBranch KW_SYSTEM_VERSION?  $snapshotId? $branch? refRetain? retentionOfSnapshots?)
+    ;
+
+alterStatementSuffixReplaceTag
+@init { gParent.pushMsg("alter table replace tag", state); }
+@after { gParent.popMsg(state); }
+    : KW_REPLACE KW_TAG sourceBranch=Identifier KW_AS KW_OF KW_SYSTEM_VERSION snapshotId=Number refRetain?
+    -> ^(TOK_ALTERTABLE_REPLACE_SNAPSHOTREF KW_TAG $sourceBranch $snapshotId refRetain?)
+    ;
+
+alterStatementSuffixDropBranch
+@init { gParent.pushMsg("alter table drop branch (if exists) branchName", state); }
+@after { gParent.popMsg(state); }
+    : KW_DROP KW_BRANCH ifExists? branchName=identifier
+    -> ^(TOK_ALTERTABLE_DROP_BRANCH ifExists? $branchName)
+    ;
+
+alterStatementSuffixCreateBranch
+@init { gParent.pushMsg("alter table create branch", state); }
+@after { gParent.popMsg(state); }
+    : KW_CREATE KW_BRANCH ifNotExists? branchName=identifier snapshotIdOfRef? refRetain? retentionOfSnapshots?
+    -> ^(TOK_ALTERTABLE_CREATE_BRANCH $branchName ifNotExists? snapshotIdOfRef? refRetain? retentionOfSnapshots?)
+    | KW_CREATE KW_OR KW_REPLACE KW_BRANCH branchName=identifier snapshotIdOfRef? refRetain? retentionOfSnapshots?
+    -> ^(TOK_ALTERTABLE_CREATE_BRANCH $branchName KW_REPLACE snapshotIdOfRef? refRetain? retentionOfSnapshots?)
+    ;
+
+snapshotIdOfRef
+@init { gParent.pushMsg("alter table create branch/tag as of version", state); }
+@after { gParent.popMsg(state); }
+    : KW_FOR KW_SYSTEM_VERSION KW_AS KW_OF snapshotId=Number
+    -> ^(TOK_AS_OF_VERSION $snapshotId)
+    |
+    (KW_FOR KW_SYSTEM_TIME KW_AS KW_OF asOfTime=StringLiteral)
+    -> ^(TOK_AS_OF_TIME $asOfTime)
+    |
+    (KW_FOR KW_TAG KW_AS KW_OF asOfTag=identifier)
+    -> ^(TOK_AS_OF_TAG $asOfTag)
+    ;
+
+refRetain
+@init { gParent.pushMsg("alter table create branch/tag RETAIN", state); }
+@after { gParent.popMsg(state); }
+    : KW_RETAIN maxRefAge=Number timeUnit=timeUnitQualifiers
+    -> ^(TOK_RETAIN $maxRefAge $timeUnit)
+    ;
+
+retentionOfSnapshots
+@init { gParent.pushMsg("alter table create branch WITH SNAPSHOT RETENTION", state); }
+@after { gParent.popMsg(state); }
+    : (KW_WITH KW_SNAPSHOT KW_RETENTION minSnapshotsToKeep=Number KW_SNAPSHOTS (maxSnapshotAge=Number timeUnit=timeUnitQualifiers)?)
+    -> ^(TOK_WITH_SNAPSHOT_RETENTION $minSnapshotsToKeep ($maxSnapshotAge $timeUnit)?)
+    ;
+
+alterStatementSuffixDropTag
+@init { gParent.pushMsg("alter table drop tag (if exists) tagName", state); }
+@after { gParent.popMsg(state); }
+    : KW_DROP KW_TAG ifExists? tagName=identifier
+    -> ^(TOK_ALTERTABLE_DROP_TAG ifExists? $tagName)
+    ;
+
+alterStatementSuffixCreateTag
+@init { gParent.pushMsg("alter table create tag", state); }
+@after { gParent.popMsg(state); }
+    : KW_CREATE KW_TAG ifNotExists? tagName=identifier snapshotIdOfRef? refRetain?
+    -> ^(TOK_ALTERTABLE_CREATE_TAG $tagName ifNotExists? snapshotIdOfRef? refRetain?)
+    ;
+
+alterStatementSuffixCreateOrReplaceTag
+@init { gParent.pushMsg("alter table create tag", state); }
+@after { gParent.popMsg(state); }
+     : KW_CREATE KW_OR KW_REPLACE KW_TAG tagName=identifier snapshotIdOfRef? refRetain?
+     -> ^(TOK_ALTERTABLE_CREATE_TAG $tagName KW_REPLACE snapshotIdOfRef? refRetain?)
+     ;
 
 fileFormat
 @init { gParent.pushMsg("file format specification", state); }

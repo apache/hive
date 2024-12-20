@@ -39,7 +39,7 @@ STAGE PLANS:
             location: B
             partition spec: {ds=2010-02-01}
           Partition
-            params: {totalSize=0, numRows=0, rawDataSize=0, COLUMN_STATS_ACCURATE={"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}, numFiles=0, numFilesErasureCoded=0}
+            params: {totalSize=#Masked#, numRows=0, rawDataSize=0, COLUMN_STATS_ACCURATE={"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}, numFiles=0, numFilesErasureCoded=0}
             partition spec: {ds=2010-03-01}
           Partition
             location: C
