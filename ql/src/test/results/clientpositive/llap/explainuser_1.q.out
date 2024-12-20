@@ -2379,57 +2379,56 @@ POSTHOOK: Input: default@lineitem
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
-Reducer 3 <- Map 1 (SIMPLE_EDGE)
-Reducer 4 <- Map 1 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+Reducer 3 <- Map 4 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_22]
-        Select Operator [SEL_21] (rows=2 width=8)
+      Reducer 3 llap
+      File Output Operator [FS_21]
+        Select Operator [SEL_20] (rows=2 width=8)
           Output:["_col0","_col1"]
-          Merge Join Operator [MERGEJOIN_52] (rows=2 width=8)
-            Conds:RS_18._col1=RS_19._col0(Left Semi),Output:["_col0","_col3"]
-          <-Map 1 [SIMPLE_EDGE] llap
-            SHUFFLE [RS_19]
-              PartitionCols:_col0
-              Group By Operator [GBY_17] (rows=2 width=4)
-                Output:["_col0"],keys:_col0
-                Select Operator [SEL_12] (rows=2 width=4)
-                  Output:["_col0"]
-                  Filter Operator [FIL_30] (rows=2 width=96)
-                    predicate:((l_linenumber = 1) and (l_shipmode = 'AIR') and l_orderkey is not null)
-                    TableScan [TS_10] (rows=100 width=96)
-                      default@lineitem,lineitem,Tbl:COMPLETE,Col:COMPLETE,Output:["l_orderkey","l_linenumber","l_shipmode","l_partkey","l_suppkey"]
-          <-Reducer 4 [SIMPLE_EDGE] llap
+          Merge Join Operator [MERGEJOIN_51] (rows=2 width=8)
+            Conds:RS_17._col1=RS_18._col0(Left Semi),Output:["_col0","_col3"]
+          <-Map 4 [SIMPLE_EDGE] llap
             SHUFFLE [RS_18]
+              PartitionCols:_col0
+              Group By Operator [GBY_16] (rows=2 width=4)
+                Output:["_col0"],keys:_col0
+                Select Operator [SEL_14] (rows=2 width=4)
+                  Output:["_col0"]
+                  Filter Operator [FIL_29] (rows=2 width=96)
+                    predicate:((l_linenumber = 1) and (l_shipmode = 'AIR') and l_orderkey is not null)
+                    TableScan [TS_12] (rows=100 width=96)
+                      default@lineitem,lineitem,Tbl:COMPLETE,Col:COMPLETE,Output:["l_orderkey","l_linenumber","l_shipmode","l_partkey"]
+          <-Reducer 2 [SIMPLE_EDGE] llap
+            SHUFFLE [RS_17]
               PartitionCols:_col1
-              Merge Join Operator [MERGEJOIN_51] (rows=14 width=12)
-                Conds:RS_13._col0=RS_14._col1(Inner),Output:["_col0","_col1","_col3"]
-              <-Map 1 [SIMPLE_EDGE] llap
-                SHUFFLE [RS_14]
-                  PartitionCols:_col1
-                  Select Operator [SEL_9] (rows=14 width=12)
-                    Output:["_col0","_col1","_col2"]
-                    Filter Operator [FIL_29] (rows=14 width=16)
-                      predicate:((l_linenumber = 1) and l_partkey is not null and l_orderkey is not null)
-                       Please refer to the previous TableScan [TS_10]
-              <-Reducer 3 [SIMPLE_EDGE] llap
-                SHUFFLE [RS_13]
-                  PartitionCols:_col0
-                  Group By Operator [GBY_5] (rows=100 width=4)
-                    Output:["_col0"],keys:KEY._col0
-                  <-Map 1 [SIMPLE_EDGE] llap
-                    SHUFFLE [RS_4]
-                      PartitionCols:_col0
-                      Group By Operator [GBY_3] (rows=100 width=4)
-                        Output:["_col0"],keys:l_partkey
+              Select Operator [SEL_11] (rows=14 width=12)
+                Output:["_col0","_col1","_col3"]
+                Merge Join Operator [MERGEJOIN_50] (rows=14 width=12)
+                  Conds:RS_8._col1=RS_9._col0(Left Semi),Output:["_col0","_col1","_col2"]
+                <-Map 4 [SIMPLE_EDGE] llap
+                  SHUFFLE [RS_9]
+                    PartitionCols:_col0
+                    Group By Operator [GBY_7] (rows=100 width=4)
+                      Output:["_col0"],keys:_col0
+                      Select Operator [SEL_5] (rows=100 width=4)
+                        Output:["_col0"]
                         Filter Operator [FIL_28] (rows=100 width=4)
                           predicate:l_partkey is not null
-                           Please refer to the previous TableScan [TS_10]
+                           Please refer to the previous TableScan [TS_12]
+                <-Map 1 [SIMPLE_EDGE] llap
+                  SHUFFLE [RS_8]
+                    PartitionCols:_col1
+                    Select Operator [SEL_2] (rows=14 width=12)
+                      Output:["_col0","_col1","_col2"]
+                      Filter Operator [FIL_27] (rows=14 width=16)
+                        predicate:((l_linenumber = 1) and l_partkey is not null and l_orderkey is not null)
+                        TableScan [TS_0] (rows=100 width=16)
+                          default@lineitem,li,Tbl:COMPLETE,Col:COMPLETE,Output:["l_orderkey","l_partkey","l_suppkey","l_linenumber"]
 
 PREHOOK: query: explain select key, value, count(*) 
 from src_cbo b
