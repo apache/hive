@@ -10234,30 +10234,47 @@ public class ObjectStore implements RawStore, Configurable {
   public boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
       String partName, List<String> partVals, String colName, String engine)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    boolean ret = false;
-    Query query = null;
     dbName = org.apache.commons.lang3.StringUtils.defaultString(dbName,
       Warehouse.DEFAULT_DATABASE_NAME);
     catName = normalizeIdentifier(catName);
     if (tableName == null) {
       throw new InvalidInputException("Table name is null.");
     }
+    // Note: this does not verify ACID state; called internally when removing cols/etc.
+    //       Also called via an unused metastore API that checks for ACID tables.
+    MPartition mPartition = getMPartition(catName, dbName, tableName, partName);
+    if (mPartition == null) {
+      throw new NoSuchObjectException("Partition " + partName
+          + " for which stats deletion is requested doesn't exist");
+    }
+
+    return new GetHelper<Boolean>(catName, dbName, tableName, true, true) {
+      @Override
+      protected String describeResult() {
+        return "delete prtition column stats";
+      }
+
+      @Override
+      protected Boolean getSqlResult(GetHelper<Boolean> ctx) throws MetaException {
+        return directSql.deletePartitionColumnStats(catName, dbName, tableName, partName, colName, engine);
+      }
+
+      @Override
+      protected Boolean getJdoResult(GetHelper<Boolean> ctx)
+          throws MetaException, NoSuchObjectException, InvalidObjectException {
+        return deletePartitionColumnStatisticsVisJDO(catName, dbName, tableName, partName, colName, engine);
+      }
+    }.run(false);
+  }
+
+  private boolean deletePartitionColumnStatisticsVisJDO(String catName, String dbName, String tableName,
+      String partName, String colName, String engine) throws NoSuchObjectException {
+    boolean ret = false;
+    Query query = null;
     try {
       openTransaction();
-      MTable mTable = getMTable(catName, dbName, tableName);
       MPartitionColumnStatistics mStatsObj;
       List<MPartitionColumnStatistics> mStatsObjColl;
-      if (mTable == null) {
-        throw new NoSuchObjectException("Table " + tableName
-            + "  for which stats deletion is requested doesn't exist");
-      }
-      // Note: this does not verify ACID state; called internally when removing cols/etc.
-      //       Also called via an unused metastore API that checks for ACID tables.
-      MPartition mPartition = getMPartition(catName, dbName, tableName, partVals, mTable);
-      if (mPartition == null) {
-        throw new NoSuchObjectException("Partition " + partName
-            + " for which stats deletion is requested doesn't exist");
-      }
       query = pm.newQuery(MPartitionColumnStatistics.class);
       String filter;
       String parameters;
@@ -10334,25 +10351,42 @@ public class ObjectStore implements RawStore, Configurable {
   public boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
       String colName, String engine)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    boolean ret = false;
-    Query query = null;
     dbName = org.apache.commons.lang3.StringUtils.defaultString(dbName,
       Warehouse.DEFAULT_DATABASE_NAME);
     if (tableName == null) {
       throw new InvalidInputException("Table name is null.");
     }
+
+    // Note: this does not verify ACID state; called internally when removing cols/etc.
+    //       Also called via an unused metastore API that checks for ACID tables.
+    return new GetHelper<Boolean>(catName, dbName, tableName, true, true) {
+
+      @Override
+      protected String describeResult() {
+        return "delete table column stats";
+      }
+
+      @Override
+      protected Boolean getSqlResult(GetHelper<Boolean> ctx) throws MetaException {
+        return directSql.deleteTableColumnStatistics(getTable().getId(), colName, engine);
+      }
+
+      @Override
+      protected Boolean getJdoResult(GetHelper<Boolean> ctx)
+          throws MetaException, NoSuchObjectException, InvalidObjectException {
+            return deleteTableColumnStatisticsViaJdo(catName, dbName, tableName, colName, engine);
+      }
+    }.run(true);
+  }
+
+  private boolean deleteTableColumnStatisticsViaJdo(String catName, String dbName, String tableName,
+      String colName, String engine) throws NoSuchObjectException {
+    boolean ret = false;
+    Query query = null;
     try {
       openTransaction();
-      MTable mTable = getMTable(catName, dbName, tableName);
       MTableColumnStatistics mStatsObj;
       List<MTableColumnStatistics> mStatsObjColl;
-      if (mTable == null) {
-        throw new NoSuchObjectException("Table " +
-            TableName.getQualified(catName, dbName, tableName)
-            + "  for which stats deletion is requested doesn't exist");
-      }
-      // Note: this does not verify ACID state; called internally when removing cols/etc.
-      //       Also called via an unused metastore API that checks for ACID tables.
       query = pm.newQuery(MTableColumnStatistics.class);
       String filter;
       String parameters;
