@@ -35,6 +35,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.IntStream;
 
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -91,12 +92,14 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 import org.apache.hadoop.hive.ql.session.ClearDanglingScratchDir;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorThread;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
 import org.apache.hadoop.hive.registry.impl.ZookeeperUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
+import org.apache.hive.common.util.Ref;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.hive.http.HttpServer;
 import org.apache.hive.http.JdbcJarDownloadServlet;
@@ -118,6 +121,7 @@ import org.apache.hive.service.servlet.HS2LeadershipStatus;
 import org.apache.hive.service.servlet.HS2Peers;
 import org.apache.hive.service.servlet.LDAPAuthenticationFilter;
 import org.apache.hive.service.servlet.LoginServlet;
+import org.apache.hive.service.servlet.OTELExporter;
 import org.apache.hive.service.servlet.QueriesRESTfulAPIServlet;
 import org.apache.hive.service.servlet.QueryProfileServlet;
 import org.apache.http.StatusLine;
@@ -132,8 +136,10 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooDefs.Perms;
 import org.apache.zookeeper.data.ACL;
-import org.eclipse.jetty.servlet.FilterHolder;
+
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import org.eclipse.jetty.servlet.ServletHolder;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -182,6 +188,7 @@ public class HiveServer2 extends CompositeService {
   private ZooKeeperHiveHelper zooKeeperHelper = null;
   private ScheduledQueryExecutionService scheduledQueryService;
   private ServiceContext serviceContext;
+  private OTELExporter otelExporter;
 
   public enum WebUIAuthMethod {
     NONE, LDAP
@@ -479,28 +486,40 @@ public class HiveServer2 extends CompositeService {
           builder.addServlet("jdbcjar", JdbcJarDownloadServlet.class);
           builder.setContextRootRewriteTarget(HS2_WEBUI_ROOT_URI);
 
+          String webUIAuthMethodConfig = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_AUTH_METHOD);
+          WebUIAuthMethod webUIAuthMethod = getWebUIAuthMethod(webUIAuthMethodConfig);
+          if (WebUIAuthMethod.LDAP == webUIAuthMethod) {
+            ldapAuthService = new LdapAuthService(hiveConf, passwdAuthenticationProvider);
+            builder.addGlobalFilter("ldap", "/*", new LDAPAuthenticationFilter(ldapAuthService));
+          }
           webServer = builder.build();
           webServer.addServlet("query_page", "/query_page.html", QueryProfileServlet.class);
           webServer.addServlet("api", "/api/*", QueriesRESTfulAPIServlet.class);
-
-          String webUIAuthMethodConfig = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_AUTH_METHOD);
-          WebUIAuthMethod webUIAuthMethod = getWebUIAuthMethod(webUIAuthMethodConfig);
-              
-          switch (webUIAuthMethod) {
-            case LDAP:
-              if (passwdAuthenticationProvider == null) {
-                ldapAuthService = new LdapAuthService(hiveConf);
-              } else {
-                ldapAuthService = new LdapAuthService(hiveConf, passwdAuthenticationProvider);
-              }
-              webServer.addServlet("login", "/login", new ServletHolder(new LoginServlet(ldapAuthService)));
-              webServer.addFilter("ldap", new FilterHolder(new LDAPAuthenticationFilter(ldapAuthService)));
-              break;
+          if (ldapAuthService != null) {
+            webServer.addServlet("login", "/login", new ServletHolder(new LoginServlet(ldapAuthService)));
           }
         }
       }
     } catch (IOException ie) {
       throw new ServiceException(ie);
+    }
+
+    long otelExporterFrequency =
+        hiveConf.getTimeVar(ConfVars.HIVE_OTEL_METRICS_FREQUENCY_SECONDS, TimeUnit.MILLISECONDS);
+    if (otelExporterFrequency > 0) {
+      try {
+        otelExporter =
+            new OTELExporter(GlobalOpenTelemetry.get(), cliService.getSessionManager(), otelExporterFrequency,
+                getServerHost());
+
+        otelExporter.setName("OTEL Exporter");
+        otelExporter.setDaemon(true);
+        otelExporter.start();
+
+        LOG.info("Started OTEL exporter with frequency {}", otelExporterFrequency);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
     }
 
     // Add a shutdown hook for catching SIGTERM & SIGINT
@@ -1070,6 +1089,10 @@ public class HiveServer2 extends CompositeService {
       HiveSaml2Client.shutdown();
     }
 
+    if (otelExporter != null) {
+      otelExporter.interrupt();
+    }
+
   }
 
   private void shutdownExecutor(final ExecutorService leaderActionsExecutorService) {
@@ -1201,63 +1224,62 @@ public class HiveServer2 extends CompositeService {
     }
   }
 
-  private void maybeStartCompactorThreads(HiveConf hiveConf) throws Exception {
+  public Map<String, Integer> maybeStartCompactorThreads(HiveConf hiveConf) {
+    Map<String, Integer> startedWorkers = new HashMap<>();
     if (MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.HIVE_METASTORE_RUNWORKER_IN).equals("hs2")) {
-      int numWorkers = MetastoreConf.getIntVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS);
-      List<Map.Entry<String, String>> entries = hiveConf.getMatchingEntries(Constants.COMPACTION_POOLS_PATTERN);
+      Ref<Integer> numWorkers = new Ref<>(MetastoreConf.getIntVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS));
+      Map<String, Integer> customPools = CompactorUtil.getPoolConf(hiveConf);
 
       StringBuilder sb = new StringBuilder(2048);
       sb.append("This HS2 instance will act as Compactor with the following worker pool configuration:\n");
-      sb.append("Global pool size: ").append(numWorkers).append("\n");
+      sb.append("Global pool size: ").append(numWorkers.value).append("\n");
 
-      LOG.info("Initializing the compaction pools with using the global worker limit: {} ", numWorkers);
-      while (numWorkers > 0 && entries.size() > 0) {
-        Map.Entry<String, String> entry = entries.remove(0);
-        String poolName = entry.getValue();
-        int poolWorkers = hiveConf.getInt(entry.getKey(), 0);
-
+      LOG.info("Initializing the compaction pools with using the global worker limit: {} ", numWorkers.value);
+      customPools.forEach((poolName, poolWorkers) -> {
         if (poolWorkers == 0) {
-          LOG.warn("Compaction pool ({}) configured with zero workers. Skipping pool initialization", poolName);
-          sb.append("Pool not initialized, 0 size: ").append(poolName).append("\n");
-          continue;
+          LOG.warn("Pool not initialized, configured with zero workers: {}", poolName);
         }
-        if (poolWorkers > numWorkers) {
-          LOG.warn("Global worker pool exhausted, compaction pool ({}) will be configured with less workers than the " +
-              "required number. ({} -> {})", poolName, poolWorkers, numWorkers);
-          poolWorkers = numWorkers;
+        else if (numWorkers.value == 0) {
+          LOG.warn("Pool not initialized, no available workers remained: {}", poolName);
         }
-
-        LOG.info("Initializing compaction pool ({}) with {} workers.", poolName, poolWorkers);
-        for (int i = 0; i < poolWorkers; i++) {
-          Worker w = new Worker();
-          w.setPoolName(poolName);
-          CompactorThread.initializeAndStartThread(w, hiveConf);
-          sb.append("Worker - Name: ").append(w.getName()).append(", Pool: ").append(poolName)
-              .append(", Priority: ").append(w.getPriority()).append("\n");
-        }
-        numWorkers -= poolWorkers;
-      }
-
-      if (numWorkers == 0) {
-        LOG.warn("No default compaction pool configured, all non-labeled compaction requests will remain unprocessed!");
-        if (entries.size() > 0) {
-          for (Map.Entry<String, String> entry : entries) {
-            String poolName = entry.getValue();
-            LOG.warn("There are no available workers for the following compaction pool: {} ", poolName);
-            sb.append("Pool not initialized, no remaining free workers: ").append(poolName).append("\n");
+        else {
+          if (poolWorkers > numWorkers.value) {
+            LOG.warn("Global worker pool exhausted, compaction pool ({}) will be configured with less workers than the " +
+                "required number. ({} -> {})", poolName, poolWorkers, numWorkers.value);
+            poolWorkers = numWorkers.value;
           }
+
+          LOG.info("Initializing compaction pool ({}) with {} workers.", poolName, poolWorkers);
+          IntStream.range(0, poolWorkers).forEach(i -> {
+            Worker w = new Worker();
+            w.setPoolName(poolName);
+            CompactorThread.initializeAndStartThread(w, hiveConf);
+            startedWorkers.compute(poolName, (k, v) -> (v == null) ? 1 : v + 1);
+            sb.append(
+                String.format("Worker - Name: %s, Pool: %s, Priority: %d", w.getName(), poolName, w.getPriority())
+            );
+          });
+          numWorkers.value -= poolWorkers;
+        }
+      });
+
+      if (numWorkers.value == 0) {
+        LOG.warn("No default compaction pool configured, all non-labeled compaction requests will remain unprocessed!");
+        if (customPools.size() > 0) {
           sb.append("Pool not initialized, no remaining free workers: default\n");
         }
       } else {
-        LOG.info("Initializing default compaction pool with {} workers.", numWorkers);
-        for (int i = 0; i < numWorkers; i++) {
+        LOG.info("Initializing default compaction pool with {} workers.", numWorkers.value);
+        IntStream.range(0, numWorkers.value).forEach(i -> {
           Worker w = new Worker();
           CompactorThread.initializeAndStartThread(w, hiveConf);
+          startedWorkers.compute(Constants.COMPACTION_DEFAULT_POOL, (k, v) -> (v == null) ? 1 : v + 1);
           sb.append("Worker - Name: ").append(w.getName()).append(", Pool: default, Priority: ").append(w.getPriority()).append("\n");
-        }
+        });
       }
       LOG.info(sb.toString());
     }
+    return startedWorkers;
   }
 
   /**

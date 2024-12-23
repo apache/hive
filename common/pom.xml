@@ -222,6 +222,14 @@
           <groupId>org.codehaus.jettison</groupId>
           <artifactId>jettison</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-json</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-client</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -321,6 +329,12 @@
     <dependency>
       <groupId>javolution</groupId>
       <artifactId>javolution</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-api</artifactId>
+      <version>${otel.version}</version>
+      <scope>compile</scope>
     </dependency>
   </dependencies>
   <profiles>

@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -50,7 +51,7 @@ public class TestQBCompact {
   @BeforeClass
   public static void init() throws Exception {
     queryState = new QueryState.Builder().build();
-    conf = queryState.getConf();
+    conf = new HiveConfForTest(TestQBCompact.class);
     conf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");

@@ -92,18 +92,18 @@
     <test.excludes.additional/>
     <!-- Plugin and Plugin Dependency Versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
-    <maven.test.jvm.args>-Xmx2048m -DJETTY_AVAILABLE_PROCESSORS=4</maven.test.jvm.args>
+    <maven.test.jvm.args>-Xmx2048m -DJETTY_AVAILABLE_PROCESSORS=4 -Duser.country=US</maven.test.jvm.args>
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
     <maven.build-helper.plugin.version>3.4.0</maven.build-helper.plugin.version>
     <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
     <maven.exec.plugin.version>3.1.0</maven.exec.plugin.version>
     <maven.versions.plugin.version>2.16.0</maven.versions.plugin.version>
     <maven.shade.plugin.version>3.5.0</maven.shade.plugin.version>
-    <maven.surefire.plugin.version>3.0.0-M4</maven.surefire.plugin.version>
+    <maven.surefire.plugin.version>3.5.1</maven.surefire.plugin.version>
     <maven.cyclonedx.plugin.version>2.7.10</maven.cyclonedx.plugin.version>
     <maven.license.plugin.version>2.3.0</maven.license.plugin.version>
     <!-- Library Dependency Versions -->
-    <accumulo.version>1.10.1</accumulo.version>
+    <accumulo.version>1.10.4</accumulo.version>
     <ant.version>1.10.13</ant.version>
     <antlr.version>3.5.2</antlr.version>
     <!-- Make sure to sync it with standalone-metastore/pom.xml -->
@@ -112,7 +112,7 @@
     <!-- Include arrow for LlapOutputFormatService -->
     <arrow.version>12.0.0</arrow.version>
     <avatica.version>1.12.0</avatica.version>
-    <avro.version>1.11.3</avro.version>
+    <avro.version>1.11.4</avro.version>
     <bcprov-jdk18on.version>1.78</bcprov-jdk18on.version>
     <calcite.version>1.25.0</calcite.version>
     <datanucleus-api-jdo.version>5.2.8</datanucleus-api-jdo.version>
@@ -126,7 +126,7 @@
     <commons-compress.version>1.26.0</commons-compress.version>
     <commons-configuration.version>1.10</commons-configuration.version>
     <commons-exec.version>1.1</commons-exec.version>
-    <commons-io.version>2.12.0</commons-io.version>
+    <commons-io.version>2.14.0</commons-io.version>
     <commons-lang3.version>3.12.0</commons-lang3.version>
     <commons-math3.version>3.6.1</commons-math3.version>
     <commons-dbcp2.version>2.12.0</commons-dbcp2.version>
@@ -159,15 +159,15 @@
     <javolution.version>5.5.1</javolution.version>
     <jettison.version>1.5.4</jettison.version>
     <jetty.version>9.4.45.v20220203</jetty.version>
-    <jersey.version>1.19</jersey.version>
+    <jersey.version>1.19.4</jersey.version>
     <jline.version>2.14.6</jline.version>
     <jms.version>2.0.2</jms.version>
     <joda.version>2.9.9</joda.version>
     <jodd.version>6.0.0</jodd.version>
     <json.version>1.8</json.version>
     <junit.version>4.13.2</junit.version>
-    <junit.jupiter.version>5.10.0</junit.jupiter.version>
-    <junit.vintage.version>5.6.3</junit.vintage.version>
+    <junit.jupiter.version>5.11.2</junit.jupiter.version>
+    <junit.vintage.version>5.11.2</junit.vintage.version>
     <kafka.version>2.5.0</kafka.version>
     <kryo.version>5.5.0</kryo.version>
     <reflectasm.version>1.11.9</reflectasm.version>
@@ -178,11 +178,12 @@
     <log4j2.version>2.18.0</log4j2.version>
     <mariadb.version>2.5.0</mariadb.version>
     <mssql.version>6.2.1.jre8</mssql.version>
-    <mysql.version>8.0.31</mysql.version>
+    <mysql.version>8.2.0</mysql.version>
     <postgres.version>42.7.3</postgres.version>
     <oracle.version>21.3.0.0</oracle.version>
     <opencsv.version>5.9</opencsv.version>
     <orc.version>1.9.4</orc.version>
+    <otel.version>1.42.0</otel.version>
     <mockito-core.version>3.4.4</mockito-core.version>
     <mockito-inline.version>4.11.0</mockito-inline.version>
     <mina.version>2.0.0-M5</mina.version>
@@ -191,12 +192,12 @@
     <!-- used by druid storage handler -->
     <pac4j-saml.version>4.5.5</pac4j-saml.version>
     <paranamer.version>2.8</paranamer.version>
-    <parquet.version>1.13.1</parquet.version>
+    <parquet.version>1.14.4</parquet.version>
     <pig.version>0.16.0</pig.version>
     <plexus.version>1.5.6</plexus.version>
-    <protobuf.version>3.24.4</protobuf.version>
+    <protobuf.version>3.25.5</protobuf.version>
     <rat.version>0.16.1</rat.version>
-    <roaringbit.version>1.0.1</roaringbit.version>
+    <roaringbit.version>1.2.1</roaringbit.version>
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.30</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
@@ -227,7 +228,8 @@
     <aws-java-sdk.version>1.12.499</aws-java-sdk.version>
     <jansi.version>2.4.0</jansi.version>
     <!-- If upgrading, upgrade atlas as well in ql/pom.xml, which brings in some springframework dependencies transitively -->
-    <spring.version>5.3.21</spring.version>
+    <spring.version>5.3.39</spring.version>
+    <spring.ldap.version>2.4.1</spring.ldap.version>
     <project.build.outputTimestamp>2024-01-01T00:00:00Z</project.build.outputTimestamp>
   </properties>
   <repositories>
@@ -1325,6 +1327,16 @@
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-api</artifactId>
         <version>${tez.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-json</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-client</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.tez</groupId>
@@ -1680,11 +1692,17 @@
                   <excludes>
                     <!-- Move to SLF4J -->
                     <exclude>commons-logging:commons-logging</exclude>
-                    <exclude>log4j:log4j</exclude>
                     <exclude>ch.qos.reload4j:reload4j</exclude>
                   </excludes>
                   <searchTransitive>false</searchTransitive>
                   <message>A banned logging dependency was found!</message>
+                </bannedDependencies>
+                <bannedDependencies>
+                  <excludes>
+                    <exclude>log4j:log4j</exclude>
+                  </excludes>
+                  <searchTransitive>true</searchTransitive>
+                  <message>Banned log4j:log4j dependency/transitive dependency was found!</message>
                 </bannedDependencies>
               </rules>
               <fail>true</fail>
@@ -1735,6 +1753,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
+          <enableOutErrElements>false</enableOutErrElements>
           <excludes>
             <exclude>**/TestSerDe.java</exclude>
             <exclude>**/TestHiveMetaStore.java</exclude>
@@ -1746,8 +1765,8 @@
           </excludes>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <reuseForks>false</reuseForks>
-          <failIfNoTests>false</failIfNoTests>
-          <argLine>${maven.test.jvm.args}</argLine>
+          <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
+          <argLine>${maven.test.jvm.args} -Xshare:off</argLine>
           <trimStackTrace>false</trimStackTrace>
           <additionalClasspathElements>
             <additionalClasspathElement>${test.conf.dir}</additionalClasspathElement>

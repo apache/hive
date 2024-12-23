@@ -83,14 +83,14 @@ STAGE PLANS:
                   Statistics: Num rows: 73049 Data size: 4382940 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((d_date) IN (DATE'1998-01-02', DATE'1998-10-15', DATE'1998-11-10') and d_week_seq is not null) (type: boolean)
-                    Statistics: Num rows: 73049 Data size: 4382940 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 36525 Data size: 2191500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: d_week_seq (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 73049 Data size: 292196 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 36525 Data size: 146100 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: int)
-                        minReductionHashAggr: 0.8453504
+                        minReductionHashAggr: 0.690705
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 11297 Data size: 45188 Basic stats: COMPLETE Column stats: COMPLETE
@@ -325,14 +325,14 @@ STAGE PLANS:
                             Statistics: Num rows: 36524 Data size: 2045344 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((d_date) IN (DATE'1998-01-02', DATE'1998-10-15', DATE'1998-11-10') and d_week_seq is not null) (type: boolean)
-                    Statistics: Num rows: 73049 Data size: 4382940 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 36525 Data size: 2191500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: d_week_seq (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 73049 Data size: 292196 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 36525 Data size: 146100 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: int)
-                        minReductionHashAggr: 0.8453504
+                        minReductionHashAggr: 0.690705
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 11297 Data size: 45188 Basic stats: COMPLETE Column stats: COMPLETE

@@ -139,7 +139,6 @@ public class JsonSerDe extends AbstractSerDe {
     this.jsonReader = new HiveJsonReader(this.soi, tsParser);
     this.jsonWriter = new HiveJsonWriter(this.binaryEncoding, getColumnNames());
 
-    this.jsonReader.setBinaryEncoding(binaryEncoding);
     this.jsonReader.enable(HiveJsonReader.Feature.COL_INDEX_PARSING);
 
     if (writeablePrimitivesDeserialize) {

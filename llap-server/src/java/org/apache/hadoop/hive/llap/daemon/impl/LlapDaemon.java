@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SetCapaci
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SetCapacityResponseProto;
 import org.apache.hadoop.hive.llap.daemon.services.impl.LlapWebServices;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
+import org.apache.hadoop.hive.llap.metrics.LLAPOTELExporter;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonJvmMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
@@ -89,6 +90,9 @@ import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.logging.log4j.core.config.Configurator;
+
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -124,6 +128,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   private final DaemonId daemonId;
   private final SocketFactory socketFactory;
   private final LlapTokenManager llapTokenManager;
+  private LLAPOTELExporter otelExporter = null;
 
   // TODO Not the best way to share the address
   private final AtomicReference<InetSocketAddress> srvAddress = new AtomicReference<>(),
@@ -515,6 +520,17 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         "LlapDaemon serviceStart complete. RPC Port={}, ManagementPort={}, ShuflePort={}, WebPort={}",
         server.getBindAddress().getPort(), server.getManagementBindAddress().getPort(),
         ShuffleHandler.get().getPort(), (webServices == null ? "" : webServices.getPort()));
+
+    long otelExporterFrequency =
+        HiveConf.getTimeVar(getConfig(), ConfVars.HIVE_OTEL_METRICS_FREQUENCY_SECONDS, TimeUnit.MILLISECONDS);
+    if (otelExporterFrequency > 0) {
+      this.otelExporter = new LLAPOTELExporter(GlobalOpenTelemetry.get(), otelExporterFrequency,
+          server.getBindAddress().toString());
+      otelExporter.setName("LLAP OTEL Exporter");
+      otelExporter.setDaemon(true);
+      otelExporter.start();
+      LOG.info("Started OTEL exporter with frequency {}", otelExporterFrequency);
+    }
   }
 
   public void serviceStop() throws Exception {
@@ -554,6 +570,10 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
     if (fnLocalizer != null) {
       fnLocalizer.close();
+    }
+
+    if (otelExporter != null) {
+      otelExporter.interrupt();
     }
   }
 

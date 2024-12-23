@@ -437,7 +437,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   /*
    * Used to check recursive CTE invocations. Similar to viewsExpanded
    */
-  private List<String> ctesExpanded;
+  private List<String> ctesExpanded = new ArrayList<>();
 
   /*
    * Whether root tasks after materialized CTE linkage have been resolved
@@ -567,7 +567,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     materializedViewUpdateDesc = null;
     viewsExpanded = null;
     viewSelect = null;
-    ctesExpanded = null;
+    ctesExpanded.clear();
     globalLimitCtx.disableOpt();
     viewAliasToInput.clear();
     reduceSinkOperatorsAddedByEnforceBucketingSorting.clear();
@@ -2143,12 +2143,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   private void handleInsertStatementSpecPhase1(ASTNode ast, QBParseInfo qbp, Phase1Ctx ctx_1) throws SemanticException {
     ASTNode tabColName = (ASTNode)ast.getChild(1);
-    if(ast.getType() == HiveParser.TOK_INSERT_INTO && tabColName != null && tabColName.getType() == HiveParser.TOK_TABCOLNAME) {
+    boolean hasSpecificColumns = tabColName != null && tabColName.getType() == HiveParser.TOK_TABCOLNAME;
+    if(ast.getType() == HiveParser.TOK_INSERT_INTO) {
       //we have "insert into foo(a,b)..."; parser will enforce that 1+ columns are listed if TOK_TABCOLNAME is present
       String fullTableName = getUnescapedName((ASTNode) ast.getChild(0).getChild(0),
           SessionState.get().getCurrentDatabase());
-      List<String> targetColumnNames = processTableColumnNames(tabColName, fullTableName);
-      qbp.setDestSchemaForClause(ctx_1.dest, targetColumnNames);
+      List<String> targetColumnNames = hasSpecificColumns ? processTableColumnNames(tabColName, fullTableName) : new ArrayList<>();
+      if (hasSpecificColumns) {
+        qbp.setDestSchemaForClause(ctx_1.dest, targetColumnNames);
+      }
       Table targetTable;
       try {
         targetTable = getTableObjectByName(fullTableName);
@@ -2160,6 +2163,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(generateErrorMessage(ast,
             "Unable to access metadata for table " + fullTableName));
       }
+      ColumnAccessInfo cai = new ColumnAccessInfo();
+      if (!hasSpecificColumns) {
+        for (FieldSchema col : targetTable.getCols()) {
+          targetColumnNames.add(col.getName());
+        }
+      }
+      String completeTableName = targetTable.getCompleteName();
+      for (String colName : targetColumnNames) {
+        cai.add(completeTableName, colName);
+      }
+      setUpdateColumnAccessInfo(cai);
       Set<String> targetColumns = new HashSet<>(targetColumnNames);
       for(FieldSchema f : targetTable.getCols()) {
         //parser only allows foo(a,b), not foo(foo.a, foo.b)
@@ -2318,7 +2332,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     getMetaData(qb, false);
   }
 
-  private void getMetaData(QB qb, boolean enableMaterialization) throws SemanticException {
+  void getMetaData(QB qb, boolean enableMaterialization) throws SemanticException {
     try {
       Map<String, CTEClause> materializationAliasToCTEs = null;
       if (enableMaterialization) {
@@ -7422,8 +7436,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private Path getDestinationFilePath(final String destinationFile, boolean isMmTable) {
-    if (this.isResultsCacheEnabled() && this.queryTypeCanUseCache()) {
+  private Path getDestinationFilePath(QB qb, final String destinationFile, boolean isMmTable) {
+    if (this.isResultsCacheEnabled() && this.queryTypeCanUseCache(qb)) {
       assert (!isMmTable);
       QueryResultsCache instance = QueryResultsCache.getInstance();
       // QueryResultsCache should have been initialized by now
@@ -7761,7 +7775,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       isLocal = true;
       // fall through
     case QBMetaData.DEST_DFS_FILE: {
-      destinationPath = getDestinationFilePath(qbm.getDestFileForAlias(dest), isMmTable);
+      destinationPath = getDestinationFilePath(qb, qbm.getDestFileForAlias(dest), isMmTable);
 
       // CTAS case: the file output format and serde are defined by the create
       // table command rather than taking the default value
@@ -8454,6 +8468,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                           RowSchema fsRS, boolean canBeMerged, Table dest_tab, boolean isMmCtas,
                                           Integer dest_type, QB qb, boolean isDirectInsert, AcidUtils.Operation acidOperation, String moveTaskId) throws SemanticException {
     boolean isInsertOverwrite = false;
+    boolean isLocal = false;
     Context.Operation writeOperation = getWriteOperation(dest);
     switch (dest_type) {
     case QBMetaData.DEST_PARTITION:
@@ -8478,6 +8493,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       break;
     case QBMetaData.DEST_LOCAL_FILE:
+      isLocal = true;
     case QBMetaData.DEST_DFS_FILE:
       //CTAS path or insert into file/directory
       break;
@@ -8531,7 +8547,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     fileSinkDesc.setStatsAggPrefix(fileSinkDesc.getDirName().toString());
     if (!destTableIsMaterialization &&
         HiveConf.getVar(conf, HIVE_STATS_DBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
-      String statsTmpLoc = ctx.getTempDirForInterimJobPath(dest_path).toString();
+      String statsTmpLoc;
+      if (isLocal){
+        statsTmpLoc = ctx.getMRTmpPath().toString();
+      } else {
+        statsTmpLoc = ctx.getTempDirForInterimJobPath(dest_path).toString();
+      }
       fileSinkDesc.setStatsTmpDir(statsTmpLoc);
       LOG.debug("Set stats collection dir : " + statsTmpLoc);
     }
@@ -12917,7 +12938,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ASTNode child = ast;
     this.ast = ast;
     viewsExpanded = new ArrayList<String>();
-    ctesExpanded = new ArrayList<String>();
 
     // 1. analyze and process the position alias
     // step processPositionAlias out of genResolvedParseTree
@@ -13126,7 +13146,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Otherwise we have to wait until after the masking/filtering step.
     boolean isCacheEnabled = isResultsCacheEnabled();
     QueryResultsCache.LookupInfo lookupInfo = null;
-    if (isCacheEnabled && !needsTransform && queryTypeCanUseCache()) {
+    if (isCacheEnabled && !needsTransform && queryTypeCanUseCache(qb)) {
       lookupInfo = createLookupInfoForQuery(ast);
       if (checkResultsCache(lookupInfo, false)) {
         return;
@@ -13187,7 +13207,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Check query results cache
     // In the case that row or column masking/filtering was required, we do not support caching.
     // TODO: Enable caching for queries with masking/filtering
-    if (isCacheEnabled && needsTransform && !usesMasking && queryTypeCanUseCache()) {
+    if (isCacheEnabled && needsTransform && !usesMasking && queryTypeCanUseCache(qb)) {
       lookupInfo = createLookupInfoForQuery(ast);
       if (checkResultsCache(lookupInfo, false)) {
         return;
@@ -15827,25 +15847,33 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * Some initial checks for a query to see if we can look this query up in the results cache.
    */
-  private boolean queryTypeCanUseCache() {
-    if (this.qb == null || this.qb.getParseInfo() == null) {
+  private boolean queryTypeCanUseCache(QB qb) {
+    if (qb == null || qb.getParseInfo() == null) {
       return false;
     }
     if (this instanceof ColumnStatsSemanticAnalyzer) {
       // Column stats generates "select compute_stats() .." queries.
       // Disable caching for these.
+      LOG.debug("Query type cannot use cache (ColumnStatsSemanticAnalyzer)");
       return false;
     }
     if (queryState.getHiveOperation() != HiveOperation.QUERY) {
+      LOG.debug("Query type cannot use cache (HiveOperation is not a QUERY)");
       return false;
     }
     if (Optional.of(qb.getParseInfo()).filter(pi ->
             pi.isAnalyzeCommand() || pi.hasInsertTables() || pi.isInsertOverwriteDirectory())
         .isPresent()) {
+      LOG.debug("Query type cannot use cache (analyze, insert, or IOWD)");
       return false;
     }
     // HIVE-19096 - disable for explain and explain analyze
-    return ctx.getExplainAnalyze() == null;
+    if (ctx.getExplainAnalyze() != null) {
+      LOG.debug("Query type cannot use cache (explain analyze command)");
+      return false;
+    }
+
+    return true;
   }
 
   private boolean needsTransform() {
@@ -15858,7 +15886,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * can be added to the results cache.
    */
   private boolean queryCanBeCached() {
-    if (!queryTypeCanUseCache()) {
+    if (!queryTypeCanUseCache(qb)) {
       LOG.info("Not eligible for results caching - wrong query type");
       return false;
     }

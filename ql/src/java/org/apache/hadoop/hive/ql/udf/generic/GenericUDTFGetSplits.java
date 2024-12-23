@@ -465,7 +465,13 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       Preconditions.checkState(HiveConf.getBoolVar(wxConf,
               ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS));
 
-      HiveSplitGenerator splitGenerator = new HiveSplitGenerator(wxConf, mapWork, false, inputArgNumSplits);
+      // we're not interested in split fs serialization optimization in this case
+      // it was implemented for split generation in TezAM
+      // this can be removed any time when it turns out that's needed here too
+      HiveConf.setIntVar(wxConf, HiveConf.ConfVars.HIVE_TEZ_INPUT_FS_SERIALIZATION_THRESHOLD, -1);
+
+      HiveSplitGenerator splitGenerator =
+          new HiveSplitGenerator(wxConf, mapWork, false, inputArgNumSplits);
       List<Event> eventList = splitGenerator.initialize();
       int numGroupedSplitsGenerated = eventList.size() - 1;
       InputSplit[] result = new InputSplit[numGroupedSplitsGenerated];

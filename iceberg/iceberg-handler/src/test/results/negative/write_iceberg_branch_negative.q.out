@@ -6,4 +6,4 @@ POSTHOOK: query: create external table ice01(a int, b string, c int) stored by i
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice01
-FAILED: SemanticException Cannot use snapshotRef (does not exist): test1
+FAILED: SemanticException org.apache.hadoop.hive.ql.parse.SemanticException: Cannot use snapshotRef (does not exist): test1

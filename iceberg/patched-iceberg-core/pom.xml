@@ -20,9 +20,7 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.apache.hive</groupId>
   <artifactId>patched-iceberg-core</artifactId>
-  <version>patched-${iceberg.version}-${project.parent.version}</version>
   <name>Patched Iceberg Core</name>
   <!-- Temporary package until we need unreleased Iceberg changes for development purposes. -->
   <!-- We should periodically clean this package during rebasing to newer Iceberg releases. -->
@@ -95,7 +93,6 @@
                   <outputDirectory>${project.build.directory}/classes</outputDirectory>
                   <excludes>
                       **/HadoopInputFile.class
-                      **/SerializableTable.class
                       **/HadoopTableOperations.class
                   </excludes>
                 </artifactItem>

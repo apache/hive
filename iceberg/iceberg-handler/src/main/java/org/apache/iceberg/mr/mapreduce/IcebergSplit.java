@@ -22,21 +22,29 @@ package org.apache.iceberg.mr.mapreduce;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.BlockLocation;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.iceberg.CombinedScanTask;
 import org.apache.iceberg.FileScanTask;
-import org.apache.iceberg.hadoop.Util;
+import org.apache.iceberg.ScanTaskGroup;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.util.SerializationUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // Since this class extends `mapreduce.InputSplit and implements `mapred.InputSplit`, it can be returned by both MR v1
 // and v2 file formats.
 public class IcebergSplit extends InputSplit implements IcebergSplitContainer {
+  private static final Logger LOG = LoggerFactory.getLogger(IcebergSplit.class);
 
   public static final String[] ANYWHERE = new String[]{"*"};
 
-  private CombinedScanTask task;
+  private ScanTaskGroup<FileScanTask> taskGroup;
 
   private transient String[] locations;
   private transient Configuration conf;
@@ -45,13 +53,13 @@ public class IcebergSplit extends InputSplit implements IcebergSplitContainer {
   public IcebergSplit() {
   }
 
-  IcebergSplit(Configuration conf, CombinedScanTask task) {
-    this.task = task;
+  IcebergSplit(Configuration conf, ScanTaskGroup<FileScanTask> taskGroup) {
+    this.taskGroup = taskGroup;
     this.conf = conf;
   }
 
-  public CombinedScanTask task() {
-    return task;
+  public ScanTaskGroup<FileScanTask> taskGroup() {
+    return taskGroup;
   }
 
   @Override
@@ -61,7 +69,7 @@ public class IcebergSplit extends InputSplit implements IcebergSplitContainer {
 
   @Override
   public long getLength() {
-    return task.files().stream().mapToLong(FileScanTask::length).sum();
+    return taskGroup.tasks().stream().mapToLong(FileScanTask::length).sum();
   }
 
   @Override
@@ -70,7 +78,7 @@ public class IcebergSplit extends InputSplit implements IcebergSplitContainer {
     // getLocations() won't be accurate when called on worker nodes and will always return "*"
     if (locations == null && conf != null) {
       boolean localityPreferred = conf.getBoolean(InputFormatConfig.LOCALITY, false);
-      locations = localityPreferred ? Util.blockLocations(task, conf) : ANYWHERE;
+      locations = localityPreferred ? blockLocations(taskGroup, conf) : ANYWHERE;
     } else {
       locations = ANYWHERE;
     }
@@ -78,9 +86,28 @@ public class IcebergSplit extends InputSplit implements IcebergSplitContainer {
     return locations;
   }
 
+  // We should move to Util.blockLocations once the following PR is merged and shipped
+  // https://github.com/apache/iceberg/pull/11053
+  private static String[] blockLocations(ScanTaskGroup<FileScanTask> task, Configuration conf) {
+    final Set<String> locationSets = Sets.newHashSet();
+    task.tasks().forEach(fileScanTask -> {
+      final Path path = new Path(fileScanTask.file().path().toString());
+      try {
+        final FileSystem fs = path.getFileSystem(conf);
+        for (BlockLocation location : fs.getFileBlockLocations(path, fileScanTask.start(), fileScanTask.length())) {
+          locationSets.addAll(Arrays.asList(location.getHosts()));
+        }
+      } catch (IOException e) {
+        LOG.warn("Failed to get block locations for path {}", path, e);
+      }
+    });
+
+    return locationSets.toArray(new String[0]);
+  }
+
   @Override
   public void write(DataOutput out) throws IOException {
-    byte[] data = SerializationUtil.serializeToBytes(this.task);
+    byte[] data = SerializationUtil.serializeToBytes(this.taskGroup);
     out.writeInt(data.length);
     out.write(data);
   }
@@ -89,6 +116,6 @@ public class IcebergSplit extends InputSplit implements IcebergSplitContainer {
   public void readFields(DataInput in) throws IOException {
     byte[] data = new byte[in.readInt()];
     in.readFully(data);
-    this.task = SerializationUtil.deserializeFromBytes(data);
+    this.taskGroup = SerializationUtil.deserializeFromBytes(data);
   }
 }

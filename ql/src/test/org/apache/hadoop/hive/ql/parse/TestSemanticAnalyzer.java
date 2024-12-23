@@ -18,19 +18,67 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.spy;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.security.HadoopDefaultAuthenticator;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.stubbing.Answer;
 
 public class TestSemanticAnalyzer {
+
+  private static Hive db;
+  private static HiveConf conf;
+
+  @BeforeClass
+  public static void beforeClass() throws Exception {
+    conf = new HiveConfForTest(TestSemanticAnalyzer.class);
+    conf.set("hive.security.authorization.enabled", "false");
+    conf.set("hive.security.authorization.manager",
+        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdConfOnlyAuthorizerFactory");
+    db = Hive.get(conf);
+
+    // table1 (col1 string, col2 int)
+    createKeyValueTable("table1");
+    createKeyValueTable("table2");
+    createKeyValueTable("table3");
+  }
+
+  private static void createKeyValueTable(String tableName) throws Exception {
+    Table table = new Table("default", tableName);
+    List<FieldSchema> columns = new ArrayList<>();
+    columns.add(new FieldSchema("key", "string", "First column"));
+    columns.add(new FieldSchema("value", "int", "Second column"));
+    table.setFields(columns); // Set columns
+    db.createTable(table);
+  }
+
+  @AfterClass
+  public static void afterClass() {
+    db.close(true);
+  }
 
   @Test
   public void testNormalizeColSpec() throws Exception {
@@ -133,5 +181,71 @@ public class TestSemanticAnalyzer {
     assertFalse(analyzer.skipAuthorization());
     hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_SERVICE_USERS, "u1,u2,u3");
     assertTrue(analyzer.skipAuthorization());
+  }
+
+  @Test
+  public void testSelectCacheable() throws Exception {
+    checkQueryCanUseCache("SELECT key from table1", true);
+  }
+
+  @Test
+  public void testInsertCacheable() throws Exception {
+    checkQueryCanUseCache("INSERT INTO table1 VALUES ('asdf', 2)", false);
+  }
+
+  @Test
+  public void testInsertOverwriteDirectoryCacheable() throws Exception {
+    checkQueryCanUseCache("INSERT OVERWRITE DIRECTORY '/tmp' SELECT key FROM table2", false);
+  }
+
+  @Test
+  public void testInsertOverwriteDirectoryWithNonTrivialSubqueryCacheable() throws Exception {
+    checkQueryCanUseCache("insert overwrite directory '/tmp' " +
+        "SELECT a.key, MAX(b.value) AS MAX_VALUE, COUNT(DISTINCT b.key) AS UNIQUE_KEYS, AVG(c.value) AS VALS " +
+            "FROM table1 a " +
+            "JOIN table2 b ON a.key = b.key " +
+            "JOIN table3 c ON a.key = c.key " +
+            "GROUP BY a.key HAVING AVG(LENGTH(a.key) + LENGTH(b.key)) > 5 " +
+            "ORDER BY MAX_VALUE DESC, UNIQUE_KEYS ASC"
+        , false);
+  }
+
+  private void checkQueryCanUseCache(String query, boolean canUseCache) throws Exception {
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_RESULTS_CACHE_ENABLED, true);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
+    QueryResultsCache.initialize(conf);
+    QueryResultsCache cache = QueryResultsCache.getInstance();
+    String cacheDirPath = cache.getCacheDirPath().toUri().getPath();
+
+    SessionState.start(conf);
+    Context ctx = new Context(conf);
+    ASTNode astNode = ParseUtils.parse(query, ctx);
+    QueryState queryState = new QueryState.Builder().withHiveConf(conf).build();
+    SemanticAnalyzer analyzer = spy((SemanticAnalyzer) SemanticAnalyzerFactory.get(queryState, astNode));
+
+    analyzer.initCtx(ctx);
+
+    List<Operator<?>> capturedValues = new ArrayList<>();
+    doAnswer((Answer<Operator<?>>) invocation -> {
+      Operator<?> fileSinkOperator = (Operator<?>) invocation.callRealMethod(); // Call the actual method
+      capturedValues.add(fileSinkOperator);
+      return fileSinkOperator;
+    }).when(analyzer).genFileSinkPlan(anyString(), any(QB.class), any(Operator.class));
+
+    analyzer.analyze(astNode, ctx);
+
+    // this is a soft assertion, and doesn't reflect the goal of this unit test,
+    Assert.assertEquals("genFileSinkPlan is supposed to be called once during semantic analysis",
+        1, capturedValues.size());
+    FileSinkOperator operator = (FileSinkOperator) capturedValues.get(0);
+    String finalPath = operator.getConf().getDestPath().toUri().toString();
+
+    if (canUseCache) {
+      Assert.assertTrue(String.format("Final path %s is not in the cache folder (%s), which is unexpected",
+          finalPath, cacheDirPath), finalPath.contains(cacheDirPath));
+    } else {
+      assertFalse(String.format("Final path %s is in cache folder (%s), which is unexpected",
+          finalPath, cacheDirPath), finalPath.contains(cacheDirPath));
+    }
   }
 }

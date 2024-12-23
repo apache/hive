@@ -734,6 +734,31 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
     Assert.assertEquals(6, res.size());
   }
 
+  @Test
+  public void testMultiInsert() {
+    Assume.assumeTrue(fileFormat == FileFormat.PARQUET && isVectorized &&
+        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+
+    testTables.createTable(shell, "source", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    testTables.createTable(shell, "alice", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, null, formatVersion);
+    testTables.createTable(shell, "green", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, null, formatVersion);
+
+    String sql = "FROM source " +
+        "INSERT INTO alice " +
+        "  SELECT * WHERE first_name='Alice'" +
+        "INSERT INTO green " +
+        "  SELECT * WHERE last_name='Green'";
+    shell.executeStatement(sql);
+
+    List<Object[]> res = shell.executeStatement("SELECT * FROM alice");
+    Assert.assertEquals(1, res.size());
+    res = shell.executeStatement("SELECT * FROM green");
+    Assert.assertEquals(1, res.size());
+  }
+
   private static <T> PositionDelete<T> positionDelete(CharSequence path, long pos, T row) {
     PositionDelete<T> positionDelete = PositionDelete.create();
     return positionDelete.set(path, pos, row);

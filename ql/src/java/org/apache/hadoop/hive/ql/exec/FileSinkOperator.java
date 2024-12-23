@@ -161,7 +161,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
    * RecordWriter.
    *
    */
-  public static interface RecordWriter {
+  public interface RecordWriter {
     void write(Writable w) throws IOException;
 
     void close(boolean abort) throws IOException;

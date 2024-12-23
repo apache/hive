@@ -95,7 +95,7 @@ import static org.mockito.Mockito.when;
  * Run all the tests from abstract of {@link CatalogTests} with few specific tests related to HIVE.
  */
 public class TestHiveCatalog extends CatalogTests<HiveCatalog> {
-  private static ImmutableMap meta = ImmutableMap.of(
+  private static final ImmutableMap meta = ImmutableMap.of(
       "owner", "apache",
       "group", "iceberg",
       "comment", "iceberg  hiveCatalog test");
@@ -1091,7 +1091,7 @@ public class TestHiveCatalog extends CatalogTests<HiveCatalog> {
         .doesNotContainKey(CURRENT_SNAPSHOT_ID)
         .doesNotContainKey(CURRENT_SNAPSHOT_TIMESTAMP);
 
-    ops.setSchema(metadata, parameters);
+    ops.setSchema(metadata.schema(), parameters);
     assertThat(parameters).doesNotContainKey(CURRENT_SCHEMA);
 
     ops.setPartitionSpec(metadata, parameters);
