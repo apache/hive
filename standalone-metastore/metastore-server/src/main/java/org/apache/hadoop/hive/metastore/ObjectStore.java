@@ -10251,7 +10251,7 @@ public class ObjectStore implements RawStore, Configurable {
     return new GetHelper<Boolean>(catName, dbName, tableName, true, true) {
       @Override
       protected String describeResult() {
-        return "delete prtition column stats";
+        return "delete partition column stats";
       }
 
       @Override

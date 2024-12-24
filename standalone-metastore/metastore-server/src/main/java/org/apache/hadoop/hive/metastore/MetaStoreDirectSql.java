@@ -3260,7 +3260,7 @@ class MetaStoreDirectSql {
 
   public boolean deletePartitionColumnStats(String catName, String dbName, String tblName,
       String partName, String colName, String engine) throws MetaException {
-    String sqlFilter = "" + PARTITIONS + ".\"PART_NAME\" = ? ";
+    String sqlFilter = PARTITIONS + ".\"PART_NAME\" = ? ";
     List<Long> partitionIds = getPartitionIdsViaSqlFilter(catName, dbName, tblName, sqlFilter,
         Arrays.asList(partName), Collections.emptyList(), -1);
     assert(partitionIds.size() == 1);
