@@ -584,7 +584,7 @@ public class MetastoreConf {
         "it is desirable to configure metastore.thrift.bind.host on the intended leader HMS."),
     METASTORE_HOUSEKEEPING_LEADER_ELECTION("metastore.housekeeping.leader.election",
         "metastore.housekeeping.leader.election",
-        "host", new StringSetValidator("host", "lock"),
+        "lock", new StringSetValidator("host", "lock"),
         "Set to host, HMS will choose the leader by the configured metastore.housekeeping.leader.hostname.\n" +
         "Set to lock, HMS will use the Hive lock to elect the leader."),
     METASTORE_HOUSEKEEPING_LEADER_AUDITTABLE("metastore.housekeeping.leader.auditTable",
@@ -603,7 +603,7 @@ public class MetastoreConf {
         "metastore.housekeeping.leader.lock.namespace", "",
         "The database where the Hive lock sits when metastore.housekeeping.leader.election is set to lock."),
     METASTORE_HOUSEKEEPING_THREADS_ON("metastore.housekeeping.threads.on",
-        "hive.metastore.housekeeping.threads.on", false,
+        "hive.metastore.housekeeping.threads.on", true,
         "Whether to run the tasks under metastore.task.threads.remote on this metastore instance or not.\n" +
             "Set this to true on one instance of the Thrift metastore service as part of turning\n" +
             "on Hive transactions. For a complete list of parameters required for turning on\n" +
@@ -638,12 +638,12 @@ public class MetastoreConf {
         "hive.txn.acid.metrics.delta.pct.threshold", 0.01f,
         "Percentage (fractional) size of the delta files relative to the base directory. Deltas smaller than this threshold " +
             "count as small deltas. Default 0.01 = 1%.)"),
-    COMPACTOR_INITIATOR_ON("metastore.compactor.initiator.on", "hive.compactor.initiator.on", false,
+    COMPACTOR_INITIATOR_ON("metastore.compactor.initiator.on", "hive.compactor.initiator.on", true,
         "Whether to run the initiator thread on this metastore instance or not.\n" +
             "Set this to true on one instance of the Thrift metastore service as part of turning\n" +
             "on Hive transactions. For a complete list of parameters required for turning on\n" +
             "transactions, see hive.txn.manager."),
-    COMPACTOR_CLEANER_ON("metastore.compactor.cleaner.on", "hive.compactor.cleaner.on", false,
+    COMPACTOR_CLEANER_ON("metastore.compactor.cleaner.on", "hive.compactor.cleaner.on", true,
         "Whether to run the cleaner thread on this metastore instance or not.\n" +
             "Set this to true on one instance of the Thrift metastore service as part of turning\n" +
             "on Hive transactions. For a complete list of parameters required for turning on\n" +
@@ -1876,6 +1876,12 @@ public class MetastoreConf {
         "Whether to retain column statistics during column removals in partitioned tables - disabling this "
             + "purges all column statistics data "
             + "for all partition to retain working consistency"),
+    METADATA_SUMMARY_TIMEOUT("hive.metatool.summary.timeout", "hive.metatool.summary.timeout", 20, TimeUnit.MINUTES,
+        "The maximum time in minutes to wait for the metadata summary task to complete, otherwise the task will be cancelled."),
+    METADATA_SUMMARY_RECENT_UPDATED("hive.metatool.summary.newerThan", "hive.metatool.summary.newerThan", 30, TimeUnit.DAYS,
+        "Only collect the non-native table's summary that has been updated/changed in configured recent days."),
+    METADATA_SUMMARY_MAX_NONNATIVE_TABLES("hive.metatool.summary.maxNonNativeTables", "hive.metatool.summary.maxNonNativeTables", "",
+        "The maximum non-native tables allowed per table type during collecting the summary."),
 
     // These are all values that we put here just for testing
     STR_TEST_ENTRY("test.str", "hive.test.str", "defaultval", "comment"),
