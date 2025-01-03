@@ -77,8 +77,8 @@
       <artifactId>dropwizard-metrics-hadoop-metrics2-reporter</artifactId>
       <exclusions>
         <exclusion>
-            <groupId>io.dropwizard.metrics</groupId>
-            <artifactId>metrics-core</artifactId>
+          <groupId>io.dropwizard.metrics</groupId>
+          <artifactId>metrics-core</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
