@@ -504,10 +504,11 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
 
     // Find the maximum number of columns that can be removed by retaining a certain unique key
     ImmutableBitSet columnsToRemove = ImmutableBitSet.of();
+    final ImmutableBitSet unusedGroupingColumns = aggregate.getGroupSet().except(fieldsUsed);
     for (ImmutableBitSet key : uniqueKeys) {
-      ImmutableBitSet removableCols = originalGroupSet.except(key).except(fieldsUsed);
-      if (aggregate.getGroupSet().contains(key) && removableCols.cardinality() > columnsToRemove.cardinality()) {
-        columnsToRemove = removableCols;
+      ImmutableBitSet removeCandidate = unusedGroupingColumns.except(key);
+      if (aggregate.getGroupSet().contains(key) && removeCandidate.cardinality() > columnsToRemove.cardinality()) {
+        columnsToRemove = removeCandidate;
       }
     }
     return aggregate.getGroupSet().except(columnsToRemove);
