@@ -280,6 +280,10 @@
           <groupId>com.nimbusds</groupId>
           <artifactId>nimbus-jose-jwt</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>io.dropwizard.metrics</groupId>
+          <artifactId>metrics-core</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -298,6 +302,10 @@
       <exclusions>
         <exclusion>
           <groupId>com.codahale.metrics</groupId>
+          <artifactId>metrics-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.dropwizard.metrics</groupId>
           <artifactId>metrics-core</artifactId>
         </exclusion>
       </exclusions>
