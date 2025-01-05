@@ -411,11 +411,6 @@
         <version>${commons-math3.version}</version>
       </dependency>
       <dependency>
-        <groupId>io.dropwizard.metrics</groupId>
-        <artifactId>metrics-core</artifactId>
-        <version>${dropwizard.version}}</version>
-      </dependency>
-      <dependency>
         <groupId>io.jsonwebtoken</groupId>
         <artifactId>jjwt-api</artifactId>
         <version>${jjwt.version}</version>
