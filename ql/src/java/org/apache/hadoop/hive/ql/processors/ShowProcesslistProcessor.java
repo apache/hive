@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_NULL_FORMAT;
+import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 import static org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.defaultNullString;
 
 /**
@@ -50,17 +51,17 @@ public class ShowProcesslistProcessor implements CommandProcessor {
    */
   private Schema getSchema() {
     Schema sch = new Schema();
-    sch.addToFieldSchemas(new FieldSchema("User Name", "string", ""));
-    sch.addToFieldSchemas(new FieldSchema("Ip Addr", "string", ""));
-    sch.addToFieldSchemas(new FieldSchema("Execution Engine", "string", ""));
-    sch.addToFieldSchemas(new FieldSchema("Session Id", "string", ""));
-    sch.addToFieldSchemas(new FieldSchema("Session Active Time (s)", "string", ""));
-    sch.addToFieldSchemas(new FieldSchema("Session Idle Time (s)", "string", ""));
-    sch.addToFieldSchemas(new FieldSchema("Query ID", "string", ""));
-    sch.addToFieldSchemas(new FieldSchema("State", "string", ""));
-    sch.addToFieldSchemas(new FieldSchema("Opened Timestamp (s)", "string", ""));
-    sch.addToFieldSchemas(new FieldSchema("Elapsed Time (s)", "string", ""));
-    sch.addToFieldSchemas(new FieldSchema("Runtime (s)", "string", ""));
+    sch.addToFieldSchemas(new FieldSchema("User Name", STRING_TYPE_NAME, ""));
+    sch.addToFieldSchemas(new FieldSchema("Ip Addr", STRING_TYPE_NAME, ""));
+    sch.addToFieldSchemas(new FieldSchema("Execution Engine", STRING_TYPE_NAME, ""));
+    sch.addToFieldSchemas(new FieldSchema("Session Id", STRING_TYPE_NAME, ""));
+    sch.addToFieldSchemas(new FieldSchema("Session Active Time (s)", STRING_TYPE_NAME, ""));
+    sch.addToFieldSchemas(new FieldSchema("Session Idle Time (s)", STRING_TYPE_NAME, ""));
+    sch.addToFieldSchemas(new FieldSchema("Query ID", STRING_TYPE_NAME, ""));
+    sch.addToFieldSchemas(new FieldSchema("State", STRING_TYPE_NAME, ""));
+    sch.addToFieldSchemas(new FieldSchema("Opened Timestamp (s)", STRING_TYPE_NAME, ""));
+    sch.addToFieldSchemas(new FieldSchema("Elapsed Time (s)", STRING_TYPE_NAME, ""));
+    sch.addToFieldSchemas(new FieldSchema("Runtime (s)", STRING_TYPE_NAME, ""));
     sch.putToProperties(SERIALIZATION_NULL_FORMAT, defaultNullString);
     return sch;
   }
@@ -105,6 +106,11 @@ public class ShowProcesslistProcessor implements CommandProcessor {
     }
   }
 
+  /**
+   * There are no resources to be closed ,hence this method is empty.
+   *
+   * @throws Exception
+   */
   @Override
   public void close() throws Exception {
   }
