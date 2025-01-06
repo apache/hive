@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -85,6 +84,10 @@ public class FileUtils {
     LOG.debug("deleting  " + f);
     boolean result;
     try {
+      if (!fs.exists(f)) {
+        LOG.info("The path to moveToTrash does not exist: " + f);
+        return true;
+      }
       if(purge) {
         LOG.debug("purge is set to true. Not moving to Trash " + f);
       } else {
