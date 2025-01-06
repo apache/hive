@@ -36,7 +36,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -157,6 +156,8 @@ import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
+import org.apache.iceberg.PartitionStats;
+import org.apache.iceberg.PartitionStatsUtil;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SerializableTable;
@@ -492,8 +493,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
     Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, hmsTable);
     if (snapshot != null) {
-      Map<String, String> summary = getPartishSummary(partish, snapshot.summary());
-
+      Map<String, String> summary = getPartishSummary(partish, table, snapshot);
       if (summary != null) {
         if (summary.containsKey(SnapshotSummary.TOTAL_DATA_FILES_PROP)) {
           stats.put(StatsSetupConst.NUM_FILES, summary.get(SnapshotSummary.TOTAL_DATA_FILES_PROP));
@@ -524,23 +524,26 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return stats;
   }
 
-  private static Map<String, String> getPartishSummary(Partish partish, Map<String, String> summary) {
-    if (summary != null && partish.getPartition() != null &&
-          Boolean.parseBoolean(summary.get(SnapshotSummary.PARTITION_SUMMARY_PROP))) {
-      String key = SnapshotSummary.CHANGED_PARTITION_PREFIX + partish.getPartition().getName();
-      Map<String, String> map = Maps.newHashMap();
+  private static Map<String, String> getPartishSummary(Partish partish, Table table, Snapshot snapshot) {
+    if (partish.getPartition() != null) {
+      // TODO: If there is no partition stats file for snapshot - compute and write stats, otherwise read from file.
 
-      if (summary.containsKey(key)) {
-        StringTokenizer tokenizer = new StringTokenizer(summary.get(key), ",");
-        while (tokenizer.hasMoreTokens()) {
-          String token = tokenizer.nextToken();
-          String[] keyValue = token.split("=");
-          map.put(keyValue[0], keyValue[1]);
-        }
-      }
-      return map;
+      PartitionStats partitionStat = PartitionStatsUtil.computeStats(table, snapshot).stream()
+          .filter(stat -> table.spec().partitionToPath(stat.partition())
+              .equals(partish.getPartition().getName()))
+          .findAny()
+          .orElseThrow(() -> new IllegalArgumentException("Partition not found in snapshot"));
+
+      Map<String, String> stats = ImmutableMap.of(
+          SnapshotSummary.TOTAL_DATA_FILES_PROP, String.valueOf(partitionStat.dataFileCount()),
+          SnapshotSummary.TOTAL_RECORDS_PROP, String.valueOf(partitionStat.dataRecordCount()),
+          SnapshotSummary.TOTAL_EQ_DELETES_PROP, String.valueOf(partitionStat.equalityDeleteRecordCount()),
+          SnapshotSummary.TOTAL_POS_DELETES_PROP, String.valueOf(partitionStat.positionDeleteRecordCount()),
+          SnapshotSummary.TOTAL_FILE_SIZE_PROP, String.valueOf(partitionStat.totalDataFileSizeInBytes())
+      );
+      return stats;
     }
-    return summary;
+    return snapshot.summary();
   }
 
   private Table getTable(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
@@ -672,7 +675,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     Table table = getTable(hmsTable);
     Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, hmsTable);
     if (snapshot != null) {
-      Map<String, String> summary = getPartishSummary(partish, snapshot.summary());
+      Map<String, String> summary = getPartishSummary(partish, table, snapshot);
       if (summary != null && summary.containsKey(SnapshotSummary.TOTAL_EQ_DELETES_PROP) &&
           summary.containsKey(SnapshotSummary.TOTAL_POS_DELETES_PROP)) {
 
