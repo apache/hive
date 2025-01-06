@@ -1615,14 +1615,16 @@ public class MetaStoreServerUtils {
       if (!didMatch) { //partition path doesn't match the pattern, should have been detected at an earlier step
         throw new MetastoreException("Path " + relPath + "doesn't match custom partition pattern " + customPathPattern + "partitionPathFull: " + partitionPath);
       }
+      StringBuilder resultBuilder = new StringBuilder();
       for (int i = 0; i < patternPartCols.size(); i++) {
         if (result == null) {
-          result = patternPartCols.get(i) + "=" + pathMatcher.group(i + 1);
+          resultBuilder.append(patternPartCols.get(i)).append("=").append(pathMatcher.group(i + 1));
         }
         else {
-          result = result + Path.SEPARATOR + patternPartCols.get(i) + "=" + pathMatcher.group(i+1);
+          resultBuilder.append(Path.SEPARATOR).append(patternPartCols.get(i)).append("=").append(pathMatcher.group(i+1));
         }
       }
+      result = resultBuilder.toString();
     }
     else {
 
@@ -1807,7 +1809,7 @@ public class MetaStoreServerUtils {
         Pattern stringPattern = Pattern.compile("(\\$\\{)([^\\s/\\{\\}\\\\]+)(\\})");
         StringBuffer sb = new StringBuffer();
         Matcher m = stringPattern.matcher(customPattern);
-        ArrayList<String> partColumns = new ArrayList<String>();
+        ArrayList<String> partColumns = new ArrayList<>();
         while (m.find()) {
           m.appendReplacement(sb, "(.*)");
           partColumns.add(m.group(2));
@@ -1815,6 +1817,6 @@ public class MetaStoreServerUtils {
         m.appendTail(sb);
         return new DynamicPartitioningCustomPattern(customPattern, Pattern.compile(sb.toString()), partColumns);
       }
-    };
-  };
+    }
+  }
 }
