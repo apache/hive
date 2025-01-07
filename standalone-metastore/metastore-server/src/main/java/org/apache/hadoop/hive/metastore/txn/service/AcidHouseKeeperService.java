@@ -23,7 +23,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.txn.TxnDummyMutex;
+import org.apache.hadoop.hive.metastore.txn.NoMutex;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.slf4j.Logger;
@@ -80,7 +80,7 @@ public class AcidHouseKeeperService implements MetastoreTaskThread {
 
   @Override
   public void run() {
-    TxnStore.MutexAPI mutex = shouldUseMutex ? txnHandler.getMutexAPI() : new TxnDummyMutex();
+    TxnStore.MutexAPI mutex = shouldUseMutex ? txnHandler.getMutexAPI() : new NoMutex();
     try (AutoCloseable closeable = mutex.acquireLock(TxnStore.MUTEX_KEY.HouseKeeper.name())) {
       LOG.info("Starting to run {}", serviceName);
       long start = System.currentTimeMillis();
@@ -106,7 +106,7 @@ public class AcidHouseKeeperService implements MetastoreTaskThread {
   }
 
   @Override
-  public void shouldUseMutex(boolean enableMutex) {
+  public void enforceMutex(boolean enableMutex) {
     this.shouldUseMutex = enableMutex;
   }
 }

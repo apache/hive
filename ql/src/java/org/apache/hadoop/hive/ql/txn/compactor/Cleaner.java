@@ -21,7 +21,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
-import org.apache.hadoop.hive.metastore.txn.TxnDummyMutex;
+import org.apache.hadoop.hive.metastore.txn.NoMutex;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.txn.compactor.handler.TaskHandler;
 import org.apache.hadoop.hive.ql.txn.compactor.handler.TaskHandlerFactory;
@@ -72,7 +72,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     LOG.info("Starting Cleaner thread");
     try {
       do {
-        TxnStore.MutexAPI mutex =  shouldUseMutex ? txnHandler.getMutexAPI() : new TxnDummyMutex();
+        TxnStore.MutexAPI mutex =  shouldUseMutex ? txnHandler.getMutexAPI() : new NoMutex();
         metadataCache.invalidate();
         long startedAt = -1;
 
@@ -170,7 +170,7 @@ public class Cleaner extends MetaStoreCompactorThread {
   }
 
   @Override
-  public void shouldUseMutex(boolean enableMutex) {
+  public void enforceMutex(boolean enableMutex) {
     this.shouldUseMutex = enableMutex;
   }
 }

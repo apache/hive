@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
-import org.apache.hadoop.hive.metastore.txn.TxnDummyMutex;
+import org.apache.hadoop.hive.metastore.txn.NoMutex;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -72,7 +72,7 @@ public class Initiator extends MetaStoreCompactorThread {
       long abortedTimeThreshold = HiveConf
           .getTimeVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD,
               TimeUnit.MILLISECONDS);
-      TxnStore.MutexAPI mutex = shouldUseMutex ? txnHandler.getMutexAPI() : new TxnDummyMutex();
+      TxnStore.MutexAPI mutex = shouldUseMutex ? txnHandler.getMutexAPI() : new NoMutex();
 
       // Make sure we run through the loop once before checking to stop as this makes testing
       // much easier.  The stop value is only for testing anyway and not used when called from
@@ -425,7 +425,7 @@ public class Initiator extends MetaStoreCompactorThread {
   }
 
   @Override
-  public void shouldUseMutex(boolean enableMutex) {
+  public void enforceMutex(boolean enableMutex) {
     this.shouldUseMutex = enableMutex;
   }
 }

@@ -21,7 +21,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
-import org.apache.hadoop.hive.metastore.txn.TxnDummyMutex;
+import org.apache.hadoop.hive.metastore.txn.NoMutex;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.slf4j.Logger;
@@ -62,7 +62,7 @@ public class MaterializationsRebuildLockCleanerTask implements MetastoreTaskThre
       LOG.debug("Cleaning up materialization rebuild locks");
     }
 
-    TxnStore.MutexAPI mutex = shouldUseMutex ? txnHandler.getMutexAPI() : new TxnDummyMutex();
+    TxnStore.MutexAPI mutex = shouldUseMutex ? txnHandler.getMutexAPI() : new NoMutex();
     try (AutoCloseable closeable = mutex.acquireLock(TxnStore.MUTEX_KEY.MaterializationRebuild.name())) {
       ValidTxnList validTxnList = TxnCommonUtils.createValidReadTxnList(txnHandler.getOpenTxns(), 0);
       long removedCnt = txnHandler.cleanupMaterializationRebuildLocks(validTxnList,
@@ -78,7 +78,7 @@ public class MaterializationsRebuildLockCleanerTask implements MetastoreTaskThre
   }
 
   @Override
-  public void shouldUseMutex(boolean enableMutex) {
+  public void enforceMutex(boolean enableMutex) {
     this.shouldUseMutex = enableMutex;
   }
 }

@@ -22,7 +22,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 /**
  * An empty implementation of TxnStore.MutexAPI
  */
-public class TxnDummyMutex implements TxnStore.MutexAPI {
+public class NoMutex implements TxnStore.MutexAPI {
 
   @Override
   public LockHandle acquireLock(String key) throws MetaException {

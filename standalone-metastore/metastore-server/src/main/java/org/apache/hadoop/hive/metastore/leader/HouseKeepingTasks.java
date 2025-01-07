@@ -99,7 +99,7 @@ public class HouseKeepingTasks implements LeaderElection.LeadershipStateListener
       List<MetastoreTaskThread> alwaysTasks = new ArrayList<>(getAlwaysTasks());
       for (MetastoreTaskThread task : alwaysTasks) {
         task.setConf(configuration);
-        task.shouldUseMutex(election.hasMultipleLeaders());
+        task.enforceMutex(election.enforceMutex());
         long freq = task.runFrequency(TimeUnit.MILLISECONDS);
         // For backwards compatibility, since some threads used to be hard coded but only run if
         // frequency was > 0
@@ -112,7 +112,7 @@ public class HouseKeepingTasks implements LeaderElection.LeadershipStateListener
       List<MetastoreTaskThread> remoteOnlyTasks = new ArrayList<>(getRemoteOnlyTasks());
       for (MetastoreTaskThread task : remoteOnlyTasks) {
         task.setConf(configuration);
-        task.shouldUseMutex(election.hasMultipleLeaders());
+        task.enforceMutex(election.enforceMutex());
         long freq = task.runFrequency(TimeUnit.MILLISECONDS);
         runningTasks.add(task);
         metastoreTaskThreadPool.getPool().scheduleAtFixedRate(task, freq, freq, TimeUnit.MILLISECONDS);

@@ -46,9 +46,9 @@ public interface MetastoreTaskThread extends Configurable, Runnable {
 
   /**
    * Should use mutex support to allow only one copy of this task running across the warehouse.
-   * @param enableMutex true for enabling the mutex, false otherwise
+   * @param useMutex true for enabling the mutex, false otherwise
    */
-  default void shouldUseMutex(boolean enableMutex) {
+  default void enforceMutex(boolean useMutex) {
     // no-op
   }
 }

@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.metastore.txn.service;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.txn.TxnDummyMutex;
+import org.apache.hadoop.hive.metastore.txn.NoMutex;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.slf4j.Logger;
@@ -58,7 +58,7 @@ public class AcidTxnCleanerService implements MetastoreTaskThread {
 
   @Override
   public void run() {
-    TxnStore.MutexAPI mutex = shouldUseMutex ? txnHandler.getMutexAPI() : new TxnDummyMutex();
+    TxnStore.MutexAPI mutex = shouldUseMutex ? txnHandler.getMutexAPI() : new NoMutex();
     try (AutoCloseable closeable = mutex.acquireLock(TxnStore.MUTEX_KEY.TxnCleaner.name())) {
       long start = System.currentTimeMillis();
       txnHandler.cleanEmptyAbortedAndCommittedTxns();
@@ -73,7 +73,7 @@ public class AcidTxnCleanerService implements MetastoreTaskThread {
   }
 
   @Override
-  public void shouldUseMutex(boolean enableMutex) {
+  public void enforceMutex(boolean enableMutex) {
     this.shouldUseMutex = enableMutex;
   }
 }

@@ -35,7 +35,7 @@ public interface LeaderElection<T> extends Closeable {
   // leader election methods running inside the warehouse, so it's hard to know how many HMS instances
   // that elected as the leader. Relying on this property to tell us, default is true, means it has multiple
   // HMS instances acting as the leader.
-  public static final String HAVE_MULTIPLE_LEADERS = "hive.metastore.have.multiple.leaders";
+  static final String HIVE_TXN_ENFORCE_AUX_MUTEX = "hive.metastore.enforce.aux.mutex";
 
   /**
    * Place where election happens
@@ -70,7 +70,7 @@ public interface LeaderElection<T> extends Closeable {
    */
   public String getName();
 
-  default boolean hasMultipleLeaders() {
+  default boolean enforceMutex() {
     return true;
   }
 
