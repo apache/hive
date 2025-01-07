@@ -67,7 +67,7 @@ public class TxnStoreMutex implements TxnStore.MutexAPI {
     TransactionContext context = null;
     try {
       jdbcResource.bindDataSource(POOL_MUTEX);
-      context = jdbcResource.getTransactionManager().getNewTransaction(null);
+      context = jdbcResource.getTransactionManager().getNewTransaction();
       
       MapSqlParameterSource paramSource = new MapSqlParameterSource().addValue("key", key);
       String sqlStmt = sqlGenerator.addForUpdateClause("SELECT \"MT_COMMENT\", \"MT_KEY2\" FROM \"AUX_TABLE\" WHERE \"MT_KEY1\" = :key");

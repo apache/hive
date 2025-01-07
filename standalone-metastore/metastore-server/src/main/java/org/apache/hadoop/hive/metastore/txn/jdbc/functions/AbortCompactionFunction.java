@@ -150,7 +150,7 @@ public class AbortCompactionFunction implements TransactionalFunction<AbortCompa
 
     @Override
     public AbortCompactionResponseElement execute() {
-      try (TransactionContext context = jdbcResource.getTransactionManager().getNewTransaction(null)) {
+      try (TransactionContext context = jdbcResource.getTransactionManager().getNewTransaction()) {
         compactionInfo.state = TxnStore.ABORTED_STATE;
         compactionInfo.errorMessage = "Compaction Aborted by Abort Comapction request.";
         int updCount;

@@ -24,7 +24,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 /**
@@ -57,21 +56,25 @@ public class TransactionContextManager {
    * The created transaction is wrapped into a {@link TransactionContext} which is {@link AutoCloseable} and allows using
    * the wrapper inside a try-with-resources block.
    *
-   * @param transactional the transactional definition.
+   * @param propagation The transaction propagation to use.
    */
-  public TransactionContext getNewTransaction(Transactional transactional) {
-    Propagation propagation = transactional == null ? Propagation.REQUIRED : transactional.propagation();
-    DefaultTransactionDefinition transactionDefinition  = new DefaultTransactionDefinition(propagation.value());
-    // Default isolation level is READ_COMMITTED
+  public TransactionContext getNewTransaction(int propagation) {
+    DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition(propagation);
+    // The TxnStore default isolation level is READ_COMMITTED
     transactionDefinition.setIsolationLevel(Isolation.READ_COMMITTED.value());
-    if (transactional != null && transactional.isolation() != Isolation.DEFAULT) {
-      transactionDefinition.setIsolationLevel(transactional.isolation().value());
-    }
-    TransactionContext context = new TransactionContext(realTransactionManager.getTransaction(transactionDefinition), this);
+    TransactionContext context = new TransactionContext(
+        realTransactionManager.getTransaction(transactionDefinition), this);
     contexts.set(context);
     return context;
   }
-  
+
+  /**
+   * Return a new or an existing transaction with isolation level is READ_COMMITTED
+   */
+  public TransactionContext getNewTransaction() {
+    return getNewTransaction(Propagation.REQUIRED.value());
+  }
+
   public TransactionContext getActiveTransaction() {
     return contexts.get();
   }
