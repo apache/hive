@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.concurrent.Semaphore;
-import org.apache.arrow.memory.ArrowByteBufAllocator;
+import org.apache.arrow.memory.patch.ArrowByteBufAllocator;
 import org.apache.arrow.memory.BufferAllocator;
 
 import org.slf4j.Logger;
