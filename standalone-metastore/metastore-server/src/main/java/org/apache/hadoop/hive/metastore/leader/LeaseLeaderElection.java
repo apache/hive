@@ -475,6 +475,6 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
 
   @Override
   public boolean enforceMutex() {
-    return this.multipleLeaders;
+    return this.enforceMutex;
   }
 }

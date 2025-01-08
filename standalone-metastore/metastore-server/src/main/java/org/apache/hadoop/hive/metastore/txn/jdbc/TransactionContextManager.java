@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 /**
@@ -66,13 +65,6 @@ public class TransactionContextManager {
         realTransactionManager.getTransaction(transactionDefinition), this);
     contexts.set(context);
     return context;
-  }
-
-  /**
-   * Return a new or an existing transaction with isolation level is READ_COMMITTED
-   */
-  public TransactionContext getNewTransaction() {
-    return getNewTransaction(Propagation.REQUIRED.value());
   }
 
   public TransactionContext getActiveTransaction() {
