@@ -76,6 +76,7 @@ public class StatsUpdaterTask implements LeaderElection.LeadershipStateListener 
         thread.setConf(configuration);
         stop = new AtomicBoolean(false);
         thread.init(stop);
+        thread.enforceMutex(election.enforceMutex());
         HiveMetaStore.LOG.info("Starting metastore thread of type " + thread.getClass().getName());
         thread.start();
       } catch (Exception e) {
