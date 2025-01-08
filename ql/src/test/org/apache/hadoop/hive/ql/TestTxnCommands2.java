@@ -2393,6 +2393,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     HiveTxnManager txnMgr = TxnManagerFactory.getTxnManagerFactory().getTxnManager(hiveConf);
     // Txn is not considered committed or aborted until TXN_OPENTXN_TIMEOUT expires
     // See MinOpenTxnIdWaterMarkFunction, OpenTxnTimeoutLowBoundaryTxnIdHandler
+    // TODO: revisit wait logic
     waitUntilAllTxnFinished();
     txnMgr.openTxn(ctx, "u1");
     txnMgr.getValidTxns();
