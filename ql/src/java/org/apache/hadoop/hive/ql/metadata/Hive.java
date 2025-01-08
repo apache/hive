@@ -4194,10 +4194,16 @@ private void constructOneLBLocationMap(FileStatus fSta,
     if (isNeedRecycle && conf.getBoolVar(HiveConf.ConfVars.REPLCMENABLED)) {
       recycleDirToCmPath(path, purge);
     }
-    FileStatus[] statuses = fs.listStatus(path, pathFilter);
+    FileStatus[] statuses = null;
+    try {
+      statuses = fs.listStatus(path, pathFilter);
+    } catch (IOException e) {
+      LOG.warn("Error listing files under " + path.toString() + ". It could be deleted already. This path will be created automatically.");
+    }
     if (statuses == null || statuses.length == 0) {
       return;
     }
+
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
       String s = "Deleting files under " + path + " for replace: ";
       for (FileStatus file : statuses) {
