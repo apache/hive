@@ -571,11 +571,9 @@ public class MRCompactor implements Compactor {
           attemptId = Integer.valueOf(attemptIdString);
         }
         deltasToAttemptId.put(deltas[i].getName(), attemptId);
-        if (baseAttemptId != null) {
-          deltasToAttemptId.put(base.getName(), baseAttemptId);
-        }
       }
       if (baseAttemptId != null) {
+        deltasToAttemptId.put(base.getName(), baseAttemptId);
         deltasToAttemptId.put(base.toString(), baseAttemptId);
       }
     }

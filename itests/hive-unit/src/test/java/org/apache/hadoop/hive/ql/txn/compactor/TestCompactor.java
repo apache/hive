@@ -2575,6 +2575,34 @@ public class TestCompactor extends TestCompactorBase {
   }
 
   @Test
+  public void testMajorCompactionOnBaseMissingBucket() throws Exception {
+    dropTables("full_acid", "ext");
+    HiveConf hiveConf = driver.getConf();
+    String reducers = hiveConf.get("mapreduce.job.reduces");
+    hiveConf.set("mapreduce.job.reduces", "7");
+    executeStatementOnDriver("create table ext (a int)", driver);
+    executeStatementOnDriver("insert into table ext values(1),(2),(3),(3),(3),(3),(4),(5),(6),(7)", driver);
+    executeStatementOnDriver("create table full_acid(a int) stored as orc tblproperties('transactional'='true')", driver);
+    executeStatementOnDriver("insert overwrite table full_acid select * from ext where a  = 3", driver);
+    executeStatementOnDriver("insert into table full_acid select * from ext where a != 3 group by a", driver);
+
+    List<Integer> values1 = new ArrayList<>();
+    List<Integer> values2 = new ArrayList<>();
+    executeStatementOnDriver("select * from full_acid order by a", driver);
+    driver.getResults(values1);
+    executeStatementOnDriver("alter table full_acid compact 'major'", driver);
+    Assert.assertEquals(10, values1.size());
+
+    runWorker(conf);
+    executeStatementOnDriver("select * from full_acid order by a", driver);
+    driver.getResults(values2);
+    Assert.assertEquals(values1, values2);
+
+    hiveConf.set("mapreduce.job.reduces", reducers);
+    dropTables("full_acid", "ext");
+  }
+
+  @Test
   public void testAcidDirCacheOnDropPartitionedTable() throws Exception {
     int cacheDurationInMinutes = 10;
     AcidUtils.initDirCache(cacheDurationInMinutes);
