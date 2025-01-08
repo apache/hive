@@ -253,6 +253,10 @@ public interface HiveStorageHandler extends Configurable {
     return null;
   }
 
+  default Map<String, String> computeBasicStatistics(Partish partish) {
+    return null;
+  }
+
   /**
    * Check if the storage handler can provide basic statistics.
    * @return true if the storage handler can supply the basic statistics

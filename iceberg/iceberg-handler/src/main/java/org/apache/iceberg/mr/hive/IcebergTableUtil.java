@@ -57,6 +57,7 @@ import org.apache.iceberg.MetadataTableUtils;
 import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
+import org.apache.iceberg.PartitionStatisticsFile;
 import org.apache.iceberg.Partitioning;
 import org.apache.iceberg.PartitionsTable;
 import org.apache.iceberg.RowLevelOperationMode;
@@ -211,6 +212,12 @@ public class IcebergTableUtil {
       )
       .map(stats -> new Path(stats.path()))
       .findAny();
+  }
+
+  static PartitionStatisticsFile getPartitionStatsFile(Table table, long snapshotId) {
+    return table.partitionStatisticsFiles().stream()
+      .filter(stats -> stats.snapshotId() == snapshotId)
+      .findAny().orElse(null);
   }
 
   /**

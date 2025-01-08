@@ -20,8 +20,10 @@
 package org.apache.iceberg.mr.hive;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
@@ -156,13 +158,13 @@ import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
+import org.apache.iceberg.PartitionStatisticsFile;
 import org.apache.iceberg.PartitionStats;
-import org.apache.iceberg.PartitionStatsUtil;
+import org.apache.iceberg.Partitioning;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SerializableTable;
 import org.apache.iceberg.Snapshot;
-import org.apache.iceberg.SnapshotSummary;
 import org.apache.iceberg.SortDirection;
 import org.apache.iceberg.SortField;
 import org.apache.iceberg.SortOrder;
@@ -172,6 +174,9 @@ import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.TableScan;
 import org.apache.iceberg.actions.DeleteOrphanFiles;
+import org.apache.iceberg.data.InternalRecordWrapper;
+import org.apache.iceberg.data.PartitionStatsHandler;
+import org.apache.iceberg.data.PartitionStatsRecord;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.exceptions.ValidationException;
 import org.apache.iceberg.expressions.Evaluator;
@@ -219,6 +224,13 @@ import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.PARTITION_HASH;
 import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.PARTITION_PROJECTION;
 import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.PARTITION_SPEC_ID;
 import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.ROW_POSITION;
+import static org.apache.iceberg.SnapshotSummary.ADDED_RECORDS_PROP;
+import static org.apache.iceberg.SnapshotSummary.DELETED_RECORDS_PROP;
+import static org.apache.iceberg.SnapshotSummary.TOTAL_DATA_FILES_PROP;
+import static org.apache.iceberg.SnapshotSummary.TOTAL_EQ_DELETES_PROP;
+import static org.apache.iceberg.SnapshotSummary.TOTAL_FILE_SIZE_PROP;
+import static org.apache.iceberg.SnapshotSummary.TOTAL_POS_DELETES_PROP;
+import static org.apache.iceberg.SnapshotSummary.TOTAL_RECORDS_PROP;
 
 public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, HiveStorageHandler {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergStorageHandler.class);
@@ -435,12 +447,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     if (!getStatsSource().equals(HiveMetaHook.ICEBERG)) {
       return false;
     }
-    // For write queries where rows got modified, don't fetch from cache as values could have changed.
-    Table table = getTable(hmsTable);
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, hmsTable);
     if (snapshot != null) {
-      Map<String, String> summary = snapshot.summary();
-      return Boolean.parseBoolean(summary.get(SnapshotSummary.PARTITION_SUMMARY_PROP));
+      return IcebergTableUtil.getPartitionStatsFile(table, snapshot.snapshotId()) != null;
     }
     return false;
   }
@@ -495,16 +505,16 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     if (snapshot != null) {
       Map<String, String> summary = getPartishSummary(partish, table, snapshot);
       if (summary != null) {
-        if (summary.containsKey(SnapshotSummary.TOTAL_DATA_FILES_PROP)) {
-          stats.put(StatsSetupConst.NUM_FILES, summary.get(SnapshotSummary.TOTAL_DATA_FILES_PROP));
+        if (summary.containsKey(TOTAL_DATA_FILES_PROP)) {
+          stats.put(StatsSetupConst.NUM_FILES, summary.get(TOTAL_DATA_FILES_PROP));
         }
-        if (summary.containsKey(SnapshotSummary.TOTAL_RECORDS_PROP)) {
-          long totalRecords = Long.parseLong(summary.get(SnapshotSummary.TOTAL_RECORDS_PROP));
-          if (summary.containsKey(SnapshotSummary.TOTAL_EQ_DELETES_PROP) &&
-              summary.containsKey(SnapshotSummary.TOTAL_POS_DELETES_PROP)) {
+        if (summary.containsKey(TOTAL_RECORDS_PROP)) {
+          long totalRecords = Long.parseLong(summary.get(TOTAL_RECORDS_PROP));
+          if (summary.containsKey(TOTAL_EQ_DELETES_PROP) &&
+              summary.containsKey(TOTAL_POS_DELETES_PROP)) {
 
-            long totalEqDeletes = Long.parseLong(summary.get(SnapshotSummary.TOTAL_EQ_DELETES_PROP));
-            long totalPosDeletes = Long.parseLong(summary.get(SnapshotSummary.TOTAL_POS_DELETES_PROP));
+            long totalEqDeletes = Long.parseLong(summary.get(TOTAL_EQ_DELETES_PROP));
+            long totalPosDeletes = Long.parseLong(summary.get(TOTAL_POS_DELETES_PROP));
 
             long actualRecords = totalRecords - (totalEqDeletes > 0 ? 0 : totalPosDeletes);
             totalRecords = actualRecords > 0 ? actualRecords : totalRecords;
@@ -512,8 +522,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
           }
           stats.put(StatsSetupConst.ROW_COUNT, String.valueOf(totalRecords));
         }
-        if (summary.containsKey(SnapshotSummary.TOTAL_FILE_SIZE_PROP)) {
-          stats.put(StatsSetupConst.TOTAL_SIZE, summary.get(SnapshotSummary.TOTAL_FILE_SIZE_PROP));
+        if (summary.containsKey(TOTAL_FILE_SIZE_PROP)) {
+          stats.put(StatsSetupConst.TOTAL_SIZE, summary.get(TOTAL_FILE_SIZE_PROP));
         }
       }
     } else {
@@ -524,24 +534,71 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return stats;
   }
 
+  @Override
+  public Map<String, String> computeBasicStatistics(Partish partish) {
+    if (!getStatsSource().equals(HiveMetaHook.ICEBERG)) {
+      return partish.getPartParameters();
+    }
+    org.apache.hadoop.hive.ql.metadata.Table hmsTable = partish.getTable();
+    // For write queries where rows got modified, don't fetch from cache as values could have changed.
+    Table table = getTable(hmsTable);
+    Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, hmsTable);
+
+    if (snapshot != null && table.spec().isPartitioned()) {
+      PartitionStatisticsFile statsFile = IcebergTableUtil.getPartitionStatsFile(table, snapshot.snapshotId());
+      if (statsFile == null) {
+        statsFile = PartitionStatsHandler.computeAndWriteStatsFile(table);
+
+        table.updatePartitionStatistics()
+            .setPartitionStatistics(statsFile)
+            .commit();
+      }
+    }
+    return getBasicStatistics(partish);
+  }
+
   private static Map<String, String> getPartishSummary(Partish partish, Table table, Snapshot snapshot) {
     if (partish.getPartition() != null) {
-      // TODO: If there is no partition stats file for snapshot - compute and write stats, otherwise read from file.
+      PartitionStatisticsFile statsFile = IcebergTableUtil.getPartitionStatsFile(table, snapshot.snapshotId());
+      if (statsFile != null) {
+        Types.StructType partitionType = Partitioning.partitionType(table);
+        Schema schema = PartitionStatsHandler.schema(partitionType);
 
-      PartitionStats partitionStat = PartitionStatsUtil.computeStats(table, snapshot).stream()
-          .filter(stat -> table.spec().partitionToPath(stat.partition())
-              .equals(partish.getPartition().getName()))
-          .findAny()
-          .orElseThrow(() -> new IllegalArgumentException("Partition not found in snapshot"));
+        CloseableIterable<PartitionStatsRecord> partitionStatsRecords = PartitionStatsHandler.readPartitionStatsFile(
+            schema, table.io().newInputFile(statsFile.path()));
 
-      Map<String, String> stats = ImmutableMap.of(
-          SnapshotSummary.TOTAL_DATA_FILES_PROP, String.valueOf(partitionStat.dataFileCount()),
-          SnapshotSummary.TOTAL_RECORDS_PROP, String.valueOf(partitionStat.dataRecordCount()),
-          SnapshotSummary.TOTAL_EQ_DELETES_PROP, String.valueOf(partitionStat.equalityDeleteRecordCount()),
-          SnapshotSummary.TOTAL_POS_DELETES_PROP, String.valueOf(partitionStat.positionDeleteRecordCount()),
-          SnapshotSummary.TOTAL_FILE_SIZE_PROP, String.valueOf(partitionStat.totalDataFileSizeInBytes())
-      );
-      return stats;
+        try (Closeable toClose = partitionStatsRecords) {
+          Types.StructType recordSchema = (Types.StructType) schema.findField(
+              PartitionStatsHandler.Column.PARTITION.name()).type();
+          InternalRecordWrapper wrapper = new InternalRecordWrapper(recordSchema);
+
+          PartitionStats partitionStats = Iterables.tryFind(partitionStatsRecords, stats -> {
+            PartitionSpec spec = table.specs().get(stats.unwrap().specId());
+            return spec.partitionToPath(wrapper.wrap(stats.unwrap().partition()))
+                .equals(partish.getPartition().getName());
+          })
+              .transform(PartitionStatsRecord::unwrap)
+              .orNull();
+
+          if (partitionStats != null) {
+            Map<String, String> stats = ImmutableMap.of(
+                TOTAL_DATA_FILES_PROP, String.valueOf(partitionStats.dataFileCount()),
+                TOTAL_RECORDS_PROP, String.valueOf(partitionStats.dataRecordCount()),
+                TOTAL_EQ_DELETES_PROP, String.valueOf(partitionStats.equalityDeleteRecordCount()),
+                TOTAL_POS_DELETES_PROP, String.valueOf(partitionStats.positionDeleteRecordCount()),
+                TOTAL_FILE_SIZE_PROP, String.valueOf(partitionStats.totalDataFileSizeInBytes())
+            );
+            return stats;
+          } else {
+            LOG.warn("Partition {} not found in stats file: {}",
+                partish.getPartition().getName(), statsFile.path());
+          }
+        } catch (IOException e) {
+          throw new UncheckedIOException(e);
+        }
+      } else {
+        LOG.warn("Partition stats file not found for snapshot: {}", snapshot.snapshotId());
+      }
     }
     return snapshot.summary();
   }
@@ -623,11 +680,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public boolean canProvideColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    Snapshot snapshot = IcebergTableUtil.getTableSnapshot(hmsTable, table);
-    if (snapshot == null) {
-      return false;
+    Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, hmsTable);
+    if (snapshot != null) {
+      return canSetColStatistics(hmsTable) && canProvideColStats(table, snapshot.snapshotId());
     }
-    return canSetColStatistics(hmsTable) && canProvideColStats(table, snapshot.snapshotId());
+    return false;
   }
 
   private boolean canProvideColStats(Table table, long snapshotId) {
@@ -637,14 +694,15 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public List<ColumnStatisticsObj> getColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    Snapshot snapshot = IcebergTableUtil.getTableSnapshot(hmsTable, table);
+    Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, hmsTable);
+
     ColumnStatistics emptyStats = new ColumnStatistics();
-    if (snapshot == null) {
-      return emptyStats.getStatsObj();
+    if (snapshot != null) {
+      return IcebergTableUtil.getColStatsPath(table, snapshot.snapshotId())
+        .map(statsPath -> readColStats(table, statsPath))
+        .orElse(emptyStats).getStatsObj();
     }
-    long snapshotId = IcebergTableUtil.getTableSnapshot(hmsTable, table).snapshotId();
-    return IcebergTableUtil.getColStatsPath(table, snapshotId).map(statsPath -> readColStats(table, statsPath))
-      .orElse(emptyStats).getStatsObj();
+    return emptyStats.getStatsObj();
   }
 
   private ColumnStatistics readColStats(Table table, Path statsPath) {
@@ -676,11 +734,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, hmsTable);
     if (snapshot != null) {
       Map<String, String> summary = getPartishSummary(partish, table, snapshot);
-      if (summary != null && summary.containsKey(SnapshotSummary.TOTAL_EQ_DELETES_PROP) &&
-          summary.containsKey(SnapshotSummary.TOTAL_POS_DELETES_PROP)) {
+      if (summary != null && summary.containsKey(TOTAL_EQ_DELETES_PROP) &&
+          summary.containsKey(TOTAL_POS_DELETES_PROP)) {
 
-        long totalEqDeletes = Long.parseLong(summary.get(SnapshotSummary.TOTAL_EQ_DELETES_PROP));
-        long totalPosDeletes = Long.parseLong(summary.get(SnapshotSummary.TOTAL_POS_DELETES_PROP));
+        long totalEqDeletes = Long.parseLong(summary.get(TOTAL_EQ_DELETES_PROP));
+        long totalPosDeletes = Long.parseLong(summary.get(TOTAL_POS_DELETES_PROP));
         return totalEqDeletes + totalPosDeletes == 0;
       }
     }
@@ -1255,7 +1313,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     if (sinkDesc.getInsertOverwrite()) {
       Table table = IcebergTableUtil.getTable(conf, sinkDesc.getTableInfo().getProperties());
       if (table.currentSnapshot() != null &&
-          Long.parseLong(table.currentSnapshot().summary().get(SnapshotSummary.TOTAL_RECORDS_PROP)) == 0) {
+          Long.parseLong(table.currentSnapshot().summary().get(TOTAL_RECORDS_PROP)) == 0) {
         // If the table is empty we don't have any danger that some data can get lost.
         return;
       }
@@ -1744,8 +1802,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   private SnapshotContext toSnapshotContext(Snapshot snapshot) {
     Map<String, String> summaryMap = snapshot.summary();
-    long addedRecords = getLongSummary(summaryMap, SnapshotSummary.ADDED_RECORDS_PROP);
-    long deletedRecords = getLongSummary(summaryMap, SnapshotSummary.DELETED_RECORDS_PROP);
+    long addedRecords = getLongSummary(summaryMap, ADDED_RECORDS_PROP);
+    long deletedRecords = getLongSummary(summaryMap, DELETED_RECORDS_PROP);
     return new SnapshotContext(
         snapshot.snapshotId(), toWriteOperationType(snapshot.operation()), addedRecords, deletedRecords);
   }
