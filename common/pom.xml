@@ -343,7 +343,7 @@
     </dependency>
     <dependency>
       <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId>
+      <artifactId>opentelemetry-sdk</artifactId>
       <version>${otel.version}</version>
     </dependency>
   </dependencies>

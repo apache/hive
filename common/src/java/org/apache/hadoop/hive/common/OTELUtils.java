@@ -20,11 +20,14 @@ package org.apache.hadoop.hive.common;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
-import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.export.RetryPolicy;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
@@ -39,8 +42,8 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_OTEL_RETRY_MAX_
 
 public class OTELUtils {
 
+  private static OpenTelemetry otel =  null;
   public static OpenTelemetry getOpenTelemetry(Configuration conf) {
-    OpenTelemetry otel = GlobalOpenTelemetry.get();
     if (otel == null || otel == OpenTelemetry.noop()) {
 
       String endPoint = HiveConf.getVar(conf, HIVE_OTEL_COLLECTOR_ENDPOINT);
@@ -65,12 +68,10 @@ public class OTELUtils {
       BatchSpanProcessor batchSpanProcessor =
           BatchSpanProcessor.builder(otlpExporter).setExporterTimeout(timeOut, TimeUnit.SECONDS).build();
 
-      io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder builder =
-          AutoConfiguredOpenTelemetrySdk.builder();
-      otel = builder.addTracerProviderCustomizer((tracerProviderBuilder, configProperties) -> {
-        // Add the custom BatchSpanProcessor to the TracerProvider
-        return tracerProviderBuilder.addSpanProcessor(batchSpanProcessor);
-      }).setResultAsGlobal().build().getOpenTelemetrySdk();
+      otel = OpenTelemetrySdk.builder().setTracerProvider(
+              SdkTracerProvider.builder().addSpanProcessor(batchSpanProcessor)
+                  .addResource(Resource.create(Attributes.of(AttributeKey.stringKey("service.name"), "hive_otel"))).build())
+          .buildAndRegisterGlobal();
     }
     return otel;
   }

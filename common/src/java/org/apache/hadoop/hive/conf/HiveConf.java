@@ -5835,7 +5835,7 @@ public class HiveConf extends Configuration {
         "The maximum time to wait between retries for the OTEL exporter."
             + "This sets an upper limit on the backoff interval, ensuring retries do not exceed this duration even with exponential backoff."),
 
-    HIVE_OTEL_RETRY_BACKOFF_MULTIPLIER("hive.otel.retry.backoff.multiplier", "5",
+    HIVE_OTEL_RETRY_BACKOFF_MULTIPLIER("hive.otel.retry.backoff.multiplier", 5f,
         "The multiplier applied to the backoff interval for retries in the OTEL exporter."
             + "This determines how much the backoff interval increases after each failed attempt, following an exponential backoff strategy.");
 
