@@ -23,6 +23,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.NoMutex;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.slf4j.Logger;
@@ -46,6 +47,7 @@ public class AcidHouseKeeperService implements MetastoreTaskThread {
   protected TxnStore txnHandler;
   protected String serviceName;
   protected Map<FailableRunnable<MetaException>, String> tasks;
+  private boolean shouldUseMutex = true;
 
   public AcidHouseKeeperService() {
     serviceName = this.getClass().getSimpleName();
@@ -78,19 +80,14 @@ public class AcidHouseKeeperService implements MetastoreTaskThread {
 
   @Override
   public void run() {
-    TxnStore.MutexAPI.LockHandle handle = null;
-    try {
-      handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.HouseKeeper.name());
+    TxnStore.MutexAPI mutex = shouldUseMutex ? txnHandler.getMutexAPI() : new NoMutex();
+    try (AutoCloseable closeable = mutex.acquireLock(TxnStore.MUTEX_KEY.HouseKeeper.name())) {
       LOG.info("Starting to run {}", serviceName);
       long start = System.currentTimeMillis();
       cleanTheHouse();
       LOG.debug("Total time {} took: {} seconds.", serviceName, elapsedSince(start));
     } catch (Exception e) {
       LOG.error("Unexpected exception in thread: {}, message: {}", Thread.currentThread().getName(), e.getMessage(), e);
-    } finally {
-      if (handle != null) {
-        handle.releaseLocks();
-      }
     }
   }
 
@@ -106,5 +103,10 @@ public class AcidHouseKeeperService implements MetastoreTaskThread {
 
   private long elapsedSince(long start) {
     return (System.currentTimeMillis() - start) / 1000;
+  }
+
+  @Override
+  public void enforceMutex(boolean enableMutex) {
+    this.shouldUseMutex = enableMutex;
   }
 }
