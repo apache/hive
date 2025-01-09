@@ -221,23 +221,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
         }
         GenericUDF hiveUdf = SqlFunctionConverter.getHiveUDF(HiveIn.INSTANCE, call.getType(), args.size());
         try {
-          if (sarg.nullAs == RexUnknownAs.UNKNOWN) {
-            return ExprNodeGenericFuncDesc.newInstance(hiveUdf, args);
-          } else if (sarg.nullAs == RexUnknownAs.TRUE) {
-            GenericUDF orUdf = SqlFunctionConverter.getHiveUDF(SqlStdOperatorTable.OR, call.getType(), 2);
-            ExprNodeDesc orExprNodeDesc =
-                visitCall((RexCall) rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, call.getOperands().get(0)));
-            return ExprNodeGenericFuncDesc
-                .newInstance(orUdf, Arrays.asList(orExprNodeDesc, ExprNodeGenericFuncDesc.newInstance(hiveUdf, args)));
-          } else {
-            GenericUDF andUdf = SqlFunctionConverter.getHiveUDF(SqlStdOperatorTable.AND, call.getType(), 2);
-            ExprNodeDesc andExprNodeDesc =
-                visitCall((RexCall) rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, call.getOperands().get(0)));
-            return ExprNodeGenericFuncDesc
-                .newInstance(
-                    andUdf, Arrays.asList(andExprNodeDesc, ExprNodeGenericFuncDesc.newInstance(hiveUdf, args))
-                );
-          }
+          return ExprNodeGenericFuncDesc.newInstance(hiveUdf, args);
         } catch (UDFArgumentException e) {
           throw new RuntimeException("Failed to instantiate udf: ", e);
         }
