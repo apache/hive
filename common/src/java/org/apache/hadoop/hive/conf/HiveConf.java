@@ -5817,7 +5817,27 @@ public class HiveConf extends Configuration {
 
     HIVE_OTEL_METRICS_FREQUENCY_SECONDS("hive.otel.metrics.frequency.seconds", "0s",
         new TimeValidator(TimeUnit.SECONDS),
-        "Frequency at which the OTEL Metrics are refreshed, A value of 0 or less disable the feature");
+        "Frequency at which the OTEL Metrics are refreshed, A value of 0 or less disable the feature"),
+
+    HIVE_OTEL_COLLECTOR_ENDPOINT("hive.otel.collector.endpoint", "",
+        "The endpoint to send all OTLP traces, metrics, and logs to. Often the address of an OpenTelemetry Collector."
+            + " Must be a URL with a scheme of either http or https based on the use of TLS/"),
+
+    HIVE_OTEL_EXPORTER_TIMEOUT("hive.otel.exporter.timeout", "10m", new TimeValidator(TimeUnit.SECONDS),
+        "The maximum amount of time allowed for the OTEL exporter to complete an export operation."
+            + "If the operation exceeds this duration, it will time out."),
+
+    HIVE_OTEL_RETRY_INITIAL_BACKOFF("hive.otel.retry.initial.backoff", "10s", new TimeValidator(TimeUnit.SECONDS),
+        "The initial delay before the first retry attempt in case of a failure in the OTEL exporter."
+            + "This value serves as the starting point for the exponential backoff strategy."),
+
+    HIVE_OTEL_RETRY_MAX_BACKOFF("hive.otel.retry.max.backoff", "1m", new TimeValidator(TimeUnit.SECONDS),
+        "The maximum time to wait between retries for the OTEL exporter."
+            + "This sets an upper limit on the backoff interval, ensuring retries do not exceed this duration even with exponential backoff."),
+
+    HIVE_OTEL_RETRY_BACKOFF_MULTIPLIER("hive.otel.retry.backoff.multiplier", 5f,
+        "The multiplier applied to the backoff interval for retries in the OTEL exporter."
+            + "This determines how much the backoff interval increases after each failed attempt, following an exponential backoff strategy.");
 
     public final String varname;
     public final String altName;
