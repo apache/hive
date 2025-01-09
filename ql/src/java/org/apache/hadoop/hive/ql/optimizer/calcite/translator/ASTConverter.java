@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -63,7 +62,6 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
-import org.apache.calcite.rex.RexUnknownAs;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.rex.RexWindow;
@@ -1119,21 +1117,8 @@ public class ASTConverter {
             astNodeLst.add(visitLiteral((RexLiteral) rexBuilder.makeLiteral(
                     range.lowerEndpoint(), literal.getType(), true, true)));
           }
-          ASTNode inAST = SqlFunctionConverter.buildAST(HiveIn.INSTANCE, astNodeLst, call.getType());
-
-          if (sarg.nullAs == RexUnknownAs.UNKNOWN) {
-            return inAST;
-          } else if (sarg.nullAs == RexUnknownAs.TRUE) {
-            ASTNode isNull =
-                visitCall((RexCall) rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, call.getOperands().get(0)));
-            return SqlFunctionConverter.buildAST(SqlStdOperatorTable.OR, Arrays.asList(isNull, inAST), call.getType());
-          } else {
-            ASTNode isNotNull =
-                visitCall((RexCall) rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, call.getOperands().get(0)));
-            return SqlFunctionConverter
-                .buildAST(SqlStdOperatorTable.AND, Arrays.asList(isNotNull, inAST), call.getType());
-          }
-
+          
+          return SqlFunctionConverter.buildAST(HiveIn.INSTANCE, astNodeLst, call.getType());
           // Expand SEARCH operator
         } else {
           return visitCall((RexCall) transformOrToInAndInequalityToBetween(
