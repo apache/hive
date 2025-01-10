@@ -1,12 +1,12 @@
 PREHOOK: query: create external table ice01 (`i` int, `t` timestamp) 
     partitioned by (year int, month int, day int) 
-stored by iceberg tblproperties ('format-version'='2', 'write.summary.partition-limit'='10')
+stored by iceberg tblproperties ('format-version'='2')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ice01
 POSTHOOK: query: create external table ice01 (`i` int, `t` timestamp) 
     partitioned by (year int, month int, day int) 
-stored by iceberg tblproperties ('format-version'='2', 'write.summary.partition-limit'='10')
+stored by iceberg tblproperties ('format-version'='2')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice01

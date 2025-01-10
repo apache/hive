@@ -6,7 +6,7 @@ set hive.fetch.task.conversion=none;
 
 create external table ice01 (`i` int, `t` timestamp) 
     partitioned by (year int, month int, day int) 
-stored by iceberg tblproperties ('format-version'='2', 'write.summary.partition-limit'='10');
+stored by iceberg tblproperties ('format-version'='2');
 
 insert into ice01 (i, year, month, day) values
 (1, 2023, 10, 3),

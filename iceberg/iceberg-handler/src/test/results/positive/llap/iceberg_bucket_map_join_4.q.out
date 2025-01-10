@@ -242,23 +242,23 @@ Stage-0
           PARTITION_ONLY_SHUFFLE [RS_38]
             Group By Operator [GBY_37] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
-              Map Join Operator [MAPJOIN_36] (rows=1797 width=8)
+              Map Join Operator [MAPJOIN_36] (rows=2923 width=178)
                 Conds:SEL_35._col0=RS_33._col0(Inner)
               <-Map 3 [BROADCAST_EDGE] vectorized, llap
                 BROADCAST [RS_33]
                   PartitionCols:_col0
-                  Select Operator [SEL_32] (rows=738 width=4)
+                  Select Operator [SEL_32] (rows=1330 width=178)
                     Output:["_col0"]
-                    Filter Operator [FIL_31] (rows=738 width=89)
-                      predicate:(part is not null and key is not null)
-                      TableScan [TS_3] (rows=738 width=89)
-                        default@srcbucket_mapjoin_part_2_n6,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","part"]
-              <-Select Operator [SEL_35] (rows=738 width=4)
+                    Filter Operator [FIL_31] (rows=1330 width=178)
+                      predicate:(key is not null and part is not null)
+                      TableScan [TS_3] (rows=1476 width=178)
+                        default@srcbucket_mapjoin_part_2_n6,b,Tbl:COMPLETE,Col:NONE,Output:["key","part"]
+              <-Select Operator [SEL_35] (rows=2658 width=178)
                   Output:["_col0"]
-                  Filter Operator [FIL_34] (rows=738 width=89)
-                    predicate:(part is not null and key is not null)
-                    TableScan [TS_0] (rows=738 width=89)
-                      default@srcbucket_mapjoin_part_1_n2,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","part"]
+                  Filter Operator [FIL_34] (rows=2658 width=178)
+                    predicate:(key is not null and part is not null)
+                    TableScan [TS_0] (rows=2952 width=178)
+                      default@srcbucket_mapjoin_part_1_n2,a,Tbl:COMPLETE,Col:NONE,Output:["key","part"]
 
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1_n2 a JOIN srcbucket_mapjoin_part_2_n6 b
@@ -309,29 +309,29 @@ Stage-0
           PARTITION_ONLY_SHUFFLE [RS_47]
             Group By Operator [GBY_46] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
-              Map Join Operator [MAPJOIN_45] (rows=1797 width=8)
+              Map Join Operator [MAPJOIN_45] (rows=2923 width=178)
                 Conds:SEL_44._col0, _col1=RS_39._col0, _col1(Inner)
               <-Map 3 [BROADCAST_EDGE] vectorized, llap
                 BROADCAST [RS_39]
                   PartitionCols:_col0, _col1
-                  Select Operator [SEL_38] (rows=738 width=89)
+                  Select Operator [SEL_38] (rows=1330 width=178)
                     Output:["_col0","_col1"]
-                    Filter Operator [FIL_37] (rows=738 width=89)
-                      predicate:(part is not null and key is not null)
-                      TableScan [TS_3] (rows=738 width=89)
-                        default@srcbucket_mapjoin_part_2_n6,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","part"]
-                Dynamic Partitioning Event Operator [EVENT_42] (rows=2 width=85)
-                  Group By Operator [GBY_41] (rows=2 width=85)
+                    Filter Operator [FIL_37] (rows=1330 width=178)
+                      predicate:(key is not null and part is not null)
+                      TableScan [TS_3] (rows=1476 width=178)
+                        default@srcbucket_mapjoin_part_2_n6,b,Tbl:COMPLETE,Col:NONE,Output:["key","part"]
+                Dynamic Partitioning Event Operator [EVENT_42] (rows=1330 width=178)
+                  Group By Operator [GBY_41] (rows=1330 width=178)
                     Output:["_col0"],keys:_col0
-                    Select Operator [SEL_40] (rows=738 width=85)
+                    Select Operator [SEL_40] (rows=1330 width=178)
                       Output:["_col0"]
                        Please refer to the previous Select Operator [SEL_38]
-              <-Select Operator [SEL_44] (rows=738 width=89)
+              <-Select Operator [SEL_44] (rows=2658 width=178)
                   Output:["_col0","_col1"]
-                  Filter Operator [FIL_43] (rows=738 width=89)
-                    predicate:(part is not null and key is not null)
-                    TableScan [TS_0] (rows=738 width=89)
-                      default@srcbucket_mapjoin_part_1_n2,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","part"]
+                  Filter Operator [FIL_43] (rows=2658 width=178)
+                    predicate:(key is not null and part is not null)
+                    TableScan [TS_0] (rows=2952 width=178)
+                      default@srcbucket_mapjoin_part_1_n2,a,Tbl:COMPLETE,Col:NONE,Output:["key","part"]
 
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1_n2 a JOIN srcbucket_mapjoin_part_2_n6 b

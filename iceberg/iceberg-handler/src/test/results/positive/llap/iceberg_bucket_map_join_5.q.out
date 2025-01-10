@@ -181,23 +181,23 @@ Stage-0
           PARTITION_ONLY_SHUFFLE [RS_38]
             Group By Operator [GBY_37] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
-              Map Join Operator [MAPJOIN_36] (rows=372 width=8)
+              Map Join Operator [MAPJOIN_36] (rows=5 width=198)
                 BucketMapJoin:true,Conds:SEL_35._col0=RS_33._col0(Inner)
               <-Map 3 [CUSTOM_EDGE] vectorized, llap
                 MULTICAST [RS_33]
                   PartitionCols:_col0
-                  Select Operator [SEL_32] (rows=238 width=4)
+                  Select Operator [SEL_32] (rows=1 width=0)
                     Output:["_col0"]
-                    Filter Operator [FIL_31] (rows=238 width=89)
+                    Filter Operator [FIL_31] (rows=1 width=84)
                       predicate:((part = '1') and key is not null)
-                      TableScan [TS_3] (rows=238 width=89)
+                      TableScan [TS_3] (rows=1 width=84)
                         default@srcbucket_mapjoin_part_2_n0,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","part"]
-              <-Select Operator [SEL_35] (rows=238 width=4)
+              <-Select Operator [SEL_35] (rows=5 width=180)
                   Output:["_col0"]
-                  Filter Operator [FIL_34] (rows=238 width=89)
+                  Filter Operator [FIL_34] (rows=5 width=180)
                     predicate:((part = '1') and key is not null)
-                    TableScan [TS_0] (rows=238 width=89)
-                      default@srcbucket_mapjoin_part_1,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:2,Grouping Partition Columns:["key"],Output:["key","part"]
+                    TableScan [TS_0] (rows=238 width=180)
+                      default@srcbucket_mapjoin_part_1,a,Tbl:COMPLETE,Col:NONE,Grouping Num Buckets:2,Grouping Partition Columns:["key"],Output:["key","part"]
 
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2_n0 b
@@ -248,23 +248,23 @@ Stage-0
           PARTITION_ONLY_SHUFFLE [RS_38]
             Group By Operator [GBY_37] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
-              Map Join Operator [MAPJOIN_36] (rows=372 width=8)
+              Map Join Operator [MAPJOIN_36] (rows=5 width=198)
                 BucketMapJoin:true,Conds:SEL_35._col0=RS_33._col0(Inner)
               <-Map 3 [CUSTOM_EDGE] vectorized, llap
                 MULTICAST [RS_33]
                   PartitionCols:_col0
-                  Select Operator [SEL_32] (rows=238 width=4)
+                  Select Operator [SEL_32] (rows=1 width=0)
                     Output:["_col0"]
-                    Filter Operator [FIL_31] (rows=238 width=89)
+                    Filter Operator [FIL_31] (rows=1 width=84)
                       predicate:((part = '1') and key is not null)
-                      TableScan [TS_3] (rows=238 width=89)
+                      TableScan [TS_3] (rows=1 width=84)
                         default@srcbucket_mapjoin_part_3,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","part"]
-              <-Select Operator [SEL_35] (rows=238 width=4)
+              <-Select Operator [SEL_35] (rows=5 width=180)
                   Output:["_col0"]
-                  Filter Operator [FIL_34] (rows=238 width=89)
+                  Filter Operator [FIL_34] (rows=5 width=180)
                     predicate:((part = '1') and key is not null)
-                    TableScan [TS_0] (rows=238 width=89)
-                      default@srcbucket_mapjoin_part_1,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:2,Grouping Partition Columns:["key"],Output:["key","part"]
+                    TableScan [TS_0] (rows=238 width=180)
+                      default@srcbucket_mapjoin_part_1,a,Tbl:COMPLETE,Col:NONE,Grouping Num Buckets:2,Grouping Partition Columns:["key"],Output:["key","part"]
 
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_3 b
