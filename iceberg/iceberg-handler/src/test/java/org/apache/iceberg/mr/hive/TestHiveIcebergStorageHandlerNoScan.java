@@ -700,7 +700,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
                                   "')"))
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessageStartingWith("Failed to execute Hive query")
-          .hasMessageContaining("Table location not set");
+          .hasMessageEndingWith("Table location not set");
     }
   }
 
@@ -775,7 +775,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
                               "')"))
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessageStartingWith("Failed to execute Hive query")
-          .hasMessageContaining(
+          .hasMessageEndingWith(
           "Provide only one of the following: Hive partition transform specification, " +
                     "or the iceberg.mr.table.partition.spec property");
   }

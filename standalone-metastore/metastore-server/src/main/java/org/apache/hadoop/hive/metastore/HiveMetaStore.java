@@ -152,6 +152,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     HMSHandler baseHandler = new HMSHandler("hive client", conf);
     return HMSHandlerProxyFactory.getProxy(conf, baseHandler, true);
   }
+  
+  static Iface newHMSRetryingLocalHandler(Configuration conf)
+      throws MetaException {
+    HMSHandler baseHandler = new HMSHandler("hive client", conf);
+    RetryingHMSHandler handler = new RetryingHMSHandler(conf, baseHandler, true);
+    return (IHMSHandler) java.lang.reflect.Proxy.newProxyInstance(
+      RetryingHMSHandler.class.getClassLoader(),
+      new Class[] { IHMSHandler.class }, handler);
+  }
+
 
   /**
    * Discard a current delegation token.

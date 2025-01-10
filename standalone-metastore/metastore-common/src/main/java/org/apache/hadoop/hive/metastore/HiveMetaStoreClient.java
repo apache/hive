@@ -282,7 +282,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     open();
   }
 
-  /**
+    /**
    * Instantiate the metastore server handler directly instead of connecting
    * through the network
    *
@@ -304,8 +304,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     try {
       Class<?> clazz = Class.forName(HIVE_METASTORE_CLASS);
       //noinspection JavaReflectionMemberAccess
-      Method method = clazz.getDeclaredMethod(HIVE_METASTORE_CREATE_HANDLER_METHOD,
-          Configuration.class);
+      String methodName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.HMS_HANDLER_CREATE);
+      Method method = clazz.getDeclaredMethod(methodName,Configuration.class);
       method.setAccessible(true);
       return (ThriftHiveMetastore.Iface) method.invoke(null, conf);
     } catch (InvocationTargetException e) {
