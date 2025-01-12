@@ -2381,11 +2381,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain execute pbetween using 'ch1' ,'ch2' ,'var1' ,'var2',1000.34, 2000.0, '1947-12-12', '1968-12-31', 11, 1000, 15601, 1, 788564623, 23,1.0, 18.00, 0, 15601.0, 'xTlDv24JYv4s', 'str1', '1969-12-31 16:00:02.351','2020-12-31 16:00:01', 0, 133
+PREHOOK: query: explain execute pbetween using 'ch1' ,'ch2' ,'var1' ,'var2',1000.34, 2000.0, '1947-12-12', '1968-12-31', 11, 127, 15601, 1, 788564623, 23,1.0, 18.00, 0, 15601.0, 'xTlDv24JYv4s', 'str1', '1969-12-31 16:00:02.351','2020-12-31 16:00:01', 0, 133
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@alltypes
 #### A masked pattern was here ####
-POSTHOOK: query: explain execute pbetween using 'ch1' ,'ch2' ,'var1' ,'var2',1000.34, 2000.0, '1947-12-12', '1968-12-31', 11, 1000, 15601, 1, 788564623, 23,1.0, 18.00, 0, 15601.0, 'xTlDv24JYv4s', 'str1', '1969-12-31 16:00:02.351','2020-12-31 16:00:01', 0, 133
+POSTHOOK: query: explain execute pbetween using 'ch1' ,'ch2' ,'var1' ,'var2',1000.34, 2000.0, '1947-12-12', '1968-12-31', 11, 127, 15601, 1, 788564623, 23,1.0, 18.00, 0, 15601.0, 'xTlDv24JYv4s', 'str1', '1969-12-31 16:00:02.351','2020-12-31 16:00:01', 0, 133
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@alltypes
 #### A masked pattern was here ####
@@ -2405,10 +2405,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes
-                  filterExpr: ((c BETWEEN CAST( 'ch1' AS CHAR(5)) AND CAST( 'ch2' AS CHAR(5)) and v BETWEEN CAST( 'var1' AS varchar(10)) AND CAST( 'var2' AS varchar(10)) and d BETWEEN CAST( 1000.34 AS decimal(10,3)) AND CAST( 2000 AS decimal(10,3)) and dt BETWEEN CAST( '1947-12-12' AS DATE) AND CAST( '1968-12-31' AS DATE)) or (ctinyint BETWEEN UDFToByte(11) AND UDFToByte(1000) and csmallint BETWEEN UDFToShort(15601) AND UDFToShort(1) and cint BETWEEN UDFToInteger(788564623) AND UDFToInteger(23) and cfloat BETWEEN UDFToFloat(1) AND UDFToFloat(18) and cdouble BETWEEN UDFToDouble(0) AND UDFToDouble(15601)) or (cstring1 BETWEEN CAST( 'xTlDv24JYv4s' AS STRING) AND CAST( 'str1' AS STRING) and ctimestamp1 BETWEEN CAST( '1969-12-31 16:00:02.351' AS TIMESTAMP) AND CAST( '2020-12-31 16:00:01' AS TIMESTAMP)) or cbigint BETWEEN UDFToLong(0) AND UDFToLong(133)) (type: boolean)
+                  filterExpr: ((c BETWEEN CAST( 'ch1' AS CHAR(5)) AND CAST( 'ch2' AS CHAR(5)) and v BETWEEN CAST( 'var1' AS varchar(10)) AND CAST( 'var2' AS varchar(10)) and d BETWEEN CAST( 1000.34 AS decimal(10,3)) AND CAST( 2000 AS decimal(10,3)) and dt BETWEEN CAST( '1947-12-12' AS DATE) AND CAST( '1968-12-31' AS DATE)) or (ctinyint BETWEEN UDFToByte(11) AND UDFToByte(127) and csmallint BETWEEN UDFToShort(15601) AND UDFToShort(1) and cint BETWEEN UDFToInteger(788564623) AND UDFToInteger(23) and cfloat BETWEEN UDFToFloat(1) AND UDFToFloat(18) and cdouble BETWEEN UDFToDouble(0) AND UDFToDouble(15601)) or (cstring1 BETWEEN CAST( 'xTlDv24JYv4s' AS STRING) AND CAST( 'str1' AS STRING) and ctimestamp1 BETWEEN CAST( '1969-12-31 16:00:02.351' AS TIMESTAMP) AND CAST( '2020-12-31 16:00:01' AS TIMESTAMP)) or cbigint BETWEEN UDFToLong(0) AND UDFToLong(133)) (type: boolean)
                   Statistics: Num rows: 18346 Data size: 8590681 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((c BETWEEN CAST( 'ch1' AS CHAR(5)) AND CAST( 'ch2' AS CHAR(5)) and v BETWEEN CAST( 'var1' AS varchar(10)) AND CAST( 'var2' AS varchar(10)) and d BETWEEN CAST( 1000.34 AS decimal(10,3)) AND CAST( 2000 AS decimal(10,3)) and dt BETWEEN CAST( '1947-12-12' AS DATE) AND CAST( '1968-12-31' AS DATE)) or (ctinyint BETWEEN UDFToByte(11) AND UDFToByte(1000) and csmallint BETWEEN UDFToShort(15601) AND UDFToShort(1) and cint BETWEEN UDFToInteger(788564623) AND UDFToInteger(23) and cfloat BETWEEN UDFToFloat(1) AND UDFToFloat(18) and cdouble BETWEEN UDFToDouble(0) AND UDFToDouble(15601)) or (cstring1 BETWEEN CAST( 'xTlDv24JYv4s' AS STRING) AND CAST( 'str1' AS STRING) and ctimestamp1 BETWEEN CAST( '1969-12-31 16:00:02.351' AS TIMESTAMP) AND CAST( '2020-12-31 16:00:01' AS TIMESTAMP)) or cbigint BETWEEN UDFToLong(0) AND UDFToLong(133)) (type: boolean)
+                    predicate: ((c BETWEEN CAST( 'ch1' AS CHAR(5)) AND CAST( 'ch2' AS CHAR(5)) and v BETWEEN CAST( 'var1' AS varchar(10)) AND CAST( 'var2' AS varchar(10)) and d BETWEEN CAST( 1000.34 AS decimal(10,3)) AND CAST( 2000 AS decimal(10,3)) and dt BETWEEN CAST( '1947-12-12' AS DATE) AND CAST( '1968-12-31' AS DATE)) or (ctinyint BETWEEN UDFToByte(11) AND UDFToByte(127) and csmallint BETWEEN UDFToShort(15601) AND UDFToShort(1) and cint BETWEEN UDFToInteger(788564623) AND UDFToInteger(23) and cfloat BETWEEN UDFToFloat(1) AND UDFToFloat(18) and cdouble BETWEEN UDFToDouble(0) AND UDFToDouble(15601)) or (cstring1 BETWEEN CAST( 'xTlDv24JYv4s' AS STRING) AND CAST( 'str1' AS STRING) and ctimestamp1 BETWEEN CAST( '1969-12-31 16:00:02.351' AS TIMESTAMP) AND CAST( '2020-12-31 16:00:01' AS TIMESTAMP)) or cbigint BETWEEN UDFToLong(0) AND UDFToLong(133)) (type: boolean)
                     Statistics: Num rows: 2266 Data size: 1061232 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Statistics: Num rows: 2266 Data size: 1061232 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2447,11 +2447,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: execute pbetween using 'ch1' ,'ch2' ,'var1' ,'var2',1000.34, 2000.0, '1947-12-12', '1968-12-31', 11, 1000, 15601, 1, 788564623, 23,1.0, 18.00, 0, 15601.0, 'xTlDv24JYv4s', 'str1', '1969-12-31 16:00:02.351','2020-12-31 16:00:01', 0, 133
+PREHOOK: query: execute pbetween using 'ch1' ,'ch2' ,'var1' ,'var2',1000.34, 2000.0, '1947-12-12', '1968-12-31', 11, 127, 15601, 1, 788564623, 23,1.0, 18.00, 0, 15601.0, 'xTlDv24JYv4s', 'str1', '1969-12-31 16:00:02.351','2020-12-31 16:00:01', 0, 133
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@alltypes
 #### A masked pattern was here ####
-POSTHOOK: query: execute pbetween using 'ch1' ,'ch2' ,'var1' ,'var2',1000.34, 2000.0, '1947-12-12', '1968-12-31', 11, 1000, 15601, 1, 788564623, 23,1.0, 18.00, 0, 15601.0, 'xTlDv24JYv4s', 'str1', '1969-12-31 16:00:02.351','2020-12-31 16:00:01', 0, 133
+POSTHOOK: query: execute pbetween using 'ch1' ,'ch2' ,'var1' ,'var2',1000.34, 2000.0, '1947-12-12', '1968-12-31', 11, 127, 15601, 1, 788564623, 23,1.0, 18.00, 0, 15601.0, 'xTlDv24JYv4s', 'str1', '1969-12-31 16:00:02.351','2020-12-31 16:00:01', 0, 133
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@alltypes
 #### A masked pattern was here ####

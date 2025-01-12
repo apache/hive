@@ -1,0 +1,33 @@
+PREHOOK: query: drop table if exists json_serde4_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists json_serde4_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table json_serde4_1 (tiny_value TINYINT, small_value SMALLINT, int_value INT, big_value BIGINT)
+  row format serde 'org.apache.hive.hcatalog.data.JsonSerDe'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@json_serde4_1
+POSTHOOK: query: create table json_serde4_1 (tiny_value TINYINT, small_value SMALLINT, int_value INT, big_value BIGINT)
+  row format serde 'org.apache.hive.hcatalog.data.JsonSerDe'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@json_serde4_1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/sampleJson.json' INTO TABLE json_serde4_1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@json_serde4_1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/sampleJson.json' INTO TABLE json_serde4_1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@json_serde4_1
+PREHOOK: query: select * from json_serde4_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@json_serde4_1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from json_serde4_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@json_serde4_1
+#### A masked pattern was here ####
+Failed with exception java.io.IOException:org.apache.hadoop.hive.serde2.SerDeException: org.apache.hadoop.hive.serde2.SerDeException: java.lang.IllegalArgumentException: Failed to parse integral value for category BYTE: 128

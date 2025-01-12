@@ -385,21 +385,19 @@ public class HiveJsonReader {
       final ObjectInspector oi) throws SerDeException {
     final PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
     final PrimitiveTypeInfo typeInfo = poi.getTypeInfo();
+    final PrimitiveCategory category = typeInfo.getPrimitiveCategory();
 
     if (typeInfo.getPrimitiveCategory() != PrimitiveCategory.STRING) {
       Preconditions.checkArgument(leafNode.getNodeType() != JsonNodeType.OBJECT);
       Preconditions.checkArgument(leafNode.getNodeType() != JsonNodeType.ARRAY);
     }
 
-    switch (typeInfo.getPrimitiveCategory()) {
+    switch (category) {
     case INT:
-      return Integer.valueOf(leafNode.asInt());
     case BYTE:
-      return Byte.valueOf((byte) leafNode.asInt());
     case SHORT:
-      return Short.valueOf((short) leafNode.asInt());
     case LONG:
-      return Long.valueOf(leafNode.asLong());
+      return parseIntegralValue(leafNode, category);
     case BOOLEAN:
       if ("false".equalsIgnoreCase(leafNode.asText())) {
         return Boolean.FALSE;
@@ -446,6 +444,25 @@ public class HiveJsonReader {
     default:
       throw new SerDeException(
           "Could not convert from string to type: " + typeInfo.getTypeName());
+    }
+  }
+
+  private Object parseIntegralValue(JsonNode leafNode, PrimitiveCategory category) {
+    try {
+      switch (category) {
+        case INT:
+          return Integer.valueOf(leafNode.asText());
+        case BYTE:
+          return Byte.valueOf(leafNode.asText());
+        case SHORT:
+          return Short.valueOf(leafNode.asText());
+        case LONG:
+          return Long.valueOf(leafNode.asText());
+        default:
+          throw new IllegalArgumentException("Unexpected category: " + category);
+      }
+    } catch (NumberFormatException e) {
+      throw new IllegalArgumentException("Failed to parse integral value for category " + category + ": " + leafNode.asText(), e);
     }
   }
 

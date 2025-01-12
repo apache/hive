@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFMethodResolver;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToLong;
@@ -142,10 +143,14 @@ public class UDFToInteger extends UDF {
    *          The long value to convert
    * @return IntWritable
    */
-  public IntWritable evaluate(LongWritable i) {
+  public IntWritable evaluate(LongWritable i) throws UDFArgumentException {
     if (i == null) {
       return null;
     } else {
+      long value = i.get();
+      if (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE) {
+        throw new UDFArgumentException("Value out of range for Integer: " + value);
+      }
       intWritable.set((int) i.get());
       return intWritable;
     }

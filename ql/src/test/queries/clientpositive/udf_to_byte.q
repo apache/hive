@@ -7,7 +7,7 @@ SELECT CAST(NULL AS TINYINT) FROM src tablesample (1 rows);
 SELECT CAST(TRUE AS TINYINT) FROM src tablesample (1 rows);
 
 SELECT CAST(CAST(-18 AS SMALLINT) AS TINYINT) FROM src tablesample (1 rows);
-SELECT CAST(-129 AS TINYINT) FROM src tablesample (1 rows);
+SELECT CAST(-127 AS TINYINT) FROM src tablesample (1 rows);
 SELECT CAST(CAST(-1025 AS BIGINT) AS TINYINT) FROM src tablesample (1 rows);
 
 SELECT CAST(CAST(-3.14 AS DOUBLE) AS TINYINT) FROM src tablesample (1 rows);

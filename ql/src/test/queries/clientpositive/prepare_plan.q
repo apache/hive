@@ -197,8 +197,8 @@ prepare pbetween from
 select count(*) from alltypes where (c BETWEEN ? AND ?) AND (v BETWEEN ? AND ?) AND (d BETWEEN ? AND ?) AND (dt BETWEEN ? AND ?) OR (ctinyint BETWEEN ? AND ?) AND (csmallint BETWEEN ? AND ?) AND (cint BETWEEN ? AND ?)
     AND (cfloat BETWEEN ? AND ?) AND (cdouble BETWEEN ? AND ?) OR (cstring1 BETWEEN ? AND ?)  AND (ctimestamp1 BETWEEN ? AND ?) OR (cbigint BETWEEN ? AND ?);
 
-explain execute pbetween using 'ch1' ,'ch2' ,'var1' ,'var2',1000.34, 2000.0, '1947-12-12', '1968-12-31', 11, 1000, 15601, 1, 788564623, 23,1.0, 18.00, 0, 15601.0, 'xTlDv24JYv4s', 'str1', '1969-12-31 16:00:02.351','2020-12-31 16:00:01', 0, 133;
-execute pbetween using 'ch1' ,'ch2' ,'var1' ,'var2',1000.34, 2000.0, '1947-12-12', '1968-12-31', 11, 1000, 15601, 1, 788564623, 23,1.0, 18.00, 0, 15601.0, 'xTlDv24JYv4s', 'str1', '1969-12-31 16:00:02.351','2020-12-31 16:00:01', 0, 133;
+explain execute pbetween using 'ch1' ,'ch2' ,'var1' ,'var2',1000.34, 2000.0, '1947-12-12', '1968-12-31', 11, 127, 15601, 1, 788564623, 23,1.0, 18.00, 0, 15601.0, 'xTlDv24JYv4s', 'str1', '1969-12-31 16:00:02.351','2020-12-31 16:00:01', 0, 133;
+execute pbetween using 'ch1' ,'ch2' ,'var1' ,'var2',1000.34, 2000.0, '1947-12-12', '1968-12-31', 11, 127, 15601, 1, 788564623, 23,1.0, 18.00, 0, 15601.0, 'xTlDv24JYv4s', 'str1', '1969-12-31 16:00:02.351','2020-12-31 16:00:01', 0, 133;
 
 DROP TABLE testParam;
 DROP TABLE alltypes;
