@@ -25,15 +25,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 -18
-PREHOOK: query: SELECT CAST(-129 AS TINYINT) FROM src tablesample (1 rows)
+PREHOOK: query: SELECT CAST(-127 AS TINYINT) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT CAST(-129 AS TINYINT) FROM src tablesample (1 rows)
+POSTHOOK: query: SELECT CAST(-127 AS TINYINT) FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-127
+-127
 PREHOOK: query: SELECT CAST(CAST(-1025 AS BIGINT) AS TINYINT) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
