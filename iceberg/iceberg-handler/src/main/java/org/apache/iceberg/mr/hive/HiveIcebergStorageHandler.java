@@ -585,8 +585,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public boolean canProvideColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    long snapshotId = IcebergTableUtil.getTableSnapshot(hmsTable, table).snapshotId();
-    return canSetColStatistics(hmsTable) && canProvideColStats(table, snapshotId);
+    Snapshot snapshot = IcebergTableUtil.getTableSnapshot(hmsTable, table);
+    if (snapshot == null) {
+      return false;
+    }
+    return canSetColStatistics(hmsTable) && canProvideColStats(table, snapshot.snapshotId());
   }
 
   private boolean canProvideColStats(Table table, long snapshotId) {
@@ -596,9 +599,14 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public List<ColumnStatisticsObj> getColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    Snapshot snapshot = IcebergTableUtil.getTableSnapshot(hmsTable, table);
+    ColumnStatistics emptyStats = new ColumnStatistics();
+    if (snapshot == null) {
+      return emptyStats.getStatsObj();
+    }
     long snapshotId = IcebergTableUtil.getTableSnapshot(hmsTable, table).snapshotId();
     return IcebergTableUtil.getColStatsPath(table, snapshotId).map(statsPath -> readColStats(table, statsPath))
-      .orElse(new ColumnStatistics()).getStatsObj();
+      .orElse(emptyStats).getStatsObj();
   }
 
   private ColumnStatistics readColStats(Table table, Path statsPath) {
