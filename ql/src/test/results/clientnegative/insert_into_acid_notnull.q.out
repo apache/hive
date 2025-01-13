@@ -10,4 +10,29 @@ POSTHOOK: query: create table acid_uami(i int,
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid_uami
-FAILED: DataConstraintViolationError org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: Either CHECK or NOT NULL constraint violated!
+PREHOOK: query: insert into table acid_uami select 1, null, null
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@acid_uami
+Status: Failed
+Vertex failed, vertexName=Map 1, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : java.lang.RuntimeException: org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: Either CHECK or NOT NULL constraint violated!
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: Either CHECK or NOT NULL constraint violated!
+#### A masked pattern was here ####
+, errorMessage=Cannot recover from this error:java.lang.RuntimeException: org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: Either CHECK or NOT NULL constraint violated!
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: Either CHECK or NOT NULL constraint violated!
+#### A masked pattern was here ####
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Map 1] killed/failed due to:OWN_TASK_FAILURE]
+[Masked Vertex killed due to OTHER_VERTEX_FAILURE]
+[Masked Vertex killed due to OTHER_VERTEX_FAILURE]
+DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:2
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex failed, vertexName=Map 1, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : java.lang.RuntimeException: org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: Either CHECK or NOT NULL constraint violated!
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: Either CHECK or NOT NULL constraint violated!
+#### A masked pattern was here ####
+, errorMessage=Cannot recover from this error:java.lang.RuntimeException: org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: Either CHECK or NOT NULL constraint violated!
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: Either CHECK or NOT NULL constraint violated!
+#### A masked pattern was here ####
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Map 1] killed/failed due to:OWN_TASK_FAILURE][Masked Vertex killed due to OTHER_VERTEX_FAILURE][Masked Vertex killed due to OTHER_VERTEX_FAILURE]DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:2

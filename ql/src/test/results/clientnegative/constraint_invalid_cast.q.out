@@ -1,15 +1,19 @@
-PREHOOK: query: create table nullConstraintCheck(i int NOT NULL enforced, j int)
+PREHOOK: query: create table t1(
+  date_col date not null
+)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@nullConstraintCheck
-POSTHOOK: query: create table nullConstraintCheck(i int NOT NULL enforced, j int)
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1(
+  date_col date not null
+)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@nullConstraintCheck
-PREHOOK: query: insert into nullConstraintCheck values(null,2)
+POSTHOOK: Output: default@t1
+PREHOOK: query: insert into t1 values ('2024-99-99')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@nullconstraintcheck
+PREHOOK: Output: default@t1
 Status: Failed
 Vertex failed, vertexName=Map 1, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : java.lang.RuntimeException: org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: Either CHECK or NOT NULL constraint violated!
 #### A masked pattern was here ####
