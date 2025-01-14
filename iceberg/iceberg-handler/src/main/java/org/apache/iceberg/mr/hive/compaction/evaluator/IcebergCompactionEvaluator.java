@@ -41,13 +41,16 @@ import org.apache.iceberg.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CompactionEvaluator {
+public class IcebergCompactionEvaluator {
 
-  private CompactionEvaluator() {
+  private static long lastOptimizeTime = 1;
+  private static long currentOptimizeTime = 2;
+
+  private IcebergCompactionEvaluator() {
 
   }
 
-  private static final Logger LOG = LoggerFactory.getLogger(CompactionEvaluator.class);
+  private static final Logger LOG = LoggerFactory.getLogger(IcebergCompactionEvaluator.class);
 
   public static boolean isEligibleForCompaction(Table icebergTable, String partitionPath,
       CompactionType compactionType, HiveConf conf) {
@@ -58,7 +61,7 @@ public class CompactionEvaluator {
       return false;
     }
 
-    CommonPartitionEvaluator partitionEvaluator = constructCommonPartitionEvaluator(icebergTable, partitionPath, conf);
+    CommonPartitionEvaluator partitionEvaluator = createCommonPartitionEvaluator(icebergTable, partitionPath, conf);
 
     switch (compactionType) {
       case MINOR:
@@ -70,7 +73,7 @@ public class CompactionEvaluator {
     }
   }
 
-  private static TableRuntime constructTableRuntime(Table icebergTable, HiveConf conf) {
+  private static TableRuntime createTableRuntime(Table icebergTable, HiveConf conf) {
     long fileSizeInBytesThreshold = HiveConf.getSizeVar(conf,
         HiveConf.ConfVars.HIVE_ICEBERG_COMPACTION_FILE_SIZE_THRESHOLD);
 
@@ -85,16 +88,16 @@ public class CompactionEvaluator {
     TableRuntimeMeta tableRuntimeMeta = new TableRuntimeMeta();
     tableRuntimeMeta.setTableName(icebergTable.name());
     tableRuntimeMeta.setFormat(TableFormat.ICEBERG);
-    tableRuntimeMeta.setLastFullOptimizingTime(1);
-    tableRuntimeMeta.setLastMinorOptimizingTime(1);
+    tableRuntimeMeta.setLastFullOptimizingTime(lastOptimizeTime);
+    tableRuntimeMeta.setLastMinorOptimizingTime(lastOptimizeTime);
     tableRuntimeMeta.setTableConfig(tableConfig);
 
     return new HiveTableRuntime(tableRuntimeMeta);
   }
 
-  private static CommonPartitionEvaluator constructCommonPartitionEvaluator(Table table, String partitionPath,
+  private static CommonPartitionEvaluator createCommonPartitionEvaluator(Table table, String partitionPath,
       HiveConf conf) {
-    TableRuntime tableRuntime = constructTableRuntime(table, conf);
+    TableRuntime tableRuntime = createTableRuntime(table, conf);
 
     TableFileScanHelper tableFileScanHelper = new IcebergTableFileScanHelper(table,
         table.currentSnapshot().snapshotId());
@@ -103,10 +106,14 @@ public class CompactionEvaluator {
              tableFileScanHelper.scan()) {
       for (TableFileScanHelper.FileScanResult fileScanResult : results) {
         DataFile file = fileScanResult.file();
-        if (IcebergCompactionUtil.doesFileMatchPartition(table, partitionPath, file)) {
+        if (IcebergCompactionUtil.isHandleFileInCompaction(table, partitionPath, file)) {
           PartitionSpec partitionSpec = table.specs().get(file.specId());
           Pair<Integer, StructLike> partition = Pair.of(partitionSpec.specId(), fileScanResult.file().partition());
-          evaluator = evaluator == null ? new CommonPartitionEvaluator(tableRuntime, partition, 2) : evaluator;
+
+          if (evaluator == null) {
+            evaluator = new CommonPartitionEvaluator(tableRuntime, partition, currentOptimizeTime);
+          }
+
           evaluator.addFile(fileScanResult.file(), fileScanResult.deleteFiles());
         }
       }

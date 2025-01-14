@@ -38,15 +38,17 @@ public class IcebergCompactionUtil {
   }
 
   /**
-   * Returns true if:
-   *  1. When the table is unpartitioned.
-   *  2. When partitionPath is not provided and the file belongs to the non-latest partition spec.
-   *  3. When partitionPath is provided and the file belongs to the same partition.
+   * This method implements a common filter that is used in several places in Iceberg compaction code.
+   * Its aim is to determine if the provided file needs to be handled when compacting a partition whose path is equal to
+   * the provided partitionPath. Returns true when one of the following conditions is true, otherwise returns false:
+   *  1. table is unpartitioned
+   *  2. partitionPath is null and the file belongs to the non-latest partition spec
+   *  3. partitionPath is not null and the file belongs to the partition whose path is the partitionPath
    * @param table the iceberg table
    * @param partitionPath partition path
    * @param file Data or Delete file
    */
-  public static boolean doesFileMatchPartition(Table table, String partitionPath, ContentFile<?> file) {
+  public static boolean isHandleFileInCompaction(Table table, String partitionPath, ContentFile<?> file) {
     return !table.spec().isPartitioned() ||
         partitionPath == null && file.specId() != table.spec().specId() ||
         partitionPath != null &&
@@ -67,7 +69,7 @@ public class IcebergCompactionUtil {
     CloseableIterable<FileScanTask> filteredFileScanTasks =
         CloseableIterable.filter(fileScanTasks, t -> {
           DataFile file = t.asFileScanTask().file();
-          return doesFileMatchPartition(table, partitionPath, file);
+          return isHandleFileInCompaction(table, partitionPath, file);
         });
     return Lists.newArrayList(CloseableIterable.transform(filteredFileScanTasks, t -> t.file()));
   }
@@ -87,7 +89,7 @@ public class IcebergCompactionUtil {
     CloseableIterable<ScanTask> filteredDeletesScanTasks =
         CloseableIterable.filter(deletesScanTasks, t -> {
           DeleteFile file = ((PositionDeletesScanTask) t).file();
-          return doesFileMatchPartition(table, partitionPath, file);
+          return isHandleFileInCompaction(table, partitionPath, file);
         });
     return Lists.newArrayList(CloseableIterable.transform(filteredDeletesScanTasks,
         t -> ((PositionDeletesScanTask) t).file()));

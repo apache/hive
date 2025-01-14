@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.ql.txn.compactor.CompactorPipeline;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
 import org.apache.hadoop.hive.ql.txn.compactor.service.CompactionService;
 import org.apache.iceberg.mr.hive.IcebergTableUtil;
-import org.apache.iceberg.mr.hive.compaction.evaluator.CompactionEvaluator;
+import org.apache.iceberg.mr.hive.compaction.evaluator.IcebergCompactionEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +53,7 @@ public class IcebergCompactionService extends CompactionService {
     CompactorUtil.checkInterrupt(CLASS_NAME);
 
     org.apache.iceberg.Table icebergTable = IcebergTableUtil.getTable(conf, table);
-    if (!CompactionEvaluator.isEligibleForCompaction(icebergTable, ci.partName, ci.type, conf)) {
+    if (!IcebergCompactionEvaluator.isEligibleForCompaction(icebergTable, ci.partName, ci.type, conf)) {
       LOG.info("Table={}{} doesn't meet requirements for compaction", table.getTableName(),
           ci.partName == null ? "" : ", partition=" + ci.partName);
       msc.markRefused(CompactionInfo.compactionInfoToStruct(ci));
