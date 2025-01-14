@@ -36,7 +36,7 @@ public interface AlterHandler extends Configurable {
 
   /**
    * @deprecated As of release 2.2.0. Replaced by {@link #alterTable(RawStore, Warehouse, String,
-   * String, String, Table, EnvironmentContext, IHMSHandler, String)}
+   * String, String, Table, EnvironmentContext, IHMSHandler, String, boolean)}
    *
    * handles alter table, the changes could be cascaded to partitions if applicable
    *
@@ -53,6 +53,8 @@ public interface AlterHandler extends Configurable {
    *          <i>newTable.tableName</i> if alter op is not a rename.
    * @param newTable
    *          new table object
+   * @param envContext
+   *          environment context variable
    * @throws InvalidOperationException
    *           thrown if the newTable object is invalid
    * @throws MetaException
@@ -84,6 +86,7 @@ public interface AlterHandler extends Configurable {
    *          HMSHandle object (required to log event notification)
    * @param writeIdList write id list for the table
    * @param isTruncateOp boolean flag to specify if this is truncate operation
+   * @param envContext environment context variable
    * @throws InvalidOperationException
    *           thrown if the newTable object is invalid
    * @throws MetaException
@@ -96,13 +99,14 @@ public interface AlterHandler extends Configurable {
 
   /**
    * @deprecated As of release 2.2.0.  Replaced by {@link #alterPartitions(RawStore, Warehouse, String,
-   * String, String, List, EnvironmentContext, String, long, IHMSHandler)}
+   * String, String, List, EnvironmentContext, String, long, IHMSHandler, boolean)}
    *
    * handles alter partition
    *
    * @param msdb
    *          object to get metadata
    * @param wh
+   *          physical warehouse class
    * @param dbname
    *          database of the partition being altered
    * @param name
@@ -112,10 +116,11 @@ public interface AlterHandler extends Configurable {
    * @param new_part
    *          new partition object
    * @return the altered partition
-   * @throws InvalidOperationException
-   * @throws InvalidObjectException
-   * @throws AlreadyExistsException
-   * @throws MetaException
+   * @throws InvalidOperationException thrown if the operation is invalid
+   * @throws InvalidObjectException thrown if the new_part object is invalid
+   * @throws AlreadyExistsException thrown if the new_part object already exists
+   * @throws MetaException thrown if there is any other error
+   * @throws NoSuchObjectException thrown if there is no such object
    */
   @Deprecated
   Partition alterPartition(final RawStore msdb, Warehouse wh, final String dbname,
@@ -138,13 +143,16 @@ public interface AlterHandler extends Configurable {
    *          original values of the partition being altered
    * @param new_part
    *          new partition object
+   * @param environmentContext environment context variable
    * @param handler
    *          HMSHandle object (required to log event notification)
+   * @param validWriteIds valid write id list for the table
    * @return the altered partition
-   * @throws InvalidOperationException
-   * @throws InvalidObjectException
-   * @throws AlreadyExistsException
-   * @throws MetaException
+   * @throws InvalidOperationException thrown if the operation is invalid
+   * @throws InvalidObjectException thrown if the new_part object is invalid
+   * @throws AlreadyExistsException thrown if the new_part object already exists
+   * @throws MetaException thrown if there is any other error
+   * @throws NoSuchObjectException thrown if there is no such object
    */
   Partition alterPartition(final RawStore msdb, Warehouse wh, final String catName,
                            final String dbname, final String name, final List<String> part_vals,
@@ -154,24 +162,25 @@ public interface AlterHandler extends Configurable {
 
   /**
    * @deprecated As of release 3.0.0. Replaced by {@link #alterPartitions(RawStore, Warehouse, String,
-   * String, String, List, EnvironmentContext, String, long, IHMSHandler)}
+   * String, String, List, EnvironmentContext, String, long, IHMSHandler, boolean)}
    *
    * handles alter partitions
    *
    * @param msdb
    *          object to get metadata
-   * @param wh
+   * @param wh physical warehouse class
    * @param dbname
    *          database of the partition being altered
    * @param name
    *          table of the partition being altered
    * @param new_parts
    *          new partition list
+   * @param environmentContext environment context variable
    * @return the altered partition list
-   * @throws InvalidOperationException
-   * @throws InvalidObjectException
-   * @throws AlreadyExistsException
-   * @throws MetaException
+   * @throws InvalidOperationException thrown if the operation is invalid
+   * @throws InvalidObjectException thrown if the new_parts object is invalid
+   * @throws AlreadyExistsException thrown if the new_part object already exists
+   * @throws MetaException thrown if there is any other error
    */
   @Deprecated
   List<Partition> alterPartitions(final RawStore msdb, Warehouse wh,
@@ -181,23 +190,22 @@ public interface AlterHandler extends Configurable {
 
   /**
    * handles alter partitions
-   *
-   * @param msdb
-   *          object to get metadata
-   * @param wh
-   * @param dbname
-   *          database of the partition being altered
-   * @param name
-   *          table of the partition being altered
-   * @param new_parts
-   *          new partition list
-   * @param handler
-   *          HMSHandle object (required to log event notification)
+   * @param msdb object to get metadata
+   * @param wh physical warehouse class
+   * @param catName catalog name of the partition being altered
+   * @param dbname database of the partition being altered
+   * @param name table of the partition being altered
+   * @param new_parts new partition list
+   * @param environmentContext environment context variable
+   * @param writeIdList write id list for the table
+   * @param writeId writeId for the table
+   * @param handler HMSHandle object (required to log event notification)
+   * @param isTruncateOp whether the operation is truncate
    * @return the altered partition list
-   * @throws InvalidOperationException
-   * @throws InvalidObjectException
-   * @throws AlreadyExistsException
-   * @throws MetaException
+   * @throws InvalidOperationException thrown if the operation is invalid
+   * @throws InvalidObjectException thrown if the new_parts object is invalid
+   * @throws AlreadyExistsException thrown if the new_part object already exists
+   * @throws MetaException thrown if there is any other error
    */
   List<Partition> alterPartitions(final RawStore msdb, Warehouse wh, final String catName,
     final String dbname, final String name, final List<Partition> new_parts,

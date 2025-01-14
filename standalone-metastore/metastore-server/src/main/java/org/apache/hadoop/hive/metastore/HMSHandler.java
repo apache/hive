@@ -3365,6 +3365,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private void alterPartitionsForTruncate(RawStore ms, String catName, String dbName, String tableName,
       Table table, List<Partition> partitions, String validWriteIds, long writeId) throws Exception {
     EnvironmentContext environmentContext = new EnvironmentContext();
+    if (partitions.isEmpty()) {
+      return;
+    }
     for (Partition partition: partitions) {
       updateStatsForTruncate(partition.getParameters(), environmentContext);
       if (writeId > 0) {
@@ -3378,7 +3381,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private void alterTableStatsForTruncate(RawStore ms, String catName, String dbName,
       String tableName, Table table, List<Partition> partitionsList,
       String validWriteIds, long writeId) throws Exception {
-    if (!partitionsList.isEmpty()) {
+    if (0 != table.getPartitionKeysSize()) {
       alterPartitionsForTruncate(ms, catName, dbName, tableName, table, partitionsList,
           validWriteIds, writeId);
     } else {
@@ -3399,12 +3402,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       final String dbName, final String tableName, final Table table,
       List<Partition> partitionsList)  throws Exception {
     List<Path> locations = new ArrayList<>();
-    if (partitionsList.isEmpty()) {
-      locations.add(new Path(table.getSd().getLocation()));
-    } else {
+    if (0 != table.getPartitionKeysSize()) {
       for (Partition partition : partitionsList) {
         locations.add(new Path(partition.getSd().getLocation()));
       }
+    } else {
+      locations.add(new Path(table.getSd().getLocation()));
     }
     return locations;
   }
