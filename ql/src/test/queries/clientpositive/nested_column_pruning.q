@@ -4,6 +4,7 @@ set hive.test.vectorized.execution.enabled.override=none;
 
 set hive.fetch.task.conversion = none;
 set hive.strict.checks.cartesian.product=false;
+set hive.cbo.fallback.strategy=NEVER;
 
 -- First, create source tables
 DROP TABLE IF EXISTS dummy_n5;
