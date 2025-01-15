@@ -85,10 +85,10 @@ public class FileUtils {
     boolean result;
     try {
       if (!fs.exists(f)) {
-        LOG.info("The path to moveToTrash does not exist: " + f);
+        LOG.warn("The path to moveToTrash does not exist: " + f);
         return true;
       }
-      if(purge) {
+      if (purge) {
         LOG.debug("purge is set to true. Not moving to Trash " + f);
       } else {
         result = Trash.moveToAppropriateTrash(fs, f, conf);
