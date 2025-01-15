@@ -48,7 +48,7 @@ public class IcebergCompactionUtil {
    * @param partitionPath partition path
    * @param file Data or Delete file
    */
-  public static boolean isHandleFileInCompaction(Table table, String partitionPath, ContentFile<?> file) {
+  public static boolean shouldIncludeForCompaction(Table table, String partitionPath, ContentFile<?> file) {
     return !table.spec().isPartitioned() ||
         partitionPath == null && file.specId() != table.spec().specId() ||
         partitionPath != null &&
@@ -69,7 +69,7 @@ public class IcebergCompactionUtil {
     CloseableIterable<FileScanTask> filteredFileScanTasks =
         CloseableIterable.filter(fileScanTasks, t -> {
           DataFile file = t.asFileScanTask().file();
-          return isHandleFileInCompaction(table, partitionPath, file);
+          return shouldIncludeForCompaction(table, partitionPath, file);
         });
     return Lists.newArrayList(CloseableIterable.transform(filteredFileScanTasks, t -> t.file()));
   }
@@ -89,7 +89,7 @@ public class IcebergCompactionUtil {
     CloseableIterable<ScanTask> filteredDeletesScanTasks =
         CloseableIterable.filter(deletesScanTasks, t -> {
           DeleteFile file = ((PositionDeletesScanTask) t).file();
-          return isHandleFileInCompaction(table, partitionPath, file);
+          return shouldIncludeForCompaction(table, partitionPath, file);
         });
     return Lists.newArrayList(CloseableIterable.transform(filteredDeletesScanTasks,
         t -> ((PositionDeletesScanTask) t).file()));

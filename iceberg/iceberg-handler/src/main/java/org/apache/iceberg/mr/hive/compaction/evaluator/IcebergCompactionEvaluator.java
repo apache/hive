@@ -43,8 +43,8 @@ import org.slf4j.LoggerFactory;
 
 public class IcebergCompactionEvaluator {
 
-  private static long lastOptimizeTime = 1;
-  private static long currentOptimizeTime = 2;
+  private static final long lastOptimizeTime = 0;
+  private static final int triggerInterval = 0;
 
   private IcebergCompactionEvaluator() {
 
@@ -63,6 +63,10 @@ public class IcebergCompactionEvaluator {
 
     CommonPartitionEvaluator partitionEvaluator = createCommonPartitionEvaluator(icebergTable, partitionPath, conf);
 
+    if (partitionEvaluator == null) {
+      return false;
+    }
+
     switch (compactionType) {
       case MINOR:
         return partitionEvaluator.isMinorNecessary();
@@ -79,8 +83,8 @@ public class IcebergCompactionEvaluator {
 
     OptimizingConfig optimizingConfig = OptimizingConfig.parse(Collections.emptyMap());
     optimizingConfig.setTargetSize(fileSizeInBytesThreshold);
-    optimizingConfig.setFullTriggerInterval(0);
-    optimizingConfig.setMinorLeastInterval(0);
+    optimizingConfig.setFullTriggerInterval(triggerInterval);
+    optimizingConfig.setMinorLeastInterval(triggerInterval);
 
     TableConfiguration tableConfig = new TableConfiguration();
     tableConfig.setOptimizingConfig(optimizingConfig);
@@ -106,12 +110,12 @@ public class IcebergCompactionEvaluator {
              tableFileScanHelper.scan()) {
       for (TableFileScanHelper.FileScanResult fileScanResult : results) {
         DataFile file = fileScanResult.file();
-        if (IcebergCompactionUtil.isHandleFileInCompaction(table, partitionPath, file)) {
+        if (IcebergCompactionUtil.shouldIncludeForCompaction(table, partitionPath, file)) {
           PartitionSpec partitionSpec = table.specs().get(file.specId());
           Pair<Integer, StructLike> partition = Pair.of(partitionSpec.specId(), fileScanResult.file().partition());
 
           if (evaluator == null) {
-            evaluator = new CommonPartitionEvaluator(tableRuntime, partition, currentOptimizeTime);
+            evaluator = new CommonPartitionEvaluator(tableRuntime, partition, System.currentTimeMillis());
           }
 
           evaluator.addFile(fileScanResult.file(), fileScanResult.deleteFiles());
