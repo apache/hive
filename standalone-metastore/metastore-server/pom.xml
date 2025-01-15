@@ -114,9 +114,11 @@
       <groupId>io.dropwizard.metrics</groupId>
       <artifactId>metrics-json</artifactId>
     </dependency>
+    <!--Pinning this version specifically to see if it resolves missing JmxReporter Class !-->
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
       <artifactId>metrics-jmx</artifactId>
+      <version>4.2.0</version>
     </dependency>
     <dependency>
       <groupId>javolution</groupId>
