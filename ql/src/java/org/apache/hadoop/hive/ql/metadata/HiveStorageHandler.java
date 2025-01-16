@@ -253,6 +253,11 @@ public interface HiveStorageHandler extends Configurable {
     return null;
   }
 
+  /**
+   * Compute basic statistics (numRows, numFiles, totalSize) for the given table/partition.
+   * @param partish a partish wrapper class
+   * @return map of basic statistics, can be null
+   */
   default Map<String, String> computeBasicStatistics(Partish partish) {
     return null;
   }

@@ -229,14 +229,13 @@ public class IcebergTableUtil {
    */
   public static PartitionSpec spec(Configuration configuration, Schema schema) {
     List<TransformSpec> partitionTransformSpecList = SessionStateUtil
-            .getResource(configuration, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC)
+        .getResource(configuration, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC)
         .map(o -> (List<TransformSpec>) o).orElse(null);
 
     if (partitionTransformSpecList == null) {
-      LOG.debug("Iceberg partition transform spec is not found in QueryState.");
+      LOG.warn("Iceberg partition transform spec is not found in QueryState.");
       return null;
     }
-
     PartitionSpec.Builder builder = PartitionSpec.builderFor(schema);
     partitionTransformSpecList.forEach(spec -> {
       switch (spec.getTransformType()) {
@@ -270,7 +269,7 @@ public class IcebergTableUtil {
     // get the new partition transform spec
     PartitionSpec newPartitionSpec = spec(configuration, table.schema());
     if (newPartitionSpec == null) {
-      LOG.debug("Iceberg Partition spec is not updated due to empty partition spec definition.");
+      LOG.warn("Iceberg partition spec is not updated due to empty partition spec definition.");
       return;
     }
 
@@ -282,6 +281,10 @@ public class IcebergTableUtil {
         .getResource(configuration, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC)
         .map(o -> (List<TransformSpec>) o).orElse(null);
 
+    if (partitionTransformSpecList == null) {
+      LOG.warn("Iceberg partition transform spec is not found in QueryState.");
+      return;
+    }
     partitionTransformSpecList.forEach(spec -> {
       switch (spec.getTransformType()) {
         case IDENTITY:
