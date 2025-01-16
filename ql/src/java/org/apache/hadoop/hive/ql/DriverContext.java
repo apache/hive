@@ -287,13 +287,15 @@ public class DriverContext {
    * 1. general semantic exception
    * 2. transaction manager validation (throwin exception)
    * What a user expects here is something like "QUERY", "DDL", "DML", so this magic will do its best to tell.
-   * any kind of "analyze" ==> STATS
-   * DML operations (INSERT, UPDATE, DELETE, MERGE) ==> DML
-   * MAPRED ==> QUERY, DML (depending on QueryProperties achieved in compile time)
-   * FETCH ==> QUERY: a simple fetch task is a QUERY
+   * any kind of "analyze": STATS
+   * DML operations (INSERT, UPDATE, DELETE, MERGE): DML
+   * MAPRED: QUERY, DML (depending on QueryProperties achieved in compile time)
+   * FETCH: QUERY: a simple fetch task is a QUERY
    * UNKNOWN: if we can't determine the type of the query:
    * e.g. when ParseException happens, we won't do further magic,
    * even if it's obvious by reading the sql statement that user wanted to run e.g. a select query
+   * @param sem the semantic analyzer which already analyzed the query
+   * @param tree the root ASTNode of the query
    */
   public void setQueryType(BaseSemanticAnalyzer sem, ASTNode tree) {
     List<Task<? extends Serializable>> rootTasks = sem.getAllRootTasks();

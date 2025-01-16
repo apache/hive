@@ -99,7 +99,7 @@ public class TezRuntimeContext {
   }
 
   public long getCounter(String groupName, String counterName) {
-    CounterGroup group = getCounters().getGroup(groupName);
+    CounterGroup group = counters == null ? null : counters.getGroup(groupName);
     if (group == null) {
       return 0;
     }

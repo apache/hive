@@ -53,6 +53,9 @@ public class FromDriverContextUpdater {
   }
 
   private void updateFromQueryInfo(QueryInfo queryInfo, QueryHistoryRecord record) {
+    if (queryInfo == null) {
+      return;
+    }
     // this state is the same as "state" displayed in the JSON returned by QueriesRESTfulAPIServlet
     record.setOperationId(queryInfo.getOperationId());
     record.setExecutionEngine(queryInfo.getExecutionEngine());
