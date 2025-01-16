@@ -43,8 +43,8 @@ import org.slf4j.LoggerFactory;
 
 public class IcebergCompactionEvaluator {
 
-  private static final long lastOptimizeTime = 0;
-  private static final int triggerInterval = 0;
+  private static final long LAST_OPTIMIZE_TIME = 0;
+  private static final int TRIGGER_INTERVAL = 0;
 
   private IcebergCompactionEvaluator() {
 
@@ -78,13 +78,13 @@ public class IcebergCompactionEvaluator {
   }
 
   private static TableRuntime createTableRuntime(Table icebergTable, HiveConf conf) {
-    long fileSizeInBytesThreshold = HiveConf.getSizeVar(conf,
-        HiveConf.ConfVars.HIVE_ICEBERG_COMPACTION_FILE_SIZE_THRESHOLD);
+    long targetFileSizeBytes = HiveConf.getSizeVar(conf,
+        HiveConf.ConfVars.HIVE_ICEBERG_COMPACTION_TARGET_FILE_SIZE);
 
     OptimizingConfig optimizingConfig = OptimizingConfig.parse(Collections.emptyMap());
-    optimizingConfig.setTargetSize(fileSizeInBytesThreshold);
-    optimizingConfig.setFullTriggerInterval(triggerInterval);
-    optimizingConfig.setMinorLeastInterval(triggerInterval);
+    optimizingConfig.setTargetSize(targetFileSizeBytes);
+    optimizingConfig.setFullTriggerInterval(TRIGGER_INTERVAL);
+    optimizingConfig.setMinorLeastInterval(TRIGGER_INTERVAL);
 
     TableConfiguration tableConfig = new TableConfiguration();
     tableConfig.setOptimizingConfig(optimizingConfig);
@@ -92,8 +92,8 @@ public class IcebergCompactionEvaluator {
     TableRuntimeMeta tableRuntimeMeta = new TableRuntimeMeta();
     tableRuntimeMeta.setTableName(icebergTable.name());
     tableRuntimeMeta.setFormat(TableFormat.ICEBERG);
-    tableRuntimeMeta.setLastFullOptimizingTime(lastOptimizeTime);
-    tableRuntimeMeta.setLastMinorOptimizingTime(lastOptimizeTime);
+    tableRuntimeMeta.setLastFullOptimizingTime(LAST_OPTIMIZE_TIME);
+    tableRuntimeMeta.setLastMinorOptimizingTime(LAST_OPTIMIZE_TIME);
     tableRuntimeMeta.setTableConfig(tableConfig);
 
     return new HiveTableRuntime(tableRuntimeMeta);
