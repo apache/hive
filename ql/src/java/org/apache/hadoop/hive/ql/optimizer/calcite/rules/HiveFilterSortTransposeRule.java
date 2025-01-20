@@ -29,19 +29,19 @@ import com.google.common.collect.ImmutableList;
 
 import static java.util.Collections.singletonList;
 
-public class HiveFilterSortTransposeRule<T extends RelNode> extends RelOptRule {
+public class HiveFilterSortTransposeRule extends RelOptRule {
 
-  public static final HiveFilterSortTransposeRule<HiveSortLimit> SORT_LIMIT_INSTANCE =
-      new HiveFilterSortTransposeRule<>(HiveSortLimit.class);
-  public static final HiveFilterSortTransposeRule<HiveSortExchange> SORT_EXCHANGE_INSTANCE =
-      new HiveFilterSortTransposeRule<>(HiveSortExchange.class);
+  public static final HiveFilterSortTransposeRule SORT_LIMIT_INSTANCE =
+      new HiveFilterSortTransposeRule(HiveSortLimit.class);
+  public static final HiveFilterSortTransposeRule SORT_EXCHANGE_INSTANCE =
+      new HiveFilterSortTransposeRule(HiveSortExchange.class);
 
   //~ Constructors -----------------------------------------------------------
 
   /**
    * Creates a HiveFilterSortTransposeRule.
    */
-  private HiveFilterSortTransposeRule(Class<T> clazz) {
+  private HiveFilterSortTransposeRule(Class<? extends RelNode> clazz) {
     super(
         operand(
             HiveFilter.class,
@@ -51,19 +51,15 @@ public class HiveFilterSortTransposeRule<T extends RelNode> extends RelOptRule {
   //~ Methods ----------------------------------------------------------------
 
   public boolean matches(RelOptRuleCall call) {
-    final T sort = call.rel(1);
+    final RelNode sort = call.rel(1);
 
     // If sort contains a limit operation, we bail out
-    if (HiveCalciteUtil.limitRelNode(sort)) {
-      return false;
-    }
-
-    return true;
+    return !HiveCalciteUtil.limitRelNode(sort);
   }
 
   public void onMatch(RelOptRuleCall call) {
     final HiveFilter filter = call.rel(0);
-    final T sort = call.rel(1);
+    final RelNode sort = call.rel(1);
 
     final RelNode newFilter = filter.copy(sort.getInput(0).getTraitSet(),
             ImmutableList.of(sort.getInput(0)));
