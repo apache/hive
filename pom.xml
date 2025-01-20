@@ -162,7 +162,7 @@
     <jersey.version>1.19.4</jersey.version>
     <jline.version>2.14.6</jline.version>
     <jms.version>2.0.2</jms.version>
-    <joda.version>2.9.9</joda.version>
+    <joda.version>2.13.0</joda.version>
     <jodd.version>6.0.0</jodd.version>
     <json.version>1.8</json.version>
     <junit.version>4.13.2</junit.version>
