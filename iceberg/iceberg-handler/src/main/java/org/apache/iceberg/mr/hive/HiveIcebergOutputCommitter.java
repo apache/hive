@@ -79,6 +79,7 @@ import org.apache.iceberg.io.OutputFile;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.compaction.IcebergCompactionService;
+import org.apache.iceberg.mr.hive.compaction.IcebergCompactionUtil;
 import org.apache.iceberg.mr.hive.writer.HiveIcebergWriter;
 import org.apache.iceberg.mr.hive.writer.WriterRegistry;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
@@ -598,8 +599,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    */
   private void commitCompaction(Table table, Long snapshotId, long startTime, FilesForCommit results,
       String partitionPath) {
-    List<DataFile> existingDataFiles = IcebergTableUtil.getDataFiles(table, partitionPath);
-    List<DeleteFile> existingDeleteFiles = IcebergTableUtil.getDeleteFiles(table, partitionPath);
+    List<DataFile> existingDataFiles = IcebergCompactionUtil.getDataFiles(table, partitionPath);
+    List<DeleteFile> existingDeleteFiles = IcebergCompactionUtil.getDeleteFiles(table, partitionPath);
 
     RewriteFiles rewriteFiles = table.newRewrite();
     existingDataFiles.forEach(rewriteFiles::deleteFile);

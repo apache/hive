@@ -2240,7 +2240,8 @@ public class HiveConf extends Configuration {
         "If this is set to true the URI for auth will have the default location masked with DEFAULT_TABLE_LOCATION"),
     HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY("hive.iceberg.allow.datafiles.in.table.location.only", false,
         "If this is set to true, then all the data files being read should be withing the table location"),
-
+    HIVE_ICEBERG_COMPACTION_TARGET_FILE_SIZE("hive.iceberg.compaction.target.file.size", "128mb",
+        new SizeValidator(), "Target file size for Iceberg compaction."),
     HIVE_USE_EXPLICIT_RCFILE_HEADER("hive.exec.rcfile.use.explicit.header", true,
         "If this is set the header for RCFiles will simply be RCF.  If this is not\n" +
         "set the header will be that borrowed from sequence files, e.g. SEQ- followed\n" +
