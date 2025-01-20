@@ -807,17 +807,6 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
-   * Checks if a given table and partition specifications are eligible for compaction.
-   * @param table {@link org.apache.hadoop.hive.ql.metadata.Table} table metadata stored in Hive Metastore
-   * @param partitionSpec Map of Strings {@link java.util.Map} partition specification
-   * @return Optional of ErrorMsg {@link org.apache.hadoop.hive.ql.ErrorMsg}
-   */
-  default Optional<ErrorMsg> isEligibleForCompaction(org.apache.hadoop.hive.ql.metadata.Table table,
-      Map<String, String> partitionSpec) {
-    throw new UnsupportedOperationException("Storage handler does not support validating eligibility for compaction");
-  }
-
-  /**
    * Returns partitions names for the current table spec that correspond to the provided partition spec.
    * @param hmsTable {@link org.apache.hadoop.hive.ql.metadata.Table} table metadata stored in Hive Metastore
    * @param partitionSpec Map of Strings {@link java.util.Map} partition specification

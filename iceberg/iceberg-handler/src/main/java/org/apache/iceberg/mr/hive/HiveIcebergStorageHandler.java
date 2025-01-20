@@ -2104,20 +2104,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         .anyMatch(id -> id != table.spec().specId());
   }
 
-  private boolean isIdentityPartitionTable(org.apache.hadoop.hive.ql.metadata.Table table) {
-    return getPartitionTransformSpec(table).stream().map(TransformSpec::getTransformType)
-        .allMatch(type -> type == TransformSpec.TransformType.IDENTITY);
-  }
-
-  @Override
-  public Optional<ErrorMsg> isEligibleForCompaction(
-      org.apache.hadoop.hive.ql.metadata.Table table, Map<String, String> partitionSpec) {
-    if (partitionSpec != null && !isIdentityPartitionTable(table)) {
-      return Optional.of(ErrorMsg.COMPACTION_NON_IDENTITY_PARTITION_SPEC);
-    }
-    return Optional.empty();
-  }
-
   @Override
   public List<Partition> getPartitions(org.apache.hadoop.hive.ql.metadata.Table table,
       Map<String, String> partitionSpec, boolean latestSpecOnly) throws SemanticException {

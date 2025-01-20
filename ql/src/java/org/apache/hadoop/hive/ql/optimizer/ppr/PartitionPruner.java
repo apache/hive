@@ -111,7 +111,7 @@ public class PartitionPruner extends Transform {
    *          the pruner expression for the table
    */
   public static boolean onlyContainsPartnCols(Table table, ExprNodeDesc expr) {
-    if(!table.isPartitioned() || (expr == null)) {
+    if (!table.isPartitioned() || (expr == null)) {
       return true;
     }
 

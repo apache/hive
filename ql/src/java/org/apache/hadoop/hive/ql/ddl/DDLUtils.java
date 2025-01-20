@@ -238,4 +238,10 @@ public final class DDLUtils {
     return conf.get(HIVE_ICEBERG_STATS_SOURCE.varname, HiveMetaHook.ICEBERG)
             .equalsIgnoreCase(HiveMetaHook.ICEBERG);
   }
+  
+  public static boolean hasTransformsInPartitionSpec(Table table) {
+    return isIcebergTable(table) && 
+      table.getStorageHandler().getPartitionTransformSpec(table).stream()
+          .anyMatch(spec -> spec.getTransformType() != TransformSpec.TransformType.IDENTITY);
+  }
 }
