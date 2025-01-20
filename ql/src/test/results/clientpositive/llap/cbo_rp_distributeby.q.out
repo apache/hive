@@ -16,16 +16,6 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t1
 POSTHOOK: Lineage: t1.a SCRIPT []
 POSTHOOK: Lineage: t1.b SCRIPT []
-PREHOOK: query: explain cbo
-select * from t1 where a between date_add('2014-03-14', -1) and '2014-03-14' distribute by a
-PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-#### A masked pattern was here ####
-POSTHOOK: query: explain cbo
-select * from t1 where a between date_add('2014-03-14', -1) and '2014-03-14' distribute by a
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select * from t1 where a between date_add('2014-03-14', -1) and '2014-03-14' distribute by a
 PREHOOK: type: QUERY
@@ -95,16 +85,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 2014-03-14 10:10:12	10
-PREHOOK: query: explain cbo
-select * from t1 distribute by a, b sort by a
-PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-#### A masked pattern was here ####
-POSTHOOK: query: explain cbo
-select * from t1 distribute by a, b sort by a
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select * from t1 distribute by a, b sort by a
 PREHOOK: type: QUERY
@@ -162,16 +142,6 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain cbo
-select * from t1 cluster by a, b
-PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-#### A masked pattern was here ####
-POSTHOOK: query: explain cbo
-select * from t1 cluster by a, b
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select * from t1 cluster by a, b
 PREHOOK: type: QUERY
