@@ -71,6 +71,8 @@ import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesResult;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthResponse;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsResponse;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.GetTableResult;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
@@ -1126,6 +1128,17 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     TempTable tt = getPartitionedTempTable(table);
     List<Partition> parts = tt.listPartitionsByPartitionValsWithAuthInfo(partialPvals, userName, groupNames);
     return getPartitionsForMaxParts(tableName, parts, maxParts);
+  }
+
+  @Override
+  public GetPartitionsResponse getPartitionsWithSpecs(GetPartitionsRequest request)
+          throws TException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(request.getDbName(), request.getTblName());
+    if (table == null) {
+      return super.getPartitionsWithSpecs(request);
+    }
+    TempTable tt = getPartitionedTempTable(table);
+    return tt.getPartitionsWithSpecs(request);
   }
 
   @Override
