@@ -95,6 +95,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
   private String name;
   private String userName;
   private String hostName;
+  private boolean enforceMutex;
 
   public LeaseLeaderElection() throws IOException {
     userName = SecurityUtils.getUser();
@@ -152,7 +153,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
   public void tryBeLeader(Configuration conf, TableName table) throws LeaderException {
     requireNonNull(conf, "conf is null");
     requireNonNull(table, "table is null");
-
+    this.enforceMutex = conf.getBoolean(HIVE_TXN_ENFORCE_AUX_MUTEX, true);
     if (store == null) {
       store = TxnUtils.getTxnStore(conf);
     }
@@ -470,5 +471,10 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
   @Override
   public String getName() {
     return name;
+  }
+
+  @Override
+  public boolean enforceMutex() {
+    return this.enforceMutex;
   }
 }

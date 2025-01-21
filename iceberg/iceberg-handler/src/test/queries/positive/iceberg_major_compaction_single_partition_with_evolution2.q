@@ -14,6 +14,7 @@
 -- Mask current-snapshot-timestamp-ms
 --! qt:replace:/(\s+current-snapshot-timestamp-ms\s+)\S+(\s*)/$1#Masked#$2/
 --! qt:replace:/(MAJOR\s+succeeded\s+)[a-zA-Z0-9\-\.\s+]+(\s+manual)/$1#Masked#$2/
+--! qt:replace:/(MAJOR\s+refused\s+)[a-zA-Z0-9\-\.\s+]+(\s+manual)/$1#Masked#$2/
 -- Mask compaction id as they will be allocated in parallel threads
 --! qt:replace:/^[0-9]/#Masked#/
 -- Mask iceberg version
@@ -22,6 +23,7 @@
 set hive.llap.io.enabled=true;
 set hive.vectorized.execution.enabled=true;
 set hive.optimize.shared.work.merge.ts.schema=true;
+set hive.merge.tezfiles=true;
 
 create table ice_orc (
     a string

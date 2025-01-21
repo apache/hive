@@ -39,6 +39,7 @@ import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlCastFunction;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.parser.SqlParserPos;
+import org.apache.calcite.sql.type.ArraySqlType;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.ConversionUtil;
@@ -57,6 +58,7 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveComponentAccess;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExtractDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveToDateSqlOperator;
@@ -103,6 +105,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -141,11 +144,11 @@ public class RexNodeConverter {
     if (rexNode.getType().isStruct()) {
       // regular case of accessing nested field in a column
       return rexBuilder.makeFieldAccess(rexNode, fieldDesc.getFieldName(), true);
+    } else if (rexNode.getType().getComponentType() != null) {
+      return rexBuilder.makeCall(rexNode.getType().getComponentType(), HiveComponentAccess.COMPONENT_ACCESS,
+              Collections.singletonList(rexNode));
     } else {
-      // This may happen for schema-less tables, where columns are dynamically
-      // supplied by serdes.
-      throw new CalciteSemanticException("Unexpected rexnode : "
-          + rexNode.getClass().getCanonicalName(), UnsupportedFeature.Schema_less_table);
+      throw new CalciteSemanticException("Unexpected rexnode : " + rexNode.getClass().getCanonicalName());
     }
   }
 

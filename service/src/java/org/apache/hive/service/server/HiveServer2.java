@@ -56,6 +56,7 @@ import org.apache.curator.framework.recipes.leader.LeaderLatchListener;
 import org.apache.hadoop.hive.common.JvmPauseMonitor;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
+import org.apache.hadoop.hive.common.OTELUtils;
 import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.ZKDeRegisterWatcher;
@@ -137,7 +138,6 @@ import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooDefs.Perms;
 import org.apache.zookeeper.data.ACL;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import org.eclipse.jetty.servlet.ServletHolder;
 
 import org.slf4j.Logger;
@@ -508,9 +508,8 @@ public class HiveServer2 extends CompositeService {
         hiveConf.getTimeVar(ConfVars.HIVE_OTEL_METRICS_FREQUENCY_SECONDS, TimeUnit.MILLISECONDS);
     if (otelExporterFrequency > 0) {
       try {
-        otelExporter =
-            new OTELExporter(GlobalOpenTelemetry.get(), cliService.getSessionManager(), otelExporterFrequency,
-                getServerHost());
+        otelExporter = new OTELExporter(OTELUtils.getOpenTelemetry(hiveConf), cliService.getSessionManager(),
+            otelExporterFrequency, getServerHost());
 
         otelExporter.setName("OTEL Exporter");
         otelExporter.setDaemon(true);

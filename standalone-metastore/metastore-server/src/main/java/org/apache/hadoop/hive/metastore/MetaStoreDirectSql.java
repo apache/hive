@@ -3241,6 +3241,46 @@ class MetaStoreDirectSql {
     }
   }
 
+  public boolean deleteTableColumnStatistics(long tableId, String colName, String engine) {
+    String deleteSql = "delete from " + TAB_COL_STATS + " where \"TBL_ID\" = " + tableId;
+    if (colName != null) {
+      deleteSql += " and \"COLUMN_NAME\" = '" + colName + "'";
+    }
+    if (engine != null) {
+      deleteSql += " and \"ENGINE\" = '" + engine + "'";
+    }
+    try {
+      executeNoResult(deleteSql);
+    } catch (SQLException e) {
+      LOG.warn("Error removing table column stats. ", e);
+      return false;
+    }
+    return true;
+  }
+
+  public boolean deletePartitionColumnStats(String catName, String dbName, String tblName,
+      String partName, String colName, String engine) throws MetaException {
+    String sqlFilter = PARTITIONS + ".\"PART_NAME\" = ? ";
+    List<Long> partitionIds = getPartitionIdsViaSqlFilter(catName, dbName, tblName, sqlFilter,
+        Arrays.asList(partName), Collections.emptyList(), -1);
+    assert(partitionIds.size() == 1);
+
+    String deleteSql = "delete from " + PART_COL_STATS + " where \"PART_ID\" = " + partitionIds.get(0);
+    if (colName != null) {
+      deleteSql += " and \"COLUMN_NAME\" = '" + colName + "'";
+    }
+    if (engine != null) {
+      deleteSql += " and \"ENGINE\" = '" + engine + "'";
+    }
+    try {
+      executeNoResult(deleteSql);
+    } catch (SQLException e) {
+      LOG.warn("Error removing partition column stats. ", e);
+      return false;
+    }
+    return true;
+  }
+
   public Map<String, Map<String, String>> updatePartitionColumnStatisticsBatch(
                                                       Map<String, ColumnStatistics> partColStatsMap,
                                                       Table tbl,

@@ -34,6 +34,7 @@ import io.opentelemetry.sdk.internal.AttributesMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.OTELJavaMetrics;
 import org.apache.hadoop.hive.ql.QueryDisplay;
 import org.apache.hadoop.hive.ql.QueryInfo;
@@ -86,8 +87,8 @@ public class OTELExporter extends Thread {
 
     LOG.debug("Found {} liveQueries and {} historicalQueries", liveQueries.size(), historicalQueries.size());
 
-    for (QueryInfo lQuery: liveQueries){
-      if(lQuery.getQueryDisplay() == null){
+    for (QueryInfo lQuery : liveQueries) {
+      if (lQuery.getQueryDisplay() == null || StringUtils.isEmpty(lQuery.getQueryDisplay().getQueryId())) {
         continue;
       }
       String queryID = lQuery.getQueryDisplay().getQueryId();

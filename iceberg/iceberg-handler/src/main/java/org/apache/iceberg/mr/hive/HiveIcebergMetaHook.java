@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.mr.hive;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -53,6 +54,8 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFieldDesc;
+import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFields;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -82,6 +85,7 @@ import org.apache.iceberg.DeleteFiles;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.MetadataTableType;
 import org.apache.iceberg.MetadataTableUtils;
+import org.apache.iceberg.NullOrder;
 import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
@@ -89,6 +93,9 @@ import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.PartitionsTable;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
+import org.apache.iceberg.SortDirection;
+import org.apache.iceberg.SortOrder;
+import org.apache.iceberg.SortOrderParser;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableMetadataParser;
@@ -116,6 +123,7 @@ import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
+import org.apache.iceberg.relocated.com.google.common.base.Strings;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
@@ -137,6 +145,7 @@ import static org.apache.iceberg.TableProperties.UPDATE_MODE;
 
 public class HiveIcebergMetaHook implements HiveMetaHook {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergMetaHook.class);
+  private static final ObjectMapper JSON_OBJECT_MAPPER = new ObjectMapper();
   public static final Map<String, String> COMMON_HMS_PROPERTIES = ImmutableMap.of(
       BaseMetastoreTableOperations.TABLE_TYPE_PROP, BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase()
   );
@@ -271,6 +280,32 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     setOrcOnlyFilesParam(hmsTable);
     // Remove hive primary key columns from table request, as iceberg doesn't support hive primary key.
     request.setPrimaryKeys(null);
+    setSortOrder(hmsTable, schema, catalogProperties);
+  }
+
+  private void setSortOrder(org.apache.hadoop.hive.metastore.api.Table hmsTable, Schema schema,
+      Properties properties) {
+    String sortOderJSONString = hmsTable.getParameters().get(TableProperties.DEFAULT_SORT_ORDER);
+    SortFields sortFields = null;
+    if (!Strings.isNullOrEmpty(sortOderJSONString)) {
+      try {
+        sortFields = JSON_OBJECT_MAPPER.reader().readValue(sortOderJSONString, SortFields.class);
+      } catch (Exception e) {
+        LOG.warn("Can not read write order json: {}", sortOderJSONString, e);
+        return;
+      }
+      if (sortFields != null && !sortFields.getSortFields().isEmpty()) {
+        SortOrder.Builder sortOderBuilder = SortOrder.builderFor(schema);
+        sortFields.getSortFields().forEach(fieldDesc -> {
+          NullOrder nullOrder = fieldDesc.getNullOrder() == SortFieldDesc.NullOrder.NULLS_FIRST ?
+              NullOrder.NULLS_FIRST : NullOrder.NULLS_LAST;
+          SortDirection sortDirection = fieldDesc.getDirection() == SortFieldDesc.SortDirection.ASC ?
+              SortDirection.ASC : SortDirection.DESC;
+          sortOderBuilder.sortBy(fieldDesc.getColumnName(), sortDirection, nullOrder);
+        });
+        properties.put(TableProperties.DEFAULT_SORT_ORDER, SortOrderParser.toJson(sortOderBuilder.build()));
+      }
+    }
   }
 
   @Override
