@@ -1,12 +1,3 @@
-PREHOOK: query: SELECT COUNT(*) FROM sys.query_history
-PREHOOK: type: QUERY
-PREHOOK: Input: sys@query_history
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT COUNT(*) FROM sys.query_history
-POSTHOOK: type: QUERY
-POSTHOOK: Input: sys@query_history
-#### A masked pattern was here ####
-0
 PREHOOK: query: CREATE TABLE test_part(id int) PARTITIONED BY(dt string) STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -264,15 +255,6 @@ POSTHOOK: Input: default@test_part
 POSTHOOK: Input: default@test_part@dt=1
 POSTHOOK: Input: default@test_part@dt=3
 #### A masked pattern was here ####
-PREHOOK: query: SELECT COUNT(*) FROM sys.query_history
-PREHOOK: type: QUERY
-PREHOOK: Input: sys@query_history
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT COUNT(*) FROM sys.query_history
-POSTHOOK: type: QUERY
-POSTHOOK: Input: sys@query_history
-#### A masked pattern was here ####
-25
 PREHOOK: query: SELECT concat(substr(sql, 0, 30), "..."), cluster_id, session_type, cluster_user, end_user, db_name, query_type, ddl_type
 FROM sys.query_history ORDER BY start_time
 PREHOOK: type: QUERY
@@ -287,10 +269,7 @@ POSTHOOK: Input: sys@query_history
 
 
 
-SELECT COUNT(*) FROM sys.q...	hive-test-cluster-id-cli	OTHER	NULL	NULL	default	QUERY	
-
-
-CREATE TABLE test_part(id in...	hive-test-cluster-id-cli	OTHER	NULL	NULL	default	DDL	CREATETABLE
+CREATE TABLE test_part(id ...	hive-test-cluster-id-cli	OTHER	NULL	NULL	default	DDL	CREATETABLE
 
 SELECT * FROM test_part...	hive-test-cluster-id-cli	OTHER	NULL	NULL	default	QUERY	
 
@@ -308,7 +287,7 @@ ANALYZE TABLE test_part COMPU...	hive-test-cluster-id-cli	OTHER	NULL	NULL	defaul
 
 
 
-EXPLAIN SELECT * FROM test_...	hive-test-cluster-id-cli	OTHER	NULL	NULL	default	EXPLAIN	
+EXPLAIN SELECT * FROM test_...	hive-test-cluster-id-cli	OTHER	NULL	NULL	default		
 
 
 
@@ -370,10 +349,7 @@ POSTHOOK: Input: sys@query_history
 
 
 
-SELECT COUNT(*) FROM sys.q...	localhost	0	NULL
-
-
-CREATE TABLE test_part(id in...	localhost	0	NULL
+CREATE TABLE test_part(id ...	localhost	0	NULL
 
 SELECT * FROM test_part...	localhost	0	NULL
 
@@ -439,89 +415,6 @@ USE default...	localhost	0	NULL
 
 
 with test_part_with_alias a...	localhost	0	NULL
-PREHOOK: query: SELECT concat(substr(sql, 0, 30), "..."), execution_mode, node_used_count, node_total_count
-FROM sys.query_history ORDER BY start_time
-PREHOOK: type: QUERY
-PREHOOK: Input: sys@query_history
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT concat(substr(sql, 0, 30), "..."), execution_mode, node_used_count, node_total_count
-FROM sys.query_history ORDER BY start_time
-POSTHOOK: type: QUERY
-POSTHOOK: Input: sys@query_history
-#### A masked pattern was here ####
-
-
-
-
-SELECT COUNT(*) FROM sys.q...	llap	1	1
-
-
-CREATE TABLE test_part(id in...	NULL	-1	-1
-
-SELECT * FROM test_part...	NULL	-1	-1
-
-SELECT * FROM test_part...	llap	0	1
-
-
-
-INSERT INTO test_part VALUE...	llap	1	1
-
-
-
-ANALYZE TABLE test_part COM...	llap	1	1
-
-ANALYZE TABLE test_part COMPU...	llap	1	1
-
-
-
-EXPLAIN SELECT * FROM test_...	NULL	-1	-1
-
-
-
-ALTER TABLE test_part ADD P...	NULL	-1	-1
-
-
-UPDATE test_part SET id = 2 ...	llap	1	1
-
-DELETE FROM test_part WHERE d...	llap	1	1
-
-
-CREATE TABLE test_part2(id i...	NULL	-1	-1
-
-INSERT OVERWRITE TABLE test_p...	llap	1	1
-
-
-MERGE INTO test_part2 AS tar...	llap	1	1
-
-TRUNCATE TABLE test_part2...	NULL	-1	-1
-
-
-
-CREATE EXTERNAL TABLE test_...	NULL	-1	-1
-
-INSERT INTO test_iceberg VALU...	llap	1	1
-
-TRUNCATE TABLE test_iceberg...	NULL	-1	-1
-
-
-
-CREATE DATABASE query_histo...	NULL	-1	-1
-
-CREATE TABLE query_history_qt...	NULL	-1	-1
-
-
-
-SHOW DATABASES...	NULL	-1	-1
-
-USE query_history_qtest_db...	NULL	-1	-1
-
-SHOW TABLES...	NULL	-1	-1
-
-USE default...	NULL	-1	-1
-
-
-
-with test_part_with_alias a...	llap	1	1
 PREHOOK: query: SELECT concat(substr(sql, 0, 30), "..."), failure_reason, num_rows_fetched, configuration_options_changed
 FROM sys.query_history ORDER BY start_time
 PREHOOK: type: QUERY
@@ -536,10 +429,7 @@ POSTHOOK: Input: sys@query_history
 
 
 
-SELECT COUNT(*) FROM sys.q...	NULL	1	
-
-
-CREATE TABLE test_part(id in...	NULL	0	
+CREATE TABLE test_part(id ...	NULL	0	
 
 SELECT * FROM test_part...	NULL	0	hive.fetch.task.conversion=more
 

@@ -161,6 +161,7 @@ public class TezTask extends Task<TezWork> {
 
     final String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID);
 
+    TezJobMonitor monitor = null;
     try {
       // Get or create Context object. If we create it we have to clean it later as well.
       ctx = context;
@@ -221,11 +222,10 @@ public class TezTask extends Task<TezWork> {
           sessionRef.value, conf, mi, getWork().getLlapMode(), wmContext);
       perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_GET_SESSION);
 
-      TezJobMonitor monitor;
       try {
         ss.setTezSession(session);
         LOG.info("Subscribed to counters: {} for queryId: {}", wmContext.getSubscribedCounters(),
-          wmContext.getQueryId());
+            wmContext.getQueryId());
 
         // Ensure the session is open and has the necessary local resources.
         // This would refresh any conf resources and also local resources.
@@ -337,14 +337,13 @@ public class TezTask extends Task<TezWork> {
           && (HiveConf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_SUMMARY) ||
           Utilities.isPerfOrAboveLogging(conf))) {
         for (CounterGroup group : runtimeContext.counters) {
-          monitor.printInfo(group.getDisplayName() + ":");
+          monitor.getConsole().printInfo(group.getDisplayName() + ":");
           for (TezCounter counter : group) {
-            monitor.printInfo("   " + counter.getDisplayName() + ": " + counter.getValue());
+            monitor.getConsole().printInfo("   " + counter.getDisplayName() + ": " + counter.getValue());
           }
         }
       }
       updateNumRows();
-      monitor.endSummary();
     } catch (Exception e) {
       LOG.error("Failed to execute tez graph.", e);
       setException(e);
@@ -380,6 +379,9 @@ public class TezTask extends Task<TezWork> {
       if (dagClient != null) {
         // rc will only be overwritten if close errors out
         rc = close(work, rc, dagClient);
+      }
+      if (monitor != null){
+        monitor.getConsole().endSummary();
       }
     }
     return rc;

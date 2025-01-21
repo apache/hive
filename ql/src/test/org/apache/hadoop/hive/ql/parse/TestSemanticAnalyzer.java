@@ -29,16 +29,20 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfForTest;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.QueryProperties;
+import org.apache.hadoop.hive.ql.QueryProperties.QueryType;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -73,21 +77,35 @@ public class TestSemanticAnalyzer {
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdConfOnlyAuthorizerFactory");
     db = Hive.get(conf);
 
+    createDatabase("other_db");
+
     // table1 (col1 string, col2 int)
     createKeyValueTable("table1");
     createKeyValueTable("table2");
     createKeyValueTable("table3");
     createPartitionedTable("table_part");
     createAcidTable("table_acid");
+
+    createKeyValueTable("other_db", "table1");
+  }
+
+  private static void createDatabase(String dbName) throws Exception {
+    Database database = new Database();
+    database.setName(dbName);
+    db.createDatabase(database);
   }
 
   private static void createKeyValueTable(String tableName) throws Exception {
-    Table table = createSimpleTableWithColumns(tableName);
+    createKeyValueTable("default", tableName);
+  }
+
+  private static void createKeyValueTable(String dbName, String tableName) throws Exception {
+    Table table = createSimpleTableWithColumns(dbName, tableName);
     db.createTable(table);
   }
 
   private static void createAcidTable(String tableAcid) throws HiveException {
-    Table table = createSimpleTableWithColumns(tableAcid);
+    Table table = createSimpleTableWithColumns("default", tableAcid);
     table.setProperty("transactional", "true");
     // The table must be stored using an ACID compliant format (such as ORC)
     setOrc(table);
@@ -95,7 +113,7 @@ public class TestSemanticAnalyzer {
   }
 
   private static void createPartitionedTable(String tablePart) throws HiveException {
-    Table table = createSimpleTableWithColumns(tablePart);
+    Table table = createSimpleTableWithColumns("default", tablePart);
 
     List<FieldSchema> partitionColumns = new ArrayList<>();
     partitionColumns.add(new FieldSchema("part_col", "string", "Partition column description"));
@@ -110,8 +128,8 @@ public class TestSemanticAnalyzer {
     table.setSerializationLib("org.apache.hadoop.hive.ql.io.orc.OrcSerde");
   }
 
-  private static Table createSimpleTableWithColumns(String tableName) {
-    Table table = new Table("default", tableName);
+  private static Table createSimpleTableWithColumns(String dbName, String tableName) {
+    Table table = new Table(dbName, tableName);
     List<FieldSchema> columns = new ArrayList<>();
     columns.add(new FieldSchema("key", "string", "First column"));
     columns.add(new FieldSchema("value", "int", "Second column"));
@@ -265,6 +283,7 @@ public class TestSemanticAnalyzer {
     Context ctx = new Context(conf);
     ASTNode astNode = ParseUtils.parse(query, ctx);
     QueryState queryState = new QueryState.Builder().withHiveConf(conf).build();
+
     SemanticAnalyzer analyzer = spy((SemanticAnalyzer) SemanticAnalyzerFactory.get(queryState, astNode));
 
     analyzer.initCtx(ctx);
@@ -296,30 +315,37 @@ public class TestSemanticAnalyzer {
   @Test
   public void testQueryTypes() throws Exception {
     // QUERY
-    checkQueryType("SELECT key FROM table1", "QUERY");
-    checkQueryType("SELECT key FROM table_non_existing", "QUERY");
-    checkQueryType("SELECT a.value, b.value FROM table1 a JOIN table2 b ON a.key = b.key", "QUERY");
+    checkQueryType("SELECT key FROM table1", QueryType.QUERY);
+    checkQueryType("SELECT key FROM table_non_existing", QueryType.QUERY);
+    checkQueryType("SELECT a.value, b.value FROM table1 a JOIN table2 b ON a.key = b.key", QueryType.QUERY);
 
     // STATS
-    checkQueryType("ANALYZE TABLE table1 COMPUTE STATISTICS", "STATS");
-    checkQueryType("ANALYZE TABLE table1 COMPUTE STATISTICS FOR COLUMNS", "STATS");
+    checkQueryType("ANALYZE TABLE table1 COMPUTE STATISTICS", QueryType.STATS);
+    checkQueryType("ANALYZE TABLE table1 COMPUTE STATISTICS FOR COLUMNS", QueryType.STATS);
 
     // DML
-    checkQueryType("INSERT INTO table1 VALUES ('1', 1)", "DML");
-    checkQueryType("INSERT OVERWRITE TABLE table1 SELECT * FROM table2", "DML");
-    checkQueryType("UPDATE table_acid SET value = 2 WHERE key = '1'", "DML");
-    checkQueryType("DELETE FROM table_acid WHERE key = '1'", "DML");
+    checkQueryType("INSERT INTO table1 VALUES ('1', 1)", QueryType.DML);
+    checkQueryType("INSERT OVERWRITE TABLE table1 SELECT * FROM table2", QueryType.DML);
+    checkQueryType("UPDATE table_acid SET value = 2 WHERE key = '1'", QueryType.DML);
+    checkQueryType("DELETE FROM table_acid WHERE key = '1'", QueryType.DML);
     checkQueryType("MERGE INTO table_acid AS target USING table1 AS source ON source.key = target.key " +
-        "WHEN MATCHED THEN UPDATE SET key = 3 WHEN NOT MATCHED THEN INSERT VALUES ('3', 4)", "DML");
+        "WHEN MATCHED THEN UPDATE SET key = 3 WHEN NOT MATCHED THEN INSERT VALUES ('3', 4)", QueryType.DML);
 
     // DDL
-    checkQueryType("CREATE EXTERNAL TABLE test_part(id int) PARTITIONED BY(dt string) STORED AS ORC", "DDL");
-    checkQueryType("ALTER TABLE table_part ADD PARTITION (part_col='3')", "DDL");
-    checkQueryType("DROP TABLE table1", "DDL");
-    checkQueryType("CREATE TABLE target AS SELECT * FROM table1", "DDL");
+    checkQueryType("SHOW DATABASES", QueryType.DDL);
+    checkQueryType("SHOW TABLES", QueryType.DDL);
+    checkQueryType("CREATE DATABASE test_database_to_create", QueryType.DDL);
+    checkQueryType("CREATE EXTERNAL TABLE test_part(id int) PARTITIONED BY(dt string) STORED AS ORC", QueryType.DDL);
+    checkQueryType("ALTER TABLE table_part ADD PARTITION (part_col='3')", QueryType.DDL);
+    checkQueryType("DROP TABLE table1", QueryType.DDL);
+    checkQueryType("CREATE TABLE target AS SELECT * FROM table1", QueryType.DDL);
+
+    // OTHER
+    // EXPLAIN is a utility, cannot classified as any of the categories above
+    checkQueryType("EXPLAIN SELECT key FROM table1", QueryType.OTHER);
   }
 
-  private void checkQueryType(String query, String expectedQueryType) throws Exception {
+  private void checkQueryType(String query, QueryProperties.QueryType expectedQueryType) throws Exception {
     SessionState.start(new SessionState(conf));
     Context ctx = new Context(conf);
     ASTNode astNode = ParseUtils.parse(query, ctx);
@@ -339,12 +365,38 @@ public class TestSemanticAnalyzer {
     } catch (SemanticException e) {
       LOG.info("Ignoring semantic exception because the inner state of the Semantic Analyzer still can and will be " +
           "asserted in this unit test.", e);
+    } finally {
+      analyzer.endAnalysis(astNode); // this is called by Compiler in production
     }
 
-    DriverContext driverContext = new DriverContext(mock(QueryState.class), null, null, mock(DbTxnManager.class));
-    driverContext.setQueryType(analyzer, astNode);
-
     assertEquals(String.format("Expected query type for query '%s' is '%s', seen '%s'", query, expectedQueryType,
-        driverContext.getQueryType()), expectedQueryType, driverContext.getQueryType());
+        analyzer.getQueryProperties().getQueryType()), expectedQueryType, analyzer.getQueryProperties().getQueryType());
+  }
+
+  @Test
+  public void testTablesQueried() throws Exception {
+    checkTablesQueried("SELECT key FROM table1", Lists.newArrayList("default.table1"));
+    checkTablesQueried("INSERT OVERWRITE TABLE table1 SELECT * FROM table2", Lists.newArrayList("default.table1",
+        "default.table2"));
+    checkTablesQueried("INSERT OVERWRITE TABLE table1 SELECT * FROM other_db.table1",
+        Lists.newArrayList("default.table1", "other_db.table1"));
+    checkTablesQueried("SELECT a.value, b.value FROM table1 a JOIN table2 b ON a.key = b.key", Lists.newArrayList("default.table1",
+        "default.table2"));
+  }
+
+  private void checkTablesQueried(String query, List<String> tables) throws Exception {
+    SessionState.start(conf);
+    Context ctx = new Context(conf);
+    ASTNode astNode = ParseUtils.parse(query, ctx);
+    QueryState queryState = new QueryState.Builder().withHiveConf(conf).build();
+    SemanticAnalyzer analyzer = spy((SemanticAnalyzer) SemanticAnalyzerFactory.get(queryState, astNode));
+    analyzer.initCtx(ctx);
+    analyzer.analyze(astNode, ctx);
+
+    Collections.sort(tables);
+    List<String> result = analyzer.getQueryProperties().getTablesQueried();
+    Collections.sort(result);
+
+    Assert.assertEquals(tables, result);
   }
 }

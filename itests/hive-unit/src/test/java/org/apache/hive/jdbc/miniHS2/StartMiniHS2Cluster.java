@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.ServiceContext;
-import org.apache.hadoop.hive.ql.queryhistory.persist.IcebergPersistorForTest;
+import org.apache.hadoop.hive.ql.queryhistory.repository.IcebergRepositoryForTest;
 import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
 import org.junit.After;
 import org.junit.AfterClass;

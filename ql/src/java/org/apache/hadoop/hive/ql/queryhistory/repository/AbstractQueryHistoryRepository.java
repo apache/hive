@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.queryhistory.persist;
+package org.apache.hadoop.hive.ql.queryhistory.repository;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -39,7 +39,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class AbstractQueryHistoryPersistor implements QueryHistoryPersistor {
+public abstract class AbstractQueryHistoryRepository implements QueryHistoryRepository {
   protected Logger LOG = LoggerFactory.getLogger(getClass());
   @VisibleForTesting
   HiveConf conf;
@@ -49,31 +49,27 @@ public abstract class AbstractQueryHistoryPersistor implements QueryHistoryPersi
     this.conf = conf;
     this.schema = schema;
 
-    Database database = initDatabase();
-    Table table = initTable(database);
-    try {
+    try (Hive hive = Hive.get(conf)) {
+      Database database = initDatabase(hive);
+      Table table = initTable(hive, database);
       postInitTable(table);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  protected Database initDatabase() {
-    try (Hive hive = Hive.get(conf)) {
-      Database db = null;
-      try {
-        db = hive.getDatabase(QUERY_HISTORY_DB_NAME);
-        if (db == null) {
-          LOG.warn("Database ({}) for query history table hasn't been found, auto-creating one", QUERY_HISTORY_DB_NAME);
-          String location = getDatabaseLocation(QueryHistoryPersistor.QUERY_HISTORY_DB_NAME);
-          db = new Database(QueryHistoryPersistor.QUERY_HISTORY_DB_NAME, QueryHistoryPersistor.QUERY_HISTORY_DB_COMMENT,
-              location, null);
-          hive.createDatabase(db, false);
-        }
-        return db;
-      } catch (HiveException e) {
-        throw new RuntimeException(e);
+  protected Database initDatabase(Hive hive) {
+    Database db;
+    try {
+      db = hive.getDatabase(QUERY_HISTORY_DB_NAME);
+      if (db == null) {
+        LOG.warn("Database ({}) for query history table hasn't been found, auto-creating one", QUERY_HISTORY_DB_NAME);
+        String location = getDatabaseLocation(QUERY_HISTORY_DB_NAME);
+        db = new Database(QUERY_HISTORY_DB_NAME, QUERY_HISTORY_DB_COMMENT,
+            location, null);
+        hive.createDatabase(db, false);
       }
+      return db;
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -90,20 +86,16 @@ public abstract class AbstractQueryHistoryPersistor implements QueryHistoryPersi
     return String.format("%s/%s.db", warehouseLocation, databaseName.toLowerCase());
   }
 
-  protected Table initTable(Database db) {
-    try (Hive hive = Hive.get(conf)) {
-      Table table;
-      try {
-        table = hive.getTable(QUERY_HISTORY_DB_NAME, QUERY_HISTORY_TABLE_NAME, null, false);
-        if (table == null) {
-          LOG.info("Query history table ({}) isn't created yet", QUERY_HISTORY_TABLE_NAME);
-          table = createTable(hive, db);
-        }
-        return table;
-      } catch (HiveException e) {
-        throw new RuntimeException(e);
+  protected Table initTable(Hive hive, Database db) {
+    Table table;
+    try {
+      table = hive.getTable(QUERY_HISTORY_DB_NAME, QUERY_HISTORY_TABLE_NAME, null, false);
+      if (table == null) {
+        LOG.info("Query history table ({}) isn't created yet", QUERY_HISTORY_TABLE_NAME);
+        table = createTable(hive, db);
       }
-    } catch (Exception e) {
+      return table;
+    } catch (HiveException e) {
       throw new RuntimeException(e);
     }
   }
@@ -118,7 +110,7 @@ public abstract class AbstractQueryHistoryPersistor implements QueryHistoryPersi
 
   /**
    * While creating the table, getInitialTable is supposed to return a common table object,
-   * which contains anything general that's not specific to QueryHistoryPersistor subclasses.
+   * which contains anything general that's not specific to QueryHistoryRepository subclasses.
    */
   protected Table getInitialTable() {
     Table table = new Table(QUERY_HISTORY_DB_NAME, QUERY_HISTORY_TABLE_NAME);

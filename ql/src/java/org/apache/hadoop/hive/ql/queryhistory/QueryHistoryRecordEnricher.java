@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,28 +17,51 @@
  */
 package org.apache.hadoop.hive.ql.queryhistory;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ServiceContext;
 import org.apache.hadoop.hive.ql.exec.tez.TezRuntimeContext;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistoryRecord;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.tez.common.counters.DAGCounter;
 import org.apache.tez.common.counters.TaskCounter;
 
-public class FromDriverContextUpdater {
+public class QueryHistoryRecordEnricher {
+  private final DriverContext driverContext;
+  private final ServiceContext serviceContext;
+  private final SessionState sessionState;
+  private final PerfLogger perfLogger;
 
-  private static final FromDriverContextUpdater INSTANCE = new FromDriverContextUpdater();
-
-  public static FromDriverContextUpdater getInstance() {
-    return INSTANCE;
+  public QueryHistoryRecordEnricher(DriverContext driverContext, ServiceContext serviceContext, SessionState sessionState,
+      PerfLogger perfLogger) {
+    this.driverContext = driverContext;
+    this.serviceContext = serviceContext;
+    this.sessionState = sessionState;
+    this.perfLogger = perfLogger;
   }
 
-  public void consume(DriverContext driverContext, QueryHistoryRecord record) {
-    updateFromQueryState(driverContext.getQueryState(), record);
-    updateFromQueryInfo(driverContext.getQueryInfo(), record);
-    updateFromRuntimeContext(driverContext.getRuntimeContext(), record);
-    updateFromQueryProperties(driverContext.getQueryProperties(), record);
+  public QueryHistoryRecord createRecord() {
+    QueryHistoryRecord record = new QueryHistoryRecord();
+
+    enrichFromDriverContext(record);
+    enrichFromSessionState(record);
+    enrichFromPerfLogger(record);
+    enrichFromServiceContext(record);
+
+    return record;
+  }
+
+  private void enrichFromDriverContext(QueryHistoryRecord record) {
+    enrichFromQueryState(driverContext.getQueryState(), record);
+    enrichFromQueryInfo(driverContext.getQueryInfo(), record);
+    enrichFromRuntimeContext(driverContext.getRuntimeContext(), record);
+    enrichFromQueryProperties(driverContext.getQueryProperties(), record);
 
     record.setPlan(driverContext.getExplainPlan());
     record.setQueryType(driverContext.getQueryType());
@@ -47,12 +70,51 @@ public class FromDriverContextUpdater {
     record.setNumRowsFetched(driverContext.getFetchTask() == null ? 0 : driverContext.getFetchTask().getTotalRows());
   }
 
-  private void updateFromQueryState(QueryState queryState, QueryHistoryRecord record) {
+  private void enrichFromSessionState(QueryHistoryRecord record) {
+    record.setSessionId(sessionState.getSessionId());
+    record.setEndUser(sessionState.getUserName());
+    record.setClientProtocol(sessionState.getConf().getInt(SerDeUtils.LIST_SINK_OUTPUT_PROTOCOL, 0));
+    try {
+      boolean doAsEnabled = sessionState.getConf().getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
+      String user = Utils.getUGI().getShortUserName();
+      record.setClusterUser(doAsEnabled ? sessionState.getUserName() : user);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+    record.setSessionType(
+        sessionState.isHiveServerQuery() ? SessionType.HIVESERVER2.name() :
+            SessionType.OTHER.name());
+    record.setCurrentDatabase(sessionState.getCurrentDatabase());
+    record.setClientAddress(sessionState.getUserIpAddress());
+    record.setConfigurationOptionsChanged(sessionState.getOverriddenConfigurations());
+  }
+
+  private void enrichFromPerfLogger(QueryHistoryRecord record) {
+    record.setPlanningDuration(perfLogger.getEndTime(PerfLogger.COMPILE) - perfLogger.getStartTime(PerfLogger.COMPILE));
+    record.setPlanningStartTime(perfLogger.getStartTime(PerfLogger.COMPILE));
+
+    record.setPreparePlanDuration(perfLogger.getPreparePlanDuration());
+    record.setPreparePlanStartTime(perfLogger.getEndTime(PerfLogger.COMPILE));
+
+    record.setGetSessionDuration(perfLogger.getDuration(PerfLogger.TEZ_GET_SESSION));
+    record.setGetSessionStartTime(perfLogger.getStartTime(PerfLogger.TEZ_GET_SESSION));
+
+    record.setExecutionDuration(perfLogger.getRunDagDuration());
+    record.setExecutionStartTime(perfLogger.getStartTime(PerfLogger.TEZ_RUN_DAG));
+  }
+
+  private void enrichFromServiceContext(QueryHistoryRecord record) {
+    record.setClusterId(serviceContext.getClusterId());
+    record.setServerAddress(serviceContext.getHost());
+    record.setServerPort(serviceContext.getPort());
+  }
+
+  private void enrichFromQueryState(QueryState queryState, QueryHistoryRecord record) {
     record.setQueryId(queryState.getQueryId());
     record.setQuerySql(queryState.getQueryString());
   }
 
-  private void updateFromQueryInfo(QueryInfo queryInfo, QueryHistoryRecord record) {
+  private void enrichFromQueryInfo(QueryInfo queryInfo, QueryHistoryRecord record) {
     if (queryInfo == null) {
       return;
     }
@@ -60,14 +122,14 @@ public class FromDriverContextUpdater {
     record.setOperationId(queryInfo.getOperationId());
     record.setExecutionEngine(queryInfo.getExecutionEngine());
     record.setQueryState(queryInfo.getState());
-    record.setQueryStartTime(queryInfo.getBeginTimeUTC());
-    if (queryInfo.getEndTimeUTC() != null) {
-      record.setQueryEndTime(queryInfo.getEndTimeUTC());
+    record.setQueryStartTime(queryInfo.getBeginTime());
+    if (queryInfo.getEndTime() != null) {
+      record.setQueryEndTime(queryInfo.getEndTime());
     }
     record.setTotalTime(queryInfo.getElapsedTime());
   }
 
-  private void updateFromRuntimeContext(TezRuntimeContext runtimeContext, QueryHistoryRecord record) {
+  private void enrichFromRuntimeContext(TezRuntimeContext runtimeContext, QueryHistoryRecord record) {
     // null in case of HS2-only queries (no Tez involved)
     // dagId null-check is for safety's sake when TezTask was initialized (so a plan was generated) but no DAG ran
     if (runtimeContext == null || runtimeContext.getDagId() == null) {
@@ -80,7 +142,7 @@ public class FromDriverContextUpdater {
     record.setTezApplicationId(runtimeContext.getApplicationId());
     record.setTezSessionId(runtimeContext.getSessionId());
     record.setTezAmAddress(runtimeContext.getAmAddress());
-    record.setExecSummary(runtimeContext.getMonitor().getSummary());
+    record.setExecSummary(runtimeContext.getMonitor().getConsole().getSummary());
     record.setTotalNumberOfTasks((int) runtimeContext.getCounter(DAGCounter.class.getName(),
         DAGCounter.TOTAL_LAUNCHED_TASKS.name()));
     record.setNumberOfSucceededTasks((int) runtimeContext.getCounter(DAGCounter.class.getName(),
@@ -125,7 +187,7 @@ public class FromDriverContextUpdater {
         TaskCounter.MERGE_PHASE_TIME.name()));
   }
 
-  private void updateFromQueryProperties(QueryProperties queryProperties, QueryHistoryRecord record) {
+  private void enrichFromQueryProperties(QueryProperties queryProperties, QueryHistoryRecord record) {
     if (queryProperties == null) {
       return;
     }
@@ -154,5 +216,11 @@ public class FromDriverContextUpdater {
     record.setShuffleBytesDiskDirect(-1L);
     record.setShufflePhaseTime(-1);
     record.setMergePhaseTime(-1);
+  }
+
+  // Enum to represent the type of session, currently only two types are supported
+  // based on sessionState.isHiveServerQuery()
+  public enum SessionType {
+    HIVESERVER2, OTHER
   }
 }

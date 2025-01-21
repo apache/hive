@@ -184,11 +184,11 @@ public class QTestUtil {
     miniClusters.initConf(conf);
 
     // disable query history altogether
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_QUERY_HISTORY_SERVICE_ENABLED, false);
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED, false);
 
     // make DriverFactory able to create non-null QueryInfo objects
-    conf.set(DriverContext.DRIVER_DEFAULT_USER_NAME_PROP, QTestUtil.QTEST_DRIVER_USER);
-    conf.set(DriverContext.DRIVER_DEFAULT_OPERATION_ID_PROP, QTestUtil.QTEST_DRIVER_OPERATION_ID);
+    conf.set(DriverContext.DEFAULT_USER_NAME_PROP, QTestUtil.QTEST_DRIVER_USER);
+    conf.set(DriverContext.DEFAULT_OPERATION_ID_PROP, QTestUtil.QTEST_DRIVER_OPERATION_ID);
   }
 
   public QTestUtil(QTestArguments testArgs) throws Exception {

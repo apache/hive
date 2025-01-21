@@ -1,4 +1,4 @@
-package org.apache.hadoop.hive.ql.queryhistory.persist;
+package org.apache.hadoop.hive.ql.queryhistory.repository;
 /**
  * Licensed to the Apache Software Foundation (ASF) under one§
  * or more contributor license agreements.  See the NOTICE file
@@ -17,13 +17,14 @@ package org.apache.hadoop.hive.ql.queryhistory.persist;
  * limitations under the License.
  */
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.queryhistory.repository.IcebergRepository;
 import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistorySchema;
 
 /*
- * A test iceberg persistor which has the same behavior as parent but without any metastore locking
+ * A test iceberg repository which has the same behavior as parent but without any metastore locking
  * (for easier unit test's sake).
  */
-public class IcebergPersistorForTest extends IcebergPersistor {
+public class IcebergRepositoryForTest extends IcebergRepository {
 
   @Override
   public void init(HiveConf conf, QueryHistorySchema schema) {

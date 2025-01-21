@@ -40,10 +40,11 @@ import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.exec.tez.TezRuntimeContext;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
-import org.apache.hadoop.hive.ql.queryhistory.schema.ExampleQueryHistoryRecord;
+import org.apache.hadoop.hive.ql.queryhistory.schema.DummyQueryHistoryRecord;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.queryhistory.persist.IcebergPersistor;
-import org.apache.hadoop.hive.ql.queryhistory.persist.QueryHistoryPersistor;
+import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.queryhistory.repository.IcebergRepository;
+import org.apache.hadoop.hive.ql.queryhistory.repository.QueryHistoryRepository;
 import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistoryRecord;
 import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistorySchema;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -65,33 +66,16 @@ import java.util.Queue;
 
 public class TestQueryHistoryService {
   private static final Logger LOG = LoggerFactory.getLogger(TestQueryHistoryService.class);
-  private final ServiceContext serviceContext = new ServiceContext(() -> ExampleQueryHistoryRecord.SERVER_HOST,
-      () ->  ExampleQueryHistoryRecord.SERVER_PORT);
-
-  /**
-   * Asserts that QueryHistoryService start/stop methods are idempotent and
-   * multiple starts lead to the same instance
-   */
-  @Test
-  public void testQueryHistoryServiceInstances() {
-    HiveConf conf = getHiveConfDummyPersistor();
-    QueryHistoryService service = QueryHistoryService.start(conf, serviceContext);
-    QueryHistoryService service2 = QueryHistoryService.start(conf, serviceContext);
-    Assert.assertSame(service, service2);
-
-    service.stop();
-    service2.stop();
-    // whether stop is idempotent
-    service.stop();
-    service2.stop();
-  }
+  private static final ServiceContext serviceContext = new ServiceContext(() -> DummyQueryHistoryRecord.SERVER_HOST,
+      () ->  DummyQueryHistoryRecord.SERVER_PORT);
 
   @Test
-  public void testDefaultPersistorIsIceberg() {
+  public void testDefaultRepositoryIsIceberg() {
     HiveConf conf = getHiveConf();
-    QueryHistoryPersistor persistor = QueryHistoryService.createPersistor(conf);
-    Assert.assertTrue("Default persistor should be iceberg, instead found: " + persistor.getClass().getName(),
-        persistor instanceof IcebergPersistor);
+    QueryHistoryService service = new QueryHistoryService(conf, serviceContext);
+    QueryHistoryRepository repository = service.getRepository();
+    Assert.assertTrue("Default repository should be iceberg, instead found: " + repository.getClass().getName(),
+        repository instanceof IcebergRepository);
   }
 
   /**
@@ -100,18 +84,18 @@ public class TestQueryHistoryService {
    */
   @Test
   public void testSimplePersist() throws Exception {
-    HiveConf conf = getHiveConfDummyPersistor();
-    QueryHistoryService service = QueryHistoryService.start(conf, serviceContext);
+    HiveConf conf = getHiveConfDummyRepository();
+    QueryHistoryService service = new QueryHistoryService(conf, serviceContext).start();
 
     // prepare the source object from which the QueryHistoryService will obtain query information
-    QueryInfo queryInfo = spy(new QueryInfo(ExampleQueryHistoryRecord.QUERY_STATE, ExampleQueryHistoryRecord.END_USER,
-        ExampleQueryHistoryRecord.EXECUTION_ENGINE, ExampleQueryHistoryRecord.SESSION_ID,
-        ExampleQueryHistoryRecord.OPERATION_ID));
+    QueryInfo queryInfo = spy(new QueryInfo(DummyQueryHistoryRecord.QUERY_STATE, DummyQueryHistoryRecord.END_USER,
+        DummyQueryHistoryRecord.EXECUTION_ENGINE, DummyQueryHistoryRecord.SESSION_ID,
+        DummyQueryHistoryRecord.OPERATION_ID));
     // elapsed time is calculated from System.currentTimeMillis(), let's mock it here for unit test convenience's sake
-    when(queryInfo.getElapsedTime()).thenReturn(ExampleQueryHistoryRecord.TOTAL_TIME);
+    when(queryInfo.getElapsedTime()).thenReturn(DummyQueryHistoryRecord.TOTAL_TIME);
     queryInfo.setEndTime();
 
-    HiveConf.setQueryString(conf, ExampleQueryHistoryRecord.SQL);
+    HiveConf.setQueryString(conf, DummyQueryHistoryRecord.SQL);
 
     QueryState queryState = DriverFactory.getNewQueryState(conf);
 
@@ -133,11 +117,11 @@ public class TestQueryHistoryService {
     driverContext.setPlan(plan);
 
     // let the QueryHistoryService consume the data
-    service.handle(driverContext);
+    service.handleQuery(driverContext);
 
-    // get the prepared record from the service/persistor
-    DummyQueryHistoryPersistor persistor = (DummyQueryHistoryPersistor)service.getPersistor();
-    QueryHistoryRecord record = persistor.record;
+    // get the prepared record from the service/repository
+    DummyQueryHistoryRepository repository = (DummyQueryHistoryRepository)service.getRepository();
+    QueryHistoryRecord record = repository.record;
 
     // check all the values are as expected in the record
     checkValues(ss, queryState, driverContext, record);
@@ -147,9 +131,9 @@ public class TestQueryHistoryService {
 
   private static void prepareSessionState(SessionState ss) {
     ss.setIsHiveServerQuery(true);
-    ss.setOverriddenConfigurations(ExampleQueryHistoryRecord.CONFIGURATION_OPTIONS_CHANGED);
-    ss.setUserIpAddress(ExampleQueryHistoryRecord.CLIENT_ADDRESS);
-    ss.getConf().setInt(SerDeUtils.LIST_SINK_OUTPUT_PROTOCOL, ExampleQueryHistoryRecord.HIVERSERVER2_PROTOCOL_VERSION);
+    ss.setOverriddenConfigurations(DummyQueryHistoryRecord.CONFIGURATION_OPTIONS_CHANGED);
+    ss.setUserIpAddress(DummyQueryHistoryRecord.CLIENT_ADDRESS);
+    ss.getConf().setInt(SerDeUtils.LIST_SINK_OUTPUT_PROTOCOL, DummyQueryHistoryRecord.HIVERSERVER2_PROTOCOL_VERSION);
   }
 
   private static void preparePerfLogger(QueryInfo queryInfo, PerfLogger perfLogger) throws NoSuchFieldException,
@@ -165,13 +149,13 @@ public class TestQueryHistoryService {
 
     // COMPILE (planning)
     startTimes.put(PerfLogger.COMPILE, queryInfo.getBeginTime());
-    long compileEndTime = queryInfo.getBeginTime() + ExampleQueryHistoryRecord.PLANNING_DURATION;
+    long compileEndTime = queryInfo.getBeginTime() + DummyQueryHistoryRecord.PLANNING_DURATION;
     endTimes.put(PerfLogger.COMPILE, compileEndTime);
 
     // GET_SESSION
-    long getSessionStartTime = compileEndTime + ExampleQueryHistoryRecord.PREPARE_PLAN_DURATION;
+    long getSessionStartTime = compileEndTime + DummyQueryHistoryRecord.PREPARE_PLAN_DURATION;
     startTimes.put(PerfLogger.TEZ_GET_SESSION, getSessionStartTime);
-    long getSessionEndTime = getSessionStartTime + ExampleQueryHistoryRecord.GET_SESSION_DURATION;
+    long getSessionEndTime = getSessionStartTime + DummyQueryHistoryRecord.GET_SESSION_DURATION;
     endTimes.put(PerfLogger.TEZ_GET_SESSION, getSessionEndTime);
 
     // let's ignore DAG submission time for the sake of this unit test
@@ -179,24 +163,24 @@ public class TestQueryHistoryService {
     endTimes.put(PerfLogger.TEZ_SUBMIT_DAG, getSessionEndTime);
 
     startTimes.put(PerfLogger.TEZ_RUN_DAG, getSessionEndTime);
-    long runTezDagEndTime = getSessionEndTime + ExampleQueryHistoryRecord.EXECUTION_DURATION;
+    long runTezDagEndTime = getSessionEndTime + DummyQueryHistoryRecord.EXECUTION_DURATION;
     endTimes.put(PerfLogger.TEZ_RUN_DAG, runTezDagEndTime);
   }
 
   private static void prepareDriverContext(DriverContext driverContext) {
     // mock the queryType and ddlType, because the calculation if those are quite complicated,
     // which should be unit tested separately
-    when(driverContext.getQueryType()).thenReturn(ExampleQueryHistoryRecord.QUERY_TYPE);
-    when(driverContext.getDdlType()).thenReturn(ExampleQueryHistoryRecord.DDL_TYPE);
-    driverContext.setQueryErrorMessage(ExampleQueryHistoryRecord.FAILURE_REASON);
-    driverContext.setExplainPlan(ExampleQueryHistoryRecord.PLAN);
+    when(driverContext.getQueryType()).thenReturn(DummyQueryHistoryRecord.QUERY_TYPE);
+    when(driverContext.getDdlType()).thenReturn(DummyQueryHistoryRecord.DDL_TYPE);
+    driverContext.setQueryErrorMessage(DummyQueryHistoryRecord.FAILURE_REASON);
+    driverContext.setExplainPlan(DummyQueryHistoryRecord.PLAN);
     FetchTask fetchTask = mock(FetchTask.class);
-    when(fetchTask.getTotalRows()).thenReturn(ExampleQueryHistoryRecord.NUM_ROWS_FETCHED);
+    when(fetchTask.getTotalRows()).thenReturn(DummyQueryHistoryRecord.NUM_ROWS_FETCHED);
     when(driverContext.getFetchTask()).thenReturn(fetchTask);
 
     QueryProperties queryProperties = mock(QueryProperties.class);
     when(queryProperties.getTablesQueried()).thenReturn(
-        ExampleQueryHistoryRecord.TABLES_QUERIED);
+        DummyQueryHistoryRecord.TABLES_QUERIED);
     when(driverContext.getQueryProperties()).thenReturn(queryProperties);
   }
 
@@ -206,72 +190,74 @@ public class TestQueryHistoryService {
     TezRuntimeContext runtimeContext = tezTask.getRuntimeContext();
 
     TezClient tezClient = mock(TezClient.class);
-    when(tezClient.getAmHost()).thenReturn(ExampleQueryHistoryRecord.TEZ_AM_ADDRESS.split(":")[0]);
-    when(tezClient.getAmPort()).thenReturn(Integer.valueOf(ExampleQueryHistoryRecord.TEZ_AM_ADDRESS.split(":")[1]));
+    when(tezClient.getAmHost()).thenReturn(DummyQueryHistoryRecord.TEZ_AM_ADDRESS.split(":")[0]);
+    when(tezClient.getAmPort()).thenReturn(Integer.valueOf(DummyQueryHistoryRecord.TEZ_AM_ADDRESS.split(":")[1]));
     runtimeContext.init(tezClient);
 
-    runtimeContext.setDagId(ExampleQueryHistoryRecord.DAG_ID);
-    runtimeContext.setApplicationId(ExampleQueryHistoryRecord.TEZ_APPLICATION_ID);
-    runtimeContext.setSessionId(ExampleQueryHistoryRecord.TEZ_SESSION_ID);
-    runtimeContext.setExecutionMode(ExampleQueryHistoryRecord.EXECUTION_MODE);
+    runtimeContext.setDagId(DummyQueryHistoryRecord.DAG_ID);
+    runtimeContext.setApplicationId(DummyQueryHistoryRecord.TEZ_APPLICATION_ID);
+    runtimeContext.setSessionId(DummyQueryHistoryRecord.TEZ_SESSION_ID);
+    runtimeContext.setExecutionMode(DummyQueryHistoryRecord.EXECUTION_MODE);
 
     TezJobMonitor monitor = mock(TezJobMonitor.class);
-    when(monitor.getSummary()).thenReturn(ExampleQueryHistoryRecord.EXEC_SUMMARY);
+    LogHelper console = mock(LogHelper.class);
+    when(monitor.getConsole()).thenReturn(console);
+    when(console.getSummary()).thenReturn(DummyQueryHistoryRecord.EXEC_SUMMARY);
     runtimeContext.setMonitor(monitor);
 
     TezCounters counters = new TezCounters();
     runtimeContext.setCounters(counters);
     counters.findCounter(DAGCounter.class.getName(), DAGCounter.TOTAL_LAUNCHED_TASKS.name())
-        .setValue(ExampleQueryHistoryRecord.TOTAL_LAUNCHED_TASKS);
+        .setValue(DummyQueryHistoryRecord.TOTAL_LAUNCHED_TASKS);
     counters.findCounter(DAGCounter.class.getName(), DAGCounter.NUM_SUCCEEDED_TASKS.name())
-        .setValue(ExampleQueryHistoryRecord.NUM_SUCCEEDED_TASKS);
+        .setValue(DummyQueryHistoryRecord.NUM_SUCCEEDED_TASKS);
     counters.findCounter(DAGCounter.class.getName(), DAGCounter.NUM_KILLED_TASKS.name())
-        .setValue(ExampleQueryHistoryRecord.NUM_KILLED_TASKS);
+        .setValue(DummyQueryHistoryRecord.NUM_KILLED_TASKS);
     counters.findCounter(DAGCounter.class.getName(), DAGCounter.NUM_FAILED_TASKS.name())
-        .setValue(ExampleQueryHistoryRecord.NUM_FAILED_TASKS);
+        .setValue(DummyQueryHistoryRecord.NUM_FAILED_TASKS);
     counters.findCounter(DAGCounter.class.getName(), DAGCounter.WALL_CLOCK_MILLIS.name())
-        .setValue(ExampleQueryHistoryRecord.TASK_DURATION_MILLIS);
+        .setValue(DummyQueryHistoryRecord.TASK_DURATION_MILLIS);
     counters.findCounter(DAGCounter.class.getName(), DAGCounter.NODE_USED_COUNT.name())
-        .setValue(ExampleQueryHistoryRecord.NODE_USED_COUNT);
+        .setValue(DummyQueryHistoryRecord.NODE_USED_COUNT);
     counters.findCounter(DAGCounter.class.getName(), DAGCounter.NODE_TOTAL_COUNT.name())
-        .setValue(ExampleQueryHistoryRecord.NODE_TOTAL_COUNT);
+        .setValue(DummyQueryHistoryRecord.NODE_TOTAL_COUNT);
     counters.findCounter(TaskCounter.class.getName(), TaskCounter.REDUCE_INPUT_GROUPS.name())
-        .setValue(ExampleQueryHistoryRecord.REDUCE_INPUT_GROUPS);
+        .setValue(DummyQueryHistoryRecord.REDUCE_INPUT_GROUPS);
     counters.findCounter(TaskCounter.class.getName(), TaskCounter.REDUCE_INPUT_RECORDS.name())
-        .setValue(ExampleQueryHistoryRecord.REDUCE_INPUT_RECORDS);
+        .setValue(DummyQueryHistoryRecord.REDUCE_INPUT_RECORDS);
     counters.findCounter(TaskCounter.class.getName(), TaskCounter.SPILLED_RECORDS.name())
-        .setValue(ExampleQueryHistoryRecord.SPILLED_RECORDS);
+        .setValue(DummyQueryHistoryRecord.SPILLED_RECORDS);
     counters.findCounter(TaskCounter.class.getName(), TaskCounter.NUM_SHUFFLED_INPUTS.name())
-        .setValue(ExampleQueryHistoryRecord.NUM_SHUFFLED_INPUTS);
+        .setValue(DummyQueryHistoryRecord.NUM_SHUFFLED_INPUTS);
     counters.findCounter(TaskCounter.class.getName(), TaskCounter.NUM_FAILED_SHUFFLE_INPUTS.name())
-        .setValue(ExampleQueryHistoryRecord.NUM_FAILED_SHUFFLE_INPUTS);
+        .setValue(DummyQueryHistoryRecord.NUM_FAILED_SHUFFLE_INPUTS);
     counters.findCounter(TaskCounter.class.getName(), TaskCounter.INPUT_RECORDS_PROCESSED.name())
-        .setValue(ExampleQueryHistoryRecord.INPUT_RECORDS_PROCESSED);
+        .setValue(DummyQueryHistoryRecord.INPUT_RECORDS_PROCESSED);
     counters.findCounter(TaskCounter.class.getName(), TaskCounter.INPUT_SPLIT_LENGTH_BYTES.name())
-        .setValue(ExampleQueryHistoryRecord.INPUT_SPLIT_LENGTH_BYTES);
+        .setValue(DummyQueryHistoryRecord.INPUT_SPLIT_LENGTH_BYTES);
     counters.findCounter(TaskCounter.class.getName(), TaskCounter.OUTPUT_RECORDS.name())
-        .setValue(ExampleQueryHistoryRecord.OUTPUT_RECORDS);
+        .setValue(DummyQueryHistoryRecord.OUTPUT_RECORDS);
     counters.findCounter(TaskCounter.class.getName(), TaskCounter.OUTPUT_BYTES_PHYSICAL.name())
-        .setValue(ExampleQueryHistoryRecord.OUTPUT_BYTES_PHYSICAL);
+        .setValue(DummyQueryHistoryRecord.OUTPUT_BYTES_PHYSICAL);
     counters.findCounter(TaskCounter.class.getName(), TaskCounter.SHUFFLE_CHUNK_COUNT.name())
-        .setValue(ExampleQueryHistoryRecord.SHUFFLE_CHUNK_COUNT);
+        .setValue(DummyQueryHistoryRecord.SHUFFLE_CHUNK_COUNT);
     counters.findCounter(TaskCounter.class.getName(), TaskCounter.SHUFFLE_BYTES.name())
-        .setValue(ExampleQueryHistoryRecord.SHUFFLE_BYTES);
+        .setValue(DummyQueryHistoryRecord.SHUFFLE_BYTES);
     counters.findCounter(TaskCounter.class.getName(), TaskCounter.SHUFFLE_BYTES_DISK_DIRECT.name())
-        .setValue(ExampleQueryHistoryRecord.SHUFFLE_BYTES_DISK_DIRECT);
+        .setValue(DummyQueryHistoryRecord.SHUFFLE_BYTES_DISK_DIRECT);
     counters.findCounter(TaskCounter.class.getName(), TaskCounter.SHUFFLE_PHASE_TIME.name())
-        .setValue(ExampleQueryHistoryRecord.SHUFFLE_PHASE_TIME);
+        .setValue(DummyQueryHistoryRecord.SHUFFLE_PHASE_TIME);
     counters.findCounter(TaskCounter.class.getName(), TaskCounter.MERGE_PHASE_TIME.name())
-        .setValue(ExampleQueryHistoryRecord.MERGE_PHASE_TIME);
+        .setValue(DummyQueryHistoryRecord.MERGE_PHASE_TIME);
 
     return tezTask;
   }
 
   // This method compares the data sources with the values in the QueryHistoryRecord to check if every data made their
-  // way there as expected. The expected values are defined as constants from ExampleQueryHistoryRecord except where:
+  // way there as expected. The expected values are defined as constants from DummyQueryHistoryRecord except where:
   // 1. it was not possible to mock these values (e.g. query_id, session_id), but we can still acquire them for
   // comparison, or
-  // 2. their values in the ExampleQueryHistoryRecord are not constant and ExampleQueryHistoryRecord adds further logic
+  // 2. their values in the DummyQueryHistoryRecord are not constant and DummyQueryHistoryRecord adds further logic
   // to calculate "realistic" values, making an inner layer which is better to be eliminated (e.g. perfLogger related
   // values)
   private void checkValues(SessionState ss, QueryState queryState, DriverContext driverContext,
@@ -292,22 +278,22 @@ public class TestQueryHistoryService {
 
     compareValue(QueryHistorySchema.Field.QUERY_ID, queryState.getQueryId(), record, fieldsValidated);
     compareValue(QueryHistorySchema.Field.SESSION_ID, ss.getSessionId(), record, fieldsValidated);
-    compareValue(QueryHistorySchema.Field.OPERATION_ID, ExampleQueryHistoryRecord.OPERATION_ID, record, fieldsValidated);
-    compareValue(QueryHistorySchema.Field.EXECUTION_ENGINE, ExampleQueryHistoryRecord.EXECUTION_ENGINE, record,
+    compareValue(QueryHistorySchema.Field.OPERATION_ID, DummyQueryHistoryRecord.OPERATION_ID, record, fieldsValidated);
+    compareValue(QueryHistorySchema.Field.EXECUTION_ENGINE, DummyQueryHistoryRecord.EXECUTION_ENGINE, record,
         fieldsValidated);
-    compareValue(QueryHistorySchema.Field.EXECUTION_MODE, ExampleQueryHistoryRecord.EXECUTION_MODE, record,
+    compareValue(QueryHistorySchema.Field.EXECUTION_MODE, DummyQueryHistoryRecord.EXECUTION_MODE, record,
         fieldsValidated);
-    compareValue(QueryHistorySchema.Field.TEZ_DAG_ID, ExampleQueryHistoryRecord.DAG_ID, record, fieldsValidated);
-    compareValue(QueryHistorySchema.Field.TEZ_APP_ID, ExampleQueryHistoryRecord.TEZ_APPLICATION_ID, record,
+    compareValue(QueryHistorySchema.Field.TEZ_DAG_ID, DummyQueryHistoryRecord.DAG_ID, record, fieldsValidated);
+    compareValue(QueryHistorySchema.Field.TEZ_APP_ID, DummyQueryHistoryRecord.TEZ_APPLICATION_ID, record,
         fieldsValidated);
-    compareValue(QueryHistorySchema.Field.TEZ_SESSION_ID, ExampleQueryHistoryRecord.TEZ_SESSION_ID, record,
+    compareValue(QueryHistorySchema.Field.TEZ_SESSION_ID, DummyQueryHistoryRecord.TEZ_SESSION_ID, record,
         fieldsValidated);
     compareValue(QueryHistorySchema.Field.CLUSTER_ID, ServiceContext.findClusterId(), record, fieldsValidated);
-    compareValue(QueryHistorySchema.Field.SQL, ExampleQueryHistoryRecord.SQL, record, fieldsValidated);
-    compareValue(QueryHistorySchema.Field.SESSION_TYPE, ExampleQueryHistoryRecord.SESSION_TYPE, record,
+    compareValue(QueryHistorySchema.Field.SQL, DummyQueryHistoryRecord.SQL, record, fieldsValidated);
+    compareValue(QueryHistorySchema.Field.SESSION_TYPE, DummyQueryHistoryRecord.SESSION_TYPE, record,
         fieldsValidated);
     compareValue(QueryHistorySchema.Field.HIVERSERVER2_PROTOCOL_VERSION,
-        ExampleQueryHistoryRecord.HIVERSERVER2_PROTOCOL_VERSION, record, fieldsValidated);
+        DummyQueryHistoryRecord.HIVERSERVER2_PROTOCOL_VERSION, record, fieldsValidated);
 
     boolean doAsEnabled = ss.getConf().getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
     compareValue(QueryHistorySchema.Field.CLUSTER_USER,
@@ -315,31 +301,32 @@ public class TestQueryHistoryService {
 
     // doAs=false, END_USER is the current user (usually "hive" on a cluster)
     compareValue(QueryHistorySchema.Field.END_USER, ss.getUserName(), record, fieldsValidated);
-    compareValue(QueryHistorySchema.Field.DB_NAME, ExampleQueryHistoryRecord.CURRENT_DATABASE, record, fieldsValidated);
-    compareValue(QueryHistorySchema.Field.TEZ_COORDINATOR, ExampleQueryHistoryRecord.TEZ_AM_ADDRESS, record, fieldsValidated);
-    compareValue(QueryHistorySchema.Field.QUERY_STATE, ExampleQueryHistoryRecord.QUERY_STATE, record, fieldsValidated);
-    compareValue(QueryHistorySchema.Field.QUERY_TYPE, ExampleQueryHistoryRecord.QUERY_TYPE, record, fieldsValidated);
-    compareValue(QueryHistorySchema.Field.DDL_TYPE, ExampleQueryHistoryRecord.DDL_TYPE, record, fieldsValidated);
+    compareValue(QueryHistorySchema.Field.DB_NAME, DummyQueryHistoryRecord.CURRENT_DATABASE, record, fieldsValidated);
+    compareValue(QueryHistorySchema.Field.TEZ_COORDINATOR, DummyQueryHistoryRecord.TEZ_AM_ADDRESS, record, fieldsValidated);
+    compareValue(QueryHistorySchema.Field.QUERY_STATE, DummyQueryHistoryRecord.QUERY_STATE, record, fieldsValidated);
+    compareValue(QueryHistorySchema.Field.QUERY_TYPE, DummyQueryHistoryRecord.QUERY_TYPE.getName(), record,
+        fieldsValidated);
+    compareValue(QueryHistorySchema.Field.DDL_TYPE, DummyQueryHistoryRecord.DDL_TYPE, record, fieldsValidated);
     compareValue(QueryHistorySchema.Field.SERVER_ADDRESS, serviceContext.getHost(), record, fieldsValidated);
     compareValue(QueryHistorySchema.Field.SERVER_PORT, serviceContext.getPort(), record, fieldsValidated);
-    compareValue(QueryHistorySchema.Field.CLIENT_ADDRESS, ExampleQueryHistoryRecord.CLIENT_ADDRESS, record, fieldsValidated);
+    compareValue(QueryHistorySchema.Field.CLIENT_ADDRESS, DummyQueryHistoryRecord.CLIENT_ADDRESS, record, fieldsValidated);
 
     compareValue(QueryHistorySchema.Field.START_TIME_UTC,
-        Timestamp.ofEpochMilli(driverContext.getQueryInfo().getBeginTimeUTC().toEpochMilli()), record,
+        Timestamp.ofEpochMilli(driverContext.getQueryInfo().getBeginTime()), record,
         fieldsValidated);
     compareValue(QueryHistorySchema.Field.START_TIME,
-        Timestamp.ofEpochMilli(driverContext.getQueryInfo().getBeginTimeUTC().toEpochMilli(), ZoneId.systemDefault()),
+        Timestamp.ofEpochMilli(driverContext.getQueryInfo().getBeginTime(), ZoneId.systemDefault()),
         record,
         fieldsValidated);
     compareValue(QueryHistorySchema.Field.END_TIME_UTC,
-        Timestamp.ofEpochMilli(driverContext.getQueryInfo().getEndTimeUTC().toEpochMilli()), record,
+        Timestamp.ofEpochMilli(driverContext.getQueryInfo().getEndTime()), record,
         fieldsValidated);
     compareValue(QueryHistorySchema.Field.END_TIME,
-        Timestamp.ofEpochMilli(driverContext.getQueryInfo().getEndTimeUTC().toEpochMilli(), ZoneId.systemDefault()),
+        Timestamp.ofEpochMilli(driverContext.getQueryInfo().getEndTime(), ZoneId.systemDefault()),
         record,
         fieldsValidated);
 
-    compareValue(QueryHistorySchema.Field.TOTAL_TIME_MS, ExampleQueryHistoryRecord.TOTAL_TIME, record, fieldsValidated);
+    compareValue(QueryHistorySchema.Field.TOTAL_TIME_MS, DummyQueryHistoryRecord.TOTAL_TIME, record, fieldsValidated);
 
     // perfLogger values
     compareValue(QueryHistorySchema.Field.PLANNING_DURATION,
@@ -376,60 +363,60 @@ public class TestQueryHistoryService {
             ZoneId.systemDefault()), record,
         fieldsValidated);
 
-    compareValue(QueryHistorySchema.Field.FAILURE_REASON, ExampleQueryHistoryRecord.FAILURE_REASON, record,
+    compareValue(QueryHistorySchema.Field.FAILURE_REASON, DummyQueryHistoryRecord.FAILURE_REASON, record,
         fieldsValidated);
-    compareValue(QueryHistorySchema.Field.NUM_ROWS_FETCHED, ExampleQueryHistoryRecord.NUM_ROWS_FETCHED, record,
+    compareValue(QueryHistorySchema.Field.NUM_ROWS_FETCHED, DummyQueryHistoryRecord.NUM_ROWS_FETCHED, record,
         fieldsValidated);
-    compareValue(QueryHistorySchema.Field.PLAN, ExampleQueryHistoryRecord.PLAN, record, fieldsValidated);
+    compareValue(QueryHistorySchema.Field.PLAN, DummyQueryHistoryRecord.PLAN, record, fieldsValidated);
     compareValue(QueryHistorySchema.Field.TABLES_QUERIED, String.join(",",
-        ExampleQueryHistoryRecord.TABLES_QUERIED), record, fieldsValidated);
-    compareValue(QueryHistorySchema.Field.EXEC_SUMMARY, ExampleQueryHistoryRecord.EXEC_SUMMARY, record,
+        DummyQueryHistoryRecord.TABLES_QUERIED), record, fieldsValidated);
+    compareValue(QueryHistorySchema.Field.EXEC_SUMMARY, DummyQueryHistoryRecord.EXEC_SUMMARY, record,
         fieldsValidated);
     compareValue(QueryHistorySchema.Field.CONFIGURATION_OPTIONS_CHANGED,
-        Joiner.on(";").withKeyValueSeparator("=").join(ExampleQueryHistoryRecord.CONFIGURATION_OPTIONS_CHANGED),
+        Joiner.on(";").withKeyValueSeparator("=").join(DummyQueryHistoryRecord.CONFIGURATION_OPTIONS_CHANGED),
         record, fieldsValidated);
     compareValue(QueryHistorySchema.Field.TOTAL_LAUNCHED_TASKS,
-        ExampleQueryHistoryRecord.TOTAL_LAUNCHED_TASKS, record, fieldsValidated);
+        DummyQueryHistoryRecord.TOTAL_LAUNCHED_TASKS, record, fieldsValidated);
     compareValue(QueryHistorySchema.Field.NUM_SUCCEEDED_TASKS,
-        ExampleQueryHistoryRecord.NUM_SUCCEEDED_TASKS, record, fieldsValidated);
+        DummyQueryHistoryRecord.NUM_SUCCEEDED_TASKS, record, fieldsValidated);
     compareValue(QueryHistorySchema.Field.NUM_KILLED_TASKS,
-        ExampleQueryHistoryRecord.NUM_KILLED_TASKS, record, fieldsValidated);
+        DummyQueryHistoryRecord.NUM_KILLED_TASKS, record, fieldsValidated);
     compareValue(QueryHistorySchema.Field.NUM_FAILED_TASKS,
-        ExampleQueryHistoryRecord.NUM_FAILED_TASKS, record, fieldsValidated);
+        DummyQueryHistoryRecord.NUM_FAILED_TASKS, record, fieldsValidated);
     compareValue(QueryHistorySchema.Field.TASK_DURATION_MILLIS,
-        ExampleQueryHistoryRecord.TASK_DURATION_MILLIS, record, fieldsValidated);
+        DummyQueryHistoryRecord.TASK_DURATION_MILLIS, record, fieldsValidated);
     compareValue(QueryHistorySchema.Field.NODE_USED_COUNT,
-        ExampleQueryHistoryRecord.NODE_USED_COUNT, record, fieldsValidated);
+        DummyQueryHistoryRecord.NODE_USED_COUNT, record, fieldsValidated);
     compareValue(QueryHistorySchema.Field.NODE_TOTAL_COUNT,
-        ExampleQueryHistoryRecord.NODE_TOTAL_COUNT, record, fieldsValidated);
+        DummyQueryHistoryRecord.NODE_TOTAL_COUNT, record, fieldsValidated);
     compareValue(QueryHistorySchema.Field.REDUCE_INPUT_GROUPS,
-        ExampleQueryHistoryRecord.REDUCE_INPUT_GROUPS, record, fieldsValidated);
+        DummyQueryHistoryRecord.REDUCE_INPUT_GROUPS, record, fieldsValidated);
     compareValue(QueryHistorySchema.Field.REDUCE_INPUT_RECORDS,
-        ExampleQueryHistoryRecord.REDUCE_INPUT_RECORDS, record, fieldsValidated);
+        DummyQueryHistoryRecord.REDUCE_INPUT_RECORDS, record, fieldsValidated);
     compareValue(QueryHistorySchema.Field.SPILLED_RECORDS,
-        ExampleQueryHistoryRecord.SPILLED_RECORDS, record, fieldsValidated);
+        DummyQueryHistoryRecord.SPILLED_RECORDS, record, fieldsValidated);
     compareValue(QueryHistorySchema.Field.NUM_SHUFFLED_INPUTS,
-        ExampleQueryHistoryRecord.NUM_SHUFFLED_INPUTS, record, fieldsValidated);
+        DummyQueryHistoryRecord.NUM_SHUFFLED_INPUTS, record, fieldsValidated);
     compareValue(QueryHistorySchema.Field.NUM_FAILED_SHUFFLE_INPUTS,
-        ExampleQueryHistoryRecord.NUM_FAILED_SHUFFLE_INPUTS, record, fieldsValidated);
+        DummyQueryHistoryRecord.NUM_FAILED_SHUFFLE_INPUTS, record, fieldsValidated);
     compareValue(QueryHistorySchema.Field.INPUT_RECORDS_PROCESSED,
-        ExampleQueryHistoryRecord.INPUT_RECORDS_PROCESSED, record, fieldsValidated);
+        DummyQueryHistoryRecord.INPUT_RECORDS_PROCESSED, record, fieldsValidated);
     compareValue(QueryHistorySchema.Field.INPUT_SPLIT_LENGTH_BYTES,
-        ExampleQueryHistoryRecord.INPUT_SPLIT_LENGTH_BYTES, record, fieldsValidated);
+        DummyQueryHistoryRecord.INPUT_SPLIT_LENGTH_BYTES, record, fieldsValidated);
     compareValue(QueryHistorySchema.Field.OUTPUT_RECORDS,
-        ExampleQueryHistoryRecord.OUTPUT_RECORDS, record, fieldsValidated);
+        DummyQueryHistoryRecord.OUTPUT_RECORDS, record, fieldsValidated);
     compareValue(QueryHistorySchema.Field.OUTPUT_BYTES_PHYSICAL,
-        ExampleQueryHistoryRecord.OUTPUT_BYTES_PHYSICAL, record, fieldsValidated);
+        DummyQueryHistoryRecord.OUTPUT_BYTES_PHYSICAL, record, fieldsValidated);
     compareValue(QueryHistorySchema.Field.SHUFFLE_CHUNK_COUNT,
-        ExampleQueryHistoryRecord.SHUFFLE_CHUNK_COUNT, record, fieldsValidated);
+        DummyQueryHistoryRecord.SHUFFLE_CHUNK_COUNT, record, fieldsValidated);
     compareValue(QueryHistorySchema.Field.SHUFFLE_BYTES,
-        ExampleQueryHistoryRecord.SHUFFLE_BYTES, record, fieldsValidated);
+        DummyQueryHistoryRecord.SHUFFLE_BYTES, record, fieldsValidated);
     compareValue(QueryHistorySchema.Field.SHUFFLE_BYTES_DISK_DIRECT,
-        ExampleQueryHistoryRecord.SHUFFLE_BYTES_DISK_DIRECT, record, fieldsValidated);
+        DummyQueryHistoryRecord.SHUFFLE_BYTES_DISK_DIRECT, record, fieldsValidated);
     compareValue(QueryHistorySchema.Field.SHUFFLE_PHASE_TIME,
-        ExampleQueryHistoryRecord.SHUFFLE_PHASE_TIME, record, fieldsValidated);
+        DummyQueryHistoryRecord.SHUFFLE_PHASE_TIME, record, fieldsValidated);
     compareValue(QueryHistorySchema.Field.MERGE_PHASE_TIME,
-        ExampleQueryHistoryRecord.MERGE_PHASE_TIME, record, fieldsValidated);
+        DummyQueryHistoryRecord.MERGE_PHASE_TIME, record, fieldsValidated);
 
     if (fieldsValidated.get() != FIELDS_TO_BE_VALIDATED) {
       Assert.fail(
@@ -449,15 +436,14 @@ public class TestQueryHistoryService {
 
   @Test
   public void testBatchSizeBasedPersist() {
-    HiveConf conf = getHiveConfDummyPersistor();
+    HiveConf conf = getHiveConfDummyRepository();
     QueryHistoryRecord record = new QueryHistoryRecord();
     // make sure we don't persist according to estimated memory size
-    conf.setIntVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_SERVICE_PERSIST_MAX_MEMORY_BYTES, 1000000);
+    conf.setIntVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_PERSIST_MAX_MEMORY_BYTES, 1000000);
     // persist after the third record
-    conf.setIntVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_SERVICE_PERSIST_MAX_BATCH_SIZE, 3);
+    conf.setIntVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_PERSIST_MAX_BATCH_SIZE, 3);
 
-    QueryHistoryServiceForTest service = new QueryHistoryServiceForTest();
-    QueryHistoryService.initService(serviceContext, conf, service);
+    QueryHistoryServiceForTest service = new QueryHistoryServiceForTest(conf, serviceContext);
 
     Assert.assertFalse("Call to persist is not expected here (no records)",
         service.needToPersist());
@@ -477,16 +463,15 @@ public class TestQueryHistoryService {
 
   @Test
   public void testMemoryConsumptionBasedPersist() {
-    HiveConf conf = getHiveConfDummyPersistor();
+    HiveConf conf = getHiveConfDummyRepository();
     QueryHistoryRecord record = new QueryHistoryRecord();
     long recordSize = record.getEstimatedSizeInMemoryBytes();
     // make sure we don't persist according to batch size
-    conf.setIntVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_SERVICE_PERSIST_MAX_BATCH_SIZE, 1000);
+    conf.setIntVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_PERSIST_MAX_BATCH_SIZE, 1000);
     // persist after the second record (2 * recordSize > recordSize + 1)
-    conf.setIntVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_SERVICE_PERSIST_MAX_MEMORY_BYTES, (int)recordSize + 1);
+    conf.setIntVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_PERSIST_MAX_MEMORY_BYTES, (int)recordSize + 1);
 
-    QueryHistoryServiceForTest service = new QueryHistoryServiceForTest();
-    QueryHistoryService.initService(serviceContext, conf, service);
+    QueryHistoryServiceForTest service = new QueryHistoryServiceForTest(conf, serviceContext);
 
     Assert.assertFalse("Call to persist is not expected here (no records)",
         service.needToPersist());
@@ -509,26 +494,26 @@ public class TestQueryHistoryService {
     return conf;
   }
 
-  private HiveConf getHiveConfDummyPersistor() {
+  private HiveConf getHiveConfDummyRepository() {
     HiveConf conf = getHiveConf();
 
-    conf.setVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_SERVICE_PERSISTOR_CLASS,
-        DummyQueryHistoryPersistor.class.getName());
-    conf.setIntVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_SERVICE_PERSIST_MAX_BATCH_SIZE, 0);
+    conf.setVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_REPOSITORY_CLASS,
+        DummyQueryHistoryRepository.class.getName());
+    conf.setIntVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_PERSIST_MAX_BATCH_SIZE, 0);
     return conf;
   }
 
-  static class DummyQueryHistoryPersistor implements QueryHistoryPersistor {
+  static class DummyQueryHistoryRepository implements QueryHistoryRepository {
     QueryHistoryRecord record = null;
 
     @Override
     public void init(HiveConf conf, QueryHistorySchema schema) {
-      LOG.info("DummyQueryHistoryPersistor init");
+      LOG.info("DummyQueryHistoryRepository init");
     }
 
     @Override
     public void persist(Queue<QueryHistoryRecord> records) {
-      LOG.info("DummyQueryHistoryPersistor to persist {} records", records.size());
+      LOG.info("DummyQueryHistoryRepository to persist {} records", records.size());
       // saving for unit test purposes
       this.record = records.poll();
       records.clear();
@@ -536,6 +521,10 @@ public class TestQueryHistoryService {
   }
 
   static class QueryHistoryServiceForTest extends QueryHistoryService {
+    public QueryHistoryServiceForTest(HiveConf conf, ServiceContext serviceContext) {
+      super(conf, serviceContext);
+    }
+
     public void addRecordDirectly(QueryHistoryRecord record) {
       queryHistoryQueue.add(record);
     }

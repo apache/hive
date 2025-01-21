@@ -39,7 +39,7 @@ public class TestJdbcWithDBTokenStoreNoDoAs extends TestJdbcWithMiniKdc{
     confOverlay.put(ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_ENABLED.varname, "false");
     // query history adds no value to this test, it would just bring iceberg handler dependency, which isn't worth
     // this should be handled with HiveConfForTests when it's used here too
-    confOverlay.put(ConfVars.HIVE_QUERY_HISTORY_SERVICE_ENABLED.varname, "false");
+    confOverlay.put(ConfVars.HIVE_QUERY_HISTORY_ENABLED.varname, "false");
     miniHiveKdc = new MiniHiveKdc();
     HiveConf hiveConf = new HiveConf();
     hiveConf.setVar(ConfVars.METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_CLS, "org.apache.hadoop.hive.thrift.DBTokenStore");

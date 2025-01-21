@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.queryhistory.persist;
+package org.apache.hadoop.hive.ql.queryhistory.repository;
 
 import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistorySchemaTestUtils;
 import org.apache.iceberg.mr.mapred.Container;
@@ -23,10 +23,11 @@ import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ServiceContext;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.queryhistory.QueryHistoryService;
-import org.apache.hadoop.hive.ql.queryhistory.persist.QueryHistoryPersistor;
-import org.apache.hadoop.hive.ql.queryhistory.schema.ExampleQueryHistoryRecord;
+import org.apache.hadoop.hive.ql.queryhistory.repository.IcebergRepositoryForTest;
+import org.apache.hadoop.hive.ql.queryhistory.schema.DummyQueryHistoryRecord;
 import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistoryRecord;
 import org.apache.hadoop.hive.ql.queryhistory.schema.IcebergQueryHistoryRecord;
 import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistorySchema;
@@ -47,8 +48,10 @@ import java.io.File;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class TestIcebergPersistor {
-  private static final Logger LOG = LoggerFactory.getLogger(TestIcebergPersistor.class);
+public class TestIcebergRepository {
+  private static final Logger LOG = LoggerFactory.getLogger(TestIcebergRepository.class);
+  private static final ServiceContext serviceContext = new ServiceContext(() -> DummyQueryHistoryRecord.SERVER_HOST,
+      () ->  DummyQueryHistoryRecord.SERVER_PORT);
   private final Queue<QueryHistoryRecord> queryHistoryQueue = new LinkedBlockingQueue<>();
 
   /*
@@ -58,29 +61,28 @@ public class TestIcebergPersistor {
   @Test
   public void testPersistRecord() throws Exception {
     HiveConf conf = new HiveConf();
-    // don't mess with the HIVE_LOCKS table and other stuff in this test
-    conf.set("iceberg.engine.hive.lock-enabled", "false");
+
     conf.setBoolVar(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION, false);
-    conf.setIntVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_SERVICE_PERSIST_MAX_BATCH_SIZE, 0);
-    conf.setVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_SERVICE_PERSISTOR_CLASS, IcebergPersistorForTest.class.getName());
+    conf.setIntVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_PERSIST_MAX_BATCH_SIZE, 0);
+    conf.setVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_REPOSITORY_CLASS, IcebergRepositoryForTest.class.getName());
 
-    QueryHistoryRecord record = new ExampleQueryHistoryRecord();
+    QueryHistoryRecord record = new DummyQueryHistoryRecord();
 
-    IcebergPersistorForTest persistor = (IcebergPersistorForTest) QueryHistoryService.createPersistor(conf);
-    persistor.init(conf, new QueryHistorySchema());
+    QueryHistoryService service = new QueryHistoryService(conf, serviceContext).start();
+    IcebergRepositoryForTest repository = (IcebergRepositoryForTest) service.getRepository();
 
     queryHistoryQueue.add(record);
-    persistor.persist(queryHistoryQueue);
+    repository.persist(queryHistoryQueue);
 
-    checkRecords(conf, persistor, record);
+    checkRecords(conf, repository, record);
   }
 
-  private void checkRecords(HiveConf conf, IcebergPersistorForTest persistor, QueryHistoryRecord record)
+  private void checkRecords(HiveConf conf, IcebergRepositoryForTest repository, QueryHistoryRecord record)
       throws Exception {
     JobConf jobConf = new JobConf(conf);
     // force table to be reloaded from Catalogs to see latest Snapshot
     jobConf.unset("iceberg.mr.serialized.table.sys.query_history");
-    Container container = readRecords(persistor, jobConf);
+    Container container = readRecords(repository, jobConf);
 
     QueryHistoryRecord deserialized = new IcebergQueryHistoryRecord((GenericRecord) container.get());
     LOG.info("Deserialized record: {}", deserialized.toLongString());
@@ -89,15 +91,19 @@ public class TestIcebergPersistor {
         QueryHistorySchemaTestUtils.queryHistoryRecordsAreEqual(record, deserialized));
   }
 
-  private Container readRecords(IcebergPersistorForTest persistor, JobConf jobConf) throws Exception {
-    InputFormat<?, ?> inputFormat = persistor.storageHandler.getInputFormatClass().newInstance();
+  private Container readRecords(IcebergRepositoryForTest repository, JobConf jobConf) throws Exception {
+    InputFormat<?, ?> inputFormat = repository.storageHandler.getInputFormatClass().newInstance();
+    String tableLocation = repository.tableDesc.getProperties().get("location").toString();
     File[] dataFiles =
-        new File(persistor.tableDesc.getProperties().get("location").toString().replaceAll("^[a-zA-Z]+:", "") +
-            "/data/cluster_id=" + ExampleQueryHistoryRecord.CLUSTER_ID).listFiles(
+        new File(tableLocation.replaceAll("^[a-zA-Z]+:", "") +
+            "/data/cluster_id=" + DummyQueryHistoryRecord.CLUSTER_ID).listFiles(
             file -> file.isFile() && file.getName().toLowerCase().endsWith(".orc"));
     FileInputFormat.setInputPaths(jobConf, new Path(dataFiles[0].toURI()));
 
+    jobConf.set("iceberg.mr.table.identifier", QueryHistoryRepository.QUERY_HISTORY_DB_TABLE_NAME);
+    jobConf.set("iceberg.mr.table.location", tableLocation);
     InputSplit[] splits = inputFormat.getSplits(jobConf, 1);
+
     Container container = null;
     try (RecordReader<Void, Container<Record>> reader =
              (RecordReader<Void, Container<Record>>) inputFormat.getRecordReader(splits[0], jobConf, Reporter.NULL)) {

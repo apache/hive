@@ -72,7 +72,7 @@ public class TestHS2HttpServerLDAP {
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     // query history adds no value to this test, it would just bring iceberg handler dependency, which isn't worth
     // this should be handled with HiveConfForTests when it's used here too
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_SERVICE_ENABLED, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED, false);
     PasswdAuthenticationProvider authenticationProvider = new DummyLdapAuthenticationProviderImpl();
     hiveServer2 = new HiveServer2(authenticationProvider);
     hiveServer2.init(hiveConf);

@@ -15721,7 +15721,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       queryProperties.setNoScanAnalyzeCommand(qb.getParseInfo().isNoScanAnalyzeCommand());
       queryProperties.setAnalyzeRewrite(qb.isAnalyzeRewrite());
       queryProperties.setCTAS(qb.getTableDesc() != null);
-      queryProperties.setInsert(qb.getParseInfo().hasInsertTables());
+      queryProperties.setDML(qb.getParseInfo().hasInsertTables());
       queryProperties.setHasOuterOrderBy(!qb.getParseInfo().getIsSubQ() &&
           !qb.getParseInfo().getDestToOrderBy().isEmpty());
       queryProperties.setOuterQueryLimit(qb.getParseInfo().getOuterQueryLimit());

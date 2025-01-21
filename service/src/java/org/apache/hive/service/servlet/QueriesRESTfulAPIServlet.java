@@ -32,7 +32,6 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 
 import javax.servlet.ServletContext;
@@ -146,8 +145,6 @@ public class QueriesRESTfulAPIServlet extends HttpServlet {
     SimpleModule module = new SimpleModule("CustomSessionModule", new Version(1, 0, 0, null, null, null));
     module.addSerializer(HiveSession.class, new HiveSessionSerializer());
     mapper.registerModule(module);
-    // support java.time.Instant from QueryInfo
-    mapper.registerModule(new JavaTimeModule());
 
     try {
       PrintWriter out = response.getWriter();

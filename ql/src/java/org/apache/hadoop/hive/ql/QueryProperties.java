@@ -19,10 +19,8 @@
 package org.apache.hadoop.hive.ql;
 
 
-import org.apache.hadoop.hive.ql.parse.QB;
-
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -37,13 +35,36 @@ import java.util.Set;
  * the query uses a script for mapping/reducing
  */
 public class QueryProperties {
+  public enum QueryType {
+    QUERY("QUERY"),
+    DML("DML"),
+    DDL("DDL"),
+    // strictly speaking, "ANALYZE TABLE" is DDL because it collects and stores metadata or statistical information,
+    // but in Hive it's a special statement which is worth a separate query type
+    STATS("STATS"),
+    OTHER("");
+
+    private final String name;
+
+    QueryType(String name) {
+      this.name = name;
+    }
+
+    public String getName() {
+      return name;
+    }
+  }
 
   boolean query;
   boolean analyzeCommand;
   boolean noScanAnalyzeCommand;
   boolean analyzeRewrite;
   boolean ctas;
-  boolean isInsert;
+  /**
+   * isDml comes from the original QBParseInfo.hasInsertTables()
+   * this is true if the query modifies the table's data in any way: INSERT [OVERWRITE], UPDATE, DELETE, MERGE
+   */
+  boolean isDML;
   int outerQueryLimit;
 
   boolean hasJoin = false;
@@ -80,8 +101,11 @@ public class QueryProperties {
   private boolean isMaterializedView;
   private boolean isView;
 
+  private QueryType queryType;
+  private String ddlType;
+
   // set of queried tables, aliases are resolved to real table names
-  private Set<String> tablesQueried = new HashSet<>();
+  private List<String> tablesQueried = new ArrayList<>();
 
   public boolean isQuery() {
     return query;
@@ -89,6 +113,17 @@ public class QueryProperties {
 
   public void setQuery(boolean query) {
     this.query = query;
+  }
+
+  /**
+   * The return value of either isAnalyzeCommand() or isAnalyzeRewrite() is always true for analyze commands:
+   * isAnalyzeCommand=true for "compute statistics",
+   * isAnalyzeRewrite=true for "compute statistics for columns".
+   *
+   * @return whether the query is an ANALYZE TABLE query
+   */
+  public boolean isAnalyze() {
+    return isAnalyzeCommand() || isAnalyzeRewrite();
   }
 
   public boolean isAnalyzeCommand() {
@@ -310,12 +345,12 @@ public class QueryProperties {
     return this.filterWithSubQuery;
   }
 
-  public boolean isInsert() {
-    return isInsert;
+  public boolean isDML() {
+    return isDML;
   }
 
-  public void setInsert(final boolean insert) {
-    isInsert = insert;
+  public void setDML(final boolean dml) {
+    isDML = dml;
   }
 
   /**
@@ -338,8 +373,28 @@ public class QueryProperties {
     isView = view;
   }
 
-  public Set<String> getTablesQueried() {
+  public QueryType getQueryType() {
+    return queryType;
+  }
+
+  public void setQueryType(QueryType queryType) {
+    this.queryType = queryType;
+  }
+
+  public String getDdlType() {
+    return ddlType == null ? "" : ddlType;
+  }
+
+  public void setDdlType(String ddlType) {
+    this.ddlType = ddlType;
+  }
+
+  public List<String> getTablesQueried() {
     return tablesQueried;
+  }
+
+  public void setTablesQueried(List<String> tablesQueried) {
+    this.tablesQueried = tablesQueried;
   }
 
   public void clear() {
@@ -377,15 +432,9 @@ public class QueryProperties {
     multiDestQuery = false;
     filterWithSubQuery = false;
 
-    tablesQueried.clear();
-  }
+    queryType = null;
+    ddlType = null;
 
-  /**
-   * This method extracts all query related information from the root QB from its state available after semantic
-   * analysis.
-   * @param qb the root QB of the analyzer
-   */
-  public void extractInfoFromQueryBlock(QB qb) {
-    qb.iterate(qbIt -> tablesQueried.addAll(qbIt.getTableAliasValues()));
+    tablesQueried.clear();
   }
 }

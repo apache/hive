@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,8 +34,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.google.common.base.Strings;
 import org.antlr.runtime.TokenRewriteStream;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
@@ -63,9 +66,11 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
+import org.apache.hadoop.hive.ql.QueryProperties.QueryType;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
+import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.ddl.table.constraint.ConstraintsUtils;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -330,13 +335,24 @@ public abstract class BaseSemanticAnalyzer {
     initCtx(ctx);
     init(true);
     analyzeInternal(ast);
-    setQueryPropertiesAfterAnalyze();
+    postAnalyze();
   }
 
-  private void setQueryPropertiesAfterAnalyze() {
-    if (queryProperties != null && getQB() != null){
-      queryProperties.extractInfoFromQueryBlock(getQB());
+  /**
+   * This method is called after analyzeInternal, assuming all the semantic context is present (analyzeInternal is
+   * overridden by the subclasses of BaseSemanticAnalyzer).
+   * The reason why postAnalyze is private is that it's not supposed to be overridden.
+   */
+  private void postAnalyze() {
+    if (queryProperties == null) {
+      queryProperties = new QueryProperties();
     }
+    queryProperties.setTablesQueried(ctx.getParsedTables().stream()
+        .map(pair -> {
+          String db = Strings.isNullOrEmpty(pair.getKey()) ? "default" : pair.getKey();
+          String table = pair.getValue();
+          return db + "." + table;
+        }).collect(Collectors.toList()));
   }
 
   public void validate() throws SemanticException {
@@ -2052,8 +2068,8 @@ public abstract class BaseSemanticAnalyzer {
   /**
    * Called when we end analysis of a query.
    */
-  public void endAnalysis() {
-    // Nothing to do
+  public void endAnalysis(ASTNode tree) {
+    setQueryType(tree); // at this point we know the query type for sure
   }
 
   public ParseContext getParseContext() {
@@ -2101,5 +2117,77 @@ public abstract class BaseSemanticAnalyzer {
 
   public QB getQB(){
     return null;
+  }
+
+  /**
+   * Resolves the query type from the SemanticAnalyzer and the query AST, which might look magic.
+   * Magic is needed because a query can fail due to semantic exceptions, and at that time, from syntax point of view,
+   * it's already clear what's the query type, even if the SemanticAnalyzer bailed out, typical problems:
+   * 1. general semantic exception
+   * 2. transaction manager validation (throwin exception)
+   * What a user expects here is something like "QUERY", "DDL", "DML", so this magic will do its best to tell.
+   * any kind of "analyze": STATS
+   * DML operations (INSERT, UPDATE, DELETE, MERGE): DML
+   * MAPRED: QUERY, DML (depending on QueryProperties achieved in compile time)
+   * FETCH: QUERY, as a simple fetch task is a QUERY
+   * empty string if we can't determine the type of the query,
+   * e.g. when ParseException happens, we won't do further magic,
+   * even if it's obvious by reading the sql statement that user wanted to run e.g. a select query
+   * @param tree the root ASTNode of the query
+   */
+  public void setQueryType(ASTNode tree) {
+    List<Task<? extends Serializable>> rootTasks = getAllRootTasks();
+    if (queryProperties == null) {
+      return;
+    }
+    queryProperties.setQueryType(queryProperties.isAnalyze() ? QueryType.STATS :
+        (queryProperties.isDML() ?
+            QueryType.DML : null));
+    // common confusion whether CTAS is DML or DDL, let's pick DDL here
+    if (queryProperties.isCTAS()) {
+      queryProperties.setQueryType(QueryType.DDL);
+    }
+    if (queryProperties.getQueryType() != null) {
+      return; //already figured out
+    }
+    queryProperties.setQueryType(rootTasks.stream().findFirst().map(t -> {
+      String type = t.getType().toString();
+      // a MAPRED stage could mean an INSERT query also
+      if (queryProperties != null && type.equalsIgnoreCase("MAPRED")) {
+        return queryProperties.isDML() ? QueryType.DML : QueryType.QUERY;
+      }
+      return null;
+    }).orElseGet(() -> {
+      // in case of a semantic exception (e.g. a table not found or something else)
+      // the root AST Node can still imply if this is a query, try to fall back to that
+      // instead of ""
+      if (tree.getText().equalsIgnoreCase("TOK_QUERY")) {
+        return QueryType.QUERY;
+      }
+      // CREATE TABLE is a DDL and yet it's not handled by DDLSemanticAnalyzerFactory
+      // FIXME: HIVE-28724
+      if (tree.getText().equalsIgnoreCase("TOK_CREATETABLE")) {
+        return QueryType.DDL;
+      }
+      // from this point, best efforts come
+      // whether it's a DDL?
+      if (DDLSemanticAnalyzerFactory.handles(tree)) {
+        return QueryType.DDL;
+      }
+      // whether it's DML? UPDATE/DELETE/MERGE queries are handled with an instance of RewriteSemanticAnalyzer
+      if (RewriteSemanticAnalyzer.class.isAssignableFrom(getClass())) {
+        return QueryType.DML;
+      }
+      // if there is a fetch task, this is a query
+      if (getFetchTask() != null) {
+        return QueryType.QUERY;
+      }
+      return QueryType.OTHER;
+    }));
+
+    // in case of DDL queries, the DDL type can be figured out from the tree root token, e.g.:
+    // CREATETABLE, ALTERTABLE_ADDPARTS, SHOWDATABASES, SHOWTABLES, etc.
+    queryProperties.setDdlType(QueryType.DDL.equals(queryProperties.getQueryType()) ?
+        tree.getText().substring("TOK_".length()) : "");
   }
 }

@@ -17,14 +17,15 @@
  **/
 package org.apache.hadoop.hive.ql.queryhistory.schema;
 
-import com.google.common.collect.Sets;
+import org.apache.hadoop.hive.ql.QueryProperties.QueryType;
 
-import java.time.Instant;
+import com.google.common.collect.Lists;
+
 import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
-public class ExampleQueryHistoryRecord extends QueryHistoryRecord {
+public class DummyQueryHistoryRecord extends QueryHistoryRecord {
   public static final String QUERY_ID = "hive_20240429111756_d39b59fb-31e2-4e89-853e-fac2844530e9";
   public static final String SESSION_ID = "9df26da2-c7f0-4571-838b-f39179a8dcb7";
   public static final String CLUSTER_ID = "hive_instance_123";
@@ -44,7 +45,7 @@ public class ExampleQueryHistoryRecord extends QueryHistoryRecord {
   public static final String SQL = "SELECT 1";
   public static final int HIVERSERVER2_PROTOCOL_VERSION = 1;
   public static final String CURRENT_DATABASE = "default";
-  public static final String QUERY_TYPE = "QUERY";
+  public static final QueryType QUERY_TYPE = QueryType.QUERY;
   public static final String DDL_TYPE = "ALTERDATABASE";
   public static final String CLIENT_ADDRESS = "client_host.domain";
 
@@ -59,7 +60,7 @@ public class ExampleQueryHistoryRecord extends QueryHistoryRecord {
   public static final int NUM_ROWS_FETCHED = 1500;
   public static final String PLAN = "This plan is simply awesome";
   public static final String EXEC_SUMMARY = "It was super fast!";
-  public static final Set<String> TABLES_QUERIED = Sets.newHashSet(
+  public static final List<String> TABLES_QUERIED = Lists.newArrayList(
       "default.queried_table1", "default.queried_table2");
   public static final Map<String, String> CONFIGURATION_OPTIONS_CHANGED = Collections.singletonMap("hive.opt", "hello");
   public static final int TOTAL_LAUNCHED_TASKS = 2100;
@@ -84,11 +85,11 @@ public class ExampleQueryHistoryRecord extends QueryHistoryRecord {
   public static final long SHUFFLE_PHASE_TIME = 30000L;
   public static final long MERGE_PHASE_TIME = 4000L;
 
-  public ExampleQueryHistoryRecord() {
+  public DummyQueryHistoryRecord() {
     this(System.currentTimeMillis());
   }
 
-  public ExampleQueryHistoryRecord(long queryStartMillis) {
+  public DummyQueryHistoryRecord(long queryStartMillis) {
     setQueryId(QUERY_ID);
     setSessionId(SESSION_ID);
     setClusterId(CLUSTER_ID);
@@ -111,9 +112,9 @@ public class ExampleQueryHistoryRecord extends QueryHistoryRecord {
     setServerAddress(SERVER_HOST);
     setServerPort(SERVER_PORT);
     setClientAddress(CLIENT_ADDRESS);
-    setQueryStartTime(Instant.ofEpochMilli(queryStartMillis));
-    setQueryEndTime(Instant.ofEpochMilli(
-        queryStartMillis + PLANNING_DURATION + PREPARE_PLAN_DURATION + GET_SESSION_DURATION + EXECUTION_DURATION));
+    setQueryStartTime(queryStartMillis);
+    setQueryEndTime(
+        queryStartMillis + PLANNING_DURATION + PREPARE_PLAN_DURATION + GET_SESSION_DURATION + EXECUTION_DURATION);
     setTotalTime(TOTAL_TIME);
     setPlanningDuration(PLANNING_DURATION);
     setPlanningStartTime(queryStartMillis);

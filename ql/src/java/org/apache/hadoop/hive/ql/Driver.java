@@ -24,8 +24,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
-import javax.management.Query;
-
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
@@ -56,7 +54,6 @@ import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.queryhistory.QueryHistoryService;
-import org.apache.hadoop.hive.ql.reexec.ReCompileException;
 import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -556,11 +553,7 @@ public class Driver implements IDriver {
   }
 
   private void setTriggerContext(String queryId) {
-    long queryStartTime;
-    // query info is created by SQLOperation which will have start time of the operation. When JDBC Statement is not
-    // used queryInfo will be null, in which case we take creation of Driver instance as query start time (which is also
-    // the time when query display object is created)
-    queryStartTime = driverContext.getQueryStartTime();
+    long queryStartTime = driverContext.getQueryStartTime();
     WmContext wmContext = new WmContext(queryStartTime, queryId);
     context.setWmContext(wmContext);
   }
@@ -753,11 +746,11 @@ public class Driver implements IDriver {
   // is called to stop the query if it is running, clean query results, and release resources.
   @Override
   public void close() {
-    if (driverContext.getConf().getBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_SERVICE_ENABLED)) {
-      if (driverState.isClosed() || driverState.isDestroyed()){
+    if (driverContext.getConf().getBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED)) {
+      if (driverState.isClosed() || driverState.isDestroyed()) {
         LOG.warn("Driver instance {} already closed or destroyed, prevent handling query history", this);
-      } else{
-        QueryHistoryService.handle(driverContext);
+      } else {
+        QueryHistoryService.getInstance().handleQuery(driverContext);
       }
     }
     driverState.lock();

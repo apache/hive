@@ -2,8 +2,6 @@
 --! qt:queryhistory
 --! qt:transactional
 
-SELECT COUNT(*) FROM sys.query_history;
-
 CREATE TABLE test_part(id int) PARTITIONED BY(dt string) STORED AS ORC TBLPROPERTIES ('transactional'='true');
 
 --BASIC QUERY, fetch
@@ -58,12 +56,11 @@ with test_part_with_alias as (select * from test_part) select * from test_part_w
 
 -- any operation on query_history table might involve further record changes on query_history table,
 -- so let's disable the feature while to reduce noise while checking the contents
-set hive.query.history.service.enabled=false;
+set hive.query.history.enabled=false;
 set hive.compute.query.using.stats=false;
 
 -- below are some query history queries: only those fields were queries that are constant across test runs,
 -- so duration-like fields are not added here for instance, for full schema, please refer to QueryHistorySchema
-SELECT COUNT(*) FROM sys.query_history;
 
 -- basic query data
 SELECT concat(substr(sql, 0, 30), "..."), cluster_id, session_type, cluster_user, end_user, db_name, query_type, ddl_type
@@ -71,10 +68,6 @@ FROM sys.query_history ORDER BY start_time;
 
 -- environment related data
 SELECT concat(substr(sql, 0, 30), "..."), server_address, server_port, client_address
-FROM sys.query_history ORDER BY start_time;
-
--- cluster execution characteristics
-SELECT concat(substr(sql, 0, 30), "..."), execution_mode, node_used_count, node_total_count
 FROM sys.query_history ORDER BY start_time;
 
 -- misc fields

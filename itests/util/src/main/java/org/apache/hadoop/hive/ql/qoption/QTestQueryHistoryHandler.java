@@ -23,7 +23,6 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.qoption.QTestOptionHandler;
 import org.apache.hadoop.hive.ql.queryhistory.QueryHistoryService;
-import org.apache.hadoop.hive.ql.queryhistory.persist.QueryHistoryPersistor;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
@@ -46,18 +45,19 @@ public class QTestQueryHistoryHandler implements QTestOptionHandler {
   public void beforeTest(QTestUtil qt) throws Exception {
     HiveConf hiveConf = qt.getConf();
     if (enabled) {
-      HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_QUERY_HISTORY_SERVICE_ENABLED, true);
+      HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED, true);
       // no matter what is default size, in qtest let's persist as soon as possible
-      HiveConf.setIntVar(hiveConf, HiveConf.ConfVars.HIVE_QUERY_HISTORY_SERVICE_PERSIST_MAX_BATCH_SIZE, 0);
+      HiveConf.setIntVar(hiveConf, HiveConf.ConfVars.HIVE_QUERY_HISTORY_PERSIST_MAX_BATCH_SIZE, 0);
 
-      QueryHistoryService queryHistoryService = QueryHistoryService.start(hiveConf, new ServiceContext(() ->
-          "localhost", () -> 0));
+      QueryHistoryService queryHistoryService = new QueryHistoryService(hiveConf, new ServiceContext(() ->
+          "localhost", () -> 0)).start();
+      QueryHistoryService.setInstance(queryHistoryService);
     }
   }
 
   @Override
   public void afterTest(QTestUtil qt) throws Exception {
     enabled = false;
-    HiveConf.setBoolVar(qt.getConf(), HiveConf.ConfVars.HIVE_QUERY_HISTORY_SERVICE_ENABLED, false);
+    HiveConf.setBoolVar(qt.getConf(), HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED, false);
   }
 }

@@ -511,15 +511,4 @@ public class QB {
     aliasToSubqExpr.put(alias, qbexpr);
     addAlias(alias);
   }
-
-  public void iterate(QBVisitor qbVisitor) {
-    // handle this QB
-    qbVisitor.visit(this);
-    for (QBExpr qbExpr : aliasToSubq.values()) {
-      // handle all subQ QBs
-      if (qbExpr.getQB() != null){
-        qbExpr.getQB().iterate(qbVisitor);
-      }
-    }
-  }
 }

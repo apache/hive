@@ -36,11 +36,11 @@ public class TestQueryHistoryRecord {
   }
 
   /**
-   * This test is crucial for ensuring that unit tests using ExampleQueryHistoryRecord have coverage on all fields.
+   * This test is crucial for ensuring that unit tests using DummyQueryHistoryRecord have coverage on all fields.
    */
   @Test
   public void testExampleRecordIsFullySet() {
-    QueryHistoryRecord record = new ExampleQueryHistoryRecord();
+    QueryHistoryRecord record = new DummyQueryHistoryRecord();
     for (QueryHistorySchema.Field field : QueryHistorySchema.Field.values()) {
       Assert.assertNotNull("Field should be filled with example value: " + field.getName(), record.get(field));
     }
@@ -49,7 +49,7 @@ public class TestQueryHistoryRecord {
   @Test
   public void testBasicRecordEstimatedSizes() {
     QueryHistoryRecord emptyRecord = new QueryHistoryRecord();
-    QueryHistoryRecord exampleRecord = new ExampleQueryHistoryRecord();
+    QueryHistoryRecord exampleRecord = new DummyQueryHistoryRecord();
     // these assertions have no strict meaning, they are just for demonstrating the current estimated size of a query
     // history record
     Assert.assertEquals(EMPTY_RECORD_ESTIMATED_SIZE_BYTES, emptyRecord.getEstimatedSizeInMemoryBytes());

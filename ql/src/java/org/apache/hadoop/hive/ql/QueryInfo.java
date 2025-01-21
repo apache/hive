@@ -19,8 +19,6 @@ package org.apache.hadoop.hive.ql;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 
-import java.time.Instant;
-
 /**
  * The class is synchronized, as WebUI may access information about a running query.
  */
@@ -28,13 +26,11 @@ public class QueryInfo {
 
   private final String userName;
   private final String executionEngine;
-  private final long beginTime;
+  private final Long beginTime;
   private final String sessionId;
   private final String operationId;
-  private final Instant beginTimeUTC;
   private Long runtime;  // tracks only running portion of the query.
   private Long endTime;
-  private Instant endTimeUTC;
   private String state;
   private QueryDisplay queryDisplay;
 
@@ -45,15 +41,14 @@ public class QueryInfo {
     this.userName = userName;
     this.executionEngine = executionEngine;
     this.beginTime = System.currentTimeMillis();
-    this.beginTimeUTC = Instant.ofEpochMilli(beginTime);
     this.sessionId = sessionId;
     this.operationId = operationId;
   }
 
   public static QueryInfo getFromConf(HiveConf conf) {
-    return new QueryInfo("INITIALIZED", conf.get(DriverContext.DRIVER_DEFAULT_USER_NAME_PROP),
+    return new QueryInfo("INITIALIZED", conf.get(DriverContext.DEFAULT_USER_NAME_PROP),
         conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE), HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SESSION_ID),
-        conf.get(DriverContext.DRIVER_DEFAULT_OPERATION_ID_PROP));
+        conf.get(DriverContext.DEFAULT_OPERATION_ID_PROP));
   }
 
   public synchronized long getElapsedTime() {
@@ -110,7 +105,6 @@ public class QueryInfo {
 
   public synchronized void setEndTime() {
     this.endTime = System.currentTimeMillis();
-    this.endTimeUTC = Instant.ofEpochMilli(endTime);
   }
 
   public synchronized void setRuntime(long runtime) {
@@ -127,13 +121,5 @@ public class QueryInfo {
 
   public void setOperationLogLocation(String operationLogLocation) {
     this.operationLogLocation = operationLogLocation;
-  }
-
-  public Instant getBeginTimeUTC() {
-    return beginTimeUTC;
-  }
-
-  public Instant getEndTimeUTC() {
-    return endTimeUTC;
   }
 }

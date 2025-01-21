@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.queryhistory.persist.IcebergPersistorForTest;
+import org.apache.hadoop.hive.ql.queryhistory.repository.IcebergRepositoryForTest;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniDFSShim;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniMrShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -92,11 +92,11 @@ public class MiniHS2 extends AbstractHiveService {
 
   public void setupQueryHistory() {
     // Query History Service (with a default iceberg table) needs locks and HIVE_LOCKS table to be present,
-    // so this is to use the IcebergPersistorForTest class to keep MiniHS2-based unit tests working flawlessly
-    getHiveConf().setVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_SERVICE_PERSISTOR_CLASS,
-        IcebergPersistorForTest.class.getName());
+    // so this is to use the IcebergRepositoryForTest class to keep MiniHS2-based unit tests working flawlessly
+    getHiveConf().setVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_REPOSITORY_CLASS,
+        IcebergRepositoryForTest.class.getName());
     // for testing purposes, we can persist the query history record almost immediately
-    getHiveConf().setIntVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_SERVICE_PERSIST_MAX_BATCH_SIZE, 1);
+    getHiveConf().setIntVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_PERSIST_MAX_BATCH_SIZE, 1);
   }
 
   public enum MiniClusterType {
@@ -238,7 +238,7 @@ public class MiniHS2 extends AbstractHiveService {
         hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, HS2_BINARY_MODE);
       }
 
-      hiveConf.setBoolVar(ConfVars.HIVE_QUERY_HISTORY_SERVICE_ENABLED, useQueryHistory);
+      hiveConf.setBoolVar(ConfVars.HIVE_QUERY_HISTORY_ENABLED, useQueryHistory);
 
       return new MiniHS2(hiveConf, miniClusterType, useMiniKdc, serverPrincipal, serverKeytab,
           isMetastoreRemote, createTransactionalTables, usePortsFromConf, authType, isHA, cleanupLocalDirOnStartup,

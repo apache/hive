@@ -56,7 +56,7 @@ public class TestThriftCLIServiceWithBinary extends ThriftCLIServiceTest {
     hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, transportMode);
     // query history adds no value to this test
     // this should be handled with HiveConfForTests when it's used here too
-    hiveConf.setBoolVar(ConfVars.HIVE_QUERY_HISTORY_SERVICE_ENABLED, false);
+    hiveConf.setBoolVar(ConfVars.HIVE_QUERY_HISTORY_ENABLED, false);
 
     startHiveServer2WithConf(hiveConf);
 

@@ -230,7 +230,7 @@ public class TestHiveShell {
 
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.TRY_DIRECT_SQL, true);
 
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_SERVICE_ENABLED, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED, false);
     return hiveConf;
   }
 }

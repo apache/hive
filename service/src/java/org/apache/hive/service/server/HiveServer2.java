@@ -327,8 +327,9 @@ public class HiveServer2 extends CompositeService {
       scheduledQueryService = ScheduledQueryExecutionService.startScheduledQueryExecutorService(hiveConf);
     }
 
-    if (hiveConf.getBoolVar(ConfVars.HIVE_QUERY_HISTORY_SERVICE_ENABLED)) {
-      queryHistoryService = QueryHistoryService.start(hiveConf, serviceContext);
+    if (hiveConf.getBoolVar(ConfVars.HIVE_QUERY_HISTORY_ENABLED)) {
+      queryHistoryService = new QueryHistoryService(hiveConf, serviceContext).start();
+      QueryHistoryService.setInstance(queryHistoryService);
     }
 
     // Setup cache if enabled.

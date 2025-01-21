@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
-package org.apache.hadoop.hive.ql.queryhistory.persist;
+package org.apache.hadoop.hive.ql.queryhistory.repository;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -53,8 +53,8 @@ import org.apache.tez.mapreduce.hadoop.mapred.TaskAttemptContextImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class IcebergPersistor extends AbstractQueryHistoryPersistor implements QueryHistoryPersistor {
-  private static final Logger LOG = LoggerFactory.getLogger(IcebergPersistor.class);
+public class IcebergRepository extends AbstractQueryHistoryRepository implements QueryHistoryRepository {
+  private static final Logger LOG = LoggerFactory.getLogger(IcebergRepository.class);
   private static final String ICEBERG_STORAGE_HANDLER = "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler";
 
   private HiveOutputFormat<?, ?> outputFormat;

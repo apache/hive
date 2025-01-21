@@ -66,7 +66,7 @@ public class HiveConfForTest extends HiveConf {
     setValue("tez.dag.recovery.enabled", "false");
     // as Query History Service is enabled by default, it might add overhead to tests, it's not worth using it
     // dedicated unit tests are supposed to check that service as much as possible
-    setValue(HiveConf.ConfVars.HIVE_QUERY_HISTORY_SERVICE_ENABLED.varname, "false");
+    setValue(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED.varname, "false");
   }
 
   public void setValue(String name, String value) {

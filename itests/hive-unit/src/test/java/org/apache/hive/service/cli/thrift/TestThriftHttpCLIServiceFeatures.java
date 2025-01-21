@@ -156,7 +156,7 @@ public class TestThriftHttpCLIServiceFeatures extends AbstractThriftCLITest {
 
     // query history adds no value to this test
     // this should be handled with HiveConfForTests when it's used here too
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_SERVICE_ENABLED, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED, false);
 
     startHiveServer2WithConf(hiveConf);
 

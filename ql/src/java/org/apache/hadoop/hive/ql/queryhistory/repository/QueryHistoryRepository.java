@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
-package org.apache.hadoop.hive.ql.queryhistory.persist;
+package org.apache.hadoop.hive.ql.queryhistory.repository;
 
 import java.util.Queue;
 
@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistoryRecord;
 import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistorySchema;
 
-public interface QueryHistoryPersistor {
+public interface QueryHistoryRepository {
   String QUERY_HISTORY_DB_NAME = "sys";
   String QUERY_HISTORY_TABLE_NAME = "query_history";
   String QUERY_HISTORY_DB_TABLE_NAME =

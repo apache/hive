@@ -20,12 +20,13 @@ package org.apache.hadoop.hive.ql.queryhistory.schema;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistorySchema.Field;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.io.Writable;
@@ -109,8 +110,9 @@ public class QueryHistoryRecord {
     set(QueryHistorySchema.Field.QUERY_STATE, state);
   }
 
-  public void setQueryType(String type) {
-    set(QueryHistorySchema.Field.QUERY_TYPE, type);
+  public void setQueryType(QueryProperties.QueryType type) {
+    set(QueryHistorySchema.Field.QUERY_TYPE, type == null ? QueryProperties.QueryType.OTHER.getName() :
+        type.getName());
   }
 
   public void setDdlType(String ddlType) {
@@ -129,14 +131,14 @@ public class QueryHistoryRecord {
     set(QueryHistorySchema.Field.CLIENT_ADDRESS, userIpAddress);
   }
 
-  public void setQueryStartTime(Instant beginTimeUTC) {
-    set(Field.START_TIME_UTC, Timestamp.ofEpochMilli(beginTimeUTC.toEpochMilli()));
-    set(Field.START_TIME, Timestamp.ofEpochMilli(beginTimeUTC.toEpochMilli(), ZoneId.systemDefault()));
+  public void setQueryStartTime(long beginTimeEpochMillis) {
+    set(Field.START_TIME_UTC, Timestamp.ofEpochMilli(beginTimeEpochMillis));
+    set(Field.START_TIME, Timestamp.ofEpochMilli(beginTimeEpochMillis, ZoneId.systemDefault()));
   }
 
-  public void setQueryEndTime(Instant endTimeUTC) {
-    set(Field.END_TIME_UTC, Timestamp.ofEpochMilli(endTimeUTC.toEpochMilli()));
-    set(Field.END_TIME, Timestamp.ofEpochMilli(endTimeUTC.toEpochMilli(), ZoneId.systemDefault()));
+  public void setQueryEndTime(long endTimeEpochMillis) {
+    set(Field.END_TIME_UTC, Timestamp.ofEpochMilli(endTimeEpochMillis));
+    set(Field.END_TIME, Timestamp.ofEpochMilli(endTimeEpochMillis, ZoneId.systemDefault()));
   }
 
   public void setTotalTime(long elapsedTime) {
@@ -188,7 +190,7 @@ public class QueryHistoryRecord {
   }
 
 
-  public void setTablesQueried(Set<String> tablesQueried) {
+  public void setTablesQueried(List<String> tablesQueried) {
     set(Field.TABLES_QUERIED, String.join(",", tablesQueried));
   }
 
