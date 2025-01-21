@@ -4,7 +4,6 @@
 set hive.mapred.mode=nonstrict;
 -- sampling with join and alias
 -- SORT_QUERY_RESULTS
-set hive.cbo.fallback.strategy=NEVER;
 
 EXPLAIN EXTENDED
 SELECT s.*

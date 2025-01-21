@@ -11,7 +11,6 @@ set hive.exec.pre.hooks = org.apache.hadoop.hive.ql.hooks.PreExecutePrinter,org.
 
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-set hive.cbo.fallback.strategy=NEVER;
 
 create table srcpartbucket (key string, value string) partitioned by (ds string, hr string) clustered by (key) into 4 buckets stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only");
 

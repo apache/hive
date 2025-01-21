@@ -1,4 +1,3 @@
-set hive.cbo.fallback.strategy=NEVER;
 -- setting up a table with multiple rows
 drop table if exists HIVE_20262;
 create table HIVE_20262 (a array<int>);

@@ -1,7 +1,6 @@
 --! qt:dataset:src1
 --! qt:dataset:src
 set hive.merge.tezfiles=true;
-set hive.cbo.fallback.strategy=NEVER;
 -- SORT_BEFORE_DIFF
 
 EXPLAIN

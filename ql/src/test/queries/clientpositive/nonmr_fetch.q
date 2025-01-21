@@ -4,7 +4,6 @@ set hive.mapred.mode=nonstrict;
 set hive.fetch.task.conversion=minimal;
 set hive.exec.submitviachild=false;
 set hive.exec.submit.local.task.via.child=false;
-set hive.cbo.fallback.strategy=NEVER;
 
 -- backward compatible (minimal)
 explain select * from src limit 10;
