@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * Analyzer for database creation commands.
@@ -113,6 +114,7 @@ public class CreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
       database.setType(DatabaseType.REMOTE);
       database.setRemote_dbname(remoteDbName);
     }
+    database.setOwnerName(SessionState.getUserFromAuthenticator());
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
     outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
   }
