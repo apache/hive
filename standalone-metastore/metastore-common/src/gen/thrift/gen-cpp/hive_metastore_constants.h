@@ -59,6 +59,7 @@ class hive_metastoreConstants {
   std::string WRITE_ID;
   std::string EXPECTED_PARAMETER_KEY;
   std::string EXPECTED_PARAMETER_VALUE;
+  std::string IS_TRUNCATE_OP;
 };
 
 extern const hive_metastoreConstants g_hive_metastore_constants;

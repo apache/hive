@@ -101,7 +101,7 @@ public class HiveAlterHandler implements AlterHandler {
   @Override
   public void alterTable(RawStore msdb, Warehouse wh, String catName, String dbname,
       String name, Table newt, EnvironmentContext environmentContext,
-      IHMSHandler handler, String writeIdList, boolean isTruncateOp)
+      IHMSHandler handler, String writeIdList)
           throws InvalidOperationException, MetaException {
     catName = normalizeIdentifier(catName);
     name = normalizeIdentifier(name);
@@ -110,12 +110,18 @@ public class HiveAlterHandler implements AlterHandler {
     final boolean cascade;
     final boolean replDataLocationChanged;
     final boolean isReplicated;
+    final boolean isTruncateOp;
     if ((environmentContext != null) && environmentContext.isSetProperties()) {
       cascade = StatsSetupConst.TRUE.equals(environmentContext.getProperties().get(StatsSetupConst.CASCADE));
       replDataLocationChanged = ReplConst.TRUE.equals(environmentContext.getProperties().get(ReplConst.REPL_DATA_LOCATION_CHANGED));
+      isTruncateOp = environmentContext.getProperties()
+          .containsKey(hive_metastoreConstants.IS_TRUNCATE_OP) ? Boolean.TRUE.toString()
+          .equalsIgnoreCase(environmentContext.getProperties()
+              .get(hive_metastoreConstants.IS_TRUNCATE_OP)) : false;
     } else {
       cascade = false;
       replDataLocationChanged = false;
+      isTruncateOp = false;
     }
 
     if (newt == null) {
@@ -800,7 +806,7 @@ public class HiveAlterHandler implements AlterHandler {
     EnvironmentContext environmentContext)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
     return alterPartitions(msdb, wh, MetaStoreUtils.getDefaultCatalog(conf), dbname, name, new_parts,
-        environmentContext, null, -1, null, false);
+        environmentContext, null, -1, null);
   }
 
   private Map<List<String>, Partition> getExistingPartitions(final RawStore msdb,
@@ -828,13 +834,22 @@ public class HiveAlterHandler implements AlterHandler {
   public List<Partition> alterPartitions(final RawStore msdb, Warehouse wh, final String catName,
       final String dbname, final String name, final List<Partition> new_parts,
       EnvironmentContext environmentContext, String writeIdList, long writeId,
-      IHMSHandler handler, boolean isTruncateOp)
+      IHMSHandler handler)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
     List<Partition> oldParts = new ArrayList<>();
     List<List<String>> partValsList = new ArrayList<>();
     List<TransactionalMetaStoreEventListener> transactionalListeners = null;
     if (handler != null) {
       transactionalListeners = handler.getTransactionalListeners();
+    }
+    final boolean isTruncateOp;
+    if ((environmentContext != null) && environmentContext.isSetProperties()) {
+      isTruncateOp = environmentContext.getProperties()
+          .containsKey(hive_metastoreConstants.IS_TRUNCATE_OP) ? Boolean.TRUE.toString()
+          .equalsIgnoreCase(environmentContext.getProperties()
+              .get(hive_metastoreConstants.IS_TRUNCATE_OP)) : false;
+    } else {
+      isTruncateOp = false;
     }
 
     boolean success = false;

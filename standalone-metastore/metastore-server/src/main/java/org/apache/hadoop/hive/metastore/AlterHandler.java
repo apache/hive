@@ -36,7 +36,7 @@ public interface AlterHandler extends Configurable {
 
   /**
    * @deprecated As of release 2.2.0. Replaced by {@link #alterTable(RawStore, Warehouse, String,
-   * String, String, Table, EnvironmentContext, IHMSHandler, String, boolean)}
+   * String, String, Table, EnvironmentContext, IHMSHandler, String)}
    *
    * handles alter table, the changes could be cascaded to partitions if applicable
    *
@@ -64,7 +64,7 @@ public interface AlterHandler extends Configurable {
   default void alterTable(RawStore msdb, Warehouse wh, String catName, String dbname,
     String name, Table newTable, EnvironmentContext envContext)
       throws InvalidOperationException, MetaException {
-    alterTable(msdb, wh, catName, dbname, name, newTable, envContext, null, null, false);
+    alterTable(msdb, wh, catName, dbname, name, newTable, envContext, null, null);
   }
 
   /**
@@ -85,7 +85,6 @@ public interface AlterHandler extends Configurable {
    * @param handler
    *          HMSHandle object (required to log event notification)
    * @param writeIdList write id list for the table
-   * @param isTruncateOp boolean flag to specify if this is truncate operation
    * @param envContext environment context variable
    * @throws InvalidOperationException
    *           thrown if the newTable object is invalid
@@ -94,12 +93,12 @@ public interface AlterHandler extends Configurable {
    */
   void alterTable(RawStore msdb, Warehouse wh, String catName, String dbname,
       String name, Table newTable, EnvironmentContext envContext,
-      IHMSHandler handler,  String writeIdList, boolean isTruncateOp)
+      IHMSHandler handler,  String writeIdList)
           throws InvalidOperationException, MetaException;
 
   /**
    * @deprecated As of release 2.2.0.  Replaced by {@link #alterPartitions(RawStore, Warehouse, String,
-   * String, String, List, EnvironmentContext, String, long, IHMSHandler, boolean)}
+   * String, String, List, EnvironmentContext, String, long, IHMSHandler)}
    *
    * handles alter partition
    *
@@ -162,7 +161,7 @@ public interface AlterHandler extends Configurable {
 
   /**
    * @deprecated As of release 3.0.0. Replaced by {@link #alterPartitions(RawStore, Warehouse, String,
-   * String, String, List, EnvironmentContext, String, long, IHMSHandler, boolean)}
+   * String, String, List, EnvironmentContext, String, long, IHMSHandler)}
    *
    * handles alter partitions
    *
@@ -200,7 +199,6 @@ public interface AlterHandler extends Configurable {
    * @param writeIdList write id list for the table
    * @param writeId writeId for the table
    * @param handler HMSHandle object (required to log event notification)
-   * @param isTruncateOp whether the operation is truncate
    * @return the altered partition list
    * @throws InvalidOperationException thrown if the operation is invalid
    * @throws InvalidObjectException thrown if the new_parts object is invalid
@@ -210,6 +208,6 @@ public interface AlterHandler extends Configurable {
   List<Partition> alterPartitions(final RawStore msdb, Warehouse wh, final String catName,
     final String dbname, final String name, final List<Partition> new_parts,
     EnvironmentContext environmentContext,  String writeIdList, long writeId,
-    IHMSHandler handler, boolean isTruncateOp)
+    IHMSHandler handler)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException;
 }

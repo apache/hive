@@ -3375,7 +3375,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
     }
     alterHandler.alterPartitions(ms, wh, catName, dbName, tableName, partitions, environmentContext,
-        validWriteIds, writeId, this, true);
+        validWriteIds, writeId, this);
   }
 
   private void alterTableStatsForTruncate(RawStore ms, String catName, String dbName,
@@ -3393,7 +3393,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         table.setWriteId(writeId);
       }
       alterHandler.alterTable(ms, wh, catName, dbName, tableName, table,
-          environmentContext, this, validWriteIds, true);
+          environmentContext, this, validWriteIds);
     }
     return;
   }
@@ -6108,7 +6108,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         firePreEvent(new PreAlterPartitionEvent(db_name, tbl_name, table, null, tmpPart, this));
       }
       oldParts = alterHandler.alterPartitions(getMS(), wh, catName, db_name, tbl_name, new_parts,
-          environmentContext, writeIdList, writeId, this, false);
+          environmentContext, writeIdList, writeId, this);
       Iterator<Partition> olditr = oldParts.iterator();
 
       for (Partition tmpPart : new_parts) {
@@ -6260,7 +6260,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
       firePreEvent(new PreAlterTableEvent(oldt, newTable, this));
       alterHandler.alterTable(getMS(), wh, catName, dbname, name, newTable,
-          envContext, this, validWriteIdList, false);
+          envContext, this, validWriteIdList);
       success = true;
     } catch (Exception e) {
       ex = e;

@@ -62,6 +62,7 @@ final class Constant extends \Thrift\Type\TConstant
     static protected $WRITE_ID;
     static protected $EXPECTED_PARAMETER_KEY;
     static protected $EXPECTED_PARAMETER_VALUE;
+    static protected $IS_TRUNCATE_OP;
 
     protected static function init_DDL_TIME()
     {
@@ -281,5 +282,10 @@ final class Constant extends \Thrift\Type\TConstant
     protected static function init_EXPECTED_PARAMETER_VALUE()
     {
         return "expected_parameter_value";
+    }
+
+    protected static function init_IS_TRUNCATE_OP()
+    {
+        return "__is_truncate_op__";
     }
 }

@@ -3362,3 +3362,4 @@ const string WRITE_ID = "writeId",
 // Keys for alter table environment context parameters
 const string EXPECTED_PARAMETER_KEY = "expected_parameter_key",
 const string EXPECTED_PARAMETER_VALUE = "expected_parameter_value",
+const string IS_TRUNCATE_OP = "__is_truncate_op__"

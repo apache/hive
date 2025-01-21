@@ -46,16 +46,14 @@ public class TruncatePartitionHandler extends AbstractMessageHandler {
           MetastoreConf.ConfVars.NOTIFICATION_ALTER_PARTITIONS_V2_ENABLED)) {
         AlterPartitionsMessage singleMsg = deserializer.getAlterPartitionsMessage(
             context.dmd.getPayload());
-        tName = TableName.fromString(singleMsg.getTable(), null,
-            context.isDbNameEmpty() ? singleMsg.getDB() : context.dbName);
         tblObj = singleMsg.getTableObj();
+        tName = TableName.fromString(tblObj.getTableName(), null, tblObj.getDbName());
         List<Map<String, String>> afterPartitionsList = singleMsg.getPartitions();
         List<Task<?>> childTaskList = new ArrayList<>();
         for(Map<String, String> afterIteratorMap : afterPartitionsList) {
-          Iterator<String> afterIterator = afterIteratorMap.values().iterator();
           Map<String, String> partSpec = new LinkedHashMap<>();
           for (FieldSchema fs : tblObj.getPartitionKeys()) {
-            partSpec.put(fs.getName(), afterIterator.next());
+            partSpec.put(fs.getName(), afterIteratorMap.get(fs.getName()));
           }
           childTaskList.addAll(handleSingleAlterPartition(context, tName, partSpec,
               singleMsg.getWriteId()));
