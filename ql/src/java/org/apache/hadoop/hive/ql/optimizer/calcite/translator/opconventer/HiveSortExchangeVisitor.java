@@ -24,6 +24,7 @@ import java.util.List;
 import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.RelDistribution.Type;
 import org.apache.calcite.rel.RelFieldCollation;
+import org.apache.calcite.rex.RexInputRef;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -58,8 +59,10 @@ class HiveSortExchangeVisitor extends HiveRelNodeVisitor<HiveSortExchange> {
     if (distribution.getType() == Type.HASH_DISTRIBUTED) {
       partitionKeyList = new ArrayList<>(exchangeRel.getDistribution().getKeys().size());
       for (int index = 0; index < exchangeRel.getDistribution().getKeys().size(); index++) {
+        RexInputRef keyRef = exchangeRel.getCluster().getRexBuilder().makeInputRef(
+                exchangeRel.getInput(), exchangeRel.getDistribution().getKeys().get(index));
         partitionKeyList.add(HiveOpConverterUtils.convertToExprNode(
-                exchangeRel.getCluster().getRexBuilder().makeInputRef(exchangeRel.getInput(), index),
+                keyRef,
                 exchangeRel.getInput(), inputOpAf.tabAlias, inputOpAf.vcolsInCalcite));
       }
     } else if (distribution.getType() != Type.ANY) {
