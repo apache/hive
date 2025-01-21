@@ -57,11 +57,14 @@ public class IcebergTimestampObjectInspectorHive3 extends AbstractPrimitiveJavaO
       return null;
     }
     LocalDateTime time;
-    if (o instanceof OffsetDateTime) {
+    if (o instanceof LocalDateTime) {
+      time = (LocalDateTime) o;
+    } else if (o instanceof OffsetDateTime) {
       OffsetDateTime odt = (OffsetDateTime) o;
       time = odt.atZoneSameInstant(TypeInfoFactory.timestampLocalTZTypeInfo.getTimeZone()).toLocalDateTime();
     } else {
-      time = (LocalDateTime) o;
+      throw new ClassCastException(String.format("An unexpected type %s was passed as timestamp. " +
+              "Expected LocalDateTime/OffsetDateTime", o.getClass().getName()));
     }
     return Timestamp.ofEpochMilli(time.toInstant(ZoneOffset.UTC).toEpochMilli(), time.getNano());
   }
