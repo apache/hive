@@ -21,7 +21,7 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfForTest;
-import org.apache.hadoop.hive.ql.processors.ShowProcesslistProcessor;
+import org.apache.hadoop.hive.ql.processors.ShowProcessListProcessor;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationHandle;
@@ -43,7 +43,7 @@ public class TestHiveCommandOpForProcessList {
   private ByteArrayOutputStream baos;
   private static SessionState state;
   private SessionManager sessionManager;
-  private ShowProcesslistProcessor processor;
+  private ShowProcessListProcessor processor;
 
   @Before
   public void setupTest() throws Exception {
@@ -51,7 +51,7 @@ public class TestHiveCommandOpForProcessList {
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    processor = new ShowProcesslistProcessor();
+    processor = new ShowProcessListProcessor();
     sessionManager = new SessionManager(null, true);
     sessionManager.init(hiveConf);
     sessionManager.start();

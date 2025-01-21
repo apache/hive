@@ -98,7 +98,7 @@ public final class CommandProcessorFactory {
     case RELOAD:
       return new ReloadProcessor();
     case PROCESSLIST:
-      return new ShowProcesslistProcessor();
+      return new ShowProcessListProcessor();
     case CRYPTO:
       try {
         return new CryptoProcessor(SessionState.get().getHdfsEncryptionShim(), conf);

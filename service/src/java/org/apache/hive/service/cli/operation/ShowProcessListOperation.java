@@ -19,7 +19,7 @@ package org.apache.hive.service.cli.operation;
 
 import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
-import org.apache.hadoop.hive.ql.processors.ShowProcesslistProcessor;
+import org.apache.hadoop.hive.ql.processors.ShowProcessListProcessor;
 import org.apache.hadoop.hive.ql.session.ProcessListInfo;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.session.HiveSession;
@@ -30,7 +30,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -46,9 +45,9 @@ public class ShowProcessListOperation extends HiveCommandOperation {
 
   @Override
   public void runInternal() throws HiveSQLException {
-    // For ShowProcesslistProcessor , session and operation level details  are fetched from SessionManager.
+    // For ShowProcessListProcessor , session and operation level details  are fetched from SessionManager.
     List<ProcessListInfo> liveQueries = getLiveQueryInfos(parentSession);
-    ShowProcesslistProcessor showProcesslistProcessor = (ShowProcesslistProcessor) commandProcessor;
+    ShowProcessListProcessor showProcesslistProcessor = (ShowProcessListProcessor) commandProcessor;
     if (liveQueries != null) {
       showProcesslistProcessor.setup(liveQueries);
     }

@@ -35,8 +35,8 @@ import static org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.defaultN
 /**
  * List operations/queries being performed in sessions within hiveserver2
  */
-public class ShowProcesslistProcessor implements CommandProcessor {
-  private static final Logger LOG = LoggerFactory.getLogger(ShowProcesslistProcessor.class.getName());
+public class ShowProcessListProcessor implements CommandProcessor {
+  private static final Logger LOG = LoggerFactory.getLogger(ShowProcessListProcessor.class.getName());
   private static final SessionState.LogHelper console = new SessionState.LogHelper(LOG);
   private List<ProcessListInfo> liveQueries = null;
 
