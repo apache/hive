@@ -25,7 +25,10 @@ import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.session.HiveSession;
 import org.apache.hive.service.cli.session.SessionManager;
 
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -34,7 +37,7 @@ import java.util.stream.Collectors;
 
 public class ShowProcessListOperation extends HiveCommandOperation {
 
-  private static final SimpleDateFormat FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+  private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
   protected ShowProcessListOperation(HiveSession parentSession, String statement,
       CommandProcessor commandProcessor, Map<String, String> confOverlay) {
@@ -66,6 +69,10 @@ public class ShowProcessListOperation extends HiveCommandOperation {
           QueryInfo query = sessionManager.getOperationManager()
               .getQueryInfo(op.getHandle().getHandleIdentifier().toString());
 
+          LocalDateTime beginTime = LocalDateTime.ofInstant(
+              Instant.ofEpochMilli(query.getBeginTime()), ZoneId.systemDefault()
+          );
+
           return new ProcessListInfo.Builder()
               .setUserName(session.getUserName())
               .setIpAddr(session.getIpAddress())
@@ -74,7 +81,7 @@ public class ShowProcessListOperation extends HiveCommandOperation {
               .setSessionIdleTime((currentTime - session.getLastAccessTime()) / 1000)
               .setQueryId(op.getQueryId())
               .setExecutionEngine(query.getExecutionEngine())
-              .setBeginTime(FORMATTER.format(new Date(query.getBeginTime())))
+              .setBeginTime(beginTime.format(FORMATTER))
               .setRuntime(query.getRuntime() == null ? "Not finished" : String.valueOf(query.getRuntime() / 1000))
               .setElapsedTime(query.getElapsedTime() / 1000)
               .setState(query.getState())
