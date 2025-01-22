@@ -10,6 +10,13 @@ distribute by 1 sort by 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
+almond antique medium spring khaki
+almond antique metallic orange dim
+almond antique salmon chartreuse burlywood
+almond aquamarine midnight light salmon
+almond aquamarine pink moccasin thistle
+almond aquamarine yellow dodger mint
+almond azure aquamarine papaya violet
 almond antique blue firebrick mint
 almond antique burnished rose metallic
 almond antique burnished rose metallic
@@ -17,11 +24,8 @@ almond antique chartreuse khaki white
 almond antique chartreuse lavender yellow
 almond antique forest lavender goldenrod
 almond antique gainsboro frosted violet
-almond antique medium spring khaki
-almond antique metallic orange dim
 almond antique misty red olive
 almond antique olive coral navajo
-almond antique salmon chartreuse burlywood
 almond antique sky peru orange
 almond antique violet chocolate turquoise
 almond antique violet mint lemon
@@ -29,12 +33,8 @@ almond antique violet turquoise frosted
 almond aquamarine burnished black steel
 almond aquamarine dodger light gainsboro
 almond aquamarine floral ivory bisque
-almond aquamarine midnight light salmon
-almond aquamarine pink moccasin thistle
 almond aquamarine rose maroon antique
 almond aquamarine sandy cyan gainsboro
-almond aquamarine yellow dodger mint
-almond azure aquamarine papaya violet
 almond azure blanched chiffon midnight
 PREHOOK: query: create temporary table d1 (key int)
 PREHOOK: type: CREATETABLE
