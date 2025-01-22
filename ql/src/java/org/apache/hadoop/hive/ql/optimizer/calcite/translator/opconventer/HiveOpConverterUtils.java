@@ -112,7 +112,7 @@ final class HiveOpConverterUtils {
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
   static ReduceSinkOperator genReduceSink(Operator<?> input, String tableAlias, ExprNodeDesc[] keys, int tag,
-      ArrayList<ExprNodeDesc> partitionCols, String order, String nullOrder, int numReducers,
+      List<ExprNodeDesc> partitionCols, String order, String nullOrder, int numReducers,
       Operation acidOperation, HiveConf hiveConf) throws SemanticException {
     Operator dummy = Operator.createDummy(); // dummy for backtracking
     dummy.setParentOperators(Arrays.asList(input));

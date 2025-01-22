@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.translator.opconventer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.calcite.rel.RelDistribution;
@@ -55,7 +56,7 @@ class HiveSortExchangeVisitor extends HiveRelNodeVisitor<HiveSortExchange> {
     }
 
     RelDistribution distribution = exchangeRel.getDistribution();
-    ArrayList<ExprNodeDesc> partitionKeyList;
+    List<ExprNodeDesc> partitionKeyList;
     if (distribution.getType() == Type.HASH_DISTRIBUTED) {
       partitionKeyList = new ArrayList<>(exchangeRel.getDistribution().getKeys().size());
       for (int index = 0; index < exchangeRel.getDistribution().getKeys().size(); index++) {
@@ -68,7 +69,7 @@ class HiveSortExchangeVisitor extends HiveRelNodeVisitor<HiveSortExchange> {
     } else if (distribution.getType() != Type.ANY) {
       throw new SemanticException("Only hash distribution supported for HiveSortExchange");
     } else {
-      partitionKeyList = new ArrayList<>(0);
+      partitionKeyList = Collections.emptyList();
     }
     ExprNodeDesc[] expressions = new ExprNodeDesc[exchangeRel.getKeys().size()];
     StringBuilder order = new StringBuilder();
