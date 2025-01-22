@@ -21,11 +21,10 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator.opconventer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.calcite.rel.RelDistribution;
-import org.apache.calcite.rel.RelDistribution.Type;
 import org.apache.calcite.rel.RelFieldCollation;
-import org.apache.calcite.rex.RexInputRef;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -59,14 +58,11 @@ class HiveSortExchangeVisitor extends HiveRelNodeVisitor<HiveSortExchange> {
     List<ExprNodeDesc> partitionKeyList;
     switch (distribution.getType()) {
       case HASH_DISTRIBUTED:
-        partitionKeyList = new ArrayList<>(exchangeRel.getDistribution().getKeys().size());
-        for (int index = 0; index < exchangeRel.getDistribution().getKeys().size(); index++) {
-          RexInputRef keyRef = exchangeRel.getCluster().getRexBuilder().makeInputRef(
-                  exchangeRel.getInput(), exchangeRel.getDistribution().getKeys().get(index));
-          partitionKeyList.add(HiveOpConverterUtils.convertToExprNode(
-                  keyRef,
-                  exchangeRel.getInput(), inputOpAf.tabAlias, inputOpAf.vcolsInCalcite));
-        }
+        partitionKeyList = exchangeRel.getDistribution().getKeys().stream()
+                .map(keyIndex -> HiveOpConverterUtils.convertToExprNode(
+                        exchangeRel.getCluster().getRexBuilder().makeInputRef(exchangeRel.getInput(), keyIndex),
+                        exchangeRel.getInput(), inputOpAf.tabAlias, inputOpAf.vcolsInCalcite))
+                .collect(Collectors.toList());
         break;
 
       case ANY:
@@ -76,6 +72,7 @@ class HiveSortExchangeVisitor extends HiveRelNodeVisitor<HiveSortExchange> {
       default:
         throw new SemanticException("Unsupported distribution type in HiveSortExchange: " + distribution.getType());
     }
+
     ExprNodeDesc[] expressions = new ExprNodeDesc[exchangeRel.getKeys().size()];
     StringBuilder order = new StringBuilder();
     StringBuilder nullOrder = new StringBuilder();
