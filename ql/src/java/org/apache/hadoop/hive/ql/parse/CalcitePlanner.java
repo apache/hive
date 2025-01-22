@@ -73,7 +73,6 @@ import org.apache.calcite.plan.volcano.AbstractConverter;
 import org.apache.calcite.plan.volcano.RelSubset;
 import org.apache.calcite.rel.AbstractRelNode;
 import org.apache.calcite.rel.RelCollation;
-import org.apache.calcite.rel.RelCollationImpl;
 import org.apache.calcite.rel.RelCollations;
 import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.RelDistributions;
@@ -379,6 +378,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
    * query with fully qualified identifiers.
    */
   private static final String EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM = "EXPANDED_QUERY_PROGRAM";
+  private static final String ERROR_MESSAGE_DUPLICATES_DETECTED =
+          "Duplicates detected when adding columns to RR: see previous message";
+
   private final AtomicInteger noColsMissingStats = new AtomicInteger(0);
   private SemanticException semanticException;
   private boolean runCBO = true;
@@ -2855,7 +2857,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         if (inputRels[0] != leftRel) {
           RowResolver newLeftRR = new RowResolver();
           if (!RowResolver.add(newLeftRR, leftRR)) {
-            LOG.warn("Duplicates detected when adding columns to RR: see previous message");
+            LOG.warn(ERROR_MESSAGE_DUPLICATES_DETECTED);
           }
           for (int i = leftRel.getRowType().getFieldCount();
                   i < inputRels[0].getRowType().getFieldCount(); i++) {
@@ -2868,7 +2870,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
           RowResolver joinRR = new RowResolver();
           if (!RowResolver.add(joinRR, newLeftRR)) {
-            LOG.warn("Duplicates detected when adding columns to RR: see previous message");
+            LOG.warn(ERROR_MESSAGE_DUPLICATES_DETECTED);
           }
           relToHiveColNameCalcitePosMap.put(topRel, buildHiveToCalciteColumnMap(joinRR));
           relToHiveRR.put(topRel, joinRR);
@@ -2887,7 +2889,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         topRR = new RowResolver();
         if (!RowResolver.add(topRR, leftRR)) {
-          LOG.warn("Duplicates detected when adding columns to RR: see previous message");
+          LOG.warn(ERROR_MESSAGE_DUPLICATES_DETECTED);
         }
       } else {
         final RelDataType combinedRowType = SqlValidatorUtil.createJoinType(
@@ -4178,7 +4180,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // 3. Construct new Row Resolver with everything from below.
       RowResolver out_rwsch = new RowResolver();
       if (!RowResolver.add(out_rwsch, inputRR)) {
-        LOG.warn("Duplicates detected when adding columns to RR: see previous message");
+        LOG.warn(ERROR_MESSAGE_DUPLICATES_DETECTED);
       }
 
       // 4. Walk through Window Expressions & Construct RexNodes for those,
@@ -5443,10 +5445,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
         if (isObyByPos) {
           return getFieldIndexFromColumnNumber(selectOutputRR, ref);
         } else { // if not using position alias and it is a number.
-          LOG.warn("Using constant number "
-                  + ref.getText()
-                  + " in order by. If you try to use position alias when hive.orderby.position.alias is false, " +
-                  "the position alias will be ignored.");
+          LOG.warn("Using constant number {}" +
+                  " in order by. If you try to use position alias when hive.orderby.position.alias is false, " +
+                  "the position alias will be ignored.", ref.getText());
         }
       } else {
         // 2.2 Convert ExprNode to RexNode
@@ -5481,8 +5482,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           orderByExpression = astToExprNDescMap.get(ref);
         } catch (SemanticException ex) {
           // we can tolerate this as this is the previous behavior
-          LOG.debug("Can not find column in " + ref.getText() + ". The error msg is "
-                  + ex.getMessage());
+          LOG.debug("Can not find column in {} The error msg is {}", ref.getText(), ex.getMessage());
         }
       }
       // then try to get it from all
@@ -5560,7 +5560,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         RowResolver obSyntheticProjectRR = new RowResolver();
         if (!RowResolver.add(obSyntheticProjectRR, inputRR)) {
           throw new CalciteSemanticException(
-                  "Duplicates detected when adding columns to RR: see previous message",
+                  ERROR_MESSAGE_DUPLICATES_DETECTED,
                   UnsupportedFeature.Duplicates_in_RR);
         }
         int vcolPos = inputRR.getRowSchema().getSignature().size();
@@ -5576,21 +5576,21 @@ public class CalcitePlanner extends SemanticAnalyzer {
         if (outermostOB) {
           if (!RowResolver.add(outputRR, inputRR)) {
             throw new CalciteSemanticException(
-                    "Duplicates detected when adding columns to RR: see previous message",
+                    ERROR_MESSAGE_DUPLICATES_DETECTED,
                     UnsupportedFeature.Duplicates_in_RR);
           }
 
         } else {
           if (!RowResolver.add(outputRR, obSyntheticProjectRR)) {
             throw new CalciteSemanticException(
-                    "Duplicates detected when adding columns to RR: see previous message",
+                    ERROR_MESSAGE_DUPLICATES_DETECTED,
                     UnsupportedFeature.Duplicates_in_RR);
           }
         }
       } else {
         if (!RowResolver.add(outputRR, inputRR)) {
           throw new CalciteSemanticException(
-                  "Duplicates detected when adding columns to RR: see previous message",
+                  ERROR_MESSAGE_DUPLICATES_DETECTED,
                   UnsupportedFeature.Duplicates_in_RR);
         }
       }
