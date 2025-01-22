@@ -1773,21 +1773,21 @@ public class MetaStoreServerUtils {
     }
 
     /**
-     * @returns stored custom pattern string
+     * @return stored custom pattern string
     * */
     public String getCustomPattern() {
       return customPattern;
     }
 
     /**
-     * @returns stored custom pattern regex matcher
+     * @return stored custom pattern regex matcher
      * */
     public Pattern getPartitionCapturePattern() {
       return partitionCapturePattern;
     }
 
     /**
-     * @returns list of partition key columns
+     * @return list of partition key columns
      * */
     public List<String> getPartitionColumns() {
       return partitionColumns;
@@ -1804,7 +1804,7 @@ public class MetaStoreServerUtils {
       /**
        * Constructs the regex to match the partition values in a path based on the custom pattern.
        *
-       * @returns custom partition pattern matcher */
+       * @return custom partition pattern matcher */
       public DynamicPartitioningCustomPattern build() {
         Pattern stringPattern = Pattern.compile("(\\$\\{)([^\\s/\\{\\}\\\\]+)(\\})");
         StringBuffer sb = new StringBuffer();
