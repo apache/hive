@@ -57,19 +57,24 @@ class HiveSortExchangeVisitor extends HiveRelNodeVisitor<HiveSortExchange> {
 
     RelDistribution distribution = exchangeRel.getDistribution();
     List<ExprNodeDesc> partitionKeyList;
-    if (distribution.getType() == Type.HASH_DISTRIBUTED) {
-      partitionKeyList = new ArrayList<>(exchangeRel.getDistribution().getKeys().size());
-      for (int index = 0; index < exchangeRel.getDistribution().getKeys().size(); index++) {
-        RexInputRef keyRef = exchangeRel.getCluster().getRexBuilder().makeInputRef(
-                exchangeRel.getInput(), exchangeRel.getDistribution().getKeys().get(index));
-        partitionKeyList.add(HiveOpConverterUtils.convertToExprNode(
-                keyRef,
-                exchangeRel.getInput(), inputOpAf.tabAlias, inputOpAf.vcolsInCalcite));
-      }
-    } else if (distribution.getType() == Type.ANY) {
-      partitionKeyList = Collections.emptyList();
-    } else {
-      throw new SemanticException("Unsupported distribution type in HiveSortExchange: " + distribution.getType());
+    switch (distribution.getType()) {
+      case HASH_DISTRIBUTED:
+        partitionKeyList = new ArrayList<>(exchangeRel.getDistribution().getKeys().size());
+        for (int index = 0; index < exchangeRel.getDistribution().getKeys().size(); index++) {
+          RexInputRef keyRef = exchangeRel.getCluster().getRexBuilder().makeInputRef(
+                  exchangeRel.getInput(), exchangeRel.getDistribution().getKeys().get(index));
+          partitionKeyList.add(HiveOpConverterUtils.convertToExprNode(
+                  keyRef,
+                  exchangeRel.getInput(), inputOpAf.tabAlias, inputOpAf.vcolsInCalcite));
+        }
+        break;
+
+      case ANY:
+        partitionKeyList = Collections.emptyList();
+        break;
+
+      default:
+        throw new SemanticException("Unsupported distribution type in HiveSortExchange: " + distribution.getType());
     }
     ExprNodeDesc[] expressions = new ExprNodeDesc[exchangeRel.getKeys().size()];
     StringBuilder order = new StringBuilder();
