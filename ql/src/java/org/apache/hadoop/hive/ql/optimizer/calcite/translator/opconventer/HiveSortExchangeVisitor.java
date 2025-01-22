@@ -66,10 +66,10 @@ class HiveSortExchangeVisitor extends HiveRelNodeVisitor<HiveSortExchange> {
                 keyRef,
                 exchangeRel.getInput(), inputOpAf.tabAlias, inputOpAf.vcolsInCalcite));
       }
-    } else if (distribution.getType() != Type.ANY) {
-      throw new SemanticException("Unsupported distribution type in HiveSortExchange: " + distribution.getType());
-    } else {
+    } else if (distribution.getType() == Type.ANY) {
       partitionKeyList = Collections.emptyList();
+    } else {
+      throw new SemanticException("Unsupported distribution type in HiveSortExchange: " + distribution.getType());
     }
     ExprNodeDesc[] expressions = new ExprNodeDesc[exchangeRel.getKeys().size()];
     StringBuilder order = new StringBuilder();
