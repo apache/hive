@@ -3357,6 +3357,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     StatsSetupConst.setBasicStatsState(props, StatsSetupConst.TRUE);
     environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
     environmentContext.putToProperties(StatsSetupConst.DO_NOT_POPULATE_QUICK_STATS, StatsSetupConst.TRUE);
+    environmentContext.putToProperties(hive_metastoreConstants.IS_TRUNCATE_OP, Boolean.TRUE.toString());
     //then invalidate column stats
     StatsSetupConst.clearColumnStatsState(props);
     return;
