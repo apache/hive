@@ -190,7 +190,7 @@
     <netty.version>4.1.116.Final</netty.version>
     <netty3.version>3.10.5.Final</netty3.version>
     <!-- used by druid storage handler -->
-    <pac4j-saml.version>4.5.5</pac4j-saml.version>
+    <pac4j-saml.version>4.5.8</pac4j-saml.version>
     <paranamer.version>2.8</paranamer.version>
     <parquet.version>1.14.4</parquet.version>
     <pig.version>0.16.0</pig.version>
@@ -879,6 +879,10 @@
           <exclusion>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.json</artifactId>
           </exclusion>
           <exclusion>
             <!-- The dependency included in pac4j is old and has known CVEs.
