@@ -47,7 +47,8 @@ public class TruncatePartitionHandler extends AbstractMessageHandler {
         AlterPartitionsMessage singleMsg = deserializer.getAlterPartitionsMessage(
             context.dmd.getPayload());
         tblObj = singleMsg.getTableObj();
-        tName = TableName.fromString(tblObj.getTableName(), null, tblObj.getDbName());
+        tName = TableName.fromString(singleMsg.getTable(), null,
+            context.isDbNameEmpty() ? singleMsg.getDB() : context.dbName);
         List<Map<String, String>> afterPartitionsList = singleMsg.getPartitions();
         List<Task<?>> childTaskList = new ArrayList<>();
         for(Map<String, String> afterIteratorMap : afterPartitionsList) {
