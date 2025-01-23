@@ -64,6 +64,15 @@ explain cbo
 select * from t1 where (a is null or a=1 or a=2) and (b is not null and b in (4, 6, 8));
 explain
 select * from t1 where (a is null or a=1 or a=2) and (b is not null and b in (4, 6, 8));
+explain cbo
+select * from t1 where coalesce(a, 1) between 2 and 5;
+explain cbo
+select * from t1 where cast(a as double) between 1.1 and 9.5 and struct(a, b) in (struct(3, 4), struct(5, 6));
+explain cbo
+select * from t1 where cast(a as double) in (sqrt(50), sqrt(60), sqrt(70));
+-- No SEARCH operator because of non-deterministic function `rand`
+explain cbo
+select * from t1 where cast(a as double) in (rand(50), rand(60), rand(70));
 
 set hive.cbo.returnpath.hiveop=true;
 
@@ -97,3 +106,12 @@ explain
 select * from t1 where a between 1 and 5 and b not between 10 and 15;
 explain
 select * from t1 where (a is null or a=1 or a=2) and (b is not null and b in (4, 6, 8));
+explain
+select * from t1 where coalesce(a, 1) between 2 and 5;
+explain
+select * from t1 where cast(a as double) between 1.1 and 9.5 and struct(a, b) in (struct(3, 4), struct(5, 6));
+explain
+select * from t1 where cast(a as double) in (sqrt(50), sqrt(60), sqrt(70));
+-- No SEARCH operator because of non-deterministic function `rand`
+explain
+select * from t1 where cast(a as double) in (rand(50), rand(60), rand(70));
