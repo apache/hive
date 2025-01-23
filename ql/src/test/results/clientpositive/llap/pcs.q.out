@@ -1288,23 +1288,21 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 2000-04-08
 2000-04-08
 2000-04-08
-PREHOOK: query: explain extended select ds from pcs_t1 where struct(ds, key, rand(100)) in (struct('2000-04-08',1,0.2), struct('2000-04-09',2,0.3))
+PREHOOK: query: explain extended select ds from pcs_t1 where struct(ds, key) in (struct('2000-04-08',1), struct('2000-04-09',2))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@pcs_t1
 PREHOOK: Input: default@pcs_t1@ds=2000-04-08
 PREHOOK: Input: default@pcs_t1@ds=2000-04-09
-PREHOOK: Input: default@pcs_t1@ds=2000-04-10
 #### A masked pattern was here ####
-POSTHOOK: query: explain extended select ds from pcs_t1 where struct(ds, key, rand(100)) in (struct('2000-04-08',1,0.2), struct('2000-04-09',2,0.3))
+POSTHOOK: query: explain extended select ds from pcs_t1 where struct(ds, key) in (struct('2000-04-08',1), struct('2000-04-09',2))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcs_t1
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
-POSTHOOK: Input: default@pcs_t1@ds=2000-04-10
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ds`
 FROM `default`.`pcs_t1`
-WHERE (`ds`, `key`, RAND(100)) = ('2000-04-08', 1, 0.2) OR (`ds`, `key`, RAND(100)) = ('2000-04-09', 2, 0.3)
+WHERE (`key`, `ds`) IN ((1, '2000-04-08'), (2, '2000-04-09'))
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1381,47 +1379,14 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcs_t1
             name: default.pcs_t1
-          Partition
-            input format: org.apache.hadoop.mapred.TextInputFormat
-            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-            partition values:
-              ds 2000-04-10
-            properties:
-              column.name.delimiter ,
-              columns key,value
-              columns.types int:string
-#### A masked pattern was here ####
-              name default.pcs_t1
-              partition_columns ds
-              partition_columns.types string
-              serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              properties:
-                bucketing_version 2
-                column.name.delimiter ,
-                columns key,value
-                columns.comments 
-                columns.types int:string
-#### A masked pattern was here ####
-                name default.pcs_t1
-                partition_columns ds
-                partition_columns.types string
-                serialization.format 1
-                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.pcs_t1
-            name: default.pcs_t1
       Processor Tree:
         TableScan
           alias: pcs_t1
+          filterExpr: ((struct(key,ds)) IN (const struct(1,'2000-04-08'), const struct(2,'2000-04-09')) and (struct(ds)) IN (struct('2000-04-08'), struct('2000-04-09'))) (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false
-            predicate: ((struct(ds,key,rand(100)) = const struct('2000-04-08',1,0.2D)) or (struct(ds,key,rand(100)) = const struct('2000-04-09',2,0.3D))) (type: boolean)
+            predicate: (struct(key,ds)) IN (const struct(1,'2000-04-08'), const struct(2,'2000-04-09')) (type: boolean)
             Select Operator
               expressions: ds (type: string)
               outputColumnNames: _col0
