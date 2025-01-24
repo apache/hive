@@ -145,12 +145,11 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Compact
-      compaction type: major
+      compaction type: smart_optimize
       table name: default.ice_orc
       numberOfBuckets: 0
       order by: order by last_name desc
       table name: default.ice_orc
-      blocking: true
 
 PREHOOK: query: alter table ice_orc COMPACT 'major' and wait order by last_name desc
 PREHOOK: type: ALTERTABLE_COMPACT
