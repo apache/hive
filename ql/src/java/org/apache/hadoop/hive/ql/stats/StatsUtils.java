@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -247,13 +248,11 @@ public class StatsUtils {
       colsWithStats.add(cstats.getColumnName());
     }
 
-    List<String> missingColStats = new ArrayList<String>(Sets.difference(neededCols, colsWithStats));
+    List<String> missingColStats = new ArrayList<>(Sets.difference(neededCols, colsWithStats));
 
-    if(missingColStats.size() > 0) {
-      List<ColStatistics> estimatedColStats = estimateStats(table, schema, missingColStats, conf, nr);
-      for (ColStatistics estColStats : estimatedColStats) {
-        columnStats.add(estColStats);
-      }
+    if (!missingColStats.isEmpty()) {
+      columnStats.addAll(
+          estimateStats(table, schema, missingColStats, conf, nr));
     }
   }
 
@@ -288,7 +287,7 @@ public class StatsUtils {
       basicStatsFactory.addEnhancer(new BasicStats.SetMinRowNumber01());
 
       BasicStats basicStats = basicStatsFactory.build(Partish.buildFor(table));
-
+      
       //      long nr = getNumRows(conf, schema, neededColumns, table, ds);
       long ds = basicStats.getDataSize();
       long nr = basicStats.getNumRows();
@@ -298,7 +297,7 @@ public class StatsUtils {
       long numErasureCodedFiles = getErasureCodedFiles(table);
 
       if (needColStats && !metaTable) {
-        colStats = getTableColumnStats(table, schema, neededColumns, colStatsCache, fetchColStats);
+        colStats = getTableColumnStats(table, neededColumns, colStatsCache, fetchColStats);
         if (estimateStats) {
           estimateStatsForMissingCols(neededColumns, colStats, table, conf, nr, schema);
         }
@@ -362,6 +361,31 @@ public class StatsUtils {
       }
 
       if (needColStats) {
+        
+        if (DDLUtils.isIcebergTable(table)) {
+          // TODO: replace with partition column stats once implemented
+          List<ColStatistics> colStats = getTableColumnStats(table, neededColumns, colStatsCache, fetchColStats);
+          if (estimateStats) {
+            estimateStatsForMissingCols(neededColumns, colStats, table, conf, nr, schema);
+            // we should have stats for all columns (estimated or actual)
+            if (neededColumns.size() == colStats.size()) {
+              long betterDS = getDataSizeFromColumnStats(nr, colStats);
+              stats.setDataSize((betterDS < 1 || colStats.isEmpty()) ? ds : betterDS);
+            }
+          }
+          // infer if any column can be primary key based on column statistics
+          inferAndSetPrimaryKey(stats.getNumRows(), colStats);
+
+          stats.setColumnStatsState(deriveStatType(colStats, neededColumns));
+          stats.addToColumnStats(colStats);
+          
+          if (partStats.isEmpty()) {
+            // all partitions are filtered by partition pruning
+            stats.setBasicStatsState(State.COMPLETE);
+          }
+          return stats;
+        }
+        
         List<String> partitionCols = getPartitionColumns(schema, neededColumns, referencedColumns);
 
         // We will retrieve stats from the metastore only for columns that are not cached
@@ -1038,8 +1062,7 @@ public class StatsUtils {
    * @return column statistics
    */
   public static List<ColStatistics> getTableColumnStats(
-      Table table, List<ColumnInfo> schema, List<String> neededColumns,
-      ColumnStatsList colStatsCache, boolean fetchColStats) {
+      Table table, List<String> neededColumns, ColumnStatsList colStatsCache, boolean fetchColStats) {
     List<ColStatistics> stats = new ArrayList<>();
     if (table.isMaterializedTable()) {
       LOG.debug("Materialized table does not contain table statistics");
