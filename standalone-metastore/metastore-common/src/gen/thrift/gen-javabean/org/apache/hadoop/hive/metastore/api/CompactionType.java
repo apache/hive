@@ -12,7 +12,8 @@ public enum CompactionType implements org.apache.thrift.TEnum {
   MINOR(1),
   MAJOR(2),
   REBALANCE(3),
-  ABORT_TXN_CLEANUP(4);
+  ABORT_TXN_CLEANUP(4),
+  SMART_OPTIMIZE(5);
 
   private final int value;
 
@@ -42,6 +43,8 @@ public enum CompactionType implements org.apache.thrift.TEnum {
         return REBALANCE;
       case 4:
         return ABORT_TXN_CLEANUP;
+      case 5:
+        return SMART_OPTIMIZE;
       default:
         return null;
     }
