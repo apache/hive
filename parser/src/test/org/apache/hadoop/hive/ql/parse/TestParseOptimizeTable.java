@@ -34,7 +34,7 @@ public class TestParseOptimizeTable {
         "      TOK_TABNAME\n" +
         "         tbl0\n" +
         "      TOK_ALTERTABLE_COMPACT\n" +
-        "         'MAJOR'\n" +
+        "         'SMART'\n" +
         "         TOK_BLOCKING\n" +
         "         TOK_WHERE\n" +
         "            and\n" +
@@ -64,7 +64,7 @@ public class TestParseOptimizeTable {
         "      TOK_TABNAME\n" +
         "         tbl0\n" +
         "      TOK_ALTERTABLE_COMPACT\n" +
-        "         'MAJOR'\n" +
+        "         'SMART'\n" +
         "         TOK_BLOCKING\n" +
         "         TOK_ORDERBY\n" +
         "            TOK_TABSORTCOLNAMEDESC\n" +
@@ -87,7 +87,7 @@ public class TestParseOptimizeTable {
         "      TOK_TABNAME\n" +
         "         tbl0\n" +
         "      TOK_ALTERTABLE_COMPACT\n" +
-        "         'MAJOR'\n" +
+        "         'SMART'\n" +
         "         TOK_BLOCKING\n" +
         "         TOK_COMPACT_POOL\n" +
         "            'iceberg'\n" +
