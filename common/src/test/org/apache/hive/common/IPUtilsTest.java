@@ -20,50 +20,16 @@ package org.apache.hive.common;
 
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Field;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class IPUtilsTest {
 
   @Test
-  void testValidIPv4Addresses() {
-    assertTrue(IPUtils.isValidIPv4("192.168.1.1"));
-    assertTrue(IPUtils.isValidIPv4("255.255.255.255"));
-    assertTrue(IPUtils.isValidIPv4("0.0.0.0"));
-    assertTrue(IPUtils.isValidIPv4("1.1.1.1"));
-  }
-
-  @Test
-  void testInvalidIPv4Addresses() {
-    assertFalse(IPUtils.isValidIPv4("256.100.50.25")); // Invalid: 256 out of range
-    assertFalse(IPUtils.isValidIPv4("192.168.1")); // Invalid: Missing octet
-    assertFalse(IPUtils.isValidIPv4("192.168.1.01")); // Invalid: Leading zero
-    assertFalse(IPUtils.isValidIPv4("192.168.1.1.1")); // Invalid: Extra octet
-    assertFalse(IPUtils.isValidIPv4("abcd")); // Invalid: Not an IP
-    assertFalse(IPUtils.isValidIPv4("1234.123.123.123")); // Invalid: Octet out of range
-  }
-
-  @Test
-  void testValidIPv6Addresses() {
-    assertTrue(IPUtils.isValidIPv6("2001:db8::ff00:42:8329")); // Valid IPv6
-    assertTrue(IPUtils.isValidIPv6("::1")); // Loopback address
-    assertTrue(IPUtils.isValidIPv6("2001:0db8:85a3:0000:0000:8a2e:0370:7334")); // Full notation
-    assertTrue(IPUtils.isValidIPv6("fe80::1")); // Link-local address
-    assertTrue(IPUtils.isValidIPv6("::")); // Unspecified address
-  }
-
-  @Test
-  void testInvalidIPv6Addresses() {
-    assertFalse(IPUtils.isValidIPv6("192.168.1.1")); // IPv4 address
-    assertFalse(IPUtils.isValidIPv6("abcd")); // Not an IP
-    assertFalse(IPUtils.isValidIPv6("2001:db8:::1")); // Too many colons
-    assertFalse(IPUtils.isValidIPv6("2001:db8::gggg")); // Invalid hex characters
-    assertFalse(IPUtils.isValidIPv6("2001:db8::1::1")); // Multiple "::"
-  }
-
-  @Test
   void testIPv4LoopbackWhenIPv4StackIsForced() {
-    System.setProperty("java.net.preferIPv4Stack", "true");
-    System.setProperty("java.net.preferIPv6Addresses", "false");
+    IPUtils.setPreferIPv4Stack(true);
+    IPUtils.setPreferIPv6Addresses(false);
 
     String loopback = IPUtils.getLoopbackAddress();
     assertEquals(IPUtils.LOOPBACK_ADDRESS_IPV4, loopback);
@@ -71,8 +37,8 @@ class IPUtilsTest {
 
   @Test
   void testIPv6LoopbackWhenIPv6IsPreferred() {
-    System.setProperty("java.net.preferIPv4Stack", "false");
-    System.setProperty("java.net.preferIPv6Addresses", "true");
+    IPUtils.setPreferIPv4Stack(false);
+    IPUtils.setPreferIPv6Addresses(true);
 
     String loopback = IPUtils.getLoopbackAddress();
     assertEquals(IPUtils.LOOPBACK_ADDRESS_IPV6, loopback);
@@ -80,8 +46,8 @@ class IPUtilsTest {
 
   @Test
   void testIPv4LoopbackWhenIPv6IsNotPreferred() {
-    System.setProperty("java.net.preferIPv4Stack", "false");
-    System.setProperty("java.net.preferIPv6Addresses", "false");
+    IPUtils.setPreferIPv4Stack(false);
+    IPUtils.setPreferIPv6Addresses(false);
 
     String loopback = IPUtils.getLoopbackAddress();
     assertEquals(IPUtils.LOOPBACK_ADDRESS_IPV4, loopback);
@@ -89,8 +55,8 @@ class IPUtilsTest {
 
   @Test
   void testIPv4WildcardWhenIPv4StackIsForced() {
-    System.setProperty("java.net.preferIPv4Stack", "true");
-    System.setProperty("java.net.preferIPv6Addresses", "false");
+    IPUtils.setPreferIPv4Stack(true);
+    IPUtils.setPreferIPv6Addresses(false);
 
     String wildcard = IPUtils.getWildcardAddress();
     assertEquals(IPUtils.WILDCARD_ADDRESS_IPV4, wildcard);
@@ -98,8 +64,8 @@ class IPUtilsTest {
 
   @Test
   void testIPv6WildcardWhenIPv6IsPreferred() {
-    System.setProperty("java.net.preferIPv4Stack", "false");
-    System.setProperty("java.net.preferIPv6Addresses", "true");
+    IPUtils.setPreferIPv4Stack(false);
+    IPUtils.setPreferIPv6Addresses(true);
 
     String wildcard = IPUtils.getWildcardAddress();
     assertEquals(IPUtils.WILDCARD_ADDRESS_IPV6, wildcard);
@@ -107,9 +73,9 @@ class IPUtilsTest {
 
   @Test
   void testIPv4WildcardWhenIPv6IsNotPreferred() {
-    System.setProperty("java.net.preferIPv4Stack", "false");
-    System.setProperty("java.net.preferIPv6Addresses", "false");
-
+    IPUtils.setPreferIPv4Stack(false);
+    IPUtils.setPreferIPv6Addresses(false);
+    
     String wildcard = IPUtils.getWildcardAddress();
     assertEquals(IPUtils.WILDCARD_ADDRESS_IPV4, wildcard);
   }
@@ -146,8 +112,8 @@ class IPUtilsTest {
   
   @Test
   void testWildcardWhenIPv4StackIsForcedAndIPv4WildcardProvided() {
-    System.setProperty("java.net.preferIPv4Stack", "true");
-    System.setProperty("java.net.preferIPv6Addresses", "false");
+    IPUtils.setPreferIPv4Stack(true);
+    IPUtils.setPreferIPv6Addresses(false);
 
     String result = IPUtils.updateWildcardAddress(IPUtils.WILDCARD_ADDRESS_IPV4);
     assertEquals(IPUtils.WILDCARD_ADDRESS_IPV4, result);
@@ -155,8 +121,8 @@ class IPUtilsTest {
 
   @Test
   void testWildcardWhenIPv4StackIsForcedAndIPv6WildcardProvided() {
-    System.setProperty("java.net.preferIPv4Stack", "true");
-    System.setProperty("java.net.preferIPv6Addresses", "false");
+    IPUtils.setPreferIPv4Stack(true);
+    IPUtils.setPreferIPv6Addresses(false);
 
     String result = IPUtils.updateWildcardAddress(IPUtils.WILDCARD_ADDRESS_IPV6);
     assertEquals(IPUtils.WILDCARD_ADDRESS_IPV4, result);
@@ -165,8 +131,8 @@ class IPUtilsTest {
 
   @Test
   void testWildcardWhenIPv6IsPreferredAndIPv6WildcardProvided() {
-    System.setProperty("java.net.preferIPv4Stack", "false");
-    System.setProperty("java.net.preferIPv6Addresses", "true");
+    IPUtils.setPreferIPv4Stack(false);
+    IPUtils.setPreferIPv6Addresses(true);
 
     String result = IPUtils.updateWildcardAddress(IPUtils.WILDCARD_ADDRESS_IPV6);
     assertEquals(IPUtils.WILDCARD_ADDRESS_IPV6, result);
@@ -174,8 +140,8 @@ class IPUtilsTest {
 
   @Test
   void testWildcardWhenIPv6IsPreferredAndIPv4WildcardProvided() {
-    System.setProperty("java.net.preferIPv4Stack", "false");
-    System.setProperty("java.net.preferIPv6Addresses", "true");
+    IPUtils.setPreferIPv4Stack(false);
+    IPUtils.setPreferIPv6Addresses(true);
 
     String result = IPUtils.updateWildcardAddress(IPUtils.WILDCARD_ADDRESS_IPV4);
     assertEquals(IPUtils.WILDCARD_ADDRESS_IPV6, result);
@@ -183,8 +149,8 @@ class IPUtilsTest {
 
   @Test
   void testWildcardWhenIPv6IsNotPreferredAndIPv4WildcardProvided() {
-    System.setProperty("java.net.preferIPv4Stack", "false");
-    System.setProperty("java.net.preferIPv6Addresses", "false");
+    IPUtils.setPreferIPv4Stack(false);
+    IPUtils.setPreferIPv6Addresses(false);
 
     String result = IPUtils.updateWildcardAddress(IPUtils.WILDCARD_ADDRESS_IPV4);
     assertEquals(IPUtils.WILDCARD_ADDRESS_IPV4, result);
@@ -192,8 +158,8 @@ class IPUtilsTest {
 
   @Test
   void testWildcardWhenIPv6IsNotPreferredAndIPv6WildcardProvided() {
-    System.setProperty("java.net.preferIPv4Stack", "false");
-    System.setProperty("java.net.preferIPv6Addresses", "false");
+    IPUtils.setPreferIPv4Stack(false);
+    IPUtils.setPreferIPv6Addresses(false);
 
     String result = IPUtils.updateWildcardAddress(IPUtils.WILDCARD_ADDRESS_IPV6);
     assertEquals(IPUtils.WILDCARD_ADDRESS_IPV4, result);
