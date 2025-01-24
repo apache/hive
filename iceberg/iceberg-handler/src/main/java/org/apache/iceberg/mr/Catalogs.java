@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.function.UnaryOperator;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
@@ -184,11 +183,7 @@ public final class Catalogs {
    * @return true if the Catalog is HiveCatalog
    */
   public static boolean hiveCatalog(Configuration conf, Properties props) {
-    return hiveCatalog(conf, props::getProperty);
-  }
-
-  public static boolean hiveCatalog(Configuration conf, UnaryOperator<String> props) {
-    String catalogName = props.apply(InputFormatConfig.CATALOG_NAME);
+    String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
     String catalogType = getCatalogType(conf, catalogName);
     if (catalogType != null) {
       return CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE.equalsIgnoreCase(catalogType);

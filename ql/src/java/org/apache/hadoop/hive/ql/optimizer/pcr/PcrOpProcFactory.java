@@ -132,7 +132,7 @@ public final class PcrOpProcFactory {
       }
       partitions.addAll(prunedPartList.getPartitions());
       
-      // skip the optimization for Iceberg tables with non-identity partition transforms
+      // skip the optimization for tables with non-identity partition transforms
       if (DDLUtils.hasTransformsInPartitionSpec(top.getConf().getTableMetadata())) {
         return null;
       }

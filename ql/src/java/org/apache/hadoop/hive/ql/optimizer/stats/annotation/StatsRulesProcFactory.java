@@ -2961,8 +2961,7 @@ public class StatsRulesProcFactory {
 
       if (satisfyPrecondition(parentStats)) {
         Statistics stats = parentStats.clone();
-        List<ColStatistics> colStats = StatsUtils.getColStatisticsUpdatingTableAlias(
-            parentStats, lop.getSchema());
+        List<ColStatistics> colStats = StatsUtils.getColStatisticsUpdatingTableAlias(parentStats);
         stats.setColumnStats(colStats);
 
         // if limit is greater than available rows then do not update

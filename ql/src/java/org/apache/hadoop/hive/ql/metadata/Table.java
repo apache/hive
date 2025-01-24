@@ -260,7 +260,7 @@ public class Table implements Serializable {
   public void checkValidity(Configuration conf) throws HiveException {
     // check for validity
     validateName(conf);
-    if (0 == getCols().size()) {
+    if (getCols().isEmpty()) {
       throw new HiveException(
           "at least one column must be specified for the table");
     }
@@ -340,10 +340,6 @@ public class Table implements Serializable {
       deserializer = getDeserializerFromMetaStore(false);
     }
     return deserializer;
-  }
-
-  final public Class<? extends Deserializer> getDeserializerClass() throws Exception {
-    return HiveMetaStoreUtils.getDeserializerClass(SessionState.getSessionConf(), tTable);
   }
 
   final public Deserializer getDeserializer(boolean skipConfError) {
@@ -458,7 +454,7 @@ public class Table implements Serializable {
     public ValidationFailureSemanticException(String s) {
       super(s);
     }
-  };
+  }
 
   final public void validatePartColumnNames(
       Map<String, String> spec, boolean shouldBeFull) throws SemanticException {
@@ -535,9 +531,7 @@ public class Table implements Serializable {
           .getObjectInspector();
       List<? extends StructField> fld_lst = structObjectInspector
           .getAllStructFieldRefs();
-      for (StructField field : fld_lst) {
-        fields.add(field);
-      }
+      fields.addAll(fld_lst);
     } catch (SerDeException e) {
       throw new RuntimeException(e);
     }
@@ -682,8 +676,7 @@ public class Table implements Serializable {
     tTable.getSd().setSortCols(sortOrder);
   }
 
-  public void setSkewedValueLocationMap(List<String> valList, String dirName)
-      throws HiveException {
+  public void setSkewedValueLocationMap(List<String> valList, String dirName) {
     Map<List<String>, String> mappings = tTable.getSd().getSkewedInfo()
         .getSkewedColValueLocationMaps();
     if (null == mappings) {
@@ -700,7 +693,7 @@ public class Table implements Serializable {
         .getSkewedColValueLocationMaps() : new HashMap<List<String>, String>();
   }
 
-  public void setSkewedColValues(List<List<String>> skewedValues) throws HiveException {
+  public void setSkewedColValues(List<List<String>> skewedValues) {
     tTable.getSd().getSkewedInfo().setSkewedColValues(skewedValues);
   }
 
@@ -709,7 +702,7 @@ public class Table implements Serializable {
         .getSkewedColValues() : new ArrayList<List<String>>();
   }
 
-  public void setSkewedColNames(List<String> skewedColNames) throws HiveException {
+  public void setSkewedColNames(List<String> skewedColNames) {
     tTable.getSd().getSkewedInfo().setSkewedColNames(skewedColNames);
   }
 
@@ -722,7 +715,7 @@ public class Table implements Serializable {
     return tTable.getSd().getSkewedInfo();
   }
 
-  public void setSkewedInfo(SkewedInfo skewedInfo) throws HiveException {
+  public void setSkewedInfo(SkewedInfo skewedInfo) {
     tTable.getSd().setSkewedInfo(skewedInfo);
   }
 
@@ -1192,10 +1185,6 @@ public class Table implements Serializable {
     this.tableSpec = tableSpec;
   }
 
-  public boolean hasDeserializer() {
-    return deserializer != null;
-  }
-
   public String getCatalogName() {
     return this.tTable.getCatName();
   }
@@ -1375,4 +1364,4 @@ public class Table implements Serializable {
     sourceTable.setDeletedCount(0L);
     return sourceTable;
   }
-};
+}

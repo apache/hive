@@ -378,7 +378,7 @@ public interface HiveStorageHandler extends Configurable {
    * Any partitioning scheme provided via the standard HiveQL syntax will be honored but stored in someplace
    * other than HMS, depending on the storage handler implementation.
    *
-   * @return whether the table is self-contained and provided built-in partition support
+   * @return whether the table has built-in partitioning support
    */
   default boolean supportsPartitioning() {
     return false;
