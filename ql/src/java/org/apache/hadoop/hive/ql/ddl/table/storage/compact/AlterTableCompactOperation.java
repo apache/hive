@@ -108,9 +108,11 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
     }
 
     if (desc.getFileSizeThreshold() != null) {
-      if (!DDLUtils.isIcebergTable(table) || compactionRequest.getType() != CompactionType.MINOR) {
+      if (!DDLUtils.isIcebergTable(table) || compactionRequest.getType() != CompactionType.MINOR && 
+          compactionRequest.getType() != CompactionType.SMART) {
         throw new HiveException(ErrorMsg.UNSUPPORTED_COMPACTION_REQUEST_WITH_FILE_SIZE_THRESHOLD);
       }
+      compactionRequest.setType(CompactionType.MINOR);
       compactionRequest.putToProperties(CompactorContext.COMPACTION_FILE_SIZE_THRESHOLD, desc.getFileSizeThreshold());
     }
 

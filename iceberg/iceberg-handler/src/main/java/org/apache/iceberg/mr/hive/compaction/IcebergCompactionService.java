@@ -18,6 +18,7 @@
 
 package org.apache.iceberg.mr.hive.compaction;
 
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
@@ -40,7 +41,7 @@ public class IcebergCompactionService extends CompactionService {
 
   public Boolean compact(Table table, CompactionInfo ci) throws Exception {
 
-    if (!ci.isMajorCompaction() && !ci.isMinorCompaction()) {
+    if (!ci.isMajorCompaction() && !ci.isMinorCompaction() && !ci.isSmartOptimize()) {
       ci.errorMessage = String.format("Iceberg tables do not support %s compaction type", ci.type.name());
       LOG.error(ci.errorMessage + " Compaction info: {}", ci);
       try {
@@ -53,11 +54,16 @@ public class IcebergCompactionService extends CompactionService {
     CompactorUtil.checkInterrupt(CLASS_NAME);
 
     org.apache.iceberg.Table icebergTable = IcebergTableUtil.getTable(conf, table);
-    if (!IcebergCompactionEvaluator.isEligibleForCompaction(icebergTable, ci, conf)) {
+    IcebergCompactionEvaluator compactionEvaluator = new IcebergCompactionEvaluator(icebergTable, ci, conf);
+    if (!compactionEvaluator.isEligibleForCompaction()) {
       LOG.info("Table={}{} doesn't meet requirements for compaction", table.getTableName(),
           ci.partName == null ? "" : ", partition=" + ci.partName);
       msc.markRefused(CompactionInfo.compactionInfoToStruct(ci));
       return false;
+    }
+
+    if (ci.type == CompactionType.SMART) {
+      ci.type = compactionEvaluator.determineCompactionType();
     }
 
     if (ci.runAs == null) {

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Collections;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.PartitionSpec;
@@ -45,24 +46,29 @@ public class IcebergCompactionEvaluator {
 
   private static final long LAST_OPTIMIZE_TIME = 0;
   private static final int TRIGGER_INTERVAL = 0;
+  private CommonPartitionEvaluator partitionEvaluator;
+  private final Table table;
+  private final CompactionInfo ci;
+  private final HiveConf conf;
 
-  private IcebergCompactionEvaluator() {
+  public IcebergCompactionEvaluator(Table table, CompactionInfo ci, HiveConf conf) {
+    this.table = table;
+    this.ci = ci;
+    this.conf = conf;
 
+    if (table.currentSnapshot() != null) {
+      partitionEvaluator = createCommonPartitionEvaluator();
+    } else {
+      LOG.info("Table {}{} doesn't require compaction because it is empty", table,
+          ci.partName == null ? "" : " partition " + ci.partName);
+    }
   }
 
   private static final Logger LOG = LoggerFactory.getLogger(IcebergCompactionEvaluator.class);
 
-  public static boolean isEligibleForCompaction(Table icebergTable, CompactionInfo ci, HiveConf conf) {
+  public boolean isEligibleForCompaction() {
 
-    if (icebergTable.currentSnapshot() == null) {
-      LOG.info("Table {}{} doesn't require compaction because it is empty", icebergTable,
-          ci.partName == null ? "" : " partition " + ci.partName);
-      return false;
-    }
-
-    CommonPartitionEvaluator partitionEvaluator = createCommonPartitionEvaluator(icebergTable, ci, conf);
-
-    if (partitionEvaluator == null) {
+    if (table.currentSnapshot() == null || partitionEvaluator == null) {
       return false;
     }
 
@@ -71,12 +77,29 @@ public class IcebergCompactionEvaluator {
         return partitionEvaluator.isMinorNecessary() || partitionEvaluator.isMajorNecessary();
       case MAJOR:
         return partitionEvaluator.isFullNecessary();
+      case SMART:
+        return partitionEvaluator.isMinorNecessary() || partitionEvaluator.isMajorNecessary() ||
+            partitionEvaluator.isFullNecessary();
       default:
         return false;
     }
   }
 
-  private static TableRuntime createTableRuntime(Table icebergTable, CompactionInfo ci, HiveConf conf) {
+  public CompactionType determineCompactionType() {
+    if (ci.type == CompactionType.SMART) {
+      if (partitionEvaluator.isFullNecessary()) {
+        return CompactionType.MAJOR;
+      } else if (partitionEvaluator.isMinorNecessary() || partitionEvaluator.isMajorNecessary()) {
+        return CompactionType.MINOR;
+      } else {
+        return null;
+      }
+    } else {
+      return ci.type;
+    }
+  }
+
+  private TableRuntime createTableRuntime() {
     OptimizingConfig optimizingConfig = OptimizingConfig.parse(Collections.emptyMap());
     optimizingConfig.setTargetSize(IcebergCompactionUtil.getTargetFileSize(ci, conf));
     optimizingConfig.setFullTriggerInterval(TRIGGER_INTERVAL);
@@ -86,7 +109,7 @@ public class IcebergCompactionEvaluator {
     tableConfig.setOptimizingConfig(optimizingConfig);
 
     TableRuntimeMeta tableRuntimeMeta = new TableRuntimeMeta();
-    tableRuntimeMeta.setTableName(icebergTable.name());
+    tableRuntimeMeta.setTableName(table.name());
     tableRuntimeMeta.setFormat(TableFormat.ICEBERG);
     tableRuntimeMeta.setLastFullOptimizingTime(LAST_OPTIMIZE_TIME);
     tableRuntimeMeta.setLastMinorOptimizingTime(LAST_OPTIMIZE_TIME);
@@ -95,9 +118,8 @@ public class IcebergCompactionEvaluator {
     return new HiveTableRuntime(tableRuntimeMeta);
   }
 
-  private static CommonPartitionEvaluator createCommonPartitionEvaluator(Table table, CompactionInfo ci,
-      HiveConf conf) {
-    TableRuntime tableRuntime = createTableRuntime(table, ci, conf);
+  private CommonPartitionEvaluator createCommonPartitionEvaluator() {
+    TableRuntime tableRuntime = createTableRuntime();
     long fileSizeThreshold = IcebergCompactionUtil.getFileSizeThreshold(ci, conf);
 
     TableFileScanHelper tableFileScanHelper = new IcebergTableFileScanHelper(table,

@@ -108,22 +108,14 @@ alterTblPartitionStatementSuffix[boolean partition]
 optimizeTableStatementSuffix
 @init { gParent.pushMsg("optimize table statement suffix", state); }
 @after { gParent.popMsg(state); }
-    : optimizeTblRewriteDataSuffixMajorCompaction
-    | optimizeTblRewriteDataSuffixMinorCompaction
+    : optimizeTblRewriteDataSuffixCompaction
     ;
 
-optimizeTblRewriteDataSuffixMajorCompaction
-@init { gParent.msgs.push("major compaction request"); }
+optimizeTblRewriteDataSuffixCompaction
+@init { gParent.msgs.push("smart optimize compaction request"); }
 @after { gParent.msgs.pop(); }
-    : KW_REWRITE KW_DATA compactPool? whereClause? orderByClause?
-    -> ^(TOK_ALTERTABLE_COMPACT Identifier["'MAJOR'"] TOK_BLOCKING orderByClause? whereClause? compactPool?)
-    ;
-
-optimizeTblRewriteDataSuffixMinorCompaction
-@init { gParent.msgs.push("minor compaction request"); }
-@after { gParent.msgs.pop(); }
-    : KW_REWRITE KW_DATA fileSizeThresholdClause compactPool? whereClause? orderByClause?
-    -> ^(TOK_ALTERTABLE_COMPACT Identifier["'MINOR'"] TOK_BLOCKING fileSizeThresholdClause compactPool? whereClause? orderByClause?)
+    : KW_REWRITE KW_DATA fileSizeThresholdClause? compactPool? whereClause? orderByClause?
+    -> ^(TOK_ALTERTABLE_COMPACT Identifier["'SMART'"] TOK_BLOCKING fileSizeThresholdClause? compactPool? whereClause? orderByClause?)
     ;
 
 alterStatementPartitionKeyType
