@@ -842,15 +842,6 @@ public class HiveAlterHandler implements AlterHandler {
     if (handler != null) {
       transactionalListeners = handler.getTransactionalListeners();
     }
-    final boolean isTruncateOp;
-    if ((environmentContext != null) && environmentContext.isSetProperties()) {
-      isTruncateOp = environmentContext.getProperties()
-          .containsKey(hive_metastoreConstants.IS_TRUNCATE_OP) ? Boolean.TRUE.toString()
-          .equalsIgnoreCase(environmentContext.getProperties()
-              .get(hive_metastoreConstants.IS_TRUNCATE_OP)) : false;
-    } else {
-      isTruncateOp = false;
-    }
 
     boolean success = false;
     try {
@@ -904,12 +895,12 @@ public class HiveAlterHandler implements AlterHandler {
             MetastoreConf.ConfVars.NOTIFICATION_ALTER_PARTITIONS_V2_ENABLED);
         if (shouldSendSingleEvent) {
           MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventMessage.EventType.ALTER_PARTITIONS,
-              new AlterPartitionsEvent(oldParts, new_parts, tbl, isTruncateOp, true, handler), environmentContext);
+              new AlterPartitionsEvent(oldParts, new_parts, tbl, false, true, handler), environmentContext);
         } else {
           for (Partition newPart : new_parts) {
             Partition oldPart = oldPartMap.get(newPart.getValues());
             MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventMessage.EventType.ALTER_PARTITION,
-                new AlterPartitionEvent(oldPart, newPart, tbl, isTruncateOp, true, newPart.getWriteId(), handler),
+                new AlterPartitionEvent(oldPart, newPart, tbl, false, true, newPart.getWriteId(), handler),
                 environmentContext);
           }
         }

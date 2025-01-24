@@ -3357,7 +3357,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     StatsSetupConst.setBasicStatsState(props, StatsSetupConst.TRUE);
     environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
     environmentContext.putToProperties(StatsSetupConst.DO_NOT_POPULATE_QUICK_STATS, StatsSetupConst.TRUE);
-    environmentContext.putToProperties(hive_metastoreConstants.IS_TRUNCATE_OP, Boolean.TRUE.toString());
     //then invalidate column stats
     StatsSetupConst.clearColumnStatsState(props);
     return;
@@ -3369,14 +3368,45 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (partitions.isEmpty()) {
       return;
     }
+    List<List<String>> partValsList = new ArrayList<>();
     for (Partition partition: partitions) {
       updateStatsForTruncate(partition.getParameters(), environmentContext);
       if (writeId > 0) {
         partition.setWriteId(writeId);
       }
+      partition.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(System
+          .currentTimeMillis() / 1000));
+      partValsList.add(partition.getValues());
     }
-    alterHandler.alterPartitions(ms, wh, catName, dbName, tableName, partitions, environmentContext,
-        validWriteIds, writeId, this);
+    ms.alterPartitions(catName, dbName, tableName, partValsList, partitions, writeId, validWriteIds);
+    if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
+      boolean shouldSendSingleEvent = MetastoreConf.getBoolVar(this.getConf(),
+          MetastoreConf.ConfVars.NOTIFICATION_ALTER_PARTITIONS_V2_ENABLED);
+      if (shouldSendSingleEvent) {
+        MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventMessage.EventType.ALTER_PARTITIONS,
+            new AlterPartitionsEvent(partitions, partitions, table, true, true, this), environmentContext);
+      } else {
+        for (Partition partition : partitions) {
+          MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventMessage.EventType.ALTER_PARTITION,
+              new AlterPartitionEvent(partition, partition, table, true, true, partition.getWriteId(), this),
+              environmentContext);
+        }
+      }
+    }
+    if (listeners != null && !listeners.isEmpty()) {
+      boolean shouldSendSingleEvent = MetastoreConf.getBoolVar(this.getConf(),
+          MetastoreConf.ConfVars.NOTIFICATION_ALTER_PARTITIONS_V2_ENABLED);
+      if (shouldSendSingleEvent) {
+        MetaStoreListenerNotifier.notifyEvent(listeners, EventMessage.EventType.ALTER_PARTITIONS,
+            new AlterPartitionsEvent(partitions, partitions, table, true, true, this), environmentContext);
+      } else {
+        for (Partition partition : partitions) {
+          MetaStoreListenerNotifier.notifyEvent(listeners, EventMessage.EventType.ALTER_PARTITION,
+              new AlterPartitionEvent(partition, partition, table, true, true, partition.getWriteId(), this),
+              environmentContext);
+        }
+      }
+    }
   }
 
   private void alterTableStatsForTruncate(RawStore ms, String catName, String dbName,
@@ -3388,6 +3418,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     } else {
       EnvironmentContext environmentContext = new EnvironmentContext();
       updateStatsForTruncate(table.getParameters(), environmentContext);
+      environmentContext.putToProperties(hive_metastoreConstants.IS_TRUNCATE_OP, Boolean.TRUE.toString());
 
       // TODO: this should actually pass thru and set writeId for txn stats.
       if (writeId > 0) {
