@@ -449,6 +449,23 @@ class CompactionTxnHandler extends TxnHandler {
     info.state = REFUSED_STATE;
     updateStatus(info);
   }
+  
+  /**
+   * Update compaction type.
+   * @param ci compaction job.
+   * @throws MetaException
+   */
+  @RetrySemantics.CannotRetry
+  @Override
+  public void updateCompactionType(CompactionInfo ci) throws MetaException {
+    jdbcResource.execute(
+        "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_TYPE\" = :type " +
+            "WHERE \"CQ_ID\" = :id",
+        new MapSqlParameterSource()
+            .addValue("type", Character.toString(thriftCompactionType2DbType(ci.type)))
+            .addValue("id", ci.id),
+        ParameterizedCommand.EXACTLY_ONE_ROW);
+  }
 
   @Override
   @RetrySemantics.CannotRetry

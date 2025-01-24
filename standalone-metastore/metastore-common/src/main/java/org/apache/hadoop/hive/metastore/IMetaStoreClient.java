@@ -4337,6 +4337,13 @@ public interface IMetaStoreClient extends AutoCloseable {
   void updateCompactorState(CompactionInfoStruct cr, long txnId) throws TException;
 
   /**
+   * Update the compaction type.
+   * @param cr compaction job being done.
+   * @throws TException
+   */
+  void updateCompactionType(CompactionInfoStruct cr) throws TException;
+
+  /**
    * Get columns.
    * @param cr compaction job.
    * @return

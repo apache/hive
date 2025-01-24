@@ -239,6 +239,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void mark_failed(const CompactionInfoStruct& cr) = 0;
   virtual void mark_refused(const CompactionInfoStruct& cr) = 0;
   virtual bool update_compaction_metrics_data(const CompactionMetricsDataStruct& data) = 0;
+  virtual void update_compaction_type(const CompactionInfoStruct& cr) = 0;
   virtual void remove_compaction_metrics_data(const CompactionMetricsDataRequest& request) = 0;
   virtual void set_hadoop_jobid(const std::string& jobId, const int64_t cq_id) = 0;
   virtual void get_latest_committed_compaction_info(GetLatestCommittedCompactionInfoResponse& _return, const GetLatestCommittedCompactionInfoRequest& rqst) = 0;
@@ -1008,6 +1009,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   bool update_compaction_metrics_data(const CompactionMetricsDataStruct& /* data */) override {
     bool _return = false;
     return _return;
+  }
+  void update_compaction_type(const CompactionInfoStruct& /* cr */) override {
+    return;
   }
   void remove_compaction_metrics_data(const CompactionMetricsDataRequest& /* request */) override {
     return;
@@ -27546,6 +27550,110 @@ class ThriftHiveMetastore_update_compaction_metrics_data_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_update_compaction_type_args__isset {
+  _ThriftHiveMetastore_update_compaction_type_args__isset() : cr(false) {}
+  bool cr :1;
+} _ThriftHiveMetastore_update_compaction_type_args__isset;
+
+class ThriftHiveMetastore_update_compaction_type_args {
+ public:
+
+  ThriftHiveMetastore_update_compaction_type_args(const ThriftHiveMetastore_update_compaction_type_args&);
+  ThriftHiveMetastore_update_compaction_type_args& operator=(const ThriftHiveMetastore_update_compaction_type_args&);
+  ThriftHiveMetastore_update_compaction_type_args() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_update_compaction_type_args() noexcept;
+  CompactionInfoStruct cr;
+
+  _ThriftHiveMetastore_update_compaction_type_args__isset __isset;
+
+  void __set_cr(const CompactionInfoStruct& val);
+
+  bool operator == (const ThriftHiveMetastore_update_compaction_type_args & rhs) const
+  {
+    if (!(cr == rhs.cr))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_update_compaction_type_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_update_compaction_type_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_update_compaction_type_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_update_compaction_type_pargs() noexcept;
+  const CompactionInfoStruct* cr;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_update_compaction_type_result__isset {
+  _ThriftHiveMetastore_update_compaction_type_result__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_update_compaction_type_result__isset;
+
+class ThriftHiveMetastore_update_compaction_type_result {
+ public:
+
+  ThriftHiveMetastore_update_compaction_type_result(const ThriftHiveMetastore_update_compaction_type_result&);
+  ThriftHiveMetastore_update_compaction_type_result& operator=(const ThriftHiveMetastore_update_compaction_type_result&);
+  ThriftHiveMetastore_update_compaction_type_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_update_compaction_type_result() noexcept;
+  MetaException o1;
+
+  _ThriftHiveMetastore_update_compaction_type_result__isset __isset;
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_update_compaction_type_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_update_compaction_type_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_update_compaction_type_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_update_compaction_type_presult__isset {
+  _ThriftHiveMetastore_update_compaction_type_presult__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_update_compaction_type_presult__isset;
+
+class ThriftHiveMetastore_update_compaction_type_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_update_compaction_type_presult() noexcept;
+  MetaException o1;
+
+  _ThriftHiveMetastore_update_compaction_type_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_remove_compaction_metrics_data_args__isset {
   _ThriftHiveMetastore_remove_compaction_metrics_data_args__isset() : request(false) {}
   bool request :1;
@@ -36081,6 +36189,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   bool update_compaction_metrics_data(const CompactionMetricsDataStruct& data) override;
   void send_update_compaction_metrics_data(const CompactionMetricsDataStruct& data);
   bool recv_update_compaction_metrics_data();
+  void update_compaction_type(const CompactionInfoStruct& cr) override;
+  void send_update_compaction_type(const CompactionInfoStruct& cr);
+  void recv_update_compaction_type();
   void remove_compaction_metrics_data(const CompactionMetricsDataRequest& request) override;
   void send_remove_compaction_metrics_data(const CompactionMetricsDataRequest& request);
   void recv_remove_compaction_metrics_data();
@@ -36511,6 +36622,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_mark_failed(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_mark_refused(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_update_compaction_metrics_data(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_update_compaction_type(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_remove_compaction_metrics_data(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_set_hadoop_jobid(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_latest_committed_compaction_info(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -36797,6 +36909,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["mark_failed"] = &ThriftHiveMetastoreProcessor::process_mark_failed;
     processMap_["mark_refused"] = &ThriftHiveMetastoreProcessor::process_mark_refused;
     processMap_["update_compaction_metrics_data"] = &ThriftHiveMetastoreProcessor::process_update_compaction_metrics_data;
+    processMap_["update_compaction_type"] = &ThriftHiveMetastoreProcessor::process_update_compaction_type;
     processMap_["remove_compaction_metrics_data"] = &ThriftHiveMetastoreProcessor::process_remove_compaction_metrics_data;
     processMap_["set_hadoop_jobid"] = &ThriftHiveMetastoreProcessor::process_set_hadoop_jobid;
     processMap_["get_latest_committed_compaction_info"] = &ThriftHiveMetastoreProcessor::process_get_latest_committed_compaction_info;
@@ -38936,6 +39049,15 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return ifaces_[i]->update_compaction_metrics_data(data);
   }
 
+  void update_compaction_type(const CompactionInfoStruct& cr) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->update_compaction_type(cr);
+    }
+    ifaces_[i]->update_compaction_type(cr);
+  }
+
   void remove_compaction_metrics_data(const CompactionMetricsDataRequest& request) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -40261,6 +40383,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   bool update_compaction_metrics_data(const CompactionMetricsDataStruct& data) override;
   int32_t send_update_compaction_metrics_data(const CompactionMetricsDataStruct& data);
   bool recv_update_compaction_metrics_data(const int32_t seqid);
+  void update_compaction_type(const CompactionInfoStruct& cr) override;
+  int32_t send_update_compaction_type(const CompactionInfoStruct& cr);
+  void recv_update_compaction_type(const int32_t seqid);
   void remove_compaction_metrics_data(const CompactionMetricsDataRequest& request) override;
   int32_t send_remove_compaction_metrics_data(const CompactionMetricsDataRequest& request);
   void recv_remove_compaction_metrics_data(const int32_t seqid);

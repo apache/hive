@@ -12,6 +12,7 @@
 --! qt:replace:/(\s+current-snapshot-timestamp-ms\s+)\S+(\s*)/$1#Masked#$2/
 --! qt:replace:/(MAJOR\s+succeeded\s+)[a-zA-Z0-9\-\.\s+]+(\s+manual)/$1#Masked#$2/
 --! qt:replace:/(MAJOR\s+refused\s+)[a-zA-Z0-9\-\.\s+]+(\s+manual)/$1#Masked#$2/
+--! qt:replace:/(SMART_OPTIMIZE\s+refused\s+)[a-zA-Z0-9\-\.\s+]+(\s+manual)/$1#Masked#$2/
 -- Mask compaction id as they will be allocated in parallel threads
 --! qt:replace:/^[0-9]/#Masked#/
 -- Mask removed file size
@@ -63,7 +64,7 @@ describe formatted ice_orc;
 explain alter table ice_orc COMPACT 'major' and wait order by first_name desc;
 explain optimize table ice_orc rewrite data order by first_name desc;
 
-alter table ice_orc COMPACT 'major' and wait order by first_name desc;
+optimize table ice_orc rewrite data order by first_name desc;
 
 select * from ice_orc where company_id = 100;
 select * from ice_orc where dept_id = 2;
