@@ -78,7 +78,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtilities;
-import org.apache.hive.common.IPUtils;
+import org.apache.hive.common.IPStackUtils;
 import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -604,7 +604,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     Assert.assertEquals("default.alter_table:8:9223372036854775807::", validWriteIds);
 
     runStatementOnDriver(String.format("ALTER TABLE %s SET SKEWED LOCATION (1='hdfs://%s/abcd/1')",
-        tableName, IPUtils.concatLoopbackAddressPort(8020)));
+        tableName, IPStackUtils.concatLoopbackAddressPort(8020)));
     validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
     Assert.assertEquals("default.alter_table:9:9223372036854775807::", validWriteIds);
 

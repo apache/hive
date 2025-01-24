@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hive.common.IPUtils;
+import org.apache.hive.common.IPStackUtils;
 import org.apache.hive.service.cli.session.SessionManager;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -44,7 +44,7 @@ public class TestCLIServiceConnectionLimits {
     try {
       for (int i = 0; i < limit + 1; i++) {
         SessionHandle session = service.openSession(CLIService.SERVER_VERSION, "foo", "bar",
-            IPUtils.getLoopbackAddress(), null);
+            IPStackUtils.resolveLoopbackAddress(), null);
         sessionHandles.add(session);
       }
     } finally {
@@ -66,7 +66,7 @@ public class TestCLIServiceConnectionLimits {
       // open 5 connections
       for (int i = 0; i < limit / 2; i++) {
         SessionHandle session = service.openSession(CLIService.SERVER_VERSION, "foo", "bar",
-            IPUtils.getLoopbackAddress(), null);
+            IPStackUtils.resolveLoopbackAddress(), null);
         sessionHandles.add(session);
       }
 
@@ -79,7 +79,7 @@ public class TestCLIServiceConnectionLimits {
       // open till limit but not exceed
       for (int i = 0; i < limit; i++) {
         SessionHandle session = service.openSession(CLIService.SERVER_VERSION, "ff", "bar",
-            IPUtils.getLoopbackAddress(), null);
+            IPStackUtils.resolveLoopbackAddress(), null);
         sessionHandles.add(session);
       }
     } finally {
@@ -100,13 +100,13 @@ public class TestCLIServiceConnectionLimits {
     try {
       for (int i = 0; i < limit + 1; i++) {
         SessionHandle session = service.openSession(CLIService.SERVER_VERSION, null, "bar",
-            IPUtils.getLoopbackAddress(), null);
+            IPStackUtils.resolveLoopbackAddress(), null);
         sessionHandles.add(session);
       }
 
       for (int i = 0; i < limit + 1; i++) {
         SessionHandle session = service.openSession(CLIService.SERVER_VERSION, "", "bar",
-            IPUtils.getLoopbackAddress(), null);
+            IPStackUtils.resolveLoopbackAddress(), null);
         sessionHandles.add(session);
       }
     } finally {
@@ -175,7 +175,7 @@ public class TestCLIServiceConnectionLimits {
     try {
       for (int i = 0; i < limit + 1; i++) {
         SessionHandle session = service.openSession(CLIService.SERVER_VERSION, "foo", "bar",
-            IPUtils.getLoopbackAddress(), null);
+            IPStackUtils.resolveLoopbackAddress(), null);
         sessionHandles.add(session);
       }
 
@@ -191,7 +191,7 @@ public class TestCLIServiceConnectionLimits {
   public void testConnectionLimitPerIpAddress() throws HiveSQLException {
     thrown.expect(HiveSQLException.class);
     thrown.expectMessage(String.format("Connection limit per ipaddress reached (ipaddress: %s limit: 10)", 
-        IPUtils.getLoopbackAddress()));
+        IPStackUtils.resolveLoopbackAddress()));
 
     conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_USER, 0);
     conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_IPADDRESS, 10);
@@ -201,7 +201,7 @@ public class TestCLIServiceConnectionLimits {
     try {
       for (int i = 0; i < limit + 1; i++) {
         SessionHandle session = service.openSession(CLIService.SERVER_VERSION, "foo", "bar",
-            IPUtils.getLoopbackAddress(), null);
+            IPStackUtils.resolveLoopbackAddress(), null);
         sessionHandles.add(session);
       }
 
@@ -217,7 +217,7 @@ public class TestCLIServiceConnectionLimits {
   public void testConnectionLimitPerUserIpAddress() throws HiveSQLException {
     thrown.expect(HiveSQLException.class);
     thrown.expectMessage(String.format("Connection limit per user:ipaddress reached (user:ipaddress: foo:%s limit: 10)",
-        IPUtils.getLoopbackAddress()));
+        IPStackUtils.resolveLoopbackAddress()));
 
     conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_USER, 0);
     conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_IPADDRESS, 0);
@@ -227,7 +227,7 @@ public class TestCLIServiceConnectionLimits {
     try {
       for (int i = 0; i < limit + 1; i++) {
         SessionHandle session = service.openSession(CLIService.SERVER_VERSION, "foo", "bar",
-            IPUtils.getLoopbackAddress(), null);
+            IPStackUtils.resolveLoopbackAddress(), null);
         sessionHandles.add(session);
       }
 
@@ -252,7 +252,7 @@ public class TestCLIServiceConnectionLimits {
     try {
       for (int i = 0; i < limit + 1; i++) {
         SessionHandle session = service.openSession(CLIService.SERVER_VERSION, "foo", "bar",
-            IPUtils.getLoopbackAddress(), null);
+            IPStackUtils.resolveLoopbackAddress(), null);
         sessionHandles.add(session);
       }
 
@@ -268,7 +268,7 @@ public class TestCLIServiceConnectionLimits {
   public void testConnectionMultipleLimitsIPAndUserIP() throws HiveSQLException {
     thrown.expect(HiveSQLException.class);
     thrown.expectMessage(String.format("Connection limit per ipaddress reached (ipaddress: %s limit: 5)",
-        IPUtils.getLoopbackAddress()));
+        IPStackUtils.resolveLoopbackAddress()));
 
     conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_USER, 0);
     conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_IPADDRESS, 5);
@@ -278,7 +278,7 @@ public class TestCLIServiceConnectionLimits {
     try {
       for (int i = 0; i < limit + 1; i++) {
         SessionHandle session = service.openSession(CLIService.SERVER_VERSION, "foo", "bar",
-            IPUtils.getLoopbackAddress(), null);
+            IPStackUtils.resolveLoopbackAddress(), null);
         sessionHandles.add(session);
       }
 
@@ -294,7 +294,7 @@ public class TestCLIServiceConnectionLimits {
   public void testConnectionMultipleLimitsUserIPAndUser() throws HiveSQLException {
     thrown.expect(HiveSQLException.class);
     thrown.expectMessage(String.format("Connection limit per user:ipaddress reached (user:ipaddress: foo:%s limit: 10)",
-        IPUtils.getLoopbackAddress()));
+        IPStackUtils.resolveLoopbackAddress()));
 
     conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_USER, 15);
     conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_IPADDRESS, 0);
@@ -304,7 +304,7 @@ public class TestCLIServiceConnectionLimits {
     try {
       for (int i = 0; i < limit + 1; i++) {
         SessionHandle session = service.openSession(CLIService.SERVER_VERSION, "foo", "bar",
-            IPUtils.getLoopbackAddress(), null);
+            IPStackUtils.resolveLoopbackAddress(), null);
         sessionHandles.add(session);
       }
 
@@ -320,19 +320,19 @@ public class TestCLIServiceConnectionLimits {
   public void testConnectionForwardedIpAddresses() throws HiveSQLException {
     thrown.expect(HiveSQLException.class);
     thrown.expectMessage(String.format("Connection limit per ipaddress reached (ipaddress: %s limit: 10)", 
-        IPUtils.transformToIPv6("194.167.0.3")));
+        IPStackUtils.transformToIPv6("194.167.0.3")));
 
     conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_USER, 0);
     conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_IPADDRESS, 10);
     conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_USER_IPADDRESS, 10);
     CLIService service = getService(conf);
-    SessionManager.setForwardedAddresses(Lists.newArrayList(IPUtils.transformToIPv6("194.167.0.3"),
-        IPUtils.transformToIPv6("194.167.0.2"), IPUtils.transformToIPv6("194.167.0.1")));
+    SessionManager.setForwardedAddresses(Lists.newArrayList(IPStackUtils.transformToIPv6("194.167.0.3"),
+        IPStackUtils.transformToIPv6("194.167.0.2"), IPStackUtils.transformToIPv6("194.167.0.1")));
     List<SessionHandle> sessionHandles = new ArrayList<>();
     try {
       for (int i = 0; i < limit + 1; i++) {
         SessionHandle session = service.openSession(CLIService.SERVER_VERSION, "foo", "bar", 
-            IPUtils.transformToIPv6("194.167.0.1"), null);
+            IPStackUtils.transformToIPv6("194.167.0.1"), null);
         sessionHandles.add(session);
       }
 

@@ -26,7 +26,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.shims.HadoopShimsSecure;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.hive.common.IPUtils;
+import org.apache.hive.common.IPStackUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -301,7 +301,7 @@ public class TestTempletonUtils {
   @Test
   public void testPropertiesParsing() throws Exception {
     String[] props = {
-        String.format("hive.metastore.uris=thrift://localhost:9933\\,thrift://%s", IPUtils.concatLoopbackAddressPort(9933)),
+        String.format("hive.metastore.uris=thrift://localhost:9933\\,thrift://%s", IPStackUtils.concatLoopbackAddressPort(9933)),
         "hive.metastore.sasl.enabled=false",
         "hive.some.fake.path=C:\\foo\\bar.txt\\"
     };

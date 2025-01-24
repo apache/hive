@@ -33,7 +33,7 @@ import javax.net.ssl.TrustManagerFactory;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Sets;
-import org.apache.hive.common.IPUtils;
+import org.apache.hive.common.IPStackUtils;
 import org.apache.thrift.transport.TSSLTransportFactory;
 import org.apache.thrift.transport.TSSLTransportFactory.TSSLTransportParameters;
 import org.apache.thrift.transport.TServerSocket;
@@ -143,7 +143,7 @@ public class HiveAuthUtils {
       throws TTransportException {
     SSLSocket sslSocket = (SSLSocket) tSSLSocket.getSocket();
     SSLParameters sslParams = sslSocket.getSSLParameters();
-    if (sslSocket.getLocalAddress().getHostAddress().equals(IPUtils.getLoopbackAddress())) {
+    if (IPStackUtils.isActiveStackLoopbackIP(sslSocket.getLocalAddress().getHostAddress())) {
       sslParams.setEndpointIdentificationAlgorithm(null);
     } else {
       sslParams.setEndpointIdentificationAlgorithm("HTTPS");

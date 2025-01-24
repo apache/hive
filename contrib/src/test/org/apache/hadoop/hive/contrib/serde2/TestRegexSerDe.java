@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.io.Text;
-import org.apache.hive.common.IPUtils;
+import org.apache.hive.common.IPStackUtils;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
@@ -71,7 +71,7 @@ public class TestRegexSerDe {
               + "\"GET /someurl/?track=Blabla(Main) HTTP/1.1\" 200 5864 - "
               + "\"Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US) " 
               + "AppleWebKit/525.19 (KHTML, like Gecko) Chrome/1.0.154.65 Safari/525.19\"",
-          IPUtils.getLoopbackAddress()));
+          IPStackUtils.resolveLoopbackAddress()));
 
       // Deserialize
       Object row = serDe.deserialize(t);

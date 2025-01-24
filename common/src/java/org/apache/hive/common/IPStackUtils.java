@@ -18,45 +18,38 @@
 
 package org.apache.hive.common;
 
+import com.google.common.annotations.VisibleForTesting;
+import io.netty.util.NetUtil;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.regex.Pattern;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
-public class IPUtils {
+public class IPStackUtils {
 
   public static final String WILDCARD_ADDRESS_IPV4 = "0.0.0.0";
-  public static final String WILDCARD_ADDRESS_IPV6 = "::";
   public static final String LOOPBACK_ADDRESS_IPV4 = "127.0.0.1";
-  public static final String LOOPBACK_ADDRESS_IPV6 = "::1";
 
-  private static final String IPV6_PATTERN =
-      "([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|" +  // 1:2:3:4:5:6:7:8
-          "([0-9a-fA-F]{1,4}:){1,7}:|" +                  // 1::  or 1:2:3::8
-          "([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|" +
-          "([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|" +
-          "([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|" +
-          "([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|" +
-          "([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|" +
-          "[0-9a-fA-F]{1,4}:(:[0-9a-fA-F]{1,4}){1,6}|" +
-          ":((:[0-9a-fA-F]{1,4}){1,7}|:)|" +               // :: or ::1 or ::1:2
-          "fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|" + // Link-local
-          "::(ffff(:0{1,4}){0,1}:){0,1}" +
-          "((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}" +
-          "(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|" +  // IPv4-mapped (::ffff:192.168.1.1)
-          "([0-9a-fA-F]{1,4}:){1,4}:" +
-          "((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}" +
-          "(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])";
+  public static final List<String> WILDCARD_ADDRESSES_IPV6 = Collections.unmodifiableList(
+      Arrays.asList("::", "0:0:0:0:0:0:0:0"));
+  public static final List<String> LOOPBACK_ADDRESSES_IPV6 = Collections.unmodifiableList(
+      Arrays.asList("::1", "0:0:0:0:0:0:0:1"));
 
-  private static final String IPV4_PATTERN =
-      "^(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\\." +
-          "(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\\." +
-          "(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\\." +
-          "(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])$";
+  private static boolean preferIPv4Stack =  NetUtil.isIpV4StackPreferred();
+  private static boolean preferIPv6Addresses = NetUtil.isIpV6AddressesPreferred();
 
-  private static final Pattern ipv6Pattern = Pattern.compile("^(" + IPV6_PATTERN + ")$");
-  private static final Pattern ipv4Pattern = Pattern.compile(IPV4_PATTERN);
+  private IPStackUtils() {
+  }
 
-  private IPUtils() {
+  @VisibleForTesting
+  static void setPreferIPv4Stack(boolean preferIPv4Stack) {
+    IPStackUtils.preferIPv4Stack = preferIPv4Stack;
+  }
+
+  @VisibleForTesting
+  static void setPreferIPv6Addresses(boolean preferIPv6Addresses) {
+    IPStackUtils.preferIPv6Addresses = preferIPv6Addresses;
   }
   
   /**
@@ -64,16 +57,13 @@ public class IPUtils {
    * depending on Java properties.
    * @return the wildcard address
    */
-  public static String getWildcardAddress() {
-    boolean preferIPv6Addresses = Boolean.getBoolean("java.net.preferIPv6Addresses");
-    boolean preferIPv4Stack = Boolean.getBoolean("java.net.preferIPv4Stack");
-
+  public static String resolveWildcardAddress() {
     if (preferIPv4Stack) {
       // IPv6 stack is completely disabled on Java side
       return WILDCARD_ADDRESS_IPV4;
     } else if (preferIPv6Addresses) {
       // Dual stack is enabled, and IPv6 addresses are preferred
-      return WILDCARD_ADDRESS_IPV6;
+      return WILDCARD_ADDRESSES_IPV6.get(0);
     } else {
       // Dual stack is enabled, and IPv6 addresses are not preferred
       return WILDCARD_ADDRESS_IPV4;
@@ -85,20 +75,36 @@ public class IPUtils {
    * @return the wildcard address and port string
    */
   public static String concatWildcardAddressPort(int port) {
-    return concatHostPort(getWildcardAddress(), port);
+    return concatHostPort(resolveWildcardAddress(), port);
   }
 
   /**
-   * Updates provided wildcard address for the active IP Stack. If the provided is IPv4 wildcard address, and the 
+   * Adapts provided wildcard address for the active IP Stack. If the provided is IPv4 wildcard address, and the
    * active stack is IPv6, returns IPv6 wildcard address, and vice versa. If the provided address is not a wildcard 
    * address, returns back provided address. 
    * @param hostname An ip address or hostname
    * @return the updated wildcard address or the provided address
    */
-  public static String updateWildcardAddress(String hostname) {
-    if (hostname.equals(WILDCARD_ADDRESS_IPV4) || hostname.equals(WILDCARD_ADDRESS_IPV6)) {
+  public static String adaptWildcardAddress(String hostname) {
+    if (WILDCARD_ADDRESS_IPV4.equals(hostname) || WILDCARD_ADDRESSES_IPV6.contains(hostname)) {
       // The provided address is a wildcard address, return the wildcard address for the active IP stack
-      return getWildcardAddress();
+      return resolveWildcardAddress();
+    } else {
+      return hostname;
+    }
+  }
+
+  /**
+   * Adapts provided loopback address for the active IP Stack. If the provided is IPv4 loopback address, and the
+   * active stack is IPv6, returns IPv6 loopback address, and vice versa. If the provided address is not a loopback
+   * address, returns back provided address.
+   * @param hostname An ip address or hostname
+   * @return the updated wildcard address or the provided address
+   */
+  public static String adaptLoopbackAddress(String hostname) {
+    if (LOOPBACK_ADDRESS_IPV4.equals(hostname) || LOOPBACK_ADDRESSES_IPV6.contains(hostname)) {
+      // The provided address is a loopback address, return the loopback address for the active IP stack
+      return resolveLoopbackAddress();
     } else {
       return hostname;
     }
@@ -108,19 +114,33 @@ public class IPUtils {
    * Get the IPv4 or IPv6 loopback address depending on Java properties.
    * @return the loopback address
    */
-  public static String getLoopbackAddress() {
-    boolean preferIPv6Addresses = Boolean.getBoolean("java.net.preferIPv6Addresses");
-    boolean preferIPv4Stack = Boolean.getBoolean("java.net.preferIPv4Stack");
-
+  public static String resolveLoopbackAddress() {
     if (preferIPv4Stack) {
       // IPv6 stack is completely disabled on Java side
       return LOOPBACK_ADDRESS_IPV4;
     } else if (preferIPv6Addresses) {
       // Dual stack is enabled, and IPv6 addresses are preferred
-      return LOOPBACK_ADDRESS_IPV6;
+      return LOOPBACK_ADDRESSES_IPV6.get(0);
     } else {
       // Dual stack is enabled, and IPv6 addresses are not preferred
       return LOOPBACK_ADDRESS_IPV4;
+    }
+  }
+
+  /**
+   * Check if the provided IP address is a loopback interface for the active IP stack.
+   * @return boolean
+   */
+  public static boolean isActiveStackLoopbackIP(String ipAddress) {
+    if (preferIPv4Stack) {
+      // IPv6 stack is completely disabled on Java side
+      return LOOPBACK_ADDRESS_IPV4.equals(ipAddress);
+    } else if (preferIPv6Addresses) {
+      // Dual stack is enabled, and IPv6 addresses are preferred
+      return LOOPBACK_ADDRESSES_IPV6.contains(ipAddress);
+    } else {
+      // Dual stack is enabled, and IPv6 addresses are not preferred
+      return LOOPBACK_ADDRESS_IPV4.equals(ipAddress);
     }
   }
 
@@ -129,23 +149,7 @@ public class IPUtils {
    * @return the wildcard address and port string
    */
   public static String concatLoopbackAddressPort(int port) {
-    return concatHostPort(getLoopbackAddress(), port);
-  }
-
-  /**
-   * Checks if the provided ip address is a valid IPv4 address.
-   * @return true if the provided ip address is a valid IPv4 address else false
-   */
-  public static boolean isValidIPv4(String ip) {
-    return ipv4Pattern.matcher(ip).matches();
-  }
-
-  /**
-   * Checks if the provided ip address is a valid IPv6 address.
-   * @return true if the provided ip address is a valid IPv6 address else false
-   */
-  public static boolean isValidIPv6(String ip) {
-    return ipv6Pattern.matcher(ip).matches();
+    return concatHostPort(resolveLoopbackAddress(), port);
   }
   
   /** 
@@ -156,12 +160,26 @@ public class IPUtils {
    * @return the concatenated host and port
    */
   public static String concatHostPort(String host, int port) {
-    if (host.contains(":")) {
+    return formatIPAddressForURL(host) + ":" + port;
+  }
+
+  /**
+   * Prepares an IP address for use in a URL.
+   * <p>
+   * This method ensures that IPv6 addresses are enclosed in square brackets,
+   * as required by URL syntax. IPv4 addresses and hostnames remain unchanged.
+   * </p>
+   *
+   * @param ipAddress the IP address or hostname to format
+   * @return the formatted IP address for use in a URL
+   */
+  public static String formatIPAddressForURL(String ipAddress) {
+    if (ipAddress.contains(":") && !ipAddress.startsWith("[") && !ipAddress.endsWith("]")) {
       // IPv6 address
-      return "[" + host + "]:" + port;
+      return "[" + ipAddress + "]";
     } else {
       // IPv4 address or hostname
-      return host + ":" + port;
+      return ipAddress;
     }
   }
 
@@ -172,7 +190,7 @@ public class IPUtils {
    * @return the transformed IPv4 address
    */
   public static String transformToIPv6(String ipv4) {
-    if (isValidIPv4(ipv4)) {
+    if (NetUtil.isValidIpV4Address(ipv4)) {
       try {
         return InetAddress.getByName("::ffff:" + ipv4).getHostAddress();
       } catch (UnknownHostException e) {
@@ -191,7 +209,7 @@ public class IPUtils {
    * @return the concatenated and transformed to IPv6 host and port
    */
   public static String transformToIPv6(String ipv4, int port) {
-    if (isValidIPv4(ipv4)) {
+    if (NetUtil.isValidIpV4Address(ipv4)) {
       try {
         return concatHostPort(InetAddress.getByName("::ffff:" + ipv4).getHostAddress(), port);
       } catch (UnknownHostException e) {

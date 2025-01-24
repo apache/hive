@@ -39,7 +39,7 @@ import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecretManager.DelegationTokenInformation;
 import org.apache.hadoop.security.token.delegation.DelegationKey;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.hive.common.IPUtils;
+import org.apache.hive.common.IPStackUtils;
 import org.apache.thrift.transport.TSaslServerTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.junit.Assert;
@@ -130,7 +130,7 @@ public class TestHadoopAuthBridge23 {
       builder.append(ip);
       builder.append(',');
     }
-    builder.append(IPUtils.getLoopbackAddress());
+    builder.append(IPStackUtils.resolveLoopbackAddress());
     builder.append(",");
     builder.append(InetAddress.getLocalHost().getCanonicalHostName());
     conf.setStrings(DefaultImpersonationProvider.getTestProvider().getProxySuperuserIpConfKey(superUserShortName),

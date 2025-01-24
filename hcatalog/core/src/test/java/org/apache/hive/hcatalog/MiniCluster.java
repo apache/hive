@@ -34,7 +34,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.MiniMRCluster;
-import org.apache.hive.common.IPUtils;
+import org.apache.hive.common.IPStackUtils;
 
 /**
  * This class builds a single instance of itself with the Singleton
@@ -79,8 +79,8 @@ public class MiniCluster {
       // Write the necessary config info to hadoop-site.xml
       m_conf = m_mr.createJobConf();
       m_conf.setInt("mapred.submit.replication", 1);
-      m_conf.set("dfs.datanode.address", IPUtils.concatWildcardAddressPort(0));
-      m_conf.set("dfs.datanode.http.address", IPUtils.concatWildcardAddressPort(0));
+      m_conf.set("dfs.datanode.address", IPStackUtils.concatWildcardAddressPort(0));
+      m_conf.set("dfs.datanode.http.address", IPStackUtils.concatWildcardAddressPort(0));
       m_conf.writeXml(new FileOutputStream(conf_file));
 
       // Set the system properties needed by Pig

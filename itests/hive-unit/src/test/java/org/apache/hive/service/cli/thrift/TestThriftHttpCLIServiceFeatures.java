@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClie
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
-import org.apache.hive.common.IPUtils;
+import org.apache.hive.common.IPStackUtils;
 import org.apache.hive.jdbc.HttpBasicAuthInterceptor;
 import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.rpc.thrift.TCLIService;
@@ -316,10 +316,10 @@ public class TestThriftHttpCLIServiceFeatures extends AbstractThriftCLITest {
    */
   @Test
   public void testForwardedHeaders() throws Exception {
-    verifyForwardedHeaders(new ArrayList<String>(Arrays.asList(IPUtils.getLoopbackAddress(), 
-        IPUtils.transformToIPv6("202.101.101.101"))), "show tables");
+    verifyForwardedHeaders(new ArrayList<String>(Arrays.asList(IPStackUtils.resolveLoopbackAddress(),
+        IPStackUtils.transformToIPv6("202.101.101.101"))), "show tables");
     verifyForwardedHeaders(new ArrayList<String>(Arrays.asList(
-        IPUtils.transformToIPv6("202.101.101.101"))), "fs -ls /");
+        IPStackUtils.transformToIPv6("202.101.101.101"))), "fs -ls /");
     verifyForwardedHeaders(new ArrayList<String>(), "show databases");
   }
 
