@@ -39,7 +39,10 @@ import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types.NestedField;
 import org.apache.iceberg.types.Types.StructType;
 
+// TODO: remove class once upgraded to Iceberg v1.7.0
+
 public class Partitioning {
+
   private Partitioning() {
   }
 

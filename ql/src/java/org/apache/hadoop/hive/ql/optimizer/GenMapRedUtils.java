@@ -509,7 +509,7 @@ public final class GenMapRedUtils {
 
     if (partsList == null) {
       Table tab = tsOp.getConf().getTableMetadata();
-      if (tab.alwaysUnpartitioned()) {
+      if (tab.hasNonNativePartitionSupport()) {
         partsList = new PrunedPartitionList(tab, null, Sets.newHashSet(new DummyPartition(tab)),
             Collections.emptyList(), false);
       } else {

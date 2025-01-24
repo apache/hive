@@ -514,7 +514,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
 
   private Long getSnapshotId(Table table, String branchName) {
     Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, branchName);
-    return snapshot != null ? snapshot.snapshotId() : null;
+    return (snapshot != null) ? snapshot.snapshotId() : null;
   }
 
   /**
@@ -857,7 +857,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       }
     }
     return Stream.of(parentDirToDataFile, parentDirToDeleteFile)
-      .flatMap(map -> map.values().stream().flatMap(List::stream))
+      .flatMap(files ->
+          files.values().stream().flatMap(List::stream))
       .collect(Collectors.toList());
   }
 

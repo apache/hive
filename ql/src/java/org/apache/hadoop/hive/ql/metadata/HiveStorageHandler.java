@@ -75,7 +75,6 @@ import org.apache.hadoop.mapred.OutputFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -379,9 +378,9 @@ public interface HiveStorageHandler extends Configurable {
    * Any partitioning scheme provided via the standard HiveQL syntax will be honored but stored in someplace
    * other than HMS, depending on the storage handler implementation.
    *
-   * @return whether table should always be unpartitioned from the perspective of HMS
+   * @return whether the table is self-contained and provided built-in partition support
    */
-  default boolean alwaysUnpartitioned() {
+  default boolean supportsPartitioning() {
     return false;
   }
 
@@ -562,8 +561,8 @@ public interface HiveStorageHandler extends Configurable {
   default DynamicPartitionCtx createDPContext(
           HiveConf conf, org.apache.hadoop.hive.ql.metadata.Table table, Operation writeOperation)
       throws SemanticException {
-    Preconditions.checkState(alwaysUnpartitioned(), "Should only be called for table formats where partitioning " +
-        "is not handled by Hive but the table format itself. See alwaysUnpartitioned() method.");
+    Preconditions.checkState(supportsPartitioning(), "Should only be called for table formats where partitioning " +
+        "is not handled by Hive but the table format itself. See supportsPartitioning() method.");
     return null;
   }
 

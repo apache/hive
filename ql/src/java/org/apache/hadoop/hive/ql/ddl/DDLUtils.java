@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -205,7 +204,7 @@ public final class DDLUtils {
     Optional<List<FieldSchema>> cols = Optional.ofNullable(columns);
     Optional<List<FieldSchema>> partCols = Optional.ofNullable(partitionColumns);
     
-    if (tbl.alwaysUnpartitioned()) {
+    if (tbl.hasNonNativePartitionSupport()) {
       tbl.getSd().setCols(new ArrayList<>());
       cols.ifPresent(c -> tbl.getSd().getCols().addAll(c));
       if (partCols.isPresent() && !partCols.get().isEmpty()) {

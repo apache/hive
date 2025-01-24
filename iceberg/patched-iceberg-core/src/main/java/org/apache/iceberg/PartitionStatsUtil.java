@@ -39,6 +39,8 @@ import org.apache.iceberg.util.PartitionUtil;
 import org.apache.iceberg.util.Tasks;
 import org.apache.iceberg.util.ThreadPools;
 
+// TODO: remove class once upgraded to Iceberg v1.7.0
+
 public class PartitionStatsUtil {
 
   private PartitionStatsUtil() {

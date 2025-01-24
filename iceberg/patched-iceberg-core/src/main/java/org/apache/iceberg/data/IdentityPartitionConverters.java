@@ -27,7 +27,10 @@ import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.ByteBuffers;
 import org.apache.iceberg.util.DateTimeUtil;
 
+// TODO: remove class once Iceberg PR #11216 is merged and released
+
 public class IdentityPartitionConverters {
+
   private IdentityPartitionConverters() {
   }
 

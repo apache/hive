@@ -384,7 +384,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public boolean alwaysUnpartitioned() {
+  public boolean supportsPartitioning() {
     return true;
   }
 

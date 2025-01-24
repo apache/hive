@@ -2591,7 +2591,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         } else {
           // This is a partition
           qb.getMetaData().setDestForAlias(name, ts.partHandle);
-          if (ts.tableHandle.alwaysUnpartitioned() && ts.partSpec != null && ts.partSpec.size() > 0) {
+          if (ts.tableHandle.hasNonNativePartitionSupport() && ts.partSpec != null && ts.partSpec.size() > 0) {
             qb.getMetaData().setPartSpecForAlias(name, ts.partSpec);
           }
         }
@@ -7527,7 +7527,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       if (!qb.getIsQuery()) {
         isAlreadyContainsPartCols = Optional.ofNullable(destinationTable)
-            .map(Table::alwaysUnpartitioned)
+            .map(Table::hasNonNativePartitionSupport)
             .orElse(Boolean.FALSE);
         if (!updating(dest) && !deleting(dest) && isAlreadyContainsPartCols
             && destinationTable != null && partSpec != null) {
@@ -7671,13 +7671,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             + queryTmpdir + " from " + destinationPath);
       }
 
-      if (destinationTable.alwaysUnpartitioned()) {
+      if (destinationTable.hasNonNativePartitionSupport()) {
         partSpec = qbm.getPartSpecForAlias(dest);
       }
 
       if (!qb.getIsQuery()) {
         isAlreadyContainsPartCols = Optional.ofNullable(destinationTable)
-                .map(Table::alwaysUnpartitioned)
+                .map(Table::hasNonNativePartitionSupport)
                 .orElse(Boolean.FALSE);
         if (!updating(dest) && !deleting(dest) && isAlreadyContainsPartCols
                 && destinationTable != null && partSpec != null) {
@@ -7746,7 +7746,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       loadTableWork.add(ltd);
 
-      if (destinationTable.alwaysUnpartitioned()) {
+      if (destinationTable.hasNonNativePartitionSupport()) {
         // HMS does not know about this partition
         // but the underlying storage format knows about it.
         DummyPartition dummyPartition;
@@ -8481,7 +8481,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // Some non-native tables might be partitioned without partition spec information being present in the Table object
       HiveStorageHandler storageHandler = dest_tab.getStorageHandler();
-      if (dest_tab.alwaysUnpartitioned()) {
+      if (dest_tab.hasNonNativePartitionSupport()) {
         DynamicPartitionCtx nonNativeDpCtx = storageHandler.createDPContext(conf, dest_tab, writeOperation);
         if (dpCtx == null && nonNativeDpCtx != null) {
           dpCtx = nonNativeDpCtx;
@@ -8910,7 +8910,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // if target table is always unpartitioned, then the output object inspector will already contain the partition cols
     // too, therefore we shouldn't add the partition col num to the output col num
     boolean alreadyContainsPartCols = Optional.ofNullable(table)
-            .map(Table::alwaysUnpartitioned)
+            .map(Table::hasNonNativePartitionSupport)
             .orElse(Boolean.FALSE);
 
     if (dynPart && dpCtx != null && !alreadyContainsPartCols) {
@@ -11956,7 +11956,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         deserializer.handleJobLevelConfiguration(conf);
         List<? extends StructField> fields = rowObjectInspector
             .getAllStructFieldRefs();
-        Set<String> partCols = tab.alwaysUnpartitioned() ?
+        Set<String> partCols = tab.hasNonNativePartitionSupport() ?
             Sets.newHashSet(tab.getPartColNames()) : Collections.emptySet();
         for (int i = 0; i < fields.size(); i++) {
           /**
@@ -12245,7 +12245,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // add WriteEntity for each matching partition
-    if (tab.isPartitioned() && !tab.alwaysUnpartitioned()) {
+    if (tab.isPartitioned() && !tab.hasNonNativePartitionSupport()) {
       List<String> cols = new ArrayList<String>();
       if (qbp.getAnalyzeRewrite() != null) {
         List<FieldSchema> partitionCols = tab.getPartCols();

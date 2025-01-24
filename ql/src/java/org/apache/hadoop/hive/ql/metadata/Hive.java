@@ -3670,7 +3670,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   public Partition getPartition(Table tbl, Map<String, String> partSpec) throws HiveException {
-    if (tbl.alwaysUnpartitioned()) {
+    if (tbl.hasNonNativePartitionSupport()) {
       return tbl.getStorageHandler().getPartition(tbl, partSpec, Context.RewritePolicy.get(conf));
     } else {
       return getPartition(tbl, partSpec, false);
@@ -4059,7 +4059,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public List<String> getPartitionNames(String dbName, String tblName,
       Map<String, String> partSpec, short max) throws HiveException {
     Table t = getTable(dbName, tblName);
-    if (t.alwaysUnpartitioned()) {
+    if (t.hasNonNativePartitionSupport()) {
       return t.getStorageHandler().getPartitionNames(t, partSpec);
     }
 
@@ -4146,10 +4146,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS);
     try {
-      if (tbl.alwaysUnpartitioned()) {
+      if (tbl.hasNonNativePartitionSupport()) {
         return tbl.getStorageHandler().getPartitions(tbl);
       } else {
-        int batchSize= MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+        int batchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
         return new ArrayList<>(getAllPartitionsInBatches(tbl, batchSize, DEFAULT_BATCH_DECAYING_FACTOR, MetastoreConf
                 .getIntVar(conf, MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES),
             null, true, getUserName(), getGroupNames())); 
@@ -4169,7 +4169,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       return Sets.newHashSet(new Partition(tbl));
     }
     Set<Partition> parts = Sets.newLinkedHashSet();
-    if (tbl.alwaysUnpartitioned()) {
+    if (tbl.hasNonNativePartitionSupport()) {
       parts.addAll(tbl.getStorageHandler().getPartitions(tbl));
     } else {
       List<org.apache.hadoop.hive.metastore.api.Partition> tParts;
@@ -4192,7 +4192,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return list of partition objects
    */
   public Set<Partition> getAllPartitionsOf(Table tbl) throws HiveException {
-    int batchSize = tbl.alwaysUnpartitioned() ? 
+    int batchSize = tbl.hasNonNativePartitionSupport() ? 
         0 : MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
     if (batchSize > 0) {
       return getAllPartitionsInBatches(tbl, batchSize, DEFAULT_BATCH_DECAYING_FACTOR, MetastoreConf.getIntVar(
@@ -4338,7 +4338,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    */
   public List<Partition> getPartitions(Table tbl, Map<String, String> partialPartSpec)
   throws HiveException {
-    if (tbl.alwaysUnpartitioned()) {
+    if (tbl.hasNonNativePartitionSupport()) {
       return tbl.getStorageHandler().getPartitions(tbl, partialPartSpec, false);
     } else {
       return getPartitions(tbl, partialPartSpec, (short)-1); 
@@ -4512,10 +4512,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
     if (!tbl.isPartitioned()) {
       throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, tbl.getTableName());
     }
-    int batchSize = MetastoreConf.getIntVar(Hive.get().getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+    int batchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
     if (batchSize > 0) {
       return new ArrayList<>(getAllPartitionsWithSpecsInBatches(tbl, batchSize, DEFAULT_BATCH_DECAYING_FACTOR, MetastoreConf.getIntVar(
-          Hive.get().getConf(), MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES), request));
+          conf, MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES), request));
     } else {
       return getPartitionsWithSpecsInternal(tbl, request);
     }
@@ -4654,7 +4654,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       Preconditions.checkNotNull(partitions);
       String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULT_PARTITION_NAME);
-      if (tbl.alwaysUnpartitioned()) {
+      if (tbl.hasNonNativePartitionSupport()) {
         partitions.addAll(tbl.getStorageHandler().getPartitionsByExpr(tbl, expr));
         return false;
       } else {

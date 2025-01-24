@@ -23,6 +23,8 @@ import java.util.Objects;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 
+// TODO: remove class once upgraded to Iceberg v1.7.0
+
 public class PartitionStats implements StructLike {
 
   private static final int STATS_COUNT = 12;

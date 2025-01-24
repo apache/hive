@@ -625,14 +625,14 @@ public class Table implements Serializable {
   }
 
   public List<String> getPartColNames() {
-    List<FieldSchema> partCols = alwaysUnpartitioned() ?
+    List<FieldSchema> partCols = hasNonNativePartitionSupport() ?
         getStorageHandler().getPartitionKeys(this) : getPartCols();
     return partCols.stream().map(FieldSchema::getName)
       .collect(Collectors.toList());
   }
 
-  public boolean alwaysUnpartitioned() {
-    return getStorageHandler() != null && getStorageHandler().alwaysUnpartitioned();
+  public boolean hasNonNativePartitionSupport() {
+    return getStorageHandler() != null && getStorageHandler().supportsPartitioning();
   }
 
   public boolean isPartitionKey(String colName) {
@@ -642,7 +642,7 @@ public class Table implements Serializable {
   // TODO merge this with getBucketCols function
   public String getBucketingDimensionId() {
     List<String> bcols = tTable.getSd().getBucketCols();
-    if (bcols == null || bcols.isEmpty()) {
+    if (CollectionUtils.isEmpty(bcols)) {
       return null;
     }
 
@@ -828,7 +828,7 @@ public class Table implements Serializable {
   }
   
   public boolean isPartitioned() {
-    return alwaysUnpartitioned() ? getStorageHandler().isPartitioned(this) : 
+    return hasNonNativePartitionSupport() ? getStorageHandler().isPartitioned(this) : 
         CollectionUtils.isNotEmpty(getPartCols());
   }
 

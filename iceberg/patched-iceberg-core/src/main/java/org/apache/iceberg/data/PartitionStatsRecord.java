@@ -32,8 +32,11 @@ import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.types.Types.StructType;
 
+// TODO: remove class once Iceberg PR #11216 is merged and released
+
 /** Wraps the {@link PartitionStats} as {@link Record}. Used by generic writers and readers. */
 public class PartitionStatsRecord implements Record, StructLike {
+
   private static final LoadingCache<StructType, Map<String, Integer>> NAME_MAP_CACHE =
       Caffeine.newBuilder()
       .weakKeys()

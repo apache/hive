@@ -52,7 +52,6 @@ import org.apache.iceberg.io.InputFile;
 import org.apache.iceberg.io.OutputFile;
 import org.apache.iceberg.orc.ORC;
 import org.apache.iceberg.parquet.Parquet;
-import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.types.Types.IntegerType;
 import org.apache.iceberg.types.Types.LongType;
@@ -62,6 +61,8 @@ import org.apache.iceberg.util.SnapshotUtil;
 
 import static org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT;
 import static org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT_DEFAULT;
+
+// TODO: remove class once Iceberg PR #11216 is merged and released
 
 /**
  * Computes, writes and reads the {@link PartitionStatisticsFile}. Uses generic readers and writers
@@ -157,8 +158,7 @@ public final class PartitionStatsHandler {
     return writePartitionStatsFile(table, currentSnapshot.snapshotId(), schema, convertedRecords);
   }
 
-  @VisibleForTesting
-  static PartitionStatisticsFile writePartitionStatsFile(
+  private static PartitionStatisticsFile writePartitionStatsFile(
       Table table, long snapshotId, Schema dataSchema, Iterator<PartitionStatsRecord> records) {
     OutputFile outputFile = newPartitionStatsFile(table, snapshotId);
     FileWriterFactory<Record> factory =
@@ -271,8 +271,7 @@ public final class PartitionStatsHandler {
     return PartitionStatsRecord.create(record.struct(), stats);
   }
 
-  @VisibleForTesting
-  static Iterator<PartitionStatsRecord> statsToRecords(
+  private static Iterator<PartitionStatsRecord> statsToRecords(
       List<PartitionStats> stats, Schema recordSchema) {
     StructType partitionType = (StructType) recordSchema.findField(Column.PARTITION.name()).type();
     return new TransformIteratorWithBiFunction<>(

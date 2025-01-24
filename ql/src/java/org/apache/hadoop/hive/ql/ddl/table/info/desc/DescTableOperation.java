@@ -53,7 +53,6 @@ import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.TableConstraintsInfo;
 import org.apache.hadoop.hive.ql.parse.HiveTableName;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
@@ -150,7 +149,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
 
     // Fetch partition statistics only for describe extended or formatted.
     if (desc.isExtended() || desc.isFormatted()) {
-      boolean disablePartitionStats = table.alwaysUnpartitioned() || 
+      boolean disablePartitionStats = table.hasNonNativePartitionSupport() || 
           HiveConf.getBoolVar(context.getConf(), HiveConf.ConfVars.HIVE_DESCRIBE_PARTITIONED_TABLE_IGNORE_STATS);
       
       if (table.isPartitioned() && partition == null && !disablePartitionStats) {
@@ -199,7 +198,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
 
     TableName tableName = HiveTableName.of(desc.getDbTableName());
     if (null == part) {
-      if (table.isPartitioned() && !table.alwaysUnpartitioned()) {
+      if (table.isPartitioned() && !table.hasNonNativePartitionSupport()) {
         Map<String, String> tableProps = table.getParameters() == null ?
             new HashMap<>() : table.getParameters();
         if (table.isPartitionKey(colNames.get(0))) {
