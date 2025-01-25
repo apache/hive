@@ -13,7 +13,6 @@ set hive.merge.mapredfiles=false;
 set hive.auto.convert.sortmerge.join.bigtable.selection.policy=org.apache.hadoop.hive.ql.optimizer.LeftmostBigTableSelectorForAutoSMJ;
 
 set hive.auto.convert.sortmerge.join.to.mapjoin=true;
-set hive.cbo.fallback.strategy=NEVER;
 
 -- Create two bucketed and sorted tables
 CREATE TABLE test_table1_n3 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)

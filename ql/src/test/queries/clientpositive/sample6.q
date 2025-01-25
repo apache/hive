@@ -1,7 +1,6 @@
 --! qt:dataset:srcbucket2
 --! qt:dataset:srcbucket
 set hive.mapred.mode=nonstrict;
-set hive.cbo.fallback.strategy=NEVER;
 CREATE TABLE dest1_n27(key INT, value STRING) STORED AS TEXTFILE;
 
 -- both input pruning and sample filter
