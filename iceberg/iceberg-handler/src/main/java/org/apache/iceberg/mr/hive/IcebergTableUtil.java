@@ -418,36 +418,14 @@ public class IcebergTableUtil {
   }
 
   public static PartitionData toPartitionData(StructLike key, Types.StructType keyType) {
-    PartitionData data = new PartitionData(keyType);
-    for (int i = 0; i < keyType.fields().size(); i++) {
-      Object val = key.get(i, keyType.fields().get(i).type().typeId().javaClass());
-      if (val != null) {
-        data.set(i, val);
-      }
-    }
-    return data;
+    PartitionData keyTemplate = new PartitionData(keyType);
+    return keyTemplate.copyFor(key);
   }
 
   public static PartitionData toPartitionData(StructLike sourceKey, Types.StructType sourceKeyType,
       Types.StructType targetKeyType) {
-    PartitionData data = new PartitionData(targetKeyType);
-    for (int i = 0; i < targetKeyType.fields().size(); i++) {
-      Types.NestedField targetKey = targetKeyType.fields().get(i);
-
-      Optional<Object> val = sourceKeyType.fields().stream()
-          .filter(f -> f.name().equals(targetKey.name()))
-          .findFirst()
-          .map(sourceKeyElem ->
-            sourceKey.get(
-              sourceKeyType.fields().indexOf(sourceKeyElem),
-              targetKey.type().typeId().javaClass()
-            )
-          );
-      if (val.isPresent()) {
-        data.set(i, val.get());
-      }
-    }
-    return data;
+    StructProjection projection = StructProjection.create(sourceKeyType, targetKeyType).wrap(sourceKey);
+    return toPartitionData(projection, targetKeyType);
   }
 
   public static Expression generateExpressionFromPartitionSpec(Table table, Map<String, String> partitionSpec,
