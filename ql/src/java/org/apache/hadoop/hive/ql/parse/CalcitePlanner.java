@@ -5405,6 +5405,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
         ASTNode ref = (ASTNode) nullObASTExpr.getChild(0);
 
         int fieldIndex = genSortByKey(ref);
+        if (fieldIndex < 0) {
+          continue;
+        }
 
         // 2.4 Determine the Direction of order by
         RelFieldCollation.Direction order = RelFieldCollation.Direction.DESCENDING;
@@ -5448,6 +5451,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           LOG.warn("Using constant number {}" +
                   " in order by. If you try to use position alias when hive.orderby.position.alias is false, " +
                   "the position alias will be ignored.", ref.getText());
+          return -1;
         }
       } else {
         // 2.2 Convert ExprNode to RexNode
@@ -5465,8 +5469,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
           return fieldIndex;
         }
       }
-
-      return 0;
     }
 
     private RexNode getOrderByExpression(
@@ -5520,16 +5522,21 @@ public class CalcitePlanner extends SemanticAnalyzer {
         for (int i = 0; i < distributeByAST.getChildCount(); ++i) {
           ASTNode keyAST = (ASTNode) distributeByAST.getChild(i);
           int fieldIndex = genSortByKey(keyAST);
-          keys.add(fieldIndex);
+          if (fieldIndex >= 0) {
+            keys.add(fieldIndex);
+          }
         }
-        hiveRelDistribution = new HiveRelDistribution(RelDistribution.Type.HASH_DISTRIBUTED, keys.build());
-      } else {
-        // In case of SORT BY we do not need Distribution
-        // but the instance RelDistributions.ANY can not be used here because
-        // org.apache.calcite.rel.core.Exchange has
-        // assert distribution != RelDistributions.ANY;
-        hiveRelDistribution = new HiveRelDistribution(RelDistribution.Type.ANY, RelDistributions.ANY.getKeys());
+        ImmutableList<Integer> keyList = keys.build();
+        if (!keyList.isEmpty()) {
+          hiveRelDistribution = new HiveRelDistribution(RelDistribution.Type.HASH_DISTRIBUTED, keyList);
+          return this;
+        }
       }
+      // In case of SORT BY we do not need Distribution
+      // but the instance RelDistributions.ANY can not be used here because
+      // org.apache.calcite.rel.core.Exchange has
+      // assert distribution != RelDistributions.ANY;
+      hiveRelDistribution = new HiveRelDistribution(RelDistribution.Type.ANY, RelDistributions.ANY.getKeys());
       return this;
     }
 
@@ -5599,6 +5606,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
     RelNode sortLimit(RexNode offsetRN, RexNode fetchRN) throws SemanticException {
       genOBProject();
 
+      if (fieldCollations.isEmpty()) {
+        return endGenOBLogicalPlan(obInputRel);
+      }
+
       // 4. Construct SortRel
       RelOptCluster cluster = calcitePlannerAction.cluster;
       RelTraitSet traitSet = cluster.traitSetOf(HiveRelNode.CONVENTION);
@@ -5610,13 +5621,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
     RelNode sortExchange() throws SemanticException {
       genOBProject();
 
+      if (fieldCollations.isEmpty() && hiveRelDistribution.getKeys().isEmpty()) {
+        return endGenOBLogicalPlan(obInputRel);
+      }
+
       RelCollation canonizedCollation = RelCollations.of(fieldCollations);
       ImmutableList.Builder<RexNode> builder = ImmutableList.builder();
       for (RelFieldCollation relFieldCollation : canonizedCollation.getFieldCollations()) {
         int index = relFieldCollation.getFieldIndex();
         builder.add(calcitePlannerAction.cluster.getRexBuilder().makeInputRef(obInputRel, index));
       }
-      RelNode sortRel = HiveSortExchange.create(obInputRel, hiveRelDistribution, canonizedCollation, builder.build());
+      ImmutableList<RexNode> keys = builder.build();
+      RelNode sortRel = HiveSortExchange.create(obInputRel, hiveRelDistribution, canonizedCollation, keys);
       return endGenOBLogicalPlan(sortRel);
     }
 
