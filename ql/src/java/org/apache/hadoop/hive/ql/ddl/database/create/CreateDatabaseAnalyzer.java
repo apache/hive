@@ -23,6 +23,7 @@ import java.util.Map;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DatabaseType;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
@@ -115,6 +116,7 @@ public class CreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
       database.setRemote_dbname(remoteDbName);
     }
     database.setOwnerName(SessionState.getUserFromAuthenticator());
+    database.setOwnerType(PrincipalType.USER);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
     outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
   }
