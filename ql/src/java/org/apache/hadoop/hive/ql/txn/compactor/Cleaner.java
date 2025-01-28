@@ -21,6 +21,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
+import org.apache.hadoop.hive.metastore.txn.NoMutex;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.txn.compactor.handler.TaskHandler;
 import org.apache.hadoop.hive.ql.txn.compactor.handler.TaskHandlerFactory;
@@ -46,6 +47,7 @@ public class Cleaner extends MetaStoreCompactorThread {
   static final private String CLASS_NAME = Cleaner.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private boolean metricsEnabled = false;
+  private boolean shouldUseMutex = true;
 
   private ExecutorService cleanerExecutor;
   private List<TaskHandler> cleanupHandlers;
@@ -70,14 +72,13 @@ public class Cleaner extends MetaStoreCompactorThread {
     LOG.info("Starting Cleaner thread");
     try {
       do {
-        TxnStore.MutexAPI.LockHandle handle = null;
+        TxnStore.MutexAPI mutex =  shouldUseMutex ? txnHandler.getMutexAPI() : new NoMutex();
         metadataCache.invalidate();
         long startedAt = -1;
 
         // Make sure nothing escapes this run method and kills the metastore at large,
         // so wrap it in a big catch Throwable statement.
-        try {
-          handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Cleaner.name());
+        try (AutoCloseable closeable = mutex.acquireLock(TxnStore.MUTEX_KEY.Cleaner.name())) {
           startedAt = System.currentTimeMillis();
 
           if (metricsEnabled) {
@@ -120,9 +121,6 @@ public class Cleaner extends MetaStoreCompactorThread {
           LOG.error("Caught an exception in the main loop of compactor cleaner, {}",
               StringUtils.stringifyException(t));
         } finally {
-          if (handle != null) {
-            handle.releaseLocks();
-          }
           if (metricsEnabled) {
             updateCycleDurationMetric(MetricsConstants.COMPACTION_CLEANER_CYCLE_DURATION, startedAt);
           }
@@ -169,5 +167,10 @@ public class Cleaner extends MetaStoreCompactorThread {
     public void run() {
       updateCycleDurationMetric(metric, startedAt);
     }
+  }
+
+  @Override
+  public void enforceMutex(boolean enableMutex) {
+    this.shouldUseMutex = enableMutex;
   }
 }

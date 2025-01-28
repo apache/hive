@@ -54,7 +54,7 @@ STAGE PLANS:
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
-                      Map-reduce partition columns: 1 (type: int)
+                      Map-reduce partition columns: _col0 (type: array<int>)
                       Statistics: Num rows: 11 Data size: 34628 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: array<int>), _col1 (type: array<string>), _col2 (type: map<string,string>), _col3 (type: int), _col4 (type: string)
             Execution mode: vectorized, llap

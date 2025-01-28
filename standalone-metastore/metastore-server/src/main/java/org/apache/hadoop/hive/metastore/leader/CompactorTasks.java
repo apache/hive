@@ -138,6 +138,7 @@ public class CompactorTasks implements LeaderElection.LeadershipStateListener {
       AtomicBoolean flag = new AtomicBoolean();
       thread.setConf(configuration);
       thread.init(flag);
+      thread.enforceMutex(election.enforceMutex());
       metastoreThreadsMap.put(thread, flag);
       HiveMetaStore.LOG.info("Starting metastore thread of type " + thread.getClass().getName());
       thread.start();

@@ -21,6 +21,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
+import org.apache.hadoop.hive.metastore.txn.NoMutex;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.slf4j.Logger;
@@ -37,6 +38,7 @@ public class MaterializationsRebuildLockCleanerTask implements MetastoreTaskThre
 
   private Configuration conf;
   private TxnStore txnHandler;
+  private boolean shouldUseMutex = true;
 
   @Override
   public long runFrequency(TimeUnit unit) {
@@ -60,9 +62,8 @@ public class MaterializationsRebuildLockCleanerTask implements MetastoreTaskThre
       LOG.debug("Cleaning up materialization rebuild locks");
     }
 
-    TxnStore.MutexAPI.LockHandle handle = null;
-    try {
-      handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.MaterializationRebuild.name());
+    TxnStore.MutexAPI mutex = shouldUseMutex ? txnHandler.getMutexAPI() : new NoMutex();
+    try (AutoCloseable closeable = mutex.acquireLock(TxnStore.MUTEX_KEY.MaterializationRebuild.name())) {
       ValidTxnList validTxnList = TxnCommonUtils.createValidReadTxnList(txnHandler.getOpenTxns(), 0);
       long removedCnt = txnHandler.cleanupMaterializationRebuildLocks(validTxnList,
           MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TXN_TIMEOUT, TimeUnit.MILLISECONDS));
@@ -73,10 +74,11 @@ public class MaterializationsRebuildLockCleanerTask implements MetastoreTaskThre
       }
     } catch (Throwable t) {
       LOG.error("Unexpected error in thread: {}, message: {}", Thread.currentThread().getName(), t.getMessage(), t);
-    } finally {
-      if (handle != null) {
-        handle.releaseLocks();
-      }
     }
+  }
+
+  @Override
+  public void enforceMutex(boolean enableMutex) {
+    this.shouldUseMutex = enableMutex;
   }
 }

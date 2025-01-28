@@ -358,7 +358,7 @@ Table Parameters:
 #### A masked pattern was here ####
 	rawDataSize         	0                   
 	serialization.format	1                   
-	snapshot-count      	18                  
+	snapshot-count      	17                  
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	#Masked#
@@ -381,7 +381,7 @@ POSTHOOK: query: show compactions order by 'partition'
 POSTHOOK: type: SHOW COMPACTIONS
 CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
 #Masked#	default	ice_orc	event_src_trunc=AAA/event_time_month=2024-08	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
-#Masked#	default	ice_orc	event_src_trunc=AAA/event_time_month=2024-09	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	ice_orc	event_src_trunc=AAA/event_time_month=2024-09	MAJOR	refused	#Masked#	manual	default	0	0	0	 --- 
 #Masked#	default	ice_orc	event_src_trunc=BBB/event_time_month=2024-07	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
 #Masked#	default	ice_orc	event_src_trunc=BBB/event_time_month=2024-08	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
 #Masked#	default	ice_orc	 --- 	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 

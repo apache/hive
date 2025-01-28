@@ -50,14 +50,10 @@ public class TestHiveDatabaseMetaData {
   }
 
   @Test
-  public void testGetHiveDefaultNullsLastNullConfig() {
+  public void testGetHiveDefaultNullsLastNullConfig() throws SQLException {
     map.remove(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY);
-    try {
-      hiveDatabaseMetaData.nullsAreSortedLow();
-      fail("SQLException is expected");
-    } catch (Exception e) {
-      assertTrue(e.getMessage().contains("HIVE_DEFAULT_NULLS_LAST is not available"));
-    }
+    assertTrue(hiveDatabaseMetaData.nullsAreSortedHigh());
+    assertFalse(hiveDatabaseMetaData.nullsAreSortedLow());
   }
 
   @Test

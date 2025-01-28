@@ -5,7 +5,6 @@ set mapred.min.split.size=256;
 set mapred.min.split.size.per.node=256;
 set mapred.min.split.size.per.rack=256;
 set mapred.max.split.size=256;
-set hive.cbo.fallback.strategy=NEVER;
 
 
 drop table combine_3_srcpart_seq_rc;

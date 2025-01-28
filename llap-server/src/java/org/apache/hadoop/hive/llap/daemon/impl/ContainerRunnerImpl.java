@@ -187,7 +187,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
 
   @Override
   public void serviceStart() throws Exception {
-    LOG.info("Using ShufflePort: " + localShufflePort.get());
+    LOG.info("Using ShufflePort: {}", localShufflePort.get());
     AuxiliaryServiceHelper.setServiceDataIntoEnv(
         TezConstants.TEZ_SHUFFLE_HANDLER_SERVICE_ID,
         ByteBuffer.allocate(4).putInt(localShufflePort.get()), localEnv);
@@ -458,13 +458,13 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     } catch (Exception e) {
       tokens = "error: " + e.getMessage();
     }
-    LOG.warn("Security error from " + userName + "; cluster " + clusterId + "; tokens " + tokens);
+    LOG.warn("Security error from {}; cluster {}; tokens {}", userName, clusterId, tokens);
   }
 
   @Override
   public SourceStateUpdatedResponseProto sourceStateUpdated(
       SourceStateUpdatedRequestProto request) throws IOException {
-    LOG.info("Processing state update: " + stringifySourceStateUpdateRequest(request));
+    LOG.info("Processing state update: {}", stringifySourceStateUpdateRequest(request));
     QueryIdentifier queryId =
         new QueryIdentifier(request.getQueryIdentifier().getApplicationIdString(),
             request.getQueryIdentifier().getDagIndex());
@@ -482,7 +482,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     QueryInfo queryInfo = queryTracker.queryComplete(queryIdentifier, request.getDeleteDelay(), false);
     if (queryInfo != null) {
       List<QueryFragmentInfo> knownFragments = queryInfo.getRegisteredFragments();
-      LOG.info("DBG: Pending fragment count for completed query {} = {}", queryIdentifier,
+      LOG.info("Pending fragment count for completed query {} = {}", queryIdentifier,
         knownFragments.size());
       for (QueryFragmentInfo fragmentInfo : knownFragments) {
         LOG.info("Issuing killFragment for completed query {} {}", queryIdentifier,
@@ -514,7 +514,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
       UpdateFragmentRequestProto request) throws IOException {
     String fragmentId = request.getFragmentIdentifierString();
     boolean isGuaranteed = request.hasIsGuaranteed() && request.getIsGuaranteed();
-    LOG.info("DBG: Received updateFragment request for {}", fragmentId);
+    LOG.info("Received updateFragment request for {}", fragmentId);
     // TODO: ideally, QueryTracker should have fragment-to-query mapping.
     QueryIdentifier queryId = executorService.findQueryByFragment(fragmentId);
     // checkPermissions returns false if query is not found, throws on failure.
@@ -609,10 +609,10 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     LOG.info("Processing query failed notification for {}", queryIdentifier);
     List<QueryFragmentInfo> knownFragments;
     knownFragments = queryTracker.getRegisteredFragments(queryIdentifier);
-    LOG.info("DBG: Pending fragment count for failed query {} = {}", queryIdentifier,
+    LOG.info("Pending fragment count for failed query {} = {}", queryIdentifier,
         knownFragments.size());
     for (QueryFragmentInfo fragmentInfo : knownFragments) {
-      LOG.info("DBG: Issuing killFragment for failed query {} {}", queryIdentifier,
+      LOG.info("Issuing killFragment for failed query {} {}", queryIdentifier,
           fragmentInfo.getFragmentIdentifierString());
       executorService.killFragment(fragmentInfo.getFragmentIdentifierString());
     }
@@ -649,7 +649,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
           @Override
           public void onRemoval(
               RemovalNotification<String, BlockingQueue<UserGroupInformation>> notification) {
-            LOG.debug("Removing " + notification.getValue()  + " from pool.Pool size: " + ugiPool.size());
+            LOG.debug("Removing {} from pool. Pool size: {}", notification.getValue(), ugiPool.size());
           }
         }).expireAfterAccess(60 * 3, TimeUnit.MINUTES).build();
 
@@ -678,7 +678,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
               ugi.addToken(appToken);
               BlockingQueue<UserGroupInformation> queue = new LinkedBlockingQueue<>(numExecutors);
               queue.add(ugi);
-              LOG.debug("Added new ugi pool for " + appTokenIdentifier + ", Pool Size: ");
+              LOG.debug("Added new ugi pool for {}. Pool Size: {}", appTokenIdentifier, ugiPool.size());
               return queue;
             }
           });
@@ -689,7 +689,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
         ugi = UserGroupInformation.createRemoteUser(appTokenIdentifier);
         ugi.addToken(appToken);
         queue.offer(ugi);
-        LOG.info("Added new ugi for " + appTokenIdentifier + ". Pool size:" + ugiPool.size());
+        LOG.info("Added new ugi pool for {}. Pool Size: {}", appTokenIdentifier, ugiPool.size());
       }
       return ugi;
     }

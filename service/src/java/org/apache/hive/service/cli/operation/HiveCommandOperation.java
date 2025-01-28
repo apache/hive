@@ -49,7 +49,7 @@ import org.apache.hive.service.cli.session.HiveSession;
  * Executes a HiveCommand
  */
 public class HiveCommandOperation extends ExecuteStatementOperation {
-  private final CommandProcessor commandProcessor;
+  protected final CommandProcessor commandProcessor;
   private TableSchema resultSchema = null;
 
   /**

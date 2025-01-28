@@ -18,11 +18,18 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.partition.exchange;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
+import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
+import org.apache.hadoop.hive.metastore.api.PartitionFilterMode;
+import org.apache.hadoop.hive.metastore.client.builder.GetPartitionProjectionsSpecBuilder;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -77,9 +84,20 @@ public  class AlterTableExchangePartitionAnalyzer extends AbstractAlterTableAnal
     if (AcidUtils.isTransactionalTable(sourceTable) || AcidUtils.isTransactionalTable(destTable)) {
       throw new SemanticException(ErrorMsg.EXCHANGE_PARTITION_NOT_ALLOWED_WITH_TRANSACTIONAL_TABLES.getMsg());
     }
+    List<String> sourceProjectFilters = MetaStoreUtils.getPvals(sourceTable.getPartCols(), partitionSpecs);
 
     // check if source partition exists
-    PartitionUtils.getPartitions(db, sourceTable, partitionSpecs, true);
+    GetPartitionsFilterSpec sourcePartitionsFilterSpec = new GetPartitionsFilterSpec();
+    sourcePartitionsFilterSpec.setFilters(sourceProjectFilters);
+    sourcePartitionsFilterSpec.setFilterMode(PartitionFilterMode.BY_VALUES);
+
+    GetProjectionsSpec getProjectionsSpec = new GetPartitionProjectionsSpecBuilder()
+        .addProjectFieldList(Arrays.asList("values")).build();
+
+    GetPartitionsRequest request = new GetPartitionsRequest(sourceTable.getDbName(), sourceTable.getTableName(),
+        getProjectionsSpec, sourcePartitionsFilterSpec);
+    request.setCatName(sourceTable.getCatName());
+    PartitionUtils.getPartitionsWithSpecs(db, sourceTable, request, true);
 
     // Verify that the partitions specified are continuous
     // If a subpartition value is specified without specifying a partition's value then we throw an exception
@@ -88,13 +106,23 @@ public  class AlterTableExchangePartitionAnalyzer extends AbstractAlterTableAnal
       throw new SemanticException(ErrorMsg.PARTITION_VALUE_NOT_CONTINUOUS.getMsg(partitionSpecs.toString()));
     }
 
+    List<String> destProjectFilters = MetaStoreUtils.getPvals(destTable.getPartCols(), partitionSpecs);
+
+    // check if dest partition exists
+    GetPartitionsFilterSpec getDestPartitionsFilterSpec = new GetPartitionsFilterSpec();
+    getDestPartitionsFilterSpec.setFilters(destProjectFilters);
+    getDestPartitionsFilterSpec.setFilterMode(PartitionFilterMode.BY_VALUES);
+
     List<Partition> destPartitions = null;
+    GetPartitionsRequest destRequest = new GetPartitionsRequest(destTable.getDbName(), destTable.getTableName(),
+        getProjectionsSpec, getDestPartitionsFilterSpec);
+    destRequest.setCatName(destTable.getCatName());
     try {
-      destPartitions = PartitionUtils.getPartitions(db, destTable, partitionSpecs, true);
+      destPartitions = PartitionUtils.getPartitionsWithSpecs(db, destTable, destRequest, true);
     } catch (SemanticException ex) {
       // We should expect a semantic exception being throw as this partition should not be present.
     }
-    if (destPartitions != null) {
+    if (CollectionUtils.isNotEmpty(destPartitions)) {
       // If any destination partition is present then throw a Semantic Exception.
       throw new SemanticException(ErrorMsg.PARTITION_EXISTS.getMsg(destPartitions.toString()));
     }
