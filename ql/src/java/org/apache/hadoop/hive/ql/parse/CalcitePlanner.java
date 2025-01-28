@@ -2416,7 +2416,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         // 9.2.  Introduce exchange operators below join/multijoin operators
         generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-            HiveInsertExchange4JoinRule.EXCHANGE_BELOW_JOIN, HiveInsertExchange4JoinRule.EXCHANGE_BELOW_MULTIJOIN);
+                HiveInsertExchange4JoinRule.exchangeBelowJoin(NullOrdering.defaultNullOrder(conf).getDirection()),
+                HiveInsertExchange4JoinRule.exchangeBelowMultiJoin(NullOrdering.defaultNullOrder(conf).getDirection()));
       } else {
         generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
                 HiveProjectSortExchangeTransposeRule.INSTANCE, HiveProjectMergeRule.INSTANCE);

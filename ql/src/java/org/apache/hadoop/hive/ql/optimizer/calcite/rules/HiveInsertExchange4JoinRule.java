@@ -30,6 +30,7 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Exchange;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rex.RexNode;
+import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
@@ -56,20 +57,28 @@ import com.google.common.collect.Sets;
  */
 public class HiveInsertExchange4JoinRule extends RelOptRule {
 
-  protected static transient final Logger LOG = LoggerFactory
-      .getLogger(HiveInsertExchange4JoinRule.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(HiveInsertExchange4JoinRule.class);
 
   /** Rule that creates Exchange operators under a MultiJoin operator. */
-  public static final HiveInsertExchange4JoinRule EXCHANGE_BELOW_MULTIJOIN =
-      new HiveInsertExchange4JoinRule(HiveMultiJoin.class);
+  public static HiveInsertExchange4JoinRule exchangeBelowMultiJoin(
+          RelFieldCollation.NullDirection defaultAscNullDirection) {
+    return new HiveInsertExchange4JoinRule(HiveMultiJoin.class, defaultAscNullDirection);
+  }
+
 
   /** Rule that creates Exchange operators under a Join operator. */
-  public static final HiveInsertExchange4JoinRule EXCHANGE_BELOW_JOIN =
-      new HiveInsertExchange4JoinRule(Join.class);
+  public static HiveInsertExchange4JoinRule exchangeBelowJoin(
+          RelFieldCollation.NullDirection defaultAscNullDirection) {
+    return new HiveInsertExchange4JoinRule(Join.class, defaultAscNullDirection);
+  }
 
-  public HiveInsertExchange4JoinRule(Class<? extends RelNode> clazz) {
+  private final RelFieldCollation.NullDirection defaultAscNullDirection;
+
+  public HiveInsertExchange4JoinRule(
+          Class<? extends RelNode> clazz, RelFieldCollation.NullDirection defaultAscNullDirection) {
     // match multijoin or join
     super(RelOptRule.operand(clazz, any()));
+    this.defaultAscNullDirection = defaultAscNullDirection;
   }
 
   @Override
@@ -118,7 +127,7 @@ public class HiveInsertExchange4JoinRule extends RelOptRule {
         for (int pos : joinLeafPredInfo.getProjsJoinKeysInChildSchema(i)) {
           if (!joinKeyPositions.contains(pos)) {
             joinKeyPositions.add(pos);
-            collationListBuilder.add(new RelFieldCollation(pos));
+            collationListBuilder.add(new RelFieldCollation(pos, RelFieldCollation.Direction.ASCENDING, defaultAscNullDirection));
           }
         }
       }
