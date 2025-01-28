@@ -256,4 +256,4 @@ FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-あa?	🤎いiうu	?いiうu
+あa🤎	🤎いiうu	🤎いiうu
