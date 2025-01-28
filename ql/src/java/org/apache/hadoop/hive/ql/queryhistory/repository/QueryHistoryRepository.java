@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.queryhistory.repository;
 import java.util.Queue;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistoryRecord;
-import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistorySchema;
+import org.apache.hadoop.hive.ql.queryhistory.schema.Record;
+import org.apache.hadoop.hive.ql.queryhistory.schema.Schema;
 
 public interface QueryHistoryRepository {
   String QUERY_HISTORY_DB_NAME = "sys";
@@ -36,7 +36,7 @@ public interface QueryHistoryRepository {
   // needs a QueryState instance (acquired by a query id)
   String QUERY_ID_FOR_TABLE_CREATION = "query_history_service_query_id_for_table_creation";
 
-  void init(HiveConf conf, QueryHistorySchema schema);
+  void init(HiveConf conf, Schema schema);
 
-  void persist(Queue<QueryHistoryRecord> records);
+  void flush(Queue<Record> records);
 }

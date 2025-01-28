@@ -750,7 +750,7 @@ public class Driver implements IDriver {
       if (driverState.isClosed() || driverState.isDestroyed()) {
         LOG.warn("Driver instance {} already closed or destroyed, prevent handling query history", this);
       } else {
-        QueryHistoryService.getInstance().handleQuery(driverContext);
+        QueryHistoryService.getInstance().logQuery(driverContext);
       }
     }
     driverState.lock();

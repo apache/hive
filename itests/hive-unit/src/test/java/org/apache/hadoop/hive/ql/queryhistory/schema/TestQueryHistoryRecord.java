@@ -27,29 +27,29 @@ public class TestQueryHistoryRecord {
   private static final int EMPTY_RECORD_ESTIMATED_SIZE_BYTES = 1368;
 
   @Test
-  public void testEmptyQueryHistoryRecord() {
-    QueryHistoryRecord record = new QueryHistoryRecord();
+  public void testEmptyRecord() {
+    Record record = new Record();
     // some fields are initialized right after constructing the object
-    Assert.assertEquals(record.get(QueryHistorySchema.Field.QUERY_HISTORY_SCHEMA_VERSION),
-        QueryHistorySchema.CURRENT_VERSION);
-    Assert.assertEquals(record.get(QueryHistorySchema.Field.HIVE_VERSION), HiveVersionInfo.getVersion());
+    Assert.assertEquals(record.get(Schema.Field.QUERY_HISTORY_SCHEMA_VERSION),
+        Schema.CURRENT_VERSION);
+    Assert.assertEquals(record.get(Schema.Field.HIVE_VERSION), HiveVersionInfo.getVersion());
   }
 
   /**
-   * This test is crucial for ensuring that unit tests using DummyQueryHistoryRecord have coverage on all fields.
+   * This test is crucial for ensuring that unit tests using DummyRecord have coverage on all fields.
    */
   @Test
   public void testExampleRecordIsFullySet() {
-    QueryHistoryRecord record = new DummyQueryHistoryRecord();
-    for (QueryHistorySchema.Field field : QueryHistorySchema.Field.values()) {
+    Record record = new DummyRecord();
+    for (Schema.Field field : Schema.Field.values()) {
       Assert.assertNotNull("Field should be filled with example value: " + field.getName(), record.get(field));
     }
   }
 
   @Test
   public void testBasicRecordEstimatedSizes() {
-    QueryHistoryRecord emptyRecord = new QueryHistoryRecord();
-    QueryHistoryRecord exampleRecord = new DummyQueryHistoryRecord();
+    Record emptyRecord = new Record();
+    Record exampleRecord = new DummyRecord();
     // these assertions have no strict meaning, they are just for demonstrating the current estimated size of a query
     // history record
     Assert.assertEquals(EMPTY_RECORD_ESTIMATED_SIZE_BYTES, emptyRecord.getEstimatedSizeInMemoryBytes());
@@ -58,7 +58,7 @@ public class TestQueryHistoryRecord {
 
   @Test
   public void testRecordSizeIsNotRecalculatedAfterFirstCall() {
-    QueryHistoryRecord emptyRecord = new QueryHistoryRecord();
+    Record emptyRecord = new Record();
     Assert.assertEquals(EMPTY_RECORD_ESTIMATED_SIZE_BYTES, emptyRecord.getEstimatedSizeInMemoryBytes());
 
     emptyRecord.setPlan("asdfghjk");
@@ -69,7 +69,7 @@ public class TestQueryHistoryRecord {
 
   @Test
   public void testRecordSizeWithChangedPlan() {
-    QueryHistoryRecord emptyRecord = new QueryHistoryRecord();
+    Record emptyRecord = new Record();
     // don't call getEstimatedSizeInMemoryBytes here, we know it's EMPTY_RECORD_ESTIMATED_SIZE_BYTES
     String plan = "asdfghjk";
     emptyRecord.setPlan(plan);

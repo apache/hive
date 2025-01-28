@@ -18,7 +18,7 @@ package org.apache.hadoop.hive.ql.queryhistory.repository;
  */
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.queryhistory.repository.IcebergRepository;
-import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistorySchema;
+import org.apache.hadoop.hive.ql.queryhistory.schema.Schema;
 
 /*
  * A test iceberg repository which has the same behavior as parent but without any metastore locking
@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistorySchema;
 public class IcebergRepositoryForTest extends IcebergRepository {
 
   @Override
-  public void init(HiveConf conf, QueryHistorySchema schema) {
+  public void init(HiveConf conf, Schema schema) {
     conf.set("iceberg.engine.hive.lock-enabled", "false");
     super.init(conf, schema);
   }

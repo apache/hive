@@ -20,34 +20,42 @@ package org.apache.hadoop.hive.ql.queryhistory.repository;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.PartitionTransform;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
-import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistorySchema;
+import org.apache.hadoop.hive.ql.queryhistory.schema.Schema;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-public abstract class AbstractQueryHistoryRepository implements QueryHistoryRepository {
+public abstract class AbstractRepository implements QueryHistoryRepository {
   protected Logger LOG = LoggerFactory.getLogger(getClass());
   @VisibleForTesting
   HiveConf conf;
-  protected QueryHistorySchema schema;
+  protected Schema schema;
+  private Warehouse warehouse;
 
-  public void init(HiveConf conf, QueryHistorySchema schema) {
+  public void init(HiveConf conf, Schema schema) {
     this.conf = conf;
     this.schema = schema;
+    try {
+      this.warehouse = new Warehouse(conf);
+    } catch (MetaException e) {
+      throw new RuntimeException(e);
+    }
+    initializeSessionForTableCreation();
 
     try (Hive hive = Hive.get(conf)) {
       Database database = initDatabase(hive);
@@ -56,6 +64,16 @@ public abstract class AbstractQueryHistoryRepository implements QueryHistoryRepo
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private void initializeSessionForTableCreation() {
+    HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID, QueryHistoryRepository.QUERY_ID_FOR_TABLE_CREATION);
+    SessionState ss = SessionState.get(); // if there is a SessionState in the called thread, we can use that
+    if (ss == null){
+      ss = SessionState.start(conf);
+    }
+    ss.addQueryState(QueryHistoryRepository.QUERY_ID_FOR_TABLE_CREATION,
+        new QueryState.Builder().withHiveConf(conf).build());
   }
 
   protected Database initDatabase(Hive hive) {
@@ -75,15 +93,8 @@ public abstract class AbstractQueryHistoryRepository implements QueryHistoryRepo
     }
   }
 
-  private String getDatabaseLocation(String databaseName) {
-    String warehouseLocation = conf.get(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname);
-    if (warehouseLocation == null) {
-      warehouseLocation = conf.get(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname);
-    }
-    Preconditions.checkNotNull(
-        warehouseLocation, "Warehouse location is not set: 'hive.metastore.warehouse.external.dir' and " +
-            "'hive.metastore.warehouse.dir' are both null");
-    return String.format("%s/%s.db", warehouseLocation, databaseName.toLowerCase());
+  private String getDatabaseLocation(String databaseName) throws Exception {
+    return warehouse.getDefaultExternalDatabasePath(databaseName).toUri().toString();
   }
 
   protected Table initTable(Hive hive, Database db) {
@@ -112,16 +123,14 @@ public abstract class AbstractQueryHistoryRepository implements QueryHistoryRepo
    * While creating the table, getInitialTable is supposed to return a common table object,
    * which contains anything general that's not specific to QueryHistoryRepository subclasses.
    */
-  protected Table getInitialTable() {
+  protected Table createTableObject() {
     Table table = new Table(QUERY_HISTORY_DB_NAME, QUERY_HISTORY_TABLE_NAME);
     table.setProperty("EXTERNAL", "TRUE");
     table.setTableType(TableType.EXTERNAL_TABLE);
 
     List<FieldSchema> partCols = new ArrayList<>();
 
-    Arrays.stream(QueryHistorySchema.Field.values()).filter(QueryHistorySchema.Field::isPartitioningCol)
-        .forEach(field -> partCols.add(new FieldSchema(field.getName(), field.getType(),
-            field.getDescription())));
+    partCols.addAll(schema.getPartCols());
     List<TransformSpec> spec = PartitionTransform.getPartitionTransformSpec(partCols);
     SessionStateUtil.addResourceOrThrow(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC, spec);
 

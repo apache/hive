@@ -17,20 +17,19 @@
  */
 package org.apache.hadoop.hive.ql.queryhistory.repository;
 
-import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistorySchemaTestUtils;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.data.GenericRecord;
-import org.apache.iceberg.data.Record;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ServiceContext;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.queryhistory.QueryHistoryService;
 import org.apache.hadoop.hive.ql.queryhistory.repository.IcebergRepositoryForTest;
-import org.apache.hadoop.hive.ql.queryhistory.schema.DummyQueryHistoryRecord;
-import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistoryRecord;
-import org.apache.hadoop.hive.ql.queryhistory.schema.IcebergQueryHistoryRecord;
-import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistorySchema;
+import org.apache.hadoop.hive.ql.queryhistory.schema.DummyRecord;
+import org.apache.hadoop.hive.ql.queryhistory.schema.IcebergRecord;
+import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistorySchemaTestUtils;
+import org.apache.hadoop.hive.ql.queryhistory.schema.Record;
+import org.apache.hadoop.hive.ql.queryhistory.schema.Schema;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -50,9 +49,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class TestIcebergRepository {
   private static final Logger LOG = LoggerFactory.getLogger(TestIcebergRepository.class);
-  private static final ServiceContext serviceContext = new ServiceContext(() -> DummyQueryHistoryRecord.SERVER_HOST,
-      () ->  DummyQueryHistoryRecord.SERVER_PORT);
-  private final Queue<QueryHistoryRecord> queryHistoryQueue = new LinkedBlockingQueue<>();
+  private static final ServiceContext serviceContext = new ServiceContext(() -> DummyRecord.SERVER_HOST,
+      () ->  DummyRecord.SERVER_PORT);
+  private final Queue<Record> queryHistoryQueue = new LinkedBlockingQueue<>();
 
   /*
    * This unit test asserts that the created record is persisted as expected and the values made their way to the
@@ -63,29 +62,29 @@ public class TestIcebergRepository {
     HiveConf conf = new HiveConf();
 
     conf.setBoolVar(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION, false);
-    conf.setIntVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_PERSIST_MAX_BATCH_SIZE, 0);
+    conf.setIntVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_BATCH_SIZE, 0);
     conf.setVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_REPOSITORY_CLASS, IcebergRepositoryForTest.class.getName());
 
-    QueryHistoryRecord record = new DummyQueryHistoryRecord();
+    Record record = new DummyRecord();
 
-    QueryHistoryService service = new QueryHistoryService(conf, serviceContext).start();
+    QueryHistoryService service = new QueryHistoryService(conf, serviceContext);
+    service.start();
     IcebergRepositoryForTest repository = (IcebergRepositoryForTest) service.getRepository();
 
     queryHistoryQueue.add(record);
-    repository.persist(queryHistoryQueue);
+    repository.flush(queryHistoryQueue);
 
     checkRecords(conf, repository, record);
   }
 
-  private void checkRecords(HiveConf conf, IcebergRepositoryForTest repository, QueryHistoryRecord record)
+  private void checkRecords(HiveConf conf, IcebergRepositoryForTest repository, Record record)
       throws Exception {
     JobConf jobConf = new JobConf(conf);
     // force table to be reloaded from Catalogs to see latest Snapshot
     jobConf.unset("iceberg.mr.serialized.table.sys.query_history");
     Container container = readRecords(repository, jobConf);
 
-    QueryHistoryRecord deserialized = new IcebergQueryHistoryRecord((GenericRecord) container.get());
-    LOG.info("Deserialized record: {}", deserialized.toLongString());
+    Record deserialized = new IcebergRecord((GenericRecord) container.get());
 
     Assert.assertTrue("Original and deserialized records should contain equal values",
         QueryHistorySchemaTestUtils.queryHistoryRecordsAreEqual(record, deserialized));
@@ -96,7 +95,7 @@ public class TestIcebergRepository {
     String tableLocation = repository.tableDesc.getProperties().get("location").toString();
     File[] dataFiles =
         new File(tableLocation.replaceAll("^[a-zA-Z]+:", "") +
-            "/data/cluster_id=" + DummyQueryHistoryRecord.CLUSTER_ID).listFiles(
+            "/data/cluster_id=" + DummyRecord.CLUSTER_ID).listFiles(
             file -> file.isFile() && file.getName().toLowerCase().endsWith(".orc"));
     FileInputFormat.setInputPaths(jobConf, new Path(dataFiles[0].toURI()));
 
@@ -105,8 +104,9 @@ public class TestIcebergRepository {
     InputSplit[] splits = inputFormat.getSplits(jobConf, 1);
 
     Container container = null;
-    try (RecordReader<Void, Container<Record>> reader =
-             (RecordReader<Void, Container<Record>>) inputFormat.getRecordReader(splits[0], jobConf, Reporter.NULL)) {
+    try (RecordReader<Void, Container<org.apache.iceberg.data.Record>> reader =
+             (RecordReader<Void, Container<org.apache.iceberg.data.Record>>) inputFormat.getRecordReader(splits[0],
+                 jobConf, Reporter.NULL)) {
       container = reader.createValue();
       reader.next(reader.createKey(), container);
     }

@@ -18,8 +18,8 @@
 package org.apache.hadoop.hive.ql.queryhistory.schema;
 
 import org.apache.hadoop.hive.common.type.Timestamp;
-import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistoryRecord;
-import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistorySchema;
+import org.apache.hadoop.hive.ql.queryhistory.schema.Record;
+import org.apache.hadoop.hive.ql.queryhistory.schema.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,12 +29,12 @@ public class QueryHistorySchemaTestUtils {
   private static final Logger LOG = LoggerFactory.getLogger(QueryHistorySchemaTestUtils.class);
 
   /**
-   * Special equality method for datetime fields in a QueryHistoryRecord. This is because hive's Timestamp
+   * Special equality method for datetime fields in a Record. This is because hive's Timestamp
    * after being serialized and de-serialized ends up becoming a LocalDateTime, and a TimeStamp.equals
    * (LocalDateTime) would simply return non-equality, even if the inner LocalDateTime instance points to the
    * same moment in time as the other LocalDateTime instance.
    */
-  public static boolean queryHistoryRecordsAreEqual(QueryHistoryRecord thiz, QueryHistoryRecord obj){
+  public static boolean queryHistoryRecordsAreEqual(Record thiz, Record obj){
     if (thiz == obj) {
       return true;
     }
@@ -43,13 +43,13 @@ public class QueryHistorySchemaTestUtils {
       return false;
     }
 
-    QueryHistoryRecord other = (QueryHistoryRecord) obj;
+    Record other = (Record) obj;
 
-    for (QueryHistorySchema.Field field : QueryHistorySchema.Field.values()) {
+    for (Schema.Field field : Schema.Field.values()) {
       Object valueThis = thiz.get(field);
       Object valueThat = other.get(field);
       if ((valueThis != null && valueThat == null) || (valueThis == null && valueThat != null)) {
-        LOG.info("QueryHistoryRecord equality check: fields differ in null value: {}", field.getName());
+        LOG.info("Record equality check: fields differ in null value: {}", field.getName());
         return false;
       }
       if (valueThis instanceof Timestamp || valueThat instanceof Timestamp){
@@ -60,7 +60,7 @@ public class QueryHistorySchemaTestUtils {
         continue; // check next field
       }
       if (valueThis != null && !valueThis.equals(valueThat)) {
-        LOG.info("QueryHistoryRecord equality check: fields are not equal: {}, this: {} (type: {})," +
+        LOG.info("Record equality check: fields are not equal: {}, this: {} (type: {})," +
             " that: {} (type: {})",
             field.getName(),
             valueThis, valueThis.getClass(), valueThat, valueThat.getClass());

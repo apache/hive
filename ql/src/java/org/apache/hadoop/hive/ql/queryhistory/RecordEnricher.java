@@ -25,20 +25,20 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ServiceContext;
 import org.apache.hadoop.hive.ql.exec.tez.TezRuntimeContext;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
-import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistoryRecord;
+import org.apache.hadoop.hive.ql.queryhistory.schema.Record;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.tez.common.counters.DAGCounter;
 import org.apache.tez.common.counters.TaskCounter;
 
-public class QueryHistoryRecordEnricher {
+public class RecordEnricher {
   private final DriverContext driverContext;
   private final ServiceContext serviceContext;
   private final SessionState sessionState;
   private final PerfLogger perfLogger;
 
-  public QueryHistoryRecordEnricher(DriverContext driverContext, ServiceContext serviceContext, SessionState sessionState,
+  public RecordEnricher(DriverContext driverContext, ServiceContext serviceContext, SessionState sessionState,
       PerfLogger perfLogger) {
     this.driverContext = driverContext;
     this.serviceContext = serviceContext;
@@ -46,8 +46,8 @@ public class QueryHistoryRecordEnricher {
     this.perfLogger = perfLogger;
   }
 
-  public QueryHistoryRecord createRecord() {
-    QueryHistoryRecord record = new QueryHistoryRecord();
+  public Record createRecord() {
+    Record record = new Record();
 
     enrichFromDriverContext(record);
     enrichFromSessionState(record);
@@ -57,7 +57,7 @@ public class QueryHistoryRecordEnricher {
     return record;
   }
 
-  private void enrichFromDriverContext(QueryHistoryRecord record) {
+  private void enrichFromDriverContext(Record record) {
     enrichFromQueryState(driverContext.getQueryState(), record);
     enrichFromQueryInfo(driverContext.getQueryInfo(), record);
     enrichFromRuntimeContext(driverContext.getRuntimeContext(), record);
@@ -70,7 +70,7 @@ public class QueryHistoryRecordEnricher {
     record.setNumRowsFetched(driverContext.getFetchTask() == null ? 0 : driverContext.getFetchTask().getTotalRows());
   }
 
-  private void enrichFromSessionState(QueryHistoryRecord record) {
+  private void enrichFromSessionState(Record record) {
     record.setSessionId(sessionState.getSessionId());
     record.setEndUser(sessionState.getUserName());
     record.setClientProtocol(sessionState.getConf().getInt(SerDeUtils.LIST_SINK_OUTPUT_PROTOCOL, 0));
@@ -89,7 +89,7 @@ public class QueryHistoryRecordEnricher {
     record.setConfigurationOptionsChanged(sessionState.getOverriddenConfigurations());
   }
 
-  private void enrichFromPerfLogger(QueryHistoryRecord record) {
+  private void enrichFromPerfLogger(Record record) {
     record.setPlanningDuration(perfLogger.getEndTime(PerfLogger.COMPILE) - perfLogger.getStartTime(PerfLogger.COMPILE));
     record.setPlanningStartTime(perfLogger.getStartTime(PerfLogger.COMPILE));
 
@@ -103,18 +103,18 @@ public class QueryHistoryRecordEnricher {
     record.setExecutionStartTime(perfLogger.getStartTime(PerfLogger.TEZ_RUN_DAG));
   }
 
-  private void enrichFromServiceContext(QueryHistoryRecord record) {
+  private void enrichFromServiceContext(Record record) {
     record.setClusterId(serviceContext.getClusterId());
     record.setServerAddress(serviceContext.getHost());
     record.setServerPort(serviceContext.getPort());
   }
 
-  private void enrichFromQueryState(QueryState queryState, QueryHistoryRecord record) {
+  private void enrichFromQueryState(QueryState queryState, Record record) {
     record.setQueryId(queryState.getQueryId());
     record.setQuerySql(queryState.getQueryString());
   }
 
-  private void enrichFromQueryInfo(QueryInfo queryInfo, QueryHistoryRecord record) {
+  private void enrichFromQueryInfo(QueryInfo queryInfo, Record record) {
     if (queryInfo == null) {
       return;
     }
@@ -129,7 +129,7 @@ public class QueryHistoryRecordEnricher {
     record.setTotalTime(queryInfo.getElapsedTime());
   }
 
-  private void enrichFromRuntimeContext(TezRuntimeContext runtimeContext, QueryHistoryRecord record) {
+  private void enrichFromRuntimeContext(TezRuntimeContext runtimeContext, Record record) {
     // null in case of HS2-only queries (no Tez involved)
     // dagId null-check is for safety's sake when TezTask was initialized (so a plan was generated) but no DAG ran
     if (runtimeContext == null || runtimeContext.getDagId() == null) {
@@ -187,14 +187,14 @@ public class QueryHistoryRecordEnricher {
         TaskCounter.MERGE_PHASE_TIME.name()));
   }
 
-  private void enrichFromQueryProperties(QueryProperties queryProperties, QueryHistoryRecord record) {
+  private void enrichFromQueryProperties(QueryProperties queryProperties, Record record) {
     if (queryProperties == null) {
       return;
     }
     record.setTablesQueried(queryProperties.getTablesQueried());
   }
 
-  private void setInvalidValuesForRuntimeFields(QueryHistoryRecord record) {
+  private void setInvalidValuesForRuntimeFields(Record record) {
     record.setTotalNumberOfTasks(-1);
     record.setNumberOfSucceededTasks(-1);
     record.setNumberOfKilledTasks(-1);

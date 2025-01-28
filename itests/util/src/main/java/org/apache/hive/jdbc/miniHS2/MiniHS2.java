@@ -96,7 +96,7 @@ public class MiniHS2 extends AbstractHiveService {
     getHiveConf().setVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_REPOSITORY_CLASS,
         IcebergRepositoryForTest.class.getName());
     // for testing purposes, we can persist the query history record almost immediately
-    getHiveConf().setIntVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_PERSIST_MAX_BATCH_SIZE, 1);
+    getHiveConf().setIntVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_BATCH_SIZE, 1);
   }
 
   public enum MiniClusterType {

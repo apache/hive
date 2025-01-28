@@ -18,16 +18,16 @@
 package org.apache.hadoop.hive.ql.queryhistory.schema;
 
 import org.apache.iceberg.data.GenericRecord;
-import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistoryRecord;
-import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistorySchema;
+import org.apache.hadoop.hive.ql.queryhistory.schema.Record;
+import org.apache.hadoop.hive.ql.queryhistory.schema.Schema;
 
 /**
- * Convenient class for creating a QueryHistoryRecord from an iceberg Container.
+ * Convenient class for creating a Record from an iceberg Container.
  */
-public class IcebergQueryHistoryRecord extends QueryHistoryRecord {
+public class IcebergRecord extends Record {
 
-  public IcebergQueryHistoryRecord(GenericRecord icebergRecord) {
-    for (QueryHistorySchema.Field field : QueryHistorySchema.Field.values()) {
+  public IcebergRecord(GenericRecord icebergRecord) {
+    for (Schema.Field field : Schema.Field.values()) {
       record.put(field.getName(), icebergRecord.getField(field.getName()));
     }
   }

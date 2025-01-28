@@ -27,8 +27,9 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
-public class QueryHistorySchema {
+public class Schema {
   public static final int CURRENT_VERSION = 1;
 
   // how many bytes are consumed by the "short" fields in a record
@@ -37,7 +38,7 @@ public class QueryHistorySchema {
 
   private static int calculateSimpleFieldsSize() {
     int baseSize = 0;
-    for (QueryHistorySchema.Field field : QueryHistorySchema.Field.values()) {
+    for (Schema.Field field : Schema.Field.values()) {
       switch (field.getType()) {
         case "string":
           // consider an average 20 chars length
@@ -59,7 +60,7 @@ public class QueryHistorySchema {
     return baseSize;
   }
 
-  public interface QueryHistorySchemaField {
+  interface SchemaField {
     String getName();
     String getType();
     String getDescription();
@@ -74,7 +75,7 @@ public class QueryHistorySchema {
 
   private final ArrayList<FieldSchema> fields;
 
-  public QueryHistorySchema() {
+  public Schema() {
     this.fields = new ArrayList<>();
 
     Arrays.asList(Field.values())
@@ -82,30 +83,25 @@ public class QueryHistorySchema {
   }
 
   @VisibleForTesting
-  static ObjectInspector createInspector(QueryHistorySchemaField[] fields) {
+  static ObjectInspector createInspector(SchemaField[] fields) {
     return ObjectInspectorFactory.getStandardStructObjectInspector(
-        Arrays.stream(fields).map(QueryHistorySchemaField::getName).collect(Collectors.toList()),
-        Arrays.stream(fields).map(field -> {
-          switch (field.getType()) {
-            case "string":
-              return PrimitiveObjectInspectorFactory.javaStringObjectInspector;
-            case "int":
-              return PrimitiveObjectInspectorFactory.javaIntObjectInspector;
-            case "bigint":
-              return PrimitiveObjectInspectorFactory.javaLongObjectInspector;
-            case "timestamp":
-              return PrimitiveObjectInspectorFactory.javaTimestampObjectInspector;
-            default:
-              throw new IllegalArgumentException("Unsupported type: " + field.getType());
-          }
-        }).collect(Collectors.toList()));
+        Arrays.stream(fields).map(SchemaField::getName).collect(Collectors.toList()),
+        Arrays.stream(fields).map(field -> PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
+            TypeInfoFactory.getPrimitiveTypeInfo(field.getType()))).collect(Collectors.toList()));
   }
 
   public List<FieldSchema> getFields() {
     return fields;
   }
 
-  public enum Field implements QueryHistorySchemaField {
+
+  public List<? extends FieldSchema> getPartCols() {
+    return Arrays.stream(Schema.Field.values()).filter(Schema.Field::isPartitioningCol)
+        .map(field -> new FieldSchema(field.getName(), field.getType(),
+            field.getDescription())).collect(Collectors.toList());
+  }
+
+  public enum Field implements SchemaField {
     // 1. BASIC FIELDS
     QUERY_HISTORY_SCHEMA_VERSION("query_history_schema_version", "int",
         "Query history schema version when this record was written"),

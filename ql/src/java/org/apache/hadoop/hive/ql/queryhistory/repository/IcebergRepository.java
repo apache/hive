@@ -25,6 +25,7 @@ import java.util.Queue;
 import java.util.UUID;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Maps;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -40,20 +41,22 @@ import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistoryRecord;
-import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistorySchema;
+import org.apache.hadoop.hive.ql.queryhistory.schema.Record;
+import org.apache.hadoop.hive.ql.queryhistory.schema.Schema;
 import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.OutputCommitter;
+import org.apache.hadoop.mapred.TaskAttemptContext;
 import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.tez.mapreduce.hadoop.mapred.TaskAttemptContextImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class IcebergRepository extends AbstractQueryHistoryRepository implements QueryHistoryRepository {
+public class IcebergRepository extends AbstractRepository implements QueryHistoryRepository {
   private static final Logger LOG = LoggerFactory.getLogger(IcebergRepository.class);
   private static final String ICEBERG_STORAGE_HANDLER = "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler";
 
@@ -65,7 +68,7 @@ public class IcebergRepository extends AbstractQueryHistoryRepository implements
   TableDesc tableDesc;
 
   @Override
-  public void init(HiveConf conf, QueryHistorySchema schema) {
+  public void init(HiveConf conf, Schema schema) {
     super.init(conf, schema);
   }
 
@@ -73,7 +76,7 @@ public class IcebergRepository extends AbstractQueryHistoryRepository implements
   protected Table createTable(Hive hive, Database db) throws HiveException {
     LOG.info("Creating iceberg Query History table...");
 
-    Table table = getInitialTable();
+    Table table = createTableObject();
 
     // iceberg specific
     table.setProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE,
@@ -97,8 +100,8 @@ public class IcebergRepository extends AbstractQueryHistoryRepository implements
     this.tableDesc = Utilities.getTableDesc(table);
 
     Map<String, String> map = new HashMap<>();
-    this.storageHandler = HiveUtils.getStorageHandler(conf, tableDesc.getProperties()
-        .getProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE));
+
+    this.storageHandler = table.getStorageHandler();
     storageHandler.configureOutputJobProperties(tableDesc, map);
 
     //need to obtain a serialized table for later usage
@@ -113,7 +116,7 @@ public class IcebergRepository extends AbstractQueryHistoryRepository implements
   }
 
   @Override
-  public void persist(Queue<QueryHistoryRecord> records) {
+  public void flush(Queue<Record> records) {
     int numRecords = records.size();
     LOG.info("Persisting {} records", numRecords);
     if (numRecords == 0) {
@@ -130,15 +133,19 @@ public class IcebergRepository extends AbstractQueryHistoryRepository implements
       }
 
       writer.close(false);
-      storageHandler.storageHandlerCommit(HiveConf.getProperties(conf), Context.Operation.OTHER,
-          new TaskAttemptContextImpl(jobConf, TaskAttemptID.forName(conf.get("mapred.task.id")), null));
+
+      TaskAttemptContext context = new TaskAttemptContextImpl(jobConf, TaskAttemptID.forName(
+          conf.get("mapred.task.id")), null);
+      OutputCommitter committer = storageHandler.getOutputCommitter();
+      committer.commitTask(context);
+      storageHandler.storageHandlerCommit(HiveConf.getProperties(conf), Context.Operation.OTHER);
 
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  private void writeRecord(RecordWriter writer, QueryHistoryRecord record) throws Exception {
+  private void writeRecord(RecordWriter writer, Record record) throws Exception {
     Writable w = record.serialize(serializer);
     writer.write(w);
   }
@@ -161,6 +168,6 @@ public class IcebergRepository extends AbstractQueryHistoryRepository implements
 
     String jobId = String.format("job_%s", jobIdPostFix);
     SessionStateUtil.addCommitInfo(SessionState.getSessionConf(), tableDesc.getTableName(), jobId, 1,
-        new HashMap(tableDesc.getProperties()));
+        Maps.fromProperties(tableDesc.getProperties()));
   }
 }

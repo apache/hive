@@ -70,6 +70,7 @@ import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.TaskAttemptContext;
 
@@ -618,11 +619,6 @@ public interface HiveStorageHandler extends Configurable {
     throw new UnsupportedOperationException();
   }
 
-  default void storageHandlerCommit(Properties commitProperties, Operation operation, TaskAttemptContext context)
-      throws HiveException {
-    throw new UnsupportedOperationException();
-  }
-
   @Deprecated
   default void storageHandlerCommit(Properties commitProperties, boolean overwrite) throws HiveException {
     storageHandlerCommit(commitProperties, overwrite ? Operation.IOW : Operation.OTHER);
@@ -636,6 +632,13 @@ public interface HiveStorageHandler extends Configurable {
    */
   default boolean isAllowedAlterOperation(AlterTableType opType) {
     return DEFAULT_ALLOWED_ALTER_OPS.contains(opType);
+  }
+
+  /**
+   * Returns an OutputCommitter that belongs to this storage handler if any.
+   */
+  default OutputCommitter getOutputCommitter() {
+    return null;
   }
 
   /**

@@ -17,7 +17,6 @@
  **/
 package org.apache.hadoop.hive.ql.queryhistory.schema;
 
-import java.time.Instant;
 import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
@@ -27,43 +26,43 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.QueryProperties;
-import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistorySchema.Field;
+import org.apache.hadoop.hive.ql.queryhistory.schema.Schema.Field;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.io.Writable;
 import org.apache.hive.common.util.HiveVersionInfo;
 
-public class QueryHistoryRecord {
+public class Record {
   private long estimatedSizeInMemoryBytes = 0;
 
-  public QueryHistoryRecord(){
-    set(Field.QUERY_HISTORY_SCHEMA_VERSION, QueryHistorySchema.CURRENT_VERSION);
+  public Record(){
+    set(Field.QUERY_HISTORY_SCHEMA_VERSION, Schema.CURRENT_VERSION);
     set(Field.HIVE_VERSION, HiveVersionInfo.getVersion());
   }
 
   protected final Map<String, Object> record = new HashMap<>();
 
   public void setQueryId(String queryId) {
-    set(QueryHistorySchema.Field.QUERY_ID, queryId);
+    set(Schema.Field.QUERY_ID, queryId);
   }
 
   public void setSessionId(String sessionId) {
-    set(QueryHistorySchema.Field.SESSION_ID, sessionId);
+    set(Schema.Field.SESSION_ID, sessionId);
   }
 
   public void setOperationId(String operationId) {
-    set(QueryHistorySchema.Field.OPERATION_ID, operationId);
+    set(Schema.Field.OPERATION_ID, operationId);
   }
 
   public void setExecutionEngine(String executionEngine) {
-    set(QueryHistorySchema.Field.EXECUTION_ENGINE, executionEngine);
+    set(Schema.Field.EXECUTION_ENGINE, executionEngine);
   }
 
   public void setExecutionMode(String executionMode) {
-    set(QueryHistorySchema.Field.EXECUTION_MODE, executionMode);
+    set(Schema.Field.EXECUTION_MODE, executionMode);
   }
 
   public void setDagId(String dagId) {
-    set(QueryHistorySchema.Field.TEZ_DAG_ID, dagId);
+    set(Schema.Field.TEZ_DAG_ID, dagId);
   }
 
   public void setClusterId(String clusterId) {
@@ -71,47 +70,47 @@ public class QueryHistoryRecord {
   }
 
   public void setTezApplicationId(String applicationId) {
-    set(QueryHistorySchema.Field.TEZ_APP_ID, applicationId);
+    set(Schema.Field.TEZ_APP_ID, applicationId);
   }
 
   public void setTezSessionId(String sessionId) {
-    set(QueryHistorySchema.Field.TEZ_SESSION_ID, sessionId);
+    set(Schema.Field.TEZ_SESSION_ID, sessionId);
   }
 
   public void setSessionType(String sessionType) {
-    set(QueryHistorySchema.Field.SESSION_TYPE, sessionType);
+    set(Schema.Field.SESSION_TYPE, sessionType);
   }
 
   public void setClientProtocol(int clientProtocol) {
-    set(QueryHistorySchema.Field.HIVERSERVER2_PROTOCOL_VERSION, clientProtocol);
+    set(Schema.Field.HIVERSERVER2_PROTOCOL_VERSION, clientProtocol);
   }
 
   public void setClusterUser(String username) {
-    set(QueryHistorySchema.Field.CLUSTER_USER, username);
+    set(Schema.Field.CLUSTER_USER, username);
   }
 
   public void setEndUser(String userNameConnection) {
-    set(QueryHistorySchema.Field.END_USER, userNameConnection);
+    set(Schema.Field.END_USER, userNameConnection);
   }
 
   public void setQuerySql(String querySql) {
-    set(QueryHistorySchema.Field.SQL, querySql);
+    set(Schema.Field.SQL, querySql);
   }
 
   public void setCurrentDatabase(String currentDatabase) {
-    set(QueryHistorySchema.Field.DB_NAME, currentDatabase);
+    set(Schema.Field.DB_NAME, currentDatabase);
   }
 
   public void setTezAmAddress(String amAddress) {
-    set(QueryHistorySchema.Field.TEZ_COORDINATOR, amAddress);
+    set(Schema.Field.TEZ_COORDINATOR, amAddress);
   }
 
   public void setQueryState(String state) {
-    set(QueryHistorySchema.Field.QUERY_STATE, state);
+    set(Schema.Field.QUERY_STATE, state);
   }
 
   public void setQueryType(QueryProperties.QueryType type) {
-    set(QueryHistorySchema.Field.QUERY_TYPE, type == null ? QueryProperties.QueryType.OTHER.getName() :
+    set(Schema.Field.QUERY_TYPE, type == null ? QueryProperties.QueryType.OTHER.getName() :
         type.getName());
   }
 
@@ -120,15 +119,15 @@ public class QueryHistoryRecord {
   }
 
   public void setServerAddress(String serverAddress) {
-    set(QueryHistorySchema.Field.SERVER_ADDRESS, serverAddress);
+    set(Schema.Field.SERVER_ADDRESS, serverAddress);
   }
 
   public void setServerPort(int serverPort) {
-    set(QueryHistorySchema.Field.SERVER_PORT, serverPort);
+    set(Schema.Field.SERVER_PORT, serverPort);
   }
 
   public void setClientAddress(String userIpAddress) {
-    set(QueryHistorySchema.Field.CLIENT_ADDRESS, userIpAddress);
+    set(Schema.Field.CLIENT_ADDRESS, userIpAddress);
   }
 
   public void setQueryStartTime(long beginTimeEpochMillis) {
@@ -295,25 +294,17 @@ public class QueryHistoryRecord {
   }
 
   public String toString() {
-    return String.format("QueryHistoryRecord [queryId: %s, sessionId: %s]", get(QueryHistorySchema.Field.QUERY_ID),
-        get(QueryHistorySchema.Field.SESSION_ID));
-  }
-
-  /**
-   * Utility toString kind of method for debugging.
-   * @return string representation of the underlying map
-   */
-  public String toLongString() {
-    return String.format("QueryHistoryRecord [%s]", record);
+    return String.format("QueryHistoryRecord [queryId: %s, sessionId: %s]", get(Schema.Field.QUERY_ID),
+        get(Schema.Field.SESSION_ID));
   }
 
   public Writable serialize(Serializer serializer) throws Exception {
-    return serializer.serialize(toSerializable(), QueryHistorySchema.INSPECTOR);
+    return serializer.serialize(toSerializable(), Schema.INSPECTOR);
   }
 
   Object[] toSerializable() {
-    Object[] record = new Object[QueryHistorySchema.Field.values().length];
-    for (Field field : QueryHistorySchema.Field.values()) {
+    Object[] record = new Object[Schema.Field.values().length];
+    for (Field field : Schema.Field.values()) {
       record[field.ordinal()] = getFieldValue(field);
     }
     return record;
@@ -339,7 +330,7 @@ public class QueryHistoryRecord {
     if (this.estimatedSizeInMemoryBytes > 0) {
       return this.estimatedSizeInMemoryBytes;
     }
-    long calculatedSize = QueryHistorySchema.BASE_RECORD_SIZE_IN_MEMORY_BYTES;
+    long calculatedSize = Schema.BASE_RECORD_SIZE_IN_MEMORY_BYTES;
 
     // consider the "long" fields which mainly contribute to the size of the record
     calculatedSize += getFieldSize(Field.FAILURE_REASON);

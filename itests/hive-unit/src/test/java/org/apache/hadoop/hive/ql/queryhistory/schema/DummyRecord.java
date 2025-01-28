@@ -25,7 +25,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.List;
 
-public class DummyQueryHistoryRecord extends QueryHistoryRecord {
+public class DummyRecord extends Record {
   public static final String QUERY_ID = "hive_20240429111756_d39b59fb-31e2-4e89-853e-fac2844530e9";
   public static final String SESSION_ID = "9df26da2-c7f0-4571-838b-f39179a8dcb7";
   public static final String CLUSTER_ID = "hive_instance_123";
@@ -85,11 +85,11 @@ public class DummyQueryHistoryRecord extends QueryHistoryRecord {
   public static final long SHUFFLE_PHASE_TIME = 30000L;
   public static final long MERGE_PHASE_TIME = 4000L;
 
-  public DummyQueryHistoryRecord() {
+  public DummyRecord() {
     this(System.currentTimeMillis());
   }
 
-  public DummyQueryHistoryRecord(long queryStartMillis) {
+  public DummyRecord(long queryStartMillis) {
     setQueryId(QUERY_ID);
     setSessionId(SESSION_ID);
     setClusterId(CLUSTER_ID);

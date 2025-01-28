@@ -5746,17 +5746,24 @@ public class HiveConf extends Configuration {
         "Whether to collect and store explain plan in the query history. Default is true."),
     HIVE_QUERY_HISTORY_EXEC_SUMMARY_ENABLED("hive.query.history.exec.summary.enabled", true,
         "Whether to collect and store execution summary in the query history. Default is true."),
-    HIVE_QUERY_HISTORY_PERSIST_MAX_BATCH_SIZE("hive.query.history.persist.max.batch.size", 200,
+    HIVE_QUERY_HISTORY_BATCH_SIZE("hive.query.history.batch.size", 200,
         "The maximum amount of records held in memory " +
             "before query history service persists them to the target table. " +
             "A small value (like 1-5) will lead to more real-time behavior with the price of small files. " +
             "Set this to 0 to wait for the records to be persisted synchronously (not recommended in production)."),
-    HIVE_QUERY_HISTORY_PERSIST_MAX_MEMORY_BYTES("hive.query.history.persist.max.memory.bytes",
+    HIVE_QUERY_HISTORY_MAX_MEMORY_BYTES("hive.query.history.max.memory.bytes",
         20 * 1024 * 1024, // 20MB
         "The maximum size in bytes the query history queue can grow in the memory before query history service " +
             "persists them to the target table." +
             "Set this to 0 to disable this check (not recommended in production in order to keep HS2's heap under " +
             "control)"),
+    HIVE_QUERY_HISTORY_FLUSH_INTERVAL_SECONDS("hive.query.history.flush.interval.seconds",
+        60 * 60, // 1h
+        "The query history service attempts to flush records from memory to the Iceberg table regardless of the " +
+            "current batch size. This ensures that history records are not kept inaccessible to users for extended " +
+            "periods. This property defines the interval for this operation. The default value of 1 hour is " +
+            "presumably a reasonable tradeoff between generating smaller files and allowing sufficient time for " +
+            "records to arrive. Set this to 0 to disable (so to 'force' batch size-based strategies)"),
     HIVE_QUERY_HISTORY_REPOSITORY_CLASS("hive.query.history.repository.class",
         "org.apache.hadoop.hive.ql.queryhistory.repository.IcebergRepository",
         "The class implementing QueryHistoryRepository to be used for persisting QueryHistoryRecord instances"),
