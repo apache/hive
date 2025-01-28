@@ -142,12 +142,15 @@ public class PartitionStatsUtil {
       ContentFile<?> file, PartitionSpec spec, StructType partitionType) {
     // keep the partition data as per the unified spec by coercing
     StructLike partition = PartitionUtil.coercePartition(partitionType, spec, file.partition());
+    Schema partitionSchema = spec.partitionType().asSchema();
 
-    GenericRecord record = GenericRecord.create(partitionType);
+    GenericRecord record = GenericRecord.create(partitionSchema);
     List<Types.NestedField> fields = partitionType.fields();
-    for (int index = 0; index < fields.size(); index++) {
-      Object val = partition.get(index, fields.get(index).type().typeId().javaClass());
-      record.set(index, val);
+    for (int index = 0, pos = 0; index < fields.size(); index++) {
+      if (partitionSchema.findField(fields.get(index).fieldId()) != null) {
+        Object val = partition.get(index, fields.get(index).type().typeId().javaClass());
+        record.set(pos++, val);
+      }
     }
 
     return record;

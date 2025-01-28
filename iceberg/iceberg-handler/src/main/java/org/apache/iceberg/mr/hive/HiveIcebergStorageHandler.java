@@ -592,12 +592,14 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
           } else {
             LOG.warn("Partition {} not found in stats file: {}",
                 partish.getPartition().getName(), statsFile.path());
+            return null;
           }
         } catch (IOException e) {
           throw new UncheckedIOException(e);
         }
       } else {
         LOG.warn("Partition stats file not found for snapshot: {}", snapshot.snapshotId());
+        return null;
       }
     }
     return snapshot.summary();
@@ -2255,7 +2257,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       boolean latestSpecOnly) throws SemanticException {
     Expression exp = HiveIcebergInputFormat.getFilterExpr(conf, (ExprNodeGenericFuncDesc) filter);
     if (exp == null) {
-      return Lists.newArrayList(new DummyPartition(hmsTable));
+      return ImmutableList.of();
     }
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     int tableSpecId = table.spec().specId();
