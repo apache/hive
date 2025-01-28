@@ -89,3 +89,11 @@ FROM src tablesample (1 rows);
 SELECT
   substr('ABC', cast(2147483649 as bigint))
 FROM src tablesample (1 rows);
+
+--test 4-byte charactor
+set hive.vectorized.execution.enabled=false;
+SELECT
+  substr('あa🤎いiうu', 1, 3) as b1,
+  substr('あa🤎いiうu', 3) as b2,
+  substr('あa🤎いiうu', -5) as b3
+FROM src tablesample (1 rows);
