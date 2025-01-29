@@ -590,15 +590,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
             if (cboCtx.type == PreCboCtx.Type.VIEW && !materializedView) {
               throw new SemanticException("Create view is not supported in cbo return path.");
             }
+            newPlan =
+                PlanModifierForReturnPath.convertOpTree(newPlan, resultSchema, this.getQB().getTableDesc() != null);
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Plan after return path modifier:\n" + RelOptUtil.toString(newPlan));
+            }
             sinkOp = getOptimizedHiveOPDag(newPlan);
             if (oldHints.size() > 0) {
               LOG.debug("Propagating hints to QB: " + oldHints);
               getQB().getParseInfo().setHintList(oldHints);
             }
-            LOG.info("CBO Succeeded; optimized logical plan.");
-
-            this.ctx.setCboInfo(getOptimizedByCboInfo());
-            this.ctx.setCboSucceeded(true);
           } else {
             // 1. Convert Plan to AST
             ASTNode newAST = getOptimizedAST(newPlan);
@@ -649,38 +650,39 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
             disableJoinMerge = defaultJoinMerge;
             sinkOp = genPlan(getQB());
-            LOG.info("CBO Succeeded; optimized logical plan.");
-
-            this.ctx.setCboInfo(getOptimizedByCboInfo());
-            this.ctx.setCboSucceeded(true);
-            if (this.ctx.isExplainPlan()) {
-              // Enrich explain with information derived from CBO
-              ExplainConfiguration explainConfig = this.ctx.getExplainConfig();
-              if (explainConfig.isCbo()) {
-                if (!explainConfig.isCboJoinCost()) {
-                  // Include cost as provided by Calcite
-                  newPlan.getCluster().invalidateMetadataQuery();
-                  RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.DEFAULT);
-                }
-                if (explainConfig.isFormatted()) {
-                  this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan));
-                } else if (explainConfig.isCboCost() || explainConfig.isCboJoinCost()) {
-                  this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan, SqlExplainLevel.ALL_ATTRIBUTES));
-                } else {
-                  // Do not include join cost
-                  this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan));
-                }
-              } else if (explainConfig.isFormatted()) {
-                this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan));
-                this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
-              } else if (explainConfig.isExtended()) {
-                this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
-              }
-            }
             if (LOG.isTraceEnabled()) {
-              LOG.trace(getOptimizedSql(newPlan));
               LOG.trace(newAST.dump());
             }
+          }
+          LOG.info("CBO Succeeded; optimized logical plan.");
+          this.ctx.setCboInfo(getOptimizedByCboInfo());
+          this.ctx.setCboSucceeded(true);
+          if (this.ctx.isExplainPlan()) {
+            // Enrich explain with information derived from CBO
+            ExplainConfiguration explainConfig = this.ctx.getExplainConfig();
+            if (explainConfig.isCbo()) {
+              if (!explainConfig.isCboJoinCost()) {
+                // Include cost as provided by Calcite
+                newPlan.getCluster().invalidateMetadataQuery();
+                RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.DEFAULT);
+              }
+              if (explainConfig.isFormatted()) {
+                this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan));
+              } else if (explainConfig.isCboCost() || explainConfig.isCboJoinCost()) {
+                this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan, SqlExplainLevel.ALL_ATTRIBUTES));
+              } else {
+                // Do not include join cost
+                this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan));
+              }
+            } else if (explainConfig.isFormatted()) {
+              this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan));
+              this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
+            } else if (explainConfig.isExtended()) {
+              this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
+            }
+          }
+          if (LOG.isTraceEnabled()) {
+            LOG.trace(getOptimizedSql(newPlan));
           }
           perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.GENERATE_OPERATOR_TREE);
         } catch (Exception e) {
@@ -1415,12 +1417,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
    * @throws SemanticException
    */
   Operator getOptimizedHiveOPDag(RelNode optimizedOptiqPlan) throws SemanticException {
-    RelNode modifiedOptimizedOptiqPlan = PlanModifierForReturnPath.convertOpTree(
-        optimizedOptiqPlan, resultSchema, this.getQB().getTableDesc() != null);
-
-    LOG.debug("Translating the following plan:\n" + RelOptUtil.toString(modifiedOptimizedOptiqPlan));
     Operator<?> hiveRoot = new HiveOpConverter(this, conf, unparseTranslator, topOps)
-                                  .convert(modifiedOptimizedOptiqPlan);
+                                  .convert(optimizedOptiqPlan);
     RowResolver hiveRootRR = genRowResolver(hiveRoot, getQB());
     opParseCtx.put(hiveRoot, new OpParseContext(hiveRootRR));
     String dest = getQB().getParseInfo().getClauseNames().iterator().next();
