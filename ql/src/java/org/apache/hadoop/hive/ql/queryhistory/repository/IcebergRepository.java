@@ -68,11 +68,6 @@ public class IcebergRepository extends AbstractRepository implements QueryHistor
   TableDesc tableDesc;
 
   @Override
-  public void init(HiveConf conf, Schema schema) {
-    super.init(conf, schema);
-  }
-
-  @Override
   protected Table createTable(Hive hive, Database db) throws HiveException {
     LOG.info("Creating iceberg Query History table...");
 
