@@ -30,8 +30,6 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Exchange;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rex.RexNode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinLeafPredicateInfo;
@@ -55,8 +53,6 @@ import com.google.common.collect.Sets;
  *                                                 Join
  */
 public class HiveInsertExchange4JoinRule extends RelOptRule {
-
-  protected static final Logger LOG = LoggerFactory.getLogger(HiveInsertExchange4JoinRule.class);
 
   /** Rule that creates Exchange operators under a MultiJoin operator. */
   public static HiveInsertExchange4JoinRule exchangeBelowMultiJoin(
