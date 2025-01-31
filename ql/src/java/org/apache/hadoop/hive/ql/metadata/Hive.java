@@ -49,6 +49,7 @@ import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.reflect.Proxy;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
@@ -128,6 +129,7 @@ import org.apache.hadoop.hive.metastore.client.HookEnabledMetaStoreClient;
 import org.apache.hadoop.hive.metastore.client.SynchronizedMetaStoreClient;
 import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
@@ -253,6 +255,7 @@ import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.thrift.TException;
@@ -6004,23 +6007,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         return storageHandler == null ? null : storageHandler.getMetaHook();
       }
     };
-
-    IMetaStoreClient thriftClient = ThriftHiveMetaStoreClient.newClient(conf, allowEmbedded);
-    IMetaStoreClient clientWithLocalCache = HiveMetaStoreClientWithLocalCache.newClient(conf, thriftClient);
-    IMetaStoreClient sessionLevelClient = SessionHiveMetaStoreClient.newClient(conf, clientWithLocalCache);
-    IMetaStoreClient clientWithHook = HookEnabledMetaStoreClient.newClient(conf, hookLoader, sessionLevelClient);
-
-    if (conf.getBoolVar(ConfVars.METASTORE_FASTPATH)) {
-      return SynchronizedMetaStoreClient.newClient(conf, clientWithHook);
-    } else {
-      return RetryingMetaStoreClient.getProxy(
-          conf,
-          new Class[] {Configuration.class, IMetaStoreClient.class},
-          new Object[] {conf, clientWithHook},
-          metaCallTimeMap,
-          SynchronizedMetaStoreClient.class.getName()
-      );
-    }
+    return IMetaStoreClientFactory.create(conf, allowEmbedded, metaCallTimeMap, hookLoader);
   }
 
   @Nullable

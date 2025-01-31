@@ -921,7 +921,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         "We can only handle non-partitioned Hive tables. The Iceberg schema should be in " +
             InputFormatConfig.PARTITION_SPEC + " or already converted to a partition transform ");
 
-    PartitionSpec spec = IcebergTableUtil.spec(configuration, schema);
+    PartitionSpec spec = HMSTablePropertyHelper.createPartitionSpec(configuration, schema);
     if (spec != null) {
       Preconditions.checkArgument(hmsTable.getParameters().get(InputFormatConfig.PARTITION_SPEC) == null,
           "Provide only one of the following: Hive partition transform specification, or the " +

@@ -109,6 +109,54 @@ Upgrading from older versions of Hive
   different database for your MetaStore you will need to provide
   your own upgrade script.
 
+Using Iceberg REST catalog
+==========================
+To enable Apache Iceberg REST catalog usage add the followings in hive-site.xml
+
+    <property>
+        <name>iceberg.catalog</name>
+        <value>rest</value>
+    </property>
+    <property>
+        <name>iceberg.catalog.rest.type</name>
+        <value>rest</value>
+    </property>
+    <property>
+        <name>iceberg.catalog.rest.uri</name>
+        <value>{restServerUrl}</value>
+    </property>
+    <property>
+        <name>metastore.type</name>
+        <value>rest</value>
+    </property>
+
+For OAUTH2 authentication add this as well:
+
+    <property>
+        <name>iceberg.catalog.rest.security</name>
+        <value>OAUTH2</value>
+    </property>
+    <property>
+        <name>iceberg.catalog.rest.credential</name>
+        <value>{user:pass}</value>
+    </property>
+    <property>
+        <name>iceberg.catalog.rest.scope</name>
+        <value>PRINCIPAL_ROLE:ALL</value>
+    </property>
+    <property>
+        <name>iceberg.catalog.rest.oauth2.credential</name>
+        <value>{user:pass}</value>
+    </property>
+    <property>
+        <name>iceberg.catalog.rest.oauth2.scope</name>
+        <value>PRINCIPAL_ROLE:ALL</value>
+    </property>
+    <property>
+        <name>iceberg.catalog.rest.warehouse</name>
+        <value>{catalogName}</value>
+    </property>
+
 Useful mailing lists
 ====================
 

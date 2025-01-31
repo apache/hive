@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -30,6 +32,8 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.ValidCleanerWriteIdList;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
@@ -50,20 +54,24 @@ public interface IMetaStoreClient extends AutoCloseable {
    * Returns whether current client is compatible with conf argument or not
    * @return
    */
-  boolean isCompatibleWith(Configuration conf);
+  default boolean isCompatibleWith(Configuration configuration) {
+    return false;
+  }
 
   /**
    * Set added jars path info to MetaStoreClient.
    * @param addedJars the hive.added.jars.path. It is qualified paths separated by commas.
    */
-  void setHiveAddedJars(String addedJars);
+  default void setHiveAddedJars(String addedJars){};
 
   /**
    * Returns true if the current client is using an in process metastore (local metastore).
    *
    * @return
    */
-  boolean isLocalMetaStore();
+  default boolean isLocalMetaStore(){
+    return false;
+  }
 
   /**
    *  Tries to reconnect this MetaStoreClient to the MetaStore.
@@ -79,12 +87,14 @@ public interface IMetaStoreClient extends AutoCloseable {
   /**
    * set meta variable which is open to end users
    */
-  void setMetaConf(String key, String value) throws MetaException, TException;
+  default void setMetaConf(String key, String value) throws MetaException, TException {}
 
   /**
    * get current meta variable
    */
-  String getMetaConf(String key) throws MetaException, TException;
+  default String getMetaConf(String key) throws MetaException, TException{
+    return "";
+  }
 
   /**
    * Create a new catalog.
@@ -95,8 +105,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * create the directory for the catalog.
    * @throws TException general thrift exception.
    */
-  void createCatalog(Catalog catalog)
-      throws AlreadyExistsException, InvalidObjectException, MetaException, TException;
+  default void createCatalog(Catalog catalog)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException{
+  }
 
   /**
    * Alter an existing catalog.
@@ -110,8 +121,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException usually indicates a database error
    * @throws TException general thrift exception
    */
-  void alterCatalog(String catalogName, Catalog newCatalog)
-      throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
+  default void alterCatalog(String catalogName, Catalog newCatalog)
+      throws NoSuchObjectException, InvalidObjectException, MetaException, TException{
+  }
 
   /**
    * Get a catalog object.
@@ -121,7 +133,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException something went wrong, usually in the database.
    * @throws TException general thrift exception.
    */
-  Catalog getCatalog(String catName) throws NoSuchObjectException, MetaException, TException;
+  default Catalog getCatalog(String catName) throws NoSuchObjectException, MetaException, TException{
+    return null;
+  }
 
   /**
    * Get a list of all catalogs known to the system.
@@ -129,7 +143,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException something went wrong, usually in the database.
    * @throws TException general thrift exception.
    */
-  List<String> getCatalogs() throws MetaException, TException;
+  default List<String> getCatalogs() throws MetaException, TException{
+    return new LinkedList<>();
+  }
 
   /**
    * Drop a catalog.  Catalogs must be empty to be dropped, there is no cascade for dropping a
@@ -140,8 +156,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException something went wrong, usually in the database.
    * @throws TException general thrift exception.
    */
-  void dropCatalog(String catName)
-      throws NoSuchObjectException, InvalidOperationException, MetaException, TException;
+  default void dropCatalog(String catName)
+      throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
+  }
 
   /**
    * Drop a catalog.  Catalogs must be empty to be dropped, there is no cascade for dropping a
@@ -150,7 +167,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @param ifExists if true, do not throw an error if the catalog does not exist.
    * @throws TException general thrift exception.
    */
-  void dropCatalog(String catName, boolean ifExists) throws TException;
+  default void dropCatalog(String catName, boolean ifExists) throws TException {
+  }
 
   /**
    * Get the names of all databases in the default catalog that match the given pattern.
@@ -253,8 +271,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException thrift transport error
    * @throws UnknownDBException no such database
    */
-  List<Table> getAllMaterializedViewObjectsForRewriting()
-      throws MetaException, TException, UnknownDBException;
+  default List<Table> getAllMaterializedViewObjectsForRewriting()
+      throws MetaException, TException, UnknownDBException{
+    return Collections.emptyList();
+  }
 
   /**
    * Get the names of all the tables along with extended table metadata
@@ -267,8 +287,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException Thrown if there is error on fetching from DBMS.
    * @throws TException Thrown if there is a thrift transport exception.
    */
-  public List<ExtendedTableInfo> getTablesExt(String catName, String dbName, String tablePattern, int requestedFields,
-      int limit) throws MetaException, TException;
+  default List<ExtendedTableInfo> getTablesExt(String catName, String dbName, String tablePattern, int requestedFields,
+      int limit) throws MetaException, TException{
+    return Collections.emptyList();
+  }
 
   /**
    * Get materialized views that have rewriting enabled.  This will use the default catalog.
@@ -278,8 +300,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException thrift transport error
    * @throws UnknownDBException no such database
    */
-  List<String> getMaterializedViewsForRewriting(String dbName)
-      throws MetaException, TException, UnknownDBException;
+  default List<String> getMaterializedViewsForRewriting(String dbName)
+      throws MetaException, TException, UnknownDBException{
+    return Collections.emptyList();
+  }
 
   /**
    * Get materialized views that have rewriting enabled.
@@ -290,8 +314,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException thrift transport error
    * @throws UnknownDBException no such database
    */
-  List<String> getMaterializedViewsForRewriting(String catName, String dbName)
-      throws MetaException, TException, UnknownDBException;
+  default List<String> getMaterializedViewsForRewriting(String catName, String dbName)
+      throws MetaException, TException, UnknownDBException{
+    return Collections.emptyList();
+  }
 
   /**
    * Fetches just table name and comments.  Useful when you need full table name
@@ -305,8 +331,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException thrift transport error
    * @throws UnknownDBException No databases match the provided pattern.
    */
-  List<TableMeta> getTableMeta(String dbPatterns, String tablePatterns, List<String> tableTypes)
-      throws MetaException, TException, UnknownDBException;
+  default List<TableMeta> getTableMeta(String dbPatterns, String tablePatterns, List<String> tableTypes)
+      throws MetaException, TException, UnknownDBException{
+    return Collections.emptyList();
+  }
 
   /**
    * Fetches just table name and comments.  Useful when you need full table name
@@ -321,9 +349,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException thrift transport error
    * @throws UnknownDBException No databases match the provided pattern.
    */
-  List<TableMeta> getTableMeta(String catName, String dbPatterns, String tablePatterns,
+  default List<TableMeta> getTableMeta(String catName, String dbPatterns, String tablePatterns,
                                List<String> tableTypes)
-      throws MetaException, TException, UnknownDBException;
+      throws MetaException, TException, UnknownDBException{
+    return Collections.emptyList();
+  }
 
   /**
    * Get the names of all tables in the specified database.
@@ -386,8 +416,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws UnknownDBException no such database
    * @throws TException thrift transport error
    */
-  List<String> listTableNamesByFilter(String dbName, String filter, short maxTables)
-      throws TException, InvalidOperationException, UnknownDBException;
+  default List<String> listTableNamesByFilter(String dbName, String filter, short maxTables)
+      throws TException, InvalidOperationException, UnknownDBException{
+    return Collections.emptyList();
+  }
 
   /**
    * Get a list of table names that match a filter.
@@ -429,8 +461,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws UnknownDBException no such database
    * @throws TException thrift transport error
    */
-  List<String> listTableNamesByFilter(String catName, String dbName, String filter, int maxTables)
-      throws TException, InvalidOperationException, UnknownDBException;
+  default List<String> listTableNamesByFilter(String catName, String dbName, String filter, int maxTables)
+      throws TException, InvalidOperationException, UnknownDBException{
+    return Collections.emptyList();
+  }
 
   /**
    * Drop the table.
@@ -566,18 +600,19 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException Thrift transport exception
    */
   @Deprecated
-  void truncateTable(String dbName, String tableName, List<String> partNames) throws MetaException, TException;
+  default void truncateTable(String dbName, String tableName, List<String> partNames) throws MetaException, TException{}
 
-  void truncateTable(TableName table, List<String> partNames) throws TException;
+  default void truncateTable(TableName table, List<String> partNames) throws TException{}
 
-  void truncateTable(String dbName, String tableName, List<String> partNames,
-      String validWriteIds, long writeId) throws TException;
+  default void truncateTable(String dbName, String tableName, List<String> partNames,
+      String validWriteIds, long writeId) throws TException{}
 
-  void truncateTable(String dbName, String tableName, List<String> partNames,
-      String validWriteIds, long writeId, boolean deleteData) throws TException;
 
-  void truncateTable(String catName, String dbName, String tableName, String ref, List<String> partNames,
-      String validWriteIds, long writeId, boolean deleteData, EnvironmentContext context) throws TException;
+  default void truncateTable(String dbName, String tableName, List<String> partNames,
+      String validWriteIds, long writeId, boolean deleteData) throws TException {};
+
+  default void truncateTable(String catName, String dbName, String tableName, String ref, List<String> partNames,
+      String validWriteIds, long writeId, boolean deleteData, EnvironmentContext context) throws TException {};
 
   /**
    * Recycles the files recursively from the input path to the cmroot directory either by copying or moving it.
@@ -586,7 +621,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    *                isPurge flag when set to true files which needs to be recycled are not moved to Trash
    * @return Response which is currently void
    */
-  CmRecycleResponse recycleDirToCmPath(CmRecycleRequest request) throws MetaException, TException;
+  default CmRecycleResponse recycleDirToCmPath(CmRecycleRequest request) throws MetaException, TException{
+    return new CmRecycleResponse();
+  }
 
   /**
    * Check whether a table exists in the default catalog.
@@ -742,8 +779,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    *          Any other errors
    */
-  List<Table> getTableObjectsByName(String dbName, List<String> tableNames)
-      throws MetaException, InvalidOperationException, UnknownDBException, TException;
+  default List<Table> getTableObjectsByName(String dbName, List<String> tableNames)
+      throws MetaException, InvalidOperationException, UnknownDBException, TException{
+    return Collections.emptyList();
+  }
 
   /**
    * Get tables as objects (rather than just fetching their names).  This is more expensive and
@@ -765,8 +804,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    *          Any other errors
    */
-  List<Table> getTables(String catName, String dbName, List<String> tableNames, GetProjectionsSpec projectionsSpec)
-          throws MetaException, InvalidOperationException, UnknownDBException, TException;
+  default List<Table> getTables(String catName, String dbName, List<String> tableNames, GetProjectionsSpec projectionsSpec)
+          throws MetaException, InvalidOperationException, UnknownDBException, TException{
+    return Collections.emptyList();
+  }
   /**
    * Get tables as objects (rather than just fetching their names).  This is more expensive and
    * should only be used if you actually need all the information about the tables.
@@ -788,26 +829,30 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    *          Any other errors
    */
-  List<Table> getTableObjectsByName(String catName, String dbName, List<String> tableNames)
-      throws MetaException, InvalidOperationException, UnknownDBException, TException;
+  default List<Table> getTableObjectsByName(String catName, String dbName, List<String> tableNames)
+      throws MetaException, InvalidOperationException, UnknownDBException, TException{
+    return Collections.emptyList();
+  }
 
   /**
    * Returns the invalidation information for the materialized views given as input.
    */
-  Materialization getMaterializationInvalidationInfo(CreationMetadata cm, String validTxnList)
-          throws MetaException, InvalidOperationException, UnknownDBException, TException;
+  default Materialization getMaterializationInvalidationInfo(CreationMetadata cm, String validTxnList)
+          throws MetaException, InvalidOperationException, UnknownDBException, TException{
+    return new Materialization();
+  }
 
   /**
    * Updates the creation metadata for the materialized view.
    */
-  void updateCreationMetadata(String dbName, String tableName, CreationMetadata cm)
-      throws MetaException, TException;
+  default void updateCreationMetadata(String dbName, String tableName, CreationMetadata cm)
+      throws MetaException, TException{}
 
   /**
    * Updates the creation metadata for the materialized view.
    */
-  void updateCreationMetadata(String catName, String dbName, String tableName, CreationMetadata cm)
-      throws MetaException, TException;
+  default void updateCreationMetadata(String catName, String dbName, String tableName, CreationMetadata cm)
+      throws MetaException, TException{}
 
   /**
   /**
@@ -822,8 +867,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
-  Partition appendPartition(String dbName, String tableName, List<String> partVals)
-      throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
+  default Partition appendPartition(String dbName, String tableName, List<String> partVals)
+      throws InvalidObjectException, AlreadyExistsException, MetaException, TException{
+    return new Partition();
+  }
 
   /**
    * Add a partition to a table and get back the resulting Partition object.  This creates an
@@ -838,8 +885,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
-  Partition appendPartition(String catName, String dbName, String tableName, List<String> partVals)
-      throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
+  default Partition appendPartition(String catName, String dbName, String tableName, List<String> partVals)
+      throws InvalidObjectException, AlreadyExistsException, MetaException, TException{
+    return new Partition();
+  }
 
   /**
    * Add a partition to a table and get back the resulting Partition object.  This creates an
@@ -853,8 +902,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
-  Partition appendPartition(String dbName, String tableName, String name)
-      throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
+  default Partition appendPartition(String dbName, String tableName, String name)
+      throws InvalidObjectException, AlreadyExistsException, MetaException, TException{
+    return new Partition();
+  }
 
   /**
    * Add a partition to a table and get back the resulting Partition object.  This creates an
@@ -869,8 +920,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
-  Partition appendPartition(String catName, String dbName, String tableName, String name)
-      throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
+  default Partition appendPartition(String catName, String dbName, String tableName, String name)
+      throws InvalidObjectException, AlreadyExistsException, MetaException, TException{
+    return new Partition();
+  }
 
   /**
    * Add a partition to the table.
@@ -887,8 +940,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    *           Thrift exception
    */
-  Partition add_partition(Partition partition)
-      throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
+  default Partition add_partition(Partition partition)
+      throws InvalidObjectException, AlreadyExistsException, MetaException, TException{
+    return new Partition();
+  }
 
   /**
    * Add partitions to the table.
@@ -904,8 +959,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    *           Thrift exception
    */
-  int add_partitions(List<Partition> partitions)
-      throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
+  default int add_partitions(List<Partition> partitions)
+      throws InvalidObjectException, AlreadyExistsException, MetaException, TException{
+    return 0;
+  }
 
   /**
    * Add a partitions using a spec proxy.
@@ -916,8 +973,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS or storage.
    * @throws TException thrift transport error
    */
-  int add_partitions_pspec(PartitionSpecProxy partitionSpec)
-      throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
+  default int add_partitions_pspec(PartitionSpecProxy partitionSpec)
+      throws InvalidObjectException, AlreadyExistsException, MetaException, TException{
+    return 0;
+  }
 
   /**
    * Add partitions to the table.
@@ -927,9 +986,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @param needResults Whether the results are needed
    * @return the partitions that were added, or null if !needResults
    */
-  List<Partition> add_partitions(
+  default List<Partition> add_partitions(
       List<Partition> partitions, boolean ifNotExists, boolean needResults)
-      throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
+      throws InvalidObjectException, AlreadyExistsException, MetaException, TException{
+    return Collections.emptyList();
+  }
 
   /**
    * Get a partition.
@@ -942,8 +1003,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error access the RDBMS.
    * @throws TException thrift transport error
    */
-  Partition getPartition(String dbName, String tblName, List<String> partVals)
-      throws NoSuchObjectException, MetaException, TException;
+  default Partition getPartition(String dbName, String tblName, List<String> partVals)
+      throws NoSuchObjectException, MetaException, TException{
+    return new Partition();
+  }
 
   /**
    * Get a partition.
@@ -953,8 +1016,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error access the RDBMS.
    * @throws TException thrift transport error
    */
-  GetPartitionResponse getPartitionRequest(GetPartitionRequest req)
-          throws NoSuchObjectException, MetaException, TException;
+  default GetPartitionResponse getPartitionRequest(GetPartitionRequest req)
+          throws NoSuchObjectException, MetaException, TException{
+    return new GetPartitionResponse();
+  }
 
     /**
      * Get a partition.
@@ -968,8 +1033,10 @@ public interface IMetaStoreClient extends AutoCloseable {
      * @throws MetaException error access the RDBMS.
      * @throws TException thrift transport error
      */
-  Partition getPartition(String catName, String dbName, String tblName, List<String> partVals)
-      throws NoSuchObjectException, MetaException, TException;
+  default Partition getPartition(String catName, String dbName, String tblName, List<String> partVals)
+      throws NoSuchObjectException, MetaException, TException{
+    return new Partition();
+  }
 
   /**
    * Move a partition from one table to another
@@ -984,10 +1051,12 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws InvalidObjectException error in partition specifications
    * @throws TException thrift transport error
    */
-  Partition exchange_partition(Map<String, String> partitionSpecs,
+  default Partition exchange_partition(Map<String, String> partitionSpecs,
       String sourceDb, String sourceTable, String destdb,
       String destTableName) throws MetaException, NoSuchObjectException,
-      InvalidObjectException, TException;
+      InvalidObjectException, TException{
+    return new Partition();
+  }
 
   /**
    * Move a partition from one table to another
@@ -1004,10 +1073,12 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws InvalidObjectException error in partition specifications
    * @throws TException thrift transport error
    */
-  Partition exchange_partition(Map<String, String> partitionSpecs, String sourceCat,
+  default Partition exchange_partition(Map<String, String> partitionSpecs, String sourceCat,
                                String sourceDb, String sourceTable, String destCat, String destdb,
                                String destTableName) throws MetaException, NoSuchObjectException,
-      InvalidObjectException, TException;
+      InvalidObjectException, TException{
+    return new Partition();
+  }
 
   /**
    * With the one partitionSpecs to exchange, multiple partitions could be exchanged.
@@ -1024,10 +1095,12 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException thrift transport error
    * @return the list of the new partitions
    */
-  List<Partition> exchange_partitions(Map<String, String> partitionSpecs,
+  default List<Partition> exchange_partitions(Map<String, String> partitionSpecs,
       String sourceDb, String sourceTable, String destdb,
       String destTableName) throws MetaException, NoSuchObjectException,
-      InvalidObjectException, TException;
+      InvalidObjectException, TException {
+    return Collections.emptyList();
+  }
 
   /**
    * With the one partitionSpecs to exchange, multiple partitions could be exchanged.
@@ -1046,10 +1119,12 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException thrift transport error
    * @return the list of the new partitions
    */
-  List<Partition> exchange_partitions(Map<String, String> partitionSpecs, String sourceCat,
+  default List<Partition> exchange_partitions(Map<String, String> partitionSpecs, String sourceCat,
                                       String sourceDb, String sourceTable, String destCat,
                                       String destdb, String destTableName)
-      throws MetaException, NoSuchObjectException, InvalidObjectException, TException;
+      throws MetaException, NoSuchObjectException, InvalidObjectException, TException {
+    return Collections.emptyList();
+  }
 
   /**
    * Get a Partition by name.
@@ -1060,8 +1135,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error access the RDBMS.
    * @throws TException thrift transport error
    */
-  Partition getPartition(String dbName, String tblName, String name)
-      throws MetaException, UnknownTableException, NoSuchObjectException, TException;
+  default Partition getPartition(String dbName, String tblName, String name)
+      throws MetaException, UnknownTableException, NoSuchObjectException, TException{
+    return new Partition();
+  }
 
   /**
    * Get a Partition by name.
@@ -1073,8 +1150,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error access the RDBMS.
    * @throws TException thrift transport error
    */
-  Partition getPartition(String catName, String dbName, String tblName, String name)
-      throws MetaException, UnknownTableException, NoSuchObjectException, TException;
+  default Partition getPartition(String catName, String dbName, String tblName, String name)
+      throws MetaException, UnknownTableException, NoSuchObjectException, TException{
+    return new Partition();
+  }
 
 
   /**
@@ -1090,9 +1169,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws NoSuchObjectException no such partition
    * @throws TException thrift transport error
    */
-  Partition getPartitionWithAuthInfo(String dbName, String tableName,
+  default Partition getPartitionWithAuthInfo(String dbName, String tableName,
       List<String> pvals, String userName, List<String> groupNames)
-      throws MetaException, UnknownTableException, NoSuchObjectException, TException;
+      throws MetaException, UnknownTableException, NoSuchObjectException, TException{
+    return new Partition();
+  }
 
   /**
    * Get a Partition along with authorization information.
@@ -1108,9 +1189,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws NoSuchObjectException no such partition
    * @throws TException thrift transport error
    */
-  Partition getPartitionWithAuthInfo(String catName, String dbName, String tableName,
+  default Partition getPartitionWithAuthInfo(String catName, String dbName, String tableName,
                                      List<String> pvals, String userName, List<String> groupNames)
-      throws MetaException, UnknownTableException, NoSuchObjectException, TException;
+      throws MetaException, UnknownTableException, NoSuchObjectException, TException{
+    return new Partition();
+  }
 
   /**
    * Get a list of partittions for a table.
@@ -1122,8 +1205,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing RDBMS.
    * @throws TException thrift transport error
    */
-  List<Partition> listPartitions(String db_name, String tbl_name, short max_parts)
-      throws NoSuchObjectException, MetaException, TException;
+  default List<Partition> listPartitions(String db_name, String tbl_name, short max_parts)
+      throws NoSuchObjectException, MetaException, TException {
+    return Collections.emptyList();
+  }
 
   /**
    * Get a list of partittions for a table.
@@ -1136,8 +1221,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing RDBMS.
    * @throws TException thrift transport error
    */
-  List<Partition> listPartitions(String catName, String db_name, String tbl_name, int max_parts)
-      throws NoSuchObjectException, MetaException, TException;
+  default List<Partition> listPartitions(String catName, String db_name, String tbl_name, int max_parts)
+      throws NoSuchObjectException, MetaException, TException {
+    return Collections.emptyList();
+  }
 
   /**
    * Get a list of partitions from a table, returned in the form of PartitionSpecProxy
@@ -1147,8 +1234,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @return a PartitionSpecProxy
    * @throws TException thrift transport error
    */
-  PartitionSpecProxy listPartitionSpecs(String dbName, String tableName, int maxParts)
-    throws TException;
+  default PartitionSpecProxy listPartitionSpecs(String dbName, String tableName, int maxParts)
+    throws TException {
+    return null;
+  }
 
   /**
    * Get a list of partitions from a table, returned in the form of PartitionSpecProxy
@@ -1159,8 +1248,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @return a PartitionSpecProxy
    * @throws TException thrift transport error
    */
-  PartitionSpecProxy listPartitionSpecs(String catName, String dbName, String tableName,
-                                        int maxParts) throws TException;
+  default PartitionSpecProxy listPartitionSpecs(String catName, String dbName, String tableName, int maxParts)
+      throws TException {
+    return null;
+  }
 
   /**
    * Get a list of partitions based on a (possibly partial) list of partition values.
@@ -1174,8 +1265,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the database or processing the partition values.
    * @throws TException thrift transport error.
    */
-  List<Partition> listPartitions(String db_name, String tbl_name,
-      List<String> part_vals, short max_parts) throws NoSuchObjectException, MetaException, TException;
+  default List<Partition> listPartitions(String db_name, String tbl_name,
+      List<String> part_vals, short max_parts) throws NoSuchObjectException, MetaException, TException {
+    return Collections.emptyList();
+  }
 
   /**
    * Get a list of partitions based on a (possibly partial) list of partition values.
@@ -1190,9 +1283,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the database or processing the partition values.
    * @throws TException thrift transport error.
    */
-  List<Partition> listPartitions(String catName, String db_name, String tbl_name,
+  default List<Partition> listPartitions(String catName, String db_name, String tbl_name,
                                  List<String> part_vals, int max_parts)
-      throws NoSuchObjectException, MetaException, TException;
+      throws NoSuchObjectException, MetaException, TException {
+    return Collections.emptyList();
+  }
 
   /**
    * List Names of partitions in a table.
@@ -1204,8 +1299,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException Error accessing the RDBMS.
    * @throws TException thrift transport error
    */
-  List<String> listPartitionNames(String db_name, String tbl_name,
-      short max_parts) throws NoSuchObjectException, MetaException, TException;
+  default List<String> listPartitionNames(String db_name, String tbl_name,
+      short max_parts) throws NoSuchObjectException, MetaException, TException {
+    return Collections.emptyList();
+  }
 
   /**
    * List Names of partitions in a table.
@@ -1215,8 +1312,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException Error accessing the RDBMS.
    * @throws TException thrift transport error
    */
-  GetPartitionNamesPsResponse listPartitionNamesRequest(GetPartitionNamesPsRequest req)
-          throws NoSuchObjectException, MetaException, TException;
+  default GetPartitionNamesPsResponse listPartitionNamesRequest(GetPartitionNamesPsRequest req)
+          throws NoSuchObjectException, MetaException, TException {
+    return new GetPartitionNamesPsResponse();
+  }
 
   /**
    * List Names of partitions in a table.
@@ -1229,8 +1328,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException Error accessing the RDBMS.
    * @throws TException thrift transport error
    */
-  List<String> listPartitionNames(String catName, String db_name, String tbl_name,
-                                  int max_parts) throws NoSuchObjectException, MetaException, TException;
+  default List<String> listPartitionNames(String catName, String db_name, String tbl_name, int max_parts)
+      throws NoSuchObjectException, MetaException, TException {
+    return Collections.emptyList();
+  }
 
   /**
    * Get a list of partition names matching a partial specification of the partition values.
@@ -1246,9 +1347,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException thrift transport error.
    * @throws NoSuchObjectException no such table.
    */
-  List<String> listPartitionNames(String db_name, String tbl_name,
-      List<String> part_vals, short max_parts)
-      throws MetaException, TException, NoSuchObjectException;
+  default List<String> listPartitionNames(String db_name, String tbl_name, List<String> part_vals, short max_parts)
+      throws MetaException, TException, NoSuchObjectException {
+    return Collections.emptyList();
+  }
 
   /**
    * Get a list of partition names matching a partial specification of the partition values.
@@ -1265,9 +1367,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException thrift transport error.
    * @throws NoSuchObjectException no such table.
    */
-  List<String> listPartitionNames(String catName, String db_name, String tbl_name,
-                                  List<String> part_vals, int max_parts)
-      throws MetaException, TException, NoSuchObjectException;
+  default List<String> listPartitionNames(String catName, String db_name, String tbl_name, List<String> part_vals,
+      int max_parts) throws MetaException, TException, NoSuchObjectException {
+    return Collections.emptyList();
+  }
 
   /**
    * Get a list of partition names matching the specified filter and return in order if specified.
@@ -1277,8 +1380,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException thrift transport error.
    * @throws NoSuchObjectException  no such table.
    */
-  List<String> listPartitionNames(PartitionsByExprRequest request)
-      throws MetaException, TException, NoSuchObjectException;
+  default List<String> listPartitionNames(PartitionsByExprRequest request)
+      throws MetaException, TException, NoSuchObjectException {
+    return Collections.emptyList();
+  }
 
   /**
    * Get a list of partition values
@@ -1288,8 +1393,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException thrift transport error
    * @throws NoSuchObjectException no such table
    */
-  PartitionValuesResponse listPartitionValues(PartitionValuesRequest request)
-      throws MetaException, TException, NoSuchObjectException;
+  default PartitionValuesResponse listPartitionValues(PartitionValuesRequest request)
+      throws MetaException, TException, NoSuchObjectException {
+    return new PartitionValuesResponse();
+  }
 
   /**
    * Get number of partitions matching specified filter
@@ -1303,8 +1410,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws NoSuchObjectException no such table
    * @throws TException thrift transport error
    */
-  int getNumPartitionsByFilter(String dbName, String tableName,
-                               String filter) throws MetaException, NoSuchObjectException, TException;
+  default int getNumPartitionsByFilter(String dbName, String tableName, String filter)
+      throws MetaException, NoSuchObjectException, TException {
+    return 0;
+  }
 
   /**
    * Get number of partitions matching specified filter
@@ -1319,8 +1428,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws NoSuchObjectException no such table
    * @throws TException thrift transport error
    */
-  int getNumPartitionsByFilter(String catName, String dbName, String tableName,
-                               String filter) throws MetaException, NoSuchObjectException, TException;
+  default int getNumPartitionsByFilter(String catName, String dbName, String tableName, String filter)
+      throws MetaException, NoSuchObjectException, TException {
+    return 0;
+  }
 
 
   /**
@@ -1337,8 +1448,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws NoSuchObjectException No such table.
    * @throws TException thrift transport error
    */
-  List<Partition> listPartitionsByFilter(String db_name, String tbl_name,
-      String filter, short max_parts) throws MetaException, NoSuchObjectException, TException;
+  default List<Partition> listPartitionsByFilter(String db_name, String tbl_name, String filter, short max_parts)
+      throws MetaException, NoSuchObjectException, TException {
+    return Collections.emptyList();
+  }
 
   /**
    * Get list of partitions matching specified filter
@@ -1355,9 +1468,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws NoSuchObjectException No such table.
    * @throws TException thrift transport error
    */
-  List<Partition> listPartitionsByFilter(String catName, String db_name, String tbl_name,
+  default List<Partition> listPartitionsByFilter(String catName, String db_name, String tbl_name,
                                          String filter, int max_parts)
-      throws MetaException, NoSuchObjectException, TException;
+      throws MetaException, NoSuchObjectException, TException {
+    return Collections.emptyList();
+  }
 
   /**
    * Get a list of partitions in a PartitionSpec, using a filter to select which partitions to
@@ -1371,9 +1486,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws NoSuchObjectException No table matches the request
    * @throws TException thrift transport error
    */
-  PartitionSpecProxy listPartitionSpecsByFilter(String db_name, String tbl_name,
-                                                String filter, int max_parts)
-      throws MetaException, NoSuchObjectException, TException;
+  default PartitionSpecProxy listPartitionSpecsByFilter(String db_name, String tbl_name, String filter, int max_parts)
+      throws MetaException, NoSuchObjectException, TException {
+    return null;
+  }
 
   /**
    * Get a list of partitions in a PartitionSpec, using a filter to select which partitions to
@@ -1388,9 +1504,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws NoSuchObjectException No table matches the request
    * @throws TException thrift transport error
    */
-  PartitionSpecProxy listPartitionSpecsByFilter(String catName, String db_name, String tbl_name,
-                                                String filter, int max_parts)
-      throws MetaException, NoSuchObjectException, TException;
+  default PartitionSpecProxy listPartitionSpecsByFilter(String catName, String db_name, String tbl_name,
+      String filter, int max_parts) throws MetaException, NoSuchObjectException, TException {
+    return null;
+  }
 
   /**
    * Get list of {@link PartitionSpec} matching specified serialized expression.
@@ -1398,8 +1515,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @return whether the resulting list contains partitions which may or may not match the expr
    * @throws TException thrift transport error or error executing the filter.
    */
-  boolean listPartitionsSpecByExpr(PartitionsByExprRequest req, List<PartitionSpec> result)
-          throws TException;
+  default boolean listPartitionsSpecByExpr(PartitionsByExprRequest req, List<PartitionSpec> result) throws TException {
+    return false;
+  }
 
   /**
    * Get list of partitions matching specified serialized expression
@@ -1414,9 +1532,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @return whether the resulting list contains partitions which may or may not match the expr
    * @throws TException thrift transport error or error executing the filter.
    */
-  boolean listPartitionsByExpr(String db_name, String tbl_name,
+  default boolean listPartitionsByExpr(String db_name, String tbl_name,
       byte[] expr, String default_partition_name, short max_parts, List<Partition> result)
-      throws TException;
+      throws TException {
+    return false;
+  }
 
   /**
    * Get list of partitions matching specified serialized expression
@@ -1432,9 +1552,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @return whether the resulting list contains partitions which may or may not match the expr
    * @throws TException thrift transport error or error executing the filter.
    */
-  boolean listPartitionsByExpr(String catName, String db_name, String tbl_name, byte[] expr,
-                               String default_partition_name, int max_parts, List<Partition> result)
-      throws TException;
+  default boolean listPartitionsByExpr(String catName, String db_name, String tbl_name, byte[] expr, 
+      String default_partition_name, int max_parts, List<Partition> result) throws TException {
+    return false;
+  }
 
   /**
    * Get list of partitions matching specified serialized expression
@@ -1456,9 +1577,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
-  List<Partition> listPartitionsWithAuthInfo(String dbName,
+  default List<Partition> listPartitionsWithAuthInfo(String dbName,
       String tableName, short maxParts, String userName, List<String> groupNames)
-      throws MetaException, TException, NoSuchObjectException;
+      throws MetaException, TException, NoSuchObjectException {
+    return Collections.emptyList();
+  }
 
   /**
    * List partitions, fetching the authorization information along with the partitions.
@@ -1468,8 +1591,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
-  GetPartitionsPsWithAuthResponse listPartitionsWithAuthInfoRequest(GetPartitionsPsWithAuthRequest req)
-          throws MetaException, TException, NoSuchObjectException;
+  default GetPartitionsPsWithAuthResponse listPartitionsWithAuthInfoRequest(GetPartitionsPsWithAuthRequest req)
+          throws MetaException, TException, NoSuchObjectException {
+    return new GetPartitionsPsWithAuthResponse();
+  }
 
   /**
    * List partitions, fetching the authorization information along with the partitions.
@@ -1484,9 +1609,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
-  List<Partition> listPartitionsWithAuthInfo(String catName, String dbName, String tableName,
+  default List<Partition> listPartitionsWithAuthInfo(String catName, String dbName, String tableName,
                                              int maxParts, String userName, List<String> groupNames)
-      throws MetaException, TException, NoSuchObjectException;
+      throws MetaException, TException, NoSuchObjectException {
+    return Collections.emptyList();
+  }
 
   /**
    * Get partitions by a list of partition names.
@@ -1500,8 +1627,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @deprecated Use {@link #getPartitionsByNames(GetPartitionsByNamesRequest)} instead
    */
   @Deprecated
-  List<Partition> getPartitionsByNames(String db_name, String tbl_name,
-      List<String> part_names) throws NoSuchObjectException, MetaException, TException;
+  default List<Partition> getPartitionsByNames(String db_name, String tbl_name,
+      List<String> part_names) throws NoSuchObjectException, MetaException, TException {
+    return Collections.emptyList();
+  }
 
   /**
    * Get partitions by a list of partition names.
@@ -1511,8 +1640,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS.
    * @throws TException thrift transport error
    */
-  PartitionsResponse getPartitionsRequest(PartitionsRequest req)
-          throws NoSuchObjectException, MetaException, TException;
+  default PartitionsResponse getPartitionsRequest(PartitionsRequest req)
+          throws NoSuchObjectException, MetaException, TException {
+    return new PartitionsResponse();
+  }
 
     /**
    * Get partitions by a list of partition names.
@@ -1522,7 +1653,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS.
    * @throws TException thrift transport error
    */
-  GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req) throws TException;
+  default GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req) throws TException {
+    return new GetPartitionsByNamesResult();
+  }
 
   /**
    * List partitions along with privilege information for a user or groups
@@ -1537,9 +1670,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
-  List<Partition> listPartitionsWithAuthInfo(String dbName,
+  default List<Partition> listPartitionsWithAuthInfo(String dbName,
       String tableName, List<String> partialPvals, short maxParts, String userName,
-      List<String> groupNames) throws MetaException, TException, NoSuchObjectException;
+      List<String> groupNames) throws MetaException, TException, NoSuchObjectException {
+    return Collections.emptyList();
+  }
 
   /**
    * List partitions along with privilege information for a user or groups
@@ -1554,10 +1689,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
-  List<Partition> listPartitionsWithAuthInfo(String catName, String dbName, String tableName,
-                                             List<String> partialPvals, int maxParts, String userName,
-                                             List<String> groupNames)
-      throws MetaException, TException, NoSuchObjectException;
+  default List<Partition> listPartitionsWithAuthInfo(
+      String catName, String dbName, String tableName, List<String> partialPvals, int maxParts, String userName,
+      List<String> groupNames) throws MetaException, TException, NoSuchObjectException  {
+    return Collections.emptyList();
+  }
 
   /**
    * Mark an event as having occurred on a partition.
@@ -1573,9 +1709,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws UnknownPartitionException no such partition
    * @throws InvalidPartitionException partition partKVs is invalid
    */
-  void markPartitionForEvent(String db_name, String tbl_name, Map<String,String> partKVs,
+  default void markPartitionForEvent(String db_name, String tbl_name, Map<String,String> partKVs,
       PartitionEventType eventType) throws MetaException, NoSuchObjectException, TException,
-      UnknownTableException, UnknownDBException, UnknownPartitionException, InvalidPartitionException;
+      UnknownTableException, UnknownDBException, UnknownPartitionException, InvalidPartitionException {}
 
   /**
    * Mark an event as having occurred on a partition.
@@ -1592,9 +1728,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws UnknownPartitionException no such partition
    * @throws InvalidPartitionException partition partKVs is invalid
    */
-  void markPartitionForEvent(String catName, String db_name, String tbl_name, Map<String,String> partKVs,
+  default void markPartitionForEvent(String catName, String db_name, String tbl_name, Map<String,String> partKVs,
                              PartitionEventType eventType) throws MetaException, NoSuchObjectException, TException,
-      UnknownTableException, UnknownDBException, UnknownPartitionException, InvalidPartitionException;
+      UnknownTableException, UnknownDBException, UnknownPartitionException, InvalidPartitionException {}
 
   /**
    * Determine whether a partition has been marked with a particular event type.
@@ -1610,9 +1746,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws UnknownPartitionException no such partition
    * @throws InvalidPartitionException partition partKVs is invalid
    */
-  boolean isPartitionMarkedForEvent(String db_name, String tbl_name, Map<String,String> partKVs,
+  default boolean isPartitionMarkedForEvent(String db_name, String tbl_name, Map<String,String> partKVs,
       PartitionEventType eventType) throws MetaException, NoSuchObjectException, TException,
-      UnknownTableException, UnknownDBException, UnknownPartitionException, InvalidPartitionException;
+      UnknownTableException, UnknownDBException, UnknownPartitionException, InvalidPartitionException {
+    return false;
+  }
 
   /**
    * Determine whether a partition has been marked with a particular event type.
@@ -1629,16 +1767,18 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws UnknownPartitionException no such partition
    * @throws InvalidPartitionException partition partKVs is invalid
    */
-  boolean isPartitionMarkedForEvent(String catName, String db_name, String tbl_name, Map<String,String> partKVs,
+  default boolean isPartitionMarkedForEvent(String catName, String db_name, String tbl_name, Map<String,String> partKVs,
                                     PartitionEventType eventType) throws MetaException, NoSuchObjectException, TException,
-      UnknownTableException, UnknownDBException, UnknownPartitionException, InvalidPartitionException;
+      UnknownTableException, UnknownDBException, UnknownPartitionException, InvalidPartitionException {
+    return false;
+  }
 
   /**
    * @param partVals
    * @throws TException
    * @throws MetaException
    */
-  void validatePartitionNameCharacters(List<String> partVals) throws TException, MetaException;
+  default void validatePartitionNameCharacters(List<String> partVals) throws TException, MetaException{}
 
   /**
    * Dry run that translates table
@@ -1647,8 +1787,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    *    *          a table object
    *    * @throws HiveException
    */
-  public Table getTranslateTableDryrun(Table tbl) throws AlreadyExistsException,
-          InvalidObjectException, MetaException, NoSuchObjectException, TException;
+  default Table getTranslateTableDryrun(Table tbl) throws AlreadyExistsException,
+          InvalidObjectException, MetaException, NoSuchObjectException, TException {
+    return new Table();
+  }
 
   /**
    * @param tbl
@@ -1683,8 +1825,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException something went wrong, usually in the RDBMS
    * @throws TException general thrift exception
    */
-  void alter_table(String databaseName, String tblName, Table table)
-      throws InvalidOperationException, MetaException, TException;
+  default void alter_table(String databaseName, String tblName, Table table)
+      throws InvalidOperationException, MetaException, TException {}
 
   /**
    * Alter a table. Equivalent to
@@ -1718,17 +1860,17 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException something went wrong, usually in the RDBMS
    * @throws TException general thrift exception
    */
-  void alter_table(String catName, String dbName, String tblName, Table newTable,
+  default void alter_table(String catName, String dbName, String tblName, Table newTable,
                   EnvironmentContext envContext)
-      throws InvalidOperationException, MetaException, TException;
+      throws InvalidOperationException, MetaException, TException {}
 
   /**
    * @deprecated Use alter_table_with_environmentContext instead of alter_table with cascade option
    * passed in EnvironmentContext using {@code StatsSetupConst.CASCADE}
    */
   @Deprecated
-  void alter_table(String defaultDatabaseName, String tblName, Table table,
-      boolean cascade) throws InvalidOperationException, MetaException, TException;
+  default void alter_table(String defaultDatabaseName, String tblName, Table table,
+      boolean cascade) throws InvalidOperationException, MetaException, TException {}
 
   /**
    * Alter a table.
@@ -1743,13 +1885,13 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException general thrift exception
    */
   @Deprecated
-  void alter_table_with_environmentContext(String databaseName, String tblName, Table table,
+  default void alter_table_with_environmentContext(String databaseName, String tblName, Table table,
       EnvironmentContext environmentContext) throws InvalidOperationException, MetaException,
-      TException;
+      TException {}
 
-  void alter_table(String catName, String databaseName, String tblName, Table table,
+  default void alter_table(String catName, String databaseName, String tblName, Table table,
       EnvironmentContext environmentContext, String validWriteIdList)
-          throws InvalidOperationException, MetaException, TException;
+          throws InvalidOperationException, MetaException, TException {}
   /**
    * Create a new database.
    * @param db database object.  If the catalog name is null it will be assumed to be
@@ -1844,8 +1986,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException something went wrong, usually in the RDBMS.
    * @throws TException general thrift error.
    */
-  void alterDatabase(String name, Database db)
-      throws NoSuchObjectException, MetaException, TException;
+  default void alterDatabase(String name, Database db)
+      throws NoSuchObjectException, MetaException, TException {}
 
   /**
    * Alter a database.
@@ -1857,8 +1999,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException something went wrong, usually in the RDBMS.
    * @throws TException general thrift error.
    */
-  void alterDatabase(String catName, String dbName, Database newDb)
-      throws NoSuchObjectException, MetaException, TException;
+  default void alterDatabase(String catName, String dbName, Database newDb)
+      throws NoSuchObjectException, MetaException, TException {}
 
   /**
    * Create a new dataconnector.
@@ -1868,8 +2010,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException something went wrong, usually in the RDBMS
    * @throws TException general thrift error
    */
-  void createDataConnector(DataConnector connector)
-      throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
+  default void createDataConnector(DataConnector connector)
+      throws InvalidObjectException, AlreadyExistsException, MetaException, TException {}
 
   /**
    * Drop a dataconnector.
@@ -1881,8 +2023,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException something went wrong, usually either in the RDMBS or in storage.
    * @throws TException general thrift error.
    */
-  void dropDataConnector(String name, boolean ifNotExists, boolean checkReferences)
-      throws NoSuchObjectException, InvalidOperationException, MetaException, TException;
+  default void dropDataConnector(String name, boolean ifNotExists, boolean checkReferences)
+      throws NoSuchObjectException, InvalidOperationException, MetaException, TException {}
 
   /**
    * Alter a dataconnector.
@@ -1892,8 +2034,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException Operation could not be completed, usually in the RDBMS.
    * @throws TException thrift transport layer error.
    */
-  void alterDataConnector(String name, DataConnector connector)
-      throws NoSuchObjectException, MetaException, TException;
+  default void alterDataConnector(String name, DataConnector connector)
+      throws NoSuchObjectException, MetaException, TException {}
 
   /**
    * Get the dataconnector by name
@@ -1901,8 +2043,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error complete the operation
    * @throws TException thrift transport error
    */
-  DataConnector getDataConnector(String name)
-      throws MetaException, TException;
+  default DataConnector getDataConnector(String name)
+      throws MetaException, TException {
+    return new DataConnector();
+  }
 
   /**
    * Get the names of all dataconnectors in the MetaStore.
@@ -1910,7 +2054,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing RDBMS.
    * @throws TException thrift transport error
    */
-  List<String> getAllDataConnectorNames() throws MetaException, TException;
+  default List<String> getAllDataConnectorNames() throws MetaException, TException {
+    return Collections.emptyList();
+  }
 
   /**
    * Drop a partition.
@@ -1924,9 +2070,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS or the storage.
    * @throws TException thrift transport error
    */
-  boolean dropPartition(String db_name, String tbl_name,
+  default boolean dropPartition(String db_name, String tbl_name,
       List<String> part_vals, boolean deleteData) throws NoSuchObjectException,
-      MetaException, TException;
+      MetaException, TException {
+    return false;
+  }
 
   /**
    * Drop a partition.
@@ -1941,9 +2089,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS or the storage.
    * @throws TException thrift transport error
    */
-  boolean dropPartition(String catName, String db_name, String tbl_name,
+  default boolean dropPartition(String catName, String db_name, String tbl_name,
                         List<String> part_vals, boolean deleteData) throws NoSuchObjectException,
-      MetaException, TException;
+      MetaException, TException {
+    return false;
+  }
 
   /**
    * Drop a partition with the option to purge the partition data directly,
@@ -1957,9 +2107,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS or the storage.
    * @throws TException thrift transport error.
    */
-  boolean dropPartition(String db_name, String tbl_name, List<String> part_vals,
+  default boolean dropPartition(String db_name, String tbl_name, List<String> part_vals,
                         PartitionDropOptions options)
-      throws NoSuchObjectException, MetaException, TException;
+      throws NoSuchObjectException, MetaException, TException {
+    return false;
+  }
 
   /**
    * Drop a partition with the option to purge the partition data directly,
@@ -1974,9 +2126,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS or the storage.
    * @throws TException thrift transport error.
    */
-  boolean dropPartition(String catName, String db_name, String tbl_name, List<String> part_vals,
+  default boolean dropPartition(String catName, String db_name, String tbl_name, List<String> part_vals,
                         PartitionDropOptions options)
-      throws NoSuchObjectException, MetaException, TException;
+      throws NoSuchObjectException, MetaException, TException {
+    return false;
+  }
 
   /**
    * Drop partitions based on an expression.
@@ -1994,9 +2148,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error access the RDBMS or storage.
    * @throws TException Thrift transport error.
    */
-  List<Partition> dropPartitions(String dbName, String tblName,
+  default List<Partition> dropPartitions(String dbName, String tblName,
                                  List<Pair<Integer, byte[]>> partExprs, boolean deleteData,
-                                 boolean ifExists) throws NoSuchObjectException, MetaException, TException;
+                                 boolean ifExists) throws NoSuchObjectException, MetaException, TException {
+    return Collections.emptyList();
+  }
 
   /**
    * Drop partitions based on an expression.
@@ -2024,9 +2180,16 @@ public interface IMetaStoreClient extends AutoCloseable {
             .deleteData(deleteData)
             .ifExists(ifExists));
   }
+  @Deprecated
+  default List<Partition> dropPartitions(String dbName, String tblName,
+      List<Pair<Integer, byte[]>> partExprs, boolean deleteData,
+      boolean ifExists, boolean needResults) throws NoSuchObjectException, MetaException, TException {
+    return Collections.emptyList();
+  }
 
   /**
    * Drop partitions based on an expression.
+>>>>>>> be2c0f0b12d (HIVE-28658 Add Iceberg REST Catalog client support)
    * @param catName catalog name.
    * @param dbName database name.
    * @param tblName table name.
@@ -2066,10 +2229,12 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error access the RDBMS or storage.
    * @throws TException On failure
    */
-  List<Partition> dropPartitions(String dbName, String tblName,
+  default List<Partition> dropPartitions(String dbName, String tblName,
                                  List<Pair<Integer, byte[]>> partExprs,
                                  PartitionDropOptions options)
-      throws NoSuchObjectException, MetaException, TException;
+      throws NoSuchObjectException, MetaException, TException {
+    return Collections.emptyList();
+  }
 
   /**
    * Generalization of dropPartitions(),
@@ -2083,10 +2248,12 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error access the RDBMS or storage.
    * @throws TException On failure
    */
-  List<Partition> dropPartitions(String catName, String dbName, String tblName,
+  default List<Partition> dropPartitions(String catName, String dbName, String tblName,
                                  List<Pair<Integer, byte[]>> partExprs,
                                  PartitionDropOptions options)
-      throws NoSuchObjectException, MetaException, TException;
+      throws NoSuchObjectException, MetaException, TException {
+    return Collections.emptyList();
+  }
 
   List<Partition> dropPartitions(String catName, String dbName, String tblName,
       List<Pair<Integer, byte[]>> partExprs, PartitionDropOptions options, EnvironmentContext context)
@@ -2103,9 +2270,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS or storage
    * @throws TException thrift transport error
    */
-  boolean dropPartition(String db_name, String tbl_name,
+  default boolean dropPartition(String db_name, String tbl_name,
       String name, boolean deleteData) throws NoSuchObjectException,
-      MetaException, TException;
+      MetaException, TException {
+    return false;
+  }
 
   /**
    * Drop a partition.
@@ -2119,9 +2288,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS or storage
    * @throws TException thrift transport error
    */
-  boolean dropPartition(String catName, String db_name, String tbl_name,
+  default boolean dropPartition(String catName, String db_name, String tbl_name,
                         String name, boolean deleteData)
-      throws NoSuchObjectException, MetaException, TException;
+      throws NoSuchObjectException, MetaException, TException {
+    return false;
+  }
 
   /**
    * updates a partition to new partition
@@ -2139,8 +2310,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    *           if error in communicating with metastore server
    */
-  void alter_partition(String dbName, String tblName, Partition newPart)
-      throws InvalidOperationException, MetaException, TException;
+  default void alter_partition(String dbName, String tblName, Partition newPart)
+      throws InvalidOperationException, MetaException, TException {}
 
   /**
    * updates a partition to new partition
@@ -2159,13 +2330,13 @@ public interface IMetaStoreClient extends AutoCloseable {
    *           if error in communicating with metastore server
    */
   @Deprecated
-  void alter_partition(String dbName, String tblName, Partition newPart, EnvironmentContext environmentContext)
-      throws InvalidOperationException, MetaException, TException;
+  default void alter_partition(String dbName, String tblName, Partition newPart, EnvironmentContext environmentContext)
+      throws InvalidOperationException, MetaException, TException {}
 
 
-  void alter_partition(String catName, String dbName, String tblName, Partition newPart,
+  default void alter_partition(String catName, String dbName, String tblName, Partition newPart,
       EnvironmentContext environmentContext, String writeIdList)
-      throws InvalidOperationException, MetaException, TException;
+      throws InvalidOperationException, MetaException, TException {}
 
   /**
    * updates a partition to new partition
@@ -2183,9 +2354,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    *           if error in communicating with metastore server
    */
-  void alter_partition(String catName, String dbName, String tblName, Partition newPart,
+  default void alter_partition(String catName, String dbName, String tblName, Partition newPart,
                        EnvironmentContext environmentContext)
-      throws InvalidOperationException, MetaException, TException;
+      throws InvalidOperationException, MetaException, TException {}
 
   /**
    * updates a list of partitions
@@ -2204,8 +2375,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    *           if error in communicating with metastore server
    */
   @Deprecated
-  void alter_partitions(String dbName, String tblName, List<Partition> newParts)
-      throws InvalidOperationException, MetaException, TException;
+  default void alter_partitions(String dbName, String tblName, List<Partition> newParts)
+      throws InvalidOperationException, MetaException, TException {}
 
   /**
    * updates a list of partitions
@@ -2225,14 +2396,14 @@ public interface IMetaStoreClient extends AutoCloseable {
    *           if error in communicating with metastore server
    */
   @Deprecated
-  void alter_partitions(String dbName, String tblName, List<Partition> newParts,
+  default  void alter_partitions(String dbName, String tblName, List<Partition> newParts,
       EnvironmentContext environmentContext)
-      throws InvalidOperationException, MetaException, TException;
+      throws InvalidOperationException, MetaException, TException {}
 
-  void alter_partitions(String dbName, String tblName, List<Partition> newParts,
+  default  void alter_partitions(String dbName, String tblName, List<Partition> newParts,
                         EnvironmentContext environmentContext,
                         String writeIdList, long writeId)
-      throws InvalidOperationException, MetaException, TException;
+      throws InvalidOperationException, MetaException, TException {}
 
   /**
    * updates a list of partitions
@@ -2251,10 +2422,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    *           if error in communicating with metastore server
    */
-  void alter_partitions(String catName, String dbName, String tblName, List<Partition> newParts,
+  default void alter_partitions(String catName, String dbName, String tblName, List<Partition> newParts,
                         EnvironmentContext environmentContext,
                         String writeIdList, long writeId)
-      throws InvalidOperationException, MetaException, TException;
+      throws InvalidOperationException, MetaException, TException {}
 
   /**
    * rename a partition to a new partition
@@ -2275,9 +2446,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    *          if error in communicating with metastore server
    */
   @Deprecated
-  void renamePartition(final String dbname, final String tableName, final List<String> part_vals,
+  default void renamePartition(final String dbname, final String tableName, final List<String> part_vals,
                        final Partition newPart)
-      throws InvalidOperationException, MetaException, TException;
+      throws InvalidOperationException, MetaException, TException {}
 
   /**
    * rename a partition to a new partition
@@ -2303,9 +2474,9 @@ public interface IMetaStoreClient extends AutoCloseable {
     renamePartition(catName, dbname, tableName, part_vals, newPart, validWriteIds, 0, false);
   }
 
-  void renamePartition(String catName, String dbname, String tableName, List<String> part_vals,
+  default void renamePartition(String catName, String dbname, String tableName, List<String> part_vals,
                        Partition newPart, String validWriteIds, long txnId, boolean makeCopy)
-    throws TException;
+    throws TException {}
 
   /**
    * Get schema for a table, excluding the partition columns.
@@ -2317,9 +2488,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
-  List<FieldSchema> getFields(String db, String tableName)
+  default List<FieldSchema> getFields(String db, String tableName)
       throws MetaException, TException, UnknownTableException,
-      UnknownDBException;
+      UnknownDBException {
+    return Collections.emptyList();
+  }
 
   /**
    * Get schema for a table, excluding the partition columns.
@@ -2332,9 +2505,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
-  List<FieldSchema> getFields(String catName, String db, String tableName)
+  default List<FieldSchema> getFields(String catName, String db, String tableName)
       throws MetaException, TException, UnknownTableException,
-      UnknownDBException;
+      UnknownDBException {
+    return Collections.emptyList();
+  }
 
   /**
    * Get schema for a table, excluding the partition columns.
@@ -2345,9 +2520,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
-  GetFieldsResponse getFieldsRequest(GetFieldsRequest req)
+  default GetFieldsResponse getFieldsRequest(GetFieldsRequest req)
           throws MetaException, TException, UnknownTableException,
-          UnknownDBException;
+          UnknownDBException {
+    return new GetFieldsResponse();
+  }
 
   /**
    * Get schema for a table, including the partition columns.
@@ -2359,9 +2536,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
-  List<FieldSchema> getSchema(String db, String tableName)
+  default List<FieldSchema> getSchema(String db, String tableName)
       throws MetaException, TException, UnknownTableException,
-      UnknownDBException;
+      UnknownDBException {
+    return Collections.emptyList();
+  }
 
   /**
    * Get schema for a table, including the partition columns.
@@ -2374,9 +2553,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
-  List<FieldSchema> getSchema(String catName, String db, String tableName)
+  default List<FieldSchema> getSchema(String catName, String db, String tableName)
       throws MetaException, TException, UnknownTableException,
-      UnknownDBException;
+      UnknownDBException {
+    return Collections.emptyList();
+  }
 
   /**
    * Get schema for a table, including the partition columns.
@@ -2387,9 +2568,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
-  GetSchemaResponse getSchemaRequest(GetSchemaRequest req)
+  default GetSchemaResponse getSchemaRequest(GetSchemaRequest req)
           throws MetaException, TException, UnknownTableException,
-          UnknownDBException;
+          UnknownDBException {
+    return new GetSchemaResponse();
+  }
 
   /**
    * @param name
@@ -2400,8 +2583,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    * @throws ConfigValSecurityException
    */
-  String getConfigValue(String name, String defaultValue)
-      throws TException, ConfigValSecurityException;
+  default String getConfigValue(String name, String defaultValue)
+      throws TException, ConfigValSecurityException {
+    return "50";
+  }
 
   /**
    *
@@ -2411,8 +2596,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    * @throws TException
    */
-  List<String> partitionNameToVals(String name)
-      throws MetaException, TException;
+  default List<String> partitionNameToVals(String name)
+      throws MetaException, TException {
+    return Collections.emptyList();
+  }
   /**
    *
    * @param name
@@ -2421,8 +2608,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    * @throws TException
    */
-  Map<String, String> partitionNameToSpec(String name)
-      throws MetaException, TException;
+  default Map<String, String> partitionNameToSpec(String name)
+      throws MetaException, TException {
+    return Collections.emptyMap();
+  }
 
   /**
    * Write table level column statistics to persistent store
@@ -2434,9 +2623,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    * @throws InvalidInputException
    */
-  boolean updateTableColumnStatistics(ColumnStatistics statsObj)
+  default boolean updateTableColumnStatistics(ColumnStatistics statsObj)
     throws NoSuchObjectException, InvalidObjectException, MetaException, TException,
-    InvalidInputException;
+    InvalidInputException {
+    return false;
+}
 
   /**
    * Write partition level column statistics to persistent store
@@ -2448,9 +2639,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    * @throws InvalidInputException
    */
-  boolean updatePartitionColumnStatistics(ColumnStatistics statsObj)
+  default boolean updatePartitionColumnStatistics(ColumnStatistics statsObj)
    throws NoSuchObjectException, InvalidObjectException, MetaException, TException,
-   InvalidInputException;
+   InvalidInputException {
+    return false;
+  }
 
   /**
    * Get the column statistics for a set of columns in a table.  This should only be used for
@@ -2465,12 +2658,16 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
-  List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName,
-      List<String> colNames, String engine) throws NoSuchObjectException, MetaException, TException;
+  default List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName,
+      List<String> colNames, String engine) throws NoSuchObjectException, MetaException, TException {
+    return Collections.emptyList();
+  }
 
-  List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName,
+  default List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName,
       List<String> colNames, String engine, String validWriteIdList)
-      throws NoSuchObjectException, MetaException, TException;
+      throws NoSuchObjectException, MetaException, TException {
+    return Collections.emptyList();
+  }
 
   /**
    * Get the column statistics for a set of columns in a table.  This should only be used for
@@ -2486,12 +2683,16 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
-  List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName, String tableName,
-      List<String> colNames, String engine) throws NoSuchObjectException, MetaException, TException;
+  default List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName, String tableName,
+      List<String> colNames, String engine) throws NoSuchObjectException, MetaException, TException {
+    return Collections.emptyList();
+  }
 
-  List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName, String tableName,
+  default List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName, String tableName,
       List<String> colNames, String engine, String validWriteIdList)
-      throws NoSuchObjectException, MetaException, TException;
+      throws NoSuchObjectException, MetaException, TException {
+    return Collections.emptyList();
+  }
   /**
    * Get the column statistics for a set of columns in a partition.
    * @param dbName database name
@@ -2505,14 +2706,18 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
-  Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(String dbName,
+  default Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(String dbName,
       String tableName,  List<String> partNames, List<String> colNames, String engine)
-          throws NoSuchObjectException, MetaException, TException;
+          throws NoSuchObjectException, MetaException, TException {
+    return Collections.emptyMap();
+  }
 
-  Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(String dbName,
+  default Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(String dbName,
       String tableName,  List<String> partNames, List<String> colNames,
       String engine, String validWriteIdList)
-      throws NoSuchObjectException, MetaException, TException;
+      throws NoSuchObjectException, MetaException, TException {
+    return Collections.emptyMap();
+  }
 
   /**
    * Get the column statistics for a set of columns in a partition.
@@ -2528,16 +2733,19 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
-  Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
+  default Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
       String catName, String dbName, String tableName,  List<String> partNames, List<String> colNames,
-      String engine) throws NoSuchObjectException, MetaException, TException;
+      String engine) throws NoSuchObjectException, MetaException, TException {
+    return Collections.emptyMap();
+  }
 
-  Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
+  default Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
       String catName, String dbName, String tableName,
       List<String> partNames, List<String> colNames,
       String engine, String validWriteIdList)
-      throws NoSuchObjectException, MetaException, TException;
-
+      throws NoSuchObjectException, MetaException, TException {
+    return Collections.emptyMap();
+  }
   /**
    * Delete partition level column statistics given dbName, tableName, partName and colName, or
    * all columns in a partition.
@@ -2672,9 +2880,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @return boolean indicating the outcome of the operation
    * @throws TException thrift transport error
    */
-  public boolean deleteColumnStatistics(DeleteColumnStatisticsRequest req) throws TException;
+  default boolean deleteColumnStatistics(DeleteColumnStatisticsRequest req) throws TException {
+    return false;
+  }
 
-  void updateTransactionalStatistics(UpdateTransactionalStatsRequest req) throws TException;
+  default void updateTransactionalStatistics(UpdateTransactionalStatsRequest req) throws TException {}
 
   /**
    * @param role
@@ -2683,8 +2893,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    * @throws TException
    */
-  boolean create_role(Role role)
-      throws MetaException, TException;
+  default boolean create_role(Role role)
+      throws MetaException, TException {
+    return false;
+  }
 
   /**
    * @param role_name
@@ -2694,7 +2906,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    * @throws TException
    */
-  boolean drop_role(String role_name) throws MetaException, TException;
+  default boolean drop_role(String role_name) throws MetaException, TException{
+    return false;
+  }
 
   /**
    * list all role names
@@ -2702,7 +2916,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    * @throws MetaException
    */
-  List<String> listRoleNames() throws MetaException, TException;
+  default List<String> listRoleNames() throws MetaException, TException {
+    return Collections.emptyList();
+  }
 
   /**
    *
@@ -2716,9 +2932,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    * @throws TException
    */
-  boolean grant_role(String role_name, String user_name,
+  default boolean grant_role(String role_name, String user_name,
       PrincipalType principalType, String grantor, PrincipalType grantorType,
-      boolean grantOption) throws MetaException, TException;
+      boolean grantOption) throws MetaException, TException{
+    return false;
+  }
 
   /**
    * @param role_name
@@ -2731,8 +2949,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    * @throws TException
    */
-  boolean revoke_role(String role_name, String user_name,
-      PrincipalType principalType, boolean grantOption) throws MetaException, TException;
+  default boolean revoke_role(String role_name, String user_name,
+      PrincipalType principalType, boolean grantOption) throws MetaException, TException{
+    return false;
+  }
 
   /**
    *
@@ -2742,8 +2962,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    * @throws TException
    */
-  List<Role> list_roles(String principalName, PrincipalType principalType)
-      throws MetaException, TException;
+  default List<Role> list_roles(String principalName, PrincipalType principalType)
+      throws MetaException, TException {
+    return Collections.emptyList();
+  }
 
   /**
    * Return the privileges that the user, group have directly and indirectly through roles
@@ -2755,9 +2977,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    * @throws TException
    */
-  PrincipalPrivilegeSet get_privilege_set(HiveObjectRef hiveObject,
+  default PrincipalPrivilegeSet get_privilege_set(HiveObjectRef hiveObject,
       String user_name, List<String> group_names) throws MetaException,
-      TException;
+      TException {
+    return new PrincipalPrivilegeSet();
+  }
 
   /**
    * Return the privileges that this principal has directly over the object (not through roles).
@@ -2768,9 +2992,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    * @throws TException
    */
-  List<HiveObjectPrivilege> list_privileges(String principal_name,
+  default List<HiveObjectPrivilege> list_privileges(String principal_name,
       PrincipalType principal_type, HiveObjectRef hiveObject)
-      throws MetaException, TException;
+      throws MetaException, TException {
+    return Collections.emptyList();
+  }
 
   /**
    * @param privileges
@@ -2778,8 +3004,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    * @throws TException
    */
-  boolean grant_privileges(PrivilegeBag privileges)
-      throws MetaException, TException;
+  default boolean grant_privileges(PrivilegeBag privileges)
+      throws MetaException, TException {
+    return false;
+  }
 
   /**
    * @param privileges
@@ -2787,8 +3015,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    * @throws TException
    */
-  boolean revoke_privileges(PrivilegeBag privileges, boolean grantOption)
-      throws MetaException, TException;
+  default boolean revoke_privileges(PrivilegeBag privileges, boolean grantOption)
+      throws MetaException, TException {
+    return false;
+  }
 
   /**
    * @param authorizer
@@ -2797,8 +3027,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    * @throws TException
    */
-  boolean refresh_privileges(HiveObjectRef objToRefresh, String authorizer, PrivilegeBag grantPrivileges)
-      throws MetaException, TException;
+  default boolean refresh_privileges(HiveObjectRef objToRefresh, String authorizer, PrivilegeBag grantPrivileges)
+      throws MetaException, TException {
+    return false;
+  }
 
   /**
    * This is expected to be a no-op when in local mode,
@@ -2809,8 +3041,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    * @throws TException
    */
-  String getDelegationToken(String owner, String renewerKerberosPrincipalName)
-      throws MetaException, TException;
+  default String getDelegationToken(String owner, String renewerKerberosPrincipalName)
+      throws MetaException, TException {
+    return "";
+  }
 
   /**
    * @param tokenStrForm
@@ -2818,33 +3052,52 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    * @throws TException
    */
-  long renewDelegationToken(String tokenStrForm) throws MetaException, TException;
+  default long renewDelegationToken(String tokenStrForm) throws MetaException, TException {
+    return 0;
+  }
 
   /**
    * @param tokenStrForm
    * @throws MetaException
    * @throws TException
    */
-  void cancelDelegationToken(String tokenStrForm) throws MetaException, TException;
+  default void cancelDelegationToken(String tokenStrForm) throws MetaException, TException {}
 
-  String getTokenStrForm() throws IOException;
+  default String getTokenStrForm() throws IOException {
+    return "";
+  }
 
-  boolean addToken(String tokenIdentifier, String delegationToken) throws TException;
+  default boolean addToken(String tokenIdentifier, String delegationToken) throws TException {
+    return false;
+  }
 
-  boolean removeToken(String tokenIdentifier) throws TException;
+  default boolean removeToken(String tokenIdentifier) throws TException {
+    return false;
+  }
 
-  String getToken(String tokenIdentifier) throws TException;
+  default String getToken(String tokenIdentifier) throws TException {
+    return "";
+  }
 
-  List<String> getAllTokenIdentifiers() throws TException;
+  default List<String> getAllTokenIdentifiers() throws TException {
+    return Collections.emptyList();
+  }
 
-  int addMasterKey(String key) throws MetaException, TException;
+  default int addMasterKey(String key) throws MetaException, TException {
+    return 0;
+  }
 
-  void updateMasterKey(Integer seqNo, String key)
-      throws NoSuchObjectException, MetaException, TException;
+  default void updateMasterKey(Integer seqNo, String key)
+      throws NoSuchObjectException, MetaException, TException {}
 
-  boolean removeMasterKey(Integer keySeq) throws TException;
+  default boolean removeMasterKey(Integer keySeq) throws TException {
+    return false;
+  }
 
-  String[] getMasterKeys() throws TException;
+
+  default String[] getMasterKeys() throws TException {
+    return new String[0];
+  }
 
   /**
    * Create a new function.
@@ -2853,8 +3106,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
-  void createFunction(Function func)
-      throws InvalidObjectException, MetaException, TException;
+  default void createFunction(Function func)
+      throws InvalidObjectException, MetaException, TException {}
 
   /**
    * Alter a function.
@@ -2865,8 +3118,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
-  void alterFunction(String dbName, String funcName, Function newFunction)
-      throws InvalidObjectException, MetaException, TException;
+  default void alterFunction(String dbName, String funcName, Function newFunction)
+      throws InvalidObjectException, MetaException, TException {}
 
   /**
    * Alter a function.
@@ -2878,8 +3131,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
-  void alterFunction(String catName, String dbName, String funcName, Function newFunction)
-      throws InvalidObjectException, MetaException, TException;
+  default void alterFunction(String catName, String dbName, String funcName, Function newFunction)
+      throws InvalidObjectException, MetaException, TException {}
 
   /**
    * Drop a function.
@@ -2891,8 +3144,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws InvalidInputException not sure when this is thrown
    * @throws TException thrift transport error
    */
-  void dropFunction(String dbName, String funcName) throws MetaException,
-      NoSuchObjectException, InvalidObjectException, InvalidInputException, TException;
+  default void dropFunction(String dbName, String funcName) throws MetaException,
+      NoSuchObjectException, InvalidObjectException, InvalidInputException, TException {}
 
   /**
    * Drop a function.
@@ -2905,8 +3158,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws InvalidInputException not sure when this is thrown
    * @throws TException thrift transport error
    */
-  void dropFunction(String catName, String dbName, String funcName) throws MetaException,
-      NoSuchObjectException, InvalidObjectException, InvalidInputException, TException;
+  default void dropFunction(String catName, String dbName, String funcName) throws MetaException,
+      NoSuchObjectException, InvalidObjectException, InvalidInputException, TException {}
 
   /**
    * Get a function.
@@ -2915,8 +3168,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
-  Function getFunction(String dbName, String funcName)
-      throws MetaException, TException;
+  default Function getFunction(String dbName, String funcName)
+      throws MetaException, TException {
+    return new Function();
+  }
 
   /**
    * Get a function.
@@ -2926,8 +3181,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
-  Function getFunction(String catName, String dbName, String funcName)
-      throws MetaException, TException;
+  default Function getFunction(String catName, String dbName, String funcName)
+      throws MetaException, TException {
+    return new Function();
+  }
 
   /**
    * Get all functions matching a pattern
@@ -2937,16 +3194,20 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException thrift transport error
    */
   @Deprecated
-  List<String> getFunctions(String dbName, String pattern)
-      throws MetaException, TException;
+  default List<String> getFunctions(String dbName, String pattern)
+      throws MetaException, TException {
+    return Collections.emptyList();
+  }
 
   /**
    * Get all functions matching a pattern
    * @param functionRequest function request.
    * @throws TException thrift transport error
    */
-  GetFunctionsResponse getFunctionsRequest(GetFunctionsRequest functionRequest)
-      throws TException;
+  default GetFunctionsResponse getFunctionsRequest(GetFunctionsRequest functionRequest)
+      throws TException {
+    return new GetFunctionsResponse();
+  }
   /**
    * Get all functions matching a pattern
    * @param catName catalog name.
@@ -2956,8 +3217,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException thrift transport error
    */
   @Deprecated
-  List<String> getFunctions(String catName, String dbName, String pattern)
-      throws MetaException, TException;
+  default List<String> getFunctions(String catName, String dbName, String pattern)
+      throws MetaException, TException {
+    return Collections.emptyList();
+  }
 
   /**
    * Get all functions in the default catalog.
@@ -2965,16 +3228,22 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
-  GetAllFunctionsResponse getAllFunctions() throws MetaException, TException;
+  default GetAllFunctionsResponse getAllFunctions() throws MetaException, TException {
+    return new GetAllFunctionsResponse();
+  }
 
-  GetOpenTxnsResponse getOpenTxns() throws TException ;
+  default GetOpenTxnsResponse getOpenTxns() throws TException  {
+    return new GetOpenTxnsResponse();
+  }
 
   /**
    * Get a structure that details valid transactions.
    * @return list of valid transactions
    * @throws TException
    */
-  ValidTxnList getValidTxns() throws TException;
+  default ValidTxnList getValidTxns() throws TException {
+    return new ValidReadTxnList();
+  }
 
   /**
    * Get a structure that details valid transactions.
@@ -2983,7 +3252,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @return list of valid transactions and also valid write IDs for each input table.
    * @throws TException
    */
-  ValidTxnList getValidTxns(long currentTxn) throws TException;
+  default ValidTxnList getValidTxns(long currentTxn) throws TException {
+    return new ValidReadTxnList();
+  }
 
   /**
    * Get a structure that details valid transactions.
@@ -2993,7 +3264,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @return list of valid transactions and also valid write IDs for each input table.
    * @throws TException
    */
-  ValidTxnList getValidTxns(long currentTxn, List<TxnType> excludeTxnTypes) throws TException;
+  default ValidTxnList getValidTxns(long currentTxn, List<TxnType> excludeTxnTypes) throws TException {
+    return new ValidReadTxnList();
+  }
 
   /**
    * Get a structure that details valid write ids.
@@ -3001,7 +3274,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @return list of valid write ids for the given table
    * @throws TException
    */
-  ValidWriteIdList getValidWriteIds(String fullTableName) throws TException;
+  default ValidWriteIdList getValidWriteIds(String fullTableName) throws TException {
+    return new ValidCleanerWriteIdList("", 0);
+  }
 
   /**
    * Get a structure that details valid write ids.
@@ -3010,7 +3285,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @return list of valid write ids for the given table
    * @throws TException
    */
-  ValidWriteIdList getValidWriteIds(String fullTableName, Long writeId) throws TException;
+  default ValidWriteIdList getValidWriteIds(String fullTableName, Long writeId) throws TException {
+    return new ValidCleanerWriteIdList("", 0);
+  }
 
   /**
    * Get a structure that details valid write ids list for all tables read by current txn.
@@ -3020,15 +3297,17 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @return list of valid write ids for the given list of tables.
    * @throws TException
    */
-  List<TableValidWriteIds> getValidWriteIds(List<String> tablesList, String validTxnList)
-          throws TException;
+  default List<TableValidWriteIds> getValidWriteIds(List<String> tablesList, String validTxnList)
+          throws TException {
+    return Collections.emptyList();
+  }
 
   /**
    * Persists minOpenWriteId list to identify obsolete directories eligible for cleanup
    * @param txnId transaction identifier
    * @param writeIds list of minOpenWriteId
    */
-  void addWriteIdsToMinHistory(long txnId, Map<String, Long> writeIds) throws TException;
+  default void addWriteIdsToMinHistory(long txnId, Map<String, Long> writeIds) throws TException {}
     
   /**
    * Initiate a transaction.
@@ -3038,7 +3317,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @return transaction identifier
    * @throws TException
    */
-  long openTxn(String user) throws TException;
+  default long openTxn(String user) throws TException {
+    return 0;
+  }
 
   /**
    * Initiate a transaction with given type.
@@ -3047,7 +3328,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @return transaction identifier
    * @throws TException
    */
-  long openTxn(String user, TxnType txnType) throws TException;
+  default long openTxn(String user, TxnType txnType) throws TException {
+    return 0;
+  }
 
   /**
    * Initiate a repl replayed or hive replication transaction (dump/load).
@@ -3062,7 +3345,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @return transaction identifiers
    * @throws TException
    */
-  List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user, TxnType txnType) throws TException;
+  default List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user, TxnType txnType) throws TException {
+    return Collections.emptyList();
+  }
 
   /**
    * Initiate a batch of transactions.  It is not guaranteed that the
@@ -3089,7 +3374,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * optimistically assuming that the result matches the request.
    * @throws TException
    */
-  OpenTxnsResponse openTxns(String user, int numTxns) throws TException;
+  default OpenTxnsResponse openTxns(String user, int numTxns) throws TException {
+    return new OpenTxnsResponse();
+  }
 
   /**
    * Rollback a transaction.  This will also unlock any locks associated with
@@ -3100,7 +3387,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * deleted.
    * @throws TException
    */
-  void rollbackTxn(long txnid) throws NoSuchTxnException, TException;
+  default void rollbackTxn(long txnid) throws NoSuchTxnException, TException {}
 
   /**
    * Rollback a transaction.  This will also unlock any locks associated with
@@ -3112,7 +3399,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * deleted.
    * @throws TException
    */
-  void rollbackTxn(AbortTxnRequest abortTxnRequest) throws NoSuchTxnException, TException;
+  default void rollbackTxn(AbortTxnRequest abortTxnRequest) throws NoSuchTxnException, TException {}
 
   /**
    * Rollback a transaction.  This will also unlock any locks associated with
@@ -3128,7 +3415,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * deleted.
    * @throws TException
    */
-  void replRollbackTxn(long srcTxnid, String replPolicy, TxnType txnType) throws NoSuchTxnException, TException;
+  default void replRollbackTxn(long srcTxnid, String replPolicy, TxnType txnType) throws NoSuchTxnException, TException {}
 
   /**
    * Commit a transaction.  This will also unlock any locks associated with
@@ -3141,8 +3428,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    * aborted.  This can result from the transaction timing out.
    * @throws TException
    */
-  void commitTxn(long txnid)
-      throws NoSuchTxnException, TxnAbortedException, TException;
+  default void commitTxn(long txnid)
+      throws NoSuchTxnException, TxnAbortedException, TException {}
 
   /**
    * Like commitTxn but it will atomically store as well a key and a value. This
@@ -3166,9 +3453,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * tableId and key are found in TABLE_PARAMS while updating.
    * @throws TException
    */
-  void commitTxnWithKeyValue(long txnid, long tableId,
+  default void commitTxnWithKeyValue(long txnid, long tableId,
       String key, String value) throws NoSuchTxnException,
-      TxnAbortedException, TException;
+      TxnAbortedException, TException {}
 
   /**
    * Commit a transaction.  This will also unlock any locks associated with
@@ -3182,14 +3469,14 @@ public interface IMetaStoreClient extends AutoCloseable {
    * aborted.  This can result from the transaction timing out.
    * @throws TException
    */
-  void commitTxn(CommitTxnRequest rqst)
-          throws NoSuchTxnException, TxnAbortedException, TException;
+  default void commitTxn(CommitTxnRequest rqst)
+          throws NoSuchTxnException, TxnAbortedException, TException {}
 
   /**
    * Abort a list of transactions. This is for use by "ABORT TRANSACTIONS" in the grammar.
    * @throws TException
    */
-  void abortTxns(List<Long> txnids) throws TException;
+  default void abortTxns(List<Long> txnids) throws TException {}
 
   /**
    * Abort a list of transactions with additional information of
@@ -3197,7 +3484,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @param abortTxnsRequest Information containing txnIds and error codes
    * @throws TException
    */
-  void abortTxns(AbortTxnsRequest abortTxnsRequest) throws TException;
+  default void abortTxns(AbortTxnsRequest abortTxnsRequest) throws TException {}
 
   /**
    * Allocate a per table write ID and associate it with the given transaction.
@@ -3206,7 +3493,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @param tableName table to which the write ID to be allocated
    * @throws TException
    */
-  long allocateTableWriteId(long txnId, String dbName, String tableName) throws TException;
+  default long allocateTableWriteId(long txnId, String dbName, String tableName) throws TException {
+    return 0;
+  }
 
   /**
    * Allocate a per table write ID and associate it with the given transaction.
@@ -3216,7 +3505,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @param reallocate should we reallocate already mapped writeId (if true) or reuse (if false)
    * @throws TException
    */
-  long allocateTableWriteId(long txnId, String dbName, String tableName, boolean reallocate) throws TException;
+  default long allocateTableWriteId(long txnId, String dbName, String tableName, boolean reallocate) throws TException {
+    return 0;
+  }
 
   /**
    * Replicate Table Write Ids state to mark aborted write ids and writeid high water mark.
@@ -3226,8 +3517,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @param partNames List of partitions being written.
    * @throws TException in case of failure to replicate the writeid state
    */
-  void replTableWriteIdState(String validWriteIdList, String dbName, String tableName, List<String> partNames)
-          throws TException;
+  default void replTableWriteIdState(String validWriteIdList, String dbName, String tableName, List<String> partNames)
+          throws TException {}
 
   /**
    * Allocate a per table write ID and associate it with the given transaction.
@@ -3236,7 +3527,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @param tableName table to which the write ID to be allocated
    * @throws TException
    */
-  List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName) throws TException;
+  default List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName) throws TException {
+    return Collections.emptyList();
+  }
 
   /**
    * Allocate a per table write ID and associate it with the given transaction. Used by replication load task.
@@ -3246,8 +3539,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @param srcTxnToWriteIdList List of txn to write id map sent from the source cluster.
    * @throws TException
    */
-  List<TxnToWriteId> replAllocateTableWriteIdsBatch(String dbName, String tableName, String replPolicy,
-                                                    List<TxnToWriteId> srcTxnToWriteIdList) throws TException;
+  default List<TxnToWriteId> replAllocateTableWriteIdsBatch(String dbName, String tableName, String replPolicy,
+                                                    List<TxnToWriteId> srcTxnToWriteIdList) throws TException {
+    return Collections.emptyList();
+  }
 
   /**
    * Get the maximum allocated writeId for the given table
@@ -3256,7 +3551,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @return the maximum allocated writeId
    * @throws TException
    */
-  long getMaxAllocatedWriteId(String dbName, String tableName) throws TException;
+  default long getMaxAllocatedWriteId(String dbName, String tableName) throws TException {
+    return 0;
+  }
 
   /**
    * Seed an ACID table with the given writeId. If the table already contains writes it will fail.
@@ -3265,7 +3562,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @param seedWriteId the start value of writeId
    * @throws TException
    */
-  void seedWriteId(String dbName, String tableName, long seedWriteId) throws TException;
+  default void seedWriteId(String dbName, String tableName, long seedWriteId) throws TException {}
 
   /**
    * Seed or increment the global txnId to the given value.
@@ -3273,7 +3570,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @param seedTxnId The seed value for the next transactions
    * @throws TException
    */
-  void seedTxnId(long seedTxnId) throws TException;
+  default void seedTxnId(long seedTxnId) throws TException {}
 
   /**
    * Show the list of currently open transactions.  This is for use by "show transactions" in the
@@ -3282,7 +3579,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @return List of currently opened transactions, included aborted ones.
    * @throws TException
    */
-  GetOpenTxnsInfoResponse showTxns() throws TException;
+  default GetOpenTxnsInfoResponse showTxns() throws TException {
+    return new GetOpenTxnsInfoResponse();
+  }
 
   /**
    * Request a set of locks.  All locks needed for a particular query, DML,
@@ -3313,8 +3612,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   @RetrySemantics.CannotRetry
-  LockResponse lock(LockRequest request)
-      throws NoSuchTxnException, TxnAbortedException, TException;
+  default LockResponse lock(LockRequest request)
+      throws NoSuchTxnException, TxnAbortedException, TException {
+    return new LockResponse();
+  }
 
   /**
    * Check the status of a set of locks requested via a
@@ -3337,9 +3638,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * This can result from the lock timing out and being unlocked by the system.
    * @throws TException
    */
-  LockResponse checkLock(long lockid)
+  default LockResponse checkLock(long lockid)
     throws NoSuchTxnException, TxnAbortedException, NoSuchLockException,
-      TException;
+      TException {
+    return new LockResponse();
+  }
 
   /**
    * Unlock a set of locks.  This can only be called when the locks are not
@@ -3352,8 +3655,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    * transaction.
    * @throws TException
    */
-  void unlock(long lockid)
-      throws NoSuchLockException, TxnOpenException, TException;
+  default void unlock(long lockid)
+      throws NoSuchLockException, TxnOpenException, TException {}
 
   /**
    * Show all currently held and waiting locks.
@@ -3361,7 +3664,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @return List of currently held and waiting locks.
    * @throws TException
    */
-  ShowLocksResponse showLocks(ShowLocksRequest showLocksRequest) throws TException;
+  default ShowLocksResponse showLocks(ShowLocksRequest showLocksRequest) throws TException {
+    return new ShowLocksResponse();
+  }
 
   /**
    * Send a heartbeat to indicate that the client holding these locks (if
@@ -3383,9 +3688,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * This can result from the lock timing out and being unlocked by the system.
    * @throws TException
    */
-  void heartbeat(long txnid, long lockid)
+  default void heartbeat(long txnid, long lockid)
     throws NoSuchLockException, NoSuchTxnException, TxnAbortedException,
-      TException;
+      TException {}
 
   /**
    * Send heartbeats for a range of transactions.  This is for the streaming ingest client that
@@ -3397,7 +3702,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * have already been closed) and which were aborted.
    * @throws TException
    */
-  HeartbeatTxnRangeResponse heartbeatTxnRange(long min, long max) throws TException;
+  default HeartbeatTxnRangeResponse heartbeatTxnRange(long min, long max) throws TException {
+    return new HeartbeatTxnRangeResponse();
+  }
 
   /**
    * Send a request to compact a table or partition.  This will not block until the compaction is
@@ -3409,7 +3716,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    *                a compaction request.
    * @throws TException
    */
-  CompactionResponse compact2(CompactionRequest request) throws TException;
+  default CompactionResponse compact2(CompactionRequest request) throws TException {
+    return new CompactionResponse();
+  }
 
   /**
    * Get a list of all compactions.
@@ -3417,12 +3726,16 @@ public interface IMetaStoreClient extends AutoCloseable {
    * in progress, and finished but waiting to clean the existing files.
    * @throws TException
    */
-  ShowCompactResponse showCompactions() throws TException;
+  default ShowCompactResponse showCompactions() throws TException {
+    return new ShowCompactResponse();
+  }
   
   /**
    * Get a list of compactions for the given request object.
    */
-  ShowCompactResponse showCompactions(ShowCompactRequest request) throws TException;
+  default ShowCompactResponse showCompactions(ShowCompactRequest request) throws TException {
+    return new ShowCompactResponse();
+  }
   
   /**
    * Submit a request for performing cleanup of output directory. This is particularly
@@ -3434,8 +3747,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @param txnId The transaction ID of the query.
    * @throws TException
    */
-  boolean submitForCleanup(CompactionRequest rqst, long highestWriteId,
-                           long txnId) throws TException;
+  default boolean submitForCleanup(CompactionRequest rqst, long highestWriteId,
+                           long txnId) throws TException {
+    return false;
+  }
 
   /**
    * Get one latest record of SUCCEEDED or READY_FOR_CLEANING compaction for a table/partition.
@@ -3448,8 +3763,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * partition specified by the request.
    * @throws TException
    */
-  GetLatestCommittedCompactionInfoResponse getLatestCommittedCompactionInfo(GetLatestCommittedCompactionInfoRequest request)
-    throws TException;
+  default GetLatestCommittedCompactionInfoResponse getLatestCommittedCompactionInfo(GetLatestCommittedCompactionInfoRequest request)
+    throws TException {
+    return new GetLatestCommittedCompactionInfoResponse();
+  }
 
   /**
    * Send a list of partitions to the metastore to indicate which partitions were loaded
@@ -3461,9 +3778,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @param partNames partition name, as constructed by Warehouse.makePartName
    * @throws TException
    */
-  void addDynamicPartitions(long txnId, long writeId, String dbName, String tableName, List<String> partNames,
+  default void addDynamicPartitions(long txnId, long writeId, String dbName, String tableName, List<String> partNames,
                             DataOperationType operationType)
-    throws TException;
+    throws TException {}
 
   /**
    * Performs the commit/rollback to the metadata storage for insert operator from external storage handler.
@@ -3472,16 +3789,20 @@ public interface IMetaStoreClient extends AutoCloseable {
    *
    * @throws MetaException
    */
-  void insertTable(Table table, boolean overwrite) throws MetaException;
+  default void insertTable(Table table, boolean overwrite) throws MetaException {}
 
   /**
    * Checks if there is a conflicting transaction
    * @param txnId
    * @return latest txnId in conflict
    */
-  long getLatestTxnIdInConflict(long txnId) throws TException;
+  default long getLatestTxnIdInConflict(long txnId) throws TException {
+    return 0;
+  }
 
-  GetDatabaseObjectsResponse get_databases_req(GetDatabaseObjectsRequest request) throws TException;
+  default GetDatabaseObjectsResponse get_databases_req(GetDatabaseObjectsRequest request) throws TException {
+    return  new GetDatabaseObjectsResponse();
+  }
 
   /**
    * A filter provided by the client that determines if a given notification event should be
@@ -3510,8 +3831,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   @InterfaceAudience.LimitedPrivate({"HCatalog"})
-  NotificationEventResponse getNextNotification(long lastEventId, int maxEvents,
-                                                NotificationFilter filter) throws TException;
+  default NotificationEventResponse getNextNotification(long lastEventId, int maxEvents,
+                                                NotificationFilter filter) throws TException {
+    return new NotificationEventResponse();
+  }
 
   /**
    * Get the next set of notifications from the database.
@@ -3531,8 +3854,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   @InterfaceAudience.LimitedPrivate({"HCatalog"})
-  NotificationEventResponse getNextNotification(NotificationEventRequest request,
-      boolean allowGapsInEventIds, NotificationFilter filter) throws TException;
+  default NotificationEventResponse getNextNotification(NotificationEventRequest request,
+      boolean allowGapsInEventIds, NotificationFilter filter) throws TException {
+    return new NotificationEventResponse();
+  }
 
   /**
    * Get the last used notification event id.
@@ -3540,7 +3865,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   @InterfaceAudience.LimitedPrivate({"HCatalog"})
-  CurrentNotificationEventId getCurrentNotificationEventId() throws TException;
+  default CurrentNotificationEventId getCurrentNotificationEventId() throws TException {
+    return new CurrentNotificationEventId();
+  }
 
   /**
    * Get the number of events from given eventID for the input database.
@@ -3548,8 +3875,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   @InterfaceAudience.LimitedPrivate({"HCatalog"})
-  NotificationEventsCountResponse getNotificationEventsCount(NotificationEventsCountRequest rqst)
-          throws TException;
+  default NotificationEventsCountResponse getNotificationEventsCount(NotificationEventsCountRequest rqst)
+          throws TException {
+    return new NotificationEventsCountResponse();
+  }
 
   /**
    * Request that the metastore fire an event.  Currently this is only supported for DML
@@ -3560,7 +3889,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
 
   @InterfaceAudience.LimitedPrivate({"Apache Hive, HCatalog"})
-  FireEventResponse fireListenerEvent(FireEventRequest request) throws TException;
+  default FireEventResponse fireListenerEvent(FireEventRequest request) throws TException {
+    return new FireEventResponse();
+  }
 
   /**
    * Add a event related to write operations in an ACID table.
@@ -3568,7 +3899,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   @InterfaceAudience.LimitedPrivate({"Apache Hive, HCatalog"})
-  void addWriteNotificationLog(WriteNotificationLogRequest rqst) throws TException;
+  default void addWriteNotificationLog(WriteNotificationLogRequest rqst) throws TException {}
 
   /**
    * Add a batch of event related to write operations in an ACID table.
@@ -3576,7 +3907,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   @InterfaceAudience.LimitedPrivate({"Apache Hive, HCatalog"})
-  void addWriteNotificationLogInBatch(WriteNotificationLogBatchRequest rqst) throws TException;
+  default void addWriteNotificationLogInBatch(WriteNotificationLogBatchRequest rqst) throws TException {}
 
   class IncompatibleMetastoreException extends MetaException {
     public IncompatibleMetastoreException(String message) {
@@ -3593,8 +3924,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    * @throws TException
    */
-  GetPrincipalsInRoleResponse get_principals_in_role(GetPrincipalsInRoleRequest getPrincRoleReq)
-      throws MetaException, TException;
+  default GetPrincipalsInRoleResponse get_principals_in_role(GetPrincipalsInRoleRequest getPrincRoleReq)
+      throws MetaException, TException {
+    return new GetPrincipalsInRoleResponse();
+  }
+
 
   /**
    * get all role-grants for roles that have been granted to given principal
@@ -3605,8 +3939,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    * @throws TException
    */
-  GetRoleGrantsForPrincipalResponse get_role_grants_for_principal(
-      GetRoleGrantsForPrincipalRequest getRolePrincReq) throws MetaException, TException;
+  default GetRoleGrantsForPrincipalResponse get_role_grants_for_principal(
+      GetRoleGrantsForPrincipalRequest getRolePrincReq) throws MetaException, TException {
+    return new GetRoleGrantsForPrincipalResponse();
+  }
 
   /**
    * Get aggregated column stats for a set of partitions.
@@ -3620,12 +3956,16 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport exception
    */
-  AggrStats getAggrColStatsFor(String dbName, String tblName,
-      List<String> colNames, List<String> partName, String engine)  throws NoSuchObjectException, MetaException, TException;
+  default AggrStats getAggrColStatsFor(String dbName, String tblName,
+      List<String> colNames, List<String> partName, String engine)  throws NoSuchObjectException, MetaException, TException {
+    return new AggrStats();
+  }
 
-  AggrStats getAggrColStatsFor(String dbName, String tblName,
+  default AggrStats getAggrColStatsFor(String dbName, String tblName,
       List<String> colNames, List<String> partName,
-      String engine, String writeIdList)  throws NoSuchObjectException, MetaException, TException;
+      String engine, String writeIdList)  throws NoSuchObjectException, MetaException, TException {
+    return new AggrStats();
+  }
 
   /**
    * Get aggregated column stats for a set of partitions.
@@ -3640,15 +3980,19 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport exception
    */
-  AggrStats getAggrColStatsFor(String catName, String dbName, String tblName,
+  default AggrStats getAggrColStatsFor(String catName, String dbName, String tblName,
                                List<String> colNames, List<String> partNames,
                                String engine)
-      throws NoSuchObjectException, MetaException, TException;
+      throws NoSuchObjectException, MetaException, TException {
+    return new AggrStats();
+  }
 
-  AggrStats getAggrColStatsFor(String catName, String dbName, String tblName,
+  default AggrStats getAggrColStatsFor(String catName, String dbName, String tblName,
                                List<String> colNames, List<String> partNames,
                                String engine, String writeIdList)
-      throws NoSuchObjectException, MetaException, TException;
+      throws NoSuchObjectException, MetaException, TException {
+    return new AggrStats();
+  }
   /**
    * Set table or partition column statistics.
    * @param request request object, contains all the table, partition, and statistics information
@@ -3659,38 +4003,48 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException thrift transport error.
    * @throws InvalidInputException the input is invalid (eg, a null table name)
    */
-  boolean setPartitionColumnStatistics(SetPartitionsStatsRequest request)
-      throws NoSuchObjectException, InvalidObjectException, MetaException, TException, InvalidInputException;
+  default boolean setPartitionColumnStatistics(SetPartitionsStatsRequest request)
+      throws NoSuchObjectException, InvalidObjectException, MetaException, TException, InvalidInputException {
+    return false;
+  }
 
   /**
    * Flush any catalog objects held by the metastore implementation.  Note that this does not
    * flush statistics objects.  This should be called at the beginning of each query.
    */
-  void flushCache();
+  default void flushCache() {}
 
   /**
    * Gets file metadata, as cached by metastore, for respective file IDs.
    * The metadata that is not cached in metastore may be missing.
    */
-  Iterable<Entry<Long, ByteBuffer>> getFileMetadata(List<Long> fileIds) throws TException;
+  default Iterable<Entry<Long, ByteBuffer>> getFileMetadata(List<Long> fileIds) throws TException {
+    return Collections.emptyList();
+  }
 
-  Iterable<Entry<Long, MetadataPpdResult>> getFileMetadataBySarg(
-      List<Long> fileIds, ByteBuffer sarg, boolean doGetFooters) throws TException;
+  default Iterable<Entry<Long, MetadataPpdResult>> getFileMetadataBySarg(
+      List<Long> fileIds, ByteBuffer sarg, boolean doGetFooters) throws TException {
+    return Collections.emptyList();
+  }
 
   /**
    * Cleares the file metadata cache for respective file IDs.
    */
-  void clearFileMetadata(List<Long> fileIds) throws TException;
+  default void clearFileMetadata(List<Long> fileIds) throws TException {}
 
   /**
    * Adds file metadata for respective file IDs to metadata cache in metastore.
    */
-  void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata) throws TException;
+  default void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata) throws TException {}
 
-  boolean isSameConfObj(Configuration c);
+  default boolean isSameConfObj(Configuration c) {
+    return false;
+  }
 
-  boolean cacheFileMetadata(String dbName, String tableName, String partName,
-      boolean allParts) throws TException;
+  default boolean cacheFileMetadata(String dbName, String tableName, String partName,
+      boolean allParts) throws TException {
+    return false;
+  }
 
   /**
    * Get a primary key for a table.
@@ -3700,8 +4054,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws NoSuchObjectException no primary key exists on this table, or maybe no such table
    * @throws TException thrift transport error
    */
-  List<SQLPrimaryKey> getPrimaryKeys(PrimaryKeysRequest request)
-    throws MetaException, NoSuchObjectException, TException;
+  default List<SQLPrimaryKey> getPrimaryKeys(PrimaryKeysRequest request)
+    throws MetaException, NoSuchObjectException, TException {
+    return Collections.emptyList();
+  }
 
   /**
    * Get a foreign key for a table.
@@ -3711,8 +4067,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws NoSuchObjectException no foreign key exists on this table, or maybe no such table
    * @throws TException thrift transport error
    */
-  List<SQLForeignKey> getForeignKeys(ForeignKeysRequest request) throws MetaException,
-    NoSuchObjectException, TException;
+  default List<SQLForeignKey> getForeignKeys(ForeignKeysRequest request) throws MetaException,
+    NoSuchObjectException, TException {
+    return Collections.emptyList();
+  }
 
   /**
    * Get a unique constraint for a table.
@@ -3722,8 +4080,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws NoSuchObjectException no unique constraint on this table, or maybe no such table
    * @throws TException thrift transport error
    */
-  List<SQLUniqueConstraint> getUniqueConstraints(UniqueConstraintsRequest request) throws MetaException,
-    NoSuchObjectException, TException;
+  default List<SQLUniqueConstraint> getUniqueConstraints(UniqueConstraintsRequest request) throws MetaException,
+    NoSuchObjectException, TException {
+    return Collections.emptyList();
+  }
 
   /**
    * Get a not null constraint for a table.
@@ -3733,14 +4093,20 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws NoSuchObjectException no not null constraint on this table, or maybe no such table
    * @throws TException thrift transport error
    */
-  List<SQLNotNullConstraint> getNotNullConstraints(NotNullConstraintsRequest request) throws MetaException,
-    NoSuchObjectException, TException;
+  default List<SQLNotNullConstraint> getNotNullConstraints(NotNullConstraintsRequest request) throws MetaException,
+    NoSuchObjectException, TException {
+    return Collections.emptyList();
+  }
 
-  List<SQLDefaultConstraint> getDefaultConstraints(DefaultConstraintsRequest request) throws MetaException,
-      NoSuchObjectException, TException;
+  default List<SQLDefaultConstraint> getDefaultConstraints(DefaultConstraintsRequest request) throws MetaException,
+      NoSuchObjectException, TException {
+    return Collections.emptyList();
+  }
 
-  List<SQLCheckConstraint> getCheckConstraints(CheckConstraintsRequest request) throws MetaException,
-      NoSuchObjectException, TException;
+  default List<SQLCheckConstraint> getCheckConstraints(CheckConstraintsRequest request) throws MetaException,
+      NoSuchObjectException, TException {
+    return Collections.emptyList();
+  }
 
   /**
    * Get all constraints of given table
@@ -3750,17 +4116,19 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws NoSuchObjectException
    * @throws TException
    */
-  SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest request)
-      throws MetaException, NoSuchObjectException, TException;
+  default SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest request)
+      throws MetaException, NoSuchObjectException, TException {
+    return new SQLAllTableConstraints();
+  }
 
-  void createTableWithConstraints(
+  default void createTableWithConstraints(
     org.apache.hadoop.hive.metastore.api.Table tTbl,
     List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
     List<SQLUniqueConstraint> uniqueConstraints,
     List<SQLNotNullConstraint> notNullConstraints,
     List<SQLDefaultConstraint> defaultConstraints,
     List<SQLCheckConstraint> checkConstraints)
-    throws AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException, TException;
+    throws AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException, TException {}
 
   /**
    * Drop a constraint.  This can be used for primary keys, foreign keys, unique constraints, or
@@ -3772,8 +4140,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws NoSuchObjectException no such constraint exists
    * @throws TException thrift transport error
    */
-  void dropConstraint(String dbName, String tableName, String constraintName)
-      throws MetaException, NoSuchObjectException, TException;
+  default void dropConstraint(String dbName, String tableName, String constraintName)
+      throws MetaException, NoSuchObjectException, TException {}
 
   /**
    * Drop a constraint.  This can be used for primary keys, foreign keys, unique constraints, or
@@ -3786,8 +4154,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws NoSuchObjectException no such constraint exists
    * @throws TException thrift transport error
    */
-  void dropConstraint(String catName, String dbName, String tableName, String constraintName)
-      throws MetaException, NoSuchObjectException, TException;
+  default void dropConstraint(String catName, String dbName, String tableName, String constraintName)
+      throws MetaException, NoSuchObjectException, TException {}
 
 
   /**
@@ -3797,8 +4165,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws NoSuchObjectException no such table exists
    * @throws TException thrift transport error
    */
-  void addPrimaryKey(List<SQLPrimaryKey> primaryKeyCols) throws
-  MetaException, NoSuchObjectException, TException;
+  default void addPrimaryKey(List<SQLPrimaryKey> primaryKeyCols) throws
+  MetaException, NoSuchObjectException, TException {}
 
   /**
    * Add a foreign key
@@ -3807,8 +4175,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws NoSuchObjectException one of the tables in the foreign key does not exist.
    * @throws TException thrift transport error
    */
-  void addForeignKey(List<SQLForeignKey> foreignKeyCols) throws
-  MetaException, NoSuchObjectException, TException;
+  default void addForeignKey(List<SQLForeignKey> foreignKeyCols) throws
+  MetaException, NoSuchObjectException, TException {}
 
   /**
    * Add a unique constraint
@@ -3817,8 +4185,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws NoSuchObjectException no such table
    * @throws TException thrift transport error
    */
-  void addUniqueConstraint(List<SQLUniqueConstraint> uniqueConstraintCols) throws
-  MetaException, NoSuchObjectException, TException;
+  default void addUniqueConstraint(List<SQLUniqueConstraint> uniqueConstraintCols) throws
+  MetaException, NoSuchObjectException, TException {}
 
   /**
    * Add a not null constraint
@@ -3828,14 +4196,14 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws NoSuchObjectException no such table
    * @throws TException thrift transport error
    */
-  void addNotNullConstraint(List<SQLNotNullConstraint> notNullConstraintCols) throws
-  MetaException, NoSuchObjectException, TException;
+  default void addNotNullConstraint(List<SQLNotNullConstraint> notNullConstraintCols) throws
+  MetaException, NoSuchObjectException, TException {}
 
-  void addDefaultConstraint(List<SQLDefaultConstraint> defaultConstraints) throws
-      MetaException, NoSuchObjectException, TException;
+  default void addDefaultConstraint(List<SQLDefaultConstraint> defaultConstraints) throws
+      MetaException, NoSuchObjectException, TException {}
 
-  void addCheckConstraint(List<SQLCheckConstraint> checkConstraints) throws
-      MetaException, NoSuchObjectException, TException;
+  default void addCheckConstraint(List<SQLCheckConstraint> checkConstraints) throws
+      MetaException, NoSuchObjectException, TException {}
 
   /**
    * Gets the unique id of the backing database instance used for storing metadata
@@ -3843,59 +4211,71 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException if HMS is not able to fetch the UUID or if there are multiple UUIDs found in the database
    * @throws TException in case of Thrift errors
    */
-  String getMetastoreDbUuid() throws MetaException, TException;
+  default String getMetastoreDbUuid() throws MetaException, TException {
+    return "";
+  }
 
-  void createResourcePlan(WMResourcePlan resourcePlan, String copyFromName)
-      throws InvalidObjectException, MetaException, TException;
+  default void createResourcePlan(WMResourcePlan resourcePlan, String copyFromName)
+      throws InvalidObjectException, MetaException, TException {}
 
   WMFullResourcePlan getResourcePlan(String resourcePlanName, String ns)
     throws NoSuchObjectException, MetaException, TException;
 
-  List<WMResourcePlan> getAllResourcePlans(String ns)
-      throws NoSuchObjectException, MetaException, TException;
+  default List<WMResourcePlan> getAllResourcePlans(String ns)
+      throws NoSuchObjectException, MetaException, TException {
+    return Collections.emptyList();
+  }
 
-  void dropResourcePlan(String resourcePlanName, String ns)
-      throws NoSuchObjectException, MetaException, TException;
+  default void dropResourcePlan(String resourcePlanName, String ns)
+      throws NoSuchObjectException, MetaException, TException {}
 
-  WMFullResourcePlan alterResourcePlan(String resourcePlanName, String ns, WMNullableResourcePlan resourcePlan,
+  default WMFullResourcePlan alterResourcePlan(String resourcePlanName, String ns, WMNullableResourcePlan resourcePlan,
       boolean canActivateDisabled, boolean isForceDeactivate, boolean isReplace)
-      throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
+      throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
+    return new WMFullResourcePlan();
+  }
 
-  WMFullResourcePlan getActiveResourcePlan(String ns) throws MetaException, TException;
+  default WMFullResourcePlan getActiveResourcePlan(String ns) throws MetaException, TException {
+    return new WMFullResourcePlan();
+  }
 
-  WMValidateResourcePlanResponse validateResourcePlan(String resourcePlanName, String ns)
-      throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
+  default WMValidateResourcePlanResponse validateResourcePlan(String resourcePlanName, String ns)
+      throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
+    return new WMValidateResourcePlanResponse();
+  }
 
-  void createWMTrigger(WMTrigger trigger)
-      throws InvalidObjectException, MetaException, TException;
+  default void createWMTrigger(WMTrigger trigger)
+      throws InvalidObjectException, MetaException, TException {}
 
-  void alterWMTrigger(WMTrigger trigger)
-      throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
+  default void alterWMTrigger(WMTrigger trigger)
+      throws NoSuchObjectException, InvalidObjectException, MetaException, TException {}
 
-  void dropWMTrigger(String resourcePlanName, String triggerName, String ns)
-      throws NoSuchObjectException, MetaException, TException;
+  default void dropWMTrigger(String resourcePlanName, String triggerName, String ns)
+      throws NoSuchObjectException, MetaException, TException {}
 
-  List<WMTrigger> getTriggersForResourcePlan(String resourcePlan, String ns)
-      throws NoSuchObjectException, MetaException, TException;
+  default List<WMTrigger> getTriggersForResourcePlan(String resourcePlan, String ns)
+      throws NoSuchObjectException, MetaException, TException {
+    return Collections.emptyList();
+  }
 
-  void createWMPool(WMPool pool)
-      throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
+  default void createWMPool(WMPool pool)
+      throws NoSuchObjectException, InvalidObjectException, MetaException, TException {}
 
-  void alterWMPool(WMNullablePool pool, String poolPath)
-      throws NoSuchObjectException, InvalidObjectException, TException;
+  default void alterWMPool(WMNullablePool pool, String poolPath)
+      throws NoSuchObjectException, InvalidObjectException, TException {}
 
-  void dropWMPool(String resourcePlanName, String poolPath, String ns)
-      throws TException;
+  default void dropWMPool(String resourcePlanName, String poolPath, String ns)
+      throws TException {}
 
-  void createOrUpdateWMMapping(WMMapping mapping, boolean isUpdate)
-      throws TException;
+  default void createOrUpdateWMMapping(WMMapping mapping, boolean isUpdate)
+      throws TException {}
 
-  void dropWMMapping(WMMapping mapping)
-      throws TException;
+  default void dropWMMapping(WMMapping mapping)
+      throws TException {}
 
-  void createOrDropTriggerToPoolMapping(String resourcePlanName, String triggerName,
+  default void createOrDropTriggerToPoolMapping(String resourcePlanName, String triggerName,
       String poolPath, boolean shouldDrop, String ns) throws AlreadyExistsException, NoSuchObjectException,
-      InvalidObjectException, MetaException, TException;
+      InvalidObjectException, MetaException, TException {}
 
   /**
    * Create a new schema.  This is really a schema container, as there will be specific versions
@@ -3906,7 +4286,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
-  void createISchema(ISchema schema) throws TException;
+  default void createISchema(ISchema schema) throws TException {}
 
   /**
    * Alter an existing schema.
@@ -3918,7 +4298,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
-  void alterISchema(String catName, String dbName, String schemaName, ISchema newSchema) throws TException;
+  default void alterISchema(String catName, String dbName, String schemaName, ISchema newSchema) throws TException {}
 
   /**
    * Fetch a schema.
@@ -3930,7 +4310,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
-  ISchema getISchema(String catName, String dbName, String name) throws TException;
+  default ISchema getISchema(String catName, String dbName, String name) throws TException {
+    return new ISchema();
+  }
 
   /**
    * Drop an existing schema.  If there are schema versions of this, this call will fail.
@@ -3942,7 +4324,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
-  void dropISchema(String catName, String dbName, String name) throws TException;
+  default void dropISchema(String catName, String dbName, String name) throws TException {}
 
   /**
    * Add a new version to an existing schema.
@@ -3952,7 +4334,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
-  void addSchemaVersion(SchemaVersion schemaVersion) throws TException;
+  default void addSchemaVersion(SchemaVersion schemaVersion) throws TException {}
 
   /**
    * Get a specific version of a schema.
@@ -3964,7 +4346,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
-  SchemaVersion getSchemaVersion(String catName, String dbName, String schemaName, int version) throws TException;
+  default SchemaVersion getSchemaVersion(String catName, String dbName, String schemaName, int version)
+      throws TException {
+    return new SchemaVersion();
+  }
 
   /**
    * Get the latest version of a schema.
@@ -3977,7 +4362,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
-  SchemaVersion getSchemaLatestVersion(String catName, String dbName, String schemaName) throws TException;
+  default SchemaVersion getSchemaLatestVersion(String catName, String dbName, String schemaName) throws TException {
+    return new SchemaVersion();
+  }
 
   /**
    * Get all the extant versions of a schema.
@@ -3990,7 +4377,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
-  List<SchemaVersion> getSchemaAllVersions(String catName, String dbName, String schemaName) throws TException;
+  default List<SchemaVersion> getSchemaAllVersions(String catName, String dbName, String schemaName) throws TException {
+    return Collections.emptyList();
+  }
 
   /**
    * Drop a version of a schema.  Given that versions are supposed to be immutable you should
@@ -4004,7 +4393,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
-  void dropSchemaVersion(String catName, String dbName, String schemaName, int version) throws TException;
+  default void dropSchemaVersion(String catName, String dbName, String schemaName, int version) throws TException {}
 
   /**
    * Find all schema versions that have columns that match a query.
@@ -4014,7 +4403,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
-  FindSchemasByColsResp getSchemaByCols(FindSchemasByColsRqst rqst) throws TException;
+  default FindSchemasByColsResp getSchemaByCols(FindSchemasByColsRqst rqst) throws TException {
+    return new FindSchemasByColsResp();
+  }
 
   /**
    * Map a schema version to a serde.  This mapping is one-to-one, thus this will destroy any
@@ -4029,7 +4420,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
-  void mapSchemaVersionToSerde(String catName, String dbName, String schemaName, int version, String serdeName) throws TException;
+  default void mapSchemaVersionToSerde(String catName, String dbName, String schemaName, int version, String serdeName) throws TException {}
 
   /**
    * Set the state of a schema version.
@@ -4043,7 +4434,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
-  void setSchemaVersionState(String catName, String dbName, String schemaName, int version, SchemaVersionState state) throws TException;
+  default void setSchemaVersionState(String catName, String dbName, String schemaName, int version, SchemaVersionState state) throws TException {}
 
   /**
    * Add a serde.  This is primarily intended for use with SchemaRegistry objects, since serdes
@@ -4053,7 +4444,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
-  void addSerDe(SerDeInfo serDeInfo) throws TException;
+  default void addSerDe(SerDeInfo serDeInfo) throws TException {}
 
   /**
    * Fetch a serde.  This is primarily intended for use with SchemaRegistry objects, since serdes
@@ -4064,7 +4455,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
-  SerDeInfo getSerDe(String serDeName) throws TException;
+  default SerDeInfo getSerDe(String serDeName) throws TException {
+    return new SerDeInfo();
+  }
 
   /**
    * Acquire the materialization rebuild lock for a given view. We need to specify the fully
@@ -4076,7 +4469,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @return the response from the metastore, where the lock id is equal to the txn id and
    * the status can be either ACQUIRED or NOT ACQUIRED
    */
-  LockResponse lockMaterializationRebuild(String dbName, String tableName, long txnId) throws TException;
+  default LockResponse lockMaterializationRebuild(String dbName, String tableName, long txnId) throws TException {
+    return new LockResponse();
+  }
+
 
   /**
    * Method to refresh the acquisition of a given materialization rebuild lock.
@@ -4085,13 +4481,17 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @param txnId transaction id for the rebuild
    * @return true if the lock could be renewed, false otherwise
    */
-  boolean heartbeatLockMaterializationRebuild(String dbName, String tableName, long txnId) throws TException;
+  default boolean heartbeatLockMaterializationRebuild(String dbName, String tableName, long txnId) throws TException {
+    return false;
+  }
 
   /** Adds a RuntimeStat for metastore persistence. */
-  void addRuntimeStat(RuntimeStat stat) throws TException;
+  default void addRuntimeStat(RuntimeStat stat) throws TException {}
 
   /** Reads runtime statistics. */
-  List<RuntimeStat> getRuntimeStats(int maxWeight, int maxCreateTime) throws TException;
+  default List<RuntimeStat> getRuntimeStats(int maxWeight, int maxCreateTime) throws TException {
+    return Collections.emptyList();
+  }
 
   /**
    * Generic Partition request API, providing different ways of filtering and controlling output.
@@ -4109,7 +4509,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * Partition filter spec is the generalization of various types of partition filtering.
    * Partitions can be filtered by names, by values or by partition expressions.
    */
-  GetPartitionsResponse getPartitionsWithSpecs(GetPartitionsRequest request) throws TException;
+  default GetPartitionsResponse getPartitionsWithSpecs(GetPartitionsRequest request) throws TException {
+    return new GetPartitionsResponse();
+  }
 
   /**
    * Get the next compaction job to do.
@@ -4118,7 +4520,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    * @throws TException
    */
-  OptionalCompactionInfoStruct findNextCompact(FindNextCompactRequest rqst) throws MetaException, TException;
+  default OptionalCompactionInfoStruct findNextCompact(FindNextCompactRequest rqst) throws MetaException, TException {
+    return new OptionalCompactionInfoStruct();
+  }
 
   /**
    * Set the compaction highest write id.
@@ -4126,7 +4530,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @param txnId transaction id.
    * @throws TException
    */
-  void updateCompactorState(CompactionInfoStruct cr, long txnId) throws TException;
+  default void updateCompactorState(CompactionInfoStruct cr, long txnId) throws TException {}
 
   /**
    * Get columns.
@@ -4134,7 +4538,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @return
    * @throws TException
    */
-  List<String> findColumnsWithStats(CompactionInfoStruct cr) throws TException;
+  default List<String> findColumnsWithStats(CompactionInfoStruct cr) throws TException {
+    return Collections.emptyList();
+  }
 
   /**
    * Mark a finished compaction as cleaned.
@@ -4142,7 +4548,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    * @throws TException
    */
-  void markCleaned(CompactionInfoStruct cr) throws MetaException, TException;
+  default void markCleaned(CompactionInfoStruct cr) throws MetaException, TException {}
 
   /**
    * Mark a finished compaction as compacted.
@@ -4150,7 +4556,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    * @throws TException
    */
-  void markCompacted(CompactionInfoStruct cr) throws MetaException, TException;
+  default void markCompacted(CompactionInfoStruct cr) throws MetaException, TException {}
 
   /**
    * Mark a finished compaction as failed.
@@ -4158,7 +4564,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    * @throws TException
    */
-  void markFailed(CompactionInfoStruct cr) throws MetaException, TException;
+  default void markFailed(CompactionInfoStruct cr) throws MetaException, TException {}
 
   /**
    * Mark a compaction as refused (to run).
@@ -4166,7 +4572,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    * @throws TException
    */
-  void markRefused(CompactionInfoStruct cr) throws MetaException, TException;
+  default void markRefused(CompactionInfoStruct cr) throws MetaException, TException {}
 
   /**
    * Create, update or delete one record in the compaction metrics cache.
@@ -4194,7 +4600,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    * @throws TException
    */
-  void removeCompactionMetricsData(CompactionMetricsDataRequest request) throws MetaException, TException;
+  default void removeCompactionMetricsData(CompactionMetricsDataRequest request) throws MetaException, TException {}
   /**
    * Set the hadoop id for a compaction.
    * @param jobId mapreduce job id that will do the compaction.
@@ -4202,72 +4608,92 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    * @throws TException
    */
-  void setHadoopJobid(String jobId, long cqId) throws MetaException, TException;
+  default void setHadoopJobid(String jobId, long cqId) throws MetaException, TException {}
 
   /**
    * Gets the version string of the metastore server which this client is connected to
    *
    * @return String representation of the version number of Metastore server (eg: 3.1.0-SNAPSHOT)
    */
-  String getServerVersion() throws TException;
+  default String getServerVersion() throws TException {
+    return "";
+  }
 
   /**
    * Returns details about a scheduled query by name.
    * 
    * @throws NoSuchObjectException if an object by the given name dosen't exists.
    */
-  ScheduledQuery getScheduledQuery(ScheduledQueryKey scheduleKey) throws TException;
+  default ScheduledQuery getScheduledQuery(ScheduledQueryKey scheduleKey) throws TException {
+    return new ScheduledQuery();
+  }
 
   /**
    * Carries out maintenance of scheduled queries (insert/update/drop).
    */
-  void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request) throws MetaException, TException;
+  default void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request) throws MetaException, TException {}
 
   /**
    * Checks whenever a query is available for execution.
    *
    * @return optionally a scheduled query to be processed.
    */
-  ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) throws MetaException, TException;
+  default ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) throws MetaException, TException {
+    return new ScheduledQueryPollResponse();
+  }
 
   /**
    * Registers the progress a scheduled query being executed.
    */
-  void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws TException;
+  default void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws TException {}
 
   /**
    * Adds replication metrics for the replication policies.
    * @param replicationMetricList
    * @throws MetaException
    */
-  void addReplicationMetrics(ReplicationMetricList replicationMetricList) throws MetaException, TException;
+  default void addReplicationMetrics(ReplicationMetricList replicationMetricList) throws MetaException, TException {}
 
-  ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest
-                                                replicationMetricsRequest) throws MetaException, TException;
+  default ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest
+                                                replicationMetricsRequest) throws MetaException, TException {
+    return new ReplicationMetricList();
+  }
 
-  void createStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException, TException;
+  default void createStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException, TException {}
 
-  StoredProcedure getStoredProcedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException, TException;
+  default StoredProcedure getStoredProcedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException, TException {
+    return new StoredProcedure();
+  }
 
-  void dropStoredProcedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException, TException;
+  default void dropStoredProcedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException, TException {}
 
-  List<String> getAllStoredProcedures(ListStoredProcedureRequest request) throws MetaException, TException;
+  default List<String> getAllStoredProcedures(ListStoredProcedureRequest request) throws MetaException, TException {
+    return Collections.emptyList();
+  }
 
-  void addPackage(AddPackageRequest request) throws NoSuchObjectException, MetaException, TException;
+  default void addPackage(AddPackageRequest request) throws NoSuchObjectException, MetaException, TException {}
 
-  Package findPackage(GetPackageRequest request) throws TException;
+  default Package findPackage(GetPackageRequest request) throws TException {
+    return new Package();
+  }
 
-  List<String> listPackages(ListPackageRequest request) throws TException;
+  default List<String> listPackages(ListPackageRequest request) throws TException {
+    return Collections.emptyList();
+  }
 
-  void dropPackage(DropPackageRequest request) throws TException;
+  default void dropPackage(DropPackageRequest request) throws TException {}
 
   /**
    * Get acid write events of a specific transaction.
    * @throws TException
    */
-  List<WriteEventInfo> getAllWriteEventInfo(GetAllWriteEventInfoRequest request) throws TException;
+  default List<WriteEventInfo> getAllWriteEventInfo(GetAllWriteEventInfoRequest request) throws TException {
+    return Collections.emptyList();
+  }
 
-  AbortCompactResponse abortCompactions(AbortCompactionRequest request) throws TException;
+  default AbortCompactResponse abortCompactions(AbortCompactionRequest request) throws TException {
+    return new AbortCompactResponse();
+  }
 
   /**
    * Sets properties.

@@ -113,6 +113,8 @@
     <slf4j.version>1.7.30</slf4j.version>
     <httpcomponents.core.version>4.4.13</httpcomponents.core.version>
     <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
+    <httpcomponents5.core.version>5.3</httpcomponents5.core.version>
+    <httpcomponents5.client.version>5.3</httpcomponents5.client.version>
     <pac4j-core.version>4.5.8</pac4j-core.version>
     <nimbus-jose-jwt.version>9.37.3</nimbus-jose-jwt.version>
     <jetty.version>9.4.57.v20241219</jetty.version>

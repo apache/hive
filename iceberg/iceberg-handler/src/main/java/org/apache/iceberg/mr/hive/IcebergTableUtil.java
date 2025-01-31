@@ -80,6 +80,7 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.expressions.ResidualEvaluator;
+import org.apache.iceberg.hive.HMSTablePropertyHelper;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
@@ -229,54 +230,9 @@ public class IcebergTableUtil {
       .findAny().orElse(null);
   }
 
-  /**
-   * Create {@link PartitionSpec} based on the partition information stored in
-   * {@link TransformSpec}.
-   * @param configuration a Hadoop configuration
-   * @param schema iceberg table schema
-   * @return iceberg partition spec, always non-null
-   */
-  public static PartitionSpec spec(Configuration configuration, Schema schema) {
-    List<TransformSpec> partitionTransformSpecList = SessionStateUtil
-        .getResource(configuration, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC)
-        .map(o -> (List<TransformSpec>) o).orElse(null);
-
-    if (partitionTransformSpecList == null) {
-      LOG.warn("Iceberg partition transform spec is not found in QueryState.");
-      return null;
-    }
-    PartitionSpec.Builder builder = PartitionSpec.builderFor(schema);
-    partitionTransformSpecList.forEach(spec -> {
-      switch (spec.getTransformType()) {
-        case IDENTITY:
-          builder.identity(spec.getColumnName().toLowerCase());
-          break;
-        case YEAR:
-          builder.year(spec.getColumnName());
-          break;
-        case MONTH:
-          builder.month(spec.getColumnName());
-          break;
-        case DAY:
-          builder.day(spec.getColumnName());
-          break;
-        case HOUR:
-          builder.hour(spec.getColumnName());
-          break;
-        case TRUNCATE:
-          builder.truncate(spec.getColumnName(), spec.getTransformParam().get());
-          break;
-        case BUCKET:
-          builder.bucket(spec.getColumnName(), spec.getTransformParam().get());
-          break;
-      }
-    });
-    return builder.build();
-  }
-
   public static void updateSpec(Configuration configuration, Table table) {
     // get the new partition transform spec
-    PartitionSpec newPartitionSpec = spec(configuration, table.schema());
+    PartitionSpec newPartitionSpec = HMSTablePropertyHelper.createPartitionSpec(configuration, table.schema());
     if (newPartitionSpec == null) {
       LOG.warn("Iceberg partition spec is not updated due to empty partition spec definition.");
       return;
