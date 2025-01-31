@@ -37,6 +37,7 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
@@ -65,14 +66,22 @@ public class PropertyServlet extends HttpServlet {
   /** The configuration. */
   private final Configuration configuration;
   /** The security. */
-  private final ServletSecurity security;
+  private final SecureServletCaller security;
+
+  static boolean isAuthJwt(Configuration configuration) {
+    String auth = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.PROPERTIES_SERVLET_AUTH);
+    return "jwt".equalsIgnoreCase(auth);
+  }
 
   PropertyServlet(Configuration configuration) {
-    String auth = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.PROPERTIES_SERVLET_AUTH);
-    boolean jwt = auth != null && "jwt".equals(auth.toLowerCase());
-    this.security = new ServletSecurity(configuration, jwt);
+    this(configuration, new ServletSecurity(configuration, isAuthJwt(configuration)));
+  }
+
+  PropertyServlet(Configuration configuration, SecureServletCaller security) {
+    this.security = security;
     this.configuration = configuration;
   }
+
   private String strError(String msg, Object...args) {
     return String.format(PTYERROR + msg, args);
   }
@@ -344,6 +353,10 @@ public class PropertyServlet extends HttpServlet {
       return null;
     }
     String cli = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
+    return startServer(conf, port, cli, new PropertyServlet(conf));
+  }
+
+  public static Server startServer(Configuration conf, int port, String path, Servlet servlet) throws Exception {
     // HTTP Server
     Server server = new Server();
     server.setStopAtShutdown(true);
@@ -359,11 +372,11 @@ public class PropertyServlet extends HttpServlet {
     ServletHandler handler = new ServletHandler();
     server.setHandler(handler);
     ServletHolder holder = handler.newServletHolder(Source.EMBEDDED);
-    holder.setServlet(new PropertyServlet(conf)); //
-    handler.addServletWithMapping(holder, "/"+cli+"/*");
+    holder.setServlet(servlet); //
+    handler.addServletWithMapping(holder, "/"+path+"/*");
     server.start();
     if (!server.isStarted()) {
-      LOGGER.error("unable to start property-maps servlet server, path {}, port {}", cli, port);
+      LOGGER.error("unable to start property-maps servlet server, path {}, port {}", path, port);
     } else {
       LOGGER.info("started property-maps servlet server on {}", server.getURI());
     }

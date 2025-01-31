@@ -1827,6 +1827,20 @@ public class MetastoreConf {
         "hive.metastore.properties.servlet.auth", "jwt",
         "Property-maps servlet authentication method (simple or jwt)."
     ),
+    ICEBERG_CATALOG_SERVLET_PATH("hive.metastore.catalog.servlet.path",
+        "hive.metastore.catalog.servlet.path", "icecli",
+        "HMS Iceberg Catalog servlet path component of URL endpoint."
+    ),
+    ICEBERG_CATALOG_SERVLET_PORT("hive.metastore.catalog.servlet.port",
+        "hive.metastore.catalog.servlet.port", -1,
+        "HMS Iceberg Catalog servlet server port. Negative value disables the servlet," +
+            " 0 will let the system determine the catalog server port," +
+            " positive value will be used as-is."
+    ),
+    ICEBERG_CATALOG_SERVLET_AUTH("hive.metastore.catalog.servlet.auth",
+        "hive.metastore.catalog.servlet.auth", "jwt",
+        "HMS Iceberg Catalog servlet authentication method (simple or jwt)."
+    ),
 
     // Deprecated Hive values that we are keeping for backwards compatibility.
     @Deprecated

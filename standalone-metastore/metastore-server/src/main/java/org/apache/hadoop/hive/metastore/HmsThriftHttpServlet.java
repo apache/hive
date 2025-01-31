@@ -35,7 +35,7 @@ If JWT auth is enabled, then the servlet is also responsible for validating
 JWTs sent in the Authorization header in HTTP request.
  */
 public class HmsThriftHttpServlet extends TServlet {
-  private final ServletSecurity security;
+  private final SecureServletCaller security;
 
   public HmsThriftHttpServlet(TProcessor processor,
       TProtocolFactory protocolFactory, Configuration conf) {

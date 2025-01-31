@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import org.apache.commons.cli.OptionBuilder;
@@ -120,10 +122,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   private static String msHost = null;
   private static ThriftServer thriftServer;
   private static Server propertyServer = null;
+  private static Server icebergServer = null;
 
 
   public static Server getPropertyServer() {
     return propertyServer;
+  }
+
+  public static Server getIcebergServer() {
+    return icebergServer;
   }
 
   public static boolean isRenameAllowed(Database srcDB, Database destDB) {
@@ -319,6 +326,23 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (isCliVerbose) {
           System.err.println(shutdownMsg);
         }
+        // property server
+        if (propertyServer != null) {
+          try {
+            propertyServer.stop();
+          } catch (Exception e) {
+            LOG.error("Error stopping Property Map server.", e);
+          }
+        }
+        // iceberg server
+        if (icebergServer != null) {
+          try {
+            icebergServer.stop();
+          } catch (Exception e) {
+            LOG.error("Error stopping Iceberg API server.", e);
+          }
+        }
+        // metrics
         if (MetastoreConf.getBoolVar(conf, ConfVars.METRICS_ENABLED)) {
           try {
             Metrics.shutdown();
@@ -389,7 +413,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       throws Exception {
     LOG.info("Attempting to start http metastore server on port: {}", port);
     // login principal if security is enabled
-    ServletSecurity.loginServerPincipal(conf);
+    ServletSecurity.loginServerPrincipal(conf);
 
     long maxMessageSize = MetastoreConf.getLongVar(conf, ConfVars.SERVER_MAX_MESSAGE_SIZE);
     int minWorkerThreads = MetastoreConf.getIntVar(conf, ConfVars.SERVER_MIN_THREADS);
@@ -742,8 +766,24 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
     // optionally create and start the property server and servlet
     propertyServer = PropertyServlet.startServer(conf);
+    // optionally create and start the Iceberg REST server and servlet
+    icebergServer = startIcebergCatalog(conf);
 
     thriftServer.start();
+  }
+
+  static Server startIcebergCatalog(Configuration configuration) {
+    try {
+      Class<?> iceClazz = Class.forName("org.apache.iceberg.rest.HMSCatalogServer");
+      Method iceStart = iceClazz.getMethod("startServer", Configuration.class);
+      return (Server) iceStart.invoke(null, configuration);
+    } catch (ClassNotFoundException xnf) {
+      LOG.warn("unable to start Iceberg REST Catalog server {}, missing jar?", xnf);
+      return null;
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      LOG.error("unable to start Iceberg REST Catalog server {}", e);
+      return null;
+    }
   }
 
   /**
