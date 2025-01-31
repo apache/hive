@@ -174,6 +174,7 @@ import org.apache.iceberg.expressions.StrictMetricsEvaluator;
 import org.apache.iceberg.hadoop.ConfigProperties;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.HiveTableOperations;
+import org.apache.iceberg.hive.MetastoreUtil;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
@@ -257,7 +258,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   public HiveMetaHook getMetaHook() {
     // Make sure to always return a new instance here, as HiveIcebergMetaHook might hold state relevant for the
     // operation.
-    return new HiveIcebergMetaHook(conf);
+    return StringUtils.isEmpty(MetastoreUtil.getCatalogType(conf)) ?
+        new HiveIcebergMetaHook(conf) : new BaseHiveIcebergMetaHook(conf);
   }
 
   @Override
@@ -2114,7 +2116,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       return Collections.emptyList();
     }
     Table icebergTable = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    return IcebergTableUtil.getPartitionKeys(icebergTable, icebergTable.spec().specId());
+    return MetastoreUtil.getPartitionKeys(icebergTable, icebergTable.spec().specId());
   }
 
   @Override
