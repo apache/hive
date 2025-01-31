@@ -9,7 +9,7 @@
 -- Mask total file size
 --! qt:replace:/(\S\"total-files-size\\\":\\\")(\d+)(\\\")/$1#Masked#$3/
 -- Mask width
---! qt:replace:/(width=1)\d+/$1####/
+--! qt:replace:/(width=[15])\d+/$1###/
 -- Mask iceberg version
 --! qt:replace:/(\S\"iceberg-version\\\":\\\")(\w+\s\w+\s\d+\.\d+\.\d+\s\(\w+\s\w+\))(\\\")/$1#Masked#$3/
 
