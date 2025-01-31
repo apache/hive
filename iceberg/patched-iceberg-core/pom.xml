@@ -94,6 +94,11 @@
                   <excludes>
                       **/HadoopInputFile.class
                       **/HadoopTableOperations.class
+                      org.apache.iceberg.avro.ValueReaders.class
+                      org.apache.iceberg.avro.ValueWriters.class
+                      org.apache.iceberg.BaseScan.class
+                      org.apache.iceberg.PartitionsTable.class
+                      org.apache.iceberg.Partitioning.class
                   </excludes>
                 </artifactItem>
               </artifactItems>

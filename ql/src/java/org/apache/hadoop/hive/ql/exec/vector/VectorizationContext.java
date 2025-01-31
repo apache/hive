@@ -1103,6 +1103,9 @@ import com.google.common.annotations.VisibleForTesting;
   private int getStructFieldIndex(ExprNodeFieldDesc exprNodeFieldDesc) throws HiveException {
     ExprNodeDesc structNodeDesc = exprNodeFieldDesc.getDesc();
     String fieldName = exprNodeFieldDesc.getFieldName();
+    if (exprNodeFieldDesc.getIsList()) {
+      throw new HiveException("Could not vectorize expression with a LIST type without an index");
+    }
     StructTypeInfo structTypeInfo = (StructTypeInfo) structNodeDesc.getTypeInfo();
     int index = 0;
     boolean isFieldExist = false;

@@ -22,6 +22,7 @@
 set hive.llap.io.enabled=true;
 set hive.vectorized.execution.enabled=true;
 set hive.optimize.shared.work.merge.ts.schema=true;
+set hive.merge.tezfiles=true;
 
 create table ice_orc (
     first_name string, 

@@ -1867,13 +1867,12 @@ public class HiveConf extends Configuration {
             + "execution engine doesn't take advantage of statistics stored in the cache."),
     // CBO related
     HIVE_CBO_ENABLED("hive.cbo.enable", true, "Flag to control enabling Cost Based Optimizations using Calcite framework."),
-    HIVE_CBO_FALLBACK_STRATEGY("hive.cbo.fallback.strategy", "CONSERVATIVE",
-        new StringSet(true, "NEVER", "CONSERVATIVE", "ALWAYS", "TEST"),
+    HIVE_CBO_FALLBACK_STRATEGY("hive.cbo.fallback.strategy", "NEVER",
+        new StringSet(true, "NEVER", "CONSERVATIVE", "ALWAYS"),
         "The strategy defines when Hive fallbacks to legacy optimizer when CBO fails:" 
             + "NEVER, never use the legacy optimizer (all CBO errors are fatal);"
             + "ALWAYS, always use the legacy optimizer (CBO errors are not fatal);"
-            + "CONSERVATIVE, use the legacy optimizer only when the CBO error is not related to subqueries and views;"
-            + "TEST, specific behavior only for tests, do not use in production"), 
+            + "CONSERVATIVE, use the legacy optimizer only when the CBO error is not related to subqueries and views."), 
     HIVE_CBO_CNF_NODES_LIMIT("hive.cbo.cnf.maxnodes", -1, "When converting to conjunctive normal form (CNF), fail if" +
         "the expression exceeds this threshold; the threshold is expressed in terms of number of nodes (leaves and" +
         "interior nodes). -1 to not set up a threshold."),
@@ -2240,7 +2239,8 @@ public class HiveConf extends Configuration {
         "If this is set to true the URI for auth will have the default location masked with DEFAULT_TABLE_LOCATION"),
     HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY("hive.iceberg.allow.datafiles.in.table.location.only", false,
         "If this is set to true, then all the data files being read should be withing the table location"),
-
+    HIVE_ICEBERG_COMPACTION_TARGET_FILE_SIZE("hive.iceberg.compaction.target.file.size", "128mb",
+        new SizeValidator(), "Target file size for Iceberg compaction."),
     HIVE_USE_EXPLICIT_RCFILE_HEADER("hive.exec.rcfile.use.explicit.header", true,
         "If this is set the header for RCFiles will simply be RCF.  If this is not\n" +
         "set the header will be that borrowed from sequence files, e.g. SEQ- followed\n" +
@@ -4541,7 +4541,7 @@ public class HiveConf extends Configuration {
         "If enabled, HiveServer2 will block any requests made to it over http " +
             "if an X-CSRF-TOKEN header is not present"),
     HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist",
-      "set,reset,dfs,add,list,delete,reload,compile,llap",
+      "set,reset,dfs,add,list,delete,reload,compile,llap,processlist",
         "Comma separated list of non-SQL Hive commands users are authorized to execute"),
     HIVE_SERVER2_JOB_CREDENTIAL_PROVIDER_PATH("hive.server2.job.credential.provider.path", "",
         "If set, this configuration property should provide a comma-separated list of URLs that indicates the type and " +

@@ -1,6 +1,5 @@
 set hive.mapred.mode=nonstrict;
 set hive.optimize.skewjoin.compiletime = true;
-set hive.cbo.fallback.strategy=NEVER;
 
 CREATE TABLE T1_n88(key STRING, value STRING) STORED AS TEXTFILE;
 

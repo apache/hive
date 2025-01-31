@@ -343,7 +343,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
               .getEncodedDumpRootPath(conf, sourceDbNameOrPattern.toLowerCase()), conf);
       if (ReplUtils.failedWithNonRecoverableError(latestDumpPath, conf)) {
         Path nonRecoverableFile = new Path(latestDumpPath, ReplAck.NON_RECOVERABLE_MARKER.toString());
-        ReplUtils.reportStatusInReplicationMetrics("REPL_LOAD", Status.SKIPPED,
+        ReplUtils.reportStatusInReplicationMetrics("REPL_LOAD", Status.FAILED_ADMIN,
                 nonRecoverableFile.toString(), conf,  sourceDbNameOrPattern, null);
         throw new Exception(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getMsg());
       }

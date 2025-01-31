@@ -4685,12 +4685,12 @@ public class TestReplicationScenarios {
       verifyFail("REPL DUMP " + primaryDbName, driver);
 
       metric = collector.getMetrics().getLast();
-      assertEquals(metric.getProgress().getStatus(), Status.SKIPPED);
+      assertEquals(metric.getProgress().getStatus(), Status.FAILED_ADMIN);
       assertEquals(metric.getProgress().getStages().get(0).getErrorLogPath(), nonRecoverableFile.toString());
 
       verifyFail("REPL DUMP " + primaryDbName, driver);
       metric = collector.getMetrics().getLast();
-      assertEquals(metric.getProgress().getStatus(), Status.SKIPPED);
+      assertEquals(metric.getProgress().getStatus(), Status.FAILED_ADMIN);
       assertEquals(metric.getProgress().getStages().get(0).getErrorLogPath(), nonRecoverableFile.toString());
 
       fs.delete(nonRecoverableFile, true);
@@ -4713,7 +4713,7 @@ public class TestReplicationScenarios {
       verifyFail("REPL LOAD " + primaryDbName + " INTO " + replicaDbName, driverMirror);
 
       metric = collector.getMetrics().getLast();
-      assertEquals(metric.getProgress().getStatus(), Status.SKIPPED);
+      assertEquals(metric.getProgress().getStatus(), Status.FAILED_ADMIN);
       assertEquals(metric.getProgress().getStages().get(0).getErrorLogPath(), nonRecoverableFile.toString());
     } finally {
       isMetricsEnabledForTests(false);
