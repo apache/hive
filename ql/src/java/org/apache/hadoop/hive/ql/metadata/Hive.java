@@ -246,6 +246,7 @@ import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.thrift.TException;
@@ -5839,11 +5840,28 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
     };
 
+    if ("rest".equals(conf.get("metastore.type", "hms"))) {
+      return getHiveIcebergRESTCatalog(conf);
+    }
+
     if (conf.getBoolVar(ConfVars.METASTORE_FASTPATH)) {
       return new SessionHiveMetaStoreClient(conf, hookLoader, allowEmbedded);
     } else {
       return RetryingMetaStoreClient.getProxy(conf, hookLoader, metaCallTimeMap,
           SessionHiveMetaStoreClient.class.getName(), allowEmbedded);
+    }
+  }
+  private IMetaStoreClient getHiveIcebergRESTCatalog(HiveConf conf) throws MetaException {
+    try {
+      Class<? extends IMetaStoreClient> handlerClass =
+          (Class<? extends IMetaStoreClient>)
+              Class.forName("org.apache.iceberg.hive.HiveIcebergRESTCatalogClientAdapter", true, Utilities.getSessionSpecifiedClassLoader());
+      IMetaStoreClient restCatalogMetastoreClient = ReflectionUtils.newInstance(handlerClass, conf);
+      restCatalogMetastoreClient.reconnect();
+      return restCatalogMetastoreClient;
+    } catch (ClassNotFoundException e) {
+      throw new MetaException("Error in loading HiveIcebergRESTCatalog class."
+          + e.getMessage());
     }
   }
 
