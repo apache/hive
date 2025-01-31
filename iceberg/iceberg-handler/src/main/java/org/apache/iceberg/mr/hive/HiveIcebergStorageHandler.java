@@ -174,9 +174,8 @@ import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.TableScan;
 import org.apache.iceberg.actions.DeleteOrphanFiles;
-import org.apache.iceberg.data.InternalRecordWrapper;
+import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.PartitionStatsHandler;
-import org.apache.iceberg.data.PartitionStatsRecord;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.exceptions.ValidationException;
 import org.apache.iceberg.expressions.Evaluator;
@@ -564,21 +563,24 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         Types.StructType partitionType = Partitioning.partitionType(table);
         Schema schema = PartitionStatsHandler.schema(partitionType);
 
-        CloseableIterable<PartitionStatsRecord> partitionStatsRecords = PartitionStatsHandler.readPartitionStatsFile(
+        CloseableIterable<PartitionStats> partitionStatsRecords = PartitionStatsHandler.readPartitionStatsFile(
             schema, table.io().newInputFile(statsFile.path()));
 
         try (Closeable toClose = partitionStatsRecords) {
-          Types.StructType recordSchema = (Types.StructType) schema.findField(
-              PartitionStatsHandler.Column.PARTITION.name()).type();
-          InternalRecordWrapper wrapper = new InternalRecordWrapper(recordSchema);
-
           PartitionStats partitionStats = Iterables.tryFind(partitionStatsRecords, stats -> {
-            PartitionSpec spec = table.specs().get(stats.unwrap().specId());
-            return spec.partitionToPath(wrapper.wrap(stats.unwrap().partition()))
-                .equals(partish.getPartition().getName());
-          })
-              .transform(PartitionStatsRecord::unwrap)
-              .orNull();
+            PartitionSpec spec = table.specs().get(stats.specId());
+            Schema readSchema = spec.partitionType().asSchema();
+            GenericRecord record = GenericRecord.create(readSchema);
+
+            List<Types.NestedField> fields = partitionType.fields();
+            for (int index = 0, pos = 0; index < fields.size(); index++) {
+              if (readSchema.findField(fields.get(index).fieldId()) != null) {
+                record.set(pos++, stats.partition().get(index, Object.class));
+              }
+            }
+            return spec.partitionToPath(record).equals(partish.getPartition().getName());
+
+          }).orNull();
 
           if (partitionStats != null) {
             Map<String, String> stats = ImmutableMap.of(

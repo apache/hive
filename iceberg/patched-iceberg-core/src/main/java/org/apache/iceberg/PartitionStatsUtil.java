@@ -25,14 +25,12 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
-import org.apache.iceberg.data.GenericRecord;
-import org.apache.iceberg.data.Record;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Queues;
 import org.apache.iceberg.types.Comparators;
-import org.apache.iceberg.types.Types;
 import org.apache.iceberg.types.Types.StructType;
 import org.apache.iceberg.util.PartitionMap;
 import org.apache.iceberg.util.PartitionUtil;
@@ -94,13 +92,17 @@ public class PartitionStatsUtil {
       PartitionMap<PartitionStats> statsMap = PartitionMap.create(table.specs());
       int specId = manifest.partitionSpecId();
       PartitionSpec spec = table.specs().get(specId);
+      PartitionData keyTemplate = new PartitionData(partitionType);
 
       for (ManifestEntry<?> entry : reader.entries()) {
         ContentFile<?> file = entry.file();
-        Record key = coercedPartitionRecord(file, spec, partitionType);
+        StructLike coercedPartition =
+            PartitionUtil.coercePartition(partitionType, spec, file.partition());
+        StructLike key = keyTemplate.copyFor(coercedPartition);
         Snapshot snapshot = table.snapshot(entry.snapshotId());
         PartitionStats stats =
-            statsMap.computeIfAbsent(specId, key, () -> new PartitionStats(key, specId));
+            statsMap.computeIfAbsent(specId, ((PartitionData) file.partition()).copy(),
+              () -> new PartitionStats(key, specId));
         if (entry.isLive()) {
           stats.liveEntry(file, snapshot);
         } else {
@@ -138,21 +140,26 @@ public class PartitionStatsUtil {
     return statsMap.values();
   }
 
-  private static Record coercedPartitionRecord(
-      ContentFile<?> file, PartitionSpec spec, StructType partitionType) {
-    // keep the partition data as per the unified spec by coercing
-    StructLike partition = PartitionUtil.coercePartition(partitionType, spec, file.partition());
-    Schema partitionSchema = spec.partitionType().asSchema();
-
-    GenericRecord record = GenericRecord.create(partitionSchema);
-    List<Types.NestedField> fields = partitionType.fields();
-    for (int index = 0, pos = 0; index < fields.size(); index++) {
-      if (partitionSchema.findField(fields.get(index).fieldId()) != null) {
-        Object val = partition.get(index, fields.get(index).type().typeId().javaClass());
-        record.set(pos++, val);
-      }
+  @SuppressWarnings("checkstyle:CyclomaticComplexity")
+  public static boolean isEqual(
+      Comparator<StructLike> partitionComparator, PartitionStats stats1, PartitionStats stats2) {
+    if (stats1 == stats2) {
+      return true;
+    } else if (stats1 == null || stats2 == null) {
+      return false;
     }
 
-    return record;
+    return partitionComparator.compare(stats1.partition(), stats2.partition()) == 0 &&
+        stats1.specId() == stats2.specId() &&
+        stats1.dataRecordCount() == stats2.dataRecordCount() &&
+        stats1.dataFileCount() == stats2.dataFileCount() &&
+        stats1.totalDataFileSizeInBytes() == stats2.totalDataFileSizeInBytes() &&
+        stats1.positionDeleteRecordCount() == stats2.positionDeleteRecordCount() &&
+        stats1.positionDeleteFileCount() == stats2.positionDeleteFileCount() &&
+        stats1.equalityDeleteRecordCount() == stats2.equalityDeleteRecordCount() &&
+        stats1.equalityDeleteFileCount() == stats2.equalityDeleteFileCount() &&
+        stats1.totalRecordCount() == stats2.totalRecordCount() &&
+        Objects.equals(stats1.lastUpdatedAt(), stats2.lastUpdatedAt()) &&
+        Objects.equals(stats1.lastUpdatedSnapshotId(), stats2.lastUpdatedSnapshotId());
   }
 }

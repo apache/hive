@@ -19,14 +19,12 @@
 
 package org.apache.iceberg.data;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.function.BiFunction;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.HasTableOperations;
 import org.apache.iceberg.ImmutableGenericPartitionStatisticsFile;
@@ -40,27 +38,19 @@ import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.avro.Avro;
-import org.apache.iceberg.data.avro.DataReader;
-import org.apache.iceberg.data.orc.GenericOrcReader;
-import org.apache.iceberg.data.parquet.GenericParquetReaders;
-import org.apache.iceberg.encryption.EncryptedFiles;
-import org.apache.iceberg.encryption.EncryptionKeyMetadata;
+import org.apache.iceberg.avro.InternalReader;
+import org.apache.iceberg.avro.InternalWriter;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.DataWriter;
-import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.io.InputFile;
 import org.apache.iceberg.io.OutputFile;
-import org.apache.iceberg.orc.ORC;
-import org.apache.iceberg.parquet.Parquet;
+import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.types.Types.IntegerType;
 import org.apache.iceberg.types.Types.LongType;
 import org.apache.iceberg.types.Types.NestedField;
 import org.apache.iceberg.types.Types.StructType;
 import org.apache.iceberg.util.SnapshotUtil;
-
-import static org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT;
-import static org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT_DEFAULT;
 
 // TODO: remove class once Iceberg PR #11216 is merged and released
 
@@ -108,20 +98,19 @@ public final class PartitionStatsHandler {
    */
   public static Schema schema(StructType partitionType) {
     Preconditions.checkState(!partitionType.fields().isEmpty(), "table must be partitioned");
-
     return new Schema(
-      NestedField.required(1, Column.PARTITION.name(), partitionType),
-      NestedField.required(2, Column.SPEC_ID.name(), IntegerType.get()),
-      NestedField.required(3, Column.DATA_RECORD_COUNT.name(), LongType.get()),
-      NestedField.required(4, Column.DATA_FILE_COUNT.name(), IntegerType.get()),
-      NestedField.required(5, Column.TOTAL_DATA_FILE_SIZE_IN_BYTES.name(), LongType.get()),
-      NestedField.optional(6, Column.POSITION_DELETE_RECORD_COUNT.name(), LongType.get()),
-      NestedField.optional(7, Column.POSITION_DELETE_FILE_COUNT.name(), IntegerType.get()),
-      NestedField.optional(8, Column.EQUALITY_DELETE_RECORD_COUNT.name(), LongType.get()),
-      NestedField.optional(9, Column.EQUALITY_DELETE_FILE_COUNT.name(), IntegerType.get()),
-      NestedField.optional(10, Column.TOTAL_RECORD_COUNT.name(), LongType.get()),
-      NestedField.optional(11, Column.LAST_UPDATED_AT.name(), LongType.get()),
-      NestedField.optional(12, Column.LAST_UPDATED_SNAPSHOT_ID.name(), LongType.get()));
+        NestedField.required(1, Column.PARTITION.name(), partitionType),
+        NestedField.required(2, Column.SPEC_ID.name(), IntegerType.get()),
+        NestedField.required(3, Column.DATA_RECORD_COUNT.name(), LongType.get()),
+        NestedField.required(4, Column.DATA_FILE_COUNT.name(), IntegerType.get()),
+        NestedField.required(5, Column.TOTAL_DATA_FILE_SIZE_IN_BYTES.name(), LongType.get()),
+        NestedField.optional(6, Column.POSITION_DELETE_RECORD_COUNT.name(), LongType.get()),
+        NestedField.optional(7, Column.POSITION_DELETE_FILE_COUNT.name(), IntegerType.get()),
+        NestedField.optional(8, Column.EQUALITY_DELETE_RECORD_COUNT.name(), LongType.get()),
+        NestedField.optional(9, Column.EQUALITY_DELETE_FILE_COUNT.name(), IntegerType.get()),
+        NestedField.optional(10, Column.TOTAL_RECORD_COUNT.name(), LongType.get()),
+        NestedField.optional(11, Column.LAST_UPDATED_AT.name(), LongType.get()),
+        NestedField.optional(12, Column.LAST_UPDATED_SNAPSHOT_ID.name(), LongType.get()));
   }
 
   /**
@@ -150,38 +139,28 @@ public final class PartitionStatsHandler {
     }
 
     StructType partitionType = Partitioning.partitionType(table);
-    Schema schema = schema(partitionType);
-
     Collection<PartitionStats> stats = PartitionStatsUtil.computeStats(table, currentSnapshot);
     List<PartitionStats> sortedStats = PartitionStatsUtil.sortStats(stats, partitionType);
-    Iterator<PartitionStatsRecord> convertedRecords = statsToRecords(sortedStats, schema);
-    return writePartitionStatsFile(table, currentSnapshot.snapshotId(), schema, convertedRecords);
+    return writePartitionStatsFile(
+        table, currentSnapshot.snapshotId(), schema(partitionType), sortedStats.iterator());
   }
 
-  private static PartitionStatisticsFile writePartitionStatsFile(
-      Table table, long snapshotId, Schema dataSchema, Iterator<PartitionStatsRecord> records) {
+  @VisibleForTesting
+  static PartitionStatisticsFile writePartitionStatsFile(
+      Table table, long snapshotId, Schema dataSchema, Iterator<PartitionStats> records) {
     OutputFile outputFile = newPartitionStatsFile(table, snapshotId);
-    FileWriterFactory<Record> factory =
-        GenericFileWriterFactory.builderFor(table)
-        .dataSchema(dataSchema)
-        .dataFileFormat(fileFormat(outputFile.location()))
-        .build();
-    DataWriter<Record> writer =
-        factory.newDataWriter(
-        EncryptedFiles.encryptedOutput(outputFile, EncryptionKeyMetadata.EMPTY),
-        PartitionSpec.unpartitioned(),
-        null);
-    try (Closeable toClose = writer) {
+
+    try (DataWriter<StructLike> writer = dataWriter(dataSchema, outputFile)) {
       records.forEachRemaining(writer::write);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
 
     return ImmutableGenericPartitionStatisticsFile.builder()
-      .snapshotId(snapshotId)
-      .path(outputFile.location())
-      .fileSizeInBytes(outputFile.toInputFile().getLength())
-      .build();
+        .snapshotId(snapshotId)
+        .path(outputFile.location())
+        .fileSizeInBytes(outputFile.toInputFile().getLength())
+        .build();
   }
 
   /**
@@ -190,35 +169,10 @@ public final class PartitionStatsHandler {
    * @param schema The {@link Schema} of the partition statistics file.
    * @param inputFile An {@link InputFile} pointing to the partition stats file.
    */
-  public static CloseableIterable<PartitionStatsRecord> readPartitionStatsFile(
+  public static CloseableIterable<PartitionStats> readPartitionStatsFile(
       Schema schema, InputFile inputFile) {
-    CloseableIterable<Record> records;
-    FileFormat fileFormat = fileFormat(inputFile.location());
-    switch (fileFormat) {
-      case PARQUET:
-        records =
-          Parquet.read(inputFile)
-            .project(schema)
-            .createReaderFunc(
-              fileSchema -> GenericParquetReaders.buildReader(schema, fileSchema))
-            .build();
-        break;
-      case ORC:
-        records =
-          ORC.read(inputFile)
-            .project(schema)
-            .createReaderFunc(fileSchema -> GenericOrcReader.buildReader(schema, fileSchema))
-            .build();
-        break;
-      case AVRO:
-        records = Avro.read(inputFile).project(schema).createReaderFunc(DataReader::create).build();
-        break;
-      default:
-        throw new UnsupportedOperationException("Unsupported file format:" + fileFormat.name());
-    }
-
-    return CloseableIterable.transform(
-      records, PartitionStatsHandler::recordToPartitionStatsRecord);
+    CloseableIterable<StructLike> records = dataReader(schema, inputFile);
+    return CloseableIterable.transform(records, PartitionStatsHandler::recordToPartitionStats);
   }
 
   private static FileFormat fileFormat(String fileLocation) {
@@ -226,24 +180,57 @@ public final class PartitionStatsHandler {
   }
 
   private static OutputFile newPartitionStatsFile(Table table, long snapshotId) {
-    FileFormat fileFormat =
-        fileFormat(
-        table.properties().getOrDefault(DEFAULT_FILE_FORMAT, DEFAULT_FILE_FORMAT_DEFAULT));
+    FileFormat fileFormat = FileFormat.AVRO;
     return table
-      .io()
-      .newOutputFile(
-        ((HasTableOperations) table)
-          .operations()
-          .metadataFileLocation(
-            fileFormat.addExtension(
-              String.format(Locale.ROOT, "partition-stats-%d", snapshotId))));
+        .io()
+        .newOutputFile(
+            ((HasTableOperations) table)
+                .operations()
+                .metadataFileLocation(
+                    fileFormat.addExtension(
+                        String.format(Locale.ROOT, "partition-stats-%d", snapshotId))));
   }
 
-  private static PartitionStatsRecord recordToPartitionStatsRecord(Record record) {
+  private static DataWriter<StructLike> dataWriter(Schema dataSchema, OutputFile outputFile)
+      throws IOException {
+    FileFormat fileFormat = fileFormat(outputFile.location());
+    switch (fileFormat) {
+      case AVRO:
+        return Avro.writeData(outputFile)
+            .schema(dataSchema)
+            .createWriterFunc(InternalWriter::create)
+            .overwrite()
+            .withSpec(PartitionSpec.unpartitioned())
+            .build();
+      case PARQUET:
+      case ORC:
+        // Internal writers are not supported for PARQUET & ORC yet.
+      default:
+        throw new UnsupportedOperationException("Unsupported file format:" + fileFormat.name());
+    }
+  }
+
+  private static CloseableIterable<StructLike> dataReader(Schema schema, InputFile inputFile) {
+    FileFormat fileFormat = fileFormat(inputFile.location());
+    switch (fileFormat) {
+      case AVRO:
+        return Avro.read(inputFile)
+            .project(schema)
+            .createReaderFunc(fileSchema -> InternalReader.create(schema))
+            .build();
+      case PARQUET:
+      case ORC:
+        // Internal readers are not supported for PARQUET & ORC yet.
+      default:
+        throw new UnsupportedOperationException("Unsupported file format:" + fileFormat.name());
+    }
+  }
+
+  private static PartitionStats recordToPartitionStats(StructLike record) {
     PartitionStats stats =
         new PartitionStats(
-        record.get(Column.PARTITION.id(), StructLike.class),
-        record.get(Column.SPEC_ID.id(), Integer.class));
+            record.get(Column.PARTITION.id(), StructLike.class),
+            record.get(Column.SPEC_ID.id(), Integer.class));
     stats.set(Column.DATA_RECORD_COUNT.id(), record.get(Column.DATA_RECORD_COUNT.id(), Long.class));
     stats.set(Column.DATA_FILE_COUNT.id(), record.get(Column.DATA_FILE_COUNT.id(), Integer.class));
     stats.set(
@@ -267,67 +254,6 @@ public final class PartitionStatsHandler {
     stats.set(
         Column.LAST_UPDATED_SNAPSHOT_ID.id(),
         record.get(Column.LAST_UPDATED_SNAPSHOT_ID.id(), Long.class));
-
-    return PartitionStatsRecord.create(record.struct(), stats);
-  }
-
-  private static Iterator<PartitionStatsRecord> statsToRecords(
-      List<PartitionStats> stats, Schema recordSchema) {
-    StructType partitionType = (StructType) recordSchema.findField(Column.PARTITION.name()).type();
-    return new TransformIteratorWithBiFunction<>(
-      stats.iterator(),
-        (partitionStats, schema) -> {
-          PartitionStatsRecord record = PartitionStatsRecord.create(schema, partitionStats);
-          record.set(
-              Column.PARTITION.id(),
-              convertPartitionValues(
-              record.get(Column.PARTITION.id(), StructLike.class), partitionType));
-          return record;
-        },
-      recordSchema);
-  }
-
-  private static Record convertPartitionValues(
-      StructLike partitionRecord, StructType partitionType) {
-    if (partitionRecord == null) {
-      return null;
-    }
-
-    GenericRecord converted = GenericRecord.create(partitionType);
-    for (int index = 0; index < partitionRecord.size(); index++) {
-      Object val = partitionRecord.get(index, Object.class);
-      if (val != null) {
-        converted.set(
-            index,
-            IdentityPartitionConverters.convertConstant(
-            partitionType.fields().get(index).type(), val));
-      }
-    }
-
-    return converted;
-  }
-
-  private static class TransformIteratorWithBiFunction<T, U, R> implements Iterator<R> {
-    private final Iterator<T> iterator;
-    private final BiFunction<T, U, R> transformer;
-    private final U additionalInput;
-
-    TransformIteratorWithBiFunction(
-        Iterator<T> iterator, BiFunction<T, U, R> transformer, U additionalInput) {
-      this.iterator = iterator;
-      this.transformer = transformer;
-      this.additionalInput = additionalInput;
-    }
-
-    @Override
-    public boolean hasNext() {
-      return iterator.hasNext();
-    }
-
-    @Override
-    public R next() {
-      T nextElement = iterator.next();
-      return transformer.apply(nextElement, additionalInput);
-    }
+    return stats;
   }
 }
