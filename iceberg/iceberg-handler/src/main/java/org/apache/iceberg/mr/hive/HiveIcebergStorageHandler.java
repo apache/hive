@@ -172,6 +172,7 @@ import org.apache.iceberg.expressions.Projections;
 import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.expressions.StrictMetricsEvaluator;
 import org.apache.iceberg.hadoop.ConfigProperties;
+import org.apache.iceberg.hive.HMSTablePropertyHelper;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.io.CloseableIterable;
@@ -1556,7 +1557,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       try {
         HiveIcebergSerDe icebergSerDe = (HiveIcebergSerDe) tableDesc.getDeserializer(configuration);
         schema = icebergSerDe.getTableSchema();
-        spec = IcebergTableUtil.spec(configuration, icebergSerDe.getTableSchema());
+        spec = HMSTablePropertyHelper.createPartitionSpec(configuration, icebergSerDe.getTableSchema());
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
