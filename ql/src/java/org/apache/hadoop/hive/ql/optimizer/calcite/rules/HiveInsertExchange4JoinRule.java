@@ -54,19 +54,6 @@ import com.google.common.collect.Sets;
  */
 public class HiveInsertExchange4JoinRule extends RelOptRule {
 
-  /** Rule that creates Exchange operators under a MultiJoin operator. */
-  public static HiveInsertExchange4JoinRule exchangeBelowMultiJoin(
-          RelFieldCollation.NullDirection defaultAscNullDirection) {
-    return new HiveInsertExchange4JoinRule(HiveMultiJoin.class, defaultAscNullDirection);
-  }
-
-
-  /** Rule that creates Exchange operators under a Join operator. */
-  public static HiveInsertExchange4JoinRule exchangeBelowJoin(
-          RelFieldCollation.NullDirection defaultAscNullDirection) {
-    return new HiveInsertExchange4JoinRule(Join.class, defaultAscNullDirection);
-  }
-
   private final RelFieldCollation.NullDirection defaultAscNullDirection;
 
   public HiveInsertExchange4JoinRule(
