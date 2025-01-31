@@ -1176,8 +1176,8 @@ public class SessionState implements ISessionAuthState{
     protected Logger LOG;
     protected boolean isSilent;
 
-    private final StringBuilder summary = new StringBuilder();
-    private boolean collectSummary;
+    private final StringBuilder querySummary = new StringBuilder();
+    private boolean collectQuerySummary;
 
     public LogHelper(Logger LOG) {
       this(LOG, false);
@@ -1323,9 +1323,9 @@ public class SessionState implements ISessionAuthState{
       if (!isSilent) {
         getInfoStream().println(info);
       }
-      if (collectSummary){
-        summary.append(info);
-        summary.append("\n");
+      if (collectQuerySummary){
+        querySummary.append(info);
+        querySummary.append("\n");
       }
       LOG.info(info + StringUtils.defaultString(detail));
     }
@@ -1391,25 +1391,25 @@ public class SessionState implements ISessionAuthState{
       if(!getIsSilent() || getIsQtestLogging()) {
         getErrStream().println(error);
       }
-      if (collectSummary){
-        summary.append(error);
-        summary.append("\n");
+      if (collectQuerySummary){
+        querySummary.append(error);
+        querySummary.append("\n");
       }
       LOG.error(error + StringUtils.defaultString(detail));
     }
 
-    public String getSummary() {
-      return summary.toString();
+    public String getQuerySummary() {
+      return querySummary.toString();
     }
 
     public void startSummary() {
-      summary.setLength(0);
-      summary.append("\n");
-      collectSummary = true;
+      querySummary.setLength(0);
+      querySummary.append("\n");
+      collectQuerySummary = true;
     }
 
     public void endSummary() {
-      collectSummary = false;
+      collectQuerySummary = false;
     }
   }
 

@@ -450,9 +450,13 @@ public class Compiler {
 
   private void explainOutput(BaseSemanticAnalyzer sem, QueryPlan plan) throws IOException {
     HiveConf conf = driverContext.getConf();
+
+    boolean queryHistoryExplainPlanEnabled = conf.getBoolVar(
+        HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED) && conf.getBoolVar(
+        HiveConf.ConfVars.HIVE_QUERY_HISTORY_EXPLAIN_PLAN_ENABLED);
+
     if (conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT) ||
-        conf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT) ||
-        conf.isQueryHistoryExplainEnabled()) {
+        conf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT) || queryHistoryExplainPlanEnabled) {
       String explainOutput = ExplainTask.getExplainOutput(sem, plan, tree, queryState,
           context, conf);
       if (explainOutput != null) {
@@ -467,7 +471,7 @@ public class Compiler {
             conf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT)) {
           driverContext.getQueryDisplay().setExplainPlan(explainOutput);
         }
-        if (conf.isQueryHistoryExplainEnabled()){
+        if (queryHistoryExplainPlanEnabled){
           driverContext.setExplainPlan(explainOutput);
         }
       }

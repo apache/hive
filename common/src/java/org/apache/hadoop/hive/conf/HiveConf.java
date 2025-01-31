@@ -7168,11 +7168,6 @@ public class HiveConf extends Configuration {
     return isWebUiEnabled() && this.getIntVar(ConfVars.HIVE_SERVER2_WEBUI_MAX_HISTORIC_QUERIES) > 0;
   }
 
-  public boolean isQueryHistoryExplainEnabled() {
-    return getBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED) && getBoolVar(
-        HiveConf.ConfVars.HIVE_QUERY_HISTORY_EXPLAIN_PLAN_ENABLED);
-  }
-
   public static boolean isLoadMetastoreConfig() {
     return loadMetastoreConfig;
   }

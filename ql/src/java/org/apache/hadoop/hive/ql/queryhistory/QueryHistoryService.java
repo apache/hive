@@ -43,12 +43,11 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 public class QueryHistoryService {
   private static final Logger LOG = LoggerFactory.getLogger(QueryHistoryService.class);
 
-  private static QueryHistoryService INSTANCE = null;
+  private static QueryHistoryService instance = null;
 
   protected final Queue<Record> queryHistoryQueue = new LinkedBlockingQueue<>();
 
-  private final ExecutorService flushExecutor = Executors.newFixedThreadPool(1,
-      new ThreadFactoryBuilder().setNameFormat("QueryHistoryService repository thread").setDaemon(true).build());
+  private ExecutorService flushExecutor;
   private final ScheduledExecutorService periodicFlushExecutor = Executors.newScheduledThreadPool(1,
       new ThreadFactoryBuilder().setNameFormat("QueryHistoryService periodic flush check").setDaemon(true).build());
 
@@ -60,7 +59,19 @@ public class QueryHistoryService {
   private final int flushInterval;
   private final QueryHistoryRepository repository;
 
-  public QueryHistoryService(HiveConf inputConf, ServiceContext serviceContext) {
+  public static QueryHistoryService newInstance(HiveConf inputConf, ServiceContext serviceContext) {
+    // keeping a global, static instance is usually considered an antipattern, even in case of using the Singleton
+    // design, this time the constraint was the ability to hook into the query processing (Driver) from somewhere the
+    // outer service (HiveServer2, QTestUtil, etc.), which otherwise would have needed passing a service instance
+    // through many layers, making the code and method signatures more complicated
+    if (instance == null) {
+      instance = new QueryHistoryService(inputConf, serviceContext);
+    }
+    return instance;
+  }
+
+  @VisibleForTesting
+  QueryHistoryService(HiveConf inputConf, ServiceContext serviceContext) {
     LOG.info("Creating QueryHistoryService instance");
 
     this.conf = new HiveConf(inputConf);
@@ -75,12 +86,20 @@ public class QueryHistoryService {
 
     LOG.info("QueryHistoryService created [batchSize: {}, maxQueueSizeInMemoryBytes: {}]",
         batchSize, maxQueueSizeInMemoryBytes);
+  }
 
-    // keeping a global, static instance is usually considered an antipattern, even in case of using the Singleton
-    // design, this time the constraint was the ability to hook into the query processing (Driver) from somewhere the
-    // outer service (HiveServer2, QTestUtil, etc.), which otherwise would have needed passing a service instance
-    // through many layers, making the code and method signatures more complicated
-    INSTANCE = this;
+  private static class QueryHistoryThread extends Thread {
+
+    public QueryHistoryThread(Runnable runnable, HiveConf conf) {
+      super(runnable);
+      HiveConf jobConf = new HiveConf(conf);
+      // this session won't need tez, let's not mess with starting a TezSessionState
+      jobConf.setBoolVar(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION, false);
+      // localize this conf for the thread that will be running the repository,
+      // as iceberg integration heavily relies on the session state conf
+      SessionState session = SessionState.start(jobConf);
+      LOG.info("Session for QueryHistoryService started, sessionId: {}", session.getSessionId());
+    }
   }
 
   /**
@@ -90,19 +109,9 @@ public class QueryHistoryService {
   public void start() {
     repository.init(conf, new Schema());
 
-    try {
-      flushExecutor.submit(() -> {
-        // this session won't need tez, let's not mess with starting a TezSessionState
-        conf.setBoolVar(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION, false);
-
-        // localize this conf for the thread that will be running the repository,
-        // as iceberg integration heavily relies on the session state conf
-        SessionState session = SessionState.start(conf);
-        LOG.info("Session for QueryHistoryService started, sessionId: {}", session.getSessionId());
-      });
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to start QueryHistoryService", e);
-    }
+    flushExecutor = Executors.newFixedThreadPool(1,
+        new ThreadFactoryBuilder().setNameFormat("QueryHistoryService repository thread").setDaemon(true)
+            .setThreadFactory(r -> new QueryHistoryThread(r, conf)).build());
 
     if (flushInterval > 0) {
       // only flush, don't wait, this is a background task
@@ -111,10 +120,10 @@ public class QueryHistoryService {
   }
 
   public static QueryHistoryService getInstance() {
-    if (INSTANCE == null) {
+    if (instance == null) {
       throw new RuntimeException("QueryHistoryService is not present when asked for the singleton instance");
     }
-    return INSTANCE;
+    return instance;
   }
 
   private void printConfigInformation() {
@@ -166,7 +175,7 @@ public class QueryHistoryService {
         recordCreateEnd - recordCreateStart, queryHistoryQueue.size());
 
     CompletableFuture<?> flushFuture = flushRecordsIfNeeded();
-    maybeWaitForRecordsToBeFlushed(batchSize == 0, flushFuture);
+    waitForRecordsToBeFlushed(batchSize == 0, flushFuture);
   }
 
   private CompletableFuture<?> flushRecordsIfNeeded() {
@@ -179,7 +188,7 @@ public class QueryHistoryService {
     }
   }
 
-  private void maybeWaitForRecordsToBeFlushed(boolean shouldWait, CompletableFuture<?> flushFuture) {
+  private void waitForRecordsToBeFlushed(boolean shouldWait, CompletableFuture<?> flushFuture) {
     if (shouldWait) {
       flushFuture.join();
     }
@@ -222,7 +231,7 @@ public class QueryHistoryService {
     periodicFlushExecutor.shutdownNow();
 
     CompletableFuture<?> flushFuture = doFlush();
-    maybeWaitForRecordsToBeFlushed(true, flushFuture);
+    waitForRecordsToBeFlushed(true, flushFuture);
     flushExecutor.shutdownNow();
   }
 

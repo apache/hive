@@ -165,7 +165,7 @@ public class Schema {
         "A captured error message as a failure reason if any"),
     NUM_ROWS_FETCHED("num_rows_fetched", "int", "Number of rows fetched by the query"),
     PLAN("plan", "string", "Full text of the query plan"),
-    TABLES_QUERIED("tables_queried", "string",
+    USED_TABLES("used_tables", "string",
         "Comma-separated list of the tables used by this query"),
     EXEC_SUMMARY("exec_summary", "string", "Full text of the exec summary"),
     CONFIGURATION_OPTIONS_CHANGED("configuration_options_changed", "string",

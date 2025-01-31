@@ -347,12 +347,7 @@ public abstract class BaseSemanticAnalyzer {
     if (queryProperties == null) {
       queryProperties = new QueryProperties();
     }
-    queryProperties.setTablesQueried(ctx.getParsedTables().stream()
-        .map(pair -> {
-          String db = Strings.isNullOrEmpty(pair.getKey()) ? "default" : pair.getKey();
-          String table = pair.getValue();
-          return db + "." + table;
-        }).collect(Collectors.toList()));
+    queryProperties.setUsedTables(CacheTableHelper.getUniqueNames(ctx.getParsedTables()));
   }
 
   public void validate() throws SemanticException {

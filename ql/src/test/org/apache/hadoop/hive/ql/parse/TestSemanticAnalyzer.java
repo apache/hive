@@ -33,8 +33,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfForTest;
@@ -374,17 +377,18 @@ public class TestSemanticAnalyzer {
   }
 
   @Test
-  public void testTablesQueried() throws Exception {
-    checkTablesQueried("SELECT key FROM table1", Lists.newArrayList("default.table1"));
-    checkTablesQueried("INSERT OVERWRITE TABLE table1 SELECT * FROM table2", Lists.newArrayList("default.table1",
+  public void testUsedTables() throws Exception {
+    checkTablesUsed("SELECT key FROM table1", Sets.newHashSet("default.table1"));
+    checkTablesUsed("INSERT OVERWRITE TABLE table1 SELECT * FROM table2", Sets.newHashSet("default.table1",
         "default.table2"));
-    checkTablesQueried("INSERT OVERWRITE TABLE table1 SELECT * FROM other_db.table1",
-        Lists.newArrayList("default.table1", "other_db.table1"));
-    checkTablesQueried("SELECT a.value, b.value FROM table1 a JOIN table2 b ON a.key = b.key", Lists.newArrayList("default.table1",
-        "default.table2"));
+    checkTablesUsed("INSERT OVERWRITE TABLE table1 SELECT * FROM other_db.table1",
+        Sets.newHashSet("default.table1", "other_db.table1"));
+    checkTablesUsed("SELECT a.value, b.value FROM table1 a JOIN table2 b ON a.key = b.key",
+        Sets.newHashSet("default.table1",
+            "default.table2"));
   }
 
-  private void checkTablesQueried(String query, List<String> tables) throws Exception {
+  private void checkTablesUsed(String query, Set<String> tables) throws Exception {
     SessionState.start(conf);
     Context ctx = new Context(conf);
     ASTNode astNode = ParseUtils.parse(query, ctx);
@@ -393,10 +397,8 @@ public class TestSemanticAnalyzer {
     analyzer.initCtx(ctx);
     analyzer.analyze(astNode, ctx);
 
-    Collections.sort(tables);
-    List<String> result = analyzer.getQueryProperties().getTablesQueried();
-    Collections.sort(result);
+    Set<String> result = analyzer.getQueryProperties().getUsedTables();
 
-    Assert.assertEquals(tables, result);
+    Assert.assertEquals(new TreeSet<>(tables), new TreeSet<>(result));
   }
 }

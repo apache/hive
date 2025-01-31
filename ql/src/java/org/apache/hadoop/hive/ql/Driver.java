@@ -746,13 +746,7 @@ public class Driver implements IDriver {
   // is called to stop the query if it is running, clean query results, and release resources.
   @Override
   public void close() {
-    if (driverContext.getConf().getBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED)) {
-      if (driverState.isClosed() || driverState.isDestroyed()) {
-        LOG.warn("Driver instance {} already closed or destroyed, prevent handling query history", this);
-      } else {
-        QueryHistoryService.getInstance().logQuery(driverContext);
-      }
-    }
+    logQueryHistory();
     driverState.lock();
     try {
       releaseTaskQueue();
@@ -770,6 +764,16 @@ public class Driver implements IDriver {
       DriverState.removeDriverState();
     }
     destroy();
+  }
+
+  private void logQueryHistory() {
+    if (driverContext.getConf().getBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED)) {
+      if (driverState.isClosed() || driverState.isDestroyed()) {
+        LOG.warn("Driver instance {} already closed or destroyed, prevent handling query history", this);
+      } else {
+        QueryHistoryService.getInstance().logQuery(driverContext);
+      }
+    }
   }
 
   // TaskQueue could be released in the query and close processes at same

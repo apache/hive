@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
 import org.apache.hadoop.hive.ql.queryhistory.schema.DummyRecord;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.queryhistory.repository.IcebergRepository;
 import org.apache.hadoop.hive.ql.queryhistory.repository.QueryHistoryRepository;
@@ -49,7 +50,6 @@ import org.apache.hadoop.hive.ql.queryhistory.schema.Record;
 import org.apache.hadoop.hive.ql.queryhistory.schema.Schema;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.shims.Utils;
-import org.apache.tez.client.TezClient;
 import org.apache.tez.common.counters.DAGCounter;
 import org.apache.tez.common.counters.TaskCounter;
 import org.apache.tez.common.counters.TezCounters;
@@ -176,12 +176,11 @@ public class TestQueryHistoryService {
     driverContext.setQueryErrorMessage(DummyRecord.FAILURE_REASON);
     driverContext.setExplainPlan(DummyRecord.PLAN);
     FetchTask fetchTask = mock(FetchTask.class);
-    when(fetchTask.getTotalRows()).thenReturn(DummyRecord.NUM_ROWS_FETCHED);
+    when(fetchTask.getNumRows()).thenReturn(DummyRecord.NUM_ROWS_FETCHED);
     when(driverContext.getFetchTask()).thenReturn(fetchTask);
 
     QueryProperties queryProperties = mock(QueryProperties.class);
-    when(queryProperties.getTablesQueried()).thenReturn(
-        DummyRecord.TABLES_QUERIED);
+    when(queryProperties.getUsedTables()).thenReturn(DummyRecord.USED_TABLES);
     when(driverContext.getQueryProperties()).thenReturn(queryProperties);
   }
 
@@ -190,10 +189,9 @@ public class TestQueryHistoryService {
 
     TezRuntimeContext runtimeContext = tezTask.getRuntimeContext();
 
-    TezClient tezClient = mock(TezClient.class);
-    when(tezClient.getAmHost()).thenReturn(DummyRecord.TEZ_AM_ADDRESS.split(":")[0]);
-    when(tezClient.getAmPort()).thenReturn(Integer.valueOf(DummyRecord.TEZ_AM_ADDRESS.split(":")[1]));
-    runtimeContext.init(tezClient);
+    TezSessionState tezSessionState = mock(TezSessionState.class);
+    when(tezSessionState.getAppMasterUri()).thenReturn(DummyRecord.TEZ_AM_ADDRESS);
+    runtimeContext.init(tezSessionState);
 
     runtimeContext.setDagId(DummyRecord.DAG_ID);
     runtimeContext.setApplicationId(DummyRecord.TEZ_APPLICATION_ID);
@@ -202,8 +200,8 @@ public class TestQueryHistoryService {
 
     TezJobMonitor monitor = mock(TezJobMonitor.class);
     LogHelper console = mock(LogHelper.class);
-    when(monitor.getConsole()).thenReturn(console);
-    when(console.getSummary()).thenReturn(DummyRecord.EXEC_SUMMARY);
+    when(monitor.logger()).thenReturn(console);
+    when(console.getQuerySummary()).thenReturn(DummyRecord.EXEC_SUMMARY);
     runtimeContext.setMonitor(monitor);
 
     TezCounters counters = new TezCounters();
@@ -369,8 +367,8 @@ public class TestQueryHistoryService {
     compareValue(Schema.Field.NUM_ROWS_FETCHED, DummyRecord.NUM_ROWS_FETCHED, record,
         fieldsValidated);
     compareValue(Schema.Field.PLAN, DummyRecord.PLAN, record, fieldsValidated);
-    compareValue(Schema.Field.TABLES_QUERIED, String.join(",",
-        DummyRecord.TABLES_QUERIED), record, fieldsValidated);
+    compareValue(Schema.Field.USED_TABLES, String.join(",",
+        DummyRecord.USED_TABLES), record, fieldsValidated);
     compareValue(Schema.Field.EXEC_SUMMARY, DummyRecord.EXEC_SUMMARY, record,
         fieldsValidated);
     compareValue(Schema.Field.CONFIGURATION_OPTIONS_CHANGED,

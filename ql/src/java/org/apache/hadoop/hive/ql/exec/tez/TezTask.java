@@ -337,9 +337,9 @@ public class TezTask extends Task<TezWork> {
           && (HiveConf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_SUMMARY) ||
           Utilities.isPerfOrAboveLogging(conf))) {
         for (CounterGroup group : runtimeContext.counters) {
-          monitor.getConsole().printInfo(group.getDisplayName() + ":");
+          monitor.logger().printInfo(group.getDisplayName() + ":");
           for (TezCounter counter : group) {
-            monitor.getConsole().printInfo("   " + counter.getDisplayName() + ": " + counter.getValue());
+            monitor.logger().printInfo("   " + counter.getDisplayName() + ": " + counter.getValue());
           }
         }
       }
@@ -381,7 +381,7 @@ public class TezTask extends Task<TezWork> {
         rc = close(work, rc, dagClient);
       }
       if (monitor != null){
-        monitor.getConsole().endSummary();
+        monitor.logger().endSummary();
       }
     }
     return rc;
@@ -687,15 +687,12 @@ public class TezTask extends Task<TezWork> {
     }
 
     perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
-    runtimeContext.init(sessionState.getSession());
     return new SyncDagClient(dagClient);
   }
 
   private DAGClient submitInternal(DAG dag, TezSessionState sessionState) throws TezException, IOException {
-    TezClient tezClient = sessionState.getSession();
-    DAGClient dagClient = tezClient.submitDAG(dag);
-    runtimeContext.init(tezClient);
-    return dagClient;
+    runtimeContext.init(sessionState);
+    return sessionState.getSession().submitDAG(dag);
   }
 
   private void sessionDestroyOrReturnToPool(Ref<TezSessionState> sessionStateRef,

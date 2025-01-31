@@ -19,8 +19,8 @@
 package org.apache.hadoop.hive.ql;
 
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
@@ -104,8 +104,8 @@ public class QueryProperties {
   private QueryType queryType;
   private String ddlType;
 
-  // set of queried tables, aliases are resolved to real table names
-  private List<String> tablesQueried = new ArrayList<>();
+  // set of used tables, aliases are resolved to real table names
+  private Set<String> usedTables = new HashSet<>();
 
   public boolean isQuery() {
     return query;
@@ -389,12 +389,12 @@ public class QueryProperties {
     this.ddlType = ddlType;
   }
 
-  public List<String> getTablesQueried() {
-    return tablesQueried;
+  public Set<String> getUsedTables() {
+    return usedTables;
   }
 
-  public void setTablesQueried(List<String> tablesQueried) {
-    this.tablesQueried = tablesQueried;
+  public void setUsedTables(Set<String> usedTables) {
+    this.usedTables = usedTables;
   }
 
   public void clear() {
@@ -435,6 +435,6 @@ public class QueryProperties {
     queryType = null;
     ddlType = null;
 
-    tablesQueried.clear();
+    usedTables.clear();
   }
 }

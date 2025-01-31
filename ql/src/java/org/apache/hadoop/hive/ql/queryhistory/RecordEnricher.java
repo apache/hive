@@ -67,7 +67,7 @@ public class RecordEnricher {
     record.setQueryType(driverContext.getQueryType());
     record.setDdlType(driverContext.getDdlType());
     record.setFailureReason(driverContext.getQueryErrorMessage());
-    record.setNumRowsFetched(driverContext.getFetchTask() == null ? 0 : driverContext.getFetchTask().getTotalRows());
+    record.setNumRowsFetched(driverContext.getFetchTask() == null ? 0 : driverContext.getFetchTask().getNumRows());
   }
 
   private void enrichFromSessionState(Record record) {
@@ -142,7 +142,7 @@ public class RecordEnricher {
     record.setTezApplicationId(runtimeContext.getApplicationId());
     record.setTezSessionId(runtimeContext.getSessionId());
     record.setTezAmAddress(runtimeContext.getAmAddress());
-    record.setExecSummary(runtimeContext.getMonitor().getConsole().getSummary());
+    record.setExecSummary(runtimeContext.getMonitor().logger().getQuerySummary());
     record.setTotalNumberOfTasks((int) runtimeContext.getCounter(DAGCounter.class.getName(),
         DAGCounter.TOTAL_LAUNCHED_TASKS.name()));
     record.setNumberOfSucceededTasks((int) runtimeContext.getCounter(DAGCounter.class.getName(),
@@ -191,7 +191,7 @@ public class RecordEnricher {
     if (queryProperties == null) {
       return;
     }
-    record.setTablesQueried(queryProperties.getTablesQueried());
+    record.setUsedTables(queryProperties.getUsedTables());
   }
 
   private void setInvalidValuesForRuntimeFields(Record record) {

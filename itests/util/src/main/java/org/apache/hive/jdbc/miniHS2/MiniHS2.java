@@ -44,7 +44,6 @@ import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.queryhistory.repository.IcebergRepositoryForTest;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniDFSShim;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniMrShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -92,9 +91,9 @@ public class MiniHS2 extends AbstractHiveService {
 
   public void setupQueryHistory() {
     // Query History Service (with a default iceberg table) needs locks and HIVE_LOCKS table to be present,
-    // so this is to use the IcebergRepositoryForTest class to keep MiniHS2-based unit tests working flawlessly
-    getHiveConf().setVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_REPOSITORY_CLASS,
-        IcebergRepositoryForTest.class.getName());
+    // so this is to keep MiniHS2-based unit tests working flawlessly
+    getHiveConf().set("iceberg.engine.hive.lock-enabled", "false");
+
     // for testing purposes, we can persist the query history record almost immediately
     getHiveConf().setIntVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_BATCH_SIZE, 1);
   }

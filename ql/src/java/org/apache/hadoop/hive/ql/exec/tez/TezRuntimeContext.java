@@ -42,8 +42,8 @@ public class TezRuntimeContext {
   // llap/container
   private String executionMode;
 
-  public void init(TezClient tezClient) {
-    this.amAddress = tezClient.getAmHost() + ":" + tezClient.getAmPort();
+  public void init(TezSessionState sessionState) {
+    this.amAddress = sessionState.getAppMasterUri();
   }
 
   public TezCounters getCounters() {

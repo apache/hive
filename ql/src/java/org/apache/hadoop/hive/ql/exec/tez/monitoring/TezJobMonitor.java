@@ -520,7 +520,7 @@ public class TezJobMonitor {
     return TezProgressMonitor.NULL;
   }
 
-  public LogHelper getConsole(){
+  public LogHelper logger(){
     return console;
   }
 }

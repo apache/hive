@@ -237,10 +237,6 @@ public class QB {
     return aliasToTabs.keySet();
   }
 
-  public Collection<String> getTableAliasValues() {
-    return aliasToTabs.values();
-  }
-
   public List<String> getAliases() {
     return aliases;
   }

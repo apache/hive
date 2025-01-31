@@ -19,11 +19,11 @@ package org.apache.hadoop.hive.ql.queryhistory.schema;
 
 import org.apache.hadoop.hive.ql.QueryProperties.QueryType;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.List;
+import java.util.Set;
 
 public class DummyRecord extends Record {
   public static final String QUERY_ID = "hive_20240429111756_d39b59fb-31e2-4e89-853e-fac2844530e9";
@@ -60,7 +60,7 @@ public class DummyRecord extends Record {
   public static final int NUM_ROWS_FETCHED = 1500;
   public static final String PLAN = "This plan is simply awesome";
   public static final String EXEC_SUMMARY = "It was super fast!";
-  public static final List<String> TABLES_QUERIED = Lists.newArrayList(
+  public static final Set<String> USED_TABLES = Sets.newHashSet(
       "default.queried_table1", "default.queried_table2");
   public static final Map<String, String> CONFIGURATION_OPTIONS_CHANGED = Collections.singletonMap("hive.opt", "hello");
   public static final int TOTAL_LAUNCHED_TASKS = 2100;
@@ -128,7 +128,7 @@ public class DummyRecord extends Record {
     setNumRowsFetched(NUM_ROWS_FETCHED);
     setPlan(PLAN);
     setExecSummary(EXEC_SUMMARY);
-    setTablesQueried(TABLES_QUERIED);
+    setUsedTables(USED_TABLES);
     setConfigurationOptionsChanged(CONFIGURATION_OPTIONS_CHANGED);
     setTotalNumberOfTasks(TOTAL_LAUNCHED_TASKS);
     setNumberOfSucceededTasks(NUM_SUCCEEDED_TASKS);

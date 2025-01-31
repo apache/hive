@@ -241,7 +241,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
     return cachingEnabled;
   }
 
-  public int getTotalRows() {
+  public int getNumRows() {
     return totalRows;
   }
 }

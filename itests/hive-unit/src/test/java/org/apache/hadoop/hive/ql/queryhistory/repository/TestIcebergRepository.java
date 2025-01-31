@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ServiceContext;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.queryhistory.QueryHistoryService;
-import org.apache.hadoop.hive.ql.queryhistory.repository.IcebergRepositoryForTest;
 import org.apache.hadoop.hive.ql.queryhistory.schema.DummyRecord;
 import org.apache.hadoop.hive.ql.queryhistory.schema.IcebergRecord;
 import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistorySchemaTestUtils;
@@ -60,16 +59,16 @@ public class TestIcebergRepository {
   @Test
   public void testPersistRecord() throws Exception {
     HiveConf conf = new HiveConf();
+    conf.set("iceberg.engine.hive.lock-enabled", "false");
 
     conf.setBoolVar(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION, false);
     conf.setIntVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_BATCH_SIZE, 0);
-    conf.setVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_REPOSITORY_CLASS, IcebergRepositoryForTest.class.getName());
 
     Record record = new DummyRecord();
 
-    QueryHistoryService service = new QueryHistoryService(conf, serviceContext);
+    QueryHistoryService service = QueryHistoryService.newInstance(conf, serviceContext);
     service.start();
-    IcebergRepositoryForTest repository = (IcebergRepositoryForTest) service.getRepository();
+    IcebergRepository repository = (IcebergRepository) service.getRepository();
 
     queryHistoryQueue.add(record);
     repository.flush(queryHistoryQueue);
@@ -77,7 +76,7 @@ public class TestIcebergRepository {
     checkRecords(conf, repository, record);
   }
 
-  private void checkRecords(HiveConf conf, IcebergRepositoryForTest repository, Record record)
+  private void checkRecords(HiveConf conf, IcebergRepository repository, Record record)
       throws Exception {
     JobConf jobConf = new JobConf(conf);
     // force table to be reloaded from Catalogs to see latest Snapshot
@@ -90,7 +89,7 @@ public class TestIcebergRepository {
         QueryHistorySchemaTestUtils.queryHistoryRecordsAreEqual(record, deserialized));
   }
 
-  private Container readRecords(IcebergRepositoryForTest repository, JobConf jobConf) throws Exception {
+  private Container readRecords(IcebergRepository repository, JobConf jobConf) throws Exception {
     InputFormat<?, ?> inputFormat = repository.storageHandler.getInputFormatClass().newInstance();
     String tableLocation = repository.tableDesc.getProperties().get("location").toString();
     File[] dataFiles =

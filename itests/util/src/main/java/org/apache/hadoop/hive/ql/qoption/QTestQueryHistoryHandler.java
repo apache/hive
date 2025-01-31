@@ -49,7 +49,7 @@ public class QTestQueryHistoryHandler implements QTestOptionHandler {
       // no matter what is default size, in qtest let's persist as soon as possible
       HiveConf.setIntVar(hiveConf, HiveConf.ConfVars.HIVE_QUERY_HISTORY_BATCH_SIZE, 0);
 
-      QueryHistoryService queryHistoryService = new QueryHistoryService(hiveConf, new ServiceContext(() ->
+      QueryHistoryService queryHistoryService = QueryHistoryService.newInstance(hiveConf, new ServiceContext(() ->
           "localhost", () -> 0));
       queryHistoryService.start();
     }

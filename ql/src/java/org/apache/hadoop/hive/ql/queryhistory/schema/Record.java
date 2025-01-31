@@ -19,8 +19,8 @@ package org.apache.hadoop.hive.ql.queryhistory.schema;
 
 import java.time.ZoneId;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
@@ -189,8 +189,8 @@ public class Record {
   }
 
 
-  public void setTablesQueried(List<String> tablesQueried) {
-    set(Field.TABLES_QUERIED, String.join(",", tablesQueried));
+  public void setUsedTables(Set<String> usedTables) {
+    set(Field.USED_TABLES, String.join(",", usedTables));
   }
 
   public void setExecSummary(String summary) {
