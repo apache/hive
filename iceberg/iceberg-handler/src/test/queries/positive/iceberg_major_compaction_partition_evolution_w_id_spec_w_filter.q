@@ -69,8 +69,8 @@ delete from ice_orc where last_name in ('ln5', 'ln13');
 select * from ice_orc;
 describe formatted ice_orc;
 
-explain alter table ice_orc COMPACT 'major' and wait where team_id=10 or first_name in ('fn3', 'fn11') or last_name in ('ln7', 'ln15');
-alter table ice_orc COMPACT 'major' and wait where team_id=10 or first_name in ('fn3', 'fn11') or last_name in ('ln7', 'ln15');
+explain alter table ice_orc COMPACT 'major' and wait where company_id=100 or dept_id in (1,2);
+alter table ice_orc COMPACT 'major' and wait where company_id=100 or dept_id in (1,2);
 
 select * from ice_orc;
 describe formatted ice_orc;

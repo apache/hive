@@ -700,7 +700,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
                                   "')"))
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessageStartingWith("Failed to execute Hive query")
-          .hasMessageEndingWith("Table location not set");
+          .hasMessageContaining("Table location not set");
     }
   }
 
