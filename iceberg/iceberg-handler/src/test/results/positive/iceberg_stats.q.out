@@ -265,7 +265,7 @@ STAGE PLANS:
         Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
-        Map 1
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: ice03
@@ -279,12 +279,12 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: #Masked# Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        null sort order:
-                        sort order:
+                        null sort order: 
+                        sort order: 
                         Statistics: Num rows: 1 Data size: #Masked# Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized
-        Reducer 2
+        Reducer 2 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
