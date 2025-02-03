@@ -2129,7 +2129,7 @@ public abstract class BaseSemanticAnalyzer {
    * even if it's obvious by reading the sql statement that user wanted to run e.g. a select query
    * @param tree the root ASTNode of the query
    */
-  public void setQueryType(ASTNode tree) {
+  protected void setQueryType(ASTNode tree) {
     // common confusion whether CTAS is DML or DDL, let's pick DDL here
     if (queryProperties.isCTAS()) {
       queryProperties.setQueryType(QueryType.DDL);

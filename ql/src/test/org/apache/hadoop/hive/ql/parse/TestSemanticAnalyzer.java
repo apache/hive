@@ -366,6 +366,8 @@ public class TestSemanticAnalyzer {
     checkQueryType("DELETE FROM table_acid WHERE key = '1'", QueryType.DML);
     checkQueryType("MERGE INTO table_acid AS target USING table1 AS source ON source.key = target.key " +
         "WHEN MATCHED THEN UPDATE SET key = 3 WHEN NOT MATCHED THEN INSERT VALUES ('3', 4)", QueryType.DML);
+    // EXPORT acid table is handled by RewriteSemanticAnalyzer, but it's not a DML
+    checkQueryType("EXPORT TABLE table_acid TO '/path'", QueryType.OTHER);
 
     // DDL
     checkQueryType("SHOW DATABASES", QueryType.DDL);
