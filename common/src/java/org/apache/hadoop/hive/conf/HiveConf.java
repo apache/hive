@@ -5648,6 +5648,7 @@ public class HiveConf extends Configuration {
             "hive.zookeeper.ssl.truststore.password," +
             "hive.zookeeper.ssl.truststore.type," +
             "hive.iceberg.allow.datafiles.in.table.location.only," +
+            "hive.hook.proto.base-directory," +
             "hive.rewrite.data.policy",
         "Comma separated list of configuration options which are immutable at runtime"),
     HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
