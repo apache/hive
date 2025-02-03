@@ -14941,7 +14941,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  @Override
   public QB getQB() {
     return qb;
   }

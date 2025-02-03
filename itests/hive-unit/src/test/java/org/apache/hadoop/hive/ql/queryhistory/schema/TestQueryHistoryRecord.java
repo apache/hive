@@ -17,7 +17,6 @@
  **/
 package org.apache.hadoop.hive.ql.queryhistory.schema;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.junit.Assert;
 import org.junit.Test;

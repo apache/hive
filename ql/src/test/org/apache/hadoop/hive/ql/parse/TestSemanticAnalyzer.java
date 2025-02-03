@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -29,20 +30,21 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import org.apache.hadoop.hive.common.MaterializationSnapshot;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfForTest;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryProperties.QueryType;
@@ -54,6 +56,7 @@ import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.MaterializedViewMetadata;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.security.HadoopDefaultAuthenticator;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -83,13 +86,16 @@ public class TestSemanticAnalyzer {
     createDatabase("other_db");
 
     // table1 (col1 string, col2 int)
-    createKeyValueTable("table1");
+    Table table1 = createKeyValueTable("table1");
     createKeyValueTable("table2");
     createKeyValueTable("table3");
     createPartitionedTable("table_part");
     createAcidTable("table_acid");
 
     createKeyValueTable("other_db", "table1");
+
+    createView("view1", table1);
+    createMaterializedView("mview1", table1);
   }
 
   private static void createDatabase(String dbName) throws Exception {
@@ -98,13 +104,14 @@ public class TestSemanticAnalyzer {
     db.createDatabase(database);
   }
 
-  private static void createKeyValueTable(String tableName) throws Exception {
-    createKeyValueTable("default", tableName);
+  private static Table createKeyValueTable(String tableName) throws Exception {
+    return createKeyValueTable("default", tableName);
   }
 
-  private static void createKeyValueTable(String dbName, String tableName) throws Exception {
+  private static Table createKeyValueTable(String dbName, String tableName) throws Exception {
     Table table = createSimpleTableWithColumns(dbName, tableName);
     db.createTable(table);
+    return table;
   }
 
   private static void createAcidTable(String tableAcid) throws HiveException {
@@ -138,6 +145,32 @@ public class TestSemanticAnalyzer {
     columns.add(new FieldSchema("value", "int", "Second column"));
     table.setFields(columns); // Set columns
     return table;
+  }
+
+  private static void createView(String viewName, Table sourceTable) throws HiveException {
+    Table view = new Table("default", viewName);
+    view.setTableType(TableType.VIRTUAL_VIEW);
+    view.setViewOriginalText(String.format("SELECT * FROM %s", sourceTable.getTableName()));
+    view.setViewExpandedText(String.format("SELECT * FROM %s", sourceTable.getTableName()));
+
+    db.createTable(view);
+  }
+
+  private static void createMaterializedView(String materializedViewName, Table sourceTable) throws HiveException {
+    Table materializedView = new Table("default", materializedViewName);
+    materializedView.setTableType(TableType.MATERIALIZED_VIEW);
+    materializedView.setViewOriginalText(String.format("SELECT * FROM %s", sourceTable.getTableName()));
+    materializedView.setViewExpandedText(String.format("SELECT * FROM %s", sourceTable.getTableName()));
+
+    MaterializedViewMetadata metadata = new MaterializedViewMetadata(
+        MetaStoreUtils.getDefaultCatalog(conf),
+        sourceTable.getDbName(),
+        materializedViewName,
+        Sets.newHashSet(sourceTable.createSourceTable()),
+        mock(MaterializationSnapshot.class));
+    materializedView.setMaterializedViewMetadata(metadata);
+
+    db.createTable(materializedView);
   }
 
   @AfterClass
@@ -342,6 +375,14 @@ public class TestSemanticAnalyzer {
     checkQueryType("ALTER TABLE table_part ADD PARTITION (part_col='3')", QueryType.DDL);
     checkQueryType("DROP TABLE table1", QueryType.DDL);
     checkQueryType("CREATE TABLE target AS SELECT * FROM table1", QueryType.DDL);
+    // DDL: view
+    checkQueryType("CREATE VIEW v1 AS SELECT * FROM table1", QueryType.DDL);
+    checkQueryType("DROP VIEW IF EXISTS v1", QueryType.DDL);
+    checkQueryType("ALTER VIEW view1 AS SELECT * FROM table1", QueryType.DDL);
+    // DDL: materialized view
+    checkQueryType("CREATE MATERIALIZED VIEW mv1 AS SELECT * FROM table1", QueryType.DDL);
+    checkQueryType("DROP MATERIALIZED VIEW IF EXISTS mv1", QueryType.DDL);
+    checkQueryType("ALTER MATERIALIZED VIEW mview1 REBUILD", QueryType.DDL);
 
     // OTHER
     // EXPLAIN is a utility, cannot classified as any of the categories above
@@ -372,8 +413,9 @@ public class TestSemanticAnalyzer {
       analyzer.endAnalysis(astNode); // this is called by Compiler in production
     }
 
+    QueryType queryType = analyzer.getQueryProperties() == null ? null : analyzer.getQueryProperties().getQueryType();
     assertEquals(String.format("Expected query type for query '%s' is '%s', seen '%s'", query, expectedQueryType,
-        analyzer.getQueryProperties().getQueryType()), expectedQueryType, analyzer.getQueryProperties().getQueryType());
+        queryType), expectedQueryType, queryType);
   }
 
   @Test

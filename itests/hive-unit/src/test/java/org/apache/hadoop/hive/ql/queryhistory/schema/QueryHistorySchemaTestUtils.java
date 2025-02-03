@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.queryhistory.schema;
 
 import org.apache.hadoop.hive.common.type.Timestamp;
-import org.apache.hadoop.hive.ql.queryhistory.schema.Record;
 import org.apache.hadoop.hive.ql.queryhistory.schema.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

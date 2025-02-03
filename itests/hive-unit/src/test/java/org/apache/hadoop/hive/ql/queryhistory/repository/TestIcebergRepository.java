@@ -17,26 +17,22 @@
  */
 package org.apache.hadoop.hive.ql.queryhistory.repository;
 
-import org.apache.iceberg.mr.mapred.Container;
-import org.apache.iceberg.data.GenericRecord;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ServiceContext;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.queryhistory.QueryHistoryService;
 import org.apache.hadoop.hive.ql.queryhistory.schema.DummyRecord;
 import org.apache.hadoop.hive.ql.queryhistory.schema.IcebergRecord;
-import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistorySchemaTestUtils;
 import org.apache.hadoop.hive.ql.queryhistory.schema.Record;
-import org.apache.hadoop.hive.ql.queryhistory.schema.Schema;
-import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.queryhistory.schema.QueryHistorySchemaTestUtils;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.iceberg.data.GenericRecord;
+import org.apache.iceberg.mr.mapred.Container;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;

@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,10 +33,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.google.common.base.Strings;
 import org.antlr.runtime.TokenRewriteStream;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
@@ -101,6 +98,7 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
@@ -347,7 +345,8 @@ public abstract class BaseSemanticAnalyzer {
     if (queryProperties == null) {
       queryProperties = new QueryProperties();
     }
-    queryProperties.setUsedTables(CacheTableHelper.getUniqueNames(ctx.getParsedTables()));
+    queryProperties.setUsedTables(
+        CacheTableHelper.getUniqueNames(ctx.getParsedTables()));
   }
 
   public void validate() throws SemanticException {
@@ -2064,7 +2063,11 @@ public abstract class BaseSemanticAnalyzer {
    * Called when we end analysis of a query.
    */
   public void endAnalysis(ASTNode tree) {
-    setQueryType(tree); // at this point we know the query type for sure
+    // many subclasses might end up implementing this method assuming that queryProperties object is present
+    // let's check here once instead of all the implementations
+    if (queryProperties != null){
+      setQueryType(tree); // at this point we know the query type for sure
+    }
   }
 
   public ParseContext getParseContext() {
@@ -2110,10 +2113,6 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
-  public QB getQB(){
-    return null;
-  }
-
   /**
    * Resolves the query type from the SemanticAnalyzer and the query AST, which might look magic.
    * Magic is needed because a query can fail due to semantic exceptions, and at that time, from syntax point of view,
@@ -2121,8 +2120,8 @@ public abstract class BaseSemanticAnalyzer {
    * 1. general semantic exception
    * 2. transaction manager validation (throwin exception)
    * What a user expects here is something like "QUERY", "DDL", "DML", so this magic will do its best to tell.
-   * any kind of "analyze": STATS
-   * DML operations (INSERT, UPDATE, DELETE, MERGE): DML
+   * In case a subclass of SemanticAnalyzer obviously tells the QueryType,
+   * this method is overridden, otherwise see below:
    * MAPRED: QUERY, DML (depending on QueryProperties achieved in compile time)
    * FETCH: QUERY, as a simple fetch task is a QUERY
    * empty string if we can't determine the type of the query,
@@ -2131,13 +2130,6 @@ public abstract class BaseSemanticAnalyzer {
    * @param tree the root ASTNode of the query
    */
   public void setQueryType(ASTNode tree) {
-    List<Task<? extends Serializable>> rootTasks = getAllRootTasks();
-    if (queryProperties == null) {
-      return;
-    }
-    queryProperties.setQueryType(queryProperties.isAnalyze() ? QueryType.STATS :
-        (queryProperties.isDML() ?
-            QueryType.DML : null));
     // common confusion whether CTAS is DML or DDL, let's pick DDL here
     if (queryProperties.isCTAS()) {
       queryProperties.setQueryType(QueryType.DDL);
@@ -2146,9 +2138,9 @@ public abstract class BaseSemanticAnalyzer {
       return; //already figured out
     }
     queryProperties.setQueryType(rootTasks.stream().findFirst().map(t -> {
-      String type = t.getType().toString();
+      StageType type = t.getType();
       // a MAPRED stage could mean an INSERT query also
-      if (queryProperties != null && type.equalsIgnoreCase("MAPRED")) {
+      if (queryProperties != null && type == StageType.MAPRED) {
         return queryProperties.isDML() ? QueryType.DML : QueryType.QUERY;
       }
       return null;
@@ -2156,22 +2148,22 @@ public abstract class BaseSemanticAnalyzer {
       // in case of a semantic exception (e.g. a table not found or something else)
       // the root AST Node can still imply if this is a query, try to fall back to that
       // instead of ""
-      if (tree.getText().equalsIgnoreCase("TOK_QUERY")) {
+      if ("TOK_QUERY".equalsIgnoreCase(tree.getText())) {
         return QueryType.QUERY;
       }
       // CREATE TABLE is a DDL and yet it's not handled by DDLSemanticAnalyzerFactory
       // FIXME: HIVE-28724
-      if (tree.getText().equalsIgnoreCase("TOK_CREATETABLE")) {
+      if ("TOK_CREATETABLE".equalsIgnoreCase(tree.getText())) {
         return QueryType.DDL;
       }
       // from this point, best efforts come
-      // whether it's a DDL?
+      // DDL semantic analyzers don't have a single common place to override this method, hence handling here
       if (DDLSemanticAnalyzerFactory.handles(tree)) {
         return QueryType.DDL;
       }
-      // whether it's DML? UPDATE/DELETE/MERGE queries are handled with an instance of RewriteSemanticAnalyzer
-      if (RewriteSemanticAnalyzer.class.isAssignableFrom(getClass())) {
-        return QueryType.DML;
+      // CREATE MV is handled by the base semantic analyzer, need to handle here
+      if ("TOK_CREATE_MATERIALIZED_VIEW".equalsIgnoreCase(tree.getText())) {
+        return QueryType.DDL;
       }
       // if there is a fetch task, this is a query
       if (getFetchTask() != null) {

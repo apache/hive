@@ -17,37 +17,30 @@
  */
 package org.apache.hadoop.hive.ql.queryhistory;
 
-import java.lang.reflect.Field;
-import java.time.ZoneId;
-import java.util.Arrays;
-import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.DriverFactory;
-import org.apache.hadoop.hive.ql.QueryProperties;
-import org.apache.hadoop.hive.ql.ServiceContext;
 import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ServiceContext;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
-import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.exec.tez.TezRuntimeContext;
+import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
-import org.apache.hadoop.hive.ql.queryhistory.schema.DummyRecord;
-import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
-import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.queryhistory.repository.IcebergRepository;
 import org.apache.hadoop.hive.ql.queryhistory.repository.QueryHistoryRepository;
+import org.apache.hadoop.hive.ql.queryhistory.schema.DummyRecord;
 import org.apache.hadoop.hive.ql.queryhistory.schema.Record;
 import org.apache.hadoop.hive.ql.queryhistory.schema.Schema;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.tez.common.counters.DAGCounter;
@@ -58,11 +51,17 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Field;
+import java.time.ZoneId;
+import java.util.Arrays;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
-
-import java.util.Queue;
 
 public class TestQueryHistoryService {
   private static final Logger LOG = LoggerFactory.getLogger(TestQueryHistoryService.class);

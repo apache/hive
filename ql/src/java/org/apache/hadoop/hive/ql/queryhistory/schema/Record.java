@@ -17,11 +17,6 @@
  **/
 package org.apache.hadoop.hive.ql.queryhistory.schema;
 
-import java.time.ZoneId;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import org.apache.hadoop.hive.common.type.Timestamp;
@@ -30,6 +25,11 @@ import org.apache.hadoop.hive.ql.queryhistory.schema.Schema.Field;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.io.Writable;
 import org.apache.hive.common.util.HiveVersionInfo;
+
+import java.time.ZoneId;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class Record {
   private long estimatedSizeInMemoryBytes = 0;

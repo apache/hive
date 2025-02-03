@@ -17,9 +17,8 @@
  **/
 package org.apache.hadoop.hive.ql.queryhistory.schema;
 
-import org.apache.hadoop.hive.ql.QueryProperties.QueryType;
-
 import com.google.common.collect.Sets;
+import org.apache.hadoop.hive.ql.QueryProperties.QueryType;
 
 import java.util.Collections;
 import java.util.Map;

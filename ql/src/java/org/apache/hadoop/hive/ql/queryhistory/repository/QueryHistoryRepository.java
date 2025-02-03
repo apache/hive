@@ -17,11 +17,11 @@
  **/
 package org.apache.hadoop.hive.ql.queryhistory.repository;
 
-import java.util.Queue;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.queryhistory.schema.Record;
 import org.apache.hadoop.hive.ql.queryhistory.schema.Schema;
+
+import java.util.Queue;
 
 public interface QueryHistoryRepository {
   String QUERY_HISTORY_DB_NAME = "sys";

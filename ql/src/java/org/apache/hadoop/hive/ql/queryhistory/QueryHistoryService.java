@@ -17,15 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.queryhistory;
 
-import java.util.Queue;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ServiceContext;
@@ -38,7 +31,13 @@ import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.util.Queue;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class QueryHistoryService {
   private static final Logger LOG = LoggerFactory.getLogger(QueryHistoryService.class);
@@ -90,15 +89,22 @@ public class QueryHistoryService {
 
   private static class QueryHistoryThread extends Thread {
 
+    private final HiveConf conf;
+
     public QueryHistoryThread(Runnable runnable, HiveConf conf) {
       super(runnable);
-      HiveConf jobConf = new HiveConf(conf);
       // this session won't need tez, let's not mess with starting a TezSessionState
-      jobConf.setBoolVar(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION, false);
+      conf.setBoolVar(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION, false);
+      this.conf = conf;
+    }
+
+    @Override
+    public void run() {
       // localize this conf for the thread that will be running the repository,
       // as iceberg integration heavily relies on the session state conf
-      SessionState session = SessionState.start(jobConf);
+      SessionState session = SessionState.start(conf);
       LOG.info("Session for QueryHistoryService started, sessionId: {}", session.getSessionId());
+      super.run();
     }
   }
 

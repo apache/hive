@@ -17,9 +17,8 @@
  **/
 package org.apache.hadoop.hive.ql.queryhistory.schema;
 
-import org.apache.iceberg.data.GenericRecord;
-import org.apache.hadoop.hive.ql.queryhistory.schema.Record;
 import org.apache.hadoop.hive.ql.queryhistory.schema.Schema;
+import org.apache.iceberg.data.GenericRecord;
 
 /**
  * Convenient class for creating a Record from an iceberg Container.
