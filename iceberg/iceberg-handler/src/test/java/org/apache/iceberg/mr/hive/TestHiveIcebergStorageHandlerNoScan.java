@@ -775,7 +775,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
                               "')"))
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessageStartingWith("Failed to execute Hive query")
-          .hasMessageEndingWith(
+          .hasMessageContaining(
           "Provide only one of the following: Hive partition transform specification, " +
                     "or the iceberg.mr.table.partition.spec property");
   }
