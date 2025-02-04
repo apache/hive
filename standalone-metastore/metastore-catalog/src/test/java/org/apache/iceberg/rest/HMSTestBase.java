@@ -73,7 +73,6 @@ import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.SupportsNamespaces;
-import org.apache.iceberg.hive.HiveCatalog;
 import org.eclipse.jetty.server.Server;
 import org.junit.After;
 import org.junit.Assert;

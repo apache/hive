@@ -17,7 +17,7 @@
     <version>4.1.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>hive-metastore-icecat</artifactId>
+  <artifactId>hive-standalone-metastore-icecat</artifactId>
   <name>Hive Metastore Iceberg Catalog</name>
   <properties>
     <standalone.metastore.path.to.root>..</standalone.metastore.path.to.root>
