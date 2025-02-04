@@ -84,6 +84,7 @@ import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.core.Filter;
+import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.SetOp;
 import org.apache.calcite.rel.core.TableScan;
@@ -2416,7 +2417,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         // 9.2.  Introduce exchange operators below join/multijoin operators
         generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-            HiveInsertExchange4JoinRule.EXCHANGE_BELOW_JOIN, HiveInsertExchange4JoinRule.EXCHANGE_BELOW_MULTIJOIN);
+                new HiveInsertExchange4JoinRule(Join.class, NullOrdering.defaultNullOrder(conf).getDirection()),
+                new HiveInsertExchange4JoinRule(
+                        HiveMultiJoin.class, NullOrdering.defaultNullOrder(conf).getDirection()));
       } else {
         generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
                 HiveProjectSortExchangeTransposeRule.INSTANCE, HiveProjectMergeRule.INSTANCE);
