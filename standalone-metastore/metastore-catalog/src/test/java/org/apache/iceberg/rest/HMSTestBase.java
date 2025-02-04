@@ -124,6 +124,7 @@ public abstract class HMSTestBase {
   protected int port = -1;
   protected int catalogPort = -1;
   protected final String catalogPath = "hmscatalog";
+  protected static final int WAIT_FOR_SERVER = 5000;
   // for direct calls
   protected Catalog catalog;
   protected SupportsNamespaces nsCatalog;
@@ -183,22 +184,42 @@ public abstract class HMSTestBase {
     Database db = new Database(DB_NAME, "catalog test", location, Collections.emptyMap());
     client.createDatabase(db);
 
+    int[] aport = { -1 };
+    Catalog ice = acquireServer(aport);
+      catalog =  ice;
+      nsCatalog = catalog instanceof SupportsNamespaces? (SupportsNamespaces) catalog : null;
+      catalogPort = aport[0];
+  }
+  
+  private static String format(String format, Object... params) {
+    return org.slf4j.helpers.MessageFormatter.arrayFormat(format, params).getMessage();
+  }
+
+  private static Catalog acquireServer(int[] port) throws InterruptedException {
+    final int wait = 200;
     Server iceServer = HiveMetaStore.getIcebergServer();
-    int tries = 5;
+    int tries = WAIT_FOR_SERVER / wait;
     while(iceServer == null && tries-- > 0) {
-      Thread.sleep(100);
+      Thread.sleep(wait);
       iceServer = HiveMetaStore.getIcebergServer();
     }
-    Catalog ice = HMSCatalogServer.getLastCatalog();
     if (iceServer != null) {
-      while (iceServer.isStarting()) {
-        Thread.sleep(100);
+      port[0] = iceServer.getURI().getPort();
+      boolean starting;
+      tries = WAIT_FOR_SERVER / wait;
+      while((starting = iceServer.isStarting()) && tries-- > 0) {
+        Thread.sleep(wait);
       }
-      catalog =  ice != null? ice : HMSCatalogServer.getLastCatalog();
-      nsCatalog = catalog instanceof SupportsNamespaces? (SupportsNamespaces) catalog : null;
-      catalogPort = iceServer.getURI().getPort();
+      if (starting) {
+        LOG.warn("server still starting after {}ms", WAIT_FOR_SERVER);
+      }
+      Catalog ice = HMSCatalogServer.getLastCatalog();
+      if (ice == null) {
+        throw new NullPointerException(format("unable to acquire catalog after {}ms", WAIT_FOR_SERVER));
+      }
+      return ice;
     } else {
-      throw new NullPointerException("no server");
+      throw new NullPointerException(format("unable to acquire server after {}ms", WAIT_FOR_SERVER));
     }
   }
 
