@@ -277,11 +277,11 @@ import com.google.common.annotations.VisibleForTesting;
 
   private HiveVectorIfStmtMode hiveVectorIfStmtMode;
 
-  private Set<String> allowCustomUDFs;
+  private Set<String> allowedCustomUDFs;
 
-  private Set<String> getAllowCustomUDFs(HiveConf hiveConf) {
+  private Set<String> getAllowedCustomUDFs(HiveConf hiveConf) {
     String udfs = HiveConf.getVar(hiveConf,
-        HiveConf.ConfVars.HIVE_VECTOR_ADAPTOR_USAGE_CHOSEN_CUSTOM_LIST);
+        HiveConf.ConfVars.HIVE_VECTOR_ADAPTOR_CUSTOM_UDF_WHITELIST);
     if (udfs != null && !udfs.isEmpty()) {
       return new HashSet<>(Arrays.asList(udfs.split(",")));
     }
@@ -310,7 +310,7 @@ import com.google.common.annotations.VisibleForTesting;
     adaptorSuppressEvaluateExceptions =
         HiveConf.getBoolVar(
             hiveConf, HiveConf.ConfVars.HIVE_VECTORIZED_ADAPTOR_SUPPRESS_EVALUATE_EXCEPTIONS);
-    this.allowCustomUDFs = getAllowCustomUDFs(hiveConf);
+    this.allowedCustomUDFs = getAllowedCustomUDFs(hiveConf);
   }
 
   private void copyHiveConfVars(VectorizationContext vContextEnvironment) {
@@ -1050,7 +1050,7 @@ import com.google.common.annotations.VisibleForTesting;
                 "Could not vectorize expression (mode = " + mode.name() + "): " + exprDesc.toString()
                   + " because hive.vectorized.adaptor.usage.mode=none");
           case CHOSEN:
-            if (isNonVectorizedPathUDF(expr, mode, allowCustomUDFs)) {
+            if (isNonVectorizedPathUDF(expr, mode, allowedCustomUDFs)) {
               ve = getCustomUDFExpression(expr, mode);
             } else {
               throw new HiveException(
@@ -1459,7 +1459,7 @@ import com.google.common.annotations.VisibleForTesting;
    * Depending on performance requirements and frequency of use, these
    * may be implemented in the future with an optimized VectorExpression.
    */
-  public static boolean isNonVectorizedPathUDF(ExprNodeGenericFuncDesc expr,
+  private static boolean isNonVectorizedPathUDF(ExprNodeGenericFuncDesc expr,
       VectorExpressionDescriptor.Mode mode, Set<String> allowCustomUDFs) {
     GenericUDF gudf = expr.getGenericUDF();
     if (gudf instanceof GenericUDFBridge) {

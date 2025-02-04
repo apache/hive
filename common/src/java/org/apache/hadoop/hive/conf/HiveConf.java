@@ -4704,7 +4704,7 @@ public class HiveConf extends Configuration {
         "This flag should be set to true to enable vectorized mode of the PTF of query execution.\n" +
         "The default value is true."),
 
-    HIVE_VECTOR_ADAPTOR_USAGE_CHOSEN_CUSTOM_LIST("hive.vectorized.adaptor.usage.chosen.custom.list", "",
+    HIVE_VECTOR_ADAPTOR_CUSTOM_UDF_WHITELIST("hive.vectorized.adaptor.custom.udf.whitelist", "",
         "Custom UDF allowed when hive.vectorized.adaptor.usage.mode is chosen.\n" +
         "Specify classes separated by commas:\n" +
         "package.FooClass,package.BarClass"),
