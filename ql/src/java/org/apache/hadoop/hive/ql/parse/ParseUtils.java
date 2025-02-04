@@ -786,6 +786,6 @@ public final class ParseUtils {
    * @param node the ASTNode
    */
   public static String getNodeName(ASTNode node) {
-    return node == null ? "" : node.getText().substring("TOK_".length());
+    return node == null || node.getText() == null ? "" : node.getText().substring("TOK_".length());
   }
 }
