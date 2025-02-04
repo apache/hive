@@ -780,4 +780,12 @@ public final class ParseUtils {
     }
     return result;
   }
+
+  /**
+   * Returns the root node's string representation without the "TOK_" prefix.
+   * @param node the ASTNode
+   */
+  public static String getNodeName(ASTNode node) {
+    return node == null ? "" : node.getText().substring("TOK_".length());
+  }
 }

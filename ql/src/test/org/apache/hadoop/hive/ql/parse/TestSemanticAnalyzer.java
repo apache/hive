@@ -352,7 +352,9 @@ public class TestSemanticAnalyzer {
   public void testQueryTypes() throws Exception {
     // QUERY
     checkQueryType("SELECT key FROM table1", QueryType.QUERY);
+    checkQueryType("WITH a AS (SELECT key FROM table1) SELECT * FROM a", QueryType.QUERY);
     checkQueryType("SELECT key FROM table_non_existing", QueryType.QUERY);
+    checkQueryType("WITH a AS (SELECT key FROM table_non_existing) SELECT * FROM a", QueryType.QUERY);
     checkQueryType("SELECT a.value, b.value FROM table1 a JOIN table2 b ON a.key = b.key", QueryType.QUERY);
 
     // STATS

@@ -189,6 +189,26 @@ public class TestQueryProperties {
   private void checkIsDML(String query, boolean expectedIsDML) throws Exception {
     // fullAnalyze=true: this unit test expects the whole SemanticAnalyzer.analyze to be run
     QueryProperties properties = analyze(query, true);
-    Assert.assertEquals(expectedIsDML, properties.isDML());
+    Assert.assertEquals(expectedIsDML, QueryProperties.QueryType.DML.equals(properties.getQueryType()));
+  }
+
+  @Test
+  public void testFieldsRemainUntouchedOnClear() {
+    QueryProperties queryProperties = new QueryProperties();
+
+    // check default values
+    Assert.assertNull(queryProperties.getQueryType());
+    // getDdlType resolves to empty string if not set
+    Assert.assertEquals("", queryProperties.getDdlType());
+
+    queryProperties.setQueryType(QueryProperties.QueryType.DDL);
+    queryProperties.setDdlType("CREATETABLE");
+
+    queryProperties.clear();
+
+    // check that some values are not affected by clear()
+    Assert.assertEquals("queryType is not supposed to be cleared", QueryProperties.QueryType.DDL,
+        queryProperties.getQueryType());
+    Assert.assertEquals("ddlType is not supposed to be cleared", "CREATETABLE", queryProperties.getDdlType());
   }
 }

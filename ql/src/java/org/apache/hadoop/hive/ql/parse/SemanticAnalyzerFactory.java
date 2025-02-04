@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.parse.rewrite.DeleteRewriterFactory;
@@ -63,7 +64,11 @@ public final class SemanticAnalyzerFactory {
       queryState.setCommandType(opType);
 
       if (DDLSemanticAnalyzerFactory.handles(tree)) {
-        return DDLSemanticAnalyzerFactory.getAnalyzer(tree, queryState);
+        BaseSemanticAnalyzer sem = DDLSemanticAnalyzerFactory.getAnalyzer(tree, queryState);
+        QueryProperties queryProperties = sem.getQueryProperties();
+        queryProperties.setQueryType(QueryProperties.QueryType.DDL);
+        queryProperties.setDdlType(ParseUtils.getNodeName(tree));
+        return sem;
       }
 
       switch (tree.getType()) {

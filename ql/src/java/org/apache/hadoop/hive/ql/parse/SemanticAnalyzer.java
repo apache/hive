@@ -14021,6 +14021,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       isUserStorageFormat = true;
     }
 
+    // CREATE TABLE is a DDL and yet it's not handled by DDLSemanticAnalyzerFactory
+    // FIXME: HIVE-28724
+    queryProperties.setQueryType(QueryProperties.QueryType.DDL);
+    queryProperties.setDdlType(ParseUtils.getNodeName(ast));
+
     /*
      * Check the 1st-level children and do simple semantic checks: 1) CTLT and
      * CTAS should not coexists. 2) CTLT or CTAS should not coexists with column
@@ -14559,6 +14564,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     LOG.info("Creating view " + dbDotTable + " position="
         + ast.getCharPositionInLine());
     int numCh = ast.getChildCount();
+
+    // all the CREATE VIEW statements are DDLs (including MV)
+    queryProperties.setQueryType(QueryProperties.QueryType.DDL);
+    queryProperties.setDdlType(ParseUtils.getNodeName(ast));
+
     for (int num = 1; num < numCh; num++) {
       ASTNode child = (ASTNode) ast.getChild(num);
       if (storageFormat.fillStorageFormat(child)) {
@@ -15720,7 +15730,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       queryProperties.setNoScanAnalyzeCommand(qb.getParseInfo().isNoScanAnalyzeCommand());
       queryProperties.setAnalyzeRewrite(qb.isAnalyzeRewrite());
       queryProperties.setCTAS(qb.getTableDesc() != null);
-      queryProperties.setDML(qb.getParseInfo().hasInsertTables());
+      if (qb.getParseInfo().hasInsertTables()) {
+        queryProperties.setQueryType(QueryProperties.QueryType.DML);
+      }
       queryProperties.setHasOuterOrderBy(!qb.getParseInfo().getIsSubQ() &&
           !qb.getParseInfo().getDestToOrderBy().isEmpty());
       queryProperties.setOuterQueryLimit(qb.getParseInfo().getOuterQueryLimit());

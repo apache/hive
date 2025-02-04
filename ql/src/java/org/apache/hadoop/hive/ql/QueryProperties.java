@@ -60,11 +60,6 @@ public class QueryProperties {
   boolean noScanAnalyzeCommand;
   boolean analyzeRewrite;
   boolean ctas;
-  /**
-   * isDml comes from the original QBParseInfo.hasInsertTables()
-   * this is true if the query modifies the table's data in any way: INSERT [OVERWRITE], UPDATE, DELETE, MERGE
-   */
-  boolean isDML;
   int outerQueryLimit;
 
   boolean hasJoin = false;
@@ -101,8 +96,8 @@ public class QueryProperties {
   private boolean isMaterializedView;
   private boolean isView;
 
-  private QueryType queryType;
-  private String ddlType;
+  private QueryType queryType = null;
+  private String ddlType = null;
 
   // set of used tables, aliases are resolved to real table names
   private Set<String> usedTables = new HashSet<>();
@@ -345,14 +340,6 @@ public class QueryProperties {
     return this.filterWithSubQuery;
   }
 
-  public boolean isDML() {
-    return isDML;
-  }
-
-  public void setDML(final boolean dml) {
-    isDML = dml;
-  }
-
   /**
    * True indicates this statement create or replaces a materialized view, not that it is a query
    * against a materialized view.
@@ -431,9 +418,6 @@ public class QueryProperties {
 
     multiDestQuery = false;
     filterWithSubQuery = false;
-
-    queryType = null;
-    ddlType = null;
 
     usedTables.clear();
   }
