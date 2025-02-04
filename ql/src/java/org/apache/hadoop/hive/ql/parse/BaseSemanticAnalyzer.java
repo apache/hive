@@ -2118,9 +2118,8 @@ public abstract class BaseSemanticAnalyzer {
     // in case of a semantic exception (e.g. a table not found or something else)
     // the root AST Node can still imply if this is a query, try to fall back to that
     // instead of ""
-    String text = tree.getText();
     QueryType queryType = QueryType.OTHER;
-    if ("TOK_QUERY".equalsIgnoreCase(text)) {
+    if ("TOK_QUERY".equalsIgnoreCase(tree.getText())) {
       queryType = QueryType.QUERY;
     }
     queryProperties.setQueryType(queryType);
