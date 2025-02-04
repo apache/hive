@@ -4704,6 +4704,11 @@ public class HiveConf extends Configuration {
         "This flag should be set to true to enable vectorized mode of the PTF of query execution.\n" +
         "The default value is true."),
 
+    HIVE_VECTOR_ADAPTOR_USAGE_CHOSEN_CUSTOM_LIST("hive.vectorized.adaptor.usage.chosen.custom.list", "",
+        "Custom UDF allowed when hive.vectorized.adaptor.usage.mode is chosen.\n" +
+        "Specify classes separated by commas:\n" +
+        "package.FooClass,package.BarClass"),
+
     HIVE_VECTORIZATION_PTF_MAX_MEMORY_BUFFERING_BATCH_COUNT("hive.vectorized.ptf.max.memory.buffering.batch.count", 25,
         "Maximum number of vectorized row batches to buffer in memory for PTF\n" +
         "The default value is 25"),
