@@ -442,6 +442,7 @@ public class TestSemanticAnalyzer {
     SemanticAnalyzer analyzer = spy((SemanticAnalyzer) SemanticAnalyzerFactory.get(queryState, astNode));
     analyzer.initCtx(ctx);
     analyzer.analyze(astNode, ctx);
+    analyzer.endAnalysis(astNode);
 
     Set<String> result = analyzer.getQueryProperties().getUsedTables();
 

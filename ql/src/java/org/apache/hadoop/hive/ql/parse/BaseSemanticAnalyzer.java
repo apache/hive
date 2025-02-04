@@ -332,17 +332,6 @@ public abstract class BaseSemanticAnalyzer {
     initCtx(ctx);
     init(true);
     analyzeInternal(ast);
-    postAnalyze();
-  }
-
-  /**
-   * This method is called after analyzeInternal, assuming all the semantic context is present (analyzeInternal is
-   * overridden by the subclasses of BaseSemanticAnalyzer).
-   * The reason why postAnalyze is private is that it's not supposed to be overridden.
-   */
-  private void postAnalyze() {
-    queryProperties.setUsedTables(
-        CacheTableHelper.getUniqueNames(ctx.getParsedTables()));
   }
 
   public void validate() throws SemanticException {
@@ -2060,6 +2049,8 @@ public abstract class BaseSemanticAnalyzer {
    */
   public void endAnalysis(ASTNode tree) {
     setQueryType(tree); // at this point we know the query type for sure
+    queryProperties.setUsedTables(
+        CacheTableHelper.getUniqueNames(ctx.getParsedTables()));
   }
 
   public ParseContext getParseContext() {

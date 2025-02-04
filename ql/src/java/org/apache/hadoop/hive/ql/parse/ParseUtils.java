@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 
@@ -786,6 +787,8 @@ public final class ParseUtils {
    * @param node the ASTNode
    */
   public static String getNodeName(ASTNode node) {
-    return node == null || node.getText() == null ? "" : node.getText().substring("TOK_".length());
+    return Optional.ofNullable(node)
+        .map(ASTNode::getText).map(text -> text.substring("TOK_".length()))
+        .orElse("");
   }
 }
