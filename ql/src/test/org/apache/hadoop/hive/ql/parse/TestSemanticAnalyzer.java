@@ -90,12 +90,13 @@ public class TestSemanticAnalyzer {
     createKeyValueTable("table2");
     createKeyValueTable("table3");
     createPartitionedTable("table_part");
-    createAcidTable("table_acid");
+    Table tableAcid = createAcidTable("table_acid");
 
     createKeyValueTable("other_db", "table1");
 
     createView("view1", table1);
     createMaterializedView("mview1", table1);
+    createMaterializedView("mview_acid", tableAcid);
   }
 
   private static void createDatabase(String dbName) throws Exception {
@@ -114,12 +115,13 @@ public class TestSemanticAnalyzer {
     return table;
   }
 
-  private static void createAcidTable(String tableAcid) throws HiveException {
+  private static Table createAcidTable(String tableAcid) throws HiveException {
     Table table = createSimpleTableWithColumns("default", tableAcid);
     table.setProperty("transactional", "true");
     // The table must be stored using an ACID compliant format (such as ORC)
     setOrc(table);
     db.createTable(table);
+    return table;
   }
 
   private static void createPartitionedTable(String tablePart) throws HiveException {
@@ -161,6 +163,8 @@ public class TestSemanticAnalyzer {
     materializedView.setTableType(TableType.MATERIALIZED_VIEW);
     materializedView.setViewOriginalText(String.format("SELECT * FROM %s", sourceTable.getTableName()));
     materializedView.setViewExpandedText(String.format("SELECT * FROM %s", sourceTable.getTableName()));
+
+    materializedView.getSd().setCols(sourceTable.getCols());
 
     MaterializedViewMetadata metadata = new MaterializedViewMetadata(
         MetaStoreUtils.getDefaultCatalog(conf),
@@ -384,9 +388,9 @@ public class TestSemanticAnalyzer {
     checkQueryType("DROP VIEW IF EXISTS v1", QueryType.DDL);
     checkQueryType("ALTER VIEW view1 AS SELECT * FROM table1", QueryType.DDL);
     // DDL: materialized view
-    checkQueryType("CREATE MATERIALIZED VIEW mv1 AS SELECT * FROM table1", QueryType.DDL);
+    checkQueryType("CREATE MATERIALIZED VIEW mv1 AS SELECT * FROM table_acid", QueryType.DDL);
     checkQueryType("DROP MATERIALIZED VIEW IF EXISTS mv1", QueryType.DDL);
-    checkQueryType("ALTER MATERIALIZED VIEW mview1 REBUILD", QueryType.DDL);
+    checkQueryType("ALTER MATERIALIZED VIEW mview_acid REBUILD", QueryType.DDL);
 
     // OTHER
     // EXPLAIN is a utility, cannot classified as any of the categories above
