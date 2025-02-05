@@ -810,10 +810,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                     + maxParts);
   }
 
-  private void startPartitionFunction(String function, String catName, String db, String tbl, int maxParts,
+  private void startPartitionFunction(String function, String catName, String db, String tbl, int partitionLimit,
                                       String expression, String defaultPartitionName) {
     startFunction(function, " : tbl=" + TableName.getQualified(catName, db, tbl) + ": Expression=" + expression
-            + ": Default partition name=" + defaultPartitionName + ": Max partitions=" + maxParts);
+            + ": Default partition name=" + defaultPartitionName + ": Max partitions=" + partitionLimit);
   }
 
   private String getGroupsCountAndUsername(final String user_name, final List<String> group_names) {
@@ -7601,8 +7601,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
     String expr = req.isSetExpr() ? Arrays.toString((req.getExpr())) : "";
     String defaultPartitionName = req.isSetDefaultPartitionName() ? req.getDefaultPartitionName() : "";
-    int maxParts = req.getMaxParts();
-    startPartitionFunction("get_partitions_by_expr", catName, dbName, tblName, maxParts, expr, defaultPartitionName);
+    int partitionLimit = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.LIMIT_PARTITION_REQUEST);
+    startPartitionFunction("get_partitions_by_expr", catName, dbName, tblName, partitionLimit, expr, defaultPartitionName);
     fireReadTablePreEvent(catName, dbName, tblName);
     PartitionsByExprResult ret = null;
     Exception ex = null;
