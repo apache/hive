@@ -17,6 +17,7 @@
 
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules.views;
 
+import com.google.common.collect.Range;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptTable;
@@ -31,9 +32,10 @@ import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexTableInputRef;
-import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeFamily;
+import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.util.Sarg;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -82,12 +84,7 @@ public class HivePushdownSnapshotFilterRule extends RelRule<HivePushdownSnapshot
   @Override
   public void onMatch(RelOptRuleCall call) {
     HiveFilter filter = call.rel(0);
-    RexNode expandedCondition = RexUtil.expandSearch(
-        filter.getCluster().getRexBuilder(), null, filter.getCondition()
-    );
-    RexNode newCondition = expandedCondition.accept(
-        new SnapshotIdShuttle(call.builder().getRexBuilder(), call.getMetadataQuery(), filter)
-    );
+    RexNode newCondition = filter.getCondition().accept(new SnapshotIdShuttle(call.builder().getRexBuilder(), call.getMetadataQuery(), filter));
     call.transformTo(call.builder().push(filter.getInput()).filter(newCondition).build());
   }
 
@@ -124,7 +121,30 @@ public class HivePushdownSnapshotFilterRule extends RelRule<HivePushdownSnapshot
         return false;
       }
 
-      Long snapshotId = literal.getValueAs(Long.class);
+      Long snapshotId;
+      
+      // Here we are trying to check SEARCH Operators for predicates like
+      // $0 <[=] a, and $0 >[=] a.
+      // e.g., SEARCH($0, Sarg[(a, +inf)]), SEARCH($0, Sarg[[a, +inf)])
+      //       SEARCH($0, Sarg[(-inf, a)]), SEARCH($0, Sarg[(-inf, a]])
+      if (literal.getTypeName() == SqlTypeName.SARG) {
+        Sarg<?> sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
+        // there must only be one range, from which we can extract the snapshotId.
+        if (sarg.rangeSet.asRanges().size() != 1) {
+          return false;
+        }
+        Range<?> range = sarg.rangeSet.asRanges().iterator().next();
+        // range must be bounded on one end, either upper or lower, but not both.
+        if (range.hasLowerBound() && !range.hasUpperBound()) {
+          snapshotId = ((Number) range.lowerEndpoint()).longValue();
+        } else if (!range.hasLowerBound() && range.hasUpperBound()) {
+          snapshotId = ((Number) range.upperEndpoint()).longValue();
+        } else {
+          return false;
+        }
+      } else {
+        snapshotId = literal.getValueAs(Long.class);
+      }
 
       RelOptTable relOptTable = getRelOptTableOf(op2);
       if (relOptTable == null) {
