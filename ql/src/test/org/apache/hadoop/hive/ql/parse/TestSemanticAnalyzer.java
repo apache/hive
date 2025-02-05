@@ -390,11 +390,15 @@ public class TestSemanticAnalyzer {
     // DDL: materialized view
     checkQueryType("CREATE MATERIALIZED VIEW mv1 AS SELECT * FROM table_acid", QueryType.DDL);
     checkQueryType("DROP MATERIALIZED VIEW IF EXISTS mv1", QueryType.DDL);
+    checkQueryType("ALTER MATERIALIZED VIEW mview_acid ENABLE REWRITE", QueryType.DDL);
     checkQueryType("ALTER MATERIALIZED VIEW mview_acid REBUILD", QueryType.DDL);
+
 
     // OTHER
     // EXPLAIN is a utility, cannot classified as any of the categories above
     checkQueryType("EXPLAIN SELECT key FROM table1", QueryType.OTHER);
+    checkQueryType("MSCK REPAIR TABLE table_part", QueryType.OTHER);
+    checkQueryType("ALTER TABLE table_acid COMPACT 'major'", QueryType.OTHER);
   }
 
   private void checkQueryType(String query, QueryProperties.QueryType expectedQueryType) throws Exception {
