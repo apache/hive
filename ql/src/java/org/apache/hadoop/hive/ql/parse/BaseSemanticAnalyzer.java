@@ -2048,9 +2048,11 @@ public abstract class BaseSemanticAnalyzer {
    * Called when we end analysis of a query.
    */
   public void endAnalysis(ASTNode tree) {
+    if (ctx != null){
+      queryProperties.setUsedTables(
+          CacheTableHelper.getUniqueNames(ctx.getParsedTables()));
+    }
     setQueryType(tree); // at this point we know the query type for sure
-    queryProperties.setUsedTables(
-        CacheTableHelper.getUniqueNames(ctx.getParsedTables()));
   }
 
   public ParseContext getParseContext() {
