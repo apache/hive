@@ -1162,6 +1162,11 @@ public class MetastoreConf {
         "When used in conjunction with the org.apache.hadoop.hive.ql.parse.MetaDataExportListener pre event listener, \n" +
             "this setting determines if the metadata that is exported will subsequently be moved to the user's trash directory \n" +
             "alongside the dropped table data. This ensures that the metadata will be cleaned up along with the dropped table data."),
+    METASTORE_USERS_RESTRICTED_TO_DEFERRED_VIEW(
+            "metastore.users.restricted_to_deferred_view",
+            "metastore.users.restricted_to_deferred_view",
+            "",
+            "comma separated users who are restricted to create deferred view, not normal view"),
     METRICS_ENABLED("metastore.metrics.enabled", "hive.metastore.metrics.enabled", false,
         "Enable metrics on the metastore."),
     METRICS_CLASS("metastore.metrics.class", "hive.service.metrics.class", "org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics",
