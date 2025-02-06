@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.queryhistory.repository.IcebergRepository;
 import org.apache.hadoop.hive.ql.queryhistory.repository.QueryHistoryRepository;
 import org.apache.hadoop.hive.ql.queryhistory.schema.DummyRecord;
@@ -98,6 +99,7 @@ public class TestQueryHistoryService {
     HiveConf.setQueryString(conf, DummyRecord.SQL);
 
     QueryState queryState = DriverFactory.getNewQueryState(conf);
+    queryState.setCommandType(HiveOperation.valueOf(DummyRecord.OPERATION));
 
     // prepare SessionState
     SessionState ss = SessionState.start(conf);
@@ -168,10 +170,9 @@ public class TestQueryHistoryService {
   }
 
   private static void prepareDriverContext(DriverContext driverContext) {
-    // mock the queryType and ddlType, because the calculation if those are quite complicated,
+    // mock the queryType and operation, because the calculation if those are quite complicated,
     // which should be unit tested separately
     when(driverContext.getQueryType()).thenReturn(DummyRecord.QUERY_TYPE);
-    when(driverContext.getDdlType()).thenReturn(DummyRecord.DDL_TYPE);
     driverContext.setQueryErrorMessage(DummyRecord.FAILURE_REASON);
     driverContext.setExplainPlan(DummyRecord.PLAN);
     FetchTask fetchTask = mock(FetchTask.class);
@@ -304,7 +305,7 @@ public class TestQueryHistoryService {
     compareValue(Schema.Field.QUERY_STATE, DummyRecord.QUERY_STATE, record, fieldsValidated);
     compareValue(Schema.Field.QUERY_TYPE, DummyRecord.QUERY_TYPE.getName(), record,
         fieldsValidated);
-    compareValue(Schema.Field.DDL_TYPE, DummyRecord.DDL_TYPE, record, fieldsValidated);
+    compareValue(Schema.Field.OPERATION, DummyRecord.OPERATION, record, fieldsValidated);
     compareValue(Schema.Field.SERVER_ADDRESS, serviceContext.getHost(), record, fieldsValidated);
     compareValue(Schema.Field.SERVER_PORT, serviceContext.getPort(), record, fieldsValidated);
     compareValue(Schema.Field.CLIENT_ADDRESS, DummyRecord.CLIENT_ADDRESS, record, fieldsValidated);

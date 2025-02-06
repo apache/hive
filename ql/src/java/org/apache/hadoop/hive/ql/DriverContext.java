@@ -149,10 +149,6 @@ public class DriverContext {
     return queryProperties == null ? null : queryProperties.getQueryType();
   }
 
-  public String getDdlType() {
-    return queryProperties == null ? null : queryProperties.getDdlType();
-  }
-
   public TezRuntimeContext getRuntimeContext() {
     return runtimeContext;
   }

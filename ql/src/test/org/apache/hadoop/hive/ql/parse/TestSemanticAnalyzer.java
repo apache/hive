@@ -97,6 +97,8 @@ public class TestSemanticAnalyzer {
     createView("view1", table1);
     createMaterializedView("mview1", table1);
     createMaterializedView("mview_acid", tableAcid);
+
+    db.createRole("role1", "hive");
   }
 
   private static void createDatabase(String dbName) throws Exception {
@@ -355,53 +357,84 @@ public class TestSemanticAnalyzer {
   @Test
   public void testQueryTypes() throws Exception {
     // QUERY
-    checkQueryType("SELECT key FROM table1", QueryType.QUERY);
-    checkQueryType("WITH a AS (SELECT key FROM table1) SELECT * FROM a", QueryType.QUERY);
-    checkQueryType("SELECT key FROM table_non_existing", QueryType.QUERY);
-    checkQueryType("WITH a AS (SELECT key FROM table_non_existing) SELECT * FROM a", QueryType.QUERY);
-    checkQueryType("SELECT a.value, b.value FROM table1 a JOIN table2 b ON a.key = b.key", QueryType.QUERY);
+    checkQueryType("SELECT key FROM table1", QueryType.DQL, "QUERY");
+    checkQueryType("WITH a AS (SELECT key FROM table1) SELECT * FROM a", QueryType.DQL, "QUERY");
+    checkQueryType("SELECT key FROM table_non_existing", QueryType.DQL, "QUERY");
+    checkQueryType("WITH a AS (SELECT key FROM table_non_existing) SELECT * FROM a", QueryType.DQL, "QUERY");
+    checkQueryType("SELECT a.value, b.value FROM table1 a JOIN table2 b ON a.key = b.key", QueryType.DQL, "QUERY");
 
     // STATS
-    checkQueryType("ANALYZE TABLE table1 COMPUTE STATISTICS", QueryType.STATS);
-    checkQueryType("ANALYZE TABLE table1 COMPUTE STATISTICS FOR COLUMNS", QueryType.STATS);
+    /*
+     * The different operations for ANALYZE commands shows the current behavior, which is reflected in every
+     * q.out files. Changing this would overwrite/break many q.outs (TODO: HIVE-28750), and the sqlKind approach doesn't
+     * work there as there is no 'ANALYZE' sqlKind. However, the ANALYZE queries can still be identified by the
+     * dedicated QueryType.STATS enum value, making them queryable in query history.
+     */
+    checkQueryType("ANALYZE TABLE table1 COMPUTE STATISTICS", QueryType.STATS, "QUERY");
+    checkQueryType("ANALYZE TABLE table1 COMPUTE STATISTICS FOR COLUMNS", QueryType.STATS, "ANALYZE_TABLE");
 
     // DML
-    checkQueryType("INSERT INTO table1 VALUES ('1', 1)", QueryType.DML);
-    checkQueryType("INSERT OVERWRITE TABLE table1 SELECT * FROM table2", QueryType.DML);
-    checkQueryType("UPDATE table_acid SET value = 2 WHERE key = '1'", QueryType.DML);
-    checkQueryType("DELETE FROM table_acid WHERE key = '1'", QueryType.DML);
+    checkQueryType("INSERT INTO table1 VALUES ('1', 1)", QueryType.DML, "INSERT");
+    checkQueryType("INSERT OVERWRITE TABLE table1 SELECT * FROM table2", QueryType.DML, "INSERT");
+    checkQueryType("INSERT OVERWRITE DIRECTORY '/' SELECT * FROM table2", QueryType.DML, "INSERT");
+    checkQueryType("UPDATE table_acid SET value = 2 WHERE key = '1'", QueryType.DML, "UPDATE");
+    checkQueryType("DELETE FROM table_acid WHERE key = '1'", QueryType.DML, "DELETE");
     checkQueryType("MERGE INTO table_acid AS target USING table1 AS source ON source.key = target.key " +
-        "WHEN MATCHED THEN UPDATE SET key = 3 WHEN NOT MATCHED THEN INSERT VALUES ('3', 4)", QueryType.DML);
-    // EXPORT acid table is handled by RewriteSemanticAnalyzer, but it's not a DML
-    checkQueryType("EXPORT TABLE table_acid TO '/path'", QueryType.OTHER);
+        "WHEN MATCHED THEN UPDATE SET key = 3 WHEN NOT MATCHED THEN INSERT VALUES ('3', 4)", QueryType.DML, "MERGE");
+    checkQueryType("LOAD DATA INPATH '/data.csv' INTO TABLE table1", QueryType.DML, "LOAD");
 
     // DDL
-    checkQueryType("SHOW DATABASES", QueryType.DDL);
-    checkQueryType("SHOW TABLES", QueryType.DDL);
-    checkQueryType("CREATE DATABASE test_database_to_create", QueryType.DDL);
-    checkQueryType("CREATE EXTERNAL TABLE test_part(id int) PARTITIONED BY(dt string) STORED AS ORC", QueryType.DDL);
-    checkQueryType("ALTER TABLE table_part ADD PARTITION (part_col='3')", QueryType.DDL);
-    checkQueryType("DROP TABLE table1", QueryType.DDL);
-    checkQueryType("CREATE TABLE target AS SELECT * FROM table1", QueryType.DDL);
+    // FIXME: SHOW [...] commands are more like DQL, see: HIVE-28754
+    checkQueryType("SHOW DATABASES", QueryType.DDL, "SHOWDATABASES");
+    checkQueryType("SHOW TABLES", QueryType.DDL, "SHOWTABLES");
+    checkQueryType("CREATE DATABASE test_database_to_create", QueryType.DDL, "CREATEDATABASE");
+    checkQueryType("CREATE EXTERNAL TABLE test_part(id int) PARTITIONED BY(dt string) STORED AS ORC", QueryType.DDL,
+        "CREATETABLE");
+    checkQueryType("CREATE TABLE t AS SELECT * FROM table_acid", QueryType.DDL, "CREATETABLE_AS_SELECT");
+    checkQueryType("ALTER TABLE table_part ADD PARTITION (part_col='3')", QueryType.DDL, "ALTERTABLE_ADDPARTS");
+    checkQueryType("DROP TABLE table1", QueryType.DDL, "DROPTABLE");
+    checkQueryType("CREATE TABLE target AS SELECT * FROM table1", QueryType.DDL, "CREATETABLE_AS_SELECT");
+    checkQueryType("TRUNCATE TABLE table1", QueryType.DDL, "TRUNCATETABLE");
     // DDL: view
-    checkQueryType("CREATE VIEW v1 AS SELECT * FROM table1", QueryType.DDL);
-    checkQueryType("DROP VIEW IF EXISTS v1", QueryType.DDL);
-    checkQueryType("ALTER VIEW view1 AS SELECT * FROM table1", QueryType.DDL);
+    checkQueryType("CREATE VIEW v1 AS SELECT * FROM table1", QueryType.DDL, "CREATEVIEW");
+    checkQueryType("DROP VIEW IF EXISTS v1", QueryType.DDL, "DROPVIEW");
+    checkQueryType("ALTER VIEW view1 AS SELECT * FROM table1", QueryType.DDL, "ALTERVIEW_AS");
     // DDL: materialized view
-    checkQueryType("CREATE MATERIALIZED VIEW mv1 AS SELECT * FROM table_acid", QueryType.DDL);
-    checkQueryType("DROP MATERIALIZED VIEW IF EXISTS mv1", QueryType.DDL);
-    checkQueryType("ALTER MATERIALIZED VIEW mview_acid ENABLE REWRITE", QueryType.DDL);
-    checkQueryType("ALTER MATERIALIZED VIEW mview_acid REBUILD", QueryType.DDL);
+    checkQueryType("CREATE MATERIALIZED VIEW mv1 AS SELECT * FROM table_acid", QueryType.DDL,
+        "CREATE_MATERIALIZED_VIEW");
+    checkQueryType("DROP MATERIALIZED VIEW IF EXISTS mv1", QueryType.DDL, "DROP_MATERIALIZED_VIEW");
+    checkQueryType("ALTER MATERIALIZED VIEW mview_acid ENABLE REWRITE", QueryType.DDL,
+        "ALTER_MATERIALIZED_VIEW_REWRITE");
+    checkQueryType("ALTER MATERIALIZED VIEW mview_acid REBUILD", QueryType.DDL, "ALTER_MATERIALIZED_VIEW_REBUILD");
+    checkQueryType("DESCRIBE FORMATTED table_acid", QueryType.DDL, "DESCTABLE");
 
+    // FIXME: HIVE-28753 to classify acid table export operation as 'EXPORT'
+    checkQueryType("EXPORT TABLE table_acid TO '/path'", QueryType.DDL, "QUERY");
+    // EXPORT non-acid table is handled by ExportSemanticAnalyzer, the same characteristics should apply
+    checkQueryType("EXPORT TABLE table1 TO '/path'", QueryType.DDL, "EXPORT");
+
+    //DCL: basically, subclasses of AbstractPrivilegeAnalyzer
+    checkQueryType("GRANT ROLE role1 TO USER user1", QueryType.DCL, "GRANT_ROLE");
+    checkQueryType("REVOKE ROLE role1 FROM USER user1", QueryType.DCL, "REVOKE_ROLE");
 
     // OTHER
     // EXPLAIN is a utility, cannot classified as any of the categories above
-    checkQueryType("EXPLAIN SELECT key FROM table1", QueryType.OTHER);
-    checkQueryType("MSCK REPAIR TABLE table_part", QueryType.OTHER);
-    checkQueryType("ALTER TABLE table_acid COMPACT 'major'", QueryType.OTHER);
+    checkQueryType("EXPLAIN SELECT key FROM table1", QueryType.DQL, "EXPLAIN");
+    checkQueryType("EXPLAIN INSERT INTO table1 VALUES ('1', 1)", QueryType.DQL, "EXPLAIN");
+
+    // some commands that are handled by DDL analyzers but not DDLs in fact
+    checkQueryType("MSCK REPAIR TABLE table_part", QueryType.OTHER, "MSCK");
+    checkQueryType("ALTER TABLE table_acid COMPACT 'major'", QueryType.OTHER, "ALTERTABLE_COMPACT");
+
+    // TCL commands that we classify as QueryType.OTHER (and don't really support at the moment)
+    checkQueryType("COMMIT", QueryType.OTHER, "COMMIT");
+    checkQueryType("START TRANSACTION", QueryType.OTHER, "START TRANSACTION");
+    checkQueryType("ROLLBACK", QueryType.OTHER, "ROLLBACK");
+
   }
 
-  private void checkQueryType(String query, QueryProperties.QueryType expectedQueryType) throws Exception {
+  private void checkQueryType(String query, QueryProperties.QueryType expectedQueryType, String expectedOperation)
+      throws Exception {
     SessionState.start(new SessionState(conf));
     Context ctx = new Context(conf);
     ASTNode astNode = ParseUtils.parse(query, ctx);
@@ -425,9 +458,13 @@ public class TestSemanticAnalyzer {
       analyzer.endAnalysis(astNode); // this is called by Compiler in production
     }
 
-    QueryType queryType = analyzer.getQueryProperties() == null ? null : analyzer.getQueryProperties().getQueryType();
+    QueryType queryType = analyzer.getQueryProperties().getQueryType();
     assertEquals(String.format("Expected query type for query '%s' is '%s', seen '%s'", query, expectedQueryType,
         queryType), expectedQueryType, queryType);
+    String operationOrSqlKind = queryState.getSqlKind() == null ? queryState.getCommandType() :
+        queryState.getSqlKind().toString();
+    assertEquals(String.format("Expected operation(or sqlKind) for query '%s' is '%s', seen '%s'", query,
+        expectedOperation, operationOrSqlKind), expectedOperation, operationOrSqlKind);
   }
 
   @Test

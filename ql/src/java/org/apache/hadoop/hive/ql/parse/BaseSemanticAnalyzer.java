@@ -38,6 +38,7 @@ import java.util.stream.Stream;
 import org.antlr.runtime.TokenRewriteStream;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -94,10 +95,10 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
@@ -2113,8 +2114,20 @@ public abstract class BaseSemanticAnalyzer {
     // instead of ""
     QueryType queryType = QueryType.OTHER;
     if ("TOK_QUERY".equalsIgnoreCase(tree.getText())) {
-      queryType = QueryType.QUERY;
+      queryType = QueryType.DQL;
     }
     queryProperties.setQueryType(queryType);
+  }
+
+  /**
+   * Sets the sqlKind of the query if any. Subclasses can overwrite this to prevent using any sqlKind (e.g. MV REBUILD).
+   * @param sqlKind that belongs to the semantic analyzer
+   */
+  protected void setSqlKind(SqlKind sqlKind) {
+    // when e.g. a MERGE query is rewritten to INSERTs, the analyzer codepaths
+    // will keep calling setSqlKind(HiveOperation.INSERT), so this null-check prevents overwrite
+    if (queryState.getSqlKind() == null) {
+      queryState.setSqlKind(sqlKind);
+    }
   }
 }

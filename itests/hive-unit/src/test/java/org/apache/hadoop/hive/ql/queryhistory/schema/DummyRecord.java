@@ -44,8 +44,8 @@ public class DummyRecord extends Record {
   public static final String SQL = "SELECT 1";
   public static final int HIVERSERVER2_PROTOCOL_VERSION = 1;
   public static final String CURRENT_DATABASE = "default";
-  public static final QueryType QUERY_TYPE = QueryType.QUERY;
-  public static final String DDL_TYPE = "ALTERDATABASE";
+  public static final QueryType QUERY_TYPE = QueryType.DQL;
+  public static final String OPERATION = "ALTERDATABASE";
   public static final String CLIENT_ADDRESS = "client_host.domain";
 
   // example durations with distiguishable values (even in case of addition), like: 5100 means planning + prepare plan
@@ -107,7 +107,7 @@ public class DummyRecord extends Record {
     setTezAmAddress(TEZ_AM_ADDRESS);
     setQueryState(QUERY_STATE);
     setQueryType(QUERY_TYPE);
-    setDdlType(DDL_TYPE);
+    setOperation(OPERATION);
     setServerAddress(SERVER_HOST);
     setServerPort(SERVER_PORT);
     setClientAddress(CLIENT_ADDRESS);

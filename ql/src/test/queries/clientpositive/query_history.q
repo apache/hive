@@ -21,6 +21,7 @@ ANALYZE TABLE test_part COMPUTE STATISTICS FOR COLUMNS;
 
 --EXPLAIN
 EXPLAIN SELECT * FROM test_part;
+EXPLAIN INSERT INTO test_part VALUES (1, '1');
 
 --SCHEMA/DATA manipulation
 ALTER TABLE test_part ADD PARTITION (dt='3');
@@ -63,7 +64,7 @@ set hive.compute.query.using.stats=false;
 -- so duration-like fields are not added here for instance, for full schema, please refer to QueryHistorySchema
 
 -- basic query data
-SELECT concat(substr(sql, 0, 30), "..."), cluster_id, session_type, cluster_user, end_user, db_name, query_type, ddl_type
+SELECT concat(substr(sql, 0, 30), "..."), cluster_id, session_type, cluster_user, end_user, db_name, query_type, operation
 FROM sys.query_history ORDER BY start_time;
 
 -- environment related data

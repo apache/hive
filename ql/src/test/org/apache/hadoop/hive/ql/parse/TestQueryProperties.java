@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -198,17 +199,13 @@ public class TestQueryProperties {
 
     // check default values
     Assert.assertNull(queryProperties.getQueryType());
-    // getDdlType resolves to empty string if not set
-    Assert.assertEquals("", queryProperties.getDdlType());
 
     queryProperties.setQueryType(QueryProperties.QueryType.DDL);
-    queryProperties.setDdlType("CREATETABLE");
 
     queryProperties.clear();
 
     // check that some values are not affected by clear()
     Assert.assertEquals("queryType is not supposed to be cleared", QueryProperties.QueryType.DDL,
         queryProperties.getQueryType());
-    Assert.assertEquals("ddlType is not supposed to be cleared", "CREATETABLE", queryProperties.getDdlType());
   }
 }

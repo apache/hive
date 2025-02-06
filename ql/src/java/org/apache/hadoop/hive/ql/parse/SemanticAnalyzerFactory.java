@@ -67,7 +67,6 @@ public final class SemanticAnalyzerFactory {
         BaseSemanticAnalyzer sem = DDLSemanticAnalyzerFactory.getAnalyzer(tree, queryState);
         QueryProperties queryProperties = sem.getQueryProperties();
         queryProperties.setQueryType(QueryProperties.QueryType.DDL);
-        queryProperties.setDdlType(ParseUtils.getNodeName(tree));
         return sem;
       }
 

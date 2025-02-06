@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.antlr.runtime.tree.Tree;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -305,6 +306,12 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer<Object> 
 
   @Override
   public void setQueryType(ASTNode tree) {
-    queryProperties.setQueryType(QueryProperties.QueryType.OTHER);
+    queryProperties.setQueryType(QueryProperties.QueryType.DDL);
+  }
+
+  @Override
+  protected void setSqlKind(SqlKind sqlKind) {
+    // NO-OP: prevent Semantic Analyzer to turn this query to a simple SqlKind=INSERT
+    // we classify acid export as HiveOperation.EXPORT
   }
 }

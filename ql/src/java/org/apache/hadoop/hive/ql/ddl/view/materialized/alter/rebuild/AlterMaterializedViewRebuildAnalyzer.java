@@ -29,6 +29,7 @@ import org.apache.calcite.rel.metadata.JaninoRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rex.RexExecutor;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.tools.Frameworks;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -787,5 +788,11 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
   @Override
   public void setQueryType(ASTNode tree) {
     queryProperties.setQueryType(QueryProperties.QueryType.DDL);
+  }
+
+  @Override
+  protected void setSqlKind(SqlKind sqlKind) {
+    // NO-OP: prevent Semantic Analyzer to classify this query as a simple SqlKind=INSERT
+    // we classify MV REBUILD as HiveOperation.ALTER_MATERIALIZED_VIEW_REBUILD
   }
 }

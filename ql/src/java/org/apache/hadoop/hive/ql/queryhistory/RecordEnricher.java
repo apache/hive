@@ -65,9 +65,18 @@ public class RecordEnricher {
 
     record.setPlan(driverContext.getExplainPlan());
     record.setQueryType(driverContext.getQueryType());
-    record.setDdlType(driverContext.getDdlType());
+    record.setOperation(getClassifiedOperation());
     record.setFailureReason(driverContext.getQueryErrorMessage());
     record.setNumRowsFetched(driverContext.getFetchTask() == null ? 0 : driverContext.getFetchTask().getNumRows());
+  }
+
+  /**
+   * With query history, a more detailed HiveOperation-based query classification is introduced without breaking the
+   * original one. If there is an SqlKind stored in the QueryState, the record will contain it.
+   */
+  private String getClassifiedOperation() {
+    QueryState queryState = driverContext.getQueryState();
+    return queryState.getSqlKind() == null ? queryState.getCommandType() : queryState.getSqlKind().toString();
   }
 
   private void enrichFromSessionState(Record record) {

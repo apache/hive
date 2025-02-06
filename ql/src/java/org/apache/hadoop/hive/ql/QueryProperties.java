@@ -36,9 +36,10 @@ import java.util.Set;
  */
 public class QueryProperties {
   public enum QueryType {
-    QUERY("QUERY"),
+    DQL("DQL"),
     DML("DML"),
     DDL("DDL"),
+    DCL("DCL"),
     // strictly speaking, "ANALYZE TABLE" is DDL because it collects and stores metadata or statistical information,
     // but in Hive it's a special statement which is worth a separate query type
     STATS("STATS"),
@@ -97,7 +98,6 @@ public class QueryProperties {
   private boolean isView;
 
   private QueryType queryType = null;
-  private String ddlType = null;
 
   // set of used tables, aliases are resolved to real table names
   private Set<String> usedTables = new HashSet<>();
@@ -366,14 +366,6 @@ public class QueryProperties {
 
   public void setQueryType(QueryType queryType) {
     this.queryType = queryType;
-  }
-
-  public String getDdlType() {
-    return ddlType == null ? "" : ddlType;
-  }
-
-  public void setDdlType(String ddlType) {
-    this.ddlType = ddlType;
   }
 
   public Set<String> getUsedTables() {

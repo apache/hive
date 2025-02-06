@@ -114,8 +114,8 @@ public class Record {
         type.getName());
   }
 
-  public void setDdlType(String ddlType) {
-    set(Field.DDL_TYPE, ddlType);
+  public void setOperation(String operation) {
+    set(Field.OPERATION, operation);
   }
 
   public void setServerAddress(String serverAddress) {
