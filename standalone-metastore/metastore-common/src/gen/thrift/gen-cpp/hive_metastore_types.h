@@ -21226,11 +21226,12 @@ void swap(GetAllWriteEventInfoRequest &a, GetAllWriteEventInfoRequest &b);
 std::ostream& operator<<(std::ostream& out, const GetAllWriteEventInfoRequest& obj);
 
 typedef struct _DeleteColumnStatisticsRequest__isset {
-  _DeleteColumnStatisticsRequest__isset() : cat_name(false), part_names(false), col_names(false), engine(true) {}
+  _DeleteColumnStatisticsRequest__isset() : cat_name(false), part_names(false), col_names(false), engine(true), tableLevel(true) {}
   bool cat_name :1;
   bool part_names :1;
   bool col_names :1;
   bool engine :1;
+  bool tableLevel :1;
 } _DeleteColumnStatisticsRequest__isset;
 
 class DeleteColumnStatisticsRequest : public virtual ::apache::thrift::TBase {
@@ -21241,7 +21242,8 @@ class DeleteColumnStatisticsRequest : public virtual ::apache::thrift::TBase {
   DeleteColumnStatisticsRequest() : cat_name(),
                                     db_name(),
                                     tbl_name(),
-                                    engine("hive") {
+                                    engine("hive"),
+                                    tableLevel(false) {
   }
 
   virtual ~DeleteColumnStatisticsRequest() noexcept;
@@ -21251,6 +21253,7 @@ class DeleteColumnStatisticsRequest : public virtual ::apache::thrift::TBase {
   std::vector<std::string>  part_names;
   std::vector<std::string>  col_names;
   std::string engine;
+  bool tableLevel;
 
   _DeleteColumnStatisticsRequest__isset __isset;
 
@@ -21265,6 +21268,8 @@ class DeleteColumnStatisticsRequest : public virtual ::apache::thrift::TBase {
   void __set_col_names(const std::vector<std::string> & val);
 
   void __set_engine(const std::string& val);
+
+  void __set_tableLevel(const bool val);
 
   bool operator == (const DeleteColumnStatisticsRequest & rhs) const
   {
@@ -21287,6 +21292,10 @@ class DeleteColumnStatisticsRequest : public virtual ::apache::thrift::TBase {
     if (__isset.engine != rhs.__isset.engine)
       return false;
     else if (__isset.engine && !(engine == rhs.engine))
+      return false;
+    if (__isset.tableLevel != rhs.__isset.tableLevel)
+      return false;
+    else if (__isset.tableLevel && !(tableLevel == rhs.tableLevel))
       return false;
     return true;
   }

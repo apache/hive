@@ -40,7 +40,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
@@ -2193,12 +2192,12 @@ public class CachedStore implements RawStore, Configurable {
     return succ;
   }
 
-  @Override public boolean deleteTableMultiColumnStatistics(String catName, String dbName, String tblName, List<String> colNames, String engine)
+  @Override public boolean deleteTableColumnStatistics(String catName, String dbName, String tblName, List<String> colNames, String engine)
           throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     if (!CacheUtils.HIVE_ENGINE.equals(engine)) {
       throw new RuntimeException("CachedStore can only be enabled for Hive engine");
     }
-    boolean succ = rawStore.deleteTableMultiColumnStatistics(catName, dbName, tblName, colNames, engine);
+    boolean succ = rawStore.deleteTableColumnStatistics(catName, dbName, tblName, colNames, engine);
     // in case of event based cache update, cache is updated during commit txn
     if (succ && !canUseEvents) {
       catName = normalizeIdentifier(catName);
@@ -2334,13 +2333,13 @@ public class CachedStore implements RawStore, Configurable {
     return succ;
   }
 
-  @Override public boolean deletePartitionMultiColumnStatistics(String catName, String dbName, String tblName,
+  @Override public boolean deletePartitionColumnStatistics(String catName, String dbName, String tblName,
                                                            List<String> partNames, List<String> colNames, String engine)
           throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     if (!CacheUtils.HIVE_ENGINE.equals(engine)) {
       throw new RuntimeException("CachedStore can only be enabled for Hive engine");
     }
-    boolean succ = rawStore.deletePartitionMultiColumnStatistics(catName, dbName, tblName, partNames, colNames, engine);
+    boolean succ = rawStore.deletePartitionColumnStatistics(catName, dbName, tblName, partNames, colNames, engine);
     // in case of event based cache update, cache is updated during commit txn.
     if (succ && !canUseEvents) {
       catName = normalizeIdentifier(catName);

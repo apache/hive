@@ -850,10 +850,10 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public boolean deleteTableMultiColumnStatistics(String catName, String dbName, String tableName,
+  public boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
       List<String> colNames, String engine)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    return objectStore.deleteTableMultiColumnStatistics(catName, dbName, tableName, colNames, engine);
+    return objectStore.deleteTableColumnStatistics(catName, dbName, tableName, colNames, engine);
   }
 
   @Override
@@ -866,11 +866,11 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
     @Override
-  public boolean deletePartitionMultiColumnStatistics(String catName, String dbName, String tableName,
+  public boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
                                                  List<String> partNames, List<String> colNames, String engine)
           throws NoSuchObjectException, MetaException, InvalidObjectException,
           InvalidInputException {
-      return objectStore.deletePartitionMultiColumnStatistics(catName, dbName, tableName, partNames, colNames, engine);
+      return objectStore.deletePartitionColumnStatistics(catName, dbName, tableName, partNames, colNames, engine);
   }
 
   @Override

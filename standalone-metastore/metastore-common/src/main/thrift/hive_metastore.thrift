@@ -2516,7 +2516,8 @@ struct DeleteColumnStatisticsRequest {
   3: required string tbl_name,
   4: optional list<string> part_names,
   5: optional list<string> col_names,
-  6: optional string engine = "hive"
+  6: optional string engine = "hive",
+  7: optional bool tableLevel = false
 }
 
 // Exceptions.

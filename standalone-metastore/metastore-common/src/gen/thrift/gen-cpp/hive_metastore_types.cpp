@@ -54016,6 +54016,11 @@ void DeleteColumnStatisticsRequest::__set_engine(const std::string& val) {
   this->engine = val;
 __isset.engine = true;
 }
+
+void DeleteColumnStatisticsRequest::__set_tableLevel(const bool val) {
+  this->tableLevel = val;
+__isset.tableLevel = true;
+}
 std::ostream& operator<<(std::ostream& out, const DeleteColumnStatisticsRequest& obj)
 {
   obj.printTo(out);
@@ -54118,6 +54123,14 @@ uint32_t DeleteColumnStatisticsRequest::read(::apache::thrift::protocol::TProtoc
           xfer += iprot->skip(ftype);
         }
         break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->tableLevel);
+          this->__isset.tableLevel = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -54183,6 +54196,11 @@ uint32_t DeleteColumnStatisticsRequest::write(::apache::thrift::protocol::TProto
     xfer += oprot->writeString(this->engine);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.tableLevel) {
+    xfer += oprot->writeFieldBegin("tableLevel", ::apache::thrift::protocol::T_BOOL, 7);
+    xfer += oprot->writeBool(this->tableLevel);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -54196,6 +54214,7 @@ void swap(DeleteColumnStatisticsRequest &a, DeleteColumnStatisticsRequest &b) {
   swap(a.part_names, b.part_names);
   swap(a.col_names, b.col_names);
   swap(a.engine, b.engine);
+  swap(a.tableLevel, b.tableLevel);
   swap(a.__isset, b.__isset);
 }
 
@@ -54206,6 +54225,7 @@ DeleteColumnStatisticsRequest::DeleteColumnStatisticsRequest(const DeleteColumnS
   part_names = other1881.part_names;
   col_names = other1881.col_names;
   engine = other1881.engine;
+  tableLevel = other1881.tableLevel;
   __isset = other1881.__isset;
 }
 DeleteColumnStatisticsRequest& DeleteColumnStatisticsRequest::operator=(const DeleteColumnStatisticsRequest& other1882) {
@@ -54215,6 +54235,7 @@ DeleteColumnStatisticsRequest& DeleteColumnStatisticsRequest::operator=(const De
   part_names = other1882.part_names;
   col_names = other1882.col_names;
   engine = other1882.engine;
+  tableLevel = other1882.tableLevel;
   __isset = other1882.__isset;
   return *this;
 }
@@ -54227,6 +54248,7 @@ void DeleteColumnStatisticsRequest::printTo(std::ostream& out) const {
   out << ", " << "part_names="; (__isset.part_names ? (out << to_string(part_names)) : (out << "<null>"));
   out << ", " << "col_names="; (__isset.col_names ? (out << to_string(col_names)) : (out << "<null>"));
   out << ", " << "engine="; (__isset.engine ? (out << to_string(engine)) : (out << "<null>"));
+  out << ", " << "tableLevel="; (__isset.tableLevel ? (out << to_string(tableLevel)) : (out << "<null>"));
   out << ")";
 }
 

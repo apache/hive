@@ -17,6 +17,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField PART_NAMES_FIELD_DESC = new org.apache.thrift.protocol.TField("part_names", org.apache.thrift.protocol.TType.LIST, (short)4);
   private static final org.apache.thrift.protocol.TField COL_NAMES_FIELD_DESC = new org.apache.thrift.protocol.TField("col_names", org.apache.thrift.protocol.TType.LIST, (short)5);
   private static final org.apache.thrift.protocol.TField ENGINE_FIELD_DESC = new org.apache.thrift.protocol.TField("engine", org.apache.thrift.protocol.TType.STRING, (short)6);
+  private static final org.apache.thrift.protocol.TField TABLE_LEVEL_FIELD_DESC = new org.apache.thrift.protocol.TField("tableLevel", org.apache.thrift.protocol.TType.BOOL, (short)7);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new DeleteColumnStatisticsRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new DeleteColumnStatisticsRequestTupleSchemeFactory();
@@ -27,6 +28,7 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> part_names; // optional
   private @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> col_names; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String engine; // optional
+  private boolean tableLevel; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -35,7 +37,8 @@ package org.apache.hadoop.hive.metastore.api;
     TBL_NAME((short)3, "tbl_name"),
     PART_NAMES((short)4, "part_names"),
     COL_NAMES((short)5, "col_names"),
-    ENGINE((short)6, "engine");
+    ENGINE((short)6, "engine"),
+    TABLE_LEVEL((short)7, "tableLevel");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -63,6 +66,8 @@ package org.apache.hadoop.hive.metastore.api;
           return COL_NAMES;
         case 6: // ENGINE
           return ENGINE;
+        case 7: // TABLE_LEVEL
+          return TABLE_LEVEL;
         default:
           return null;
       }
@@ -104,7 +109,9 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.CAT_NAME,_Fields.PART_NAMES,_Fields.COL_NAMES,_Fields.ENGINE};
+  private static final int __TABLELEVEL_ISSET_ID = 0;
+  private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.CAT_NAME,_Fields.PART_NAMES,_Fields.COL_NAMES,_Fields.ENGINE,_Fields.TABLE_LEVEL};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -122,12 +129,16 @@ package org.apache.hadoop.hive.metastore.api;
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.ENGINE, new org.apache.thrift.meta_data.FieldMetaData("engine", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.TABLE_LEVEL, new org.apache.thrift.meta_data.FieldMetaData("tableLevel", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(DeleteColumnStatisticsRequest.class, metaDataMap);
   }
 
   public DeleteColumnStatisticsRequest() {
     this.engine = "hive";
+
+    this.tableLevel = false;
 
   }
 
@@ -144,6 +155,7 @@ package org.apache.hadoop.hive.metastore.api;
    * Performs a deep copy on <i>other</i>.
    */
   public DeleteColumnStatisticsRequest(DeleteColumnStatisticsRequest other) {
+    __isset_bitfield = other.__isset_bitfield;
     if (other.isSetCat_name()) {
       this.cat_name = other.cat_name;
     }
@@ -164,6 +176,7 @@ package org.apache.hadoop.hive.metastore.api;
     if (other.isSetEngine()) {
       this.engine = other.engine;
     }
+    this.tableLevel = other.tableLevel;
   }
 
   public DeleteColumnStatisticsRequest deepCopy() {
@@ -178,6 +191,8 @@ package org.apache.hadoop.hive.metastore.api;
     this.part_names = null;
     this.col_names = null;
     this.engine = "hive";
+
+    this.tableLevel = false;
 
   }
 
@@ -357,6 +372,28 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
+  public boolean isTableLevel() {
+    return this.tableLevel;
+  }
+
+  public void setTableLevel(boolean tableLevel) {
+    this.tableLevel = tableLevel;
+    setTableLevelIsSet(true);
+  }
+
+  public void unsetTableLevel() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __TABLELEVEL_ISSET_ID);
+  }
+
+  /** Returns true if field tableLevel is set (has been assigned a value) and false otherwise */
+  public boolean isSetTableLevel() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __TABLELEVEL_ISSET_ID);
+  }
+
+  public void setTableLevelIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TABLELEVEL_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case CAT_NAME:
@@ -407,6 +444,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case TABLE_LEVEL:
+      if (value == null) {
+        unsetTableLevel();
+      } else {
+        setTableLevel((java.lang.Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -431,6 +476,9 @@ package org.apache.hadoop.hive.metastore.api;
     case ENGINE:
       return getEngine();
 
+    case TABLE_LEVEL:
+      return isTableLevel();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -454,6 +502,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetCol_names();
     case ENGINE:
       return isSetEngine();
+    case TABLE_LEVEL:
+      return isSetTableLevel();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -525,6 +575,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_tableLevel = true && this.isSetTableLevel();
+    boolean that_present_tableLevel = true && that.isSetTableLevel();
+    if (this_present_tableLevel || that_present_tableLevel) {
+      if (!(this_present_tableLevel && that_present_tableLevel))
+        return false;
+      if (this.tableLevel != that.tableLevel)
+        return false;
+    }
+
     return true;
   }
 
@@ -555,6 +614,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetEngine()) ? 131071 : 524287);
     if (isSetEngine())
       hashCode = hashCode * 8191 + engine.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetTableLevel()) ? 131071 : 524287);
+    if (isSetTableLevel())
+      hashCode = hashCode * 8191 + ((tableLevel) ? 131071 : 524287);
 
     return hashCode;
   }
@@ -623,6 +686,16 @@ package org.apache.hadoop.hive.metastore.api;
     }
     if (isSetEngine()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.engine, other.engine);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetTableLevel(), other.isSetTableLevel());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTableLevel()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.tableLevel, other.tableLevel);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -703,6 +776,12 @@ package org.apache.hadoop.hive.metastore.api;
       }
       first = false;
     }
+    if (isSetTableLevel()) {
+      if (!first) sb.append(", ");
+      sb.append("tableLevel:");
+      sb.append(this.tableLevel);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -730,6 +809,8 @@ package org.apache.hadoop.hive.metastore.api;
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bitfield = 0;
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
@@ -822,6 +903,14 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 7: // TABLE_LEVEL
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.tableLevel = iprot.readBool();
+              struct.setTableLevelIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -887,6 +976,11 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.isSetTableLevel()) {
+        oprot.writeFieldBegin(TABLE_LEVEL_FIELD_DESC);
+        oprot.writeBool(struct.tableLevel);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -919,7 +1013,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetEngine()) {
         optionals.set(3);
       }
-      oprot.writeBitSet(optionals, 4);
+      if (struct.isSetTableLevel()) {
+        optionals.set(4);
+      }
+      oprot.writeBitSet(optionals, 5);
       if (struct.isSetCat_name()) {
         oprot.writeString(struct.cat_name);
       }
@@ -944,6 +1041,9 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetEngine()) {
         oprot.writeString(struct.engine);
       }
+      if (struct.isSetTableLevel()) {
+        oprot.writeBool(struct.tableLevel);
+      }
     }
 
     @Override
@@ -953,7 +1053,7 @@ package org.apache.hadoop.hive.metastore.api;
       struct.setDb_nameIsSet(true);
       struct.tbl_name = iprot.readString();
       struct.setTbl_nameIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(4);
+      java.util.BitSet incoming = iprot.readBitSet(5);
       if (incoming.get(0)) {
         struct.cat_name = iprot.readString();
         struct.setCat_nameIsSet(true);
@@ -987,6 +1087,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(3)) {
         struct.engine = iprot.readString();
         struct.setEngineIsSet(true);
+      }
+      if (incoming.get(4)) {
+        struct.tableLevel = iprot.readBool();
+        struct.setTableLevelIsSet(true);
       }
     }
   }
