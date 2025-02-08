@@ -7371,6 +7371,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return new SetPartitionsStatsResponse(ret);
   }
 
+  @Deprecated
   @Override
   public boolean delete_partition_column_statistics(String dbName, String tableName,
                                                     String partName, String colName, String engine) throws TException {
@@ -7380,48 +7381,15 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (colName != null) {
       colName = colName.toLowerCase();
     }
-    startFunction("delete_column_statistics_by_partition",": table=" +
-        TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName) +
-        " partition=" + partName + " column=" + colName);
-    boolean ret = false, committed = false;
-
-    getMS().openTransaction();
-    try {
-      List<String> partVals = getPartValsFromName(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, partName);
-      Table table = getMS().getTable(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
-      // This API looks unused; if it were used we'd need to update stats state and write ID.
-      // We cannot just randomly nuke some txn stats.
-      if (TxnUtils.isTransactionalTable(table)) {
-        throw new MetaException("Cannot delete stats via this API for a transactional table");
-      }
-
-      ret = getMS().deletePartitionColumnStatistics(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
-          partName, partVals, colName, engine);
-      if (ret) {
-        if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-              EventType.DELETE_PARTITION_COLUMN_STAT,
-              new DeletePartitionColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
-                  partName, partVals, colName, engine, this));
-        }
-        if (!listeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(listeners,
-              EventType.DELETE_PARTITION_COLUMN_STAT,
-              new DeletePartitionColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
-                  partName, partVals, colName, engine, this));
-        }
-      }
-      committed = getMS().commitTransaction();
-    } finally {
-      if (!committed) {
-        getMS().rollbackTransaction();
-      }
-      endFunction("delete_column_statistics_by_partition", ret != false, null, tableName);
-    }
-    return ret;
+    DeleteColumnStatisticsRequest request = new DeleteColumnStatisticsRequest(parsedDbName[DB_NAME], tableName);
+    request.setEngine(engine);
+    request.setCat_name(parsedDbName[CAT_NAME]);
+    request.addToCol_names(colName);
+    request.addToPart_names(partName);
+    return delete_column_statistics_req(request);
   }
 
-
+  @Override
   public boolean delete_column_statistics_req(DeleteColumnStatisticsRequest req) throws TException {
     String dbName = normalizeIdentifier(req.getDb_name());
     String tableName = normalizeIdentifier(req.getTbl_name());
@@ -7433,16 +7401,14 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
     startFunction("delete_column_statistics_req", ": table=" +
         TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName) +
-        " partition=" + req.getPart_name() + " column=" + colNames + " engine=" + engine);
+        " partitions=" + req.getPart_names() + " column=" + colNames + " engine=" + engine);
     boolean ret = false, committed = false;
     List<ListenerEvent> events = new ArrayList<>();
     final RawStore rawStore = getMS();
     rawStore.openTransaction();
     try {
       Table table = rawStore.getTable(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
-      boolean isPartitioned = table.isSetPartitionKeys() && table.getPartitionKeysSize() > 0;
-      List<FieldSchema> keys = table.getPartitionKeys();
-      int size1 = table.getPartitionKeysSize();
+      boolean isPartitioned = table.getPartitionKeysSize() > 0;
       if (TxnUtils.isTransactionalTable(table)) {
         throw new MetaException("Cannot delete stats via this API for a transactional table");
       }
@@ -7456,8 +7422,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         }
       } else {
         List<String> partNames = new ArrayList<>();
-        if (req.getPart_name() != null) {
-          partNames.add(req.getPart_name());
+        if (req.getPart_namesSize() > 0) {
+          partNames.addAll(req.getPart_names());
         } else {
           partNames.addAll(rawStore.listPartitionNames(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, (short) -1));
         }
@@ -7496,6 +7462,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return ret;
   }
 
+  @Deprecated
   @Override
   public boolean delete_table_column_statistics(String dbName, String tableName, String colName, String engine)
       throws TException {
@@ -7507,44 +7474,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (colName != null) {
       colName = colName.toLowerCase();
     }
-    startFunction("delete_column_statistics_by_table", ": table=" +
-        TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName) + " column=" +
-        colName);
 
-
-    boolean ret = false, committed = false;
-    getMS().openTransaction();
-    try {
-      Table table = getMS().getTable(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
-      // This API looks unused; if it were used we'd need to update stats state and write ID.
-      // We cannot just randomly nuke some txn stats.
-      if (TxnUtils.isTransactionalTable(table)) {
-        throw new MetaException("Cannot delete stats via this API for a transactional table");
-      }
-
-      ret = getMS().deleteTableColumnStatistics(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, colName, engine);
-      if (ret) {
-        if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-              EventType.DELETE_TABLE_COLUMN_STAT,
-              new DeleteTableColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
-                  tableName, colName, engine, this));
-        }
-        if (!listeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(listeners,
-              EventType.DELETE_TABLE_COLUMN_STAT,
-              new DeleteTableColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
-                  tableName, colName, engine, this));
-        }
-      }
-      committed = getMS().commitTransaction();
-    } finally {
-      if (!committed) {
-        getMS().rollbackTransaction();
-      }
-      endFunction("delete_column_statistics_by_table", ret != false, null, tableName);
-    }
-    return ret;
+    DeleteColumnStatisticsRequest request = new DeleteColumnStatisticsRequest(parsedDbName[DB_NAME], tableName);
+    request.setEngine(engine);
+    request.setCat_name(parsedDbName[CAT_NAME]);
+    request.addToCol_names(colName);
+    return delete_column_statistics_req(request);
   }
 
   @Override

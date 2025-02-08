@@ -2948,34 +2948,6 @@ class MetaStoreDirectSql {
   }
 
   /**
-   * Drops all column stats in all Partition-s. Should be called with the list short enough to not trip up Oracle/etc.
-   * @param  catName The catalog name
-   * @param  dbName The database name
-   * @param  tblName The table name
-   * @throws MetaException If there is an SQL exception during the execution it converted to
-   * MetaException
-   */
-  protected void dropAllPartitionsColumnStatistics(String catName, String dbName, String tblName) throws MetaException {
-    // Get partition ids
-    List<Long> partitionIdList = getPartitionIdsViaSqlFilter(catName, dbName, tblName,
-            null, Collections.<String>emptyList(), Collections.<String>emptyList(), null);
-    if (partitionIdList.isEmpty()) {
-      return;
-    }
-    String queryText;
-    String partitionIds = getIdListForIn(partitionIdList);
-    try {
-      // Drop partition statistics
-      queryText = "delete from " + PART_COL_STATS + " where \"PART_ID\" in (" + partitionIds + ")";
-      executeNoResult(queryText);
-      Deadline.checkTimeout();
-    } catch (SQLException sqlException) {
-      LOG.warn("SQL error executing query while dropping partitions column statistics", sqlException);
-      throw new MetaException("Encountered error while dropping partitions column statistics.");
-    }
-  }
-
-  /**
    * Drops SD-s. Should be called with the list short enough to not trip up Oracle/etc.
    * @param storageDescriptorIdList The storage descriptor identifiers to drop
    * @throws MetaException If there is an SQL exception during the execution it converted to

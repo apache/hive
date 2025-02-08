@@ -3645,51 +3645,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public boolean deletePartitionColumnStatistics(String dbName, String tableName, String partName,
-      String colName, String engine) throws TException {
-    return deletePartitionColumnStatistics(getDefaultCatalog(conf), dbName, tableName, partName,
-        colName, engine);
-  }
-
-  @Override
-  public boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
-      String partName, String colName, String engine) throws TException {
-    return client.delete_partition_column_statistics(prependCatalogToDbName(catName, dbName, conf),
-        tableName, partName, colName, engine);
-  }
-
-//  @Override
-//  public boolean deletePartitionMultiColumnStatistics(String dbName, String tableName, String partName,
-//                                                 List<String> colNames, String engine) throws TException {
-//    DeleteColumnStatisticsRequest req = new DeleteColumnStatisticsRequest(getDefaultCatalog(conf),
-//            dbName, tableName, partName, engine);
-//    req.setCol_names(colNames);
-//    return deleteMultiColumnStatistics(req);
-//  }
-
-  @Override
-  public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName, String engine)
-      throws TException {
-    return deleteTableColumnStatistics(getDefaultCatalog(conf), dbName, tableName, colName, engine);
-  }
-
-  @Override
-  public boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
-      String colName, String engine) throws TException {
-    return client.delete_table_column_statistics(prependCatalogToDbName(catName, dbName, conf),
-        tableName, colName, engine);
-  }
-
-//  @Override
-//  public boolean deleteTableMultiColumnStatistics(String dbName, String tableName, List<String> colNames, String engine)
-//          throws TException {
-//    DeleteTableColumnStatisticsRequest req = new DeleteTableColumnStatisticsRequest(getDefaultCatalog(conf), dbName, tableName, engine);
-//    req.setCol_names(colNames);
-//    return deleteTableMultiColumnStatistics(req);
-//  }
-
-  @Override
   public boolean deleteColumnStatistics(DeleteColumnStatisticsRequest req) throws TException {
+    if (!req.isSetCat_name()) {
+      req.setCat_name(getDefaultCatalog(conf));
+    }
     return client.delete_column_statistics_req(req);
   }
 

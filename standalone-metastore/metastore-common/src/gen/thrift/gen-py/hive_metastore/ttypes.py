@@ -30814,18 +30814,18 @@ class DeleteColumnStatisticsRequest(object):
      - cat_name
      - db_name
      - tbl_name
-     - part_name
+     - part_names
      - col_names
      - engine
 
     """
 
 
-    def __init__(self, cat_name=None, db_name=None, tbl_name=None, part_name=None, col_names=None, engine=None,):
+    def __init__(self, cat_name=None, db_name=None, tbl_name=None, part_names=None, col_names=None, engine="hive",):
         self.cat_name = cat_name
         self.db_name = db_name
         self.tbl_name = tbl_name
-        self.part_name = part_name
+        self.part_names = part_names
         self.col_names = col_names
         self.engine = engine
 
@@ -30854,17 +30854,22 @@ class DeleteColumnStatisticsRequest(object):
                 else:
                     iprot.skip(ftype)
             elif fid == 4:
-                if ftype == TType.STRING:
-                    self.part_name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                if ftype == TType.LIST:
+                    self.part_names = []
+                    (_etype1381, _size1378) = iprot.readListBegin()
+                    for _i1382 in range(_size1378):
+                        _elem1383 = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                        self.part_names.append(_elem1383)
+                    iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
             elif fid == 5:
                 if ftype == TType.LIST:
                     self.col_names = []
-                    (_etype1381, _size1378) = iprot.readListBegin()
-                    for _i1382 in range(_size1378):
-                        _elem1383 = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
-                        self.col_names.append(_elem1383)
+                    (_etype1387, _size1384) = iprot.readListBegin()
+                    for _i1388 in range(_size1384):
+                        _elem1389 = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                        self.col_names.append(_elem1389)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -30895,15 +30900,18 @@ class DeleteColumnStatisticsRequest(object):
             oprot.writeFieldBegin('tbl_name', TType.STRING, 3)
             oprot.writeString(self.tbl_name.encode('utf-8') if sys.version_info[0] == 2 else self.tbl_name)
             oprot.writeFieldEnd()
-        if self.part_name is not None:
-            oprot.writeFieldBegin('part_name', TType.STRING, 4)
-            oprot.writeString(self.part_name.encode('utf-8') if sys.version_info[0] == 2 else self.part_name)
+        if self.part_names is not None:
+            oprot.writeFieldBegin('part_names', TType.LIST, 4)
+            oprot.writeListBegin(TType.STRING, len(self.part_names))
+            for iter1390 in self.part_names:
+                oprot.writeString(iter1390.encode('utf-8') if sys.version_info[0] == 2 else iter1390)
+            oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.col_names is not None:
             oprot.writeFieldBegin('col_names', TType.LIST, 5)
             oprot.writeListBegin(TType.STRING, len(self.col_names))
-            for iter1384 in self.col_names:
-                oprot.writeString(iter1384.encode('utf-8') if sys.version_info[0] == 2 else iter1384)
+            for iter1391 in self.col_names:
+                oprot.writeString(iter1391.encode('utf-8') if sys.version_info[0] == 2 else iter1391)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.engine is not None:
@@ -30914,14 +30922,10 @@ class DeleteColumnStatisticsRequest(object):
         oprot.writeStructEnd()
 
     def validate(self):
-        if self.cat_name is None:
-            raise TProtocolException(message='Required field cat_name is unset!')
         if self.db_name is None:
             raise TProtocolException(message='Required field db_name is unset!')
         if self.tbl_name is None:
             raise TProtocolException(message='Required field tbl_name is unset!')
-        if self.engine is None:
-            raise TProtocolException(message='Required field engine is unset!')
         return
 
     def __repr__(self):
@@ -34648,9 +34652,9 @@ DeleteColumnStatisticsRequest.thrift_spec = (
     (1, TType.STRING, 'cat_name', 'UTF8', None, ),  # 1
     (2, TType.STRING, 'db_name', 'UTF8', None, ),  # 2
     (3, TType.STRING, 'tbl_name', 'UTF8', None, ),  # 3
-    (4, TType.STRING, 'part_name', 'UTF8', None, ),  # 4
+    (4, TType.LIST, 'part_names', (TType.STRING, 'UTF8', False), None, ),  # 4
     (5, TType.LIST, 'col_names', (TType.STRING, 'UTF8', False), None, ),  # 5
-    (6, TType.STRING, 'engine', 'UTF8', None, ),  # 6
+    (6, TType.STRING, 'engine', 'UTF8', "hive", ),  # 6
 )
 all_structs.append(MetaException)
 MetaException.thrift_spec = (

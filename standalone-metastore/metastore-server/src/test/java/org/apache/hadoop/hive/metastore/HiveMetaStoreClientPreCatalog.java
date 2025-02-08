@@ -1903,20 +1903,6 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
         psr).getPartStats();
   }
 
-  /** {@inheritDoc} */
-  @Override
-  public boolean deletePartitionColumnStatistics(String dbName, String tableName, String partName,
-    String colName, String engine) throws TException {
-    return client.delete_partition_column_statistics(dbName, tableName, partName, colName, engine);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName, String engine)
-    throws TException {
-    return client.delete_table_column_statistics(dbName, tableName, colName, engine);
-  }
-
   @Override
   public boolean deleteColumnStatistics(DeleteColumnStatisticsRequest req)
           throws TException {
@@ -3578,18 +3564,6 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
       String catName, String dbName, String tableName, List<String> partNames,
       List<String> colNames, String engine, String validWriteIdList)
       throws TException {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
-      String partName, String colName, String engine) throws TException {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
-      String colName, String engine) throws TException {
     throw new UnsupportedOperationException();
   }
 

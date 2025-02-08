@@ -21226,9 +21226,11 @@ void swap(GetAllWriteEventInfoRequest &a, GetAllWriteEventInfoRequest &b);
 std::ostream& operator<<(std::ostream& out, const GetAllWriteEventInfoRequest& obj);
 
 typedef struct _DeleteColumnStatisticsRequest__isset {
-  _DeleteColumnStatisticsRequest__isset() : part_name(false), col_names(false) {}
-  bool part_name :1;
+  _DeleteColumnStatisticsRequest__isset() : cat_name(false), part_names(false), col_names(false), engine(true) {}
+  bool cat_name :1;
+  bool part_names :1;
   bool col_names :1;
+  bool engine :1;
 } _DeleteColumnStatisticsRequest__isset;
 
 class DeleteColumnStatisticsRequest : public virtual ::apache::thrift::TBase {
@@ -21236,19 +21238,17 @@ class DeleteColumnStatisticsRequest : public virtual ::apache::thrift::TBase {
 
   DeleteColumnStatisticsRequest(const DeleteColumnStatisticsRequest&);
   DeleteColumnStatisticsRequest& operator=(const DeleteColumnStatisticsRequest&);
-  DeleteColumnStatisticsRequest() noexcept
-                                : cat_name(),
-                                  db_name(),
-                                  tbl_name(),
-                                  part_name(),
-                                  engine() {
+  DeleteColumnStatisticsRequest() : cat_name(),
+                                    db_name(),
+                                    tbl_name(),
+                                    engine("hive") {
   }
 
   virtual ~DeleteColumnStatisticsRequest() noexcept;
   std::string cat_name;
   std::string db_name;
   std::string tbl_name;
-  std::string part_name;
+  std::vector<std::string>  part_names;
   std::vector<std::string>  col_names;
   std::string engine;
 
@@ -21260,7 +21260,7 @@ class DeleteColumnStatisticsRequest : public virtual ::apache::thrift::TBase {
 
   void __set_tbl_name(const std::string& val);
 
-  void __set_part_name(const std::string& val);
+  void __set_part_names(const std::vector<std::string> & val);
 
   void __set_col_names(const std::vector<std::string> & val);
 
@@ -21268,21 +21268,25 @@ class DeleteColumnStatisticsRequest : public virtual ::apache::thrift::TBase {
 
   bool operator == (const DeleteColumnStatisticsRequest & rhs) const
   {
-    if (!(cat_name == rhs.cat_name))
+    if (__isset.cat_name != rhs.__isset.cat_name)
+      return false;
+    else if (__isset.cat_name && !(cat_name == rhs.cat_name))
       return false;
     if (!(db_name == rhs.db_name))
       return false;
     if (!(tbl_name == rhs.tbl_name))
       return false;
-    if (__isset.part_name != rhs.__isset.part_name)
+    if (__isset.part_names != rhs.__isset.part_names)
       return false;
-    else if (__isset.part_name && !(part_name == rhs.part_name))
+    else if (__isset.part_names && !(part_names == rhs.part_names))
       return false;
     if (__isset.col_names != rhs.__isset.col_names)
       return false;
     else if (__isset.col_names && !(col_names == rhs.col_names))
       return false;
-    if (!(engine == rhs.engine))
+    if (__isset.engine != rhs.__isset.engine)
+      return false;
+    else if (__isset.engine && !(engine == rhs.engine))
       return false;
     return true;
   }

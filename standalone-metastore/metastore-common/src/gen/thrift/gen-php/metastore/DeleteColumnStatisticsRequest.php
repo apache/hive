@@ -23,7 +23,7 @@ class DeleteColumnStatisticsRequest
     static public $_TSPEC = array(
         1 => array(
             'var' => 'cat_name',
-            'isRequired' => true,
+            'isRequired' => false,
             'type' => TType::STRING,
         ),
         2 => array(
@@ -37,9 +37,13 @@ class DeleteColumnStatisticsRequest
             'type' => TType::STRING,
         ),
         4 => array(
-            'var' => 'part_name',
+            'var' => 'part_names',
             'isRequired' => false,
-            'type' => TType::STRING,
+            'type' => TType::LST,
+            'etype' => TType::STRING,
+            'elem' => array(
+                'type' => TType::STRING,
+                ),
         ),
         5 => array(
             'var' => 'col_names',
@@ -52,7 +56,7 @@ class DeleteColumnStatisticsRequest
         ),
         6 => array(
             'var' => 'engine',
-            'isRequired' => true,
+            'isRequired' => false,
             'type' => TType::STRING,
         ),
     );
@@ -70,9 +74,9 @@ class DeleteColumnStatisticsRequest
      */
     public $tbl_name = null;
     /**
-     * @var string
+     * @var string[]
      */
-    public $part_name = null;
+    public $part_names = null;
     /**
      * @var string[]
      */
@@ -80,7 +84,7 @@ class DeleteColumnStatisticsRequest
     /**
      * @var string
      */
-    public $engine = null;
+    public $engine = "hive";
 
     public function __construct($vals = null)
     {
@@ -94,8 +98,8 @@ class DeleteColumnStatisticsRequest
             if (isset($vals['tbl_name'])) {
                 $this->tbl_name = $vals['tbl_name'];
             }
-            if (isset($vals['part_name'])) {
-                $this->part_name = $vals['part_name'];
+            if (isset($vals['part_names'])) {
+                $this->part_names = $vals['part_names'];
             }
             if (isset($vals['col_names'])) {
                 $this->col_names = $vals['col_names'];
@@ -147,8 +151,17 @@ class DeleteColumnStatisticsRequest
                     }
                     break;
                 case 4:
-                    if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->part_name);
+                    if ($ftype == TType::LST) {
+                        $this->part_names = array();
+                        $_size1381 = 0;
+                        $_etype1384 = 0;
+                        $xfer += $input->readListBegin($_etype1384, $_size1381);
+                        for ($_i1385 = 0; $_i1385 < $_size1381; ++$_i1385) {
+                            $elem1386 = null;
+                            $xfer += $input->readString($elem1386);
+                            $this->part_names []= $elem1386;
+                        }
+                        $xfer += $input->readListEnd();
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -156,13 +169,13 @@ class DeleteColumnStatisticsRequest
                 case 5:
                     if ($ftype == TType::LST) {
                         $this->col_names = array();
-                        $_size1381 = 0;
-                        $_etype1384 = 0;
-                        $xfer += $input->readListBegin($_etype1384, $_size1381);
-                        for ($_i1385 = 0; $_i1385 < $_size1381; ++$_i1385) {
-                            $elem1386 = null;
-                            $xfer += $input->readString($elem1386);
-                            $this->col_names []= $elem1386;
+                        $_size1387 = 0;
+                        $_etype1390 = 0;
+                        $xfer += $input->readListBegin($_etype1390, $_size1387);
+                        for ($_i1391 = 0; $_i1391 < $_size1387; ++$_i1391) {
+                            $elem1392 = null;
+                            $xfer += $input->readString($elem1392);
+                            $this->col_names []= $elem1392;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -205,9 +218,16 @@ class DeleteColumnStatisticsRequest
             $xfer += $output->writeString($this->tbl_name);
             $xfer += $output->writeFieldEnd();
         }
-        if ($this->part_name !== null) {
-            $xfer += $output->writeFieldBegin('part_name', TType::STRING, 4);
-            $xfer += $output->writeString($this->part_name);
+        if ($this->part_names !== null) {
+            if (!is_array($this->part_names)) {
+                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+            }
+            $xfer += $output->writeFieldBegin('part_names', TType::LST, 4);
+            $output->writeListBegin(TType::STRING, count($this->part_names));
+            foreach ($this->part_names as $iter1393) {
+                $xfer += $output->writeString($iter1393);
+            }
+            $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
         }
         if ($this->col_names !== null) {
@@ -216,8 +236,8 @@ class DeleteColumnStatisticsRequest
             }
             $xfer += $output->writeFieldBegin('col_names', TType::LST, 5);
             $output->writeListBegin(TType::STRING, count($this->col_names));
-            foreach ($this->col_names as $iter1387) {
-                $xfer += $output->writeString($iter1387);
+            foreach ($this->col_names as $iter1394) {
+                $xfer += $output->writeString($iter1394);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

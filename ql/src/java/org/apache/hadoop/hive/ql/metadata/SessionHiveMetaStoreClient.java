@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DeleteColumnStatisticsRequest;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
@@ -576,12 +577,22 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
 
   /** {@inheritDoc} */
   @Override
-  public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName, String engine)
-      throws TException {
-    if (getTempTable(dbName, tableName) != null) {
-      return deleteTempTableColumnStats(dbName, tableName, colName);
+  public boolean deleteColumnStatistics(DeleteColumnStatisticsRequest req) throws TException {
+    String dbName = req.getDb_name();
+    String tableName = req.getTbl_name();
+    org.apache.hadoop.hive.metastore.api.Table table;
+    if ((table = getTempTable(dbName, tableName)) != null) {
+      List<String> colNames = req.getCol_names();
+      if (table.getPartitionKeysSize() == 0) {
+        for (String colName : colNames) {
+          deleteTempTableColumnStats(dbName, tableName, colName);
+        }
+      } else {
+        throw new UnsupportedOperationException("Not implemented yet");
+      }
+      return true;
     }
-    return super.deleteTableColumnStatistics(dbName, tableName, colName, engine);
+    return super.deleteColumnStatistics(req);
   }
 
   private void createTempTable(org.apache.hadoop.hive.metastore.api.Table tbl) throws TException {

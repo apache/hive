@@ -8350,26 +8350,24 @@ class DeleteColumnStatisticsRequest
   CAT_NAME = 1
   DB_NAME = 2
   TBL_NAME = 3
-  PART_NAME = 4
+  PART_NAMES = 4
   COL_NAMES = 5
   ENGINE = 6
 
   FIELDS = {
-    CAT_NAME => {:type => ::Thrift::Types::STRING, :name => 'cat_name'},
+    CAT_NAME => {:type => ::Thrift::Types::STRING, :name => 'cat_name', :optional => true},
     DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
     TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
-    PART_NAME => {:type => ::Thrift::Types::STRING, :name => 'part_name', :optional => true},
+    PART_NAMES => {:type => ::Thrift::Types::LIST, :name => 'part_names', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     COL_NAMES => {:type => ::Thrift::Types::LIST, :name => 'col_names', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
-    ENGINE => {:type => ::Thrift::Types::STRING, :name => 'engine'}
+    ENGINE => {:type => ::Thrift::Types::STRING, :name => 'engine', :default => %q"hive", :optional => true}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field cat_name is unset!') unless @cat_name
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field db_name is unset!') unless @db_name
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tbl_name is unset!') unless @tbl_name
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field engine is unset!') unless @engine
   end
 
   ::Thrift::Struct.generate_accessors self

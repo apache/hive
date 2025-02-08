@@ -2511,12 +2511,12 @@ struct GetAllWriteEventInfoRequest {
 }
 
 struct DeleteColumnStatisticsRequest {
-  1: required string cat_name,
+  1: optional string cat_name,
   2: required string db_name,
   3: required string tbl_name,
-  4: optional string part_name,
+  4: optional list<string> part_names,
   5: optional list<string> col_names,
-  6: required string engine
+  6: optional string engine = "hive"
 }
 
 // Exceptions.
