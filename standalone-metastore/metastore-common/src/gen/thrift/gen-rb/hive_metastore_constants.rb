@@ -95,5 +95,3 @@ EXPECTED_PARAMETER_KEY = %q"expected_parameter_key"
 
 EXPECTED_PARAMETER_VALUE = %q"expected_parameter_value"
 
-IS_TRUNCATE_OP = %q"__is_truncate_op__"
-

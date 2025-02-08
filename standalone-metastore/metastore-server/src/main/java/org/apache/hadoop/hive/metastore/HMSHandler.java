@@ -3418,14 +3418,25 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     } else {
       EnvironmentContext environmentContext = new EnvironmentContext();
       updateStatsForTruncate(table.getParameters(), environmentContext);
-      environmentContext.putToProperties(hive_metastoreConstants.IS_TRUNCATE_OP, Boolean.TRUE.toString());
+      boolean isReplicated = isDbReplicationTarget(ms.getDatabase(catName, dbName));
+      if (!transactionalListeners.isEmpty()) {
+        MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+            EventType.ALTER_TABLE,
+            new AlterTableEvent(table, table, true, true,
+                writeId, this, isReplicated));
+      }
 
+      if (!listeners.isEmpty()) {
+        MetaStoreListenerNotifier.notifyEvent(listeners,
+            EventType.ALTER_TABLE,
+            new AlterTableEvent(table, table, true, true,
+                writeId, this, isReplicated));
+      }
       // TODO: this should actually pass thru and set writeId for txn stats.
       if (writeId > 0) {
         table.setWriteId(writeId);
       }
-      alterHandler.alterTable(ms, wh, catName, dbName, tableName, table,
-          environmentContext, this, validWriteIds);
+      ms.alterTable(catName, dbName, tableName, table, validWriteIds);
     }
     return;
   }

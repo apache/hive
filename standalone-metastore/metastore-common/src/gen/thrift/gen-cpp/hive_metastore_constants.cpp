@@ -99,8 +99,6 @@ hive_metastoreConstants::hive_metastoreConstants() {
 
   EXPECTED_PARAMETER_VALUE = "expected_parameter_value";
 
-  IS_TRUNCATE_OP = "__is_truncate_op__";
-
 }
 
 }}} // namespace

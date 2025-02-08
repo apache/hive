@@ -110,18 +110,12 @@ public class HiveAlterHandler implements AlterHandler {
     final boolean cascade;
     final boolean replDataLocationChanged;
     final boolean isReplicated;
-    final boolean isTruncateOp;
     if ((environmentContext != null) && environmentContext.isSetProperties()) {
       cascade = StatsSetupConst.TRUE.equals(environmentContext.getProperties().get(StatsSetupConst.CASCADE));
       replDataLocationChanged = ReplConst.TRUE.equals(environmentContext.getProperties().get(ReplConst.REPL_DATA_LOCATION_CHANGED));
-      isTruncateOp = environmentContext.getProperties()
-          .containsKey(hive_metastoreConstants.IS_TRUNCATE_OP) ? Boolean.TRUE.toString()
-          .equalsIgnoreCase(environmentContext.getProperties()
-              .get(hive_metastoreConstants.IS_TRUNCATE_OP)) : false;
     } else {
       cascade = false;
       replDataLocationChanged = false;
-      isTruncateOp = false;
     }
 
     if (newt == null) {
@@ -454,7 +448,7 @@ public class HiveAlterHandler implements AlterHandler {
       if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
         txnAlterTableEventResponses = MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                   EventMessage.EventType.ALTER_TABLE,
-                  new AlterTableEvent(oldt, newt, isTruncateOp, true,
+                  new AlterTableEvent(oldt, newt, false, true,
                           newt.getWriteId(), handler, isReplicated),
                   environmentContext);
       }
@@ -516,7 +510,7 @@ public class HiveAlterHandler implements AlterHandler {
       // make this call whether the event failed or succeeded. To make this behavior consistent,
       // this call is made for failed events also.
       MetaStoreListenerNotifier.notifyEvent(listeners, EventMessage.EventType.ALTER_TABLE,
-          new AlterTableEvent(oldt, newt, isTruncateOp, success, newt.getWriteId(), handler, isReplicated),
+          new AlterTableEvent(oldt, newt, false, success, newt.getWriteId(), handler, isReplicated),
           environmentContext, txnAlterTableEventResponses, msdb);
     }
   }

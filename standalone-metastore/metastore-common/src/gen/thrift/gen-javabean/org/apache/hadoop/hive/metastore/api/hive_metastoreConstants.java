@@ -97,6 +97,4 @@ package org.apache.hadoop.hive.metastore.api;
 
   public static final java.lang.String EXPECTED_PARAMETER_VALUE = "expected_parameter_value";
 
-  public static final java.lang.String IS_TRUNCATE_OP = "__is_truncate_op__";
-
 }
