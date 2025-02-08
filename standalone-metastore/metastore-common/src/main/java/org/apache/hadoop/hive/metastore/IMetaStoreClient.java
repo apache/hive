@@ -2700,8 +2700,12 @@ public interface IMetaStoreClient extends AutoCloseable {
     InvalidObjectException, TException, InvalidInputException {
     DeleteColumnStatisticsRequest request = new DeleteColumnStatisticsRequest(dbName, tableName);
     request.setEngine(engine);
-    request.addToCol_names(colName);
-    request.addToPart_names(partName);
+    if (colName != null) {
+      request.addToCol_names(colName);
+    }
+    if (partName != null) {
+      request.addToPart_names(partName);
+    }
     return deleteColumnStatistics(request);
   }
 
@@ -2730,8 +2734,12 @@ public interface IMetaStoreClient extends AutoCloseable {
     DeleteColumnStatisticsRequest request = new DeleteColumnStatisticsRequest(dbName, tableName);
     request.setCat_name(catName);
     request.setEngine(engine);
-    request.addToCol_names(colName);
-    request.addToPart_names(partName);
+    if (colName != null) {
+      request.addToCol_names(colName);
+    }
+    if (partName != null) {
+      request.addToPart_names(partName);
+    }
     return deleteColumnStatistics(request);
   }
 
@@ -2756,7 +2764,10 @@ public interface IMetaStoreClient extends AutoCloseable {
     NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException {
     DeleteColumnStatisticsRequest request = new DeleteColumnStatisticsRequest(dbName, tableName);
     request.setEngine(engine);
-    request.addToCol_names(colName);
+    if (colName != null) {
+      request.addToCol_names(colName);
+    }
+    request.setTableLevel(true);
     return deleteColumnStatistics(request);
   }
 
@@ -2783,7 +2794,10 @@ public interface IMetaStoreClient extends AutoCloseable {
     DeleteColumnStatisticsRequest request = new DeleteColumnStatisticsRequest(dbName, tableName);
     request.setCat_name(catName);
     request.setEngine(engine);
-    request.addToCol_names(colName);
+    if (colName != null) {
+      request.addToCol_names(colName);
+    }
+    request.setTableLevel(true);
     return deleteColumnStatistics(request);
   }
 

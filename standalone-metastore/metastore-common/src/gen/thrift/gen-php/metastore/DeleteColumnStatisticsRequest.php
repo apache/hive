@@ -59,6 +59,11 @@ class DeleteColumnStatisticsRequest
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        7 => array(
+            'var' => 'tableLevel',
+            'isRequired' => false,
+            'type' => TType::BOOL,
+        ),
     );
 
     /**
@@ -85,6 +90,10 @@ class DeleteColumnStatisticsRequest
      * @var string
      */
     public $engine = "hive";
+    /**
+     * @var bool
+     */
+    public $tableLevel = false;
 
     public function __construct($vals = null)
     {
@@ -106,6 +115,9 @@ class DeleteColumnStatisticsRequest
             }
             if (isset($vals['engine'])) {
                 $this->engine = $vals['engine'];
+            }
+            if (isset($vals['tableLevel'])) {
+                $this->tableLevel = $vals['tableLevel'];
             }
         }
     }
@@ -189,6 +201,13 @@ class DeleteColumnStatisticsRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 7:
+                    if ($ftype == TType::BOOL) {
+                        $xfer += $input->readBool($this->tableLevel);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -245,6 +264,11 @@ class DeleteColumnStatisticsRequest
         if ($this->engine !== null) {
             $xfer += $output->writeFieldBegin('engine', TType::STRING, 6);
             $xfer += $output->writeString($this->engine);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->tableLevel !== null) {
+            $xfer += $output->writeFieldBegin('tableLevel', TType::BOOL, 7);
+            $xfer += $output->writeBool($this->tableLevel);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

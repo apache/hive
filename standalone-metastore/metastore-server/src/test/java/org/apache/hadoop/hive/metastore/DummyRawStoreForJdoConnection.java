@@ -921,7 +921,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public boolean deleteTableMultiColumnStatistics(String catName, String dbName, String tableName,
+  public boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
                                              List<String> colNames, String engine)
           throws NoSuchObjectException, MetaException, InvalidObjectException {
     return false;
@@ -936,7 +936,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public boolean deletePartitionMultiColumnStatistics(String catName, String dbName, String tableName,
+  public boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
                                                  List<String> partNames, List<String> colNames, String engine)
           throws NoSuchObjectException, MetaException, InvalidObjectException,
           InvalidInputException {

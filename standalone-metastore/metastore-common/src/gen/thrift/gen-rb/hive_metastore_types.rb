@@ -8353,6 +8353,7 @@ class DeleteColumnStatisticsRequest
   PART_NAMES = 4
   COL_NAMES = 5
   ENGINE = 6
+  TABLELEVEL = 7
 
   FIELDS = {
     CAT_NAME => {:type => ::Thrift::Types::STRING, :name => 'cat_name', :optional => true},
@@ -8360,7 +8361,8 @@ class DeleteColumnStatisticsRequest
     TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
     PART_NAMES => {:type => ::Thrift::Types::LIST, :name => 'part_names', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     COL_NAMES => {:type => ::Thrift::Types::LIST, :name => 'col_names', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
-    ENGINE => {:type => ::Thrift::Types::STRING, :name => 'engine', :default => %q"hive", :optional => true}
+    ENGINE => {:type => ::Thrift::Types::STRING, :name => 'engine', :default => %q"hive", :optional => true},
+    TABLELEVEL => {:type => ::Thrift::Types::BOOL, :name => 'tableLevel', :default => false, :optional => true}
   }
 
   def struct_fields; FIELDS; end

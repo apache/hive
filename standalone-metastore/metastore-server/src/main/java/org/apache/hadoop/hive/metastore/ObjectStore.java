@@ -1498,7 +1498,7 @@ public class ObjectStore implements RawStore, Configurable {
         }
         // delete column statistics if present
         try {
-          deleteTableColumnStatistics(catName, dbName, tableName, null, null);
+          deleteTableColumnStatistics(catName, dbName, tableName, (String) null, null);
         } catch (NoSuchObjectException e) {
           LOG.info("Found no table level column statistics associated with {} to delete",
               TableName.getQualified(catName, dbName, tableName));
@@ -10231,11 +10231,11 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public boolean deletePartitionMultiColumnStatistics(String catName, String dbName, String tableName,
+  public boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
       List<String> partNames, List<String> colNames, String engine)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     if (partNames == null || partNames.isEmpty()) {
-      throw new InvalidInputException("No partition is specified for dropping the statistics");
+      throw new InvalidInputException("No partition specified for dropping the statistics");
     }
     dbName = org.apache.commons.lang3.StringUtils.defaultString(dbName, Warehouse.DEFAULT_DATABASE_NAME);
     catName = normalizeIdentifier(catName);
@@ -10265,11 +10265,6 @@ public class ObjectStore implements RawStore, Configurable {
     String catalog = normalizeIdentifier(catName);
     try {
       openTransaction();
-      MTable mTable = getMTable(catName, dbName, tableName);
-      if (mTable == null) {
-        throw new NoSuchObjectException("Table " + tableName
-                + "  for which stats deletion is requested doesn't exist");
-      }
       Batchable<String, Void> b = new Batchable<String, Void>() {
         @Override
         public List<Void> run(List<String> input) throws Exception {
@@ -10330,14 +10325,13 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public boolean deleteTableMultiColumnStatistics(String catName, String dbName, String tableName,
+  public boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
       List<String> colNames, String engine)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     dbName = org.apache.commons.lang3.StringUtils.defaultString(dbName, Warehouse.DEFAULT_DATABASE_NAME);
     if (tableName == null) {
       throw new InvalidInputException("Table name is null.");
     }
-
     return new GetHelper<Boolean>(catName, dbName, tableName, true, true) {
       @Override
       protected String describeResult() {
@@ -10359,20 +10353,9 @@ public class ObjectStore implements RawStore, Configurable {
       List<String> colNames, String engine) throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     boolean ret = false;
     Query query = null;
-    dbName = org.apache.commons.lang3.StringUtils.defaultString(dbName,
-      Warehouse.DEFAULT_DATABASE_NAME);
-    if (tableName == null) {
-      throw new InvalidInputException("Table name is null.");
-    }
     try {
       openTransaction();
-      MTable mTable = getMTable(catName, dbName, tableName);
       List<MTableColumnStatistics> mStatsObjColl;
-      if (mTable == null) {
-        throw new NoSuchObjectException("Table " +
-                TableName.getQualified(catName, dbName, tableName)
-                + "  for which stats deletion is requested doesn't exist");
-      }
       // Note: this does not verify ACID state; called internally when removing cols/etc.
       //       Also called via an unused metastore API that checks for ACID tables.
       query = pm.newQuery(MTableColumnStatistics.class);

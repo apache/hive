@@ -23,12 +23,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.collect.Lists;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.common.TableName;
@@ -1400,7 +1398,7 @@ public interface RawStore extends Configurable {
   default boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
                                                   String partName, List<String> partVals, String colName, String engine)
           throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException{
-    return deletePartitionMultiColumnStatistics(catName, dbName, tableName,
+    return deletePartitionColumnStatistics(catName, dbName, tableName,
             Arrays.asList(partName), colName != null ? Arrays.asList(colName) : null, engine);
   }
 
@@ -1420,7 +1418,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException error dropping the stats
    * @throws InvalidInputException bad input, such as null table or database name.
    */
-  boolean deletePartitionMultiColumnStatistics(String catName, String dbName, String tableName,
+  boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
     List<String> partNames, List<String> colNames, String engine)
     throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
 
@@ -1440,7 +1438,7 @@ public interface RawStore extends Configurable {
   default boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
     String colName, String engine)
     throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    return deleteTableMultiColumnStatistics(catName, dbName, tableName, colName != null ? Arrays.asList(colName) : null, engine);
+    return deleteTableColumnStatistics(catName, dbName, tableName, colName != null ? Arrays.asList(colName) : null, engine);
   }
 
   /**
@@ -1456,7 +1454,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException error dropping the stats
    * @throws InvalidInputException bad inputs, such as null table name.
    */
-  boolean deleteTableMultiColumnStatistics(String catName, String dbName, String tableName,
+  boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
     List<String> colNames, String engine)
     throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
 

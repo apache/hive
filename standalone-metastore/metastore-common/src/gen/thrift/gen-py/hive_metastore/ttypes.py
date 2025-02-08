@@ -30817,17 +30817,19 @@ class DeleteColumnStatisticsRequest(object):
      - part_names
      - col_names
      - engine
+     - tableLevel
 
     """
 
 
-    def __init__(self, cat_name=None, db_name=None, tbl_name=None, part_names=None, col_names=None, engine="hive",):
+    def __init__(self, cat_name=None, db_name=None, tbl_name=None, part_names=None, col_names=None, engine="hive", tableLevel=False,):
         self.cat_name = cat_name
         self.db_name = db_name
         self.tbl_name = tbl_name
         self.part_names = part_names
         self.col_names = col_names
         self.engine = engine
+        self.tableLevel = tableLevel
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -30878,6 +30880,11 @@ class DeleteColumnStatisticsRequest(object):
                     self.engine = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.BOOL:
+                    self.tableLevel = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -30917,6 +30924,10 @@ class DeleteColumnStatisticsRequest(object):
         if self.engine is not None:
             oprot.writeFieldBegin('engine', TType.STRING, 6)
             oprot.writeString(self.engine.encode('utf-8') if sys.version_info[0] == 2 else self.engine)
+            oprot.writeFieldEnd()
+        if self.tableLevel is not None:
+            oprot.writeFieldBegin('tableLevel', TType.BOOL, 7)
+            oprot.writeBool(self.tableLevel)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -34655,6 +34666,7 @@ DeleteColumnStatisticsRequest.thrift_spec = (
     (4, TType.LIST, 'part_names', (TType.STRING, 'UTF8', False), None, ),  # 4
     (5, TType.LIST, 'col_names', (TType.STRING, 'UTF8', False), None, ),  # 5
     (6, TType.STRING, 'engine', 'UTF8', "hive", ),  # 6
+    (7, TType.BOOL, 'tableLevel', None, False, ),  # 7
 )
 all_structs.append(MetaException)
 MetaException.thrift_spec = (
