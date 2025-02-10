@@ -25,11 +25,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
-import com.google.common.collect.Range;
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelDistribution;
@@ -71,12 +69,11 @@ import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableBitSet;
-import org.apache.calcite.util.Sarg;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveComponentAccess;
@@ -97,7 +94,6 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.slf4j.Logger;
@@ -106,7 +102,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Iterables;
 
 import static org.apache.calcite.rel.core.Values.isEmpty;
-import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil.transformOrToInAndInequalityToBetween;
 
 public class ASTConverter {
   private static final Logger LOG = LoggerFactory.getLogger(ASTConverter.class);
@@ -1099,29 +1094,27 @@ public class ASTConverter {
         astNodeLst.add(call.operands.get(1).accept(this));
         break;
       case SEARCH:
-        ASTNode astNode = call.getOperands().get(0).accept(this);
-        astNodeLst.add(astNode);
-        RexLiteral literal = (RexLiteral) call.operands.get(1);
-        Sarg<?> sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
-        int minOrClauses = SessionState.getSessionConf().getIntVar(HiveConf.ConfVars.HIVE_POINT_LOOKUP_OPTIMIZER_MIN);
-
-        // convert Sarg to IN when they are points.
-        if (sarg.isPoints()) {
-          for (Range<?> range : sarg.rangeSet.asRanges()) {
-            astNodeLst.add(visitLiteral((RexLiteral) rexBuilder.makeLiteral(
-                range.lowerEndpoint(), literal.getType(), true, true)));
-          }
-          
-          return SqlFunctionConverter.buildAST(HiveIn.INSTANCE, astNodeLst, call.getType());
-          // Expand SEARCH operator
-        } else {
-          return visitCall((RexCall) transformOrToInAndInequalityToBetween(
-                  rexBuilder,
-                  call.accept(RexUtil.searchShuttle(rexBuilder, null, -1)),
-                  minOrClauses
-              )
-          );
+        HiveCalciteUtil.SearchToNodeTransformer<ASTNode> transformer = new HiveCalciteUtil.SearchToNodeTransformer<>();
+        transformer.transform(rexBuilder, call, this);
+        
+        if (!transformer.inNodes.isEmpty()) {
+          ASTNode inNode = SqlFunctionConverter.buildAST(HiveIn.INSTANCE, transformer.inNodes, transformer.type);
+          inNode = transformer.negate ?
+              SqlFunctionConverter
+                  .buildAST(SqlStdOperatorTable.NOT, Collections.singletonList(inNode), transformer.type) :
+              inNode;
+          astNodeLst.add(inNode);
         }
+        
+        astNodeLst.addAll(transformer.nodes);
+        if (astNodeLst.size() == 1) {
+          return astNodeLst.get(0);
+        }
+        
+        return transformer.negate ? 
+            SqlFunctionConverter.buildAST(SqlStdOperatorTable.AND, astNodeLst, transformer.type) :
+            SqlFunctionConverter.buildAST(SqlStdOperatorTable.OR, astNodeLst, transformer.type);
+        
       case FLOOR:
         if (call.operands.size() == 2) {
           // Floor on date: special handling since function in Hive does

@@ -21,11 +21,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import com.google.common.collect.BoundType;
+import com.google.common.collect.Range;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptUtil;
@@ -69,11 +72,14 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
+import org.apache.calcite.util.Sarg;
 import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSqlFunction;
@@ -1370,6 +1376,180 @@ public class HiveCalciteUtil {
       return rel;
     } else {
       return rel.copy(rel.getTraitSet(), newInputs);
+    }
+  }
+  
+  public static class RangeToRex <C extends Comparable<C>> {
+    private final RexBuilder rexBuilder;
+    private final RelDataType type;
+    private final RexNode ref;
+
+    public RangeToRex(RexBuilder rexBuilder, RelDataType type, RexNode ref) {
+      this.rexBuilder = rexBuilder;
+      this.type = type;
+      this.ref = ref;
+    }
+
+    private RexNode and(RexNode... nodes) {
+      return rexBuilder.makeCall(SqlStdOperatorTable.AND, nodes);
+    }
+
+    private RexNode op(SqlOperator op, C value) {
+      return rexBuilder.makeCall(op, ref,
+          rexBuilder.makeLiteral(value, type, true, true));
+    }
+
+    private RexNode all() {
+      return rexBuilder.makeLiteral(true);
+    }
+
+    private RexNode atLeast(C lower) {
+      return op(SqlStdOperatorTable.GREATER_THAN_OR_EQUAL, lower);
+    }
+
+    private RexNode atMost(C upper) {
+      return op(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, upper);
+    }
+
+    private RexNode greaterThan(C lower) {
+      return op(SqlStdOperatorTable.GREATER_THAN, lower);
+    }
+
+    private RexNode lessThan(C upper) {
+      return op(SqlStdOperatorTable.LESS_THAN, upper);
+    }
+
+    private RexNode singleton(C value) {
+      return op(SqlStdOperatorTable.EQUALS, value);
+    }
+
+    private RexNode closed(C lower, C upper) {
+      return makeHiveBetween(rexBuilder, false, ref, type, lower, upper);
+    }
+
+    private RexNode closedOpen(C lower, C upper) {
+      return and(op(SqlStdOperatorTable.GREATER_THAN_OR_EQUAL, lower),
+          op(SqlStdOperatorTable.LESS_THAN, upper));
+    }
+
+    private RexNode openClosed(C lower, C upper) {
+      return and(op(SqlStdOperatorTable.GREATER_THAN, lower),
+          op(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, upper));
+    }
+
+    private RexNode open(C lower, C upper) {
+      return and(op(SqlStdOperatorTable.GREATER_THAN, lower),
+          op(SqlStdOperatorTable.LESS_THAN, upper));
+    }
+    
+    public RexNode convert(Range<?> range) {
+      if (range.hasLowerBound() && range.hasUpperBound()) {
+        final C lower = (C) range.lowerEndpoint();
+        final C upper = (C) range.upperEndpoint();
+        if (range.lowerBoundType() == BoundType.OPEN) {
+          if (range.upperBoundType() == BoundType.OPEN) {
+            return open(lower, upper);
+          } else {
+            return openClosed(lower, upper);
+          }
+        } else {
+          if (range.upperBoundType() == BoundType.OPEN) {
+            return closedOpen(lower, upper);
+          } else {
+            // We use .equals rather than .compareTo, because if the endpoints
+            // are not equal the range could not have been created using
+            // Range.singleton. (If they are equal, we cannot distinguish
+            // between closed(v, v) but assume singleton(v).)
+            if (lower.equals(upper)) {
+              return singleton(lower);
+            } else {
+              return closed(lower, upper);
+            }
+          }
+        }
+      } else if (range.hasLowerBound()) {
+        final C lower = (C) range.lowerEndpoint();
+        if (range.lowerBoundType() == BoundType.OPEN) {
+          return greaterThan(lower);
+        } else {
+          return atLeast(lower);
+        }
+      } else if (range.hasUpperBound()) {
+        final C upper = (C) range.upperEndpoint();
+        if (range.upperBoundType() == BoundType.OPEN) {
+          return lessThan(upper);
+        } else {
+          return atMost(upper);
+        }
+      } else {
+        return all();
+      }
+    }
+  }
+  
+  public static RelDataType getSargType(RexCall call) {
+    return call.operands.get(1).getType();
+  }
+  
+  public static RexNode makeHiveBetween(RexBuilder rexBuilder, boolean isNotBetween, RexNode operand,
+                                        RelDataType type, Object lower, Object upper) {
+    return rexBuilder
+        .makeCall(
+            HiveBetween.INSTANCE,
+            rexBuilder.makeLiteral(isNotBetween),
+            operand,
+            rexBuilder.makeLiteral(lower, type, true, true),
+            rexBuilder.makeLiteral(upper, type, true, true)
+        );
+  }
+  
+  public static RexNode negateHiveBetween(RexBuilder rexBuilder, RexCall hiveBetween) {
+    return rexBuilder
+        .makeCall(
+            HiveBetween.INSTANCE,
+            rexBuilder.makeLiteral(!RexLiteral.booleanValue((hiveBetween.getOperands().get(0)))),
+            hiveBetween.getOperands().get(1),
+            hiveBetween.getOperands().get(2),
+            hiveBetween.getOperands().get(3)
+        );
+  }
+  
+  public static class SearchToNodeTransformer<N extends Node> {
+    public final List<N> inNodes = new ArrayList<>();
+    public final List<N> nodes = new ArrayList<>();
+    public boolean negate = false;
+    public RelDataType type;
+    
+    public void transform(RexBuilder rexBuilder, RexCall call, RexVisitor<N> converter) {
+      assert call.getOperator().getKind() == SqlKind.SEARCH;
+      RexNode ref = call.getOperands().get(0);
+      RexLiteral literal = (RexLiteral) call.operands.get(1);
+      Sarg<?> sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
+      this.type = literal.getType();
+
+      this.negate = sarg.negate().complexity() < sarg.complexity();
+      Sarg<?> finalSarg = negate ? sarg.negate() : sarg;
+      RangeToRex<?> rangeConverter = new RangeToRex<>(rexBuilder, type, ref);
+
+      for (Range<?> range: finalSarg.rangeSet.asRanges()) {
+        RexCall rexCall = (RexCall) rangeConverter.convert(range);
+        switch (rexCall.getOperator().getKind()) {
+          case EQUALS:
+            if (inNodes.isEmpty()) {
+              inNodes.add(ref.accept(converter));
+            }
+            inNodes.add(rexCall.getOperands().get(1).accept(converter));
+            break;
+          case BETWEEN:
+            RexCall between = negate ? (RexCall) negateHiveBetween(rexBuilder, rexCall) : rexCall;
+            nodes.add(between.accept(converter));
+            break;
+          default:
+            RexCall expr = negate ? (RexCall) RexUtil.negate(rexBuilder, rexCall) : rexCall;
+            assert expr != null;
+            nodes.add(expr.accept(converter));
+        }
+      }
     }
   }
 }

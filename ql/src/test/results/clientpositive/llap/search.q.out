@@ -84,9 +84,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: t1
-          filterExpr: (a BETWEEN 1 AND 5 or (a > 100) or (a) IN (10, 12, 15)) (type: boolean)
+          filterExpr: ((a) IN (10, 12, 15) or a BETWEEN 1 AND 5 or (a > 100)) (type: boolean)
           Filter Operator
-            predicate: (a BETWEEN 1 AND 5 or (a > 100) or (a) IN (10, 12, 15)) (type: boolean)
+            predicate: ((a) IN (10, 12, 15) or a BETWEEN 1 AND 5 or (a > 100)) (type: boolean)
             Select Operator
               expressions: a (type: int), b (type: int)
               outputColumnNames: _col0, _col1
@@ -471,9 +471,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: t1
-          filterExpr: (a is not null and a BETWEEN 1 AND 5) (type: boolean)
+          filterExpr: a BETWEEN 1 AND 5 (type: boolean)
           Filter Operator
-            predicate: (a is not null and a BETWEEN 1 AND 5) (type: boolean)
+            predicate: a BETWEEN 1 AND 5 (type: boolean)
             Select Operator
               expressions: a (type: int), b (type: int)
               outputColumnNames: _col0, _col1
@@ -514,9 +514,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: t1
-          filterExpr: (a NOT BETWEEN 1 AND 15 or ((a > 5) and (a < 10))) (type: boolean)
+          filterExpr: (a NOT BETWEEN 1 AND 5 and a NOT BETWEEN 10 AND 15) (type: boolean)
           Filter Operator
-            predicate: (a NOT BETWEEN 1 AND 15 or ((a > 5) and (a < 10))) (type: boolean)
+            predicate: (a NOT BETWEEN 1 AND 5 and a NOT BETWEEN 10 AND 15) (type: boolean)
             Select Operator
               expressions: a (type: int), b (type: int)
               outputColumnNames: _col0, _col1
@@ -759,9 +759,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: t1
-          filterExpr: (a BETWEEN 1 AND 5 or (a > 100) or (a) IN (10, 12, 15)) (type: boolean)
+          filterExpr: ((a) IN (10, 12, 15) or a BETWEEN 1 AND 5 or (a > 100)) (type: boolean)
           Filter Operator
-            predicate: (a BETWEEN 1 AND 5 or (a > 100) or (a) IN (10, 12, 15)) (type: boolean)
+            predicate: ((a) IN (10, 12, 15) or a BETWEEN 1 AND 5 or (a > 100)) (type: boolean)
             Select Operator
               expressions: a (type: int), b (type: int)
               outputColumnNames: a, b
@@ -1011,9 +1011,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: t1
-          filterExpr: (a is not null and a BETWEEN 1 AND 5) (type: boolean)
+          filterExpr: a BETWEEN 1 AND 5 (type: boolean)
           Filter Operator
-            predicate: (a is not null and a BETWEEN 1 AND 5) (type: boolean)
+            predicate: a BETWEEN 1 AND 5 (type: boolean)
             Select Operator
               expressions: a (type: int), b (type: int)
               outputColumnNames: a, b
@@ -1039,9 +1039,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: t1
-          filterExpr: (a NOT BETWEEN 1 AND 15 or ((a > 5) and (a < 10))) (type: boolean)
+          filterExpr: (a NOT BETWEEN 1 AND 5 and a NOT BETWEEN 10 AND 15) (type: boolean)
           Filter Operator
-            predicate: (a NOT BETWEEN 1 AND 15 or ((a > 5) and (a < 10))) (type: boolean)
+            predicate: (a NOT BETWEEN 1 AND 5 and a NOT BETWEEN 10 AND 15) (type: boolean)
             Select Operator
               expressions: a (type: int), b (type: int)
               outputColumnNames: a, b

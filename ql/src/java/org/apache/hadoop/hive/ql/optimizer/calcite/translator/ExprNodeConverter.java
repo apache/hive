@@ -20,13 +20,11 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 import com.google.common.base.Preconditions;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
-import com.google.common.collect.Range;
 import org.apache.calcite.avatica.util.ByteString;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.type.RelDataType;
@@ -40,7 +38,6 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
-import org.apache.calcite.rex.RexUnknownAs;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.rex.RexWindow;
@@ -50,7 +47,6 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.DateString;
 import org.apache.calcite.util.NlsString;
-import org.apache.calcite.util.Sarg;
 import org.apache.calcite.util.TimeString;
 import org.apache.calcite.util.TimestampString;
 import org.apache.hadoop.hive.common.type.Date;
@@ -66,6 +62,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.RexVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.Schema;
@@ -88,8 +85,10 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNot;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -101,8 +100,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableSet;
-
-import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil.transformOrToInAndInequalityToBetween;
 
 /*
  * convert a RexNode to an ExprNodeDesc
@@ -208,30 +205,31 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
         args.add(operand.accept(this));
       }
     } else if (call.getKind() == SqlKind.SEARCH) {
-      RexNode searchOperand = call.getOperands().get(0);
-      args.add(searchOperand.accept(this));
-      RexLiteral literal = (RexLiteral)call.operands.get(1);
-      Sarg<?> sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
-      int minOrClauses = SessionState.getSessionConf().getIntVar(HiveConf.ConfVars.HIVE_POINT_LOOKUP_OPTIMIZER_MIN);
+      HiveCalciteUtil.SearchToNodeTransformer<ExprNodeDesc> transformer = 
+          new HiveCalciteUtil.SearchToNodeTransformer<>();
+      transformer.transform(rexBuilder, call, this);
+      
+      try {
+        if (!transformer.inNodes.isEmpty()) {
+          GenericUDF hiveInUdf = SqlFunctionConverter
+              .getHiveUDF(HiveIn.INSTANCE, transformer.type, transformer.inNodes.size());
+          ExprNodeGenericFuncDesc inFuncDesc = ExprNodeGenericFuncDesc.newInstance(hiveInUdf, transformer.inNodes);
+          inFuncDesc = transformer.negate ?
+              ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPNot(), Collections.singletonList(inFuncDesc)) :
+              inFuncDesc;
+          args.add(inFuncDesc);
+        }
 
-      if (sarg.isPoints()) {
-        for (Range<?> range : sarg.rangeSet.asRanges()) {
-          args.add(visitLiteral((RexLiteral) rexBuilder.makeLiteral(
-                  range.lowerEndpoint(), literal.getType(), true, true)));
+        args.addAll(transformer.nodes);
+        if (args.size() == 1) {
+          return args.get(0);
         }
-        GenericUDF hiveUdf = SqlFunctionConverter.getHiveUDF(HiveIn.INSTANCE, call.getType(), args.size());
-        try {
-          return ExprNodeGenericFuncDesc.newInstance(hiveUdf, args);
-        } catch (UDFArgumentException e) {
-          throw new RuntimeException("Failed to instantiate udf: ", e);
-        }
-      } else {
-        return visitCall((RexCall) transformOrToInAndInequalityToBetween(
-                rexBuilder,
-                call.accept(RexUtil.searchShuttle(rexBuilder, null, -1)),
-                minOrClauses
-            )
-        );
+
+        return transformer.negate ?
+            ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPAnd(), args) :
+            ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPOr(), args);
+      } catch (UDFArgumentException e) {
+        throw new RuntimeException("Failed to instantiate udf: ", e);
       }
     } else {
       for (RexNode operand : call.operands) {
