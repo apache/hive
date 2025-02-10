@@ -341,7 +341,7 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
    * Table-name followed by "*" indicates that all partitions are inside table location.
    * Otherwise, we record the number of partitions covered by table location.
    */
-  private JSONArray listOutputEntities(HashSet<String> locations) {
+  private JSONArray listOutputEntities(HashSet<String> locations) throws JSONException {
     List<String> listEntities = new ArrayList<>();
     for(String loc : locations) {
       DataLocation data = inputLocations.get(loc);
