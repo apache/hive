@@ -872,25 +872,9 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
 
   @Override
   public boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
-                                             String colName, String engine)
-      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    return objectStore.deleteTableColumnStatistics(catName, dbName, tableName, colName, engine);
-  }
-
-  @Override
-  public boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
                                              List<String> colNames, String engine)
           throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     return objectStore.deleteTableColumnStatistics(catName, dbName, tableName, colNames, engine);
-  }
-
-  @Override
-  public boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
-                                                 String partName, List<String> partVals, String colName, String engine)
-      throws NoSuchObjectException, MetaException, InvalidObjectException,
-      InvalidInputException {
-    return objectStore.deletePartitionColumnStatistics(catName, dbName, tableName, partName,
-        partVals, colName, engine);
   }
 
   @Override

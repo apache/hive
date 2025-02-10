@@ -1395,6 +1395,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException error dropping the stats
    * @throws InvalidInputException bad input, such as null table or database name.
    */
+  @Deprecated
   default boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
                                                   String partName, List<String> partVals, String colName, String engine)
           throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException{
@@ -1435,6 +1436,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException error dropping the stats
    * @throws InvalidInputException bad inputs, such as null table name.
    */
+  @Deprecated
   default boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
     String colName, String engine)
     throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {

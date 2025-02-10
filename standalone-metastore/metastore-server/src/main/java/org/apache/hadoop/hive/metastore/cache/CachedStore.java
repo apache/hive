@@ -47,7 +47,16 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.metastore.*;
+import org.apache.hadoop.hive.metastore.Deadline;
+import org.apache.hadoop.hive.metastore.FileMetadataHandler;
+import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.metastore.PartFilterExprUtil;
+import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
+import org.apache.hadoop.hive.metastore.RawStore;
+import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.HiveAlterHandler;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.api.Package;
 import org.apache.hadoop.hive.metastore.cache.SharedCache.StatsType;
@@ -73,7 +82,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 
 import static org.apache.hadoop.hive.metastore.HMSHandler.getPartValsFromName;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.*;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 // TODO filter->expr
@@ -2173,25 +2182,6 @@ public class CachedStore implements RawStore, Configurable {
     return columnStatistics;
   }
 
-  @Override public boolean deleteTableColumnStatistics(String catName, String dbName, String tblName, String colName, String engine)
-      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    if (!CacheUtils.HIVE_ENGINE.equals(engine)) {
-      throw new RuntimeException("CachedStore can only be enabled for Hive engine");
-    }
-    boolean succ = rawStore.deleteTableColumnStatistics(catName, dbName, tblName, colName, engine);
-    // in case of event based cache update, cache is updated during commit txn
-    if (succ && !canUseEvents) {
-      catName = normalizeIdentifier(catName);
-      dbName = normalizeIdentifier(dbName);
-      tblName = normalizeIdentifier(tblName);
-      if (!shouldCacheTable(catName, dbName, tblName)) {
-        return succ;
-      }
-      sharedCache.removeTableColStatsFromCache(catName, dbName, tblName, colName);
-    }
-    return succ;
-  }
-
   @Override public boolean deleteTableColumnStatistics(String catName, String dbName, String tblName, List<String> colNames, String engine)
           throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     if (!CacheUtils.HIVE_ENGINE.equals(engine)) {
@@ -2206,10 +2196,13 @@ public class CachedStore implements RawStore, Configurable {
       if (!shouldCacheTable(catName, dbName, tblName)) {
         return succ;
       }
-      if (colNames != null) {
-        for (String colName : colNames) {
-          sharedCache.removeTableColStatsFromCache(catName, dbName, tblName, colName);
-        }
+      if (colNames == null) {
+        colNames = getTable(catName, dbName, tblName)
+            .getSd().getCols().stream().map(FieldSchema::getName)
+            .collect(Collectors.toList());
+      }
+      for (String colName : colNames) {
+        sharedCache.removeTableColStatsFromCache(catName, dbName, tblName, colName);
       }
     }
     return succ;
@@ -2314,26 +2307,6 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override public boolean deletePartitionColumnStatistics(String catName, String dbName, String tblName,
-      String partName, List<String> partVals, String colName, String engine)
-      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    if (!CacheUtils.HIVE_ENGINE.equals(engine)) {
-      throw new RuntimeException("CachedStore can only be enabled for Hive engine");
-    }
-    boolean succ = rawStore.deletePartitionColumnStatistics(catName, dbName, tblName, partName, partVals, colName, engine);
-    // in case of event based cache update, cache is updated during commit txn.
-    if (succ && !canUseEvents) {
-      catName = normalizeIdentifier(catName);
-      dbName = normalizeIdentifier(dbName);
-      tblName = normalizeIdentifier(tblName);
-      if (!shouldCacheTable(catName, dbName, tblName)) {
-        return succ;
-      }
-      sharedCache.removePartitionColStatsFromCache(catName, dbName, tblName, partVals, colName);
-    }
-    return succ;
-  }
-
-  @Override public boolean deletePartitionColumnStatistics(String catName, String dbName, String tblName,
                                                            List<String> partNames, List<String> colNames, String engine)
           throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     if (!CacheUtils.HIVE_ENGINE.equals(engine)) {
@@ -2348,13 +2321,16 @@ public class CachedStore implements RawStore, Configurable {
       if (!shouldCacheTable(catName, dbName, tblName)) {
         return succ;
       }
-      if (colNames != null) {
-        Table table = rawStore.getTable(catName, dbName, tblName);
-        for (String partName : partNames) {
-          List<String> partVals = getPartValsFromName(table, partName);
-          for (String colName : colNames) {
-            sharedCache.removePartitionColStatsFromCache(catName, dbName, tblName, partVals, colName);
-          }
+      Table table = rawStore.getTable(catName, dbName, tblName);
+      if (colNames == null) {
+        colNames = table
+            .getSd().getCols().stream().map(FieldSchema::getName)
+            .collect(Collectors.toList());
+      }
+      for (String partName : partNames) {
+        List<String> partVals = getPartValsFromName(table, partName);
+        for (String colName : colNames) {
+          sharedCache.removePartitionColStatsFromCache(catName, dbName, tblName, partVals, colName);
         }
       }
     }

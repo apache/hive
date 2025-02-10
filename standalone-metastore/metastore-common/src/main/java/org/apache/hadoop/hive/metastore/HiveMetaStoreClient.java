@@ -3651,10 +3651,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
     // check any null value in the list
     if (req.isSetCol_names() && req.getCol_names().stream().anyMatch(Objects::isNull)) {
-      throw new IllegalArgumentException("Null column is found in DeleteColumnStatisticsRequest");
+      throw new IllegalArgumentException("Null column found in DeleteColumnStatisticsRequest");
     }
     if (req.isSetPart_names() && req.getPart_names().stream().anyMatch(Objects::isNull)) {
-      throw new IllegalArgumentException("Null partName is found in DeleteColumnStatisticsRequest");
+      throw new IllegalArgumentException("Null partName found in DeleteColumnStatisticsRequest");
     }
     return client.delete_column_statistics_req(req);
   }

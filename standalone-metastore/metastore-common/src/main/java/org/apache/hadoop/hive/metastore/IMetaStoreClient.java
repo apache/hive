@@ -2802,11 +2802,11 @@ public interface IMetaStoreClient extends AutoCloseable {
   }
 
   /**
-   * Delete table or partition level column statistics given catName, dbName, tableName, partName and colNames,
+   * Delete table or partition level column statistics given catName, dbName, tableName, partNames and colNames,
    * or all columns in a table or partition.
    * This should be used for tables or partitions
    * @param req the DeleteColumnStatisticsRequest which including
-   *            catalog name, database name, table name, partition name(optional),
+   *            catalog name, database name, table name, a list of partition names(optional),
    *            a list column names(optional), and engine name
    * @return boolean indicating the outcome of the operation
    * @throws TException thrift transport error
