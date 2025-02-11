@@ -205,8 +205,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
         args.add(operand.accept(this));
       }
     } else if (call.getKind() == SqlKind.SEARCH) {
-      HiveCalciteUtil.SearchToNodeTransformer<ExprNodeDesc> transformer = 
-          new HiveCalciteUtil.SearchToNodeTransformer<>();
+      HiveCalciteUtil.SearchTransformer<ExprNodeDesc> transformer = new HiveCalciteUtil.SearchTransformer<>();
       transformer.transform(rexBuilder, call, this);
       
       try {
