@@ -77,7 +77,6 @@ import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
-import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
@@ -1514,7 +1513,7 @@ public class HiveCalciteUtil {
         );
   }
   
-  public static class SearchToNodeTransformer<N extends Node> {
+  public static class SearchTransformer<N> {
     public final List<N> inNodes = new ArrayList<>();
     public final List<N> nodes = new ArrayList<>();
     public boolean negate = false;

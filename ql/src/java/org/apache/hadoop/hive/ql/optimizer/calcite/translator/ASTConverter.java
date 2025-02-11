@@ -1094,7 +1094,7 @@ public class ASTConverter {
         astNodeLst.add(call.operands.get(1).accept(this));
         break;
       case SEARCH:
-        HiveCalciteUtil.SearchToNodeTransformer<ASTNode> transformer = new HiveCalciteUtil.SearchToNodeTransformer<>();
+        HiveCalciteUtil.SearchTransformer<ASTNode> transformer = new HiveCalciteUtil.SearchTransformer<>();
         transformer.transform(rexBuilder, call, this);
         
         if (!transformer.inNodes.isEmpty()) {
