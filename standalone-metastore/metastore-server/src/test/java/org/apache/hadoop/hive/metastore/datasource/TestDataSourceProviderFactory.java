@@ -74,7 +74,7 @@ public class TestDataSourceProviderFactory {
     HikariDataSource hds = (HikariDataSource) ds;
     Assert.assertEquals(30000L, hds.getConnectionTimeout());
     Assert.assertEquals(1800000L, hds.getMaxLifetime());
-    Assert.assertEquals(600000L, hds.getLeakDetectionThreshold());
+    Assert.assertEquals(0L, hds.getLeakDetectionThreshold());
     Assert.assertEquals(1L, hds.getInitializationFailTimeout());
   }
 

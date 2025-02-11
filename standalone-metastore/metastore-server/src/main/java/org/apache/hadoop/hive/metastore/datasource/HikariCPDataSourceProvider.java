@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore.datasource;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
-
 import com.codahale.metrics.MetricRegistry;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -42,8 +40,6 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
   private static final Logger LOG = LoggerFactory.getLogger(HikariCPDataSourceProvider.class);
 
   static final String HIKARI = "hikaricp";
-  private static final String LEAK_DETECTION_THRESHOLD = "leakDetectionThreshold";
-  private static final long DEFAULT_LEAK_DETECTION_THRESHOLD = MINUTES.toMillis(10);
 
   @Override
   public DataSource create(Configuration hdpConfig, int maxPoolSize) throws SQLException {
@@ -55,7 +51,6 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     String passwd = DataSourceProvider.getMetastoreJdbcPasswd(hdpConfig);
 
     Properties properties = replacePrefix(DataSourceProvider.getPrefixedProperties(hdpConfig, HIKARI));
-    properties.putIfAbsent(LEAK_DETECTION_THRESHOLD, DEFAULT_LEAK_DETECTION_THRESHOLD);
 
     HikariConfig config;
     try {
