@@ -189,8 +189,6 @@ public abstract class JDBCExpandExpressionsRule extends RelOptRule {
       if (node instanceof RexCall) {
         RexCall call = (RexCall) node;
         switch (call.getKind()) {
-          case IN:
-            return transformIntoOrAndClause(rexBuilder, call);
           case SEARCH:
             return expandSearchAndRemoveRowOperator(rexBuilder, call);
           default:
