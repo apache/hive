@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.database.desc;
 
-import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils;

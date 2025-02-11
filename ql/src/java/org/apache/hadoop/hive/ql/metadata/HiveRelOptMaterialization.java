@@ -31,7 +31,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.apache.commons.collections.CollectionUtils.intersection;
+import static org.apache.commons.collections4.CollectionUtils.intersection;
 
 /**
  * Hive extension of {@link RelOptMaterialization}.
