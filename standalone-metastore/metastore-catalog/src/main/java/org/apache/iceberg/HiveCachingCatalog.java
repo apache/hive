@@ -48,29 +48,27 @@ import org.slf4j.LoggerFactory;
  * Class that wraps an Iceberg Catalog to cache tables.
  * Initial code in:
  * https://github.com/apache/iceberg/blob/1.3.x/core/src/main/java/org/apache/iceberg/CachingCatalog.java
- * Main difference is the SupportsNamespace and the fact that loadTable performs a metadata refresh.
+ * Main difference is the SupportsNamespace.
  *
  * <p>See {@link CatalogProperties#CACHE_EXPIRATION_INTERVAL_MS} for more details regarding special
  * values for {@code expirationIntervalMillis}.
+ * @param <CATALOG> the catalog class
  */
 public class HiveCachingCatalog<CATALOG extends Catalog & SupportsNamespaces> implements Catalog, SupportsNamespaces {
   private static final Logger LOG = LoggerFactory.getLogger(HiveCachingCatalog.class);
   @SuppressWarnings("checkstyle:VisibilityModifier")
-  protected final long expirationIntervalMillis;
+  protected final long expirationMs;
   @SuppressWarnings("checkstyle:VisibilityModifier")
   protected final Cache<TableIdentifier, Table> tableCache;
   private final CATALOG catalog;
-  private final boolean caseSensitive;
 
   @SuppressWarnings("checkstyle:VisibilityModifier")
-  protected HiveCachingCatalog(CATALOG catalog, long expirationIntervalMillis) {
-    Preconditions.checkArgument(
-        expirationIntervalMillis != 0,
-        "When %s is set to 0, the catalog cache should be disabled. This indicates a bug.",
+  protected HiveCachingCatalog(CATALOG catalog, long expiration) {
+    Preconditions.checkArgument(expiration > 0,
+        "When %s is <= 0, the catalog cache should be disabled.",
         CatalogProperties.CACHE_EXPIRATION_INTERVAL_MS);
     this.catalog = catalog;
-    this.caseSensitive = true;
-    this.expirationIntervalMillis = expirationIntervalMillis;
+    this.expirationMs = expiration;
     this.tableCache = createTableCache(Ticker.systemTicker());
   }
 
@@ -86,19 +84,24 @@ public class HiveCachingCatalog<CATALOG extends Catalog & SupportsNamespaces> im
 
   private Cache<TableIdentifier, Table> createTableCache(Ticker ticker) {
     Caffeine<Object, Object> cacheBuilder = Caffeine.newBuilder().softValues();
-    if (expirationIntervalMillis > 0) {
+    if (expirationMs > 0) {
       return cacheBuilder
           .removalListener(new MetadataTableInvalidatingRemovalListener())
           .executor(Runnable::run) // Makes the callbacks to removal listener synchronous
-          .expireAfterAccess(Duration.ofMillis(expirationIntervalMillis))
+          .expireAfterAccess(Duration.ofMillis(expirationMs))
           .ticker(ticker)
           .build();
     }
     return cacheBuilder.build();
   }
 
-  private TableIdentifier canonicalizeIdentifier(TableIdentifier tableIdentifier) {
-    return caseSensitive ? tableIdentifier : tableIdentifier.toLowerCase();
+  /**
+   * Eventual canonical transformation.
+   * @param tableIdentifier the identifier
+   * @return the canonical representation
+   */
+  protected TableIdentifier canonicalizeIdentifier(TableIdentifier tableIdentifier) {
+    return tableIdentifier;
   }
 
   @Override
@@ -129,8 +132,7 @@ public class HiveCachingCatalog<CATALOG extends Catalog & SupportsNamespaces> im
       Table originTable = tableCache.get(originTableIdentifier, this::loadTableHive);
 
       // share TableOperations instance of origin table for all metadata tables, so that metadata
-      // table instances are
-      // also refreshed as well when origin table instance is refreshed.
+      // table instances are also refreshed as well when origin table instance is refreshed.
       if (originTable instanceof HasTableOperations) {
         TableOperations ops = ((HasTableOperations) originTable).operations();
         MetadataTableType type = MetadataTableType.from(canonicalized.name());

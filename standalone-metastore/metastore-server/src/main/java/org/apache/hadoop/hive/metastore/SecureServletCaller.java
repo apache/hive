@@ -30,7 +30,7 @@ public interface SecureServletCaller {
    * Should be called in Servlet.init()
    * @throws ServletException if the jwt validator creation throws an exception
    */
-  public void init() throws ServletException;
+  void init() throws ServletException;
 
   /**
    * Any http method executor.

@@ -38,6 +38,7 @@ import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.SupportsNamespaces;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.catalog.ViewCatalog;
 import org.apache.iceberg.exceptions.AlreadyExistsException;
 import org.apache.iceberg.exceptions.CommitFailedException;
 import org.apache.iceberg.exceptions.CommitStateUnknownException;
@@ -56,6 +57,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.rest.requests.CommitTransactionRequest;
 import org.apache.iceberg.rest.requests.CreateNamespaceRequest;
 import org.apache.iceberg.rest.requests.CreateTableRequest;
+import org.apache.iceberg.rest.requests.CreateViewRequest;
 import org.apache.iceberg.rest.requests.RegisterTableRequest;
 import org.apache.iceberg.rest.requests.RenameTableRequest;
 import org.apache.iceberg.rest.requests.ReportMetricsRequest;
@@ -68,6 +70,7 @@ import org.apache.iceberg.rest.responses.GetNamespaceResponse;
 import org.apache.iceberg.rest.responses.ListNamespacesResponse;
 import org.apache.iceberg.rest.responses.ListTablesResponse;
 import org.apache.iceberg.rest.responses.LoadTableResponse;
+import org.apache.iceberg.rest.responses.LoadViewResponse;
 import org.apache.iceberg.rest.responses.OAuthTokenResponse;
 import org.apache.iceberg.rest.responses.UpdateNamespacePropertiesResponse;
 import org.apache.iceberg.util.Pair;
@@ -102,11 +105,14 @@ public class HMSCatalogAdapter implements RESTClient {
 
   private final Catalog catalog;
   private final SupportsNamespaces asNamespaceCatalog;
+  private final ViewCatalog asViewCatalog;
+
 
   public HMSCatalogAdapter(Catalog catalog) {
     this.catalog = catalog;
     this.asNamespaceCatalog =
         catalog instanceof SupportsNamespaces ? (SupportsNamespaces) catalog : null;
+    this.asViewCatalog = catalog instanceof ViewCatalog ? (ViewCatalog) catalog : null;
   }
 
   enum HTTPMethod {
@@ -115,9 +121,16 @@ public class HMSCatalogAdapter implements RESTClient {
     POST,
     DELETE
   }
+  
+  @FunctionalInterface
+  interface Operation<T extends RESTResponse>  {
+      T exec(Map<String, String> vars, Object body);
+  }
 
   enum Route {
     TOKENS(HTTPMethod.POST, "v1/oauth/tokens", null, OAuthTokenResponse.class),
+    SEPARATE_AUTH_TOKENS_URI(
+        HTTPMethod.POST, "https://auth-server.com/token", null, OAuthTokenResponse.class),
     CONFIG(HTTPMethod.GET, "v1/config", null, ConfigResponse.class),
     LIST_NAMESPACES(HTTPMethod.GET, "v1/namespaces", null, ListNamespacesResponse.class),
     CREATE_NAMESPACE(
@@ -158,7 +171,22 @@ public class HMSCatalogAdapter implements RESTClient {
         ReportMetricsRequest.class,
         null),
     COMMIT_TRANSACTION(
-        HTTPMethod.POST, "v1/transactions/commit", CommitTransactionRequest.class, null);
+        HTTPMethod.POST, "v1/transactions/commit", CommitTransactionRequest.class, null),
+    LIST_VIEWS(HTTPMethod.GET, "v1/namespaces/{namespace}/views", null, ListTablesResponse.class),
+    LOAD_VIEW(
+            HTTPMethod.GET, "v1/namespaces/{namespace}/views/{name}", null, LoadViewResponse.class),
+    CREATE_VIEW(
+            HTTPMethod.POST,
+            "v1/namespaces/{namespace}/views",
+            CreateViewRequest.class,
+            LoadViewResponse.class),
+    UPDATE_VIEW(
+            HTTPMethod.POST,
+            "v1/namespaces/{namespace}/views/{name}",
+            UpdateTableRequest.class,
+            LoadViewResponse.class),
+    RENAME_VIEW(HTTPMethod.POST, "v1/views/rename", RenameTableRequest.class, null),
+    DROP_VIEW(HTTPMethod.DELETE, "v1/namespaces/{namespace}/views/{name}");
 
     private final HTTPMethod method;
     private final int requiredLength;
@@ -284,33 +312,26 @@ public class HMSCatalogAdapter implements RESTClient {
   }
 
   private OAuthTokenResponse tokens(Map<String, String> vars, Object body) {
-    Class<OAuthTokenResponse> responseType = OAuthTokenResponse.class;
-    @SuppressWarnings("unchecked")
     Map<String, String> request = (Map<String, String>) castRequest(Map.class, body);
     String grantType = request.get("grant_type");
     switch (grantType) {
       case "client_credentials":
-        return castResponse(
-                responseType,
-                OAuthTokenResponse.builder()
-                        .withToken("client-credentials-token:sub=" + request.get("client_id"))
-                        .withIssuedTokenType("urn:ietf:params:oauth:token-type:access_token")
-                        .withTokenType("Bearer")
-                        .build());
+        return OAuthTokenResponse.builder()
+            .withToken("client-credentials-token:sub=" + request.get("client_id"))
+            .withTokenType("Bearer")
+            .build();
 
       case "urn:ietf:params:oauth:grant-type:token-exchange":
         String actor = request.get("actor_token");
         String token =
-                String.format(
-                        "token-exchange-token:sub=%s%s",
-                        request.get("subject_token"), actor != null ? ",act=" + actor : "");
-        return castResponse(
-                responseType,
-                OAuthTokenResponse.builder()
-                        .withToken(token)
-                        .withIssuedTokenType("urn:ietf:params:oauth:token-type:access_token")
-                        .withTokenType("Bearer")
-                        .build());
+            String.format(
+                "token-exchange-token:sub=%s%s",
+                request.get("subject_token"), actor != null ? ",act=" + actor : "");
+        return OAuthTokenResponse.builder()
+            .withToken(token)
+            .withIssuedTokenType("urn:ietf:params:oauth:token-type:access_token")
+            .withTokenType("Bearer")
+            .build();
 
       default:
         throw new UnsupportedOperationException("Unsupported grant_type: " + grantType);
@@ -431,6 +452,67 @@ public class HMSCatalogAdapter implements RESTClient {
     return null;
   }
 
+    private ListTablesResponse listViews(Map<String, String> vars, Object body) {
+        if (null != asViewCatalog) {
+            Namespace namespace = namespaceFromPathVars(vars);
+            String pageToken = PropertyUtil.propertyAsString(vars, "pageToken", null);
+            String pageSize = PropertyUtil.propertyAsString(vars, "pageSize", null);
+            if (pageSize != null) {
+                return castResponse(
+                        ListTablesResponse.class,
+                        CatalogHandlers.listViews(asViewCatalog, namespace, pageToken, pageSize));
+            } else {
+                return castResponse(
+                        ListTablesResponse.class, CatalogHandlers.listViews(asViewCatalog, namespace));
+            }
+        }
+        throw new ViewNotSupported(catalog.toString());
+    }
+    
+    private LoadViewResponse createView(Map<String, String> vars, Object body) {
+        if (null != asViewCatalog) {
+          Namespace namespace = namespaceFromPathVars(vars);
+          CreateViewRequest request = castRequest(CreateViewRequest.class, body);
+          return castResponse(
+                  LoadViewResponse.class, CatalogHandlers.createView(asViewCatalog, namespace, request));
+        }
+        throw new ViewNotSupported(catalog.toString());
+    }
+    
+    private LoadViewResponse loadView(Map<String, String> vars, Object body) {
+        if (null != asViewCatalog) {
+          TableIdentifier ident = identFromPathVars(vars);
+          return castResponse(LoadViewResponse.class, CatalogHandlers.loadView(asViewCatalog, ident));
+        }
+        throw new ViewNotSupported(catalog.toString());
+    }
+    
+    private LoadViewResponse updateView(Map<String, String> vars, Object body) {
+        if (null != asViewCatalog) {
+          TableIdentifier ident = identFromPathVars(vars);
+          UpdateTableRequest request = castRequest(UpdateTableRequest.class, body);
+          return castResponse(
+                  LoadViewResponse.class, CatalogHandlers.updateView(asViewCatalog, ident, request));
+        }
+        throw new ViewNotSupported(catalog.toString());
+    }
+    
+    private RESTResponse renameView(Map<String, String> vars, Object body) {
+        if (null != asViewCatalog) {
+          RenameTableRequest request = castRequest(RenameTableRequest.class, body);
+          CatalogHandlers.renameView(asViewCatalog, request);
+        return null;
+        }
+        throw new ViewNotSupported(catalog.toString());
+    }
+    
+    private RESTResponse dropView(Map<String, String> vars, Object body) {
+        if (null != asViewCatalog) {
+          CatalogHandlers.dropView(asViewCatalog, identFromPathVars(vars));
+          return null;
+        }
+        throw new ViewNotSupported(catalog.toString());
+    }
 
   @SuppressWarnings("MethodLength")
   private <T extends RESTResponse> T handleRequest(
@@ -489,6 +571,24 @@ public class HMSCatalogAdapter implements RESTClient {
 
       case COMMIT_TRANSACTION:
         return (T) commitTransaction(vars, body);
+        
+      case LIST_VIEWS:
+        return (T) listViews(vars, body);
+
+      case CREATE_VIEW:
+          return (T) createView(vars, body);
+
+      case LOAD_VIEW:
+        return (T) loadView(vars, body);
+
+      case UPDATE_VIEW:
+        return (T) updateView(vars, body);
+        
+      case RENAME_VIEW:
+        return (T) renameView(vars, body);
+        
+      case DROP_VIEW:
+        return (T) dropView(vars, body);
 
       default:
     }
@@ -622,6 +722,12 @@ public class HMSCatalogAdapter implements RESTClient {
   private static class NamespaceNotSupported extends RuntimeException {
     NamespaceNotSupported(String catalog) {
       super("catalog " + catalog + " does not support namespace");
+    }
+  }
+  
+  private static class ViewNotSupported extends RuntimeException {
+    ViewNotSupported(String catalog) {
+      super("catalog " + catalog + " does not support views");
     }
   }
 

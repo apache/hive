@@ -20,6 +20,8 @@
 package org.apache.iceberg.rest;
 
 import com.google.gson.Gson;
+import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
@@ -31,11 +33,14 @@ import org.apache.iceberg.Table;
 import org.apache.iceberg.Transaction;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.rest.requests.CreateTableRequest;
+import org.apache.iceberg.rest.requests.RenameTableRequest;
 import org.apache.iceberg.types.Types;
 import static org.apache.iceberg.types.Types.NestedField.required;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.After;
 import org.junit.Test;
 
 public class TestHMSCatalog extends HMSTestBase {
@@ -65,7 +70,7 @@ public class TestHMSCatalog extends HMSTestBase {
     Object response = clientCall(jwt, url, "GET", null);
     Assert.assertTrue(response instanceof Map);
     Map<String, Object> nsrep = (Map<String, Object>) response;
-    List<String> nslist = (List<String>) nsrep.get("namespaces");
+    List<List<String>> nslist = (List<List<String>>) nsrep.get("namespaces");
     Assert.assertEquals(2, nslist.size());
     Assert.assertTrue((nslist.contains(Arrays.asList("default"))));
     Assert.assertTrue((nslist.contains(Arrays.asList("hivedb"))));
@@ -104,6 +109,8 @@ public class TestHMSCatalog extends HMSTestBase {
   
   @Test
   public void testCreateTableTxnBuilder() throws Exception {
+    URI iceUri = URI.create("http://hive@localhost:" + catalogPort + "/"+catalogPath+"/v1/");
+    String jwt = generateJWT();
     Schema schema = getTestSchema();
     final String tblName = "tbl_" + Integer.toHexString(RND.nextInt(65536));
     final TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, tblName);
@@ -123,36 +130,88 @@ public class TestHMSCatalog extends HMSTestBase {
       Assert.assertFalse(tis.isEmpty());
 
       // list namespaces
-      URL url = new URL("http://hive@localhost:" + catalogPort + "/"+catalogPath+"/v1/namespaces");
-      String jwt = generateJWT();
+      URL url = iceUri.resolve("namespaces").toURL();
       // succeed
       Object response = clientCall(jwt, url, "GET", null);
       Assert.assertNotNull(response);
+      Assert.assertEquals(200, (int) eval(response, "json -> json.status"));
+      List<List<String>> nslist = (List<List<String>>) eval(response, "json -> json.namespaces");
+      Assert.assertEquals(2, nslist.size());
+      Assert.assertTrue((nslist.contains(Arrays.asList("default"))));
+      Assert.assertTrue((nslist.contains(Arrays.asList("hivedb"))));
 
       // list tables in hivedb
-      url = new URL("http://hive@localhost:" + catalogPort + "/" + catalogPath+"/v1/namespaces/" + DB_NAME + "/tables");
+      url = iceUri.resolve("namespaces/" + DB_NAME + "/tables").toURL();
       // succeed
       response = clientCall(jwt, url, "GET", null);
       Assert.assertNotNull(response);
+      Assert.assertEquals(200, (int) eval(response, "json -> json.status"));
+      Assert.assertEquals(1, (int) eval(response, "json -> size(json.identifiers)"));
+      Assert.assertEquals(tblName, eval(response, "json -> json.identifiers[0].name"));
 
       // load table
-      url = new URL("http://hive@localhost:" + catalogPort + "/" + catalogPath+"/v1/namespaces/" + DB_NAME + "/tables/" + tblName);
+      url = iceUri.resolve("namespaces/" + DB_NAME + "/tables/" + tblName).toURL();
       // succeed
       response = clientCall(jwt, url, "GET", null);
       Assert.assertNotNull(response);
-      String str = new Gson().toJson(response);
+      Assert.assertEquals(200, (int) eval(response, "json -> json.status"));
+      Assert.assertEquals(location, eval(response, "json -> json.metadata.location"));
 
       // quick check on metrics
       Map<String, Long> counters = reportMetricCounters("list_namespaces", "list_tables", "load_table");
       counters.forEach((key, value) -> Assert.assertTrue(key, value > 0));
       table = catalog.loadTable(tableIdent);
       Assert.assertNotNull(table);
-    } catch (Exception xany) {
-        String str = xany.getMessage();
+    } catch (IOException xany) {
+        Assert.fail(xany.getMessage());
     } finally {
         //metastoreClient.dropTable(DB_NAME, tblName);
       catalog.dropTable(tableIdent, false);
     }
+  }
+
+
+  @Test
+  public void testTableAPI() throws Exception {
+    URI iceUri = URI.create("http://hive@localhost:" + catalogPort + "/"+catalogPath+"/v1/");
+    String jwt = generateJWT();
+    Schema schema = getTestSchema();
+    final String tblName = "tbl_" + Integer.toHexString(RND.nextInt(65536));
+    final TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, tblName);
+    String location = temp.newFolder(tableIdent.toString()).toString();
+      // create table
+    CreateTableRequest create = CreateTableRequest.builder().
+             withName(tblName).
+             withLocation(location).
+             withSchema(schema).build();
+      URL url = iceUri.resolve("namespaces/" + DB_NAME + "/tables").toURL();
+      Object response = clientCall(jwt, url, "POST", create);
+      Assert.assertNotNull(response);
+      Assert.assertEquals(200, (int) eval(response, "json -> json.status"));
+      Assert.assertEquals(location, eval(response, "json -> json.metadata.location"));
+      Table table = catalog.loadTable(tableIdent);
+      Assert.assertEquals(location, table.location());
+      
+      // rename table
+      final String rtblName = "TBL_" + Integer.toHexString(RND.nextInt(65536));
+      final TableIdentifier rtableIdent = TableIdentifier.of(DB_NAME, rtblName);
+      RenameTableRequest rename = RenameTableRequest.builder().
+              withSource(tableIdent).
+              withDestination(rtableIdent).
+              build();
+      url = iceUri.resolve("tables/rename").toURL();
+      response = clientCall(jwt, url, "POST", rename);
+      Assert.assertNotNull(response);
+      Assert.assertEquals(200, (int) eval(response, "json -> json.status"));
+      table = catalog.loadTable(rtableIdent);
+      Assert.assertEquals(location, table.location());
+      
+     // delete table
+      url = iceUri.resolve("namespaces/" + DB_NAME + "/tables/" + rtblName).toURL();
+      response = clientCall(jwt, url, "DELETE", null);
+      Assert.assertNotNull(response);
+      Assert.assertEquals(200, (int) eval(response, "json -> json.status"));
+      Assert.assertThrows(NoSuchTableException.class, () -> catalog.loadTable(rtableIdent));
   }
 
 }

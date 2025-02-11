@@ -24,10 +24,6 @@ import com.codahale.metrics.MetricRegistry;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.ToNumberPolicy;
-import com.google.gson.ToNumberStrategy;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSSigner;
@@ -48,6 +44,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +52,13 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.commons.jexl3.JexlBuilder;
+import org.apache.commons.jexl3.JexlContext;
+import org.apache.commons.jexl3.JexlEngine;
+import org.apache.commons.jexl3.JexlException;
+import org.apache.commons.jexl3.JexlFeatures;
+import org.apache.commons.jexl3.MapContext;
+import org.apache.commons.jexl3.introspection.JexlPermissions;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
@@ -71,6 +75,9 @@ import org.apache.hadoop.hive.metastore.properties.HMSPropertyManager;
 import org.apache.hadoop.hive.metastore.properties.PropertyManager;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hive.iceberg.com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.hive.iceberg.com.fasterxml.jackson.core.type.TypeReference;
+import org.apache.hive.iceberg.com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.SupportsNamespaces;
 import org.eclipse.jetty.server.Server;
@@ -89,6 +96,19 @@ public abstract class HMSTestBase {
   protected static Random RND = new Random(20230922);
   protected static final String USER_1 = "USER_1";
   protected static final String DB_NAME = "hivedb";
+  /** A Jexl engine for convenience. */
+  static final JexlEngine JEXL;
+  static {
+    JexlFeatures features = new JexlFeatures()
+        .sideEffect(false)
+        .sideEffectGlobal(false);
+    JexlPermissions p = JexlPermissions.RESTRICTED
+        .compose("org.apache.hadoop.hive.metastore.*", "org.apache.iceberg.*");
+    JEXL = new JexlBuilder()
+        .features(features)
+        .permissions(p)
+        .create();
+  }
 
   protected static final long EVICTION_INTERVAL = TimeUnit.SECONDS.toMillis(10);
   private static final File JWT_AUTHKEY_FILE =
@@ -354,7 +374,7 @@ public abstract class HMSTestBase {
         con.setDoOutput(true);
         DataOutputStream wr = new DataOutputStream(con.getOutputStream());
         if (json) {
-          String outjson = GSON.toJson(arg);
+          String outjson = serialize(arg);
           wr.writeBytes(outjson);
         } else {
           wr.writeBytes(arg.toString());
@@ -368,7 +388,7 @@ public abstract class HMSTestBase {
       con.disconnect();
     }
   }
-  
+
   private static Object httpResponse(HttpURLConnection con) throws IOException {
     int responseCode = con.getResponseCode();
     InputStream responseStream = con.getErrorStream();
@@ -392,7 +412,8 @@ public abstract class HMSTestBase {
             return new ServerResponse(responseCode, response.toString());
           }
         }
-        Object r = GSON.fromJson(reader, Object.class);
+        // there might be no answer which is still ok
+        Object r = reader.ready() ? deserialize(reader) : new HashMap<>(1);
         if (r instanceof Map) {
           ((Map<String, Object>) r).put("status", responseCode);
         }
@@ -401,25 +422,42 @@ public abstract class HMSTestBase {
     }
     return responseCode;
 }
-  
-  /**
-   * Making integer more pervasive when converting JSON.
-   */
-  private static final ToNumberStrategy NARROW_NUMBER = jsonReader -> {
-    Number number = ToNumberPolicy.LONG_OR_DOUBLE.readNumber(jsonReader);
-    if (number instanceof Long) {
-      long n = number.longValue();
-      int i = (int) n;
-      if (i == n) {
-        return i;
-      }
+
+    private static final ObjectMapper MAPPER = RESTObjectMapper.mapper();
+
+    static <T> String serialize(T object) {
+        try {
+        return MAPPER.writeValueAsString(object);
+        } catch (JsonProcessingException xany) {
+            throw new RuntimeException(xany);
+        }
     }
-    return number;
-  };
-  
-  public static final Gson GSON = new GsonBuilder()
-      .setNumberToNumberStrategy(NARROW_NUMBER)
-      .setObjectToNumberStrategy(NARROW_NUMBER)
-      .setPrettyPrinting()
-      .create();
+
+    static <T> T deserialize(String s) {
+        try {
+            return MAPPER.readValue(s, new TypeReference<T>() {});
+        } catch (JsonProcessingException xany) {
+            throw new RuntimeException(xany);
+        }
+    }
+
+    static <T> T deserialize(BufferedReader s) {
+        try {
+            return MAPPER.readValue(s, new TypeReference<T>() {});
+        } catch (IOException xany) {
+            throw new RuntimeException(xany);
+        }
+    }
+    
+  static Object eval(Object properties, String expr) {
+    try {
+      JexlContext context = properties instanceof Map
+              ? new MapContext((Map) properties)
+              : JexlEngine.EMPTY_CONTEXT;
+      Object result = JEXL.createScript(expr).execute(context, properties);
+      return result;
+    } catch (JexlException xany) {
+      throw xany;
+    }
+  }
 }

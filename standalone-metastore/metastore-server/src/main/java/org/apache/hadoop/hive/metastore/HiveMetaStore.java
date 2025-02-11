@@ -159,7 +159,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     HMSHandler baseHandler = new HMSHandler("hive client", conf);
     return HMSHandlerProxyFactory.getProxy(conf, baseHandler, true);
   }
-  
+
+  /**
+   * Create HMS handler for embedded metastore.
+   *
+   * <h1>IMPORTANT</h1>
+   *
+   * This method is called indirectly by HiveMetastoreClient using reflection when using an embedded
+   * Iceberg Catalog. It can not be removed and its arguments can't be changed without matching
+   * change in HiveMetastoreClient .
+   *
+   * @param conf configuration to use
+   * @throws MetaException
+   */
   static Iface newHMSRetryingLocalHandler(Configuration conf)
       throws MetaException {
     HMSHandler baseHandler = new HMSHandler("hive client", conf);
@@ -778,10 +790,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Method iceStart = iceClazz.getMethod("startServer", Configuration.class);
       return (Server) iceStart.invoke(null, configuration);
     } catch (ClassNotFoundException xnf) {
-      LOG.warn("unable to start Iceberg REST Catalog server {}, missing jar?", xnf);
+      LOG.warn("unable to start Iceberg REST Catalog server, missing jar?", xnf);
       return null;
-    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-      LOG.error("unable to start Iceberg REST Catalog server {}", e);
+    } catch (Exception e) {
+      LOG.error("unable to start Iceberg REST Catalog server", e);
       return null;
     }
   }

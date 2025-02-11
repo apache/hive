@@ -80,6 +80,7 @@ public class ServletSecurity implements SecureServletCaller {
    * @param executor the method executor
    * @throws IOException if the Json in/out fail
    */
+  @Override
   public void execute(HttpServletRequest request, HttpServletResponse response, MethodExecutor executor)
       throws IOException {
     if (LOG.isDebugEnabled()) {
