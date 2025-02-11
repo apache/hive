@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore.datasource;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
+
 import com.codahale.metrics.MetricRegistry;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -40,9 +42,8 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
   private static final Logger LOG = LoggerFactory.getLogger(HikariCPDataSourceProvider.class);
 
   static final String HIKARI = "hikaricp";
-  private static final String CONNECTION_TIMEOUT_PROPERTY = HIKARI + ".connectionTimeout";
-  private static final String MAX_LIFETIME = HIKARI + ".maxLifetime";
-  private static final String LEAK_DETECTION_THRESHOLD = HIKARI + ".leakDetectionThreshold";
+  private static final String LEAK_DETECTION_THRESHOLD = "leakDetectionThreshold";
+  private static final long DEFAULT_LEAK_DETECTION_THRESHOLD = MINUTES.toMillis(10);
 
   @Override
   public DataSource create(Configuration hdpConfig, int maxPoolSize) throws SQLException {
@@ -53,11 +54,8 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     String user = DataSourceProvider.getMetastoreJdbcUser(hdpConfig);
     String passwd = DataSourceProvider.getMetastoreJdbcPasswd(hdpConfig);
 
-    Properties properties = replacePrefix(
-        DataSourceProvider.getPrefixedProperties(hdpConfig, HIKARI));
-    long connectionTimeout = hdpConfig.getLong(CONNECTION_TIMEOUT_PROPERTY, 30000L);
-    long maxLifetime = hdpConfig.getLong(MAX_LIFETIME, 3600000L);
-    long leakDetectionThreshold = hdpConfig.getLong(LEAK_DETECTION_THRESHOLD, 3600000L);
+    Properties properties = replacePrefix(DataSourceProvider.getPrefixedProperties(hdpConfig, HIKARI));
+    properties.putIfAbsent(LEAK_DETECTION_THRESHOLD, DEFAULT_LEAK_DETECTION_THRESHOLD);
 
     HikariConfig config;
     try {
@@ -69,8 +67,6 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     config.setJdbcUrl(driverUrl);
     config.setUsername(user);
     config.setPassword(passwd);
-    config.setMaxLifetime(maxLifetime);
-    config.setLeakDetectionThreshold(leakDetectionThreshold);
     if (!StringUtils.isEmpty(poolName)) {
       config.setPoolName(poolName);
     }
@@ -85,9 +81,6 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
       int minimumIdle = Integer.parseInt(hdpConfig.get(HIKARI + ".minimumIdle", "2"));
       config.setMinimumIdle(Math.min(maxPoolSize, minimumIdle));
     }
-
-    //https://github.com/brettwooldridge/HikariCP
-    config.setConnectionTimeout(connectionTimeout);
 
     DatabaseProduct dbProduct =  DatabaseProduct.determineDatabaseProduct(driverUrl, hdpConfig);
 
