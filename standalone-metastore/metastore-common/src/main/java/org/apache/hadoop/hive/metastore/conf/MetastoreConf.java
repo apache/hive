@@ -911,8 +911,6 @@ public class MetastoreConf {
     HMS_HANDLER_PROXY_CLASS("metastore.hmshandler.proxy", "hive.metastore.hmshandler.proxy",
         METASTORE_RETRYING_HANDLER_CLASS,
         "The proxy class name of HMSHandler, default is RetryingHMSHandler."),
-    HMS_HANDLER_CREATE("metastore.hmshandler.create", "metastore.hmshandler.create","newHMSHandler",
-            "The method name to create new HMSHandler"),
     IDENTIFIER_FACTORY("datanucleus.identifierFactory",
         "datanucleus.identifierFactory", "datanucleus1",
         "Name of the identifier factory to use when generating table/column names etc. \n" +

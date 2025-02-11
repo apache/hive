@@ -128,9 +128,7 @@ public abstract class HMSTestBase {
     }
     @Override
     public String getMetaStoreScriptDir() {
-      return  new File(BASE_DIR,"src/test/resources").getAbsolutePath() + File.separatorChar +
-          "scripts" + File.separatorChar + "metastore" +
-          File.separatorChar + "upgrade" + File.separatorChar + dbType;
+      return new File(BASE_DIR, "../metastore-server/src/main/sql/derby").getAbsolutePath();      
     }
   }
 

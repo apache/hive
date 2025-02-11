@@ -73,7 +73,6 @@ public class HMSCatalogServer {
     final String cwarehouse = configuration.get(MetastoreConf.ConfVars.WAREHOUSE.getVarname());
     final String cextwarehouse = configuration.get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname());
     MetastoreConf.setVar(configuration, MetastoreConf.ConfVars.THRIFT_URIS, "");
-    MetastoreConf.setVar(configuration, MetastoreConf.ConfVars.HMS_HANDLER_CREATE, "newHMSRetryingLocalHandler");
     final HiveCatalog catalog = new org.apache.iceberg.hive.HiveCatalog();
     catalog.setConf(configuration);
     Map<String, String> properties = new TreeMap<>();

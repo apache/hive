@@ -75,6 +75,20 @@
     </dependency>
     -->
     <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore-common</artifactId>
+      <version>${hive.version}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore-server</artifactId>
+      <version>${hive.version}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apache.httpcomponents.core5</groupId>
       <artifactId>httpcore5</artifactId>
       <version>5.2</version>
@@ -243,39 +257,11 @@
             </goals>
           </execution>
         </executions>
-        <configuration>
-          <excludes>
-            <exclude>*.patch</exclude>
-            <exclude>DEV-README</exclude>
-            <exclude>**/src/main/sql/**</exclude>
-            <exclude>**/README.md</exclude>
-            <exclude>**/*.iml</exclude>
-            <exclude>**/*.txt</exclude>
-            <exclude>**/*.log</exclude>
-            <exclude>**/package-info.java</exclude>
-            <exclude>**/*.properties</exclude>
-            <exclude>**/*.q</exclude>
-            <exclude>**/*.q.out</exclude>
-            <exclude>**/*.xml</exclude>
-            <exclude>**/gen/**</exclude>
-            <exclude>**/patchprocess/**</exclude>
-            <exclude>**/metastore_db/**</exclude>
-            <exclude>**/test/resources/**/*.ldif</exclude>
-            <exclude>**/test/resources/**/*.sql</exclude>
-            <exclude>**/test/resources/**/*.json</exclude>
-          </excludes>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire.version}</version>
-        <configuration>
-          <includes>
-            <include>TestHMSCatalog.java</include>
-            <include>TestHiveCatalog.java</include>
-          </includes>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -292,39 +278,6 @@
                 </systemProperty>
               </systemProperties>
             </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <version>3.1.0</version>
-        <executions>
-          <execution>
-            <phase>generate-test-sources</phase>
-            <configuration>
-              <target>
-                <copy todir="${project.basedir}/src/test/java/org/apache/hadoop/hive/metastore/utils" overwrite="true" verbose="true">
-                  <fileset dir="${project.basedir}/../metastore-server/src/test/java/org/apache/hadoop/hive/metastore/utils">
-                    <include name="TestTxnDbUtil.java"/>
-                  </fileset>
-                </copy>
-                <copy todir="${project.basedir}/src/test/java/org/apache/hadoop/hive/metastore" overwrite="true" verbose="true">
-                  <fileset dir="${project.basedir}/../metastore-server/src/test/java/org/apache/hadoop/hive/metastore">
-                    <include name="MetaStoreTestUtils.java"/>
-                  </fileset>
-                </copy>
-                <copy todir="${project.basedir}/src/test/resources/scripts/metastore/upgrade/derby" overwrite="true" verbose="true">
-                  <fileset dir="${project.basedir}/../metastore-server/src/main/sql/derby">
-                    <include name="hive-schema-4.1.0.derby.sql"/>
-                  </fileset>
-                </copy>
-              </target>
-            </configuration>
-            <id>copy</id>
-            <goals>
-              <goal>run</goal>
-            </goals>
           </execution>
         </executions>
       </plugin>
