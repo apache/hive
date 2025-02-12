@@ -30,7 +30,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.SecureServletCaller;
 import org.apache.hadoop.hive.metastore.ServletSecurity;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.iceberg.HiveCachingCatalog;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.hive.HiveCatalog;
 import org.eclipse.jetty.server.ConnectionFactory;
@@ -48,6 +47,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+/**
+ * Iceberg Catalog server.
+ */
 public class HMSCatalogServer {
   private static final String CACHE_EXPIRY = "hive.metastore.catalog.cache.expiry";
   private static final String JETTY_THREADPOOL_MIN = "hive.metastore.catalog.jetty.threadpool.min";
@@ -60,44 +62,44 @@ public class HMSCatalogServer {
     return catalogRef != null ? catalogRef.get() :  null;
   }
 
-  private HMSCatalogServer() {
+  protected HMSCatalogServer() {
     // nothing
   }
 
-  public static HttpServlet createServlet(SecureServletCaller security, Catalog catalog) throws IOException {
+  protected HttpServlet createServlet(SecureServletCaller security, Catalog catalog) throws IOException {
     return new HMSCatalogServlet(security, new HMSCatalogAdapter(catalog));
   }
 
-  public static Catalog createCatalog(Configuration configuration) {
-    final String curi = configuration.get(MetastoreConf.ConfVars.THRIFT_URIS.getVarname());
-    final String cwarehouse = configuration.get(MetastoreConf.ConfVars.WAREHOUSE.getVarname());
-    final String cextwarehouse = configuration.get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname());
-    MetastoreConf.setVar(configuration, MetastoreConf.ConfVars.THRIFT_URIS, "");
+  protected Catalog createCatalog(Configuration configuration) {
+    final String configUri = configuration.get(MetastoreConf.ConfVars.THRIFT_URIS.getVarname());
+    final String configWarehouse = configuration.get(MetastoreConf.ConfVars.WAREHOUSE.getVarname());
+    final String configExtWarehouse = configuration.get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname());
+    Map<String, String> properties = new TreeMap<>();
+    if (configUri != null) {
+      properties.put("uri", configUri);
+    }
+    if (configWarehouse != null) {
+      properties.put("warehouse", configWarehouse);
+    }
+    if (configExtWarehouse != null) {
+      properties.put("external-warehouse", configExtWarehouse);
+    }
     final HiveCatalog catalog = new org.apache.iceberg.hive.HiveCatalog();
     catalog.setConf(configuration);
-    Map<String, String> properties = new TreeMap<>();
-    if (curi != null) {
-      properties.put("uri", curi);
-    }
-    if (cwarehouse != null) {
-      properties.put("warehouse", cwarehouse);
-    }
-    if (cextwarehouse != null) {
-      properties.put("external-warehouse", cextwarehouse);
-    }
     catalog.initialize("hive", properties);
     long expiry = configuration.getLong(CACHE_EXPIRY, 60_000L);
-    return expiry > 0? HiveCachingCatalog.wrap(catalog, expiry) : catalog;
+    return expiry > 0? new HMSCachingCatalog(catalog, expiry) : catalog;
   }
 
-  public static HttpServlet createServlet(Configuration configuration, Catalog catalog) throws IOException {
+  protected HttpServlet createServlet(Configuration configuration, Catalog catalog) throws IOException {
     String auth = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.ICEBERG_CATALOG_SERVLET_AUTH);
     boolean jwt = "jwt".equalsIgnoreCase(auth);
     SecureServletCaller security = new ServletSecurity(configuration, jwt);
     Catalog actualCatalog = catalog;
     if (actualCatalog == null) {
+      // FIXME: 20250212 - the no-Thrift requires this but then test fail with closed Peristence Manager
+      // MetastoreConf.setVar(configuration, MetastoreConf.ConfVars.THRIFT_URIS, "");
       actualCatalog = createCatalog(configuration);
-      actualCatalog.initialize("hive", Collections.emptyMap());
     }
     catalogRef = new SoftReference<>(actualCatalog);
     return createServlet(security, actualCatalog);
@@ -110,7 +112,7 @@ public class HMSCatalogServer {
    * @return the server instance
    * @throws Exception if servlet initialization fails
    */
-  public static Server startServer(Configuration conf, HiveCatalog catalog) throws Exception {
+  protected Server startServer(Configuration conf, HiveCatalog catalog) throws Exception {
     int port = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_SERVLET_PORT);
     if (port < 0) {
       return null;
@@ -163,6 +165,6 @@ public class HMSCatalogServer {
    * @throws Exception if servlet initialization fails
    */
   public static Server startServer(Configuration conf) throws Exception {
-    return startServer(conf, null);
+    return new HMSCatalogServer().startServer(conf, null);
   }
 }
