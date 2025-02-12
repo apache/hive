@@ -1839,6 +1839,22 @@ public class MetastoreConf {
         "hive.metastore.catalog.servlet.auth", "jwt",
         "HMS Iceberg Catalog servlet authentication method (simple or jwt)."
     ),
+    ICEBERG_CATALOG_JETTY_THREADPOOL_MIN("hive.metastore.catalog.jetty.threadpool.min",
+        "hive.metastore.catalog.jetty.threadpool.min", 8,
+        "HMS Iceberg Catalog embedded Jetty minimum number of threads."
+    ),
+    ICEBERG_CATALOG_JETTY_THREADPOOL_MAX("hive.metastore.catalog.jetty.threadpool.max",
+        "hive.metastore.catalog.jetty.threadpool.max", 256,
+        "HMS Iceberg Catalog embedded Jetty maximum number of threads."
+    ),
+    ICEBERG_CATALOG_JETTY_THREADPOOL_IDLE("hive.metastore.catalog.jetty.threadpool.idle",
+        "hive.metastore.catalog.jetty.threadpool.idle", 60_000L,
+        "HMS Iceberg Catalog embedded Jetty thread idle time."
+    ),
+    ICEBERG_CATALOG_CACHE_EXPIRY("hive.metastore.catalog.cache.expiry",
+        "hive.metastore.catalog.cache.expiry", 60_000L,
+        "HMS Iceberg Catalog cache expiry."
+    ),
 
     // Deprecated Hive values that we are keeping for backwards compatibility.
     @Deprecated

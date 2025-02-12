@@ -22,9 +22,9 @@ package org.apache.iceberg.rest;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
-import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.servlet.http.HttpServlet;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.SecureServletCaller;
@@ -51,18 +51,19 @@ import org.slf4j.LoggerFactory;
  * Iceberg Catalog server.
  */
 public class HMSCatalogServer {
-  private static final String CACHE_EXPIRY = "hive.metastore.catalog.cache.expiry";
-  private static final String JETTY_THREADPOOL_MIN = "hive.metastore.catalog.jetty.threadpool.min";
-  private static final String JETTY_THREADPOOL_MAX = "hive.metastore.catalog.jetty.threadpool.max";
-  private static final String JETTY_THREADPOOL_IDLE = "hive.metastore.catalog.jetty.threadpool.idle";
   private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogServer.class);
-  private static Reference<Catalog> catalogRef;
+  private static final AtomicReference<Reference<Catalog>> catalogRef = new AtomicReference<>();
 
-  static Catalog getLastCatalog() {
-    return catalogRef != null ? catalogRef.get() :  null;
+  public static Catalog getLastCatalog() {
+    Reference<Catalog> soft = catalogRef.get();
+    return soft != null ? soft.get() :  null;
+  }
+  
+  protected static void setLastCatalog(Catalog catalog) {
+    catalogRef.set(new SoftReference<>(catalog));
   }
 
-  protected HMSCatalogServer() {
+  private HMSCatalogServer() {
     // nothing
   }
 
@@ -71,23 +72,24 @@ public class HMSCatalogServer {
   }
 
   protected Catalog createCatalog(Configuration configuration) {
-    final String configUri = configuration.get(MetastoreConf.ConfVars.THRIFT_URIS.getVarname());
-    final String configWarehouse = configuration.get(MetastoreConf.ConfVars.WAREHOUSE.getVarname());
-    final String configExtWarehouse = configuration.get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname());
-    Map<String, String> properties = new TreeMap<>();
+    final Map<String, String> properties = new TreeMap<>();
+    final String configUri = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.THRIFT_URIS);
     if (configUri != null) {
       properties.put("uri", configUri);
     }
+    final String configWarehouse = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.WAREHOUSE);
     if (configWarehouse != null) {
       properties.put("warehouse", configWarehouse);
     }
+    final String configExtWarehouse = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL);
     if (configExtWarehouse != null) {
       properties.put("external-warehouse", configExtWarehouse);
     }
     final HiveCatalog catalog = new org.apache.iceberg.hive.HiveCatalog();
     catalog.setConf(configuration);
-    catalog.initialize("hive", properties);
-    long expiry = configuration.getLong(CACHE_EXPIRY, 60_000L);
+    final String catalogName = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.CATALOG_DEFAULT);
+    catalog.initialize(catalogName, properties);
+    long expiry = MetastoreConf.getLongVar(configuration, MetastoreConf.ConfVars.ICEBERG_CATALOG_CACHE_EXPIRY);
     return expiry > 0? new HMSCachingCatalog(catalog, expiry) : catalog;
   }
 
@@ -100,9 +102,10 @@ public class HMSCatalogServer {
       MetastoreConf.setVar(configuration, MetastoreConf.ConfVars.THRIFT_URIS, "");
       actualCatalog = createCatalog(configuration);
     }
-    catalogRef = new SoftReference<>(actualCatalog);
+    setLastCatalog(actualCatalog);
     return createServlet(security, actualCatalog);
   }
+  
 
   /**
    * Convenience method to start a http server that only serves this servlet.
@@ -134,9 +137,9 @@ public class HMSCatalogServer {
   }
 
   private static Server createHttpServer(Configuration conf, int port) throws IOException {
-    final int maxThreads = conf.getInt(JETTY_THREADPOOL_MAX, 256);
-    final int minThreads = conf.getInt(JETTY_THREADPOOL_MIN, 8);
-    final int idleTimeout = conf.getInt(JETTY_THREADPOOL_IDLE, 60_000);
+    final int maxThreads = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_JETTY_THREADPOOL_MAX);
+    final int minThreads = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_JETTY_THREADPOOL_MIN);
+    final int idleTimeout = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_JETTY_THREADPOOL_IDLE);
     final QueuedThreadPool threadPool = new QueuedThreadPool(maxThreads, minThreads, idleTimeout);
     final Server httpServer = new Server(threadPool);
     final SslContextFactory sslContextFactory = ServletSecurity.createSslContextFactory(conf);
