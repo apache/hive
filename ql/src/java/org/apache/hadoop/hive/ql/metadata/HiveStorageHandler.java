@@ -70,7 +70,9 @@ import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.hadoop.mapred.OutputFormat;
+import org.apache.hadoop.mapred.TaskAttemptContext;
 
 import java.util.HashMap;
 import java.util.List;
@@ -606,7 +608,7 @@ public interface HiveStorageHandler extends Configurable {
   default boolean commitInMoveTask() {
     return false;
   }
-  
+
   /**
    * Commits the inserts for the non-native tables. Used in the {@link org.apache.hadoop.hive.ql.exec.MoveTask}.
    * @param commitProperties Commit properties which are needed for the handler based commit
@@ -630,6 +632,13 @@ public interface HiveStorageHandler extends Configurable {
    */
   default boolean isAllowedAlterOperation(AlterTableType opType) {
     return DEFAULT_ALLOWED_ALTER_OPS.contains(opType);
+  }
+
+  /**
+   * Returns an OutputCommitter that belongs to this storage handler if any.
+   */
+  default OutputCommitter getOutputCommitter() {
+    return null;
   }
 
   /**

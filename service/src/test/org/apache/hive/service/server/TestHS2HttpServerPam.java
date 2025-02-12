@@ -64,6 +64,9 @@ public class TestHS2HttpServerPam {
     hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PAM_SERVICES, "sshd");
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_PAM, true);
     hiveConf.setBoolVar(ConfVars.HIVE_IN_TEST, true);
+    // query history adds no value to this test, it would just bring iceberg handler dependency, which isn't worth
+    // this should be handled with HiveConfForTests when it's used here too
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED, false);
     hiveServer2 = new HiveServer2(new TestPamAuthenticator(hiveConf));
     hiveServer2.init(hiveConf);
     hiveServer2.start();

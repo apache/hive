@@ -31,9 +31,9 @@ function initialize_hive {
   fi
   $HIVE_HOME/bin/schematool -dbType $DB_DRIVER $COMMAND $VERBOSE_MODE
   if [ $? -eq 0 ]; then
-    echo "Initialized schema successfully.."
+    echo "Initialized Hive Metastore Server schema successfully.."
   else
-    echo "Schema initialization failed!"
+    echo "Hive Metastore Server schema initialization failed!"
     exit 1
   fi
 }

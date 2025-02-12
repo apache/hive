@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.calcite.sql.SqlKind;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
@@ -33,6 +34,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.rewrite.DeleteStatement;
 import org.apache.hadoop.hive.ql.parse.rewrite.RewriterFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 
 import java.util.Collections;
 import java.util.List;
@@ -44,6 +46,7 @@ public class DeleteSemanticAnalyzer extends RewriteSemanticAnalyzer<DeleteStatem
   public DeleteSemanticAnalyzer(QueryState queryState, RewriterFactory<DeleteStatement> rewriterFactory)
       throws SemanticException {
     super(queryState, rewriterFactory);
+    queryState.setSqlKind(SqlKind.DELETE);
   }
 
   @Override

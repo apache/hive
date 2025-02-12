@@ -929,7 +929,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public void storageHandlerCommit(Properties commitProperties, Operation operation)
-        throws HiveException {
+      throws HiveException {
     String tableName = commitProperties.getProperty(Catalogs.NAME);
     String location = commitProperties.getProperty(Catalogs.LOCATION);
     String snapshotRef = commitProperties.getProperty(Catalogs.SNAPSHOT_REF);
@@ -962,6 +962,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
   }
 
+
+  @Override
   public HiveIcebergOutputCommitter getOutputCommitter() {
     return new HiveIcebergOutputCommitter();
   }

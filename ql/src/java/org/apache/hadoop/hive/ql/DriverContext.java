@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql;
 
 import java.io.DataInput;
 
-import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.metastore.api.TxnType;
@@ -38,6 +36,9 @@ import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
  * Context for the procedure managed by the Driver.
  */
 public class DriverContext {
+  public static final String DEFAULT_USER_NAME_PROP = "hive.driver.default.user.name";
+  public static final String DEFAULT_OPERATION_ID_PROP = "hive.driver.default.operation.id";
+
   // For WebUI.  Kept alive after queryPlan is freed.
   private final QueryDisplay queryDisplay = new QueryDisplay();
 
@@ -82,6 +83,9 @@ public class DriverContext {
   private String queryErrorMessage;
 
   private TezRuntimeContext runtimeContext;
+  private QueryProperties queryProperties;
+
+  private String explainPlan;
 
   public DriverContext(QueryState queryState, QueryInfo queryInfo, HookRunner hookRunner,
       HiveTxnManager initTxnManager) {
@@ -137,11 +141,20 @@ public class DriverContext {
       this.runtimeContext = Utilities.getFirstTezTask(plan.getRootTasks())
           .map(TezTask::getRuntimeContext)
           .orElse(null);
+      this.queryProperties = plan.getQueryProperties();
     }
+  }
+
+  public QueryProperties.QueryType getQueryType() {
+    return queryProperties == null ? null : queryProperties.getQueryType();
   }
 
   public TezRuntimeContext getRuntimeContext() {
     return runtimeContext;
+  }
+
+  public QueryProperties getQueryProperties() {
+    return queryProperties;
   }
 
   public Schema getSchema() {
@@ -246,5 +259,20 @@ public class DriverContext {
 
   public void setQueryErrorMessage(String queryErrorMessage) {
     this.queryErrorMessage = queryErrorMessage;
+  }
+
+  public long getQueryStartTime() {
+    // query info is created by SQLOperation which will have start time of the operation. When JDBC Statement is not
+    // used queryInfo will be null, in which case we take creation of Driver instance as query start time (which is also
+    // the time when query display object is created)
+    return getQueryInfo() != null ? getQueryInfo().getBeginTime() : getQueryDisplay().getQueryStartTime();
+  }
+
+  public void setExplainPlan(String explainPlan) {
+    this.explainPlan = explainPlan;
+  }
+
+  public String getExplainPlan() {
+    return explainPlan;
   }
 }

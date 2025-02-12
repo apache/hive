@@ -38,6 +38,7 @@ import java.util.stream.Stream;
 import org.antlr.runtime.TokenRewriteStream;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -63,6 +64,7 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
+import org.apache.hadoop.hive.ql.QueryProperties.QueryType;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
@@ -93,6 +95,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -145,7 +148,7 @@ public abstract class BaseSemanticAnalyzer {
   protected CompilationOpContext cContext;
   protected Context ctx;
   protected Map<String, String> idToTableNameMap;
-  protected QueryProperties queryProperties;
+  protected QueryProperties queryProperties = new QueryProperties();
   ParseContext pCtx = null;
 
   //user defined functions in query
@@ -2045,8 +2048,12 @@ public abstract class BaseSemanticAnalyzer {
   /**
    * Called when we end analysis of a query.
    */
-  public void endAnalysis() {
-    // Nothing to do
+  public void endAnalysis(ASTNode tree) {
+    if (ctx != null){
+      queryProperties.setUsedTables(
+          CacheTableHelper.getUniqueNames(ctx.getParsedTables()));
+    }
+    setQueryType(tree); // at this point we know the query type for sure
   }
 
   public ParseContext getParseContext() {
@@ -2092,4 +2099,35 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
+  /**
+   * Handles all the magic to resolve the queryType that hasn't already been taken care of by subclasses or different
+   * code paths in the semantic analyzers (and corresponding factories), so this method is typically called at the end
+   * of the analysis process, where all the analysis context is present as well as the AST.
+   * @param tree the root ASTNode of the query
+   */
+  protected void setQueryType(ASTNode tree) {
+    if (queryProperties.getQueryType() != null) {
+      return; //already figured out
+    }
+    // in case of a semantic exception (e.g. a table not found or something else)
+    // the root AST Node can still imply if this is a query, try to fall back to that
+    // instead of ""
+    QueryType queryType = QueryType.OTHER;
+    if ("TOK_QUERY".equalsIgnoreCase(tree.getText())) {
+      queryType = QueryType.DQL;
+    }
+    queryProperties.setQueryType(queryType);
+  }
+
+  /**
+   * Sets the sqlKind of the query if any. Subclasses can overwrite this to prevent using any sqlKind (e.g. MV REBUILD).
+   * @param sqlKind that belongs to the semantic analyzer
+   */
+  protected void setSqlKind(SqlKind sqlKind) {
+    // when e.g. a MERGE query is rewritten to INSERTs, the analyzer codepaths
+    // will keep calling setSqlKind(HiveOperation.INSERT), so this null-check prevents overwrite
+    if (queryState.getSqlKind() == null) {
+      queryState.setSqlKind(sqlKind);
+    }
+  }
 }
