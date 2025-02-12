@@ -164,7 +164,6 @@ public class TestHMSCatalog extends HMSTestBase {
     } catch (IOException xany) {
         Assert.fail(xany.getMessage());
     } finally {
-        //metastoreClient.dropTable(DB_NAME, tblName);
       catalog.dropTable(tableIdent, false);
     }
   }

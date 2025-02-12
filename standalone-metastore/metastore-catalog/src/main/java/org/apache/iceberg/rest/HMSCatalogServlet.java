@@ -80,64 +80,43 @@ public class HMSCatalogServlet extends HttpServlet {
       this.doPatch(req, resp);
     }
   }
-
-  protected void doPatch(HttpServletRequest request, HttpServletResponse response)  {
+  
+  private void doExecute(String method, HttpServletRequest request, HttpServletResponse response) {
     try {
       security.execute(request, response, this::execute);
     } catch (IOException e) {
-      LOG.error("PATCH failed", e);
+      LOG.error(method + " failed", e);
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
+  }
+
+  protected void doPatch(HttpServletRequest request, HttpServletResponse response)  {
+    doExecute("PATCH", request, response);
   }
 
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response) {
-    try {
-      security.execute(request, response, this::execute);
-    } catch (IOException e) {
-      LOG.error("GET failed", e);
-      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-    }
+    doExecute("GET", request, response);
   }
 
   @Override
   protected void doPut(HttpServletRequest request, HttpServletResponse response) {
-    try {
-      security.execute(request, response, this::execute);
-    } catch (IOException e) {
-      LOG.error("PUT failed", e);
-      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-    }
+    doExecute("PUT", request, response);
   }
 
   @Override
   protected void doHead(HttpServletRequest request, HttpServletResponse response) {
-    try {
-      security.execute(request, response, this::execute);
-    } catch (IOException e) {
-      LOG.error("HEAD failed", e);
-      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-    }
+    doExecute("HEAD", request, response);
   }
 
   @Override
   protected void doPost(HttpServletRequest request, HttpServletResponse response) {
-    try {
-      security.execute(request, response, this::execute);
-    } catch (IOException e) {
-      LOG.error("POST failed", e);
-      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-    }
+    doExecute("POST", request, response);
   }
 
   @Override
   protected void doDelete(HttpServletRequest request, HttpServletResponse response)  {
-    try {
-      security.execute(request, response, this::execute);
-    } catch (IOException e) {
-      LOG.error("DELETE failed", e);
-      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-    }
+    doExecute("DELETE", request, response);
   }
 
   private void execute(HttpServletRequest request, HttpServletResponse response) {
@@ -165,12 +144,9 @@ public class HMSCatalogServlet extends HttpServlet {
       if (responseBody != null) {
         RESTObjectMapper.mapper().writeValue(response.getWriter(), responseBody);
       }
-    } catch (RuntimeException e) {
+    } catch (RuntimeException | IOException e) {
       // should be a RESTException but not able to see them through dependencies
       LOG.error("Error processing REST request", e);
-      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-    } catch (Exception e) {
-      LOG.error("Unexpected exception when processing REST request", e);
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
   }
@@ -257,11 +233,11 @@ public class HMSCatalogServlet extends HttpServlet {
       return new ServletRequestContext(method, route, path, headers, queryParams, requestBody);
     }
 
-    public HTTPMethod method() {
+    HTTPMethod method() {
       return method;
     }
 
-    public Route route() {
+    Route route() {
       return route;
     }
 
