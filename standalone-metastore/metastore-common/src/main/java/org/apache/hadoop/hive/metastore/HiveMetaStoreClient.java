@@ -282,7 +282,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     open();
   }
 
-    /**
+  /**
    * Instantiate the metastore server handler directly instead of connecting
    * through the network
    *

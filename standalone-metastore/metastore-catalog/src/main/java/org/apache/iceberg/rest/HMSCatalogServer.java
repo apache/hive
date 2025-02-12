@@ -97,8 +97,7 @@ public class HMSCatalogServer {
     SecureServletCaller security = new ServletSecurity(configuration, jwt);
     Catalog actualCatalog = catalog;
     if (actualCatalog == null) {
-      // FIXME: 20250212 - the no-Thrift requires this but then test fail with closed Peristence Manager
-      // MetastoreConf.setVar(configuration, MetastoreConf.ConfVars.THRIFT_URIS, "");
+      MetastoreConf.setVar(configuration, MetastoreConf.ConfVars.THRIFT_URIS, "");
       actualCatalog = createCatalog(configuration);
     }
     catalogRef = new SoftReference<>(actualCatalog);

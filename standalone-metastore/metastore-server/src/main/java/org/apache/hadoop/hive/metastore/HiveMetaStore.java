@@ -161,28 +161,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   }
 
   /**
-   * Create HMS handler for embedded metastore.
-   *
-   * <h1>IMPORTANT</h1>
-   *
-   * This method is called indirectly by HiveMetastoreClient using reflection when using an embedded
-   * Iceberg Catalog. It can not be removed and its arguments can't be changed without matching
-   * change in HiveMetastoreClient .
-   *
-   * @param conf configuration to use
-   * @throws MetaException
-   */
-  static Iface newHMSRetryingLocalHandler(Configuration conf)
-      throws MetaException {
-    HMSHandler baseHandler = new HMSHandler("hive client", conf);
-    RetryingHMSHandler handler = new RetryingHMSHandler(conf, baseHandler, true);
-    return (IHMSHandler) java.lang.reflect.Proxy.newProxyInstance(
-      RetryingHMSHandler.class.getClassLoader(),
-      new Class[] { IHMSHandler.class }, handler);
-  }
-
-
-  /**
    * Discard a current delegation token.
    *
    * @param tokenStrForm

@@ -80,6 +80,7 @@ import org.apache.hive.iceberg.com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.hive.iceberg.com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.SupportsNamespaces;
+import org.apache.iceberg.hive.Friend;
 import org.eclipse.jetty.server.Server;
 import org.junit.After;
 import org.junit.Assert;
@@ -166,11 +167,11 @@ public abstract class HMSTestBase {
 
     conf.setBoolean(MetastoreConf.ConfVars.METRICS_ENABLED.getVarname(), true);
     // "hive.metastore.warehouse.dir"
-    String whpath = new File(BASE_DIR,"target/tmp/warehouse/managed").toURI()/*.getAbsolutePath()*/.toString();
+    String whpath = new File(BASE_DIR,"target/tmp/warehouse/managed").toURI().toString();
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.WAREHOUSE, whpath);
     HiveConf.setVar(conf, HiveConf.ConfVars.METASTORE_WAREHOUSE, whpath);
     // "hive.metastore.warehouse.external.dir"
-    String extwhpath = new File(BASE_DIR,"target/tmp/warehouse/external").toURI()/*.getAbsolutePath()*/.toString();
+    String extwhpath = new File(BASE_DIR,"target/tmp/warehouse/external").toURI().toString();
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL, extwhpath);
     conf.set(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname, extwhpath);
 
@@ -277,6 +278,7 @@ public abstract class HMSTestBase {
       System.clearProperty(ObjectStore.TRUSTSTORE_PASSWORD_KEY);
       System.clearProperty(ObjectStore.TRUSTSTORE_TYPE_KEY);
       //
+      Friend.cleanPoolCache();
     } finally {
       catalog = null;
       nsCatalog = null;
