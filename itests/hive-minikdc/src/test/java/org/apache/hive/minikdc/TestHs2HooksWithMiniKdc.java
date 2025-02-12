@@ -56,7 +56,9 @@ public class TestHs2HooksWithMiniKdc {
         SemanticAnalysisHook.class.getName());
     confOverlay.put(ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "" + Boolean.FALSE);
     confOverlay.put(ConfVars.HIVE_FETCH_TASK_CACHING.varname, "" + false);
-
+    // query history adds no value to this test, it would just bring iceberg handler dependency, which isn't worth
+    // this should be handled with HiveConfForTests when it's used here too
+    confOverlay.put(ConfVars.HIVE_QUERY_HISTORY_ENABLED.varname, "false");
     miniHiveKdc = new MiniHiveKdc();
     HiveConf hiveConf = new HiveConf();
     miniHS2 = MiniHiveKdc.getMiniHS2WithKerb(miniHiveKdc, hiveConf);

@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -712,4 +713,8 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     return analyzeRewrite;
   }
 
+  @Override
+  public void setQueryType(ASTNode tree) {
+    queryProperties.setQueryType(QueryProperties.QueryType.STATS);
+  }
 }

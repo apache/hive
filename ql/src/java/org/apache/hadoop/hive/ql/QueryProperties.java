@@ -19,6 +19,9 @@
 package org.apache.hadoop.hive.ql;
 
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  *
  * QueryProperties.
@@ -32,6 +35,26 @@ package org.apache.hadoop.hive.ql;
  * the query uses a script for mapping/reducing
  */
 public class QueryProperties {
+  public enum QueryType {
+    DQL("DQL"),
+    DML("DML"),
+    DDL("DDL"),
+    DCL("DCL"),
+    // strictly speaking, "ANALYZE TABLE" is DDL because it collects and stores metadata or statistical information,
+    // but in Hive it's a special statement which is worth a separate query type
+    STATS("STATS"),
+    OTHER("");
+
+    private final String name;
+
+    QueryType(String name) {
+      this.name = name;
+    }
+
+    public String getName() {
+      return name;
+    }
+  }
 
   boolean query;
   boolean analyzeCommand;
@@ -74,12 +97,28 @@ public class QueryProperties {
   private boolean isMaterializedView;
   private boolean isView;
 
+  private QueryType queryType = null;
+
+  // set of used tables, aliases are resolved to real table names
+  private Set<String> usedTables = new HashSet<>();
+
   public boolean isQuery() {
     return query;
   }
 
   public void setQuery(boolean query) {
     this.query = query;
+  }
+
+  /**
+   * The return value of either isAnalyzeCommand() or isAnalyzeRewrite() is always true for analyze commands:
+   * isAnalyzeCommand=true for "compute statistics",
+   * isAnalyzeRewrite=true for "compute statistics for columns".
+   *
+   * @return whether the query is an ANALYZE TABLE query
+   */
+  public boolean isAnalyze() {
+    return isAnalyzeCommand() || isAnalyzeRewrite();
   }
 
   public boolean isAnalyzeCommand() {
@@ -321,6 +360,22 @@ public class QueryProperties {
     isView = view;
   }
 
+  public QueryType getQueryType() {
+    return queryType;
+  }
+
+  public void setQueryType(QueryType queryType) {
+    this.queryType = queryType;
+  }
+
+  public Set<String> getUsedTables() {
+    return usedTables;
+  }
+
+  public void setUsedTables(Set<String> usedTables) {
+    this.usedTables = usedTables;
+  }
+
   public void clear() {
     query = false;
     analyzeCommand = false;
@@ -355,6 +410,7 @@ public class QueryProperties {
 
     multiDestQuery = false;
     filterWithSubQuery = false;
-  }
 
+    usedTables.clear();
+  }
 }
