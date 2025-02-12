@@ -76,7 +76,7 @@ public class TestPackageJdo {
     }
   }
 
-  static class ColumnInfo {
+  private static class ColumnInfo {
     final String columnName;
     final Object dataType;
     final Object columnSize;
