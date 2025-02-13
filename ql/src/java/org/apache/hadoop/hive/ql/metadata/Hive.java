@@ -55,6 +55,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -2411,7 +2412,7 @@ public class Hive implements AutoCloseable {
   public List<HiveRelOptMaterialization> getMaterializedViewsByAST(
           ASTNode astNode, Set<TableName> tablesUsed,  Supplier<String> validTxnsList, HiveTxnManager txnMgr) throws HiveException {
 
-    List<HiveRelOptMaterialization> materializedViews =
+    Collection<HiveRelOptMaterialization> materializedViews =
             HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews(astNode);
     if (materializedViews.isEmpty()) {
       return Collections.emptyList();
