@@ -5,10 +5,10 @@ set hive.support.concurrency = true;
 SHOW CATALOGS;
 
 -- CREATE with comment
-CREATE CATALOG test_cat LOCATION '/tmp/test_cat' COMMENT 'Hive test catalog';
+CREATE CATALOG test_cat LOCATION '/dummy/path/test_cat' COMMENT 'Hive test catalog';
 
 -- CREATE INE already exists
-CREATE CATALOG IF NOT EXISTS test_cat LOCATION '/tmp/test_cat';
+CREATE CATALOG IF NOT EXISTS test_cat LOCATION '/dummy/path/test_cat';
 SHOW CATALOGS;
 
 -- DROP
@@ -16,7 +16,7 @@ DROP CATALOG test_cat;
 SHOW CATALOGS;
 
 -- CREATE INE doesn't exist
-CREATE CATALOG IF NOT EXISTS test_cat LOCATION '/tmp/test_cat' COMMENT 'Hive test catalog';
+CREATE CATALOG IF NOT EXISTS test_cat LOCATION '/dummy/path/test_cat' COMMENT 'Hive test catalog';
 SHOW CATALOGS;
 
 -- DROP IE exists
@@ -27,7 +27,7 @@ SHOW CATALOGS;
 DROP CATALOG IF EXISTS test_cat;
 
 -- SHOW
-CREATE CATALOG test_cat LOCATION '/tmp/test_cat' COMMENT 'Hive test catalog';
+CREATE CATALOG test_cat LOCATION '/dummy/path/test_cat' COMMENT 'Hive test catalog';
 SHOW CATALOGS;
 
 -- SHOW pattern
@@ -43,5 +43,5 @@ SHOW CATALOGS LIKE 'test__';
 DESC CATALOG test_cat;
 
 -- ALTER LOCATION
-ALTER CATALOG test_cat SET LOCATION '/tmp/test_cat_new';
+ALTER CATALOG test_cat SET LOCATION '/dummy/path/test_cat_new';
 DESC CATALOG test_cat;
