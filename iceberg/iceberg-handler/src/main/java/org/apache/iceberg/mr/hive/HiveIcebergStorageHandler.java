@@ -174,7 +174,6 @@ import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.TableScan;
 import org.apache.iceberg.actions.DeleteOrphanFiles;
-import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.PartitionStatsHandler;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.exceptions.ValidationException;
@@ -569,17 +568,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         try (Closeable toClose = partitionStatsRecords) {
           PartitionStats partitionStats = Iterables.tryFind(partitionStatsRecords, stats -> {
             PartitionSpec spec = table.specs().get(stats.specId());
-            Schema readSchema = spec.partitionType().asSchema();
-            GenericRecord record = GenericRecord.create(readSchema);
-
-            List<Types.NestedField> fields = partitionType.fields();
-            for (int index = 0, pos = 0; index < fields.size(); index++) {
-              if (readSchema.findField(fields.get(index).fieldId()) != null) {
-                record.set(pos++, stats.partition().get(index, Object.class));
-              }
-            }
-            return spec.partitionToPath(record).equals(partish.getPartition().getName());
-
+            PartitionData data  = IcebergTableUtil.toPartitionData(stats.partition(), partitionType,
+                spec.partitionType());
+            return spec.partitionToPath(data).equals(partish.getPartition().getName());
           }).orNull();
 
           if (partitionStats != null) {
