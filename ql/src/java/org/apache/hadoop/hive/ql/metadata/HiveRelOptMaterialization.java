@@ -71,7 +71,7 @@ public class HiveRelOptMaterialization extends RelOptMaterialization {
    * @param scope Set of algorithms
    * @return true if applicable false otherwise
    */
-  public boolean isSupported(EnumSet<RewriteAlgorithm> scope) {
+  public boolean isSupported(Set<RewriteAlgorithm> scope) {
     return !intersection(this.scope, scope).isEmpty();
   }
 
