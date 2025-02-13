@@ -58,6 +58,8 @@ public class QueryHistoryService {
   private final int flushInterval;
   private final QueryHistoryRepository repository;
 
+  private boolean running = false;
+
   public static QueryHistoryService newInstance(HiveConf inputConf, ServiceContext serviceContext) {
     // keeping a global, static instance is usually considered an antipattern, even in case of using the Singleton
     // design, this time the constraint was the ability to hook into the query processing (Driver) from somewhere the
@@ -123,6 +125,7 @@ public class QueryHistoryService {
       // only flush, don't wait, this is a background task
       periodicFlushExecutor.scheduleAtFixedRate(this::doFlush, 0, flushInterval, TimeUnit.SECONDS);
     }
+    running = true;
   }
 
   public static QueryHistoryService getInstance() {
@@ -232,6 +235,7 @@ public class QueryHistoryService {
 
   public void stop() {
     LOG.info("Stopping QueryHistoryService, leftover records to flush: {}", queryHistoryQueue.size());
+    running = false;
 
     // start periodic check first, we don't need it anymore
     periodicFlushExecutor.shutdownNow();
@@ -249,5 +253,9 @@ public class QueryHistoryService {
   @VisibleForTesting
   public QueryHistoryRepository getRepository(){
     return repository;
+  }
+
+  public boolean isRunning() {
+    return running;
   }
 }
