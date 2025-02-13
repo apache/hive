@@ -1823,10 +1823,11 @@ public class MetastoreConf {
     ),
     PROPERTIES_SERVLET_AUTH("hive.metastore.properties.servlet.auth",
         "hive.metastore.properties.servlet.auth", "jwt",
+            new StringSetValidator("simple", "jwt"),
         "Property-maps servlet authentication method (simple or jwt)."
     ),
     ICEBERG_CATALOG_SERVLET_PATH("hive.metastore.catalog.servlet.path",
-        "hive.metastore.catalog.servlet.path", "icecli",
+        "hive.metastore.catalog.servlet.path", "iceberg",
         "HMS Iceberg Catalog servlet path component of URL endpoint."
     ),
     ICEBERG_CATALOG_SERVLET_PORT("hive.metastore.catalog.servlet.port",
