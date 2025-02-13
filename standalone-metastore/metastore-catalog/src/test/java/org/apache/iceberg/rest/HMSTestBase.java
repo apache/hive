@@ -80,7 +80,7 @@ import org.apache.hive.iceberg.com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.hive.iceberg.com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.SupportsNamespaces;
-import org.apache.iceberg.hive.Friend;
+import org.apache.iceberg.hive.IcebergTestHelper;
 import org.eclipse.jetty.server.Server;
 import org.junit.After;
 import org.junit.Assert;
@@ -278,7 +278,7 @@ public abstract class HMSTestBase {
       System.clearProperty(ObjectStore.TRUSTSTORE_PASSWORD_KEY);
       System.clearProperty(ObjectStore.TRUSTSTORE_TYPE_KEY);
       //
-      Friend.cleanPoolCache();
+      IcebergTestHelper.invalidatePoolCache();
     } finally {
       catalog = null;
       nsCatalog = null;

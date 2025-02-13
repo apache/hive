@@ -19,10 +19,16 @@
 package org.apache.iceberg.hive;
 
 /**
- * Friend of CachedClientPool.
+ * Test helper utility.
  */
-public class Friend {
-  public static void cleanPoolCache() {
+public class IcebergTestHelper {
+  /**
+   * Invalidates all clients remaining in the cached client pool held by the
+   * Catalog instance(s).
+   * <p>This is necessary when a new catalog is instantiated to avoid reusing
+   * old clients that may point to a (now) defunct catalog.</p>
+   */
+  public static void invalidatePoolCache() {
       CachedClientPool.clientPoolCache().invalidateAll();
   }
   
