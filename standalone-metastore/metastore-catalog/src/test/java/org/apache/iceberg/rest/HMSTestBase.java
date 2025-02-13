@@ -266,7 +266,7 @@ public abstract class HMSTestBase {
   }
 
   @After
-  public synchronized void tearDown() throws Exception {
+  public void tearDown() throws Exception {
     try {
       if (port >= 0) {
     System.out.println("Stopping MetaStore Server on port " + port);
