@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.common.log;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.fusesource.jansi.Ansi;
 
 import java.io.PrintStream;
@@ -51,6 +52,7 @@ public class InPlaceUpdate {
   private int lines = 0;
   private PrintStream out;
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
   public InPlaceUpdate(PrintStream out) {
     this.out = out;
   }
@@ -149,14 +151,14 @@ public class InPlaceUpdate {
     //         VERTICES     STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED
     // -------------------------------------------------------------------------------
     reprintLine(SEPARATOR);
-    reprintLineWithColorAsBold(String.format(HEADER_FORMAT, monitor.headers().toArray()),
+    reprintLineWithColorAsBold(HEADER_FORMAT.formatted(monitor.headers().toArray()),
       Ansi.Color.CYAN);
     reprintLine(SEPARATOR);
 
 
     // Map 1 .......... container  SUCCEEDED      7          7        0        0       0       0
     List<String> printReady =
-        monitor.rows().stream().map(row -> String.format(VERTEX_FORMAT, row.toArray())).collect(Collectors.toList());
+        monitor.rows().stream().map(row -> VERTEX_FORMAT.formatted(row.toArray())).collect(Collectors.toList());
     reprintMultiLine(StringUtils.join(printReady, "\n"));
 
     // -------------------------------------------------------------------------------
@@ -165,12 +167,12 @@ public class InPlaceUpdate {
     String progressStr = "" + (int) (monitor.progressedPercentage() * 100) + "%";
     float et = (float) (System.currentTimeMillis() - monitor.startTime()) / (float) 1000;
     String elapsedTime = "ELAPSED TIME: " + secondsFormatter.format(et) + " s";
-    String footer = String.format(
-      FOOTER_FORMAT,
-      monitor.footerSummary(),
-      getInPlaceProgressBar(monitor.progressedPercentage()),
-      progressStr,
-      elapsedTime);
+    String footer = 
+        FOOTER_FORMAT.formatted(
+        monitor.footerSummary(),
+        getInPlaceProgressBar(monitor.progressedPercentage()),
+        progressStr,
+        elapsedTime);
 
     reprintLine(SEPARATOR);
     reprintLineWithColorAsBold(footer, Ansi.Color.RED);
