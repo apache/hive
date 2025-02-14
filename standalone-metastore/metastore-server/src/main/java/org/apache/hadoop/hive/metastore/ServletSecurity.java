@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -43,16 +44,46 @@ import java.util.Optional;
 
 /**
  * Secures servlet processing.
+ * <p>This is to be used by servlets that require impersonation through UserGroupInformation.doAs mechanism when
+ * providing service. The servlet request header provides user identification
+ * that Hadoop&quote;s security uses to perform actions, the
+ * {@link ServletSecurity#execute(HttpServletRequest, HttpServletResponse, ServletSecurity.MethodExecutor)}
+ * method takes care of running code in the expected UserGroupInformation context.
+ * </p>
+ * A typical usage in a servlet is the following:
+ * <pre>
+ * {@code
+ * SecureServletCaller security; // ...
+ *
+ * @Override protected void doPost(HttpServletRequest request,
+ * HttpServletResponse response) throws ServletException, IOException {
+ * security.execute(request, response, this::runPost);
+ * }
+ *
+ * private void runPost(HttpServletRequest request,
+ * HttpServletResponse response) throws ServletException {
+ * ...
+ * }
+ * }
+ * </pre>
+ *
+ * <p>This implementation performs user extraction and eventual JWT validation to
+ * execute (servlet service) methods within the context of the retrieved UserGroupInformation.</p>
  */
 public class ServletSecurity {
   private static final Logger LOG = LoggerFactory.getLogger(ServletSecurity.class);
   static final String X_USER = MetaStoreUtils.USER_NAME_HTTP_HEADER;
   private final boolean isSecurityEnabled;
   private final boolean jwtAuthEnabled;
-  private JWTValidator jwtValidator = null;
   private final Configuration conf;
+  private JWTValidator jwtValidator = null;
 
-  ServletSecurity(Configuration conf, boolean jwt) {
+  public ServletSecurity(Configuration conf) {
+    this(conf, MetastoreConf.getVar(conf,
+            MetastoreConf.ConfVars.THRIFT_METASTORE_AUTHENTICATION).equalsIgnoreCase("jwt"));
+  }
+
+  public ServletSecurity(Configuration conf, boolean jwt) {
     this.conf = conf;
     this.isSecurityEnabled = UserGroupInformation.isSecurityEnabled();
     this.jwtAuthEnabled = jwt;
@@ -63,7 +94,7 @@ public class ServletSecurity {
    * @throws ServletException if the jwt validator creation throws an exception
    */
   public void init() throws ServletException {
-    if (jwtAuthEnabled) {
+    if (jwtAuthEnabled && jwtValidator == null) {
       try {
         jwtValidator = new JWTValidator(this.conf);
       } catch (Exception e) {
@@ -74,10 +105,50 @@ public class ServletSecurity {
   }
 
   /**
+   * Proxy a servlet instance service through this security executor.
+   */
+  public class ProxyServlet extends HttpServlet {
+    private final HttpServlet delegate;
+
+    ProxyServlet(HttpServlet delegate) {
+      this.delegate = delegate;
+    }
+
+    public void init() throws ServletException {
+      ServletSecurity.this.init();
+      delegate.init();
+    }
+
+    @Override public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
+      execute(request, response, delegate::service);
+    }
+  }
+
+  /**
+   * Creates a proxy servlet.
+   * @param servlet the servlet to serve within this security context
+   * @return a servlet instance
+   */
+  public HttpServlet proxy(HttpServlet servlet) {
+    return new ProxyServlet(servlet);
+  }
+
+  /**
    * Any http method executor.
+   * <p>A method whose signature is similar to
+   * {@link HttpServlet#doPost(HttpServletRequest, HttpServletResponse)},
+   * {@link HttpServlet#doGet(HttpServletRequest, HttpServletResponse)},
+   * etc.</p>
    */
   @FunctionalInterface
-  interface MethodExecutor {
+  public interface MethodExecutor {
+    /**
+     * The method to call to secure the execution of a (http) method.
+     * @param request the request
+     * @param response the response
+     * @throws ServletException if the method executor fails
+     * @throws IOException if the Json in/out fail
+     */
     void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException;
   }
 
@@ -86,11 +157,10 @@ public class ServletSecurity {
    * @param request the request
    * @param response the response
    * @param executor the method executor
-   * @throws ServletException if the method executor fails
    * @throws IOException if the Json in/out fail
    */
   public void execute(HttpServletRequest request, HttpServletResponse response, MethodExecutor executor)
-      throws ServletException, IOException {
+      throws IOException {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Logging headers in "+request.getMethod()+" request");
       Enumeration<String> headerNames = request.getHeaderNames();
@@ -124,7 +194,7 @@ public class ServletSecurity {
       } catch (RuntimeException e) {
         LOG.error("Exception when executing http request as user: " + clientUgi.getUserName(),
             e);
-        throw new ServletException(e);
+        throw new IOException(e);
       }
     } catch (HttpAuthenticationException e) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -178,7 +248,7 @@ public class ServletSecurity {
    * @param conf the configuration
    * @throws IOException if getting the server principal fails
    */
-  static void loginServerPincipal(Configuration conf) throws IOException {
+  static void loginServerPrincipal(Configuration conf) throws IOException {
     // This check is likely pointless, especially with the current state of the http
     // servlet which respects whatever comes in. Putting this in place for the moment
     // only to enable testing on an otherwise secure cluster.
@@ -193,35 +263,40 @@ public class ServletSecurity {
       LOG.info("Security is not enabled. Not logging in via keytab");
     }
   }
+
   /**
    * Creates an SSL context factory if configuration states so.
    * @param conf the configuration
    * @return null if no ssl in config, an instance otherwise
    * @throws IOException if getting password fails
    */
-  static SslContextFactory createSslContextFactory(Configuration conf) throws IOException {
+  public static SslContextFactory createSslContextFactory(Configuration conf) throws IOException {
     final boolean useSsl  = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_SSL);
     if (!useSsl) {
       return null;
     }
-    String keyStorePath = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PATH).trim();
+    final String keyStorePath = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PATH).trim();
     if (keyStorePath.isEmpty()) {
       throw new IllegalArgumentException(MetastoreConf.ConfVars.SSL_KEYSTORE_PATH.toString()
           + " Not configured for SSL connection");
     }
-    String keyStorePassword =
+    final String keyStorePassword =
         MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PASSWORD);
-    String keyStoreType =
+    final String keyStoreType =
         MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_TYPE).trim();
-    String keyStoreAlgorithm =
+    final String keyStoreAlgorithm =
         MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_KEYMANAGERFACTORY_ALGORITHM).trim();
-
+    final String[] excludedProtocols =
+        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_PROTOCOL_BLACKLIST).split(",");
+    if (LOG.isInfoEnabled()) {
+      LOG.info("HTTP Server SSL: adding excluded protocols: {}", Arrays.toString(excludedProtocols));
+    }
     SslContextFactory factory = new SslContextFactory.Server();
-    String[] excludedProtocols = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_PROTOCOL_BLACKLIST).split(",");
-    LOG.info("HTTP Server SSL: adding excluded protocols: " + Arrays.toString(excludedProtocols));
     factory.addExcludeProtocols(excludedProtocols);
-    LOG.info("HTTP Server SSL: SslContextFactory.getExcludeProtocols = "
-        + Arrays.toString(factory.getExcludeProtocols()));
+    if (LOG.isInfoEnabled()) {
+      LOG.info("HTTP Server SSL: SslContextFactory.getExcludeProtocols = {}",
+        Arrays.toString(factory.getExcludeProtocols()));
+    }
     factory.setKeyStorePath(keyStorePath);
     factory.setKeyStorePassword(keyStorePassword);
     factory.setKeyStoreType(keyStoreType);

@@ -37,6 +37,7 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
@@ -64,15 +65,16 @@ public class PropertyServlet extends HttpServlet {
   public static final Logger LOGGER = LoggerFactory.getLogger(PropertyServlet.class);
   /** The configuration. */
   private final Configuration configuration;
-  /** The security. */
-  private final ServletSecurity security;
+
+  static boolean isAuthJwt(Configuration configuration) {
+    String auth = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.PROPERTIES_SERVLET_AUTH);
+    return "jwt".equalsIgnoreCase(auth);
+  }
 
   PropertyServlet(Configuration configuration) {
-    String auth = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.PROPERTIES_SERVLET_AUTH);
-    boolean jwt = auth != null && "jwt".equals(auth.toLowerCase());
-    this.security = new ServletSecurity(configuration, jwt);
     this.configuration = configuration;
   }
+
   private String strError(String msg, Object...args) {
     return String.format(PTYERROR + msg, args);
   }
@@ -138,16 +140,10 @@ public class PropertyServlet extends HttpServlet {
 
   public void init() throws ServletException {
     super.init();
-    security.init();
   }
 
   @Override
   protected void doPost(HttpServletRequest request,
-                        HttpServletResponse response) throws ServletException, IOException {
-    security.execute(request, response, PropertyServlet.this::runPost);
-  }
-
-  private void runPost(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException {
     final RawStore ms =  getMS();
     final String ns = getNamespace(request.getRequestURI());
@@ -258,10 +254,6 @@ public class PropertyServlet extends HttpServlet {
   @Override
   protected void doPut(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
-    security.execute(request, response, PropertyServlet.this::runPut);
-  }
-  private void runPut(HttpServletRequest request,
-                       HttpServletResponse response) throws ServletException {
     final String ns = getNamespace(request.getRequestURI());
     final RawStore ms =  getMS();
     try {
@@ -294,11 +286,6 @@ public class PropertyServlet extends HttpServlet {
   @Override
   protected void doGet(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
-    security.execute(request, response, PropertyServlet.this::runGet);
-  }
-
-  private void runGet(HttpServletRequest request,
-                      HttpServletResponse response) throws ServletException {
     final String ns = getNamespace(request.getRequestURI());
     final RawStore ms = getMS();
     try {
@@ -343,7 +330,9 @@ public class PropertyServlet extends HttpServlet {
     if (port < 0) {
       return null;
     }
-    String cli = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
+    String path = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
+    ServletSecurity security = new ServletSecurity(conf);
+    Servlet servlet =  security.proxy(new PropertyServlet(conf));
     // HTTP Server
     Server server = new Server();
     server.setStopAtShutdown(true);
@@ -359,11 +348,11 @@ public class PropertyServlet extends HttpServlet {
     ServletHandler handler = new ServletHandler();
     server.setHandler(handler);
     ServletHolder holder = handler.newServletHolder(Source.EMBEDDED);
-    holder.setServlet(new PropertyServlet(conf)); //
-    handler.addServletWithMapping(holder, "/"+cli+"/*");
+    holder.setServlet(servlet); //
+    handler.addServletWithMapping(holder, "/"+path+"/*");
     server.start();
     if (!server.isStarted()) {
-      LOGGER.error("unable to start property-maps servlet server, path {}, port {}", cli, port);
+      LOGGER.error("unable to start property-maps servlet server, path {}, port {}", path, port);
     } else {
       LOGGER.info("started property-maps servlet server on {}", server.getURI());
     }
