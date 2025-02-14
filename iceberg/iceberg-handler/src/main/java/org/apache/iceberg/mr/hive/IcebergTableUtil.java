@@ -81,6 +81,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
+import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.PropertyUtil;
 import org.apache.iceberg.util.SnapshotUtil;
 import org.apache.iceberg.util.StructProjection;
@@ -530,6 +531,32 @@ public class IcebergTableUtil {
           })
           .filter(e -> e.getKey().equals(partitionPath))
           .transform(e -> IcebergAcidUtil.computeHash(e.getValue()))
+          .get(0);
+    }
+  }
+
+  public static Pair<Integer, StructLike> getPartitionSpecStructPair(Table table, String partitionPath)
+      throws IOException {
+    if (!table.spec().isPartitioned()) {
+      return Pair.of(table.spec().specId(), null);
+    } else if (partitionPath == null) {
+      return Pair.of(0, null);
+    }
+    PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
+        .createMetadataTableInstance(table, MetadataTableType.PARTITIONS);
+    try (CloseableIterable<FileScanTask> fileScanTasks = partitionsTable.newScan().planFiles()) {
+      return FluentIterable.from(fileScanTasks)
+          .transformAndConcat(task -> task.asDataTask().rows())
+          .transform(row -> {
+            StructLike data = row.get(IcebergTableUtil.PART_IDX, StructProjection.class);
+            PartitionSpec spec = table.specs().get(row.get(IcebergTableUtil.SPEC_IDX, Integer.class));
+            PartitionData partitionData = IcebergTableUtil.toPartitionData(data,
+                Partitioning.partitionType(table), spec.partitionType());
+            String path = spec.partitionToPath(partitionData);
+            return Maps.immutableEntry(path, Pair.of(spec.specId(), data));
+          })
+          .filter(e -> e.getKey().equals(partitionPath))
+          .transform(e -> e.getValue())
           .get(0);
     }
   }

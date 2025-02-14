@@ -22,7 +22,7 @@ set iceberg.mr.schema.auto.conversion=true;
 
 CREATE TABLE x (name VARCHAR(50), age TINYINT, num_clicks BIGINT) 
 stored by iceberg stored as orc 
-TBLPROPERTIES ('external.table.purge'='true','format-version'='2');
+TBLPROPERTIES ('external.table.purge'='true', 'format-version'='2', 'compactor.threshold.target.size'='1500');
 
 insert into x values 
 ('amy', 35, 123412344),

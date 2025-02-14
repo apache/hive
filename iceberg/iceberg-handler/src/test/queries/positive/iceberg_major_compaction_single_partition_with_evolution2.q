@@ -30,7 +30,7 @@ create table ice_orc (
  )
 partitioned by (b bigint)
 stored by iceberg stored as orc 
-tblproperties ('format-version'='2');
+tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1500');
 
 insert into ice_orc partition(b=1) VALUES 
 ('a1'),
