@@ -175,6 +175,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   private static final String REPL_EVENTS_WITH_DUPLICATE_ID_IN_METASTORE =
           "Notification events with duplicate event ids in the meta store.";
 
+  private static final String CREATE_TRANSPORT_FAILED = "Failed to create client transport.";
+  private static final String CONNECT_METASTORE_FAILED = "Failed to connect to metastore: ";
+
   static final protected Logger LOG = LoggerFactory.getLogger(HiveMetaStoreClient.class);
 
   public HiveMetaStoreClient(Configuration conf) throws MetaException {
@@ -781,7 +784,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   private void open() throws MetaException {
     isConnected = false;
     TTransportException tte = null;
-    MetaException recentME = null;
     boolean useSSL = MetastoreConf.getBoolVar(conf, ConfVars.USE_SSL);
     boolean useSasl = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_SASL);
     String clientAuthMode = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_AUTH_MODE);
@@ -799,15 +801,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         LOG.info("Trying to connect to metastore with URI ({}) in {} transport mode", store,
             transportMode);
         try {
-          try {
-            if (isHttpTransportMode) {
-              transport = createHttpClient(store, useSSL);
-            } else {
-              transport = createBinaryClient(store, useSSL);
-            }
-          } catch (TTransportException te) {
-            tte = te;
-            throw new MetaException(te.toString());
+          if (isHttpTransportMode) {
+            transport = createHttpClient(store, useSSL);
+          } else {
+            transport = createBinaryClient(store, useSSL);
           }
 
           final TProtocol protocol;
@@ -817,37 +814,27 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
             protocol = new TBinaryProtocol(transport);
           }
           client = new ThriftHiveMetastore.Client(protocol);
-          try {
-            if (!transport.isOpen()) {
-              transport.open();
-              final int newCount = connCount.incrementAndGet();
-              if (useSSL) {
-                LOG.info(
-                    "Opened an SSL connection to metastore, current connections: {}",
-                    newCount);
-                if (LOG.isTraceEnabled()) {
-                  LOG.trace("METASTORE SSL CONNECTION TRACE - open [{}]",
-                      System.identityHashCode(this), new Exception());
-                }
-              } else {
-                LOG.info("Opened a connection to metastore, URI ({}) "
-                    + "current connections: {}", store, newCount);
-                if (LOG.isTraceEnabled()) {
-                  LOG.trace("METASTORE CONNECTION TRACE - open [{}]",
-                      System.identityHashCode(this), new Exception());
-                }
+          if (!transport.isOpen()) {
+            transport.open();
+            final int newCount = connCount.incrementAndGet();
+            if (useSSL) {
+              LOG.info("Opened an SSL connection to metastore, current connections: {}", newCount);
+              if (LOG.isTraceEnabled()) {
+                LOG.trace("METASTORE SSL CONNECTION TRACE - open [{}]",
+                        System.identityHashCode(this), new Exception());
+              }
+            } else {
+              LOG.info("Opened a connection to metastore, URI ({}) current connections: {}",
+                      store, newCount);
+              if (LOG.isTraceEnabled()) {
+                LOG.trace("METASTORE CONNECTION TRACE - open [{}]",
+                        System.identityHashCode(this), new Exception());
               }
             }
-            isConnected = true;
-          } catch (TTransportException e) {
-            tte = e;
-            String errMsg = String.format("Failed to connect to the MetaStore Server URI (%s) in %s "
-                    + "transport mode",   store, transportMode);
-            LOG.warn(errMsg);
-            LOG.debug(errMsg, e);
           }
+          isConnected = true;
 
-          if (isConnected && !useSasl && !usePasswordAuth && !isHttpTransportMode &&
+          if (!useSasl && !usePasswordAuth && !isHttpTransportMode &&
                   MetastoreConf.getBoolVar(conf, ConfVars.EXECUTE_SET_UGI)) {
             // Call set_ugi, only in unsecure mode.
             try {
@@ -864,11 +851,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                   + "Continuing without it.", e);
             }
           }
+        } catch (TTransportException e) {
+          tte = e;
+          String errMsg = String.format("Failed to connect to metastore with uri (%s) " +
+              "transport mode: %s in attempt %d ", store, transportMode, attempt);
+          LOG.warn(errMsg);
+          LOG.debug(errMsg, e);
         } catch (MetaException e) {
-          recentME = e;
-          String errMsg = "Failed to connect to metastore with URI (" + store
-              + ") transport mode:" + transportMode + " in attempt " + attempt;
-          LOG.error(errMsg, e);
+          throw new MetaException(CONNECT_METASTORE_FAILED + StringUtils.stringifyException(e));
         }
         if (isConnected) {
           break;
@@ -884,14 +874,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
 
     if (!isConnected) {
-      // Either tte or recentME should be set but protect from a bug which causes both of them to
-      // be null. When MetaException wraps TTransportException, tte will be set so stringify that
-      // directly.
+      // tte should be set but protect from a bug which causes it to be null.
       String exceptionString = "Unknown exception";
       if (tte != null) {
         exceptionString = StringUtils.stringifyException(tte);
-      } else if (recentME != null) {
-        exceptionString = StringUtils.stringifyException(recentME);
       }
       throw new MetaException("Could not connect to meta store using any of the URIs provided." +
           " Most recent failure: " + exceptionString);
@@ -901,8 +887,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   // wraps the underlyingTransport in the appropriate transport based on mode of authentication
-  private TTransport createAuthBinaryTransport(URI store, TTransport underlyingTransport)
-      throws MetaException {
+  @VisibleForTesting
+  protected TTransport createAuthBinaryTransport(URI store, TTransport underlyingTransport)
+      throws MetaException, TTransportException {
     boolean isHttpTransportMode =
         MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_THRIFT_TRANSPORT_MODE).
         equalsIgnoreCase("http");
@@ -942,9 +929,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         }
         // Overlay the SASL transport on top of the base socket transport (SSL or non-SSL)
         transport = MetaStorePlainSaslHelper.getPlainTransport(userName, passwd, underlyingTransport);
-      } catch (IOException | TTransportException sasle) {
+      } catch (TTransportException e) {
+        LOG.error(CREATE_TRANSPORT_FAILED, e);
+        throw e;
+      } catch (IOException sasle) {
         // IOException covers SaslException
-        LOG.error("Could not create client transport", sasle);
+        LOG.error(CREATE_TRANSPORT_FAILED, sasle);
         throw new MetaException(sasle.toString());
       }
     } else if (useSasl) {
@@ -977,7 +967,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
               underlyingTransport, MetaStoreUtils.getMetaStoreSaslProperties(conf, useSSL));
         }
       } catch (IOException ioe) {
-        LOG.error("Failed to create client transport", ioe);
+        LOG.error(CREATE_TRANSPORT_FAILED, ioe);
         throw new MetaException(ioe.toString());
       }
     } else {
@@ -985,8 +975,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         try {
           transport = new TFramedTransport(transport);
         } catch (TTransportException e) {
-          LOG.error("Failed to create client transport", e);
-          throw new MetaException(e.toString());
+          LOG.error(CREATE_TRANSPORT_FAILED, e);
+          throw e;
         }
       }
     }

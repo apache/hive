@@ -115,6 +115,8 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   public final static ClientCapabilities TEST_VERSION = new ClientCapabilities(
       Lists.newArrayList(ClientCapability.INSERT_ONLY_TABLES, ClientCapability.TEST_CAPABILITY));
 
+  private static final String CONNECT_METASTORE_FAILED = "Could not connect to metastore: ";
+
   ThriftHiveMetastore.Iface client = null;
   private TTransport transport = null;
   private boolean isConnected = false;
@@ -472,20 +474,12 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
               transport = SecurityUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout,
                   connectionTimeout, trustStorePath, trustStorePassword, trustStoreType, trustStoreAlgorithm);
               LOG.info("Opened an SSL connection to metastore, current connections: " + connCount.incrementAndGet());
-            } catch(IOException e) {
+            } catch (IOException e) {
               throw new IllegalArgumentException(e);
-            } catch(TTransportException e) {
-              tte = e;
-              throw new MetaException(e.toString());
             }
           } else {
-            try {
-              transport = new TSocket(new TConfiguration(),
-                  store.getHost(), store.getPort(), clientSocketTimeout, connectionTimeout);
-            } catch (TTransportException e) {
-              tte = e;
-              throw new MetaException(e.toString());
-            }
+            transport = new TSocket(new TConfiguration(),
+                store.getHost(), store.getPort(), clientSocketTimeout, connectionTimeout);
           }
 
           if (useSasl) {
@@ -503,7 +497,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
               // tokenSig could be null
               tokenStrForm = SecurityUtils.getTokenStrForm(tokenSig);
 
-              if(tokenStrForm != null) {
+              if (tokenStrForm != null) {
                 LOG.info("HMSC::open(): Found delegation token. Creating DIGEST-based thrift connection.");
                 // authenticate using delegation tokens via the "DIGEST" mechanism
                 transport = authBridge.createClientTransport(null, store.getHost(),
@@ -539,23 +533,13 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
             protocol = new TBinaryProtocol(transport);
           }
           client = new ThriftHiveMetastore.Client(protocol);
-          try {
-            if (!transport.isOpen()) {
-              transport.open();
-              LOG.info("Opened a connection to metastore, current connections: " + connCount.incrementAndGet());
-            }
-            isConnected = true;
-          } catch (TTransportException e) {
-            tte = e;
-            if (LOG.isDebugEnabled()) {
-              LOG.warn("Failed to connect to the MetaStore Server...", e);
-            } else {
-              // Don't print full exception trace if DEBUG is not on.
-              LOG.warn("Failed to connect to the MetaStore Server...");
-            }
+          if (!transport.isOpen()) {
+            transport.open();
+            LOG.info("Opened a connection to metastore, current connections: " + connCount.incrementAndGet());
           }
+          isConnected = true;
 
-          if (isConnected && !useSasl && MetastoreConf.getBoolVar(conf, ConfVars.EXECUTE_SET_UGI)){
+          if (!useSasl && MetastoreConf.getBoolVar(conf, ConfVars.EXECUTE_SET_UGI)) {
             // Call set_ugi, only in unsecure mode.
             try {
               UserGroupInformation ugi = SecurityUtils.getUGI();
@@ -571,9 +555,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
                   + "Continuing without it.", e);
             }
           }
+        } catch (TTransportException e) {
+          tte = e;
+          LOG.warn("Failed to connect to the MetaStore Server.");
         } catch (MetaException e) {
-          LOG.error("Unable to connect to metastore with URI " + store
-                    + " in attempt " + attempt, e);
+          throw new MetaException(CONNECT_METASTORE_FAILED + StringUtils.stringifyException(e));
         }
         if (isConnected) {
           break;
