@@ -96,7 +96,12 @@ public class MapJoinMemoryExhaustionHandler {
         + tableContainerSize + "\tMemory usage:\t" + usedMemory + "\tpercentage:\t" + percentageNumberFormat.format(percentage);
     console.printInfo(msg);
     if(percentage > maxMemoryUsage) {
-      throw new MapJoinMemoryExhaustionError(msg);
+      System.gc();
+      usedMemory = memoryMXBean.getHeapMemoryUsage().getUsed();
+      percentage = (double) usedMemory / (double) maxHeapSize;
+      if(percentage > maxMemoryUsage) {
+        throw new MapJoinMemoryExhaustionError(msg);
+      }
     }
    }
 }
