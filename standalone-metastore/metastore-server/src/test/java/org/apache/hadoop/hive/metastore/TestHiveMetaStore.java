@@ -43,6 +43,7 @@ import static org.mockito.Mockito.mock;
 import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.DatabaseType;
+import org.apache.hadoop.hive.metastore.api.DeleteColumnStatisticsRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
@@ -1765,7 +1766,7 @@ public abstract class TestHiveMetaStore {
       new DatabaseBuilder()
           .setName(dbName)
           .create(client, conf);
-      createTableForTestFilter(dbName,tblName, tblOwner, lastAccessed, true);
+      createTableForTestFilter(dbName, tblName, tblOwner, lastAccessed, true);
 
       // Create a ColumnStatistics Obj
       String[] colName = new String[]{"income", "name"};
@@ -1853,8 +1854,18 @@ public abstract class TestHiveMetaStore {
       client.updateTableColumnStatistics(colStats);
 
       // query column stats for column whose stats were updated in the previous call
-      colStats2 = client.getTableColumnStatistics(
-          dbName, tblName, Lists.newArrayList(colName[0]), ENGINE).get(0);
+      List<ColumnStatisticsObj> colStats3 = client.getTableColumnStatistics(
+          dbName, tblName, Lists.newArrayList(colName), ENGINE);
+      assertEquals(2, colStats3.size());
+      DeleteColumnStatisticsRequest request = new DeleteColumnStatisticsRequest(dbName, tblName);
+      request.setTableLevel(true);
+      request.setEngine(ENGINE);
+      // multiple columns
+      request.setCol_names(Arrays.asList(colName));
+      assertTrue(client.deleteColumnStatistics(request));
+      colStats3 = client.getTableColumnStatistics(
+          dbName, tblName, Lists.newArrayList(colName), ENGINE);
+      assertTrue("stats are not empty: " + colStats3, colStats3.isEmpty());
 
       // partition level column statistics test
       // create a table with multiple partitions
@@ -1908,6 +1919,52 @@ public abstract class TestHiveMetaStore {
      // test get stats on a column for which stats doesn't exist
      Map<String, List<ColumnStatisticsObj>> stats2 = client.getPartitionColumnStatistics(dbName, tblName,
          Lists.newArrayList(partName), Lists.newArrayList(colName[1]), ENGINE);
+     assertTrue("stats are not empty: " + stats2, stats2.isEmpty());
+
+     request.setTableLevel(false);
+     request.setCol_names(Arrays.asList(colName));
+     request.addToPart_names(partName);
+     // no column name set
+     request.unsetCol_names();
+     assertTrue(client.deleteColumnStatistics(request));
+     stats2 = client.getPartitionColumnStatistics(dbName, tblName,
+          Lists.newArrayList(partName), Lists.newArrayList(colName), ENGINE);
+     assertTrue("stats are not empty: " + stats2, stats2.isEmpty());
+
+     client.updatePartitionColumnStatistics(colStats);
+     ColumnStatistics colStats1 = new ColumnStatistics(colStats);
+     colStats1.getStatsDesc().setPartName(partitions.get(1));
+     client.updatePartitionColumnStatistics(colStats1);
+     colStats1 = new ColumnStatistics(colStats);
+     colStats1.getStatsDesc().setPartName(partitions.get(2));
+     client.updatePartitionColumnStatistics(colStats1);
+
+     request.unsetPart_names();
+     request.setPart_names(Arrays.asList(partitions.get(0), partitions.get(1)));
+     request.setCol_names(Arrays.asList(colName[0]));
+     assertTrue(client.deleteColumnStatistics(request));
+     stats2 = client.getPartitionColumnStatistics(dbName, tblName,
+         Lists.newArrayList(partitions.get(0), partitions.get(1), partitions.get(2)), Lists.newArrayList(colName), ENGINE);
+     assertEquals(1, stats2.get(partitions.get(0)).size());
+     assertEquals(colName[1], stats2.get(partitions.get(0)).get(0).getColName());
+     assertEquals(1, stats2.get(partitions.get(1)).size());
+     assertEquals(colName[1], stats2.get(partitions.get(1)).get(0).getColName());
+     assertEquals(2, stats2.get(partitions.get(2)).size());
+
+     // no column
+     request.unsetCol_names();
+     assertTrue(client.deleteColumnStatistics(request));
+     stats2 = client.getPartitionColumnStatistics(dbName, tblName,
+          Lists.newArrayList(partitions.get(0), partitions.get(1), partitions.get(2)), Lists.newArrayList(colName), ENGINE);
+     assertEquals(1, stats2.size());
+     assertEquals(2, stats2.get(partitions.get(2)).size());
+
+     // no partition or column name is set
+     request.unsetPart_names();
+     client.updatePartitionColumnStatistics(colStats);
+     assertTrue(client.deleteColumnStatistics(request));
+     stats2 = client.getPartitionColumnStatistics(dbName, tblName,
+          Lists.newArrayList(partitions), Lists.newArrayList(colName), ENGINE);
      assertTrue("stats are not empty: " + stats2, stats2.isEmpty());
     } catch (Exception e) {
       System.err.println(StringUtils.stringifyException(e));
