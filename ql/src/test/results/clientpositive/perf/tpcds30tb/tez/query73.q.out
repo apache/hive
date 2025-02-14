@@ -109,10 +109,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
-                  filterExpr: (d_dom BETWEEN 1 AND 2 and (d_year) IN (2000, 2001, 2002)) (type: boolean)
+                  filterExpr: ((d_year) IN (2000, 2001, 2002) and d_dom BETWEEN 1 AND 2) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 1168784 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (d_dom BETWEEN 1 AND 2 and (d_year) IN (2000, 2001, 2002)) (type: boolean)
+                    predicate: ((d_year) IN (2000, 2001, 2002) and d_dom BETWEEN 1 AND 2) (type: boolean)
                     Statistics: Num rows: 71 Data size: 1136 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: d_date_sk (type: bigint)
@@ -167,10 +167,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
-                  filterExpr: (s_county) IN ('Mobile County', 'Maverick County', 'Huron County', 'Kittitas County') (type: boolean)
+                  filterExpr: (s_county) IN ('Huron County', 'Kittitas County', 'Maverick County', 'Mobile County') (type: boolean)
                   Statistics: Num rows: 1704 Data size: 180624 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (s_county) IN ('Mobile County', 'Maverick County', 'Huron County', 'Kittitas County') (type: boolean)
+                    predicate: (s_county) IN ('Huron County', 'Kittitas County', 'Maverick County', 'Mobile County') (type: boolean)
                     Statistics: Num rows: 53 Data size: 5618 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: s_store_sk (type: bigint)

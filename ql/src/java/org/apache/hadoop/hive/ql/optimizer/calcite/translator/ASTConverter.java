@@ -73,10 +73,12 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveComponentAccess;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveValues;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter;
@@ -91,7 +93,6 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
-import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
@@ -869,6 +870,12 @@ public class ASTConverter {
     @Override
     public ASTNode visitLiteral(RexLiteral literal) {
 
+      if (!RexUtil.isNull(literal) && literal.getType().isStruct()) {
+        return rexBuilder
+            .makeCall(SqlStdOperatorTable.ROW, (List<? extends RexNode>) literal.getValue())
+            .accept(this);
+      }
+
       if (RexUtil.isNull(literal) && literal.getType().getSqlTypeName() != SqlTypeName.NULL
           && rexBuilder != null) {
         // It is NULL value with different type, we need to introduce a CAST
@@ -1078,6 +1085,28 @@ public class ASTConverter {
         // proceed correctly if we just ignore the <time_unit>
         astNodeLst.add(call.operands.get(1).accept(this));
         break;
+      case SEARCH:
+        HiveCalciteUtil.SearchTransformer<ASTNode> transformer = new HiveCalciteUtil.SearchTransformer<>();
+        transformer.transform(rexBuilder, call, this);
+        
+        if (!transformer.inNodes.isEmpty()) {
+          ASTNode inNode = SqlFunctionConverter.buildAST(HiveIn.INSTANCE, transformer.inNodes, transformer.type);
+          inNode = transformer.negate ?
+              SqlFunctionConverter
+                  .buildAST(SqlStdOperatorTable.NOT, Collections.singletonList(inNode), transformer.type) :
+              inNode;
+          astNodeLst.add(inNode);
+        }
+        
+        astNodeLst.addAll(transformer.nodes);
+        if (astNodeLst.size() == 1) {
+          return astNodeLst.get(0);
+        }
+        
+        return transformer.negate ? 
+            SqlFunctionConverter.buildAST(SqlStdOperatorTable.AND, astNodeLst, transformer.type) :
+            SqlFunctionConverter.buildAST(SqlStdOperatorTable.OR, astNodeLst, transformer.type);
+        
       case FLOOR:
         if (call.operands.size() == 2) {
           // Floor on date: special handling since function in Hive does

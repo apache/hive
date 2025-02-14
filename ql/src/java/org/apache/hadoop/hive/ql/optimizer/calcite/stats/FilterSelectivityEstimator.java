@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelOptUtil.InputReferencedVisitor;
@@ -52,7 +53,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.calcite.sql.fun.SqlStdOperatorTable.NOT_BETWEEN;
 
 public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
 
@@ -154,27 +154,50 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       selectivity = computeBetweenPredicateSelectivity(call);
       break;
 
-    case IN: {
-      // TODO: 1) check for duplicates 2) We assume in clause values to be
-      // present in NDV which may not be correct (Range check can find it) 3) We
-      // assume values in NDV set is uniformly distributed over col values
-      // (account for skewness - histogram).
-      selectivity = computeFunctionSelectivity(call);
-      if (selectivity != null) {
-        selectivity = selectivity * (call.operands.size() - 1);
-        if (selectivity <= 0.0) {
-          selectivity = 0.10;
-        } else if (selectivity >= 1.0) {
-          selectivity = 1.0;
-        }
+    case SEARCH:
+      HiveCalciteUtil.SearchTransformer<Double> transformer = new HiveCalciteUtil.SearchTransformer<>();
+      transformer.transform(
+          childRel.getCluster().getRexBuilder(), call,
+          new FilterSelectivityEstimator(childRel, mq) {
+            @Override
+            public Double visitLiteral(RexLiteral literal) {
+              return 1.0D;
+            }
+          });
+      
+      List<Double> selectivities = new ArrayList<>();
+      
+      if (!transformer.inNodes.isEmpty()) {
+        selectivities.add(computeSelectivityOfSearchPoints(call, transformer.inNodes.size() - 1));
       }
-      break;
-    }
+      selectivities.addAll(transformer.nodes);
+      
+      if (selectivities.size() == 1) {
+        return selectivities.get(0);
+      }
 
+      return transformer.negate ? 
+          computeConjunctionSelectivity(selectivities) : 
+          computeDisjunctionSelectivity(selectivities);
+      
     default:
       selectivity = computeFunctionSelectivity(call);
     }
 
+    return selectivity;
+  }
+  
+  private Double computeSelectivityOfSearchPoints(RexCall call, int points) {
+    Double selectivity = computeFunctionSelectivity(call);
+    if (selectivity != null) {
+      selectivity = selectivity * points;
+      if (selectivity <= 0.0) {
+        selectivity = 0.10;
+      } else if (selectivity >= 1.0) {
+        selectivity = 1.0;
+      }
+    }
+    
     return selectivity;
   }
 
@@ -349,12 +372,18 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * @return
    */
   private Double computeDisjunctionSelectivity(RexCall call) {
+    return computeDisjunctionSelectivity(
+        call.getOperands().stream().map(op -> op.accept(this)).collect(Collectors.toList())
+    );
+  }
+
+  private Double computeDisjunctionSelectivity(List<Double> selectivities) {
     Double tmpCardinality;
     Double tmpSelectivity;
     double selectivity = 1;
 
-    for (RexNode dje : call.getOperands()) {
-      tmpSelectivity = dje.accept(this);
+    for (Double d : selectivities) {
+      tmpSelectivity = d;
       if (tmpSelectivity == null) {
         tmpSelectivity = 0.99;
       }
@@ -384,17 +413,20 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * @return
    */
   private Double computeConjunctionSelectivity(RexCall call) {
-    Double tmpSelectivity;
-    double selectivity = 1;
-
-    for (RexNode cje : call.getOperands()) {
-      tmpSelectivity = cje.accept(this);
-      if (tmpSelectivity != null) {
-        selectivity *= tmpSelectivity;
+    return computeConjunctionSelectivity(
+        call.getOperands().stream().map(op -> op.accept(this)).collect(Collectors.toList())
+    );
+  }
+  
+  private Double computeConjunctionSelectivity(List<Double> selectivities) {
+    double result = 1;
+    for (Double s: selectivities) {
+      if (s != null) {
+        result *= s;
       }
     }
-
-    return selectivity;
+    
+    return result;
   }
 
   /**
