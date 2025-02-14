@@ -9842,7 +9842,7 @@ public class ObjectStore implements RawStore, Configurable {
           if (desc.getLastAnalyzed() > mStat.getLastAnalyzed()) {
             desc.setLastAnalyzed(mStat.getLastAnalyzed());
           }
-          statObjs.add(StatObjectConverter.getTableColumnStatisticsObj(mStat, enableBitVector, enableKll));
+          statObjs.add(StatObjectConverter.getColumnStatisticsObj(mStat, enableBitVector, enableKll));
           Deadline.checkTimeout();
         }
         ColumnStatistics colStat = new ColumnStatistics(desc, statObjs);
@@ -9975,7 +9975,7 @@ public class ObjectStore implements RawStore, Configurable {
             csd = StatObjectConverter.getPartitionColumnStatisticsDesc(mStatsObj);
             curList = new ArrayList<>(colNames.size());
           }
-          curList.add(StatObjectConverter.getPartitionColumnStatisticsObj(mStatsObj, enableBitVector, enableKll));
+          curList.add(StatObjectConverter.getColumnStatisticsObj(mStatsObj, enableBitVector, enableKll));
           lastPartName = partName;
           Deadline.checkTimeout();
         }
