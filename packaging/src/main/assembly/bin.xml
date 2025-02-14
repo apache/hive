@@ -103,7 +103,7 @@
       <excludes>
         <exclude>org.apache.hadoop:*</exclude>
         <exclude>org.apache.hive:hive-jdbc:jar:standalone</exclude>
-        <exclude>org.apache.httpcomponents:*</exclude>
+        <!--exclude>org.apache.httpcomponents:*</exclude-->
       </excludes>
       <includes>
         <include>org.apache.hive.hcatalog:hive-webhcat:*</include>
