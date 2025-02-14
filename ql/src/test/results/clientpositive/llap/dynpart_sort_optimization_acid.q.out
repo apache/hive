@@ -1694,7 +1694,7 @@ STAGE PLANS:
                       Statistics: Num rows: 10 Data size: 800 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: '2008-04-08' (type: string), _col2 (type: int), _bucket_number (type: string), _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-                        null sort order: aaaa
+                        null sort order: zzzz
                         sort order: ++++
                         Map-reduce partition columns: '2008-04-08' (type: string), _col2 (type: int)
                         Statistics: Num rows: 10 Data size: 1740 Basic stats: COMPLETE Column stats: PARTIAL
@@ -1704,7 +1704,7 @@ STAGE PLANS:
                         Statistics: Num rows: 10 Data size: 2720 Basic stats: COMPLETE Column stats: PARTIAL
                         Reduce Output Operator
                           key expressions: _col2 (type: string), _col3 (type: int), _bucket_number (type: string), _col0 (type: string)
-                          null sort order: aaaa
+                          null sort order: zzzz
                           sort order: ++++
                           Map-reduce partition columns: _col2 (type: string), _col3 (type: int)
                           Statistics: Num rows: 10 Data size: 2720 Basic stats: COMPLETE Column stats: PARTIAL
@@ -1889,7 +1889,7 @@ STAGE PLANS:
                       Statistics: Num rows: 14 Data size: 3696 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col1 (type: string), _col2 (type: int), _bucket_number (type: string), _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-                        null sort order: aaaa
+                        null sort order: zzzz
                         sort order: ++++
                         Map-reduce partition columns: _col1 (type: string), _col2 (type: int)
                         Statistics: Num rows: 14 Data size: 3696 Basic stats: COMPLETE Column stats: PARTIAL
@@ -2266,7 +2266,7 @@ STAGE PLANS:
                       Statistics: Num rows: 10 Data size: 800 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: '2008-04-08' (type: string), _col2 (type: int), _bucket_number (type: string), _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-                        null sort order: aaaa
+                        null sort order: zzzz
                         sort order: ++++
                         Map-reduce partition columns: '2008-04-08' (type: string), _col2 (type: int)
                         Statistics: Num rows: 10 Data size: 1740 Basic stats: COMPLETE Column stats: PARTIAL
@@ -2276,7 +2276,7 @@ STAGE PLANS:
                         Statistics: Num rows: 10 Data size: 2720 Basic stats: COMPLETE Column stats: PARTIAL
                         Reduce Output Operator
                           key expressions: _col2 (type: string), _col3 (type: int), _bucket_number (type: string), _col0 (type: string)
-                          null sort order: aaaa
+                          null sort order: zzzz
                           sort order: ++++
                           Map-reduce partition columns: _col2 (type: string), _col3 (type: int)
                           Statistics: Num rows: 10 Data size: 2720 Basic stats: COMPLETE Column stats: PARTIAL

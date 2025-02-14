@@ -231,7 +231,7 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 966 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: iceberg_bucket(_col5, 16) (type: int), iceberg_truncate(_col6, 3) (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: iceberg_bucket(_col5, 16) (type: int), iceberg_truncate(_col6, 3) (type: string)
                         Statistics: Num rows: 7 Data size: 3384 Basic stats: COMPLETE Column stats: COMPLETE
@@ -252,7 +252,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 486 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: iceberg_bucket(_col5, 16) (type: int), iceberg_truncate(_col6, 3) (type: string)
-                    null sort order: aa
+                    null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: iceberg_bucket(_col5, 16) (type: int), iceberg_truncate(_col6, 3) (type: string)
                     Statistics: Num rows: 7 Data size: 3384 Basic stats: COMPLETE Column stats: COMPLETE
@@ -308,7 +308,7 @@ STAGE PLANS:
                 Statistics: Num rows: 4 Data size: 1932 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: iceberg_bucket(_col5, 16) (type: int), iceberg_truncate(_col6, 3) (type: string)
-                  null sort order: aa
+                  null sort order: zz
                   sort order: ++
                   Map-reduce partition columns: iceberg_bucket(_col5, 16) (type: int), iceberg_truncate(_col6, 3) (type: string)
                   Statistics: Num rows: 7 Data size: 3384 Basic stats: COMPLETE Column stats: COMPLETE
@@ -519,7 +519,7 @@ STAGE PLANS:
                     Statistics: Num rows: 9 Data size: 1452 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: iceberg_bucket(_col5, 16) (type: int), iceberg_truncate(_col6, 3) (type: string)
-                      null sort order: aa
+                      null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: iceberg_bucket(_col5, 16) (type: int), iceberg_truncate(_col6, 3) (type: string)
                       Statistics: Num rows: 9 Data size: 1452 Basic stats: COMPLETE Column stats: COMPLETE
