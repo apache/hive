@@ -27,7 +27,6 @@ import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.servlet.http.HttpServlet;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.SecureServletCaller;
 import org.apache.hadoop.hive.metastore.ServletSecurity;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.iceberg.catalog.Catalog;
@@ -67,8 +66,8 @@ public class HMSCatalogServer {
     // nothing
   }
 
-  protected HttpServlet createServlet(SecureServletCaller security, Catalog catalog) throws IOException {
-    return new HMSCatalogServlet(security, new HMSCatalogAdapter(catalog));
+  protected HttpServlet createServlet(ServletSecurity security, Catalog catalog) throws IOException {
+    return security.proxy(new HMSCatalogServlet(new HMSCatalogAdapter(catalog)));
   }
 
   protected Catalog createCatalog(Configuration configuration) {
@@ -94,9 +93,7 @@ public class HMSCatalogServer {
   }
 
   protected HttpServlet createServlet(Configuration configuration, Catalog catalog) throws IOException {
-    String auth = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.ICEBERG_CATALOG_SERVLET_AUTH);
-    boolean jwt = "jwt".equalsIgnoreCase(auth);
-    SecureServletCaller security = new ServletSecurity(configuration, jwt);
+    ServletSecurity security = new ServletSecurity(configuration);
     Catalog actualCatalog = catalog;
     if (actualCatalog == null) {
       MetastoreConf.setVar(configuration, MetastoreConf.ConfVars.THRIFT_URIS, "");
@@ -106,7 +103,6 @@ public class HMSCatalogServer {
     return createServlet(security, actualCatalog);
   }
   
-
   /**
    * Convenience method to start a http server that only serves this servlet.
    * @param conf the configuration
@@ -135,13 +131,14 @@ public class HMSCatalogServer {
     httpServer.start();
     return httpServer;
   }
-
+  
   private static Server createHttpServer(Configuration conf, int port) throws IOException {
     final int maxThreads = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_JETTY_THREADPOOL_MAX);
     final int minThreads = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_JETTY_THREADPOOL_MIN);
     final int idleTimeout = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_JETTY_THREADPOOL_IDLE);
     final QueuedThreadPool threadPool = new QueuedThreadPool(maxThreads, minThreads, idleTimeout);
     final Server httpServer = new Server(threadPool);
+    httpServer.setStopAtShutdown(true);
     final SslContextFactory sslContextFactory = ServletSecurity.createSslContextFactory(conf);
     final ServerConnector connector = new ServerConnector(httpServer, sslContextFactory);
     connector.setPort(port);

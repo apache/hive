@@ -65,8 +65,6 @@ public class PropertyServlet extends HttpServlet {
   public static final Logger LOGGER = LoggerFactory.getLogger(PropertyServlet.class);
   /** The configuration. */
   private final Configuration configuration;
-  /** The security. */
-  private final SecureServletCaller security;
 
   static boolean isAuthJwt(Configuration configuration) {
     String auth = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.PROPERTIES_SERVLET_AUTH);
@@ -74,11 +72,6 @@ public class PropertyServlet extends HttpServlet {
   }
 
   PropertyServlet(Configuration configuration) {
-    this(configuration, new ServletSecurity(configuration, isAuthJwt(configuration)));
-  }
-
-  PropertyServlet(Configuration configuration, SecureServletCaller security) {
-    this.security = security;
     this.configuration = configuration;
   }
 
@@ -147,16 +140,10 @@ public class PropertyServlet extends HttpServlet {
 
   public void init() throws ServletException {
     super.init();
-    security.init();
   }
 
   @Override
   protected void doPost(HttpServletRequest request,
-                        HttpServletResponse response) throws ServletException, IOException {
-    security.execute(request, response, PropertyServlet.this::runPost);
-  }
-
-  private void runPost(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException {
     final RawStore ms =  getMS();
     final String ns = getNamespace(request.getRequestURI());
@@ -267,10 +254,6 @@ public class PropertyServlet extends HttpServlet {
   @Override
   protected void doPut(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
-    security.execute(request, response, PropertyServlet.this::runPut);
-  }
-  private void runPut(HttpServletRequest request,
-                       HttpServletResponse response) throws ServletException {
     final String ns = getNamespace(request.getRequestURI());
     final RawStore ms =  getMS();
     try {
@@ -303,11 +286,6 @@ public class PropertyServlet extends HttpServlet {
   @Override
   protected void doGet(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
-    security.execute(request, response, PropertyServlet.this::runGet);
-  }
-
-  private void runGet(HttpServletRequest request,
-                      HttpServletResponse response) throws ServletException {
     final String ns = getNamespace(request.getRequestURI());
     final RawStore ms = getMS();
     try {
@@ -352,11 +330,9 @@ public class PropertyServlet extends HttpServlet {
     if (port < 0) {
       return null;
     }
-    String cli = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
-    return startServer(conf, port, cli, new PropertyServlet(conf));
-  }
-
-  public static Server startServer(Configuration conf, int port, String path, Servlet servlet) throws Exception {
+    String path = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
+    ServletSecurity security = new ServletSecurity(conf);
+    Servlet servlet =  security.proxy(new PropertyServlet(conf));
     // HTTP Server
     Server server = new Server();
     server.setStopAtShutdown(true);

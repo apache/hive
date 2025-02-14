@@ -96,6 +96,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import javax.servlet.Servlet;
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
 /**
@@ -469,7 +470,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     IHMSHandler handler = HMSHandlerProxyFactory.getProxy(conf, baseHandler, false);
     processor = new ThriftHiveMetastore.Processor<>(handler);
     LOG.info("Starting DB backed MetaStore Server with generic processor");
-    TServlet thriftHttpServlet = new HmsThriftHttpServlet(processor, protocolFactory, conf);
+    ServletSecurity security = new ServletSecurity(conf);
+    Servlet thriftHttpServlet = security.proxy(new TServlet(processor, protocolFactory));
 
     boolean directSqlEnabled = MetastoreConf.getBoolVar(conf, ConfVars.TRY_DIRECT_SQL);
     HMSHandler.LOG.info("Direct SQL optimization = {}",  directSqlEnabled);

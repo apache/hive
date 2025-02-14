@@ -33,7 +33,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.hadoop.hive.metastore.SecureServletCaller;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
@@ -52,74 +51,16 @@ import org.slf4j.LoggerFactory;
  */
 public class HMSCatalogServlet extends HttpServlet {
   private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogServlet.class);
-  /**
-   * The security.
-   */
-  private final SecureServletCaller security;
-
   private final HMSCatalogAdapter restCatalogAdapter;
   private final Map<String, String> responseHeaders =
       ImmutableMap.of(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
 
-  public HMSCatalogServlet(SecureServletCaller security, HMSCatalogAdapter restCatalogAdapter) {
-    this.security = security;
+  public HMSCatalogServlet(HMSCatalogAdapter restCatalogAdapter) {
     this.restCatalogAdapter = restCatalogAdapter;
   }
-
-  @Override
-  public void init() throws ServletException {
-    super.init();
-    security.init();
-  }
-  @Override
-  protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-    String method = req.getMethod();
-    if (!"PATCH".equals(method)) {
-      super.service(req, resp);
-    } else {
-      this.doPatch(req, resp);
-    }
-  }
   
-  private void doExecute(String method, HttpServletRequest request, HttpServletResponse response) {
-    try {
-      security.execute(request, response, this::execute);
-    } catch (IOException e) {
-      LOG.error(method + " failed", e);
-      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-    }
-  }
-
-  protected void doPatch(HttpServletRequest request, HttpServletResponse response)  {
-    doExecute("PATCH", request, response);
-  }
-
   @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) {
-    doExecute("GET", request, response);
-  }
-
-  @Override
-  protected void doPut(HttpServletRequest request, HttpServletResponse response) {
-    doExecute("PUT", request, response);
-  }
-
-  @Override
-  protected void doHead(HttpServletRequest request, HttpServletResponse response) {
-    doExecute("HEAD", request, response);
-  }
-
-  @Override
-  protected void doPost(HttpServletRequest request, HttpServletResponse response) {
-    doExecute("POST", request, response);
-  }
-
-  @Override
-  protected void doDelete(HttpServletRequest request, HttpServletResponse response)  {
-    doExecute("DELETE", request, response);
-  }
-
-  private void execute(HttpServletRequest request, HttpServletResponse response) {
+  protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     try {
       ServletRequestContext context = ServletRequestContext.from(request);
       response.setStatus(HttpServletResponse.SC_OK);
