@@ -28,6 +28,8 @@ import java.util.concurrent.Executors;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.TaskQueue;
@@ -55,6 +57,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 public class StatsTask extends Task<StatsWork> implements Serializable {
   private static final long serialVersionUID = 1L;
   private static transient final Logger LOG = LoggerFactory.getLogger(StatsTask.class);
+  private final PerfLogger perfLogger = SessionState.getPerfLogger();
 
   public StatsTask() {
     super();
@@ -94,6 +97,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     }
     int ret = 0;
     try {
+      perfLogger.perfLogBegin("StatsTask", PerfLogger.STATS_TASK);
 
       if (work.isFooterScan()) {
         work.getBasicStatsNoJobWork().setPartitions(work.getPartitions());
@@ -113,6 +117,9 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       LOG.error("Failed to run stats task", e);
       setException(e);
       return 1;
+    } finally {
+      perfLogger.perfLogEnd("StatsTask", PerfLogger.STATS_TASK);
+      console.printInfo(String.format("StatsTask took %d", perfLogger.getDuration(PerfLogger.STATS_TASK)));
     }
     return 0;
   }

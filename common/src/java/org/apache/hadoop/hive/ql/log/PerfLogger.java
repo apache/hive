@@ -101,6 +101,8 @@ public class PerfLogger {
   public static final String LOAD_PARTITION = "LoadPartition";
   public static final String LOAD_DYNAMIC_PARTITIONS = "LoadDynamicPartitions";
 
+  public static final String STATS_TASK = "StatsTask";
+
   public static final String HIVE_GET_TABLE = "getTablesByType";
   public static final String HIVE_GET_DATABASE = "getDatabase";
   public static final String HIVE_GET_DATABASE_2 = "getDatabase2";
