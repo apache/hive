@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.queryhistory.repository;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.queryhistory.schema.Record;
+import org.apache.hadoop.hive.ql.queryhistory.schema.Schema;
 import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
@@ -47,16 +49,20 @@ import org.apache.tez.mapreduce.hadoop.mapred.TaskAttemptContextImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
 import java.util.UUID;
+import java.util.concurrent.Executors;
 
 public class IcebergRepository extends AbstractRepository implements QueryHistoryRepository {
   private static final Logger LOG = LoggerFactory.getLogger(IcebergRepository.class);
   private static final String ICEBERG_STORAGE_HANDLER = "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler";
+  private static final String ICEBERG_WORKER_THREAD_NAME_FORMAT = "hs2-iceberg-worker-pool-%d";
 
   private HiveOutputFormat<?, ?> outputFormat;
   private Serializer serializer;
@@ -64,6 +70,43 @@ public class IcebergRepository extends AbstractRepository implements QueryHistor
   HiveStorageHandler storageHandler;
   @VisibleForTesting
   TableDesc tableDesc;
+
+  public void init(HiveConf conf, Schema schema) {
+    super.init(conf, schema);
+    try {
+      overrideIcebergWorkerPool();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * This is a workaround for Iceberg's exiting executor services, as described in HIVE-28759.
+   * This method replaces the original executor service with a new one that is not immediately shut down by the JVM's
+   * shutdown hook, allowing the query history service to flush records from its queue successfully.
+   * The new executor service retains the thread settings of the original one.
+   */
+  private void overrideIcebergWorkerPool() throws Exception {
+    Field field = Class.forName("org.apache.iceberg.util.ThreadPools").getDeclaredField("WORKER_POOL");
+    field.setAccessible(true);
+
+    Field modifiersField = Field.class.getDeclaredField("modifiers");
+    modifiersField.setAccessible(true);
+    modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+
+    int poolSize = getIcebergWorkerPoolSize();
+    LOG.info("Overriding iceberg worker pool, size: {}", poolSize);
+    field.set(null, Executors.newFixedThreadPool(poolSize,
+        (new ThreadFactoryBuilder()).setDaemon(true).setNameFormat(ICEBERG_WORKER_THREAD_NAME_FORMAT).build()));
+  }
+
+  private int getIcebergWorkerPoolSize() {
+    String value = System.getProperty("iceberg.worker.num-threads");
+    if (value == null) {
+      value = System.getenv("ICEBERG_WORKER_NUM_THREADS");
+    }
+    return value == null ? Math.max(2, Runtime.getRuntime().availableProcessors()) : Integer.parseInt(value);
+  }
 
   @Override
   protected Table createTable(Hive hive, Database db) throws HiveException {
