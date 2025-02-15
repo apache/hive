@@ -37,6 +37,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -44,28 +45,35 @@ import java.util.Optional;
 
 /**
  * Secures servlet processing.
- * <p>This is to be used by servlets that require impersonation through UserGroupInformation.doAs mechanism when
- * providing service. The servlet request header provides user identification
- * that Hadoop&quote;s security uses to perform actions, the
+ * <p>This is to be used by servlets that require impersonation through {@link UserGroupInformation#doAs(PrivilegedAction)}
+ * method when providing service. The servlet request header provides user identification
+ * that Hadoop{@literal '}s security uses to perform actions, the
  * {@link ServletSecurity#execute(HttpServletRequest, HttpServletResponse, ServletSecurity.MethodExecutor)}
- * method takes care of running code in the expected UserGroupInformation context.
+ * method invokes the executor through a {@link PrivilegedAction} in the expected {@link UserGroupInformation} context.
  * </p>
  * A typical usage in a servlet is the following:
  * <pre>
- * {@code
+ *{@code
  * SecureServletCaller security; // ...
- *
- * @Override protected void doPost(HttpServletRequest request,
- * HttpServletResponse response) throws ServletException, IOException {
- * security.execute(request, response, this::runPost);
+ * @Override protected void doPost(HttpServletRequest request, HttpServletResponse response)
+ *    throws ServletException, IOException {
+ *  security.execute(request, response, this::runPost);
  * }
- *
- * private void runPost(HttpServletRequest request,
- * HttpServletResponse response) throws ServletException {
+ * private void runPost(HttpServletRequest request, HttpServletResponse response) throws ServletException {
  * ...
  * }
- * }
+ *}
  * </pre>
+ * <p>
+ *  As a convenience, instead of embedding the security instance, one can wrap an existing servlet in a proxy that
+ *  will ensure all its service methods are called with the expected {@link UserGroupInformation} .
+ *  <pre>
+ * {@code
+ *  HttpServlet myServlet = ...;
+ *  ServletSecurity security = ...: ;
+ *  Servlet ugiServlet = security.proxy(mySerlvet);
+ *  }</pre>
+ * </p>
  *
  * <p>This implementation performs user extraction and eventual JWT validation to
  * execute (servlet service) methods within the context of the retrieved UserGroupInformation.</p>
@@ -114,7 +122,7 @@ public class ServletSecurity {
       this.delegate = delegate;
     }
 
-    public void init() throws ServletException {
+    @Override public void init() throws ServletException {
       ServletSecurity.this.init();
       delegate.init();
     }
@@ -162,7 +170,7 @@ public class ServletSecurity {
   public void execute(HttpServletRequest request, HttpServletResponse response, MethodExecutor executor)
       throws IOException {
     if (LOG.isDebugEnabled()) {
-      LOG.debug("Logging headers in "+request.getMethod()+" request");
+      LOG.debug("Logging headers in {} request", request.getMethod());
       Enumeration<String> headerNames = request.getHeaderNames();
       while (headerNames.hasMoreElements()) {
         String headerName = headerNames.nextElement();
@@ -170,9 +178,9 @@ public class ServletSecurity {
             request.getHeader(headerName));
       }
     }
+    final UserGroupInformation clientUgi;
     try {
       String userFromHeader = extractUserName(request, response);
-      UserGroupInformation clientUgi;
       // Temporary, and useless for now. Here only to allow this to work on an otherwise kerberized
       // server.
       if (isSecurityEnabled || jwtAuthEnabled) {
@@ -182,25 +190,25 @@ public class ServletSecurity {
         LOG.info("Creating remote user for: {}", userFromHeader);
         clientUgi = UserGroupInformation.createRemoteUser(userFromHeader);
       }
-      PrivilegedExceptionAction<Void> action = () -> {
-        executor.execute(request, response);
-        return null;
-      };
-      try {
-        clientUgi.doAs(action);
-      } catch (InterruptedException e) {
-        LOG.error("Exception when executing http request as user: " + clientUgi.getUserName(), e);
-        Thread.currentThread().interrupt();
-      } catch (RuntimeException e) {
-        LOG.error("Exception when executing http request as user: " + clientUgi.getUserName(),
-            e);
-        throw new IOException(e);
-      }
     } catch (HttpAuthenticationException e) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       response.getWriter().println("Authentication error: " + e.getMessage());
       // Also log the error message on server side
       LOG.error("Authentication error: ", e);
+      // no need to go further
+      return;
+    }
+    final PrivilegedExceptionAction<Void> action = () -> {
+      executor.execute(request, response);
+      return null;
+    };
+    try {
+      clientUgi.doAs(action);
+    } catch (InterruptedException e) {
+      LOG.info("Interrupted when executing http request as user: {}", clientUgi.getUserName(), e);
+      Thread.currentThread().interrupt();
+    } catch (RuntimeException e) {
+      throw new IOException("Exception when executing http request as user: "+ clientUgi.getUserName(), e);
     }
   }
 
