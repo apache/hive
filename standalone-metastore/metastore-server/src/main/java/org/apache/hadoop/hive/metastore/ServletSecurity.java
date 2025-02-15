@@ -52,27 +52,25 @@ import java.util.Optional;
  * method invokes the executor through a {@link PrivilegedAction} in the expected {@link UserGroupInformation} context.
  * </p>
  * A typical usage in a servlet is the following:
- * <pre>
- *{@code
+ * <pre><code>
  * SecureServletCaller security; // ...
- * @Override protected void doPost(HttpServletRequest request, HttpServletResponse response)
+ * {@literal @}Override protected void doPost(HttpServletRequest request, HttpServletResponse response)
  *    throws ServletException, IOException {
  *  security.execute(request, response, this::runPost);
  * }
  * private void runPost(HttpServletRequest request, HttpServletResponse response) throws ServletException {
  * ...
  * }
- *}
- * </pre>
+ * </code></pre>
  * <p>
  *  As a convenience, instead of embedding the security instance, one can wrap an existing servlet in a proxy that
  *  will ensure all its service methods are called with the expected {@link UserGroupInformation} .
- *  <pre>
- * {@code
+ *  <pre><code>
  *  HttpServlet myServlet = ...;
  *  ServletSecurity security = ...: ;
  *  Servlet ugiServlet = security.proxy(mySerlvet);
- *  }</pre>
+ *  }
+ *  </code></pre>
  * </p>
  *
  * <p>This implementation performs user extraction and eventual JWT validation to
