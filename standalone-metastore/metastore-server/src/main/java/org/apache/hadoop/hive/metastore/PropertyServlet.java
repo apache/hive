@@ -332,7 +332,7 @@ public class PropertyServlet extends HttpServlet {
       return null;
     }
     String path = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
-    ServletSecurity security = new ServletSecurity(conf);
+    ServletSecurity security = new ServletSecurity(conf, PropertyServlet.isAuthJwt(conf));
     Servlet servlet =  security.proxy(new PropertyServlet(conf));
     // HTTP Server
     Server server = new Server();
