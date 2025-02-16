@@ -63,18 +63,19 @@ import java.util.Optional;
  * }
  * </code></pre>
  * <p>
- *  As a convenience, instead of embedding the security instance, one can wrap an existing servlet in a proxy that
- *  will ensure all its service methods are called with the expected {@link UserGroupInformation} .
- *  <pre><code>
+ * As a convenience, instead of embedding the security instance, one can wrap an existing servlet in a proxy that
+ * will ensure all its service methods are called with the expected {@link UserGroupInformation} .
+ * </p>
+ * <pre><code>
  *  HttpServlet myServlet = ...;
  *  ServletSecurity security = ...: ;
  *  Servlet ugiServlet = security.proxy(mySerlvet);
  *  }
  *  </code></pre>
+ * <p>
+ * This implementation performs user extraction and eventual JWT validation to
+ * execute (servlet service) methods within the context of the retrieved UserGroupInformation.
  * </p>
- *
- * <p>This implementation performs user extraction and eventual JWT validation to
- * execute (servlet service) methods within the context of the retrieved UserGroupInformation.</p>
  */
 public class ServletSecurity {
   private static final Logger LOG = LoggerFactory.getLogger(ServletSecurity.class);
