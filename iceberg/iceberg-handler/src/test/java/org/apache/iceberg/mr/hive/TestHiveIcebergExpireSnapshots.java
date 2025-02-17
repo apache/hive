@@ -27,6 +27,7 @@ import org.apache.commons.collections4.IterableUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.functional.RemoteIterators;
+import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.TableIdentifier;
@@ -183,6 +184,9 @@ public class TestHiveIcebergExpireSnapshots extends HiveIcebergStorageHandlerWit
         "(CURRENT_DATE - 1) AND '" + toTime + "'");
     table.refresh();
     Assert.assertEquals(1, IterableUtils.size(table.snapshots()));
+    AssertHelpers.assertThrows("Invalid timestamp expression", IllegalArgumentException.class, () ->
+        shell.executeStatement("ALTER TABLE " + identifier.name() + " EXECUTE EXPIRE_SNAPSHOTS BETWEEN " +
+        "(RAND()) AND '" + toTime + "'"));
   }
 
   @Test

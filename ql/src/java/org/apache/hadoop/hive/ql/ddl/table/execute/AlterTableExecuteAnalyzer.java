@@ -181,6 +181,9 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
       QueryState queryState = new QueryState.Builder().withGenerateNewQueryId(false).withHiveConf(conf).build();
       SemanticAnalyzer sem = (SemanticAnalyzer) SemanticAnalyzerFactory.get(queryState, node);
       ExprNodeDesc desc = sem.genExprNodeDesc(node, new RowResolver(), false, true);
+      if(!(desc instanceof ExprNodeConstantDesc))  {
+        throw new SemanticException("Invalid timestamp expression");
+      }
       ExprNodeConstantDesc constantDesc = (ExprNodeConstantDesc) desc;
       return String.valueOf(constantDesc.getValue());
     }

@@ -501,7 +501,7 @@ alterStatementSuffixExecute
     -> ^(TOK_ALTERTABLE_EXECUTE KW_FAST_FORWARD $sourceBranch $targetBranch?)
     | KW_EXECUTE KW_CHERRY_PICK snapshotId=Number
     -> ^(TOK_ALTERTABLE_EXECUTE KW_CHERRY_PICK $snapshotId)
-    | KW_EXECUTE KW_EXPIRE_SNAPSHOTS  KW_BETWEEN
+    | KW_EXECUTE KW_EXPIRE_SNAPSHOTS KW_BETWEEN
       fromTimestamp=timestampExpression KW_AND toTimestamp=timestampExpression
     -> ^(TOK_ALTERTABLE_EXECUTE KW_EXPIRE_SNAPSHOTS $fromTimestamp $toTimestamp)
     | KW_EXECUTE KW_EXPIRE_SNAPSHOTS KW_RETAIN KW_LAST numToRetain=Number
