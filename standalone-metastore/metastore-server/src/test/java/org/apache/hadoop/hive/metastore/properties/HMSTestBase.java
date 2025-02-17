@@ -111,7 +111,6 @@ public abstract class HMSTestBase {
     NS = "hms" + RND.nextInt(100);
     conf = MetastoreConf.newMetastoreConf();
     MetaStoreTestUtils.setConfForStandloneMode(conf);
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_METASTORE_AUTHENTICATION, "jwt");
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
     // Events that get cleaned happen in batches of 1 to exercise batching code
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.EVENT_CLEAN_MAX_EVENTS, 1L);
