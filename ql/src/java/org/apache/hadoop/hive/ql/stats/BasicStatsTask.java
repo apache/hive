@@ -101,7 +101,6 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
 
   @Override
   public int process(Hive db, Table tbl) throws Exception {
-
     LOG.info("Executing stats task");
     table = tbl;
     return aggregateStats(db, tbl);
