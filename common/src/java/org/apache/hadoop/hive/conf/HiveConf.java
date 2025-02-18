@@ -64,6 +64,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -7301,6 +7302,12 @@ public class HiveConf extends Configuration {
       }
     }
     return ret;
+  }
+
+  public static boolean shouldComputeLineage(HiveConf conf) {
+    Collection<String> lineage_filter =
+      conf.getTrimmedStringCollection(HiveConf.ConfVars.HIVE_LINEAGE_STATEMENT_FILTER.varname);
+    return !(lineage_filter.isEmpty() || lineage_filter.contains("NONE"));
   }
 
   // sync all configs from given conf

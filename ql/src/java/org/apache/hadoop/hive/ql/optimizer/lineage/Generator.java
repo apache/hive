@@ -90,7 +90,7 @@ public class Generator extends Transform {
   static Predicate<ParseContext> createFilterPredicateFromConf(Configuration conf) {
     Set<LineageInfoFilter> operations = new HashSet<>();
     boolean noneSpecified = false;
-    for (String valueText : conf.getStringCollection(HiveConf.ConfVars.HIVE_LINEAGE_STATEMENT_FILTER.varname)) {
+    for (String valueText : conf.getTrimmedStringCollection(HiveConf.ConfVars.HIVE_LINEAGE_STATEMENT_FILTER.varname)) {
       LineageInfoFilter enumValue = EnumUtils.getEnumIgnoreCase(LineageInfoFilter.class, valueText);
       if (enumValue == null) {
         throw new EnumConstantNotPresentException(LineageInfoFilter.class, valueText);
