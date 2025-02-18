@@ -16,7 +16,6 @@
  * limitations under the License.
  */
 
-
 package org.apache.hadoop.hive.ql.optimizer.graph;
 
 import java.util.Collections;
@@ -30,7 +29,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
-import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
+import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -38,6 +37,7 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemiJoinBranchInfo;
 import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
+import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 
 /**
  * Represents the Operator tree as a graph.
@@ -146,7 +146,6 @@ public class OperatorGraph {
       if (!cluster.getMembers().contains(currentOperator)) {
         cluster.add(currentOperator);
 
-        // TODO: write about DummyStoreOperator and FileSinkOperator
         if (!(currentOperator instanceof ReduceSinkOperator)) {
           remainingOperators.addAll(currentOperator.getChildOperators());
         }
@@ -158,20 +157,24 @@ public class OperatorGraph {
 
   private Set<Cluster> createClusterSet(ParseContext pctx) {
     Set<Operator<?>> rootOperators = new HashSet<>(pctx.getTopOps().values());
-    Set<Operator<?>> mergeJoinOperators = new HashSet<>();
+    Set<Operator<?>> joinOperators = new HashSet<>();
     for (Operator<?> operator: pctx.getAllOps()) {
-      if (operator instanceof CommonMergeJoinOperator) {
-        mergeJoinOperators.add(operator);
+      if (operator instanceof CommonJoinOperator) {
+        if (operator instanceof MapJoinOperator) {
+          MapJoinDesc desc = (MapJoinDesc) operator.getConf();
+          if (desc.isDynamicPartitionHashJoin()) {
+            joinOperators.add(operator);
+          }
+        } else {
+          joinOperators.add(operator);
+        }
       }
 
       if (operator instanceof ReduceSinkOperator) {
-        // TODO: Do we need to consider SJ and DPP?
         for (Operator<?> childOperator: operator.getChildOperators()) {
           if (childOperator instanceof MapJoinOperator) {
-            MapJoinOperator childMJOperator = (MapJoinOperator) childOperator;
-            int parentTag = childMJOperator.getParentOperators().indexOf(operator);
-            int bigTablePos = childMJOperator.getConf().getPosBigTable();
-            if (parentTag == bigTablePos) {
+            MapJoinDesc conf = (MapJoinDesc) childOperator.getConf();
+            if (conf.isDynamicPartitionHashJoin()) {
               rootOperators.add(childOperator);
             }
           } else {
@@ -186,21 +189,22 @@ public class OperatorGraph {
       clusters.add(createCluster(rootOperator));
     }
 
-    for (Operator<?> operator: mergeJoinOperators) {
-      Set<Cluster> mergeJoinCluster = new HashSet<>();
+    for (Operator<?> joinOp: joinOperators) {
+      Set<Cluster> joinOpIncludingClusters = new HashSet<>();
       for (Cluster cluster: clusters) {
-        if (cluster.getMembers().contains(operator)) {
-          mergeJoinCluster.add(cluster);
+        if (cluster.getMembers().contains(joinOp)) {
+          joinOpIncludingClusters.add(cluster);
         }
       }
 
-      if (!mergeJoinCluster.isEmpty()) {
+      if (joinOpIncludingClusters.size() > 1) {
         Cluster mergedCluster = new Cluster();
-        for (Cluster cluster: mergeJoinCluster) {
+        for (Cluster cluster: joinOpIncludingClusters) {
           mergedCluster.merge(cluster);
-          clusters.remove(cluster);
         }
+
         clusters.add(mergedCluster);
+        clusters.removeAll(joinOpIncludingClusters);
       }
     }
 
