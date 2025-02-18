@@ -1856,6 +1856,18 @@ public class MetastoreConf {
         "hive.metastore.catalog.cache.expiry", 60_000L,
         "HMS Iceberg Catalog cache expiry."
     ),
+    EMBEDDED_JETTY_THREADPOOL_MIN("hive.metastore.embedded.jetty.threadpool.min",
+            "hive.metastore.embedded.jetty.threadpool.min", 2,
+            "HMS embedded Jetty server(s) minimum number of threads."
+    ),
+    EMBEDDED_JETTY_THREADPOOL_MAX("hive.metastore.embedded.jetty.threadpool.max",
+            "hive.metastore.embedded.jetty.threadpool.max", 256,
+            "HMS embedded Jetty server(s) maximum number of threads."
+    ),
+    EMBEDDED_JETTY_THREADPOOL_IDLE("hive.metastore.embedded.jetty.threadpool.idle",
+            "hive.metastore.embedded.jetty.threadpool.idle", 60_000L,
+            "HMS embedded Jetty server(s) thread idle time."
+    ),
 
     // Deprecated Hive values that we are keeping for backwards compatibility.
     @Deprecated

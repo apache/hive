@@ -29,15 +29,9 @@ import org.apache.hadoop.hive.metastore.properties.PropertyManager;
 import org.apache.hadoop.hive.metastore.properties.PropertyMap;
 import org.apache.hadoop.hive.metastore.properties.PropertyStore;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.servlet.Source;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
@@ -320,42 +314,48 @@ public class PropertyServlet extends HttpServlet {
   }
 
   /**
+   * Single servlet creation helper.
+   */
+  private static class ServerBuilder extends ServletServerBuilder {
+    final int port;
+    final String path;
+    ServerBuilder(Configuration conf) {
+      super(conf);
+      port = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PORT);
+      path = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
+    }
+
+    @Override
+    protected String getServletPath() {
+      return path;
+    }
+
+    @Override
+    protected int getServerPort() {
+      return port;
+    }
+
+    @Override
+    protected HttpServlet createServlet() throws IOException {
+      ServletSecurity security = new ServletSecurity(configuration, PropertyServlet.isAuthJwt(configuration));
+      return security.proxy(new PropertyServlet(configuration));
+    }
+  }
+
+  /**
    * Convenience method to start a http server that only serves this servlet.
    * @param conf the configuration
    * @return the server instance
    * @throws Exception if servlet initialization fails
    */
   public static Server startServer(Configuration conf) throws Exception {
-    // no port, no server
-    int port = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PORT);
-    if (port < 0) {
-      return null;
-    }
-    String path = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
-    ServletSecurity security = new ServletSecurity(conf, PropertyServlet.isAuthJwt(conf));
-    Servlet servlet =  security.proxy(new PropertyServlet(conf));
-    // HTTP Server
-    Server server = new Server();
-    server.setStopAtShutdown(true);
-
-    // Optional SSL
-    final SslContextFactory sslContextFactory = ServletSecurity.createSslContextFactory(conf);
-    final ServerConnector connector = new ServerConnector(server, sslContextFactory);
-    connector.setPort(port);
-    connector.setReuseAddress(true);
-    server.addConnector(connector);
-
-    // Hook the servlet
-    ServletHandler handler = new ServletHandler();
-    server.setHandler(handler);
-    ServletHolder holder = handler.newServletHolder(Source.EMBEDDED);
-    holder.setServlet(servlet); //
-    handler.addServletWithMapping(holder, "/"+path+"/*");
-    server.start();
-    if (!server.isStarted()) {
-      LOGGER.error("unable to start property-maps servlet server, path {}, port {}", path, port);
-    } else {
-      LOGGER.info("started property-maps servlet server on {}", server.getURI());
+    Server server = new ServerBuilder(conf).startServer();
+    if (server != null) {
+      if (!server.isStarted()) {
+        LOGGER.error("Unable to start property-maps servlet server on {}", server.getURI());
+      } else {
+        LOGGER.info("Started property-maps servlet server on {}", server.getURI());
+      }
     }
     return server;
   }

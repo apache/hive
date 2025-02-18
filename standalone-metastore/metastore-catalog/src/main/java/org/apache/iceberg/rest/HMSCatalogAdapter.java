@@ -90,7 +90,7 @@ public class HMSCatalogAdapter implements RESTClient {
           .put(NamespaceNotSupported.class, 400)
           .put(IllegalArgumentException.class, 400)
           .put(ValidationException.class, 400)
-          .put(NamespaceNotEmptyException.class, 400) // TODO: should this be more specific?
+          .put(NamespaceNotEmptyException.class, 400)
           .put(NotAuthorizedException.class, 401)
           .put(ForbiddenException.class, 403)
           .put(NoSuchNamespaceException.class, 404)
@@ -102,6 +102,15 @@ public class HMSCatalogAdapter implements RESTClient {
           .put(UnprocessableEntityException.class, 422)
           .put(CommitStateUnknownException.class, 500)
           .buildOrThrow();
+
+  private static final String URN_OAUTH_TOKEN_EXCHANGE = "urn:ietf:params:oauth:grant-type:token-exchange";
+  private static final String URN_OAUTH_ACCESS_TOKEN = "urn:ietf:params:oauth:token-type:access_token";
+  private static final String GRANT_TYPE = "grant_type";
+  private static final String CLIENT_CREDENTIALS = "client_credentials";
+  private static final String BEARER = "Bearer";
+  private static final String CLIENT_ID = "client_id";
+  private static final String ACTOR_TOKEN = "actor_token";
+  private static final String SUBJECT_TOKEN = "subject_token";
 
   private final Catalog catalog;
   private final SupportsNamespaces asNamespaceCatalog;
@@ -288,24 +297,24 @@ public class HMSCatalogAdapter implements RESTClient {
 
   private OAuthTokenResponse tokens(Object body) {
     Map<String, String> request = (Map<String, String>) castRequest(Map.class, body);
-    String grantType = request.get("grant_type");
+    String grantType = request.get(GRANT_TYPE);
     switch (grantType) {
-      case "client_credentials":
+      case CLIENT_CREDENTIALS:
         return OAuthTokenResponse.builder()
-            .withToken("client-credentials-token:sub=" + request.get("client_id"))
-            .withTokenType("Bearer")
+            .withToken("client-credentials-token:sub=" + request.get(CLIENT_ID))
+            .withTokenType(BEARER)
             .build();
 
-      case "urn:ietf:params:oauth:grant-type:token-exchange":
-        String actor = request.get("actor_token");
+      case URN_OAUTH_TOKEN_EXCHANGE:
+        String actor = request.get(ACTOR_TOKEN);
         String token =
             String.format(
                 "token-exchange-token:sub=%s%s",
-                request.get("subject_token"), actor != null ? ",act=" + actor : "");
+                request.get(SUBJECT_TOKEN), actor != null ? ",act=" + actor : "");
         return OAuthTokenResponse.builder()
             .withToken(token)
-            .withIssuedTokenType("urn:ietf:params:oauth:token-type:access_token")
-            .withTokenType("Bearer")
+            .withIssuedTokenType(URN_OAUTH_ACCESS_TOKEN)
+            .withTokenType(BEARER)
             .build();
 
       default:
@@ -315,13 +324,13 @@ public class HMSCatalogAdapter implements RESTClient {
 
   private ListNamespacesResponse listNamespaces(Map<String, String> vars) {
     if (asNamespaceCatalog != null) {
-      Namespace ns;
+      Namespace namespace;
       if (vars.containsKey("parent")) {
-        ns = Namespace.of(RESTUtil.NAMESPACE_SPLITTER.splitToStream(vars.get("parent")).toArray(String[]::new));
+        namespace = Namespace.of(RESTUtil.NAMESPACE_SPLITTER.splitToStream(vars.get("parent")).toArray(String[]::new));
       } else {
-        ns = Namespace.empty();
+        namespace = Namespace.empty();
       }
-      return castResponse(ListNamespacesResponse.class, CatalogHandlers.listNamespaces(asNamespaceCatalog, ns));
+      return castResponse(ListNamespacesResponse.class, CatalogHandlers.listNamespaces(asNamespaceCatalog, namespace));
     }
     throw new NamespaceNotSupported(catalog.toString());
   }
