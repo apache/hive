@@ -129,7 +129,7 @@ public abstract class ServletServerBuilder {
 
   /**
    * Convenience method to start a http server that only serves this servlet.
-   * @return the server instance or null if port < 0
+   * @return the server instance or null if port &lt; 0
    * @throws Exception if servlet initialization fails
    */
   public Server startServer() throws Exception {
