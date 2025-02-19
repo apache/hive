@@ -217,7 +217,7 @@ STAGE PLANS:
                     Statistics: Num rows: 4534 Data size: 1526284 Basic stats: PARTIAL Column stats: PARTIAL
                     Reduce Output Operator
                       key expressions: _col2 (type: string)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col2 (type: string)
                       Reduce Sink Vectorization:
@@ -251,7 +251,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
