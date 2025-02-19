@@ -336,7 +336,7 @@ public class PropertyServlet extends HttpServlet {
     }
 
     @Override
-    protected HttpServlet createServlet() throws IOException {
+    protected HttpServlet createServlet() {
       ServletSecurity security = new ServletSecurity(configuration, PropertyServlet.isAuthJwt(configuration));
       return security.proxy(new PropertyServlet(configuration));
     }

@@ -53,7 +53,7 @@ import java.util.Optional;
  * </p>
  * A typical usage in a servlet is the following:
  * <pre><code>
- * SecureServletCaller security; // ...
+ * ServletSecurity security; // ...
  * {@literal @}Override protected void doPost(HttpServletRequest request, HttpServletResponse response)
  *    throws ServletException, IOException {
  *  security.execute(request, response, this::runPost);

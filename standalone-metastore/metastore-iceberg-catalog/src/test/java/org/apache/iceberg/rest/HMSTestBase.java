@@ -37,6 +37,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -433,15 +434,7 @@ public abstract class HMSTestBase {
         }
     }
 
-    static <T> T deserialize(String s) {
-        try {
-            return MAPPER.readValue(s, new TypeReference<T>() {});
-        } catch (JsonProcessingException xany) {
-            throw new RuntimeException(xany);
-        }
-    }
-
-    static <T> T deserialize(BufferedReader s) {
+    static <T> T deserialize(Reader s) {
         try {
             return MAPPER.readValue(s, new TypeReference<T>() {});
         } catch (IOException xany) {

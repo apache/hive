@@ -131,6 +131,14 @@ public class HMSCatalogServer extends ServletServerBuilder {
    * @throws Exception if servlet initialization fails
    */
   public static Server startServer(Configuration conf) throws Exception {
-    return new HMSCatalogServer(conf, null).startServer();
+    Server server = new HMSCatalogServer(conf, null).startServer();
+    if (server != null) {
+      if (!server.isStarted()) {
+        LOG.error("Unable to start property-maps servlet server on {}", server.getURI());
+      } else {
+        LOG.info("Started property-maps servlet server on {}", server.getURI());
+      }
+    }
+    return server;
   }
 }

@@ -77,7 +77,7 @@ import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.PropertyUtil;
 
 /**
- * Original @ https://github.com/apache/iceberg/blob/main/core/src/test/java/org/apache/iceberg/rest/RESTCatalogAdapter.java
+ * Original @ https://github.com/apache/iceberg/blob/1.6.x/core/src/test/java/org/apache/iceberg/rest/RESTCatalogAdapter.java
  * Adaptor class to translate REST requests into {@link Catalog} API calls.
  */
 public class HMSCatalogAdapter implements RESTClient {
@@ -696,10 +696,8 @@ public class HMSCatalogAdapter implements RESTClient {
   }
 
   @Override
-  public void close() throws IOException {
-    // The calling test is responsible for closing the underlying catalog backing this REST catalog
-    // so that the underlying backend catalog is not closed and reopened during the REST catalog's
-    // initialize method when fetching the server configuration.
+  public void close() {
+    // The caller is responsible for closing the underlying catalog backing this REST catalog.
   }
 
   private static class NamespaceNotSupported extends RuntimeException {

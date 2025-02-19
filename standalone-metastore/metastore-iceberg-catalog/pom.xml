@@ -17,7 +17,7 @@
     <version>4.1.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>hive-standalone-metastore-icecat</artifactId>
+  <artifactId>hive-standalone-metastore-iceberg-catalog</artifactId>
   <name>Hive Metastore Iceberg Catalog</name>
   <properties>
     <standalone.metastore.path.to.root>..</standalone.metastore.path.to.root>
@@ -59,6 +59,21 @@
       <artifactId>iceberg-bundled-guava</artifactId>
       <version>${iceberg.version}</version>
     </dependency>
+    <!-- Intellij dislikes shaded Iceberg: uncomment the following 2 blocks helps when coding/debugging -->
+    <!--
+    <dependency>
+      <groupId>org.apache.iceberg</groupId>
+      <artifactId>iceberg-api</artifactId>
+      <version>${iceberg.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.iceberg</groupId>
+      <artifactId>iceberg-core</artifactId>
+      <version>${iceberg.version}</version>
+      <optional>true</optional>
+    </dependency>
+    -->
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-common</artifactId>

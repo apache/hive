@@ -29,7 +29,6 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -45,7 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Original @ https://github.com/apache/iceberg/blob/main/core/src/test/java/org/apache/iceberg/rest/RESTCatalogServlet.java
+ * Original @ https://github.com/apache/iceberg/blob/1.6.x/core/src/test/java/org/apache/iceberg/rest/RESTCatalogServlet.java
  * The RESTCatalogServlet provides a servlet implementation used in combination with a
  * RESTCatalogAdaptor to proxy the REST Spec to any Catalog implementation.
  */
@@ -60,7 +59,7 @@ public class HMSCatalogServlet extends HttpServlet {
   }
   
   @Override
-  protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+  protected void service(HttpServletRequest request, HttpServletResponse response) {
     try {
       ServletRequestContext context = ServletRequestContext.from(request);
       response.setStatus(HttpServletResponse.SC_OK);
