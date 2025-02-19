@@ -60,7 +60,7 @@ STAGE PLANS:
                       Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
@@ -660,7 +660,7 @@ STAGE PLANS:
                       Statistics: Num rows: 18 Data size: 3240 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 18 Data size: 3240 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1044,7 +1044,7 @@ STAGE PLANS:
                   Statistics: Num rows: 18 Data size: 3258 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col1 (type: string)
-                    null sort order: a
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col1 (type: string)
                     Statistics: Num rows: 18 Data size: 3258 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1154,11 +1154,11 @@ POSTHOOK: Input: default@partition_mv_3
 POSTHOOK: Input: default@partition_mv_3@key=238
 #### A masked pattern was here ####
 val_238_n	238
+val_238	238
+val_238	238
+val_238	238
+val_238	238
 val_238_n	238
-val_238	238
-val_238	238
-val_238	238
-val_238	238
 val_238_n2	238
 val_238_n2	238
 PREHOOK: query: DROP MATERIALIZED VIEW partition_mv_1
