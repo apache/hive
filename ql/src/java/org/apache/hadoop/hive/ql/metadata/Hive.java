@@ -1800,17 +1800,11 @@ public class Hive implements AutoCloseable {
    * @throws LockException
    */
   private ValidWriteIdList getValidWriteIdList(String dbName, String tableName) throws LockException {
-    ValidWriteIdList validWriteIdList = null;
-    SessionState sessionState = SessionState.get();
-    HiveTxnManager txnMgr = sessionState != null? sessionState.getTxnMgr() : null;
-    long txnId = txnMgr != null ? txnMgr.getCurrentTxnId() : 0;
-    if (txnId > 0) {
-      validWriteIdList = AcidUtils.getTableValidWriteIdListWithTxnList(conf, dbName, tableName);
-    } else {
-      String fullTableName = getFullTableName(dbName, tableName);
-      validWriteIdList = new ValidReaderWriteIdList(fullTableName, new long[0], new BitSet(), Long.MAX_VALUE);
-    }
-    return validWriteIdList;
+    long txnId = Optional.ofNullable(SessionState.get())
+      .map(ss -> ss.getTxnMgr().getCurrentTxnId()).orElse(0L);
+    
+    return (txnId > 0) ? AcidUtils.getTableValidWriteIdListWithTxnList(conf, dbName, tableName) : 
+        new ValidReaderWriteIdList();
   }
 
   /**
@@ -4041,6 +4035,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public List<String> getPartitionNames(String dbName, String tblName, short max)
       throws HiveException {
+    Table tbl = getTable(dbName, tblName);
+    if (tbl.hasNonNativePartitionSupport()) {
+      return tbl.getStorageHandler().getPartitionNames(tbl, Maps.newHashMap());
+    }
     List<String> names = null;
     try {
       names = getMSC().listPartitionNames(dbName, tblName, max);
@@ -4058,13 +4056,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public List<String> getPartitionNames(String dbName, String tblName,
       Map<String, String> partSpec, short max) throws HiveException {
-    Table t = getTable(dbName, tblName);
-    if (t.hasNonNativePartitionSupport()) {
-      return t.getStorageHandler().getPartitionNames(t, partSpec);
+    Table tbl = getTable(dbName, tblName);
+    if (tbl.hasNonNativePartitionSupport()) {
+      return tbl.getStorageHandler().getPartitionNames(tbl, partSpec);
     }
-
-    List<String> pvals = MetaStoreUtils.getPvals(t.getPartCols(), partSpec);
-
+    List<String> pvals = MetaStoreUtils.getPvals(tbl.getPartCols(), partSpec);
     return getPartitionNamesByPartitionVals(dbName, tblName, pvals, max);
   }
 
@@ -6110,17 +6106,20 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_TABLE_COLUMN_STATS);
+ 
     List<ColumnStatisticsObj> retv = null;
     try {
+      Table tbl = getTable(dbName, tableName);
+      if (tbl.isNonNative() && tbl.getStorageHandler().canProvideColStatistics(tbl)) {
+        return tbl.getStorageHandler().getColStatistics(tbl);
+      }
       if (checkTransactional) {
-        Table tbl = getTable(dbName, tableName);
         AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl);
         retv = getMSC().getTableColumnStatistics(dbName, tableName, colNames, Constants.HIVE_ENGINE,
             tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null);
       } else {
         retv = getMSC().getTableColumnStatistics(dbName, tableName, colNames, Constants.HIVE_ENGINE);
       }
-
       return retv;
     } catch (Exception e) {
       LOG.debug("Failed getTableColumnStatistics", e);
@@ -6150,24 +6149,27 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  public AggrStats getAggrColStatsFor(String dbName, String tblName,
-     List<String> colNames, List<String> partName, boolean checkTransactional) {
+  public AggrStats getAggrColStatsFor(String dbName, String tblName, 
+      List<String> colNames, List<String> partName, boolean checkTransactional) {
+    
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_AGGR_COL_STATS);
+    
     String writeIdList = null;
     try {
+      Table tbl = getTable(dbName, tblName);
+      if (tbl.isNonNative() && tbl.getStorageHandler().canProvideColStatistics(tbl)) {
+        return tbl.getStorageHandler().getAggrColStatsFor(tbl, colNames, partName);
+      }
       if (checkTransactional) {
-        Table tbl = getTable(dbName, tblName);
         AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl);
         writeIdList = tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null;
       }
-      AggrStats result = getMSC().getAggrColStatsFor(dbName, tblName, colNames, partName, Constants.HIVE_ENGINE,
-              writeIdList);
-
-      return result;
+      return getMSC().getAggrColStatsFor(dbName, tblName, colNames, partName, 
+          Constants.HIVE_ENGINE, writeIdList);
     } catch (Exception e) {
       LOG.debug("Failed getAggrColStatsFor", e);
-      return new AggrStats(new ArrayList<ColumnStatisticsObj>(),0);
+      return new AggrStats(new ArrayList<>(),0);
     } finally {
       perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_AGGR_COL_STATS, "HS2-cache");
     }
