@@ -24,6 +24,8 @@ import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -104,7 +106,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       return Utilities.getColumnNamesFromFieldSchema(tbl.getCols());
     case 3:
       int numCols = tree.getChild(2).getChildCount();
-      List<String> colName = new ArrayList<String>(numCols);
+      List<String> colName = new ArrayList<>(numCols);
       for (int i = 0; i < numCols; i++) {
         colName.add(getUnescapedName((ASTNode) tree.getChild(2).getChild(i)));
       }
@@ -154,52 +156,44 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     }
   }
 
-  private static StringBuilder genPartitionClause(Table tbl, Map<String, String> partSpec, HiveConf conf)
-      throws SemanticException {
-    StringBuilder whereClause = new StringBuilder(" where ");
-    boolean predPresent = false;
-    StringBuilder groupByClause = new StringBuilder(" group by ");
-    boolean aggPresent = false;
+  private static CharSequence genPartitionClause(Table tbl, Map<String, String> partSpec, HiveConf conf) {
+    boolean predPresent = partSpec.values().stream().anyMatch(Objects::nonNull);
+    
+    StringBuilder whereClause = new StringBuilder(" where ").append(
+      partSpec.entrySet().stream()
+        .filter(part -> part.getValue() != null)
+        .map(part -> unparseIdentifier(part.getKey(), conf) + " = " 
+            + genPartValueString(getColTypeOf(tbl, part.getKey()), part.getValue()))
+        .collect(Collectors.joining(" and "))
+    );
 
-    for (Map.Entry<String, String> part : partSpec.entrySet()) {
-      String value = part.getValue();
-      if (value != null) {
-        if (!predPresent) {
-          predPresent = true;
-        } else {
-          whereClause.append(" and ");
-        }
-        whereClause.append(unparseIdentifier(part.getKey(), conf)).append(" = ")
-            .append(genPartValueString(getColTypeOf(tbl, part.getKey()), value));
-      }
-    }
-
-    for (FieldSchema fs : tbl.getPartitionKeys()) {
-      if (!aggPresent) {
-        aggPresent = true;
-      } else {
-        groupByClause.append(',');
-      }
-      groupByClause.append(unparseIdentifier(fs.getName(), conf));
-    }
-
+    StringBuilder groupByClause = new StringBuilder(" group by ").append((
+      tbl.hasNonNativePartitionSupport() ?
+        tbl.getStorageHandler().getPartitionTransformSpec(tbl).stream()
+            .map(spec -> spec.toHiveExpr(conf, false)) :
+        tbl.getPartColNames().stream().map(col -> unparseIdentifier(col, conf))
+      )
+      .collect(Collectors.joining(", "))
+    );
+      
     // attach the predicate and group by to the return clause
     return predPresent ? whereClause.append(groupByClause) : groupByClause;
   }
 
 
 
-  private static String getColTypeOf(Table tbl, String partKey) throws SemanticException{
-    for (FieldSchema fs : tbl.getPartitionKeys()) {
+  private static String getColTypeOf(Table tbl, String partKey) {
+    for (FieldSchema fs : tbl.hasNonNativePartitionSupport() ?
+          tbl.getStorageHandler().getPartitionKeys(tbl) : tbl.getPartitionKeys()) {
       if (partKey.equalsIgnoreCase(fs.getName())) {
         return fs.getType().toLowerCase();
       }
     }
-    throw new SemanticException("Unknown partition key : " + partKey);
+    throw new RuntimeException("Unknown partition key : " + partKey);
   }
 
   protected static List<String> getColumnTypes(Table tbl, List<String> colNames) {
-    List<String> colTypes = new ArrayList<String>();
+    List<String> colTypes = new ArrayList<>();
     List<FieldSchema> cols = tbl.getCols();
     List<String> copyColNames = new ArrayList<>(colNames);
 
@@ -245,14 +239,14 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       HiveConf conf, Map<String, String> partSpec, boolean isPartitionStats,
       boolean useTableValues) throws SemanticException {
     StringBuilder rewrittenQueryBuilder = new StringBuilder("select ");
-
+    
     StringBuilder columnNamesBuilder = new StringBuilder();
     StringBuilder columnDummyValuesBuilder = new StringBuilder();
     for (int i = 0; i < colNames.size(); i++) {
       if (i > 0) {
-        rewrittenQueryBuilder.append(" , ");
-        columnNamesBuilder.append(" , ");
-        columnDummyValuesBuilder.append(" , ");
+        rewrittenQueryBuilder.append(", ");
+        columnNamesBuilder.append(", ");
+        columnDummyValuesBuilder.append(", ");
       }
 
       final String columnName = unparseIdentifier(colNames.get(i), conf);
@@ -262,17 +256,22 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       columnNamesBuilder.append(columnName);
 
       columnDummyValuesBuilder.append(
-          "cast(null as " + typeInfo.toString() + ")");
+          "cast(null as " + typeInfo + ")");
     }
 
     if (isPartitionStats) {
-      for (FieldSchema fs : tbl.getPartCols()) {
-        String identifier = unparseIdentifier(fs.getName(), conf);
-        rewrittenQueryBuilder.append(" , ").append(identifier);
-        columnNamesBuilder.append(" , ").append(identifier);
+      if (tbl.hasNonNativePartitionSupport()) {
+        tbl.getStorageHandler().getPartitionTransformSpec(tbl).forEach(spec -> 
+            rewrittenQueryBuilder.append(", ").append(spec.toHiveExpr(conf, true)));
+      } else {
+        for (FieldSchema fs : tbl.getPartCols()) {
+          String identifier = unparseIdentifier(fs.getName(), conf);
+          rewrittenQueryBuilder.append(", ").append(identifier);
+          columnNamesBuilder.append(", ").append(identifier);
 
-        columnDummyValuesBuilder.append(" , cast(null as ")
+          columnDummyValuesBuilder.append(", cast(null as ")
             .append(TypeInfoUtils.getTypeInfoFromTypeString(fs.getType()).toString()).append(")");
+        }
       }
     }
 
@@ -281,12 +280,12 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       //TABLE(VALUES(cast(null as int),cast(null as string))) AS tablename(col1,col2)
       rewrittenQueryBuilder.append("table(values(");
       // Values
-      rewrittenQueryBuilder.append(columnDummyValuesBuilder.toString());
+      rewrittenQueryBuilder.append(columnDummyValuesBuilder);
       rewrittenQueryBuilder.append(")) as ");
       rewrittenQueryBuilder.append(unparseIdentifier(tbl.getTableName() ,conf));
       rewrittenQueryBuilder.append("(");
       // Columns
-      rewrittenQueryBuilder.append(columnNamesBuilder.toString());
+      rewrittenQueryBuilder.append(columnNamesBuilder);
       rewrittenQueryBuilder.append(")");
     } else {
       rewrittenQueryBuilder.append(unparseIdentifier(tbl.getDbName(), conf));
@@ -554,7 +553,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     List<String> tableCols = Utilities.getColumnNamesFromFieldSchema(tbl.getCols());
     for (String sc : specifiedCols) {
       if (!tableCols.contains(sc.toLowerCase())) {
-        String msg = "'" + sc + "' (possible columns are " + tableCols.toString() + ")";
+        String msg = "'" + sc + "' (possible columns are " + tableCols + ")";
         throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(msg));
       }
     }
@@ -604,8 +603,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       checkForPartitionColumns(
           colNames, Utilities.getColumnNamesFromFieldSchema(tbl.getPartitionKeys()));
       validateSpecifiedColumnNames(colNames);
-      if (conf.getBoolVar(ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS) && tbl.isPartitioned()
-            && !tbl.hasNonNativePartitionSupport()) {
+      if (conf.getBoolVar(ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS) && tbl.isPartitioned()) {
         isPartitionStats = true;
       }
 
@@ -673,8 +671,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     checkForPartitionColumns(colNames,
         Utilities.getColumnNamesFromFieldSchema(tbl.getPartitionKeys()));
     validateSpecifiedColumnNames(colNames);
-    if (conf.getBoolVar(ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS) && tbl.isPartitioned() 
-          && !tbl.hasNonNativePartitionSupport()) {
+    if (conf.getBoolVar(ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS) && tbl.isPartitioned()) {
       isPartitionStats = true;
     }
 
