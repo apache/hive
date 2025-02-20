@@ -253,6 +253,7 @@ Table Parameters:
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	13                  
+	numPartitions       	8                   
 	numRows             	26                  
 	parquet.compression 	zstd                
 #### A masked pattern was here ####
@@ -357,6 +358,7 @@ Table Parameters:
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	8                   
+	numPartitions       	8                   
 	numRows             	26                  
 	parquet.compression 	zstd                
 #### A masked pattern was here ####

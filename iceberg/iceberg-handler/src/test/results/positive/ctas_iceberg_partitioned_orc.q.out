@@ -304,9 +304,11 @@ Table Parameters:
 	iceberg.orc.files.only	true                
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	2                   
+	numPartitions       	2                   
 	numRows             	2                   
 	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
+	rawDataSize         	0                   
 	serialization.format	1                   
 	snapshot-count      	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
