@@ -5079,4 +5079,20 @@ public final class Utilities {
     }
     return suffix;
   }
+
+  public static void cleanResourceDirectory(String resourceDirPath) {
+    if (resourceDirPath != null) {
+      File resourceDir = new File(resourceDirPath);
+      if (resourceDir.exists()) {
+        try {
+          FileUtils.deleteDirectory(resourceDir);
+          LOG.info("Cleaned up Hive downloaded resources directory: {}", resourceDir);
+        } catch (IOException e) {
+          LOG.error("Error removing session resource dir: {}", resourceDir, e);
+        } finally {
+          SessionState.detachSession(); // Detach session to free resources
+        }
+      }
+    }
+  }
 }
