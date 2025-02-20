@@ -33,6 +33,8 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.hadoop.conf.Configuration;
@@ -584,6 +586,10 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     if ((table = getTempTable(dbName, tableName)) != null) {
       List<String> colNames = req.getCol_names();
       if (table.getPartitionKeysSize() == 0) {
+        if (colNames == null || colNames.isEmpty()) {
+          colNames = table.getSd().getCols().stream().map(FieldSchema::getName)
+              .collect(Collectors.toList());
+        }
         for (String colName : colNames) {
           deleteTempTableColumnStats(dbName, tableName, colName);
         }
