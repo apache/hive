@@ -30,6 +30,7 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.mr.hive.TestTables.TestTableType;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -42,10 +43,11 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import static org.apache.iceberg.mr.hive.TestTables.TestTableType.HIVE_CATALOG;
+
 @RunWith(Parameterized.class)
 public class TestHiveIcebergStorageHandlerWithMultipleCatalogs {
 
-  private static final String[] EXECUTION_ENGINES = new String[] { "tez" };
   private static final String HIVECATALOGNAME = "table1_catalog";
   private static final String OTHERCATALOGNAME = "table2_catalog";
   private static TestHiveShell shell;
@@ -55,14 +57,12 @@ public class TestHiveIcebergStorageHandlerWithMultipleCatalogs {
   @Parameterized.Parameter(1)
   public FileFormat fileFormat2;
   @Parameterized.Parameter(2)
-  public String executionEngine;
-  @Parameterized.Parameter(3)
   public TestTables.TestTableType testTableType1;
-  @Parameterized.Parameter(4)
+  @Parameterized.Parameter(3)
   public String table1CatalogName;
-  @Parameterized.Parameter(5)
+  @Parameterized.Parameter(4)
   public TestTables.TestTableType testTableType2;
-  @Parameterized.Parameter(6)
+  @Parameterized.Parameter(5)
   public String table2CatalogName;
 
   @Rule
@@ -70,22 +70,16 @@ public class TestHiveIcebergStorageHandlerWithMultipleCatalogs {
   private TestTables testTables1;
   private TestTables testTables2;
 
-  @Parameterized.Parameters(name = "fileFormat1={0}, fileFormat2={1}, engine={2}, tableType1={3}, catalogName1={4}, " +
-          "tableType2={5}, catalogName2={6}")
+  @Parameterized.Parameters(name = "fileFormat1={0}, fileFormat2={1}, tableType1={2}, catalogName1={3}, " +
+          "tableType2={4}, catalogName2={5}")
   public static Collection<Object[]> parameters() {
     Collection<Object[]> testParams = Lists.newArrayList();
-    String javaVersion = System.getProperty("java.specification.version");
 
     // Run tests with PARQUET and ORC file formats for a two Catalogs
-    for (String engine : EXECUTION_ENGINES) {
-      // include Tez tests only for Java 8
-      if (javaVersion.equals("1.8")) {
-        for (TestTables.TestTableType testTableType : TestTables.ALL_TABLE_TYPES) {
-          if (!TestTables.TestTableType.HIVE_CATALOG.equals(testTableType)) {
-            testParams.add(new Object[]{FileFormat.PARQUET, FileFormat.ORC, engine,
-                TestTables.TestTableType.HIVE_CATALOG, HIVECATALOGNAME, testTableType, OTHERCATALOGNAME});
-          }
-        }
+    for (TestTableType testTableType : TestTables.ALL_TABLE_TYPES) {
+      if (!HIVE_CATALOG.equals(testTableType)) {
+        testParams.add(new Object[]{FileFormat.PARQUET, FileFormat.ORC,
+            HIVE_CATALOG, HIVECATALOGNAME, testTableType, OTHERCATALOGNAME});
       }
     }
     return testParams;
@@ -104,7 +98,7 @@ public class TestHiveIcebergStorageHandlerWithMultipleCatalogs {
   @Before
   public void before() throws IOException {
     testTables1 = HiveIcebergStorageHandlerTestUtils.testTables(shell, testTableType1, temp, table1CatalogName);
-    HiveIcebergStorageHandlerTestUtils.init(shell, testTables1, temp, executionEngine);
+    HiveIcebergStorageHandlerTestUtils.init(shell, testTables1, temp);
     testTables1.properties().entrySet().forEach(e -> shell.setHiveSessionValue(e.getKey(), e.getValue()));
 
     testTables2 = HiveIcebergStorageHandlerTestUtils.testTables(shell, testTableType2, temp, table2CatalogName);

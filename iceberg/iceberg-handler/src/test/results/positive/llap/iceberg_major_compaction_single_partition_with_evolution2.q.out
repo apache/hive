@@ -133,6 +133,7 @@ Table Parameters:
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	4                   
+	numPartitions       	2                   
 	numRows             	12                  
 	parquet.compression 	zstd                
 #### A masked pattern was here ####
@@ -221,6 +222,7 @@ Table Parameters:
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	4                   
+	numPartitions       	2                   
 	numRows             	8                   
 	parquet.compression 	zstd                
 #### A masked pattern was here ####
@@ -310,7 +312,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	compactor.threshold.target.size	1500                
@@ -323,6 +325,7 @@ Table Parameters:
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	3                   
+	numPartitions       	2                   
 	numRows             	8                   
 	parquet.compression 	zstd                
 #### A masked pattern was here ####
@@ -412,7 +415,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	compactor.threshold.target.size	1500                
@@ -425,6 +428,7 @@ Table Parameters:
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	5                   
+	numPartitions       	5                   
 	numRows             	8                   
 	parquet.compression 	zstd                
 #### A masked pattern was here ####

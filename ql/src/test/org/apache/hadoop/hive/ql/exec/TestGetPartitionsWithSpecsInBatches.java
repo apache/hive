@@ -51,6 +51,7 @@ public class TestGetPartitionsWithSpecsInBatches {
   @BeforeClass
   public static void setupClass() throws HiveException {
     hiveConf = new HiveConfForTest(TestGetPartitionsWithSpecsInBatches.class);
+    hiveConf.set("hive.security.authorization.manager","org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider");
     SessionState ss = SessionState.start(hiveConf);
     hive = ss.getHiveDb();
     try {
