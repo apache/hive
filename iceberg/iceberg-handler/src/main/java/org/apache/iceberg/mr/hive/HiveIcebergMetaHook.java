@@ -36,6 +36,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -112,6 +113,7 @@ import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.expressions.UnboundPredicate;
+import org.apache.iceberg.expressions.UnboundTerm;
 import org.apache.iceberg.hive.CachedClientPool;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.HiveTableOperations;
@@ -1138,7 +1140,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       ExprNodeDesc exprNodeDesc = SerializationUtilities
           .deserializeObjectWithTypeInformation(partExpr.getRight(), true);
       SearchArgument sarg = ConvertAstToSearchArg.create(conf, (ExprNodeGenericFuncDesc) exprNodeDesc);
-      validatePartitionSpec(sarg, icebergTbl, partitionFieldMap);
+      validatePartitionSpec(sarg, icebergTbl);
       return HiveIcebergFilterFactory.generateFilterExpression(sarg);
     }).collect(Collectors.toList());
     PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
@@ -1178,13 +1180,12 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     context.putToProperties(HiveMetaStoreClient.SKIP_DROP_PARTITION, "true");
   }
 
-  private static void validatePartitionSpec(SearchArgument sarg, Table icebergTbl,
-      Map<String, PartitionField> partitionFieldMap) {
+  private static void validatePartitionSpec(SearchArgument sarg, Table icebergTbl) {
     for (PredicateLeaf leaf : sarg.getLeaves()) {
       TransformSpec transformSpec = TransformSpec.fromStringWithColumnName(leaf.getColumnName());
       Types.NestedField column = icebergTbl.schema().findField(transformSpec.getColumnName());
       PartitionField partitionColumn =
-          partitionFieldMap.values().stream().filter(pf -> pf.sourceId() == column.fieldId()).findFirst().get();
+          icebergTbl.spec().fields().stream().filter(pf -> pf.sourceId() == column.fieldId()).findFirst().get();
 
       if (!(partitionColumn.transform() == null && transformSpec.transformTypeString() == null) &&
           !partitionColumn.transform().toString().equalsIgnoreCase(transformSpec.transformTypeString())) {
@@ -1201,26 +1202,11 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     String columName = icebergTbl.schema().findField(field.sourceId()).name();
     TransformSpec transformSpec = TransformSpec.fromString(field.transform().toString(), columName);
 
-    switch (transformSpec.getTransformType()) {
-      case IDENTITY:
-        return Expressions.equal(field.name(), partitionData.get(index, Object.class));
-      case YEAR:
-        return Expressions.equal(Expressions.year(columName), partitionData.get(index, Integer.class));
-      case MONTH:
-        return Expressions.equal(Expressions.month(columName), partitionData.get(index, Integer.class));
-      case DAY:
-        return Expressions.equal(Expressions.day(columName), partitionData.get(index, Integer.class));
-      case HOUR:
-        return Expressions.equal(Expressions.hour(columName), partitionData.get(index, Integer.class));
-      case TRUNCATE:
-        return Expressions.equal(Expressions.truncate(columName, transformSpec.getTransformParam().get()),
-            partitionData.get(index, Object.class));
-      case BUCKET:
-        return Expressions.equal(Expressions.bucket(columName, transformSpec.getTransformParam().get()),
-            partitionData.get(index, Object.class));
-      default:
-        throw new UnsupportedOperationException("Unsupported partition transform: " + field.transform());
-    }
+    UnboundTerm<Object> partitionColumn =
+        ObjectUtils.defaultIfNull(HiveIcebergFilterFactory.toTerm(columName, transformSpec),
+            Expressions.ref(field.name()));
+
+    return Expressions.equal(partitionColumn, partitionData.get(index, Object.class));
   }
 
   private class PreAlterTableProperties {

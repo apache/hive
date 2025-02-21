@@ -144,7 +144,7 @@ public class HiveIcebergFilterFactory {
     }
   }
 
-  private static UnboundTerm<Object> toTerm(String columnName, TransformSpec transformSpec) {
+  public static UnboundTerm<Object> toTerm(String columnName, TransformSpec transformSpec) {
     if (transformSpec == null) {
       return null;
     }
