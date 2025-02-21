@@ -740,6 +740,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("delete_table_column_statistics\n");
   }
 
+  bool delete_column_statistics_req(const DeleteColumnStatisticsRequest& req) {
+    // Your implementation goes here
+    printf("delete_column_statistics_req\n");
+  }
+
   void create_function(const Function& func) {
     // Your implementation goes here
     printf("create_function\n");

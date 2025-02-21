@@ -30808,6 +30808,149 @@ class GetAllWriteEventInfoRequest(object):
         return not (self == other)
 
 
+class DeleteColumnStatisticsRequest(object):
+    """
+    Attributes:
+     - cat_name
+     - db_name
+     - tbl_name
+     - part_names
+     - col_names
+     - engine
+     - tableLevel
+
+    """
+
+
+    def __init__(self, cat_name=None, db_name=None, tbl_name=None, part_names=None, col_names=None, engine="hive", tableLevel=False,):
+        self.cat_name = cat_name
+        self.db_name = db_name
+        self.tbl_name = tbl_name
+        self.part_names = part_names
+        self.col_names = col_names
+        self.engine = engine
+        self.tableLevel = tableLevel
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.cat_name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.db_name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.tbl_name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.LIST:
+                    self.part_names = []
+                    (_etype1381, _size1378) = iprot.readListBegin()
+                    for _i1382 in range(_size1378):
+                        _elem1383 = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                        self.part_names.append(_elem1383)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.LIST:
+                    self.col_names = []
+                    (_etype1387, _size1384) = iprot.readListBegin()
+                    for _i1388 in range(_size1384):
+                        _elem1389 = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                        self.col_names.append(_elem1389)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.STRING:
+                    self.engine = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.BOOL:
+                    self.tableLevel = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('DeleteColumnStatisticsRequest')
+        if self.cat_name is not None:
+            oprot.writeFieldBegin('cat_name', TType.STRING, 1)
+            oprot.writeString(self.cat_name.encode('utf-8') if sys.version_info[0] == 2 else self.cat_name)
+            oprot.writeFieldEnd()
+        if self.db_name is not None:
+            oprot.writeFieldBegin('db_name', TType.STRING, 2)
+            oprot.writeString(self.db_name.encode('utf-8') if sys.version_info[0] == 2 else self.db_name)
+            oprot.writeFieldEnd()
+        if self.tbl_name is not None:
+            oprot.writeFieldBegin('tbl_name', TType.STRING, 3)
+            oprot.writeString(self.tbl_name.encode('utf-8') if sys.version_info[0] == 2 else self.tbl_name)
+            oprot.writeFieldEnd()
+        if self.part_names is not None:
+            oprot.writeFieldBegin('part_names', TType.LIST, 4)
+            oprot.writeListBegin(TType.STRING, len(self.part_names))
+            for iter1390 in self.part_names:
+                oprot.writeString(iter1390.encode('utf-8') if sys.version_info[0] == 2 else iter1390)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.col_names is not None:
+            oprot.writeFieldBegin('col_names', TType.LIST, 5)
+            oprot.writeListBegin(TType.STRING, len(self.col_names))
+            for iter1391 in self.col_names:
+                oprot.writeString(iter1391.encode('utf-8') if sys.version_info[0] == 2 else iter1391)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.engine is not None:
+            oprot.writeFieldBegin('engine', TType.STRING, 6)
+            oprot.writeString(self.engine.encode('utf-8') if sys.version_info[0] == 2 else self.engine)
+            oprot.writeFieldEnd()
+        if self.tableLevel is not None:
+            oprot.writeFieldBegin('tableLevel', TType.BOOL, 7)
+            oprot.writeBool(self.tableLevel)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        if self.db_name is None:
+            raise TProtocolException(message='Required field db_name is unset!')
+        if self.tbl_name is None:
+            raise TProtocolException(message='Required field tbl_name is unset!')
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
 class MetaException(TException):
     """
     Attributes:
@@ -34513,6 +34656,17 @@ GetAllWriteEventInfoRequest.thrift_spec = (
     (1, TType.I64, 'txnId', None, None, ),  # 1
     (2, TType.STRING, 'dbName', 'UTF8', None, ),  # 2
     (3, TType.STRING, 'tableName', 'UTF8', None, ),  # 3
+)
+all_structs.append(DeleteColumnStatisticsRequest)
+DeleteColumnStatisticsRequest.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'cat_name', 'UTF8', None, ),  # 1
+    (2, TType.STRING, 'db_name', 'UTF8', None, ),  # 2
+    (3, TType.STRING, 'tbl_name', 'UTF8', None, ),  # 3
+    (4, TType.LIST, 'part_names', (TType.STRING, 'UTF8', False), None, ),  # 4
+    (5, TType.LIST, 'col_names', (TType.STRING, 'UTF8', False), None, ),  # 5
+    (6, TType.STRING, 'engine', 'UTF8', "hive", ),  # 6
+    (7, TType.BOOL, 'tableLevel', None, False, ),  # 7
 )
 all_structs.append(MetaException)
 MetaException.thrift_spec = (

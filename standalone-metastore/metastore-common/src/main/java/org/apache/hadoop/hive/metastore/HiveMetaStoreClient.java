@@ -3645,30 +3645,18 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public boolean deletePartitionColumnStatistics(String dbName, String tableName, String partName,
-      String colName, String engine) throws TException {
-    return deletePartitionColumnStatistics(getDefaultCatalog(conf), dbName, tableName, partName,
-        colName, engine);
-  }
-
-  @Override
-  public boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
-      String partName, String colName, String engine) throws TException {
-    return client.delete_partition_column_statistics(prependCatalogToDbName(catName, dbName, conf),
-        tableName, partName, colName, engine);
-  }
-
-  @Override
-  public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName, String engine)
-      throws TException {
-    return deleteTableColumnStatistics(getDefaultCatalog(conf), dbName, tableName, colName, engine);
-  }
-
-  @Override
-  public boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
-      String colName, String engine) throws TException {
-    return client.delete_table_column_statistics(prependCatalogToDbName(catName, dbName, conf),
-        tableName, colName, engine);
+  public boolean deleteColumnStatistics(DeleteColumnStatisticsRequest req) throws TException {
+    if (!req.isSetCat_name()) {
+      req.setCat_name(getDefaultCatalog(conf));
+    }
+    // check any null value in the list
+    if (req.isSetCol_names() && req.getCol_names().stream().anyMatch(Objects::isNull)) {
+      throw new IllegalArgumentException("Null column is found in DeleteColumnStatisticsRequest");
+    }
+    if (req.isSetPart_names() && req.getPart_names().stream().anyMatch(Objects::isNull)) {
+      throw new IllegalArgumentException("Null partName is found in DeleteColumnStatisticsRequest");
+    }
+    return client.delete_column_statistics_req(req);
   }
 
   @Override

@@ -170,6 +170,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual bool set_aggr_stats_for(const SetPartitionsStatsRequest& request) = 0;
   virtual bool delete_partition_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const std::string& col_name, const std::string& engine) = 0;
   virtual bool delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine) = 0;
+  virtual bool delete_column_statistics_req(const DeleteColumnStatisticsRequest& req) = 0;
   virtual void create_function(const Function& func) = 0;
   virtual void drop_function(const std::string& dbName, const std::string& funcName) = 0;
   virtual void alter_function(const std::string& dbName, const std::string& funcName, const Function& newFunc) = 0;
@@ -783,6 +784,10 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return _return;
   }
   bool delete_table_column_statistics(const std::string& /* db_name */, const std::string& /* tbl_name */, const std::string& /* col_name */, const std::string& /* engine */) override {
+    bool _return = false;
+    return _return;
+  }
+  bool delete_column_statistics_req(const DeleteColumnStatisticsRequest& /* req */) override {
     bool _return = false;
     return _return;
   }
@@ -19762,6 +19767,143 @@ class ThriftHiveMetastore_delete_table_column_statistics_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_delete_column_statistics_req_args__isset {
+  _ThriftHiveMetastore_delete_column_statistics_req_args__isset() : req(false) {}
+  bool req :1;
+} _ThriftHiveMetastore_delete_column_statistics_req_args__isset;
+
+class ThriftHiveMetastore_delete_column_statistics_req_args {
+ public:
+
+  ThriftHiveMetastore_delete_column_statistics_req_args(const ThriftHiveMetastore_delete_column_statistics_req_args&);
+  ThriftHiveMetastore_delete_column_statistics_req_args& operator=(const ThriftHiveMetastore_delete_column_statistics_req_args&);
+  ThriftHiveMetastore_delete_column_statistics_req_args() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_delete_column_statistics_req_args() noexcept;
+  DeleteColumnStatisticsRequest req;
+
+  _ThriftHiveMetastore_delete_column_statistics_req_args__isset __isset;
+
+  void __set_req(const DeleteColumnStatisticsRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_delete_column_statistics_req_args & rhs) const
+  {
+    if (!(req == rhs.req))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_delete_column_statistics_req_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_delete_column_statistics_req_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_delete_column_statistics_req_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_delete_column_statistics_req_pargs() noexcept;
+  const DeleteColumnStatisticsRequest* req;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_delete_column_statistics_req_result__isset {
+  _ThriftHiveMetastore_delete_column_statistics_req_result__isset() : success(false), o1(false), o2(false), o3(false), o4(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+  bool o4 :1;
+} _ThriftHiveMetastore_delete_column_statistics_req_result__isset;
+
+class ThriftHiveMetastore_delete_column_statistics_req_result {
+ public:
+
+  ThriftHiveMetastore_delete_column_statistics_req_result(const ThriftHiveMetastore_delete_column_statistics_req_result&);
+  ThriftHiveMetastore_delete_column_statistics_req_result& operator=(const ThriftHiveMetastore_delete_column_statistics_req_result&);
+  ThriftHiveMetastore_delete_column_statistics_req_result() noexcept
+                                                          : success(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_delete_column_statistics_req_result() noexcept;
+  bool success;
+  NoSuchObjectException o1;
+  MetaException o2;
+  InvalidObjectException o3;
+  InvalidInputException o4;
+
+  _ThriftHiveMetastore_delete_column_statistics_req_result__isset __isset;
+
+  void __set_success(const bool val);
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  void __set_o3(const InvalidObjectException& val);
+
+  void __set_o4(const InvalidInputException& val);
+
+  bool operator == (const ThriftHiveMetastore_delete_column_statistics_req_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    if (!(o4 == rhs.o4))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_delete_column_statistics_req_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_delete_column_statistics_req_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_delete_column_statistics_req_presult__isset {
+  _ThriftHiveMetastore_delete_column_statistics_req_presult__isset() : success(false), o1(false), o2(false), o3(false), o4(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+  bool o4 :1;
+} _ThriftHiveMetastore_delete_column_statistics_req_presult__isset;
+
+class ThriftHiveMetastore_delete_column_statistics_req_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_delete_column_statistics_req_presult() noexcept;
+  bool* success;
+  NoSuchObjectException o1;
+  MetaException o2;
+  InvalidObjectException o3;
+  InvalidInputException o4;
+
+  _ThriftHiveMetastore_delete_column_statistics_req_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_create_function_args__isset {
   _ThriftHiveMetastore_create_function_args__isset() : func(false) {}
   bool func :1;
@@ -35732,6 +35874,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   bool delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine) override;
   void send_delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine);
   bool recv_delete_table_column_statistics();
+  bool delete_column_statistics_req(const DeleteColumnStatisticsRequest& req) override;
+  void send_delete_column_statistics_req(const DeleteColumnStatisticsRequest& req);
+  bool recv_delete_column_statistics_req();
   void create_function(const Function& func) override;
   void send_create_function(const Function& func);
   void recv_create_function();
@@ -36297,6 +36442,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_set_aggr_stats_for(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_delete_partition_column_statistics(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_delete_table_column_statistics(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_delete_column_statistics_req(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_create_function(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_drop_function(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_alter_function(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -36582,6 +36728,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["set_aggr_stats_for"] = &ThriftHiveMetastoreProcessor::process_set_aggr_stats_for;
     processMap_["delete_partition_column_statistics"] = &ThriftHiveMetastoreProcessor::process_delete_partition_column_statistics;
     processMap_["delete_table_column_statistics"] = &ThriftHiveMetastoreProcessor::process_delete_table_column_statistics;
+    processMap_["delete_column_statistics_req"] = &ThriftHiveMetastoreProcessor::process_delete_column_statistics_req;
     processMap_["create_function"] = &ThriftHiveMetastoreProcessor::process_create_function;
     processMap_["drop_function"] = &ThriftHiveMetastoreProcessor::process_drop_function;
     processMap_["alter_function"] = &ThriftHiveMetastoreProcessor::process_alter_function;
@@ -38133,6 +38280,15 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->delete_table_column_statistics(db_name, tbl_name, col_name, engine);
     }
     return ifaces_[i]->delete_table_column_statistics(db_name, tbl_name, col_name, engine);
+  }
+
+  bool delete_column_statistics_req(const DeleteColumnStatisticsRequest& req) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->delete_column_statistics_req(req);
+    }
+    return ifaces_[i]->delete_column_statistics_req(req);
   }
 
   void create_function(const Function& func) override {
@@ -39898,6 +40054,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   bool delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine) override;
   int32_t send_delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine);
   bool recv_delete_table_column_statistics(const int32_t seqid);
+  bool delete_column_statistics_req(const DeleteColumnStatisticsRequest& req) override;
+  int32_t send_delete_column_statistics_req(const DeleteColumnStatisticsRequest& req);
+  bool recv_delete_column_statistics_req(const int32_t seqid);
   void create_function(const Function& func) override;
   int32_t send_create_function(const Function& func);
   void recv_create_function(const int32_t seqid);
