@@ -325,7 +325,7 @@ public final class ParseUtils {
   }
 
   private static void handleSetColRefs(ASTNode tree, Context ctx) {
-    CalcitePlanner.ASTSearcher astSearcher = new CalcitePlanner.ASTSearcher();
+    ASTSearcher astSearcher = new ASTSearcher();
     while (true) {
       astSearcher.reset();
       ASTNode setCols = astSearcher.depthFirstSearch(tree, HiveParser.TOK_SETCOLREF);
@@ -598,7 +598,26 @@ public final class ParseUtils {
       for (int i = 0; i < partSpecTree.getChildCount(); ++i) {
         CommonTree partSpecSingleKey = (CommonTree) partSpecTree.getChild(i);
         assert (partSpecSingleKey.getType() == HiveParser.TOK_PARTVAL);
-        String key = stripIdentifierQuotes(partSpecSingleKey.getChild(0).getText()).toLowerCase();
+        String columnName;
+        String key;
+        if (partSpecSingleKey.getChild(0).getType() == HiveParser.TOK_FUNCTION) {
+          int childCount = partSpecSingleKey.getChild(0).getChildCount();
+          if (childCount == 2) {  // Case with type and key
+            key = stripIdentifierQuotes(partSpecSingleKey.getChild(0).getChild(1).getText()).toLowerCase();
+            columnName = partSpecSingleKey.getChild(0).getChild(0).getText().toLowerCase() + "(" + key + ")";
+          } else if (childCount == 3) {  // Case with transform, columnName, and integer
+            key = stripIdentifierQuotes(partSpecSingleKey.getChild(0).getChild(2).getText()).toLowerCase();
+            String integerValue = partSpecSingleKey.getChild(0).getChild(1).getText();
+            columnName =
+                partSpecSingleKey.getChild(0).getChild(0).getText().toLowerCase() + "(" + integerValue + ", " + key
+                    + ")";
+          } else {
+            throw new SemanticException("Unexpected number of children in partition spec");
+          }
+        } else {
+          key = stripIdentifierQuotes(partSpecSingleKey.getChild(0).getText()).toLowerCase();
+          columnName = key;
+        }
         String operator = partSpecSingleKey.getChild(1).getText();
         ASTNode partValNode = (ASTNode)partSpecSingleKey.getChild(2);
         TypeCheckCtx typeCheckCtx = new TypeCheckCtx(null);
@@ -608,7 +627,7 @@ public final class ParseUtils {
 
         boolean isDefaultPartitionName = val.equals(defaultPartitionName);
 
-        String type = colTypes.get(key);
+        String type = columnName.equals(key) ? colTypes.get(key) : "string";
         if (type == null) {
           throw new SemanticException("Column " + key + " is not a partition key");
         }
@@ -623,7 +642,7 @@ public final class ParseUtils {
           }
         }
 
-        ExprNodeColumnDesc column = new ExprNodeColumnDesc(pti, key, null, true);
+        ExprNodeColumnDesc column = new ExprNodeColumnDesc(pti, columnName, null, true);
         ExprNodeGenericFuncDesc op;
         if (!isDefaultPartitionName) {
           op = PartitionUtils.makeBinaryPredicate(operator, column, new ExprNodeConstantDesc(pti, val));
