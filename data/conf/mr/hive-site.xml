@@ -354,7 +354,7 @@
 
   <property>
     <name>hive.server2.webui.max.threads</name>
-    <value>4</value>
+    <value>6</value>
   </property>
 
   <property>
