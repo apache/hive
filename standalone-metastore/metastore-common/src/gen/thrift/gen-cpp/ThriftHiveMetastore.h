@@ -74,7 +74,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void translate_table_dryrun(Table& _return, const CreateTableRequest& request) = 0;
   virtual void drop_table(const std::string& dbname, const std::string& name, const bool deleteData) = 0;
   virtual void drop_table_with_environment_context(const std::string& dbname, const std::string& name, const bool deleteData, const EnvironmentContext& environment_context) = 0;
-  virtual void drop_table_req(const DropTableRequest& dropTableReq) = 0;
+  virtual void drop_table_req(AsyncOperationResp& _return, const DropTableRequest& dropTableReq) = 0;
   virtual void truncate_table(const std::string& dbName, const std::string& tableName, const std::vector<std::string> & partNames) = 0;
   virtual void truncate_table_req(TruncateTableResponse& _return, const TruncateTableRequest& req) = 0;
   virtual void get_tables(std::vector<std::string> & _return, const std::string& db_name, const std::string& pattern) = 0;
@@ -485,7 +485,7 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void drop_table_with_environment_context(const std::string& /* dbname */, const std::string& /* name */, const bool /* deleteData */, const EnvironmentContext& /* environment_context */) override {
     return;
   }
-  void drop_table_req(const DropTableRequest& /* dropTableReq */) override {
+  void drop_table_req(AsyncOperationResp& /* _return */, const DropTableRequest& /* dropTableReq */) override {
     return;
   }
   void truncate_table(const std::string& /* dbName */, const std::string& /* tableName */, const std::vector<std::string> & /* partNames */) override {
@@ -7104,7 +7104,8 @@ class ThriftHiveMetastore_drop_table_req_pargs {
 };
 
 typedef struct _ThriftHiveMetastore_drop_table_req_result__isset {
-  _ThriftHiveMetastore_drop_table_req_result__isset() : o1(false), o3(false) {}
+  _ThriftHiveMetastore_drop_table_req_result__isset() : success(false), o1(false), o3(false) {}
+  bool success :1;
   bool o1 :1;
   bool o3 :1;
 } _ThriftHiveMetastore_drop_table_req_result__isset;
@@ -7118,10 +7119,13 @@ class ThriftHiveMetastore_drop_table_req_result {
   }
 
   virtual ~ThriftHiveMetastore_drop_table_req_result() noexcept;
+  AsyncOperationResp success;
   NoSuchObjectException o1;
   MetaException o3;
 
   _ThriftHiveMetastore_drop_table_req_result__isset __isset;
+
+  void __set_success(const AsyncOperationResp& val);
 
   void __set_o1(const NoSuchObjectException& val);
 
@@ -7129,6 +7133,8 @@ class ThriftHiveMetastore_drop_table_req_result {
 
   bool operator == (const ThriftHiveMetastore_drop_table_req_result & rhs) const
   {
+    if (!(success == rhs.success))
+      return false;
     if (!(o1 == rhs.o1))
       return false;
     if (!(o3 == rhs.o3))
@@ -7147,7 +7153,8 @@ class ThriftHiveMetastore_drop_table_req_result {
 };
 
 typedef struct _ThriftHiveMetastore_drop_table_req_presult__isset {
-  _ThriftHiveMetastore_drop_table_req_presult__isset() : o1(false), o3(false) {}
+  _ThriftHiveMetastore_drop_table_req_presult__isset() : success(false), o1(false), o3(false) {}
+  bool success :1;
   bool o1 :1;
   bool o3 :1;
 } _ThriftHiveMetastore_drop_table_req_presult__isset;
@@ -7157,6 +7164,7 @@ class ThriftHiveMetastore_drop_table_req_presult {
 
 
   virtual ~ThriftHiveMetastore_drop_table_req_presult() noexcept;
+  AsyncOperationResp* success;
   NoSuchObjectException o1;
   MetaException o3;
 
@@ -35819,9 +35827,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void drop_table_with_environment_context(const std::string& dbname, const std::string& name, const bool deleteData, const EnvironmentContext& environment_context) override;
   void send_drop_table_with_environment_context(const std::string& dbname, const std::string& name, const bool deleteData, const EnvironmentContext& environment_context);
   void recv_drop_table_with_environment_context();
-  void drop_table_req(const DropTableRequest& dropTableReq) override;
+  void drop_table_req(AsyncOperationResp& _return, const DropTableRequest& dropTableReq) override;
   void send_drop_table_req(const DropTableRequest& dropTableReq);
-  void recv_drop_table_req();
+  void recv_drop_table_req(AsyncOperationResp& _return);
   void truncate_table(const std::string& dbName, const std::string& tableName, const std::vector<std::string> & partNames) override;
   void send_truncate_table(const std::string& dbName, const std::string& tableName, const std::vector<std::string> & partNames);
   void recv_truncate_table();
@@ -37594,13 +37602,14 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     ifaces_[i]->drop_table_with_environment_context(dbname, name, deleteData, environment_context);
   }
 
-  void drop_table_req(const DropTableRequest& dropTableReq) override {
+  void drop_table_req(AsyncOperationResp& _return, const DropTableRequest& dropTableReq) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->drop_table_req(dropTableReq);
+      ifaces_[i]->drop_table_req(_return, dropTableReq);
     }
-    ifaces_[i]->drop_table_req(dropTableReq);
+    ifaces_[i]->drop_table_req(_return, dropTableReq);
+    return;
   }
 
   void truncate_table(const std::string& dbName, const std::string& tableName, const std::vector<std::string> & partNames) override {
@@ -40029,9 +40038,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void drop_table_with_environment_context(const std::string& dbname, const std::string& name, const bool deleteData, const EnvironmentContext& environment_context) override;
   int32_t send_drop_table_with_environment_context(const std::string& dbname, const std::string& name, const bool deleteData, const EnvironmentContext& environment_context);
   void recv_drop_table_with_environment_context(const int32_t seqid);
-  void drop_table_req(const DropTableRequest& dropTableReq) override;
+  void drop_table_req(AsyncOperationResp& _return, const DropTableRequest& dropTableReq) override;
   int32_t send_drop_table_req(const DropTableRequest& dropTableReq);
-  void recv_drop_table_req(const int32_t seqid);
+  void recv_drop_table_req(AsyncOperationResp& _return, const int32_t seqid);
   void truncate_table(const std::string& dbName, const std::string& tableName, const std::vector<std::string> & partNames) override;
   int32_t send_truncate_table(const std::string& dbName, const std::string& tableName, const std::vector<std::string> & partNames);
   void recv_truncate_table(const int32_t seqid);

@@ -820,7 +820,7 @@ module ThriftHiveMetastore
 
     def drop_table_req(dropTableReq)
       send_drop_table_req(dropTableReq)
-      recv_drop_table_req()
+      return recv_drop_table_req()
     end
 
     def send_drop_table_req(dropTableReq)
@@ -829,9 +829,10 @@ module ThriftHiveMetastore
 
     def recv_drop_table_req()
       result = receive_message(Drop_table_req_result)
+      return result.success unless result.success.nil?
       raise result.o1 unless result.o1.nil?
       raise result.o3 unless result.o3.nil?
-      return
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'drop_table_req failed: unknown result')
     end
 
     def truncate_table(dbName, tableName, partNames)
@@ -5377,7 +5378,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Drop_table_req_args)
       result = Drop_table_req_result.new()
       begin
-        @handler.drop_table_req(args.dropTableReq)
+        result.success = @handler.drop_table_req(args.dropTableReq)
       rescue ::NoSuchObjectException => o1
         result.o1 = o1
       rescue ::MetaException => o3
@@ -10018,10 +10019,12 @@ module ThriftHiveMetastore
 
   class Drop_table_req_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
     O1 = 1
     O3 = 2
 
     FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::AsyncOperationResp},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
       O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
     }

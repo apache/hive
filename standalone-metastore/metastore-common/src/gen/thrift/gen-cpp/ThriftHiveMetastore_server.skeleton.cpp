@@ -260,7 +260,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("drop_table_with_environment_context\n");
   }
 
-  void drop_table_req(const DropTableRequest& dropTableReq) {
+  void drop_table_req(AsyncOperationResp& _return, const DropTableRequest& dropTableReq) {
     // Your implementation goes here
     printf("drop_table_req\n");
   }

@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.metastore.client;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -1679,7 +1678,22 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     dropTableReq.setCatalogName(catName);
     dropTableReq.setDropPartitions(true);
     dropTableReq.setEnvContext(envContext);
-    client.drop_table_req(dropTableReq);
+    dropTableReq.setAsyncDrop(!isLocalMetaStore());
+    AsyncOperationResp resp = client.drop_table_req(dropTableReq);
+    dropTableReq.setId(resp.getId());
+    try {
+      while (!resp.isFinished() && !Thread.currentThread().isInterrupted()) {
+        resp = client.drop_table_req(dropTableReq);
+        if (resp.getMessage() != null) {
+          LOG.info(resp.getMessage());
+        }
+      }
+    } finally {
+      if (!resp.isFinished()) {
+        dropTableReq.setCancel(true);
+        client.drop_table_req(dropTableReq);
+      }
+    }
   }
 
   @Override

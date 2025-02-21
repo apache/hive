@@ -658,6 +658,8 @@ class ExtendedTableInfo; end
 
 class DropTableRequest; end
 
+class AsyncOperationResp; end
+
 class GetDatabaseRequest; end
 
 class AlterDatabaseRequest; end
@@ -5918,6 +5920,9 @@ class DropTableRequest
   DELETEDATA = 4
   ENVCONTEXT = 5
   DROPPARTITIONS = 6
+  ID = 7
+  ASYNCDROP = 8
+  CANCEL = 9
 
   FIELDS = {
     CATALOGNAME => {:type => ::Thrift::Types::STRING, :name => 'catalogName', :optional => true},
@@ -5925,7 +5930,10 @@ class DropTableRequest
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
     DELETEDATA => {:type => ::Thrift::Types::BOOL, :name => 'deleteData', :optional => true},
     ENVCONTEXT => {:type => ::Thrift::Types::STRUCT, :name => 'envContext', :class => ::EnvironmentContext, :optional => true},
-    DROPPARTITIONS => {:type => ::Thrift::Types::BOOL, :name => 'dropPartitions', :optional => true}
+    DROPPARTITIONS => {:type => ::Thrift::Types::BOOL, :name => 'dropPartitions', :optional => true},
+    ID => {:type => ::Thrift::Types::STRING, :name => 'id', :optional => true},
+    ASYNCDROP => {:type => ::Thrift::Types::BOOL, :name => 'asyncDrop', :optional => true},
+    CANCEL => {:type => ::Thrift::Types::BOOL, :name => 'cancel', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -5933,6 +5941,27 @@ class DropTableRequest
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableName is unset!') unless @tableName
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class AsyncOperationResp
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  ID = 1
+  MESSAGE = 2
+  FINISHED = 3
+
+  FIELDS = {
+    ID => {:type => ::Thrift::Types::STRING, :name => 'id'},
+    MESSAGE => {:type => ::Thrift::Types::STRING, :name => 'message', :optional => true},
+    FINISHED => {:type => ::Thrift::Types::BOOL, :name => 'finished', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field id is unset!') unless @id
   end
 
   ::Thrift::Struct.generate_accessors self

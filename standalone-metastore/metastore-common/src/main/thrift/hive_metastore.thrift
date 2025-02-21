@@ -1770,7 +1770,16 @@ struct DropTableRequest {
  3: required string tableName,
  4: optional bool deleteData,
  5: optional EnvironmentContext envContext,
- 6: optional bool dropPartitions
+ 6: optional bool dropPartitions,
+ 7: optional string id,
+ 8: optional bool asyncDrop,
+ 9: optional bool cancel
+}
+
+struct AsyncOperationResp {
+ 1: required string id,
+ 2: optional string message,
+ 3: optional bool finished
 }
 
 struct GetDatabaseRequest {
@@ -2695,7 +2704,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void drop_table_with_environment_context(1:string dbname, 2:string name, 3:bool deleteData,
       4:EnvironmentContext environment_context)
                        throws(1:NoSuchObjectException o1, 2:MetaException o3)
-  void drop_table_req(1:DropTableRequest dropTableReq)
+  AsyncOperationResp drop_table_req(1:DropTableRequest dropTableReq)
         throws(1:NoSuchObjectException o1, 2:MetaException o3)
   void truncate_table(1:string dbName, 2:string tableName, 3:list<string> partNames)
                           throws(1:MetaException o1)
