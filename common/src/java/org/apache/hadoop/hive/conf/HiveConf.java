@@ -7305,9 +7305,10 @@ public class HiveConf extends Configuration {
   }
 
   public static boolean shouldComputeLineage(HiveConf conf) {
-    Collection<String> lineage_filter =
+    Collection<String> lineageFilter =
       conf.getTrimmedStringCollection(HiveConf.ConfVars.HIVE_LINEAGE_STATEMENT_FILTER.varname);
-    return !(lineage_filter.isEmpty() || lineage_filter.contains("NONE"));
+    return !(lineageFilter.isEmpty() || lineageFilter.contains("NONE"))
+      || conf.getBoolVar(ConfVars.HIVE_LINEAGE_INFO);
   }
 
   // sync all configs from given conf

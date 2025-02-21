@@ -13261,16 +13261,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Set the mapjoin hint if it needs to be disabled.
     pCtx.setDisableMapJoin(disableMapJoinWithHint(getQB().getParseInfo().getHintList()));
 
-    if (forViewCreation) {
+    if (forViewCreation && shouldComputeLineage(conf)) {
       // Generate lineage info if LineageLogger hook is configured.
       // Add the transformation that computes the lineage information.
-      if (shouldComputeLineage(conf)) {
-        List<Transform> transformations = new ArrayList<Transform>();
-        transformations.add(new HiveOpConverterPostProc());
-        transformations.add(Generator.fromConf(conf));
-        for (Transform t : transformations) {
-          pCtx = t.transform(pCtx);
-        }
+      List<Transform> transformations = new ArrayList<Transform>();
+      transformations.add(new HiveOpConverterPostProc());
+      transformations.add(Generator.fromConf(conf));
+      for (Transform t : transformations) {
+        pCtx = t.transform(pCtx);
       }
     }
     perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.PARSE_CONTEXT_GENERATION);
