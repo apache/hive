@@ -1668,106 +1668,100 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       // First pass will drop the materialized views
       List<String> materializedViewNames = getTablesByTypeCore(req.getCatalogName(), req.getName(), ".*",
           TableType.MATERIALIZED_VIEW.toString());
-      int startIndex = 0;
-      // retrieve the tables from the metastore in batches to alleviate memory constraints
-      while (startIndex < materializedViewNames.size()) {
-        int endIndex = Math.min(startIndex + tableBatchSize, materializedViewNames.size());
-
-        List<Table> materializedViews;
-        try {
-          materializedViews = ms.getTableObjectsByName(req.getCatalogName(), req.getName(), materializedViewNames.subList(startIndex, endIndex));
-        } catch (UnknownDBException e) {
-          throw new MetaException(e.getMessage());
-        }
-
-        if (materializedViews != null && !materializedViews.isEmpty()) {
-          for (Table materializedView : materializedViews) {
-            boolean isSoftDelete = TxnUtils.isTableSoftDeleteEnabled(materializedView, req.isSoftDelete());
-            
-            if (materializedView.getSd().getLocation() != null && !isSoftDelete) {
-              Path materializedViewPath = wh.getDnsPath(new Path(materializedView.getSd().getLocation()));
-              
-              if (!FileUtils.isSubdirectory(databasePath.toString(), materializedViewPath.toString()) || req.isSoftDelete()) {
-                if (!wh.isWritable(materializedViewPath.getParent())) {
-                  throw new MetaException("Database metadata not deleted since table: " +
-                      materializedView.getTableName() + " has a parent location " + materializedViewPath.getParent() +
-                      " which is not writable by " + SecurityUtils.getUser());
-                }
-                tablePaths.add(materializedViewPath);
-              }
-            }
-            EnvironmentContext context = null;
-            if (isSoftDelete) {
-              context = new EnvironmentContext();
-              context.putToProperties(hive_metastoreConstants.TXN_ID, String.valueOf(req.getTxnId()));
-            }
-            // Drop the materialized view but not its data
-            drop_table_with_environment_context(
-                req.getName(), materializedView.getTableName(), false, context);
-            
-            // Remove from all tables
-            uniqueTableNames.remove(materializedView.getTableName());
+      Batchable.runBatched(tableBatchSize, materializedViewNames, new Batchable<String, Void>() {
+        @Override
+        public List<Void> run(List<String> input) throws Exception {
+          List<Table> materializedViews;
+          try {
+            materializedViews = ms.getTableObjectsByName(req.getCatalogName(), req.getName(), input);
+          } catch (UnknownDBException e) {
+            throw new MetaException(e.getMessage());
           }
+
+          if (materializedViews != null && !materializedViews.isEmpty()) {
+            for (Table materializedView : materializedViews) {
+              boolean isSoftDelete = TxnUtils.isTableSoftDeleteEnabled(materializedView, req.isSoftDelete());
+
+              if (materializedView.getSd().getLocation() != null && !isSoftDelete) {
+                Path materializedViewPath = wh.getDnsPath(new Path(materializedView.getSd().getLocation()));
+
+                if (!FileUtils.isSubdirectory(databasePath.toString(), materializedViewPath.toString()) || req.isSoftDelete()) {
+                  if (!wh.isWritable(materializedViewPath.getParent())) {
+                    throw new MetaException("Database metadata not deleted since table: " +
+                        materializedView.getTableName() + " has a parent location " + materializedViewPath.getParent() +
+                        " which is not writable by " + SecurityUtils.getUser());
+                  }
+                  tablePaths.add(materializedViewPath);
+                }
+              }
+              EnvironmentContext context = null;
+              if (isSoftDelete) {
+                context = new EnvironmentContext();
+                context.putToProperties(hive_metastoreConstants.TXN_ID, String.valueOf(req.getTxnId()));
+              }
+              // Drop the materialized view but not its data
+              drop_table_with_environment_context(
+                  req.getName(), materializedView.getTableName(), false, context);
+
+              // Remove from all tables
+              uniqueTableNames.remove(materializedView.getTableName());
+            }
+          }
+          return null;
         }
-        startIndex = endIndex;
-      }
+      });
 
       // drop tables before dropping db
-      List<String> allTables = new ArrayList<>(uniqueTableNames);
-      startIndex = 0;
-      
-      // retrieve the tables from the metastore in batches to alleviate memory constraints
-      while (startIndex < allTables.size()) {
-        int endIndex = Math.min(startIndex + tableBatchSize, allTables.size());
-
-        List<Table> tables;
-        try {
-          tables = ms.getTableObjectsByName(req.getCatalogName(), req.getName(), allTables.subList(startIndex, endIndex));
-        } catch (UnknownDBException e) {
-          throw new MetaException(e.getMessage());
-        }
-
-        if (tables != null && !tables.isEmpty()) {
-          for (Table table : tables) {
-            // If the table is not external and it might not be in a subdirectory of the database
-            // add it's locations to the list of paths to delete
-            boolean isSoftDelete = TxnUtils.isTableSoftDeleteEnabled(table, req.isSoftDelete());
-            Path tablePath = null;
-            
-            boolean tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(table, req.isDeleteData()) 
-              && !isSoftDelete;
-            
-            boolean isManagedTable = table.getTableType().equals(TableType.MANAGED_TABLE.toString());
-            if (table.getSd().getLocation() != null && tableDataShouldBeDeleted) {
-              tablePath = wh.getDnsPath(new Path(table.getSd().getLocation()));
-              if (!isManagedTable || req.isSoftDelete()) {
-                if (!wh.isWritable(tablePath.getParent())) {
-                  throw new MetaException(
-                      "Database metadata not deleted since table: " + table.getTableName() + " has a parent location "
-                          + tablePath.getParent() + " which is not writable by " + SecurityUtils.getUser());
-                }
-                tablePaths.add(tablePath);
-              }
-            }
-            // For each partition in each table, drop the partitions and get a list of
-            // partitions' locations which might need to be deleted
-            partitionPaths.addAll(dropPartitionsAndGetLocations(ms, req.getCatalogName(), req.getName(), table.getTableName(),
-                tablePath, tableDataShouldBeDeleted));
-            
-            EnvironmentContext context = null;
-            if (isSoftDelete) {
-              context = new EnvironmentContext();
-              context.putToProperties(hive_metastoreConstants.TXN_ID, String.valueOf(req.getTxnId()));
-              req.setDeleteManagedDir(false);
-            }
-            // Drop the table but not its data
-            drop_table_with_environment_context(
-                MetaStoreUtils.prependCatalogToDbName(table.getCatName(), table.getDbName(), conf),
-                table.getTableName(), false, context, false);
+      Batchable.runBatched(tableBatchSize, new ArrayList<>(uniqueTableNames), new Batchable<String, Void>() {
+        @Override
+        public List<Void> run(List<String> input) throws Exception {
+          List<Table> tables;
+          try {
+            tables = ms.getTableObjectsByName(req.getCatalogName(), req.getName(), input);
+          } catch (UnknownDBException e) {
+            throw new MetaException(e.getMessage());
           }
+
+          if (tables != null && !tables.isEmpty()) {
+            for (Table table : tables) {
+              // If the table is not external and it might not be in a subdirectory of the database
+              // add it's locations to the list of paths to delete
+              boolean isSoftDelete = TxnUtils.isTableSoftDeleteEnabled(table, req.isSoftDelete());
+              boolean tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(table, req.isDeleteData())
+                  && !isSoftDelete;
+
+              boolean isManagedTable = table.getTableType().equals(TableType.MANAGED_TABLE.toString());
+              if (table.getSd().getLocation() != null && tableDataShouldBeDeleted) {
+                Path tablePath = wh.getDnsPath(new Path(table.getSd().getLocation()));
+                if (!isManagedTable || req.isSoftDelete()) {
+                  if (!wh.isWritable(tablePath.getParent())) {
+                    throw new MetaException(
+                        "Database metadata not deleted since table: " + table.getTableName() + " has a parent location "
+                            + tablePath.getParent() + " which is not writable by " + SecurityUtils.getUser());
+                  }
+                  tablePaths.add(tablePath);
+                }
+              }
+
+              EnvironmentContext context = null;
+              if (isSoftDelete) {
+                context = new EnvironmentContext();
+                context.putToProperties(hive_metastoreConstants.TXN_ID, String.valueOf(req.getTxnId()));
+                req.setDeleteManagedDir(false);
+              }
+              DropTableRequest dropRequest = new DropTableRequest(table.getDbName(), table.getTableName());
+              dropRequest.setCatalogName(table.getCatName());
+              dropRequest.setEnvContext(context);
+              // Drop the table but not its data
+              dropRequest.setDeleteData(false);
+              dropRequest.setDropPartitions(true);
+              List<Path> partPaths = TableOperationsHandler.ofNew(HMSHandler.this, false, dropRequest).getDropTableResult();
+              partitionPaths.addAll(tableDataShouldBeDeleted ? partPaths : Collections.emptyList());
+            }
+          }
+          return null;
         }
-        startIndex = endIndex;
-      }
+      });
 
       if (ms.dropDatabase(req.getCatalogName(), req.getName())) {
         if (!transactionalListeners.isEmpty()) {
@@ -2281,52 +2275,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       transformedTbl = transformer.transformCreateTable(tbl, processorCapabilities, processorId);
     }
     return transformedTbl != null ? transformedTbl : tbl;
-  }
-
-  private void create_table_core(final RawStore ms, final Table tbl,
-                                 final EnvironmentContext envContext)
-      throws AlreadyExistsException, MetaException,
-      InvalidObjectException, NoSuchObjectException, InvalidInputException {
-    CreateTableRequest req = new CreateTableRequest(tbl);
-    req.setEnvContext(envContext);
-    create_table_core(ms, req);
-  }
-
-  private void create_table_core(final RawStore ms, final Table tbl,
-                                 final EnvironmentContext envContext, List<SQLPrimaryKey> primaryKeys,
-                                 List<SQLForeignKey> foreignKeys, List<SQLUniqueConstraint> uniqueConstraints,
-                                 List<SQLNotNullConstraint> notNullConstraints, List<SQLDefaultConstraint> defaultConstraints,
-                                 List<SQLCheckConstraint> checkConstraints,
-                                 List<String> processorCapabilities, String processorIdentifier)
-      throws AlreadyExistsException, MetaException,
-      InvalidObjectException, NoSuchObjectException, InvalidInputException {
-    CreateTableRequest req = new CreateTableRequest(tbl);
-    if (envContext != null) {
-      req.setEnvContext(envContext);
-    }
-    if (primaryKeys != null) {
-      req.setPrimaryKeys(primaryKeys);
-    }
-    if (foreignKeys != null) {
-      req.setForeignKeys(foreignKeys);
-    }
-    if (uniqueConstraints != null) {
-      req.setUniqueConstraints(uniqueConstraints);
-    }
-    if (notNullConstraints != null) {
-      req.setNotNullConstraints(notNullConstraints);
-    }
-    if (defaultConstraints != null) {
-      req.setDefaultConstraints(defaultConstraints);
-    }
-    if (checkConstraints != null) {
-      req.setCheckConstraints(checkConstraints);
-    }
-    if (processorCapabilities != null) {
-      req.setProcessorCapabilities(processorCapabilities);
-      req.setProcessorIdentifier(processorIdentifier);
-    }
-    create_table_core(ms, req);
   }
 
   private void create_table_core(final RawStore ms, final CreateTableRequest req)
@@ -2998,109 +2946,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return (ms.getTable(catName, dbname, name, null) != null);
   }
 
-  private boolean drop_table_core(final RawStore ms, final String catName, final String dbname,
-                                  final String name, final boolean deleteData,
-                                  final EnvironmentContext envContext, final String indexName, boolean dropPartitions)
-    throws TException, IOException {
-    boolean success = false;
-    boolean tableDataShouldBeDeleted = false;
-    Path tblPath = null;
-    List<Path> partPaths = null;
-    Table tbl = null;
-    boolean ifPurge = false;
-    Map<String, String> transactionalListenerResponses = Collections.emptyMap();
-    Database db = null;
-    boolean isReplicated = false;
-    try {
-      ms.openTransaction();
-
-      // HIVE-25282: Drop/Alter table in REMOTE db should fail
-      db = ms.getDatabase(catName, dbname);
-      if (MetaStoreUtils.isDatabaseRemote(db)) {
-        throw new MetaException("Drop table in REMOTE database " + db.getName() + " is not allowed");
-      }
-      isReplicated = isDbReplicationTarget(db);
-
-      // drop any partitions
-      GetTableRequest req = new GetTableRequest(dbname,name);
-      req.setCatName(catName);
-      tbl = get_table_core(req);
-      if (tbl == null) {
-        throw new NoSuchObjectException(name + " doesn't exist");
-      }
-
-      // Check if table is part of a materialized view.
-      // If it is, it cannot be dropped.
-      List<String> isPartOfMV = ms.isPartOfMaterializedView(catName, dbname, name);
-      if (!isPartOfMV.isEmpty()) {
-        throw new MetaException(String.format("Cannot drop table as it is used in the following materialized" +
-            " views %s%n", isPartOfMV));
-      }
-
-      if (tbl.getSd() == null) {
-        throw new MetaException("Table metadata is corrupted");
-      }
-      ifPurge = isMustPurge(envContext, tbl);
-
-      firePreEvent(new PreDropTableEvent(tbl, deleteData, this));
-
-      tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(tbl, deleteData);
-      if (tableDataShouldBeDeleted && tbl.getSd().getLocation() != null) {
-        tblPath = new Path(tbl.getSd().getLocation());
-        if (!wh.isWritable(tblPath.getParent())) {
-          String target = indexName == null ? "Table" : "Index table";
-          throw new MetaException(target + " metadata not deleted since " +
-              tblPath.getParent() + " is not writable by " +
-              SecurityUtils.getUser());
-        }
-      }
-
-      // Drop the partitions and get a list of locations which need to be deleted
-      // In case of drop database cascade we need not to drop the partitions, they are already dropped.
-      if (dropPartitions) {
-        partPaths = dropPartitionsAndGetLocations(ms, catName, dbname, name, tblPath, tableDataShouldBeDeleted);
-      }
-      // Drop any constraints on the table
-      ms.dropConstraint(catName, dbname, name, null, true);
-
-      if (!ms.dropTable(catName, dbname, name)) {
-        String tableName = TableName.getQualified(catName, dbname, name);
-        throw new MetaException(indexName == null ? "Unable to drop table " + tableName:
-            "Unable to drop index table " + tableName + " for index " + indexName);
-      } else {
-        if (!transactionalListeners.isEmpty()) {
-          transactionalListenerResponses =
-              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                  EventType.DROP_TABLE,
-                  new DropTableEvent(tbl, true, deleteData,
-                      this, isReplicated),
-                  envContext);
-        }
-        success = ms.commitTransaction();
-      }
-    } finally {
-      if (!success) {
-        ms.rollbackTransaction();
-      } else if (tableDataShouldBeDeleted) {
-        // Data needs deletion. Check if trash may be skipped.
-        // Delete the data in the partitions which have other locations
-        deletePartitionData(partPaths, ifPurge, ReplChangeManager.shouldEnableCm(db, tbl));
-        // Delete the data in the table
-        deleteTableData(tblPath, ifPurge, ReplChangeManager.shouldEnableCm(db, tbl));
-      }
-
-      if (!listeners.isEmpty()) {
-        MetaStoreListenerNotifier.notifyEvent(listeners,
-            EventType.DROP_TABLE,
-            new DropTableEvent(tbl, success, deleteData, this, isReplicated),
-            envContext,
-            transactionalListenerResponses, ms);
-      }
-    }
-    return success;
-  }
-
-  private boolean checkTableDataShouldBeDeleted(Table tbl, boolean deleteData) {
+  static boolean checkTableDataShouldBeDeleted(Table tbl, boolean deleteData) {
     if (deleteData && MetaStoreUtils.isExternalTable(tbl)) {
       // External table data can be deleted if EXTERNAL_TABLE_PURGE is true
       return MetaStoreUtils.isExternalTablePurge(tbl);
@@ -3116,7 +2962,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    *                data from warehouse
    * @param shouldEnableCm If cm should be enabled
    */
-  private void deleteTableData(Path tablePath, boolean ifPurge, boolean shouldEnableCm) {
+  void deleteTableData(Path tablePath, boolean ifPurge, boolean shouldEnableCm) {
     if (tablePath != null) {
       deleteDataExcludeCmroot(tablePath, ifPurge, shouldEnableCm);
     }
@@ -3150,7 +2996,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    *                removing data from warehouse
    * @param shouldEnableCm If cm should be enabled
    */
-  private void deletePartitionData(List<Path> partPaths, boolean ifPurge, boolean shouldEnableCm) {
+  void deletePartitionData(List<Path> partPaths, boolean ifPurge, boolean shouldEnableCm) {
     if (partPaths != null && !partPaths.isEmpty()) {
       for (Path partPath : partPaths) {
         deleteDataExcludeCmroot(partPath, ifPurge, shouldEnableCm);
@@ -3212,157 +3058,40 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
   }
 
-  /**
-   * Deletes the partitions specified by catName, dbName, tableName. If checkLocation is true, for
-   * locations of partitions which may not be subdirectories of tablePath checks to make sure the
-   * locations are writable.
-   *
-   * Drops the metadata for each partition.
-   *
-   * Provides a list of locations of partitions which may not be subdirectories of tablePath.
-   *
-   * @param ms RawStore to use for metadata retrieval and delete
-   * @param catName The catName
-   * @param dbName The dbName
-   * @param tableName The tableName
-   * @param tablePath The tablePath of which subdirectories does not have to be checked
-   * @param checkLocation Should we check the locations at all
-   * @return The list of the Path objects to delete (only in case checkLocation is true)
-   * @throws MetaException
-   * @throws IOException
-   * @throws NoSuchObjectException
-   */
-  private List<Path> dropPartitionsAndGetLocations(RawStore ms, String catName, String dbName,
-                                                   String tableName, Path tablePath, boolean checkLocation)
-      throws MetaException, IOException, NoSuchObjectException {
-    int batchSize = MetastoreConf.getIntVar(conf, ConfVars.BATCH_RETRIEVE_OBJECTS_MAX);
-    String tableDnsPath = null;
-    if (tablePath != null) {
-      tableDnsPath = wh.getDnsPath(tablePath).toString();
-    }
-
-    List<Path> partPaths = new ArrayList<>();
-    while (true) {
-      List<String> partNames;
-      if (checkLocation) {
-        Map<String, String> partitionLocations = ms.getPartitionLocations(catName, dbName, tableName,
-                tableDnsPath, batchSize);
-        partNames = new ArrayList<>(partitionLocations.keySet());
-        for (String partName : partNames) {
-          String pathString = partitionLocations.get(partName);
-          if (pathString != null) {
-            Path partPath = wh.getDnsPath(new Path(pathString));
-            // Double check here. Maybe Warehouse.getDnsPath revealed relationship between the
-            // path objects
-            if (tableDnsPath == null ||
-                !FileUtils.isSubdirectory(tableDnsPath, partPath.toString())) {
-              if (!wh.isWritable(partPath.getParent())) {
-                throw new MetaException("Table metadata not deleted since the partition "
-                    + partName + " has parent location " + partPath.getParent()
-                    + " which is not writable by " + SecurityUtils.getUser());
-              }
-              partPaths.add(partPath);
-            }
-          }
-        }
-      } else {
-        partNames = ms.listPartitionNames(catName, dbName, tableName, (short) batchSize);
-      }
-
-      if (partNames == null || partNames.isEmpty()) {
-        // No more partitions left to drop. Return with the collected path list to delete.
-        return partPaths;
-      }
-
-      for (MetaStoreEventListener listener : listeners) {
-        //No drop part listener events fired for public listeners historically, for drop table case.
-        //Limiting to internal listeners for now, to avoid unexpected calls for public listeners.
-        if (listener instanceof HMSMetricsListener) {
-          for (@SuppressWarnings("unused") String partName : partNames) {
-            listener.onDropPartition(null);
-          }
-        }
-      }
-
-      ms.dropPartitions(catName, dbName, tableName, partNames);
-    }
-  }
-
   @Override
   @Deprecated
   public void drop_table(final String dbname, final String name, final boolean deleteData)
       throws NoSuchObjectException, MetaException {
-    startFunction("drop_table", ": " + dbname + ":" + name);
-    boolean success = false;
-    Exception ex = null;
-    try {
     String[] parsedDbName = parseDbName(dbname, conf);
     DropTableRequest dropTableReq = new DropTableRequest(parsedDbName[DB_NAME], name);
     dropTableReq.setDeleteData(deleteData);
     dropTableReq.setCatalogName(parsedDbName[CAT_NAME]);
     dropTableReq.setDropPartitions(true);
     drop_table_req(dropTableReq);
-    } catch (Exception e) {
-      ex = e;
-      throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)
-              .convertIfInstance(IOException.class, MetaException.class).defaultMetaException();
-    } finally {
-      endFunction("drop_table", success, ex, name);
-    }
   }
 
   @Override
   @Deprecated
   public void drop_table_with_environment_context(final String dbname, final String name, final boolean deleteData,
       final EnvironmentContext envContext) throws NoSuchObjectException, MetaException {
-    startFunction("drop_table_with_environment_context", ": " + dbname + ":" + name);
-    boolean success = false;
-    Exception ex = null;
-    try {
-      String[] parsedDbName = parseDbName(dbname, conf);
-      DropTableRequest dropTableReq = new DropTableRequest(parsedDbName[DB_NAME], name);
-      dropTableReq.setDeleteData(deleteData);
-      dropTableReq.setCatalogName(parsedDbName[CAT_NAME]);
-      dropTableReq.setDropPartitions(true);
-      dropTableReq.setEnvContext(envContext);
-      drop_table_req(dropTableReq);
-      success = true;
-    } catch (Exception e) {
-      ex = e;
-      throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)
-              .convertIfInstance(IOException.class, MetaException.class).defaultMetaException();
-    } finally {
-      endFunction("drop_table_with_environment_context", success, ex, name);
-    }
-  }
-
-  private void drop_table_with_environment_context(final String dbname, final String name, final boolean deleteData,
-      final EnvironmentContext envContext, boolean dropPartitions) throws MetaException, NoSuchObjectException {
     String[] parsedDbName = parseDbName(dbname, conf);
-    startTableFunction("drop_table", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name);
-
-    boolean success = false;
-    Exception ex = null;
-    try {
-      success =
-          drop_table_core(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name, deleteData, envContext, null, dropPartitions);
-    } catch (Exception e) {
-      ex = e;
-      throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)
-          .convertIfInstance(IOException.class, MetaException.class).defaultMetaException();
-    } finally {
-      endFunction("drop_table", success, ex, name);
-    }
+    DropTableRequest dropTableReq = new DropTableRequest(parsedDbName[DB_NAME], name);
+    dropTableReq.setDeleteData(deleteData);
+    dropTableReq.setCatalogName(parsedDbName[CAT_NAME]);
+    dropTableReq.setDropPartitions(true);
+    dropTableReq.setEnvContext(envContext);
+    drop_table_req(dropTableReq);
   }
 
   @Override
-  public void drop_table_req(final DropTableRequest dropTableReq) throws MetaException, NoSuchObjectException {
+  public TableOpResp drop_table_req(DropTableRequest dropTableReq) throws MetaException, NoSuchObjectException {
     startFunction("drop_table_req", ": " + dropTableReq.getTableName());
     boolean success = false;
     Exception ex = null;
     try {
-      success = drop_table_core(getMS(), dropTableReq.getCatalogName(), dropTableReq.getDbName(), dropTableReq.getTableName(),
-              dropTableReq.isDeleteData(), dropTableReq.getEnvContext(), null, dropTableReq.isDropPartitions());
+      TableOperationsHandler<?> tableOp = TableOperationsHandler.ofCache(dropTableReq.getId(), dropTableReq.isCancel())
+          .orElseGet(() -> TableOperationsHandler.ofNew(this, dropTableReq.isAsyncDrop(), dropTableReq));
+      return tableOp.toTableOpResp();
     } catch (Exception e) {
       ex = e;
       throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)
@@ -4124,7 +3853,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return part;
   }
 
-  private void firePreEvent(PreEventContext event) throws MetaException {
+  public void firePreEvent(PreEventContext event) throws MetaException {
     for (MetaStorePreEventListener listener : preListeners) {
       try {
         listener.onEvent(event);
@@ -4834,74 +4563,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         part.putToParameters(key, paramVal);
       }
     }
-  }
-
-  private Partition add_partition_core(final RawStore ms,
-                                       final Partition part, final EnvironmentContext envContext)
-      throws TException {
-    boolean success = false;
-    Table tbl = null;
-    Map<String, String> transactionalListenerResponses = Collections.emptyMap();
-    if (!part.isSetCatName()) {
-      part.setCatName(getDefaultCatalog(conf));
-    }
-    try {
-      ms.openTransaction();
-      tbl = ms.getTable(part.getCatName(), part.getDbName(), part.getTableName(), null);
-      if (tbl == null) {
-        throw new InvalidObjectException(
-            "Unable to add partition because table or database do not exist");
-      }
-
-      firePreEvent(new PreAddPartitionEvent(tbl, part, this));
-
-      if (part.getValues() == null || part.getValues().isEmpty()) {
-        throw new MetaException("The partition values cannot be null or empty.");
-      }
-      boolean shouldAdd = startAddPartition(ms, part, tbl.getPartitionKeys(), false);
-      assert shouldAdd; // start would throw if it already existed here
-      boolean madeDir = createLocationForAddedPartition(tbl, part);
-      try {
-        initializeAddedPartition(tbl, part, madeDir, envContext);
-        initializePartitionParameters(tbl, part);
-        success = ms.addPartition(part);
-      } finally {
-        if (!success && madeDir) {
-          wh.deleteDir(new Path(part.getSd().getLocation()), true, false,
-              ReplChangeManager.shouldEnableCm(ms.getDatabase(part.getCatName(), part.getDbName()), tbl));
-        }
-      }
-
-      // Setting success to false to make sure that if the listener fails, rollback happens.
-      success = false;
-
-      if (!transactionalListeners.isEmpty()) {
-        transactionalListenerResponses =
-            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                EventType.ADD_PARTITION,
-                new AddPartitionEvent(tbl, Arrays.asList(part), true, this),
-                envContext);
-
-      }
-
-      // we proceed only if we'd actually succeeded anyway, otherwise,
-      // we'd have thrown an exception
-      success = ms.commitTransaction();
-    } finally {
-      if (!success) {
-        ms.rollbackTransaction();
-      }
-
-      if (!listeners.isEmpty()) {
-        MetaStoreListenerNotifier.notifyEvent(listeners,
-            EventType.ADD_PARTITION,
-            new AddPartitionEvent(tbl, Arrays.asList(part), success, this),
-            envContext,
-            transactionalListenerResponses, ms);
-
-      }
-    }
-    return part;
   }
 
   @Deprecated
