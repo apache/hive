@@ -1826,6 +1826,13 @@ public class MetastoreConf {
             new StringSetValidator("simple", "jwt"),
         "Property-maps servlet authentication method (simple or jwt)."
     ),
+    ICEBERG_CATALOG_SERVLET_FACTORY("hive.metastore.catalog.servlet.factory",
+            "hive.metastore.catalog.servlet.factory",
+            "org.apache.iceberg.rest.HMSCatalogServer",
+            "HMS Iceberg Catalog servlet factory class name."
+            + "The factory needs to expose a method: "
+            + "public static HttpServlet createServlet(Configuration configuration);"
+    ),
     ICEBERG_CATALOG_SERVLET_PATH("hive.metastore.catalog.servlet.path",
         "hive.metastore.catalog.servlet.path", "iceberg",
         "HMS Iceberg Catalog servlet path component of URL endpoint."
@@ -1839,18 +1846,6 @@ public class MetastoreConf {
     ICEBERG_CATALOG_SERVLET_AUTH("hive.metastore.catalog.servlet.auth",
         "hive.metastore.catalog.servlet.auth", "jwt",
         "HMS Iceberg Catalog servlet authentication method (simple or jwt)."
-    ),
-    ICEBERG_CATALOG_JETTY_THREADPOOL_MIN("hive.metastore.catalog.jetty.threadpool.min",
-        "hive.metastore.catalog.jetty.threadpool.min", 8,
-        "HMS Iceberg Catalog embedded Jetty minimum number of threads."
-    ),
-    ICEBERG_CATALOG_JETTY_THREADPOOL_MAX("hive.metastore.catalog.jetty.threadpool.max",
-        "hive.metastore.catalog.jetty.threadpool.max", 256,
-        "HMS Iceberg Catalog embedded Jetty maximum number of threads."
-    ),
-    ICEBERG_CATALOG_JETTY_THREADPOOL_IDLE("hive.metastore.catalog.jetty.threadpool.idle",
-        "hive.metastore.catalog.jetty.threadpool.idle", 60_000L,
-        "HMS Iceberg Catalog embedded Jetty thread idle time."
     ),
     ICEBERG_CATALOG_CACHE_EXPIRY("hive.metastore.catalog.cache.expiry",
         "hive.metastore.catalog.cache.expiry", 60_000L,

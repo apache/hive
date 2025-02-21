@@ -68,7 +68,6 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.ObjectStore;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
@@ -194,11 +193,10 @@ public abstract class HMSTestBase {
     // The manager decl
     PropertyManager.declare(NS, HMSPropertyManager.class);
     // The client
-    HiveMetaStoreClient client = createClient(conf, port);
+    HiveMetaStoreClient client = createClient(conf);
     Assert.assertNotNull("Unable to connect to the MetaStore server", client);
 
     // create a managed root
-    Warehouse wh = new Warehouse(conf);
     String location = temp.newFolder("hivedb2023").getAbsolutePath();
     Database db = new Database(DB_NAME, "catalog test", location, Collections.emptyMap());
     client.createDatabase(db);
@@ -242,7 +240,7 @@ public abstract class HMSTestBase {
     }
   }
 
-  protected HiveMetaStoreClient createClient(Configuration conf, int port) throws Exception {
+  protected HiveMetaStoreClient createClient(Configuration conf) throws Exception {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_URIS, "");
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.EXECUTE_SET_UGI, false);
     return new HiveMetaStoreClient(conf);

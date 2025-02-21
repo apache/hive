@@ -21,7 +21,6 @@ package org.apache.iceberg.rest;
 
 import com.codahale.metrics.Counter;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

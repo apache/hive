@@ -32,8 +32,6 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.hc.core5.http.ContentType;
-import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.io.CharStreams;
 import org.apache.iceberg.rest.HMSCatalogAdapter.HTTPMethod;
@@ -50,9 +48,12 @@ import org.slf4j.LoggerFactory;
  */
 public class HMSCatalogServlet extends HttpServlet {
   private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogServlet.class);
+  private static final String CONTENT_TYPE = "Content-Type";
+  private static final String APPLICATION_JSON = "application/json";
+  
   private final HMSCatalogAdapter restCatalogAdapter;
   private final Map<String, String> responseHeaders =
-      ImmutableMap.of(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
+      ImmutableMap.of(CONTENT_TYPE, APPLICATION_JSON);
 
   public HMSCatalogServlet(HMSCatalogAdapter restCatalogAdapter) {
     this.restCatalogAdapter = restCatalogAdapter;
@@ -64,7 +65,6 @@ public class HMSCatalogServlet extends HttpServlet {
       ServletRequestContext context = ServletRequestContext.from(request);
       response.setStatus(HttpServletResponse.SC_OK);
       responseHeaders.forEach(response::setHeader);
-
       final Optional<ErrorResponse> error = context.error();
       if (error.isPresent()) {
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);

@@ -29,7 +29,7 @@
     <module>metastore-common</module>
     <module>metastore-server</module>
     <module>metastore-tools</module>
-    <module>metastore-iceberg-catalog</module>
+    <module>metastore-catalog</module>
   </modules>
   <properties>
     <hive.version>4.1.0-SNAPSHOT</hive.version>

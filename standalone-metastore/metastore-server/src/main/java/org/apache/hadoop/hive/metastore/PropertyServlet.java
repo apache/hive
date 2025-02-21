@@ -69,6 +69,10 @@ public class PropertyServlet extends HttpServlet {
     this.configuration = configuration;
   }
 
+  @Override public String getServletName() {
+    return "HMS property";
+  }
+  
   private String strError(String msg, Object...args) {
     return String.format(PTYERROR + msg, args);
   }
@@ -313,50 +317,34 @@ public class PropertyServlet extends HttpServlet {
     }
   }
 
-  /**
-   * Single servlet creation helper.
-   */
-  private static class ServerBuilder extends ServletServerBuilder {
-    final int port;
-    final String path;
-    ServerBuilder(Configuration conf) {
-      super(conf);
-      port = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PORT);
-      path = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
+  public static ServletServerBuilder.Descriptor createServlet(Configuration configuration) {
+    try {
+      int port = MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PORT);
+      String path = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
+      if (port >= 0 && path != null && !path.isEmpty()) {
+        ServletSecurity security = new ServletSecurity(configuration, PropertyServlet.isAuthJwt(configuration));
+        HttpServlet servlet = security.proxy(new PropertyServlet(configuration));
+        return new ServletServerBuilder.Descriptor(port, path, servlet) {
+          @Override public String toString() {
+            return "HMS property";
+          }
+        };
+      }
+    } catch (Exception io) {
+      LOGGER.error("failed to create servlet ", io);
     }
-
-    @Override
-    protected String getServletPath() {
-      return path;
-    }
-
-    @Override
-    protected int getServerPort() {
-      return port;
-    }
-
-    @Override
-    protected HttpServlet createServlet() {
-      ServletSecurity security = new ServletSecurity(configuration, PropertyServlet.isAuthJwt(configuration));
-      return security.proxy(new PropertyServlet(configuration));
-    }
+    return null;
   }
 
   /**
    * Convenience method to start a http server that only serves this servlet.
+   *
    * @param conf the configuration
    * @return the server instance
    * @throws Exception if servlet initialization fails
    */
   public static Server startServer(Configuration conf) throws Exception {
-    Server server = new ServerBuilder(conf).startServer();
-    if (server != null) {
-      if (!server.isStarted()) {
-        LOGGER.error("Unable to start property-maps servlet server on {}", server.getURI());
-      } else {
-        LOGGER.info("Started property-maps servlet server on {}", server.getURI());
-      }
-    }
-    return server;
+   return ServletServerBuilder.startServer(LOGGER, conf, PropertyServlet::createServlet);
   }
+
 }

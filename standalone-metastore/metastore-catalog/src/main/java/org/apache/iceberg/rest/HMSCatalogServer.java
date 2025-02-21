@@ -32,14 +32,13 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.hive.HiveCatalog;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Iceberg Catalog server creator.
  */
-public class HMSCatalogServer extends ServletServerBuilder {
+public class HMSCatalogServer {
   private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogServer.class);
   protected static final AtomicReference<Reference<Catalog>> catalogRef = new AtomicReference<>();
 
@@ -52,29 +51,33 @@ public class HMSCatalogServer extends ServletServerBuilder {
     catalogRef.set(new SoftReference<>(catalog));
   }
 
+  protected final Configuration configuration;
   protected final int port;
   protected final String path;
   protected Catalog catalog;
 
   protected HMSCatalogServer(Configuration conf, Catalog catalog) {
-    super(conf);
     port = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_SERVLET_PORT);
     path = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_SERVLET_PATH);
+    this.configuration = conf;
     this.catalog = catalog;
   }
-
-  @Override
-  protected String getServletPath() {
+  
+  public int getPort() {
+    return port;
+  }
+  
+  public String getPath() {
     return path;
   }
-
-  @Override
-  protected int getServerPort() {
-    return port;
+  
+  public Catalog getCatalog() {
+    return catalog;
   }
 
   protected Catalog createCatalog() {
     final Map<String, String> properties = new TreeMap<>();
+    MetastoreConf.setVar(configuration, MetastoreConf.ConfVars.THRIFT_URIS, "");
     final String configUri = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.THRIFT_URIS);
     if (configUri != null) {
       properties.put("uri", configUri);
@@ -100,45 +103,40 @@ public class HMSCatalogServer extends ServletServerBuilder {
     return security.proxy(new HMSCatalogServlet(new HMSCatalogAdapter(catalog)));
   }
 
-  @Override
   protected HttpServlet createServlet() throws IOException {
-    Catalog actualCatalog = catalog;
-    if (actualCatalog == null) {
-      MetastoreConf.setVar(configuration, MetastoreConf.ConfVars.THRIFT_URIS, "");
-      actualCatalog = catalog = createCatalog();
+    if (port >= 0 && path != null && !path.isEmpty()) {
+      Catalog actualCatalog = catalog;
+      if (actualCatalog == null) {
+        actualCatalog = catalog = createCatalog();
+      }
+      setLastCatalog(actualCatalog);
+      return createServlet(actualCatalog);
     }
-    setLastCatalog(actualCatalog);
-    return createServlet(actualCatalog);
+    return null;
   }
 
-  @Override
-  protected Server createServer() {
-    final int maxThreads = MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.ICEBERG_CATALOG_JETTY_THREADPOOL_MAX);
-    final int minThreads = MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.ICEBERG_CATALOG_JETTY_THREADPOOL_MIN);
-    final int idleTimeout = MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.ICEBERG_CATALOG_JETTY_THREADPOOL_IDLE);
-    final QueuedThreadPool threadPool = new QueuedThreadPool(maxThreads, minThreads, idleTimeout);
-    return new Server(threadPool);
-  }
-
+  
   /**
-   * Convenience method to start a http server that only serves the Iceberg
-   * catalog servlet.
-   * <p>
-   * This one is looked up through reflection to start from HMS.</p>
+   * Factory method to describe Iceberg servlet.
+   * <p>This one is looked up through reflection to start from HMS.</p>
    *
    * @param conf the configuration
-   * @return the server instance
-   * @throws Exception if servlet initialization fails
+   * @return the servlet descriptor instance
    */
-  public static Server startServer(Configuration conf) throws Exception {
-    Server server = new HMSCatalogServer(conf, null).startServer();
-    if (server != null) {
-      if (!server.isStarted()) {
-        LOG.error("Unable to start property-maps servlet server on {}", server.getURI());
-      } else {
-        LOG.info("Started property-maps servlet server on {}", server.getURI());
+  public static ServletServerBuilder.Descriptor createServlet(Configuration configuration) {
+    try {
+      HMSCatalogServer hms = new HMSCatalogServer(configuration, null);
+      HttpServlet servlet = hms.createServlet();
+      if (servlet != null) {
+        return new ServletServerBuilder.Descriptor(hms.getPort(), hms.getPath(), servlet) {
+          @Override public String toString() {
+            return "Iceberg REST Catalog";
+          }
+        };
       }
+    } catch (Exception exception) {
+      LOG.error("failed to create servlet ", exception);
     }
-    return server;
+    return null;
   }
 }

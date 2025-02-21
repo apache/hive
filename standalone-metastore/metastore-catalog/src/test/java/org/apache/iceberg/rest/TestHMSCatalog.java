@@ -78,7 +78,7 @@ public class TestHMSCatalog extends HMSTestBase {
             "\"properties\":{ \"owner\": \"apache\", \"group\" : \"iceberg\" }"
             +"}");
     Assert.assertNotNull(response);
-    HiveMetaStoreClient client = createClient(conf, port);
+    HiveMetaStoreClient client = createClient(conf);
     Database database1 = client.getDatabase(ns);
     Assert.assertEquals("apache", database1.getParameters().get("owner"));
     Assert.assertEquals("iceberg", database1.getParameters().get("group"));

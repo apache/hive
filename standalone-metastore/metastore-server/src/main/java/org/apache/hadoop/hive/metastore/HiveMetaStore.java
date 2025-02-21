@@ -122,16 +122,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   private static ZooKeeperHiveHelper zooKeeperHelper = null;
   private static String msHost = null;
   private static ThriftServer thriftServer;
-  private static Server propertyServer = null;
-  private static Server icebergServer = null;
+  private static Server servletServer = null;
 
 
   public static Server getPropertyServer() {
-    return propertyServer;
+    return servletServer;
   }
 
   public static Server getIcebergServer() {
-    return icebergServer;
+    return servletServer;
   }
 
   public static boolean isRenameAllowed(Database srcDB, Database destDB) {
@@ -317,20 +316,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (isCliVerbose) {
           System.err.println(shutdownMsg);
         }
-        // property server
-        if (propertyServer != null) {
+        // servlet server
+        if (servletServer != null) {
           try {
-            propertyServer.stop();
+            servletServer.stop();
           } catch (Exception e) {
             LOG.error("Error stopping Property Map server.", e);
-          }
-        }
-        // iceberg server
-        if (icebergServer != null) {
-          try {
-            icebergServer.stop();
-          } catch (Exception e) {
-            LOG.error("Error stopping Iceberg API server.", e);
           }
         }
         // metrics
@@ -756,19 +747,24 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw e;
       }
     }
-    // optionally create and start the property server and servlet
-    propertyServer = PropertyServlet.startServer(conf);
-    // optionally create and start the Iceberg REST server and servlet
-    icebergServer = startIcebergCatalog(conf);
-
+    // optionally create and start the property and Iceberg REST server
+    servletServer = ServletServerBuilder.startServer(LOG, conf,
+            PropertyServlet::createServlet,
+            HiveMetaStore::createIcebergServlet);
     thriftServer.start();
   }
 
-  static Server startIcebergCatalog(Configuration configuration) {
+  /**
+   * Creates the Iceberg REST catalog servlet descriptor.
+   * @param configuration the configuration
+   * @return the servlet descriptor (can be null)
+   */
+  static ServletServerBuilder.Descriptor createIcebergServlet(Configuration configuration) {
     try {
-      Class<?> iceClazz = Class.forName("org.apache.iceberg.rest.HMSCatalogServer");
-      Method iceStart = iceClazz.getMethod("startServer", Configuration.class);
-      return (Server) iceStart.invoke(null, configuration);
+      String className = MetastoreConf.getVar(configuration, ConfVars.ICEBERG_CATALOG_SERVLET_FACTORY);
+      Class<?> iceClazz = Class.forName(className);
+      Method iceStart = iceClazz.getMethod("createServlet", Configuration.class);
+      return (ServletServerBuilder.Descriptor) iceStart.invoke(null, configuration);
     } catch (ClassNotFoundException xnf) {
       LOG.warn("unable to start Iceberg REST Catalog server, missing jar?", xnf);
       return null;
