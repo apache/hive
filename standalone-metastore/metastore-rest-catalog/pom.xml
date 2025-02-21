@@ -17,8 +17,8 @@
     <version>4.1.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>hive-standalone-metastore-catalog</artifactId>
-  <name>Hive Metastore Iceberg Catalog</name>
+  <artifactId>hive-standalone-metastore-rest-catalog</artifactId>
+  <name>Hive Metastore Iceberg REST Catalog</name>
   <properties>
     <standalone.metastore.path.to.root>..</standalone.metastore.path.to.root>
     <maven.compiler.source>8</maven.compiler.source>

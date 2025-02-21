@@ -29,7 +29,7 @@
     <module>metastore-common</module>
     <module>metastore-server</module>
     <module>metastore-tools</module>
-    <module>metastore-catalog</module>
+    <module>metastore-rest-catalog</module>
   </modules>
   <properties>
     <hive.version>4.1.0-SNAPSHOT</hive.version>
