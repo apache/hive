@@ -45,11 +45,11 @@ public class HMSServletTest1A extends HMSServletTest1 {
         .willReturn(ok()
             .withBody(Files.readAllBytes(jwtVerificationJWKSFile.toPath()))));
     thriftPort = MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
-    servletServer = HiveMetaStore.getPropertyServer();
+    servletServer = HiveMetaStore.getServletServer();
     if (servletServer == null || !servletServer.isStarted()) {
       Assert.fail("http server did not start");
     }
-    sport = servletServer.getURI().getPort();
+    sport = HiveMetaStore.getPropertyServletPort();
     return sport;
   }
 

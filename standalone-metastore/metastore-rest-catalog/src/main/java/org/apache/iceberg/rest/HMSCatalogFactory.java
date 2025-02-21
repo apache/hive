@@ -31,15 +31,14 @@ import org.apache.hadoop.hive.metastore.ServletServerBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.hive.HiveCatalog;
-import org.eclipse.jetty.server.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Iceberg Catalog server creator.
  */
-public class HMSCatalogServer {
-  private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogServer.class);
+public class HMSCatalogFactory {
+  private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogFactory.class);
   protected static final AtomicReference<Reference<Catalog>> catalogRef = new AtomicReference<>();
 
   public static Catalog getLastCatalog() {
@@ -56,7 +55,7 @@ public class HMSCatalogServer {
   protected final String path;
   protected Catalog catalog;
 
-  protected HMSCatalogServer(Configuration conf, Catalog catalog) {
+  protected HMSCatalogFactory(Configuration conf, Catalog catalog) {
     port = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_SERVLET_PORT);
     path = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_SERVLET_PATH);
     this.configuration = conf;
@@ -120,12 +119,12 @@ public class HMSCatalogServer {
    * Factory method to describe Iceberg servlet.
    * <p>This one is looked up through reflection to start from HMS.</p>
    *
-   * @param conf the configuration
+   * @param configuration the configuration
    * @return the servlet descriptor instance
    */
   public static ServletServerBuilder.Descriptor createServlet(Configuration configuration) {
     try {
-      HMSCatalogServer hms = new HMSCatalogServer(configuration, null);
+      HMSCatalogFactory hms = new HMSCatalogFactory(configuration, null);
       HttpServlet servlet = hms.createServlet();
       if (servlet != null) {
         return new ServletServerBuilder.Descriptor(hms.getPort(), hms.getPath(), servlet) {
@@ -134,7 +133,7 @@ public class HMSCatalogServer {
           }
         };
       }
-    } catch (Exception exception) {
+    } catch (IOException exception) {
       LOG.error("failed to create servlet ", exception);
     }
     return null;

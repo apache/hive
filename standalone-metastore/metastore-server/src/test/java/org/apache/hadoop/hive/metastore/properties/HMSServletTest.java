@@ -51,6 +51,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import org.apache.hadoop.hive.metastore.HiveMetaStore;
 
 public class HMSServletTest extends HMSTestBase {
   protected static final String CLI = "hmscli";
@@ -64,7 +65,7 @@ public class HMSServletTest extends HMSTestBase {
       if (servletServer == null || !servletServer.isStarted()) {
         Assert.fail("http server did not start");
       }
-      sport = servletServer.getURI().getPort();
+      sport = HiveMetaStore.getPropertyServletPort();
     }
     return sport;
   }

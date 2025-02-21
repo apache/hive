@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
@@ -122,17 +121,39 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   private static ZooKeeperHiveHelper zooKeeperHelper = null;
   private static String msHost = null;
   private static ThriftServer thriftServer;
+  /** the servlet server. */
   private static Server servletServer = null;
+  /** the port and path of the property servlet. */
+  private static int propertyServletPort = -1;
+  /** the port and path of the catalog servlet. */
+  private static int catalogServletPort = -1;
 
-
-  public static Server getPropertyServer() {
+  /**
+   * Gets the embedded servlet server.
+   * @return the server instance or null
+   */
+  public static Server getServletServer() {
     return servletServer;
   }
 
-  public static Server getIcebergServer() {
-    return servletServer;
+  /**
+   * Gets the property servlet connector port.
+   * <p>If configuration is 0, this port is allocated by the system.</p>
+   * @return the connector port or -1 if not configured
+   */
+  public static int getPropertyServletPort() {
+    return propertyServletPort;
   }
-
+  
+  /**
+   * Gets the catalog servlet connector port.
+   * <p>If configuration is 0, this port is allocated by the system.</p>
+   * @return the connector port or -1 if not configured
+   */
+  public static int getCatalogServletPort() {
+    return catalogServletPort;
+  }
+  
   public static boolean isRenameAllowed(Database srcDB, Database destDB) {
     if (!srcDB.getName().equalsIgnoreCase(destDB.getName())) {
       if (ReplChangeManager.isSourceOfReplication(srcDB) || ReplChangeManager.isSourceOfReplication(destDB)) {
@@ -748,12 +769,24 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
     // optionally create and start the property and Iceberg REST server
-    servletServer = ServletServerBuilder.startServer(LOG, conf,
-            PropertyServlet::createServlet,
-            HiveMetaStore::createIcebergServlet);
+    ServletServerBuilder.Descriptor properties = PropertyServlet.createServlet(conf);
+    ServletServerBuilder.Descriptor catalog = createIcebergServlet(conf);
+    ServletServerBuilder builder = new ServletServerBuilder(conf);
+    builder.addServlet(properties);
+    builder.addServlet(catalog);
+    servletServer = builder.start(LOG);
+    if (servletServer != null) {
+      if (properties != null) {
+          propertyServletPort = properties.getPort();
+      }
+      if (catalog != null) {
+        catalogServletPort = catalog.getPort();
+      }
+    }
+    // main server
     thriftServer.start();
   }
-
+  
   /**
    * Creates the Iceberg REST catalog servlet descriptor.
    * @param configuration the configuration

@@ -1828,7 +1828,7 @@ public class MetastoreConf {
     ),
     ICEBERG_CATALOG_SERVLET_FACTORY("hive.metastore.catalog.servlet.factory",
             "hive.metastore.catalog.servlet.factory",
-            "org.apache.iceberg.rest.HMSCatalogServer",
+            "org.apache.iceberg.rest.HMSCatalogFactory",
             "HMS Iceberg Catalog servlet factory class name."
             + "The factory needs to expose a method: "
             + "public static HttpServlet createServlet(Configuration configuration);"
@@ -1851,17 +1851,17 @@ public class MetastoreConf {
         "hive.metastore.catalog.cache.expiry", 60_000L,
         "HMS Iceberg Catalog cache expiry."
     ),
-    EMBEDDED_JETTY_THREADPOOL_MIN("hive.metastore.embedded.jetty.threadpool.min",
-            "hive.metastore.embedded.jetty.threadpool.min", 2,
-            "HMS embedded Jetty server(s) minimum number of threads."
+    HTTPSERVER_THREADPOOL_MIN("hive.metastore.httpserver.threadpool.min",
+            "hive.metastore.httpserver.threadpool.min", 8,
+            "HMS embedded HTTP server minimum number of threads."
     ),
-    EMBEDDED_JETTY_THREADPOOL_MAX("hive.metastore.embedded.jetty.threadpool.max",
-            "hive.metastore.embedded.jetty.threadpool.max", 256,
-            "HMS embedded Jetty server(s) maximum number of threads."
+    HTTPSERVER_THREADPOOL_MAX("hive.metastore.httpserver.threadpool.max",
+            "hive.metastore.httpserver.threadpool.max", 256,
+            "HMS embedded HTTP server maximum number of threads."
     ),
-    EMBEDDED_JETTY_THREADPOOL_IDLE("hive.metastore.embedded.jetty.threadpool.idle",
-            "hive.metastore.embedded.jetty.threadpool.idle", 60_000L,
-            "HMS embedded Jetty server(s) thread idle time."
+    HTTPSERVER_THREADPOOL_IDLE("hive.metastore.httpserver.threadpool.idle",
+            "hive.metastore.httpserver.threadpool.idle", 60_000L,
+            "HMS embedded HTTP server thread idle time."
     ),
 
     // Deprecated Hive values that we are keeping for backwards compatibility.

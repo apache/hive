@@ -201,27 +201,25 @@ public abstract class HMSTestBase {
     Database db = new Database(DB_NAME, "catalog test", location, Collections.emptyMap());
     client.createDatabase(db);
 
-    int[] aport = { -1 };
-    Catalog ice = acquireServer(aport);
+    Catalog ice = acquireServer();
       catalog =  ice;
       nsCatalog = catalog instanceof SupportsNamespaces? (SupportsNamespaces) catalog : null;
-      catalogPort = aport[0];
+      catalogPort = HiveMetaStore.getCatalogServletPort();
   }
   
   private static String format(String format, Object... params) {
     return org.slf4j.helpers.MessageFormatter.arrayFormat(format, params).getMessage();
   }
 
-  private static Catalog acquireServer(int[] port) throws InterruptedException {
+  private static Catalog acquireServer() throws InterruptedException {
     final int wait = 200;
-    Server iceServer = HiveMetaStore.getIcebergServer();
+    Server iceServer = HiveMetaStore.getServletServer();
     int tries = WAIT_FOR_SERVER / wait;
     while(iceServer == null && tries-- > 0) {
       Thread.sleep(wait);
-      iceServer = HiveMetaStore.getIcebergServer();
+      iceServer = HiveMetaStore.getServletServer();
     }
     if (iceServer != null) {
-      port[0] = iceServer.getURI().getPort();
       boolean starting;
       tries = WAIT_FOR_SERVER / wait;
       while((starting = iceServer.isStarting()) && tries-- > 0) {
@@ -230,7 +228,7 @@ public abstract class HMSTestBase {
       if (starting) {
         LOG.warn("server still starting after {}ms", WAIT_FOR_SERVER);
       }
-      Catalog ice = HMSCatalogServer.getLastCatalog();
+      Catalog ice = HMSCatalogFactory.getLastCatalog();
       if (ice == null) {
         throw new NullPointerException(format("unable to acquire catalog after {}ms", WAIT_FOR_SERVER));
       }

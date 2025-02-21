@@ -52,7 +52,7 @@ public class ServletServerBuilder {
   /**
    * Keeping track of descriptors.
    */
-  private Map<Servlet, Descriptor> descriptorsMap = new IdentityHashMap<>();
+  private final Map<Servlet, Descriptor> descriptorsMap = new IdentityHashMap<>();
   /**
    * The configuration instance.
    */
@@ -93,6 +93,7 @@ public class ServletServerBuilder {
       this.servlet = servlet;
     }
     
+    @Override
     public String toString() {
       return servlet.getClass().getSimpleName() + ":" + port+ "/"+ path ;
     }
@@ -131,8 +132,10 @@ public class ServletServerBuilder {
    * @param descriptor a descriptor
    * @return the descriptor
    */
-  public Descriptor addServlet(Descriptor descriptor){
-    descriptorsMap.put(descriptor.getServlet(), descriptor);
+  public Descriptor addServlet(Descriptor descriptor) {
+    if (descriptor != null) {
+      descriptorsMap.put(descriptor.getServlet(), descriptor);
+    }
     return descriptor;
   }
 
@@ -144,9 +147,9 @@ public class ServletServerBuilder {
    * @throws IOException if server creation fails
    */
   protected Server createServer() throws IOException {
-    final int maxThreads = MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.EMBEDDED_JETTY_THREADPOOL_MAX);
-    final int minThreads = MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.EMBEDDED_JETTY_THREADPOOL_MIN);
-    final int idleTimeout = MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.EMBEDDED_JETTY_THREADPOOL_IDLE);
+    final int maxThreads = MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.HTTPSERVER_THREADPOOL_MAX);
+    final int minThreads = MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.HTTPSERVER_THREADPOOL_MIN);
+    final int idleTimeout = MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.HTTPSERVER_THREADPOOL_IDLE);
     final QueuedThreadPool threadPool = new QueuedThreadPool(maxThreads, minThreads, idleTimeout);
     Server server = new Server(threadPool);
     server.setStopAtShutdown(true);
@@ -219,14 +222,12 @@ public class ServletServerBuilder {
     final Server server = createServer();
     // create the connectors
     final SslContextFactory sslFactory = ServletSecurity.createSslContextFactory(configuration);
-    final int[] keys = new int[size];
     final ServerConnector[] connectors = new ServerConnector[size];
     final ServletContextHandler[] handlers = new ServletContextHandler[size];
     Iterator<Map.Entry<Integer, ServletContextHandler>> it = handlersMap.entrySet().iterator();
     for (int c = 0; it.hasNext(); ++c) {
       Map.Entry<Integer, ServletContextHandler> entry = it.next();
       int key = entry.getKey();
-      keys[c] = key;
       int port = key < 0? 0 : key;
       ServerConnector connector = createConnector(server, sslFactory, port);
       connectors[c] = connector;
@@ -263,6 +264,60 @@ public class ServletServerBuilder {
   }
 
   /**
+   * Creates a builder.
+   * @param conf the configuration
+   * @param describe the functions to call that create servlet descriptors
+   * @return the builder or null if no descriptors
+   */
+  @SafeVarargs
+  public static ServletServerBuilder builder(Configuration conf,
+          Function<Configuration, ServletServerBuilder.Descriptor>... describe) {
+    List<ServletServerBuilder.Descriptor> descriptors = new ArrayList();
+    Arrays.asList(describe).forEach(functor -> {
+      ServletServerBuilder.Descriptor descriptor = functor.apply(conf);
+      if (descriptor != null) {
+        descriptors.add(descriptor);
+      }
+    });
+    if (!descriptors.isEmpty()) {
+      ServletServerBuilder builder = new ServletServerBuilder(conf);
+      descriptors.forEach(d -> builder.addServlet(d));
+      return builder;
+    }
+    return null;
+  }
+
+  /**
+   * Creates and starts the server.
+   * @param logger a logger to output info
+   * @return the server instance (or null if error)
+   */
+  public Server start(Logger logger) {
+    try {
+      Server server = startServer();
+      if (server != null) {
+        if (!server.isStarted()) {
+          logger.error("Unable to start servlet server on {}", server.getURI());
+        } else {
+          descriptorsMap.values().forEach(descriptor -> {
+            logger.info("Started {} servlet on {}:{}",
+                    descriptor.toString(),
+                    descriptor.getPort(),
+                    descriptor.getPath());
+          });
+        }
+      }
+      return server;
+    } catch (Exception exception) {
+      logger.error("Unable to start servlet server", exception);
+      return null;
+    } catch (Throwable throwable) {
+      logger.error("Unable to start servlet server", throwable);
+      return null;
+    }
+  }
+  
+   /**
    * Helper for generic use case.
    * @param logger the logger
    * @param conf the configuration
@@ -274,40 +329,7 @@ public class ServletServerBuilder {
           Logger logger,
           Configuration conf,
           Function<Configuration, ServletServerBuilder.Descriptor>... describe) {
-    List<ServletServerBuilder.Descriptor> descriptors = new ArrayList();
-    Arrays.asList(describe).forEach(functor -> {
-      ServletServerBuilder.Descriptor descriptor = functor.apply(conf);
-      if (descriptor != null) {
-        descriptors.add(descriptor);
-      };
-    });
-    if (!descriptors.isEmpty()) {
-      ServletServerBuilder builder = new ServletServerBuilder(conf);
-      descriptors.forEach(d -> builder.addServlet(d));
-      try {
-        Server server = builder.startServer();
-        if (server != null) {
-          if (!server.isStarted()) {
-            logger.error("Unable to start property-maps servlet server on {}", server.getURI());
-          } else {
-            descriptors.forEach(descriptor -> {
-            logger.info("Started {} servlet on {}:{}",
-                    descriptor.toString(),
-                   descriptor.getPort(),
-                   descriptor.getPath());
-            });
-          }
-        }
-        return server;
-      } catch(Exception exception) {
-        logger.error("Unable to start servlet server", exception);
-        return null;
-      } catch(Throwable throwable) {
-        logger.error("Unable to start servlet server", throwable);
-        return null;
-      }
-    }
-    return null;
+    return builder(conf, describe).start(logger);
   }
 }
 
