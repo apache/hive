@@ -1133,14 +1133,12 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       List<org.apache.commons.lang3.tuple.Pair<Integer, byte[]>> partExprs)
       throws MetaException {
     Table icebergTbl = IcebergTableUtil.getTable(conf, hmsTable);
-    Map<String, PartitionField> partitionFieldMap =
-        icebergTbl.spec().fields().stream().collect(Collectors.toMap(PartitionField::name, Function.identity()));
     DeleteFiles deleteFiles = icebergTbl.newDelete();
     List<Expression> expressions = partExprs.stream().map(partExpr -> {
       ExprNodeDesc exprNodeDesc = SerializationUtilities
           .deserializeObjectWithTypeInformation(partExpr.getRight(), true);
       SearchArgument sarg = ConvertAstToSearchArg.create(conf, (ExprNodeGenericFuncDesc) exprNodeDesc);
-      validatePartitionSpec(sarg, icebergTbl);
+      validatePartitionSpec(sarg, icebergTbl.spec());
       return HiveIcebergFilterFactory.generateFilterExpression(sarg);
     }).collect(Collectors.toList());
     PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
@@ -1166,7 +1164,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         Expression partFilter = Expressions.alwaysTrue();
         for (int index = 0; index < pSpec.fields().size(); index++) {
           PartitionField field = icebergTbl.spec().fields().get(index);
-          UnboundPredicate<Object> equal = getPartitionPredicate(icebergTbl, partitionData, field, index);
+          UnboundPredicate<Object> equal = getPartitionPredicate(partitionData, field, index, icebergTbl.schema());
           partFilter = Expressions.and(partFilter, equal);
         }
         partitionSetFilter = Expressions.or(partitionSetFilter, partFilter);
@@ -1180,12 +1178,12 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     context.putToProperties(HiveMetaStoreClient.SKIP_DROP_PARTITION, "true");
   }
 
-  private static void validatePartitionSpec(SearchArgument sarg, Table icebergTbl) {
+  private static void validatePartitionSpec(SearchArgument sarg, PartitionSpec partitionSpec) {
     for (PredicateLeaf leaf : sarg.getLeaves()) {
       TransformSpec transformSpec = TransformSpec.fromStringWithColumnName(leaf.getColumnName());
-      Types.NestedField column = icebergTbl.schema().findField(transformSpec.getColumnName());
+      Types.NestedField column = partitionSpec.schema().findField(transformSpec.getColumnName());
       PartitionField partitionColumn =
-          icebergTbl.spec().fields().stream().filter(pf -> pf.sourceId() == column.fieldId()).findFirst().get();
+          partitionSpec.fields().stream().filter(pf -> pf.sourceId() == column.fieldId()).findFirst().get();
 
       if (!(partitionColumn.transform() == null && transformSpec.transformTypeString() == null) &&
           !partitionColumn.transform().toString().equalsIgnoreCase(transformSpec.transformTypeString())) {
@@ -1197,9 +1195,9 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     }
   }
 
-  private static UnboundPredicate<Object> getPartitionPredicate(Table icebergTbl, PartitionData partitionData,
-      PartitionField field, int index) {
-    String columName = icebergTbl.schema().findField(field.sourceId()).name();
+  private static UnboundPredicate<Object> getPartitionPredicate(PartitionData partitionData, PartitionField field,
+      int index, Schema schema) {
+    String columName = schema.findField(field.sourceId()).name();
     TransformSpec transformSpec = TransformSpec.fromString(field.transform().toString(), columName);
 
     UnboundTerm<Object> partitionColumn =
