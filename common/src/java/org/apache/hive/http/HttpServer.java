@@ -82,15 +82,17 @@ import org.eclipse.jetty.rewrite.handler.RewriteRegexRule;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.LoginService;
-import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.LowResourceMonitor;
+import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.ContextHandler.Context;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.FilterMapping;
@@ -138,6 +140,8 @@ public class HttpServer {
   private String appDir;
   private WebAppContext webAppContext;
   private Server webServer;
+  private QueuedThreadPool threadPool;
+  private PortHandlerWrapper portHandlerWrapper;
 
   /**
    * Create a status server on the given port.
@@ -179,6 +183,7 @@ public class HttpServer {
         new LinkedList<Pair<String, Class<? extends HttpServlet>>>();
     private boolean disableDirListing = false;
     private final Map<String, Pair<String, Filter>> globalFilters = new LinkedHashMap<>();
+    private String contextPath;
 
     public Builder(String name) {
       Preconditions.checkArgument(name != null && !name.isEmpty(), "Name must be specified");
@@ -187,6 +192,10 @@ public class HttpServer {
 
     public HttpServer build() throws IOException {
       return new HttpServer(this);
+    }
+
+    public void setContextPath(String contextPath) {
+      this.contextPath = contextPath;
     }
 
     public Builder setConf(HiveConf origConf) {
@@ -489,13 +498,13 @@ public class HttpServer {
   /**
    * Create the web context for the application of specified name
    */
-  WebAppContext createWebAppContext(Builder b) {
+  WebAppContext createWebAppContext(Builder b) throws FileNotFoundException {
     WebAppContext ctx = new WebAppContext();
     setContextAttributes(ctx.getServletContext(), b.contextAttrs);
     ctx.getServletContext().getSessionCookieConfig().setHttpOnly(true);
     ctx.setDisplayName(b.name);
-    ctx.setContextPath("/");
-    ctx.setWar(appDir + "/" + b.name);
+    ctx.setContextPath(b.contextPath == null ? "/" : b.contextPath);
+    ctx.setWar(getWebAppsPath(b.name) + "/" + b.name);
     return ctx;
   }
 
@@ -519,8 +528,9 @@ public class HttpServer {
   /**
    * Setup cross-origin requests (CORS) filter.
    * @param b - builder
+   * @param webAppContext - webAppContext
    */
-  private void setupCORSFilter(Builder b) {
+  private void setupCORSFilter(Builder b, WebAppContext webAppContext) {
     FilterHolder holder = new FilterHolder();
     holder.setClassName(CrossOriginFilter.class.getName());
     Map<String, String> params = new HashMap<>();
@@ -533,10 +543,62 @@ public class HttpServer {
     handler.addFilterWithMapping(holder, "/*", FilterMapping.ALL);
   }
 
+  public void addWebApp(Builder b) throws IOException {
+    WebAppContext webAppContext = createWebAppContext(b);
+    ContextHandlerCollection portHandler = new ContextHandlerCollection();
+    ServerConnector connector = addWebApp(b, webAppContext, portHandler);
+    portHandlerWrapper.addHandler(connector, portHandler);
+  }
+  
+  private ServerConnector addWebApp(Builder b, WebAppContext webAppContext, ContextHandlerCollection portHandler)
+      throws IOException {
+
+    if (b.useSPNEGO) {
+      // Secure the web server with kerberos
+      setupSpnegoFilter(b, webAppContext);
+    }
+
+    if (b.enableCORS) {
+      setupCORSFilter(b, webAppContext);
+    }
+
+    Map<String, String> xFrameParams = setHeaders();
+    if (b.xFrameEnabled) {
+      setupXframeFilter(b, xFrameParams, webAppContext);
+    }
+
+    if (b.disableDirListing) {
+      disableDirectoryListingOnServlet(webAppContext);
+    }
+
+    ServerConnector connector = createChannelConnector(threadPool.getQueueSize(), b);
+    webServer.addConnector(connector);
+
+    RewriteHandler rwHandler = new RewriteHandler();
+    rwHandler.setRewriteRequestURI(true);
+    rwHandler.setRewritePathInfo(false);
+
+    RewriteRegexRule rootRule = new RewriteRegexRule();
+    rootRule.setRegex("^/$");
+    rootRule.setReplacement(b.contextRootRewriteTarget);
+    rootRule.setTerminating(true);
+
+    rwHandler.addRule(rootRule);
+    rwHandler.setHandler(webAppContext);
+
+    portHandler.addHandler(rwHandler);
+
+    for (Pair<String, Class<? extends HttpServlet>> p : b.servlets) {
+      addServlet(p.getFirst(), "/" + p.getFirst(), p.getSecond(), webAppContext);
+    }
+    
+    return connector;
+  }
+  
   /**
    * Create a channel connector for "http/https" requests
    */
-  Connector createChannelConnector(int queueSize, Builder b) {
+  ServerConnector createChannelConnector(int queueSize, Builder b) {
     ServerConnector connector;
 
     final HttpConfiguration conf = new HttpConfiguration();
@@ -604,7 +666,7 @@ public class HttpServer {
 
   private void createWebServer(final Builder b) throws IOException {
     // Create the thread pool for the web server to handle HTTP requests
-    QueuedThreadPool threadPool = new QueuedThreadPool();
+    threadPool = new QueuedThreadPool();
     if (b.maxThreads > 0) {
       threadPool.setMaxThreads(b.maxThreads);
     }
@@ -615,58 +677,28 @@ public class HttpServer {
     this.appDir = getWebAppsPath(b.name);
     this.webAppContext = createWebAppContext(b);
 
-    if (b.useSPNEGO) {
-      // Secure the web server with kerberos
-      setupSpnegoFilter(b, webAppContext);
-    }
-
-    if (b.enableCORS) {
-      setupCORSFilter(b);
-    }
-
-    Map<String, String> xFrameParams = setHeaders();
-    if (b.xFrameEnabled) {
-      setupXframeFilter(b,xFrameParams);
-    }
-
-    if (b.disableDirListing) {
-      disableDirectoryListingOnServlet(webAppContext);
-    }
-
-    initializeWebServer(b, threadPool.getMaxThreads());
+    initializeWebServer(b);
   }
 
-  private void initializeWebServer(final Builder b, int queueSize) throws IOException {
+  private void initializeWebServer(final Builder b) throws IOException {
     // Set handling for low resource conditions.
     final LowResourceMonitor low = new LowResourceMonitor(webServer);
     low.setLowResourcesIdleTimeout(10000);
     webServer.addBean(low);
 
-    Connector connector = createChannelConnector(queueSize, b);
-    webServer.addConnector(connector);
-
-    RewriteHandler rwHandler = new RewriteHandler();
-    rwHandler.setRewriteRequestURI(true);
-    rwHandler.setRewritePathInfo(false);
-
-    RewriteRegexRule rootRule = new RewriteRegexRule();
-    rootRule.setRegex("^/$");
-    rootRule.setReplacement(b.contextRootRewriteTarget);
-    rootRule.setTerminating(true);
-
-    rwHandler.addRule(rootRule);
-    rwHandler.setHandler(webAppContext);
-
-    // Configure web application contexts for the web server
-    ContextHandlerCollection contexts = new ContextHandlerCollection();
-    contexts.addHandler(rwHandler);
-    webServer.setHandler(contexts);
-
+    // Configure the global context handler collection for the web server
+    portHandlerWrapper = new PortHandlerWrapper();
+    webServer.setHandler(portHandlerWrapper);
+    
+    ContextHandlerCollection portHandler = new ContextHandlerCollection();
+    portHandler.addHandler(webAppContext);
+    ServerConnector connector = addWebApp(b, webAppContext, portHandler);
+    
+    portHandlerWrapper.addHandler(connector, portHandler);
 
     if (b.usePAM) {
-      setupPam(b, contexts);
+      setupPam(b, portHandlerWrapper);
     }
-
 
     addServlet("jmx", "/jmx", JMXJsonServlet.class);
     addServlet("conf", "/conf", ConfServlet.class);
@@ -679,8 +711,7 @@ public class HttpServer {
       if (Files.notExists(tmpDir)) {
         Files.createDirectories(tmpDir);
       }
-      ServletContextHandler genCtx =
-        new ServletContextHandler(contexts, "/prof-output");
+      ServletContextHandler genCtx = new ServletContextHandler(portHandler, "/prof-output");
       setContextAttributes(genCtx.getServletContext(), b.contextAttrs);
       genCtx.addServlet(ProfileOutputServlet.class, "/*");
       genCtx.setResourceBase(tmpDir.toAbsolutePath().toString());
@@ -689,14 +720,9 @@ public class HttpServer {
       LOG.info("ASYNC_PROFILER_HOME env or -Dasync.profiler.home not specified. Disabling /prof endpoint..");
     }
 
-    for (Pair<String, Class<? extends HttpServlet>> p : b.servlets) {
-      addServlet(p.getFirst(), "/" + p.getFirst(), p.getSecond());
-    }
-
     b.globalFilters.forEach((k, v) -> addFilter(k, v.getFirst(), v.getSecond(), webAppContext.getServletHandler()));
 
-    ServletContextHandler staticCtx =
-      new ServletContextHandler(contexts, "/static");
+    ServletContextHandler staticCtx = new ServletContextHandler(portHandler, "/static");
     staticCtx.setResourceBase(appDir + "/static");
     staticCtx.addServlet(DefaultServlet.class, "/*");
     staticCtx.setDisplayName("static");
@@ -704,8 +730,7 @@ public class HttpServer {
 
     String logDir = getLogDir(b.conf);
     if (logDir != null) {
-      ServletContextHandler logCtx =
-        new ServletContextHandler(contexts, "/logs");
+      ServletContextHandler logCtx = new ServletContextHandler(portHandler, "/logs");
       setContextAttributes(logCtx.getServletContext(), b.contextAttrs);
       if(b.useSPNEGO) {
         setupSpnegoFilter(b,logCtx);
@@ -716,7 +741,7 @@ public class HttpServer {
     }
 
     // Define the global filers for each servlet context except the staticCtx(css style).
-    Optional<Handler[]> handlers = Optional.ofNullable(contexts.getHandlers());
+    Optional<Handler[]> handlers = Optional.ofNullable(portHandler.getHandlers());
     handlers.ifPresent(hs -> Arrays.stream(hs)
         .filter(h -> h instanceof ServletContextHandler && !"static".equals(((ServletContextHandler) h).getDisplayName()))
         .forEach(h -> b.globalFilters.forEach((k, v) ->
@@ -748,7 +773,7 @@ public class HttpServer {
     return headers;
   }
 
-  private void setupXframeFilter(Builder b, Map<String, String> params) {
+  private void setupXframeFilter(Builder b, Map<String, String> params, WebAppContext webAppContext) {
     FilterHolder holder = new FilterHolder();
     holder.setClassName(QuotingInputFilter.class.getName());
     holder.setInitParameters(params);
@@ -804,6 +829,15 @@ public class HttpServer {
    */
   public void addServlet(String name, String pathSpec,
       Class<? extends HttpServlet> clazz) {
+    ServletHolder holder = new ServletHolder(clazz);
+    if (name != null) {
+      holder.setName(name);
+    }
+    webAppContext.addServlet(holder, pathSpec);
+  }
+
+  private void addServlet(String name, String pathSpec, Class<? extends HttpServlet> clazz,
+      WebAppContext webAppContext) {
     ServletHolder holder = new ServletHolder(clazz);
     if (name != null) {
       holder.setName(name);
@@ -1026,4 +1060,32 @@ public class HttpServer {
     }
   }
 
+  class PortHandlerWrapper extends ContextHandlerCollection {
+
+    private final Map<ServerConnector, HandlerCollection> connectorToHandlerMap = new HashMap<>();
+
+    public PortHandlerWrapper() {
+    }
+    
+    public void addHandler(ServerConnector connector, HandlerCollection handler) {
+      connectorToHandlerMap.put(connector, handler);
+      addHandler(handler);
+    }
+
+    @Override
+    public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+      // Determine the connector (port) the request came through
+      int port = request.getServerPort();
+
+      // Find the handler for the corresponding port
+      Handler handler = connectorToHandlerMap.entrySet().stream()
+          .filter(entry -> entry.getKey().getPort() == port)
+          .map(Map.Entry::getValue)
+          .findFirst()
+          .orElseThrow(() -> new IllegalStateException("No handler found for port " + port));
+
+      // Delegate the request to the handler
+      handler.handle(target, baseRequest, request, response);
+    }
+  }
 }
