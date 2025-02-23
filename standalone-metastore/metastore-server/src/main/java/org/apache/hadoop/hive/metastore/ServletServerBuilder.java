@@ -109,6 +109,10 @@ public class ServletServerBuilder {
     public HttpServlet getServlet() {
       return servlet;
     }
+
+    void setPort(int port) {
+      this.port = port;
+    }
   }
 
   /**
@@ -180,7 +184,7 @@ public class ServletServerBuilder {
   }
 
   /**
-   * Adds a servlet to its intended servlet context handler.
+   * Adds a servlet to its intended servlet context context.
    * @param handlersMap the map of port to handlers
    * @param descriptor the servlet descriptor
    * @throws IOException
@@ -245,7 +249,7 @@ public class ServletServerBuilder {
     server.setHandler(portHandler);
     // start the server
     server.start();
-    // collect auto ports
+    // collect automatically assigned connector ports
     for (int i = 0; i < connectors.length; ++i) {
       int port = connectors[i].getLocalPort();
       ServletContextHandler handler = handlers[i];
@@ -255,7 +259,7 @@ public class ServletServerBuilder {
         if (servlet != null) {
           Descriptor descriptor = descriptorsMap.get(servlet);
           if (descriptor != null) {
-            descriptor.port = port;
+            descriptor.setPort(port);
           }
         }
       }

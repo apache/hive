@@ -16,22 +16,23 @@
  */
 package org.apache.hadoop.hive.metastore.properties;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.ok;
+import java.nio.file.Files;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.junit.Assert;
-
-import java.nio.file.Files;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.ok;
+import org.junit.experimental.categories.Category;
 
 /**
  * Test using the servlet server created by the MetaStore and
  * the client based on Apache HttpClient.
  */
+@Category(MetastoreUnitTest.class)
 public class HMSServletTest1A extends HMSServletTest1 {
   protected int thriftPort;
 

@@ -18,7 +18,18 @@ package org.apache.hadoop.hive.metastore.properties;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -29,18 +40,9 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
+import org.junit.experimental.categories.Category;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
+@Category(MetastoreUnitTest.class)
 public class HMSServletTest1 extends HMSServletTest {
   @Override
   public void tearDown() throws Exception {
@@ -52,7 +54,7 @@ public class HMSServletTest1 extends HMSServletTest {
 
   @Override
   protected PropertyClient createClient(Configuration conf, int sport) throws Exception {
-    URL url = new URL("http://hive@localhost:" + sport + "/" + CLI + "/" + NS);
+    URL url = new URL("http://hive@localhost:" + sport + "/" + path + "/" + NS);
     String jwt = generateJWT();
     return new JSonHttpClient(jwt, url.toString());
   }

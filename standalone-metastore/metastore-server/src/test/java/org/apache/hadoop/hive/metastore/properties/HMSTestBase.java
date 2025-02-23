@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore.properties;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
@@ -25,25 +27,6 @@ import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.jexl3.JxltEngine;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
-import org.apache.hadoop.hive.metastore.ObjectStore;
-import org.apache.hadoop.hive.metastore.TestObjectStore;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.ok;
-import static org.apache.hadoop.hive.metastore.properties.HMSPropertyManager.MaintenanceOpStatus;
-import static org.apache.hadoop.hive.metastore.properties.HMSPropertyManager.MaintenanceOpType;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -58,16 +41,30 @@ import java.util.Random;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-
-import static org.apache.hadoop.hive.metastore.properties.HMSPropertyManager.JEXL;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.jexl3.JxltEngine;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
+import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.metastore.TestObjectStore;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import static org.apache.hadoop.hive.metastore.properties.HMSPropertyManager.MAINTENANCE_OPERATION;
 import static org.apache.hadoop.hive.metastore.properties.HMSPropertyManager.MAINTENANCE_STATUS;
+import org.apache.hadoop.hive.metastore.properties.HMSPropertyManager.MaintenanceOpStatus;
+import org.apache.hadoop.hive.metastore.properties.HMSPropertyManager.MaintenanceOpType;
+import static org.apache.hadoop.hive.metastore.properties.PropertyManager.JEXL;
 import static org.apache.hadoop.hive.metastore.properties.PropertyType.BOOLEAN;
 import static org.apache.hadoop.hive.metastore.properties.PropertyType.DATETIME;
 import static org.apache.hadoop.hive.metastore.properties.PropertyType.DOUBLE;
 import static org.apache.hadoop.hive.metastore.properties.PropertyType.INTEGER;
 import static org.apache.hadoop.hive.metastore.properties.PropertyType.JSON;
 import static org.apache.hadoop.hive.metastore.properties.PropertyType.STRING;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class HMSTestBase {
   protected static final String baseDir = System.getProperty("basedir");
@@ -87,12 +84,12 @@ public abstract class HMSTestBase {
   /**
    * Abstract the property client access on a given namespace.
    */
-  interface PropertyClient {
+  protected interface PropertyClient {
     boolean setProperties(Map<String, String> properties);
     Map<String, Map<String, String>> getProperties(String mapPrefix, String mapPredicate, String... selection) throws IOException;
   }
 
-  interface HttpPropertyClient extends PropertyClient {
+  protected interface HttpPropertyClient extends PropertyClient {
     default Map<String, String> getProperties(List<String> selection) throws IOException {
       throw new UnsupportedOperationException("not implemented in " + this.getClass());
     }
@@ -202,6 +199,8 @@ public abstract class HMSTestBase {
 
   /**
    * Creates a client.
+   * @param conf the configuration
+   * @param port the servlet port
    * @return the client instance
    * @throws Exception
    */
