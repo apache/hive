@@ -49,6 +49,7 @@ import org.apache.tez.common.security.TokenCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 import org.slf4j.MDC;
 
 import java.io.IOException;
@@ -70,7 +71,7 @@ public class QueryTracker extends AbstractService {
 
   private static final Logger LOG = LoggerFactory.getLogger(QueryTracker.class);
   private static final Marker QUERY_COMPLETE_MARKER =
-      new Log4jMarker(new Log4jQueryCompleteMarker());
+      new Log4jMarker(MarkerFactory.getIMarkerFactory(), new Log4jQueryCompleteMarker());
 
   /// Shared singleton MetricsSource instance for all DAG locks
   private static final MetricsSource LOCK_METRICS;
