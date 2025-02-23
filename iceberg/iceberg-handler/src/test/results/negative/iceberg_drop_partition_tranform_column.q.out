@@ -50,4 +50,4 @@ PREHOOK: query: ALTER TABLE drop_partition DROP PARTITION (location_id = 'loc_00
 PREHOOK: type: ALTERTABLE_DROPPARTS
 PREHOOK: Input: default@drop_partition
 PREHOOK: Output: default@drop_partition@location_id=loc_002/reading_time_day=2024-06-01
-FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. Drop Partition not supported on Transformed Columns
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. Invalid transform for column: reading_time Expected: day Found: IDENTITY
