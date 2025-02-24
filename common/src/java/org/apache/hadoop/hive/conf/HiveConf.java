@@ -3881,7 +3881,7 @@ public class HiveConf extends Configuration {
     HIVE_LINEAGE_INFO("hive.lineage.hook.info.enabled", false,
         "Whether Hive provides lineage information to hooks." +
             "Deprecated: use hive.lineage.statement.filter instead."),
-    HIVE_LINEAGE_STATEMENT_FILTER("hive.lineage.statement.filter", "ALL",
+    HIVE_LINEAGE_STATEMENT_FILTER("hive.lineage.statement.filter", "NONE",
         "Whether Hive provides lineage information to hooks for the specified statements only, " +
             "the value is a comma-separated list (ex.: CREATE_MATERIALIZED_VIEW," +
             "CREATE_TABLE,CREATE_TABLE_AS_SELECT). Possible values are: CREATE_TABLE, CREATE_TABLE_AS_SELECT, " +

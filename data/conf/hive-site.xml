@@ -155,6 +155,12 @@
 </property>
 
 <property>
+  <name>hive.lineage.statement.filter</name>
+  <value>ALL</value>
+  <description>Lineage information filter</description>
+</property>
+
+<property>
   <name>hive.exec.post.hooks</name>
   <value>org.apache.hadoop.hive.ql.hooks.PostExecutePrinter</value>
   <description>Post Execute Hook for Tests</description>
