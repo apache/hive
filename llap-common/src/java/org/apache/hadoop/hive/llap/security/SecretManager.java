@@ -29,6 +29,7 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.RetryOneTime;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.SSLZookeeperFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapUtil;
@@ -53,6 +54,11 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
       +  " that invalid ACLs on secret key paths would mean that security is compromised)";
   private final Configuration conf;
   private final String clusterId;
+  public static final String ZK_DTSM_ZK_SSL_ENABLED = "zk-dt-secret-manager.ssl.enabled";
+  public static final String ZK_DTSM_ZK_SSL_KEYSTORE_LOCATION = "zk-dt-secret-manager.ssl.keystore.location";
+  public static final String ZK_DTSM_ZK_SSL_KEYSTORE_PASSWORD = "zk-dt-secret-manager.ssl.keystore.password";
+  public static final String ZK_DTSM_ZK_SSL_TRUSTSTORE_LOCATION = "zk-dt-secret-manager.ssl.truststore.location";
+  public static final String ZK_DTSM_ZK_SSL_TRUSTSTORE_PASSWORD = "zk-dt-secret-manager.ssl.truststore.password";
 
   public SecretManager(Configuration conf, String clusterId) {
     super(validateConfigBeforeCtor(conf));
@@ -201,6 +207,19 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
     setZkConfIfNotSet(zkConf, ZK_DTSM_ZK_CONNECTION_STRING,
         HiveConf.getVar(zkConf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_STRING));
 
+    if (HiveConf.getBoolVar(zkConf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_ENABLED)) {
+      setZkConfIfNotSet(zkConf, ZK_DTSM_ZK_SSL_ENABLED,
+              HiveConf.getVar(zkConf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_ENABLED));
+      setZkConfIfNotSet(zkConf, ZK_DTSM_ZK_SSL_KEYSTORE_LOCATION,
+              HiveConf.getVar(zkConf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_KEYSTORE_LOCATION));
+      setZkConfIfNotSet(zkConf, ZK_DTSM_ZK_SSL_KEYSTORE_PASSWORD,
+              HiveConf.getVar(zkConf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_KEYSTORE_PASSWORD));
+      setZkConfIfNotSet(zkConf, ZK_DTSM_ZK_SSL_TRUSTSTORE_LOCATION,
+              HiveConf.getVar(zkConf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_TRUSTSTORE_LOCATION));
+      setZkConfIfNotSet(zkConf, ZK_DTSM_ZK_SSL_TRUSTSTORE_PASSWORD,
+              HiveConf.getVar(zkConf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_TRUSTSTORE_PASSWORD));
+    }
+    
     UserGroupInformation zkUgi = null;
     try {
       zkUgi = LlapUtil.loginWithKerberos(llapPrincipal, llapKeytab);
@@ -268,9 +287,17 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
     int stime = conf.getInt(ZK_DTSM_ZK_SESSION_TIMEOUT, ZK_DTSM_ZK_SESSION_TIMEOUT_DEFAULT),
         ctime = conf.getInt(ZK_DTSM_ZK_CONNECTION_TIMEOUT, ZK_DTSM_ZK_CONNECTION_TIMEOUT_DEFAULT);
     CuratorFramework zkClient = CuratorFrameworkFactory.builder().namespace(null)
-        .retryPolicy(new RetryOneTime(10)).sessionTimeoutMs(stime).connectionTimeoutMs(ctime)
-        .ensembleProvider(new FixedEnsembleProvider(conf.get(ZK_DTSM_ZK_CONNECTION_STRING)))
-        .build();
+            .retryPolicy(new RetryOneTime(10)).sessionTimeoutMs(stime).connectionTimeoutMs(ctime)
+            .ensembleProvider(new FixedEnsembleProvider(conf.get(ZK_DTSM_ZK_CONNECTION_STRING)))
+            .zookeeperFactory(new SSLZookeeperFactory(
+                    HiveConf.getBoolVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_ENABLED),
+                    HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_KEYSTORE_LOCATION),
+                    HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_KEYSTORE_PASSWORD),
+                    "",
+                    HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_TRUSTSTORE_LOCATION),
+                    HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_TRUSTSTORE_PASSWORD),
+                    "")
+            ).build();
     // Hardcoded from a private field in ZKDelegationTokenSecretManager.
     // We need to check the path under what it sets for namespace, since the namespace is
     // created with world ACLs.
