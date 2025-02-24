@@ -29,6 +29,7 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.RetryOneTime;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.SSLZookeeperFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapUtil;
@@ -44,6 +45,12 @@ import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Id;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.hadoop.security.token.delegation.ZKDelegationTokenSecretManager.ZK_DTSM_ZK_SSL_ENABLED;
+import static org.apache.hadoop.security.token.delegation.ZKDelegationTokenSecretManager.ZK_DTSM_ZK_SSL_KEYSTORE_LOCATION;
+import static org.apache.hadoop.security.token.delegation.ZKDelegationTokenSecretManager.ZK_DTSM_ZK_SSL_KEYSTORE_PASSWORD;
+import static org.apache.hadoop.security.token.delegation.ZKDelegationTokenSecretManager.ZK_DTSM_ZK_SSL_TRUSTSTORE_LOCATION;
+import static org.apache.hadoop.security.token.delegation.ZKDelegationTokenSecretManager.ZK_DTSM_ZK_SSL_TRUSTSTORE_PASSWORD;
 
 public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdentifier>
   implements SigningSecretManager {
@@ -201,6 +208,19 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
     setZkConfIfNotSet(zkConf, ZK_DTSM_ZK_CONNECTION_STRING,
         HiveConf.getVar(zkConf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_STRING));
 
+    if (HiveConf.getBoolVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_ENABLED)) {
+      setZkConfIfNotSet(zkConf, ZK_DTSM_ZK_SSL_ENABLED,
+              HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_ENABLED));
+      setZkConfIfNotSet(zkConf, ZK_DTSM_ZK_SSL_KEYSTORE_LOCATION,
+              HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_KEYSTORE_LOCATION));
+      setZkConfIfNotSet(zkConf, ZK_DTSM_ZK_SSL_KEYSTORE_PASSWORD,
+              HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_KEYSTORE_PASSWORD));
+      setZkConfIfNotSet(zkConf, ZK_DTSM_ZK_SSL_TRUSTSTORE_LOCATION,
+              HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_TRUSTSTORE_LOCATION));
+      setZkConfIfNotSet(zkConf, ZK_DTSM_ZK_SSL_TRUSTSTORE_PASSWORD,
+              HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_TRUSTSTORE_PASSWORD));
+    }
+    
     UserGroupInformation zkUgi = null;
     try {
       zkUgi = LlapUtil.loginWithKerberos(llapPrincipal, llapKeytab);
@@ -267,10 +287,28 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
   private static void checkRootAcls(Configuration conf, String path, String user) {
     int stime = conf.getInt(ZK_DTSM_ZK_SESSION_TIMEOUT, ZK_DTSM_ZK_SESSION_TIMEOUT_DEFAULT),
         ctime = conf.getInt(ZK_DTSM_ZK_CONNECTION_TIMEOUT, ZK_DTSM_ZK_CONNECTION_TIMEOUT_DEFAULT);
-    CuratorFramework zkClient = CuratorFrameworkFactory.builder().namespace(null)
-        .retryPolicy(new RetryOneTime(10)).sessionTimeoutMs(stime).connectionTimeoutMs(ctime)
-        .ensembleProvider(new FixedEnsembleProvider(conf.get(ZK_DTSM_ZK_CONNECTION_STRING)))
-        .build();
+
+    CuratorFramework zkClient = null;
+    if (HiveConf.getBoolVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_ENABLED)) {
+      zkClient = CuratorFrameworkFactory.builder().namespace(null)
+              .retryPolicy(new RetryOneTime(10)).sessionTimeoutMs(stime).connectionTimeoutMs(ctime)
+              .ensembleProvider(new FixedEnsembleProvider(conf.get(ZK_DTSM_ZK_CONNECTION_STRING)))
+              .zookeeperFactory(new SSLZookeeperFactory(
+                      HiveConf.getBoolVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_ENABLED),
+                      HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_KEYSTORE_LOCATION),
+                      HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_KEYSTORE_PASSWORD),
+                      "",
+                      HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_TRUSTSTORE_LOCATION),
+                      HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_TRUSTSTORE_PASSWORD),
+                      "")
+              ).build();
+    } else {
+      zkClient = CuratorFrameworkFactory.builder().namespace(null)
+              .retryPolicy(new RetryOneTime(10)).sessionTimeoutMs(stime).connectionTimeoutMs(ctime)
+              .ensembleProvider(new FixedEnsembleProvider(conf.get(ZK_DTSM_ZK_CONNECTION_STRING)))
+              .build();
+    }
+
     // Hardcoded from a private field in ZKDelegationTokenSecretManager.
     // We need to check the path under what it sets for namespace, since the namespace is
     // created with world ACLs.
