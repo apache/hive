@@ -11,7 +11,7 @@ STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
+    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5433/qtestDB",
     "hive.sql.dbcp.username" = "qtestuser",
     "hive.sql.dbcp.password" = "qtestpassword",
     "hive.sql.schema" = "bob",
@@ -25,7 +25,7 @@ CREATE EXTERNAL TABLE country_1 (id int, name varchar(20))
     TBLPROPERTIES (
         "hive.sql.database.type" = "POSTGRES",
         "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-        "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
+        "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5433/qtestDB",
         "hive.sql.dbcp.username" = "qtestuser",
         "hive.sql.dbcp.password" = "qtestpassword",
         "hive.sql.schema" = "alice",
@@ -45,7 +45,7 @@ CREATE EXTERNAL TABLE country_2 (id int, name varchar(20))
     TBLPROPERTIES (
         "hive.sql.database.type" = "POSTGRES",
         "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-        "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
+        "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5433/qtestDB",
         "hive.sql.dbcp.username" = "greg",
         "hive.sql.dbcp.password" = "GregPass123!$",
         "hive.sql.table" = "country");
