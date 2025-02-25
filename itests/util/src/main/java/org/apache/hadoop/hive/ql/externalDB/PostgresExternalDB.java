@@ -27,7 +27,7 @@ public class PostgresExternalDB extends AbstractExternalDB {
     }
 
     public String getJdbcUrl() {
-        return "jdbc:postgresql://" + getContainerHostAddress() + ":5432/" + dbName;
+        return "jdbc:postgresql://" + getContainerHostAddress() + ":5433/" + dbName;
     }
 
     public String getJdbcDriver() {
@@ -39,7 +39,7 @@ public class PostgresExternalDB extends AbstractExternalDB {
     }
 
     public String[] getDockerAdditionalArgs() {
-        return new String[] {"-p", "5432:5432",
+        return new String[] {"-p", "5433:5432",
             "-e", "POSTGRES_PASSWORD=" + getRootPassword(),
             "-e", "POSTGRES_USER=" + getRootUser(),
             "-e", "POSTGRES_DB=" + dbName,

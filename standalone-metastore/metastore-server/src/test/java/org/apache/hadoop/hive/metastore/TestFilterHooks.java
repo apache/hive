@@ -174,7 +174,7 @@ public class TestFilterHooks {
   private static String mysql_type = "mysql";
   private static String mysql_url = "jdbc:mysql://localhost:3306/hive";
   private static String postgres_type = "postgres";
-  private static String postgres_url = "jdbc:postgresql://localhost:5432";
+  private static String postgres_url = "jdbc:postgresql://localhost:5433";
 
 
   protected HiveMetaStoreClient createClient(Configuration metaStoreConf) throws Exception {

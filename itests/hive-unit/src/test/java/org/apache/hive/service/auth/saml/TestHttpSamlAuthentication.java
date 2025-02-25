@@ -30,11 +30,18 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
+
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -170,6 +177,18 @@ public class TestHttpSamlAuthentication {
           ConfVars.HIVE_SERVER2_SAML_CALLBACK_TOKEN_TTL.defaultStrVal);
     }
     miniHS2.start(configOverlay);
+    File file = new File("/home/jenkins/.testcontainers.properties");
+    String content = "docker.client.strategy=org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy\n" +
+            "docker.host=tcp\\://docker\\:2376\n" +
+            "docker.tls.verify=1\n" +
+            "docker.cert.path=/certs/client";
+    try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+      writer.write(content);
+      System.out.println("File written successfully to /home/jenkins/.testcontainers.properties");
+    }
+    catch (IOException e) {
+      e.printStackTrace();
+    }
     Map<String, String> idpEnv = getIdpEnv(useSignedAssertions, authMode);
     idpContainer = new GenericContainer<>(
         DockerImageName.parse("vihangk1/docker-test-saml-idp"))
@@ -201,6 +220,10 @@ public class TestHttpSamlAuthentication {
         "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress");
     idpEnv.put("SIMPLESAMLPHP_SP_NAME_ID_ATTRIBUTE", "email");
     idpEnv.put("SIMPLESAMLPHP_IDP_AUTH", authMode);
+//    idpEnv.put("TESTCONTAINERS_DOCKER_CLIENT_STRATEGY", "org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy");
+//    idpEnv.put("DOCKER_HOST", "tcp://docker:2376");
+//    idpEnv.put("DOCKER_TLS_VERIFY", "1");
+//    idpEnv.put("DOCKER_CERT_PATH", "/certs/client");
     // by default idp signs the assertions
     if (!useSignedAssertions) {
       idpEnv.put("SIMPLESAMLPHP_SP_SIGN_ASSERTION", "false");
