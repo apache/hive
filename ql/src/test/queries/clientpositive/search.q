@@ -5,6 +5,19 @@ create table t1 (a int, b int);
 set hive.optimize.transform.in.maxnodes=1000;
 
 explain cbo
+select * from t1 where a in (1, 2, 3);
+explain
+select * from t1 where a in (1, 2, 3);
+explain cbo
+select * from t1 where a not in (1, 2, 3);
+explain
+select * from t1 where a not in (1, 2, 3);
+explain cbo
+select * from t1 where a between 1 and 5 or a not in (10, 12, 15) or a > 100 and (b not between 20 and 30 and b < 50);
+explain
+select * from t1 where a between 1 and 5 or a not in (10, 12, 15) or a > 100 and (b not between 20 and 30 and b < 50);
+
+explain cbo
 select * from t1 where a between 1 and 5 or a between 10 and 15;
 explain
 select * from t1 where a between 1 and 5 or a between 10 and 15;
@@ -20,6 +33,10 @@ explain cbo
 select * from t1 where a in (1, 2, 3);
 explain
 select * from t1 where a in (1, 2, 3);
+explain cbo
+select * from t1 where a not in (1, 2, 3);
+explain
+select * from t1 where a not in (1, 2, 3);
 explain cbo
 select * from t1 where a in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22);
 explain
@@ -76,6 +93,18 @@ select * from t1 where cast(a as double) in (rand(50), rand(60), rand(70));
 
 set hive.cbo.returnpath.hiveop=true;
 
+explain cbo
+select * from t1 where a in (1, 2, 3);
+explain
+select * from t1 where a in (1, 2, 3);
+explain cbo
+select * from t1 where a not in (1, 2, 3);
+explain
+select * from t1 where a not in (1, 2, 3);
+explain cbo
+select * from t1 where a between 1 and 5 or a not in (10, 12, 15) or a > 100 and (b not between 20 and 30 and b < 50);
+explain
+select * from t1 where a between 1 and 5 or a not in (10, 12, 15) or a > 100 and (b not between 20 and 30 and b < 50);
 explain
 select * from t1 where a between 1 and 5 or a between 10 and 15;
 explain

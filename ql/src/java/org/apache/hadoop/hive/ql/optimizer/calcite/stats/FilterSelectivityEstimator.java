@@ -31,11 +31,13 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
+import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
+import org.apache.calcite.rex.RexVisitor;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
@@ -61,12 +63,14 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   private final RelNode childRel;
   private final double  childCardinality;
   private final RelMetadataQuery mq;
+  private final RexBuilder rexBuilder;
 
   public FilterSelectivityEstimator(RelNode childRel, RelMetadataQuery mq) {
     super(true);
     this.mq = mq;
     this.childRel = childRel;
     this.childCardinality = mq.getRowCount(childRel);
+    this.rexBuilder = childRel.getCluster().getRexBuilder();
   }
 
   public Double estimateSelectivity(RexNode predicate) {
@@ -112,6 +116,18 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     }
 
     case NOT:
+      if (call.getOperands().get(0).isA(SqlKind.SEARCH)) {
+        return new SearchToFilterSelectivityTransformer(rexBuilder, (RexCall) call.getOperands().get(0),
+            new FilterSelectivityEstimator(childRel, mq) {
+              @Override
+              public Double visitLiteral(RexLiteral literal) {
+                return 1.0D;
+              }
+            }, true).transform();
+      } else {
+        selectivity = computeNotEqualitySelectivity(call);
+      }
+      break;
     case NOT_EQUALS: {
       selectivity = computeNotEqualitySelectivity(call);
       break;
@@ -155,31 +171,13 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       break;
 
     case SEARCH:
-      HiveCalciteUtil.SearchTransformer<Double> transformer = new HiveCalciteUtil.SearchTransformer<>();
-      transformer.transform(
-          childRel.getCluster().getRexBuilder(), call,
+      return new SearchToFilterSelectivityTransformer(rexBuilder, call,
           new FilterSelectivityEstimator(childRel, mq) {
             @Override
             public Double visitLiteral(RexLiteral literal) {
               return 1.0D;
             }
-          });
-      
-      List<Double> selectivities = new ArrayList<>();
-      
-      if (!transformer.inNodes.isEmpty()) {
-        selectivities.add(computeSelectivityOfSearchPoints(call, transformer.inNodes.size() - 1));
-      }
-      selectivities.addAll(transformer.nodes);
-      
-      if (selectivities.size() == 1) {
-        return selectivities.get(0);
-      }
-
-      return transformer.negate ? 
-          computeConjunctionSelectivity(selectivities) : 
-          computeDisjunctionSelectivity(selectivities);
-      
+          }).transform();
     default:
       selectivity = computeFunctionSelectivity(call);
     }
@@ -625,5 +623,32 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    */
   public static boolean isHistogramAvailable(ColStatistics colStats) {
     return colStats != null && colStats.getHistogram() != null && colStats.getHistogram().length > 0;
+  }
+  
+  private class SearchToFilterSelectivityTransformer extends HiveCalciteUtil.SearchTransformer<Double> {
+    private final RexCall search;
+
+    public SearchToFilterSelectivityTransformer(
+        RexBuilder rexBuilder, RexCall search, RexVisitor<Double> rexVisitor, boolean negate) {
+      super(rexBuilder, search, rexVisitor, negate);
+      this.search = search;
+    }
+
+    public SearchToFilterSelectivityTransformer(
+        RexBuilder rexBuilder, RexCall search, RexVisitor<Double> rexVisitor) {
+      this(rexBuilder, search, rexVisitor, false);
+    }
+
+    @Override
+    protected Double transformInOperands(List<Double> inNodes) {
+      return negate ?
+          computeNotEqualitySelectivity(search) :
+          computeSelectivityOfSearchPoints(search, inNodes.size() - 1);
+    }
+
+    @Override
+    protected Double transformAllNodes() {
+      return negate ? computeConjunctionSelectivity(results) : computeDisjunctionSelectivity(results);
+    }
   }
 }

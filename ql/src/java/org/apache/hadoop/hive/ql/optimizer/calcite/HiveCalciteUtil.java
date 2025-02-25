@@ -72,6 +72,7 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
+import org.apache.calcite.util.RangeSets;
 import org.apache.calcite.util.Sarg;
 import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -1501,54 +1502,146 @@ public class HiveCalciteUtil {
             rexBuilder.makeLiteral(upper, type, true, true)
         );
   }
-  
-  public static RexNode negateHiveBetween(RexBuilder rexBuilder, RexCall hiveBetween) {
-    return rexBuilder
-        .makeCall(
-            HiveBetween.INSTANCE,
-            rexBuilder.makeLiteral(!RexLiteral.booleanValue((hiveBetween.getOperands().get(0)))),
-            hiveBetween.getOperands().get(1),
-            hiveBetween.getOperands().get(2),
-            hiveBetween.getOperands().get(3)
-        );
-  }
-  
-  public static class SearchTransformer<N> {
-    public final List<N> inNodes = new ArrayList<>();
-    public final List<N> nodes = new ArrayList<>();
-    public boolean negate = false;
-    public RelDataType type;
-    
-    public void transform(RexBuilder rexBuilder, RexCall call, RexVisitor<N> converter) {
-      assert call.getOperator().getKind() == SqlKind.SEARCH;
-      RexNode ref = call.getOperands().get(0);
-      RexLiteral literal = (RexLiteral) call.operands.get(1);
-      Sarg<?> sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
-      this.type = literal.getType();
 
-      this.negate = sarg.negate().complexity() < sarg.complexity();
-      Sarg<?> finalSarg = negate ? sarg.negate() : sarg;
-      RangeToRex<?> rangeConverter = new RangeToRex<>(rexBuilder, type, ref);
+  public abstract static class SearchTransformer<N> {
+    private final RexBuilder rexBuilder;
+    private final RexVisitor<N> rexVisitor;
+    private final RexNode ref;
+    private final Sarg<?> sarg;
+    protected final RelDataType type;
+    protected List<N> results;
+    protected final boolean negate;
 
-      for (Range<?> range: finalSarg.rangeSet.asRanges()) {
-        RexCall rexCall = (RexCall) rangeConverter.convert(range);
-        switch (rexCall.getOperator().getKind()) {
-          case EQUALS:
-            if (inNodes.isEmpty()) {
-              inNodes.add(ref.accept(converter));
-            }
-            inNodes.add(rexCall.getOperands().get(1).accept(converter));
-            break;
-          case BETWEEN:
-            RexCall between = negate ? (RexCall) negateHiveBetween(rexBuilder, rexCall) : rexCall;
-            nodes.add(between.accept(converter));
-            break;
-          default:
-            RexCall expr = negate ? (RexCall) RexUtil.negate(rexBuilder, rexCall) : rexCall;
-            assert expr != null;
-            nodes.add(expr.accept(converter));
-        }
+    public SearchTransformer(RexBuilder rexBuilder, RexCall search, RexVisitor<N> rexVisitor, boolean negate) {
+      this.rexBuilder = rexBuilder;
+      this.rexVisitor = rexVisitor;
+      ref = search.getOperands().get(0);
+      this.negate = negate;
+      RexLiteral literal = (RexLiteral) search.operands.get(1);
+      sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
+      type = literal.getType();
+    }
+
+    public SearchTransformer(RexBuilder rexBuilder, RexCall search, RexVisitor<N> rexVisitor) {
+      this(rexBuilder, search, rexVisitor, false);
+    }
+
+    public N transform() {
+      HiveCalciteUtil.RangeConverter consumer =
+          new HiveCalciteUtil.RangeConverter<>(rexBuilder, type, ref, rexVisitor, negate);
+      RangeSets.forEach(sarg.rangeSet, consumer);
+      
+      results = new ArrayList<>();
+      if (!consumer.inNodes.isEmpty()) {
+        results.add(transformInOperands((List<N>) consumer.inNodes));
       }
+      results.addAll(consumer.nodes);
+      
+      if (results.size() == 1) {
+        return results.get(0);
+      }
+      
+      return transformAllNodes();
+    }
+    
+    protected abstract N transformInOperands(List<N> inNodes);
+    
+    protected abstract N transformAllNodes();
+  }
+
+  public static class RangeConverter<C extends Comparable<C>, R> implements RangeSets.Consumer<C> {
+
+    protected final RexBuilder rexBuilder;
+    protected final RelDataType type;
+    protected final RexNode ref;
+    protected final RexVisitor<R> rexVisitor;
+    protected final boolean negate;
+    public final List<R> inNodes;
+    public final List<R> nodes;
+
+    public RangeConverter(
+        RexBuilder rexBuilder, RelDataType type, RexNode ref, RexVisitor<R> rexVisitor, boolean negate) {
+      this.rexBuilder = rexBuilder;
+      this.type = type;
+      this.ref = ref;
+      this.rexVisitor = rexVisitor;
+      this.inNodes = new ArrayList<>();
+      this.nodes = new ArrayList<>();
+      this.negate = negate;
+    }
+
+    private RexNode op(SqlOperator op, C value) {
+      return rexBuilder.makeCall(op, ref,
+          rexBuilder.makeLiteral(value, type, true, true));
+    }
+
+    private RexNode and(RexNode... nodes) {
+      return rexBuilder.makeCall(SqlStdOperatorTable.AND, nodes);
+    }
+    
+    private void addWithNegate(RexNode node) {
+      node = negate ? RexUtil.negate(rexBuilder, (RexCall) node) : node;
+      assert node != null;
+      nodes.add(node.accept(rexVisitor));
+    }
+
+    public void all() {
+      nodes.add(rexBuilder.makeLiteral(!negate).accept(rexVisitor));
+    }
+
+    @Override
+    public void atLeast(C lower) {
+      addWithNegate(op(SqlStdOperatorTable.GREATER_THAN_OR_EQUAL, lower));
+    }
+
+    @Override
+    public void atMost(C upper) {
+      addWithNegate(op(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, upper));
+    }
+
+    @Override
+    public void greaterThan(C lower) {
+      addWithNegate(op(SqlStdOperatorTable.GREATER_THAN, lower));
+    }
+
+    @Override
+    public void lessThan(C upper) {
+      addWithNegate(op(SqlStdOperatorTable.LESS_THAN, upper));
+    }
+
+    @Override
+    public void singleton(C value) {
+      if (inNodes.isEmpty()) {
+        inNodes.add(ref.accept(rexVisitor));
+      }
+      inNodes.add(rexBuilder.makeLiteral(value, type, true, true).accept(rexVisitor));
+    }
+
+    @Override
+    public void closed(C lower, C upper) {
+      // when `negate` is true, we want to create NOT BETWEEN, so we set `isNotBetween` to `negate` (true)
+      nodes.add(makeHiveBetween(rexBuilder, negate, ref, type, lower, upper).accept(rexVisitor));
+    }
+
+    @Override
+    public void closedOpen(C lower, C upper) {
+      addWithNegate(
+          and(op(SqlStdOperatorTable.GREATER_THAN_OR_EQUAL, lower), op(SqlStdOperatorTable.LESS_THAN, upper))
+      );
+    }
+
+    @Override
+    public void openClosed(C lower, C upper) {
+      addWithNegate(
+          and(op(SqlStdOperatorTable.GREATER_THAN, lower), op(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, upper))
+      );
+    }
+
+    @Override
+    public void open(C lower, C upper) {
+      addWithNegate(
+          and(op(SqlStdOperatorTable.GREATER_THAN, lower), op(SqlStdOperatorTable.LESS_THAN, upper))
+      );
     }
   }
 }
