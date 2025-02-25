@@ -204,32 +204,17 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       for (RexNode operand : call.operands) {
         args.add(operand.accept(this));
       }
-    } else if (call.getKind() == SqlKind.SEARCH) {
-      HiveCalciteUtil.SearchTransformer<ExprNodeDesc> transformer = new HiveCalciteUtil.SearchTransformer<>();
-      transformer.transform(rexBuilder, call, this);
-      
-      try {
-        if (!transformer.inNodes.isEmpty()) {
-          GenericUDF hiveInUdf = SqlFunctionConverter
-              .getHiveUDF(HiveIn.INSTANCE, transformer.type, transformer.inNodes.size());
-          ExprNodeGenericFuncDesc inFuncDesc = ExprNodeGenericFuncDesc.newInstance(hiveInUdf, transformer.inNodes);
-          inFuncDesc = transformer.negate ?
-              ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPNot(), Collections.singletonList(inFuncDesc)) :
-              inFuncDesc;
-          args.add(inFuncDesc);
-        }
-
-        args.addAll(transformer.nodes);
-        if (args.size() == 1) {
-          return args.get(0);
-        }
-
-        return transformer.negate ?
-            ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPAnd(), args) :
-            ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPOr(), args);
-      } catch (UDFArgumentException e) {
-        throw new RuntimeException("Failed to instantiate udf: ", e);
+    } else if (call.getKind() == SqlKind.NOT) {
+      if (call.getOperands().get(0).isA(SqlKind.SEARCH)) {
+        return new SearchToExprNodeDescTransformer(
+            rexBuilder, (RexCall) call.getOperands().get(0), this, true
+        ).transform();
       }
+      for (RexNode operand : call.operands) {
+        args.add(operand.accept(this));
+      }
+    } else if (call.getKind() == SqlKind.SEARCH) {
+      return new SearchToExprNodeDescTransformer(rexBuilder, call, this).transform();
     } else {
       for (RexNode operand : call.operands) {
         args.add(operand.accept(this));
@@ -558,5 +543,40 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
   private String getWindowColumnAlias() {
     return "$win$_col_" + (uniqueCounter++);
   }
+  
+  private static class SearchToExprNodeDescTransformer extends HiveCalciteUtil.SearchTransformer<ExprNodeDesc> {
 
+    public SearchToExprNodeDescTransformer(
+        RexBuilder rexBuilder, RexCall search, org.apache.calcite.rex.RexVisitor<ExprNodeDesc> rexVisitor) {
+      this(rexBuilder, search, rexVisitor, false);
+    }
+
+    public SearchToExprNodeDescTransformer(
+        RexBuilder rexBuilder, RexCall search, org.apache.calcite.rex.RexVisitor<ExprNodeDesc> rexVisitor, 
+        boolean negate) {
+      super(rexBuilder, search, rexVisitor, negate);
+    }
+
+    @Override
+    protected ExprNodeDesc transformInOperands(List<ExprNodeDesc> inNodes) {
+      GenericUDF hiveInUdf = SqlFunctionConverter.getHiveUDF(HiveIn.INSTANCE, type, inNodes.size());
+      try {
+        ExprNodeGenericFuncDesc inFuncDesc = ExprNodeGenericFuncDesc.newInstance(hiveInUdf, inNodes);
+        return negate ?
+            ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPNot(), Collections.singletonList(inFuncDesc)) :
+            inFuncDesc;
+      } catch (UDFArgumentException e) {
+        throw new RuntimeException("Failed to instantiate udf: ", e);
+      }
+    }
+
+    @Override
+    protected ExprNodeDesc transformAllNodes() {
+      try {
+        return ExprNodeGenericFuncDesc.newInstance(negate? new GenericUDFOPAnd(): new GenericUDFOPOr(), results);
+      } catch (UDFArgumentException e) {
+        throw new RuntimeException("Failed to instantiate udf: ", e);
+      }
+    }
+  }
 }

@@ -1084,29 +1084,22 @@ public class ASTConverter {
         // is implicit in the function name, thus translation will
         // proceed correctly if we just ignore the <time_unit>
         astNodeLst.add(call.operands.get(1).accept(this));
+        break; 
+      case NOT:
+        if (call.getOperands().get(0).isA(SqlKind.SEARCH)) {
+          return new SearchToASTNodeTransformer(
+              rexBuilder, (RexCall) call.getOperands().get(0), this, true
+          ).transform();
+        }
+        if (op.equals(HiveComponentAccess.COMPONENT_ACCESS)) {
+          return call.operands.get(0).accept(this);
+        }
+        for (RexNode operand : call.operands) {
+          astNodeLst.add(operand.accept(this));
+        }
         break;
       case SEARCH:
-        HiveCalciteUtil.SearchTransformer<ASTNode> transformer = new HiveCalciteUtil.SearchTransformer<>();
-        transformer.transform(rexBuilder, call, this);
-        
-        if (!transformer.inNodes.isEmpty()) {
-          ASTNode inNode = SqlFunctionConverter.buildAST(HiveIn.INSTANCE, transformer.inNodes, transformer.type);
-          inNode = transformer.negate ?
-              SqlFunctionConverter
-                  .buildAST(SqlStdOperatorTable.NOT, Collections.singletonList(inNode), transformer.type) :
-              inNode;
-          astNodeLst.add(inNode);
-        }
-        
-        astNodeLst.addAll(transformer.nodes);
-        if (astNodeLst.size() == 1) {
-          return astNodeLst.get(0);
-        }
-        
-        return transformer.negate ? 
-            SqlFunctionConverter.buildAST(SqlStdOperatorTable.AND, astNodeLst, transformer.type) :
-            SqlFunctionConverter.buildAST(SqlStdOperatorTable.OR, astNodeLst, transformer.type);
-        
+        return new SearchToASTNodeTransformer(rexBuilder, call, this).transform();
       case FLOOR:
         if (call.operands.size() == 2) {
           // Floor on date: special handling since function in Hive does
@@ -1342,5 +1335,30 @@ public class ASTConverter {
 
     return flat;
   }
+  
+  private static class SearchToASTNodeTransformer extends HiveCalciteUtil.SearchTransformer<ASTNode> {
 
+    public SearchToASTNodeTransformer(
+        RexBuilder rexBuilder, RexCall search, org.apache.calcite.rex.RexVisitor<ASTNode> rexVisitor) {
+      this(rexBuilder, search, rexVisitor, false);
+    }
+
+    public SearchToASTNodeTransformer(
+        RexBuilder rexBuilder, RexCall search, org.apache.calcite.rex.RexVisitor<ASTNode> rexVisitor, boolean negate) {
+      super(rexBuilder, search, rexVisitor, negate);
+    }
+
+    @Override
+    protected ASTNode transformInOperands(List<ASTNode> inNodes) {
+      ASTNode inNode = SqlFunctionConverter.buildAST(HiveIn.INSTANCE, inNodes, type);
+      return negate ?
+          SqlFunctionConverter.buildAST(SqlStdOperatorTable.NOT, Collections.singletonList(inNode), type) :
+          inNode;
+    }
+
+    @Override
+    protected ASTNode transformAllNodes() {
+      return SqlFunctionConverter.buildAST(negate? SqlStdOperatorTable.AND: SqlStdOperatorTable.OR, results, type);
+    }
+  }
 }
