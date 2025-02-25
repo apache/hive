@@ -16,7 +16,6 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -35,6 +34,7 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
+import org.apache.calcite.rex.RexVisitor;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.util.Pair;
@@ -236,8 +236,7 @@ public class HiveFilterSortPredicates extends RelHomogeneousShuttle {
     }
     
     private Double getSearchCost(RexCall call) {
-      HiveCalciteUtil.SearchTransformer<Double> transformer = new HiveCalciteUtil.SearchTransformer<>();
-      transformer.transform(rexBuilder, call,
+      return new SearchToFunctionCostTransformer(rexBuilder, call,
           new RexFunctionCost(this.rexBuilder) {
             @Override
             public Double visitLiteral(RexLiteral literal) {
@@ -248,22 +247,7 @@ public class HiveFilterSortPredicates extends RelHomogeneousShuttle {
             public Double visitInputRef(RexInputRef inputRef) {
               return HiveRelMdSize.INSTANCE.averageTypeValueSize(inputRef.getType());
             }
-          });
-      
-      List<Double> operandCosts = new ArrayList<>();
-      
-      if (!transformer.inNodes.isEmpty()) {
-        Double inOperandCosts = transformer.inNodes.stream().filter(Objects::nonNull).reduce(1D, Double::sum);
-        Double inFunctionCost = 2d * (transformer.inNodes.size() - 1);
-        operandCosts.add(inOperandCosts + inFunctionCost);
-      }
-      operandCosts.addAll(transformer.nodes);
-      
-      Double searchOperandCost = operandCosts.stream().filter(Objects::nonNull).reduce(1D, Double::sum);
-      // functionCost is essentially the cost of conjunctions or disjunctions
-      Double functionCost = operandCosts.size() == 1 ? 0D : 1d * operandCosts.size();
-      
-      return searchOperandCost + functionCost;
+          }).transform();
     }
 
     private static Double functionCost(RexCall call) {
@@ -323,5 +307,28 @@ public class HiveFilterSortPredicates extends RelHomogeneousShuttle {
       return 0d;
     }
 
+  }
+  
+  private static class SearchToFunctionCostTransformer extends HiveCalciteUtil.SearchTransformer<Double> {
+
+    public SearchToFunctionCostTransformer(RexBuilder rexBuilder, RexCall search, RexVisitor<Double> rexVisitor) {
+      super(rexBuilder, search, rexVisitor);
+    }
+
+    @Override
+    protected Double transformInOperands(List<Double> inNodes) {
+      Double inOperandCosts = inNodes.stream().filter(Objects::nonNull).reduce(0D, Double::sum);
+      Double inFunctionCost = 2d * (inNodes.size() - 1);
+      return inOperandCosts + inFunctionCost;
+    }
+
+    @Override
+    protected Double transformAllNodes() {
+      Double searchOperandCost = results.stream().filter(Objects::nonNull).reduce(0D, Double::sum);
+      // functionCost is essentially the cost of conjunctions or disjunctions
+      Double functionCost = results.size() == 1 ? 0D : 1D * results.size();
+
+      return searchOperandCost + functionCost;
+    }
   }
 }
