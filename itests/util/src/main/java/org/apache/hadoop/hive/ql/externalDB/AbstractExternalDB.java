@@ -83,6 +83,14 @@ public abstract class AbstractExternalDB {
         return new String[] { "docker", "logs", getDockerContainerName() };
     }
 
+    private String[] netstatCmd() {
+        return new String[] { "netstat", "-tuln", "|", "grep", "5432" };
+    }
+
+    private String[] dockerPsCmd() {
+        return new String[] { "docker", "ps" };
+    }
+
     private ProcessResults runCmd(String[] cmd, long secondsToWait)
             throws IOException, InterruptedException {
         LOG.info("Going to run: " + String.join(" ", cmd));
@@ -111,6 +119,8 @@ public abstract class AbstractExternalDB {
 
 
     public void launchDockerContainer() throws Exception {
+        runCmdAndPrintStreams(netstatCmd(), 10);
+        runCmdAndPrintStreams(dockerPsCmd(), 10);
         runCmdAndPrintStreams(buildRmCmd(), 600);
         if (runCmdAndPrintStreams(buildRunCmd(), 600).rc != 0) {
           printDockerEvents();
