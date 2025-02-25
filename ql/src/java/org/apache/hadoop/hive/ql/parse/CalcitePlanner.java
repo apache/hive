@@ -178,6 +178,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSortLimitR
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveLoptOptimizeJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveEmptySingleRules;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveReduceSearchComplexityRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.RemoveInfrequentCteRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAggregateProjectMergeRule;
@@ -2433,6 +2434,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
             HiveInBetweenExpandRule.JOIN_INSTANCE,
             HiveInBetweenExpandRule.PROJECT_INSTANCE);
       }
+      
+      generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST, 
+          HiveReduceSearchComplexityRule.FILTER,
+          HiveReduceSearchComplexityRule.PROJECT);
 
       // Trigger program
       basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);

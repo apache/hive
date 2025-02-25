@@ -491,10 +491,6 @@ public class TestFilterSelectivityEstimator {
   }
 
   private RexNode makeNotBetween(RexNode inputRef, RexNode left, RexNode right) {
-    RexNode notBetween = REX_BUILDER
-        .makeCall(SqlStdOperatorTable.NOT, REX_BUILDER.makeBetween(inputRef, left, right));
-    RexSimplify simplify = new RexSimplify(REX_BUILDER, RelOptPredicateList.EMPTY, RexUtil.EXECUTOR);
-
-    return simplify.simplify(notBetween);
+    return REX_BUILDER.makeCall(SqlStdOperatorTable.NOT, REX_BUILDER.makeBetween(inputRef, left, right));
   }
 }
