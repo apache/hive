@@ -330,5 +330,17 @@ public class HiveFilterSortPredicates extends RelHomogeneousShuttle {
 
       return searchOperandCost + functionCost;
     }
+
+    @Override
+    protected Double transformWithNullAs(Double node) {
+      if (nullAsNode == null) {
+        return node;
+      }
+      // For both AND & OR, the function cost is 1 * call.operands.size
+      // operands.size should be 2 in this case.
+      Double functionCost = 2D;
+      
+      return nullAsNode + node + functionCost;
+    }
   }
 }
