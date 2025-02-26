@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 import com.google.common.base.Preconditions;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -574,6 +575,21 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
     protected ExprNodeDesc transformAllNodes() {
       try {
         return ExprNodeGenericFuncDesc.newInstance(negate? new GenericUDFOPAnd(): new GenericUDFOPOr(), results);
+      } catch (UDFArgumentException e) {
+        throw new RuntimeException("Failed to instantiate udf: ", e);
+      }
+    }
+
+    @Override
+    protected ExprNodeDesc transformWithNullAs(ExprNodeDesc node) {
+      if (nullAsNode == null) {
+        return node;
+      }
+      try {
+        return ExprNodeGenericFuncDesc
+            .newInstance(
+                nullAsTrue ? new GenericUDFOPOr(): new GenericUDFOPAnd(), Arrays.asList(nullAsNode, node)
+            );
       } catch (UDFArgumentException e) {
         throw new RuntimeException("Failed to instantiate udf: ", e);
       }

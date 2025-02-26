@@ -27,8 +27,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import com.google.common.collect.BoundType;
-import com.google.common.collect.Range;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptUtil;
@@ -62,6 +60,7 @@ import org.apache.calcite.rex.RexSimplify;
 import org.apache.calcite.rex.RexTableInputRef;
 import org.apache.calcite.rex.RexRangeRef;
 import org.apache.calcite.rex.RexSubQuery;
+import org.apache.calcite.rex.RexUnknownAs;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitor;
 import org.apache.calcite.rex.RexVisitorImpl;
@@ -1378,119 +1377,7 @@ public class HiveCalciteUtil {
       return rel.copy(rel.getTraitSet(), newInputs);
     }
   }
-  
-  public static class RangeToRex <C extends Comparable<C>> {
-    private final RexBuilder rexBuilder;
-    private final RelDataType type;
-    private final RexNode ref;
 
-    public RangeToRex(RexBuilder rexBuilder, RelDataType type, RexNode ref) {
-      this.rexBuilder = rexBuilder;
-      this.type = type;
-      this.ref = ref;
-    }
-
-    private RexNode and(RexNode... nodes) {
-      return rexBuilder.makeCall(SqlStdOperatorTable.AND, nodes);
-    }
-
-    private RexNode op(SqlOperator op, C value) {
-      return rexBuilder.makeCall(op, ref,
-          rexBuilder.makeLiteral(value, type, true, true));
-    }
-
-    private RexNode all() {
-      return rexBuilder.makeLiteral(true);
-    }
-
-    private RexNode atLeast(C lower) {
-      return op(SqlStdOperatorTable.GREATER_THAN_OR_EQUAL, lower);
-    }
-
-    private RexNode atMost(C upper) {
-      return op(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, upper);
-    }
-
-    private RexNode greaterThan(C lower) {
-      return op(SqlStdOperatorTable.GREATER_THAN, lower);
-    }
-
-    private RexNode lessThan(C upper) {
-      return op(SqlStdOperatorTable.LESS_THAN, upper);
-    }
-
-    private RexNode singleton(C value) {
-      return op(SqlStdOperatorTable.EQUALS, value);
-    }
-
-    private RexNode closed(C lower, C upper) {
-      return makeHiveBetween(rexBuilder, false, ref, type, lower, upper);
-    }
-
-    private RexNode closedOpen(C lower, C upper) {
-      return and(op(SqlStdOperatorTable.GREATER_THAN_OR_EQUAL, lower),
-          op(SqlStdOperatorTable.LESS_THAN, upper));
-    }
-
-    private RexNode openClosed(C lower, C upper) {
-      return and(op(SqlStdOperatorTable.GREATER_THAN, lower),
-          op(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, upper));
-    }
-
-    private RexNode open(C lower, C upper) {
-      return and(op(SqlStdOperatorTable.GREATER_THAN, lower),
-          op(SqlStdOperatorTable.LESS_THAN, upper));
-    }
-    
-    public RexNode convert(Range<?> range) {
-      if (range.hasLowerBound() && range.hasUpperBound()) {
-        final C lower = (C) range.lowerEndpoint();
-        final C upper = (C) range.upperEndpoint();
-        if (range.lowerBoundType() == BoundType.OPEN) {
-          if (range.upperBoundType() == BoundType.OPEN) {
-            return open(lower, upper);
-          } else {
-            return openClosed(lower, upper);
-          }
-        } else {
-          if (range.upperBoundType() == BoundType.OPEN) {
-            return closedOpen(lower, upper);
-          } else {
-            // We use .equals rather than .compareTo, because if the endpoints
-            // are not equal the range could not have been created using
-            // Range.singleton. (If they are equal, we cannot distinguish
-            // between closed(v, v) but assume singleton(v).)
-            if (lower.equals(upper)) {
-              return singleton(lower);
-            } else {
-              return closed(lower, upper);
-            }
-          }
-        }
-      } else if (range.hasLowerBound()) {
-        final C lower = (C) range.lowerEndpoint();
-        if (range.lowerBoundType() == BoundType.OPEN) {
-          return greaterThan(lower);
-        } else {
-          return atLeast(lower);
-        }
-      } else if (range.hasUpperBound()) {
-        final C upper = (C) range.upperEndpoint();
-        if (range.upperBoundType() == BoundType.OPEN) {
-          return lessThan(upper);
-        } else {
-          return atMost(upper);
-        }
-      } else {
-        return all();
-      }
-    }
-  }
-  
-  public static RelDataType getSargType(RexCall call) {
-    return call.operands.get(1).getType();
-  }
-  
   public static RexNode makeHiveBetween(RexBuilder rexBuilder, boolean isNotBetween, RexNode operand,
                                         RelDataType type, Object lower, Object upper) {
     return rexBuilder
@@ -1511,8 +1398,10 @@ public class HiveCalciteUtil {
     protected final RelDataType type;
     protected List<N> results;
     protected final boolean negate;
+    protected N nullAsNode;
+    protected boolean nullAsTrue;
 
-    public SearchTransformer(RexBuilder rexBuilder, RexCall search, RexVisitor<N> rexVisitor, boolean negate) {
+    protected SearchTransformer(RexBuilder rexBuilder, RexCall search, RexVisitor<N> rexVisitor, boolean negate) {
       this.rexBuilder = rexBuilder;
       this.rexVisitor = rexVisitor;
       ref = search.getOperands().get(0);
@@ -1520,9 +1409,11 @@ public class HiveCalciteUtil {
       RexLiteral literal = (RexLiteral) search.operands.get(1);
       sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
       type = literal.getType();
+      nullAsNode = null;
+      nullAsTrue = true;
     }
 
-    public SearchTransformer(RexBuilder rexBuilder, RexCall search, RexVisitor<N> rexVisitor) {
+    protected SearchTransformer(RexBuilder rexBuilder, RexCall search, RexVisitor<N> rexVisitor) {
       this(rexBuilder, search, rexVisitor, false);
     }
 
@@ -1530,6 +1421,7 @@ public class HiveCalciteUtil {
       HiveCalciteUtil.RangeConverter consumer =
           new HiveCalciteUtil.RangeConverter<>(rexBuilder, type, ref, rexVisitor, negate);
       RangeSets.forEach(sarg.rangeSet, consumer);
+      computeNullAsNode();
       
       results = new ArrayList<>();
       if (!consumer.inNodes.isEmpty()) {
@@ -1538,15 +1430,39 @@ public class HiveCalciteUtil {
       results.addAll(consumer.nodes);
       
       if (results.size() == 1) {
-        return results.get(0);
+        return transformWithNullAs(results.get(0));
+      }
+      return transformWithNullAs(transformAllNodes());
+    }
+    
+    private void computeNullAsNode() {
+      if (sarg.nullAs == RexUnknownAs.UNKNOWN) {
+        return;
       }
       
-      return transformAllNodes();
+      RexCall call = null;
+      if (sarg.nullAs == RexUnknownAs.TRUE) {
+        call = negate ?
+            (RexCall) rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, ref):
+            (RexCall) rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, ref);
+        nullAsTrue = !negate;
+      }
+      if (sarg.nullAs == RexUnknownAs.FALSE) {
+        call = negate ?
+            (RexCall) rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, ref):
+            (RexCall) rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, ref);
+        nullAsTrue = negate;
+      }
+
+      assert call != null;
+      nullAsNode = call.accept(rexVisitor);
     }
     
     protected abstract N transformInOperands(List<N> inNodes);
     
     protected abstract N transformAllNodes();
+    
+    protected abstract N transformWithNullAs(N node);
   }
 
   public static class RangeConverter<C extends Comparable<C>, R> implements RangeSets.Consumer<C> {

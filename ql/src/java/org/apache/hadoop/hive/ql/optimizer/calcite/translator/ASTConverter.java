@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -1359,6 +1360,19 @@ public class ASTConverter {
     @Override
     protected ASTNode transformAllNodes() {
       return SqlFunctionConverter.buildAST(negate? SqlStdOperatorTable.AND: SqlStdOperatorTable.OR, results, type);
+    }
+
+    @Override
+    protected ASTNode transformWithNullAs(ASTNode node) {
+      if (nullAsNode == null) {
+        return node;
+      }
+      
+      return SqlFunctionConverter.buildAST(
+          nullAsTrue ? SqlStdOperatorTable.OR : SqlStdOperatorTable.AND,
+          Arrays.asList(nullAsNode, node),
+          type
+      );
     }
   }
 }
