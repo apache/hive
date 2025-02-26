@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.datasource;
 import com.codahale.metrics.MetricRegistry;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
@@ -28,6 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Properties;
@@ -90,7 +94,42 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
       config.addDataSourceProperty(kv.getKey(), kv.getValue());
     }
 
-    return new HikariDataSource(initMetrics(config));
+    return new HikariDataSource(initMetrics(config)) {
+      @Override
+      public Connection getConnection() throws SQLException {
+        // A hacky around connection commit to prevent the connection leak,
+        // the secondary pool has the risk of this problem.
+        Connection connection = super.getConnection();
+        boolean wrapConnection = poolName != null && poolName.endsWith("secondary");
+        if (!wrapConnection) {
+          return connection;
+        }
+        InvocationHandler handler = (proxy, method, args) -> {
+          if ("commit".equals(method.getName())) {
+            try {
+              connection.commit();
+            } catch (SQLException e) {
+              try {
+                // At this point the transaction reaches the end, if error happens while
+                // commiting the transaction, we need to undo the changes.
+                connection.rollback();
+              } finally {
+                // Free this connection to the pool to avoid the connection leak,
+                // the default behaviour when the transaction is ending.
+                // No side effect when closing this connection multiple times later on.
+                connection.close();
+              }
+              // Throw the exception back to the caller.
+              throw e;
+            }
+            return null;
+          }
+          return method.invoke(connection, args);
+        };
+        return (Connection) Proxy.newProxyInstance(Connection.class.getClassLoader(),
+            new Class[] {Connection.class}, handler);
+      }
+    };
   }
 
   @Override
