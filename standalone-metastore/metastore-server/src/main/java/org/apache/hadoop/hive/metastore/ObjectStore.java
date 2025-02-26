@@ -59,6 +59,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import javax.jdo.Constants;
 import javax.jdo.JDODataStoreException;
 import javax.jdo.JDOException;
 import javax.jdo.JDOObjectNotFoundException;
@@ -560,24 +561,10 @@ public class ObjectStore implements RawStore, Configurable {
    */
   @Override
   public boolean openTransaction() {
-    return openTransaction(null);
-  }
-
-  /**
-   * Opens a new one or the one already created. Every call of this function must
-   * have corresponding commit or rollback function call.
-   *
-   * @param isolationLevel The transaction isolation level. Only possible to set on the first call.
-   * @return an active transaction
-   */
-  @Override
-  public boolean openTransaction(String isolationLevel) {
     openTrasactionCalls++;
     if (openTrasactionCalls == 1) {
       currentTransaction = pm.currentTransaction();
-      if (isolationLevel != null) {
-        currentTransaction.setIsolationLevel(isolationLevel);
-      }
+      currentTransaction.setIsolationLevel(Constants.TX_READ_COMMITTED);
       currentTransaction.begin();
       transactionStatus = TXN_STATUS.OPEN;
     } else {
@@ -587,16 +574,10 @@ public class ObjectStore implements RawStore, Configurable {
         throw new RuntimeException("openTransaction called in an interior"
             + " transaction scope, but currentTransaction is not active.");
       }
-
-      // Can not change the isolation level on an already open transaction
-      if (isolationLevel != null && !isolationLevel.equals(currentTransaction.getIsolationLevel())) {
-        throw new RuntimeException("Can not set isolation level on an open transaction");
-      }
     }
 
     boolean result = currentTransaction.isActive();
-    debugLog("Open transaction: count = " + openTrasactionCalls + ", isActive = " + result + ", isolationLevel = "
-            + currentTransaction.getIsolationLevel());
+    debugLog("Open transaction: count = " + openTrasactionCalls + ", isActive = " + result);
     return result;
   }
 
@@ -677,10 +658,6 @@ public class ObjectStore implements RawStore, Configurable {
    */
   @Override
   public void rollbackTransaction() {
-    if (openTrasactionCalls < 1) {
-      debugLog("rolling back transaction: no open transactions: " + openTrasactionCalls);
-      return;
-    }
     debugLog("Rollback transaction, isActive: " + isActiveTransaction());
     try {
       if (isActiveTransaction() && transactionStatus != TXN_STATUS.ROLLBACK) {
