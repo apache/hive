@@ -94,7 +94,7 @@ public class HMSCatalogFactory {
     final String catalogName = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.CATALOG_DEFAULT);
     catalog.initialize(catalogName, properties);
     long expiry = MetastoreConf.getLongVar(configuration, MetastoreConf.ConfVars.ICEBERG_CATALOG_CACHE_EXPIRY);
-    return expiry > 0 ? new HMSCachingCatalog(catalog, expiry) : catalog;
+    return expiry > 0 ? new HMSCachingCatalog<>(catalog, expiry) : catalog;
   }
 
   protected HttpServlet createServlet(Catalog catalog) throws IOException {

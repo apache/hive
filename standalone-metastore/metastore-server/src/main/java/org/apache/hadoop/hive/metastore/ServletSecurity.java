@@ -86,14 +86,18 @@ public class ServletSecurity {
   private JWTValidator jwtValidator = null;
 
   public ServletSecurity(Configuration conf) {
-    this(conf, MetastoreConf.getVar(conf,
-            MetastoreConf.ConfVars.THRIFT_METASTORE_AUTHENTICATION).equalsIgnoreCase("jwt"));
+    this(conf, isAuthJwt(conf));
   }
 
   public ServletSecurity(Configuration conf, boolean jwt) {
     this.conf = conf;
     this.isSecurityEnabled = UserGroupInformation.isSecurityEnabled();
     this.jwtAuthEnabled = jwt;
+  }
+
+  public static boolean isAuthJwt(Configuration configuration) {
+    String auth = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.PROPERTIES_SERVLET_AUTH);
+    return "jwt".equalsIgnoreCase(auth);
   }
 
   /**
@@ -284,7 +288,7 @@ public class ServletSecurity {
     }
     final String keyStorePath = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PATH).trim();
     if (keyStorePath.isEmpty()) {
-      throw new IllegalArgumentException(MetastoreConf.ConfVars.SSL_KEYSTORE_PATH.toString()
+      throw new IllegalArgumentException(MetastoreConf.ConfVars.SSL_KEYSTORE_PATH
           + " Not configured for SSL connection");
     }
     final String keyStorePassword =

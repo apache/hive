@@ -769,10 +769,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
     // optionally create and start the property and Iceberg REST server
-    ServletServerBuilder.Descriptor properties = PropertyServlet.createServlet(conf);
-    ServletServerBuilder.Descriptor catalog = createIcebergServlet(conf);
     ServletServerBuilder builder = new ServletServerBuilder(conf);
+    ServletServerBuilder.Descriptor properties = PropertyServlet.createServlet(conf);
     builder.addServlet(properties);
+    ServletServerBuilder.Descriptor catalog = createIcebergServlet(conf);
     builder.addServlet(catalog);
     servletServer = builder.start(LOG);
     if (servletServer != null) {

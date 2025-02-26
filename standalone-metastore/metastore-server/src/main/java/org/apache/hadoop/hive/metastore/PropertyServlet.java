@@ -60,16 +60,12 @@ public class PropertyServlet extends HttpServlet {
   /** The configuration. */
   private final Configuration configuration;
 
-  static boolean isAuthJwt(Configuration configuration) {
-    String auth = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.PROPERTIES_SERVLET_AUTH);
-    return "jwt".equalsIgnoreCase(auth);
-  }
-
   PropertyServlet(Configuration configuration) {
     this.configuration = configuration;
   }
 
-  @Override public String getServletName() {
+  @Override
+  public String getServletName() {
     return "HMS property";
   }
   
@@ -166,44 +162,12 @@ public class PropertyServlet extends HttpServlet {
             switch (method) {
               // fetch a list of qualified keys by name
               case "fetchProperties": {
-                // one or many keys
-                Object jsonKeys = call.get("keys");
-                if (jsonKeys == null) {
-                  throw new IllegalArgumentException("null keys");
-                }
-                Iterable<?> keys = jsonKeys instanceof List<?>
-                    ? (List<?>) jsonKeys
-                    : Collections.singletonList(jsonKeys);
-                Map<String, String> properties = new TreeMap<>();
-                for (Object okey : keys) {
-                  String key = okey.toString();
-                  String value = mgr.exportPropertyValue(key);
-                  if (value != null) {
-                    properties.put(key, value);
-                  }
-                }
-                reactions.add(properties);
+                fetchProperties( mgr, call, reactions);
                 break;
               }
               // select a list of qualified keys by prefix/predicate/selection
               case "selectProperties": {
-                String prefix = (String) call.get("prefix");
-                if (prefix == null) {
-                  throw new IllegalArgumentException("null prefix");
-                }
-                String predicate = (String) call.get("predicate");
-                // selection may be null, a sole property or a list
-                Object selection = call.get("selection");
-                @SuppressWarnings("unchecked") List<String> project =
-                    selection == null
-                        ? null
-                        : selection instanceof List<?>
-                        ? (List<String>) selection
-                        : Collections.singletonList(selection.toString());
-                Map<String, PropertyMap> selected = mgr.selectProperties(prefix, predicate, project);
-                Map<String, Map<String, String>> returned = new TreeMap<>();
-                selected.forEach((k, v) -> returned.put(k, v.export(project == null)));
-                reactions.add(returned);
+                selectProperties(mgr, call, reactions);
                 break;
               }
               case "script": {
@@ -237,18 +201,45 @@ public class PropertyServlet extends HttpServlet {
     }
   }
 
-//  A way to import values using files sent over http
-//  private void importProperties(HttpServletRequest request) throws ServletException, IOException {
-//    List<Part> fileParts = request.getParts().stream()
-//        .filter(part -> "files".equals(part.getName()) && part.getSize() > 0)
-//        .collect(Collectors.toList()); // Retrieves <input type="file" name="files" multiple="true">
-//
-//    for (Part filePart : fileParts) {
-//      String fileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString(); // MSIE fix.
-//      InputStream fileContent = filePart.getInputStream();
-//      // ... (do your job here)
-//    }
-//  }
+  private static void fetchProperties(PropertyManager mgr, Map<String, Object> call, List<Object> reactions) {
+    // one or many keys
+    Object jsonKeys = call.get("keys");
+    if (jsonKeys == null) {
+      throw new IllegalArgumentException("null keys");
+    }
+    Iterable<?> keys = jsonKeys instanceof List<?>
+        ? (List<?>) jsonKeys
+        : Collections.singletonList(jsonKeys);
+    Map<String, String> properties = new TreeMap<>();
+    for (Object okey : keys) {
+      String key = okey.toString();
+      String value = mgr.exportPropertyValue(key);
+      if (value != null) {
+        properties.put(key, value);
+      }
+    }
+    reactions.add(properties);
+  }
+
+  private static void selectProperties(PropertyManager mgr, Map<String, Object> call, List<Object> reactions) {
+    String prefix = (String) call.get("prefix");
+    if (prefix == null) {
+      throw new IllegalArgumentException("null prefix");
+    }
+    String predicate = (String) call.get("predicate");
+    // selection may be null, a sole property or a list
+    Object selection = call.get("selection");
+    @SuppressWarnings("unchecked") List<String> project =
+        selection == null
+            ? null
+            : selection instanceof List<?>
+            ? (List<String>) selection
+            : Collections.singletonList(selection.toString());
+    Map<String, PropertyMap> selected = mgr.selectProperties(prefix, predicate, project);
+    Map<String, Map<String, String>> returned = new TreeMap<>();
+    selected.forEach((k, v) -> returned.put(k, v.export(project == null)));
+    reactions.add(returned);
+  }
 
   @Override
   protected void doPut(HttpServletRequest request,
@@ -322,7 +313,7 @@ public class PropertyServlet extends HttpServlet {
       int port = MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PORT);
       String path = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
       if (port >= 0 && path != null && !path.isEmpty()) {
-        ServletSecurity security = new ServletSecurity(configuration, PropertyServlet.isAuthJwt(configuration));
+        ServletSecurity security = new ServletSecurity(configuration);
         HttpServlet servlet = security.proxy(new PropertyServlet(configuration));
         return new ServletServerBuilder.Descriptor(port, path, servlet) {
           @Override public String toString() {

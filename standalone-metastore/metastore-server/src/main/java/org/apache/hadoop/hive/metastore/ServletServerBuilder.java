@@ -18,17 +18,6 @@
  */
 package org.apache.hadoop.hive.metastore;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import javax.servlet.Servlet;
-import javax.servlet.http.HttpServlet;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -44,19 +33,31 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.slf4j.Logger;
 
+import javax.servlet.Servlet;
+import javax.servlet.http.HttpServlet;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
 /**
  * Helper class to ease creation of embedded Jetty serving servlets on
  * different ports.
  */
 public class ServletServerBuilder {
   /**
-   * Keeping track of descriptors.
-   */
-  private final Map<Servlet, Descriptor> descriptorsMap = new IdentityHashMap<>();
-  /**
    * The configuration instance.
    */
   protected final Configuration configuration;
+  /**
+   * Keeping track of descriptors.
+   */
+  private final Map<Servlet, Descriptor> descriptorsMap = new IdentityHashMap<>();
 
   /**
    * Creates a builder instance.
@@ -67,52 +68,49 @@ public class ServletServerBuilder {
     this.configuration = conf;
   }
 
-  public Configuration getConfiguration() {
-    return configuration;
+  /**
+   * Creates a builder.
+   *
+   * @param conf     the configuration
+   * @param describe the functions to call that create servlet descriptors
+   * @return the builder or null if no descriptors
+   */
+  @SafeVarargs
+  public static ServletServerBuilder builder(Configuration conf,
+                                             Function<Configuration, ServletServerBuilder.Descriptor>... describe) {
+    List<ServletServerBuilder.Descriptor> descriptors = new ArrayList();
+    Arrays.asList(describe).forEach(functor -> {
+      ServletServerBuilder.Descriptor descriptor = functor.apply(conf);
+      if (descriptor != null) {
+        descriptors.add(descriptor);
+      }
+    });
+    if (!descriptors.isEmpty()) {
+      ServletServerBuilder builder = new ServletServerBuilder(conf);
+      descriptors.forEach(d -> builder.addServlet(d));
+      return builder;
+    }
+    return null;
   }
 
   /**
-   * A descriptor of a servlet.
-   * <p>After server is started, unspecified port will be updated to reflect
-   * what the system allocated.</p>
+   * Helper for generic use case.
+   *
+   * @param logger   the logger
+   * @param conf     the configuration
+   * @param describe the functions to create descriptors
+   * @return a server instance
    */
-  public static class Descriptor {
-    private int port;
-    private final String path;
-    private final HttpServlet servlet;
+  @SafeVarargs
+  public static Server startServer(
+          Logger logger,
+          Configuration conf,
+          Function<Configuration, ServletServerBuilder.Descriptor>... describe) {
+    return builder(conf, describe).start(logger);
+  }
 
-    /**
-     * Create a servlet descriptor.
-     * @param port the servlet port (or 0 if system allocated)
-     * @param path the servlet path
-     * @param servlet the servlet instance
-     */
-    public Descriptor(int port, String path, HttpServlet servlet) {
-      this.port = port;
-      this.path = path;
-      this.servlet = servlet;
-    }
-    
-    @Override
-    public String toString() {
-      return servlet.getClass().getSimpleName() + ":" + port+ "/"+ path ;
-    }
-
-    public int getPort() {
-      return port;
-    }
-
-    public String getPath() {
-      return path;
-    }
-
-    public HttpServlet getServlet() {
-      return servlet;
-    }
-
-    void setPort(int port) {
-      this.port = port;
-    }
+  public Configuration getConfiguration() {
+    return configuration;
   }
 
   /**
@@ -120,13 +118,14 @@ public class ServletServerBuilder {
    * <p>The servlet port can be shared between servlets; if 0, the system will provide
    * a port. If the port is &lt; 0, the system will provide a port dedicated (ie non-shared)
    * to the servlet.</p>
-   * @param port the servlet port
-   * @param path the servlet path
+   *
+   * @param port    the servlet port
+   * @param path    the servlet path
    * @param servlet a servlet instance
    * @return a descriptor
    */
-  public Descriptor addServlet(int port, String path, HttpServlet servlet){
-    Descriptor descriptor  = new Descriptor(port, path, servlet);
+  public Descriptor addServlet(int port, String path, HttpServlet servlet) {
+    Descriptor descriptor = new Descriptor(port, path, servlet);
     return addServlet(descriptor);
   }
 
@@ -163,9 +162,9 @@ public class ServletServerBuilder {
   /**
    * Creates a server instance and a connector on a given port.
    *
-   * @param server the server instance
+   * @param server            the server instance
    * @param sslContextFactory the ssl factory
-   * @param port the port
+   * @param port              the port
    * @return the server connector listening to the port
    * @throws IOException if server creation fails
    */
@@ -185,8 +184,9 @@ public class ServletServerBuilder {
 
   /**
    * Adds a servlet to its intended servlet context context.
+   *
    * @param handlersMap the map of port to handlers
-   * @param descriptor the servlet descriptor
+   * @param descriptor  the servlet descriptor
    * @throws IOException
    */
   protected void addServlet(Map<Integer, ServletContextHandler> handlersMap, Descriptor descriptor) throws IOException {
@@ -216,7 +216,7 @@ public class ServletServerBuilder {
   public Server startServer() throws Exception {
     // add all servlets
     Map<Integer, ServletContextHandler> handlersMap = new HashMap<>();
-    for(Descriptor descriptor : descriptorsMap.values()) {
+    for (Descriptor descriptor : descriptorsMap.values()) {
       addServlet(handlersMap, descriptor);
     }
     final int size = handlersMap.size();
@@ -232,15 +232,15 @@ public class ServletServerBuilder {
     for (int c = 0; it.hasNext(); ++c) {
       Map.Entry<Integer, ServletContextHandler> entry = it.next();
       int key = entry.getKey();
-      int port = key < 0? 0 : key;
+      int port = Math.max(key, 0);
       ServerConnector connector = createConnector(server, sslFactory, port);
       connectors[c] = connector;
       ServletContextHandler handler = entry.getValue();
       handlers[c] = handler;
       // make each servlet context be served only by its dedicated connector
-      String host = "hms" + Integer.toString(c);
+      String host = "hms" + c;
       connector.setName(host);
-      handler.setVirtualHosts(new String[]{"@"+host});
+      handler.setVirtualHosts(new String[]{"@" + host});
     }
     // hook the connectors and the handlers
     server.setConnectors(connectors);
@@ -254,7 +254,7 @@ public class ServletServerBuilder {
       int port = connectors[i].getLocalPort();
       ServletContextHandler handler = handlers[i];
       ServletHolder[] holders = handler.getServletHandler().getServlets();
-      for(ServletHolder holder : holders) {
+      for (ServletHolder holder : holders) {
         Servlet servlet = holder.getServletInstance();
         if (servlet != null) {
           Descriptor descriptor = descriptorsMap.get(servlet);
@@ -268,31 +268,8 @@ public class ServletServerBuilder {
   }
 
   /**
-   * Creates a builder.
-   * @param conf the configuration
-   * @param describe the functions to call that create servlet descriptors
-   * @return the builder or null if no descriptors
-   */
-  @SafeVarargs
-  public static ServletServerBuilder builder(Configuration conf,
-          Function<Configuration, ServletServerBuilder.Descriptor>... describe) {
-    List<ServletServerBuilder.Descriptor> descriptors = new ArrayList();
-    Arrays.asList(describe).forEach(functor -> {
-      ServletServerBuilder.Descriptor descriptor = functor.apply(conf);
-      if (descriptor != null) {
-        descriptors.add(descriptor);
-      }
-    });
-    if (!descriptors.isEmpty()) {
-      ServletServerBuilder builder = new ServletServerBuilder(conf);
-      descriptors.forEach(d -> builder.addServlet(d));
-      return builder;
-    }
-    return null;
-  }
-
-  /**
    * Creates and starts the server.
+   *
    * @param logger a logger to output info
    * @return the server instance (or null if error)
    */
@@ -312,28 +289,55 @@ public class ServletServerBuilder {
         }
       }
       return server;
-    } catch (Exception exception) {
-      logger.error("Unable to start servlet server", exception);
-      return null;
     } catch (Throwable throwable) {
       logger.error("Unable to start servlet server", throwable);
       return null;
     }
   }
-  
-   /**
-   * Helper for generic use case.
-   * @param logger the logger
-   * @param conf the configuration
-   * @param describe the functions to create descriptors
-   * @return a server instance
+
+  /**
+   * A descriptor of a servlet.
+   * <p>After server is started, unspecified port will be updated to reflect
+   * what the system allocated.</p>
    */
-  @SafeVarargs
-  public static Server startServer(
-          Logger logger,
-          Configuration conf,
-          Function<Configuration, ServletServerBuilder.Descriptor>... describe) {
-    return builder(conf, describe).start(logger);
+  public static class Descriptor {
+    private final String path;
+    private final HttpServlet servlet;
+    private int port;
+
+    /**
+     * Create a servlet descriptor.
+     *
+     * @param port    the servlet port (or 0 if system allocated)
+     * @param path    the servlet path
+     * @param servlet the servlet instance
+     */
+    public Descriptor(int port, String path, HttpServlet servlet) {
+      this.port = port;
+      this.path = path;
+      this.servlet = servlet;
+    }
+
+    @Override
+    public String toString() {
+      return servlet.getClass().getSimpleName() + ":" + port + "/" + path;
+    }
+
+    public int getPort() {
+      return port;
+    }
+
+    void setPort(int port) {
+      this.port = port;
+    }
+
+    public String getPath() {
+      return path;
+    }
+
+    public HttpServlet getServlet() {
+      return servlet;
+    }
   }
 }
 

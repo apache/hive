@@ -369,15 +369,14 @@ public abstract class HMSTestBase {
       con.setDoInput(true);
       if (arg != null) {
         con.setDoOutput(true);
-        DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-        if (json) {
-          String outjson = serialize(arg);
-          wr.writeBytes(outjson);
-        } else {
-          wr.writeBytes(arg.toString());
+        try (DataOutputStream wr = new DataOutputStream(con.getOutputStream())) {
+          if (json) {
+            wr.writeBytes(serialize(arg));
+          } else {
+            wr.writeBytes(arg.toString());
+          }
+          wr.flush();
         }
-        wr.flush();
-        wr.close();
       }
       // perform http method
       return httpResponse(con);

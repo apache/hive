@@ -110,6 +110,8 @@ public class HMSCatalogAdapter implements RESTClient {
   private static final String CLIENT_ID = "client_id";
   private static final String ACTOR_TOKEN = "actor_token";
   private static final String SUBJECT_TOKEN = "subject_token";
+  private static final String VIEWS_PATH = "v1/namespaces/{namespace}/views/{name}";
+  private static final String TABLES_PATH = "v1/namespaces/{namespace}/tables/{table}";
 
   private final Catalog catalog;
   private final SupportsNamespaces asNamespaceCatalog;
@@ -150,13 +152,13 @@ public class HMSCatalogAdapter implements RESTClient {
             null, ListTablesResponse.class),
     CREATE_TABLE(HTTPMethod.POST, "v1/namespaces/{namespace}/tables",
             CreateTableRequest.class, LoadTableResponse.class),
-    LOAD_TABLE(HTTPMethod.GET, "v1/namespaces/{namespace}/tables/{table}",
+    LOAD_TABLE(HTTPMethod.GET, TABLES_PATH,
             null, LoadTableResponse.class),
     REGISTER_TABLE(HTTPMethod.POST, "v1/namespaces/{namespace}/register",
             RegisterTableRequest.class, LoadTableResponse.class),
-    UPDATE_TABLE(HTTPMethod.POST, "v1/namespaces/{namespace}/tables/{table}",
+    UPDATE_TABLE(HTTPMethod.POST, TABLES_PATH,
             UpdateTableRequest.class, LoadTableResponse.class),
-    DROP_TABLE(HTTPMethod.DELETE, "v1/namespaces/{namespace}/tables/{table}"),
+    DROP_TABLE(HTTPMethod.DELETE, TABLES_PATH),
     RENAME_TABLE(HTTPMethod.POST, "v1/tables/rename",
             RenameTableRequest.class, null),
     REPORT_METRICS(HTTPMethod.POST, "v1/namespaces/{namespace}/tables/{table}/metrics",
@@ -165,15 +167,15 @@ public class HMSCatalogAdapter implements RESTClient {
             CommitTransactionRequest.class, null),
     LIST_VIEWS(HTTPMethod.GET, "v1/namespaces/{namespace}/views",
             null, ListTablesResponse.class),
-    LOAD_VIEW(HTTPMethod.GET, "v1/namespaces/{namespace}/views/{name}",
+    LOAD_VIEW(HTTPMethod.GET, VIEWS_PATH,
             null, LoadViewResponse.class),
     CREATE_VIEW(HTTPMethod.POST, "v1/namespaces/{namespace}/views",
             CreateViewRequest.class, LoadViewResponse.class),
-    UPDATE_VIEW(HTTPMethod.POST, "v1/namespaces/{namespace}/views/{name}",
+    UPDATE_VIEW(HTTPMethod.POST, VIEWS_PATH,
             UpdateTableRequest.class, LoadViewResponse.class),
     RENAME_VIEW(HTTPMethod.POST, "v1/views/rename",
             RenameTableRequest.class, null),
-    DROP_VIEW(HTTPMethod.DELETE, "v1/namespaces/{namespace}/views/{name}");
+    DROP_VIEW(HTTPMethod.DELETE, VIEWS_PATH);
 
     private final HTTPMethod method;
     private final int requiredLength;
@@ -525,7 +527,7 @@ public class HMSCatalogAdapter implements RESTClient {
     transactions.forEach(Transaction::commitTransaction);
   }
   
-  @SuppressWarnings("MethodLength")
+  @SuppressWarnings({"MethodLength", "unchecked"})
   private <T extends RESTResponse> T handleRequest(
       Route route, Map<String, String> vars, Object body) {
     // update HMS catalog route counter metric

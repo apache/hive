@@ -46,7 +46,6 @@ import org.apache.commons.jexl3.JxltEngine;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.ObjectStore;
-import org.apache.hadoop.hive.metastore.TestObjectStore;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import static org.apache.hadoop.hive.metastore.properties.HMSPropertyManager.MAINTENANCE_OPERATION;
 import static org.apache.hadoop.hive.metastore.properties.HMSPropertyManager.MAINTENANCE_STATUS;
@@ -97,7 +96,7 @@ public abstract class HMSTestBase {
 
   protected Configuration conf = null;
 
-  protected static final Logger LOG = LoggerFactory.getLogger(TestObjectStore.class.getName());
+  protected static final Logger LOG = LoggerFactory.getLogger(HMSTestBase.class);
   static Random RND = new Random(20230424);
   protected String NS;// = "hms" + RND.nextInt(100);
   protected PropertyClient client;
@@ -180,9 +179,9 @@ public abstract class HMSTestBase {
 
   /**
    * Creates and starts the server.
-   * @param conf
+   * @param conf the configuration
    * @return the server port
-   * @throws Exception
+   * @throws Exception if creation fails
    */
   protected int createServer(Configuration conf) throws Exception {
     return 0;
@@ -191,7 +190,7 @@ public abstract class HMSTestBase {
   /**
    * Stops the server.
    * @param port the server port
-   * @throws Exception
+   * @throws Exception if stopping the server fails
    */
   protected void stopServer(int port) throws Exception {
     // nothing
@@ -202,12 +201,12 @@ public abstract class HMSTestBase {
    * @param conf the configuration
    * @param port the servlet port
    * @return the client instance
-   * @throws Exception
+   * @throws Exception if client creation fails
    */
   protected abstract PropertyClient createClient(Configuration conf, int port) throws Exception;
 
 
-  public void runOtherProperties0(PropertyClient client) throws Exception {
+  void runOtherProperties0(PropertyClient client) throws Exception {
     Map<String, String> ptyMap = createProperties0();
     boolean commit = client.setProperties(ptyMap);
     Assert.assertTrue(commit);
@@ -234,7 +233,7 @@ public abstract class HMSTestBase {
     try {
       String json = IOUtils.toString(
           HMSDirectTest.class.getResourceAsStream("payload.json"),
-          "UTF-8"
+              StandardCharsets.UTF_8
       );
       JxltEngine JXLT = JEXL.createJxltEngine();
       JxltEngine.Template jsonjexl = JXLT.createTemplate(json, "table", "delta", "g");
@@ -263,7 +262,7 @@ public abstract class HMSTestBase {
     }
   }
 
-  public void runOtherProperties1(PropertyClient client) throws Exception {
+  void runOtherProperties1(PropertyClient client) throws Exception {
     Map<String, String> ptyMap = createProperties1();
     boolean commit = client.setProperties(ptyMap);
     Assert.assertTrue(commit);
@@ -276,12 +275,11 @@ public abstract class HMSTestBase {
       HttpPropertyClient httpClient = (HttpPropertyClient) client;
       // get fillfactors using getProperties, create args array from previous result
       List<String> keys = new ArrayList<>(maps.keySet());
-      for (int k = 0; k < keys.size(); ++k) {
-        keys.set(k, keys.get(k) + ".fillFactor");
-      }
+      keys.replaceAll(s -> s + ".fillFactor");
       Object values = httpClient.getProperties(keys);
       Assert.assertTrue(values instanceof Map);
-      Map<String, String> getm = (Map<String, String>) values;
+      @SuppressWarnings("unchecked")
+      final Map<String, String> getm = (Map<String, String>) values;
       for (Map.Entry<String, Map<String, String>> entry : maps.entrySet()) {
         Map<String, String> map0v = entry.getValue();
         Assert.assertEquals(map0v.get("fillFactor"), getm.get(entry.getKey() + ".fillFactor"));
