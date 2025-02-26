@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -649,6 +650,17 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     @Override
     protected Double transformAllNodes() {
       return negate ? computeConjunctionSelectivity(results) : computeDisjunctionSelectivity(results);
+    }
+
+    @Override
+    protected Double transformWithNullAs(Double node) {
+      if (nullAsNode == null) {
+        return node;
+      }
+      
+      return nullAsTrue ? 
+          computeDisjunctionSelectivity(Arrays.asList(nullAsNode, node)):
+          computeConjunctionSelectivity(Arrays.asList(nullAsNode, node));
     }
   }
 }
