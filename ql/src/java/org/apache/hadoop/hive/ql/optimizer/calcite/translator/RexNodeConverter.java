@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveToDateSqlOperator;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
+import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -108,6 +109,8 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 
+import static java.util.Arrays.asList;
+
 /**
  * Class that contains logic to translate Hive expressions ({@link ExprNodeDesc})
  * into Calcite expressions ({@link RexNode}).
@@ -115,15 +118,15 @@ import java.util.List;
 public class RexNodeConverter {
 
   private final RexBuilder rexBuilder;
-  private final RelDataTypeFactory typeFactory;
+  private final FunctionHelper functionHelper;
 
 
   /**
    * Constructor used by HiveRexExecutorImpl.
    */
-  public RexNodeConverter(RexBuilder rexBuilder, RelDataTypeFactory typeFactory) {
+  public RexNodeConverter(RexBuilder rexBuilder, FunctionHelper functionHelper) {
     this.rexBuilder = rexBuilder;
-    this.typeFactory = typeFactory;
+    this.functionHelper = functionHelper;
   }
 
   public RexNode convert(ExprNodeDesc expr) throws SemanticException {
@@ -233,13 +236,13 @@ public class RexNodeConverter {
 
       isAllPrimitive =
           isAllPrimitive && tmpExprNode.getTypeInfo().getCategory() == Category.PRIMITIVE;
-      argTypeBldr.add(TypeConverter.convert(tmpExprNode.getTypeInfo(), typeFactory));
+      argTypeBldr.add(TypeConverter.convert(tmpExprNode.getTypeInfo(), rexBuilder.getTypeFactory()));
       tmpRN = convert(tmpExprNode);
       childRexNodeLst.add(tmpRN);
     }
 
     // See if this is an explicit cast.
-    RelDataType retType = TypeConverter.convert(func.getTypeInfo(), typeFactory);
+    RelDataType retType = TypeConverter.convert(func.getTypeInfo(), rexBuilder.getTypeFactory());
     RexNode expr = handleExplicitCast(func.getGenericUDF(), retType, childRexNodeLst,
         rexBuilder);
 
@@ -249,7 +252,7 @@ public class RexNodeConverter {
           func.getGenericUDF(), argTypeBldr.build(), retType);
       if (calciteOp.getKind() == SqlKind.CASE) {
         // If it is a case operator, we need to rewrite it
-        childRexNodeLst = rewriteCaseChildren(func.getFuncText(), childRexNodeLst, rexBuilder);
+        childRexNodeLst = rewriteCaseChildren(func.getFuncText(), childRexNodeLst);
         // Adjust branch types by inserting explicit casts if the actual is ambiguous
         childRexNodeLst = adjustCaseBranchTypes(childRexNodeLst, retType, rexBuilder);
       } else if (HiveExtractDate.ALL_FUNCTIONS.contains(calciteOp)) {
@@ -366,8 +369,7 @@ public class RexNodeConverter {
    * It will be transformed into:
    * CASE WHEN =(x + y, 1) THEN 'fee' WHEN =(x + y, 2) THEN 'fie' ELSE null END
    */
-  public static List<RexNode> rewriteCaseChildren(String funcText, List<RexNode> childRexNodeLst,
-      RexBuilder rexBuilder) throws SemanticException {
+  public List<RexNode> rewriteCaseChildren(String funcText, List<RexNode> childRexNodeLst) throws SemanticException {
     List<RexNode> newChildRexNodeLst = new ArrayList<>();
     if (FunctionRegistry.getNormalizedFunctionName(funcText).equals("case")) {
       RexNode firstPred = childRexNodeLst.get(0);
@@ -377,14 +379,12 @@ public class RexNodeConverter {
         if (i % 2 == 1) {
           // We rewrite it
           RexNode node = childRexNodeLst.get(i);
-          if (node.isA(SqlKind.LITERAL) && !node.getType().equals(firstPred.getType())) {
-            // this effectively changes the type of the literal to that of the predicate
-            // to which it is anyway going to be compared with
-            // ex: CASE WHEN =($0:SMALLINT, 1:INTEGER) ... => CASE WHEN =($0:SMALLINT, 1:SMALLINT)
-            node = rexBuilder.makeCast(firstPred.getType(), node);
-          }
-          newChildRexNodeLst.add(
-              rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, firstPred, node));
+          List<RexNode> newInputs = functionHelper.convertInputs(
+                  FunctionRegistry.getFunctionInfo("="),
+                  asList(firstPred, node),
+                  rexBuilder.getTypeFactory().createSqlType(SqlTypeName.BOOLEAN));
+
+          newChildRexNodeLst.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, newInputs));
         } else {
           newChildRexNodeLst.add(childRexNodeLst.get(i));
         }

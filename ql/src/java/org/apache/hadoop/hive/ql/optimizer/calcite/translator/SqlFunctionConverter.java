@@ -95,7 +95,7 @@ public class SqlFunctionConverter {
 
   static final Map<String, SqlOperator>    hiveToCalcite;
   static final Map<SqlOperator, HiveToken> calciteToHiveToken;
-  static final Map<SqlOperator, String>    reverseOperatorMap;
+  public static final Map<SqlOperator, String>    reverseOperatorMap;
 
   static {
     StaticBlockBuilder builder = new StaticBlockBuilder();

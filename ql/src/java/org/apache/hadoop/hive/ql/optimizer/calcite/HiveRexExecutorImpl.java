@@ -26,6 +26,7 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ExprNodeConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.RexNodeConverter;
+import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -40,14 +41,17 @@ public class HiveRexExecutorImpl extends RexExecutorImpl {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveRexExecutorImpl.class);
 
+  private final FunctionHelper functionHelper;
 
-  public HiveRexExecutorImpl() {
+
+  public HiveRexExecutorImpl(FunctionHelper functionHelper) {
     super(null);
+    this.functionHelper = functionHelper;
   }
 
   @Override
   public void reduce(RexBuilder rexBuilder, List<RexNode> constExps, List<RexNode> reducedValues) {
-    RexNodeConverter rexNodeConverter = new RexNodeConverter(rexBuilder, rexBuilder.getTypeFactory());
+    RexNodeConverter rexNodeConverter = new RexNodeConverter(rexBuilder, functionHelper);
     for (RexNode rexNode : constExps) {
       // initialize the converter
       ExprNodeConverter converter = new ExprNodeConverter("", null, null, null,

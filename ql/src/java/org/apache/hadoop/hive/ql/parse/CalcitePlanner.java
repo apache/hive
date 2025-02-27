@@ -1652,7 +1652,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.MV_REWRITE_FIELD_TRIMMER);
       // Create executor
-      RexExecutor executorProvider = new HiveRexExecutorImpl();
+      RexExecutor executorProvider = new HiveRexExecutorImpl(functionHelper);
       calcitePlan.getCluster().getPlanner().setExecutor(executorProvider);
 
       // Create and set MD provider

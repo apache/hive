@@ -68,13 +68,13 @@ STAGE PLANS:
                     predicate: (csmallint) IN (418S, 12205S, 10583S) (type: boolean)
                     Statistics: Num rows: 7 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: csmallint (type: smallint), CASE WHEN ((csmallint = 418S)) THEN ('a') WHEN ((csmallint = 12205S)) THEN ('b') ELSE ('c') END (type: string), CASE WHEN ((csmallint = 418S)) THEN ('a') WHEN ((csmallint = 12205S)) THEN ('b') ELSE ('c') END (type: string)
+                      expressions: csmallint (type: smallint), CASE WHEN ((csmallint = 418S)) THEN ('a') WHEN ((csmallint = 12205S)) THEN ('b') ELSE ('c') END (type: string), CASE WHEN ((UDFToInteger(csmallint) = 418)) THEN ('a') WHEN ((UDFToInteger(csmallint) = 12205)) THEN ('b') ELSE ('c') END (type: string)
                       outputColumnNames: _col0, _col1, _col2
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [1, 18, 23]
-                          selectExpressions: IfExprColumnCondExpr(col 14:boolean, col 15:stringcol 17:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 14:boolean, ConstantVectorExpression(val a) -> 15:string, IfExprStringScalarStringScalar(col 16:boolean, val b, val c)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 16:boolean) -> 17:string) -> 18:string, IfExprColumnCondExpr(col 19:boolean, col 20:stringcol 22:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 19:boolean, ConstantVectorExpression(val a) -> 20:string, IfExprStringScalarStringScalar(col 21:boolean, val b, val c)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 21:boolean) -> 22:string) -> 23:string
+                          selectExpressions: IfExprColumnCondExpr(col 14:boolean, col 15:stringcol 17:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 14:boolean, ConstantVectorExpression(val a) -> 15:string, IfExprStringScalarStringScalar(col 16:boolean, val b, val c)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 16:boolean) -> 17:string) -> 18:string, IfExprColumnCondExpr(col 19:boolean, col 20:stringcol 22:string)(children: LongColEqualLongScalar(col 1:int, val 418)(children: col 1:smallint) -> 19:boolean, ConstantVectorExpression(val a) -> 20:string, IfExprStringScalarStringScalar(col 21:boolean, val b, val c)(children: LongColEqualLongScalar(col 1:int, val 12205)(children: col 1:smallint) -> 21:boolean) -> 22:string) -> 23:string
                       Statistics: Num rows: 7 Data size: 1214 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -222,13 +222,13 @@ STAGE PLANS:
                     predicate: (csmallint) IN (418S, 12205S, 10583S) (type: boolean)
                     Statistics: Num rows: 7 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: csmallint (type: smallint), CASE WHEN ((csmallint = 418S)) THEN ('a') WHEN ((csmallint = 12205S)) THEN ('b') ELSE (null) END (type: string), CASE WHEN ((csmallint = 418S)) THEN ('a') WHEN ((csmallint = 12205S)) THEN (null) ELSE ('c') END (type: string)
+                      expressions: csmallint (type: smallint), CASE WHEN ((csmallint = 418S)) THEN ('a') WHEN ((csmallint = 12205S)) THEN ('b') ELSE (null) END (type: string), CASE WHEN ((UDFToInteger(csmallint) = 418)) THEN ('a') WHEN ((UDFToInteger(csmallint) = 12205)) THEN (null) ELSE ('c') END (type: string)
                       outputColumnNames: _col0, _col1, _col2
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [1, 19, 25]
-                          selectExpressions: IfExprColumnCondExpr(col 14:boolean, col 15:stringcol 18:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 14:boolean, ConstantVectorExpression(val a) -> 15:string, IfExprColumnNull(col 16:boolean, col 17:string, null)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 16:boolean, ConstantVectorExpression(val b) -> 17:string) -> 18:string) -> 19:string, IfExprColumnCondExpr(col 20:boolean, col 21:stringcol 24:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 20:boolean, ConstantVectorExpression(val a) -> 21:string, IfExprNullColumn(col 22:boolean, null, col 23)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 22:boolean, ConstantVectorExpression(val c) -> 23:string) -> 24:string) -> 25:string
+                          selectExpressions: IfExprColumnCondExpr(col 14:boolean, col 15:stringcol 18:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 14:boolean, ConstantVectorExpression(val a) -> 15:string, IfExprColumnNull(col 16:boolean, col 17:string, null)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 16:boolean, ConstantVectorExpression(val b) -> 17:string) -> 18:string) -> 19:string, IfExprColumnCondExpr(col 20:boolean, col 21:stringcol 24:string)(children: LongColEqualLongScalar(col 1:int, val 418)(children: col 1:smallint) -> 20:boolean, ConstantVectorExpression(val a) -> 21:string, IfExprNullColumn(col 22:boolean, null, col 23)(children: LongColEqualLongScalar(col 1:int, val 12205)(children: col 1:smallint) -> 22:boolean, ConstantVectorExpression(val c) -> 23:string) -> 24:string) -> 25:string
                       Statistics: Num rows: 7 Data size: 194 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
