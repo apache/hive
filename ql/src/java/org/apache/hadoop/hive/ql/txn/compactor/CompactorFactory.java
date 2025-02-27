@@ -34,8 +34,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class CompactorFactory {
   private static final Logger LOG = LoggerFactory.getLogger(CompactorFactory.class.getName());
-  private static final String ICEBERG_MAJOR_QUERY_COMPACTOR_CLASS = "org.apache.iceberg.mr.hive.compaction.IcebergMajorQueryCompactor";
-
+  private static final String ICEBERG_QUERY_COMPACTOR_CLASS = "org.apache.iceberg.mr.hive.compaction.IcebergQueryCompactor";
   private static final CompactorFactory INSTANCE = new CompactorFactory();
 
   static CompactorFactory getInstance() {
@@ -113,11 +112,12 @@ public final class CompactorFactory {
       }
     } else if (MetaStoreUtils.isIcebergTable(table.getParameters())) {
       switch (compactionInfo.type) {
+        case MINOR:
         case MAJOR:
 
           try {
             Class<? extends QueryCompactor> icebergMajorQueryCompactor = (Class<? extends QueryCompactor>)
-                Class.forName(ICEBERG_MAJOR_QUERY_COMPACTOR_CLASS, true, 
+                Class.forName(ICEBERG_QUERY_COMPACTOR_CLASS, true, 
                     Utilities.getSessionSpecifiedClassLoader());
 
             return new CompactorPipeline(icebergMajorQueryCompactor.newInstance());

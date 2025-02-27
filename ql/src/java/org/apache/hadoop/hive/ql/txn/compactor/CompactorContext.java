@@ -37,6 +37,7 @@ public class CompactorContext {
   private final ValidWriteIdList validWriteIdList;
   private final CompactionInfo compactionInfo;
   private final AcidDirectory dir;
+  public static final String COMPACTION_FILE_SIZE_THRESHOLD = "compaction.file.size.threshold"; 
 
   public CompactorContext(HiveConf conf, Table table, Partition p, StorageDescriptor sd, ValidWriteIdList tblValidWriteIds, CompactionInfo ci, AcidDirectory dir) {
     this.conf = conf;
