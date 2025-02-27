@@ -426,7 +426,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-standalone-metastore-rest-catalog</artifactId>
+      <artifactId>hive-metastore-rest-catalog</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
