@@ -117,6 +117,9 @@ public class Privilege {
   public static Privilege DELETE = new Privilege(PrivilegeType.DELETE,
       PrivilegeScope.ALLSCOPE_EXCEPT_COLUMN);
 
+  public static Privilege SHOW_CATALOG = new Privilege(PrivilegeType.SELECT,
+      EnumSet.of(PrivilegeScope.USER_LEVEL_SCOPE));
+
   public static Privilege SHOW_DATABASE = new Privilege(PrivilegeType.SHOW_DATABASE,
       EnumSet.of(PrivilegeScope.USER_LEVEL_SCOPE));
 
