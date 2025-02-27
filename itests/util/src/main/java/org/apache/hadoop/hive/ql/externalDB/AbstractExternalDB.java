@@ -126,6 +126,7 @@ public abstract class AbstractExternalDB {
               throw new RuntimeException("Failed to get docker logs");
             }
         } while (startTime + MAX_STARTUP_WAIT >= System.currentTimeMillis() && !isContainerReady(pr));
+        Thread.sleep(10000);
         if (startTime + MAX_STARTUP_WAIT < System.currentTimeMillis()) {
           printDockerEvents();
           throw new RuntimeException(
