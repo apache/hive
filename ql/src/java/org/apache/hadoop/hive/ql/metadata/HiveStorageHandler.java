@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -282,6 +283,11 @@ public interface HiveStorageHandler extends Configurable {
    * @return A List of Column Statistics Objects, can be null
    */
   default List<ColumnStatisticsObj> getColStatistics(org.apache.hadoop.hive.ql.metadata.Table table) {
+    return null;
+  }
+
+  default AggrStats getAggrColStatsFor(org.apache.hadoop.hive.ql.metadata.Table hmsTable, List<String> colNames, 
+        List<String> partNames) {
     return null;
   }
 
