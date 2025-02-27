@@ -34,10 +34,10 @@ Table Parameters:
 	STATS_GENERATED_VIA_STATS_TASK	true                
 	bucketing_version   	2                   
 #### A masked pattern was here ####
-	numFiles            	1                   
+	numFiles            	0                   
 	numRows             	2                   
 	rawDataSize         	4                   
-	totalSize           	3                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
