@@ -57,16 +57,16 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 7 (BROADCAST_EDGE), Union 3 (CONTAINS)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 6 (BROADCAST_EDGE), Union 3 (CONTAINS)
         Reducer 4 <- Union 3 (CUSTOM_SIMPLE_EDGE)
-        Reducer 6 <- Map 5 (SIMPLE_EDGE), Map 7 (BROADCAST_EDGE), Union 3 (CONTAINS)
+        Reducer 5 <- Map 1 (SIMPLE_EDGE), Map 6 (BROADCAST_EDGE), Union 3 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: x
-                  filterExpr: (UDFToDouble(key) < 20.0D) (type: boolean)
+                  filterExpr: ((UDFToDouble(key) < 20.0D) or (UDFToDouble(key) > 100.0D)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -91,52 +91,6 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col1 (type: bigint)
                         auto parallelism: true
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-            Path -> Alias:
-#### A masked pattern was here ####
-            Path -> Partition:
-#### A masked pattern was here ####
-                Partition
-                  base file name: src
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    bucket_count -1
-                    bucketing_version 2
-                    column.name.delimiter ,
-                    columns key,value
-                    columns.types string:string
-#### A masked pattern was here ####
-                    name default.src
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    properties:
-                      bucketing_version 2
-                      column.name.delimiter ,
-                      columns key,value
-                      columns.comments 'default','default'
-                      columns.types string:string
-#### A masked pattern was here ####
-                      name default.src
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.src
-                  name: default.src
-            Truncated Path -> Alias:
-              /src [x]
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: x1
-                  filterExpr: (UDFToDouble(key) > 100.0D) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                  GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: (UDFToDouble(key) > 100.0D) (type: boolean)
@@ -197,8 +151,8 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              /src [x1]
-        Map 7 
+              /src [x]
+        Map 6 
             Map Operator Tree:
                 TableScan
                   alias: x
@@ -287,13 +241,13 @@ STAGE PLANS:
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
-                  Estimated key counts: Map 7 => 25
+                  Estimated key counts: Map 6 => 25
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
                   outputColumnNames: _col1, _col2, _col3
                   input vertices:
-                    1 Map 7
+                    1 Map 6
                   Position of Big Table: 0
                   Statistics: Num rows: 50 Data size: 9150 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -382,7 +336,7 @@ STAGE PLANS:
                     TotalFiles: 1
                     GatherStats: false
                     MultiFileSpray: false
-        Reducer 6 
+        Reducer 5 
             Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
@@ -395,13 +349,13 @@ STAGE PLANS:
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
-                  Estimated key counts: Map 7 => 25
+                  Estimated key counts: Map 6 => 25
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
                   outputColumnNames: _col1, _col2, _col3
                   input vertices:
-                    1 Map 7
+                    1 Map 6
                   Position of Big Table: 0
                   Statistics: Num rows: 50 Data size: 9150 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
