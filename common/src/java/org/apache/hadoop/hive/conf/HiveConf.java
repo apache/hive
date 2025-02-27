@@ -64,6 +64,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -3880,7 +3881,7 @@ public class HiveConf extends Configuration {
     HIVE_LINEAGE_INFO("hive.lineage.hook.info.enabled", false,
         "Whether Hive provides lineage information to hooks." +
             "Deprecated: use hive.lineage.statement.filter instead."),
-    HIVE_LINEAGE_STATEMENT_FILTER("hive.lineage.statement.filter", "ALL",
+    HIVE_LINEAGE_STATEMENT_FILTER("hive.lineage.statement.filter", "NONE",
         "Whether Hive provides lineage information to hooks for the specified statements only, " +
             "the value is a comma-separated list (ex.: CREATE_MATERIALIZED_VIEW," +
             "CREATE_TABLE,CREATE_TABLE_AS_SELECT). Possible values are: CREATE_TABLE, CREATE_TABLE_AS_SELECT, " +
@@ -7301,6 +7302,13 @@ public class HiveConf extends Configuration {
       }
     }
     return ret;
+  }
+
+  public static boolean shouldComputeLineage(HiveConf conf) {
+    Collection<String> lineageFilter =
+      conf.getTrimmedStringCollection(HiveConf.ConfVars.HIVE_LINEAGE_STATEMENT_FILTER.varname);
+    return !(lineageFilter.isEmpty() || lineageFilter.contains("NONE"))
+      || conf.getBoolVar(ConfVars.HIVE_LINEAGE_INFO);
   }
 
   // sync all configs from given conf
