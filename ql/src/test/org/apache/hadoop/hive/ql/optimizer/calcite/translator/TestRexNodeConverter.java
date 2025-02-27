@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.type.HiveFunctionHelper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -57,6 +58,7 @@ public class TestRexNodeConverter {
   private static final String CASE_FUNC_TEST = "case";
   private static final RexBuilder REX_BUILDER = new RexBuilder(
       new JavaTypeFactoryImpl(new HiveTypeSystemImpl()));
+  private static final HiveFunctionHelper FUNCTION_HELPER = new HiveFunctionHelper(REX_BUILDER);
   private static final RelDataTypeFactory TYPE_FACTORY = REX_BUILDER.getTypeFactory();
 
   private static RelDataType smallIntegerType;
@@ -126,8 +128,8 @@ public class TestRexNodeConverter {
         varChar35,
         varCharNull);
 
-    List<RexNode> computed = RexNodeConverter.rewriteCaseChildren(
-        CASE_FUNC_TEST, childrenNodeList, REX_BUILDER);
+    List<RexNode> computed = new RexNodeConverter(REX_BUILDER, FUNCTION_HELPER)
+            .rewriteCaseChildren(CASE_FUNC_TEST, childrenNodeList);
 
     Assert.assertEquals(expected, computed);
   }
@@ -152,8 +154,8 @@ public class TestRexNodeConverter {
         varChar35,
         varCharNull);
 
-    List<RexNode> computed = RexNodeConverter.rewriteCaseChildren(
-        CASE_FUNC_TEST, childrenNodeList, REX_BUILDER);
+    List<RexNode> computed = new RexNodeConverter(REX_BUILDER, FUNCTION_HELPER)
+            .rewriteCaseChildren(CASE_FUNC_TEST, childrenNodeList);
 
     Assert.assertEquals(expected, computed);
   }
@@ -178,8 +180,8 @@ public class TestRexNodeConverter {
         varChar35,
         varCharNull);
 
-    List<RexNode> computed = RexNodeConverter.rewriteCaseChildren(
-        CASE_FUNC_TEST, childrenNodeList, REX_BUILDER);
+    List<RexNode> computed = new RexNodeConverter(REX_BUILDER, FUNCTION_HELPER)
+            .rewriteCaseChildren(CASE_FUNC_TEST, childrenNodeList);
 
     Assert.assertEquals(expected, computed);
   }

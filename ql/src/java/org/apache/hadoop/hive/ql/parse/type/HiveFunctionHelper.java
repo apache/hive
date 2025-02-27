@@ -102,6 +102,7 @@ public class HiveFunctionHelper implements FunctionHelper {
 
   private final RexBuilder rexBuilder;
   private final int maxNodesForInToOrTransformation;
+  private final RexNodeConverter rexNodeConverter;
 
   public HiveFunctionHelper(RexBuilder rexBuilder) {
     this.rexBuilder = rexBuilder;
@@ -111,6 +112,7 @@ public class HiveFunctionHelper implements FunctionHelper {
     } catch (HiveException e) {
       throw new IllegalStateException(e);
     }
+    this.rexNodeConverter = new RexNodeConverter(rexBuilder,this);
   }
 
   /**
@@ -255,7 +257,7 @@ public class HiveFunctionHelper implements FunctionHelper {
           fi.getGenericUDF(), argsTypes.build(), returnType);
       if (calciteOp.getKind() == SqlKind.CASE) {
         // If it is a case operator, we need to rewrite it
-        inputs = RexNodeConverter.rewriteCaseChildren(functionText, inputs, rexBuilder);
+        inputs = rexNodeConverter.rewriteCaseChildren(functionText, inputs);
         // Adjust branch types by inserting explicit casts if the actual is ambiguous
         inputs = RexNodeConverter.adjustCaseBranchTypes(inputs, returnType, rexBuilder);
         checkForStatefulFunctions(inputs);
@@ -576,7 +578,7 @@ public class HiveFunctionHelper implements FunctionHelper {
    */
   @Override
   public RexNode foldExpression(RexNode expr) {
-    HiveRexExecutorImpl executor = new HiveRexExecutorImpl();
+    HiveRexExecutorImpl executor = new HiveRexExecutorImpl(this);
     List<RexNode> result = new ArrayList<>();
     executor.reduce(rexBuilder, ImmutableList.of(expr), result);
     return result.get(0);
