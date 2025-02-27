@@ -26,6 +26,7 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
+import org.apache.calcite.rex.RexUnknownAs;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.util.Sarg;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
@@ -83,11 +84,26 @@ public class HiveReduceSearchComplexityRule extends RelOptRule {
   }
   
   private boolean isNegationBetter(Sarg<?> sarg) {
-    int complexity = sarg.complexity();
-    int negationComplexity = sarg.negate().complexity();
+    int complexity = getComplexity(sarg);
+    int negationComplexity = getComplexity(sarg.negate());
 
     return negationComplexity < complexity || 
         (negationComplexity == complexity && countClosedRanges(sarg.negate()) > countClosedRanges(sarg));
+  }
+
+  /**
+   * Calcite's complexity method ignores complexity of IS NOT NULL.
+   * This can be removed if we decide to ignore IS NOT NULLs in Hive.
+   * @param sarg SEARCH args
+   * @return complexity of sarg
+   */
+  private int getComplexity(Sarg<?> sarg) {
+    int complexity = sarg.complexity();
+    if (sarg.nullAs == RexUnknownAs.FALSE) {
+      complexity++;
+    }
+    
+    return complexity;
   }
   
   private long countClosedRanges(Sarg<?> sarg) {
