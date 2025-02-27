@@ -3,7 +3,7 @@ PREHOOK: query: create table ice_orc (
     last_name string
  )
 stored by iceberg stored as orc 
-tblproperties ('format-version'='2')
+tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1500')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ice_orc
@@ -12,7 +12,7 @@ POSTHOOK: query: create table ice_orc (
     last_name string
  )
 stored by iceberg stored as orc 
-tblproperties ('format-version'='2')
+tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1500')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice_orc
@@ -182,6 +182,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
+	compactor.threshold.target.size	1500                
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"}]}
 	current-snapshot-id 	#Masked#
 	current-snapshot-summary	{\"deleted-data-files\":\"3\",\"deleted-records\":\"3\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"11\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"11\",\"total-delete-files\":\"7\",\"total-position-deletes\":\"7\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
@@ -272,6 +273,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"first_name\":\"true\",\"last_name\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
+	compactor.threshold.target.size	1500                
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"}]}
 	current-snapshot-id 	#Masked#
 	current-snapshot-summary	{\"added-data-files\":\"1\",\"deleted-data-files\":\"11\",\"removed-position-delete-files\":\"7\",\"removed-delete-files\":\"7\",\"added-records\":\"4\",\"deleted-records\":\"11\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"removed-position-deletes\":\"7\",\"changed-partition-count\":\"1\",\"total-records\":\"4\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"1\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
