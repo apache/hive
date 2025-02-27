@@ -178,12 +178,20 @@ public class AlterTableAddPartitionDesc implements DDLDescWithWriteId, Serializa
 
   private ReplicationSpec replicationSpec = null; // TODO: make replicationSpec final too
 
+  private final String customPattern;
+
   public AlterTableAddPartitionDesc(String dbName, String tableName, boolean ifNotExists,
-      List<PartitionDesc> partitions) {
+                                    List<PartitionDesc> partitions) {
+    this(dbName, tableName, ifNotExists, partitions, null);
+  }
+
+  public AlterTableAddPartitionDesc(String dbName, String tableName, boolean ifNotExists,
+      List<PartitionDesc> partitions, String customPattern) {
     this.dbName = dbName;
     this.tableName = tableName;
     this.ifNotExists = ifNotExists;
     this.partitions = partitions;
+    this.customPattern = customPattern;
   }
 
   @Explain(displayName = "db name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -239,6 +247,10 @@ public class AlterTableAddPartitionDesc implements DDLDescWithWriteId, Serializa
   @Override
   public boolean mayNeedWriteId() {
     return true;
+  }
+
+  public String getCustomPattern() {
+    return this.customPattern;
   }
 
 }
