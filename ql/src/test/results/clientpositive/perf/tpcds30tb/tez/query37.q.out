@@ -61,10 +61,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: item
-                  filterExpr: ((i_manufact_id) IN (678, 964, 918, 849) and i_current_price BETWEEN 22 AND 52) (type: boolean)
+                  filterExpr: ((i_manufact_id) IN (678, 849, 918, 964) and i_current_price BETWEEN 22 AND 52) (type: boolean)
                   Statistics: Num rows: 462000 Data size: 188360804 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((i_manufact_id) IN (678, 964, 918, 849) and i_current_price BETWEEN 22 AND 52) (type: boolean)
+                    predicate: ((i_manufact_id) IN (678, 849, 918, 964) and i_current_price BETWEEN 22 AND 52) (type: boolean)
                     Statistics: Num rows: 769 Data size: 313636 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: i_item_sk (type: bigint), i_item_id (type: string), i_item_desc (type: varchar(200)), i_current_price (type: decimal(7,2))
