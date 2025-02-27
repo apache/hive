@@ -39,7 +39,8 @@ import org.apache.hadoop.io.Text;
  *
  */
 @Description(name = "get_json_object",
-    value = "_FUNC_(json_txt, path) - Extract a json object from path ",
+    value = "_FUNC_(json_txt, path, arrayStrictMode) - Extract a json object from path," +
+            "Whether to enable strict mode for parsing JSON arrays, can be omitted, default is false",
     extended = "Extract json object from a json string based on json path "
     + "specified, and return json string of the extracted json object. It "
     + "will return null if the input json string is invalid.\n"
@@ -100,7 +101,9 @@ public class UDFJson extends UDF {
 
   public UDFJson() {
   }
-
+  public Text evaluate(String jsonString, String pathString) {
+    return evaluate(jsonString,pathString,false);
+  }
   /**
    * Extract json object from a json string based on json path specified, and
    * return json string of the extracted json object. It will return null if the
@@ -118,9 +121,11 @@ public class UDFJson extends UDF {
    *          the json string.
    * @param pathString
    *          the json path expression.
+   * @param arrayStrictMode
+   *         Whether to enable strict mode for parsing JSON arrays, default is false
    * @return json string or null when an error happens.
    */
-  public Text evaluate(String jsonString, String pathString) {
+  public Text evaluate(String jsonString, String pathString,boolean arrayStrictMode) {
     if (jsonString == null || jsonString.isEmpty() || pathString == null
         || pathString.isEmpty() || pathString.charAt(0) != '$') {
       return null;
@@ -179,7 +184,7 @@ public class UDFJson extends UDF {
       if (extractObject == null) {
           return null;
       }
-      extractObject = extract(extractObject, pathExpr[i], i == pathExprStart && isRootArray);
+      extractObject = extract(extractObject, pathExpr[i], i == pathExprStart && isRootArray,arrayStrictMode);
     }
 
     Text result = new Text();
@@ -197,7 +202,7 @@ public class UDFJson extends UDF {
     return result;
   }
 
-  private Object extract(Object json, String path, boolean skipMapProc) {
+  private Object extract(Object json, String path, boolean skipMapProc,boolean arrayStrictMode) {
     // skip MAP processing for the first path element if root is array
     if (!skipMapProc) {
       // Cache patternkey.matcher(path).matches()
@@ -225,6 +230,13 @@ public class UDFJson extends UDF {
         }
         mKeyGroup1 = mKey.group(1);
         mKeyGroup1Cache.put(path, mKeyGroup1);
+      }
+    //StrictMode is true. If a JSON array type cannot accurately obtain the value of the nth element in the array based on a single key,
+    // which may cause errors, it will not be parsed and returned as empty
+      if(arrayStrictMode){
+        if (json instanceof List) {
+          return null;
+        }
       }
       json = extract_json_withkey(json, mKeyGroup1);
     }
