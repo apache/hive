@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.util.SuppressFBWarnings;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 
 import java.util.Map;
@@ -42,6 +43,7 @@ public class CheckResult {
   /**
    * @return a list of tables not found on the filesystem.
    */
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "HIVE-23613: intended_TO_DO")
   public Set<String> getTablesNotOnFs() {
     return tablesNotOnFs;
   }
@@ -50,6 +52,7 @@ public class CheckResult {
    * @param tablesNotOnFs
    *          a list of tables not found on the filesystem.
    */
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
   public void setTablesNotOnFs(Set<String> tablesNotOnFs) {
     this.tablesNotOnFs = tablesNotOnFs;
   }
@@ -57,6 +60,7 @@ public class CheckResult {
   /**
    * @return a list of tables not found in the metastore.
    */
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "HIVE-23613: intended_TO_DO")
   public Set<String> getTablesNotInMs() {
     return tablesNotInMs;
   }
@@ -65,6 +69,7 @@ public class CheckResult {
    * @param tablesNotInMs
    *          a list of tables not found in the metastore.
    */
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
   public void setTablesNotInMs(Set<String> tablesNotInMs) {
     this.tablesNotInMs = tablesNotInMs;
   }
@@ -72,6 +77,7 @@ public class CheckResult {
   /**
    * @return a list of partitions not found on the fs
    */
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "HIVE-23613: intended_TO_DO")
   public Set<PartitionResult> getPartitionsNotOnFs() {
     return partitionsNotOnFs;
   }
@@ -80,6 +86,7 @@ public class CheckResult {
    * @param partitionsNotOnFs
    *          a list of partitions not found on the fs
    */
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
   public void setPartitionsNotOnFs(Set<PartitionResult> partitionsNotOnFs) {
     this.partitionsNotOnFs = partitionsNotOnFs;
   }
@@ -87,6 +94,7 @@ public class CheckResult {
   /**
    * @return a list of partitions not found in the metastore
    */
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "HIVE-23613: intended_TO_DO")
   public Set<PartitionResult> getPartitionsNotInMs() {
     return partitionsNotInMs;
   }
@@ -95,22 +103,27 @@ public class CheckResult {
    * @param partitionsNotInMs
    *          a list of partitions not found in the metastore
    */
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
   public void setPartitionsNotInMs(Set<PartitionResult> partitionsNotInMs) {
     this.partitionsNotInMs = partitionsNotInMs;
   }
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "HIVE-23613: intended_TO_DO")
   public Set<PartitionResult> getExpiredPartitions() {
     return expiredPartitions;
   }
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
   public void setExpiredPartitions(final Set<PartitionResult> expiredPartitions) {
     this.expiredPartitions = expiredPartitions;
   }
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "HIVE-23613: intended_TO_DO")
   public Set<PartitionResult> getCorrectPartitions() {
     return this.correctPartitions;
   }
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
   public void setCorrectPartitions(final Set<PartitionResult> correctPartitions) {
     this.correctPartitions = correctPartitions;
   }
