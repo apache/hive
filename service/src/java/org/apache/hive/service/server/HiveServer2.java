@@ -167,6 +167,8 @@ public class HiveServer2 extends CompositeService {
   private CLIService cliService;
   private ThriftCLIService thriftCLIService;
   private CuratorFramework zKClientForPrivSync = null;
+  private HttpServer uiWebServer; // Web UI
+  private HttpServer leaderWebServer; // HA Leader web server
   private HttpServer webServer; // Web UI
   private TezSessionPoolManager tezSessionPoolManager;
   private WorkloadManager wm;
@@ -383,9 +385,11 @@ public class HiveServer2 extends CompositeService {
 
     // Setup web UI
     final int webUIPort;
+    final int leaderPort;
     final String webHost;
     try {
       webUIPort = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_WEBUI_PORT);
+      leaderPort = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_LEADER_PORT);
       webHost = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_BIND_HOST);
       // We disable web UI in tests unless the test is explicitly setting a
       // unique web ui port so that we don't mess up ptests.
@@ -394,116 +398,44 @@ public class HiveServer2 extends CompositeService {
       if (uiDisabledInTest) {
         LOG.info("Web UI is disabled in test mode since webui port was not specified");
       } else {
+        if (leaderPort <= 0) {
+          LOG.info("HA leader web server is disabled since port is set to " + leaderPort);
+        } else {
+          if (serviceDiscovery && activePassiveHA) {
+            LOG.info("Starting HA Leader web server on port " + leaderPort);
+            int leaderMaxThreads = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_LEADER_MAX_THREADS);
+            HttpServer.Builder leaderServerBuilder = createWebServerBuilder("hiveserver2", webHost, leaderPort, 
+                leaderMaxThreads, hiveConf);
+            leaderServerBuilder.setContextAttribute("hs2.isLeader", isLeader);
+            leaderServerBuilder.setContextAttribute("hs2.failover.callback", new FailoverHandlerCallback(hs2HARegistry));
+            leaderServerBuilder.setContextAttribute("hiveconf", hiveConf);
+            leaderServerBuilder.addServlet("leader", HS2LeadershipStatus.class);
+            leaderServerBuilder.addServlet("peers", HS2Peers.class);
+            leaderWebServer = leaderServerBuilder.build();
+          }
+        }
         if (webUIPort <= 0) {
           LOG.info("Web UI is disabled since port is set to " + webUIPort);
         } else {
           LOG.info("Starting Web UI on port "+ webUIPort);
-          if (JspFactory.getDefaultFactory() == null) {
-            // Set the default JspFactory to avoid NPE while opening the home page
-            JspFactory.setDefaultFactory(new org.apache.jasper.runtime.JspFactoryImpl());
-          }
-          HttpServer.Builder builder = new HttpServer.Builder("hiveserver2");
-          builder.setPort(webUIPort).setConf(hiveConf);
-          builder.setHost(webHost);
-          builder.setMaxThreads(
-            hiveConf.getIntVar(ConfVars.HIVE_SERVER2_WEBUI_MAX_THREADS));
-          builder.setAdmins(hiveConf.getVar(ConfVars.USERS_IN_ADMIN_ROLE));
-          // SessionManager is initialized
-          builder.setContextAttribute("hive.sm",
-            cliService.getSessionManager());
-          hiveConf.set("startcode",
-            String.valueOf(System.currentTimeMillis()));
-          if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_SSL)) {
-            String keyStorePath = hiveConf.getVar(
-              ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PATH);
-            if (StringUtils.isBlank(keyStorePath)) {
-              throw new IllegalArgumentException(
-                ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PATH.varname
-                  + " Not configured for SSL connection");
-            }
-            builder.setKeyStorePassword(ShimLoader.getHadoopShims().getPassword(
-              hiveConf, ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PASSWORD.varname));
-            builder.setKeyStorePath(keyStorePath);
-            builder.setKeyStoreType(hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_TYPE));
-            builder.setKeyManagerFactoryAlgorithm(
-                hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYMANAGERFACTORY_ALGORITHM));
-            builder.setExcludeCiphersuites(
-                hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_EXCLUDE_CIPHERSUITES));
-            builder.setUseSSL(true);
-          }
-          if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_SPNEGO)) {
-            String spnegoPrincipal = hiveConf.getVar(
-                ConfVars.HIVE_SERVER2_WEBUI_SPNEGO_PRINCIPAL);
-            String spnegoKeytab = hiveConf.getVar(
-                ConfVars.HIVE_SERVER2_WEBUI_SPNEGO_KEYTAB);
-            if (StringUtils.isBlank(spnegoPrincipal) || StringUtils.isBlank(spnegoKeytab)) {
-              throw new IllegalArgumentException(
-                ConfVars.HIVE_SERVER2_WEBUI_SPNEGO_PRINCIPAL.varname
-                  + "/" + ConfVars.HIVE_SERVER2_WEBUI_SPNEGO_KEYTAB.varname
-                  + " Not configured for SPNEGO authentication");
-            }
-            builder.setSPNEGOPrincipal(spnegoPrincipal);
-            builder.setSPNEGOKeytab(spnegoKeytab);
-            builder.setUseSPNEGO(true);
-          }
-          if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_ENABLE_CORS)) {
-            builder.setEnableCORS(true);
-            String allowedOrigins = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_CORS_ALLOWED_ORIGINS);
-            String allowedMethods = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_CORS_ALLOWED_METHODS);
-            String allowedHeaders = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_CORS_ALLOWED_HEADERS);
-            if (StringUtils.isBlank(allowedOrigins) || StringUtils.isBlank(allowedMethods) || StringUtils.isBlank(allowedHeaders)) {
-              throw new IllegalArgumentException("CORS enabled. But " +
-                ConfVars.HIVE_SERVER2_WEBUI_CORS_ALLOWED_ORIGINS.varname + "/" +
-                ConfVars.HIVE_SERVER2_WEBUI_CORS_ALLOWED_METHODS.varname + "/" +
-                ConfVars.HIVE_SERVER2_WEBUI_CORS_ALLOWED_HEADERS.varname + "/" +
-                " is not configured");
-            }
-            builder.setAllowedOrigins(allowedOrigins);
-            builder.setAllowedMethods(allowedMethods);
-            builder.setAllowedHeaders(allowedHeaders);
-            LOG.info("CORS enabled - allowed-origins: {} allowed-methods: {} allowed-headers: {}", allowedOrigins,
-              allowedMethods, allowedHeaders);
-          }
-          if(hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_XFRAME_ENABLED)){
-            builder.configureXFrame(true).setXFrameOption(hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_XFRAME_VALUE));
-          }
-          if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_PAM)) {
-            if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_SSL)) {
-              String hiveServer2PamServices = hiveConf.getVar(ConfVars.HIVE_SERVER2_PAM_SERVICES);
-              if (hiveServer2PamServices == null || hiveServer2PamServices.isEmpty()) {
-                throw new IllegalArgumentException(ConfVars.HIVE_SERVER2_PAM_SERVICES.varname + " are not configured.");
-              }
-              builder.setPAMAuthenticator(pamAuthenticator == null ? new PamAuthenticator(hiveConf) : pamAuthenticator);
-              builder.setUsePAM(true);
-            } else if (hiveConf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
-              builder.setPAMAuthenticator(pamAuthenticator == null ? new PamAuthenticator(hiveConf) : pamAuthenticator);
-              builder.setUsePAM(true);
-            } else {
-              throw new IllegalArgumentException(ConfVars.HIVE_SERVER2_WEBUI_USE_SSL.varname + " has false value. It is recommended to set to true when PAM is used.");
-            }
-          }
-          if (serviceDiscovery && activePassiveHA) {
-            builder.setContextAttribute("hs2.isLeader", isLeader);
-            builder.setContextAttribute("hs2.failover.callback", new FailoverHandlerCallback(hs2HARegistry));
-            builder.setContextAttribute("hiveconf", hiveConf);
-            builder.addServlet("leader", HS2LeadershipStatus.class);
-            builder.addServlet("peers", HS2Peers.class);
-          }
-          builder.addServlet("llap", LlapServlet.class);
-          builder.addServlet("jdbcjar", JdbcJarDownloadServlet.class);
-          builder.setContextRootRewriteTarget(HS2_WEBUI_ROOT_URI);
+          int webUIMaxThreads = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_WEBUI_MAX_THREADS);
+          HttpServer.Builder uiServerbuilder = createWebServerBuilder("hiveserver2", webHost, webUIPort, 
+              webUIMaxThreads, hiveConf);
+          uiServerbuilder.addServlet("llap", LlapServlet.class);
+          uiServerbuilder.addServlet("jdbcjar", JdbcJarDownloadServlet.class);
+          uiServerbuilder.setContextRootRewriteTarget(HS2_WEBUI_ROOT_URI);
 
           String webUIAuthMethodConfig = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_AUTH_METHOD);
           WebUIAuthMethod webUIAuthMethod = getWebUIAuthMethod(webUIAuthMethodConfig);
           if (WebUIAuthMethod.LDAP == webUIAuthMethod) {
             ldapAuthService = new LdapAuthService(hiveConf, passwdAuthenticationProvider);
-            builder.addGlobalFilter("ldap", "/*", new LDAPAuthenticationFilter(ldapAuthService));
+            uiServerbuilder.addGlobalFilter("ldap", "/*", new LDAPAuthenticationFilter(ldapAuthService));
           }
-          webServer = builder.build();
-          webServer.addServlet("query_page", "/query_page.html", QueryProfileServlet.class);
-          webServer.addServlet("api", "/api/*", QueriesRESTfulAPIServlet.class);
+          uiWebServer = uiServerbuilder.build();
+          uiWebServer.addServlet("query_page", "/query_page.html", QueryProfileServlet.class);
+          uiWebServer.addServlet("api", "/api/*", QueriesRESTfulAPIServlet.class);
           if (ldapAuthService != null) {
-            webServer.addServlet("login", "/login", new ServletHolder(new LoginServlet(ldapAuthService)));
+            uiWebServer.addServlet("login", "/login", new ServletHolder(new LoginServlet(ldapAuthService)));
           }
         }
       }
@@ -544,6 +476,86 @@ public class HiveServer2 extends CompositeService {
     if ("hs2".equals(runWorkerIn) && numWorkers < 1) {
       LOG.warn("Invalid number of Compactor Worker threads({}) on HS2", numWorkers);
     }
+  }
+  
+  private HttpServer.Builder createWebServerBuilder(String name, String webHost, int webPort, int maxThreads, HiveConf hiveConf) 
+      throws IOException {
+    if (JspFactory.getDefaultFactory() == null) {
+      // Set the default JspFactory to avoid NPE while opening the home page
+      JspFactory.setDefaultFactory(new org.apache.jasper.runtime.JspFactoryImpl());
+    }
+    HttpServer.Builder builder = new HttpServer.Builder(name);
+    builder.setPort(webPort).setConf(hiveConf);
+    builder.setHost(webHost);
+    builder.setMaxThreads(maxThreads);
+    builder.setAdmins(hiveConf.getVar(ConfVars.USERS_IN_ADMIN_ROLE));
+    // SessionManager is initialized
+    builder.setContextAttribute("hive.sm", cliService.getSessionManager());
+    hiveConf.set("startcode", String.valueOf(System.currentTimeMillis()));
+    if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_SSL)) {
+      String keyStorePath = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PATH);
+      if (StringUtils.isBlank(keyStorePath)) {
+        throw new IllegalArgumentException(ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PATH.varname
+                + " Not configured for SSL connection");
+      }
+      builder.setKeyStorePassword(ShimLoader.getHadoopShims().getPassword(
+          hiveConf, ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PASSWORD.varname));
+      builder.setKeyStorePath(keyStorePath);
+      builder.setKeyStoreType(hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_TYPE));
+      builder.setKeyManagerFactoryAlgorithm(hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYMANAGERFACTORY_ALGORITHM));
+      builder.setExcludeCiphersuites(hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_EXCLUDE_CIPHERSUITES));
+      builder.setUseSSL(true);
+    }
+    if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_SPNEGO)) {
+      String spnegoPrincipal = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_SPNEGO_PRINCIPAL);
+      String spnegoKeytab = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_SPNEGO_KEYTAB);
+      if (StringUtils.isBlank(spnegoPrincipal) || StringUtils.isBlank(spnegoKeytab)) {
+        throw new IllegalArgumentException(ConfVars.HIVE_SERVER2_WEBUI_SPNEGO_PRINCIPAL.varname
+                + "/" + ConfVars.HIVE_SERVER2_WEBUI_SPNEGO_KEYTAB.varname
+                + " Not configured for SPNEGO authentication");
+      }
+      builder.setSPNEGOPrincipal(spnegoPrincipal);
+      builder.setSPNEGOKeytab(spnegoKeytab);
+      builder.setUseSPNEGO(true);
+    }
+    if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_ENABLE_CORS)) {
+      builder.setEnableCORS(true);
+      String allowedOrigins = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_CORS_ALLOWED_ORIGINS);
+      String allowedMethods = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_CORS_ALLOWED_METHODS);
+      String allowedHeaders = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_CORS_ALLOWED_HEADERS);
+      if (StringUtils.isBlank(allowedOrigins) || StringUtils.isBlank(allowedMethods) || StringUtils.isBlank(allowedHeaders)) {
+        throw new IllegalArgumentException("CORS enabled. But " +
+            ConfVars.HIVE_SERVER2_WEBUI_CORS_ALLOWED_ORIGINS.varname + "/" +
+            ConfVars.HIVE_SERVER2_WEBUI_CORS_ALLOWED_METHODS.varname + "/" +
+            ConfVars.HIVE_SERVER2_WEBUI_CORS_ALLOWED_HEADERS.varname + "/" +
+            " is not configured");
+      }
+      builder.setAllowedOrigins(allowedOrigins);
+      builder.setAllowedMethods(allowedMethods);
+      builder.setAllowedHeaders(allowedHeaders);
+      LOG.info("CORS enabled - allowed-origins: {} allowed-methods: {} allowed-headers: {}", allowedOrigins,
+          allowedMethods, allowedHeaders);
+    }
+    if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_XFRAME_ENABLED)){
+      builder.configureXFrame(true).setXFrameOption(hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_XFRAME_VALUE));
+    }
+    if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_PAM)) {
+      if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_SSL)) {
+        String hiveServer2PamServices = hiveConf.getVar(ConfVars.HIVE_SERVER2_PAM_SERVICES);
+        if (hiveServer2PamServices == null || hiveServer2PamServices.isEmpty()) {
+          throw new IllegalArgumentException(ConfVars.HIVE_SERVER2_PAM_SERVICES.varname + " are not configured.");
+        }
+        builder.setPAMAuthenticator(pamAuthenticator == null ? new PamAuthenticator(hiveConf) : pamAuthenticator);
+        builder.setUsePAM(true);
+      } else if (hiveConf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
+        builder.setPAMAuthenticator(pamAuthenticator == null ? new PamAuthenticator(hiveConf) : pamAuthenticator);
+        builder.setUsePAM(true);
+      } else {
+        throw new IllegalArgumentException(ConfVars.HIVE_SERVER2_WEBUI_USE_SSL.varname + " has false value. It is recommended to set to true when PAM is used.");
+      }
+    }
+    
+    return builder;
   }
 
   private WMFullResourcePlan createTestResourcePlan() {
@@ -804,12 +816,22 @@ public class HiveServer2 extends CompositeService {
       throw new ServiceException(e);
     }
 
-    if (webServer != null) {
+    if (uiWebServer != null) {
       try {
-        webServer.start();
-        LOG.info("Web UI has started on port " + webServer.getPort());
+        uiWebServer.start();
+        LOG.info("Web UI has started on port " + uiWebServer.getPort());
       } catch (Exception e) {
         LOG.error("Error starting Web UI: ", e);
+        throw new ServiceException(e);
+      }
+    }
+
+    if (leaderWebServer != null) {
+      try {
+        leaderWebServer.start();
+        LOG.info("Leader web server has started on port " + leaderWebServer.getPort());
+      } catch (Exception e) {
+        LOG.error("Error starting leader web server: ", e);
         throw new ServiceException(e);
       }
     }
@@ -1064,12 +1086,20 @@ public class HiveServer2 extends CompositeService {
       LOG.info("HS2 HA registry stopped");
       hs2HARegistry = null;
     }
-    if (webServer != null) {
+    if (uiWebServer != null) {
       try {
-        webServer.stop();
+        uiWebServer.stop();
         LOG.info("Web UI has stopped");
       } catch (Exception e) {
         LOG.error("Error stopping Web UI: ", e);
+      }
+    }
+    if (leaderWebServer != null) {
+      try {
+        leaderWebServer.stop();
+        LOG.info("Leader web server has stopped");
+      } catch (Exception e) {
+        LOG.error("Error stopping Leader web server: ", e);
       }
     }
     // Shutdown Metrics
