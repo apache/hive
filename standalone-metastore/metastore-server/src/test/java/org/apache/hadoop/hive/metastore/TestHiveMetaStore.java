@@ -3787,7 +3787,7 @@ public abstract class TestHiveMetaStore {
     final String mysql_type = "mysql";
     final String mysql_url = "jdbc:mysql://nightly1.apache.org:3306/hive1";
     final String postgres_type = "postgres";
-    final String postgres_url = "jdbc:postgresql://localhost:5432";
+    final String postgres_url = "jdbc:postgresql://localhost:5433";
 
     try {
       DataConnector connector = new DataConnector(connector_name1, mysql_type, mysql_url);
