@@ -1,0 +1,109 @@
+PREHOOK: query: explain
+select  
+   sum(ws_ext_discount_amt)  as `Excess Discount Amount` 
+from 
+    web_sales 
+   ,item 
+   ,date_dim
+where
+i_manufact_id = 269
+and i_item_sk = ws_item_sk 
+and d_date between '1998-03-18' and 
+        (cast('1998-03-18' as date) + 90 days)
+and d_date_sk = ws_sold_date_sk 
+and ws_ext_discount_amt  
+     > ( 
+         SELECT 
+            1.3 * avg(ws_ext_discount_amt) 
+         FROM 
+            web_sales 
+           ,date_dim
+         WHERE 
+              ws_item_sk = i_item_sk 
+          and d_date between '1998-03-18' and
+                             (cast('1998-03-18' as date) + 90 days)
+          and d_date_sk = ws_sold_date_sk 
+      ) 
+order by sum(ws_ext_discount_amt)
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@web_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select  
+   sum(ws_ext_discount_amt)  as `Excess Discount Amount` 
+from 
+    web_sales 
+   ,item 
+   ,date_dim
+where
+i_manufact_id = 269
+and i_item_sk = ws_item_sk 
+and d_date between '1998-03-18' and 
+        (cast('1998-03-18' as date) + 90 days)
+and d_date_sk = ws_sold_date_sk 
+and ws_ext_discount_amt  
+     > ( 
+         SELECT 
+            1.3 * avg(ws_ext_discount_amt) 
+         FROM 
+            web_sales 
+           ,date_dim
+         WHERE 
+              ws_item_sk = i_item_sk 
+          and d_date between '1998-03-18' and
+                             (cast('1998-03-18' as date) + 90 days)
+          and d_date_sk = ws_sold_date_sk 
+      ) 
+order by sum(ws_ext_discount_amt)
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@web_sales
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: web_sales
+          properties:
+            hive.sql.query SELECT SUM("t1"."ws_ext_discount_amt") AS "$f0"
+FROM (SELECT "ws_sold_date_sk", "ws_item_sk", "ws_ext_discount_amt"
+FROM (SELECT "ws_sold_date_sk", "ws_item_sk", "ws_ext_discount_amt"
+FROM "web_sales") AS "t"
+WHERE "ws_item_sk" IS NOT NULL AND ("ws_sold_date_sk" IS NOT NULL AND "ws_ext_discount_amt" IS NOT NULL)) AS "t1"
+INNER JOIN (SELECT "i_item_sk"
+FROM (SELECT "i_item_sk", "i_manufact_id"
+FROM "item") AS "t2"
+WHERE "i_manufact_id" = 269 AND "i_item_sk" IS NOT NULL) AS "t4" ON "t1"."ws_item_sk" = "t4"."i_item_sk"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_date"
+FROM "date_dim") AS "t5"
+WHERE CAST("d_date" AS TIMESTAMP(9)) BETWEEN TIMESTAMP '1998-03-18 00:00:00.000000000' AND TIMESTAMP '1998-06-16 00:00:00.000000000' AND "d_date_sk" IS NOT NULL) AS "t7" ON "t1"."ws_sold_date_sk" = "t7"."d_date_sk"
+INNER JOIN (SELECT 1.3 * CAST(SUM("t10"."ws_ext_discount_amt") / COUNT("t10"."ws_ext_discount_amt") AS DECIMAL(11, 6)) AS "_o__c0", "t10"."ws_item_sk"
+FROM (SELECT "ws_sold_date_sk", "ws_item_sk", "ws_ext_discount_amt"
+FROM (SELECT "ws_sold_date_sk", "ws_item_sk", "ws_ext_discount_amt"
+FROM "web_sales") AS "t8"
+WHERE "ws_item_sk" IS NOT NULL AND "ws_sold_date_sk" IS NOT NULL) AS "t10"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_date"
+FROM "date_dim") AS "t11"
+WHERE CAST("d_date" AS TIMESTAMP(9)) BETWEEN TIMESTAMP '1998-03-18 00:00:00.000000000' AND TIMESTAMP '1998-06-16 00:00:00.000000000' AND "d_date_sk" IS NOT NULL) AS "t13" ON "t10"."ws_sold_date_sk" = "t13"."d_date_sk"
+GROUP BY "t10"."ws_item_sk"
+HAVING CAST(SUM("t10"."ws_ext_discount_amt") / COUNT("t10"."ws_ext_discount_amt") AS DECIMAL(11, 6)) IS NOT NULL) AS "t16" ON "t4"."i_item_sk" = "t16"."ws_item_sk" AND "t1"."ws_ext_discount_amt" > "t16"."_o__c0"
+            hive.sql.query.fieldNames $f0
+            hive.sql.query.fieldTypes decimal(17,2)
+            hive.sql.query.split false
+          Select Operator
+            expressions: $f0 (type: decimal(17,2))
+            outputColumnNames: _col0
+            ListSink
+
