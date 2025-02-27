@@ -24,12 +24,9 @@ import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.curator.ensemble.fixed.FixedEnsembleProvider;
 import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.retry.RetryOneTime;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.SSLZookeeperFactory;
+import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapUtil;
@@ -45,12 +42,6 @@ import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Id;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.apache.hadoop.security.token.delegation.ZKDelegationTokenSecretManager.ZK_DTSM_ZK_SSL_ENABLED;
-import static org.apache.hadoop.security.token.delegation.ZKDelegationTokenSecretManager.ZK_DTSM_ZK_SSL_KEYSTORE_LOCATION;
-import static org.apache.hadoop.security.token.delegation.ZKDelegationTokenSecretManager.ZK_DTSM_ZK_SSL_KEYSTORE_PASSWORD;
-import static org.apache.hadoop.security.token.delegation.ZKDelegationTokenSecretManager.ZK_DTSM_ZK_SSL_TRUSTSTORE_LOCATION;
-import static org.apache.hadoop.security.token.delegation.ZKDelegationTokenSecretManager.ZK_DTSM_ZK_SSL_TRUSTSTORE_PASSWORD;
 
 public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdentifier>
   implements SigningSecretManager {
@@ -290,23 +281,20 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
 
     CuratorFramework zkClient = null;
     if (HiveConf.getBoolVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_ENABLED)) {
-      zkClient = CuratorFrameworkFactory.builder().namespace(null)
-              .retryPolicy(new RetryOneTime(10)).sessionTimeoutMs(stime).connectionTimeoutMs(ctime)
-              .ensembleProvider(new FixedEnsembleProvider(conf.get(ZK_DTSM_ZK_CONNECTION_STRING)))
-              .zookeeperFactory(new SSLZookeeperFactory(
-                      HiveConf.getBoolVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_ENABLED),
-                      HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_KEYSTORE_LOCATION),
-                      HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_KEYSTORE_PASSWORD),
-                      "",
-                      HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_TRUSTSTORE_LOCATION),
-                      HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_TRUSTSTORE_PASSWORD),
-                      "")
-              ).build();
-    } else {
-      zkClient = CuratorFrameworkFactory.builder().namespace(null)
-              .retryPolicy(new RetryOneTime(10)).sessionTimeoutMs(stime).connectionTimeoutMs(ctime)
-              .ensembleProvider(new FixedEnsembleProvider(conf.get(ZK_DTSM_ZK_CONNECTION_STRING)))
+      ZooKeeperHiveHelper zkHiveHelper = ZooKeeperHiveHelper.builder().quorum(conf.get(ZK_DTSM_ZK_CONNECTION_STRING))
+              .maxRetries(1).baseSleepTime(10).sessionTimeout(stime).connectionTimeout(ctime)
+              .sslEnabled(HiveConf.getBoolVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_ENABLED))
+              .keyStoreLocation(HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_KEYSTORE_LOCATION))
+              .keyStorePassword(HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_KEYSTORE_PASSWORD))
+              .trustStoreLocation(HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_TRUSTSTORE_LOCATION))
+              .trustStorePassword(HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_TRUSTSTORE_PASSWORD))
               .build();
+      zkClient = zkHiveHelper.getNewZookeeperClient();
+    } else {
+      ZooKeeperHiveHelper zkHiveHelper = ZooKeeperHiveHelper.builder().quorum(conf.get(ZK_DTSM_ZK_CONNECTION_STRING))
+              .maxRetries(1).baseSleepTime(10).sessionTimeout(stime).connectionTimeout(ctime)
+              .build();
+      zkClient = zkHiveHelper.getNewZookeeperClient();
     }
 
     // Hardcoded from a private field in ZKDelegationTokenSecretManager.
