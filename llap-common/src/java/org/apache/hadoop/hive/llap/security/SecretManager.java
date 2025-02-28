@@ -281,20 +281,18 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
 
     CuratorFramework zkClient = null;
     if (HiveConf.getBoolVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_ENABLED)) {
-      ZooKeeperHiveHelper zkHiveHelper = ZooKeeperHiveHelper.builder().quorum(conf.get(ZK_DTSM_ZK_CONNECTION_STRING))
+      zkClient = ZooKeeperHiveHelper.builder().quorum(conf.get(ZK_DTSM_ZK_CONNECTION_STRING))
               .maxRetries(1).baseSleepTime(10).sessionTimeout(stime).connectionTimeout(ctime)
               .sslEnabled(HiveConf.getBoolVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_ENABLED))
               .keyStoreLocation(HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_KEYSTORE_LOCATION))
               .keyStorePassword(HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_KEYSTORE_PASSWORD))
               .trustStoreLocation(HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_TRUSTSTORE_LOCATION))
               .trustStorePassword(HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_TRUSTSTORE_PASSWORD))
-              .build();
-      zkClient = zkHiveHelper.getNewZookeeperClient();
+              .build().getNewZookeeperClient();
     } else {
-      ZooKeeperHiveHelper zkHiveHelper = ZooKeeperHiveHelper.builder().quorum(conf.get(ZK_DTSM_ZK_CONNECTION_STRING))
+      zkClient = ZooKeeperHiveHelper.builder().quorum(conf.get(ZK_DTSM_ZK_CONNECTION_STRING))
               .maxRetries(1).baseSleepTime(10).sessionTimeout(stime).connectionTimeout(ctime)
-              .build();
-      zkClient = zkHiveHelper.getNewZookeeperClient();
+              .build().getNewZookeeperClient();
     }
 
     // Hardcoded from a private field in ZKDelegationTokenSecretManager.
