@@ -74,21 +74,8 @@ public class IcebergRepository extends AbstractRepository implements QueryHistor
   @Override
   public void init(HiveConf conf, Schema schema) {
     super.init(conf, schema);
-    icebergExecutor = Executors.newFixedThreadPool(getIcebergWorkerPoolSize(),
+    icebergExecutor = Executors.newFixedThreadPool(2,
         (new ThreadFactoryBuilder()).setDaemon(true).setNameFormat(ICEBERG_WORKER_THREAD_NAME_FORMAT).build());
-  }
-
-  /**
-   * Calculates the pool size for the ExecutorService to be passed to the committer.
-   * The thread pool adheres to the configuration settings for Iceberg worker pools.
-   * @return pool size for iceberg worker pool
-   */
-  private int getIcebergWorkerPoolSize() {
-    String value = System.getProperty("iceberg.worker.num-threads");
-    if (value == null) {
-      value = System.getenv("ICEBERG_WORKER_NUM_THREADS");
-    }
-    return value == null ? Math.max(2, Runtime.getRuntime().availableProcessors()) : Integer.parseInt(value);
   }
 
   @Override

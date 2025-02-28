@@ -109,7 +109,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     return OUTPUT_COMMITTER;
   }
 
-  private ExecutorService snapshotUpdateExecutor;
+  private ExecutorService workerPool;
 
   @Override
   public void setupJob(JobContext jobContext) {
@@ -225,11 +225,11 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
   }
 
   /**
-   * Receives a custom executor to be used for SnapshotUpdate.commit() operations.
-   * @param snapshotUpdateExecutor to pass to SnapshotUpdates
+   * Receives a custom workerPool to be used for SnapshotUpdate.commit() operations.
+   * @param workerPool to pass to SnapshotUpdates
    */
-  public void setSnapshotUpdateExecutor(ExecutorService snapshotUpdateExecutor) {
-    this.snapshotUpdateExecutor = snapshotUpdateExecutor;
+  public void setWorkerPool(ExecutorService workerPool) {
+    this.workerPool = workerPool;
   }
 
   /**
@@ -598,8 +598,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * @param update the SnapshotUpdate of any kind (e.g. AppendFiles, DeleteFiles, etc.)
    */
   private void commit(SnapshotUpdate<?> update) {
-    if (snapshotUpdateExecutor != null) {
-      update.scanManifestsWith(snapshotUpdateExecutor);
+    if (workerPool != null) {
+      update.scanManifestsWith(workerPool);
     }
     update.commit();
   }

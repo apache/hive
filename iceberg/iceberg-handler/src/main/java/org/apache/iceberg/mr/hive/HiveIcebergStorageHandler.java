@@ -925,7 +925,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public void storageHandlerCommit(Properties commitProperties, Operation operation, ExecutorService suppliedExecutor)
+  public void storageHandlerCommit(Properties commitProperties, Operation operation, ExecutorService executorService)
       throws HiveException {
     String tableName = commitProperties.getProperty(Catalogs.NAME);
     String location = commitProperties.getProperty(Catalogs.LOCATION);
@@ -940,7 +940,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       return;
     }
     HiveIcebergOutputCommitter committer = getOutputCommitter();
-    committer.setSnapshotUpdateExecutor(suppliedExecutor);
+    committer.setWorkerPool(executorService);
     try {
       committer.commitJobs(jobContextList, operation);
     } catch (Throwable e) {
