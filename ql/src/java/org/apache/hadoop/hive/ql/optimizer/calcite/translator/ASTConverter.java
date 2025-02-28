@@ -1359,7 +1359,11 @@ public class ASTConverter {
 
     @Override
     protected ASTNode transformInOperands(List<ASTNode> inNodes) {
-      ASTNode inNode = SqlFunctionConverter.buildAST(HiveIn.INSTANCE, inNodes, type);
+      if (inNodes.size() == 2) {
+        return SqlFunctionConverter
+            .buildAST(negate ? SqlStdOperatorTable.NOT_EQUALS : SqlStdOperatorTable.EQUALS, inNodes, type);
+      }
+      ASTNode inNode = SqlFunctionConverter.buildAST( HiveIn.INSTANCE, inNodes, type);
       return negate ?
           SqlFunctionConverter.buildAST(SqlStdOperatorTable.NOT, Collections.singletonList(inNode), type) :
           inNode;
