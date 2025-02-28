@@ -153,7 +153,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
-                  filterExpr: ((cdate <> DATE'1969-07-14') and (cdate <> DATE'1969-10-26') and (cdate <> DATE'1970-01-21')) (type: boolean)
+                  filterExpr: (not (cdate) IN (DATE'1969-07-14', DATE'1969-10-26', DATE'1970-01-21')) (type: boolean)
                   Statistics: Num rows: 12289 Data size: 339304 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -161,15 +161,15 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDateColNotEqualDateScalar(col 3:date, val -171), FilterDateColNotEqualDateScalar(col 3:date, val -67), FilterDateColNotEqualDateScalar(col 3:date, val 20))
-                    predicate: ((cdate <> DATE'1969-07-14') and (cdate <> DATE'1969-10-26') and (cdate <> DATE'1970-01-21')) (type: boolean)
-                    Statistics: Num rows: 12289 Data size: 339304 Basic stats: COMPLETE Column stats: COMPLETE
+                        predicateExpression: SelectColumnIsFalse(col 6:boolean)(children: LongColumnInList(col 3, values [-171, -67, 20]) -> 6:boolean)
+                    predicate: (not (cdate) IN (DATE'1969-07-14', DATE'1969-10-26', DATE'1970-01-21')) (type: boolean)
+                    Statistics: Num rows: 6144 Data size: 169680 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: []
-                      Statistics: Num rows: 12289 Data size: 339304 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 6144 Data size: 169680 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:
@@ -370,7 +370,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
-                  filterExpr: ((cdecimal1 <> -3367.6517567568) and (cdecimal1 <> 881.0135135135) and (cdecimal1 <> 2365.8945945946)) (type: boolean)
+                  filterExpr: ((not (cdecimal1) IN (-3367.6517567568, 2365.8945945946)) and (not (cdecimal1) IN (881.0135135135))) (type: boolean)
                   Statistics: Num rows: 12289 Data size: 1027600 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -378,15 +378,15 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDecimalColNotEqualDecimalScalar(col 1:decimal(20,10), val -3367.6517567568), FilterDecimalColNotEqualDecimalScalar(col 1:decimal(20,10), val 881.0135135135), FilterDecimalColNotEqualDecimalScalar(col 1:decimal(20,10), val 2365.8945945946))
-                    predicate: ((cdecimal1 <> -3367.6517567568) and (cdecimal1 <> 881.0135135135) and (cdecimal1 <> 2365.8945945946)) (type: boolean)
-                    Statistics: Num rows: 12289 Data size: 1027600 Basic stats: COMPLETE Column stats: COMPLETE
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsFalse(col 6:boolean)(children: DecimalColumnInList(col 1:decimal(20,10), values [-3367.6517567568, 2365.8945945946]) -> 6:boolean), SelectColumnIsFalse(col 7:boolean)(children: DecimalColumnInList(col 1:decimal(20,10), values [881.0135135135]) -> 7:boolean))
+                    predicate: ((not (cdecimal1) IN (-3367.6517567568, 2365.8945945946)) and (not (cdecimal1) IN (881.0135135135))) (type: boolean)
+                    Statistics: Num rows: 12283 Data size: 1027152 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: []
-                      Statistics: Num rows: 12289 Data size: 1027600 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 12283 Data size: 1027152 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:

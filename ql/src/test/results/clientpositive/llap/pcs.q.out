@@ -665,7 +665,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: (ds) IN ('2000-04-08', '2000-04-09') (type: boolean)
+                  filterExpr: (ds is not null and (ds) IN ('2000-04-08', '2000-04-09')) (type: boolean)
                   Statistics: Num rows: 40 Data size: 7520 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Select Operator
