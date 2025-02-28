@@ -491,17 +491,26 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public Map<String, String> getBasicStatistics(Partish partish) {
+    return getBasicStatistics(partish, getStatsSource());
+  }
+  
+  private Map<String, String> getBasicStatistics(Partish partish, String statsSource) {
     Map<String, String> stats = Maps.newHashMap();
 
-    if (!getStatsSource().equals(HiveMetaHook.ICEBERG)) {
-      return partish.getPartParameters();
-    }
     org.apache.hadoop.hive.ql.metadata.Table hmsTable = partish.getTable();
     // For write queries where rows got modified, don't fetch from cache as values could have changed.
     Table table = getTable(hmsTable);
-
     Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, hmsTable);
-    if (snapshot != null) {
+
+    if (snapshot == null) {
+      stats.put(StatsSetupConst.NUM_FILES, "0");
+      stats.put(StatsSetupConst.ROW_COUNT, "0");
+      stats.put(StatsSetupConst.TOTAL_SIZE, "0");
+      
+    } else if (!statsSource.equals(HiveMetaHook.ICEBERG)) {
+      stats = partish.getPartParameters();
+    
+    } else {
       Map<String, String> summary = getPartishSummary(partish, table, snapshot);
       if (summary != null) {
         if (summary.containsKey(TOTAL_DATA_FILES_PROP)) {
@@ -525,10 +534,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
           stats.put(StatsSetupConst.TOTAL_SIZE, summary.get(TOTAL_FILE_SIZE_PROP));
         }
       }
-    } else {
-      stats.put(StatsSetupConst.NUM_FILES, "0");
-      stats.put(StatsSetupConst.ROW_COUNT, "0");
-      stats.put(StatsSetupConst.TOTAL_SIZE, "0");
     }
     return stats;
   }
@@ -536,7 +541,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public Map<String, String> computeBasicStatistics(Partish partish) {
     if (!getStatsSource().equals(HiveMetaHook.ICEBERG)) {
-      return partish.getPartParameters();
+      Map<String, String> stats = getBasicStatistics(partish, HiveMetaHook.ICEBERG);
+      stats.remove(StatsSetupConst.ROW_COUNT);
+      return stats;
     }
     org.apache.hadoop.hive.ql.metadata.Table hmsTable = partish.getTable();
     // For write queries where rows got modified, don't fetch from cache as values could have changed.
@@ -612,8 +619,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public boolean canSetColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    return table.currentSnapshot() != null && getStatsSource().equals(HiveMetaHook.ICEBERG);
+    return getStatsSource().equals(HiveMetaHook.ICEBERG);
   }
 
   @Override
@@ -646,7 +652,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
               snapshotSequenceNumber,
               ByteBuffer.wrap(serializeColStats),
               PuffinCompressionCodec.NONE,
-              ImmutableMap.of("partition-name", 
+              ImmutableMap.of("partition-name",
                   String.valueOf(statsObj.getStatsDesc().getPartName()))
             ));
         });
