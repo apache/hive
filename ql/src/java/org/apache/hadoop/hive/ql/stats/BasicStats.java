@@ -231,8 +231,8 @@ public class BasicStats {
 
   public BasicStats(Partish p) {
     partish = p;
+    tryGetBasicStatsFromStorageHandler();
 
-    checkForBasicStatsFromStorageHandler();
     rowCount = parseLong(StatsSetupConst.ROW_COUNT);
     rawDataSize = parseLong(StatsSetupConst.RAW_DATA_SIZE);
     totalSize = parseLong(StatsSetupConst.TOTAL_SIZE);
@@ -272,10 +272,11 @@ public class BasicStats {
 
   }
 
-  private void checkForBasicStatsFromStorageHandler() {
+  private void tryGetBasicStatsFromStorageHandler() {
     if (partish.getTable() != null && partish.getTable().isNonNative() &&
         partish.getTable().getStorageHandler().canProvideBasicStatistics()) {
-      partish.getPartParameters().putAll(partish.getTable().getStorageHandler().getBasicStatistics(partish));
+      partish.getPartParameters().putAll(
+          partish.getTable().getStorageHandler().getBasicStatistics(partish));
     }
   }
 
