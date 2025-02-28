@@ -335,7 +335,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table__879
-                  filterExpr: (col_24 is not null or (col_24) IN ('part1', 'part2', 'part3')) (type: boolean)
+                  filterExpr: (col_24 is not null or (col_24 is not null and (col_24) IN ('part1', 'part2', 'part3'))) (type: boolean)
                   Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -359,7 +359,7 @@ STAGE PLANS:
                         auto parallelism: true
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (col_24) IN ('part1', 'part2', 'part3') (type: boolean)
+                    predicate: (col_24 is not null and (col_24) IN ('part1', 'part2', 'part3')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: col_24 (type: string), col_21 (type: string)

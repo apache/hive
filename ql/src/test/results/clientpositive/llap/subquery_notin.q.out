@@ -399,7 +399,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col7
                 Statistics: Num rows: 34 Data size: 8162 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (_col4 is null or (_col4 = 0L) or (_col0 is null or _col7 is not null or (_col5 < _col4)) is not true) (type: boolean)
+                  predicate: ((_col0 is null or _col7 is not null or (_col5 < _col4)) is not true or _col4 is null or (_col4 = 0L)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 5764 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col1 (type: string), _col0 (type: string), _col2 (type: int)
@@ -1006,7 +1006,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col7
                 Statistics: Num rows: 18 Data size: 4326 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (_col4 is null or (_col4 = 0L) or (_col2 is null or _col7 is not null or (_col5 < _col4)) is not true) (type: boolean)
+                  predicate: ((_col2 is null or _col7 is not null or (_col5 < _col4)) is not true or _col4 is null or (_col4 = 0L)) (type: boolean)
                   Statistics: Num rows: 13 Data size: 3127 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col1 (type: string), _col0 (type: string), _col2 (type: int)
@@ -1759,7 +1759,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10, _col11, _col13
                 Statistics: Num rows: 26 Data size: 16614 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (_col10 is null or (_col10 = 0L) or (_col5 is null or _col13 is not null or (_col11 < _col10)) is not true) (type: boolean)
+                  predicate: ((_col5 is null or _col13 is not null or (_col11 < _col10)) is not true or _col10 is null or (_col10 = 0L)) (type: boolean)
                   Statistics: Num rows: 14 Data size: 8946 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
@@ -2292,7 +2292,7 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
 HiveAggregate(group=[{}], agg#0=[count()])
-  HiveFilter(condition=[OR(SEARCH($2, Sarg[0; NULL AS TRUE]), IS NOT TRUE(OR(IS NULL($1), IS NOT NULL($6), <($3, $2))))])
+  HiveFilter(condition=[OR(IS NOT TRUE(OR(IS NULL($1), IS NOT NULL($6), <($3, $2))), SEARCH($2, Sarg[0; NULL AS TRUE]))])
     HiveProject(p_name=[$0], p_size=[$1], c=[$4], ck=[$5], $f15=[$2], p_partkey=[$6], literalTrue=[$7], p_name0=[$8])
       HiveJoin(condition=[AND(=($8, $0), =($2, $6))], joinType=[left], algorithm=[none], cost=[not available])
         HiveJoin(condition=[=($3, $0)], joinType=[left], algorithm=[none], cost=[not available])
@@ -2415,7 +2415,7 @@ STAGE PLANS:
                   outputColumnNames: _col1, _col2, _col3, _col6
                   Statistics: Num rows: 26 Data size: 624 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (_col2 is null or (_col2 = 0L) or (_col1 is null or _col6 is not null or (_col3 < _col2)) is not true) (type: boolean)
+                    predicate: ((_col1 is null or _col6 is not null or (_col3 < _col2)) is not true or _col2 is null or (_col2 = 0L)) (type: boolean)
                     Statistics: Num rows: 14 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Statistics: Num rows: 14 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2708,7 +2708,7 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(p_partkey=[$0], p_name=[$1], p_mfgr=[$2], p_brand=[$3], p_type=[$4], p_size=[$5], p_container=[$6], p_retailprice=[$7], p_comment=[$8])
-  HiveFilter(condition=[OR(SEARCH($9, Sarg[0; NULL AS TRUE]), IS NOT TRUE(OR(IS NULL($1), IS NOT NULL($13), <($10, $9))))])
+  HiveFilter(condition=[OR(IS NOT TRUE(OR(IS NULL($1), IS NOT NULL($13), <($10, $9))), SEARCH($9, Sarg[0; NULL AS TRUE]))])
     HiveProject(p_partkey=[$0], p_name=[$1], p_mfgr=[$2], p_brand=[$3], p_type=[$4], p_size=[$5], p_container=[$6], p_retailprice=[$7], p_comment=[$8], c=[$13], ck=[$14], $f17=[$10], p_name0=[$15], literalTrue=[$16], p_size0=[$17], p_partkey0=[$18])
       HiveJoin(condition=[AND(=($1, $15), =($17, $5), =($10, $18))], joinType=[left], algorithm=[none], cost=[not available])
         HiveJoin(condition=[AND(=($11, $5), =($9, $12))], joinType=[left], algorithm=[none], cost=[not available])
@@ -2830,7 +2830,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col13
                   Statistics: Num rows: 52 Data size: 32828 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (_col9 is null or (_col9 = 0L) or (_col1 is null or _col13 is not null or (_col10 < _col9)) is not true) (type: boolean)
+                    predicate: ((_col1 is null or _col13 is not null or (_col10 < _col9)) is not true or _col9 is null or (_col9 = 0L)) (type: boolean)
                     Statistics: Num rows: 52 Data size: 32828 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
@@ -3020,7 +3020,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col11, _col12, _col14
                 Statistics: Num rows: 26 Data size: 16614 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (_col11 is null or (_col11 = 0L) or (_col1 is null or _col14 is not null or (_col12 < _col11)) is not true) (type: boolean)
+                  predicate: ((_col1 is null or _col14 is not null or (_col12 < _col11)) is not true or _col11 is null or (_col11 = 0L)) (type: boolean)
                   Statistics: Num rows: 14 Data size: 8946 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
@@ -3194,7 +3194,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col4, _col5, _col7
                 Statistics: Num rows: 26 Data size: 6370 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (_col4 is null or (_col4 = 0L) or (_col1 is null or _col7 is not null or (_col5 < _col4)) is not true) (type: boolean)
+                  predicate: ((_col1 is null or _col7 is not null or (_col5 < _col4)) is not true or _col4 is null or (_col4 = 0L)) (type: boolean)
                   Statistics: Num rows: 15 Data size: 3675 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string)
@@ -3368,7 +3368,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col4, _col5, _col7
                 Statistics: Num rows: 26 Data size: 6370 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (_col4 is null or (_col4 = 0L) or (_col1 is null or _col7 is not null or (_col5 < _col4)) is not true) (type: boolean)
+                  predicate: ((_col1 is null or _col7 is not null or (_col5 < _col4)) is not true or _col4 is null or (_col4 = 0L)) (type: boolean)
                   Statistics: Num rows: 14 Data size: 3430 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string)
@@ -3884,7 +3884,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col3, _col4, _col6
                 Statistics: Num rows: 500 Data size: 99000 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (_col3 is null or (_col3 = 0L) or (_col1 is null or _col6 is not null or (_col4 < _col3)) is not true) (type: boolean)
+                  predicate: ((_col1 is null or _col6 is not null or (_col4 < _col3)) is not true or _col3 is null or (_col3 = 0L)) (type: boolean)
                   Statistics: Num rows: 252 Data size: 49896 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string)
@@ -5350,7 +5350,7 @@ STAGE PLANS:
                   outputColumnNames: _col1, _col2, _col3, _col6
                   Statistics: Num rows: 29 Data size: 688 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (_col2 is null or (_col2 = 0L) or (_col1 is null or _col6 is not null or (_col3 < _col2)) is not true) (type: boolean)
+                    predicate: ((_col1 is null or _col6 is not null or (_col3 < _col2)) is not true or _col2 is null or (_col2 = 0L)) (type: boolean)
                     Statistics: Num rows: 16 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Statistics: Num rows: 16 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5653,7 +5653,7 @@ POSTHOOK: Input: default@t2_n0
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(c1=[$0])
-  HiveFilter(condition=[OR(SEARCH($1, Sarg[0; NULL AS TRUE]), IS NOT TRUE(OR(IS NULL($0), IS NOT NULL($5), <($2, $1))))])
+  HiveFilter(condition=[OR(IS NOT TRUE(OR(IS NULL($0), IS NOT NULL($5), <($2, $1))), SEARCH($1, Sarg[0; NULL AS TRUE]))])
     HiveProject(c1=[$0], c=[$4], ck=[$5], c20=[$2], c10=[$6], literalTrue=[$7], c100=[$8])
       HiveJoin(condition=[AND(=($0, $6), =($2, $8))], joinType=[left], algorithm=[none], cost=[not available])
         HiveJoin(condition=[=($1, $3)], joinType=[left], algorithm=[none], cost=[not available])
@@ -5795,7 +5795,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1, _col2, _col5
                   Statistics: Num rows: 5 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (_col1 is null or (_col1 = 0L) or (_col0 is null or _col5 is not null or (_col2 < _col1)) is not true) (type: boolean)
+                    predicate: ((_col0 is null or _col5 is not null or (_col2 < _col1)) is not true or _col1 is null or (_col1 = 0L)) (type: boolean)
                     Statistics: Num rows: 5 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: int)
@@ -6033,7 +6033,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col3, _col4, _col6
                 Statistics: Num rows: 4 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (_col3 is null or (_col3 = 0L) or (_col1 is null or _col6 is not null or (_col4 < _col3)) is not true) (type: boolean)
+                  predicate: ((_col1 is null or _col6 is not null or (_col4 < _col3)) is not true or _col3 is null or (_col3 = 0L)) (type: boolean)
                   Statistics: Num rows: 4 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int)
@@ -6267,7 +6267,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col3, _col4, _col5
                 Statistics: Num rows: 2 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (_col3 is null or (_col3 = 0L) or (_col1 is null or _col5 is not null or (_col4 < _col3)) is not true) (type: boolean)
+                  predicate: ((_col1 is null or _col5 is not null or (_col4 < _col3)) is not true or _col3 is null or (_col3 = 0L)) (type: boolean)
                   Statistics: Num rows: 2 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: int)
@@ -6474,7 +6474,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col3, _col4, _col5
                 Statistics: Num rows: 3 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (_col3 is null or (_col3 = 0L) or (_col1 is null or _col5 is not null or (_col4 < _col3)) is not true) (type: boolean)
+                  predicate: ((_col1 is null or _col5 is not null or (_col4 < _col3)) is not true or _col3 is null or (_col3 = 0L)) (type: boolean)
                   Statistics: Num rows: 3 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int)
@@ -6643,7 +6643,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col3, _col4, _col6
                 Statistics: Num rows: 3 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (_col3 is null or (_col3 = 0L) or (_col0 is null or _col6 is not null or (_col4 < _col3)) is not true) (type: boolean)
+                  predicate: ((_col0 is null or _col6 is not null or (_col4 < _col3)) is not true or _col3 is null or (_col3 = 0L)) (type: boolean)
                   Statistics: Num rows: 3 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int)
@@ -7170,7 +7170,7 @@ STAGE PLANS:
                 residual filter predicates: {(_col1 > _col7)}
                 Statistics: Num rows: 762 Data size: 172813 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (_col3 is null or (_col3 = 0L) or (_col0 is null or _col6 is not null or (_col4 < _col3)) is not true) (type: boolean)
+                  predicate: ((_col0 is null or _col6 is not null or (_col4 < _col3)) is not true or _col3 is null or (_col3 = 0L)) (type: boolean)
                   Statistics: Num rows: 383 Data size: 86937 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
