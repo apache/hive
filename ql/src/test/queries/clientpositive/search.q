@@ -30,6 +30,14 @@ select * from t1 where a in (1);
 explain
 select * from t1 where a in (1);
 explain cbo
+select * from t1 where a is null or a in (1);
+explain
+select * from t1 where a is null or a in (1);
+explain cbo
+select * from t1 where a is null or a not in (1);
+explain
+select * from t1 where a is null or a not in (1);
+explain cbo
 select * from t1 where a in (1, 2, 3);
 explain
 select * from t1 where a in (1, 2, 3);
@@ -111,6 +119,10 @@ explain
 select * from t1 where a between 1 and 5 or a in (10, 12, 15) or a > 100;
 explain
 select * from t1 where a in (1);
+explain
+select * from t1 where a is null or a in (1);
+explain
+select * from t1 where a is null or a not in (1);
 explain
 select * from t1 where a in (1, 2, 3);
 explain

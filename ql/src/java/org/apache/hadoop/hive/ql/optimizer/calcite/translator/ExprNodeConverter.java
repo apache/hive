@@ -88,7 +88,9 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNot;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
@@ -560,8 +562,12 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
 
     @Override
     protected ExprNodeDesc transformInOperands(List<ExprNodeDesc> inNodes) {
-      GenericUDF hiveInUdf = SqlFunctionConverter.getHiveUDF(HiveIn.INSTANCE, type, inNodes.size());
       try {
+        if (inNodes.size() == 2) {
+          return ExprNodeGenericFuncDesc
+              .newInstance(negate ? new GenericUDFOPNotEqual() : new GenericUDFOPEqual(), inNodes);
+        }
+        GenericUDF hiveInUdf = SqlFunctionConverter.getHiveUDF(HiveIn.INSTANCE, type, inNodes.size());
         ExprNodeGenericFuncDesc inFuncDesc = ExprNodeGenericFuncDesc.newInstance(hiveInUdf, inNodes);
         return negate ?
             ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPNot(), Collections.singletonList(inFuncDesc)) :
