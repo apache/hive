@@ -72,9 +72,8 @@ public class TransformSpec {
     this.transformParam = transformParam;
   }
 
-  public TransformSpec withFieldName(String fieldName) {
+  public void setFieldName(String fieldName) {
     this.fieldName = fieldName;
-    return this;
   }
 
   public String getFieldName() {

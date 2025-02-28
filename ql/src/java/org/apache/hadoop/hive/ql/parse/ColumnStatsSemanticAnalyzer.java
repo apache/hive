@@ -128,7 +128,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     try {
       // for static partition, it may not exist when HIVE_STATS_COL_AUTOGATHER is
       // set to true
-      if (context == null) {
+      if (context == null && partValsSpecified > 0) {
         if ((partValsSpecified == tbl.getPartitionKeys().size())
             && (db.getPartition(tbl, partSpec, false, null, false) == null)) {
           throw new SemanticException(ErrorMsg.COLUMNSTATSCOLLECTOR_INVALID_PARTITION.getMsg()
@@ -175,7 +175,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       )
       .collect(Collectors.joining(", "))
     );
-      
+
     // attach the predicate and group by to the return clause
     return predPresent ? whereClause.append(groupByClause) : groupByClause;
   }
@@ -239,7 +239,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       HiveConf conf, Map<String, String> partSpec, boolean isPartitionStats,
       boolean useTableValues) throws SemanticException {
     StringBuilder rewrittenQueryBuilder = new StringBuilder("select ");
-    
+
     StringBuilder columnNamesBuilder = new StringBuilder();
     StringBuilder columnDummyValuesBuilder = new StringBuilder();
     for (int i = 0; i < colNames.size(); i++) {
@@ -603,7 +603,8 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       checkForPartitionColumns(
           colNames, Utilities.getColumnNamesFromFieldSchema(tbl.getPartitionKeys()));
       validateSpecifiedColumnNames(colNames);
-      if (conf.getBoolVar(ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS) && tbl.isPartitioned()) {
+      if (conf.getBoolVar(ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS) && tbl.isPartitioned()
+            && (!tbl.isNonNative() || tbl.getStorageHandler().canSetColStatistics(tbl))) {
         isPartitionStats = true;
       }
 
@@ -671,7 +672,8 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     checkForPartitionColumns(colNames,
         Utilities.getColumnNamesFromFieldSchema(tbl.getPartitionKeys()));
     validateSpecifiedColumnNames(colNames);
-    if (conf.getBoolVar(ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS) && tbl.isPartitioned()) {
+    if (conf.getBoolVar(ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS) && tbl.isPartitioned()
+          && (!tbl.isNonNative() || tbl.getStorageHandler().canSetColStatistics(tbl))) {
       isPartitionStats = true;
     }
 
