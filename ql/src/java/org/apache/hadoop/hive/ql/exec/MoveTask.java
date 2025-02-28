@@ -1157,7 +1157,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     if (storageHandlerClass != null) {
       HiveStorageHandler storageHandler = HiveUtils.getStorageHandler(configuration, storageHandlerClass);
       if (storageHandler.commitInMoveTask()) {
-        storageHandler.storageHandlerCommit(commitProperties, operation);
+        storageHandler.storageHandlerCommit(commitProperties, operation, null);
         return true;
       }
     }

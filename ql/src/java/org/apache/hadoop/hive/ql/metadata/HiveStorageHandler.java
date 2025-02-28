@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
+import java.util.concurrent.ExecutorService;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
@@ -613,15 +614,17 @@ public interface HiveStorageHandler extends Configurable {
    * Commits the inserts for the non-native tables. Used in the {@link org.apache.hadoop.hive.ql.exec.MoveTask}.
    * @param commitProperties Commit properties which are needed for the handler based commit
    * @param operation the operation type
+   * @param suppliedExecutor an ExecutorService to be used by the StorageHandler (optional)
    * @throws HiveException If there is an error during commit
    */
-  default void storageHandlerCommit(Properties commitProperties, Operation operation) throws HiveException {
+  default void storageHandlerCommit(Properties commitProperties, Operation operation, ExecutorService suppliedExecutor)
+      throws HiveException {
     throw new UnsupportedOperationException();
   }
 
   @Deprecated
   default void storageHandlerCommit(Properties commitProperties, boolean overwrite) throws HiveException {
-    storageHandlerCommit(commitProperties, overwrite ? Operation.IOW : Operation.OTHER);
+    storageHandlerCommit(commitProperties, overwrite ? Operation.IOW : Operation.OTHER, null);
   }
 
   /**

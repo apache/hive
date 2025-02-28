@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.queryhistory.repository;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.queryhistory.schema.Record;
+import org.apache.hadoop.hive.ql.queryhistory.schema.Schema;
 import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
@@ -53,10 +55,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class IcebergRepository extends AbstractRepository implements QueryHistoryRepository {
   private static final Logger LOG = LoggerFactory.getLogger(IcebergRepository.class);
   private static final String ICEBERG_STORAGE_HANDLER = "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler";
+  private static final String ICEBERG_WORKER_THREAD_NAME_FORMAT = "query-history-iceberg-worker-pool-%d";
 
   private HiveOutputFormat<?, ?> outputFormat;
   private Serializer serializer;
@@ -64,6 +69,27 @@ public class IcebergRepository extends AbstractRepository implements QueryHistor
   HiveStorageHandler storageHandler;
   @VisibleForTesting
   TableDesc tableDesc;
+  private ExecutorService icebergExecutor;
+
+  @Override
+  public void init(HiveConf conf, Schema schema) {
+    super.init(conf, schema);
+    icebergExecutor = Executors.newFixedThreadPool(getIcebergWorkerPoolSize(),
+        (new ThreadFactoryBuilder()).setDaemon(true).setNameFormat(ICEBERG_WORKER_THREAD_NAME_FORMAT).build());
+  }
+
+  /**
+   * Calculates the pool size for the ExecutorService to be passed to the committer.
+   * The thread pool adheres to the configuration settings for Iceberg worker pools.
+   * @return pool size for iceberg worker pool
+   */
+  private int getIcebergWorkerPoolSize() {
+    String value = System.getProperty("iceberg.worker.num-threads");
+    if (value == null) {
+      value = System.getenv("ICEBERG_WORKER_NUM_THREADS");
+    }
+    return value == null ? Math.max(2, Runtime.getRuntime().availableProcessors()) : Integer.parseInt(value);
+  }
 
   @Override
   protected Table createTable(Hive hive, Database db) throws HiveException {
@@ -131,7 +157,7 @@ public class IcebergRepository extends AbstractRepository implements QueryHistor
           conf.get("mapred.task.id")), null);
       OutputCommitter committer = storageHandler.getOutputCommitter();
       committer.commitTask(context);
-      storageHandler.storageHandlerCommit(HiveConf.getProperties(conf), Context.Operation.OTHER);
+      storageHandler.storageHandlerCommit(HiveConf.getProperties(conf), Context.Operation.OTHER, icebergExecutor);
 
     } catch (Exception e) {
       throw new RuntimeException(e);
