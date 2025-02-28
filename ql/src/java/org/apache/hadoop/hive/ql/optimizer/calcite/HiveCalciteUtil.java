@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
@@ -1496,9 +1497,23 @@ public class HiveCalciteUtil {
     }
     
     private void addWithNegate(RexNode node) {
-      node = negate ? RexUtil.negate(rexBuilder, (RexCall) node) : node;
-      assert node != null;
-      nodes.add(node.accept(rexVisitor));
+      RexCall call = (RexCall) node;
+      if (negate) {
+        if (call.isA(SqlKind.AND)) {
+          call = (RexCall) rexBuilder
+              .makeCall(
+                  SqlStdOperatorTable.OR,
+                  Arrays.asList(
+                      RexUtil.negate(rexBuilder, (RexCall) call.getOperands().get(0)), 
+                      RexUtil.negate(rexBuilder, (RexCall) call.getOperands().get(1))
+                  )
+              );
+        } else {
+          call = (RexCall) RexUtil.negate(rexBuilder, call);
+        }
+      }
+      assert call != null;
+      nodes.add(call.accept(rexVisitor));
     }
 
     public void all() {
