@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.type.HiveFunctionHelper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -57,10 +58,12 @@ public class TestRexNodeConverter {
   private static final String CASE_FUNC_TEST = "case";
   private static final RexBuilder REX_BUILDER = new RexBuilder(
       new JavaTypeFactoryImpl(new HiveTypeSystemImpl()));
+  private static final HiveFunctionHelper FUNCTION_HELPER = new HiveFunctionHelper(REX_BUILDER);
   private static final RelDataTypeFactory TYPE_FACTORY = REX_BUILDER.getTypeFactory();
 
   private static RelDataType smallIntegerType;
   private static RelDataType integerType;
+  private static RelDataType nullableIntegerType;
   @SuppressWarnings("FieldCanBeLocal")
   private static RelDataType nullableSmallIntegerType;
 
@@ -83,6 +86,7 @@ public class TestRexNodeConverter {
   public static void beforeClass() {
     smallIntegerType = TYPE_FACTORY.createSqlType(SqlTypeName.SMALLINT);
     integerType = TYPE_FACTORY.createSqlType(SqlTypeName.INTEGER);
+    nullableIntegerType = TYPE_FACTORY.createTypeWithNullability(integerType, true);
     nullableSmallIntegerType = TYPE_FACTORY.createTypeWithNullability(smallIntegerType, true);
 
     RelDataType varcharType = TYPE_FACTORY.createSqlType(SqlTypeName.VARCHAR, 20);
@@ -117,17 +121,19 @@ public class TestRexNodeConverter {
         REX_BUILDER.makeLiteral(6, integerType, true),
         varChar35);
 
+    // Cast to nullable integer is added. The method HiveFunctionHelper.convertInputs works with TypeInfo
+    // which doesn't contain nullability information.
     List<RexNode> expected = ImmutableList.of(
         REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS,
-            inputRef, REX_BUILDER.makeLiteral(1, smallIntegerType, true)),
+            REX_BUILDER.makeCast(nullableIntegerType, inputRef), REX_BUILDER.makeLiteral(1, integerType, true)),
         varChar34,
         REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS,
-            inputRef, REX_BUILDER.makeLiteral(6, smallIntegerType, true)),
+            REX_BUILDER.makeCast(nullableIntegerType, inputRef), REX_BUILDER.makeLiteral(6, integerType, true)),
         varChar35,
         varCharNull);
 
-    List<RexNode> computed = RexNodeConverter.rewriteCaseChildren(
-        CASE_FUNC_TEST, childrenNodeList, REX_BUILDER);
+    List<RexNode> computed = new RexNodeConverter(REX_BUILDER, FUNCTION_HELPER)
+            .rewriteCaseChildren(CASE_FUNC_TEST, childrenNodeList);
 
     Assert.assertEquals(expected, computed);
   }
@@ -145,15 +151,15 @@ public class TestRexNodeConverter {
 
     List<RexNode> expected = ImmutableList.of(
         REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS,
-            inputRef, REX_BUILDER.makeLiteral(1, smallIntegerType, true)),
+            REX_BUILDER.makeCast(nullableIntegerType, inputRef), REX_BUILDER.makeLiteral(1, integerType, true)),
         varChar34,
         REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS,
-            inputRef, REX_BUILDER.makeLiteral(null, smallIntegerType, true)),
+            REX_BUILDER.makeCast(nullableIntegerType, inputRef), REX_BUILDER.makeLiteral(null, integerType, true)),
         varChar35,
         varCharNull);
 
-    List<RexNode> computed = RexNodeConverter.rewriteCaseChildren(
-        CASE_FUNC_TEST, childrenNodeList, REX_BUILDER);
+    List<RexNode> computed = new RexNodeConverter(REX_BUILDER, FUNCTION_HELPER)
+            .rewriteCaseChildren(CASE_FUNC_TEST, childrenNodeList);
 
     Assert.assertEquals(expected, computed);
   }
@@ -171,15 +177,15 @@ public class TestRexNodeConverter {
 
     List<RexNode> expected = ImmutableList.of(
         REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS,
-            inputRef, REX_BUILDER.makeLiteral(1, smallIntegerType, true)),
+                REX_BUILDER.makeCast(nullableIntegerType, inputRef), REX_BUILDER.makeLiteral(1, integerType, true)),
         varChar34,
         REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS,
-            inputRef, REX_BUILDER.makeLiteral(null, smallIntegerType, true)),
+                REX_BUILDER.makeCast(nullableIntegerType, inputRef), REX_BUILDER.makeLiteral(null, integerType, true)),
         varChar35,
         varCharNull);
 
-    List<RexNode> computed = RexNodeConverter.rewriteCaseChildren(
-        CASE_FUNC_TEST, childrenNodeList, REX_BUILDER);
+    List<RexNode> computed = new RexNodeConverter(REX_BUILDER, FUNCTION_HELPER)
+            .rewriteCaseChildren(CASE_FUNC_TEST, childrenNodeList);
 
     Assert.assertEquals(expected, computed);
   }
