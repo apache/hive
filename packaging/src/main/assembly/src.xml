@@ -105,6 +105,7 @@
         <include>standalone-metastore/metastore-common/**/*</include>
         <include>standalone-metastore/metastore-server/**/*</include>
         <include>standalone-metastore/metastore-tools/**/*</include>
+        <include>standalone-metastore/metastore-rest-catalog/**/*</include>
         <include>standalone-metastore/src/assembly/src.xml</include>
         <include>standalone-metastore/pom.xml</include>
         <include>streaming/**/*</include>
