@@ -33,11 +33,13 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.ServiceException;
 import org.apache.hive.service.ServiceUtils;
@@ -133,6 +135,13 @@ public class CLIService extends CompositeService implements ICLIService {
     ss.setIsHiveServerQuery(true);
     SessionState.start(ss);
     ss.applyAuthorizationPolicy();
+
+    String resourcesDir = HiveConf.getVar(newHiveConf, HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR);
+
+    // Add shutdown hook to clean up the resources directory
+    ShutdownHookManager.addShutdownHook(() -> {
+      Utilities.cleanResourceDirectory(resourcesDir);
+    });
   }
 
   private void setupBlockedUdfs() {

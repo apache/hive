@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -204,8 +205,18 @@ public final class HiveMaterializedViewsRegistry {
         } else {
           LOG.error("Problem connecting to the metastore when initializing the view registry", e);
         }
+      } finally {
+          cleanUpResources(ss);
       }
       perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.MATERIALIZED_VIEWS_REGISTRY_REFRESH);
+    }
+  }
+
+  // Method to clean up the downloaded resources
+  private void cleanUpResources(SessionState sessionState) {
+    if (sessionState != null) {
+      String resourcesDir = HiveConf.getVar(sessionState.getConf(), HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR);
+      Utilities.cleanResourceDirectory(resourcesDir);
     }
   }
 
