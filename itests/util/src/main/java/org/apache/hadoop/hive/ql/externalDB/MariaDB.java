@@ -36,7 +36,7 @@ public class MariaDB extends AbstractExternalDB {
     return "org.mariadb.jdbc.Driver";
   }
 
-  public String getDockerImageName() { return "mariadb:10.2"; }
+  public String getDockerImageName() { return "mariadb:11.4"; }
 
   public String[] getDockerAdditionalArgs() {
     return new String[] {"-p", "3309:3306",

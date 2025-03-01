@@ -27,7 +27,7 @@ public class Mysql extends DatabaseRule {
 
   @Override
   public String getDockerImageName() {
-    return "mysql:5.7.37";
+    return "mysql:8.4.3";
   }
 
   @Override
