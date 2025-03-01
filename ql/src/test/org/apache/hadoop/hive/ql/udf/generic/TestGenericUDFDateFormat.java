@@ -166,7 +166,7 @@ public class TestGenericUDFDateFormat {
   public void testWrongFmt() throws HiveException {
     GenericUDFDateFormat udf = new GenericUDFDateFormat();
     ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
-    Text fmtText = new Text("B");
+    Text fmtText = new Text("C");
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory
         .getPrimitiveWritableConstantObjectInspector(TypeInfoFactory.stringTypeInfo, fmtText);
     ObjectInspector[] arguments = { valueOI0, valueOI1 };

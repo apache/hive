@@ -245,16 +245,14 @@ public class LogUtils {
   public static String getLogFilePath() {
     String logFilePath = null;
     org.apache.logging.log4j.Logger rootLogger = LogManager.getRootLogger();
-    if (rootLogger instanceof org.apache.logging.log4j.core.Logger) {
-      org.apache.logging.log4j.core.Logger coreLogger =
-          (org.apache.logging.log4j.core.Logger)rootLogger;
+    if (rootLogger instanceof org.apache.logging.log4j.core.Logger coreLogger) {
       for (Appender appender : coreLogger.getAppenders().values()) {
-        if (appender instanceof FileAppender) {
-          logFilePath = ((FileAppender) appender).getFileName();
-        } else if (appender instanceof RollingFileAppender) {
-          logFilePath = ((RollingFileAppender) appender).getFileName();
-        } else if (appender instanceof RollingRandomAccessFileAppender) {
-          logFilePath = ((RollingRandomAccessFileAppender) appender).getFileName();
+        if (appender instanceof FileAppender fileAppender) {
+          logFilePath = fileAppender.getFileName();
+        } else if (appender instanceof RollingFileAppender fileAppender) {
+          logFilePath = fileAppender.getFileName();
+        } else if (appender instanceof RollingRandomAccessFileAppender fileAppender) {
+          logFilePath = fileAppender.getFileName();
         }
       }
     }
