@@ -20,7 +20,9 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -36,7 +38,9 @@ import org.apache.iceberg.types.Types.NestedField;
 import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runners.Parameterized;
 
 
 /**
@@ -44,6 +48,27 @@ import org.junit.Test;
  * CTAS, etc...
  */
 public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngineBase {
+
+  @Parameterized.Parameter(4)
+  public String statsSource;
+
+  @Parameterized.Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, formatVersion={3}, statsSource={4}")
+  public static Collection<Object[]> parameters() {
+    Collection<Object[]> baseParams = HiveIcebergStorageHandlerWithEngineBase.parameters();
+
+    Collection<Object[]> testParams = Lists.newArrayList();
+    for (String statsSource : new String[]{"iceberg", "metastore"}) {
+      for (Object[] params : baseParams) {
+        testParams.add(ArrayUtils.add(params, statsSource));
+      }
+    }
+    return testParams;
+  }
+
+  @Before
+  public void setStatsSource() {
+    HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_STATS_SOURCE, statsSource);
+  }
 
   @Test
   public void testAnalyzeTableComputeStatistics() throws IOException, TException, InterruptedException {
@@ -264,6 +289,8 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
 
   @Test
   public void testIcebergColStatsPath() throws IOException {
+    Assume.assumeTrue(statsSource.equals("iceberg"));
+    
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
     shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
@@ -332,8 +359,6 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
 
   private void checkColStatMinMaxDistinctValue(String tableName, String colName, int minValue, int maxValue,
       int distinct, int nulls) {
-
-    shell.executeStatement("set hive.iceberg.stats.source=metastore");
     List<Object[]> rows = shell.executeStatement("DESCRIBE FORMATTED " + tableName + " " + colName);
 
     // Check min
@@ -351,25 +376,5 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     // Check distinct
     Assert.assertEquals("distinct_count", rows.get(5)[0]);
     Assert.assertEquals(String.valueOf(distinct), rows.get(5)[1]);
-
-    shell.executeStatement("set hive.iceberg.stats.source=iceberg");
-    rows = shell.executeStatement("DESCRIBE FORMATTED " + tableName + " " + colName);
-
-    // Check min
-    Assert.assertEquals("min", rows.get(2)[0]);
-    Assert.assertEquals(String.valueOf(minValue), rows.get(2)[1]);
-
-    // Check max
-    Assert.assertEquals("max", rows.get(3)[0]);
-    Assert.assertEquals(String.valueOf(maxValue), rows.get(3)[1]);
-
-    // Check num of nulls
-    Assert.assertEquals("num_nulls", rows.get(4)[0]);
-    Assert.assertEquals(String.valueOf(nulls), rows.get(4)[1]);
-
-    // Check distinct
-    Assert.assertEquals("distinct_count", rows.get(5)[0]);
-    Assert.assertEquals(String.valueOf(distinct), rows.get(5)[1]);
-
   }
 }

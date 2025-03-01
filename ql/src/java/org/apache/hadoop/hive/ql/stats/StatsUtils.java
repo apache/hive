@@ -358,31 +358,6 @@ public class StatsUtils {
       }
 
       if (needColStats) {
-        
-        if (DDLUtils.isIcebergTable(table)) {
-          // TODO: replace with partition column stats once implemented
-          List<ColStatistics> colStats = getTableColumnStats(table, neededColumns, colStatsCache, fetchColStats);
-          if (estimateStats) {
-            estimateStatsForMissingCols(neededColumns, colStats, conf, nr, schema);
-            // we should have stats for all columns (estimated or actual)
-            if (neededColumns.size() == colStats.size()) {
-              long betterDS = getDataSizeFromColumnStats(nr, colStats);
-              stats.setDataSize((betterDS < 1 || colStats.isEmpty()) ? ds : betterDS);
-            }
-          }
-          // infer if any column can be primary key based on column statistics
-          inferAndSetPrimaryKey(stats.getNumRows(), colStats);
-
-          stats.setColumnStatsState(deriveStatType(colStats, neededColumns));
-          stats.addToColumnStats(colStats);
-          
-          if (partStats.isEmpty()) {
-            // all partitions are filtered by partition pruning
-            stats.setBasicStatsState(State.COMPLETE);
-          }
-          return stats;
-        }
-        
         List<String> partitionCols = getPartitionColumns(schema, neededColumns, referencedColumns);
 
         // We will retrieve stats from the metastore only for columns that are not cached
@@ -401,7 +376,7 @@ public class StatsUtils {
         // size is 0, aggrStats is null after several retries. Thus, we can
         // skip the step to connect to the metastore.
         if (fetchColStats && !neededColsToRetrieve.isEmpty() && !partNames.isEmpty()) {
-          aggrStats = Hive.get().getAggrColStatsFor(table.getDbName(), table.getTableName(),
+          aggrStats = Hive.get().getAggrColStatsFor(table.getDbName(), table.getTableName(), 
               neededColsToRetrieve, partNames, false);
         }
 
@@ -1043,12 +1018,8 @@ public class StatsUtils {
     }
     if (fetchColStats && !colStatsToRetrieve.isEmpty()) {
       try {
-        List<ColumnStatisticsObj> colStat;
-        if (table.isNonNative() && table.getStorageHandler().canProvideColStatistics(table)) {
-          colStat = table.getStorageHandler().getColStatistics(table);
-        } else {
-          colStat = Hive.get().getTableColumnStatistics(dbName, tabName, colStatsToRetrieve, false);
-        }
+        List<ColumnStatisticsObj> colStat = Hive.get().getTableColumnStatistics(
+            dbName, tabName, colStatsToRetrieve, false);
         stats = convertColStats(colStat);
       } catch (HiveException e) {
         LOG.error("Failed to retrieve table statistics: ", e);
