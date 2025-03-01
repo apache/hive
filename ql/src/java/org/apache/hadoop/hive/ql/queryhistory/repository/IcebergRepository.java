@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.queryhistory.schema.Record;
 import org.apache.hadoop.hive.ql.queryhistory.schema.Schema;
@@ -57,6 +58,10 @@ import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.EXPIRE_SNAPSHOT;
 
 public class IcebergRepository extends AbstractRepository implements QueryHistoryRepository {
   private static final Logger LOG = LoggerFactory.getLogger(IcebergRepository.class);
@@ -70,12 +75,18 @@ public class IcebergRepository extends AbstractRepository implements QueryHistor
   @VisibleForTesting
   TableDesc tableDesc;
   private ExecutorService icebergExecutor;
+  private final ScheduledExecutorService snapshotExpiryExecutor = Executors.newScheduledThreadPool(1,
+      new ThreadFactoryBuilder().setNameFormat("IcebergRepository periodic snapshot expiry").setDaemon(true).build());
 
   @Override
   public void init(HiveConf conf, Schema schema) {
     super.init(conf, schema);
     icebergExecutor = Executors.newFixedThreadPool(2,
         (new ThreadFactoryBuilder()).setDaemon(true).setNameFormat(ICEBERG_WORKER_THREAD_NAME_FORMAT).build());
+    int expiryInterval = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_QUERY_HISTORY_FLUSH_INTERVAL_SECONDS);
+    // 60s initial delay to prevent overlapping with default periodic flush executor
+    // concurrency is not an issue, this is just an easy optimization
+    snapshotExpiryExecutor.scheduleAtFixedRate(this::expireSnapshots, 60, expiryInterval, TimeUnit.SECONDS);
   }
 
   @Override
@@ -175,5 +186,10 @@ public class IcebergRepository extends AbstractRepository implements QueryHistor
     String jobId = String.format("job_%s", jobIdPostFix);
     SessionStateUtil.addCommitInfo(SessionState.getSessionConf(), tableDesc.getTableName(), jobId, 1,
         Maps.fromProperties(tableDesc.getProperties()));
+  }
+
+  private void expireSnapshots() {
+    storageHandler.executeOperation(table, new AlterTableExecuteSpec<>(EXPIRE_SNAPSHOT,
+        new AlterTableExecuteSpec.ExpireSnapshotsSpec(10)));
   }
 }
