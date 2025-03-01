@@ -30,7 +30,8 @@ create table ice_orc (
     event_src string    
 )
 partitioned by spec(truncate(3, event_src))
-stored by iceberg stored as orc;
+stored by iceberg stored as orc
+tblproperties ('compactor.threshold.target.size'='1500');
 
 insert into ice_orc values 
     (1, cast('2023-07-20 00:00:00' as timestamp with local time zone), 'AAA_1'),
