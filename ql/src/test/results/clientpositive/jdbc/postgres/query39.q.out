@@ -1,0 +1,120 @@
+PREHOOK: query: explain
+with inv as
+(select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
+       ,stdev,mean, case mean when 0 then null else stdev/mean end cov
+ from(select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
+            ,stddev_samp(inv_quantity_on_hand) stdev,avg(inv_quantity_on_hand) mean
+      from inventory
+          ,item
+          ,warehouse
+          ,date_dim
+      where inv_item_sk = i_item_sk
+        and inv_warehouse_sk = w_warehouse_sk
+        and inv_date_sk = d_date_sk
+        and d_year =1999
+      group by w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy) foo
+ where case mean when 0 then 0 else stdev/mean end > 1)
+select inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean, inv1.cov
+        ,inv2.w_warehouse_sk,inv2.i_item_sk,inv2.d_moy,inv2.mean, inv2.cov
+from inv inv1,inv inv2
+where inv1.i_item_sk = inv2.i_item_sk
+  and inv1.w_warehouse_sk =  inv2.w_warehouse_sk
+  and inv1.d_moy=4
+  and inv2.d_moy=4+1
+order by inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean,inv1.cov
+        ,inv2.d_moy,inv2.mean, inv2.cov
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@inventory
+PREHOOK: Input: default@item
+PREHOOK: Input: default@warehouse
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+with inv as
+(select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
+       ,stdev,mean, case mean when 0 then null else stdev/mean end cov
+ from(select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
+            ,stddev_samp(inv_quantity_on_hand) stdev,avg(inv_quantity_on_hand) mean
+      from inventory
+          ,item
+          ,warehouse
+          ,date_dim
+      where inv_item_sk = i_item_sk
+        and inv_warehouse_sk = w_warehouse_sk
+        and inv_date_sk = d_date_sk
+        and d_year =1999
+      group by w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy) foo
+ where case mean when 0 then 0 else stdev/mean end > 1)
+select inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean, inv1.cov
+        ,inv2.w_warehouse_sk,inv2.i_item_sk,inv2.d_moy,inv2.mean, inv2.cov
+from inv inv1,inv inv2
+where inv1.i_item_sk = inv2.i_item_sk
+  and inv1.w_warehouse_sk =  inv2.w_warehouse_sk
+  and inv1.d_moy=4
+  and inv2.d_moy=4+1
+order by inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean,inv1.cov
+        ,inv2.d_moy,inv2.mean, inv2.cov
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@inventory
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@warehouse
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: inventory
+          properties:
+            hive.sql.query SELECT "t29"."w_warehouse_sk", "t29"."i_item_sk", CAST(4 AS INTEGER) AS "d_moy", "t29"."mean", "t29"."cov", "t29"."w_warehouse_sk0" AS "w_warehouse_sk1", "t29"."i_item_sk0" AS "i_item_sk1", CAST(5 AS INTEGER) AS "d_moy1", "t29"."mean0" AS "mean1", "t29"."cov0" AS "cov1"
+FROM (SELECT "t13"."w_warehouse_sk", "t13"."i_item_sk", "t13"."mean", "t13"."cov", "t28"."w_warehouse_sk" AS "w_warehouse_sk0", "t28"."i_item_sk" AS "i_item_sk0", "t28"."mean" AS "mean0", "t28"."cov" AS "cov0"
+FROM (SELECT "t9"."w_warehouse_sk", "t3"."i_item_sk", CAST(SUM("t0"."inv_quantity_on_hand") AS DOUBLE PRECISION) / COUNT("t0"."inv_quantity_on_hand") AS "mean", CASE WHEN CAST(SUM("t0"."inv_quantity_on_hand") AS DOUBLE PRECISION) / COUNT("t0"."inv_quantity_on_hand") = 0 THEN NULL ELSE POWER((SUM(CAST("t0"."inv_quantity_on_hand" AS DOUBLE PRECISION) * CAST("t0"."inv_quantity_on_hand" AS DOUBLE PRECISION)) - SUM(CAST("t0"."inv_quantity_on_hand" AS DOUBLE PRECISION)) * SUM(CAST("t0"."inv_quantity_on_hand" AS DOUBLE PRECISION)) / COUNT(CAST("t0"."inv_quantity_on_hand" AS DOUBLE PRECISION))) / CASE WHEN COUNT(CAST("t0"."inv_quantity_on_hand" AS DOUBLE PRECISION)) = 1 THEN NULL ELSE COUNT(CAST("t0"."inv_quantity_on_hand" AS DOUBLE PRECISION)) - 1 END, 0.5) / (CAST(SUM("t0"."inv_quantity_on_hand") AS DOUBLE PRECISION) / COUNT("t0"."inv_quantity_on_hand")) END AS "cov"
+FROM (SELECT "inv_date_sk", "inv_item_sk", "inv_warehouse_sk", "inv_quantity_on_hand"
+FROM "inventory"
+WHERE "inv_item_sk" IS NOT NULL AND ("inv_warehouse_sk" IS NOT NULL AND "inv_date_sk" IS NOT NULL)) AS "t0"
+INNER JOIN (SELECT "i_item_sk"
+FROM (SELECT "i_item_sk"
+FROM "item") AS "t1"
+WHERE "i_item_sk" IS NOT NULL) AS "t3" ON "t0"."inv_item_sk" = "t3"."i_item_sk"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year", "d_moy"
+FROM "date_dim") AS "t4"
+WHERE "d_year" = 1999 AND ("d_moy" = 4 AND "d_date_sk" IS NOT NULL)) AS "t6" ON "t0"."inv_date_sk" = "t6"."d_date_sk"
+INNER JOIN (SELECT "w_warehouse_sk", "w_warehouse_name"
+FROM (SELECT "w_warehouse_sk", "w_warehouse_name"
+FROM "warehouse") AS "t7"
+WHERE "w_warehouse_sk" IS NOT NULL) AS "t9" ON "t0"."inv_warehouse_sk" = "t9"."w_warehouse_sk"
+GROUP BY "t9"."w_warehouse_name", "t9"."w_warehouse_sk", "t3"."i_item_sk"
+HAVING CASE WHEN CAST(SUM("t0"."inv_quantity_on_hand") AS DOUBLE PRECISION) / COUNT("t0"."inv_quantity_on_hand") = 0 THEN FALSE ELSE POWER((SUM(CAST("t0"."inv_quantity_on_hand" AS DOUBLE PRECISION) * CAST("t0"."inv_quantity_on_hand" AS DOUBLE PRECISION)) - SUM(CAST("t0"."inv_quantity_on_hand" AS DOUBLE PRECISION)) * SUM(CAST("t0"."inv_quantity_on_hand" AS DOUBLE PRECISION)) / COUNT(CAST("t0"."inv_quantity_on_hand" AS DOUBLE PRECISION))) / CASE WHEN COUNT(CAST("t0"."inv_quantity_on_hand" AS DOUBLE PRECISION)) = 1 THEN NULL ELSE COUNT(CAST("t0"."inv_quantity_on_hand" AS DOUBLE PRECISION)) - 1 END, 0.5) / (CAST(SUM("t0"."inv_quantity_on_hand") AS DOUBLE PRECISION) / COUNT("t0"."inv_quantity_on_hand")) > 1 END) AS "t13"
+INNER JOIN (SELECT "t24"."w_warehouse_sk", "t18"."i_item_sk", CAST(SUM("t15"."inv_quantity_on_hand") AS DOUBLE PRECISION) / COUNT("t15"."inv_quantity_on_hand") AS "mean", CASE WHEN CAST(SUM("t15"."inv_quantity_on_hand") AS DOUBLE PRECISION) / COUNT("t15"."inv_quantity_on_hand") = 0 THEN NULL ELSE POWER((SUM(CAST("t15"."inv_quantity_on_hand" AS DOUBLE PRECISION) * CAST("t15"."inv_quantity_on_hand" AS DOUBLE PRECISION)) - SUM(CAST("t15"."inv_quantity_on_hand" AS DOUBLE PRECISION)) * SUM(CAST("t15"."inv_quantity_on_hand" AS DOUBLE PRECISION)) / COUNT(CAST("t15"."inv_quantity_on_hand" AS DOUBLE PRECISION))) / CASE WHEN COUNT(CAST("t15"."inv_quantity_on_hand" AS DOUBLE PRECISION)) = 1 THEN NULL ELSE COUNT(CAST("t15"."inv_quantity_on_hand" AS DOUBLE PRECISION)) - 1 END, 0.5) / (CAST(SUM("t15"."inv_quantity_on_hand") AS DOUBLE PRECISION) / COUNT("t15"."inv_quantity_on_hand")) END AS "cov"
+FROM (SELECT "inv_date_sk", "inv_item_sk", "inv_warehouse_sk", "inv_quantity_on_hand"
+FROM "inventory"
+WHERE "inv_item_sk" IS NOT NULL AND ("inv_warehouse_sk" IS NOT NULL AND "inv_date_sk" IS NOT NULL)) AS "t15"
+INNER JOIN (SELECT "i_item_sk"
+FROM (SELECT "i_item_sk"
+FROM "item") AS "t16"
+WHERE "i_item_sk" IS NOT NULL) AS "t18" ON "t15"."inv_item_sk" = "t18"."i_item_sk"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year", "d_moy"
+FROM "date_dim") AS "t19"
+WHERE "d_year" = 1999 AND ("d_moy" = 5 AND "d_date_sk" IS NOT NULL)) AS "t21" ON "t15"."inv_date_sk" = "t21"."d_date_sk"
+INNER JOIN (SELECT "w_warehouse_sk", "w_warehouse_name"
+FROM (SELECT "w_warehouse_sk", "w_warehouse_name"
+FROM "warehouse") AS "t22"
+WHERE "w_warehouse_sk" IS NOT NULL) AS "t24" ON "t15"."inv_warehouse_sk" = "t24"."w_warehouse_sk"
+GROUP BY "t24"."w_warehouse_name", "t24"."w_warehouse_sk", "t18"."i_item_sk"
+HAVING CASE WHEN CAST(SUM("t15"."inv_quantity_on_hand") AS DOUBLE PRECISION) / COUNT("t15"."inv_quantity_on_hand") = 0 THEN FALSE ELSE POWER((SUM(CAST("t15"."inv_quantity_on_hand" AS DOUBLE PRECISION) * CAST("t15"."inv_quantity_on_hand" AS DOUBLE PRECISION)) - SUM(CAST("t15"."inv_quantity_on_hand" AS DOUBLE PRECISION)) * SUM(CAST("t15"."inv_quantity_on_hand" AS DOUBLE PRECISION)) / COUNT(CAST("t15"."inv_quantity_on_hand" AS DOUBLE PRECISION))) / CASE WHEN COUNT(CAST("t15"."inv_quantity_on_hand" AS DOUBLE PRECISION)) = 1 THEN NULL ELSE COUNT(CAST("t15"."inv_quantity_on_hand" AS DOUBLE PRECISION)) - 1 END, 0.5) / (CAST(SUM("t15"."inv_quantity_on_hand") AS DOUBLE PRECISION) / COUNT("t15"."inv_quantity_on_hand")) > 1 END) AS "t28" ON "t13"."i_item_sk" = "t28"."i_item_sk" AND "t13"."w_warehouse_sk" = "t28"."w_warehouse_sk"
+ORDER BY "t13"."w_warehouse_sk", "t13"."i_item_sk", "t13"."mean", "t13"."cov", "t28"."mean", "t28"."cov") AS "t29"
+            hive.sql.query.fieldNames w_warehouse_sk,i_item_sk,d_moy,mean,cov,w_warehouse_sk1,i_item_sk1,d_moy1,mean1,cov1
+            hive.sql.query.fieldTypes int,bigint,int,double,double,int,bigint,int,double,double
+            hive.sql.query.split false
+          Select Operator
+            expressions: w_warehouse_sk (type: int), i_item_sk (type: bigint), d_moy (type: int), mean (type: double), cov (type: double), w_warehouse_sk1 (type: int), i_item_sk1 (type: bigint), d_moy1 (type: int), mean1 (type: double), cov1 (type: double)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+            ListSink
+

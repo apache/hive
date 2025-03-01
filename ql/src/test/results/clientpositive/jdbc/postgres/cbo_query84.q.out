@@ -1,0 +1,95 @@
+PREHOOK: query: explain cbo
+select  c_customer_id as customer_id
+       ,c_last_name || ', ' || c_first_name as customername
+ from customer
+     ,customer_address
+     ,customer_demographics
+     ,household_demographics
+     ,income_band
+     ,store_returns
+ where ca_city	        =  'Hopewell'
+   and c_current_addr_sk = ca_address_sk
+   and ib_lower_bound   >=  32287
+   and ib_upper_bound   <=  32287 + 50000
+   and ib_income_band_sk = hd_income_band_sk
+   and cd_demo_sk = c_current_cdemo_sk
+   and hd_demo_sk = c_current_hdemo_sk
+   and sr_cdemo_sk = cd_demo_sk
+ order by c_customer_id
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@customer_address
+PREHOOK: Input: default@customer_demographics
+PREHOOK: Input: default@household_demographics
+PREHOOK: Input: default@income_band
+PREHOOK: Input: default@store_returns
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select  c_customer_id as customer_id
+       ,c_last_name || ', ' || c_first_name as customername
+ from customer
+     ,customer_address
+     ,customer_demographics
+     ,household_demographics
+     ,income_band
+     ,store_returns
+ where ca_city	        =  'Hopewell'
+   and c_current_addr_sk = ca_address_sk
+   and ib_lower_bound   >=  32287
+   and ib_upper_bound   <=  32287 + 50000
+   and ib_income_band_sk = hd_income_band_sk
+   and cd_demo_sk = c_current_cdemo_sk
+   and hd_demo_sk = c_current_hdemo_sk
+   and sr_cdemo_sk = cd_demo_sk
+ order by c_customer_id
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@customer_address
+POSTHOOK: Input: default@customer_demographics
+POSTHOOK: Input: default@household_demographics
+POSTHOOK: Input: default@income_band
+POSTHOOK: Input: default@store_returns
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(customer_id=[$0], customername=[$1])
+  HiveSortLimit(sort0=[$2], dir0=[ASC], fetch=[100])
+    HiveProject(customer_id=[$0], customername=[$4], c_customer_id=[$0])
+      HiveJoin(condition=[=($8, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveJoin(condition=[=($6, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveJoin(condition=[=($3, $5)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveProject(c_customer_id=[$0], c_current_cdemo_sk=[$1], c_current_hdemo_sk=[$2], c_current_addr_sk=[$3], ||=[||(||($5, _UTF-16LE', ':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), $4)])
+              HiveProject(c_customer_id=[$0], c_current_cdemo_sk=[$1], c_current_hdemo_sk=[$2], c_current_addr_sk=[$3], c_first_name=[$4], c_last_name=[$5])
+                HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                  JdbcFilter(condition=[AND(IS NOT NULL($3), IS NOT NULL($1), IS NOT NULL($2))])
+                    JdbcProject(c_customer_id=[$1], c_current_cdemo_sk=[$2], c_current_hdemo_sk=[$3], c_current_addr_sk=[$4], c_first_name=[$8], c_last_name=[$9])
+                      JdbcHiveTableScan(table=[[default, customer]], table:alias=[customer])
+            HiveProject(ca_address_sk=[$0])
+              HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                JdbcProject(ca_address_sk=[$0])
+                  JdbcFilter(condition=[AND(=($1, _UTF-16LE'Hopewell'), IS NOT NULL($0))])
+                    JdbcProject(ca_address_sk=[$0], ca_city=[$6])
+                      JdbcHiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
+          HiveProject(cd_demo_sk=[$0], sr_cdemo_sk=[$1])
+            HiveJdbcConverter(convention=[JDBC.POSTGRES])
+              JdbcJoin(condition=[=($1, $0)], joinType=[inner])
+                JdbcProject(cd_demo_sk=[$0])
+                  JdbcFilter(condition=[IS NOT NULL($0)])
+                    JdbcProject(cd_demo_sk=[$0])
+                      JdbcHiveTableScan(table=[[default, customer_demographics]], table:alias=[customer_demographics])
+                JdbcProject(sr_cdemo_sk=[$0])
+                  JdbcFilter(condition=[IS NOT NULL($0)])
+                    JdbcProject(sr_cdemo_sk=[$4])
+                      JdbcHiveTableScan(table=[[default, store_returns]], table:alias=[store_returns])
+        HiveProject(hd_demo_sk=[$0], hd_income_band_sk=[$1], ib_income_band_sk=[$2])
+          HiveJdbcConverter(convention=[JDBC.POSTGRES])
+            JdbcJoin(condition=[=($2, $1)], joinType=[inner])
+              JdbcProject(hd_demo_sk=[$0], hd_income_band_sk=[$1])
+                JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                  JdbcProject(hd_demo_sk=[$0], hd_income_band_sk=[$1])
+                    JdbcHiveTableScan(table=[[default, household_demographics]], table:alias=[household_demographics])
+              JdbcProject(ib_income_band_sk=[$0])
+                JdbcFilter(condition=[AND(>=($1, 32287), <=($2, 82287), IS NOT NULL($0))])
+                  JdbcHiveTableScan(table=[[default, income_band]], table:alias=[income_band])
+

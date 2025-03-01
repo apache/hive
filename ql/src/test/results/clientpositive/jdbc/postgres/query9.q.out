@@ -1,0 +1,779 @@
+Warning: Shuffle Join MERGEJOIN[79][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[80][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[81][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[82][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4]] in Stage 'Reducer 5' is a cross product
+Warning: Shuffle Join MERGEJOIN[83][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5]] in Stage 'Reducer 6' is a cross product
+Warning: Shuffle Join MERGEJOIN[84][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5, $hdt$_6]] in Stage 'Reducer 7' is a cross product
+Warning: Shuffle Join MERGEJOIN[85][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5, $hdt$_6, $hdt$_7]] in Stage 'Reducer 8' is a cross product
+Warning: Shuffle Join MERGEJOIN[86][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5, $hdt$_6, $hdt$_7, $hdt$_8]] in Stage 'Reducer 9' is a cross product
+Warning: Shuffle Join MERGEJOIN[87][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5, $hdt$_6, $hdt$_7, $hdt$_8, $hdt$_9]] in Stage 'Reducer 10' is a cross product
+Warning: Shuffle Join MERGEJOIN[88][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5, $hdt$_6, $hdt$_7, $hdt$_8, $hdt$_9, $hdt$_10]] in Stage 'Reducer 11' is a cross product
+Warning: Shuffle Join MERGEJOIN[89][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5, $hdt$_6, $hdt$_7, $hdt$_8, $hdt$_9, $hdt$_10, $hdt$_11]] in Stage 'Reducer 12' is a cross product
+Warning: Shuffle Join MERGEJOIN[90][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5, $hdt$_6, $hdt$_7, $hdt$_8, $hdt$_9, $hdt$_10, $hdt$_11, $hdt$_12]] in Stage 'Reducer 13' is a cross product
+Warning: Shuffle Join MERGEJOIN[91][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5, $hdt$_6, $hdt$_7, $hdt$_8, $hdt$_9, $hdt$_10, $hdt$_11, $hdt$_12, $hdt$_13]] in Stage 'Reducer 14' is a cross product
+Warning: Shuffle Join MERGEJOIN[92][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5, $hdt$_6, $hdt$_7, $hdt$_8, $hdt$_9, $hdt$_10, $hdt$_11, $hdt$_12, $hdt$_13, $hdt$_14]] in Stage 'Reducer 15' is a cross product
+Warning: Shuffle Join MERGEJOIN[93][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5, $hdt$_6, $hdt$_7, $hdt$_8, $hdt$_9, $hdt$_10, $hdt$_11, $hdt$_12, $hdt$_13, $hdt$_14, $hdt$_15]] in Stage 'Reducer 16' is a cross product
+PREHOOK: query: explain
+select case when (select count(*) 
+                  from store_sales 
+                  where ss_quantity between 1 and 20) > 409437
+            then (select avg(ss_ext_list_price) 
+                  from store_sales 
+                  where ss_quantity between 1 and 20) 
+            else (select avg(ss_net_paid_inc_tax)
+                  from store_sales
+                  where ss_quantity between 1 and 20) end bucket1 ,
+       case when (select count(*)
+                  from store_sales
+                  where ss_quantity between 21 and 40) > 4595804
+            then (select avg(ss_ext_list_price)
+                  from store_sales
+                  where ss_quantity between 21 and 40) 
+            else (select avg(ss_net_paid_inc_tax)
+                  from store_sales
+                  where ss_quantity between 21 and 40) end bucket2,
+       case when (select count(*)
+                  from store_sales
+                  where ss_quantity between 41 and 60) > 7887297
+            then (select avg(ss_ext_list_price)
+                  from store_sales
+                  where ss_quantity between 41 and 60)
+            else (select avg(ss_net_paid_inc_tax)
+                  from store_sales
+                  where ss_quantity between 41 and 60) end bucket3,
+       case when (select count(*)
+                  from store_sales
+                  where ss_quantity between 61 and 80) > 10872978
+            then (select avg(ss_ext_list_price)
+                  from store_sales
+                  where ss_quantity between 61 and 80)
+            else (select avg(ss_net_paid_inc_tax)
+                  from store_sales
+                  where ss_quantity between 61 and 80) end bucket4,
+       case when (select count(*)
+                  from store_sales
+                  where ss_quantity between 81 and 100) > 43571537
+            then (select avg(ss_ext_list_price)
+                  from store_sales
+                  where ss_quantity between 81 and 100)
+            else (select avg(ss_net_paid_inc_tax)
+                  from store_sales
+                  where ss_quantity between 81 and 100) end bucket5
+from reason
+where r_reason_sk = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@reason
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select case when (select count(*) 
+                  from store_sales 
+                  where ss_quantity between 1 and 20) > 409437
+            then (select avg(ss_ext_list_price) 
+                  from store_sales 
+                  where ss_quantity between 1 and 20) 
+            else (select avg(ss_net_paid_inc_tax)
+                  from store_sales
+                  where ss_quantity between 1 and 20) end bucket1 ,
+       case when (select count(*)
+                  from store_sales
+                  where ss_quantity between 21 and 40) > 4595804
+            then (select avg(ss_ext_list_price)
+                  from store_sales
+                  where ss_quantity between 21 and 40) 
+            else (select avg(ss_net_paid_inc_tax)
+                  from store_sales
+                  where ss_quantity between 21 and 40) end bucket2,
+       case when (select count(*)
+                  from store_sales
+                  where ss_quantity between 41 and 60) > 7887297
+            then (select avg(ss_ext_list_price)
+                  from store_sales
+                  where ss_quantity between 41 and 60)
+            else (select avg(ss_net_paid_inc_tax)
+                  from store_sales
+                  where ss_quantity between 41 and 60) end bucket3,
+       case when (select count(*)
+                  from store_sales
+                  where ss_quantity between 61 and 80) > 10872978
+            then (select avg(ss_ext_list_price)
+                  from store_sales
+                  where ss_quantity between 61 and 80)
+            else (select avg(ss_net_paid_inc_tax)
+                  from store_sales
+                  where ss_quantity between 61 and 80) end bucket4,
+       case when (select count(*)
+                  from store_sales
+                  where ss_quantity between 81 and 100) > 43571537
+            then (select avg(ss_ext_list_price)
+                  from store_sales
+                  where ss_quantity between 81 and 100)
+            else (select avg(ss_net_paid_inc_tax)
+                  from store_sales
+                  where ss_quantity between 81 and 100) end bucket5
+from reason
+where r_reason_sk = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@reason
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 10 <- Map 25 (CUSTOM_SIMPLE_EDGE), Reducer 9 (CUSTOM_SIMPLE_EDGE)
+        Reducer 11 <- Map 26 (CUSTOM_SIMPLE_EDGE), Reducer 10 (CUSTOM_SIMPLE_EDGE)
+        Reducer 12 <- Map 27 (CUSTOM_SIMPLE_EDGE), Reducer 11 (CUSTOM_SIMPLE_EDGE)
+        Reducer 13 <- Map 28 (CUSTOM_SIMPLE_EDGE), Reducer 12 (CUSTOM_SIMPLE_EDGE)
+        Reducer 14 <- Map 29 (CUSTOM_SIMPLE_EDGE), Reducer 13 (CUSTOM_SIMPLE_EDGE)
+        Reducer 15 <- Map 30 (CUSTOM_SIMPLE_EDGE), Reducer 14 (CUSTOM_SIMPLE_EDGE)
+        Reducer 16 <- Map 31 (CUSTOM_SIMPLE_EDGE), Reducer 15 (CUSTOM_SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Map 17 (CUSTOM_SIMPLE_EDGE)
+        Reducer 3 <- Map 18 (CUSTOM_SIMPLE_EDGE), Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Reducer 4 <- Map 19 (CUSTOM_SIMPLE_EDGE), Reducer 3 (CUSTOM_SIMPLE_EDGE)
+        Reducer 5 <- Map 20 (CUSTOM_SIMPLE_EDGE), Reducer 4 (CUSTOM_SIMPLE_EDGE)
+        Reducer 6 <- Map 21 (CUSTOM_SIMPLE_EDGE), Reducer 5 (CUSTOM_SIMPLE_EDGE)
+        Reducer 7 <- Map 22 (CUSTOM_SIMPLE_EDGE), Reducer 6 (CUSTOM_SIMPLE_EDGE)
+        Reducer 8 <- Map 23 (CUSTOM_SIMPLE_EDGE), Reducer 7 (CUSTOM_SIMPLE_EDGE)
+        Reducer 9 <- Map 24 (CUSTOM_SIMPLE_EDGE), Reducer 8 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: reason
+                  properties:
+                    hive.sql.query SELECT "r_reason_sk"
+FROM (SELECT "r_reason_sk"
+FROM "reason") AS "t"
+WHERE "r_reason_sk" = 1
+                    hive.sql.query.fieldNames r_reason_sk
+                    hive.sql.query.fieldTypes int
+                    hive.sql.query.split true
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 17 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  properties:
+                    hive.sql.query SELECT COUNT(*) > 409437 AS ">"
+FROM (SELECT "ss_quantity"
+FROM "store_sales") AS "t"
+WHERE "ss_quantity" BETWEEN 1 AND 20
+                    hive.sql.query.fieldNames >
+                    hive.sql.query.fieldTypes boolean
+                    hive.sql.query.split false
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: > (type: boolean)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: boolean)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 18 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  properties:
+                    hive.sql.query SELECT CAST(SUM("ss_ext_list_price") / COUNT("ss_ext_list_price") AS DECIMAL(11, 6)) AS "_o__c0"
+FROM (SELECT "ss_quantity", "ss_ext_list_price"
+FROM "store_sales") AS "t"
+WHERE "ss_quantity" BETWEEN 1 AND 20
+                    hive.sql.query.fieldNames _o__c0
+                    hive.sql.query.fieldTypes decimal(11,6)
+                    hive.sql.query.split false
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _o__c0 (type: decimal(11,6))
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: decimal(11,6))
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 19 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  properties:
+                    hive.sql.query SELECT CAST(SUM("ss_net_paid_inc_tax") / COUNT("ss_net_paid_inc_tax") AS DECIMAL(11, 6)) AS "_o__c0"
+FROM (SELECT "ss_quantity", "ss_net_paid_inc_tax"
+FROM "store_sales") AS "t"
+WHERE "ss_quantity" BETWEEN 1 AND 20
+                    hive.sql.query.fieldNames _o__c0
+                    hive.sql.query.fieldTypes decimal(11,6)
+                    hive.sql.query.split false
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _o__c0 (type: decimal(11,6))
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: decimal(11,6))
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 20 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  properties:
+                    hive.sql.query SELECT COUNT(*) > 4595804 AS ">"
+FROM (SELECT "ss_quantity"
+FROM "store_sales") AS "t"
+WHERE "ss_quantity" BETWEEN 21 AND 40
+                    hive.sql.query.fieldNames >
+                    hive.sql.query.fieldTypes boolean
+                    hive.sql.query.split false
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: > (type: boolean)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: boolean)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 21 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  properties:
+                    hive.sql.query SELECT CAST(SUM("ss_ext_list_price") / COUNT("ss_ext_list_price") AS DECIMAL(11, 6)) AS "_o__c0"
+FROM (SELECT "ss_quantity", "ss_ext_list_price"
+FROM "store_sales") AS "t"
+WHERE "ss_quantity" BETWEEN 21 AND 40
+                    hive.sql.query.fieldNames _o__c0
+                    hive.sql.query.fieldTypes decimal(11,6)
+                    hive.sql.query.split false
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _o__c0 (type: decimal(11,6))
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: decimal(11,6))
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 22 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  properties:
+                    hive.sql.query SELECT CAST(SUM("ss_net_paid_inc_tax") / COUNT("ss_net_paid_inc_tax") AS DECIMAL(11, 6)) AS "_o__c0"
+FROM (SELECT "ss_quantity", "ss_net_paid_inc_tax"
+FROM "store_sales") AS "t"
+WHERE "ss_quantity" BETWEEN 21 AND 40
+                    hive.sql.query.fieldNames _o__c0
+                    hive.sql.query.fieldTypes decimal(11,6)
+                    hive.sql.query.split false
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _o__c0 (type: decimal(11,6))
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: decimal(11,6))
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 23 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  properties:
+                    hive.sql.query SELECT COUNT(*) > 7887297 AS ">"
+FROM (SELECT "ss_quantity"
+FROM "store_sales") AS "t"
+WHERE "ss_quantity" BETWEEN 41 AND 60
+                    hive.sql.query.fieldNames >
+                    hive.sql.query.fieldTypes boolean
+                    hive.sql.query.split false
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: > (type: boolean)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: boolean)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 24 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  properties:
+                    hive.sql.query SELECT CAST(SUM("ss_ext_list_price") / COUNT("ss_ext_list_price") AS DECIMAL(11, 6)) AS "_o__c0"
+FROM (SELECT "ss_quantity", "ss_ext_list_price"
+FROM "store_sales") AS "t"
+WHERE "ss_quantity" BETWEEN 41 AND 60
+                    hive.sql.query.fieldNames _o__c0
+                    hive.sql.query.fieldTypes decimal(11,6)
+                    hive.sql.query.split false
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _o__c0 (type: decimal(11,6))
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: decimal(11,6))
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 25 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  properties:
+                    hive.sql.query SELECT CAST(SUM("ss_net_paid_inc_tax") / COUNT("ss_net_paid_inc_tax") AS DECIMAL(11, 6)) AS "_o__c0"
+FROM (SELECT "ss_quantity", "ss_net_paid_inc_tax"
+FROM "store_sales") AS "t"
+WHERE "ss_quantity" BETWEEN 41 AND 60
+                    hive.sql.query.fieldNames _o__c0
+                    hive.sql.query.fieldTypes decimal(11,6)
+                    hive.sql.query.split false
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _o__c0 (type: decimal(11,6))
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: decimal(11,6))
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 26 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  properties:
+                    hive.sql.query SELECT COUNT(*) > 10872978 AS ">"
+FROM (SELECT "ss_quantity"
+FROM "store_sales") AS "t"
+WHERE "ss_quantity" BETWEEN 61 AND 80
+                    hive.sql.query.fieldNames >
+                    hive.sql.query.fieldTypes boolean
+                    hive.sql.query.split false
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: > (type: boolean)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: boolean)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 27 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  properties:
+                    hive.sql.query SELECT CAST(SUM("ss_ext_list_price") / COUNT("ss_ext_list_price") AS DECIMAL(11, 6)) AS "_o__c0"
+FROM (SELECT "ss_quantity", "ss_ext_list_price"
+FROM "store_sales") AS "t"
+WHERE "ss_quantity" BETWEEN 61 AND 80
+                    hive.sql.query.fieldNames _o__c0
+                    hive.sql.query.fieldTypes decimal(11,6)
+                    hive.sql.query.split false
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _o__c0 (type: decimal(11,6))
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: decimal(11,6))
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 28 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  properties:
+                    hive.sql.query SELECT CAST(SUM("ss_net_paid_inc_tax") / COUNT("ss_net_paid_inc_tax") AS DECIMAL(11, 6)) AS "_o__c0"
+FROM (SELECT "ss_quantity", "ss_net_paid_inc_tax"
+FROM "store_sales") AS "t"
+WHERE "ss_quantity" BETWEEN 61 AND 80
+                    hive.sql.query.fieldNames _o__c0
+                    hive.sql.query.fieldTypes decimal(11,6)
+                    hive.sql.query.split false
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _o__c0 (type: decimal(11,6))
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: decimal(11,6))
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 29 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  properties:
+                    hive.sql.query SELECT COUNT(*) > 43571537 AS ">"
+FROM (SELECT "ss_quantity"
+FROM "store_sales") AS "t"
+WHERE "ss_quantity" BETWEEN 81 AND 100
+                    hive.sql.query.fieldNames >
+                    hive.sql.query.fieldTypes boolean
+                    hive.sql.query.split false
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: > (type: boolean)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: boolean)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 30 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  properties:
+                    hive.sql.query SELECT CAST(SUM("ss_ext_list_price") / COUNT("ss_ext_list_price") AS DECIMAL(11, 6)) AS "_o__c0"
+FROM (SELECT "ss_quantity", "ss_ext_list_price"
+FROM "store_sales") AS "t"
+WHERE "ss_quantity" BETWEEN 81 AND 100
+                    hive.sql.query.fieldNames _o__c0
+                    hive.sql.query.fieldTypes decimal(11,6)
+                    hive.sql.query.split false
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _o__c0 (type: decimal(11,6))
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: decimal(11,6))
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 31 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  properties:
+                    hive.sql.query SELECT CAST(SUM("ss_net_paid_inc_tax") / COUNT("ss_net_paid_inc_tax") AS DECIMAL(11, 6)) AS "_o__c0"
+FROM (SELECT "ss_quantity", "ss_net_paid_inc_tax"
+FROM "store_sales") AS "t"
+WHERE "ss_quantity" BETWEEN 81 AND 100
+                    hive.sql.query.fieldNames _o__c0
+                    hive.sql.query.fieldTypes decimal(11,6)
+                    hive.sql.query.split false
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _o__c0 (type: decimal(11,6))
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: decimal(11,6))
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Reducer 10 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                Statistics: Num rows: 1 Data size: 693 Basic stats: PARTIAL Column stats: NONE
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 693 Basic stats: PARTIAL Column stats: NONE
+                  value expressions: _col1 (type: boolean), _col2 (type: decimal(11,6)), _col3 (type: decimal(11,6)), _col4 (type: boolean), _col5 (type: decimal(11,6)), _col6 (type: decimal(11,6)), _col7 (type: boolean), _col8 (type: decimal(11,6)), _col9 (type: decimal(11,6))
+        Reducer 11 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                Statistics: Num rows: 1 Data size: 698 Basic stats: PARTIAL Column stats: NONE
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 698 Basic stats: PARTIAL Column stats: NONE
+                  value expressions: _col1 (type: boolean), _col2 (type: decimal(11,6)), _col3 (type: decimal(11,6)), _col4 (type: boolean), _col5 (type: decimal(11,6)), _col6 (type: decimal(11,6)), _col7 (type: boolean), _col8 (type: decimal(11,6)), _col9 (type: decimal(11,6)), _col10 (type: boolean)
+        Reducer 12 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                Statistics: Num rows: 1 Data size: 811 Basic stats: PARTIAL Column stats: NONE
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 811 Basic stats: PARTIAL Column stats: NONE
+                  value expressions: _col1 (type: boolean), _col2 (type: decimal(11,6)), _col3 (type: decimal(11,6)), _col4 (type: boolean), _col5 (type: decimal(11,6)), _col6 (type: decimal(11,6)), _col7 (type: boolean), _col8 (type: decimal(11,6)), _col9 (type: decimal(11,6)), _col10 (type: boolean), _col11 (type: decimal(11,6))
+        Reducer 13 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                Statistics: Num rows: 1 Data size: 924 Basic stats: PARTIAL Column stats: NONE
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 924 Basic stats: PARTIAL Column stats: NONE
+                  value expressions: _col1 (type: boolean), _col2 (type: decimal(11,6)), _col3 (type: decimal(11,6)), _col4 (type: boolean), _col5 (type: decimal(11,6)), _col6 (type: decimal(11,6)), _col7 (type: boolean), _col8 (type: decimal(11,6)), _col9 (type: decimal(11,6)), _col10 (type: boolean), _col11 (type: decimal(11,6)), _col12 (type: decimal(11,6))
+        Reducer 14 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                Statistics: Num rows: 1 Data size: 929 Basic stats: PARTIAL Column stats: NONE
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 929 Basic stats: PARTIAL Column stats: NONE
+                  value expressions: _col1 (type: boolean), _col2 (type: decimal(11,6)), _col3 (type: decimal(11,6)), _col4 (type: boolean), _col5 (type: decimal(11,6)), _col6 (type: decimal(11,6)), _col7 (type: boolean), _col8 (type: decimal(11,6)), _col9 (type: decimal(11,6)), _col10 (type: boolean), _col11 (type: decimal(11,6)), _col12 (type: decimal(11,6)), _col13 (type: boolean)
+        Reducer 15 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14
+                Statistics: Num rows: 1 Data size: 1042 Basic stats: PARTIAL Column stats: NONE
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 1042 Basic stats: PARTIAL Column stats: NONE
+                  value expressions: _col1 (type: boolean), _col2 (type: decimal(11,6)), _col3 (type: decimal(11,6)), _col4 (type: boolean), _col5 (type: decimal(11,6)), _col6 (type: decimal(11,6)), _col7 (type: boolean), _col8 (type: decimal(11,6)), _col9 (type: decimal(11,6)), _col10 (type: boolean), _col11 (type: decimal(11,6)), _col12 (type: decimal(11,6)), _col13 (type: boolean), _col14 (type: decimal(11,6))
+        Reducer 16 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15
+                Statistics: Num rows: 1 Data size: 1155 Basic stats: PARTIAL Column stats: NONE
+                Select Operator
+                  expressions: if(_col1, _col2, _col3) (type: decimal(11,6)), if(_col4, _col5, _col6) (type: decimal(11,6)), if(_col7, _col8, _col9) (type: decimal(11,6)), if(_col10, _col11, _col12) (type: decimal(11,6)), if(_col13, _col14, _col15) (type: decimal(11,6))
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                  Statistics: Num rows: 1 Data size: 1155 Basic stats: PARTIAL Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 1155 Basic stats: PARTIAL Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col1
+                Statistics: Num rows: 1 Data size: 5 Basic stats: PARTIAL Column stats: NONE
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 5 Basic stats: PARTIAL Column stats: NONE
+                  value expressions: _col1 (type: boolean)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col1, _col2
+                Statistics: Num rows: 1 Data size: 118 Basic stats: PARTIAL Column stats: NONE
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 118 Basic stats: PARTIAL Column stats: NONE
+                  value expressions: _col1 (type: boolean), _col2 (type: decimal(11,6))
+        Reducer 4 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col1, _col2, _col3
+                Statistics: Num rows: 1 Data size: 231 Basic stats: PARTIAL Column stats: NONE
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 231 Basic stats: PARTIAL Column stats: NONE
+                  value expressions: _col1 (type: boolean), _col2 (type: decimal(11,6)), _col3 (type: decimal(11,6))
+        Reducer 5 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col1, _col2, _col3, _col4
+                Statistics: Num rows: 1 Data size: 236 Basic stats: PARTIAL Column stats: NONE
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 236 Basic stats: PARTIAL Column stats: NONE
+                  value expressions: _col1 (type: boolean), _col2 (type: decimal(11,6)), _col3 (type: decimal(11,6)), _col4 (type: boolean)
+        Reducer 6 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 1 Data size: 349 Basic stats: PARTIAL Column stats: NONE
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 349 Basic stats: PARTIAL Column stats: NONE
+                  value expressions: _col1 (type: boolean), _col2 (type: decimal(11,6)), _col3 (type: decimal(11,6)), _col4 (type: boolean), _col5 (type: decimal(11,6))
+        Reducer 7 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col1, _col2, _col3, _col4, _col5, _col6
+                Statistics: Num rows: 1 Data size: 462 Basic stats: PARTIAL Column stats: NONE
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 462 Basic stats: PARTIAL Column stats: NONE
+                  value expressions: _col1 (type: boolean), _col2 (type: decimal(11,6)), _col3 (type: decimal(11,6)), _col4 (type: boolean), _col5 (type: decimal(11,6)), _col6 (type: decimal(11,6))
+        Reducer 8 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                Statistics: Num rows: 1 Data size: 467 Basic stats: PARTIAL Column stats: NONE
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 467 Basic stats: PARTIAL Column stats: NONE
+                  value expressions: _col1 (type: boolean), _col2 (type: decimal(11,6)), _col3 (type: decimal(11,6)), _col4 (type: boolean), _col5 (type: decimal(11,6)), _col6 (type: decimal(11,6)), _col7 (type: boolean)
+        Reducer 9 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 580 Basic stats: PARTIAL Column stats: NONE
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 580 Basic stats: PARTIAL Column stats: NONE
+                  value expressions: _col1 (type: boolean), _col2 (type: decimal(11,6)), _col3 (type: decimal(11,6)), _col4 (type: boolean), _col5 (type: decimal(11,6)), _col6 (type: decimal(11,6)), _col7 (type: boolean), _col8 (type: decimal(11,6))
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
