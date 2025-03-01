@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.metastore.CheckResult;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreChecker;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -70,11 +71,17 @@ public class TestHiveMetaStoreChecker {
   private final String catName = "hive";
   private final String dbName = "testhivemetastorechecker_db";
   private final String tableName = "testhivemetastorechecker_table";
+  private final String externalTableName = "testhivemetastorechecker_table_external";
 
   private final String partDateName = "partdate";
   private final String partCityName = "partcity";
 
+  private final String partIdName = "partid";
+
+  private final String partStateName = "partstate";
+
   private List<FieldSchema> partCols;
+  private List<FieldSchema> partColsExt;
   private List<Map<String, String>> parts;
 
   @Before
@@ -84,6 +91,7 @@ public class TestHiveMetaStoreChecker {
     conf.set(MetastoreConf.ConfVars.FS_HANDLER_THREADS_COUNT.getVarname(), "15");
     conf.set(MetastoreConf.ConfVars.MSCK_PATH_VALIDATION.getVarname(), "throw");
     msc = new HiveMetaStoreClient(conf);
+    conf.set("hcat.dynamic.partitioning.custom.pattern","const/${partstate}/const2/${partid}-${partcity}");
     checker = new HiveMetaStoreChecker(msc, conf);
 
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
@@ -95,6 +103,11 @@ public class TestHiveMetaStoreChecker {
     partCols = new ArrayList<>();
     partCols.add(new FieldSchema(partDateName, serdeConstants.STRING_TYPE_NAME, ""));
     partCols.add(new FieldSchema(partCityName, serdeConstants.STRING_TYPE_NAME, ""));
+
+    partColsExt = new ArrayList<FieldSchema>();
+    partColsExt.add(new FieldSchema(partCityName,serdeConstants.STRING_TYPE_NAME,""));
+    partColsExt.add(new FieldSchema(partStateName,serdeConstants.STRING_TYPE_NAME,""));
+    partColsExt.add(new FieldSchema(partIdName,serdeConstants.STRING_TYPE_NAME,""));
 
     parts = new ArrayList<>();
     Map<String, String> part1 = new HashMap<>();
@@ -340,6 +353,33 @@ public class TestHiveMetaStoreChecker {
     // Found the highest writeId
     assertEquals(3, result.getPartitionsNotInMs().iterator().next().getMaxWriteId());
     assertEquals(200, result.getPartitionsNotInMs().iterator().next().getMaxTxnId());
+  }
+
+  @Test
+  public void testCustomPartitionPatternCheck() throws HiveException, AlreadyExistsException, IOException, MetastoreException {
+    Table table = createTestExternalTable();
+    Path tablePath = table.getDataLocation();
+    fs = tablePath.getFileSystem(hive.getConf());
+    fs.mkdirs(new Path(tablePath,"const/CO/const2/1-denver"));
+    fs.mkdirs(new Path(tablePath,"const/CA/const2/1-sanjose"));
+    fs.mkdirs(new Path(tablePath,"const/CA/const2/2-sanfrancisco"));
+    fs.mkdirs(new Path(tablePath,"const/IL/const2/1-chicago"));
+    fs.mkdirs(new Path(tablePath,"const/TX/const2/1-dallas"));
+    fs.mkdirs(new Path(tablePath,"const/TX/const2/2-austin"));
+    fs.mkdirs(new Path(tablePath,"const/NY/const2/1-newyork"));
+    fs.createNewFile(new Path(tablePath,"const/CO/const2/1-denver/datafile"));
+    fs.createNewFile(new Path(tablePath,"const/CA/const2/1-sanjose/datafile"));
+    fs.createNewFile(new Path(tablePath,"const/CA/const2/2-sanfrancisco/datafile"));
+    fs.createNewFile(new Path(tablePath,"const/IL/const2/1-chicago/datafile"));
+    fs.createNewFile(new Path(tablePath,"const/TX/const2/1-dallas/datafile"));
+    fs.createNewFile(new Path(tablePath,"const/TX/const2/2-austin/datafile"));
+    fs.createNewFile(new Path(tablePath,"const/NY/const2/1-newyork/datafile"));
+    hive.getConf().set("hcat.dynamic.partitioning.custom.pattern","const/${partstate}/const2/${partid}-${partcity}");
+    CheckResult result = checker.checkMetastore(null, dbName, externalTableName, null, null);
+    assertEquals(7, result.getPartitionsNotInMs().size());
+    //cleanup
+    hive.dropTable(dbName, externalTableName);
+    fs.delete(tablePath, true);
   }
 
   @Test
@@ -810,6 +850,23 @@ public class TestHiveMetaStoreChecker {
     for (Map<String, String> partSpec : parts) {
       hive.createPartition(table, partSpec);
     }
+    return table;
+  }
+
+  private Table createTestExternalTable() throws AlreadyExistsException, HiveException {
+    Database db = new Database();
+    db.setName(dbName);
+    hive.createDatabase(db, true);
+
+    Table table = new Table(dbName, externalTableName);
+    table.setDbName(dbName);
+    table.setInputFormatClass(TextInputFormat.class);
+    table.setOutputFormatClass(HiveIgnoreKeyTextOutputFormat.class);
+    table.setPartCols(partColsExt);
+
+    hive.createTable(table);
+    table = hive.getTable(dbName, externalTableName);
+    table.setTableType(TableType.EXTERNAL_TABLE);
     return table;
   }
   private Table createNonPartitionedTable() throws Exception {

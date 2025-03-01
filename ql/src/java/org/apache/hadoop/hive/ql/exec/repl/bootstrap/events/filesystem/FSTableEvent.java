@@ -179,7 +179,7 @@ public class FSTableEvent implements TableEvent {
           sd.getBucketCols(), sd.getSortCols(), columnStatistics, writeId);
 
       AlterTableAddPartitionDesc addPartitionDesc = new AlterTableAddPartitionDesc(tblDesc.getDatabaseName(),
-          tblDesc.getTableName(), true, ImmutableList.of(partitionDesc));
+          tblDesc.getTableName(), true, ImmutableList.of(partitionDesc), hiveConf.get("hcat.dynamic.partitioning.custom.pattern"));
       addPartitionDesc.setReplicationSpec(replicationSpec());
       return addPartitionDesc;
     } catch (Exception e) {
