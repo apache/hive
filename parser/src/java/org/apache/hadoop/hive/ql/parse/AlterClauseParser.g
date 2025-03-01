@@ -53,6 +53,7 @@ alterStatement
     | KW_ALTER (KW_DATABASE|KW_SCHEMA) alterDatabaseStatementSuffix -> alterDatabaseStatementSuffix
     | KW_ALTER KW_DATACONNECTOR alterDataConnectorStatementSuffix -> alterDataConnectorStatementSuffix
     | KW_OPTIMIZE KW_TABLE tableName optimizeTableStatementSuffix -> ^(TOK_ALTERTABLE tableName optimizeTableStatementSuffix)
+    | KW_ALTER KW_CATALOG alterCatalogStatementSuffix -> alterCatalogStatementSuffix
     ;
 
 alterTableStatementSuffix
@@ -153,6 +154,19 @@ alterMaterializedViewSuffixRebuild[CommonTree tableNameTree]
 @init { gParent.pushMsg("alter materialized view rebuild statement", state); }
 @after { gParent.popMsg(state); }
     : KW_REBUILD -> ^(TOK_ALTER_MATERIALIZED_VIEW_REBUILD {$tableNameTree})
+    ;
+
+alterCatalogStatementSuffix
+@init { gParent.pushMsg("alter catalog statement", state); }
+@after { gParent.popMsg(state); }
+    : alterCatalogSuffixSetLocation
+    ;
+
+alterCatalogSuffixSetLocation
+@init { gParent.pushMsg("alter catalog set location", state); }
+@after { gParent.popMsg(state); }
+    : catName=identifier KW_SET KW_LOCATION newLocation=StringLiteral
+    -> ^(TOK_ALTERCATALOG_LOCATION $catName $newLocation)
     ;
 
 alterDatabaseStatementSuffix
