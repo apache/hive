@@ -36,8 +36,6 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.util.Litmus;
 import org.apache.calcite.util.Pair;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.IncrementalRebuildMode;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -50,7 +48,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -67,11 +65,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
 /**
- * Functional and parallel execution tests for {@link MaterializedViewsCache}.
+ * Functional and parallel execution tests for {@link MaterializedViewMap}.
  * Parallel execution test is disabled by default.
  */
-class TestMaterializedViewsCache {
-  private MaterializedViewsCache materializedViewsCache;
+class TestMaterializedViewMap {
+  private MaterializedViewMap materializedViewMap;
   private Table defaultMV1;
   private HiveRelOptMaterialization defaultMaterialization1;
   private Table defaultMV1Same;
@@ -92,12 +90,12 @@ class TestMaterializedViewsCache {
     db1MV1 = getTable("db1", "mat1", "select col0 from t1 where col0 = 'foo'");
     db1Materialization1 = createMaterialization(db1MV1);
 
-    materializedViewsCache = new MaterializedViewsCache();
+    materializedViewMap = new MaterializedViewMap();
   }
 
   @Test
   void testEmptyCache() {
-    MaterializedViewsCache emptyCache = new MaterializedViewsCache();
+    MaterializedViewMap emptyCache = new MaterializedViewMap();
 
     ASTNode any = (ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, "any");
 
@@ -108,43 +106,43 @@ class TestMaterializedViewsCache {
 
   @Test
   void testGetByTableNameFromEmptyCache() {
-    MaterializedViewsCache emptyCache = new MaterializedViewsCache();
+    MaterializedViewMap emptyCache = new MaterializedViewMap();
 
     assertThat(emptyCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(nullValue()));
   }
 
   @Test
   void testQueryDoesNotMatchAnyMVDefinition() {
-    materializedViewsCache.putIfAbsent(defaultMV1, defaultMaterialization1);
+    materializedViewMap.putIfAbsent(defaultMV1, defaultMaterialization1);
 
     ASTNode notFound = (ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, "notFound");
 
-    assertThat(materializedViewsCache.get(notFound).isEmpty(), is(true));
-    assertThat(materializedViewsCache.values().size(), is(1));
+    assertThat(materializedViewMap.get(notFound).isEmpty(), is(true));
+    assertThat(materializedViewMap.values().size(), is(1));
   }
 
   @Test
   void testAdd() {
-    materializedViewsCache.putIfAbsent(defaultMV1, defaultMaterialization1);
+    materializedViewMap.putIfAbsent(defaultMV1, defaultMaterialization1);
 
-    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultMaterialization1));
-    assertThat(materializedViewsCache.get(defaultMaterialization1.getAst()).size(), is(1));
-    assertThat(materializedViewsCache.get(defaultMaterialization1.getAst()).get(0), is(defaultMaterialization1));
-    assertThat(materializedViewsCache.isEmpty(), is(false));
-    assertThat(materializedViewsCache.values().size(), is(1));
-    assertThat(materializedViewsCache.values().get(0), is(defaultMaterialization1));
+    assertThat(materializedViewMap.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultMaterialization1));
+    assertThat(materializedViewMap.get(defaultMaterialization1.getAst()).size(), is(1));
+    assertThat(materializedViewMap.get(defaultMaterialization1.getAst()).stream().findFirst().get(), is(defaultMaterialization1));
+    assertThat(materializedViewMap.isEmpty(), is(false));
+    assertThat(materializedViewMap.values().size(), is(1));
+    assertThat(materializedViewMap.values().stream().findFirst().get(), is(defaultMaterialization1));
   }
 
   @Test
   void testAddSameMVTwice() {
-    materializedViewsCache.putIfAbsent(defaultMV1, defaultMaterialization1);
-    materializedViewsCache.putIfAbsent(defaultMV1, defaultMaterialization1);
+    materializedViewMap.putIfAbsent(defaultMV1, defaultMaterialization1);
+    materializedViewMap.putIfAbsent(defaultMV1, defaultMaterialization1);
 
-    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultMaterialization1));
-    assertThat(materializedViewsCache.get(defaultMaterialization1.getAst()).size(), is(1));
-    assertThat(materializedViewsCache.get(defaultMaterialization1.getAst()).get(0), is(defaultMaterialization1));
-    assertThat(materializedViewsCache.values().size(), is(1));
-    assertThat(materializedViewsCache.values().get(0), is(defaultMaterialization1));
+    assertThat(materializedViewMap.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultMaterialization1));
+    assertThat(materializedViewMap.get(defaultMaterialization1.getAst()).size(), is(1));
+    assertThat(materializedViewMap.get(defaultMaterialization1.getAst()).stream().findFirst().get(), is(defaultMaterialization1));
+    assertThat(materializedViewMap.values().size(), is(1));
+    assertThat(materializedViewMap.values().stream().findFirst().get(), is(defaultMaterialization1));
   }
 
   private Table getTable(String db, String tableName, String definition) {
@@ -164,105 +162,105 @@ class TestMaterializedViewsCache {
 
   @Test
   void testAddMVsWithSameDefinition() {
-    materializedViewsCache.putIfAbsent(defaultMV1, defaultMaterialization1);
-    materializedViewsCache.putIfAbsent(defaultMV1Same, defaultMaterialization1Same);
+    materializedViewMap.putIfAbsent(defaultMV1, defaultMaterialization1);
+    materializedViewMap.putIfAbsent(defaultMV1Same, defaultMaterialization1Same);
 
-    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultMaterialization1));
-    assertThat(materializedViewsCache.get(defaultMV1Same.getDbName(), defaultMV1Same.getTableName()), is(defaultMaterialization1Same));
-    assertThat(materializedViewsCache.get(defaultMaterialization1.getAst()).size(), is(2));
-    assertThat(materializedViewsCache.get(defaultMaterialization1.getAst()), hasItem(defaultMaterialization1));
-    assertThat(materializedViewsCache.get(defaultMaterialization1.getAst()), hasItem(defaultMaterialization1Same));
-    assertThat(materializedViewsCache.isEmpty(), is(false));
-    assertThat(materializedViewsCache.values().size(), is(2));
+    assertThat(materializedViewMap.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultMaterialization1));
+    assertThat(materializedViewMap.get(defaultMV1Same.getDbName(), defaultMV1Same.getTableName()), is(defaultMaterialization1Same));
+    assertThat(materializedViewMap.get(defaultMaterialization1.getAst()).size(), is(2));
+    assertThat(materializedViewMap.get(defaultMaterialization1.getAst()), hasItem(defaultMaterialization1));
+    assertThat(materializedViewMap.get(defaultMaterialization1.getAst()), hasItem(defaultMaterialization1Same));
+    assertThat(materializedViewMap.isEmpty(), is(false));
+    assertThat(materializedViewMap.values().size(), is(2));
   }
 
   @Test
   void testAddMVsWithSameDefinitionButDifferentDatabase() {
-    materializedViewsCache.putIfAbsent(defaultMV1, defaultMaterialization1);
-    materializedViewsCache.putIfAbsent(db1MV1, db1Materialization1);
+    materializedViewMap.putIfAbsent(defaultMV1, defaultMaterialization1);
+    materializedViewMap.putIfAbsent(db1MV1, db1Materialization1);
 
-    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultMaterialization1));
-    assertThat(materializedViewsCache.get(db1MV1.getDbName(), db1MV1.getTableName()), is(db1Materialization1));
-    assertThat(materializedViewsCache.get(defaultMaterialization1.getAst()).size(), is(2));
-    assertThat(materializedViewsCache.get(defaultMaterialization1.getAst()), hasItem(defaultMaterialization1));
-    assertThat(materializedViewsCache.get(defaultMaterialization1.getAst()), hasItem(db1Materialization1));
-    assertThat(materializedViewsCache.isEmpty(), is(false));
-    assertThat(materializedViewsCache.values().size(), is(2));
+    assertThat(materializedViewMap.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultMaterialization1));
+    assertThat(materializedViewMap.get(db1MV1.getDbName(), db1MV1.getTableName()), is(db1Materialization1));
+    assertThat(materializedViewMap.get(defaultMaterialization1.getAst()).size(), is(2));
+    assertThat(materializedViewMap.get(defaultMaterialization1.getAst()), hasItem(defaultMaterialization1));
+    assertThat(materializedViewMap.get(defaultMaterialization1.getAst()), hasItem(db1Materialization1));
+    assertThat(materializedViewMap.isEmpty(), is(false));
+    assertThat(materializedViewMap.values().size(), is(2));
   }
 
   @Test
   void testLookupByTextIsCaseSensitive() {
-    materializedViewsCache.putIfAbsent(defaultMV1, defaultMaterialization1);
-    materializedViewsCache.putIfAbsent(defaultMVUpCase, defaultMaterializationUpCase);
+    materializedViewMap.putIfAbsent(defaultMV1, defaultMaterialization1);
+    materializedViewMap.putIfAbsent(defaultMVUpCase, defaultMaterializationUpCase);
 
-    assertThat(materializedViewsCache.get(defaultMaterialization1.getAst()).size(), is(1));
-    assertThat(materializedViewsCache.get(defaultMaterialization1.getAst()), hasItem(defaultMaterialization1));
-    assertThat(materializedViewsCache.isEmpty(), is(false));
-    assertThat(materializedViewsCache.values().size(), is(2));
+    assertThat(materializedViewMap.get(defaultMaterialization1.getAst()).size(), is(1));
+    assertThat(materializedViewMap.get(defaultMaterialization1.getAst()), hasItem(defaultMaterialization1));
+    assertThat(materializedViewMap.isEmpty(), is(false));
+    assertThat(materializedViewMap.values().size(), is(2));
   }
 
   @Test
   void testRefreshWhenMVWasNotCached() {
-    materializedViewsCache.refresh(defaultMV1, defaultMV1, defaultMaterialization1);
+    materializedViewMap.refresh(defaultMV1, defaultMV1, defaultMaterialization1);
 
-    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultMaterialization1));
-    assertThat(materializedViewsCache.get(defaultMaterialization1.getAst()).size(), is(1));
-    assertThat(materializedViewsCache.get(defaultMaterialization1.getAst()), hasItem(defaultMaterialization1));
-    assertThat(materializedViewsCache.isEmpty(), is(false));
-    assertThat(materializedViewsCache.values().size(), is(1));
-    assertThat(materializedViewsCache.values(), hasItem(defaultMaterialization1));
+    assertThat(materializedViewMap.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultMaterialization1));
+    assertThat(materializedViewMap.get(defaultMaterialization1.getAst()).size(), is(1));
+    assertThat(materializedViewMap.get(defaultMaterialization1.getAst()), hasItem(defaultMaterialization1));
+    assertThat(materializedViewMap.isEmpty(), is(false));
+    assertThat(materializedViewMap.values().size(), is(1));
+    assertThat(materializedViewMap.values(), hasItem(defaultMaterialization1));
   }
 
   @Test
   void testRefreshWhenMVIsCachedButWasUpdated() throws ParseException {
-    materializedViewsCache.putIfAbsent(defaultMV1, defaultMaterialization1);
+    materializedViewMap.putIfAbsent(defaultMV1, defaultMaterialization1);
     HiveRelOptMaterialization newMaterialization = createMaterialization(defaultMV1);
-    materializedViewsCache.refresh(defaultMV1, defaultMV1, newMaterialization);
+    materializedViewMap.refresh(defaultMV1, defaultMV1, newMaterialization);
 
     assertThat(newMaterialization, is(not(defaultMaterialization1)));
-    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(newMaterialization));
-    assertThat(materializedViewsCache.get(defaultMaterialization1.getAst()).size(), is(1));
-    assertThat(materializedViewsCache.get(defaultMaterialization1.getAst()), hasItem(newMaterialization));
-    assertThat(materializedViewsCache.isEmpty(), is(false));
-    assertThat(materializedViewsCache.values().size(), is(1));
-    assertThat(materializedViewsCache.values(), hasItem(newMaterialization));
+    assertThat(materializedViewMap.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(newMaterialization));
+    assertThat(materializedViewMap.get(defaultMaterialization1.getAst()).size(), is(1));
+    assertThat(materializedViewMap.get(defaultMaterialization1.getAst()), hasItem(newMaterialization));
+    assertThat(materializedViewMap.isEmpty(), is(false));
+    assertThat(materializedViewMap.values().size(), is(1));
+    assertThat(materializedViewMap.values(), hasItem(newMaterialization));
   }
 
   @Test
   void testRefreshWhenMVRefersToANewMaterialization() {
-    materializedViewsCache.putIfAbsent(defaultMV1, defaultMaterialization1);
-    materializedViewsCache.refresh(defaultMV1Same, defaultMV1, defaultMaterialization1);
+    materializedViewMap.putIfAbsent(defaultMV1, defaultMaterialization1);
+    materializedViewMap.refresh(defaultMV1Same, defaultMV1, defaultMaterialization1);
 
-    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultMaterialization1));
-    assertThat(materializedViewsCache.get(defaultMaterialization1.getAst()).size(), is(1));
-    assertThat(materializedViewsCache.get(defaultMaterialization1.getAst()), hasItem(defaultMaterialization1));
-    assertThat(materializedViewsCache.isEmpty(), is(false));
-    assertThat(materializedViewsCache.values().size(), is(1));
-    assertThat(materializedViewsCache.values(), hasItem(defaultMaterialization1));
+    assertThat(materializedViewMap.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultMaterialization1));
+    assertThat(materializedViewMap.get(defaultMaterialization1.getAst()).size(), is(1));
+    assertThat(materializedViewMap.get(defaultMaterialization1.getAst()), hasItem(defaultMaterialization1));
+    assertThat(materializedViewMap.isEmpty(), is(false));
+    assertThat(materializedViewMap.values().size(), is(1));
+    assertThat(materializedViewMap.values(), hasItem(defaultMaterialization1));
   }
 
   @Test
   void testRemoveByTable() {
-    materializedViewsCache.putIfAbsent(defaultMV1, defaultMaterialization1);
+    materializedViewMap.putIfAbsent(defaultMV1, defaultMaterialization1);
 
-    materializedViewsCache.remove(defaultMV1);
+    materializedViewMap.remove(defaultMV1);
 
-    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(nullValue()));
-    assertThat(materializedViewsCache.get(defaultMaterialization1.getAst()).isEmpty(), is(true));
-    assertThat(materializedViewsCache.isEmpty(), is(true));
-    assertThat(materializedViewsCache.values().isEmpty(), is(true));
+    assertThat(materializedViewMap.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(nullValue()));
+    assertThat(materializedViewMap.get(defaultMaterialization1.getAst()).isEmpty(), is(true));
+    assertThat(materializedViewMap.isEmpty(), is(true));
+    assertThat(materializedViewMap.values().isEmpty(), is(true));
   }
 
   @Test
   void testRemoveByTableName() {
-    materializedViewsCache.putIfAbsent(defaultMV1, defaultMaterialization1);
+    materializedViewMap.putIfAbsent(defaultMV1, defaultMaterialization1);
 
-    materializedViewsCache.remove(defaultMV1.getDbName(), defaultMV1.getTableName());
+    materializedViewMap.remove(defaultMV1.getDbName(), defaultMV1.getTableName());
 
-    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(nullValue()));
-    assertThat(materializedViewsCache.get(defaultMaterialization1.getAst()).isEmpty(), is(true));
-    assertThat(materializedViewsCache.isEmpty(), is(true));
-    assertThat(materializedViewsCache.values().isEmpty(), is(true));
+    assertThat(materializedViewMap.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(nullValue()));
+    assertThat(materializedViewMap.get(defaultMaterialization1.getAst()).isEmpty(), is(true));
+    assertThat(materializedViewMap.isEmpty(), is(true));
+    assertThat(materializedViewMap.values().isEmpty(), is(true));
   }
 
   @Disabled("Testing parallelism only")
@@ -291,15 +289,15 @@ class TestMaterializedViewsCache {
     List<Callable<Void>> callableList = new ArrayList<>();
     callableList.add(() -> {
       for (Pair<Table, HiveRelOptMaterialization> entry : testData) {
-        materializedViewsCache.refresh(entry.left, entry.left, entry.right);
+        materializedViewMap.refresh(entry.left, entry.left, entry.right);
       }
       return null;
     });
     callableList.add(() -> {
       for (int j = 0; j < ITERATIONS; ++j) {
         for (Pair<Table, HiveRelOptMaterialization> entry : testData) {
-          materializedViewsCache.remove(entry.left);
-          materializedViewsCache.putIfAbsent(entry.left, entry.right);
+          materializedViewMap.remove(entry.left);
+          materializedViewMap.putIfAbsent(entry.left, entry.right);
         }
       }
       return null;
@@ -307,14 +305,14 @@ class TestMaterializedViewsCache {
     for (Pair<Table, HiveRelOptMaterialization> entry : testData) {
       callableList.add(() -> {
         for (int j = 0; j < ITERATIONS; ++j) {
-          materializedViewsCache.get(entry.right.getAst());
+          materializedViewMap.get(entry.right.getAst());
         }
         return null;
       });
     }
     callableList.add(() -> {
       for (int j = 0; j < ITERATIONS; ++j) {
-        List<HiveRelOptMaterialization> materializations = materializedViewsCache.values();
+        Collection<HiveRelOptMaterialization> materializations = materializedViewMap.values();
       }
       return null;
     });
