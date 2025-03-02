@@ -95,7 +95,7 @@
 
     <property>
         <name>templeton.controller.mr.child.opts</name>
-        <value> -Xmx64m -Djava.net.preferIPv6Stack=true</value>
+        <value> -Xmx64m -Djava.net.preferIPv6Stack=true -Djava.net.preferIPv6Addresses=true</value>
     </property>
 
     <property>

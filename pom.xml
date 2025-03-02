@@ -1817,6 +1817,7 @@
             <test.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</test.warehouse.dir>
             <test.local.warehouse.dir>${test.warehouse.scheme}${test.local.warehouse.dir}</test.local.warehouse.dir>
             <java.net.preferIPv6Stack>true</java.net.preferIPv6Stack>
+            <java.net.preferIPv6Addresses>true</java.net.preferIPv6Addresses>
             <!-- EnforceReadOnlyTables hook and QTestUtil -->
             <test.src.tables/>
             <java.security.krb5.conf>${test.conf.dir}/krb5.conf</java.security.krb5.conf>
