@@ -17,7 +17,7 @@
     <version>4.1.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>hive-metastore-rest-catalog</artifactId>
+  <artifactId>hive-standalone-metastore-rest-catalog</artifactId>
   <name>Hive Metastore REST Catalog</name>
   <properties>
     <standalone.metastore.path.to.root>..</standalone.metastore.path.to.root>
@@ -44,26 +44,7 @@
       <artifactId>hive-iceberg-catalog</artifactId>
       <version>${hive.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.apache.iceberg</groupId>
-      <artifactId>iceberg-bundled-guava</artifactId>
-      <version>${iceberg.version}</version>
-    </dependency>
-    <!-- Intellij dislikes shaded Iceberg: uncomment the following 2 blocks helps when coding/debugging -->
-    <!--
-    <dependency>
-      <groupId>org.apache.iceberg</groupId>
-      <artifactId>iceberg-api</artifactId>
-      <version>${iceberg.version}</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.iceberg</groupId>
-      <artifactId>iceberg-core</artifactId>
-      <version>${iceberg.version}</version>
-      <optional>true</optional>
-    </dependency>
-    -->
+    <!-- Test dependencies -->
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-common</artifactId>
@@ -82,6 +63,7 @@
       <groupId>org.apache.httpcomponents.core5</groupId>
       <artifactId>httpcore5</artifactId>
       <version>5.2</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
