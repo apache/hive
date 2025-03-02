@@ -50,8 +50,8 @@ public class HMSServletTest1A extends HMSServletTest1 {
     if (servletServer == null || !servletServer.isStarted()) {
       Assert.fail("http server did not start");
     }
-    sport = HiveMetaStore.getPropertyServletPort();
-    return sport;
+    servletPort = HiveMetaStore.getPropertyServletPort();
+    return servletPort;
   }
 
   @Override

@@ -125,12 +125,14 @@ public class ServletSecurity {
       this.delegate = delegate;
     }
 
-    @Override public void init() throws ServletException {
+    @Override
+    public void init() throws ServletException {
       ServletSecurity.this.init();
       delegate.init();
     }
 
-    @Override public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    @Override
+    public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
       execute(request, response, delegate::service);
     }
   }
@@ -281,7 +283,7 @@ public class ServletSecurity {
    * @return null if no ssl in config, an instance otherwise
    * @throws IOException if getting password fails
    */
-  public static SslContextFactory createSslContextFactory(Configuration conf) throws IOException {
+  static SslContextFactory createSslContextFactory(Configuration conf) throws IOException {
     final boolean useSsl  = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_SSL);
     if (!useSsl) {
       return null;

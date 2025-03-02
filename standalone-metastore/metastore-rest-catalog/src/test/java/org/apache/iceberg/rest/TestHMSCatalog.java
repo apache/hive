@@ -22,7 +22,7 @@ package org.apache.iceberg.rest;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -71,8 +71,8 @@ public class TestHMSCatalog extends HMSTestBase {
     Map<String, Object> nsrep = (Map<String, Object>) response;
     List<List<String>> nslist = (List<List<String>>) nsrep.get("namespaces");
     Assert.assertEquals(2, nslist.size());
-    Assert.assertTrue((nslist.contains(Arrays.asList("default"))));
-    Assert.assertTrue((nslist.contains(Arrays.asList("hivedb"))));
+    Assert.assertTrue((nslist.contains(Collections.singletonList("default"))));
+    Assert.assertTrue((nslist.contains(Collections.singletonList("hivedb"))));
     // succeed
     response = clientCall(jwt, url, "POST", false, "{ \"namespace\" : [ \""+ns+"\" ], "+
             "\"properties\":{ \"owner\": \"apache\", \"group\" : \"iceberg\" }"
@@ -94,9 +94,7 @@ public class TestHMSCatalog extends HMSTestBase {
 
     // quick check on metrics
     Map<String, Long> counters = reportMetricCounters("list_namespaces", "list_tables");
-    counters.entrySet().forEach(m->{
-      Assert.assertTrue(m.getKey(), m.getValue() > 0);
-    });
+    counters.forEach((key, value) -> Assert.assertTrue(key, value > 0));
   }
   
   private Schema getTestSchema() {
@@ -136,8 +134,8 @@ public class TestHMSCatalog extends HMSTestBase {
       Assert.assertEquals(200, (int) eval(response, "json -> json.status"));
       List<List<String>> nslist = (List<List<String>>) eval(response, "json -> json.namespaces");
       Assert.assertEquals(2, nslist.size());
-      Assert.assertTrue((nslist.contains(Arrays.asList("default"))));
-      Assert.assertTrue((nslist.contains(Arrays.asList("hivedb"))));
+      Assert.assertTrue((nslist.contains(Collections.singletonList("default"))));
+      Assert.assertTrue((nslist.contains(Collections.singletonList("hivedb"))));
 
       // list tables in hivedb
       url = iceUri.resolve("namespaces/" + DB_NAME + "/tables").toURL();

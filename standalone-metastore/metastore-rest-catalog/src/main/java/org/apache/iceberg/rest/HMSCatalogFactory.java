@@ -35,10 +35,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Iceberg Catalog server creator.
+ * Catalog & servlet factory.
  */
 public class HMSCatalogFactory {
   private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogFactory.class);
+  /**
+   * Convenience soft reference to last catalog.
+   */
   protected static final AtomicReference<Reference<Catalog>> catalogRef = new AtomicReference<>();
 
   public static Catalog getLastCatalog() {
@@ -55,6 +58,13 @@ public class HMSCatalogFactory {
   protected final String path;
   protected Catalog catalog;
 
+  /**
+   * Factory constructor.
+   * <p>Called by the static method {@link HMSCatalogFactory#createServlet(Configuration)} that is
+   * declared in configuration and found through introspection.</p>
+   * @param conf the configuration
+   * @param catalog the catalog
+   */
   protected HMSCatalogFactory(Configuration conf, Catalog catalog) {
     port = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_SERVLET_PORT);
     path = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_SERVLET_PATH);
@@ -74,6 +84,10 @@ public class HMSCatalogFactory {
     return catalog;
   }
 
+  /**
+   * Creates the catalog instance.
+   * @return the catalog
+   */
   protected Catalog createCatalog() {
     final Map<String, String> properties = new TreeMap<>();
     MetastoreConf.setVar(configuration, MetastoreConf.ConfVars.THRIFT_URIS, "");
@@ -97,11 +111,21 @@ public class HMSCatalogFactory {
     return expiry > 0 ? new HMSCachingCatalog<>(catalog, expiry) : catalog;
   }
 
-  protected HttpServlet createServlet(Catalog catalog) throws IOException {
+  /**
+   * Creates the REST catalog servlet instance.
+   * @param catalog the Iceberg catalog
+   * @return the servlet
+   */
+  protected HttpServlet createServlet(Catalog catalog) {
     ServletSecurity security = new ServletSecurity(configuration);
     return security.proxy(new HMSCatalogServlet(new HMSCatalogAdapter(catalog)));
   }
 
+  /**
+   * Creates the REST catalog servlet instance.
+   * @return the servlet
+   * @throws IOException if creation fails
+   */
   protected HttpServlet createServlet() throws IOException {
     if (port >= 0 && path != null && !path.isEmpty()) {
       Catalog actualCatalog = catalog;
@@ -113,15 +137,16 @@ public class HMSCatalogFactory {
     }
     return null;
   }
-
   
   /**
    * Factory method to describe Iceberg servlet.
-   * <p>This one is looked up through reflection to start from HMS.</p>
+   * <p>This method name is found through configuration as {@link MetastoreConf.ConfVars#ICEBERG_CATALOG_SERVLET_FACTORY}
+   * and looked up through reflection to start from HMS.</p>
    *
    * @param configuration the configuration
    * @return the servlet descriptor instance
    */
+  @SuppressWarnings("unused")
   public static ServletServerBuilder.Descriptor createServlet(Configuration configuration) {
     try {
       HMSCatalogFactory hms = new HMSCatalogFactory(configuration, null);

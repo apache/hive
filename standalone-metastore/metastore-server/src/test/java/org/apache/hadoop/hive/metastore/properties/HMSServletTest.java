@@ -59,7 +59,7 @@ import org.junit.experimental.categories.Category;
 public class HMSServletTest extends HMSTestBase {
   String path = null;
   Server servletServer = null;
-  int sport = -1;
+  int servletPort = -1;
   
   @Before
   public void setUp() throws Exception {
@@ -67,26 +67,28 @@ public class HMSServletTest extends HMSTestBase {
     path = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
   }
 
-  @Override protected int createServer(Configuration conf) throws Exception {
+  @Override
+  protected int createServer(Configuration conf) throws Exception {
     if (servletServer == null) {
       servletServer = PropertyServlet.startServer(conf);
       if (servletServer == null || !servletServer.isStarted()) {
         Assert.fail("http server did not start");
       }
-      sport = servletServer.getURI().getPort();
+      servletPort = servletServer.getURI().getPort();
     }
-    return sport;
+    return servletPort;
   }
 
   /**
    * Stops the server.
    * @param port the server port
    */
-  @Override protected void stopServer(int port) throws Exception {
+  @Override
+  protected void stopServer(int port) throws Exception {
     if (servletServer != null) {
       servletServer.stop();
       servletServer = null;
-      sport = -1;
+      servletPort = -1;
     }
   }
 
@@ -154,7 +156,7 @@ public class HMSServletTest extends HMSTestBase {
 
   @Test
   public void testServletEchoA() throws Exception {
-    URL url = new URL("http://hive@localhost:" + sport + "/" + path + "/" + NS);
+    URL url = new URL("http://hive@localhost:" + servletPort + "/" + path + "/" + NS);
     Map<String, String> json = Collections.singletonMap("method", "echo");
     String jwt = generateJWT();
     // succeed
@@ -186,7 +188,7 @@ public class HMSServletTest extends HMSTestBase {
         .setScheme("http")
         .setUserInfo("hive")
         .setHost("localhost")
-        .setPort(sport)
+        .setPort(servletPort)
         .setPath("/" + path + "/" + NS)
         .setParameters(nvp)
         .build();
@@ -303,7 +305,7 @@ public class HMSServletTest extends HMSTestBase {
    * @throws Exception
    */
   private HttpPost createPost(String jwt, String msgBody) {
-    HttpPost method = new HttpPost("http://hive@localhost:" + sport + "/" + path + "/" + NS);
+    HttpPost method = new HttpPost("http://hive@localhost:" + servletPort + "/" + path + "/" + NS);
     method.addHeader("Authorization", "Bearer " + jwt);
     method.addHeader("Content-Type", "application/json");
     method.addHeader("Accept", "application/json");

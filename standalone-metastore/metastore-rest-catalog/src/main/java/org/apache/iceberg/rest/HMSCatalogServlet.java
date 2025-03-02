@@ -58,7 +58,12 @@ public class HMSCatalogServlet extends HttpServlet {
   public HMSCatalogServlet(HMSCatalogAdapter restCatalogAdapter) {
     this.restCatalogAdapter = restCatalogAdapter;
   }
-  
+
+  @Override
+  public String getServletName() {
+    return "HMS Catalog";
+  }
+
   @Override
   protected void service(HttpServletRequest request, HttpServletResponse response) {
     try {

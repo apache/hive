@@ -66,7 +66,7 @@ public class PropertyServlet extends HttpServlet {
 
   @Override
   public String getServletName() {
-    return "HMS property";
+    return "HMS Property";
   }
   
   private String strError(String msg, Object...args) {
@@ -180,7 +180,7 @@ public class PropertyServlet extends HttpServlet {
                 break;
               }
               default: {
-                throw new IllegalArgumentException("bad argument type " + action.getClass());
+                throw new IllegalArgumentException("Bad argument type " + action.getClass());
               }
             }
           }
@@ -317,12 +317,12 @@ public class PropertyServlet extends HttpServlet {
         HttpServlet servlet = security.proxy(new PropertyServlet(configuration));
         return new ServletServerBuilder.Descriptor(port, path, servlet) {
           @Override public String toString() {
-            return "HMS property";
+            return "HMS Property";
           }
         };
       }
     } catch (Exception io) {
-      LOGGER.error("failed to create servlet ", io);
+      LOGGER.error("Failed to create servlet ", io);
     }
     return null;
   }

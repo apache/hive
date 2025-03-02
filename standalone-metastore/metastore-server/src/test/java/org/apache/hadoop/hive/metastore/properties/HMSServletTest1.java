@@ -30,6 +30,7 @@ import java.util.TreeMap;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -48,12 +49,14 @@ public class HMSServletTest1 extends HMSServletTest {
   public void tearDown() throws Exception {
     if (client instanceof AutoCloseable) {
       ((AutoCloseable) client).close();
+      client = null;
     }
     super.tearDown();
   }
 
   @Override
   protected PropertyClient createClient(Configuration conf, int sport) throws Exception {
+    String path = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
     URL url = new URL("http://hive@localhost:" + sport + "/" + path + "/" + NS);
     String jwt = generateJWT();
     return new JSonHttpClient(jwt, url.toString());

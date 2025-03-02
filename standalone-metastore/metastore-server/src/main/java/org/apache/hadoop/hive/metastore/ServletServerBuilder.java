@@ -35,7 +35,6 @@ import org.slf4j.Logger;
 
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServlet;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -43,6 +42,7 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -53,7 +53,7 @@ public class ServletServerBuilder {
   /**
    * The configuration instance.
    */
-  protected final Configuration configuration;
+  private final Configuration configuration;
   /**
    * Keeping track of descriptors.
    */
@@ -64,7 +64,7 @@ public class ServletServerBuilder {
    *
    * @param conf the configuration
    */
-  protected ServletServerBuilder(Configuration conf) {
+  public ServletServerBuilder(Configuration conf) {
     this.configuration = conf;
   }
 
@@ -78,7 +78,7 @@ public class ServletServerBuilder {
   @SafeVarargs
   public static ServletServerBuilder builder(Configuration conf,
                                              Function<Configuration, ServletServerBuilder.Descriptor>... describe) {
-    List<ServletServerBuilder.Descriptor> descriptors = new ArrayList();
+    List<ServletServerBuilder.Descriptor> descriptors = new ArrayList<>();
     Arrays.asList(describe).forEach(functor -> {
       ServletServerBuilder.Descriptor descriptor = functor.apply(conf);
       if (descriptor != null) {
@@ -87,7 +87,7 @@ public class ServletServerBuilder {
     });
     if (!descriptors.isEmpty()) {
       ServletServerBuilder builder = new ServletServerBuilder(conf);
-      descriptors.forEach(d -> builder.addServlet(d));
+      descriptors.forEach(builder::addServlet);
       return builder;
     }
     return null;
@@ -106,7 +106,7 @@ public class ServletServerBuilder {
           Logger logger,
           Configuration conf,
           Function<Configuration, ServletServerBuilder.Descriptor>... describe) {
-    return builder(conf, describe).start(logger);
+    return Objects.requireNonNull(builder(conf, describe)).start(logger);
   }
 
   public Configuration getConfiguration() {
@@ -147,9 +147,8 @@ public class ServletServerBuilder {
    * <p>Default use configuration to determine thread-pool constants?</p>
    *
    * @return the server instance
-   * @throws IOException if server creation fails
    */
-  protected Server createServer() throws IOException {
+  private Server createServer() {
     final int maxThreads = MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.HTTPSERVER_THREADPOOL_MAX);
     final int minThreads = MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.HTTPSERVER_THREADPOOL_MIN);
     final int idleTimeout = MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.HTTPSERVER_THREADPOOL_IDLE);
@@ -166,9 +165,8 @@ public class ServletServerBuilder {
    * @param sslContextFactory the ssl factory
    * @param port              the port
    * @return the server connector listening to the port
-   * @throws IOException if server creation fails
    */
-  protected ServerConnector createConnector(Server server, SslContextFactory sslContextFactory, int port) throws IOException {
+  private ServerConnector createConnector(Server server, SslContextFactory sslContextFactory, int port) {
     final ServerConnector connector = new ServerConnector(server, sslContextFactory);
     connector.setPort(port);
     connector.setReuseAddress(true);
@@ -187,9 +185,8 @@ public class ServletServerBuilder {
    *
    * @param handlersMap the map of port to handlers
    * @param descriptor  the servlet descriptor
-   * @throws IOException
    */
-  protected void addServlet(Map<Integer, ServletContextHandler> handlersMap, Descriptor descriptor) throws IOException {
+  private void addServlet(Map<Integer, ServletContextHandler> handlersMap, Descriptor descriptor) {
     final int port = descriptor.getPort();
     final String path = descriptor.getPath();
     final HttpServlet servlet = descriptor.getServlet();
@@ -280,12 +277,10 @@ public class ServletServerBuilder {
         if (!server.isStarted()) {
           logger.error("Unable to start servlet server on {}", server.getURI());
         } else {
-          descriptorsMap.values().forEach(descriptor -> {
-            logger.info("Started {} servlet on {}:{}",
-                    descriptor.toString(),
-                    descriptor.getPort(),
-                    descriptor.getPath());
-          });
+          descriptorsMap.values().forEach(descriptor -> logger.info("Started {} servlet on {}:{}",
+                  descriptor.toString(),
+                  descriptor.getPort(),
+                  descriptor.getPath()));
         }
       }
       return server;
@@ -320,6 +315,7 @@ public class ServletServerBuilder {
 
     @Override
     public String toString() {
+      // can not use the servlet name since it is only valid after calling init()
       return servlet.getClass().getSimpleName() + ":" + port + "/" + path;
     }
 

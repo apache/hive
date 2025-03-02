@@ -768,6 +768,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw e;
       }
     }
+
     // optionally create and start the property and Iceberg REST server
     ServletServerBuilder builder = new ServletServerBuilder(conf);
     ServletServerBuilder.Descriptor properties = PropertyServlet.createServlet(conf);
@@ -783,6 +784,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         catalogServletPort = catalog.getPort();
       }
     }
+
     // main server
     thriftServer.start();
   }
@@ -799,10 +801,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Method iceStart = iceClazz.getMethod("createServlet", Configuration.class);
       return (ServletServerBuilder.Descriptor) iceStart.invoke(null, configuration);
     } catch (ClassNotFoundException xnf) {
-      LOG.warn("unable to start Iceberg REST Catalog server, missing jar?", xnf);
+      LOG.warn("Unable to start Iceberg REST Catalog server, missing jar?", xnf);
       return null;
     } catch (Exception e) {
-      LOG.error("unable to start Iceberg REST Catalog server", e);
+      LOG.error("Unable to start Iceberg REST Catalog server", e);
       return null;
     }
   }
