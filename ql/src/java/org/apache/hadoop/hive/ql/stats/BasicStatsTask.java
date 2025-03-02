@@ -126,6 +126,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     private BasicStatsWork work;
     private boolean followedColStats1;
     private Map<String, String> providedBasicStats;
+    private boolean skipUpdate = false;
 
     public BasicStatsProcessor(Partish partish, BasicStatsWork work, boolean followedColStats2) {
       this.partish = partish;
@@ -135,6 +136,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       Table table = partish.getTable();
       if (table.isNonNative() && table.getStorageHandler().canProvideBasicStatistics()) {
         providedBasicStats = table.getStorageHandler().computeBasicStatistics(partish);
+        skipUpdate = providedBasicStats.containsKey(StatsSetupConst.ROW_COUNT);
       }
     }
 
@@ -175,17 +177,17 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
 
       if (providedBasicStats == null) {
         MetaStoreServerUtils.populateQuickStats(partfileStatus, parameters);
-
-        if (statsAggregator != null) {
-          // Update stats for transactional tables (MM, or full ACID with overwrite), even
-          // though we are marking stats as not being accurate.
-          if (StatsSetupConst.areBasicStatsUptoDate(parameters) || p.isTransactionalTable()) {
-            String prefix = getAggregationPrefix(p.getTable(), p.getPartition());
-            updateStats(statsAggregator, parameters, prefix);
-          }
-        }
       } else {
         parameters.putAll(providedBasicStats);
+      }
+
+      if (statsAggregator != null && !skipUpdate) {
+        // Update stats for transactional tables (MM, or full ACID with overwrite), even
+        // though we are marking stats as not being accurate.
+        if (StatsSetupConst.areBasicStatsUptoDate(parameters) || p.isTransactionalTable()) {
+          String prefix = getAggregationPrefix(p.getTable(), p.getPartition());
+          updateStats(statsAggregator, parameters, prefix);
+        }
       }
 
       return p.getOutput();
