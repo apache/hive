@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -147,8 +148,10 @@ public class UDFToInteger extends UDF {
     if (i == null) {
       return null;
     } else {
+      HiveConf hiveConf = new HiveConf();
+      boolean strictIntegralCheck = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_STRICT_INTEGRAL_LIMIT);
       long value = i.get();
-      if (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE) {
+      if (strictIntegralCheck && (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE)) {
         throw new UDFArgumentException("Value out of range for Integer: " + value);
       }
       intWritable.set((int) i.get());

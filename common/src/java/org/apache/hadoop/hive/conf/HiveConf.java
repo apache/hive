@@ -1840,6 +1840,8 @@ public class HiveConf extends Configuration {
         "OFFSET is mostly meaningless when a result set doesn't have a total order."),
     HIVE_STRICT_TIMESTAMP_CONVERSION("hive.strict.timestamp.conversion", true,
         "Restricts unsafe numeric to timestamp conversions"),
+    HIVE_STRICT_INTEGRAL_LIMIT("hive.strict.integral.limit", true,
+            "Enabling strict limits for integral values (TINYINT, SMALLINT, INT, BIGINT)."),
     HIVE_LOAD_DATA_OWNER("hive.load.data.owner", "",
         "Set the owner of files loaded using load data in managed tables."),
 
