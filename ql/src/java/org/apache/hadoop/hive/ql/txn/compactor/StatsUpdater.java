@@ -91,7 +91,7 @@ public final class StatsUpdater {
             if (compactionQueueName != null && compactionQueueName.length() > 0) {
                 conf.set(TezConfiguration.TEZ_QUEUE_NAME, compactionQueueName);
             }
-            SessionState sessionState = DriverUtils.setUpSessionState(conf, userName, true);
+            SessionState sessionState = DriverUtils.setUpSessionState(conf, userName);
             DriverUtils.runOnDriver(conf, sessionState, sb.toString());
         } catch (Throwable t) {
             LOG.error(ci + ": gatherStats(" + ci.dbname + "," + ci.tableName + "," + ci.partName +
