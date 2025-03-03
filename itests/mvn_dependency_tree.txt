@@ -1,2 +1,0 @@
-org.apache.hive:hive-it:pom:4.1.0-SNAPSHOT
-\- org.slf4j:slf4j-api:jar:1.7.30:compile
