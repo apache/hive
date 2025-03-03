@@ -19,6 +19,10 @@
 package org.apache.iceberg.mr.hive.compaction;
 
 import java.util.List;
+import java.util.Optional;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorContext;
 import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFile;
@@ -29,6 +33,7 @@ import org.apache.iceberg.PositionDeletesScanTask;
 import org.apache.iceberg.ScanTask;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.io.CloseableIterable;
+import org.apache.iceberg.mr.hive.compaction.evaluator.amoro.TableProperties;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 
 public class IcebergCompactionUtil {
@@ -55,6 +60,12 @@ public class IcebergCompactionUtil {
             table.specs().get(file.specId()).partitionToPath(file.partition()).equals(partitionPath);
   }
 
+  public static boolean shouldIncludeForCompaction(Table table, String partitionPath, ContentFile<?> file,
+      long fileSizeThreshold) {
+    return shouldIncludeForCompaction(table, partitionPath, file) &&
+        (fileSizeThreshold == -1 || file.fileSizeInBytes() < fileSizeThreshold);
+  }
+
   /**
    * Returns table's list of data files as following:
    *  1. If the table is unpartitioned, returns all data files.
@@ -63,13 +74,13 @@ public class IcebergCompactionUtil {
    * @param table the iceberg table
    * @param partitionPath partition path
    */
-  public static List<DataFile> getDataFiles(Table table, String partitionPath) {
+  public static List<DataFile> getDataFiles(Table table, String partitionPath, long fileSizeThreshold) {
     CloseableIterable<FileScanTask> fileScanTasks =
         table.newScan().useSnapshot(table.currentSnapshot().snapshotId()).ignoreResiduals().planFiles();
     CloseableIterable<FileScanTask> filteredFileScanTasks =
         CloseableIterable.filter(fileScanTasks, t -> {
           DataFile file = t.asFileScanTask().file();
-          return shouldIncludeForCompaction(table, partitionPath, file);
+          return shouldIncludeForCompaction(table, partitionPath, file, fileSizeThreshold);
         });
     return Lists.newArrayList(CloseableIterable.transform(filteredFileScanTasks, t -> t.file()));
   }
@@ -93,5 +104,49 @@ public class IcebergCompactionUtil {
         });
     return Lists.newArrayList(CloseableIterable.transform(filteredDeletesScanTasks,
         t -> ((PositionDeletesScanTask) t).file()));
+  }
+
+  /**
+   * Returns target file size as following:
+   * In case of Minor compaction:
+   *  1. When COMPACTION_FILE_SIZE_THRESHOLD is defined, returns it.
+   *  2. Otherwise, calculates the file size threshold as:
+   *       COMPACTION_FILE_SIZE_THRESHOLD * TableProperties.HIVE_ICEBERG_COMPACTION_TARGET_FILE_SIZE
+   *     This makes Compaction evaluator consider data files with size less than file size threshold as undersized
+   *     segment files eligible for minor compaction (as per Amoro compaction evaluator, which is minor compaction
+   *     in Hive).
+   * In case of Major compaction returns -1.
+   * @param ci the compaction info
+   * @param conf Hive configuration
+   */
+  public static long getFileSizeThreshold(CompactionInfo ci, HiveConf conf) {
+    switch (ci.type) {
+      case MINOR:
+        return Optional.ofNullable(ci.getProperty(CompactorContext.COMPACTION_FILE_SIZE_THRESHOLD))
+            .map(HiveConf::toSizeBytes).orElse((long) (HiveConf.toSizeBytes(HiveConf.getVar(conf,
+                HiveConf.ConfVars.HIVE_ICEBERG_COMPACTION_TARGET_FILE_SIZE)) *
+                TableProperties.SELF_OPTIMIZING_MIN_TARGET_SIZE_RATIO_DEFAULT));
+      case MAJOR:
+        return -1;
+      default:
+        throw new RuntimeException(String.format("Unsupported compaction type %s", ci.type));
+    }
+  }
+
+  /**
+   * Returns target file size as following:
+   *  1. When COMPACTION_FILE_SIZE_THRESHOLD is defined, calculates target size as:
+   *       COMPACTION_FILE_SIZE_THRESHOLD / TableProperties.SELF_OPTIMIZING_MIN_TARGET_SIZE_RATIO_DEFAULT
+   *     This makes Compaction evaluator consider data files with size less than COMPACTION_FILE_SIZE_THRESHOLD as
+   *     fragments eligible for major (as per Amoro definition, minor compaction in Hive) compaction.
+   *  2. Otherwise, returns the default HIVE_ICEBERG_COMPACTION_TARGET_FILE_SIZE from HiveConf.
+   * @param ci the compaction info
+   * @param conf Hive configuration
+   */
+  public static long getTargetFileSize(CompactionInfo ci, HiveConf conf) {
+    return Optional.ofNullable(ci.getProperty(CompactorContext.COMPACTION_FILE_SIZE_THRESHOLD))
+        .map(HiveConf::toSizeBytes).map(x -> (long) (x / TableProperties.SELF_OPTIMIZING_MIN_TARGET_SIZE_RATIO_DEFAULT))
+        .orElse(HiveConf.toSizeBytes(HiveConf.getVar(conf,
+            HiveConf.ConfVars.HIVE_ICEBERG_COMPACTION_TARGET_FILE_SIZE)));
   }
 }

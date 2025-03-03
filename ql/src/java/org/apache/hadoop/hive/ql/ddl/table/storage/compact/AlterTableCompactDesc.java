@@ -45,10 +45,11 @@ public class AlterTableCompactDesc extends AbstractAlterTableDesc implements DDL
   private final String orderByClause;
   private final ExprNodeDesc filterExpr;
   private Long writeId;
+  private String fileSizeThreshold;
 
   public AlterTableCompactDesc(TableName tableName, Map<String, String> partitionSpec, String compactionType,
       boolean isBlocking, String poolName, int numberOfBuckets, Map<String, String> properties, String orderByClause, 
-      ExprNodeDesc filterExpr) throws SemanticException{
+      ExprNodeDesc filterExpr, String fileSizeThreshold) throws SemanticException {
     super(AlterTableType.COMPACT, tableName, partitionSpec, null, false, false, properties);
     this.tableName = tableName.getNotEmptyDbTable();
     this.partitionSpec = partitionSpec;
@@ -59,6 +60,7 @@ public class AlterTableCompactDesc extends AbstractAlterTableDesc implements DDL
     this.properties = properties;
     this.orderByClause = orderByClause;
     this.filterExpr = filterExpr;
+    this.fileSizeThreshold = fileSizeThreshold;
   }
 
   @Explain(displayName = "table name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -104,6 +106,10 @@ public class AlterTableCompactDesc extends AbstractAlterTableDesc implements DDL
 
   public ExprNodeDesc getFilterExpr() {
     return filterExpr;
+  }
+
+  public String getFileSizeThreshold() {
+    return fileSizeThreshold;
   }
 
   @Override
