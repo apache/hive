@@ -18,9 +18,12 @@
 
 package org.apache.hive.common.util;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
@@ -30,8 +33,6 @@ import org.apache.hadoop.conf.Configuration;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-
-import static java.lang.String.format;
 
 /**
  * Same as Hadoop ReflectionUtils, but (1) does not leak classloaders (or shouldn't anyway, we
@@ -102,8 +103,8 @@ public class ReflectionUtil {
    */
   public static void setConf(Object theObject, Configuration conf) {
     if (conf != null) {
-      if (theObject instanceof Configurable) {
-        ((Configurable) theObject).setConf(conf);
+      if (theObject instanceof Configurable configurable) {
+        configurable.setConf(conf);
       }
       setJobConf(theObject, conf);
     }
@@ -129,13 +130,25 @@ public class ReflectionUtil {
    * @param value new value
    * @throws RuntimeException in case the field is not found or cannot be set.
    */
+  @SuppressFBWarnings(value = "REFLF_REFLECTION_MAY_INCREASE_ACCESSIBILITY_OF_FIELD", justification = "HIVE-23613: intended_TO_DO")
   public static void setField(Object object, String field, Object value) {
     try {
       Field fieldToChange = object.getClass().getDeclaredField(field);
       fieldToChange.setAccessible(true);
       fieldToChange.set(object, value);
     } catch (NoSuchFieldException | IllegalAccessException e) {
-      throw new RuntimeException(format("Cannot set field %s in object %s", field, object.getClass()));
+      throw new RuntimeException("Cannot set field %s in object %s".formatted(field, object.getClass()));
+    }
+  }
+
+  @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE", justification = "HIVE-23613: intended_TO_DO")
+  public static void setField(Object object, Field fld, Object value) {
+    try {
+      fld.setAccessible(true);
+      fld.set(object, value);
+    } catch (IllegalAccessException e) {
+      String fieldName = null == fld ? "n/a" : fld.getName();
+      throw new RuntimeException("Failed to set " + fieldName + " of object", e);
     }
   }
 
@@ -157,7 +170,19 @@ public class ReflectionUtil {
 
       fieldToChange.set(object, value);
     } catch (NoSuchFieldException | IllegalAccessException e) {
-      throw new RuntimeException(format("Cannot set field %s in object %s", field, object.getClass()));
+      throw new RuntimeException("Cannot set field %s in object %s".formatted(field, object.getClass()));
+    }
+  }
+
+  public static void setStaticFinalFieldsModifiable(Field field) {
+    try {
+      field.setAccessible(true);
+      VarHandle modifiersHandle = MethodHandles.privateLookupIn(Field.class, MethodHandles.lookup())
+              .findVarHandle(Field.class, "modifiers", int.class);
+      int modifiers = field.getModifiers();
+      modifiersHandle.set(field, modifiers & ~Modifier.FINAL);
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+      throw new RuntimeException("Cannot make static final field %s modifiable".formatted(field));
     }
   }
 }

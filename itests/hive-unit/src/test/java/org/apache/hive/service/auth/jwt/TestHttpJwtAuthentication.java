@@ -28,6 +28,7 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hive.common.util.ReflectionUtil;
 import org.apache.hive.jdbc.HiveConnection;
 import org.apache.hive.jdbc.Utils;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
@@ -38,6 +39,8 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.io.File;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
@@ -92,10 +95,7 @@ public class TestHttpJwtAuthentication {
   }
 
   private static void removeStaticFinalAndSetValue(Field field, Object value) throws Exception {
-    field.setAccessible(true);
-    Field modifiersField = Field.class.getDeclaredField("modifiers");
-    modifiersField.setAccessible(true);
-    modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+    ReflectionUtil.setStaticFinalFieldsModifiable(field);
     field.set(null, value);
   }
 
