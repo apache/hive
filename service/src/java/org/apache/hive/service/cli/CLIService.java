@@ -126,13 +126,14 @@ public class CLIService extends CompositeService implements ICLIService {
   }
 
   private void applyAuthorizationConfigPolicy(HiveConf newHiveConf) throws HiveException,
-      MetaException {
+          MetaException, IOException {
     // authorization setup using SessionState should be revisited eventually, as
     // authorization and authentication are not session specific settings
     SessionState ss = new SessionState(newHiveConf);
     ss.setIsHiveServerQuery(true);
     SessionState.start(ss);
     ss.applyAuthorizationPolicy();
+    ss.close();
   }
 
   private void setupBlockedUdfs() {
