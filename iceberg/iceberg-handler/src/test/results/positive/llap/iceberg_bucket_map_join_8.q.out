@@ -139,7 +139,7 @@ POSTHOOK: Input: default@srcbucket_big
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Map 1 <- Map 3 (BROADCAST_EDGE)
+Map 1 <- Map 3 (CUSTOM_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
@@ -168,7 +168,7 @@ Stage-0
                 Filter Operator [FIL_32] (rows=11 width=7)
                   predicate:key1 is not null
                   TableScan [TS_0] (rows=16 width=7)
-                    default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key1","id"]
+                    default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:4,Grouping Partition Columns:["key1"],Output:["key1","id"]
 
 PREHOOK: query: SELECT a.key1, a.id
 FROM srcbucket_big a
@@ -223,7 +223,7 @@ POSTHOOK: Input: default@srcbucket_big
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Map 1 <- Map 3 (BROADCAST_EDGE)
+Map 1 <- Map 3 (CUSTOM_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
@@ -237,9 +237,9 @@ Stage-0
         <-Map 1 [SIMPLE_EDGE] vectorized, llap
           SHUFFLE [RS_35]
             Map Join Operator [MAPJOIN_34] (rows=11 width=75)
-              Conds:SEL_33._col0=RS_31._col0(Inner),Output:["_col0","_col1"]
-            <-Map 3 [BROADCAST_EDGE] vectorized, llap
-              BROADCAST [RS_31]
+              BucketMapJoin:true,Conds:SEL_33._col0=RS_31._col0(Inner),Output:["_col0","_col1"]
+            <-Map 3 [CUSTOM_EDGE] vectorized, llap
+              MULTICAST [RS_31]
                 PartitionCols:_col0
                 Select Operator [SEL_30] (rows=4 width=87)
                   Output:["_col0"]
@@ -252,7 +252,7 @@ Stage-0
                 Filter Operator [FIL_32] (rows=11 width=75)
                   predicate:key2 is not null
                   TableScan [TS_0] (rows=16 width=69)
-                    default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key2","id"]
+                    default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:8,Grouping Partition Columns:["key2"],Output:["key2","id"]
 
 PREHOOK: query: SELECT a.key2, a.id
 FROM srcbucket_big a
@@ -471,7 +471,7 @@ POSTHOOK: Input: default@srcbucket_big
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Map 1 <- Map 3 (BROADCAST_EDGE)
+Map 1 <- Map 3 (CUSTOM_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
@@ -485,10 +485,10 @@ Stage-0
         <-Map 1 [SIMPLE_EDGE] vectorized, llap
           SHUFFLE [RS_55]
             Map Join Operator [MAPJOIN_54] (rows=6 width=66)
-              Conds:SEL_53._col0, _col1=RS_51._col0, _col1(Inner),Output:["_col0","_col1","_col2"]
-            <-Map 3 [BROADCAST_EDGE] vectorized, llap
-              BROADCAST [RS_51]
-                PartitionCols:_col0, _col1
+              BucketMapJoin:true,Conds:SEL_53._col0, _col1=RS_51._col0, _col1(Inner),Output:["_col0","_col1","_col2"]
+            <-Map 3 [CUSTOM_EDGE] vectorized, llap
+              MULTICAST [RS_51]
+                PartitionCols:_col0
                 Select Operator [SEL_50] (rows=3 width=93)
                   Output:["_col0","_col1"]
                   Filter Operator [FIL_49] (rows=3 width=93)
@@ -500,7 +500,7 @@ Stage-0
                 Filter Operator [FIL_52] (rows=8 width=73)
                   predicate:(key1 is not null and value is not null)
                   TableScan [TS_0] (rows=16 width=73)
-                    default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key1","value","id"]
+                    default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:4,Grouping Partition Columns:["key1"],Output:["key1","value","id"]
 
 PREHOOK: query: SELECT a.key1, a.value, a.id
 FROM srcbucket_big a
@@ -551,7 +551,7 @@ POSTHOOK: Input: default@srcbucket_big
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Map 1 <- Map 3 (BROADCAST_EDGE)
+Map 1 <- Map 3 (CUSTOM_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
@@ -565,10 +565,10 @@ Stage-0
         <-Map 1 [SIMPLE_EDGE] vectorized, llap
           SHUFFLE [RS_55]
             Map Join Operator [MAPJOIN_54] (rows=6 width=121)
-              Conds:SEL_53._col0, _col1=RS_51._col0, _col1(Inner),Output:["_col0","_col1","_col2"]
-            <-Map 3 [BROADCAST_EDGE] vectorized, llap
-              BROADCAST [RS_51]
-                PartitionCols:_col0, _col1
+              BucketMapJoin:true,Conds:SEL_53._col0, _col1=RS_51._col0, _col1(Inner),Output:["_col0","_col1","_col2"]
+            <-Map 3 [CUSTOM_EDGE] vectorized, llap
+              MULTICAST [RS_51]
+                PartitionCols:_col0
                 Select Operator [SEL_50] (rows=3 width=176)
                   Output:["_col0","_col1"]
                   Filter Operator [FIL_49] (rows=3 width=176)
@@ -580,7 +580,7 @@ Stage-0
                 Filter Operator [FIL_52] (rows=8 width=136)
                   predicate:(key2 is not null and value is not null)
                   TableScan [TS_0] (rows=16 width=136)
-                    default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key2","value","id"]
+                    default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:8,Grouping Partition Columns:["key2"],Output:["key2","value","id"]
 
 PREHOOK: query: SELECT a.key2, a.value, a.id
 FROM srcbucket_big a
