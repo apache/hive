@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.metadata;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -204,6 +205,12 @@ public final class HiveMaterializedViewsRegistry {
         } else {
           LOG.error("Problem connecting to the metastore when initializing the view registry", e);
         }
+      } finally {
+          try {
+              ss.close();
+          } catch (IOException e) {
+              LOG.error("Problem closing session state", e);
+          }
       }
       perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.MATERIALIZED_VIEWS_REGISTRY_REFRESH);
     }
