@@ -148,14 +148,14 @@ public class TestActivePassiveHA {
 
     assertEquals(true, miniHS2_1.getIsLeaderTestFuture().get());
     assertEquals(true, miniHS2_1.isLeader());
-    String url = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+    String url = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_LEADER_PORT.varname) + "/leader";
     assertEquals("true", sendGet(url));
 
     assertEquals(false, miniHS2_2.isLeader());
-    url = "http://localhost:" + hiveConf2.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+    url = "http://localhost:" + hiveConf2.get(ConfVars.HIVE_SERVER2_LEADER_PORT.varname) + "/leader";
     assertEquals("false", sendGet(url));
 
-    url = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/peers";
+    url = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_LEADER_PORT.varname) + "/peers";
     String resp = sendGet(url);
     ObjectMapper objectMapper = new ObjectMapper();
     HS2Peers.HS2Instances hs2Peers = objectMapper.readValue(resp, HS2Peers.HS2Instances.class);
@@ -190,7 +190,7 @@ public class TestActivePassiveHA {
 
     assertEquals(true, miniHS2_2.getIsLeaderTestFuture().get());
     assertEquals(true, miniHS2_2.isLeader());
-    url = "http://localhost:" + hiveConf2.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+    url = "http://localhost:" + hiveConf2.get(ConfVars.HIVE_SERVER2_LEADER_PORT.varname) + "/leader";
     assertEquals("true", sendGet(url));
 
     while (client.getAll().size() != 1) {
@@ -212,7 +212,7 @@ public class TestActivePassiveHA {
     assertEquals(1, leaders.size());
     assertEquals(0, standby.size());
 
-    url = "http://localhost:" + hiveConf2.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/peers";
+    url = "http://localhost:" + hiveConf2.get(ConfVars.HIVE_SERVER2_LEADER_PORT.varname) + "/peers";
     resp = sendGet(url);
     objectMapper = new ObjectMapper();
     hs2Peers = objectMapper.readValue(resp, HS2Peers.HS2Instances.class);
@@ -231,7 +231,7 @@ public class TestActivePassiveHA {
     miniHS2_1.start(getConfOverlay(instanceId1));
 
     assertEquals(false, miniHS2_1.isLeader());
-    url = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+    url = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_LEADER_PORT.varname) + "/leader";
     assertEquals("false", sendGet(url));
 
     while (client.getAll().size() != 2) {
@@ -253,7 +253,7 @@ public class TestActivePassiveHA {
     assertEquals(1, leaders.size());
     assertEquals(1, standby.size());
 
-    url = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/peers";
+    url = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_LEADER_PORT.varname) + "/peers";
     resp = sendGet(url);
     objectMapper = new ObjectMapper();
     hs2Peers = objectMapper.readValue(resp, HS2Peers.HS2Instances.class);
@@ -280,11 +280,11 @@ public class TestActivePassiveHA {
 
     assertEquals(true, miniHS2_1.getIsLeaderTestFuture().get());
     assertEquals(true, miniHS2_1.isLeader());
-    String url = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+    String url = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_LEADER_PORT.varname) + "/leader";
     assertEquals("true", sendGet(url));
 
     assertEquals(false, miniHS2_2.isLeader());
-    url = "http://localhost:" + hiveConf2.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+    url = "http://localhost:" + hiveConf2.get(ConfVars.HIVE_SERVER2_LEADER_PORT.varname) + "/leader";
     assertEquals("false", sendGet(url));
 
     // miniHS2_1 will be leader
@@ -345,8 +345,8 @@ public class TestActivePassiveHA {
       confOverlay.put(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH.varname, "clidriverTest");
       miniHS2_2.setPamAuthenticator(pamAuthenticator2);
       miniHS2_2.start(confOverlay);
-      String url1 = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
-      String url2 = "http://localhost:" + hiveConf2.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+      String url1 = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_LEADER_PORT.varname) + "/leader";
+      String url2 = "http://localhost:" + hiveConf2.get(ConfVars.HIVE_SERVER2_LEADER_PORT.varname) + "/leader";
 
       // when we start miniHS2_1 will be leader (sequential start)
       assertEquals(true, miniHS2_1.getIsLeaderTestFuture().get());
@@ -403,7 +403,7 @@ public class TestActivePassiveHA {
       confOverlay.put(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH.varname, "clidriverTest");
       miniHS2_2.start(confOverlay);
 
-      String url1 = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+      String url1 = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_LEADER_PORT.varname) + "/leader";
       // when we start miniHS2_1 will be leader (sequential start)
       assertEquals(true, miniHS2_1.getIsLeaderTestFuture().get());
       assertEquals(true, miniHS2_1.isLeader());
@@ -438,7 +438,7 @@ public class TestActivePassiveHA {
       Map<String, String> confOverlay = getSecureConfOverlay(instanceId2);
       miniHS2_2.setPamAuthenticator(pamAuthenticator2);
       miniHS2_2.start(confOverlay);
-      String url1 = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+      String url1 = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_LEADER_PORT.varname) + "/leader";
       assertEquals(true, miniHS2_1.getIsLeaderTestFuture().get());
       assertEquals(true, miniHS2_1.isLeader());
 
@@ -494,8 +494,8 @@ public class TestActivePassiveHA {
       confOverlay.put(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH.varname, "clidriverTest");
       miniHS2_2.setPamAuthenticator(pamAuthenticator2);
       miniHS2_2.start(confOverlay);
-      String url1 = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
-      String url2 = "http://localhost:" + hiveConf2.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+      String url1 = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_LEADER_PORT.varname) + "/leader";
+      String url2 = "http://localhost:" + hiveConf2.get(ConfVars.HIVE_SERVER2_LEADER_PORT.varname) + "/leader";
       String zkJdbcUrl = miniHS2_1.getJdbcURL();
       String zkConnectString = zkServer.getConnectString();
       assertTrue(zkJdbcUrl.contains(zkConnectString));
