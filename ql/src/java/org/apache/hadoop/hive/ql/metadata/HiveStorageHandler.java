@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -246,10 +247,10 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
-   * Return some basic statistics (numRows, numFiles, totalSize) calculated by the underlying storage handler
+   * Returns basic statistics (numRows, numFiles, totalSize) calculated by the underlying storage handler
    * implementation.
-   * @param partish a partish wrapper class
-   * @return map of basic statistics, can be null
+   * @param partish table/partition wrapper object
+   * @return map of basic statistics
    */
   default Map<String, String> getBasicStatistics(Partish partish) {
     return null;
@@ -257,8 +258,8 @@ public interface HiveStorageHandler extends Configurable {
 
   /**
    * Compute basic statistics (numRows, numFiles, totalSize) for the given table/partition.
-   * @param partish a partish wrapper class
-   * @return map of basic statistics, can be null
+   * @param partish table/partition wrapper object
+   * @return map of basic statistics
    */
   default Map<String, String> computeBasicStatistics(Partish partish) {
     return null;
@@ -271,50 +272,67 @@ public interface HiveStorageHandler extends Configurable {
   default boolean canProvideBasicStatistics() {
     return false;
   }
-
-  default boolean canProvidePartitionStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+  
+  /**
+   * Check if the storage handler can provide partition statistics.
+   * @return true if the storage handler can supply the partition statistics
+   */
+  default boolean canProvidePartitionStatistics(org.apache.hadoop.hive.ql.metadata.Table table) {
     return false;
   }
 
   /**
-   * Return some col statistics (Lower bounds, Upper bounds, Null value counts, NaN, total counts) calculated by
-   * the underlying storage handler implementation.
-   * @param table
-   * @return A List of Column Statistics Objects, can be null
+   * Returns column statistics (upper/lower bounds, number of Null/NaN values, NDVs, histogram).
+   * @param table table object
+   * @return list of ColumnStatisticsObj objects
    */
   default List<ColumnStatisticsObj> getColStatistics(org.apache.hadoop.hive.ql.metadata.Table table) {
     return null;
   }
 
   /**
+   * Returns an aggregated column statistics for the supplied partition list
+   * @param table table object
+   * @param colNames list of column names
+   * @param partNames list of partition names
+   * @return AggrStats object
+  */ 
+  default AggrStats getAggrColStatsFor(org.apache.hadoop.hive.ql.metadata.Table table, List<String> colNames, 
+        List<String> partNames) throws MetaException {
+    return null;
+  }
+
+  /**
    * Set column stats for non-native tables
-   * @param table
-   * @param colStats
-   * @return boolean
+   * @param table table object
+   * @param colStats list of ColumnStatistics objects
+   * @return true if operation is successful                 
    */
   default boolean setColStatistics(org.apache.hadoop.hive.ql.metadata.Table table, List<ColumnStatistics> colStats) {
     return false;
   }
 
   /**
-   * Check if the storage handler can provide col statistics.
-   * @param tbl
-   * @return true if the storage handler can supply the col statistics
+   * Check if the storage handler can provide column statistics.
+   * @param table table object
+   * @return true if the storage handler can supply the column statistics
    */
-  default boolean canProvideColStatistics(org.apache.hadoop.hive.ql.metadata.Table tbl) {
+  default boolean canProvideColStatistics(org.apache.hadoop.hive.ql.metadata.Table table) {
     return false;
   }
 
   /**
    * Check if the storage handler can set col statistics.
+   * @param table table object
    * @return true if the storage handler can set the col statistics
    */
-  default boolean canSetColStatistics(org.apache.hadoop.hive.ql.metadata.Table tbl) {
+  default boolean canSetColStatistics(org.apache.hadoop.hive.ql.metadata.Table table) {
     return false;
   }
 
   /**
-   * Check if the storage handler answer a few queries like count(1) purely using stats.
+   * Check if the storage handler can answer a few queries like count(1) purely using statistics.
+   * @param partish table/partition wrapper object
    * @return true if the storage handler can answer query using statistics
    */
   default boolean canComputeQueryUsingStats(Partish partish) {
@@ -322,8 +340,8 @@ public interface HiveStorageHandler extends Configurable {
   }
   
   @Deprecated
-  default boolean canComputeQueryUsingStats(org.apache.hadoop.hive.ql.metadata.Table tbl) {
-    return canComputeQueryUsingStats(Partish.buildFor(tbl));
+  default boolean canComputeQueryUsingStats(org.apache.hadoop.hive.ql.metadata.Table table) {
+    return canComputeQueryUsingStats(Partish.buildFor(table));
   }
   
   /**

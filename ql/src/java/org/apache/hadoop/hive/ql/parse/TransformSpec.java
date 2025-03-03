@@ -17,10 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.conf.Configuration;
+
 import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.apache.hadoop.hive.ql.metadata.HiveUtils.unparseIdentifier;
 
 public class TransformSpec {
 
@@ -28,10 +32,12 @@ public class TransformSpec {
   public enum TransformType {
     IDENTITY, YEAR, MONTH, DAY, HOUR, TRUNCATE, BUCKET, VOID
   }
-
+  
   private String columnName;
   private TransformType transformType;
   private Optional<Integer> transformParam;
+
+  private String fieldName;
 
   public TransformSpec() {
   }
@@ -66,6 +72,14 @@ public class TransformSpec {
     this.transformParam = transformParam;
   }
 
+  public void setFieldName(String fieldName) {
+    this.fieldName = fieldName;
+  }
+
+  public String getFieldName() {
+    return fieldName;
+  }
+
   public String transformTypeString() {
     if (transformType == null) {
       return null;
@@ -74,6 +88,28 @@ public class TransformSpec {
       return transformType.name() + "[" + transformParam.get() + "]";
     }
     return transformType.name();
+  }
+
+  public String toHiveExpr(Configuration conf, boolean alias) {
+    String identifier = unparseIdentifier(columnName, conf);
+    if (transformType == TransformSpec.TransformType.IDENTITY) {
+      return identifier;
+    }
+    String fn = "iceberg_" + transformType.name().toLowerCase() + "(" + identifier;
+    switch (transformType) {
+      case BUCKET:
+      case TRUNCATE:
+        fn += ", " + transformParam.get();
+        break;
+    }
+    StringBuilder expr = new StringBuilder();
+    expr.append(fn).append(")");
+    if (!alias) {
+      return expr.toString();
+    }
+    expr.append(" AS ")
+      .append(unparseIdentifier(fieldName));
+    return expr.toString();
   }
 
   public static TransformType fromString(String transformString) {

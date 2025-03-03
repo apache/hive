@@ -198,7 +198,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
 
     TableName tableName = HiveTableName.of(desc.getDbTableName());
     if (null == part) {
-      if (table.isPartitioned() && !table.hasNonNativePartitionSupport()) {
+      if (table.isPartitioned() && StatsUtils.checkCanProvidePartitionStats(table)) {
         Map<String, String> tableProps = table.getParameters() == null ?
             new HashMap<>() : table.getParameters();
         if (table.isPartitionKey(colNames.get(0))) {
@@ -209,12 +209,9 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
         table.setParameters(tableProps);
       } else {
         cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer, context.getConf()));
-        if (table.isNonNative() && table.getStorageHandler().canProvideColStatistics(table)) {
-          colStats.addAll(table.getStorageHandler().getColStatistics(table));
-        } else {
-          colStats.addAll(context.getDb().getTableColumnStatistics(tableName.getDb().toLowerCase(),
+        colStats.addAll(
+          context.getDb().getTableColumnStatistics(tableName.getDb().toLowerCase(), 
               tableName.getTable().toLowerCase(), colNames, false));
-        }
       }
     } else {
       List<String> partitions = new ArrayList<String>();
