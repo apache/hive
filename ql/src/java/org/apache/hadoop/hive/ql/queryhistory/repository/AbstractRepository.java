@@ -46,6 +46,7 @@ public abstract class AbstractRepository implements QueryHistoryRepository {
   HiveConf conf;
   protected Schema schema;
   private Warehouse warehouse;
+  protected Table table;
 
   public void init(HiveConf conf, Schema schema) {
     this.conf = conf;
@@ -98,7 +99,6 @@ public abstract class AbstractRepository implements QueryHistoryRepository {
   }
 
   protected Table initTable(Hive hive, Database db) {
-    Table table;
     try {
       table = hive.getTable(QUERY_HISTORY_DB_NAME, QUERY_HISTORY_TABLE_NAME, null, false);
       if (table == null) {
