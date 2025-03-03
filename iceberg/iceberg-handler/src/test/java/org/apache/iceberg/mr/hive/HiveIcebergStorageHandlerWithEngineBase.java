@@ -116,7 +116,7 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
     for (FileFormat fileFormat : HiveIcebergStorageHandlerTestUtils.FILE_FORMATS) {
       IntStream.of(2, 1).forEach(formatVersion -> {
         testParams.add(new Object[]{fileFormat, HIVE_CATALOG, false, formatVersion});
-        // test for vectorization=ON in case of ORC and PARQUET format with Tez engine
+        // test for vectorization=ON in case of ORC and PARQUET format
         if (fileFormat != FileFormat.METADATA) {
           testParams.add(new Object[]{fileFormat, HIVE_CATALOG, true, formatVersion});
         }
@@ -134,7 +134,6 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
   }
 
   protected static TestHiveShell shell;
-  protected static String executionEngine = "tez";
 
   protected TestTables testTables;
 
@@ -170,7 +169,7 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
   public void before() throws IOException {
     validateTestParams();
     testTables = HiveIcebergStorageHandlerTestUtils.testTables(shell, testTableType, temp);
-    HiveIcebergStorageHandlerTestUtils.init(shell, testTables, temp, executionEngine);
+    HiveIcebergStorageHandlerTestUtils.init(shell, testTables, temp);
     HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
     // Fetch task conversion might kick in for certain queries preventing vectorization code path to be used, so
     // we turn it off explicitly to achieve better coverage.

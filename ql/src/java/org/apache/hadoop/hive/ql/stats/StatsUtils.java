@@ -375,7 +375,7 @@ public class StatsUtils {
         // size is 0, aggrStats is null after several retries. Thus, we can
         // skip the step to connect to the metastore.
         if (fetchColStats && !neededColsToRetrieve.isEmpty() && !partNames.isEmpty()) {
-          aggrStats = Hive.get().getAggrColStatsFor(table.getDbName(), table.getTableName(), 
+          aggrStats = Hive.get().getAggrColStatsFor(table.getDbName(), table.getTableName(),
               neededColsToRetrieve, partNames, false);
         }
 
@@ -980,7 +980,7 @@ public class StatsUtils {
   }
 
   /**
-   * Get table level column statistics from metastore for needed columns
+   * Get table level column statistics for needed columns
    * @param table
    *          - table
    * @param neededColumns

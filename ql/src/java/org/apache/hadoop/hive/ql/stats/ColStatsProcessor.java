@@ -225,13 +225,12 @@ public class ColStatsProcessor implements IStatsProcessor {
       }
 
       start = System. currentTimeMillis();
-      if (tbl != null && tbl.isNonNative() && tbl.getStorageHandler().canSetColStatistics(tbl)) {
+      if (tbl.isNonNative() && tbl.getStorageHandler().canSetColStatistics(tbl)) {
         boolean success = tbl.getStorageHandler().setColStatistics(tbl, colStats);
         if (!(tbl.isMaterializedView() || tbl.isView() || tbl.isTemporary())) {
           setOrRemoveColumnStatsAccurateProperty(db, tbl, colStatDesc.getColName(), success);
         }
       } else {
-        // TODO: Write stats for native tables only (See HIVE-27421)
         db.setPartitionColumnStatistics(request);
       }
       end = System.currentTimeMillis();
