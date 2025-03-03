@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.ServiceException;
 import org.apache.hive.service.ServiceUtils;
@@ -133,6 +134,15 @@ public class CLIService extends CompositeService implements ICLIService {
     ss.setIsHiveServerQuery(true);
     SessionState.start(ss);
     ss.applyAuthorizationPolicy();
+
+    // Add shutdown hook to close the session.
+    ShutdownHookManager.addShutdownHook(() -> {
+      try {
+        ss.close();
+      } catch (IOException e) {
+        LOG.error("Problem closing session state", e);
+      }
+    });
   }
 
   private void setupBlockedUdfs() {
