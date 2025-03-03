@@ -110,6 +110,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hive.common.util.ShutdownHookManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -124,7 +125,7 @@ import com.google.common.collect.Maps;
  * from any point in the code to interact with the user and to retrieve
  * configuration information
  */
-public class SessionState implements ISessionAuthState{
+public class SessionState implements ISessionAuthState {
   private static final Logger LOG = LoggerFactory.getLogger(SessionState.class);
 
   public static final String TMP_PREFIX = "_tmp_space.db";
@@ -667,6 +668,10 @@ public class SessionState implements ISessionAuthState{
    */
   public static SessionState start(SessionState startSs) {
     start(startSs, false, null);
+
+    //add shutdown hook to clean up the session related directories and objects
+    startSs.addSessionStateShutdownHook();
+
     return startSs;
   }
 
@@ -1967,6 +1972,18 @@ public class SessionState implements ISessionAuthState{
       }
     }
     dynamicVars.clear();
+  }
+
+  private void addSessionStateShutdownHook() {
+    // Added shutdown hook to close the session.
+    ShutdownHookManager.addShutdownHook(() -> {
+      try {
+        LOG.info("Closing session state: {}", getSessionId());
+        close();
+      } catch (IOException e) {
+        LOG.error("Problem closing session state", e);
+      }
+    });
   }
 
   private void clearReflectionUtilsCache() {
