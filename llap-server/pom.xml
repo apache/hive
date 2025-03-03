@@ -367,8 +367,9 @@
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-core-test</artifactId>
+      <artifactId>log4j-core</artifactId>
       <version>${log4j2.version}</version>
+      <classifier>tests</classifier>
       <scope>test</scope>
       <exclusions>
         <exclusion>
