@@ -339,6 +339,24 @@ public class CliConfigs {
     }
   }
 
+  public static class MiniLlapLocalJdbcCliConfig extends AbstractCliConfig {
+    public MiniLlapLocalJdbcCliConfig() {
+      super(CoreJdbcCliDriver.class);
+      try {
+        setQueryDir("ql/src/test/queries/clientpositive/perf");
+        setLogDir("itests/qtest/target/qfile-results/clientpositive/jdbc/postgres");
+        setResultsDir("ql/src/test/results/clientpositive/jdbc/postgres");
+        setHiveConfDir("data/conf/llap");
+        setClusterType(MiniClusterType.LLAP_LOCAL);
+        setJdbcInitScript("q_test_tpcds_tables.postgres.sql");
+        setExternalTablesForJdbcInitScript("q_test_external_tpcds_tables_postgres.q");
+        excludesFrom(testConfigProps, "jdbc.disabled.query.files");
+      } catch (Exception e) {
+        throw new RuntimeException("can't construct cliconfig", e);
+      }
+    }
+  }
+
   public static class NegativeLlapLocalCliConfig extends AbstractCliConfig {
     public NegativeLlapLocalCliConfig() {
       super(CoreNegativeCliDriver.class);
