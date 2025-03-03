@@ -69,7 +69,7 @@ fi
 HADOOP_OPTS="$HADOOP_OPTS -Dhadoop.policy.file=$HADOOP_POLICYFILE"
 
 # Disable ipv6 as it can cause issues
-HADOOP_OPTS="$HADOOP_OPTS -Djava.net.preferIPv4Stack=true"
+HADOOP_OPTS="$HADOOP_OPTS -Djava.net.preferIPv6Stack=true"
 
 COMMAND=$1
 # the core commands
