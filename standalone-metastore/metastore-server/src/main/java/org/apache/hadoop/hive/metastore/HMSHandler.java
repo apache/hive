@@ -88,6 +88,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -10925,14 +10926,57 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     startFunction("scheduled_query_poll");
     Exception ex = null;
     try {
+      String query = request.getScheduledQuery().getQuery();
+      ScheduledQueryMaintenanceRequestType requestType = request.getType();
       RawStore ms = getMS();
       ms.scheduledQueryMaintenance(request);
+      if (requestType == ScheduledQueryMaintenanceRequestType.DROP) {
+        abortReplCreatedOpenTxnsForDatabase(query);
+      }
     } catch (Exception e) {
       LOG.error("Caught exception", e);
       ex = e;
       throw e;
     } finally {
       endFunction("scheduled_query_poll", ex == null, ex);
+    }
+  }
+
+  private void abortReplCreatedOpenTxnsForDatabase(String query) throws TException {
+    List<Long> toBeAbortedTxns = null;
+    List<TxnType> txnListExcludingReplCreated = new ArrayList<>();
+    String pattern = "(?<=REPL LOAD )\\w+(?= INTO \\w+)";
+    Pattern regex = Pattern.compile(pattern);
+    Matcher matcher = regex.matcher(query);
+    String dbName;
+    if (matcher.find()) {
+      dbName = matcher.group();
+      String replPolicy = dbName + ".*";
+      for (TxnType type : TxnType.values()) {
+        // exclude REPL_CREATED txn
+        if (type != TxnType.REPL_CREATED) {
+          txnListExcludingReplCreated.add(type);
+        }
+      }
+      List<Long> openTxnList = null;
+      GetOpenTxnsResponse openTxnsResponse = null;
+      try {
+        openTxnsResponse = getTxnHandler()
+                .getOpenTxns(txnListExcludingReplCreated);
+      } catch (Exception e) {
+        LOG.error("Got an error : " + e);
+      }
+      if (openTxnsResponse != null) {
+        openTxnList = openTxnsResponse.getOpen_txns();
+        if (openTxnList != null) {
+          toBeAbortedTxns = getTxnHandler()
+                  .getOpenTxnForPolicy(openTxnList, replPolicy);
+          if (!toBeAbortedTxns.isEmpty()) {
+            LOG.info("Aborting Repl created open transactions");
+            abort_txns(new AbortTxnsRequest(toBeAbortedTxns));
+          }
+        }
+      }
     }
   }
 
