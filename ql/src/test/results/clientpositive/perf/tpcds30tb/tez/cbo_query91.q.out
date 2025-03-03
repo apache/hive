@@ -23,7 +23,7 @@ HiveProject(call_center=[$0], call_center_name=[$1], manager=[$2], returns_loss=
                       HiveFilter(condition=[AND(IS NOT NULL($3), IS NOT NULL($2), IS NOT NULL($4))])
                         HiveTableScan(table=[[default, customer]], table:alias=[customer])
                     HiveProject(cd_demo_sk=[$0], cd_marital_status=[$2], cd_education_status=[$3])
-                      HiveFilter(condition=[AND(IN($2, _UTF-16LE'M', _UTF-16LE'W'), IN($3, _UTF-16LE'Unknown             ', _UTF-16LE'Advanced Degree     '), IN(ROW($2, $3), ROW(_UTF-16LE'M', _UTF-16LE'Unknown             '), ROW(_UTF-16LE'W', _UTF-16LE'Advanced Degree     ')))])
+                      HiveFilter(condition=[AND(SEARCH($2, Sarg[_UTF-16LE'M', _UTF-16LE'W']:CHAR(1) CHARACTER SET "UTF-16LE"), SEARCH($3, Sarg[_UTF-16LE'Advanced Degree     ', _UTF-16LE'Unknown             ']:CHAR(20) CHARACTER SET "UTF-16LE"), SEARCH(ROW($2, $3), Sarg[[_UTF-16LE'M':CHAR(1) CHARACTER SET "UTF-16LE", _UTF-16LE'Unknown             ':CHAR(20) CHARACTER SET "UTF-16LE"]:RecordType(CHAR(1) CHARACTER SET "UTF-16LE" NOT NULL EXPR$0, CHAR(20) CHARACTER SET "UTF-16LE" NOT NULL EXPR$1), [_UTF-16LE'W':CHAR(1) CHARACTER SET "UTF-16LE", _UTF-16LE'Advanced Degree     ':CHAR(20) CHARACTER SET "UTF-16LE"]:RecordType(CHAR(1) CHARACTER SET "UTF-16LE" NOT NULL EXPR$0, CHAR(20) CHARACTER SET "UTF-16LE" NOT NULL EXPR$1)]:RecordType(CHAR(1) CHARACTER SET "UTF-16LE" NOT NULL EXPR$0, CHAR(20) CHARACTER SET "UTF-16LE" NOT NULL EXPR$1)))])
                         HiveTableScan(table=[[default, customer_demographics]], table:alias=[customer_demographics])
                 HiveProject(hd_demo_sk=[$0])
                   HiveFilter(condition=[LIKE($2, _UTF-16LE'0-500%':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])

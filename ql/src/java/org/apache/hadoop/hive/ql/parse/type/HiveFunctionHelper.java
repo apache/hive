@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
@@ -322,7 +323,9 @@ public class HiveFunctionHelper implements FunctionHelper {
         // unix_timestamp(args) -> to_unix_timestamp(args)
         calciteOp = HiveToUnixTimestampSqlOperator.INSTANCE;
       }
-      expr = rexBuilder.makeCall(returnType, calciteOp, inputs);
+      expr = calciteOp.getKind() == SqlKind.IN ?
+          rexBuilder.makeIn(inputs.get(0), inputs.subList(1, inputs.size())) :
+          rexBuilder.makeCall(returnType, calciteOp, inputs);
     }
 
     if (expr instanceof RexCall && !expr.isA(SqlKind.CAST)) {
@@ -330,7 +333,6 @@ public class HiveFunctionHelper implements FunctionHelper {
       expr = rexBuilder.makeCall(returnType, call.getOperator(),
           RexUtil.flatten(call.getOperands(), call.getOperator()));
     }
-
     return expr;
   }
 
