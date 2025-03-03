@@ -55,6 +55,12 @@ public class IcebergCompactionUtil {
             table.specs().get(file.specId()).partitionToPath(file.partition()).equals(partitionPath);
   }
 
+  public static boolean shouldIncludeForCompaction(Table table, String partitionPath, ContentFile<?> file,
+      long fileSizeThreshold) {
+    return shouldIncludeForCompaction(table, partitionPath, file) &&
+        (fileSizeThreshold == -1 || file.fileSizeInBytes() < fileSizeThreshold);
+  }
+
   /**
    * Returns table's list of data files as following:
    *  1. If the table is unpartitioned, returns all data files.
@@ -63,13 +69,13 @@ public class IcebergCompactionUtil {
    * @param table the iceberg table
    * @param partitionPath partition path
    */
-  public static List<DataFile> getDataFiles(Table table, String partitionPath) {
+  public static List<DataFile> getDataFiles(Table table, String partitionPath, long fileSizeThreshold) {
     CloseableIterable<FileScanTask> fileScanTasks =
         table.newScan().useSnapshot(table.currentSnapshot().snapshotId()).ignoreResiduals().planFiles();
     CloseableIterable<FileScanTask> filteredFileScanTasks =
         CloseableIterable.filter(fileScanTasks, t -> {
           DataFile file = t.asFileScanTask().file();
-          return shouldIncludeForCompaction(table, partitionPath, file);
+          return shouldIncludeForCompaction(table, partitionPath, file, fileSizeThreshold);
         });
     return Lists.newArrayList(CloseableIterable.transform(filteredFileScanTasks, t -> t.file()));
   }
