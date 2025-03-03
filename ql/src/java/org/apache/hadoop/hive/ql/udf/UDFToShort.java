@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -129,8 +130,10 @@ public class UDFToShort extends UDF {
     if (i == null) {
       return null;
     } else {
+      HiveConf hiveConf = new HiveConf();
+      boolean strictIntegralCheck = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_STRICT_INTEGRAL_LIMIT);
       int value = i.get();
-      if (value < Short.MIN_VALUE || value > Short.MAX_VALUE) {
+      if (strictIntegralCheck && (value < Short.MIN_VALUE || value > Short.MAX_VALUE)) {
         throw new UDFArgumentException("Value out of range for Short: " + value);
       }
       shortWritable.set((short) i.get());
