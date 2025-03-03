@@ -22,8 +22,10 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.Set;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -133,6 +135,11 @@ public class StatsSetupConst {
    * statistics that inherently require a scan of the data.
    */
   public static final List<String> STATS_REQUIRE_COMPUTE = ImmutableList.of(ROW_COUNT, RAW_DATA_SIZE);
+
+  /**
+   * Set of table properties which should have numeric values
+   */
+  public static final Set<String> STATS_NUMERIC = ImmutableSet.copyOf(SUPPORTED_STATS);
 
   /**
    * List of statistics that can be collected quickly without requiring a scan of the data.
