@@ -201,6 +201,10 @@ public class TestHttpSamlAuthentication {
         "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress");
     idpEnv.put("SIMPLESAMLPHP_SP_NAME_ID_ATTRIBUTE", "email");
     idpEnv.put("SIMPLESAMLPHP_IDP_AUTH", authMode);
+    idpEnv.put("DOCKER_HOST", "tcp://docker:2376");
+    idpEnv.put("DOCKER_TLS_VERIFY", "1");
+    idpEnv.put("DOCKER_TLS_CERTDIR", "/certs");
+    idpEnv.put("DOCKER_CERT_PATH", "/certs/client");
     // by default idp signs the assertions
     if (!useSignedAssertions) {
       idpEnv.put("SIMPLESAMLPHP_SP_SIGN_ASSERTION", "false");
