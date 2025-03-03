@@ -26,8 +26,8 @@ metastore() {
 
   # hadoop 20 or newer - skip the aux_jars option and hiveconf
 
-  export HADOOP_CLIENT_OPTS=" -Dproc_metastore $HADOOP_CLIENT_OPTS "
-  export HADOOP_OPTS="$HIVE_METASTORE_HADOOP_OPTS $HADOOP_OPTS"
+  export HADOOP_CLIENT_OPTS=" -Dproc_metastore $HADOOP_CLIENT_OPTS -Djava.net.preferIPv6Stack=true -Djava.net.preferIPv6Addresses=true"
+  export HADOOP_OPTS="$HIVE_METASTORE_HADOOP_OPTS $HADOOP_OPTS -Djava.net.preferIPv6Stack=true -Djava.net.preferIPv6Addresses=true"
   exec $HADOOP jar $JAR $CLASS "$@"
 }
 
