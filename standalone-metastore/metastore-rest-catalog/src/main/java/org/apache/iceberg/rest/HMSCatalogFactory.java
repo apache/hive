@@ -35,7 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Catalog & servlet factory.
+ * Catalog &amp; servlet factory.
  */
 public class HMSCatalogFactory {
   private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogFactory.class);
@@ -103,12 +103,12 @@ public class HMSCatalogFactory {
     if (configExtWarehouse != null) {
       properties.put("external-warehouse", configExtWarehouse);
     }
-    final HiveCatalog catalog = new org.apache.iceberg.hive.HiveCatalog();
-    catalog.setConf(configuration);
+    final HiveCatalog hiveCatalog = new org.apache.iceberg.hive.HiveCatalog();
+    hiveCatalog.setConf(configuration);
     final String catalogName = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.CATALOG_DEFAULT);
-    catalog.initialize(catalogName, properties);
+    hiveCatalog.initialize(catalogName, properties);
     long expiry = MetastoreConf.getLongVar(configuration, MetastoreConf.ConfVars.ICEBERG_CATALOG_CACHE_EXPIRY);
-    return expiry > 0 ? new HMSCachingCatalog<>(catalog, expiry) : catalog;
+    return expiry > 0 ? new HMSCachingCatalog<>(hiveCatalog, expiry) : hiveCatalog;
   }
 
   /**
