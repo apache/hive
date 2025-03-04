@@ -78,7 +78,7 @@
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2
     </dropwizard-metrics-hadoop-metrics2-reporter.version>
     <dropwizard.version>3.1.0</dropwizard.version>
-    <guava.version>32.1.0-jre</guava.version>
+    <guava.version>27.0-jre</guava.version>
     <hadoop.version>3.4.1</hadoop.version>
     <hikaricp.version>4.0.3</hikaricp.version>
     <jackson.version>2.16.1</jackson.version>
@@ -145,11 +145,6 @@
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
         <version>${guava.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.google.guava</groupId>
-        <artifactId>failureaccess</artifactId>
-        <version>1.0.2</version>
       </dependency>
       <dependency>
         <groupId>com.google.protobuf</groupId>
