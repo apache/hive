@@ -145,6 +145,10 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     return CompactionType.MAJOR == type;
   }
 
+  public boolean isMinorCompaction() {
+    return CompactionType.MINOR == type;
+  }
+
   public boolean isRebalanceCompaction() {
     return CompactionType.REBALANCE == type;
   }

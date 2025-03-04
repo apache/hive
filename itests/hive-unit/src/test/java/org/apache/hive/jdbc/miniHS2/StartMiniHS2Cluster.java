@@ -51,6 +51,7 @@ public class StartMiniHS2Cluster {
     String confFilesProperty = System.getProperty("miniHS2.conf", "../../data/conf/hive-site.xml");
     boolean usePortsFromConf = Boolean.parseBoolean(System.getProperty("miniHS2.usePortsFromConf", "false"));
     boolean isMetastoreRemote = Boolean.getBoolean("miniHS2.isMetastoreRemote");
+    boolean queryHistory = Boolean.getBoolean("miniHS2.queryHistory");
 
     // Load conf files
     String[] confFiles = confFilesProperty.split(",");
@@ -76,7 +77,8 @@ public class StartMiniHS2Cluster {
       conf.addResource(new URL("file://" + new File(confFile).toURI().getPath()));
     }
 
-    miniHS2 = new MiniHS2(conf, clusterType, usePortsFromConf, isMetastoreRemote);
+    miniHS2 = new MiniHS2.Builder().withConf(conf).withClusterType(clusterType).withPortsFromConf(usePortsFromConf)
+        .withRemoteMetastore(isMetastoreRemote).withQueryHistory(queryHistory).build();
     Map<String, String> confOverlay = new HashMap<String, String>();
     miniHS2.start(confOverlay);
     miniHS2.getDFS().getFileSystem().mkdirs(new Path("/apps_staging_dir/anonymous"));

@@ -776,7 +776,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
             return null;
           }
         })
-        .map(HiveStorageHandler::alwaysUnpartitioned)
+        .map(HiveStorageHandler::supportsPartitioning)
         .orElse(Boolean.FALSE);
   }
 

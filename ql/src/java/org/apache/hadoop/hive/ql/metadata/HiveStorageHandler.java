@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
+import java.util.concurrent.ExecutorService;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
@@ -70,12 +71,13 @@ import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.hadoop.mapred.OutputFormat;
+import org.apache.hadoop.mapred.TaskAttemptContext;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -254,10 +256,23 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
+   * Compute basic statistics (numRows, numFiles, totalSize) for the given table/partition.
+   * @param partish a partish wrapper class
+   * @return map of basic statistics, can be null
+   */
+  default Map<String, String> computeBasicStatistics(Partish partish) {
+    return null;
+  }
+
+  /**
    * Check if the storage handler can provide basic statistics.
    * @return true if the storage handler can supply the basic statistics
    */
   default boolean canProvideBasicStatistics() {
+    return false;
+  }
+
+  default boolean canProvidePartitionStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     return false;
   }
 
@@ -267,7 +282,7 @@ public interface HiveStorageHandler extends Configurable {
    * @param table
    * @return A List of Column Statistics Objects, can be null
    */
-  default List<ColumnStatisticsObj>getColStatistics(org.apache.hadoop.hive.ql.metadata.Table table) {
+  default List<ColumnStatisticsObj> getColStatistics(org.apache.hadoop.hive.ql.metadata.Table table) {
     return null;
   }
 
@@ -302,10 +317,15 @@ public interface HiveStorageHandler extends Configurable {
    * Check if the storage handler answer a few queries like count(1) purely using stats.
    * @return true if the storage handler can answer query using statistics
    */
-  default boolean canComputeQueryUsingStats(org.apache.hadoop.hive.ql.metadata.Table tbl) {
+  default boolean canComputeQueryUsingStats(Partish partish) {
     return false;
   }
-
+  
+  @Deprecated
+  default boolean canComputeQueryUsingStats(org.apache.hadoop.hive.ql.metadata.Table tbl) {
+    return canComputeQueryUsingStats(Partish.buildFor(tbl));
+  }
+  
   /**
    *
    * Gets the storage format descriptor to be used for temp table for LOAD data.
@@ -361,9 +381,9 @@ public interface HiveStorageHandler extends Configurable {
    * Any partitioning scheme provided via the standard HiveQL syntax will be honored but stored in someplace
    * other than HMS, depending on the storage handler implementation.
    *
-   * @return whether table should always be unpartitioned from the perspective of HMS
+   * @return whether the table has built-in partitioning support
    */
-  default boolean alwaysUnpartitioned() {
+  default boolean supportsPartitioning() {
     return false;
   }
 
@@ -544,8 +564,8 @@ public interface HiveStorageHandler extends Configurable {
   default DynamicPartitionCtx createDPContext(
           HiveConf conf, org.apache.hadoop.hive.ql.metadata.Table table, Operation writeOperation)
       throws SemanticException {
-    Preconditions.checkState(alwaysUnpartitioned(), "Should only be called for table formats where partitioning " +
-        "is not handled by Hive but the table format itself. See alwaysUnpartitioned() method.");
+    Preconditions.checkState(supportsPartitioning(), "Should only be called for table formats where partitioning " +
+        "is not handled by Hive but the table format itself. See supportsPartitioning() method.");
     return null;
   }
 
@@ -589,14 +609,27 @@ public interface HiveStorageHandler extends Configurable {
   default boolean commitInMoveTask() {
     return false;
   }
-  
+
   /**
    * Commits the inserts for the non-native tables. Used in the {@link org.apache.hadoop.hive.ql.exec.MoveTask}.
    * @param commitProperties Commit properties which are needed for the handler based commit
    * @param operation the operation type
    * @throws HiveException If there is an error during commit
    */
-  default void storageHandlerCommit(Properties commitProperties, Operation operation) throws HiveException {
+  default void storageHandlerCommit(Properties commitProperties, Operation operation)
+      throws HiveException {
+    storageHandlerCommit(commitProperties, operation, null);
+  }
+
+  /**
+   * Commits the inserts for the non-native tables. Used in the {@link org.apache.hadoop.hive.ql.exec.MoveTask}.
+   * @param commitProperties Commit properties which are needed for the handler based commit
+   * @param operation the operation type
+   * @param executorService an ExecutorService to be used by the StorageHandler (optional)
+   * @throws HiveException If there is an error during commit
+   */
+  default void storageHandlerCommit(Properties commitProperties, Operation operation, ExecutorService executorService)
+      throws HiveException {
     throw new UnsupportedOperationException();
   }
 
@@ -613,6 +646,13 @@ public interface HiveStorageHandler extends Configurable {
    */
   default boolean isAllowedAlterOperation(AlterTableType opType) {
     return DEFAULT_ALLOWED_ALTER_OPS.contains(opType);
+  }
+
+  /**
+   * Returns an OutputCommitter that belongs to this storage handler if any.
+   */
+  default OutputCommitter getOutputCommitter() {
+    return null;
   }
 
   /**
@@ -789,17 +829,6 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
-   * Checks if a given table and partition specifications are eligible for compaction.
-   * @param table {@link org.apache.hadoop.hive.ql.metadata.Table} table metadata stored in Hive Metastore
-   * @param partitionSpec Map of Strings {@link java.util.Map} partition specification
-   * @return Optional of ErrorMsg {@link org.apache.hadoop.hive.ql.ErrorMsg}
-   */
-  default Optional<ErrorMsg> isEligibleForCompaction(org.apache.hadoop.hive.ql.metadata.Table table,
-      Map<String, String> partitionSpec) {
-    throw new UnsupportedOperationException("Storage handler does not support validating eligibility for compaction");
-  }
-
-  /**
    * Returns partitions names for the current table spec that correspond to the provided partition spec.
    * @param hmsTable {@link org.apache.hadoop.hive.ql.metadata.Table} table metadata stored in Hive Metastore
    * @param partitionSpec Map of Strings {@link java.util.Map} partition specification
@@ -820,9 +849,9 @@ public interface HiveStorageHandler extends Configurable {
     SearchArgument searchArgument) {
     return false;
   }
-  default List<FieldSchema> getPartitionKeys(org.apache.hadoop.hive.ql.metadata.Table hmsTable, boolean latestSpecOnly) {
-    throw new UnsupportedOperationException("Storage handler does not support getting partition keys " +
-            "for a table.");
+
+  default List<FieldSchema> getPartitionKeys(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    throw new UnsupportedOperationException("Storage handler does not support getting partition keys for a table.");
   }
 
   /**
@@ -888,6 +917,10 @@ public interface HiveStorageHandler extends Configurable {
     return getPartitions(table, partitionSpec, true);
   }
 
+  default List<Partition> getPartitions(org.apache.hadoop.hive.ql.metadata.Table table) throws SemanticException {
+    return getPartitions(table, Collections.emptyMap());
+  }
+
   /**
    * Returns a list of partitions based on table and partial partition specification.
    * @param table {@link org.apache.hadoop.hive.ql.metadata.Table} table metadata stored in Hive Metastore
@@ -902,7 +935,7 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   default boolean isPartitioned(org.apache.hadoop.hive.ql.metadata.Table table) {
-    throw new UnsupportedOperationException("Storage handler does not support checking if table is partitioned.");
+    return false;
   }
 
   default boolean hasUndergonePartitionEvolution(org.apache.hadoop.hive.ql.metadata.Table table) {

@@ -114,7 +114,6 @@ public class TezTask extends Task<TezWork> {
   private static final String TEZ_MEMORY_RESERVE_FRACTION = "tez.task.scale.memory.reserve-fraction";
 
   private final TezRuntimeContext runtimeContext = new TezRuntimeContext();
-
   private final DagUtils utils;
 
   private final Object dagClientLock = new Object();
@@ -162,6 +161,7 @@ public class TezTask extends Task<TezWork> {
 
     final String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID);
 
+    TezJobMonitor monitor = null;
     try {
       // Get or create Context object. If we create it we have to clean it later as well.
       ctx = context;
@@ -225,7 +225,7 @@ public class TezTask extends Task<TezWork> {
       try {
         ss.setTezSession(session);
         LOG.info("Subscribed to counters: {} for queryId: {}", wmContext.getSubscribedCounters(),
-          wmContext.getQueryId());
+            wmContext.getQueryId());
 
         // Ensure the session is open and has the necessary local resources.
         // This would refresh any conf resources and also local resources.
@@ -277,7 +277,7 @@ public class TezTask extends Task<TezWork> {
         runtimeContext.setApplicationId(appId);
 
         // finally monitor will print progress until the job is done
-        TezJobMonitor monitor = new TezJobMonitor(work.getAllWork(), dagClient, conf, dag, ctx, runtimeContext.counters,
+        monitor = new TezJobMonitor(work.getAllWork(), dagClient, conf, dag, ctx, runtimeContext.counters,
             perfLogger);
         runtimeContext.setMonitor(monitor);
         rc = monitor.monitorExecution();
@@ -324,7 +324,7 @@ public class TezTask extends Task<TezWork> {
         }
 
         if (!conf.getVar(HiveConf.ConfVars.TEZ_SESSION_EVENTS_SUMMARY).equalsIgnoreCase("none") &&
-          wmContext != null) {
+            wmContext != null) {
           if (conf.getVar(HiveConf.ConfVars.TEZ_SESSION_EVENTS_SUMMARY).equalsIgnoreCase("json")) {
             wmContext.printJson(console);
           } else if (conf.getVar(HiveConf.ConfVars.TEZ_SESSION_EVENTS_SUMMARY).equalsIgnoreCase("text")) {
@@ -337,9 +337,9 @@ public class TezTask extends Task<TezWork> {
           && (HiveConf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_SUMMARY) ||
           Utilities.isPerfOrAboveLogging(conf))) {
         for (CounterGroup group : runtimeContext.counters) {
-          LOG.info(group.getDisplayName() +":");
-          for (TezCounter counter: group) {
-            LOG.info("   "+counter.getDisplayName()+": "+counter.getValue());
+          monitor.logger().printInfo(group.getDisplayName() + ":");
+          for (TezCounter counter : group) {
+            monitor.logger().printInfo("   " + counter.getDisplayName() + ": " + counter.getValue());
           }
         }
       }
@@ -379,6 +379,9 @@ public class TezTask extends Task<TezWork> {
       if (dagClient != null) {
         // rc will only be overwritten if close errors out
         rc = close(work, rc, dagClient);
+      }
+      if (monitor != null){
+        monitor.logger().endSummary();
       }
     }
     return rc;
@@ -655,12 +658,12 @@ public class TezTask extends Task<TezWork> {
     try {
       try {
         // ready to start execution on the cluster
-        dagClient = sessionState.getSession().submitDAG(dag);
+        dagClient = submitInternal(dag, sessionState);
       } catch (SessionNotRunning nr) {
         console.printInfo("Tez session was closed. Reopening...");
         sessionStateRef.value = sessionState = getNewTezSessionOnError(sessionState);
         console.printInfo("Session re-established.");
-        dagClient = sessionState.getSession().submitDAG(dag);
+        dagClient = submitInternal(dag, sessionState);
       }
     } catch (Exception e) {
       if (this.isShutdown) {
@@ -673,7 +676,7 @@ public class TezTask extends Task<TezWork> {
         console.printInfo("Dag submit failed due to " + e.getMessage() + " stack trace: "
             + Arrays.toString(e.getStackTrace()) + " retrying...");
         sessionStateRef.value = sessionState = getNewTezSessionOnError(sessionState);
-        dagClient = sessionState.getSession().submitDAG(dag);
+        dagClient = submitInternal(dag, sessionState);
       } catch (Exception retryException) {
         // we failed to submit after retrying.
         // If this is a non-pool session, destroy it.
@@ -684,8 +687,12 @@ public class TezTask extends Task<TezWork> {
     }
 
     perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
-    runtimeContext.init(sessionState.getSession());
     return new SyncDagClient(dagClient);
+  }
+
+  private DAGClient submitInternal(DAG dag, TezSessionState sessionState) throws TezException, IOException {
+    runtimeContext.init(sessionState);
+    return sessionState.getSession().submitDAG(dag);
   }
 
   private void sessionDestroyOrReturnToPool(Ref<TezSessionState> sessionStateRef,

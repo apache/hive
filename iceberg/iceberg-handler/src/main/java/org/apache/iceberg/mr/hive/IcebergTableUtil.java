@@ -57,6 +57,7 @@ import org.apache.iceberg.MetadataTableUtils;
 import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
+import org.apache.iceberg.PartitionStatisticsFile;
 import org.apache.iceberg.Partitioning;
 import org.apache.iceberg.PartitionsTable;
 import org.apache.iceberg.RowLevelOperationMode;
@@ -132,19 +133,18 @@ public class IcebergTableUtil {
    */
   static Table getTable(Configuration configuration, Properties properties, boolean skipCache) {
     String metaTable = properties.getProperty(IcebergAcidUtil.META_TABLE_PROPERTY);
-    String tableName = properties.getProperty(Catalogs.NAME);
-    String location = properties.getProperty(Catalogs.LOCATION);
+
+    Properties props = new Properties(properties); // use input properties as default
     if (metaTable != null) {
       // HiveCatalog, HadoopCatalog uses NAME to identify the metadata table
-      properties.setProperty(Catalogs.NAME, tableName + "." + metaTable);
+      props.put(Catalogs.NAME, properties.get(Catalogs.NAME) + "." + metaTable);
       // HadoopTable uses LOCATION to identify the metadata table
-      properties.setProperty(Catalogs.LOCATION, location + "#" + metaTable);
+      props.put(Catalogs.LOCATION, properties.get(Catalogs.LOCATION) + "#" + metaTable);
     }
-
-    String tableIdentifier = properties.getProperty(Catalogs.NAME);
+    String tableIdentifier = props.getProperty(Catalogs.NAME);
     Function<Void, Table> tableLoadFunc =
         unused -> {
-          Table tab = Catalogs.loadTable(configuration, properties);
+          Table tab = Catalogs.loadTable(configuration, props);
           SessionStateUtil.addResource(configuration, tableIdentifier, tab);
           return tab;
         };
@@ -165,6 +165,41 @@ public class IcebergTableUtil {
     return getTable(configuration, properties, false);
   }
 
+  static Snapshot getTableSnapshot(Table table, org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    long snapshotId = -1;
+
+    if (hmsTable.getAsOfTimestamp() != null) {
+      ZoneId timeZone = SessionState.get() == null ?
+          new HiveConf().getLocalTimeZone() : SessionState.get().getConf().getLocalTimeZone();
+      TimestampTZ time = TimestampTZUtil.parse(hmsTable.getAsOfTimestamp(), timeZone);
+      snapshotId = SnapshotUtil.snapshotIdAsOfTime(table, time.toEpochMilli());
+
+    } else if (hmsTable.getAsOfVersion() != null) {
+      try {
+        snapshotId = Long.parseLong(hmsTable.getAsOfVersion());
+      } catch (NumberFormatException e) {
+        SnapshotRef ref = table.refs().get(hmsTable.getAsOfVersion());
+        if (ref == null) {
+          throw new RuntimeException("Cannot find matching snapshot ID or reference name for version " +
+              hmsTable.getAsOfVersion());
+        }
+        snapshotId = ref.snapshotId();
+      }
+    }
+    if (snapshotId > 0) {
+      return table.snapshot(snapshotId);
+    }
+    return getTableSnapshot(table, hmsTable.getSnapshotRef());
+  }
+
+  static Snapshot getTableSnapshot(Table table, String snapshotRef) {
+    if (snapshotRef != null) {
+      String ref = HiveUtils.getTableSnapshotRef(snapshotRef);
+      return table.snapshot(ref);
+    }
+    return table.currentSnapshot();
+  }
+
   static Optional<Path> getColStatsPath(Table table) {
     return getColStatsPath(table, table.currentSnapshot().snapshotId());
   }
@@ -179,6 +214,12 @@ public class IcebergTableUtil {
       .findAny();
   }
 
+  static PartitionStatisticsFile getPartitionStatsFile(Table table, long snapshotId) {
+    return table.partitionStatisticsFiles().stream()
+      .filter(stats -> stats.snapshotId() == snapshotId)
+      .findAny().orElse(null);
+  }
+
   /**
    * Create {@link PartitionSpec} based on the partition information stored in
    * {@link TransformSpec}.
@@ -188,14 +229,13 @@ public class IcebergTableUtil {
    */
   public static PartitionSpec spec(Configuration configuration, Schema schema) {
     List<TransformSpec> partitionTransformSpecList = SessionStateUtil
-            .getResource(configuration, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC)
-        .map(o -> (List<TransformSpec>) o).orElseGet(() -> null);
+        .getResource(configuration, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC)
+        .map(o -> (List<TransformSpec>) o).orElse(null);
 
     if (partitionTransformSpecList == null) {
-      LOG.debug("Iceberg partition transform spec is not found in QueryState.");
+      LOG.warn("Iceberg partition transform spec is not found in QueryState.");
       return null;
     }
-
     PartitionSpec.Builder builder = PartitionSpec.builderFor(schema);
     partitionTransformSpecList.forEach(spec -> {
       switch (spec.getTransformType()) {
@@ -229,7 +269,7 @@ public class IcebergTableUtil {
     // get the new partition transform spec
     PartitionSpec newPartitionSpec = spec(configuration, table.schema());
     if (newPartitionSpec == null) {
-      LOG.debug("Iceberg Partition spec is not updated due to empty partition spec definition.");
+      LOG.warn("Iceberg partition spec is not updated due to empty partition spec definition.");
       return;
     }
 
@@ -239,8 +279,12 @@ public class IcebergTableUtil {
 
     List<TransformSpec> partitionTransformSpecList = SessionStateUtil
         .getResource(configuration, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC)
-        .map(o -> (List<TransformSpec>) o).orElseGet(() -> null);
+        .map(o -> (List<TransformSpec>) o).orElse(null);
 
+    if (partitionTransformSpecList == null) {
+      LOG.warn("Iceberg partition transform spec is not found in QueryState.");
+      return;
+    }
     partitionTransformSpecList.forEach(spec -> {
       switch (spec.getTransformType()) {
         case IDENTITY:
@@ -374,42 +418,19 @@ public class IcebergTableUtil {
   }
 
   public static PartitionData toPartitionData(StructLike key, Types.StructType keyType) {
-    PartitionData data = new PartitionData(keyType);
-    for (int i = 0; i < keyType.fields().size(); i++) {
-      Object val = key.get(i, keyType.fields().get(i).type().typeId().javaClass());
-      if (val != null) {
-        data.set(i, val);
-      }
-    }
-    return data;
+    PartitionData keyTemplate = new PartitionData(keyType);
+    return keyTemplate.copyFor(key);
   }
 
   public static PartitionData toPartitionData(StructLike sourceKey, Types.StructType sourceKeyType,
       Types.StructType targetKeyType) {
-    PartitionData data = new PartitionData(targetKeyType);
-    for (int i = 0; i < targetKeyType.fields().size(); i++) {
-
-      int fi = i;
-      String fieldName = targetKeyType.fields().get(fi).name();
-      Object val = sourceKeyType.fields().stream()
-          .filter(f -> f.name().equals(fieldName)).findFirst()
-          .map(sourceKeyElem -> sourceKey.get(sourceKeyType.fields().indexOf(sourceKeyElem),
-              targetKeyType.fields().get(fi).type().typeId().javaClass()))
-          .orElseThrow(() -> new RuntimeException(
-              String.format("Error retrieving value of partition field %s", fieldName)));
-
-      if (val != null) {
-        data.set(fi, val);
-      } else {
-        throw new RuntimeException(String.format("Partition field's %s value is null", fieldName));
-      }
-    }
-    return data;
+    StructProjection projection = StructProjection.create(sourceKeyType, targetKeyType).wrap(sourceKey);
+    return toPartitionData(projection, targetKeyType);
   }
 
-  public static Expression generateExpressionFromPartitionSpec(Table table, Map<String, String> partitionSpec)
-      throws SemanticException {
-    Map<String, PartitionField> partitionFieldMap = getPartitionFields(table).stream()
+  public static Expression generateExpressionFromPartitionSpec(Table table, Map<String, String> partitionSpec,
+      boolean latestSpecOnly) throws SemanticException {
+    Map<String, PartitionField> partitionFieldMap = getPartitionFields(table, latestSpecOnly).stream()
         .collect(Collectors.toMap(PartitionField::name, Function.identity()));
     Expression finalExp = Expressions.alwaysTrue();
     for (Map.Entry<String, String> entry : partitionSpec.entrySet()) {
@@ -440,23 +461,20 @@ public class IcebergTableUtil {
     List<FieldSchema> hiveSchema = HiveSchemaUtil.convert(schema);
     Map<String, String> colNameToColType = hiveSchema.stream()
         .collect(Collectors.toMap(FieldSchema::getName, FieldSchema::getType));
-    return table.specs().get(specId).fields().stream().map(partField ->
-        new FieldSchema(schema.findColumnName(partField.sourceId()),
+    return table.specs().get(specId).fields().stream()
+        .map(partField -> new FieldSchema(
+            schema.findColumnName(partField.sourceId()),
             colNameToColType.get(schema.findColumnName(partField.sourceId())),
-            String.format("Transform: %s", partField.transform().toString()))).collect(Collectors.toList());
+            String.format("Transform: %s", partField.transform().toString()))
+        )
+        .collect(Collectors.toList());
   }
 
-  public static List<FieldSchema> getPartitionKeys(Table table, boolean latestSpecOnly) {
-    if (latestSpecOnly) {
-      return getPartitionKeys(table, table.spec().specId());
-    } else {
-      return table.specs().keySet().stream().flatMap(id -> getPartitionKeys(table, id).stream())
-          .distinct().collect(Collectors.toList());
-    }
-  }
-  public static List<PartitionField> getPartitionFields(Table table) {
-    return table.specs().values().stream().flatMap(spec -> spec.fields()
-        .stream()).distinct().collect(Collectors.toList());
+  public static List<PartitionField> getPartitionFields(Table table, boolean latestSpecOnly) {
+    return latestSpecOnly ? table.spec().fields() :
+      table.specs().values().stream()
+        .flatMap(spec -> spec.fields().stream()).distinct()
+        .collect(Collectors.toList());
   }
 
   /**
@@ -469,9 +487,10 @@ public class IcebergTableUtil {
    */
   public static Map<PartitionData, Integer> getPartitionInfo(Table icebergTable, Map<String, String> partSpecMap,
       boolean allowPartialSpec, boolean latestSpecOnly) throws SemanticException, IOException {
-    Expression expression = IcebergTableUtil.generateExpressionFromPartitionSpec(icebergTable, partSpecMap);
-    PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
-        .createMetadataTableInstance(icebergTable, MetadataTableType.PARTITIONS);
+    Expression expression = IcebergTableUtil.generateExpressionFromPartitionSpec(
+        icebergTable, partSpecMap, latestSpecOnly);
+    PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils.createMetadataTableInstance(
+        icebergTable, MetadataTableType.PARTITIONS);
 
     Map<PartitionData, Integer> result = Maps.newLinkedHashMap();
     try (CloseableIterable<FileScanTask> fileScanTasks = partitionsTable.newScan().planFiles()) {
@@ -530,31 +549,4 @@ public class IcebergTableUtil {
     }
   }
 
-  public static Snapshot getTableSnapshot(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Table table) {
-    String refName = HiveUtils.getTableSnapshotRef(hmsTable.getSnapshotRef());
-    Snapshot snapshot;
-    if (refName != null) {
-      snapshot = table.snapshot(refName);
-    } else if (hmsTable.getAsOfTimestamp() != null) {
-      ZoneId timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() :
-          SessionState.get().getConf().getLocalTimeZone();
-      TimestampTZ time = TimestampTZUtil.parse(hmsTable.getAsOfTimestamp(), timeZone);
-      long snapshotId = SnapshotUtil.snapshotIdAsOfTime(table, time.toEpochMilli());
-      snapshot = table.snapshot(snapshotId);
-    } else if (hmsTable.getAsOfVersion() != null) {
-      try {
-        snapshot = table.snapshot(Long.parseLong(hmsTable.getAsOfVersion()));
-      } catch (NumberFormatException e) {
-        SnapshotRef ref = table.refs().get(hmsTable.getAsOfVersion());
-        if (ref == null) {
-          throw new RuntimeException("Cannot find matching snapshot ID or reference name for version " +
-              hmsTable.getAsOfVersion());
-        }
-        snapshot = table.snapshot(ref.snapshotId());
-      }
-    } else {
-      snapshot = table.currentSnapshot();
-    }
-    return snapshot;
-  }
 }

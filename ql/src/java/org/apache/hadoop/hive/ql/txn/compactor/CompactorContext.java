@@ -38,6 +38,14 @@ public class CompactorContext {
   private final CompactionInfo compactionInfo;
   private final AcidDirectory dir;
 
+  public static final String COMPACTOR_THRESHOLD_PREFIX = "compactor.threshold";
+  public static final String COMPACTION_FILE_SIZE_THRESHOLD = COMPACTOR_THRESHOLD_PREFIX + ".file.size.threshold";
+  public static final String COMPACTION_TARGET_SIZE = COMPACTOR_THRESHOLD_PREFIX + ".target.size";
+  public static final String COMPACTION_MIN_FRAGMENT_RATIO = COMPACTOR_THRESHOLD_PREFIX + ".fragment.ratio"; 
+  public static final String COMPACTION_MIN_TARGET_SIZE_RATIO = COMPACTOR_THRESHOLD_PREFIX + ".min.target.size.ratio"; 
+  public static final String COMPACTION_MIN_INPUT_FILES = COMPACTOR_THRESHOLD_PREFIX + ".min.input.files"; 
+  public static final String COMPACTION_DELETE_FILE_RATIO = COMPACTOR_THRESHOLD_PREFIX + ".delete.file.ratio"; 
+
   public CompactorContext(HiveConf conf, Table table, Partition p, StorageDescriptor sd, ValidWriteIdList tblValidWriteIds, CompactionInfo ci, AcidDirectory dir) {
     this.conf = conf;
     this.table = table;

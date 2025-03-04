@@ -111,7 +111,7 @@ public class PartitionPruner extends Transform {
    *          the pruner expression for the table
    */
   public static boolean onlyContainsPartnCols(Table table, ExprNodeDesc expr) {
-    if(!isPartitioned(table) || (expr == null)) {
+    if (!table.isPartitioned() || (expr == null)) {
       return true;
     }
 
@@ -140,20 +140,10 @@ public class PartitionPruner extends Transform {
     return true;
   }
 
-  private static boolean isPartitioned(Table table) {
-    if (table.getStorageHandler() != null && table.getStorageHandler().alwaysUnpartitioned()) {
-      return table.getStorageHandler().isPartitioned(table);
-    } else {
-      return table.isPartitioned();
-    }
-  }
-  
   private static boolean isPartitionKey(Table table, String columnName) {
-    List<String> partitionKeyNames = table.getStorageHandler() != null && table.getStorageHandler().alwaysUnpartitioned() ?
-        table.getStorageHandler().getPartitionKeys(table, false).stream()
-        .map(FieldSchema::getName).collect(Collectors.toList()) : table.getPartColNames();
-    return partitionKeyNames.stream().anyMatch(item->item.equalsIgnoreCase(columnName));
+    return table.getPartColNames().stream().anyMatch(item -> item.equalsIgnoreCase(columnName));
   }
+
   /**
    * Get the partition list for the TS operator that satisfies the partition pruner
    * condition.
@@ -221,7 +211,7 @@ public class PartitionPruner extends Transform {
 
     Set<String> partColsUsedInFilter = new LinkedHashSet<String>();
     // Replace virtual columns with nulls. See javadoc for details.
-    prunerExpr = removeNonPartCols(prunerExpr, extractPartColNames(tab), partColsUsedInFilter);
+    prunerExpr = removeNonPartCols(prunerExpr, tab.getPartColNames(), partColsUsedInFilter);
     // Remove all parts that are not partition columns. See javadoc for details.
     ExprNodeDesc compactExpr = compactExpr(prunerExpr.clone());
     String oldFilter = prunerExpr.getExprString(true);
@@ -523,7 +513,7 @@ public class PartitionPruner extends Transform {
         tab.getDbName(), tab.getTableName(), (short) -1);
 
     String defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
-    List<String> partCols = extractPartColNames(tab);
+    List<String> partCols = tab.getPartColNames();
     List<PrimitiveTypeInfo> partColTypeInfos = extractPartColTypes(tab);
 
     boolean hasUnknownPartitions = prunePartitionNames(
@@ -536,15 +526,6 @@ public class PartitionPruner extends Transform {
     }
     perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
     return hasUnknownPartitions;
-  }
-
-  private static List<String> extractPartColNames(Table tab) {
-    List<FieldSchema> pCols = tab.getPartCols();
-    List<String> partCols = new ArrayList<String>(pCols.size());
-    for (FieldSchema pCol : pCols) {
-      partCols.add(pCol.getName());
-    }
-    return partCols;
   }
 
   private static List<PrimitiveTypeInfo> extractPartColTypes(Table tab) {

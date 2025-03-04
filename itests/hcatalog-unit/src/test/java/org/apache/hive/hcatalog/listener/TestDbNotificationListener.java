@@ -858,6 +858,49 @@ public class TestDbNotificationListener
   }
 
   @Test
+  public void testTruncatePartitionedTable() throws Exception {
+    String defaultDbName = "default";
+    String unPartitionedTblName = "unPartitionedTable";
+    new TableBuilder()
+        .setDbName(defaultDbName)
+        .setTableName(unPartitionedTblName)
+        .addCol("col1", "int")
+        .setLocation(testTempDir)
+        .create(msClient, new HiveConf());
+
+    Table table = msClient.getTable(new GetTableRequest(defaultDbName,
+        unPartitionedTblName));
+    msClient.truncateTable(defaultDbName, unPartitionedTblName, null);
+    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(2, rsp.getEventsSize()); // create unpartitioned table + alter table events
+
+    String partitionedTblName = "partitionedTbl";
+    new TableBuilder()
+        .setDbName(defaultDbName)
+        .setTableName(partitionedTblName)
+        .addCol("col1", "int")
+        .addPartCol("col2", "int")
+        .addPartCol("col3", "string")
+        .setLocation(testTempDir)
+        .create(msClient, new HiveConf());
+    table = msClient.getTable(new GetTableRequest(defaultDbName,
+        partitionedTblName));
+    List<Partition> partitions = new ArrayList<>();
+    for (int i = 0; i < 5; i++) {
+      List<String> values = Arrays.asList(i + "", "part" + i);
+      Partition part = new Partition(values, defaultDbName, partitionedTblName,
+          0,  0, table.getSd(), emptyParameters);
+      partitions.add(part);
+    }
+    msClient.add_partitions(partitions);
+    msClient.truncateTable(defaultDbName, partitionedTblName, null);
+    rsp = msClient.getNextNotification(firstEventId, 0, null);
+    // 5 events - create unpartitioned table, alter table events
+    // create partitioned table, add partition, alter table events.
+    assertEquals(5, rsp.getEventsSize());
+  }
+
+  @Test
   public void dropPartition() throws Exception {
     String defaultDbName = "default";
     String tblName = "dropptn";

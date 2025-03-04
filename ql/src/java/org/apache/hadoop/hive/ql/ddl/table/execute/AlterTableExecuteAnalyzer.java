@@ -39,7 +39,12 @@ import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.DeleteOrphanFilesDe
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExpireSnapshotsSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.FastForwardSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.RollbackSpec;
+import org.apache.hadoop.hive.ql.parse.RowResolver;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -85,7 +90,7 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
         desc = getRollbackDesc(tableName, partitionSpec, (ASTNode) command.getChild(1));
         break;
       case HiveParser.KW_EXPIRE_SNAPSHOTS:
-        desc = getExpireSnapshotDesc(tableName, partitionSpec,  command.getChildren());
+        desc = getExpireSnapshotDesc(tableName, partitionSpec,  command.getChildren(), queryState.getConf());
         break;
       case HiveParser.KW_SET_CURRENT_SNAPSHOT:
         desc = getSetCurrentSnapshotDesc(tableName, partitionSpec, (ASTNode) command.getChild(1));
@@ -98,7 +103,7 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
         break;
       case HiveParser.KW_ORPHAN_FILES:
         desc = getDeleteOrphanFilesDesc(tableName, partitionSpec,  command.getChildren());
-        break;        
+        break;
     }
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
@@ -139,7 +144,7 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
   }
 
   private static AlterTableExecuteDesc getExpireSnapshotDesc(TableName tableName, Map<String, String> partitionSpec,
-      List<Node> children) throws SemanticException {
+      List<Node> children, HiveConf conf) throws SemanticException {
     AlterTableExecuteSpec<ExpireSnapshotsSpec> spec;
     if (children.size() == 1) {
       spec = new AlterTableExecuteSpec(EXPIRE_SNAPSHOT, null);
@@ -158,17 +163,31 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
     } else if (children.size() == 3) {
       ASTNode secondNode = (ASTNode) children.get(2);
       String secondNodeText = PlanUtils.stripQuotes(secondNode.getText().trim());
-      TimestampTZ fromTime = TimestampTZUtil.parse(firstNodeText, timeZone);
-      TimestampTZ toTime = TimestampTZUtil.parse(secondNodeText, timeZone);
+      TimestampTZ fromTime = TimestampTZUtil.parse(getTimeStampString(conf, firstNode, firstNodeText), timeZone);
+      TimestampTZ toTime = TimestampTZUtil.parse(getTimeStampString(conf, secondNode, secondNodeText), timeZone);
       spec = new AlterTableExecuteSpec(EXPIRE_SNAPSHOT,
           new ExpireSnapshotsSpec(fromTime.toEpochMilli(), toTime.toEpochMilli()));
     } else if (EXPIRE_SNAPSHOT_BY_ID_REGEX.matcher(firstNodeText).matches()) {
       spec = new AlterTableExecuteSpec(EXPIRE_SNAPSHOT, new ExpireSnapshotsSpec(firstNodeText));
     } else {
-      TimestampTZ time = TimestampTZUtil.parse(firstNodeText, timeZone);
+      TimestampTZ time = TimestampTZUtil.parse(getTimeStampString(conf, firstNode, firstNodeText), timeZone);
       spec = new AlterTableExecuteSpec(EXPIRE_SNAPSHOT, new ExpireSnapshotsSpec(time.toEpochMilli()));
     }
     return new AlterTableExecuteDesc(tableName, partitionSpec, spec);
+  }
+
+  private static String getTimeStampString(HiveConf conf, ASTNode node, String nodeText) throws SemanticException {
+    if (node.getChildCount() > 0) {
+      QueryState queryState = new QueryState.Builder().withGenerateNewQueryId(false).withHiveConf(conf).build();
+      SemanticAnalyzer sem = (SemanticAnalyzer) SemanticAnalyzerFactory.get(queryState, node);
+      ExprNodeDesc desc = sem.genExprNodeDesc(node, new RowResolver(), false, true);
+      if(!(desc instanceof ExprNodeConstantDesc))  {
+        throw new SemanticException("Invalid timestamp expression");
+      }
+      ExprNodeConstantDesc constantDesc = (ExprNodeConstantDesc) desc;
+      return String.valueOf(constantDesc.getValue());
+    }
+    return nodeText;
   }
 
   private static AlterTableExecuteDesc getRollbackDesc(TableName tableName, Map<String, String> partitionSpec,

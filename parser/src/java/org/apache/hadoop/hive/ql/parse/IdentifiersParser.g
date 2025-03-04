@@ -821,6 +821,7 @@ partitionSpec
 partitionVal
     :
     identifier (EQUAL constant)? -> ^(TOK_PARTVAL identifier constant?)
+    | functionExpr (EQUAL constant)? -> ^(TOK_PARTVAL functionExpr constant?)
     ;
 
 partitionSelectorSpec
@@ -831,7 +832,24 @@ partitionSelectorSpec
 partitionSelectorVal
     :
     identifier partitionSelectorOperator constant -> ^(TOK_PARTVAL identifier partitionSelectorOperator constant)
+    | functionExpr partitionSelectorOperator constant -> ^(TOK_PARTVAL functionExpr partitionSelectorOperator constant)
     ;
+
+functionExpr
+    :
+    funcName LPAREN identifier RPAREN -> ^(TOK_FUNCTION funcName identifier)
+    | KW_TRUNCATE LPAREN width=Number COMMA identifier RPAREN -> ^(TOK_FUNCTION KW_TRUNCATE $width identifier)
+    | KW_BUCKET LPAREN width=Number COMMA identifier RPAREN -> ^(TOK_FUNCTION KW_BUCKET $width identifier)
+    ;
+
+funcName
+    :
+    KW_DAY
+    | KW_MONTH
+    | KW_YEAR
+    | KW_HOUR
+    ;
+
 
 partitionSelectorOperator
     :

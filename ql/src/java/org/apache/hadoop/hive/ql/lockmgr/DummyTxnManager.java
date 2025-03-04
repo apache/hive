@@ -415,22 +415,23 @@ public class DummyTxnManager extends HiveTxnManagerImpl {
         name = p.getName().split("@")[2];
       }
 
-      String partialName = "";
+      StringBuilder partialName = new StringBuilder();
       String[] partns = name.split("/");
       int len = p instanceof DummyPartition ? partns.length : partns.length - 1;
       Map<String, String> partialSpec = new LinkedHashMap<String, String>();
       for (int idx = 0; idx < len; idx++) {
         String partn = partns[idx];
-        partialName += partn;
+        partialName.append(partn);
         String[] nameValue = partn.split("=");
         assert(nameValue.length == 2);
         partialSpec.put(nameValue[0], nameValue[1]);
-        locks.add(new HiveLockObj(
-                new HiveLockObject(new DummyPartition(p.getTable(), p.getTable().getDbName()
-                        + "/" + FileUtils.escapePathName(p.getTable().getTableName()).toLowerCase()
-                        + "/" + partialName,
-                        partialSpec), lockData), mode));
-        partialName += "/";
+        DummyPartition par = new DummyPartition(p.getTable(), 
+          p.getTable().getDbName() 
+            + "/" + FileUtils.escapePathName(p.getTable().getTableName()).toLowerCase() 
+            + "/" + partialName,
+          partialSpec);
+        locks.add(new HiveLockObj(new HiveLockObject(par, lockData), mode));
+        partialName.append("/");
       }
 
       locks.add(new HiveLockObj(new HiveLockObject(p.getTable(), lockData), mode));

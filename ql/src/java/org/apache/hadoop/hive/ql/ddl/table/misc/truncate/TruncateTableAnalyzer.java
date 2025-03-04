@@ -157,7 +157,7 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
         truncateUseBase ? WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE;
     
     if (partitionSpec == null) {
-      if (!table.isPartitioned()) {
+      if (!table.isPartitioned() || table.hasNonNativePartitionSupport()) {
         outputs.add(new WriteEntity(table, writeType));
       } else {
         for (Partition partition : PartitionUtils.getPartitions(db, table, null, false)) {
@@ -166,7 +166,7 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
       }
     } else {
       if (AlterTableUtils.isFullPartitionSpec(table, partitionSpec)) {
-        if (table.getStorageHandler() != null && table.getStorageHandler().alwaysUnpartitioned()) {
+        if (table.hasNonNativePartitionSupport()) {
           table.getStorageHandler().validatePartSpec(table, partitionSpec);
           try {
             String partName = Warehouse.makePartName(partitionSpec, false);

@@ -308,6 +308,22 @@ sys	partitions			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	partitions			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	partitions			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	partitions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	proto_hive_query_data			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	proto_hive_query_data			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	proto_hive_query_data			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	proto_hive_query_data			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	proto_tez_app_data			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	proto_tez_app_data			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	proto_tez_app_data			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	proto_tez_app_data			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	proto_tez_dag_data			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	proto_tez_dag_data			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	proto_tez_dag_data			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	proto_tez_dag_data			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	proto_tez_dag_meta			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	proto_tez_dag_meta			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	proto_tez_dag_meta			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	proto_tez_dag_meta			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	replication_failover_failback_metrics			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	replication_failover_failback_metrics			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	replication_failover_failback_metrics			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -520,6 +536,10 @@ PREHOOK: Output: sys@partition_keys
 PREHOOK: Output: sys@partition_params
 PREHOOK: Output: sys@partition_stats_view
 PREHOOK: Output: sys@partitions
+PREHOOK: Output: sys@proto_hive_query_data
+PREHOOK: Output: sys@proto_tez_app_data
+PREHOOK: Output: sys@proto_tez_dag_data
+PREHOOK: Output: sys@proto_tez_dag_meta
 PREHOOK: Output: sys@replication_failover_failback_metrics
 PREHOOK: Output: sys@replication_metrics
 PREHOOK: Output: sys@replication_metrics_orig
@@ -584,6 +604,10 @@ POSTHOOK: Output: sys@partition_keys
 POSTHOOK: Output: sys@partition_params
 POSTHOOK: Output: sys@partition_stats_view
 POSTHOOK: Output: sys@partitions
+POSTHOOK: Output: sys@proto_hive_query_data
+POSTHOOK: Output: sys@proto_tez_app_data
+POSTHOOK: Output: sys@proto_tez_dag_data
+POSTHOOK: Output: sys@proto_tez_dag_meta
 POSTHOOK: Output: sys@replication_failover_failback_metrics
 POSTHOOK: Output: sys@replication_metrics
 POSTHOOK: Output: sys@replication_metrics_orig

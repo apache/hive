@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.antlr.runtime.TokenRewriteStream;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -28,6 +29,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.rewrite.MergeStatement;
 import org.apache.hadoop.hive.ql.parse.rewrite.RewriterFactory;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,6 +55,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer<MergeStatemen
   MergeSemanticAnalyzer(QueryState queryState, RewriterFactory<MergeStatement> rewriterFactory)
       throws SemanticException {
     super(queryState, rewriterFactory);
+    queryState.setSqlKind(SqlKind.MERGE);
   }
 
   @Override

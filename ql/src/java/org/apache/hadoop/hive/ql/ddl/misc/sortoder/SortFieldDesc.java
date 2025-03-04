@@ -18,23 +18,21 @@
 
 package org.apache.hadoop.hive.ql.ddl.misc.sortoder;
 
+import org.apache.hadoop.hive.ql.util.NullOrdering;
+
 public class SortFieldDesc {
 
   private String columnName;
-  private NullOrder nullOrder;
+  private NullOrdering nullOrder;
   private SortDirection direction;
 
   public SortFieldDesc() {
   }
   
-  public SortFieldDesc(String columnName, SortDirection direction, NullOrder nullOrder) {
+  public SortFieldDesc(String columnName, SortDirection direction, NullOrdering nullOrder) {
     this.columnName = columnName;
     this.direction = direction;
     this.nullOrder = nullOrder;
-  }
-
-  public enum NullOrder {
-    NULLS_FIRST, NULLS_LAST;
   }
 
   public enum SortDirection {
@@ -46,7 +44,7 @@ public class SortFieldDesc {
     return columnName;
   }
 
-  public NullOrder getNullOrder() {
+  public NullOrdering getNullOrdering() {
     return nullOrder;
   }
 
@@ -58,7 +56,7 @@ public class SortFieldDesc {
     this.columnName = columnName;
   }
 
-  public void setNullOrder(NullOrder nullOrder) {
+  public void setNullOrdering(NullOrdering nullOrder) {
     this.nullOrder = nullOrder;
   }
 

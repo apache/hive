@@ -39,7 +39,6 @@ import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartExprEvalUtils;
@@ -50,9 +49,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,20 +64,10 @@ public final class PcrExprProcFactory {
 
   public static final Logger LOG = LoggerFactory.getLogger(PcrExprProcFactory.class.getName());
 
-  static Object evalExprWithPart(ExprNodeDesc expr, Partition p, List<VirtualColumn> vcs)
+  static Object evalExprWithPart(ExprNodeDesc expr, Partition p)
       throws SemanticException {
-    StructObjectInspector rowObjectInspector;
-    Table tbl = p.getTable();
-
     try {
-      rowObjectInspector = (StructObjectInspector) tbl
-          .getDeserializer().getObjectInspector();
-    } catch (SerDeException e) {
-      throw new SemanticException(e);
-    }
-
-    try {
-      return PartExprEvalUtils.evalExprWithPart(expr, p, vcs, rowObjectInspector);
+      return PartExprEvalUtils.evalExprWithPart(expr, p);
     } catch (HiveException e) {
       throw new SemanticException(e);
     }
@@ -120,7 +107,7 @@ public final class PcrExprProcFactory {
     if (ifAgree == null) {
       return new NodeInfoWrapper(WalkState.DIVIDED, results,
           getOutExpr(fd, nodeOutputs));
-    } else if (ifAgree.booleanValue() == true) {
+    } else if (ifAgree) {
       return new NodeInfoWrapper(WalkState.TRUE, null,
           new ExprNodeConstantDesc(fd.getTypeInfo(), Boolean.TRUE));
     } else {
@@ -314,8 +301,7 @@ public final class PcrExprProcFactory {
           // a result, we update the state of the node to be TRUE of FALSE
           Boolean[] results = new Boolean[ctx.getPartList().size()];
           for (int i = 0; i < ctx.getPartList().size(); i++) {
-            results[i] = (Boolean) evalExprWithPart(fd, ctx.getPartList().get(i),
-                ctx.getVirtualColumns());
+            results[i] = (Boolean) evalExprWithPart(fd, ctx.getPartList().get(i));
           }
           return getResultWrapFromResults(results, fd, nodeOutputs);
         }
@@ -325,7 +311,7 @@ public final class PcrExprProcFactory {
         // to be a CONSTANT node with value to be the agreed result.
         Object[] results = new Object[ctx.getPartList().size()];
         for (int i = 0; i < ctx.getPartList().size(); i++) {
-          results[i] = evalExprWithPart(fd, ctx.getPartList().get(i), ctx.getVirtualColumns());
+          results[i] = evalExprWithPart(fd, ctx.getPartList().get(i));
         }
         Object result = ifResultsAgree(results);
         if (result == null) {
@@ -343,7 +329,7 @@ public final class PcrExprProcFactory {
       // Try to fold, otherwise return the expression itself
       final ExprNodeGenericFuncDesc desc = getOutExpr(fd, nodeOutputs);
       final ExprNodeDesc foldedDesc = ConstantPropagateProcFactory.foldExpr(desc);
-      if (foldedDesc != null && foldedDesc instanceof ExprNodeConstantDesc) {
+      if (foldedDesc instanceof ExprNodeConstantDesc) {
         ExprNodeConstantDesc constant = (ExprNodeConstantDesc) foldedDesc;
         if (Boolean.TRUE.equals(constant.getValue())) {
           return new NodeInfoWrapper(WalkState.TRUE, null, constant);
@@ -393,7 +379,7 @@ public final class PcrExprProcFactory {
         }
       }
       // If all of them were false, return false
-      if (newNodeOutputsList.size() == 0) {
+      if (newNodeOutputsList.isEmpty()) {
         return new NodeInfoWrapper(WalkState.FALSE, null,
                 new ExprNodeConstantDesc(fd.getTypeInfo(), Boolean.FALSE));
       }
@@ -441,7 +427,7 @@ public final class PcrExprProcFactory {
         }
       }
       // If all of them were true, return true
-      if (newNodeOutputsList.size() == 0) {
+      if (newNodeOutputsList.isEmpty()) {
         return new NodeInfoWrapper(WalkState.TRUE, null,
                 new ExprNodeConstantDesc(fd.getTypeInfo(), Boolean.TRUE));
       }

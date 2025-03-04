@@ -268,7 +268,7 @@ import org.slf4j.LoggerFactory;
  */
 
 @SuppressWarnings({"deprecation", "rawtypes"})
-public class Hive {
+public class Hive implements AutoCloseable {
 
   static final private Logger LOG = LoggerFactory.getLogger("hive.ql.metadata.Hive");
   private final String CLASS_NAME = Hive.class.getName();
@@ -3657,7 +3657,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       Table table)
         throws HiveException {
     try {
-      if (table !=null && AcidUtils.isTransactionalTable(table)) {
+      if (AcidUtils.isTransactionalTable(table)) {
         ValidWriteIdList validWriteIdList = getValidWriteIdList(req.getDb_name(), req.getTbl_name());
         req.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.toString() : null);
         req.setId(table.getTTable().getId());
@@ -3670,7 +3670,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   public Partition getPartition(Table tbl, Map<String, String> partSpec) throws HiveException {
-    if (tbl.getStorageHandler() != null && tbl.getStorageHandler().alwaysUnpartitioned()) {
+    if (tbl.hasNonNativePartitionSupport()) {
       return tbl.getStorageHandler().getPartition(tbl, partSpec, Context.RewritePolicy.get(conf));
     } else {
       return getPartition(tbl, partSpec, false);
@@ -4059,7 +4059,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public List<String> getPartitionNames(String dbName, String tblName,
       Map<String, String> partSpec, short max) throws HiveException {
     Table t = getTable(dbName, tblName);
-    if (t.getStorageHandler() != null && t.getStorageHandler().alwaysUnpartitioned()) {
+    if (t.hasNonNativePartitionSupport()) {
       return t.getStorageHandler().getPartitionNames(t, partSpec);
     }
 
@@ -4146,12 +4146,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS);
     try {
-      if (tbl.getStorageHandler() != null && tbl.getStorageHandler().alwaysUnpartitioned()) {
-        return tbl.getStorageHandler().getPartitions(tbl, Collections.EMPTY_MAP);
+      if (tbl.hasNonNativePartitionSupport()) {
+        return tbl.getStorageHandler().getPartitions(tbl);
       } else {
-        int batchSize= MetastoreConf.getIntVar(Hive.get().getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+        int batchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
         return new ArrayList<>(getAllPartitionsInBatches(tbl, batchSize, DEFAULT_BATCH_DECAYING_FACTOR, MetastoreConf
-                .getIntVar(Hive.get().getConf(), MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES),
+                .getIntVar(conf, MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES),
             null, true, getUserName(), getGroupNames())); 
       }
     } finally {
@@ -4168,17 +4168,20 @@ private void constructOneLBLocationMap(FileStatus fSta,
     if (!tbl.isPartitioned()) {
       return Sets.newHashSet(new Partition(tbl));
     }
-
-    List<org.apache.hadoop.hive.metastore.api.Partition> tParts;
-    try {
-      tParts = getMSC().listPartitions(tbl.getDbName(), tbl.getTableName(), (short)-1);
-    } catch (Exception e) {
-      LOG.error("Failed getAllPartitionsOf", e);
-      throw new HiveException(e);
-    }
-    Set<Partition> parts = new LinkedHashSet<Partition>(tParts.size());
-    for (org.apache.hadoop.hive.metastore.api.Partition tpart : tParts) {
-      parts.add(new Partition(tbl, tpart));
+    Set<Partition> parts = Sets.newLinkedHashSet();
+    if (tbl.hasNonNativePartitionSupport()) {
+      parts.addAll(tbl.getStorageHandler().getPartitions(tbl));
+    } else {
+      List<org.apache.hadoop.hive.metastore.api.Partition> tParts;
+      try {
+        tParts = getMSC().listPartitions(tbl.getDbName(), tbl.getTableName(), (short) -1);
+      } catch (Exception e) {
+        LOG.error("Failed getAllPartitionsOf", e);
+        throw new HiveException(e);
+      }
+      for (org.apache.hadoop.hive.metastore.api.Partition tpart : tParts) {
+        parts.add(new Partition(tbl, tpart));
+      }
     }
     return parts;
   }
@@ -4189,11 +4192,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return list of partition objects
    */
   public Set<Partition> getAllPartitionsOf(Table tbl) throws HiveException {
-    int batchSize= MetastoreConf.getIntVar(
-            Hive.get().getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+    int batchSize = tbl.hasNonNativePartitionSupport() ? 
+        0 : MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
     if (batchSize > 0) {
       return getAllPartitionsInBatches(tbl, batchSize, DEFAULT_BATCH_DECAYING_FACTOR, MetastoreConf.getIntVar(
-              Hive.get().getConf(), MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES), null, false);
+          conf, MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES), null, false);
     } else {
       return getAllPartitions(tbl);
     }
@@ -4276,9 +4279,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (limit >= 0) {
         return getPartitionsWithAuth(tbl, partialPartSpec, limit);
       } else {
-        int batchSize = MetastoreConf.getIntVar(Hive.get().getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+        int batchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
         return new ArrayList<>(getAllPartitionsInBatches(tbl, batchSize, DEFAULT_BATCH_DECAYING_FACTOR,
-                MetastoreConf.getIntVar(Hive.get().getConf(), MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES),
+                MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES),
                 partialPartSpec, true, getUserName(), getGroupNames()));
       }
     } finally {
@@ -4335,7 +4338,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    */
   public List<Partition> getPartitions(Table tbl, Map<String, String> partialPartSpec)
   throws HiveException {
-    if (tbl.getStorageHandler() != null && tbl.getStorageHandler().alwaysUnpartitioned()) {
+    if (tbl.hasNonNativePartitionSupport()) {
       return tbl.getStorageHandler().getPartitions(tbl, partialPartSpec, false);
     } else {
       return getPartitions(tbl, partialPartSpec, (short)-1); 
@@ -4509,10 +4512,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
     if (!tbl.isPartitioned()) {
       throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, tbl.getTableName());
     }
-    int batchSize = MetastoreConf.getIntVar(Hive.get().getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+    int batchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
     if (batchSize > 0) {
       return new ArrayList<>(getAllPartitionsWithSpecsInBatches(tbl, batchSize, DEFAULT_BATCH_DECAYING_FACTOR, MetastoreConf.getIntVar(
-          Hive.get().getConf(), MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES), request));
+          conf, MetastoreConf.ConfVars.GETPARTITIONS_BATCH_MAX_RETRIES), request));
     } else {
       return getPartitionsWithSpecsInternal(tbl, request);
     }
@@ -4651,7 +4654,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       Preconditions.checkNotNull(partitions);
       String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULT_PARTITION_NAME);
-      if (tbl.getStorageHandler() != null && tbl.getStorageHandler().alwaysUnpartitioned()) {
+      if (tbl.hasNonNativePartitionSupport()) {
         partitions.addAll(tbl.getStorageHandler().getPartitionsByExpr(tbl, expr));
         return false;
       } else {
@@ -5147,7 +5150,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       // rename cannot overwrite non empty destination directory, so deleting the destination before renaming.
       destFs.delete(destFile);
-      LOG.info("Deleted destination file" + destFile.toUri());
+      LOG.info("Deleted destination file: {}", destFile.toUri());
     } catch (FileNotFoundException e) {
       // no worries
     }
@@ -6990,5 +6993,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
       LOG.error("Failed abortCompactions", e);
       throw new HiveException(e);
     }
+  }
+
+  @Override
+  public void close() throws Exception {
+    close(true);
   }
 }

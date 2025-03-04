@@ -74,11 +74,13 @@ public class HplSqlQueryExecutor implements QueryExecutor {
 
   public Metadata metadata(OperationHandle operationHandle) {
     try {
-      TableSchema meta = hiveSession.getResultSetMetadata(operationHandle);
       List<ColumnMeta> colMeta = new ArrayList<>();
-      for (int i = 0; i < meta.getSize(); i++) {
-        ColumnDescriptor col = meta.getColumnDescriptorAt(i);
-        colMeta.add(new ColumnMeta(col.getName(), col.getTypeName(), col.getType().toJavaSQLType()));
+      if (operationHandle.hasResultSet()) {
+        TableSchema meta = hiveSession.getResultSetMetadata(operationHandle);
+        for (int i = 0; i < meta.getSize(); i++) {
+          ColumnDescriptor col = meta.getColumnDescriptorAt(i);
+          colMeta.add(new ColumnMeta(col.getName(), col.getTypeName(), col.getType().toJavaSQLType()));
+        }
       }
       return new Metadata(colMeta);
     } catch (HiveSQLException e) {

@@ -135,6 +135,10 @@ public class PartFilterVisitor extends PartitionFilterBaseVisitor<Object> {
     List<Object> values = visitConstantSeq(ctx.constantSeq());
     boolean isPositive = ctx.NOT() == null;
     String keyName = (String) visit(ctx.key);
+    return buildInCondition(keyName, values, isPositive);
+  }
+
+  private TreeNode buildInCondition(String keyName, List<Object> values, boolean isPositive) {
     List<LeafNode> nodes = values.stream()
         .map(value -> {
           LeafNode leafNode = new LeafNode();
@@ -262,4 +266,85 @@ public class PartFilterVisitor extends PartitionFilterBaseVisitor<Object> {
     return StringUtils.replace(ctx.getText().substring(1, ctx.getText().length() -1 ), "``", "`");
   }
 
+  @Override
+  public TreeNode visitBooleanCondition(PartitionFilterParser.BooleanConditionContext ctx) {
+    TreeNode exprNode = (TreeNode) visit(ctx.expression());
+    boolean isNegated = ctx.NOT() != null;  // Check for negation (NOT)
+    boolean parsedBoolean = Boolean.parseBoolean(ctx.booleanLiteral().getText());
+
+    // For TRUE case: return expression directly if not negated, otherwise negate it
+    // For FALSE case: return negated expression if not negated, otherwise return as is
+    return (parsedBoolean != isNegated) ? exprNode : negateTree(exprNode);
+  }
+
+  private Operator invertOperator(Operator operator) {
+    switch (operator) {
+      case EQUALS:
+        return Operator.NOTEQUALS;
+      case NOTEQUALS:
+      case NOTEQUALS2:
+        return Operator.EQUALS;
+      case GREATERTHAN:
+        return Operator.LESSTHANOREQUALTO;
+      case LESSTHAN:
+        return Operator.GREATERTHANOREQUALTO;
+      case GREATERTHANOREQUALTO:
+        return Operator.LESSTHAN;
+      case LESSTHANOREQUALTO:
+        return Operator.GREATERTHAN;
+      case LIKE:
+        throw new UnsupportedOperationException("LIKE operator inversion is not supported.");
+      default:
+        throw new IllegalArgumentException("Unsupported operator for inversion: " + operator.getOp());
+    }
+  }
+
+  @Override
+  public TreeNode visitBooleanWrappedExpression(PartitionFilterParser.BooleanWrappedExpressionContext ctx) {
+    // Visit the inner expression and check if "NOT" is used
+    TreeNode innerNode = (TreeNode) visit(ctx.orExpression());
+    boolean isNot = ctx.NOT() != null;
+    boolean parsedBoolean = Boolean.parseBoolean(ctx.booleanLiteral().getText());
+
+    // Return the node based on the expected boolean value (negated or not)
+    return parsedBoolean != isNot ? innerNode : negateTree(innerNode);
+  }
+
+  private TreeNode negateTree(TreeNode node) {
+    if (node instanceof LeafNode) {
+      // Negate leaf nodes directly
+      return negateLeafNode((LeafNode) node);
+    } else if (node != null) {
+      // Negate logical nodes (AND/OR) recursively
+      TreeNode negatedLeft = negateTree(node.getLhs());
+      TreeNode negatedRight = negateTree(node.getRhs());
+      LogicalOperator negatedOperator = (node.getAndOr() == LogicalOperator.AND)
+              ? LogicalOperator.OR
+              : LogicalOperator.AND;
+      return new TreeNode(negatedLeft, negatedOperator, negatedRight);
+    }
+    throw new IllegalArgumentException("Unknown TreeNode type");
+  }
+
+  private LeafNode negateLeafNode(LeafNode leaf) {
+    LeafNode negatedLeaf = new LeafNode();
+    negatedLeaf.keyName = leaf.keyName;
+
+    // Invert the operator for the leaf node
+    negatedLeaf.operator = invertOperator(leaf.operator);
+    negatedLeaf.value = leaf.value;
+    return negatedLeaf;
+  }
+
+  @Override
+  public TreeNode visitInConditionWithBoolean(PartitionFilterParser.InConditionWithBooleanContext ctx) {
+    List<Object> values = visitConstantSeq(ctx.constantSeq());
+    String keyName = (String) visit(ctx.key);
+    // Determine if the condition is a NOT IN by checking the presence of the NOT keyword
+    boolean isNotIn = !ctx.NOT().isEmpty();
+    boolean parsedBoolean = Boolean.parseBoolean(ctx.booleanLiteral().getText());
+
+    // If the boolean literal is TRUE, the condition should be IN, otherwise NOT IN
+    return buildInCondition(keyName, values, parsedBoolean != isNotIn);
+  }
 }
