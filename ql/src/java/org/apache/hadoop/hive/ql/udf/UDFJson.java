@@ -39,7 +39,7 @@ import org.apache.hadoop.io.Text;
  *
  */
 @Description(name = "get_json_object",
-    value = "_FUNC_(json_txt, path, arrayStrictMode) - Extract a json object from path," +
+    value = "_FUNC_(json_txt, path, [arrayStrictMode]) - Extract a json object from path," +
             "Whether to enable strict mode for parsing JSON arrays, can be omitted, default is false",
     extended = "Extract json object from a json string based on json path "
     + "specified, and return json string of the extracted json object. It "
