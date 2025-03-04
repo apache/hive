@@ -188,12 +188,12 @@ public class ParallelEdgeFixer extends Transform {
   }
 
   private static class ActualEdgePredicate implements OperatorGraph.OperatorEdgePredicate {
-    private static final EnumSet<EdgeType> acceptableEdgeTypes =
+    private static final EnumSet<EdgeType> ACCEPTABLE_EDGE_TYPES =
         EnumSet.of(EdgeType.FLOW, EdgeType.SEMIJOIN, EdgeType.BROADCAST);
 
     @Override
     public boolean accept(Operator<?> s, Operator<?> t, OperatorGraph.OpEdge opEdge) {
-      return acceptableEdgeTypes.contains(opEdge.getEdgeType());
+      return ACCEPTABLE_EDGE_TYPES.contains(opEdge.getEdgeType());
     }
   }
 
