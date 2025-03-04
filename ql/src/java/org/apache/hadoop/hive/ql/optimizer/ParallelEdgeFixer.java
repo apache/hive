@@ -188,7 +188,8 @@ public class ParallelEdgeFixer extends Transform {
   }
 
   private static class ActualEdgePredicate implements OperatorGraph.OperatorEdgePredicate {
-    EnumSet<EdgeType> acceptableEdgeTypes = EnumSet.of(EdgeType.FLOW, EdgeType.SEMIJOIN, EdgeType.BROADCAST);
+    private static final EnumSet<EdgeType> acceptableEdgeTypes =
+        EnumSet.of(EdgeType.FLOW, EdgeType.SEMIJOIN, EdgeType.BROADCAST);
 
     @Override
     public boolean accept(Operator<?> s, Operator<?> t, OperatorGraph.OpEdge opEdge) {
