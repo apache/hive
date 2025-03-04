@@ -105,7 +105,11 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
       if (info == null) {
           throw new InvalidToken("token expired or does not exist: " + identifier);
       }
-      renewIfRequired(identifier, info);
+      try {
+        renewIfRequired(identifier, info);
+      } catch (InvalidToken e) {
+        LOGGER.warn("Failed to renew token: " + identifier, e);
+      }
       // we have to fetch the token again as it has been renewed and info still contains the previous renew time.
       info = this.tokenStore.getToken(identifier);
 
