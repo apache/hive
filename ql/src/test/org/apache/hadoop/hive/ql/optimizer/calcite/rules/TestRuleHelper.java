@@ -93,6 +93,31 @@ public class TestRuleHelper {
         relBuilder.field(field), relBuilder.literal(value));
   }
 
+  static RexNode neq(RelBuilder relBuilder, String field, Number value) {
+    return relBuilder.call(SqlStdOperatorTable.NOT_EQUALS,
+        relBuilder.field(field), relBuilder.literal(value));
+  }
+
+  static RexNode lt(RelBuilder relBuilder, String field, Number value) {
+    return relBuilder.call(SqlStdOperatorTable.LESS_THAN,
+        relBuilder.field(field), relBuilder.literal(value));
+  }
+
+  static RexNode gt(RelBuilder relBuilder, String field, Number value) {
+    return relBuilder.call(SqlStdOperatorTable.GREATER_THAN,
+        relBuilder.field(field), relBuilder.literal(value));
+  }
+
+  static RexNode lteq(RelBuilder relBuilder, String field, Number value) {
+    return relBuilder.call(SqlStdOperatorTable.LESS_THAN_OR_EQUAL,
+        relBuilder.field(field), relBuilder.literal(value));
+  }
+
+  static RexNode gteq(RelBuilder relBuilder, String field, Number value) {
+    return relBuilder.call(SqlStdOperatorTable.GREATER_THAN_OR_EQUAL,
+        relBuilder.field(field), relBuilder.literal(value));
+  }
+
   static RexNode or(RelBuilder relBuilder, RexNode... args) {
     return relBuilder.call(SqlStdOperatorTable.OR, args);
   }
