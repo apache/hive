@@ -81,7 +81,6 @@ public class StartMiniHS2Cluster {
         .withRemoteMetastore(isMetastoreRemote).withQueryHistory(queryHistory).build();
     Map<String, String> confOverlay = new HashMap<String, String>();
     miniHS2.start(confOverlay);
-    miniHS2.getDFS().getFileSystem().mkdirs(new Path("/apps_staging_dir/anonymous"));
 
     System.out.println("JDBC URL available at " + miniHS2.getJdbcURL());
 
