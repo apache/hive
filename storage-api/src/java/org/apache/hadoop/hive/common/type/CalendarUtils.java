@@ -162,6 +162,27 @@ public class CalendarUtils {
   }
 
   /**
+   * Convert epoch microseconds from the hybrid Julian/Gregorian calendar to the
+   * proleptic Gregorian.
+   * @param hybridMicros Microseconds of epoch in the hybrid Julian/Gregorian
+   * @return Microseconds of epoch in the proleptic Gregorian
+   */
+  public static long convertTimeToProlepticMicros(long hybridMicros) {
+    long prolepticMicros = hybridMicros;
+    long hybridMillis = hybridMicros / 1_000L; // Convert micros to millis
+
+    if (hybridMillis < SWITCHOVER_MILLIS) {
+      String dateStr = HYBRID_TIME_FORMAT.get().format(new Date(hybridMillis));
+      try {
+        prolepticMicros = PROLEPTIC_TIME_FORMAT.get().parse(dateStr).getTime() * 1_000L; // Convert millis back to micros
+      } catch (ParseException e) {
+        throw new IllegalArgumentException("Can't parse " + dateStr, e);
+      }
+    }
+    return prolepticMicros;
+  }
+
+  /**
    * Convert epoch millis from the proleptic Gregorian calendar to the hybrid
    * Julian/Gregorian.
    * @param proleptic millis of epoch in the proleptic Gregorian
@@ -178,6 +199,27 @@ public class CalendarUtils {
       }
     }
     return hybrid;
+  }
+
+  /**
+   * Convert epoch microseconds from the proleptic Gregorian calendar to the
+   * hybrid Julian/Gregorian.
+   * @param prolepticMicros Microseconds of epoch in the proleptic Gregorian
+   * @return Microseconds of epoch in the hybrid Julian/Gregorian
+   */
+  public static long convertTimeToHybridMicros(long prolepticMicros) {
+    long hybridMicros = prolepticMicros;
+    long prolepticMillis = prolepticMicros / 1_000L; // Convert micros to millis
+
+    if (prolepticMillis < SWITCHOVER_MILLIS) {
+      String dateStr = PROLEPTIC_TIME_FORMAT.get().format(new Date(prolepticMillis));
+      try {
+        hybridMicros = HYBRID_TIME_FORMAT.get().parse(dateStr).getTime() * 1_000L; // Convert millis back to micros
+      } catch (ParseException e) {
+        throw new IllegalArgumentException("Can't parse " + dateStr, e);
+      }
+    }
+    return hybridMicros;
   }
 
   /**
