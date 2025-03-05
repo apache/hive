@@ -292,7 +292,7 @@ POSTHOOK: Output: default@acidtlb
 POSTHOOK: Output: default@acidtlb
 POSTHOOK: Output: default@merge_tmp_table
 CBO PLAN:
-HiveProject(col0=[$2], col1=[$0], col2=[$1], col3=[$3])
+HiveProject(col0=[$3], col1=[$2], col2=[$0], col3=[$1])
   HiveJoin(condition=[=($3, $0)], joinType=[left], algorithm=[none], cost=[not available])
     HiveProject(c=[$0], d=[$1])
       HiveTableScan(table=[[default, othertlb]], table:alias=[s])
