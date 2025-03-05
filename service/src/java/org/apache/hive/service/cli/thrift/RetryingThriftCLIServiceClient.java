@@ -314,7 +314,7 @@ public class RetryingThriftCLIServiceClient implements InvocationHandler {
     LOG.info("Connecting to {}:{} using a thrift max message of size: {}",
         host, port, maxThriftMessageSize);
 
-    transport = HiveAuthUtils.getSocketTransport(host, port, 0, maxThriftMessageSize);
+    transport = HiveAuthUtils.getSocketTransport(host, port, 0, 0, maxThriftMessageSize);
     ((TSocket) transport).setTimeout((int) conf.getTimeVar(HiveConf.ConfVars.SERVER_READ_SOCKET_TIMEOUT,
       TimeUnit.SECONDS) * 1000);
     try {
