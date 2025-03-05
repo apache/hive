@@ -95,6 +95,7 @@ public class PerfLogger {
   public static final String LOAD_HASHTABLE = "LoadHashtable";
   public static final String TEZ_GET_SESSION = "TezGetSession";
   public static final String SAVE_TO_RESULTS_CACHE = "saveToResultsCache";
+  public static final String SEARCH_TRANSFORMER = "transformSearch";
 
   public static final String FILE_MOVES = "FileMoves";
   public static final String LOAD_TABLE = "LoadTable";
