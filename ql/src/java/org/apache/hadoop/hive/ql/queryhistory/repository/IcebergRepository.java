@@ -101,6 +101,8 @@ public class IcebergRepository extends AbstractRepository implements QueryHistor
         ICEBERG_STORAGE_HANDLER);
     table.setProperty("table_type", "ICEBERG");
     table.setProperty("write.format.default", "orc");
+    // expire/delete snapshots older than 1 day
+    table.setProperty("history.expire.max-snapshot-age-ms", Integer.toString(24 * 60 * 60 * 1000));
     table.setProperty(hive_metastoreConstants.META_TABLE_NAME, QUERY_HISTORY_DB_TABLE_NAME);
 
     table.setFields(schema.getFields());
@@ -190,7 +192,11 @@ public class IcebergRepository extends AbstractRepository implements QueryHistor
   }
 
   private void expireSnapshots() {
-    storageHandler.executeOperation(table, new AlterTableExecuteSpec<>(EXPIRE_SNAPSHOT,
-        new AlterTableExecuteSpec.ExpireSnapshotsSpec(10)));
+    LOG.info("Attempting to expiry {} snapshots", table.getFullTableName());
+    try {
+      storageHandler.executeOperation(table, new AlterTableExecuteSpec<>(EXPIRE_SNAPSHOT, null));
+    } catch (Exception e) {
+      LOG.warn("Failed to expire snapshots", e);
+    }
   }
 }
