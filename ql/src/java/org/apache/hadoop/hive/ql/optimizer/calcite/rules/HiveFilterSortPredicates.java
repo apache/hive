@@ -38,7 +38,7 @@ import org.apache.calcite.rex.RexVisitor;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.util.Pair;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.SearchTransformer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.FilterSelectivityEstimator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdSize;
 import org.slf4j.Logger;
@@ -309,7 +309,7 @@ public class HiveFilterSortPredicates extends RelHomogeneousShuttle {
 
   }
   
-  private static class SearchToFunctionCostTransformer extends HiveCalciteUtil.SearchTransformer<Double> {
+  private static class SearchToFunctionCostTransformer extends SearchTransformer<Double> {
 
     public SearchToFunctionCostTransformer(RexBuilder rexBuilder, RexCall search, RexVisitor<Double> rexVisitor) {
       super(rexBuilder, search, rexVisitor);

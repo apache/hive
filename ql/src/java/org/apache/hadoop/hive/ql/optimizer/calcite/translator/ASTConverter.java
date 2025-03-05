@@ -74,8 +74,8 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.SearchTransformer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveComponentAccess;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
@@ -1345,7 +1345,7 @@ public class ASTConverter {
     return flat;
   }
   
-  private static class SearchToASTNodeTransformer extends HiveCalciteUtil.SearchTransformer<ASTNode> {
+  private static class SearchToASTNodeTransformer extends SearchTransformer<ASTNode> {
 
     public SearchToASTNodeTransformer(
         RexBuilder rexBuilder, RexCall search, org.apache.calcite.rex.RexVisitor<ASTNode> rexVisitor) {

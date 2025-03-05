@@ -63,7 +63,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.SearchTransformer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.RexVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.Schema;
@@ -547,7 +547,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
     return "$win$_col_" + (uniqueCounter++);
   }
   
-  private static class SearchToExprNodeDescTransformer extends HiveCalciteUtil.SearchTransformer<ExprNodeDesc> {
+  private static class SearchToExprNodeDescTransformer extends SearchTransformer<ExprNodeDesc> {
 
     public SearchToExprNodeDescTransformer(
         RexBuilder rexBuilder, RexCall search, org.apache.calcite.rex.RexVisitor<ExprNodeDesc> rexVisitor) {

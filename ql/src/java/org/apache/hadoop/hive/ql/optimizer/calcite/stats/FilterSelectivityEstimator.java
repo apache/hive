@@ -50,6 +50,7 @@ import org.apache.datasketches.memory.Memory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.SearchTransformer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -626,7 +627,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     return colStats != null && colStats.getHistogram() != null && colStats.getHistogram().length > 0;
   }
   
-  private class SearchToFilterSelectivityTransformer extends HiveCalciteUtil.SearchTransformer<Double> {
+  private class SearchToFilterSelectivityTransformer extends SearchTransformer<Double> {
     private final RexCall search;
 
     public SearchToFilterSelectivityTransformer(
