@@ -227,7 +227,7 @@ public class TestAvroObjectInspectorGenerator {
       "  \"fields\" : [\n" +
       "    {\"name\":\"timestampField\", " +
       "     \"type\":\"" + AvroSerDe.AVRO_LONG_TYPE_NAME + "\", " +
-      "         \"logicalType\":\"" + AvroSerDe.TIMESTAMP_TYPE_NAME + "\"}" +
+      "         \"logicalType\":\"" + AvroSerDe.TIMESTAMP_TYPE_NAME_MILLIS + "\"}" +
       "  ]\n" +
       "}";
 
