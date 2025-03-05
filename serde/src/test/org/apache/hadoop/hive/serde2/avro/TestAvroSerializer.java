@@ -125,7 +125,7 @@ public class TestAvroSerializer {
   public void canSerializeTimestamps() throws SerDeException, IOException {
     singleFieldTest("timestamp1", Timestamp.valueOf("2011-01-01 00:00:00").toEpochMilli(),
         "\"" + AvroSerDe.AVRO_LONG_TYPE_NAME + "\"," +
-        "\"logicalType\":\"" + AvroSerDe.TIMESTAMP_TYPE_NAME + "\"");
+        "\"logicalType\":\"" + AvroSerDe.TIMESTAMP_TYPE_NAME_MILLIS + "\"");
   }
 
   @Test

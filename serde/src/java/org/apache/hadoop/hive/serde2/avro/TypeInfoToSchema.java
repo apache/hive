@@ -159,7 +159,7 @@ public class TypeInfoToSchema {
       case TIMESTAMP:
         schema = AvroSerdeUtils.getSchemaFor("{" +
           "\"type\":\"" + AvroSerDe.AVRO_LONG_TYPE_NAME + "\"," +
-          "\"logicalType\":\"" + AvroSerDe.TIMESTAMP_TYPE_NAME + "\"}");
+          "\"logicalType\":\"" + AvroSerDe.TIMESTAMP_TYPE_NAME_MICROS + "\"}");
         break;
       case VOID:
         schema = Schema.create(Schema.Type.NULL);
