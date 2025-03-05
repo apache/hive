@@ -80,7 +80,7 @@ public class TestOperatorGraph {
       List<Task<?>> rootTasks = new ArrayList<>();
       generateTaskTree(rootTasks, pCtx, new ArrayList<>(), new HashSet<>(), new HashSet<>());
 
-      assertEquals(rootTasks.size(), 1);
+      assertEquals(1, rootTasks.size());
       assertTrue(rootTasks.get(0) instanceof TezTask);
       TezTask tezTask = (TezTask) rootTasks.get(0);
 

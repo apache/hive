@@ -212,28 +212,28 @@ public class OperatorGraph {
   }
 
   private DagGraph<Operator<?>, OperatorGraph.OpEdge> createDagGraph(ParseContext pctx) {
-    DagGraph<Operator<?>, OperatorGraph.OpEdge> dagGraph = new DagGraph<>();
+    DagGraph<Operator<?>, OperatorGraph.OpEdge> graph = new DagGraph<>();
     for (Operator<?> operator: pctx.getAllOps()) {
       List<Operator<?>> parents = operator.getParentOperators();
       for (Operator<?> parentOperator: parents) {
         if (operator instanceof MapJoinOperator && parentOperator instanceof ReduceSinkOperator) {
-          dagGraph.putEdgeValue(parentOperator, operator, new OpEdge(EdgeType.BROADCAST));
+          graph.putEdgeValue(parentOperator, operator, new OpEdge(EdgeType.BROADCAST));
         } else {
-          dagGraph.putEdgeValue(parentOperator, operator, new OpEdge(EdgeType.FLOW));
+          graph.putEdgeValue(parentOperator, operator, new OpEdge(EdgeType.FLOW));
         }
       }
 
       SemiJoinBranchInfo sji = pctx.getRsToSemiJoinBranchInfo().get(operator);
       if (sji != null) {
-        dagGraph.putEdgeValue(operator, sji.getTsOp(), new OpEdge(EdgeType.SEMIJOIN));
+        graph.putEdgeValue(operator, sji.getTsOp(), new OpEdge(EdgeType.SEMIJOIN));
       }
       if (operator instanceof AppMasterEventOperator) {
         DynamicPruningEventDesc dped = (DynamicPruningEventDesc) operator.getConf();
         TableScanOperator ts = dped.getTableScan();
-        dagGraph.putEdgeValue(operator, ts, new OpEdge(EdgeType.DPP));
+        graph.putEdgeValue(operator, ts, new OpEdge(EdgeType.DPP));
       }
     }
-    return dagGraph;
+    return graph;
   }
 
   public OperatorGraph(ParseContext pctx) {
@@ -243,10 +243,9 @@ public class OperatorGraph {
 
     for (Cluster cluster: clusterSet) {
       for (Operator<?> operator: cluster.getMembers()) {
-        if (!operatorToCluster.containsKey(operator)) {
-          operatorToCluster.put(operator, new HashSet<>());
-        }
-        operatorToCluster.get(operator).add(cluster);
+        operatorToCluster
+            .computeIfAbsent(operator, o -> new HashSet<>())
+            .add(cluster);
       }
     }
   }

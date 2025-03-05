@@ -53,25 +53,25 @@ public class DotExporter {
     DagGraph<Operator<?>, OpEdge> g = operatorGraph.getDagGraph();
     PrintWriter writer = new PrintWriter(outFile);
     writer.println("digraph G");
-    writer.println("{\n");
+    writer.println("{%n");
     Set<Cluster> clusters = operatorGraph.getClusters();
     Map<Cluster, Integer> clusterIndicesMap = new HashMap<>();
     int idx = 0;
     for (Cluster cluster : clusters) {
       idx++;
       clusterIndicesMap.put(cluster, idx);
-      writer.printf("subgraph cluster_%d {\n", idx);
+      writer.printf("subgraph cluster_%d {%n", idx);
       for (Operator<?> member : cluster.getMembers()) {
-        writer.printf("%s;\n", nodeName(member, idx));
+        writer.printf("%s;%n", nodeName(member, idx));
       }
-      writer.printf("label = \"cluster %d\";\n", idx);
-      writer.printf("}\n");
+      writer.printf("label = \"cluster %d\";%n", idx);
+      writer.printf("}%n");
     }
     Set<Operator<?>> nodes = g.nodes();
     for (Operator<?> n : nodes) {
       for (Cluster curCluster: operatorGraph.clusterOf(n)) {
         int curClusterIdx = clusterIndicesMap.get(curCluster);
-        writer.printf("%s[shape=record,label=\"%s\",%s];\n",
+        writer.printf("%s[shape=record,label=\"%s\",%s];%n",
             nodeName(n, curClusterIdx), nodeLabel(n), style(n));
         Set<Operator<?>> succ = g.successors(n);
         for (Operator<?> s : succ) {
@@ -91,18 +91,18 @@ public class DotExporter {
 
           Set<Cluster> childClusters = operatorGraph.clusterOf(s);
           if (childClusters.contains(curCluster)) {
-            writer.printf("%s->%s%s;\n", nodeName(n, curClusterIdx), nodeName(s, curClusterIdx), style);
+            writer.printf("%s->%s%s;%n", nodeName(n, curClusterIdx), nodeName(s, curClusterIdx), style);
           } else {
             for (Cluster childCluster: childClusters) {
               int childClusterIdx = clusterIndicesMap.get(childCluster);
-              writer.printf("%s->%s%s;\n", nodeName(n, curClusterIdx), nodeName(s, childClusterIdx), style);
+              writer.printf("%s->%s%s;%n", nodeName(n, curClusterIdx), nodeName(s, childClusterIdx), style);
             }
           }
         }
       }
     }
 
-    writer.println("}\n");
+    writer.println("}%n");
     writer.close();
   }
 
