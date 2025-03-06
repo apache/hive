@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.io.Text;
+import org.apache.hive.common.IPUtils;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
@@ -66,7 +67,7 @@ public class TestRegexSerDe {
 
       // Data
       Text t = new Text(
-          "127.0.0.1 - - [26/May/2009:00:00:00 +0000] "
+              IPUtils.getLoopbackAddress() + " - - [26/May/2009:00:00:00 +0000] "
               + "\"GET /someurl/?track=Blabla(Main) HTTP/1.1\" 200 5864 - "
               + "\"Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US) " 
               + "AppleWebKit/525.19 (KHTML, like Gecko) Chrome/1.0.154.65 Safari/525.19\"");
