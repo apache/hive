@@ -20,6 +20,7 @@ package org.apache.hive.service.cli;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveServer2TransportMode;
+import org.apache.hive.common.IPUtils;
 import org.apache.hive.service.Service;
 import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.cli.session.HiveSession;
@@ -125,7 +126,7 @@ public class TestRetryingThriftCLIServiceClient extends AbstractThriftCLITest {
       assertTrue(sqlExc.getMessage().contains("3"));
     }
     // Reset host setting
-    hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST, "127.0.0.1");
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST, IPUtils.getLoopbackAddress());
 
     // Create client
     RetryingThriftCLIServiceClient.CLIServiceClientWrapper cliServiceClient
