@@ -98,8 +98,8 @@ POSTHOOK: query: INSERT INTO display (skey, language_id, hierarchy_display) VALU
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@display
-Warning: Shuffle Join MERGEJOIN[67][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[68][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 8' is a cross product
+Warning: Shuffle Join MERGEJOIN[65][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[66][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 7' is a cross product
 PREHOOK: query: MERGE INTO display USING (
   SELECT distinct display_skey, display, display as orig_display
   FROM (
@@ -212,11 +212,11 @@ POSTHOOK: Output: default@target_ice
 PREHOOK: query: DELETE FROM target_ice WHERE a = 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@target_ice
-PREHOOK: Output: default@target_ice
+#### A masked pattern was here ####
 POSTHOOK: query: DELETE FROM target_ice WHERE a = 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@target_ice
-POSTHOOK: Output: default@target_ice
+#### A masked pattern was here ####
 PREHOOK: query: SELECT * FROM target_ice
 PREHOOK: type: QUERY
 PREHOOK: Input: default@target_ice

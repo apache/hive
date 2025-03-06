@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
@@ -35,8 +36,11 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
+import org.apache.hadoop.hive.metastore.api.PartitionsStatsResult;
 import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
@@ -261,7 +265,8 @@ final class HMSClient implements AutoCloseable {
   }
 
   Table getTable(@NotNull String dbName, @NotNull String tableName) throws TException {
-    return client.get_table(dbName, tableName);
+    GetTableRequest req = new GetTableRequest(dbName, tableName);
+    return client.get_table_req(req).getTable();
   }
 
   Partition createPartition(@NotNull Table table, @NotNull List<String> values) throws TException {
@@ -274,6 +279,10 @@ final class HMSClient implements AutoCloseable {
 
   void addPartitions(List<Partition> partitions) throws TException {
     client.add_partitions(partitions);
+  }
+
+  void updatePartitionColumnStats(ColumnStatistics colStats) throws TException {
+    client.update_partition_column_statistics(colStats);
   }
 
 
@@ -327,6 +336,20 @@ final class HMSClient implements AutoCloseable {
           getPartitionNames(dbName, tableName));
     }
     return client.get_partitions_by_names(dbName, tableName, names);
+  }
+
+  List<Partition> getPartitionsByFilter(@NotNull String dbName, @NotNull String tableName,
+                                        @NotNull String filter) throws TException {
+    return client.get_partitions_by_filter(dbName, tableName, filter, (short) -1);
+  }
+
+  List<Partition> getPartitionsByPs(@NotNull String dbName, @NotNull String tableName,
+                                    @NotNull List<String> partVals) throws TException {
+    return client.get_partitions_ps_with_auth(dbName, tableName, partVals, (short) -1, null, null);
+  }
+
+  PartitionsStatsResult getPartitionsStats(PartitionsStatsRequest request) throws TException {
+    return client.get_partitions_statistics_req(request);
   }
 
   boolean alterTable(@NotNull String dbName, @NotNull String tableName, @NotNull Table newTable)

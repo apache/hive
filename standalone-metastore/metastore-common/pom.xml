@@ -16,7 +16,7 @@
   <parent>
     <artifactId>hive-standalone-metastore</artifactId>
     <groupId>org.apache.hive</groupId>
-    <version>4.0.0-beta-2-SNAPSHOT</version>
+    <version>4.1.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>hive-standalone-metastore-common</artifactId>
@@ -121,6 +121,10 @@
       <artifactId>hadoop-common</artifactId>
       <optional>true</optional>
       <exclusions>
+        <exclusion>
+          <groupId>com.nimbusds</groupId>
+          <artifactId>nimbus-jose-jwt</artifactId>
+        </exclusion>
         <exclusion>
           <groupId>commons-beanutils</groupId>
           <artifactId>commons-beanutils</artifactId>
@@ -252,6 +256,14 @@
       <version>${zookeeper.version}</version>
       <exclusions>
         <exclusion>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-classic</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-core</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
@@ -298,6 +310,11 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.ldap</groupId>
+      <artifactId>spring-ldap-core</artifactId>
+      <version>${spring.ldap.version}</version>
     </dependency>
     <!-- test scope dependencies -->
     <dependency>

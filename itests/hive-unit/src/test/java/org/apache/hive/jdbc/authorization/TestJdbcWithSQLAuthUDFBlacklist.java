@@ -28,6 +28,7 @@ import java.util.HashMap;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
@@ -64,7 +65,7 @@ public class TestJdbcWithSQLAuthUDFBlacklist {
 
   @Test
   public void testBlackListedUdfUsage() throws Exception {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = new HiveConfForTest(getClass());
     conf.setVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_BLACKLIST, "sqrt");
     startHS2(conf);
 

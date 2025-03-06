@@ -14,4 +14,4 @@ POSTHOOK: query: create table t2 like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2
-FAILED: SemanticException [Error 10315]: Grouping sets aggregations (with rollups or cubes) are not allowed when HIVEMULTIGROUPBYSINGLEREDUCER is turned on. Set hive.multigroupby.singlereducer=false if you want to use grouping sets
+FAILED: SemanticException [Error 10315]: Grouping sets aggregations (with rollups or cubes) are not allowed when HIVE_MULTI_GROUPBY_SINGLE_REDUCER is turned on. Set hive.multigroupby.singlereducer=false if you want to use grouping sets

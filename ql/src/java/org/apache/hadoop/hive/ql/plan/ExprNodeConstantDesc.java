@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
@@ -172,6 +173,9 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
     if (typeInfo.getCategory() == Category.PRIMITIVE) {
       return getFormatted(typeInfo, value);
     } else if (typeInfo.getCategory() == Category.STRUCT) {
+      if (getWritableObjectInspector().getWritableConstantValue() == null) {
+        return getFormatted(typeInfo, value);
+      }
       StringBuilder sb = new StringBuilder();
       sb.append("const struct(");
       List<?> items = (List<?>) getWritableObjectInspector().getWritableConstantValue();
@@ -211,6 +215,14 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
     }
 
     return true;
+  }
+
+  public static boolean isFoldedFromCol(ExprNodeDesc expr) {
+    if (!(expr instanceof ExprNodeConstantDesc)) {
+      return false;
+    }
+    ExprNodeConstantDesc constantExpr = (ExprNodeConstantDesc) expr;
+    return StringUtils.isNotEmpty(constantExpr.foldedFromCol);
   }
 
   @Override

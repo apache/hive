@@ -2,7 +2,6 @@
 -- SORT_QUERY_RESULTS
 
 set hive.mapred.mode=nonstrict;
-set hive.cbo.fallback.strategy=NEVER;
 create table url_t (key string, fullurl string);
 
 insert overwrite table url_t

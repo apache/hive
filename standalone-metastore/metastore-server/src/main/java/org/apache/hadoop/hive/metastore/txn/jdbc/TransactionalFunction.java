@@ -18,6 +18,9 @@
 package org.apache.hadoop.hive.metastore.txn.jdbc;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
+import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
+import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 
 /**
  * A functional interface representing a function call (typically a query or statement) which has a result and done within
@@ -26,7 +29,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
  */
 @FunctionalInterface
 public interface TransactionalFunction<Result> {
-
+  
   /**
    * Implementations typically should execute transsactional database calls inside.
    * @param jdbcResource A {@link MultiDataSourceJdbcResource} instance responsible for providing all the necessary resources 
@@ -35,6 +38,7 @@ public interface TransactionalFunction<Result> {
    * @throws org.springframework.dao.DataAccessException Thrown if any of the JDBC calls fail
    * @throws MetaException Thrown in case of application error within the function
    */
-  Result execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException;
+  Result execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException, NoSuchTxnException, TxnAbortedException, 
+      NoSuchLockException;
 
 }

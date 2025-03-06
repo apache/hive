@@ -19,6 +19,9 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
+
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 
 import java.util.Arrays;
 
@@ -38,7 +41,9 @@ public class AlterTableExecuteSpec<T> {
     EXPIRE_SNAPSHOT,
     SET_CURRENT_SNAPSHOT,
     FAST_FORWARD,
-    CHERRY_PICK;
+    CHERRY_PICK,
+    DELETE_METADATA,
+    DELETE_ORPHAN_FILES;
   }
 
   private final ExecuteOperationType operationType;
@@ -111,6 +116,8 @@ public class AlterTableExecuteSpec<T> {
 
     private long fromTimestampMillis = -1L;
 
+    private int numRetainLast = -1;
+
     public ExpireSnapshotsSpec(long timestampMillis) {
       this.timestampMillis = timestampMillis;
     }
@@ -122,6 +129,10 @@ public class AlterTableExecuteSpec<T> {
     public ExpireSnapshotsSpec(long fromTimestampMillis, long toTimestampMillis) {
       this.fromTimestampMillis = fromTimestampMillis;
       this.timestampMillis = toTimestampMillis;
+    }
+
+    public ExpireSnapshotsSpec(int numRetainLast) {
+      this.numRetainLast = numRetainLast;
     }
 
     public Long getTimestampMillis() {
@@ -136,12 +147,20 @@ public class AlterTableExecuteSpec<T> {
       return idsToExpire;
     }
 
+    public int getNumRetainLast() {
+      return numRetainLast;
+    }
+
     public boolean isExpireByIds() {
       return idsToExpire != null;
     }
 
     public boolean isExpireByTimestampRange() {
       return timestampMillis != -1 && fromTimestampMillis != -1;
+    }
+
+    public boolean isExpireByRetainLast() {
+      return numRetainLast != -1;
     }
 
     @Override
@@ -151,6 +170,8 @@ public class AlterTableExecuteSpec<T> {
         stringHelper.add("fromTimestampMillis", fromTimestampMillis).add("toTimestampMillis", timestampMillis);
       } else if (isExpireByIds()) {
         stringHelper.add("idsToExpire", Arrays.toString(idsToExpire));
+      } else if (isExpireByRetainLast()) {
+        stringHelper.add("numRetainLast", numRetainLast);
       } else {
         stringHelper.add("timestampMillis", timestampMillis);
       }
@@ -161,23 +182,23 @@ public class AlterTableExecuteSpec<T> {
   /**
    * Value object class, that stores the set snapshot version operation specific parameters
    * <ul>
-   *   <li>snapshot Id: it should be a valid snapshot version</li>
+   *   <li>snapshot Id: it should be a valid snapshot version or a SnapshotRef name</li>
    * </ul>
    */
   public static class SetCurrentSnapshotSpec {
-    private final long snapshotId;
+    private final String snapshotIdOrRefName;
 
-    public SetCurrentSnapshotSpec(Long snapshotId) {
-      this.snapshotId = snapshotId;
+    public SetCurrentSnapshotSpec(String snapshotIdOrRefName) {
+      this.snapshotIdOrRefName = snapshotIdOrRefName;
     }
 
-    public Long getSnapshotId() {
-      return snapshotId;
+    public String getSnapshotIdOrRefName() {
+      return snapshotIdOrRefName;
     }
 
     @Override
     public String toString() {
-      return MoreObjects.toStringHelper(this).add("snapshotId", snapshotId).toString();
+      return MoreObjects.toStringHelper(this).add("snapshotIdOrRefName", snapshotIdOrRefName).toString();
     }
   }
 
@@ -232,6 +253,48 @@ public class AlterTableExecuteSpec<T> {
     @Override
     public String toString() {
       return MoreObjects.toStringHelper(this).add("snapshotId", snapshotId).toString();
+    }
+  }
+
+  public static class DeleteMetadataSpec {
+    private final String branchName;
+    private final SearchArgument sarg;
+
+    public DeleteMetadataSpec(String branchName, SearchArgument sarg) {
+      this.branchName = branchName;
+      this.sarg = sarg;
+    }
+
+    public String getBranchName() {
+      return branchName;
+    }
+
+    public SearchArgument getSarg() {
+      return sarg;
+    }
+  }
+
+  /**
+   * Value object class, that stores the delete orphan files operation specific parameters.
+   * <ul>
+   *   <li>timestampMillis: the time before which files should be considered to be deleted</li>
+   * </ul>
+   */
+  public static class DeleteOrphanFilesDesc {
+    private final long timestampMillis;
+
+    public DeleteOrphanFilesDesc(long timestampMillis) {
+      Preconditions.checkArgument(timestampMillis >= 0, "TimeStamp Millis shouldn't be negative");
+      this.timestampMillis = timestampMillis;
+    }
+
+    public long getTimestampMillis() {
+      return timestampMillis;
+    }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(this).add("timestampMillis", timestampMillis).toString();
     }
   }
 }

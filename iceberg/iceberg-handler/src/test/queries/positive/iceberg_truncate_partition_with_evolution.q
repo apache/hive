@@ -106,9 +106,19 @@ truncate table test_ice_double_date partition (a = 33678499.377556738, b = '2022
 select * from test_ice_double_date;
 select `partition` from default.test_ice_double_date.partitions;
 
+-- create a v1 table
+create external table test_truncate_part_evolution (id int, value string) stored by iceberg stored as orc tblproperties ('format-version'='1');
+insert into test_truncate_part_evolution values (1, 'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five');
+alter table test_truncate_part_evolution set partition spec(id);
+alter table test_truncate_part_evolution set tblproperties('external.table.purge'='true');
+truncate test_truncate_part_evolution partition(id=1);
+
+select * from test_truncate_part_evolution;
+
 drop table test_ice_int;
 drop table test_ice_bigint;
 drop table test_ice_str;
 drop table test_ice_date;
 drop table test_ice_double;
 drop table test_ice_double_date;
+drop table test_truncate_part_evolution;

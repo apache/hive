@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -283,7 +284,7 @@ public class TezSessionState {
     } else {
       this.resources = new HiveResources(createTezDir(sessionId, "resources"));
       ensureLocalResources(conf, additionalFilesNotFromConf);
-      LOG.info("Created new resources: " + resources);
+      LOG.info("Created new resources: " + this.resources);
     }
 
     // unless already installed on all the cluster nodes, we'll have to
@@ -363,7 +364,7 @@ public class TezSessionState {
      */
     HiveConfUtil.updateCredentialProviderPasswordForJobs(tezConfig);
 
-    String tezJobNameFormat = HiveConf.getVar(conf, ConfVars.HIVETEZJOBNAME);
+    String tezJobNameFormat = HiveConf.getVar(conf, ConfVars.HIVE_TEZ_JOB_NAME);
     final TezClient session = TezClient.newBuilder(String.format(tezJobNameFormat, sessionId), tezConfig)
         .setIsSession(true).setLocalResources(commonLocalResources)
         .setCredentials(llapCredentials).setServicePluginDescriptor(servicePluginsDescriptor)
@@ -608,7 +609,7 @@ public class TezSessionState {
     String loginUser =
         loginUserUgi == null ? null : loginUserUgi.getShortUserName();
     boolean addHs2User =
-        HiveConf.getBoolVar(hiveConf, ConfVars.HIVETEZHS2USERACCESS);
+        HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_TEZ_HS2_USER_ACCESS);
 
     String viewStr = Utilities.getAclStringWithHiveModification(tezConf,
             TezConfiguration.TEZ_AM_VIEW_ACLS, addHs2User, user, loginUser);
@@ -794,12 +795,12 @@ public class TezSessionState {
     // tez needs its own scratch dir (per session)
     // TODO: De-link from SessionState. A TezSession can be linked to different Hive Sessions via the pool.
     SessionState sessionState = SessionState.get();
-    String hdfsScratchDir = sessionState == null ? HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR) : sessionState
+    String hdfsScratchDir = sessionState == null ? HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCH_DIR) : sessionState
       .getHdfsScratchDirURIString();
     Path tezDir = new Path(hdfsScratchDir, TEZ_DIR);
     tezDir = new Path(tezDir, sessionId + ((suffix == null) ? "" : ("-" + suffix)));
     FileSystem fs = tezDir.getFileSystem(conf);
-    FsPermission fsPermission = new FsPermission(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIRPERMISSION));
+    FsPermission fsPermission = new FsPermission(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCH_DIR_PERMISSION));
     fs.mkdirs(tezDir, fsPermission);
     // Make sure the path is normalized (we expect validation to pass since we just created it).
     tezDir = DagUtils.validateTargetDir(tezDir, conf).getPath();
@@ -1006,5 +1007,11 @@ public class TezSessionState {
     }
     this.resources = resources;
     return dir;
+  }
+
+  public String getAppMasterUri() {
+    return Optional.of(getSession()).map(
+            tezClient -> tezClient.getAmHost() + ":" + tezClient.getAmPort())
+        .get();
   }
 }

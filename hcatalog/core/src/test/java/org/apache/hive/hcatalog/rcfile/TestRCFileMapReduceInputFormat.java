@@ -38,7 +38,6 @@ import org.apache.hadoop.hive.serde2.columnar.BytesRefWritable;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.Job;
@@ -233,7 +232,7 @@ public class TestRCFileMapReduceInputFormat {
     jonconf.set("mapred.input.dir", testDir.toString());
     JobContext context = new Job(jonconf);
     HiveConf.setLongVar(context.getConfiguration(),
-        HiveConf.ConfVars.MAPREDMAXSPLITSIZE, maxSplitSize);
+        HiveConf.ConfVars.MAPRED_MAX_SPLIT_SIZE, maxSplitSize);
     List<InputSplit> splits = inputFormat.getSplits(context);
     assertEquals("splits length should be " + splitNumber, splitNumber, splits.size());
     int readCount = 0;

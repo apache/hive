@@ -17,7 +17,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive-it</artifactId>
-    <version>4.0.0-beta-2-SNAPSHOT</version>
+    <version>4.1.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>hive-it-qfile-accumulo</artifactId>
@@ -351,6 +351,16 @@
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-api</artifactId>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-json</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-client</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.tez</groupId>
@@ -471,9 +481,6 @@
             <configuration>
               <target>
                 <mkdir dir="${test.tmp.dir}/scripts/metastore"/>
-                <copy todir="${test.tmp.dir}/scripts/metastore">
-                  <fileset dir="${basedir}/${hive.path.to.root}/metastore/scripts/"/>
-                </copy>
                 <copy todir="${test.tmp.dir}/scripts/metastore/upgrade" overwrite="true">
                   <fileset dir="${basedir}/${hive.path.to.root}/standalone-metastore/metastore-server/src/main/sql/"/>
                 </copy>

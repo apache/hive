@@ -27,13 +27,15 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.ResolverStyle;
 import java.util.Objects;
 
 final class InstantDateTimeFormatter extends InstantFormatterCache<DateTimeFormatter> {
 
-  InstantDateTimeFormatter(final ZoneId zoneId) {
+  InstantDateTimeFormatter(final ZoneId zoneId, ResolverStyle resolverStyle) {
     super(zoneId,
-        s -> new DateTimeFormatterBuilder().parseCaseInsensitive().appendPattern(s).toFormatter().withZone(zoneId));
+        s -> new DateTimeFormatterBuilder().parseCaseInsensitive()
+            .appendPattern(s).toFormatter().withResolverStyle(resolverStyle).withZone(zoneId));
   }
 
   @Override

@@ -59,8 +59,9 @@ public abstract class JdbcWithMiniKdcSQLAuthTest {
     hiveConf.setBoolVar(ConfVars.HIVE_AUTHORIZATION_ENABLED, true);
     hiveConf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
-    hiveConf.setBoolVar(ConfVars.HIVEFETCHTASKCACHING, false);
-
+    hiveConf.setBoolVar(ConfVars.HIVE_FETCH_TASK_CACHING, false);
+    // query history adds no value to this test, it would just bring iceberg handler dependency, which isn't worth
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED, false);
     miniHS2 = MiniHiveKdc.getMiniHS2WithKerb(miniHiveKdc, hiveConf);
     miniHS2.start(new HashMap<String, String>());
 

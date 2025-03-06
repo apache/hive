@@ -55,7 +55,6 @@ public class PerfLoggerTest {
     AtomicInteger count = new AtomicInteger(0);
     // getEndTimes in a loop
     executorService.execute(() -> {
-      PerfLogger.setPerfLogger(pl);
       try {
         count.incrementAndGet();
         snooze(100);
@@ -76,7 +75,6 @@ public class PerfLoggerTest {
       executorService.execute(() -> {
         try {
           int cnt = count.incrementAndGet();
-          PerfLogger.setPerfLogger(pl);
           for (int i = 0; i < 64; ++i) {
             pl.perfLogBegin("test", PerfLogger.COMPILE + "_ "+  cnt + "_" + i);
             snooze(50);

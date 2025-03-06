@@ -17,8 +17,6 @@
 github:
   description: "Apache Hive"
   homepage: https://hive.apache.org/
-  ghp_branch: master
-  ghp_path: /docs
   labels:
     - hive
     - java

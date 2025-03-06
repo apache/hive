@@ -66,20 +66,20 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"b\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"c\",\"required\":false,\"type\":\"int\"}]}
 	current-snapshot-id 	#SnapshotId#
-	current-snapshot-summary	{\"added-data-files\":\"2\",\"added-records\":\"2\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"2\",\"total-records\":\"2\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"2\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-summary	{\"added-data-files\":\"2\",\"added-records\":\"2\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"2\",\"total-records\":\"2\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"2\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b_bucket\",\"transform\":\"bucket[16]\",\"source-id\":1,\"field-id\":1000},{\"name\":\"c_trunc\",\"transform\":\"truncate[3]\",\"source-id\":2,\"field-id\":1001}]}
-	engine.hive.enabled 	true                
 	format-version      	1                   
 	iceberg.orc.files.only	true                
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	2                   
 	numRows             	2                   
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	snapshot-count      	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	#Masked#                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	uuid                	#Masked#
 	write.format.default	orc                 
@@ -95,7 +95,7 @@ Sort Columns:       	[]
 Original Query:     	select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52	 
 Expanded Query:     	select `tbl_ice`.`b`, `tbl_ice`.`c` from `default`.`tbl_ice` where `tbl_ice`.`c` > 52	 
 Rewrite Enabled:    	Yes                 	 
-Outdated for Rewriting:	Unknown             	 
+Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
 Table name          	Snapshot            	 
@@ -152,20 +152,20 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"b\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"c\",\"required\":false,\"type\":\"int\"}]}
 	current-snapshot-id 	#SnapshotId#
-	current-snapshot-summary	{\"added-data-files\":\"2\",\"added-records\":\"2\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"2\",\"total-records\":\"2\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"2\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-summary	{\"added-data-files\":\"2\",\"added-records\":\"2\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"2\",\"total-records\":\"2\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"2\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b_bucket\",\"transform\":\"bucket[16]\",\"source-id\":1,\"field-id\":1000},{\"name\":\"c_trunc\",\"transform\":\"truncate[3]\",\"source-id\":2,\"field-id\":1001}]}
-	engine.hive.enabled 	true                
 	format-version      	2                   
 	iceberg.orc.files.only	true                
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	2                   
 	numRows             	2                   
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	snapshot-count      	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	#Masked#                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	uuid                	#Masked#
 	write.delete.mode   	merge-on-read       
@@ -184,7 +184,7 @@ Sort Columns:       	[]
 Original Query:     	select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52	 
 Expanded Query:     	select `tbl_ice`.`b`, `tbl_ice`.`c` from `default`.`tbl_ice` where `tbl_ice`.`c` > 52	 
 Rewrite Enabled:    	Yes                 	 
-Outdated for Rewriting:	Unknown             	 
+Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
 Table name          	Snapshot            	 

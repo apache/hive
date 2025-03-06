@@ -373,7 +373,7 @@ public enum ErrorMsg {
       "metastore."),
   INVALID_COMPACTION_TYPE(10282, "Invalid compaction type, supported values are 'major' and " +
       "'minor'"),
-  NO_COMPACTION_PARTITION(10283, "You must specify a partition to compact for partitioned tables"),
+  COMPACTION_NO_PARTITION(10283, "You must specify a partition to compact for partitioned tables"),
   TOO_MANY_COMPACTION_PARTITIONS(10284, "Compaction can only be requested on one partition at a " +
       "time."),
   DISTINCT_NOT_SUPPORTED(10285, "Distinct keyword is not support in current context"),
@@ -421,7 +421,7 @@ public enum ErrorMsg {
   REPLACE_UNSUPPORTED_TYPE_CONVERSION(10314, "Replacing columns with unsupported type conversion (from {0} to {1}) for column {2}. SerDe may be incompatible", true),
   HIVE_GROUPING_SETS_AGGR_NOMAPAGGR_MULTIGBY(10315,
       "Grouping sets aggregations (with rollups or cubes) are not allowed when " +
-      "HIVEMULTIGROUPBYSINGLEREDUCER is turned on. Set hive.multigroupby.singlereducer=false if you want to use grouping sets"),
+      "HIVE_MULTI_GROUPBY_SINGLE_REDUCER is turned on. Set hive.multigroupby.singlereducer=false if you want to use grouping sets"),
   CANNOT_RETRIEVE_TABLE_METADATA(10316, "Error while retrieving table metadata"),
   INVALID_AST_TREE(10318, "Internal error : Invalid AST"),
   ERROR_SERIALIZE_METASTORE(10319, "Error while serializing the metastore objects"),
@@ -480,12 +480,19 @@ public enum ErrorMsg {
   INVALID_METADATA_TABLE_NAME(10430, "Invalid metadata table name {0}.", true),
   TABLE_META_REF_NOT_SUPPORTED(10431, "Table Meta Ref extension is not supported for table {0}.", true),
   COMPACTION_REFUSED(10432, "Compaction request for {0}.{1}{2} is refused, details: {3}.", true),
+  COMPACTION_PARTITION_EVOLUTION(10438, "Compaction for {0}.{1} on partition level is not allowed on a table that has undergone partition evolution", true),
+  COMPACTION_NON_IDENTITY_PARTITION_SPEC(10439, "Compaction for {0}.{1} is not supported on the table with non-identity partition spec", true),
   CBO_IS_REQUIRED(10433,
           "The following functionality requires CBO (" + HiveConf.ConfVars.HIVE_CBO_ENABLED.varname + "): {0}", true),
   CTLF_UNSUPPORTED_FORMAT(10434, "CREATE TABLE LIKE FILE is not supported by the ''{0}'' file format", true),
-  NON_NATIVE_ACID_UPDATE(10435, "Update and Merge into non-native ACID table is only supported when " +
-          HiveConf.ConfVars.SPLIT_UPDATE.varname + " is true."),
+  NON_NATIVE_ACID_UPDATE(10435, "Update and Merge to a non-native ACID table in \"merge-on-read\" mode is only supported when \"" +
+          HiveConf.ConfVars.SPLIT_UPDATE.varname + "\"=\"true\""),
   READ_ONLY_DATABASE(10436, "Database {0} is read-only", true),
+  UNEXPECTED_PARTITION_TRANSFORM_SPEC(10437, "Partition transforms are only supported by Iceberg storage handler", true),
+  NONICEBERG_COMPACTION_WITH_FILTER_NOT_SUPPORTED(10440, "Compaction with filter is not allowed on non-Iceberg table {0}.{1}", true),
+  ICEBERG_COMPACTION_WITH_PART_SPEC_AND_FILTER_NOT_SUPPORTED(10441, "Compaction command with both partition spec and filter is not supported on Iceberg table {0}.{1}", true),
+  COMPACTION_THREAD_INITIALIZATION(10442, "Compaction thread failed during initialization", false),
+  ALTER_TABLE_COMPACTION_NON_PARTITIONED_COLUMN_NOT_ALLOWED(10443, "Filter expression can contain only partition columns."),
 
   //========================== 20000 range starts here ========================//
 

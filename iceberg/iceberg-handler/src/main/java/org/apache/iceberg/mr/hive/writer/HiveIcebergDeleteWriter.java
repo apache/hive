@@ -21,35 +21,34 @@ package org.apache.iceberg.mr.hive.writer;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import org.apache.hadoop.io.Writable;
 import org.apache.iceberg.DeleteFile;
-import org.apache.iceberg.PartitionSpec;
-import org.apache.iceberg.Schema;
+import org.apache.iceberg.PartitionKey;
+import org.apache.iceberg.Table;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.deletes.PositionDelete;
-import org.apache.iceberg.io.ClusteredPositionDeleteWriter;
 import org.apache.iceberg.io.DeleteWriteResult;
-import org.apache.iceberg.io.FileIO;
-import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.mr.hive.FilesForCommit;
 import org.apache.iceberg.mr.hive.IcebergAcidUtil;
+import org.apache.iceberg.mr.hive.writer.WriterBuilder.Context;
 import org.apache.iceberg.mr.mapred.Container;
 
 class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
 
   private final GenericRecord rowDataTemplate;
   private final boolean skipRowData;
+  private final boolean isMergeTask;
 
-  HiveIcebergDeleteWriter(Schema schema, Map<Integer, PartitionSpec> specs,
-      FileWriterFactory<Record> writerFactory, OutputFileFactory fileFactory, FileIO io,
-      long targetFileSize, boolean skipRowData) {
-    super(schema, specs, io,
-        new ClusteredPositionDeleteWriter<>(writerFactory, fileFactory, io, targetFileSize));
-    rowDataTemplate = GenericRecord.create(schema);
-    this.skipRowData = skipRowData;
+  HiveIcebergDeleteWriter(Table table, HiveFileWriterFactory writerFactory,
+      OutputFileFactory deleteFileFactory, Context context) {
+    super(table, newDeleteWriter(table, writerFactory, deleteFileFactory, context));
+
+    this.rowDataTemplate = GenericRecord.create(table.schema());
+    this.skipRowData = context.skipRowData();
+    this.isMergeTask = context.isMergeTask();
   }
 
   @Override
@@ -57,17 +56,19 @@ class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
     Record rec = ((Container<Record>) row).get();
     PositionDelete<Record> positionDelete = IcebergAcidUtil.getPositionDelete(rec, rowDataTemplate);
     int specId = IcebergAcidUtil.parseSpecId(rec);
-    Record rowData = positionDelete.row();
+    PartitionKey partitionKey = isMergeTask ? IcebergAcidUtil.parsePartitionKey(rec) :
+        partition(positionDelete.row(), specId);
     if (skipRowData) {
       // Set null as the row data as we intend to avoid writing the actual row data in the delete file.
       positionDelete.set(positionDelete.path(), positionDelete.pos(), null);
     }
-    writer.write(positionDelete, specs.get(specId), partition(rowData, specId));
+    writer.write(positionDelete, specs.get(specId), partitionKey);
   }
 
   @Override
   public FilesForCommit files() {
     List<DeleteFile> deleteFiles = ((DeleteWriteResult) writer.result()).deleteFiles();
-    return FilesForCommit.onlyDelete(deleteFiles);
+    Set<CharSequence> referencedDataFiles = ((DeleteWriteResult) writer.result()).referencedDataFiles();
+    return FilesForCommit.onlyDelete(deleteFiles, referencedDataFiles);
   }
 }

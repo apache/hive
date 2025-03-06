@@ -200,7 +200,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         if (ReplUtils.failedWithNonRecoverableError(latestDumpPath, conf)) {
           LOG.error("Previous dump failed with non recoverable error. Needs manual intervention. ");
           Path nonRecoverableFile = new Path(latestDumpPath, NON_RECOVERABLE_MARKER.toString());
-          ReplUtils.reportStatusInReplicationMetrics(getName(), Status.SKIPPED, nonRecoverableFile.toString(), conf,  work.dbNameOrPattern, null);
+          ReplUtils.reportStatusInReplicationMetrics(getName(), Status.FAILED_ADMIN, nonRecoverableFile.toString(), conf,  work.dbNameOrPattern, null);
           setException(new SemanticException(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.format()));
           return ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getErrorCode();
         }
@@ -252,7 +252,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           DumpMetaData dmd = new DumpMetaData(hiveDumpRoot, conf);
           // Initialize ReplChangeManager instance since we will require it to encode file URI.
           ReplChangeManager.getInstance(conf);
-          Path cmRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLCMDIR));
+          Path cmRoot = new Path(conf.getVar(HiveConf.ConfVars.REPL_CM_DIR));
           Long lastReplId;
           LOG.info("Data copy at load enabled : {}", conf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET));
           if (isFailoverTarget) {

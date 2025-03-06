@@ -60,7 +60,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	2                   
 	rawDataSize         	44                  
-	totalSize           	46                  
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -261,10 +261,11 @@ STAGE PLANS:
             Execution mode: llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
+                enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                enabledConditionsNotMet: Could not enable vectorization due to partition column names size 1 is greater than the number of table column names size 0 IS false
                 inputFileFormats: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
+                notVectorizedReason: UDTF Operator (UDTF) not supported
+                vectorized: false
 
   Stage: Stage-0
     Fetch Operator

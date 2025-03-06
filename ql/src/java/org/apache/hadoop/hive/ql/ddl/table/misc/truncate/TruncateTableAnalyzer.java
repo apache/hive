@@ -157,7 +157,7 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
         truncateUseBase ? WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE;
     
     if (partitionSpec == null) {
-      if (!table.isPartitioned()) {
+      if (!table.isPartitioned() || table.hasNonNativePartitionSupport()) {
         outputs.add(new WriteEntity(table, writeType));
       } else {
         for (Partition partition : PartitionUtils.getPartitions(db, table, null, false)) {
@@ -166,7 +166,7 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
       }
     } else {
       if (AlterTableUtils.isFullPartitionSpec(table, partitionSpec)) {
-        if (table.getStorageHandler() != null && table.getStorageHandler().alwaysUnpartitioned()) {
+        if (table.hasNonNativePartitionSupport()) {
           table.getStorageHandler().validatePartSpec(table, partitionSpec);
           try {
             String partName = Warehouse.makePartName(partitionSpec, false);
@@ -360,7 +360,7 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
   private void addStatTask(ASTNode root, Table table, Path oldPartitionLocation, Path newPartitionLocation,
       LoadTableDesc loadTableDesc, Task<MoveWork> moveTask) throws SemanticException {
     // Recalculate the HDFS stats if auto gather stats is set
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER)) {
       BasicStatsWork basicStatsWork;
       if (oldPartitionLocation.equals(newPartitionLocation)) {
         // If we're merging to the same location, we can avoid some metastore calls

@@ -1,5 +1,3 @@
--- Mask the totalSize value as it can have slight variability, causing test flakiness
---! qt:replace:/(\s+totalSize\s+)\S+(\s+)/$1#Masked#$2/
 -- Mask random uuid
 --! qt:replace:/(\s+uuid\s+)\S+(\s*)/$1#Masked#$2/
 -- SORT_QUERY_RESULTS
@@ -15,7 +13,7 @@ insert into ice1 values  ('aa', 1, 2, 3, 4), ('aa', 1, 2, 3, 4), ('aa', 1, 2, 2,
 --compare hive table  with iceberg table
 show partitions hiveT1;
 describe default.ice1.partitions;
-select * from default.ice1.partitions order by `partition`;
+select `partition` from default.ice1.partitions order by `partition`;
 show partitions ice1 ;
 
 
@@ -28,16 +26,16 @@ create table ice2 (a string, b int, c int) PARTITIONED BY (d_part int, e_part in
 TBLPROPERTIES("format-version"='2') ;
 insert into ice2 values  ('aa', 1, 2, 3, 4), ('aa', 1, 2, 3, 4), ('aa', 1, 2, 2, 5), ('aa', 1, 2, 10, 5), ('aa', 1, 2,10, 5);
 
-select * from default.ice2.partitions order by `partition`;
+select `partition` from default.ice2.partitions order by `partition`;
 show partitions ice2;
 
 ALTER TABLE ice2 SET PARTITION SPEC (c) ;
-select * from default.ice2.partitions order by `partition`;
+select `partition` from default.ice2.partitions order by `partition`;
 show partitions ice2;
 
 insert into ice2 values  ('aa', 1, 2, 3, 4), ('aa', 1, 2, 3, 4), ('aa', 1, 3, 2, 5), ('aa', 1, 4, 10, 5), ('aa', 1, 5,
 10, 5);
-select * from default.ice2.partitions order by `partition`;
+select `partition` from default.ice2.partitions order by `partition`;
 show partitions ice2;
 
 

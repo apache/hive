@@ -35,6 +35,7 @@ import org.apache.hive.hplsql.executor.QueryException;
 import org.apache.hive.hplsql.executor.QueryExecutor;
 import org.apache.hive.hplsql.executor.QueryResult;
 import org.apache.hive.hplsql.objects.Table;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * HPL/SQL statements execution
@@ -665,7 +666,16 @@ public class Stmt {
   /**
    * Assignment from SELECT statement 
    */
-  public Integer assignFromSelect(HplsqlParser.Assignment_stmt_select_itemContext ctx) { 
+  public Integer assignFromSelect(HplsqlParser.Assignment_stmt_select_itemContext ctx) {
+    if (exec.buildSql) {
+      StringBuilder sb = new StringBuilder();
+      sb.append(Exec.getFormattedText(ctx, ctx.start.getStartIndex(), ctx.select_stmt().getStart().getStartIndex()-1));
+      sb.append(evalPop(ctx.select_stmt()).toString());
+      sb.append(")");
+      exec.stackPush(sb);
+      return 0;
+    }
+
     String sql = evalPop(ctx.select_stmt()).toString();
     if (trace) {
       trace(ctx, sql);
@@ -677,27 +687,7 @@ public class Stmt {
     }
     exec.setSqlSuccess();
     try {
-      int cnt = ctx.ident().size();
-      if (query.next()) {
-        for (int i = 0; i < cnt; i++) {
-          Var var = exec.findVariable(ctx.ident(i).getText());
-          if (var != null) {
-            var.setValue(query, i);
-            if (trace) {
-              trace(ctx, "COLUMN: " + query.metadata().columnName(i) + ", " + query.metadata().columnTypeName(i));
-              trace(ctx, "SET " + var.getName() + " = " + var.toString());
-            }
-          }
-          else if(trace) {
-            trace(ctx, "Variable not found: " + ctx.ident(i).getText());
-          }
-        }
-        exec.incRowCount();
-        exec.setSqlSuccess();
-      } else {
-        exec.setSqlCode(SqlCodes.NO_DATA_FOUND);
-        exec.signal(Signal.Type.NOTFOUND);
-      }
+      processQueryResult(ctx, query);
     } catch (QueryException e) {
       exec.signal(query);
       return 1;
@@ -706,7 +696,31 @@ public class Stmt {
     }
     return 0; 
   }
-  
+
+  private void processQueryResult(HplsqlParser.Assignment_stmt_select_itemContext ctx, QueryResult query) {
+    int cnt = ctx.ident().size();
+    if (query.next()) {
+      for (int i = 0; i < cnt; i++) {
+        Var var = exec.findVariable(ctx.ident(i).getText());
+        if (var != null) {
+          var.setValue(query, i);
+          if (trace) {
+            trace(ctx, "COLUMN: " + query.metadata().columnName(i) + ", " + query.metadata().columnTypeName(i));
+            trace(ctx, "SET " + var.getName() + " = " + var.toString());
+          }
+        }
+        else if(trace) {
+          trace(ctx, "Variable not found: " + ctx.ident(i).getText());
+        }
+      }
+      exec.incRowCount();
+      exec.setSqlSuccess();
+    } else {
+      exec.setSqlCode(SqlCodes.NO_DATA_FOUND);
+      exec.signal(Signal.Type.NOTFOUND);
+    }
+  }
+
   /**
    * SQL INSERT statement
    */
@@ -773,8 +787,9 @@ public class Stmt {
     for (int i = 0; i < rows; i++) {
       HplsqlParser.Insert_stmt_rowContext row =ctx.insert_stmt_rows().insert_stmt_row(i);
       int cols = row.expr().size();
-      for (int j = 0; j < cols; j++) {         
-        String value = evalPop(row.expr(j)).toSqlString();
+      for (int j = 0; j < cols; j++) {
+        Var var = evalPop(row.expr(j));
+        String value = var.toSqlString();
         if (j == 0 && type == Conn.Type.HIVE && conf.insertValues == Conf.InsertValues.SELECT ) {
           sql.append("SELECT ");
         }
@@ -943,7 +958,11 @@ public class Stmt {
       int cols = query.columnCount();
       Row row = new Row();
       for (int i = 0; i < cols; i++) {
-        row.addColumnDefinition(query.metadata().columnName(i), query.metadata().columnTypeName(i));
+        String columnName = query.metadata().columnName(i);
+        if (columnName.contains(".")) {
+          columnName = columnName.substring(columnName.lastIndexOf('.') + 1);
+        }
+        row.addColumnDefinition(columnName, query.metadata().columnTypeName(i));
       }
       Var var = new Var(cursor, row);
       exec.addVariable(var);
@@ -1069,14 +1088,16 @@ public class Stmt {
       // Print the results
       else {
         int cols = query.columnCount();
-        while(query.next()) {
-          for(int i = 0; i < cols; i++) {
-            if(i > 1) {
-              console.print("\t");
+        if (cols > 0) {
+          while (query.next()) {
+            for (int i = 0; i < cols; i++) {
+              if (i > 1) {
+                console.print("\t");
+              }
+              console.print(query.column(i, String.class));
             }
-            console.print(query.column(i, String.class));
+            console.printLine("");
           }
-          console.printLine("");
         }
       }
     } catch(QueryException e) {
@@ -1152,7 +1173,18 @@ public class Stmt {
    */
   public Integer update(HplsqlParser.Update_stmtContext ctx) {
     trace(ctx, "UPDATE");
-    String sql = exec.getFormattedText(ctx);
+    String sql = null;
+    if (exec.getOffline()) {
+      sql = exec.getFormattedText(ctx);
+    } else {
+      boolean oldBuildSql = exec.buildSql;
+      try {
+        exec.buildSql = true;
+        sql = generateUpdateQuery(ctx);
+      } finally {
+        exec.buildSql = oldBuildSql;
+      }
+    }
     trace(ctx, sql);
     QueryResult query = queryExecutor.executeQuery(sql, ctx);
     if (query.error()) {
@@ -1163,7 +1195,27 @@ public class Stmt {
     query.close();
     return 0;
   }
-  
+
+  @NotNull
+  private String generateUpdateQuery(HplsqlParser.Update_stmtContext ctx) {
+    HplsqlParser.Update_assignmentContext updateAssignmentContext = ctx.update_assignment();
+    StringBuilder sql = new StringBuilder(
+        Exec.getFormattedText(ctx, ctx.start.getStartIndex(), (updateAssignmentContext.start.getStartIndex() - 1)));
+    sql.append(evalPop(updateAssignmentContext).toString());
+    Token last = updateAssignmentContext.getStop();
+    HplsqlParser.Where_clauseContext whereClauseContext = ctx.where_clause();
+    if (whereClauseContext != null) {
+      exec.append(sql, evalPop(whereClauseContext).toString(), last, whereClauseContext.getStart());
+      last = whereClauseContext.getStop();
+    }
+    HplsqlParser.Update_upsertContext updateUpsertContext = ctx.update_upsert();
+    if (updateUpsertContext != null) {
+      exec.append(sql, Exec.getFormattedText(updateUpsertContext, updateUpsertContext.start.getStartIndex(),
+                    updateUpsertContext.stop.getStopIndex()), last, updateUpsertContext.getStart());
+    }
+    return sql.toString();
+  }
+
   /**
    * DELETE statement
    */

@@ -27,6 +27,8 @@ import java.util.Map.Entry;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -62,7 +64,7 @@ public final class PartitionUtils {
   public static void validatePartitions(HiveConf conf, Map<String, String> partitionSpec) throws SemanticException {
     Set<String> reservedPartitionValues = new HashSet<>();
     // Partition can't have this name
-    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME));
+    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.DEFAULT_PARTITION_NAME));
     reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.DEFAULT_ZOOKEEPER_PARTITION_NAME));
     // Partition value can't end in this suffix
     reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ORIGINAL));
@@ -95,7 +97,7 @@ public final class PartitionUtils {
       throws SemanticException {
     Partition partition;
     try {
-      partition = db.getPartition(table, partitionSpec, false);
+      partition = db.getPartition(table, partitionSpec);
     } catch (Exception e) {
       throw new SemanticException(toMessage(ErrorMsg.INVALID_PARTITION, partitionSpec), e);
     }
@@ -117,6 +119,27 @@ public final class PartitionUtils {
       throw new SemanticException(toMessage(ErrorMsg.INVALID_PARTITION, partitionSpec));
     }
     return partitions;
+  }
+
+  public static List<Partition> getPartitionsWithSpecs(Hive db, Table table, GetPartitionsRequest request,
+      boolean throwException) throws SemanticException {
+    List<Partition> partitions = null;
+    try {
+      partitions = db.getPartitionsWithSpecs(table, request);
+    } catch (Exception e) {
+      throw new SemanticException(toMessage(ErrorMsg.INVALID_PARTITION, request.getFilterSpec())
+              + " for the following partition keys: " + tablePartitionColNames(table), e);
+    }
+    if (partitions.isEmpty() && throwException) {
+      throw new SemanticException(toMessage(ErrorMsg.INVALID_PARTITION, request.getFilterSpec())
+              + " for the following partition keys: " + tablePartitionColNames(table));
+    }
+    return partitions;
+  }
+
+  private static String tablePartitionColNames(Table table) {
+    List<FieldSchema> partCols = table.getPartCols();
+    return String.join("/", partCols.toString());
   }
 
   private static String toMessage(ErrorMsg message, Object detail) {

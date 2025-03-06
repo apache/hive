@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.common;
 
+import static org.apache.hadoop.hive.shims.Utils.RAW_RESERVED_VIRTUAL_PATH;
+
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -61,11 +63,13 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.PathExistsException;
 import org.apache.hadoop.fs.PathIsDirectoryException;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.security.UserGroupInformation;
+import com.google.common.base.Preconditions;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.functional.RemoteIterators;
 import org.apache.hive.common.util.ShutdownHookManager;
@@ -767,7 +771,7 @@ public final class FileUtils {
       // is tried and it fails. We depend upon that behaviour in cases like replication,
       // wherein if distcp fails, there is good reason to not plod along with a trivial
       // implementation, and fail instead.
-      copied = doIOUtilsCopyBytes(srcFS, srcFS.getFileStatus(src), dstFS, dst, deleteSource, overwrite, shouldPreserveXAttrs(conf, srcFS, dstFS), conf, copyStatistics);
+      copied = doIOUtilsCopyBytes(srcFS, srcFS.getFileStatus(src), dstFS, dst, deleteSource, overwrite, shouldPreserveXAttrs(conf, srcFS, dstFS, src), conf, copyStatistics);
     }
     return copied;
   }
@@ -895,11 +899,21 @@ public final class FileUtils {
     }
   }
 
-  public static boolean shouldPreserveXAttrs(HiveConf conf, FileSystem srcFS, FileSystem dstFS) throws IOException {
-    if (!Utils.checkFileSystemXAttrSupport(srcFS) || !Utils.checkFileSystemXAttrSupport(dstFS)){
-      return false;
+  public static boolean shouldPreserveXAttrs(HiveConf conf, FileSystem srcFS, FileSystem dstFS, Path path) throws IOException {
+    Preconditions.checkNotNull(path);
+    if (conf.getBoolVar(ConfVars.DFS_XATTR_ONLY_SUPPORTED_ON_RESERVED_NAMESPACE)) {
+
+      if (!(path.toUri().getPath().startsWith(RAW_RESERVED_VIRTUAL_PATH)
+        && Utils.checkFileSystemXAttrSupport(srcFS, new Path(RAW_RESERVED_VIRTUAL_PATH))
+        && Utils.checkFileSystemXAttrSupport(dstFS, new Path(RAW_RESERVED_VIRTUAL_PATH)))) {
+        return false;
+      }
+    } else {
+      if (!Utils.checkFileSystemXAttrSupport(srcFS) || !Utils.checkFileSystemXAttrSupport(dstFS)) {
+        return false;
+      }
     }
-    for (Map.Entry<String,String> entry : conf.getPropsWithPrefix(Utils.DISTCP_OPTIONS_PREFIX).entrySet()) {
+    for (Map.Entry<String, String> entry : conf.getPropsWithPrefix(Utils.DISTCP_OPTIONS_PREFIX).entrySet()) {
       String distCpOption = entry.getKey();
       if (distCpOption.startsWith("p")) {
         return distCpOption.contains("x");

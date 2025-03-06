@@ -31,14 +31,15 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
-import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TestHiveAccumuloHelper {
-  private static final Logger log = Logger.getLogger(TestHiveAccumuloHelper.class);
+  private static final Logger log = LoggerFactory.getLogger(TestHiveAccumuloHelper.class);
 
   private HiveAccumuloHelper helper;
 

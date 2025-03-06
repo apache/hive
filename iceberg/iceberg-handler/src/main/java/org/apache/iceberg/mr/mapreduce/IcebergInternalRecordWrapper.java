@@ -57,7 +57,7 @@ public class IcebergInternalRecordWrapper implements Record, StructLike {
   public IcebergInternalRecordWrapper wrap(StructLike record) {
     int idx = 0;
     for (Types.NestedField field : readSchema.fields()) {
-      int position = fieldToPositionInTableSchema.get(field.name());
+      int position = fieldToPositionInReadSchema.get(field.name());
       values[idx] = record.get(position, Object.class);
       idx++;
     }
@@ -142,7 +142,9 @@ public class IcebergInternalRecordWrapper implements Record, StructLike {
   private static Function<Object, Object> converter(Type type) {
     switch (type.typeId()) {
       case TIMESTAMP:
-        return timestamp -> DateTimeUtil.timestamptzFromMicros((Long) timestamp);
+        return timestamp -> ((Types.TimestampType) type).shouldAdjustToUTC() ?
+            DateTimeUtil.timestamptzFromMicros((Long) timestamp) :
+            DateTimeUtil.timestampFromMicros((Long) timestamp);
       case DATE:
         return date -> DateTimeUtil.dateFromDays((Integer) date);
       case STRUCT:

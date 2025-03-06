@@ -126,7 +126,7 @@ public class MetastoreLock implements HiveLock {
             Executors.newSingleThreadScheduledExecutor(
                     new ThreadFactoryBuilder()
                             .setDaemon(true)
-                            .setNameFormat("iceberg-hive-lock-heartbeat-" + fullName + "-%d")
+                            .setNameFormat("iceberg-hive-lock-heartbeat-" + fullName.replace("%", "%%") + "-%d")
                             .build());
 
     initTableLevelLockCache(tableLevelLockCacheEvictionTimeout);
@@ -308,7 +308,7 @@ public class MetastoreLock implements HiveLock {
                     try {
                       // If we can not check for lock, or we do not find it, then rethrow the exception
                       // Otherwise we are happy as the findLock sets the lockId and the state correctly
-                      if (!HiveVersion.min(HiveVersion.HIVE_2)) {
+                      if (HiveVersion.min(HiveVersion.HIVE_2)) {
                         LockInfo lockFound = findLock();
                         if (lockFound != null) {
                           lockInfo.lockId = lockFound.lockId;

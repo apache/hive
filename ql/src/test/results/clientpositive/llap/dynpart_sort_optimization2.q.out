@@ -102,10 +102,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ss_n0
-                  filterExpr: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
+                  filterExpr: ss_sold_date_sk BETWEEN 2452617 AND 2452638 (type: boolean)
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
+                    predicate: ss_sold_date_sk BETWEEN 2452617 AND 2452638 (type: boolean)
                     Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: ss_sold_date_sk (type: int), ss_net_paid_inc_tax (type: float), ss_net_profit (type: float)
@@ -246,7 +246,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	11                  
 	rawDataSize         	151                 
-	totalSize           	162                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -304,7 +304,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	13                  
 	rawDataSize         	186                 
-	totalSize           	199                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -378,10 +378,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ss_n0
-                  filterExpr: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
+                  filterExpr: ss_sold_date_sk BETWEEN 2452617 AND 2452638 (type: boolean)
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
+                    predicate: ss_sold_date_sk BETWEEN 2452617 AND 2452638 (type: boolean)
                     Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_net_paid_inc_tax (type: float), ss_net_profit (type: float), ss_sold_date_sk (type: int)
@@ -510,7 +510,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	11                  
 	rawDataSize         	151                 
-	totalSize           	162                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -568,7 +568,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	13                  
 	rawDataSize         	186                 
-	totalSize           	199                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -648,10 +648,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ss_n0
-                  filterExpr: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
+                  filterExpr: ss_sold_date_sk BETWEEN 2452617 AND 2452638 (type: boolean)
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
+                    predicate: ss_sold_date_sk BETWEEN 2452617 AND 2452638 (type: boolean)
                     Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: ss_sold_date_sk (type: int), ss_net_paid_inc_tax (type: float), ss_net_profit (type: float)
@@ -788,7 +788,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	11                  
 	rawDataSize         	151                 
-	totalSize           	162                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -846,7 +846,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	13                  
 	rawDataSize         	186                 
-	totalSize           	199                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -920,10 +920,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ss_n0
-                  filterExpr: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
+                  filterExpr: ss_sold_date_sk BETWEEN 2452617 AND 2452638 (type: boolean)
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
+                    predicate: ss_sold_date_sk BETWEEN 2452617 AND 2452638 (type: boolean)
                     Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_net_paid_inc_tax (type: float), ss_net_profit (type: float), ss_sold_date_sk (type: int)
@@ -1048,7 +1048,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	11                  
 	rawDataSize         	151                 
-	totalSize           	162                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1106,7 +1106,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	13                  
 	rawDataSize         	186                 
-	totalSize           	199                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1245,10 +1245,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ss_orc
-                  filterExpr: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
+                  filterExpr: ss_sold_date_sk BETWEEN 2452617 AND 2452638 (type: boolean)
                   Statistics: Num rows: 24 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
+                    predicate: ss_sold_date_sk BETWEEN 2452617 AND 2452638 (type: boolean)
                     Statistics: Num rows: 24 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: ss_sold_date_sk (type: int), ss_net_paid_inc_tax (type: float), ss_net_profit (type: float)
@@ -1385,7 +1385,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	11                  
 	rawDataSize         	88                  
-	totalSize           	473                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1443,7 +1443,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	13                  
 	rawDataSize         	104                 
-	totalSize           	496                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1517,10 +1517,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ss_orc
-                  filterExpr: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
+                  filterExpr: ss_sold_date_sk BETWEEN 2452617 AND 2452638 (type: boolean)
                   Statistics: Num rows: 24 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
+                    predicate: ss_sold_date_sk BETWEEN 2452617 AND 2452638 (type: boolean)
                     Statistics: Num rows: 24 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_net_paid_inc_tax (type: float), ss_net_profit (type: float), ss_sold_date_sk (type: int)
@@ -1645,7 +1645,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	11                  
 	rawDataSize         	88                  
-	totalSize           	473                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1703,7 +1703,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	13                  
 	rawDataSize         	104                 
-	totalSize           	496                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

@@ -29,6 +29,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
@@ -141,6 +142,15 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   void dropCatalog(String catName)
       throws NoSuchObjectException, InvalidOperationException, MetaException, TException;
+
+  /**
+   * Drop a catalog.  Catalogs must be empty to be dropped, there is no cascade for dropping a
+   * catalog.
+   * @param catName name of the catalog to drop
+   * @param ifExists if true, do not throw an error if the catalog does not exist.
+   * @throws TException general thrift exception.
+   */
+  void dropCatalog(String catName, boolean ifExists) throws TException;
 
   /**
    * Get the names of all databases in the default catalog that match the given pattern.
@@ -555,7 +565,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException Failure in the RDBMS or storage
    * @throws TException Thrift transport exception
    */
+  @Deprecated
   void truncateTable(String dbName, String tableName, List<String> partNames) throws MetaException, TException;
+
+  void truncateTable(TableName table, List<String> partNames) throws TException;
 
   void truncateTable(String dbName, String tableName, List<String> partNames,
       String validWriteIds, long writeId) throws TException;
@@ -574,6 +587,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException Failure in the RDBMS or storage
    * @throws TException Thrift transport exception
    */
+  @Deprecated
   void truncateTable(String catName, String dbName, String tableName, List<String> partNames)
       throws MetaException, TException;
 
@@ -780,7 +794,6 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   List<Table> getTables(String catName, String dbName, List<String> tableNames, GetProjectionsSpec projectionsSpec)
           throws MetaException, InvalidOperationException, UnknownDBException, TException;
-
   /**
    * Get tables as objects (rather than just fetching their names).  This is more expensive and
    * should only be used if you actually need all the information about the tables.
@@ -2678,10 +2691,23 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    * @throws InvalidInputException input is invalid or null.
+   * @deprecated Use
+   *    {@link IMetaStoreClient#deleteColumnStatistics(org.apache.hadoop.hive.metastore.api.DeleteColumnStatisticsRequest)} instead
    */
-  boolean deletePartitionColumnStatistics(String dbName, String tableName,
+  @Deprecated
+  default boolean deletePartitionColumnStatistics(String dbName, String tableName,
     String partName, String colName, String engine) throws NoSuchObjectException, MetaException,
-    InvalidObjectException, TException, InvalidInputException;
+    InvalidObjectException, TException, InvalidInputException {
+    DeleteColumnStatisticsRequest request = new DeleteColumnStatisticsRequest(dbName, tableName);
+    request.setEngine(engine);
+    if (colName != null) {
+      request.addToCol_names(colName);
+    }
+    if (partName != null) {
+      request.addToPart_names(partName);
+    }
+    return deleteColumnStatistics(request);
+  }
 
   /**
    * Delete partition level column statistics given dbName, tableName, partName and colName, or
@@ -2698,10 +2724,24 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    * @throws InvalidInputException input is invalid or null.
+   * @deprecated Use
+   *    {@link IMetaStoreClient#deleteColumnStatistics(org.apache.hadoop.hive.metastore.api.DeleteColumnStatisticsRequest)} instead
    */
-  boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
+  @Deprecated
+  default boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
       String partName, String colName, String engine)
-      throws NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
+      throws NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException {
+    DeleteColumnStatisticsRequest request = new DeleteColumnStatisticsRequest(dbName, tableName);
+    request.setCat_name(catName);
+    request.setEngine(engine);
+    if (colName != null) {
+      request.addToCol_names(colName);
+    }
+    if (partName != null) {
+      request.addToPart_names(partName);
+    }
+    return deleteColumnStatistics(request);
+  }
 
   /**
    * Delete table level column statistics given dbName, tableName and colName, or all columns in
@@ -2716,9 +2756,20 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws InvalidObjectException error dropping the stats
    * @throws TException thrift transport error
    * @throws InvalidInputException bad input, like a null table name.
+   * @deprecated Use
+   *    {@link IMetaStoreClient#deleteColumnStatistics(org.apache.hadoop.hive.metastore.api.DeleteColumnStatisticsRequest)} instead
    */
-   boolean deleteTableColumnStatistics(String dbName, String tableName, String colName, String engine) throws
-    NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
+  @Deprecated
+  default boolean deleteTableColumnStatistics(String dbName, String tableName, String colName, String engine) throws
+    NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException {
+    DeleteColumnStatisticsRequest request = new DeleteColumnStatisticsRequest(dbName, tableName);
+    request.setEngine(engine);
+    if (colName != null) {
+      request.addToCol_names(colName);
+    }
+    request.setTableLevel(true);
+    return deleteColumnStatistics(request);
+  }
 
   /**
    * Delete table level column statistics given dbName, tableName and colName, or all columns in
@@ -2734,9 +2785,33 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws InvalidObjectException error dropping the stats
    * @throws TException thrift transport error
    * @throws InvalidInputException bad input, like a null table name.
+   * @deprecated Use
+   *    {@link IMetaStoreClient#deleteColumnStatistics(org.apache.hadoop.hive.metastore.api.DeleteColumnStatisticsRequest)} instead
    */
-  boolean deleteTableColumnStatistics(String catName, String dbName, String tableName, String colName, String engine)
-      throws NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
+  @Deprecated
+  default boolean deleteTableColumnStatistics(String catName, String dbName, String tableName, String colName, String engine)
+      throws NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException {
+    DeleteColumnStatisticsRequest request = new DeleteColumnStatisticsRequest(dbName, tableName);
+    request.setCat_name(catName);
+    request.setEngine(engine);
+    if (colName != null) {
+      request.addToCol_names(colName);
+    }
+    request.setTableLevel(true);
+    return deleteColumnStatistics(request);
+  }
+
+  /**
+   * Delete table or partition level column statistics given catName, dbName, tableName, partName and colNames,
+   * or all columns in a table or partition.
+   * This should be used for tables or partitions
+   * @param req the DeleteColumnStatisticsRequest which including
+   *            catalog name, database name, table name, partition name(optional),
+   *            a list column names(optional), and engine name
+   * @return boolean indicating the outcome of the operation
+   * @throws TException thrift transport error
+   */
+  public boolean deleteColumnStatistics(DeleteColumnStatisticsRequest req) throws TException;
 
   void updateTransactionalStatistics(UpdateTransactionalStatsRequest req) throws TException;
 
@@ -3000,9 +3075,17 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
+  @Deprecated
   List<String> getFunctions(String dbName, String pattern)
       throws MetaException, TException;
 
+  /**
+   * Get all functions matching a pattern
+   * @param functionRequest function request.
+   * @throws TException thrift transport error
+   */
+  GetFunctionsResponse getFunctionsRequest(GetFunctionsRequest functionRequest)
+      throws TException;
   /**
    * Get all functions matching a pattern
    * @param catName catalog name.
@@ -3011,6 +3094,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
+  @Deprecated
   List<String> getFunctions(String catName, String dbName, String pattern)
       throws MetaException, TException;
 

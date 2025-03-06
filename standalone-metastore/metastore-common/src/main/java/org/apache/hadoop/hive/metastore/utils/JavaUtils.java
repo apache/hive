@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -111,6 +112,18 @@ public class JavaUtils {
       return InetAddress.getLocalHost().getHostName();
     } catch (UnknownHostException e) {
       LOG.error("Unable to resolve my host name " + e.getMessage());
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static <T> void setField(T req, String methodName, Class[] argsCls, Object... args) {
+    try {
+      Method method = req.getClass().getDeclaredMethod(methodName, argsCls);
+      method.setAccessible(true);
+      method.invoke(req, args);
+    } catch (Exception e) {
+      LOG.error("Unable to invoke the underlying method: {} of the instance: {}, message: {}",
+          methodName, req, e.getMessage());
       throw new RuntimeException(e);
     }
   }

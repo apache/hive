@@ -22,6 +22,7 @@ import org.junit.Before;
 
 public class TestTxnNoBucketsVectorized extends TestTxnNoBuckets {
   @Before
+  @Override
   public void setUp() throws Exception {
     setUpInternal();
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);

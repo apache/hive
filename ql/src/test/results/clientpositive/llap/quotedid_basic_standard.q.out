@@ -294,8 +294,8 @@ PREHOOK: Input: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`
 POSTHOOK: query: show create table " ""%&'()*+,-/:;<=>?[]_|{}$^!~#@`"
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`
-CREATE TABLE `"%&'()*+,-/:;<=>?[]_|{}$^!~#@``(
-  ` "%&'()*+,-/;<=>?[]_|{}$^!~#@`` string)
+CREATE TABLE `"%&'()*+,-/:;<=>?[]_|{}$^!~#@```(
+  ` "%&'()*+,-/;<=>?[]_|{}$^!~#@``` string)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -346,8 +346,8 @@ PREHOOK: Input: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`
 POSTHOOK: query: show create table ` "%&'()*+,-/:;<=>?[]_|{}$^!~#@```
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`
-CREATE TABLE `"%&'()*+,-/:;<=>?[]_|{}$^!~#@``(
-  ` "%&'()*+,-/;<=>?[]_|{}$^!~#@`` string)
+CREATE TABLE `"%&'()*+,-/:;<=>?[]_|{}$^!~#@```(
+  ` "%&'()*+,-/;<=>?[]_|{}$^!~#@``` string)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -687,7 +687,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

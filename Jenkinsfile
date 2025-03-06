@@ -16,7 +16,14 @@
  * limitations under the License.
  */
 
+def discardDaysToKeep = '365'
+def discardNumToKeep = '' // Unlimited
+if (env.BRANCH_NAME != 'master') {
+  discardDaysToKeep = '60'
+  discardNumToKeep = '5'
+}
 properties([
+    buildDiscarder(logRotator(daysToKeepStr: discardDaysToKeep, numToKeepStr: discardNumToKeep)),
     // max 5 build/branch/day
     rateLimitBuilds(throttle: [count: 5, durationName: 'day', userBoost: true]),
     // do not run multiple testruns on the same branch
@@ -88,7 +95,7 @@ export MAVEN_OPTS="-Xmx2g"
 export -n HIVE_CONF_DIR
 cp $SETTINGS .git/settings.xml
 OPTS=" -s $PWD/.git/settings.xml -B -Dtest.groups= "
-OPTS+=" -Pitests,qsplits,dist,errorProne,iceberg"
+OPTS+=" -Pitests,qsplits,dist,errorProne"
 OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
 OPTS+=" -Dmaven.repo.local=$PWD/.git/m2"
 git config extra.mavenOpts "$OPTS"
@@ -112,7 +119,7 @@ def sonarAnalysis(args) {
       """+args+" -DskipTests -Dit.skipTests -Dmaven.javadoc.skip"
 
       sh """#!/bin/bash -e
-      sw java 11 && . /etc/profile.d/java.sh
+      sw java 17 && . /etc/profile.d/java.sh
       export MAVEN_OPTS=-Xmx5G
       """+mvnCmd
   }
@@ -121,23 +128,29 @@ def sonarAnalysis(args) {
 def hdbPodTemplate(closure) {
   podTemplate(
   containers: [
-    containerTemplate(name: 'hdb', image: 'kgyrtkirk/hive-dev-box:executor', ttyEnabled: true, command: 'tini -- cat',
+    containerTemplate(name: 'hdb', image: 'wecharyu/hive-dev-box:executor', ttyEnabled: true, command: 'tini -- cat',
         alwaysPullImage: true,
         resourceRequestCpu: '1800m',
         resourceLimitCpu: '8000m',
         resourceRequestMemory: '6400Mi',
         resourceLimitMemory: '12000Mi',
         envVars: [
-            envVar(key: 'DOCKER_HOST', value: 'tcp://localhost:2375')
+            envVar(key: 'DOCKER_HOST', value: 'tcp://localhost:2376'),
+            envVar(key: 'DOCKER_TLS_VERIFY', value: '1'),
+            envVar(key: 'DOCKER_CERT_PATH', value: '/certs/client')
         ]
     ),
-    containerTemplate(name: 'dind', image: 'docker:18.05-dind',
+    containerTemplate(name: 'dind', image: 'docker:20.10-dind',
         alwaysPullImage: true,
         privileged: true,
+        envVars: [
+            envVar(key: 'DOCKER_TLS_CERTDIR', value: '/certs')
+        ]
     ),
   ],
   volumes: [
     emptyDirVolume(mountPath: '/var/lib/docker', memory: false),
+    emptyDirVolume(mountPath: '/certs', memory: false)
   ], yaml:'''
 spec:
   securityContext:
@@ -287,7 +300,6 @@ set -x
 echo 127.0.0.1 dev_$dbType | sudo tee -a /etc/hosts
 . /etc/profile.d/confs.sh
 sw hive-dev $PWD
-ping -c2 dev_$dbType
 export DOCKER_NETWORK=host
 export DBNAME=metastore
 reinit_metastore $dbType
@@ -315,7 +327,7 @@ dev-support/nightly
 set -e
 tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
 '''
-            buildHive("install -Dtest=noMatches -Pdist,iceberg -f apache-hive-*-nightly-*/pom.xml")
+            buildHive("install -Dtest=noMatches -Pdist -f apache-hive-*-nightly-*/pom.xml")
         }
       }
   }
@@ -370,8 +382,6 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
                   RENAME_TMP=`echo \$a | sed s/TEST-//g`
                   mv \${RENAME_TMP/.xml/-output.txt} \${RENAME_TMP/.xml/-output-save.txt}
                 done
-                # removes all stdout and err for passed tests
-                xmlstarlet ed -L -d 'testsuite/testcase/system-out[count(../failure)=0]' -d 'testsuite/testcase/system-err[count(../failure)=0]' `find . -name 'TEST*xml' -path '*/surefire-reports/*'`
                 # remove all output.txt files
                 find . -name '*output.txt' -path '*/surefire-reports/*' -exec unlink "{}" \\;
               """

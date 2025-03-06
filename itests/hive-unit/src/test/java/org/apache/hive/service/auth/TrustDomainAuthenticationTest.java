@@ -68,6 +68,10 @@ public abstract class TrustDomainAuthenticationTest {
     hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE, hs2TransportMode);
     hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION, "CUSTOM");
 
+    // query history adds no value to this test
+    // this should be handled with HiveConfForTests when it's used here too
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED, false);
+
     // These tests run locally and hence all connections are from localhost. So, when we want to
     // test whether trusted domain setting works, use "localhost". When we want to test
     // otherwise, use some string other than that. Other authentication tests test empty trusted
@@ -183,7 +187,7 @@ public abstract class TrustDomainAuthenticationTest {
     }
 
     @Override
-    public void Authenticate(String user, String password) throws AuthenticationException {
+    public void authenticate(String user, String password) throws AuthenticationException {
 
       if(!userMap.containsKey(user)){
         throw new AuthenticationException("Invalid user : "+user);

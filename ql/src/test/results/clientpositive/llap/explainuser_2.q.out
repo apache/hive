@@ -1087,7 +1087,7 @@ Stage-0
                       <-Map 6 [BROADCAST_EDGE] vectorized, llap
                         SHUFFLE [RS_241]
                           PartitionCols:_col1, _col3
-                          Map Join Operator [MAPJOIN_239] (rows=550 width=10)
+                          Map Join Operator [MAPJOIN_239] (rows=275 width=10)
                             Conds:RS_230._col0=SEL_237._col0(Inner),Output:["_col1","_col2","_col3"]
                           <-Map 1 [BROADCAST_EDGE] vectorized, llap
                             BROADCAST [RS_230]
@@ -1098,9 +1098,9 @@ Stage-0
                                   predicate:(v2 is not null and v3 is not null and k1 is not null)
                                   TableScan [TS_0] (rows=170 width=34)
                                     default@cs,cs,Tbl:COMPLETE,Col:NONE,Output:["k1","v2","k3","v3"]
-                          <-Select Operator [SEL_237] (rows=500 width=10)
+                          <-Select Operator [SEL_237] (rows=250 width=10)
                               Output:["_col0"]
-                              Filter Operator [FIL_235] (rows=500 width=10)
+                              Filter Operator [FIL_235] (rows=250 width=10)
                                 predicate:((value) IN ('2000Q1', '2000Q2', '2000Q3') and key is not null)
                                 TableScan [TS_12] (rows=500 width=10)
                                   default@src,d1,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
@@ -3633,7 +3633,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-Plan not optimized by CBO due to missing feature [Unique_join].
+Plan not optimized by CBO because the statement has unsupported feature [TOK_UNIQUEJOIN]
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)

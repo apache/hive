@@ -848,7 +848,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       if (amRegistry != null) {
         amRegistry.start();
         int pluginPort = pluginEndpoint != null ? pluginEndpoint.getActualPort() : -1;
-        amRegistry.register(amPort, pluginPort, HiveConf.getVar(conf, ConfVars.HIVESESSIONID),
+        amRegistry.register(amPort, pluginPort, HiveConf.getVar(conf, ConfVars.HIVE_SESSION_ID),
             serializedToken, jobIdForToken, 0);
       }
 
@@ -1716,7 +1716,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         isGuaranteed ? guaranteedTasks : speculativeTasks;
     writeLock.lock();
     try {
-      WM_LOG.info("Registering " + taskInfo.attemptId + "; " + taskInfo.isGuaranteed);
+      WM_LOG.info("Registering {}, guaranteed: {}", taskInfo.attemptId, taskInfo.isGuaranteed);
       addToRunningTasksMap(runningTasks, taskInfo);
       if (metrics != null) {
         metrics.decrPendingTasksCount();

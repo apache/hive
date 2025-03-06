@@ -21,4 +21,4 @@ POSTHOOK: Output: default@repairtable
 PREHOOK: query: MSCK TABLE default.repairtable
 PREHOOK: type: MSCK
 PREHOOK: Output: default@repairtable
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask
+#### A masked pattern was here ####

@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -123,7 +124,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       partValsSpecified += partSpec.get(partKey) == null ? 0 : 1;
     }
     try {
-      // for static partition, it may not exist when HIVESTATSCOLAUTOGATHER is
+      // for static partition, it may not exist when HIVE_STATS_COL_AUTOGATHER is
       // set to true
       if (context == null) {
         if ((partValsSpecified == tbl.getPartitionKeys().size())
@@ -603,7 +604,8 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       checkForPartitionColumns(
           colNames, Utilities.getColumnNamesFromFieldSchema(tbl.getPartitionKeys()));
       validateSpecifiedColumnNames(colNames);
-      if (conf.getBoolVar(ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS) && tbl.isPartitioned()) {
+      if (conf.getBoolVar(ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS) && tbl.isPartitioned()
+            && !tbl.hasNonNativePartitionSupport()) {
         isPartitionStats = true;
       }
 
@@ -671,7 +673,8 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     checkForPartitionColumns(colNames,
         Utilities.getColumnNamesFromFieldSchema(tbl.getPartitionKeys()));
     validateSpecifiedColumnNames(colNames);
-    if (conf.getBoolVar(ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS) && tbl.isPartitioned()) {
+    if (conf.getBoolVar(ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS) && tbl.isPartitioned() 
+          && !tbl.hasNonNativePartitionSupport()) {
       isPartitionStats = true;
     }
 
@@ -710,4 +713,8 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     return analyzeRewrite;
   }
 
+  @Override
+  public void setQueryType(ASTNode tree) {
+    queryProperties.setQueryType(QueryProperties.QueryType.STATS);
+  }
 }

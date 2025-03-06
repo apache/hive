@@ -17,7 +17,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>4.0.0-beta-2-SNAPSHOT</version>
+    <version>4.1.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>hive-exec</artifactId>
@@ -26,7 +26,7 @@
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
     <reflections.version>0.10.2</reflections.version>
-    <atlas.version>2.1.0</atlas.version>
+    <atlas.version>2.4.0</atlas.version>
   </properties>
   <dependencies>
     <!-- dependencies are always listed in sorted order by groupId, artifactId -->
@@ -60,6 +60,10 @@
           <groupId>org.slf4j</groupId>
           <artifactId>jul-to-slf4j</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-client</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -75,6 +79,10 @@
           <groupId>org.slf4j</groupId>
           <artifactId>jul-to-slf4j</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-context</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -89,11 +97,6 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-math3</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-pool2</artifactId>
-      <version>${commons-pool2.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -372,6 +375,16 @@
     <dependency>
       <groupId>org.apache.zookeeper</groupId>
       <artifactId>zookeeper</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-classic</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-core</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.curator</groupId>
@@ -527,11 +540,6 @@
       <artifactId>stax-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>net.sf.opencsv</groupId>
-      <artifactId>opencsv</artifactId>
-      <version>${opencsv.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-server</artifactId>
       <version>${standalone-metastore.version}</version>
@@ -633,6 +641,14 @@
           <groupId>javax.servlet</groupId>
           <artifactId>servlet-api</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-json</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-client</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -711,15 +727,12 @@
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-yarn-client</artifactId>
         </exclusion>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-log4j12</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
-        </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-protobuf-history-plugin</artifactId>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.tez</groupId>
@@ -749,6 +762,17 @@
         <exclusion>
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-yarn-client</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.opencsv</groupId>
+      <artifactId>opencsv</artifactId>
+      <version>${opencsv.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-beanutils</groupId>
+          <artifactId>commons-beanutils</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -789,14 +813,6 @@
         <exclusion>
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-yarn-client</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-log4j12</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -869,7 +885,7 @@
     <dependency>
       <groupId>org.roaringbitmap</groupId>
       <artifactId>RoaringBitmap</artifactId>
-      <version>0.9.22</version>
+      <version>${roaringbit.version}</version>
     </dependency>
   </dependencies>
   <profiles>
@@ -981,9 +997,6 @@
             <configuration>
               <target>
                 <mkdir dir="${test.tmp.dir}/scripts/metastore"/>
-                <copy todir="${test.tmp.dir}/scripts/metastore">
-                  <fileset dir="${basedir}/${hive.path.to.root}/metastore/scripts/"/>
-                </copy>
                 <copy todir="${test.tmp.dir}/scripts/metastore/upgrade" overwrite="true">
                   <fileset dir="${basedir}/${hive.path.to.root}/standalone-metastore/metastore-server/src/main/sql/"/>
                 </copy>
@@ -1000,6 +1013,28 @@
             <goals>
               <goal>test-jar</goal>
             </goals>
+          </execution>
+          <execution>
+            <!-- Restoring Hive exec core jar: HIVE-26220. The core jar is being used by Spark, oozie and trino
+            projects as a result we will need to restore this to prevent downstream projects from breaking.
+            This 'execution' will produce a hive-exec-$version-core.jar which has
+            all classes from ql module, i.e. the same contents as hive-exec-$version.jar would
+            have had if there was shade plugin below.  The way shade was configured since 0.13, is
+            to override the default jar for ql module with the saded one but keep the same name.
+            In other words, ql modules producesd a single uber jar under the module's coordinates,
+            i.e. w/o a classifier.  We also need a slim jar that only has classes from ql.  This
+            jar will now be with a 'core' classifier to ensure that prior behavior is preserved.
+            It would have been better to have a slim jar called hive-exec-$version.jar and a fat
+            jar called hive-exec-$version-shaded.jar but doing this now will cause backwards compat.
+            issues-->
+            <id>core-jar</id>
+            <phase>package</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <configuration>
+              <classifier>core</classifier>
+            </configuration>
           </execution>
           <execution>
             <id>fallbackauthorizer-jar</id>
@@ -1086,7 +1121,6 @@
                   <include>org.apache.calcite.avatica:avatica</include>
                   <include>com.esri.geometry:esri-geometry-api</include>
                   <include>org.roaringbitmap:RoaringBitmap</include>
-                  <include>org.roaringbitmap:shims</include>
                   <include>com.github.luben:zstd-jni</include>
                 </includes>
               </artifactSet>

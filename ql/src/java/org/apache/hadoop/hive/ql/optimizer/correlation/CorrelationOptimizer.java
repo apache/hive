@@ -178,7 +178,7 @@ public class CorrelationOptimizer extends Transform {
       }
 
       long ThresholdOfSmallTblSizeSum = HiveConf.getLongVar(pCtx.getConf(),
-          HiveConf.ConfVars.HIVESMALLTABLESFILESIZE);
+          HiveConf.ConfVars.HIVE_SMALL_TABLES_FILESIZE);
       for (int i = 0; i < numAliases; i++) {
         // this table cannot be big table
         if (!bigTableCandidates.contains(i)) {
@@ -212,7 +212,7 @@ public class CorrelationOptimizer extends Transform {
 
     pCtx = pctx;
 
-    if (HiveConf.getBoolVar(pCtx.getConf(),HiveConf.ConfVars.HIVECONVERTJOIN)) {
+    if (HiveConf.getBoolVar(pCtx.getConf(),HiveConf.ConfVars.HIVE_CONVERT_JOIN)) {
       findPossibleAutoConvertedJoinOperators();
     }
 

@@ -19,8 +19,8 @@
 package org.apache.hadoop.hive.ql.exec.vector.reducesink;
 
 import java.util.Random;
-import java.util.function.BiFunction;
 
+import java.util.function.ToIntFunction;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExtractRow;
@@ -78,16 +78,15 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
   protected transient VectorSerializeRow<BinarySortableSerializeWrite> keyVectorSerializeRow;
 
   private transient int numBuckets;
-  private transient ObjectInspector[] bucketObjectInspectors;
   private transient VectorExtractRow bucketVectorExtractRow;
   private transient Object[] bucketFieldValues;
 
-  private transient ObjectInspector[] partitionObjectInspectors;
   private transient VectorExtractRow partitionVectorExtractRow;
   private transient Object[] partitionFieldValues;
   private transient Random nonPartitionRandom;
 
-  private transient BiFunction<Object[], ObjectInspector[], Integer> hashFunc;
+  private transient ToIntFunction<Object[]> partitionHashFunc;
+  private transient ToIntFunction<Object[]> bucketHashFunc;
   private transient BucketNumExpression bucketExpr = null;
 
   /** Kryo ctor. */
@@ -168,7 +167,7 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
     } else {
       numBuckets = conf.getNumBuckets();
 
-      bucketObjectInspectors = getObjectInspectorArray(reduceSinkBucketTypeInfos);
+      bucketHashFunc = conf.getPartitionFunction(getObjectInspectorArray(reduceSinkBucketTypeInfos));
       bucketVectorExtractRow = new VectorExtractRow();
       bucketVectorExtractRow.init(reduceSinkBucketTypeInfos, reduceSinkBucketColumnMap);
       bucketFieldValues = new Object[reduceSinkBucketTypeInfos.length];
@@ -177,16 +176,11 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
     if (isEmptyPartitions) {
       nonPartitionRandom = new Random(12345);
     } else {
-      partitionObjectInspectors = getObjectInspectorArray(reduceSinkPartitionTypeInfos);
+      partitionHashFunc = conf.getPartitionFunction(getObjectInspectorArray(reduceSinkPartitionTypeInfos));
       partitionVectorExtractRow = new VectorExtractRow();
       partitionVectorExtractRow.init(reduceSinkPartitionTypeInfos, reduceSinkPartitionColumnMap);
       partitionFieldValues = new Object[reduceSinkPartitionTypeInfos.length];
     }
-
-    // Set hashFunc
-    hashFunc = getConf().getBucketingVersion() == 2 && !vectorDesc.getIsAcidChange() ?
-      ObjectInspectorUtils::getBucketHashCode :
-      ObjectInspectorUtils::getBucketHashCodeOld;
 
     // Set function to evaluate _bucket_number if needed.
     if (reduceSinkKeyExpressions != null) {
@@ -273,14 +267,14 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
         } else {
           // Compute hashCode from partitions
           partitionVectorExtractRow.extractRow(batch, batchIndex, partitionFieldValues);
-          hashCode = hashFunc.apply(partitionFieldValues, partitionObjectInspectors);
+          hashCode = partitionHashFunc.applyAsInt(partitionFieldValues);
         }
 
         // Compute hashCode from buckets
         if (!isEmptyBuckets) {
           bucketVectorExtractRow.extractRow(batch, batchIndex, bucketFieldValues);
           final int bucketNum = ObjectInspectorUtils.getBucketNumber(
-              hashFunc.apply(bucketFieldValues, bucketObjectInspectors), numBuckets);
+              bucketHashFunc.applyAsInt(bucketFieldValues), numBuckets);
           if (bucketExpr != null) {
             evaluateBucketExpr(batch, batchIndex, bucketNum);
           }

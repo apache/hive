@@ -85,7 +85,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 139500 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col2 (type: string)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 500 Data size: 139500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -233,7 +233,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 139500 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col2 (type: string)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 500 Data size: 139500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -426,7 +426,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 139500 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col2 (type: string)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 500 Data size: 139500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -750,7 +750,7 @@ PREHOOK: Input: default@orcfile_merge1@ds=1/part=0
 PREHOOK: Output: hdfs://### HDFS PATH ###
 -- BEGIN ORC FILE DUMP --
 Structure for hdfs://### HDFS PATH ###
-File Version: 0.12 with ORC_14 by ORC Java 1.8.3
+File Version:#Masked#
 Rows: 242
 Compression: SNAPPY
 Compression size: 4096
@@ -801,7 +801,7 @@ PREHOOK: Input: default@orcfile_merge1c@ds=1/part=0
 PREHOOK: Output: hdfs://### HDFS PATH ###
 -- BEGIN ORC FILE DUMP --
 Structure for hdfs://### HDFS PATH ###
-File Version: 0.12 with ORC_14 by ORC Java 1.8.3
+File Version:#Masked#
 Rows: 242
 Compression: SNAPPY
 Compression size: 4096

@@ -29,9 +29,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.StatObjectConverter;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -53,7 +53,6 @@ import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.TableConstraintsInfo;
 import org.apache.hadoop.hive.ql.parse.HiveTableName;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
@@ -150,11 +149,13 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
 
     // Fetch partition statistics only for describe extended or formatted.
     if (desc.isExtended() || desc.isFormatted()) {
-      boolean disablePartitionStats = HiveConf.getBoolVar(context.getConf(), HiveConf.ConfVars.HIVE_DESCRIBE_PARTITIONED_TABLE_IGNORE_STATS);
+      boolean disablePartitionStats = table.hasNonNativePartitionSupport() || 
+          HiveConf.getBoolVar(context.getConf(), HiveConf.ConfVars.HIVE_DESCRIBE_PARTITIONED_TABLE_IGNORE_STATS);
+      
       if (table.isPartitioned() && partition == null && !disablePartitionStats) {
         // No partition specified for partitioned table, lets fetch all.
         Map<String, String> tblProps = table.getParameters() == null ?
-                new HashMap<String, String>() : table.getParameters();
+            new HashMap<>() : table.getParameters();
 
         Map<String, Long> valueMap = new HashMap<>();
         Map<String, Boolean> stateMap = new HashMap<>();
@@ -164,7 +165,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
         }
 
         PartitionIterable partitions = new PartitionIterable(context.getDb(), table, null,
-                MetastoreConf.getIntVar(context.getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX));
+            MetastoreConf.getIntVar(context.getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX));
         int numParts = 0;
         for (Partition p : partitions) {
           Map<String, String> partitionProps = p.getParameters();
@@ -190,16 +191,16 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
 
   private void getColumnDataColPathSpecified(Table table, Partition part, List<FieldSchema> cols,
       List<ColumnStatisticsObj> colStats, Deserializer deserializer)
-      throws SemanticException, HiveException, MetaException {
+      throws HiveException, MetaException {
     // when column name is specified in describe table DDL, colPath will be db_name.table_name.column_name
     String colName = desc.getColumnPath().split("\\.")[2];
     List<String> colNames = Lists.newArrayList(colName.toLowerCase());
 
     TableName tableName = HiveTableName.of(desc.getDbTableName());
     if (null == part) {
-      if (table.isPartitioned()) {
+      if (table.isPartitioned() && !table.hasNonNativePartitionSupport()) {
         Map<String, String> tableProps = table.getParameters() == null ?
-            new HashMap<String, String>() : table.getParameters();
+            new HashMap<>() : table.getParameters();
         if (table.isPartitionKey(colNames.get(0))) {
           getColumnDataForPartitionKeyColumn(table, cols, colStats, colNames, tableProps);
         } else {
@@ -217,9 +218,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
       }
     } else {
       List<String> partitions = new ArrayList<String>();
-      // The partition name is converted to lowercase before generating the stats. So we should use the same
-      // lower case name to get the stats.
-      String partName = HMSHandler.lowerCaseConvertPartName(part.getName());
+      String partName = part.getName();
       partitions.add(partName);
       cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer, context.getConf()));
       Map<String, List<ColumnStatisticsObj>> partitionColumnStatistics = context.getDb().getPartitionColumnStatistics(
@@ -298,10 +297,11 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
   private void handleMaterializedView(Table table) throws HiveException {
     if (table.isMaterializedView()) {
       table.setOutdatedForRewriting(context.getDb().isOutdatedMaterializedView(
-              table,
-              table.getMVMetadata().getSourceTableNames(),
-              false,
-              SessionState.get().getTxnMgr()));
+          table,
+          table.getMVMetadata().getSourceTableNames(),
+          false,
+          () -> context.getConf().get(ValidTxnList.VALID_TXNS_KEY),
+          SessionState.get().getTxnMgr()));
     }
   }
 }

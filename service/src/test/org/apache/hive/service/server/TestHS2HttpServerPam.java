@@ -35,19 +35,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import javax.security.sasl.AuthenticationException;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -68,13 +57,16 @@ public class TestHS2HttpServerPam {
         MetaStoreTestUtils.findFreePortExcepting(Integer.valueOf(ConfVars.HIVE_SERVER2_WEBUI_PORT.getDefaultValue()));
     hiveConf = new HiveConf();
     hiveConf.setBoolVar(ConfVars.HIVE_IN_TEST, true);
-    hiveConf.set(ConfVars.METASTOREPWD.varname, metastorePasswd);
+    hiveConf.set(ConfVars.METASTORE_PWD.varname, metastorePasswd);
     hiveConf.set(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname, webUIPort.toString());
     hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PAM_SERVICES, "sshd");
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_PAM, true);
     hiveConf.setBoolVar(ConfVars.HIVE_IN_TEST, true);
+    // query history adds no value to this test, it would just bring iceberg handler dependency, which isn't worth
+    // this should be handled with HiveConfForTests when it's used here too
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED, false);
     hiveServer2 = new HiveServer2(new TestPamAuthenticator(hiveConf));
     hiveServer2.init(hiveConf);
     hiveServer2.start();

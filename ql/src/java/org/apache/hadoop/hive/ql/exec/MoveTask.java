@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
@@ -66,7 +65,6 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.BucketCol;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.SortCol;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
@@ -80,6 +78,7 @@ import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.util.Time;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,6 +105,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
   private static transient final Logger LOG = LoggerFactory.getLogger(MoveTask.class);
+  private final PerfLogger perfLogger = SessionState.getPerfLogger();
 
   public MoveTask() {
     super();
@@ -171,7 +171,6 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
   private void moveFile(Path sourcePath, Path targetPath, boolean isDfsDir)
       throws HiveException {
     try {
-      PerfLogger perfLogger = SessionState.getPerfLogger();
       perfLogger.perfLogBegin("MoveTask", PerfLogger.FILE_MOVES);
 
       String mesg = "Moving data to " + (isDfsDir ? "" : "local ") + "directory "
@@ -440,9 +439,11 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             }
           }
           else {
-            FileSystem targetFs = targetPath.getFileSystem(conf);
-            if (!targetFs.exists(targetPath.getParent())){
-              targetFs.mkdirs(targetPath.getParent());
+            if (lfd.getIsDfsDir()) {
+              FileSystem targetFs = targetPath.getFileSystem(conf);
+              if (!targetFs.exists(targetPath.getParent())) {
+                targetFs.mkdirs(targetPath.getParent());
+              }
             }
             moveFile(sourcePath, targetPath, lfd.getIsDfsDir());
           }
@@ -571,7 +572,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         }
         releaseLocks(tbd);
       }
-
+      long moveFilesDuration = perfLogger.getDuration(PerfLogger.FILE_MOVES);
+      console.printInfo(String.format("Time taken to move files:\t %d ms", moveFilesDuration));
       return 0;
     } catch (HiveException he) {
       return processHiveException(he);
@@ -687,7 +689,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     Map<Path, Utilities.PartitionDetails> dps = Utilities.getFullDPSpecs(conf, dpCtx, dynamicPartitionSpecs);
 
     console.printInfo(System.getProperty("line.separator"));
-    long startTime = System.currentTimeMillis();
+    long startTime = Time.monotonicNow();
     // load the list of DP partitions and return the list of partition specs
     // TODO: In a follow-up to HIVE-1361, we should refactor loadDynamicPartitions
     // to use Utilities.getFullDPSpecs() to get the list of full partSpecs.
@@ -712,8 +714,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       pushFeed(FeedType.DYNAMIC_PARTITIONS, dp.values());
     }
 
-    String loadTime = "\t Time taken to load dynamic partitions: "  +
-        (System.currentTimeMillis() - startTime)/1000.0 + " seconds";
+    String loadTime = String.format("Time taken to load dynamic partitions:\t %.3f seconds",
+        (Time.monotonicNow() - startTime) / 1000.0);
     console.printInfo(loadTime);
     LOG.info(loadTime);
 
@@ -722,7 +724,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           " To turn off this error, set hive.error.on.empty.partition=false.");
     }
 
-    startTime = System.currentTimeMillis();
+    startTime = Time.monotonicNow();
     // for each partition spec, get the partition
     // and put it to WriteEntity for post-exec hook
     for(Map.Entry<Map<String, String>, Partition> entry : dp.entrySet()) {
@@ -760,8 +762,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       }
       LOG.info("Loading partition " + entry.getKey());
     }
-    console.printInfo("\t Time taken for adding to write entity : " +
-        (System.currentTimeMillis() - startTime)/1000.0 + " seconds");
+    console.printInfo(String.format("Time taken for adding to write entity:\t %.3f seconds",
+        (Time.monotonicNow() - startTime) / 1000.0));
     dc = null; // reset data container to prevent it being added again.
     return dc;
   }
@@ -834,7 +836,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       }
 
       // handle file format check for table level
-      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVECHECKFILEFORMAT)) {
+      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CHECK_FILEFORMAT)) {
         boolean flag = true;
         // work.checkFileFormat is set to true only for Load Task, so assumption here is
         // dynamic partition context is null

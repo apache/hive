@@ -41,10 +41,8 @@ import org.apache.iceberg.mr.hive.writer.WriterBuilder;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.parquet.hadoop.ParquetOutputFormat;
 
-public class HiveIcebergOutputFormat<T> implements OutputFormat<NullWritable, Container<Record>>,
+public class HiveIcebergOutputFormat implements OutputFormat<NullWritable, Container<Record>>,
     HiveOutputFormat<NullWritable, Container<Record>> {
-  private static final String DELETE_FILE_THREAD_POOL_SIZE = "iceberg.delete.file.thread.pool.size";
-  private static final int DELETE_FILE_THREAD_POOL_SIZE_DEFAULT = 10;
 
   @Override
   public FileSinkOperator.RecordWriter getHiveRecordWriter(JobConf jc, Path finalOutPath, Class valueClass,
@@ -68,15 +66,15 @@ public class HiveIcebergOutputFormat<T> implements OutputFormat<NullWritable, Co
     // It gets the config from the FileSinkOperator which has its own config for every target table
     Table table = HiveIcebergStorageHandler.table(jc, jc.get(hive_metastoreConstants.META_TABLE_NAME));
     String tableName = jc.get(Catalogs.NAME);
-    int poolSize = jc.getInt(DELETE_FILE_THREAD_POOL_SIZE, DELETE_FILE_THREAD_POOL_SIZE_DEFAULT);
 
     setWriterLevelConfiguration(jc, table);
     return WriterBuilder.builderFor(table)
-        .queryId(jc.get(HiveConf.ConfVars.HIVEQUERYID.varname))
+        .queryId(jc.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname))
         .tableName(tableName)
         .attemptID(taskAttemptID)
-        .poolSize(poolSize)
-        .operation(HiveCustomStorageHandlerUtils.getWriteOperation(jc, tableName))
+        .operation(HiveCustomStorageHandlerUtils.getWriteOperation(jc::get, tableName))
+        .hasOrdering(HiveCustomStorageHandlerUtils.getWriteOperationIsSorted(jc::get, tableName))
+        .isMergeTask(HiveCustomStorageHandlerUtils.isMergeTaskEnabled(jc::get, tableName))
         .build();
   }
 

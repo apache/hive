@@ -58,6 +58,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ObjectArrays;
 
 public class CoreBeeLineDriver extends CliAdapter {
+
   private final File hiveRootDirectory = new File(AbstractCliConfig.HIVE_ROOT);
   private final File queryDirectory;
   private final File logDirectory;
@@ -107,6 +108,8 @@ public class CoreBeeLineDriver extends CliAdapter {
 
   private static MiniHS2 createMiniServer() throws Exception {
     HiveConf hiveConf = new HiveConf();
+    // TODO: HIVE-28031: Adapt some cli driver tests to Tez where it's applicable
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
     // We do not need Zookeeper at the moment
     hiveConf.set(HiveConf.ConfVars.HIVE_LOCK_MANAGER.varname,
         "org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager");

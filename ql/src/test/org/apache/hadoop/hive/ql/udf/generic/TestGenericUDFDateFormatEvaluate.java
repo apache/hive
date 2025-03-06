@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
@@ -51,6 +52,7 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Parameterized.class)
 public class TestGenericUDFDateFormatEvaluate {
+
   private final GenericUDFDateFormat udf = new GenericUDFDateFormat();
   private final String value;
   private final String pattern;
@@ -84,7 +86,7 @@ public class TestGenericUDFDateFormatEvaluate {
 
   @Test
   public void testEvaluate() throws HiveException, InterruptedException {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = new HiveConfForTest(getClass());
     conf.setVar(HiveConf.ConfVars.HIVE_DATETIME_FORMATTER, formatter);
     conf.setVar(HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE, zone);
     SessionState state = SessionState.start(conf);

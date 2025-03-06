@@ -21,7 +21,10 @@ package org.apache.hadoop.hive.ql;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 
+import org.apache.calcite.sql.SqlKind;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
@@ -51,6 +54,12 @@ public class QueryState {
   private HiveOperation commandType;
 
   /**
+   * The SqlKind of the command. This typically covers additional information to HiveOperation.QUERY,
+   * it could be: INSERT, DELETE, UPDATE, MERGE, EXPLAIN.
+   */
+  private SqlKind sqlKind;
+
+  /**
    * Per-query Lineage state to track what happens in the query
    */
   private LineageState lineageState = new LineageState();
@@ -59,6 +68,11 @@ public class QueryState {
    * transaction manager used in the query.
    */
   private HiveTxnManager txnManager;
+
+  /**
+   * validTxnList supplier
+   */
+  private Supplier<String> validTxnList;
 
   /**
    * Holds the number of rows affected for insert queries.
@@ -94,11 +108,12 @@ public class QueryState {
    */
   private QueryState(HiveConf conf) {
     this.queryConf = conf;
+    this.validTxnList = () -> conf.get(ValidTxnList.VALID_TXNS_KEY);
   }
 
   // Get the query id stored in query specific config.
   public String getQueryId() {
-    return queryConf.getVar(HiveConf.ConfVars.HIVEQUERYID);
+    return queryConf.getVar(HiveConf.ConfVars.HIVE_QUERY_ID);
   }
 
   public String getQueryString() {
@@ -143,6 +158,14 @@ public class QueryState {
     this.commandType = commandType;
   }
 
+  public SqlKind getSqlKind() {
+    return sqlKind;
+  }
+
+  public void setSqlKind(SqlKind sqlKind) {
+    this.sqlKind = sqlKind;
+  }
+
   public HiveConf getConf() {
     return queryConf;
   }
@@ -163,6 +186,14 @@ public class QueryState {
     this.txnManager = txnManager;
   }
 
+  public String getValidTxnList() {
+    return validTxnList.get();
+  }
+  
+  public void setValidTxnList(Supplier<String> validTxnList) {
+    this.validTxnList = validTxnList;
+  }
+
   public long getNumModifiedRows() {
     return numModifiedRows;
   }
@@ -172,15 +203,15 @@ public class QueryState {
   }
 
   public String getQueryTag() {
-    return HiveConf.getVar(this.queryConf, HiveConf.ConfVars.HIVEQUERYTAG);
+    return HiveConf.getVar(this.queryConf, HiveConf.ConfVars.HIVE_QUERY_TAG);
   }
 
   public void setQueryTag(String queryTag) {
-    HiveConf.setVar(this.queryConf, HiveConf.ConfVars.HIVEQUERYTAG, queryTag);
+    HiveConf.setVar(this.queryConf, HiveConf.ConfVars.HIVE_QUERY_TAG, queryTag);
   }
 
   public static void setApplicationTag(HiveConf queryConf, String queryTag) {
-    String jobTag = HiveConf.getVar(queryConf, HiveConf.ConfVars.HIVEQUERYTAG);
+    String jobTag = HiveConf.getVar(queryConf, HiveConf.ConfVars.HIVE_QUERY_TAG);
     if (jobTag == null || jobTag.isEmpty()) {
       jobTag = queryTag;
     } else {
@@ -199,6 +230,11 @@ public class QueryState {
 
   public Object getResource(String resourceIdentifier) {
     return resourceMap.get(resourceIdentifier);
+  }
+
+  // Resets the resourceMap by removing all stored resource information.
+  public void clearResourceMap() {
+    resourceMap.clear();
   }
 
   public ReentrantLock getResolveConditionalTaskLock() {
@@ -227,6 +263,7 @@ public class QueryState {
     private boolean isolated = true;
     private boolean generateNewQueryId = false;
     private HiveConf hiveConf = null;
+    private Supplier<String> validTxnList;
     private LineageState lineageState = null;
 
     /**
@@ -279,6 +316,11 @@ public class QueryState {
       this.hiveConf = hiveConf;
       return this;
     }
+    
+    public Builder withValidTxnList(Supplier<String> validTxnList) {
+      this.validTxnList = validTxnList;
+      return this;
+    }
 
     /**
      * add a LineageState that will be set in the built QueryState
@@ -327,19 +369,22 @@ public class QueryState {
       // Generate the new queryId if needed
       if (generateNewQueryId) {
         String queryId = QueryPlan.makeQueryId();
-        queryConf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
+        queryConf.setVar(HiveConf.ConfVars.HIVE_QUERY_ID, queryId);
         setApplicationTag(queryConf, queryId);
 
         // FIXME: druid storage handler relies on query.id to maintain some staging directories
         // expose queryid to session level
         if (hiveConf != null) {
-          hiveConf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
+          hiveConf.setVar(HiveConf.ConfVars.HIVE_QUERY_ID, queryId);
         }
       }
 
       QueryState queryState = new QueryState(queryConf);
       if (lineageState != null) {
         queryState.setLineageState(lineageState);
+      }
+      if (validTxnList != null) {
+        queryState.setValidTxnList(validTxnList);
       }
       return queryState;
     }

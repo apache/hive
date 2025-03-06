@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.hadoop.fs.Path;
 import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFile;
@@ -33,29 +34,41 @@ public class FilesForCommit implements Serializable {
 
   private final Collection<DataFile> dataFiles;
   private final Collection<DeleteFile> deleteFiles;
-  private Collection<DataFile> referencedDataFiles;
+  private final Collection<DataFile> replacedDataFiles;
+  private final Collection<CharSequence> referencedDataFiles;
+  private final Collection<Path> mergedAndDeletedFiles;
 
   public FilesForCommit(Collection<DataFile> dataFiles, Collection<DeleteFile> deleteFiles) {
     this(dataFiles, deleteFiles, Collections.emptyList());
   }
 
   public FilesForCommit(Collection<DataFile> dataFiles, Collection<DeleteFile> deleteFiles,
-                        Collection<DataFile> referencedDataFiles) {
+      Collection<DataFile> replacedDataFiles, Collection<CharSequence> referencedDataFiles,
+      Collection<Path> mergedAndDeletedFiles) {
     this.dataFiles = dataFiles;
     this.deleteFiles = deleteFiles;
+    this.replacedDataFiles = replacedDataFiles;
     this.referencedDataFiles = referencedDataFiles;
+    this.mergedAndDeletedFiles = mergedAndDeletedFiles;
   }
 
-  public static FilesForCommit onlyDelete(Collection<DeleteFile> deleteFiles) {
-    return new FilesForCommit(Collections.emptyList(), deleteFiles);
+  public FilesForCommit(Collection<DataFile> dataFiles, Collection<DeleteFile> deleteFiles,
+      Collection<DataFile> replacedDataFiles) {
+    this(dataFiles, deleteFiles, replacedDataFiles, Collections.emptySet(), Collections.emptySet());
+  }
+
+  public static FilesForCommit onlyDelete(Collection<DeleteFile> deleteFiles,
+      Collection<CharSequence> referencedDataFiles) {
+    return new FilesForCommit(Collections.emptyList(), deleteFiles, Collections.emptyList(),
+            referencedDataFiles, Collections.emptySet());
   }
 
   public static FilesForCommit onlyData(Collection<DataFile> dataFiles) {
     return new FilesForCommit(dataFiles, Collections.emptyList());
   }
 
-  public static FilesForCommit onlyData(Collection<DataFile> dataFiles, Collection<DataFile> referencedDataFiles) {
-    return new FilesForCommit(dataFiles, Collections.emptyList(), referencedDataFiles);
+  public static FilesForCommit onlyData(Collection<DataFile> dataFiles, Collection<DataFile> replacedDataFiles) {
+    return new FilesForCommit(dataFiles, Collections.emptyList(), replacedDataFiles);
   }
 
   public static FilesForCommit empty() {
@@ -70,8 +83,16 @@ public class FilesForCommit implements Serializable {
     return deleteFiles;
   }
 
-  public Collection<DataFile> referencedDataFiles() {
+  public Collection<DataFile> replacedDataFiles() {
+    return replacedDataFiles;
+  }
+
+  public Collection<CharSequence> referencedDataFiles() {
     return referencedDataFiles;
+  }
+
+  public Collection<Path> mergedAndDeletedFiles() {
+    return mergedAndDeletedFiles;
   }
 
   public Collection<? extends ContentFile> allFiles() {
@@ -79,7 +100,7 @@ public class FilesForCommit implements Serializable {
   }
 
   public boolean isEmpty() {
-    return dataFiles.isEmpty() && deleteFiles.isEmpty() && referencedDataFiles.isEmpty();
+    return dataFiles.isEmpty() && deleteFiles.isEmpty() && replacedDataFiles.isEmpty();
   }
 
   @Override
@@ -87,7 +108,9 @@ public class FilesForCommit implements Serializable {
     return MoreObjects.toStringHelper(this)
         .add("dataFiles", dataFiles.toString())
         .add("deleteFiles", deleteFiles.toString())
+        .add("replacedDataFiles", replacedDataFiles.toString())
         .add("referencedDataFiles", referencedDataFiles.toString())
+        .add("mergedAndDeletedFiles", mergedAndDeletedFiles.toString())
         .toString();
   }
 

@@ -49,7 +49,7 @@ public class BucketMapjoinProc extends AbstractBucketJoinProc implements Semanti
 
     // Throw an error if the user asked for bucketed mapjoin to be enforced and
     // bucketed mapjoin cannot be performed
-    if (!convert && conf.getBoolVar(HiveConf.ConfVars.HIVEENFORCEBUCKETMAPJOIN)) {
+    if (!convert && conf.getBoolVar(HiveConf.ConfVars.HIVE_ENFORCE_BUCKET_MAPJOIN)) {
       throw new SemanticException(ErrorMsg.BUCKET_MAPJOIN_NOT_POSSIBLE.getMsg());
     }
 

@@ -1,5 +1,5 @@
 outputHObjs:
-HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: test_auth_obj_db}
+HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: test_auth_obj_db OWNER: testuser OWNERTYPE: USER}
 PREHOOK: query: CREATE DATABASE test_auth_obj_db
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:test_auth_obj_db
@@ -42,15 +42,15 @@ PREHOOK: query: SHOW TABLES IN test_auth_obj_db
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:test_auth_obj_db
 filterListCmdObjects
-HIVE PRIVILEGE OBJECT { objectName: test_privs type: TABLE_OR_VIEW actionType: OTHER dbName: test_auth_obj_db OWNER: testuser OWNERTYPE: USER}
-HIVE PRIVILEGE OBJECT { objectName: test_privs2 type: TABLE_OR_VIEW actionType: OTHER dbName: test_auth_obj_db OWNER: testuser2 OWNERTYPE: USER}
+HIVE PRIVILEGE OBJECT { objectName: test_privs type: TABLE_OR_VIEW actionType: OTHER dbName: test_auth_obj_db}
+HIVE PRIVILEGE OBJECT { objectName: test_privs2 type: TABLE_OR_VIEW actionType: OTHER dbName: test_auth_obj_db}
 POSTHOOK: query: SHOW TABLES IN test_auth_obj_db
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:test_auth_obj_db
 test_privs
 test_privs2
 applyRowFilterAndColumnMasking:
-HIVE PRIVILEGE OBJECT { objectName: test_privs type: TABLE_OR_VIEW actionType: OTHER dbName: test_auth_obj_db columns: [i]}
+HIVE PRIVILEGE OBJECT { objectName: test_privs type: TABLE_OR_VIEW actionType: OTHER dbName: test_auth_obj_db OWNER: testuser OWNERTYPE: USER columns: [i]}
 inputHObjs:
 HIVE PRIVILEGE OBJECT { objectName: test_privs type: TABLE_OR_VIEW actionType: OTHER dbName: test_auth_obj_db OWNER: testuser OWNERTYPE: USER}
 PREHOOK: query: EXPLAIN SELECT * FROM test_auth_obj_db.test_privs
@@ -295,7 +295,7 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ext_simple_derby_table_src
 applyRowFilterAndColumnMasking:
-HIVE PRIVILEGE OBJECT { objectName: ext_simple_derby_table_src type: TABLE_OR_VIEW actionType: OTHER dbName: default columns: [ikey, bkey, fkey, dkey]}
+HIVE PRIVILEGE OBJECT { objectName: ext_simple_derby_table_src type: TABLE_OR_VIEW actionType: OTHER dbName: default OWNER: hive_admin_user OWNERTYPE: USER columns: [ikey, bkey, fkey, dkey]}
 inputHObjs:
 HIVE PRIVILEGE OBJECT { objectName: ext_simple_derby_table_src type: TABLE_OR_VIEW actionType: OTHER dbName: default OWNER: hive_admin_user OWNERTYPE: USER columns: [bkey, dkey, fkey, ikey]}
 outputHObjs:
@@ -316,7 +316,7 @@ POSTHOOK: Lineage: ext_simple_derby_table_ctas.dkey SIMPLE [(ext_simple_derby_ta
 POSTHOOK: Lineage: ext_simple_derby_table_ctas.fkey SIMPLE [(ext_simple_derby_table_src)ext_simple_derby_table_src.FieldSchema(name:fkey, type:float, comment:from deserializer), ]
 POSTHOOK: Lineage: ext_simple_derby_table_ctas.ikey SIMPLE [(ext_simple_derby_table_src)ext_simple_derby_table_src.FieldSchema(name:ikey, type:int, comment:from deserializer), ]
 applyRowFilterAndColumnMasking:
-HIVE PRIVILEGE OBJECT { objectName: ext_simple_derby_table_ctas type: TABLE_OR_VIEW actionType: OTHER dbName: default columns: [bkey, dkey, fkey, ikey]}
+HIVE PRIVILEGE OBJECT { objectName: ext_simple_derby_table_ctas type: TABLE_OR_VIEW actionType: OTHER dbName: default OWNER: hive_admin_user OWNERTYPE: USER columns: [bkey, dkey, fkey, ikey]}
 inputHObjs:
 HIVE PRIVILEGE OBJECT { objectName: ext_simple_derby_table_ctas type: TABLE_OR_VIEW actionType: OTHER dbName: default OWNER: hive_admin_user OWNERTYPE: USER columns: [bkey, dkey, fkey, ikey]}
 outputHObjs:

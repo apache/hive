@@ -214,6 +214,22 @@ public class TimestampLocalTZWritable implements WritableComparable<TimestampLoc
     throw new IllegalStateException("Both timestamp and bytes are empty");
   }
 
+  /**
+   *
+   * @return double representation of the timestampTZ, accurate to microseconds
+   */
+  public double getMicros() {
+    double seconds, nanos;
+    if (bytesEmpty) {
+      seconds = timestampTZ.getEpochSecond();
+      nanos = timestampTZ.getNanos();
+    } else {
+      seconds = getSeconds();
+      nanos = getNanos();
+    }
+    return seconds * 1e6 + nanos / 1e3;
+  }
+
   public int getNanos() {
     if (!timestampTZEmpty) {
       return timestampTZ.getNanos();

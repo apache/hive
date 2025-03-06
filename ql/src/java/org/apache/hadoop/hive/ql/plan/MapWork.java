@@ -22,18 +22,8 @@ import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator.ProbeDecodeContext;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -183,6 +173,8 @@ public class MapWork extends BaseWork {
   protected List<Path> inputPaths;
 
   private boolean useInputPathsDirectly;
+
+  private Properties mergeSplitProperties;
 
   public MapWork() {}
 
@@ -953,5 +945,13 @@ public class MapWork extends BaseWork {
 
   public boolean isUseInputPathsDirectly() {
     return useInputPathsDirectly;
+  }
+
+  public Properties getMergeSplitProperties() {
+    return mergeSplitProperties;
+  }
+
+  public void setMergeSplitProperties(Properties mergeSplitProperties) {
+    this.mergeSplitProperties = mergeSplitProperties;
   }
 }

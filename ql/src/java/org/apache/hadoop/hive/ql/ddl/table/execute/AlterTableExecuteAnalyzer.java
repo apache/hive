@@ -35,25 +35,34 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.CherryPickSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.DeleteOrphanFilesDesc;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExpireSnapshotsSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.FastForwardSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.RollbackSpec;
+import org.apache.hadoop.hive.ql.parse.RowResolver;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.CHERRY_PICK;
+import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.DELETE_ORPHAN_FILES;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.EXPIRE_SNAPSHOT;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.FAST_FORWARD;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.ROLLBACK;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.SET_CURRENT_SNAPSHOT;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.RollbackSpec.RollbackType.TIME;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.RollbackSpec.RollbackType.VERSION;
+import static org.apache.hadoop.hive.ql.parse.HiveLexer.KW_RETAIN;
 
 /**
  * Analyzer for ALTER TABLE ... EXECUTE commands.
@@ -81,8 +90,7 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
         desc = getRollbackDesc(tableName, partitionSpec, (ASTNode) command.getChild(1));
         break;
       case HiveParser.KW_EXPIRE_SNAPSHOTS:
-        desc = getExpireSnapshotDesc(tableName, partitionSpec,  command.getChildren());
-
+        desc = getExpireSnapshotDesc(tableName, partitionSpec,  command.getChildren(), queryState.getConf());
         break;
       case HiveParser.KW_SET_CURRENT_SNAPSHOT:
         desc = getSetCurrentSnapshotDesc(tableName, partitionSpec, (ASTNode) command.getChild(1));
@@ -92,6 +100,9 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
         break;
       case HiveParser.KW_CHERRY_PICK:
         desc = getCherryPickDesc(tableName, partitionSpec, (ASTNode) command.getChild(1));
+        break;
+      case HiveParser.KW_ORPHAN_FILES:
+        desc = getDeleteOrphanFilesDesc(tableName, partitionSpec,  command.getChildren());
         break;
     }
 
@@ -128,33 +139,55 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
       ASTNode childNode) throws SemanticException {
     AlterTableExecuteSpec<AlterTableExecuteSpec.SetCurrentSnapshotSpec> spec =
         new AlterTableExecuteSpec(SET_CURRENT_SNAPSHOT,
-            new AlterTableExecuteSpec.SetCurrentSnapshotSpec(Long.valueOf(childNode.getText())));
+            new AlterTableExecuteSpec.SetCurrentSnapshotSpec(childNode.getText()));
     return new AlterTableExecuteDesc(tableName, partitionSpec, spec);
   }
 
   private static AlterTableExecuteDesc getExpireSnapshotDesc(TableName tableName, Map<String, String> partitionSpec,
-      List<Node> children) throws SemanticException {
+      List<Node> children, HiveConf conf) throws SemanticException {
     AlterTableExecuteSpec<ExpireSnapshotsSpec> spec;
-
+    if (children.size() == 1) {
+      spec = new AlterTableExecuteSpec(EXPIRE_SNAPSHOT, null);
+      return new AlterTableExecuteDesc(tableName, partitionSpec, spec);
+    }
     ZoneId timeZone = SessionState.get() == null ?
         new HiveConf().getLocalTimeZone() :
         SessionState.get().getConf().getLocalTimeZone();
     ASTNode firstNode = (ASTNode) children.get(1);
     String firstNodeText = PlanUtils.stripQuotes(firstNode.getText().trim());
-    if (children.size() == 3) {
+    if (firstNode.getType() == KW_RETAIN) {
+      ASTNode numRetainLastNode = (ASTNode) children.get(2);
+      String numToRetainText = PlanUtils.stripQuotes(numRetainLastNode.getText());
+      int numToRetain = Integer.parseInt(numToRetainText);
+      spec = new AlterTableExecuteSpec(EXPIRE_SNAPSHOT, new ExpireSnapshotsSpec(numToRetain));
+    } else if (children.size() == 3) {
       ASTNode secondNode = (ASTNode) children.get(2);
       String secondNodeText = PlanUtils.stripQuotes(secondNode.getText().trim());
-      TimestampTZ fromTime = TimestampTZUtil.parse(firstNodeText, timeZone);
-      TimestampTZ toTime = TimestampTZUtil.parse(secondNodeText, timeZone);
+      TimestampTZ fromTime = TimestampTZUtil.parse(getTimeStampString(conf, firstNode, firstNodeText), timeZone);
+      TimestampTZ toTime = TimestampTZUtil.parse(getTimeStampString(conf, secondNode, secondNodeText), timeZone);
       spec = new AlterTableExecuteSpec(EXPIRE_SNAPSHOT,
           new ExpireSnapshotsSpec(fromTime.toEpochMilli(), toTime.toEpochMilli()));
     } else if (EXPIRE_SNAPSHOT_BY_ID_REGEX.matcher(firstNodeText).matches()) {
       spec = new AlterTableExecuteSpec(EXPIRE_SNAPSHOT, new ExpireSnapshotsSpec(firstNodeText));
     } else {
-      TimestampTZ time = TimestampTZUtil.parse(firstNodeText, timeZone);
+      TimestampTZ time = TimestampTZUtil.parse(getTimeStampString(conf, firstNode, firstNodeText), timeZone);
       spec = new AlterTableExecuteSpec(EXPIRE_SNAPSHOT, new ExpireSnapshotsSpec(time.toEpochMilli()));
     }
     return new AlterTableExecuteDesc(tableName, partitionSpec, spec);
+  }
+
+  private static String getTimeStampString(HiveConf conf, ASTNode node, String nodeText) throws SemanticException {
+    if (node.getChildCount() > 0) {
+      QueryState queryState = new QueryState.Builder().withGenerateNewQueryId(false).withHiveConf(conf).build();
+      SemanticAnalyzer sem = (SemanticAnalyzer) SemanticAnalyzerFactory.get(queryState, node);
+      ExprNodeDesc desc = sem.genExprNodeDesc(node, new RowResolver(), false, true);
+      if(!(desc instanceof ExprNodeConstantDesc))  {
+        throw new SemanticException("Invalid timestamp expression");
+      }
+      ExprNodeConstantDesc constantDesc = (ExprNodeConstantDesc) desc;
+      return String.valueOf(constantDesc.getValue());
+    }
+    return nodeText;
   }
 
   private static AlterTableExecuteDesc getRollbackDesc(TableName tableName, Map<String, String> partitionSpec,
@@ -171,5 +204,25 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
       spec = new AlterTableExecuteSpec(ROLLBACK, new RollbackSpec(VERSION, Long.valueOf(childNode.getText())));
     }
     return new AlterTableExecuteDesc(tableName, partitionSpec, spec);
+  }
+
+  private static AlterTableExecuteDesc getDeleteOrphanFilesDesc(TableName tableName, Map<String, String> partitionSpec,
+      List<Node> children) throws SemanticException {
+
+    long time = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(3);
+    if (children.size() == 2) {
+      time = getTimeStampMillis((ASTNode) children.get(1));
+    }
+    AlterTableExecuteSpec spec = new AlterTableExecuteSpec(DELETE_ORPHAN_FILES, new DeleteOrphanFilesDesc(time));
+    return new AlterTableExecuteDesc(tableName, partitionSpec, spec);
+  }
+
+  private static long getTimeStampMillis(ASTNode childNode) {
+    String childNodeText = PlanUtils.stripQuotes(childNode.getText());
+    ZoneId timeZone = SessionState.get() == null ?
+        new HiveConf().getLocalTimeZone() :
+        SessionState.get().getConf().getLocalTimeZone();
+    TimestampTZ time = TimestampTZUtil.parse(PlanUtils.stripQuotes(childNodeText), timeZone);
+    return time.toEpochMilli();
   }
 }

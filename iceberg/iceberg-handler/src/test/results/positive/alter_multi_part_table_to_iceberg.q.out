@@ -40,7 +40,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	#Masked#                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -197,15 +197,16 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"a\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"b\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"c\",\"required\":false,\"type\":\"string\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"added-data-files\":\"7\",\"added-records\":\"15\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"7\",\"total-records\":\"15\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"7\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-summary	{\"added-data-files\":\"7\",\"added-records\":\"15\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"7\",\"total-records\":\"15\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"7\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000},{\"name\":\"c\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1001}]}
-	engine.hive.enabled 	true                
+	format-version      	2                   
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	7                   
 	numRows             	15                  
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	schema.name-mapping.default	[ {                 
 	                           	  \"field-id\" : 1, 
@@ -220,10 +221,13 @@ Table Parameters:
 	snapshot-count      	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	#Masked#                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
 	write.format.default	orc                 
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -306,7 +310,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	#Masked#                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -463,15 +467,16 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"a\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"b\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"c\",\"required\":false,\"type\":\"string\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"added-data-files\":\"7\",\"added-records\":\"15\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"7\",\"total-records\":\"15\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"7\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-summary	{\"added-data-files\":\"7\",\"added-records\":\"15\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"7\",\"total-records\":\"15\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"7\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000},{\"name\":\"c\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1001}]}
-	engine.hive.enabled 	true                
+	format-version      	2                   
 	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	7                   
 	numRows             	15                  
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	schema.name-mapping.default	[ {                 
 	                           	  \"field-id\" : 1, 
@@ -486,10 +491,13 @@ Table Parameters:
 	snapshot-count      	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	#Masked#                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
 	write.format.default	parquet             
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -572,7 +580,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	#Masked#                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -729,15 +737,16 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"a\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"b\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"c\",\"required\":false,\"type\":\"string\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"added-data-files\":\"7\",\"added-records\":\"15\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"7\",\"total-records\":\"15\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"7\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-summary	{\"added-data-files\":\"7\",\"added-records\":\"15\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"7\",\"total-records\":\"15\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"7\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000},{\"name\":\"c\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1001}]}
-	engine.hive.enabled 	true                
+	format-version      	2                   
 	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	7                   
 	numRows             	15                  
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	schema.name-mapping.default	[ {                 
 	                           	  \"field-id\" : 1, 
@@ -752,10 +761,13 @@ Table Parameters:
 	snapshot-count      	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	#Masked#                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
 	write.format.default	avro                
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 

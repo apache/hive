@@ -31,6 +31,7 @@ import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.plan.RelOptUtil.InputFinder;
 import org.apache.calcite.plan.RelOptUtil.InputReferencedVisitor;
+import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
@@ -82,6 +83,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
+import org.apache.hadoop.hive.ql.parse.QB;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -101,12 +103,19 @@ import com.google.common.collect.Sets;
 
 public class HiveCalciteUtil {
 
-  public static boolean validateASTForUnsupportedTokens(ASTNode ast) {
-    if (ParseUtils.containsTokenOfType(ast, HiveParser.TOK_CHARSETLITERAL, HiveParser.TOK_TABLESPLITSAMPLE)) {
-      return false;
-    } else {
-      return true;
+  public static Pair<Boolean, String> unsupportedFeaturesPresentInASTorQB(ASTNode ast, QB qb) {
+    Pair<Boolean, String> containsToken = 
+        ParseUtils.containsTokenOfType(ast, HiveParser.TOK_CHARSETLITERAL, HiveParser.TOK_TABLESPLITSAMPLE, 
+            HiveParser.TOK_UNIQUEJOIN, HiveParser.TOK_TABLEBUCKETSAMPLE);
+
+    if (Boolean.TRUE.equals(containsToken.getKey())) {
+      return containsToken;
     }
+    if (qb.hasTableSampleRecursive()) {
+      return Pair.of(true, "TOK_TABLEBUCKETSAMPLE");
+    }
+
+    return Pair.of(false, null);
   }
 
   public static List<RexNode> getProjsFromBelowAsInputRef(final RelNode rel) {
@@ -1342,5 +1351,21 @@ public class HiveCalciteUtil {
 
     rexNode.accept(visitor);
     return rexTableInputRefs;
+  }
+
+  public static RelNode stripHepVertices(RelNode rel) {
+    if (rel instanceof HepRelVertex) {
+      rel = ((HepRelVertex) rel).getCurrentRel();
+    }
+    List<RelNode> oldInputs = rel.getInputs();
+    List<RelNode> newInputs = new ArrayList<>();
+    for (RelNode oldInput : oldInputs) {
+      newInputs.add(stripHepVertices(oldInput));
+    }
+    if (oldInputs.equals(newInputs)) {
+      return rel;
+    } else {
+      return rel.copy(rel.getTraitSet(), newInputs);
+    }
   }
 }

@@ -51,6 +51,12 @@
   </property>
   -->
 
+  <!-- HIVE-28031: Adapt some cli driver tests to Tez where it's applicable -->
+  <property>
+    <name>hive.execution.engine</name>
+    <value>mr</value>
+  </property>
+
   <property>
     <name>hive.exec.scratchdir</name>
     <value>${test.tmp.dir}/scratchdir</value>
@@ -144,6 +150,12 @@
     <name>hive.querylog.location</name>
     <value>${test.tmp.dir}/tmp</value>
     <description>Location of the structured hive logs</description>
+  </property>
+
+  <property>
+    <name>hive.lineage.statement.filter</name>
+    <value>ALL</value>
+    <description>Specify the types of statements for which column lineage information is generated.</description>
   </property>
 
   <property>

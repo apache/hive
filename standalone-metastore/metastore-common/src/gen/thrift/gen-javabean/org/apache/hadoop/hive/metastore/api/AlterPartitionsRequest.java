@@ -1028,14 +1028,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 4: // PARTITIONS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1360 = iprot.readListBegin();
-                struct.partitions = new java.util.ArrayList<Partition>(_list1360.size);
-                @org.apache.thrift.annotation.Nullable Partition _elem1361;
-                for (int _i1362 = 0; _i1362 < _list1360.size; ++_i1362)
+                org.apache.thrift.protocol.TList _list1400 = iprot.readListBegin();
+                struct.partitions = new java.util.ArrayList<Partition>(_list1400.size);
+                @org.apache.thrift.annotation.Nullable Partition _elem1401;
+                for (int _i1402 = 0; _i1402 < _list1400.size; ++_i1402)
                 {
-                  _elem1361 = new Partition();
-                  _elem1361.read(iprot);
-                  struct.partitions.add(_elem1361);
+                  _elem1401 = new Partition();
+                  _elem1401.read(iprot);
+                  struct.partitions.add(_elem1401);
                 }
                 iprot.readListEnd();
               }
@@ -1080,14 +1080,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 9: // PARTITION_COL_SCHEMA
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1363 = iprot.readListBegin();
-                struct.partitionColSchema = new java.util.ArrayList<FieldSchema>(_list1363.size);
-                @org.apache.thrift.annotation.Nullable FieldSchema _elem1364;
-                for (int _i1365 = 0; _i1365 < _list1363.size; ++_i1365)
+                org.apache.thrift.protocol.TList _list1403 = iprot.readListBegin();
+                struct.partitionColSchema = new java.util.ArrayList<FieldSchema>(_list1403.size);
+                @org.apache.thrift.annotation.Nullable FieldSchema _elem1404;
+                for (int _i1405 = 0; _i1405 < _list1403.size; ++_i1405)
                 {
-                  _elem1364 = new FieldSchema();
-                  _elem1364.read(iprot);
-                  struct.partitionColSchema.add(_elem1364);
+                  _elem1404 = new FieldSchema();
+                  _elem1404.read(iprot);
+                  struct.partitionColSchema.add(_elem1404);
                 }
                 iprot.readListEnd();
               }
@@ -1130,9 +1130,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(PARTITIONS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.partitions.size()));
-          for (Partition _iter1366 : struct.partitions)
+          for (Partition _iter1406 : struct.partitions)
           {
-            _iter1366.write(oprot);
+            _iter1406.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1167,9 +1167,9 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(PARTITION_COL_SCHEMA_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.partitionColSchema.size()));
-            for (FieldSchema _iter1367 : struct.partitionColSchema)
+            for (FieldSchema _iter1407 : struct.partitionColSchema)
             {
-              _iter1367.write(oprot);
+              _iter1407.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -1197,9 +1197,9 @@ package org.apache.hadoop.hive.metastore.api;
       oprot.writeString(struct.tableName);
       {
         oprot.writeI32(struct.partitions.size());
-        for (Partition _iter1368 : struct.partitions)
+        for (Partition _iter1408 : struct.partitions)
         {
-          _iter1368.write(oprot);
+          _iter1408.write(oprot);
         }
       }
       java.util.BitSet optionals = new java.util.BitSet();
@@ -1240,9 +1240,9 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetPartitionColSchema()) {
         {
           oprot.writeI32(struct.partitionColSchema.size());
-          for (FieldSchema _iter1369 : struct.partitionColSchema)
+          for (FieldSchema _iter1409 : struct.partitionColSchema)
           {
-            _iter1369.write(oprot);
+            _iter1409.write(oprot);
           }
         }
       }
@@ -1256,14 +1256,14 @@ package org.apache.hadoop.hive.metastore.api;
       struct.tableName = iprot.readString();
       struct.setTableNameIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list1370 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-        struct.partitions = new java.util.ArrayList<Partition>(_list1370.size);
-        @org.apache.thrift.annotation.Nullable Partition _elem1371;
-        for (int _i1372 = 0; _i1372 < _list1370.size; ++_i1372)
+        org.apache.thrift.protocol.TList _list1410 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+        struct.partitions = new java.util.ArrayList<Partition>(_list1410.size);
+        @org.apache.thrift.annotation.Nullable Partition _elem1411;
+        for (int _i1412 = 0; _i1412 < _list1410.size; ++_i1412)
         {
-          _elem1371 = new Partition();
-          _elem1371.read(iprot);
-          struct.partitions.add(_elem1371);
+          _elem1411 = new Partition();
+          _elem1411.read(iprot);
+          struct.partitions.add(_elem1411);
         }
       }
       struct.setPartitionsIsSet(true);
@@ -1291,14 +1291,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       if (incoming.get(5)) {
         {
-          org.apache.thrift.protocol.TList _list1373 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.partitionColSchema = new java.util.ArrayList<FieldSchema>(_list1373.size);
-          @org.apache.thrift.annotation.Nullable FieldSchema _elem1374;
-          for (int _i1375 = 0; _i1375 < _list1373.size; ++_i1375)
+          org.apache.thrift.protocol.TList _list1413 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.partitionColSchema = new java.util.ArrayList<FieldSchema>(_list1413.size);
+          @org.apache.thrift.annotation.Nullable FieldSchema _elem1414;
+          for (int _i1415 = 0; _i1415 < _list1413.size; ++_i1415)
           {
-            _elem1374 = new FieldSchema();
-            _elem1374.read(iprot);
-            struct.partitionColSchema.add(_elem1374);
+            _elem1414 = new FieldSchema();
+            _elem1414.read(iprot);
+            struct.partitionColSchema.add(_elem1414);
           }
         }
         struct.setPartitionColSchemaIsSet(true);

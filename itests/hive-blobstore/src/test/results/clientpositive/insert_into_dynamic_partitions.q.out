@@ -117,7 +117,7 @@ STAGE PLANS:
                   Reduce Output Operator
                     bucketingVersion: 2
                     key expressions: _col1 (type: string), _bucket_number (type: string), _col0 (type: int)
-                    null sort order: aaa
+                    null sort order: zzz
                     numBuckets: 2
                     sort order: +++
                     Map-reduce partition columns: _col1 (type: string)

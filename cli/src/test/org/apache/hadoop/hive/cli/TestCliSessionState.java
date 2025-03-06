@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.cli;
 
 import static org.junit.Assert.assertEquals;
 
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Test;
@@ -33,8 +33,8 @@ public class TestCliSessionState {
    * test default db name
    */
   @Test
-  public void testgetDbName() throws Exception {
-    SessionState.start(new HiveConf());
+  public void testGetDbName() throws Exception {
+    SessionState.start(new HiveConfForTest(getClass()));
     assertEquals(Warehouse.DEFAULT_DATABASE_NAME,
         SessionState.get().getCurrentDatabase());
   }

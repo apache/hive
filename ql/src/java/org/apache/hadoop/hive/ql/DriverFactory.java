@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,7 +40,7 @@ public final class DriverFactory {
   }
 
   public static IDriver newDriver(HiveConf conf) {
-    return newDriver(getNewQueryState(conf), null);
+    return newDriver(getNewQueryState(conf), QueryInfo.getFromConf(conf));
   }
 
   public static IDriver newDriver(QueryState queryState, QueryInfo queryInfo) {
@@ -49,12 +50,13 @@ public final class DriverFactory {
     }
 
     String strategies = queryState.getConf().getVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES);
-    strategies = Strings.nullToEmpty(strategies).trim().toLowerCase();
+    strategies = Strings.nullToEmpty(strategies);
     List<IReExecutionPlugin> plugins = new ArrayList<>();
     for (String string : strategies.split(",")) {
       if (string.trim().isEmpty()) {
         continue;
       }
+
       plugins.add(buildReExecPlugin(string));
     }
 
@@ -62,10 +64,26 @@ public final class DriverFactory {
   }
 
   private static IReExecutionPlugin buildReExecPlugin(String name) throws RuntimeException {
-    Class<? extends IReExecutionPlugin> pluginType = ReExecutionStrategyType.getPluginClassByName(name);
+    Class<? extends IReExecutionPlugin> pluginType;
     try {
-      return pluginType.newInstance();
-    } catch (InstantiationException | IllegalAccessException e) {
+      pluginType = ReExecutionStrategyType.getPluginClassByName(name);
+    } catch (IllegalArgumentException e) {
+        try {
+          Class<?> cls = Class.forName(name);
+          if (cls.isAssignableFrom(IReExecutionPlugin.class)) {
+            throw new RuntimeException("Not re-execution plugin: " + name);
+          }
+
+          pluginType = (Class<? extends IReExecutionPlugin>) cls;
+        } catch (ClassNotFoundException e1) {
+          throw new RuntimeException(
+              "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname + ")");
+        }
+    }
+
+    try {
+      return pluginType.getDeclaredConstructor(null).newInstance(null);
+    } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
       throw new RuntimeException(
           "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname + ")");
     }

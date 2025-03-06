@@ -46,6 +46,8 @@ aes_encrypt
 and
 approx_distinct
 array
+array_append
+array_compact
 array_contains
 array_distinct
 array_except
@@ -53,6 +55,7 @@ array_intersect
 array_join
 array_max
 array_min
+array_position
 array_remove
 array_slice
 array_union
@@ -83,7 +86,6 @@ collect_list
 collect_set
 compute_bit_vector_fm
 compute_bit_vector_hll
-compute_stats
 concat
 concat_ws
 context_ngrams
@@ -216,6 +218,12 @@ hash
 hex
 histogram_numeric
 hour
+iceberg_bucket
+iceberg_day
+iceberg_hour
+iceberg_month
+iceberg_truncate
+iceberg_year
 if
 in
 in_bloom_filter
@@ -454,6 +462,9 @@ to_date
 to_epoch_milli
 to_unix_timestamp
 to_utc_timestamp
+toarray
+tomap
+tostruct
 translate
 trim
 trunc
@@ -530,7 +541,6 @@ collect_list
 collect_set
 compute_bit_vector_fm
 compute_bit_vector_hll
-compute_stats
 concat
 concat_ws
 context_ngrams
@@ -581,6 +591,7 @@ explode
 first_value
 floor_minute
 from_unixtime
+iceberg_truncate
 in_file
 inline
 isfalse
@@ -673,6 +684,8 @@ aes_encrypt
 and
 approx_distinct
 array
+array_append
+array_compact
 array_contains
 array_distinct
 array_except
@@ -680,6 +693,7 @@ array_intersect
 array_join
 array_max
 array_min
+array_position
 array_remove
 array_slice
 array_union
@@ -710,7 +724,6 @@ collect_list
 collect_set
 compute_bit_vector_fm
 compute_bit_vector_hll
-compute_stats
 concat
 concat_ws
 context_ngrams
@@ -843,6 +856,12 @@ hash
 hex
 histogram_numeric
 hour
+iceberg_bucket
+iceberg_day
+iceberg_hour
+iceberg_month
+iceberg_truncate
+iceberg_year
 if
 in
 in_bloom_filter
@@ -1081,6 +1100,9 @@ to_date
 to_epoch_milli
 to_unix_timestamp
 to_utc_timestamp
+toarray
+tomap
+tostruct
 translate
 trim
 trunc

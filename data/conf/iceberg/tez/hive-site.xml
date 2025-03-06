@@ -40,8 +40,7 @@
 
 <property>
   <name>hive.tez.container.size</name>
-  <value>128</value>
-  <description></description>
+  <value>512</value>
 </property>
 
 <property>
@@ -147,6 +146,12 @@
 </property>
 
 <property>
+  <name>hive.lineage.statement.filter</name>
+  <value>ALL</value>
+  <description>Specify the types of statements for which column lineage information is generated</description>
+</property>
+
+<property>
   <name>hive.exec.pre.hooks</name>
   <value>org.apache.hadoop.hive.ql.hooks.PreExecutePrinter, org.apache.hadoop.hive.ql.hooks.EnforceReadOnlyTables</value>
   <description>Pre Execute Hook for Tests</description>
@@ -221,12 +226,6 @@
 </property>
 
 <property>
-  <name>hive.execution.engine</name>
-  <value>tez</value>
-  <description>Whether to use MR or Tez</description>
-</property>
-
-<property>
   <name>tez.am.node-blacklisting.enabled</name>
   <value>false</value>
 </property>
@@ -266,6 +265,11 @@
 </property>
 
 <property>
+  <name>hive.tez.exec.print.summary</name>
+  <value>true</value>
+</property>
+
+<property>
   <name>hive.orc.splits.ms.footer.cache.enabled</name>
   <value>true</value>
 </property>
@@ -301,11 +305,6 @@
 </property>
 
 <property>
-  <name>hive.cbo.fallback.strategy</name>
-  <value>TEST</value>
-</property>
-
-<property>
   <name>iceberg.hive.keep.stats</name>
   <value>true</value>
   <description>
@@ -316,5 +315,9 @@
 <property>
   <name>hive.txn.xlock.ctas</name>
   <value>false</value>
+</property>
+<property>
+  <name>hive.lock.sleep.between.retries</name>
+  <value>2</value>
 </property>
 </configuration>

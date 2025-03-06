@@ -166,6 +166,7 @@ public class Utils {
     // Set the fetchSize
     static final String FETCH_SIZE = "fetchSize";
     static final String INIT_FILE = "initFile";
+    static final String FETCH_THREADS = "fetchThreads";
     static final String WM_POOL = "wmPool";
     // Cookie prefix
     static final String HTTP_COOKIE_PREFIX = "http.cookie.";
@@ -217,8 +218,25 @@ public class Utils {
     private final List<String> rejectedHostZnodePaths = new ArrayList<String>();
 
     // HiveConf parameters
+    private static String getNullsLastVarname() {
+      try {
+        return HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST.varname;
+      } catch(java.lang.NoSuchFieldError e) {
+        return "hive.default.nulls.last";
+      }
+    }
     public static final String HIVE_DEFAULT_NULLS_LAST_KEY =
-        HIVE_CONF_PREFIX + HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST.varname;
+        HIVE_CONF_PREFIX + getNullsLastVarname();
+
+    private static String getFetchThreadsVarname() {
+      try {
+        return HiveConf.ConfVars.HIVE_JDBC_FETCH_THREADS.varname;
+      } catch(java.lang.NoSuchFieldError e) {
+        return "hive.jdbc.fetch.threads";
+      }
+    }
+    public static final String HIVE_HIVE_JDBC_FETCH_THREADS_KEY =
+        HIVE_CONF_PREFIX + getFetchThreadsVarname();
 
     public JdbcConnectionParams() {
     }
@@ -617,8 +635,8 @@ public class Utils {
           if (port <= 0) {
             port = Integer.parseInt(Utils.DEFAULT_PORT);
           }
-          connParams.setHost(jdbcBaseURI.getHost());
-          connParams.setPort(jdbcBaseURI.getPort());
+          connParams.setHost(host);
+          connParams.setPort(port);
         }
         // We check for invalid host, port while configuring connParams with configureConnParams()
         authorityStr = connParams.getHost() + ":" + connParams.getPort();

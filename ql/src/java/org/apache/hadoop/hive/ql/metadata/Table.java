@@ -31,7 +31,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -258,7 +260,7 @@ public class Table implements Serializable {
   public void checkValidity(Configuration conf) throws HiveException {
     // check for validity
     validateName(conf);
-    if (0 == getCols().size()) {
+    if (getCols().isEmpty()) {
       throw new HiveException(
           "at least one column must be specified for the table");
     }
@@ -323,7 +325,7 @@ public class Table implements Serializable {
   }
 
   public TableName getFullTableName() {
-    return new TableName(getCatName(), getDbName(), getTableName());
+    return new TableName(getCatName(), getDbName(), getTableName(), getSnapshotRef());
   }
 
   final public Path getDataLocation() {
@@ -338,10 +340,6 @@ public class Table implements Serializable {
       deserializer = getDeserializerFromMetaStore(false);
     }
     return deserializer;
-  }
-
-  final public Class<? extends Deserializer> getDeserializerClass() throws Exception {
-    return HiveMetaStoreUtils.getDeserializerClass(SessionState.getSessionConf(), tTable);
   }
 
   final public Deserializer getDeserializer(boolean skipConfError) {
@@ -456,13 +454,13 @@ public class Table implements Serializable {
     public ValidationFailureSemanticException(String s) {
       super(s);
     }
-  };
+  }
 
   final public void validatePartColumnNames(
       Map<String, String> spec, boolean shouldBeFull) throws SemanticException {
     List<FieldSchema> partCols = tTable.getPartitionKeys();
     final String tableName = Warehouse.getQualifiedName(tTable);
-    if (partCols == null || (partCols.size() == 0)) {
+    if (CollectionUtils.isEmpty(partCols)) {
       if (spec != null) {
         throw new ValidationFailureSemanticException(tableName +
             " table is not partitioned but partition spec exists: " + spec);
@@ -533,9 +531,7 @@ public class Table implements Serializable {
           .getObjectInspector();
       List<? extends StructField> fld_lst = structObjectInspector
           .getAllStructFieldRefs();
-      for (StructField field : fld_lst) {
-        fields.add(field);
-      }
+      fields.addAll(fld_lst);
     } catch (SerDeException e) {
       throw new RuntimeException(e);
     }
@@ -607,31 +603,30 @@ public class Table implements Serializable {
     return true;
   }
 
-
   public List<FieldSchema> getPartCols() {
     List<FieldSchema> partKeys = tTable.getPartitionKeys();
     if (partKeys == null) {
-      partKeys = new ArrayList<FieldSchema>();
+      partKeys = new ArrayList<>();
       tTable.setPartitionKeys(partKeys);
     }
     return partKeys;
   }
 
   public FieldSchema getPartColByName(String colName) {
-    for (FieldSchema key : getPartCols()) {
-      if (key.getName().toLowerCase().equals(colName)) {
-        return key;
-      }
-    }
-    return null;
+    return getPartCols().stream()
+      .filter(key -> key.getName().toLowerCase().equals(colName))
+      .findFirst().orElse(null);
   }
 
   public List<String> getPartColNames() {
-    List<String> partColNames = new ArrayList<String>();
-    for (FieldSchema key : getPartCols()) {
-      partColNames.add(key.getName());
-    }
-    return partColNames;
+    List<FieldSchema> partCols = hasNonNativePartitionSupport() ?
+        getStorageHandler().getPartitionKeys(this) : getPartCols();
+    return partCols.stream().map(FieldSchema::getName)
+      .collect(Collectors.toList());
+  }
+
+  public boolean hasNonNativePartitionSupport() {
+    return getStorageHandler() != null && getStorageHandler().supportsPartitioning();
   }
 
   public boolean isPartitionKey(String colName) {
@@ -641,7 +636,7 @@ public class Table implements Serializable {
   // TODO merge this with getBucketCols function
   public String getBucketingDimensionId() {
     List<String> bcols = tTable.getSd().getBucketCols();
-    if (bcols == null || bcols.size() == 0) {
+    if (CollectionUtils.isEmpty(bcols)) {
       return null;
     }
 
@@ -681,8 +676,7 @@ public class Table implements Serializable {
     tTable.getSd().setSortCols(sortOrder);
   }
 
-  public void setSkewedValueLocationMap(List<String> valList, String dirName)
-      throws HiveException {
+  public void setSkewedValueLocationMap(List<String> valList, String dirName) {
     Map<List<String>, String> mappings = tTable.getSd().getSkewedInfo()
         .getSkewedColValueLocationMaps();
     if (null == mappings) {
@@ -699,7 +693,7 @@ public class Table implements Serializable {
         .getSkewedColValueLocationMaps() : new HashMap<List<String>, String>();
   }
 
-  public void setSkewedColValues(List<List<String>> skewedValues) throws HiveException {
+  public void setSkewedColValues(List<List<String>> skewedValues) {
     tTable.getSd().getSkewedInfo().setSkewedColValues(skewedValues);
   }
 
@@ -708,7 +702,7 @@ public class Table implements Serializable {
         .getSkewedColValues() : new ArrayList<List<String>>();
   }
 
-  public void setSkewedColNames(List<String> skewedColNames) throws HiveException {
+  public void setSkewedColNames(List<String> skewedColNames) {
     tTable.getSd().getSkewedInfo().setSkewedColNames(skewedColNames);
   }
 
@@ -721,7 +715,7 @@ public class Table implements Serializable {
     return tTable.getSd().getSkewedInfo();
   }
 
-  public void setSkewedInfo(SkewedInfo skewedInfo) throws HiveException {
+  public void setSkewedInfo(SkewedInfo skewedInfo) {
     tTable.getSd().setSkewedInfo(skewedInfo);
   }
 
@@ -825,12 +819,10 @@ public class Table implements Serializable {
       throw new HiveException("Class not found: " + name, e);
     }
   }
-
+  
   public boolean isPartitioned() {
-    if (getPartCols() == null) {
-      return false;
-    }
-    return (getPartCols().size() != 0);
+    return hasNonNativePartitionSupport() ? getStorageHandler().isPartitioned(this) : 
+        CollectionUtils.isNotEmpty(getPartCols());
   }
 
   public void setFields(List<FieldSchema> fields) {
@@ -1193,10 +1185,6 @@ public class Table implements Serializable {
     this.tableSpec = tableSpec;
   }
 
-  public boolean hasDeserializer() {
-    return deserializer != null;
-  }
-
   public String getCatalogName() {
     return this.tTable.getCatName();
   }
@@ -1376,4 +1364,4 @@ public class Table implements Serializable {
     sourceTable.setDeletedCount(0L);
     return sourceTable;
   }
-};
+}

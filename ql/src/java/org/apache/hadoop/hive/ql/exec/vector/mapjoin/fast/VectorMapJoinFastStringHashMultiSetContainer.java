@@ -53,7 +53,7 @@ public class VectorMapJoinFastStringHashMultiSetContainer extends VectorMapJoinF
       boolean isFullOuter,
       int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount, TableDesc tableDesc,
       int numHTs) {
-    vectorMapJoinFastStringHashMultiSets = new VectorMapJoinFastStringHashMultiSet[4];
+    vectorMapJoinFastStringHashMultiSets = new VectorMapJoinFastStringHashMultiSet[numHTs];
     LOG.info("Initializing {} HT Containers ", numHTs);
     for (int i = 0; i < numHTs; ++i) {
       vectorMapJoinFastStringHashMultiSets[i] = new VectorMapJoinFastStringHashMultiSet(

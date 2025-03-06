@@ -327,7 +327,7 @@ castExpression
     LPAREN
           expression
           KW_AS
-          toType=primitiveType
+          toType=type
           (fmt=KW_FORMAT StringLiteral)?
     RPAREN
     // simple cast
@@ -821,6 +821,7 @@ partitionSpec
 partitionVal
     :
     identifier (EQUAL constant)? -> ^(TOK_PARTVAL identifier constant?)
+    | functionExpr (EQUAL constant)? -> ^(TOK_PARTVAL functionExpr constant?)
     ;
 
 partitionSelectorSpec
@@ -831,7 +832,24 @@ partitionSelectorSpec
 partitionSelectorVal
     :
     identifier partitionSelectorOperator constant -> ^(TOK_PARTVAL identifier partitionSelectorOperator constant)
+    | functionExpr partitionSelectorOperator constant -> ^(TOK_PARTVAL functionExpr partitionSelectorOperator constant)
     ;
+
+functionExpr
+    :
+    funcName LPAREN identifier RPAREN -> ^(TOK_FUNCTION funcName identifier)
+    | KW_TRUNCATE LPAREN width=Number COMMA identifier RPAREN -> ^(TOK_FUNCTION KW_TRUNCATE $width identifier)
+    | KW_BUCKET LPAREN width=Number COMMA identifier RPAREN -> ^(TOK_FUNCTION KW_BUCKET $width identifier)
+    ;
+
+funcName
+    :
+    KW_DAY
+    | KW_MONTH
+    | KW_YEAR
+    | KW_HOUR
+    ;
+
 
 partitionSelectorOperator
     :
@@ -936,12 +954,12 @@ nonReserved
     | KW_DATABASES | KW_DATETIME | KW_DBPROPERTIES | KW_DCPROPERTIES | KW_DEFERRED | KW_DEFINED | KW_DELIMITED | KW_DEPENDENCY
     | KW_DESC | KW_DIRECTORIES | KW_DIRECTORY | KW_DISABLE | KW_DISTRIBUTE | KW_DISTRIBUTED | KW_DOW | KW_ELEM_TYPE
     | KW_ENABLE | KW_ENFORCED | KW_ESCAPED | KW_EXCLUSIVE | KW_EXPLAIN | KW_EXPORT | KW_FIELDS | KW_FILE | KW_FILEFORMAT
-    | KW_FIRST | KW_FORMAT | KW_FORMATTED | KW_FUNCTIONS | KW_HOLD_DDLTIME | KW_HOUR | KW_IDXPROPERTIES | KW_RESPECT | KW_IGNORE
+    | KW_FIRST | KW_FORMAT | KW_FORMATTED | KW_FUNCTIONS | KW_HOUR | KW_IDXPROPERTIES | KW_RESPECT | KW_IGNORE
     | KW_INDEX | KW_INDEXES | KW_INPATH | KW_INPUTDRIVER | KW_INPUTFORMAT | KW_ITEMS | KW_JAR | KW_JOINCOST | KW_KILL
     | KW_KEYS | KW_KEY_TYPE | KW_LAST | KW_LIMIT | KW_OFFSET | KW_LINES | KW_LOAD | KW_LOCATION | KW_LOCK | KW_LOCKS | KW_LOGICAL | KW_LONG | KW_MANAGED
-    | KW_MANAGEDLOCATION | KW_MAPJOIN | KW_MATERIALIZED | KW_METADATA | KW_MINUTE | KW_MONTH | KW_MSCK | KW_NOSCAN | KW_NO_DROP | KW_NULLS | KW_OFFLINE
+    | KW_MANAGEDLOCATION | KW_MAPJOIN | KW_MATERIALIZED | KW_METADATA | KW_MINUTE | KW_MONTH | KW_MSCK | KW_NOSCAN | KW_NULLS
     | KW_OPTION | KW_OUTPUTDRIVER | KW_OUTPUTFORMAT | KW_OVERWRITE | KW_OWNER | KW_PARTITIONED | KW_PARTITIONS | KW_PLUS
-    | KW_PRINCIPALS | KW_PROTECTION | KW_PURGE | KW_QUERY | KW_QUARTER | KW_READ | KW_READONLY | KW_REBUILD | KW_RECORDREADER | KW_RECORDWRITER
+    | KW_PRINCIPALS | KW_PURGE | KW_QUERY | KW_QUARTER | KW_READ | KW_REBUILD | KW_RECORDREADER | KW_RECORDWRITER
     | KW_RELOAD | KW_REMOTE | KW_RENAME | KW_REPAIR | KW_REPLACE | KW_REPLICATION | KW_RESTRICT | KW_REWRITE
     | KW_ROLE | KW_ROLES | KW_SCHEMA | KW_SCHEMAS | KW_SECOND | KW_SEMI | KW_SERDE | KW_SERDEPROPERTIES | KW_SERVER | KW_SETS | KW_SHARED
     | KW_SHOW | KW_SHOW_DATABASE | KW_SKEWED | KW_SORT | KW_SORTED | KW_SSL | KW_STATISTICS | KW_STORED | KW_AST
@@ -961,8 +979,8 @@ nonReserved
     | KW_NOVALIDATE
     | KW_KEY
     | KW_MATCHED
-    | KW_REPL | KW_DUMP | KW_BATCH | KW_STATUS
-    | KW_CACHE | KW_DAYOFWEEK | KW_VIEWS
+    | KW_REPL | KW_DUMP | KW_STATUS
+    | KW_CACHE | KW_VIEWS
     | KW_VECTORIZATION
     | KW_SUMMARY
     | KW_OPERATOR
@@ -971,7 +989,6 @@ nonReserved
     | KW_DEBUG
     | KW_WAIT
     | KW_ZONE
-    | KW_TIMESTAMPTZ
     | KW_DEFAULT
     | KW_REOPTIMIZATION
     | KW_EXECUTED | KW_SCHEDULED | KW_CRON | KW_EVERY | KW_AT | KW_EXECUTE
@@ -987,6 +1004,19 @@ nonReserved
     | KW_BRANCH | KW_SNAPSHOTS | KW_RETAIN | KW_RETENTION
     | KW_TAG
     | KW_FAST_FORWARD
+    | KW_OPTIMIZE
+    | KW_APPLICATION
+    | KW_COMPACT_ID
+    | KW_DATACONNECTOR
+    | KW_DATACONNECTORS
+    | KW_DDL
+    | KW_FORCE
+    | KW_OLDER
+    | KW_PKFK_JOIN
+    | KW_THAN
+    | KW_TIMESTAMPLOCALTZ
+    | KW_ORDERED
+    | KW_LOCALLY
 ;
 
 //The following SQL2011 reserved keywords are used as function name only, but not as identifiers.

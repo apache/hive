@@ -1,6 +1,4 @@
 -- SORT_QUERY_RESULTS
--- Mask the totalSize value as it can have slight variability, causing test flakiness
---! qt:replace:/(\s+totalSize\s+)\S+(\s+)/$1#Masked#$2/
 -- Mask random uuid
 --! qt:replace:/(\s+uuid\s+)\S+(\s*)/$1#Masked#$2/
 -- Mask a random snapshot id
@@ -17,6 +15,9 @@
 --! qt:replace:/(\s+numFiles\s+)\S+(\s+)/$1#Masked#$2/
 -- Mask total data files
 --! qt:replace:/(\S\"total-data-files\\\":\\\")(\d+)(\\\")/$1#Masked#$3/
+-- Mask iceberg version
+--! qt:replace:/(\S\"iceberg-version\\\":\\\")(\w+\s\w+\s\d+\.\d+\.\d+\s\(\w+\s\w+\))(\\\")/$1#Masked#$3/
+
 set hive.explain.user=false;
 create external table ice_parquet_date_transform_year(
   bigintcol bigint,
@@ -121,8 +122,24 @@ insert into ice_parquet_date_transform_bucket partition (pcol = 'gfhutjkgkd') se
 describe formatted ice_parquet_date_transform_bucket;
 select * from ice_parquet_date_transform_bucket;
 
+create external table ice_parquet_decimal_transform_bucket(
+  pcol decimal(38, 0)
+) partitioned by spec (bucket(16, pcol))
+stored by iceberg;
+
+explain insert into ice_parquet_decimal_transform_bucket values
+('0'),
+('50000000000000000000441610525');
+insert into ice_parquet_decimal_transform_bucket values
+('0'),
+('50000000000000000000441610525');
+
+describe formatted ice_parquet_decimal_transform_bucket;
+select * from ice_parquet_decimal_transform_bucket;
+
 drop table ice_parquet_date_transform_year;
 drop table ice_parquet_date_transform_month;
 drop table ice_parquet_date_transform_day;
 drop table ice_parquet_date_transform_truncate;
 drop table ice_parquet_date_transform_bucket;
+drop table ice_parquet_decimal_transform_bucket;

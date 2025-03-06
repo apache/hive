@@ -77,11 +77,13 @@ public class TezJobMonitor {
   private static final int MAX_RETRY_INTERVAL = 2500;
   private static final int MAX_RETRY_FAILURES = (MAX_RETRY_INTERVAL / MAX_CHECK_INTERVAL) + 1;
 
-  private final PerfLogger perfLogger = SessionState.getPerfLogger();
+  private final PerfLogger perfLogger;
   private static final List<DAGClient> shutdownList;
   private final List<BaseWork> topSortedWorks;
 
   transient LogHelper console;
+  // Collecting execution summary might be a bit expensive, only do it if needed for query history.
+  private final boolean shouldCollectSummaryString;
 
   private StringWriter diagnostics = new StringWriter();
 
@@ -117,23 +119,26 @@ public class TezJobMonitor {
   private final TezCounters counters;
 
   public TezJobMonitor(List<BaseWork> topSortedWorks, final DAGClient dagClient, HiveConf conf, DAG dag,
-    Context ctx, final TezCounters counters) {
+    Context ctx, final TezCounters counters, PerfLogger perfLogger) {
     this.topSortedWorks = topSortedWorks;
     this.dagClient = dagClient;
     this.hiveConf = conf;
     this.dag = dag;
     this.context = ctx;
     console = SessionState.getConsole();
+    this.perfLogger = perfLogger;
     updateFunction = updateFunction();
     this.counters = counters;
+    this.shouldCollectSummaryString = conf.getBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED) &&
+        conf.getBoolVar(ConfVars.HIVE_QUERY_HISTORY_EXEC_SUMMARY_ENABLED);
   }
 
   private RenderStrategy.UpdateFunction updateFunction() {
     return InPlaceUpdate.canRenderInPlace(hiveConf)
         && !SessionState.getConsole().getIsSilent()
         && !SessionState.get().isHiveServerQuery()
-        ? new RenderStrategy.InPlaceUpdateFunction(this)
-        : new RenderStrategy.LogToFileFunction(this);
+        ? new RenderStrategy.InPlaceUpdateFunction(this, perfLogger)
+        : new RenderStrategy.LogToFileFunction(this, perfLogger);
   }
 
   private boolean isProfilingEnabled() {
@@ -278,7 +283,9 @@ public class TezJobMonitor {
           } catch (IOException | TezException tezException) {
             // best effort
           }
-          console.printError("Execution has failed. stack trace: " + ExceptionUtils.getStackTrace(e));
+          String reportedException = "Execution has failed, stack trace: " + ExceptionUtils.getStackTrace(e);
+          console.printError(reportedException);
+          diagnostics.append(reportedException);
           rc = 1;
           done = true;
         } else {
@@ -432,7 +439,9 @@ public class TezJobMonitor {
 
   private void printSummary(boolean success, Map<String, Progress> progressMap) {
     if (isProfilingEnabled() && success && progressMap != null) {
-
+      if (shouldCollectSummaryString){
+        console.startSummary();
+      }
       double duration = (System.currentTimeMillis() - this.executionStartTime) / 1000.0;
       console.printInfo("Status: DAG finished successfully in " + String.format("%.2f seconds", duration));
       console.printInfo("DAG ID: " + this.dagClient.getDagIdentifierString());
@@ -444,8 +453,8 @@ public class TezJobMonitor {
       //llap IO summary
       if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.LLAP_IO_ENABLED, false)) {
         new LLAPioSummary(progressMap, dagClient).print(console);
-        new FSCountersSummary(progressMap, dagClient).print(console);
       }
+      new FSCountersSummary(progressMap, dagClient).print(console);
       String wmQueue = HiveConf.getVar(hiveConf, ConfVars.HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE);
       if (wmQueue != null && !wmQueue.isEmpty()) {
         new LlapWmSummary(progressMap, dagClient).print(console);
@@ -509,5 +518,9 @@ public class TezJobMonitor {
           ExceptionUtils.getStackTrace(e));
     }
     return TezProgressMonitor.NULL;
+  }
+
+  public LogHelper logger(){
+    return console;
   }
 }

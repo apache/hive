@@ -1,9 +1,11 @@
 /*
- * Copyright 2014 The Apache Software Foundation.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -13,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.hadoop.hive.ql;
 
 
@@ -72,6 +73,10 @@ public class TestWarehouseExternalDir {
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
 
     conf.setVar(ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL, whRootExternal);
+
+    // query history adds no value to this test, it would just bring iceberg handler dependency, which isn't worth
+    // this should be handled with HiveConfForTests when it's used here too
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED, false);
 
     miniHS2 = new MiniHS2.Builder().withMiniMR().withRemoteMetastore().withConf(conf).build();
     miniHS2.start(new HashMap<String, String>());

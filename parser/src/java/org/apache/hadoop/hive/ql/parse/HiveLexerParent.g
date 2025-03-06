@@ -37,6 +37,8 @@ KW_DESC : 'DESC';
 KW_NULLS : 'NULLS';
 KW_LAST : 'LAST';
 KW_ORDER : 'ORDER';
+KW_ORDERED : 'ORDERED';
+KW_LOCALLY : 'LOCALLY';
 KW_GROUP : 'GROUP';
 KW_BY : 'BY';
 KW_HAVING : 'HAVING';
@@ -399,6 +401,10 @@ KW_RETENTION: 'RETENTION';
 KW_TAG: 'TAG';
 KW_FAST_FORWARD: 'FAST-FORWARD';
 KW_CHERRY_PICK: 'CHERRY-PICK';
+KW_ORPHAN_FILES: 'ORPHAN-FILES';
+KW_OLDER: 'OLDER';
+KW_THAN: 'THAN';
+KW_OPTIMIZE: 'OPTIMIZE';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

@@ -107,18 +107,17 @@ public class QueryPlan implements Serializable {
 
   private String queryId;
   private org.apache.hadoop.hive.ql.plan.api.Query query;
-  private final Map<String, Map<String, Long>> counters =
-      new ConcurrentHashMap<String, Map<String, Long>>();
-  private final Set<String> done = Collections.newSetFromMap(new
-      ConcurrentHashMap<String, Boolean>());
-  private final Set<String> started = Collections.newSetFromMap(new
-      ConcurrentHashMap<String, Boolean>());
+  
+  private final Map<String, Map<String, Long>> counters = new ConcurrentHashMap<>();
+  private final Set<String> done = Collections.newSetFromMap(new ConcurrentHashMap<>());
+  private final Set<String> started = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
   private QueryProperties queryProperties;
 
   private transient Long queryStartTime;
   private final HiveOperation operation;
   private final boolean acidResourcesInQuery;
+  private final boolean requiresOpenTransaction;
   private final Set<FileSinkDesc> acidSinks; // Note: both full-ACID and insert-only sinks.
   private final WriteEntity acidAnalyzeTable;
   private final DDLDescWithWriteId acidDdlDesc;
@@ -134,6 +133,7 @@ public class QueryPlan implements Serializable {
     this.reducerTimeStatsPerJobList = new ArrayList<>();
     this.operation = command;
     this.acidResourcesInQuery = false;
+    this.requiresOpenTransaction = false;
     this.acidSinks = Collections.emptySet();
     this.acidDdlDesc = null;
     this.acidAnalyzeTable = null;
@@ -166,6 +166,7 @@ public class QueryPlan implements Serializable {
     this.resultSchema = resultSchema;
     // TODO: all this ACID stuff should be in some sub-object
     this.acidResourcesInQuery = sem.hasTransactionalInQuery();
+    this.requiresOpenTransaction = sem.isRequiresOpenTransaction();
     this.acidSinks = sem.getAcidFileSinks();
     this.acidDdlDesc = sem.getAcidDdlDesc();
     this.acidAnalyzeTable = sem.getAcidAnalyzeTable();
@@ -178,6 +179,10 @@ public class QueryPlan implements Serializable {
    */
   public boolean hasAcidResourcesInQuery() {
     return acidResourcesInQuery;
+  }
+
+  public boolean isRequiresOpenTransaction() {
+    return requiresOpenTransaction;
   }
 
   public WriteEntity getAcidAnalyzeTable() {

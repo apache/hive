@@ -204,13 +204,22 @@ public class TestHadoopAuthBridge23 {
       // expected
     }
 
-    // token expiration
+    // token Renewal
     MyTokenStore.TOKEN_STORE.addToken(d,
         new DelegationTokenInformation(0, t.getPassword()));
     Assert.assertNotNull(MyTokenStore.TOKEN_STORE.getToken(d));
-    anotherManager.removeExpiredTokens();
+    anotherManager.renewOrRemoveExpiredTokens();
+    Assert.assertTrue(MyTokenStore.TOKEN_STORE.getToken(d).getRenewDate() > 0);
+
+    // test Expiration
+    DelegationTokenIdentifier e = new DelegationTokenIdentifier();
+    e.setMaxDate(0);
+    MyTokenStore.TOKEN_STORE.addToken(e,
+            new DelegationTokenInformation(0, t.getPassword()));
+    Assert.assertNotNull(MyTokenStore.TOKEN_STORE.getToken(e));
+    anotherManager.renewOrRemoveExpiredTokens();
     Assert.assertNull("Expired token not removed",
-        MyTokenStore.TOKEN_STORE.getToken(d));
+        MyTokenStore.TOKEN_STORE.getToken(e));
 
     // key expiration - create an already expired key
     anotherManager.startThreads(); // generates initial key

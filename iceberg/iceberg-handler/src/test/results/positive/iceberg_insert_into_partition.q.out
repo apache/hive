@@ -102,6 +102,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 1
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -213,6 +215,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 2
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -263,37 +267,34 @@ STAGE PLANS:
                 TableScan
                   alias: ice_parquet_int
                   filterExpr: (pcol = 2) (type: boolean)
-                  Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (pcol = 2) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: strcol (type: string), intcol (type: int), 3 (type: int)
+                    outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: strcol (type: string), intcol (type: int), 3 (type: int)
-                      outputColumnNames: _col0, _col1, _col2
+                    File Output Operator
+                      compressed: false
                       Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
-                        table:
-                            input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
-                            output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
-                            serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
-                            name: default.ice_parquet_int
-                      Select Operator
-                        expressions: _col0 (type: string), _col1 (type: int), _col2 (type: int)
-                        outputColumnNames: strcol, intcol, pcol
-                        Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
-                        Group By Operator
-                          aggregations: max(length(strcol)), avg(COALESCE(length(strcol),0)), count(1), count(strcol), compute_bit_vector_hll(strcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol)
-                          minReductionHashAggr: 0.5
-                          mode: hash
-                          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                      table:
+                          input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                          output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                          serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                          name: default.ice_parquet_int
+                    Select Operator
+                      expressions: _col0 (type: string), _col1 (type: int), _col2 (type: int)
+                      outputColumnNames: strcol, intcol, pcol
+                      Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: max(length(strcol)), avg(COALESCE(length(strcol),0)), count(1), count(strcol), compute_bit_vector_hll(strcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol)
+                        minReductionHashAggr: 0.5
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                        Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
                           Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
-                          Reduce Output Operator
-                            null sort order: 
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
-                            value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary), _col9 (type: int), _col10 (type: int), _col11 (type: bigint), _col12 (type: binary)
+                          value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary), _col9 (type: int), _col10 (type: int), _col11 (type: bigint), _col12 (type: binary)
             Execution mode: vectorized
         Reducer 2 
             Execution mode: vectorized
@@ -321,6 +322,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 3
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -371,37 +374,34 @@ STAGE PLANS:
                 TableScan
                   alias: ice_parquet_int
                   filterExpr: (pcol = 2) (type: boolean)
-                  Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (pcol = 2) (type: boolean)
-                    Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: strcol (type: string), intcol (type: int), 4 (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                          output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                          serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                          name: default.ice_parquet_int
                     Select Operator
-                      expressions: strcol (type: string), intcol (type: int), 4 (type: int)
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
-                        table:
-                            input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
-                            output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
-                            serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
-                            name: default.ice_parquet_int
-                      Select Operator
-                        expressions: _col0 (type: string), _col1 (type: int), _col2 (type: int)
-                        outputColumnNames: strcol, intcol, pcol
-                        Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
-                        Group By Operator
-                          aggregations: max(length(strcol)), avg(COALESCE(length(strcol),0)), count(1), count(strcol), compute_bit_vector_hll(strcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol)
-                          minReductionHashAggr: 0.6666666
-                          mode: hash
-                          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                      expressions: _col0 (type: string), _col1 (type: int), _col2 (type: int)
+                      outputColumnNames: strcol, intcol, pcol
+                      Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: max(length(strcol)), avg(COALESCE(length(strcol),0)), count(1), count(strcol), compute_bit_vector_hll(strcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol)
+                        minReductionHashAggr: 0.5
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                        Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
                           Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
-                          Reduce Output Operator
-                            null sort order: 
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: COMPLETE
-                            value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary), _col9 (type: int), _col10 (type: int), _col11 (type: bigint), _col12 (type: binary)
+                          value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary), _col9 (type: int), _col10 (type: int), _col11 (type: bigint), _col12 (type: binary)
             Execution mode: vectorized
         Reducer 2 
             Execution mode: vectorized
@@ -429,6 +429,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 04
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -479,23 +481,27 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"strcol\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"intcol\",\"required\":false,\"type\":\"int\"},{\"id\":3,\"name\":\"pcol\",\"required\":false,\"type\":\"int\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"2\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"8\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"2\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"8\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"pcol\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000}]}
-	engine.hive.enabled 	true                
+	format-version      	2                   
 	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	#Masked#                   
 	numRows             	8                   
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	rawDataSize         	0                   
 	serialization.format	1                   
 	snapshot-count      	4                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	#Masked#                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -615,6 +621,9 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            country USA
+            state CA
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -726,6 +735,9 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            country USA
+            state CA
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -837,6 +849,9 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            country USA
+            state TX
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -908,7 +923,7 @@ STAGE PLANS:
                     Statistics: Num rows: 6 Data size: 1626 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col3 (type: string)
-                      null sort order: aa
+                      null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string), _col3 (type: string)
                       Statistics: Num rows: 6 Data size: 1626 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1027,7 +1042,7 @@ STAGE PLANS:
                     Statistics: Num rows: 12 Data size: 3252 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col3 (type: string)
-                      null sort order: aa
+                      null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string), _col3 (type: string)
                       Statistics: Num rows: 12 Data size: 3252 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1146,7 +1161,7 @@ STAGE PLANS:
                     Statistics: Num rows: 24 Data size: 6504 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col3 (type: string)
-                      null sort order: aa
+                      null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string), _col3 (type: string)
                       Statistics: Num rows: 24 Data size: 6504 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1265,7 +1280,7 @@ STAGE PLANS:
                     Statistics: Num rows: 48 Data size: 13008 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col3 (type: string)
-                      null sort order: aa
+                      null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string), _col3 (type: string)
                       Statistics: Num rows: 48 Data size: 13008 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1327,6 +1342,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            state TX
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -1384,7 +1401,7 @@ STAGE PLANS:
                     Statistics: Num rows: 96 Data size: 26208 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col3 (type: string)
-                      null sort order: aa
+                      null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string), _col3 (type: string)
                       Statistics: Num rows: 96 Data size: 26208 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1446,6 +1463,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            country India
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -1503,7 +1522,7 @@ STAGE PLANS:
                     Statistics: Num rows: 192 Data size: 52416 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col3 (type: string)
-                      null sort order: aa
+                      null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string), _col3 (type: string)
                       Statistics: Num rows: 192 Data size: 52416 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1565,6 +1584,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            country India
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -1617,23 +1638,27 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"age\",\"required\":false,\"type\":\"int\"},{\"id\":3,\"name\":\"country\",\"required\":false,\"type\":\"string\"},{\"id\":4,\"name\":\"state\",\"required\":false,\"type\":\"string\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"added-data-files\":\"2\",\"added-records\":\"192\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"2\",\"total-records\":\"384\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-summary	{\"added-data-files\":\"2\",\"added-records\":\"192\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"2\",\"total-records\":\"384\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"country\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000},{\"name\":\"state\",\"transform\":\"identity\",\"source-id\":4,\"field-id\":1001}]}
-	engine.hive.enabled 	true                
+	format-version      	2                   
 	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	#Masked#                  
 	numRows             	384                 
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	rawDataSize         	0                   
 	serialization.format	1                   
 	snapshot-count      	9                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	#Masked#               
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -2137,6 +2162,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 1999-12-31
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -2248,6 +2275,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 1999-12-26
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -2359,6 +2388,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 1999-12-12
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -2477,6 +2508,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 1999-12-13
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -2581,6 +2614,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 1999-12-02
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -2633,23 +2668,27 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"age\",\"required\":false,\"type\":\"int\"},{\"id\":3,\"name\":\"country\",\"required\":false,\"type\":\"string\"},{\"id\":4,\"name\":\"state\",\"required\":false,\"type\":\"string\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"added-data-files\":\"2\",\"added-records\":\"192\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"2\",\"total-records\":\"384\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-summary	{\"added-data-files\":\"2\",\"added-records\":\"192\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"2\",\"total-records\":\"384\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"country\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000},{\"name\":\"state\",\"transform\":\"identity\",\"source-id\":4,\"field-id\":1001}]}
-	engine.hive.enabled 	true                
+	format-version      	2                   
 	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	#Masked#                  
 	numRows             	384                 
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	rawDataSize         	0                   
 	serialization.format	1                   
 	snapshot-count      	9                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	#Masked#               
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -2793,6 +2832,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 34567890123456787
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -2904,6 +2945,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 12346577399277578
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -3015,6 +3058,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 45637829068876994
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -3133,6 +3178,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 45637829068876994
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -3237,6 +3284,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 12346577399277578
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -3287,23 +3336,27 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"datecol\",\"required\":false,\"type\":\"date\"},{\"id\":2,\"name\":\"intcol\",\"required\":false,\"type\":\"int\"},{\"id\":3,\"name\":\"pcol\",\"required\":false,\"type\":\"long\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"12\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"24\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"12\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"24\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"pcol\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000}]}
-	engine.hive.enabled 	true                
+	format-version      	2                   
 	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	#Masked#                   
 	numRows             	24                  
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	rawDataSize         	0                   
 	serialization.format	1                   
 	snapshot-count      	5                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	#Masked#                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -3447,6 +3500,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 3.14786
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -3558,6 +3613,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 3.189
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -3669,6 +3726,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 45.789
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -3787,6 +3846,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 3.14786
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -3891,6 +3952,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 3.189
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -3941,23 +4004,27 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"datecol\",\"required\":false,\"type\":\"date\"},{\"id\":2,\"name\":\"intcol\",\"required\":false,\"type\":\"int\"},{\"id\":3,\"name\":\"pcol\",\"required\":false,\"type\":\"double\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"12\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"24\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"12\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"24\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"pcol\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000}]}
-	engine.hive.enabled 	true                
+	format-version      	2                   
 	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	#Masked#                   
 	numRows             	24                  
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	rawDataSize         	0                   
 	serialization.format	1                   
 	snapshot-count      	5                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	#Masked#                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -4101,6 +4168,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 3.14786
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -4212,6 +4281,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 3.189
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -4323,6 +4394,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 45.789
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -4441,6 +4514,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 3.14786
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -4545,6 +4620,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 3.189
           replace: false
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -4595,23 +4672,27 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"datecol\",\"required\":false,\"type\":\"date\"},{\"id\":2,\"name\":\"intcol\",\"required\":false,\"type\":\"int\"},{\"id\":3,\"name\":\"pcol\",\"required\":false,\"type\":\"decimal(10, 6)\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"12\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"24\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"12\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"24\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"pcol\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000}]}
-	engine.hive.enabled 	true                
+	format-version      	2                   
 	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	#Masked#                   
 	numRows             	24                  
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	rawDataSize         	0                   
 	serialization.format	1                   
 	snapshot-count      	5                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	#Masked#                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 

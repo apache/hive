@@ -23,6 +23,7 @@ import java.util.Map;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DatabaseType;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
@@ -33,6 +34,7 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * Analyzer for database creation commands.
@@ -90,6 +92,10 @@ public class CreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
+    if (ifNotExists && getDatabase(databaseName, false) != null) {
+      return;
+    }
+
     CreateDatabaseDesc desc = null;
     Database database = new Database(databaseName, comment, locationUri, props);
     if (type.equalsIgnoreCase(DatabaseType.NATIVE.name())) {
@@ -109,6 +115,8 @@ public class CreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
       database.setType(DatabaseType.REMOTE);
       database.setRemote_dbname(remoteDbName);
     }
+    database.setOwnerName(SessionState.getUserFromAuthenticator());
+    database.setOwnerType(PrincipalType.USER);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
     outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
   }

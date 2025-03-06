@@ -27,6 +27,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.LongAccumulator;
 
+import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.hive.common.Pool;
 import org.apache.hadoop.hive.llap.LlapDaemonInfo;
@@ -34,7 +35,6 @@ import org.apache.hadoop.hive.ql.exec.MemoryMonitorInfo;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hive.common.util.FixedSizedObjectPool;
 import org.apache.tez.common.counters.TezCounter;
 import org.slf4j.Logger;
@@ -89,7 +89,7 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
     this.desc = joinOp.getConf();
     this.cacheKey = joinOp.getCacheKey();
     this.htLoadCounter = this.tezContext.getTezProcessorContext().getCounters().findCounter(
-        HiveConf.getVar(hconf, HiveConf.ConfVars.HIVECOUNTERGROUP), hconf.get(Operator.CONTEXT_NAME_KEY, ""));
+        HiveConf.getVar(hconf, HiveConf.ConfVars.HIVE_COUNTER_GROUP), hconf.get(Operator.CONTEXT_NAME_KEY, ""));
   }
 
   @Override
@@ -99,16 +99,28 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
     this.hconf = hconf;
     this.desc = joinOp.getConf();
     this.cacheKey = joinOp.getCacheKey();
-    String counterGroup = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVECOUNTERGROUP);
+    String counterGroup = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVE_COUNTER_GROUP);
     String vertexName = hconf.get(Operator.CONTEXT_NAME_KEY, "");
     String counterName = Utilities.getVertexCounterName(HashTableLoaderCounters.HASHTABLE_LOAD_TIME_MS.name(), vertexName);
     this.htLoadCounter = tezContext.getTezProcessorContext().getCounters().findCounter(counterGroup, counterName);
   }
 
   private void initHTLoadingService(long estKeyCount) {
-    // Avoid many small HTs that will rehash multiple times causing GCs
-    this.numLoadThreads = (estKeyCount < VectorMapJoinFastHashTable.FIRST_SIZE_UP) ? 1 :
-        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEMAPJOINPARALELHASHTABLETHREADS);
+    if (estKeyCount < VectorMapJoinFastHashTable.FIRST_SIZE_UP) {
+      // Avoid many small HTs that will rehash multiple times causing GCs
+      this.numLoadThreads = 1;
+    } else {
+      int initialValue = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVE_MAPJOIN_PARALEL_HASHTABLE_THREADS);
+      Preconditions.checkArgument(initialValue > 0, "The number of HT-loading-threads should be positive.");
+
+      int adjustedValue = Integer.highestOneBit(initialValue);
+      if (initialValue != adjustedValue) {
+        LOG.info("Adjust the number of HT-loading-threads to {}. (Previous value: {})",
+            adjustedValue, initialValue);
+      }
+
+      this.numLoadThreads = adjustedValue;
+    }
     this.totalEntries = new LongAccumulator(Long::sum, 0L);
     this.loadExecService = Executors.newFixedThreadPool(numLoadThreads,
         new ThreadFactoryBuilder()

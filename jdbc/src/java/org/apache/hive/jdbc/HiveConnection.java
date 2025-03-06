@@ -19,6 +19,7 @@
 package org.apache.hive.jdbc;
 
 import static org.apache.hadoop.hive.conf.Constants.MODE;
+import static org.apache.hive.service.auth.HiveAuthConstants.AuthTypes;
 import static org.apache.hive.service.cli.operation.hplsql.HplSqlQueryExecutor.HPLSQL;
 
 import java.io.BufferedReader;
@@ -84,6 +85,7 @@ import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -105,6 +107,7 @@ import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.auth.KerberosSaslHelper;
 import org.apache.hive.service.auth.PlainSaslHelper;
 import org.apache.hive.service.auth.SaslQOP;
+
 import org.apache.hive.service.cli.session.SessionUtils;
 import org.apache.hive.service.rpc.thrift.TCLIService;
 import org.apache.hive.service.rpc.thrift.TCancelDelegationTokenReq;
@@ -175,14 +178,16 @@ public class HiveConnection implements java.sql.Connection {
   private final List<TProtocolVersion> supportedProtocols = new LinkedList<TProtocolVersion>();
   private int loginTimeout = 0;
   private TProtocolVersion protocol;
-  private final int initFetchSize;
-  private int defaultFetchSize;
+  int fetchSize;
+  int fetchThreads;
   private String initFile = null;
   private String wmPool = null, wmApp = null;
   private Properties clientInfo;
   private Subject loggedInSubject;
   private int maxRetries = 1;
   private IJdbcBrowserClient browserClient;
+
+  public TCLIService.Iface getClient() { return client; }
 
   /**
    * Get all direct HiveServer2 URLs from a ZooKeeper based HiveServer2 URL
@@ -278,11 +283,25 @@ public class HiveConnection implements java.sql.Connection {
   public HiveConnection() {
     sessConfMap = null;
     isEmbeddedMode = true;
-    initFetchSize = 0;
+    fetchSize = 50;
+    fetchThreads = 0;
   }
 
   public HiveConnection(String uri, Properties info) throws SQLException {
     this(uri, info, HiveJdbcBrowserClientFactory.get());
+  }
+
+  /**
+   * Create a new connection that shares the same session ID as the current connection.
+   */
+  public HiveConnection(HiveConnection hiveConnection) throws SQLException {
+    this(hiveConnection.getConnectedUrl(), hiveConnection.getClientInfo(), HiveJdbcBrowserClientFactory.get(), false);
+    // These are set/updated when the session is established.
+    this.sessHandle = hiveConnection.sessHandle;
+    this.connParams = hiveConnection.connParams;
+    this.protocol = hiveConnection.protocol;
+    this.fetchSize = hiveConnection.fetchSize;
+    this.fetchThreads = hiveConnection.fetchThreads;
   }
 
   @VisibleForTesting
@@ -293,12 +312,19 @@ public class HiveConnection implements java.sql.Connection {
   @VisibleForTesting
   protected HiveConnection(String uri, Properties info,
       IJdbcBrowserClientFactory browserClientFactory) throws SQLException {
+    this(uri, info, browserClientFactory, true);
+  }
+
+  protected HiveConnection(String uri, Properties info,
+      IJdbcBrowserClientFactory browserClientFactory,
+      boolean initSession) throws SQLException {
     try {
       connParams = Utils.parseURL(uri, info);
     } catch (ZooKeeperHiveClientException e) {
       throw new SQLException(e);
     }
     jdbcUriString = connParams.getJdbcUriString();
+    LOG.debug("Establishing connection to " + jdbcUriString);
     // JDBC URL: jdbc:hive2://<host>:<port>/dbName;sess_var_list?hive_conf_list#hive_var_list
     // each list: <key1>=<val1>;<key2>=<val2> and so on
     // sess_var_list -> sessConfMap
@@ -307,6 +333,12 @@ public class HiveConnection implements java.sql.Connection {
     sessConfMap = connParams.getSessionVars();
     setupLoginTimeout();
     if (isKerberosAuthMode()) {
+      // Ensure UserGroupInformation includes any authorized Kerberos principals.
+      LOG.debug("Configuring Kerberos mode");
+      Configuration config = new Configuration();
+      config.set("hadoop.security.authentication", AuthTypes.KERBEROS.getAuthName());
+      UserGroupInformation.setConfiguration(config);
+
       if (isEnableCanonicalHostnameCheck()) {
         host = Utils.getCanonicalHostName(connParams.getHost());
       } else {
@@ -319,8 +351,6 @@ public class HiveConnection implements java.sql.Connection {
     }
     port = connParams.getPort();
     isEmbeddedMode = connParams.isEmbeddedMode();
-
-    initFetchSize = Integer.parseInt(sessConfMap.getOrDefault(JdbcConnectionParams.FETCH_SIZE, "0"));
 
     if (sessConfMap.containsKey(JdbcConnectionParams.INIT_FILE)) {
       initFile = sessConfMap.get(JdbcConnectionParams.INIT_FILE);
@@ -360,8 +390,10 @@ public class HiveConnection implements java.sql.Connection {
         throw new SQLException(new IllegalArgumentException(
             "Browser mode is not supported in embedded mode"));
       }
-      openSession();
-      executeInitSql();
+      if (initSession) {
+        openSession();
+        executeInitSql();
+      }
     } else {
       long retryInterval = 1000L;
       try {
@@ -383,8 +415,10 @@ public class HiveConnection implements java.sql.Connection {
           // set up the client
           client = new TCLIService.Client(new TBinaryProtocol(transport));
           // open client session
-          openSession();
-          executeInitSql();
+          if (initSession) {
+            openSession();
+            executeInitSql();
+          }
 
           break;
         } catch (Exception e) {
@@ -1250,17 +1284,30 @@ public class HiveConnection implements java.sql.Connection {
     protocol = openResp.getServerProtocolVersion();
     sessHandle = openResp.getSessionHandle();
 
-    final String serverFetchSizeString =
-        openResp.getConfiguration().get(ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.varname);
-    if (serverFetchSizeString == null) {
-      throw new IllegalStateException("Server returned a null default fetch size. Check that "
-          + ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.varname + " is configured correctly.");
-    }
-
-    this.defaultFetchSize = Integer.parseInt(serverFetchSizeString);
-    if (this.defaultFetchSize <= 0) {
+    ConfVars fetchSizeConf = ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE;
+    int serverFetchSize = Optional.ofNullable(openResp.getConfiguration().get(fetchSizeConf.varname))
+        .map(size -> Integer.parseInt(size))
+        .orElse(fetchSizeConf.defaultIntVal);
+    if (serverFetchSize <= 0) {
       throw new IllegalStateException("Default fetch size must be greater than 0");
     }
+    this.fetchSize = Optional.ofNullable(sessConfMap.get(JdbcConnectionParams.FETCH_SIZE))
+        .map(size -> Integer.parseInt(size))
+        .filter(v -> v > 0)
+        .orElse(serverFetchSize);
+
+    ConfVars fetchThreadsConf = ConfVars.HIVE_JDBC_FETCH_THREADS;
+    int serverFetchThreads = Optional.ofNullable(openResp.getConfiguration().get(fetchThreadsConf.varname))
+        .map(size -> Integer.parseInt(size))
+        .orElse(fetchThreadsConf.defaultIntVal);
+    if (serverFetchThreads <= 0) {
+      throw new IllegalStateException("Default fetch threads must be >= 0");
+    }
+    this.fetchThreads = Optional.ofNullable(sessConfMap.get(JdbcConnectionParams.FETCH_THREADS))
+        .map(size -> Integer.parseInt(size))
+        .filter(v -> v >= 0)
+        .orElse(serverFetchThreads);
+
   }
 
   /**
@@ -1310,7 +1357,7 @@ public class HiveConnection implements java.sql.Connection {
   /**
    * @return username from sessConfMap
    */
-  private String getUserName() {
+  String getUserName() {
     return getSessionValue(JdbcConnectionParams.AUTH_USER, JdbcConnectionParams.ANONYMOUS_USER);
   }
 
@@ -1577,7 +1624,7 @@ public class HiveConnection implements java.sql.Connection {
     if (isClosed) {
       throw new SQLException("Can't create Statement, connection is closed");
     }
-    return new HiveStatement(this, client, sessHandle, false, initFetchSize, defaultFetchSize);
+    return new HiveStatement(this, client, sessHandle, false, fetchSize, fetchThreads);
   }
 
   /*
@@ -1600,8 +1647,7 @@ public class HiveConnection implements java.sql.Connection {
     if (isClosed) {
       throw new SQLException("Connection is closed");
     }
-    return new HiveStatement(this, client, sessHandle, resultSetType == ResultSet.TYPE_SCROLL_INSENSITIVE,
-        initFetchSize, defaultFetchSize);
+    return new HiveStatement(this, client, sessHandle, resultSetType == ResultSet.TYPE_SCROLL_INSENSITIVE);
   }
 
   /*

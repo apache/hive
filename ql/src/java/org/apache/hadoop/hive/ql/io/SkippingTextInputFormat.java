@@ -110,17 +110,32 @@ public class SkippingTextInputFormat extends TextInputFormat {
       fileSystem = path.getFileSystem(conf);
       try {
         fis = fileSystem.open(path);
+        long currPos = fis.getPos();
+        int delimiterIdx = -1;
         for (int j = 0; j < headerCount; j++) {
-          if (fis.readLine() == null) {
+          String headerLine = fis.readLine();
+          if (headerLine == null) {
             startIndexMap.put(path, Long.MAX_VALUE);
             return Long.MAX_VALUE;
+          }
+          if (j == headerCount-1) {
+            String delimiter = conf.get("textinputformat.record.delimiter");
+            // If record delimiter is defined
+            if (delimiter != null && !delimiter.isEmpty()) {
+              delimiterIdx = headerLine.indexOf(delimiter);
+            } else {
+              currPos = fis.getPos();
+            }
+          } else {
+            currPos = fis.getPos();
           }
         }
         // Readers skip the entire first row if the start index of the
         // split is not zero. We are setting the start of the index as
         // the last byte of the previous row so the last line of header
         // is discarded instead of the first valid input row.
-        startIndexForFile = fis.getPos() - 1;
+        // We consider record delimiters if they exist.
+        startIndexForFile = currPos + delimiterIdx;
       } finally {
         if (fis != null) {
           fis.close();

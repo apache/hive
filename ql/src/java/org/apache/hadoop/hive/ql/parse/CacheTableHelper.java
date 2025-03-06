@@ -181,7 +181,7 @@ public class CacheTableHelper {
    * both the dbname and tablename are provided and some cases where the dbname is
    * null, in which case we need to grab the dbname from the SessionState.
    */
-  private Set<String> getUniqueNames(List<Pair<String, String>> tables) {
+  public static Set<String> getUniqueNames(List<Pair<String, String>> tables) {
     Set<String> names = new HashSet<>();
     for (Pair<String, String> table : tables) {
       names.add(getTableName(table));
@@ -193,7 +193,7 @@ public class CacheTableHelper {
    * Get the table name from a dbname/tablename pair. If the dbname is
    * null, use the SessionState to provide the dbname.
    */
-  private String getTableName(Pair<String, String> dbTablePair) {
+  private static String getTableName(Pair<String, String> dbTablePair) {
     String dbName = dbTablePair.getLeft() == null
         ? SessionState.get().getCurrentDatabase() : dbTablePair.getLeft();
     return dbName + "." + dbTablePair.getRight();

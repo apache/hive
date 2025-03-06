@@ -62,8 +62,8 @@ POSTHOOK: query: INSERT INTO display (skey, language_id, hierarchy_display) VALU
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@display
-Warning: Shuffle Join MERGEJOIN[67][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[68][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 8' is a cross product
+Warning: Shuffle Join MERGEJOIN[65][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[66][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 7' is a cross product
 PREHOOK: query: MERGE INTO display USING (
   SELECT distinct display_skey, display, display as orig_display
   FROM (
@@ -218,11 +218,11 @@ POSTHOOK: Output: default@calls_v2
 PREHOOK: query: delete from calls_v2 where year=2024
 PREHOOK: type: QUERY
 PREHOOK: Input: default@calls_v2
-PREHOOK: Output: default@calls_v2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: delete from calls_v2 where year=2024
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@calls_v2
-POSTHOOK: Output: default@calls_v2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: select s.operation, s.summary['added-records'], s.summary['deleted-records'] from default.calls_v2.snapshots s
   order by s.snapshot_id
 PREHOOK: type: QUERY
@@ -234,8 +234,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@calls_v2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 append	10	NULL
+delete	NULL	4
 overwrite	2	NULL
-overwrite	NULL	NULL
 PREHOOK: query: DROP TABLE calls_v2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@calls_v2

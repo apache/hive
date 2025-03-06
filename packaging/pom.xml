@@ -17,7 +17,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>4.0.0-beta-2-SNAPSHOT</version>
+    <version>4.1.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>hive-packaging</artifactId>
@@ -158,6 +158,10 @@
                   \Qhttps://opensource.org/licenses/Apache-2.0\E
                   \Qhttp://www.apache.org/licenses/\E
                 </APACHE-2.0>
+                <BSD-2-CLAUSE>
+                  https?://(www\.)?opensource.org/licenses/bsd-license.php
+                  https?://(www\.)?opensource.org/licenses/BSD-2-Clause
+                </BSD-2-CLAUSE>
                 <BSD-3-CLAUSE>
                   https?://(www\.)?opensource.org/licenses/BSD-3-Clause
                 </BSD-3-CLAUSE>
@@ -226,17 +230,6 @@
           </plugin>
         </plugins>
       </build>
-    </profile>
-    <!-- Add iceberg dependencies only with iceberg build -->
-    <profile>
-      <id>iceberg</id>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hive</groupId>
-          <artifactId>hive-iceberg-handler</artifactId>
-          <version>${project.version}</version>
-        </dependency>
-      </dependencies>
     </profile>
     <profile>
       <id>docker</id>
@@ -345,6 +338,11 @@
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-druid-handler</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-iceberg-handler</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

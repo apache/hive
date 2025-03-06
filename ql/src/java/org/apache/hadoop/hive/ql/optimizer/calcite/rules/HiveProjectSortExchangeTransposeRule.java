@@ -88,6 +88,11 @@ public final class HiveProjectSortExchangeTransposeRule extends RelOptRule {
 
     RelCollation newCollation = RelCollationTraitDef.INSTANCE.canonize(RelCollationImpl.of(fieldCollations));
     List<Integer> newDistributionKeys = getNewRelDistributionKeys(project, sortExchange.getDistribution());
+    if (newDistributionKeys == null) {
+      // Project can not be pushed because it does not project necessary expressions referenced by distribution keys
+      return;
+    }
+
     RelDistribution newDistribution = RelDistributionTraitDef.INSTANCE.canonize(
         new HiveRelDistribution(sortExchange.getDistribution().getType(), newDistributionKeys));
     RelTraitSet newTraitSet = TraitsUtil.getDefaultTraitSet(sortExchange.getCluster())

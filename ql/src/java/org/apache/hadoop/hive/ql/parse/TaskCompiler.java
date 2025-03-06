@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLDescWithTableProperties;
 import org.apache.hadoop.hive.ql.ddl.DDLTask;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
@@ -261,7 +262,7 @@ public abstract class TaskCompiler {
       // For the FetchTask, the limit optimization requires we fetch all the rows
       // in memory and count how many rows we get. It's not practical if the
       // limit factor is too big
-      int fetchLimit = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVELIMITOPTMAXFETCH);
+      int fetchLimit = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_LIMIT_OPT_MAX_FETCH);
       if (globalLimitCtx.isEnable() && globalLimitCtx.getGlobalLimit() > fetchLimit) {
         LOG.info("For FetchTask, LIMIT " + globalLimitCtx.getGlobalLimit() + " > " + fetchLimit
             + ". Doesn't qualify limit optimization.");
@@ -492,22 +493,15 @@ public abstract class TaskCompiler {
 
   private void setLoadFileLocation(
       final ParseContext pCtx, LoadFileDesc lfd) throws SemanticException {
-    // CTAS; make the movetask's destination directory the table's destination.
-    Long txnId = null;
+    // CTAS; make the move task's destination directory the table's destination.
+    DDLDescWithTableProperties ddlDesc = pCtx.getQueryProperties().isCTAS() ?
+        pCtx.getCreateTable() : pCtx.getCreateViewDesc();
+
+    FileSinkDesc dataSink = ddlDesc.getAndUnsetWriter();
+    Long txnId = ddlDesc.getInitialWriteId();
+    String loc = ddlDesc.getLocation();
     int stmtId = 0; // CTAS or CMV cannot be part of multi-txn stmt
-    FileSinkDesc dataSink = null;
-    String loc = null;
-    if (pCtx.getQueryProperties().isCTAS()) {
-      CreateTableDesc ctd = pCtx.getCreateTable();
-      dataSink = ctd.getAndUnsetWriter();
-      txnId = ctd.getInitialWriteId();
-      loc = ctd.getLocation();
-    } else {
-      CreateMaterializedViewDesc cmv = pCtx.getCreateViewDesc();
-      dataSink = cmv.getAndUnsetWriter();
-      txnId = cmv.getInitialWriteId();
-      loc = cmv.getLocation();
-    }
+    
     Path location = (loc == null) ? getDefaultCtasOrCMVLocation(pCtx) : new Path(loc);
     if (pCtx.getQueryProperties().isCTAS()) {
       CreateTableDesc ctd = pCtx.getCreateTable();
@@ -764,12 +758,12 @@ public abstract class TaskCompiler {
   protected void runDynPartitionSortOptimizations(ParseContext parseContext, HiveConf hConf) throws SemanticException {
     // run Sorted dynamic partition optimization
 
-    if(HiveConf.getBoolVar(hConf, HiveConf.ConfVars.DYNAMICPARTITIONING) &&
-        HiveConf.getVar(hConf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE).equals("nonstrict") &&
-        !HiveConf.getBoolVar(hConf, HiveConf.ConfVars.HIVEOPTLISTBUCKETING)) {
+    if(HiveConf.getBoolVar(hConf, HiveConf.ConfVars.DYNAMIC_PARTITIONING) &&
+        HiveConf.getVar(hConf, HiveConf.ConfVars.DYNAMIC_PARTITIONING_MODE).equals("nonstrict") &&
+        !HiveConf.getBoolVar(hConf, HiveConf.ConfVars.HIVE_OPT_LIST_BUCKETING)) {
       new SortedDynPartitionOptimizer().transform(parseContext);
 
-      if(HiveConf.getBoolVar(hConf, HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATION)) {
+      if(HiveConf.getBoolVar(hConf, HiveConf.ConfVars.HIVE_OPT_REDUCE_DEDUPLICATION)) {
         // Dynamic sort partition adds an extra RS therefore need to de-dup
         new ReduceSinkDeDuplication().transform(parseContext);
         // there is an issue with dedup logic wherein SELECT is created with wrong columns

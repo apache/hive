@@ -161,13 +161,13 @@ class GetPartitionNamesPsRequest
                 case 4:
                     if ($ftype == TType::LST) {
                         $this->partValues = array();
-                        $_size1283 = 0;
-                        $_etype1286 = 0;
-                        $xfer += $input->readListBegin($_etype1286, $_size1283);
-                        for ($_i1287 = 0; $_i1287 < $_size1283; ++$_i1287) {
-                            $elem1288 = null;
-                            $xfer += $input->readString($elem1288);
-                            $this->partValues []= $elem1288;
+                        $_size1325 = 0;
+                        $_etype1328 = 0;
+                        $xfer += $input->readListBegin($_etype1328, $_size1325);
+                        for ($_i1329 = 0; $_i1329 < $_size1325; ++$_i1329) {
+                            $elem1330 = null;
+                            $xfer += $input->readString($elem1330);
+                            $this->partValues []= $elem1330;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -230,8 +230,8 @@ class GetPartitionNamesPsRequest
             }
             $xfer += $output->writeFieldBegin('partValues', TType::LST, 4);
             $output->writeListBegin(TType::STRING, count($this->partValues));
-            foreach ($this->partValues as $iter1289) {
-                $xfer += $output->writeString($iter1289);
+            foreach ($this->partValues as $iter1331) {
+                $xfer += $output->writeString($iter1331);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

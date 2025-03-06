@@ -66,10 +66,12 @@ public class TestHS2HttpServerPamConfiguration {
     hiveConf = new HiveConf();
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_PAM, true);
     hiveConf.setBoolVar(ConfVars.HIVE_IN_TEST, false);
-    hiveConf.set(ConfVars.METASTOREPWD.varname, metastorePasswd);
+    hiveConf.set(ConfVars.METASTORE_PWD.varname, metastorePasswd);
     hiveConf.set(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname, webUIPort.toString());
     hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
+    // query history adds no value to this test, it would just bring iceberg handler dependency, which isn't worth
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED, false);
   }
 
   @Test

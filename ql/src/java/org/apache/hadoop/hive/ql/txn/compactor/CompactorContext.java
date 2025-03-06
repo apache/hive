@@ -22,7 +22,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 
 /**
@@ -38,7 +38,15 @@ public class CompactorContext {
   private final CompactionInfo compactionInfo;
   private final AcidDirectory dir;
 
-  CompactorContext(HiveConf conf, Table table, Partition p, StorageDescriptor sd, ValidWriteIdList tblValidWriteIds, CompactionInfo ci, AcidDirectory dir) {
+  public static final String COMPACTOR_THRESHOLD_PREFIX = "compactor.threshold";
+  public static final String COMPACTION_FILE_SIZE_THRESHOLD = COMPACTOR_THRESHOLD_PREFIX + ".file.size.threshold";
+  public static final String COMPACTION_TARGET_SIZE = COMPACTOR_THRESHOLD_PREFIX + ".target.size";
+  public static final String COMPACTION_MIN_FRAGMENT_RATIO = COMPACTOR_THRESHOLD_PREFIX + ".fragment.ratio"; 
+  public static final String COMPACTION_MIN_TARGET_SIZE_RATIO = COMPACTOR_THRESHOLD_PREFIX + ".min.target.size.ratio"; 
+  public static final String COMPACTION_MIN_INPUT_FILES = COMPACTOR_THRESHOLD_PREFIX + ".min.input.files"; 
+  public static final String COMPACTION_DELETE_FILE_RATIO = COMPACTOR_THRESHOLD_PREFIX + ".delete.file.ratio"; 
+
+  public CompactorContext(HiveConf conf, Table table, Partition p, StorageDescriptor sd, ValidWriteIdList tblValidWriteIds, CompactionInfo ci, AcidDirectory dir) {
     this.conf = conf;
     this.table = table;
     this.partition = p;
@@ -46,6 +54,10 @@ public class CompactorContext {
     this.validWriteIdList = tblValidWriteIds;
     this.compactionInfo = ci;
     this.dir = dir;
+  }
+
+  public CompactorContext(HiveConf conf, Table table, CompactionInfo ci) {
+    this(conf, table, null, null, null, ci, null);
   }
 
   public HiveConf getConf() {

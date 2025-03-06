@@ -113,6 +113,7 @@ import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 
+import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
@@ -355,9 +356,9 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
     @Override
-    public List<Partition> getPartitions(String catName, String dbName, String tblName, int max,
-                                         boolean skipColumnSchemaForPartition) throws MetaException, NoSuchObjectException {
-        return objectStore.getPartitions(catName, dbName, tblName, max, skipColumnSchemaForPartition);
+    public List<Partition> getPartitions(String catName, String dbName, String tblName,
+                                         GetPartitionsArgs args) throws MetaException, NoSuchObjectException {
+        return objectStore.getPartitions(catName, dbName, tblName, args);
     }
 
   @Override
@@ -437,9 +438,15 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   @Override
   public List<String> listPartitionNames(String catName, String dbName, String tblName, String defaultPartName,
-      byte[] exprBytes, String order, short maxParts) throws MetaException, NoSuchObjectException {
+      byte[] exprBytes, String order, int maxParts) throws MetaException, NoSuchObjectException {
     return objectStore.listPartitionNames(catName, dbName, tblName,
         defaultPartName, exprBytes, order, maxParts);
+  }
+
+  @Override
+  public List<String> listPartitionNamesByFilter(String catName, String dbName, String tblName,
+      GetPartitionsArgs args) throws MetaException, NoSuchObjectException {
+    return objectStore.listPartitionNamesByFilter(catName, dbName, tblName, args);
   }
 
   @Override
@@ -471,8 +478,8 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
     @Override
     public List<Partition> getPartitionsByFilter(String catName, String dbName, String tblName,
-                                                 String filter, short maxParts, boolean skipColSchemaForPartitions) throws MetaException, NoSuchObjectException {
-        return objectStore.getPartitionsByFilter(catName, dbName, tblName, filter, maxParts, skipColSchemaForPartitions);
+                                                 GetPartitionsArgs args) throws MetaException, NoSuchObjectException {
+        return objectStore.getPartitionsByFilter(catName, dbName, tblName, args);
     }
 
   @Override
@@ -508,8 +515,8 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
     @Override
     public List<Partition> getPartitionsByNames(String catName, String dbName, String tblName,
-                                                List<String> partNames, boolean skipColSchemaForPartitions) throws MetaException, NoSuchObjectException {
-        return objectStore.getPartitionsByNames(catName, dbName, tblName, partNames, skipColSchemaForPartitions);
+                                                GetPartitionsArgs args) throws MetaException, NoSuchObjectException {
+        return objectStore.getPartitionsByNames(catName, dbName, tblName, args);
     }
 
   @Override
@@ -520,10 +527,9 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
     @Override
-    public boolean getPartitionsByExpr(String catName, String dbName, String tblName, byte[] expr,
-                                       String defaultPartitionName, short maxParts, List<Partition> result, boolean skipColSchemaForPartitions) throws TException {
-        return objectStore.getPartitionsByExpr(catName,
-                dbName, tblName, expr, defaultPartitionName, maxParts, result, skipColSchemaForPartitions);
+    public boolean getPartitionsByExpr(String catName, String dbName, String tblName,
+                                       List<Partition> result, GetPartitionsArgs args) throws TException {
+        return objectStore.getPartitionsByExpr(catName, dbName, tblName, result, args);
     }
 
   @Override
@@ -716,15 +722,6 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
         groupNames);
   }
 
-    @Override
-    public List<Partition> getPartitionsWithAuth(String catName, String dbName, String tblName, short maxParts,
-                                                 String userName, List<String> groupNames, boolean isColumnSchemaRequired) throws MetaException, NoSuchObjectException,
-            InvalidObjectException {
-
-        return objectStore.getPartitionsWithAuth(catName, dbName, tblName, maxParts, userName,
-                groupNames, isColumnSchemaRequired);
-    }
-
   @Override
   public List<String> listPartitionNamesPs(String catName, String dbName, String tblName,
       List<String> partVals, short maxParts)
@@ -741,11 +738,9 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
     @Override
-    public List<Partition> listPartitionsPsWithAuth(String catName, String dbName, String tblName,
-                                                    List<String> partVals, short maxParts, String userName, List<String> groupNames, boolean skipColSchemaForPartitions)
+    public List<Partition> listPartitionsPsWithAuth(String catName, String dbName, String tblName, GetPartitionsArgs args)
             throws MetaException, InvalidObjectException, NoSuchObjectException {
-        return objectStore.listPartitionsPsWithAuth(catName, dbName, tblName, partVals, maxParts,
-                userName, groupNames, skipColSchemaForPartitions);
+        return objectStore.listPartitionsPsWithAuth(catName, dbName, tblName, args);
     }
 
   @Override
@@ -855,12 +850,27 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
+      List<String> colNames, String engine)
+      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    return objectStore.deleteTableColumnStatistics(catName, dbName, tableName, colNames, engine);
+  }
+
+  @Override
   public boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
       String partName, List<String> partVals, String colName, String engine)
       throws NoSuchObjectException, MetaException, InvalidObjectException,
       InvalidInputException {
     return objectStore.deletePartitionColumnStatistics(catName, dbName, tableName, partName,
         partVals, colName, engine);
+  }
+
+    @Override
+  public boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
+                                                 List<String> partNames, List<String> colNames, String engine)
+          throws NoSuchObjectException, MetaException, InvalidObjectException,
+          InvalidInputException {
+      return objectStore.deletePartitionColumnStatistics(catName, dbName, tableName, partNames, colNames, engine);
   }
 
   @Override
@@ -1022,6 +1032,12 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   public List<String> getFunctions(String catName, String dbName, String pattern)
       throws MetaException {
     return objectStore.getFunctions(catName, dbName, pattern);
+  }
+
+  @Override
+  public <T> List<T> getFunctionsRequest(String catName, String dbName,
+      String pattern, boolean isReturnNames) throws MetaException {
+    return objectStore.getFunctionsRequest(catName, dbName, pattern, isReturnNames);
   }
 
   @Override
@@ -1585,7 +1601,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   @Override
   public MTable ensureGetMTable(String catName, String dbName, String tblName) throws NoSuchObjectException {
-      return objectStore.ensureGetMTable(catName, dbName, catName);
+      return objectStore.ensureGetMTable(catName, dbName, tblName);
   }
     
   @Override

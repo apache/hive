@@ -49,7 +49,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	4                   
-	totalSize           	5                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -103,7 +103,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	4                   
-	totalSize           	5                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -163,7 +163,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	4                   
-	totalSize           	5                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -217,7 +217,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	4                   
-	totalSize           	5                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

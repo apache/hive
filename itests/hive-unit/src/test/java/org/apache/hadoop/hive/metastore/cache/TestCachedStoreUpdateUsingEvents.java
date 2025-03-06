@@ -544,7 +544,7 @@ public class TestCachedStoreUpdateUsingEvents {
 
     // Read the altered partition via CachedStore
     ptnRead = sharedCache.getPartitionFromCache(DEFAULT_CATALOG_NAME, dbName, tblName, Arrays.asList(ptnColVal1Alt));
-    Assert.assertEquals(ptn1Atl.getParameters(), ptnRead.getParameters());
+    Assert.assertEquals(null, ptnRead);
 
     ptnRead = sharedCache.getPartitionFromCache(DEFAULT_CATALOG_NAME, dbName, tblName, Arrays.asList(ptnColVal2));
     Assert.assertEquals(null, ptnRead);
@@ -585,7 +585,7 @@ public class TestCachedStoreUpdateUsingEvents {
     colStats.setStatsObj(getStatsObjects(dbName, tblName, colName, highValue, avgColLen));
     colStats.setEngine(Constants.HIVE_ENGINE);
 
-    SetPartitionsStatsRequest setTblColStat = new SetPartitionsStatsRequest(Collections.singletonList(colStats), Constants.HIVE_ENGINE);
+    SetPartitionsStatsRequest setTblColStat = new SetPartitionsStatsRequest(Collections.singletonList(colStats));
     setTblColStat.setWriteId(writeId);
     setTblColStat.setValidWriteIdList(validWriteIds);
 
@@ -627,7 +627,7 @@ public class TestCachedStoreUpdateUsingEvents {
     colStats.setStatsObj(getStatsObjects(dbName, tblName, colName, highValue, avgColLen));
     colStats.setEngine(Constants.HIVE_ENGINE);
 
-    SetPartitionsStatsRequest setTblColStat = new SetPartitionsStatsRequest(Collections.singletonList(colStats), Constants.HIVE_ENGINE);
+    SetPartitionsStatsRequest setTblColStat = new SetPartitionsStatsRequest(Collections.singletonList(colStats));
     setTblColStat.setWriteId(writeId);
     setTblColStat.setValidWriteIdList(validWriteIds);
 
@@ -940,7 +940,7 @@ public class TestCachedStoreUpdateUsingEvents {
     colStats.setStatsObj(getStatsObjects(dbName, tblName, colName, highValue, avgColLen));
     colStats.setEngine(Constants.HIVE_ENGINE);
 
-    SetPartitionsStatsRequest setTblColStat = new SetPartitionsStatsRequest(Collections.singletonList(colStats), Constants.HIVE_ENGINE);
+    SetPartitionsStatsRequest setTblColStat = new SetPartitionsStatsRequest(Collections.singletonList(colStats));
     setTblColStat.setWriteId(writeId);
     setTblColStat.setValidWriteIdList(validWriteIds);
 
@@ -1007,7 +1007,7 @@ public class TestCachedStoreUpdateUsingEvents {
     colStats.setStatsObj(getStatsObjects(dbName, tblName, colName, highValue, avgColLen));
     colStats.setEngine(Constants.HIVE_ENGINE);
 
-    SetPartitionsStatsRequest setTblColStat = new SetPartitionsStatsRequest(Collections.singletonList(colStats), Constants.HIVE_ENGINE);
+    SetPartitionsStatsRequest setTblColStat = new SetPartitionsStatsRequest(Collections.singletonList(colStats));
     setTblColStat.setWriteId(writeId);
     setTblColStat.setValidWriteIdList(validWriteIds);
 
@@ -1056,7 +1056,7 @@ public class TestCachedStoreUpdateUsingEvents {
 
     // This will update the cache for non txn table.
     PartitionsStatsRequest request = new PartitionsStatsRequest(dbName, tblName,
-            Collections.singletonList(colName[0]), partitions, Constants.HIVE_ENGINE);
+            Collections.singletonList(colName[0]), partitions);
     request.setCatName(DEFAULT_CATALOG_NAME);
     request.setValidWriteIdList(validWriteIds);
     AggrStats aggrStatsCached = hmsHandler.get_aggr_stats_for(request);
@@ -1123,7 +1123,7 @@ public class TestCachedStoreUpdateUsingEvents {
     colStats.setStatsObj(getStatsObjects(dbName, tblName, colName, 5, 20));
     colStats.setEngine(Constants.HIVE_ENGINE);
 
-    SetPartitionsStatsRequest setTblColStat = new SetPartitionsStatsRequest(Collections.singletonList(colStats), Constants.HIVE_ENGINE);
+    SetPartitionsStatsRequest setTblColStat = new SetPartitionsStatsRequest(Collections.singletonList(colStats));
     setTblColStat.setWriteId(writeId);
     setTblColStat.setValidWriteIdList(validWriteIds);
     hmsHandler.update_partition_column_statistics_req(setTblColStat);
@@ -1136,7 +1136,7 @@ public class TestCachedStoreUpdateUsingEvents {
 
     // keep the txn open and verify that the stats got is not compliant.
     PartitionsStatsRequest request = new PartitionsStatsRequest(dbName, tblName,
-            Collections.singletonList(colName[0]), partitions, Constants.HIVE_ENGINE);
+            Collections.singletonList(colName[0]), partitions);
     request.setCatName(DEFAULT_CATALOG_NAME);
     request.setValidWriteIdList(validWriteIds);
     AggrStats aggrStatsCached = hmsHandler.get_aggr_stats_for(request);
@@ -1175,7 +1175,7 @@ public class TestCachedStoreUpdateUsingEvents {
     colStats.setStatsObj(getStatsObjects(dbName, tblName, colName, 5, 20));
     colStats.setEngine(Constants.HIVE_ENGINE);
 
-    SetPartitionsStatsRequest setTblColStat = new SetPartitionsStatsRequest(Collections.singletonList(colStats), Constants.HIVE_ENGINE);
+    SetPartitionsStatsRequest setTblColStat = new SetPartitionsStatsRequest(Collections.singletonList(colStats));
     setTblColStat.setWriteId(writeId);
     setTblColStat.setValidWriteIdList(validWriteIds);
     hmsHandler.update_partition_column_statistics_req(setTblColStat);
@@ -1191,7 +1191,7 @@ public class TestCachedStoreUpdateUsingEvents {
 
     // keep the txn open and verify that the stats got is not compliant.
     PartitionsStatsRequest request = new PartitionsStatsRequest(dbName, tblName,
-            Collections.singletonList(colName[0]), partitions, Constants.HIVE_ENGINE);
+            Collections.singletonList(colName[0]), partitions);
     request.setCatName(DEFAULT_CATALOG_NAME);
     request.setValidWriteIdList(validWriteIds);
     AggrStats aggrStatsCached = hmsHandler.get_aggr_stats_for(request);

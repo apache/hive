@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TestMetastoreExpr;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
@@ -94,7 +95,7 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
   }
 
   private void initHiveConf() throws HiveException {
-    conf = Hive.get().getConf();
+    conf = new HiveConfForTest(Hive.get().getConf(), getClass());
     conf.setBoolVar(HiveConf.ConfVars.METASTORE_FASTPATH, true);
   }
 
@@ -260,7 +261,7 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
   @Test
   public void testListPartitionNames() throws Exception {
     Table t = createTable4PartColsParts(getClient()).table;
-    String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULTPARTITIONNAME);
+    String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
     List<List<String>> testValues = Lists.newArrayList(
         Lists.newArrayList("1999", defaultPartitionName, "02"),
         Lists.newArrayList(defaultPartitionName, "02", "10"),

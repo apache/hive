@@ -24,6 +24,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -50,7 +51,7 @@ import java.util.List;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestDummyTxnManager {
-  private final HiveConf conf = new HiveConf();
+  private final HiveConf conf = new HiveConfForTest(getClass());
   private HiveTxnManager txnMgr;
   private Context ctx;
   private int nextInput = 1;

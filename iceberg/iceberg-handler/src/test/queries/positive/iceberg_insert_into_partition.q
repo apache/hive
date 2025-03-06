@@ -1,6 +1,4 @@
 -- SORT_QUERY_RESULTS
--- Mask the totalSize value as it can have slight variability, causing test flakiness
---! qt:replace:/(\s+totalSize\s+)\S+(\s+)/$1#Masked#$2/
 -- Mask random uuid
 --! qt:replace:/(\s+uuid\s+)\S+(\s*)/$1#Masked#$2/
 -- Mask a random snapshot id
@@ -17,6 +15,9 @@
 --! qt:replace:/(\s+numFiles\s+)\S+(\s+)/$1#Masked#$2/
 -- Mask total data files
 --! qt:replace:/(\S\"total-data-files\\\":\\\")(\d+)(\\\")/$1#Masked#$3/
+-- Mask iceberg version
+--! qt:replace:/(\S\"iceberg-version\\\":\\\")(\w+\s\w+\s\d+\.\d+\.\d+\s\(\w+\s\w+\))(\\\")/$1#Masked#$3/
+
 set hive.explain.user=false;
 create external table ice_parquet_int(
   strcol string,

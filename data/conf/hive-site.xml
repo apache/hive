@@ -155,6 +155,12 @@
 </property>
 
 <property>
+  <name>hive.lineage.statement.filter</name>
+  <value>ALL</value>
+  <description>Specify the types of statements for which column lineage information is generated</description>
+</property>
+
+<property>
   <name>hive.exec.post.hooks</name>
   <value>org.apache.hadoop.hive.ql.hooks.PostExecutePrinter</value>
   <description>Post Execute Hook for Tests</description>
@@ -325,17 +331,7 @@
   <name>hive.scheduled.queries.executor.enabled</name>
   <value>false</value>
 </property>
-
-<property>
-  <name>hive.strict.timestamp.conversion</name>
-  <value>false</value>
-</property>
-
-<property>
-  <name>hive.cbo.fallback.strategy</name>
-  <value>TEST</value>
-</property>
-
+    
 <property>
   <name>iceberg.hive.keep.stats</name>
   <value>true</value>
@@ -368,5 +364,10 @@
   <property>
     <name>hive.async.cleanup.service.thread.count</name>
     <value>4</value>
+  </property>
+
+  <property>
+    <name>hive.tez.exec.print.summary</name>
+    <value>true</value>
   </property>
 </configuration>

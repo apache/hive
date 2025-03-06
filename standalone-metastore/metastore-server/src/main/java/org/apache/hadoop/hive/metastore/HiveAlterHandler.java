@@ -18,10 +18,8 @@
 package org.apache.hadoop.hive.metastore;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 
-import com.google.common.collect.Multimap;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.AcidMetaDataFile.DataFormat;
@@ -29,6 +27,7 @@ import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AlterPartitionsEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.model.MTable;
@@ -58,7 +57,6 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 
-import javax.jdo.Constants;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -66,7 +64,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.LinkedList;
 import java.util.Optional;
@@ -184,12 +181,7 @@ public class HiveAlterHandler implements AlterHandler {
       String expectedValue = environmentContext != null && environmentContext.getProperties() != null ?
               environmentContext.getProperties().get(hive_metastoreConstants.EXPECTED_PARAMETER_VALUE) : null;
 
-      if (expectedKey != null) {
-        // If we have to check the expected state of the table we have to prevent nonrepeatable reads.
-        msdb.openTransaction(Constants.TX_REPEATABLE_READ);
-      } else {
-        msdb.openTransaction();
-      }
+      msdb.openTransaction();
       // get old table
       // Note: we don't verify stats here; it's done below in alterTableUpdateTableColumnStats.
       olddb = msdb.getDatabase(catName, dbname);
@@ -199,10 +191,20 @@ public class HiveAlterHandler implements AlterHandler {
             TableName.getQualified(catName, dbname, name) + " doesn't exist");
       }
 
-      if (expectedKey != null && expectedValue != null
-              && !expectedValue.equals(oldt.getParameters().get(expectedKey))) {
-        throw new MetaException("The table has been modified. The parameter value for key '" + expectedKey + "' is '"
-                + oldt.getParameters().get(expectedKey) + "'. The expected was value was '" + expectedValue + "'");
+      if (expectedKey != null && expectedValue != null) {
+        String newValue = newt.getParameters().get(expectedKey);
+        if (newValue == null) {
+          throw new MetaException(String.format("New value for expected key %s is not set", expectedKey));
+        }
+        if (!expectedValue.equals(oldt.getParameters().get(expectedKey))) {
+          throw new MetaException("The table has been modified. The parameter value for key '" + expectedKey + "' is '"
+              + oldt.getParameters().get(expectedKey) + "'. The expected was value was '" + expectedValue + "'");
+        }
+        long affectedRows = msdb.updateParameterWithExpectedValue(oldt, expectedKey, expectedValue, newValue);
+        if (affectedRows != 1) {
+          // make sure concurrent modification exception messages have the same prefix
+          throw new MetaException("The table has been modified. The parameter value for key '" + expectedKey + "' is different");
+        }
       }
 
       validateTableChangesOnReplSource(olddb, oldt, newt, environmentContext);
@@ -254,9 +256,9 @@ public class HiveAlterHandler implements AlterHandler {
       boolean renamedTranslatedToExternalTable = rename && MetaStoreUtils.isTranslatedToExternalTable(oldt)
           && MetaStoreUtils.isTranslatedToExternalTable(newt);
       boolean renamedExternalTable = rename && MetaStoreUtils.isExternalTable(oldt)
-          && !MetaStoreUtils.isPropertyTrue(oldt.getParameters(), "TRANSLATED_TO_EXTERNAL");
+          && !MetaStoreUtils.isPropertyTrue(oldt.getParameters(), HiveMetaHook.TRANSLATED_TO_EXTERNAL);
       boolean isRenameIcebergTable =
-          rename && HiveMetaHook.ICEBERG.equalsIgnoreCase(newt.getParameters().get(HiveMetaHook.TABLE_TYPE));
+          rename && MetaStoreUtils.isIcebergTable(newt.getParameters());
 
       List<ColumnStatistics> columnStatistics = getColumnStats(msdb, oldt);
       columnStatistics = deleteTableColumnStats(msdb, oldt, newt, columnStatistics);
@@ -352,7 +354,6 @@ public class HiveAlterHandler implements AlterHandler {
 
           // also the location field in partition
           parts = msdb.getPartitions(catName, dbname, name, -1);
-          Multimap<Partition, ColumnStatistics> columnStatsNeedUpdated = ArrayListMultimap.create();
           for (Partition part : parts) {
             String oldPartLoc = part.getSd().getLocation();
             if (dataWasMoved && oldPartLoc.contains(oldTblLocPath)) {
@@ -363,45 +364,25 @@ public class HiveAlterHandler implements AlterHandler {
             }
             part.setDbName(newDbName);
             part.setTableName(newTblName);
-            List<ColumnStatistics> multiColStats = updateOrGetPartitionColumnStats(msdb, catName, dbname, name,
-                part.getValues(), part.getSd().getCols(), oldt, part, null, null);
-            for (ColumnStatistics colStats : multiColStats) {
-              columnStatsNeedUpdated.put(part, colStats);
-            }
           }
           // Do not verify stats parameters on a partitioned table.
           msdb.alterTable(catName, dbname, name, newt, null);
+          int partitionBatchSize = MetastoreConf.getIntVar(handler.getConf(),
+              MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+          String catalogName = catName;
           // alterPartition is only for changing the partition location in the table rename
           if (dataWasMoved) {
-
-            int partsToProcess = parts.size();
-            int partitionBatchSize = MetastoreConf.getIntVar(handler.getConf(),
-                MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
-            int batchStart = 0;
-            while (partsToProcess > 0) {
-              int batchEnd = Math.min(batchStart + partitionBatchSize, parts.size());
-              List<Partition> partBatch = parts.subList(batchStart, batchEnd);
-              int partBatchSize = partBatch.size();
-              partsToProcess -= partBatchSize;
-              batchStart += partBatchSize;
-              List<List<String>> partValues = new ArrayList<>(partBatchSize);
-              for (Partition part : partBatch) {
-                partValues.add(part.getValues());
+            Batchable.runBatched(partitionBatchSize, parts, new Batchable<Partition, Void>() {
+              @Override
+              public List<Void> run(List<Partition> input) throws Exception {
+                msdb.alterPartitions(catalogName, newDbName, newTblName,
+                    input.stream().map(Partition::getValues).collect(Collectors.toList()),
+                    input, newt.getWriteId(), writeIdList);
+                return Collections.emptyList();
               }
-              msdb.alterPartitions(catName, newDbName, newTblName, partValues,
-                  partBatch, newt.getWriteId(), writeIdList);
-            }
+            });
           }
           Deadline.checkTimeout();
-          Table table = msdb.getTable(catName, newDbName, newTblName);
-          MTable mTable = msdb.ensureGetMTable(catName, newDbName, newTblName);
-          for (Entry<Partition, ColumnStatistics> partColStats : columnStatsNeedUpdated.entries()) {
-            ColumnStatistics newPartColStats = partColStats.getValue();
-            newPartColStats.getStatsDesc().setDbName(newDbName);
-            newPartColStats.getStatsDesc().setTableName(newTblName);
-            msdb.updatePartitionColumnStatistics(table, mTable, newPartColStats, 
-                partColStats.getKey().getValues(), writeIdList, newt.getWriteId());
-          }
         } else {
           msdb.alterTable(catName, dbname, name, newt, writeIdList);
         }
@@ -478,12 +459,8 @@ public class HiveAlterHandler implements AlterHandler {
       throw new InvalidOperationException(
           "Unable to change partition or table."
               + " Check metastore logs for detailed stack." + e.getMessage());
-    } catch (InvalidInputException e) {
-        LOG.debug("Accessing Metastore failed due to invalid input ", e);
-        throw new InvalidOperationException(
-            "Unable to change partition or table."
-                + " Check metastore logs for detailed stack." + e.getMessage());
-    } catch (NoSuchObjectException e) {
+    }
+    catch (NoSuchObjectException e) {
       LOG.debug("Object not found in metastore ", e);
       throw new InvalidOperationException(
           "Unable to change partition or table. Object " +  e.getMessage() + " does not exist."
@@ -849,11 +826,9 @@ public class HiveAlterHandler implements AlterHandler {
 
   @Override
   public List<Partition> alterPartitions(final RawStore msdb, Warehouse wh, final String catName,
-                                         final String dbname, final String name,
-                                         final List<Partition> new_parts,
-                                         EnvironmentContext environmentContext,
-                                         String writeIdList, long writeId,
-                                         IHMSHandler handler)
+      final String dbname, final String name, final List<Partition> new_parts,
+      EnvironmentContext environmentContext, String writeIdList, long writeId,
+      IHMSHandler handler)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
     List<Partition> oldParts = new ArrayList<>();
     List<List<String>> partValsList = new ArrayList<>();
@@ -908,23 +883,22 @@ public class HiveAlterHandler implements AlterHandler {
       }
 
       msdb.alterPartitions(catName, dbname, name, partValsList, new_parts, writeId, writeIdList);
-      Iterator<Partition> oldPartsIt = oldParts.iterator();
-      for (Partition newPart : new_parts) {
-        Partition oldPart;
-        if (oldPartsIt.hasNext()) {
-          oldPart = oldPartsIt.next();
-        } else {
-          throw new InvalidOperationException("Missing old partition corresponding to new partition " +
-              "when invoking MetaStoreEventListener for alterPartitions event.");
-        }
 
-        if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventMessage.EventType.ALTER_PARTITION,
-              new AlterPartitionEvent(oldPart, newPart, tbl, false, true, newPart.getWriteId(), handler),
-              environmentContext);
+      if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
+        boolean shouldSendSingleEvent = MetastoreConf.getBoolVar(handler.getConf(),
+            MetastoreConf.ConfVars.NOTIFICATION_ALTER_PARTITIONS_V2_ENABLED);
+        if (shouldSendSingleEvent) {
+          MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventMessage.EventType.ALTER_PARTITIONS,
+              new AlterPartitionsEvent(oldParts, new_parts, tbl, false, true, handler), environmentContext);
+        } else {
+          for (Partition newPart : new_parts) {
+            Partition oldPart = oldPartMap.get(newPart.getValues());
+            MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventMessage.EventType.ALTER_PARTITION,
+                new AlterPartitionEvent(oldPart, newPart, tbl, false, true, newPart.getWriteId(), handler),
+                environmentContext);
+          }
         }
       }
-
       success = msdb.commitTransaction();
     } catch (InvalidObjectException | NoSuchObjectException e) {
       throw new InvalidOperationException("Alter partition operation failed: " + e);

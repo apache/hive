@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -2822,6 +2823,10 @@ public final class Utilities {
     return getTasks(tasks, new TaskFilterFunction<>(TezTask.class));
   }
 
+  public static Optional<TezTask> getFirstTezTask(List<Task<? extends Serializable>> tasks) {
+    return getTezTasks(tasks).stream().findFirst();
+  }
+
   public static List<ExecDriver> getMRTasks(List<Task<?>> tasks) {
     return getTasks(tasks, new TaskFilterFunction<>(ExecDriver.class));
   }
@@ -2939,12 +2944,12 @@ public final class Utilities {
 
   private static void validateDynPartitionCount(Configuration conf, Collection<Path> partitions) throws HiveException {
     int partsToLoad = partitions.size();
-    int maxPartition = HiveConf.getIntVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTS);
+    int maxPartition = HiveConf.getIntVar(conf, HiveConf.ConfVars.DYNAMIC_PARTITION_MAX_PARTS);
     if (partsToLoad > maxPartition) {
       throw new HiveException("Number of dynamic partitions created is " + partsToLoad
           + ", which is more than "
           + maxPartition
-          +". To solve this try to set " + HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTS.varname
+          +". To solve this try to set " + HiveConf.ConfVars.DYNAMIC_PARTITION_MAX_PARTS.varname
           + " to at least " + partsToLoad + '.');
     }
   }
@@ -3356,8 +3361,8 @@ public final class Utilities {
    */
   public static int estimateNumberOfReducers(HiveConf conf, ContentSummary inputSummary,
                                              MapWork work, boolean finalMapRed) throws IOException {
-    long bytesPerReducer = conf.getLongVar(HiveConf.ConfVars.BYTESPERREDUCER);
-    int maxReducers = conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
+    long bytesPerReducer = conf.getLongVar(HiveConf.ConfVars.BYTES_PER_REDUCER);
+    int maxReducers = conf.getIntVar(HiveConf.ConfVars.MAX_REDUCERS);
 
     double samplePercentage = getHighestSamplePercentage(work);
     long totalInputFileSize = getTotalInputFileSize(inputSummary, work, samplePercentage);
@@ -3809,7 +3814,7 @@ public final class Utilities {
    */
   public static void setInputAttributes(Configuration conf, MapWork mWork) {
     HiveConf.ConfVars var = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez") ?
-      HiveConf.ConfVars.HIVETEZINPUTFORMAT : HiveConf.ConfVars.HIVEINPUTFORMAT;
+      HiveConf.ConfVars.HIVE_TEZ_INPUT_FORMAT : HiveConf.ConfVars.HIVE_INPUT_FORMAT;
     if (mWork.getInputformat() != null) {
       HiveConf.setVar(conf, var, mWork.getInputformat());
     }
@@ -4199,7 +4204,7 @@ public final class Utilities {
   public static List<String> getStatsTmpDirs(BaseWork work, Configuration conf) {
 
     List<String> statsTmpDirs = new ArrayList<>();
-    if (!StatsSetupConst.StatDB.fs.name().equalsIgnoreCase(HiveConf.getVar(conf, ConfVars.HIVESTATSDBCLASS))) {
+    if (!StatsSetupConst.StatDB.fs.name().equalsIgnoreCase(HiveConf.getVar(conf, ConfVars.HIVE_STATS_DBCLASS))) {
       // no-op for non-fs stats collection
       return statsTmpDirs;
     }
@@ -4961,11 +4966,27 @@ public final class Utilities {
         "HDFS dir: " + rootHDFSDirPath + ", permission: " + currentHDFSDirPermission);
     }
     // If the root HDFS scratch dir already exists, make sure it is writeable.
-    if (!((currentHDFSDirPermission.toShort() & writableHDFSDirPermission
-        .toShort()) == writableHDFSDirPermission.toShort())) {
-      throw new RuntimeException("The dir: " + rootHDFSDirPath
-          + " on HDFS should be writable. Current permissions are: " + currentHDFSDirPermission);
+    if (!isWritable(currentHDFSDirPermission, writableHDFSDirPermission) &&
+        !attemptMakePathWritable(fs, rootHDFSDirPath,
+            FsPermission.createImmutable((short) (currentHDFSDirPermission.toShort() | writableHDFSDirPermission.toShort())))) {
+      throw new RuntimeException(
+          "The dir: " + rootHDFSDirPath + " should be writable. Current permissions are: " + currentHDFSDirPermission);
     }
+  }
+
+  private static boolean attemptMakePathWritable(FileSystem fs, Path path, FsPermission perm) {
+    try {
+      LOG.info("Attempting to set {} permissions on path {}", perm, path);
+      fs.setPermission(path, perm);
+      return isWritable(fs.getFileStatus(path).getPermission(), perm);
+    } catch (IOException e) {
+      return false;
+    }
+  }
+
+  private static boolean isWritable(FsPermission currentHDFSDirPermission, FsPermission writableHDFSDirPermission) {
+    return (currentHDFSDirPermission.toShort() & writableHDFSDirPermission.toShort())
+        == writableHDFSDirPermission.toShort();
   }
 
   // Get the bucketing version stored in the string format
@@ -5045,11 +5066,6 @@ public final class Utilities {
       logger.debug("{} class path = unavailable for {}", prefix,
           loader == null ? "null" : loader.getClass().getSimpleName());
     }
-  }
-
-  public static boolean arePathsEqualOrWithin(Path p1, Path p2) {
-    return ((p1.toString().toLowerCase().indexOf(p2.toString().toLowerCase()) > -1) ||
-        (p2.toString().toLowerCase().indexOf(p1.toString().toLowerCase()) > -1)) ? true : false;
   }
 
   public static String getTableOrMVSuffix(Context context, boolean createTableOrMVUseSuffix) {

@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.ThreadPool;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.service.CompactionHouseKeeperService;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 
 import java.util.ArrayList;
@@ -58,9 +59,15 @@ public class HouseKeepingTasks implements LeaderElection.LeadershipStateListener
         MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_THREADS_ON)) {
       return remoteOnlyTasks;
     }
+    boolean isCompactorEnabled = MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON)
+            || MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON);
+
     Collection<String> taskNames =
         MetastoreConf.getStringCollection(configuration, MetastoreConf.ConfVars.TASK_THREADS_REMOTE_ONLY);
     for (String taskName : taskNames) {
+      if (CompactionHouseKeeperService.class.getName().equals(taskName) && !isCompactorEnabled) {
+        continue;
+      }
       MetastoreTaskThread task =
           JavaUtils.newInstance(JavaUtils.getClass(taskName, MetastoreTaskThread.class));
       remoteOnlyTasks.add(task);
@@ -92,6 +99,7 @@ public class HouseKeepingTasks implements LeaderElection.LeadershipStateListener
       List<MetastoreTaskThread> alwaysTasks = new ArrayList<>(getAlwaysTasks());
       for (MetastoreTaskThread task : alwaysTasks) {
         task.setConf(configuration);
+        task.enforceMutex(election.enforceMutex());
         long freq = task.runFrequency(TimeUnit.MILLISECONDS);
         // For backwards compatibility, since some threads used to be hard coded but only run if
         // frequency was > 0
@@ -104,6 +112,7 @@ public class HouseKeepingTasks implements LeaderElection.LeadershipStateListener
       List<MetastoreTaskThread> remoteOnlyTasks = new ArrayList<>(getRemoteOnlyTasks());
       for (MetastoreTaskThread task : remoteOnlyTasks) {
         task.setConf(configuration);
+        task.enforceMutex(election.enforceMutex());
         long freq = task.runFrequency(TimeUnit.MILLISECONDS);
         runningTasks.add(task);
         metastoreTaskThreadPool.getPool().scheduleAtFixedRate(task, freq, freq, TimeUnit.MILLISECONDS);

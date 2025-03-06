@@ -1,6 +1,4 @@
 --! qt:dataset:src
-set hive.cbo.fallback.strategy=NEVER;
-
 
 CREATE TABLE tmp_pyang_lv (inputs string) STORED AS RCFILE;
 INSERT OVERWRITE TABLE tmp_pyang_lv SELECT key FROM src;

@@ -17,12 +17,8 @@
  */
 package org.apache.hadoop.hive.llap.daemon.impl;
 
-import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
@@ -32,9 +28,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.hive.llap.LlapThreadLocalStatistics;
 import org.apache.hadoop.hive.llap.LlapUtil;
-import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.hadoop.hive.llap.io.encoded.TezCounterSource;
 import org.apache.tez.common.CallableWithNdc;
 import org.apache.tez.common.counters.FileSystemCounter;
@@ -110,19 +105,12 @@ public class StatsRecordingThreadPool extends ThreadPoolExecutor {
       }
 
       // clone thread local file system statistics
-      List<LlapUtil.StatisticsData> statsBefore = LlapUtil.cloneThreadLocalFileSystemStatistics();
-      long cpuTime = mxBean == null ? -1 : mxBean.getCurrentThreadCpuTime(),
-          userTime = mxBean == null ? -1 : mxBean.getCurrentThreadUserTime();
+      LlapThreadLocalStatistics statsBefore = new LlapThreadLocalStatistics(mxBean);
       setupMDCFromNDC(actualCallable);
       try {
         return actualCallable.call();
       } finally {
-        if (mxBean != null) {
-          cpuTime = mxBean.getCurrentThreadCpuTime() - cpuTime;
-          userTime = mxBean.getCurrentThreadUserTime() - userTime;
-        }
-        updateCounters(statsBefore, actualCallable, cpuTime, userTime);
-
+        updateCounters(statsBefore, actualCallable);
         MDC.clear();
       }
     }
@@ -161,98 +149,44 @@ public class StatsRecordingThreadPool extends ThreadPoolExecutor {
       }
     }
 
-    /**
-     * LLAP IO related counters.
-     */
-    public enum LlapExecutorCounters {
-      EXECUTOR_CPU_NS,
-      EXECUTOR_USER_NS;
-
-    }
-
-    private void updateCounters(final List<LlapUtil.StatisticsData> statsBefore,
-        final Callable<V> actualCallable, long cpuTime, long userTime) {
+    private void updateCounters(final LlapThreadLocalStatistics statsBefore,
+        final Callable<V> actualCallable) {
       Thread thread = Thread.currentThread();
-      TezCounters tezCounters = null;
-      // add tez counters for task execution and llap io
-      if (actualCallable instanceof TaskRunner2Callable) {
-        TaskRunner2Callable taskRunner2Callable = (TaskRunner2Callable) actualCallable;
-        // counters for task execution side
-        tezCounters = taskRunner2Callable.addAndGetTezCounter(FileSystemCounter.class.getName());
-      } else if (actualCallable instanceof TezCounterSource) {
-        // Other counter sources (currently used in LLAP IO).
-        tezCounters = ((TezCounterSource) actualCallable).getTezCounters();
-      } else {
-        LOG.warn("Unexpected callable {}; cannot get counters", actualCallable);
-      }
+      final TezCounters tezCounters = getTezCounters(actualCallable);
 
       if (tezCounters != null) {
-        if (cpuTime >= 0 && userTime >= 0) {
-          tezCounters.findCounter(LlapExecutorCounters.EXECUTOR_CPU_NS).increment(cpuTime);
-          tezCounters.findCounter(LlapExecutorCounters.EXECUTOR_USER_NS).increment(userTime);
-        }
         if (statsBefore != null) {
-          // if there are multiple stats for the same scheme (from different NameNode), this
-          // method will squash them together
-          Map<String, FileSystem.Statistics> schemeToStats = LlapUtil
-              .getCombinedFileSystemStatistics();
-          for (Map.Entry<String, FileSystem.Statistics> entry : schemeToStats.entrySet()) {
-            final String scheme = entry.getKey();
-            FileSystem.Statistics statistics = entry.getValue();
-            FileSystem.Statistics.StatisticsData threadFSStats = statistics
-                .getThreadStatistics();
-            List<LlapUtil.StatisticsData> allStatsBefore = LlapUtil
-                .getStatisticsForScheme(scheme, statsBefore);
-            long bytesReadDelta = 0;
-            long bytesWrittenDelta = 0;
-            long readOpsDelta = 0;
-            long largeReadOpsDelta = 0;
-            long writeOpsDelta = 0;
-            // there could be more scheme after execution as execution might be accessing a
-            // different filesystem. So if we don't find a matching scheme before execution we
-            // just use the after execution values directly without computing delta difference
-            if (allStatsBefore != null && !allStatsBefore.isEmpty()) {
-              for (LlapUtil.StatisticsData sb : allStatsBefore) {
-                bytesReadDelta += threadFSStats.getBytesRead() - sb.getBytesRead();
-                bytesWrittenDelta += threadFSStats.getBytesWritten() - sb.getBytesWritten();
-                readOpsDelta += threadFSStats.getReadOps() - sb.getReadOps();
-                largeReadOpsDelta += threadFSStats.getLargeReadOps() - sb.getLargeReadOps();
-                writeOpsDelta += threadFSStats.getWriteOps() - sb.getWriteOps();
-              }
-            } else {
-              bytesReadDelta = threadFSStats.getBytesRead();
-              bytesWrittenDelta = threadFSStats.getBytesWritten();
-              readOpsDelta = threadFSStats.getReadOps();
-              largeReadOpsDelta = threadFSStats.getLargeReadOps();
-              writeOpsDelta = threadFSStats.getWriteOps();
-            }
-            tezCounters.findCounter(scheme, FileSystemCounter.BYTES_READ)
-                .increment(bytesReadDelta);
-            tezCounters.findCounter(scheme, FileSystemCounter.BYTES_WRITTEN)
-                .increment(bytesWrittenDelta);
-            tezCounters.findCounter(scheme, FileSystemCounter.READ_OPS).increment(readOpsDelta);
-            tezCounters.findCounter(scheme, FileSystemCounter.LARGE_READ_OPS)
-                .increment(largeReadOpsDelta);
-            tezCounters.findCounter(scheme, FileSystemCounter.WRITE_OPS)
-                .increment(writeOpsDelta);
+          LlapThreadLocalStatistics currentStats = new LlapThreadLocalStatistics(mxBean);
+          currentStats.subtract(statsBefore).fill(tezCounters);
 
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Updated stats: instance: {} thread name: {} thread id: {} scheme: {} " +
-                      "bytesRead: {} bytesWritten: {} readOps: {} largeReadOps: {} writeOps: {}",
-                  actualCallable.getClass().getSimpleName(), thread.getName(), thread.getId(),
-                  scheme, bytesReadDelta, bytesWrittenDelta, readOpsDelta, largeReadOpsDelta,
-                  writeOpsDelta);
-            }
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Updated stats: instance: {} thread name: {} thread id: {} stats: {}",
+                actualCallable.getClass().getSimpleName(), thread.getName(), thread.getId(), currentStats);
           }
         } else {
           LOG.warn("File system statistics snapshot before execution of thread is null." +
-                  "Thread name: {} id: {} allStats: {}", thread.getName(), thread.getId(),
-              statsBefore);
+                  "Thread name: {} id: {}", thread.getName(), thread.getId());
         }
       } else {
         LOG.warn("TezCounters is null for callable type: {}",
             actualCallable.getClass().getSimpleName());
       }
     }
+  }
+
+  private static <V> TezCounters getTezCounters(Callable<V> actualCallable) {
+    TezCounters tezCounters = null;
+    // add tez counters for task execution and llap io
+    if (actualCallable instanceof TaskRunner2Callable) {
+      TaskRunner2Callable taskRunner2Callable = (TaskRunner2Callable) actualCallable;
+      // counters for task execution side
+      tezCounters = taskRunner2Callable.addAndGetTezCounter(FileSystemCounter.class.getName());
+    } else if (actualCallable instanceof TezCounterSource) {
+      // Other counter sources (currently used in LLAP IO).
+      tezCounters = ((TezCounterSource) actualCallable).getTezCounters();
+    } else {
+      LOG.warn("Unexpected callable {}; cannot get counters", actualCallable);
+    }
+    return tezCounters;
   }
 }

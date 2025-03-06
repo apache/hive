@@ -417,7 +417,8 @@ struct GetCatalogsResponse {
 }
 
 struct DropCatalogRequest {
-  1: string name
+  1: string name,
+  2: optional bool ifExists
 }
 
 // namespace for tables
@@ -600,7 +601,7 @@ struct ColumnStatistics {
 2: required list<ColumnStatisticsObj> statsObj,
 3: optional bool isStatsCompliant, // Are the stats isolation-level-compliant with the
                                                       // the calling query?
-4: optional string engine
+4: optional string engine = "hive"
 }
 
 // FileMetadata represents the table-level (in case of unpartitioned) or partition-level
@@ -725,7 +726,7 @@ struct SetPartitionsStatsRequest {
 2: optional bool needMerge, //stats need to be merged with the existing stats
 3: optional i64 writeId=-1,         // writeId for the current query that updates the stats
 4: optional string validWriteIdList, // valid write id list for the table for which this struct is being sent
-5: required string engine //engine creating the current request
+5: optional string engine = "hive" //engine creating the current request
 }
 
 struct SetPartitionsStatsResponse {
@@ -880,7 +881,9 @@ struct PartitionsByExprRequest {
   7: optional string order
   8: optional string validWriteIdList,
   9: optional i64 id=-1, // table id
-  10: optional bool skipColumnSchemaForPartition
+  10: optional bool skipColumnSchemaForPartition,
+  11: optional string includeParamKeyPattern,
+  12: optional string excludeParamKeyPattern
 }
 
 struct TableStatsResult {
@@ -899,7 +902,7 @@ struct TableStatsRequest {
  3: required list<string> colNames
  4: optional string catName,
  5: optional string validWriteIdList,  // valid write id list for the table for which this struct is being sent
- 6: required string engine, //engine creating the current request
+ 6: optional string engine = "hive", //engine creating the current request
  7: optional i64 id=-1 // table id
 }
 
@@ -910,7 +913,7 @@ struct PartitionsStatsRequest {
  4: required list<string> partNames,
  5: optional string catName,
  6: optional string validWriteIdList, // valid write id list for the table for which this struct is being sent
- 7: required string engine //engine creating the current request
+ 7: optional string engine = "hive" //engine creating the current request
 }
 
 // Return type for add_partitions_req
@@ -930,7 +933,8 @@ struct AddPartitionsRequest {
   6: optional string catName,
   7: optional string validWriteIdList,
   8: optional bool skipColumnSchemaForPartition,
-  9: optional list<FieldSchema> partitionColSchema
+  9: optional list<FieldSchema> partitionColSchema,
+  10: optional EnvironmentContext environmentContext
 }
 
 // Return type for drop_partitions_req
@@ -963,6 +967,16 @@ struct DropPartitionsRequest {
   10: optional bool skipColumnSchemaForPartition
 }
 
+struct DropPartitionRequest {
+  1: optional string catName,
+  2: required string dbName,
+  3: required string tblName,
+  4: optional string partName,
+  5: optional list<string> partVals,
+  6: optional bool deleteData,
+  7: optional EnvironmentContext environmentContext
+}
+
 struct PartitionValuesRequest {
   1: required string dbName,
   2: required string tblName,
@@ -991,11 +1005,13 @@ struct GetPartitionsByNamesRequest {
   4: optional bool get_col_stats,
   5: optional list<string> processorCapabilities,
   6: optional string processorIdentifier,
-  7: optional string engine,
+  7: optional string engine = "hive",
   8: optional string validWriteIdList,
   9: optional bool getFileMetadata,
   10: optional i64 id=-1,  // table id
-  11: optional bool skipColumnSchemaForPartition
+  11: optional bool skipColumnSchemaForPartition,
+  12: optional string includeParamKeyPattern,
+  13: optional string excludeParamKeyPattern
 }
 
 struct GetPartitionsByNamesResult {
@@ -1483,6 +1499,9 @@ struct NotificationEventRequest {
     1: required i64 lastEvent,
     2: optional i32 maxEvents,
     3: optional list<string> eventTypeSkipList,
+    4: optional string catName,
+    5: optional string dbName,
+    6: optional list<string> tableNames
 }
 
 struct NotificationEvent {
@@ -1509,7 +1528,8 @@ struct NotificationEventsCountRequest {
     2: required string dbName,
     3: optional string catName,
     4: optional i64 toEventId,
-    5: optional i64 limit
+    5: optional i64 limit,
+    6: optional list<string> tableNames
 }
 
 struct NotificationEventsCountResponse {
@@ -1702,7 +1722,7 @@ struct GetTableRequest {
   7: optional bool getColumnStats,
   8: optional list<string> processorCapabilities,
   9: optional string processorIdentifier,
-  10: optional string engine,
+  10: optional string engine = "hive",
   11: optional i64 id=-1 // table id
 }
 
@@ -1744,11 +1764,25 @@ struct ExtendedTableInfo {
  4: optional list<string> requiredWriteCapabilities // capabilities required for write access
 }
 
+struct DropTableRequest {
+ 1: optional string catalogName,
+ 2: required string dbName,
+ 3: required string tableName,
+ 4: optional bool deleteData,
+ 5: optional EnvironmentContext envContext,
+ 6: optional bool dropPartitions
+}
+
 struct GetDatabaseRequest {
  1: optional string name,
  2: optional string catalogName,
  3: optional list<string> processorCapabilities,
  4: optional string processorIdentifier
+}
+
+struct AlterDatabaseRequest {
+ 1: required string oldDbName,
+ 2: required Database newDb
 }
 
 struct DropDatabaseRequest {
@@ -1760,6 +1794,18 @@ struct DropDatabaseRequest {
   6: optional bool softDelete=false,
   7: optional i64 txnId=0,
   8: optional bool deleteManagedDir=true
+}
+
+struct GetFunctionsRequest {
+  1: required string dbName,
+  2: optional string catalogName,
+  3: optional string pattern,
+  4: optional bool returnNames=true
+}
+
+struct GetFunctionsResponse {
+  1: optional list<string> function_names,
+  2: optional list<Function> functions
 }
 
 // Request type for cm_recycle
@@ -2120,16 +2166,28 @@ struct CreateDatabaseRequest {
   8: optional string catalogName,
   9: optional i32 createTime,
   10: optional string managedLocationUri,
-  11: optional string type,
-  12: optional string dataConnectorName
+  11: optional DatabaseType type,
+  12: optional string dataConnectorName,
+  13: optional string remote_dbname
 }
 
 struct CreateDataConnectorRequest {
-  1: DataConnector connector
+  1: required DataConnector connector
 }
 
 struct GetDataConnectorRequest {
   1: required string connectorName
+}
+
+struct AlterDataConnectorRequest {
+  1: required string connectorName,
+  2: required DataConnector newConnector
+}
+
+struct DropDataConnectorRequest {
+  1: required string connectorName,
+  2: optional bool ifNotExists,
+  3: optional bool checkReferences
 }
 
 struct ScheduledQueryPollRequest {
@@ -2194,6 +2252,15 @@ struct AlterPartitionsRequest {
   7: optional string validWriteIdList,
   8: optional bool skipColumnSchemaForPartition,
   9: optional list<FieldSchema> partitionColSchema
+}
+
+struct AppendPartitionsRequest {
+  1: optional string catalogName,
+  2: required string dbName,
+  3: required string tableName,
+  4: optional string name,
+  5: optional list<string> partVals,
+  6: optional EnvironmentContext environmentContext
 }
 
 struct AlterPartitionsResponse {
@@ -2306,7 +2373,9 @@ struct PartitionsRequest { // Not using Get prefix as that name is already used 
    4: optional i16 maxParts=-1,
    5: optional string validWriteIdList,
    6: optional i64 id=-1, // table id
-   7: optional bool skipColumnSchemaForPartition
+   7: optional bool skipColumnSchemaForPartition,
+   8: optional string includeParamKeyPattern,
+   9: optional string excludeParamKeyPattern
 }
 
 struct PartitionsResponse { // Not using Get prefix as that name is already used for a different method
@@ -2319,7 +2388,9 @@ struct GetPartitionsByFilterRequest {
    3: string tblName,
    4: string filter,
    5: optional i16 maxParts=-1,
-   6: optional bool skipColumnSchemaForPartition
+   6: optional bool skipColumnSchemaForPartition,
+   7: optional string includeParamKeyPattern,
+   8: optional string excludeParamKeyPattern
 }
 
 struct GetPartitionNamesPsRequest {
@@ -2346,7 +2417,10 @@ struct GetPartitionsPsWithAuthRequest {
    7: optional list<string> groupNames,
    8: optional string validWriteIdList,
    9: optional i64 id=-1 // table id
-   10: optional bool skipColumnSchemaForPartition
+   10: optional bool skipColumnSchemaForPartition,
+   11: optional string includeParamKeyPattern,
+   12: optional string excludeParamKeyPattern,
+   13: optional list<string> partNames;
 }
 
 struct GetPartitionsPsWithAuthResponse {
@@ -2436,6 +2510,16 @@ struct GetAllWriteEventInfoRequest {
   3: optional string tableName
 }
 
+struct DeleteColumnStatisticsRequest {
+  1: optional string cat_name,
+  2: required string db_name,
+  3: required string tbl_name,
+  4: optional list<string> part_names,
+  5: optional list<string> col_names,
+  6: optional string engine = "hive",
+  7: optional bool tableLevel = false
+}
+
 // Exceptions.
 
 exception MetaException {
@@ -2522,6 +2606,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void drop_catalog(1: DropCatalogRequest catName) throws (1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
 
   void create_database(1:Database database) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
+  void create_database_req(1:CreateDatabaseRequest createDatabaseRequest) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
   Database get_database(1:string name) throws(1:NoSuchObjectException o1, 2:MetaException o2)
   Database get_database_req(1:GetDatabaseRequest request) throws(1:NoSuchObjectException o1, 2:MetaException o2)
   void drop_database(1:string name, 2:bool deleteData, 3:bool cascade) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
@@ -2529,12 +2614,13 @@ service ThriftHiveMetastore extends fb303.FacebookService
   list<string> get_databases(1:string pattern) throws(1:MetaException o1)
   list<string> get_all_databases() throws(1:MetaException o1)
   void alter_database(1:string dbname, 2:Database db) throws(1:MetaException o1, 2:NoSuchObjectException o2)
+  void alter_database_req(1:AlterDatabaseRequest alterDbReq) throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
-  void create_dataconnector(1:DataConnector connector) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
+  void create_dataconnector_req(1:CreateDataConnectorRequest connectorReq) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
   DataConnector get_dataconnector_req(1:GetDataConnectorRequest request) throws(1:NoSuchObjectException o1, 2:MetaException o2)
-  void drop_dataconnector(1:string name, 2:bool ifNotExists, 3:bool checkReferences) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
+  void drop_dataconnector_req(1:DropDataConnectorRequest dropDcReq) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
   list<string> get_dataconnectors() throws(1:MetaException o1)
-  void alter_dataconnector(1:string name, 2:DataConnector connector) throws(1:MetaException o1, 2:NoSuchObjectException o2)
+  void alter_dataconnector_req(1:AlterDataConnectorRequest alterReq) throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
     // returns the type with given name (make seperate calls for the dependent types if needed)
   Type get_type(1:string name)  throws(1:MetaException o1, 2:NoSuchObjectException o2)
@@ -2604,6 +2690,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void drop_table_with_environment_context(1:string dbname, 2:string name, 3:bool deleteData,
       4:EnvironmentContext environment_context)
                        throws(1:NoSuchObjectException o1, 2:MetaException o3)
+  void drop_table_req(1:DropTableRequest dropTableReq)
+        throws(1:NoSuchObjectException o1, 2:MetaException o3)
   void truncate_table(1:string dbName, 2:string tableName, 3:list<string> partNames)
                           throws(1:MetaException o1)
   TruncateTableResponse truncate_table_req(1:TruncateTableRequest req) throws(1:MetaException o1)
@@ -2615,9 +2703,6 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws (1: MetaException o1)
   list<string> get_all_tables(1: string db_name) throws (1: MetaException o1)
 
-  Table get_table(1:string dbname, 2:string tbl_name)
-                       throws (1:MetaException o1, 2:NoSuchObjectException o2)
-  list<Table> get_table_objects_by_name(1:string dbname, 2:list<string> tbl_names)
   list<ExtendedTableInfo> get_tables_ext(1: GetTablesExtRequest req) throws (1: MetaException o1)
   GetTableResult get_table_req(1:GetTableRequest req) throws (1:MetaException o1, 2:NoSuchObjectException o2)
   GetTablesResult get_table_objects_by_name_req(1:GetTablesRequest req)
@@ -2698,6 +2783,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   Partition append_partition_with_environment_context(1:string db_name, 2:string tbl_name,
       3:list<string> part_vals, 4:EnvironmentContext environment_context)
                        throws (1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
+  Partition append_partition_req(1:AppendPartitionsRequest appendPartitionsReq)
+                       throws (1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
   Partition append_partition_by_name(1:string db_name, 2:string tbl_name, 3:string part_name)
                        throws (1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
   Partition append_partition_by_name_with_environment_context(1:string db_name, 2:string tbl_name,
@@ -2707,6 +2794,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
   bool drop_partition_with_environment_context(1:string db_name, 2:string tbl_name,
       3:list<string> part_vals, 4:bool deleteData, 5:EnvironmentContext environment_context)
+                       throws(1:NoSuchObjectException o1, 2:MetaException o2)
+  bool drop_partition_req(1:DropPartitionRequest dropPartitionReq)
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
   bool drop_partition_by_name(1:string db_name, 2:string tbl_name, 3:string part_name, 4:bool deleteData)
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
@@ -2750,7 +2839,8 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
 
   list<string> get_partition_names(1:string db_name, 2:string tbl_name, 3:i16 max_parts=-1)
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
-
+  list<string> fetch_partition_names_req(1:PartitionsRequest partitionReq)
+                       throws(1:NoSuchObjectException o1, 2:MetaException o2)
   PartitionValuesResponse get_partition_values(1:PartitionValuesRequest request)
     throws(1:MetaException o1, 2:NoSuchObjectException o2);
 
@@ -2942,6 +3032,9 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   bool delete_table_column_statistics(1:string db_name, 2:string tbl_name, 3:string col_name, 4:string engine) throws
               (1:NoSuchObjectException o1, 2:MetaException o2, 3:InvalidObjectException o3,
                4:InvalidInputException o4)
+  bool delete_column_statistics_req(1: DeleteColumnStatisticsRequest req) throws
+              (1:NoSuchObjectException o1, 2:MetaException o2, 3:InvalidObjectException o3,
+              4:InvalidInputException o4)
 
   //
   // user-defined functions
@@ -2960,6 +3053,8 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
       throws (1:InvalidOperationException o1, 2:MetaException o2)
 
   list<string> get_functions(1:string dbName, 2:string pattern)
+      throws (1:MetaException o1)
+  GetFunctionsResponse get_functions_req(1:GetFunctionsRequest request)
       throws (1:MetaException o1)
   Function get_function(1:string dbName, 2:string funcName)
       throws (1:MetaException o1, 2:NoSuchObjectException o2)

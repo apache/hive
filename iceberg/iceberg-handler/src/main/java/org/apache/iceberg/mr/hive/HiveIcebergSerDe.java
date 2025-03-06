@@ -73,9 +73,9 @@ public class HiveIcebergSerDe extends AbstractSerDe {
   private Schema tableSchema;
   private Schema projectedSchema;
   private Collection<String> partitionColumns;
-  private Map<ObjectInspector, Deserializer> deserializers = Maps.newHashMapWithExpectedSize(1);
-  private Container<Record> row = new Container<>();
-  private Map<String, String> jobConf =  Maps.newHashMap();
+  private final Map<ObjectInspector, Deserializer> deserializers = Maps.newHashMapWithExpectedSize(1);
+  private final Container<Record> row = new Container<>();
+  private final Map<String, String> jobConf =  Maps.newHashMap();
 
   @Override
   public void initialize(@Nullable Configuration configuration, Properties serDeProperties,
@@ -146,8 +146,8 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     // Currently ClusteredWriter is used which requires that records are ordered by partition keys.
     // Here we ensure that SortedDynPartitionOptimizer will kick in and do the sorting.
     // TODO: remove once we have both Fanout and ClusteredWriter available: HIVE-25948
-    HiveConf.setIntVar(configuration, HiveConf.ConfVars.HIVEOPTSORTDYNAMICPARTITIONTHRESHOLD, 1);
-    HiveConf.setVar(configuration, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
+    HiveConf.setIntVar(configuration, HiveConf.ConfVars.HIVE_OPT_SORT_DYNAMIC_PARTITION_THRESHOLD, 1);
+    HiveConf.setVar(configuration, HiveConf.ConfVars.DYNAMIC_PARTITIONING_MODE, "nonstrict");
     try {
       this.inspector = IcebergObjectInspector.create(projectedSchema);
     } catch (Exception e) {
@@ -157,19 +157,8 @@ public class HiveIcebergSerDe extends AbstractSerDe {
 
   private static Schema projectedSchema(Configuration configuration, String tableName, Schema tableSchema,
       Map<String, String> jobConfs) {
-    Context.Operation operation = HiveCustomStorageHandlerUtils.getWriteOperation(configuration, tableName);
-    if (operation != null) {
-      switch (operation) {
-        case DELETE:
-          return IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns());
-        case UPDATE:
-          return IcebergAcidUtil.createSerdeSchemaForUpdate(tableSchema.columns());
-        case OTHER:
-          return tableSchema;
-        default:
-          throw new IllegalArgumentException("Unsupported operation " + operation);
-      }
-    } else {
+    Context.Operation operation = HiveCustomStorageHandlerUtils.getWriteOperation(configuration::get, tableName);
+    if (operation == null) {
       jobConfs.put(InputFormatConfig.CASE_SENSITIVE, "false");
       String[] selectedColumns = ColumnProjectionUtils.getReadColumnNames(configuration);
       // When same table is joined multiple times, it is possible some selected columns are duplicated,
@@ -185,6 +174,20 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       } else {
         return projectedSchema;
       }
+    }
+    boolean isCOW = IcebergTableUtil.isCopyOnWriteMode(operation, configuration::get);
+    if (isCOW) {
+      return IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns());
+    }
+    switch (operation) {
+      case DELETE:
+        return IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns());
+      case UPDATE:
+        return IcebergAcidUtil.createSerdeSchemaForUpdate(tableSchema.columns());
+      case OTHER:
+        return tableSchema;
+      default:
+        throw new IllegalArgumentException("Unsupported operation " + operation);
     }
   }
 

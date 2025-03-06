@@ -87,9 +87,7 @@ public class TestHttpJwtAuthentication {
   public static void makeEnvModifiable() throws Exception {
     envMap = new HashMap<>();
     Class<?> envClass = Class.forName("java.lang.ProcessEnvironment");
-    Field theEnvironmentField = envClass.getDeclaredField("theEnvironment");
     Field theUnmodifiableEnvironmentField = envClass.getDeclaredField("theUnmodifiableEnvironment");
-    removeStaticFinalAndSetValue(theEnvironmentField, envMap);
     removeStaticFinalAndSetValue(theUnmodifiableEnvironmentField, envMap);
   }
 
@@ -116,7 +114,7 @@ public class TestHttpJwtAuthentication {
     HiveConf conf = new HiveConf();
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED, false);
-    conf.setBoolVar(ConfVars.HIVESTATSCOLAUTOGATHER, false);
+    conf.setBoolVar(ConfVars.HIVE_STATS_COL_AUTOGATHER, false);
     conf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, "JWT");
     // the content of the URL below is the same as jwtVerificationJWKSFile
     conf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION_JWT_JWKS_URL, "http://localhost:" + MOCK_JWKS_SERVER_PORT +

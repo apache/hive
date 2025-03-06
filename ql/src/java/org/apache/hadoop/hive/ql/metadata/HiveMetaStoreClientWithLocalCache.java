@@ -61,8 +61,6 @@ import org.apache.hadoop.hive.metastore.api.TableStatsResult;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsResponse;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator.ObjectEstimator;
@@ -99,8 +97,8 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
     // init cache only once
     if (!INITIALIZED.get()) {
       LOG.info("Initializing local cache in HiveMetaStoreClient...");
-      maxSize = MetastoreConf.getSizeVar(conf, MetastoreConf.ConfVars.MSC_CACHE_MAX_SIZE);
-      recordStats = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.MSC_CACHE_RECORD_STATS);
+      maxSize = HiveConf.getSizeVar(conf, HiveConf.ConfVars.MSC_CACHE_MAX_SIZE);
+      recordStats = HiveConf.getBoolVar(conf, HiveConf.ConfVars.MSC_CACHE_RECORD_STATS);
       initSizeEstimator();
       initCache();
       LOG.info("Local cache initialized in HiveMetaStoreClient: {}", mscLocalCache);
@@ -520,7 +518,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
 
   protected String getQueryId() {
     try {
-      return Hive.get().getConf().get(HiveConf.ConfVars.HIVEQUERYID.varname);
+      return Hive.get().getConf().get(HiveConf.ConfVars.HIVE_QUERY_ID.varname);
     } catch (HiveException e) {
       LOG.error("Error getting query id. Query level and Global HMS caching will be disabled", e);
       return null;
@@ -669,7 +667,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
 
 
   protected final Pair<List<TableValidWriteIds>, List<String>> getValidWriteIdsCache(CacheI cache,
-      GetValidWriteIdsRequest rqst) throws TException {
+      GetValidWriteIdsRequest rqst) {
     List<String> fullTableNamesMissing = new ArrayList<>();
     List<TableValidWriteIds> tblValidWriteIds = new ArrayList<>();
     for (String fullTableName : rqst.getFullTableNames()) {
@@ -689,8 +687,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
   }
 
   protected final List<TableValidWriteIds> loadValidWriteIdsCache(CacheI cache,
-      GetValidWriteIdsResponse r, GetValidWriteIdsRequest rqst)
-      throws TException {
+      GetValidWriteIdsResponse r, GetValidWriteIdsRequest rqst) {
     List<TableValidWriteIds> newTblValidWriteIds = new ArrayList<>();
     for (TableValidWriteIds tableValidWriteIds : r.getTblValidWriteIds()) {
       newTblValidWriteIds.add(tableValidWriteIds);

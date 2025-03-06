@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -104,19 +105,19 @@ public class PartitionPruner extends Transform {
    * if the table is not partitioned, the function always returns true.
    * condition.
    *
-   * @param tab
+   * @param table
    *          the table object
    * @param expr
    *          the pruner expression for the table
    */
-  public static boolean onlyContainsPartnCols(Table tab, ExprNodeDesc expr) {
-    if (!tab.isPartitioned() || (expr == null)) {
+  public static boolean onlyContainsPartnCols(Table table, ExprNodeDesc expr) {
+    if (!table.isPartitioned() || (expr == null)) {
       return true;
     }
 
     if (expr instanceof ExprNodeColumnDesc) {
-      String colName = ((ExprNodeColumnDesc) expr).getColumn();
-      return tab.isPartitionKey(colName);
+      String columnName = ((ExprNodeColumnDesc) expr).getColumn();
+      return isPartitionKey(table, columnName);
     }
 
     // It cannot contain a non-deterministic function
@@ -130,13 +131,17 @@ public class PartitionPruner extends Transform {
     List<ExprNodeDesc> children = expr.getChildren();
     if (children != null) {
       for (int i = 0; i < children.size(); i++) {
-        if (!onlyContainsPartnCols(tab, children.get(i))) {
+        if (!onlyContainsPartnCols(table, children.get(i))) {
           return false;
         }
       }
     }
 
     return true;
+  }
+
+  private static boolean isPartitionKey(Table table, String columnName) {
+    return table.getPartColNames().stream().anyMatch(item -> item.equalsIgnoreCase(columnName));
   }
 
   /**
@@ -206,7 +211,7 @@ public class PartitionPruner extends Transform {
 
     Set<String> partColsUsedInFilter = new LinkedHashSet<String>();
     // Replace virtual columns with nulls. See javadoc for details.
-    prunerExpr = removeNonPartCols(prunerExpr, extractPartColNames(tab), partColsUsedInFilter);
+    prunerExpr = removeNonPartCols(prunerExpr, tab.getPartColNames(), partColsUsedInFilter);
     // Remove all parts that are not partition columns. See javadoc for details.
     ExprNodeDesc compactExpr = compactExpr(prunerExpr.clone());
     String oldFilter = prunerExpr.getExprString(true);
@@ -507,8 +512,8 @@ public class PartitionPruner extends Transform {
     List<String> partNames = Hive.get().getPartitionNames(
         tab.getDbName(), tab.getTableName(), (short) -1);
 
-    String defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME);
-    List<String> partCols = extractPartColNames(tab);
+    String defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
+    List<String> partCols = tab.getPartColNames();
     List<PrimitiveTypeInfo> partColTypeInfos = extractPartColTypes(tab);
 
     boolean hasUnknownPartitions = prunePartitionNames(
@@ -521,15 +526,6 @@ public class PartitionPruner extends Transform {
     }
     perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
     return hasUnknownPartitions;
-  }
-
-  private static List<String> extractPartColNames(Table tab) {
-    List<FieldSchema> pCols = tab.getPartCols();
-    List<String> partCols = new ArrayList<String>(pCols.size());
-    for (FieldSchema pCol : pCols) {
-      partCols.add(pCol.getName());
-    }
-    return partCols;
   }
 
   private static List<PrimitiveTypeInfo> extractPartColTypes(Table tab) {

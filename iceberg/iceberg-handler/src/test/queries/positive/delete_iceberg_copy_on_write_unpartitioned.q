@@ -38,3 +38,18 @@ explain delete from tbl_ice where a in (select t1.a from tbl_ice t1 join tbl_sta
 delete from tbl_ice where a in (select t1.a from tbl_ice t1 join tbl_standard_other t2 on t1.a = t2.a);
 select count(*) from tbl_ice;
 -- 0
+
+-- null cases
+drop table if exists tbl_ice_with_nulls;
+create table tbl_ice_with_nulls (id int, name string) stored by iceberg tblproperties('format-version'='2', 'write.delete.mode'='copy-on-write');
+
+insert into tbl_ice_with_nulls values
+(1, 'ABC'),(2, 'CBS'),(3, null),(4, 'POPI'),(5, 'AQWR'),(6, 'POIU'),(7, 'SDF'),(9, null),(8,'POIKL'),(10, 'YUIO');
+
+delete from tbl_ice_with_nulls where id in (select id from tbl_ice_with_nulls where id > 9) or name in (select name from tbl_ice_with_nulls where name = 'sdf');
+select * from tbl_ice_with_nulls order by id;
+
+-- delete without where clause and disabled conversion to truncate
+set hive.optimize.delete.all=false;
+delete from tbl_ice_with_nulls;
+select * from tbl_ice_with_nulls;

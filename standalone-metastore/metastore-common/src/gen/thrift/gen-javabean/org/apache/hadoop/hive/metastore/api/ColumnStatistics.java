@@ -114,6 +114,8 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   public ColumnStatistics() {
+    this.engine = "hive";
+
   }
 
   public ColumnStatistics(
@@ -156,7 +158,8 @@ package org.apache.hadoop.hive.metastore.api;
     this.statsObj = null;
     setIsStatsCompliantIsSet(false);
     this.isStatsCompliant = false;
-    this.engine = null;
+    this.engine = "hive";
+
   }
 
   @org.apache.thrift.annotation.Nullable

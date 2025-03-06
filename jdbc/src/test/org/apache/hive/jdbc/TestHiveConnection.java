@@ -73,5 +73,8 @@ public class TestHiveConnection {
     Assert.assertEquals("cliservice", params.getSessionVars().get(JdbcConnectionParams.HTTP_PATH));
     Assert.assertEquals("60", params.getSessionVars().get(JdbcConnectionParams.SOCKET_TIMEOUT));
     Assert.assertEquals("true", params.getSessionVars().get(JdbcConnectionParams.JDBC_PARAM_REQUEST_TRACK));
+
+    JdbcConnectionParams nonPortParams = Utils.parseURL("jdbc:hive2://hello.host/default");
+    Assert.assertEquals(Integer.parseInt(Utils.DEFAULT_PORT), nonPortParams.getPort());
   }
 }

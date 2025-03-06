@@ -18,8 +18,11 @@
 
 package org.apache.hadoop.hive.metastore.client.builder;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,6 +41,14 @@ public class GetPartitionProjectionsSpecBuilder {
 
     public GetPartitionProjectionsSpecBuilder addProjectField(String field) {
         fieldList.add(field);
+        return this;
+    }
+
+    public GetPartitionProjectionsSpecBuilder addProjectFieldList(List<String> fields) {
+        fieldList.addAll(Arrays.asList("catName","dbName","tableName"));
+        if (CollectionUtils.isNotEmpty(fields)) {
+            fieldList.addAll(fields);
+        }
         return this;
     }
 

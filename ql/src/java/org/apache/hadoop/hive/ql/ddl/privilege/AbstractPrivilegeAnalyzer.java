@@ -21,8 +21,10 @@ package org.apache.hadoop.hive.ql.ddl.privilege;
 import java.lang.reflect.Constructor;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.authorization.HiveAuthorizationTaskFactory;
@@ -60,5 +62,10 @@ public abstract class AbstractPrivilegeAnalyzer extends BaseSemanticAnalyzer {
       throw new IllegalStateException(
           "Unable to create instance of " + authProviderClass.getName() + ": " + e.getMessage(), e);
     }
+  }
+
+  @Override
+  public void setQueryType(ASTNode tree) {
+    queryProperties.setQueryType(QueryProperties.QueryType.DCL);
   }
 }

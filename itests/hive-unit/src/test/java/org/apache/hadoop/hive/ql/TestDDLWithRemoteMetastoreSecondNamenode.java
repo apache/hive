@@ -1,9 +1,11 @@
 /*
- * Copyright 2014 The Apache Software Foundation.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -13,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.hadoop.hive.ql;
 
 import java.io.IOException;
@@ -27,9 +28,9 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -78,15 +79,15 @@ public class TestDDLWithRemoteMetastoreSecondNamenode {
     }
     tests = new JUnit4TestAdapter(this.getClass()).countTestCases();
     try {
-      conf = new HiveConf(ExecDriver.class);
+      conf = new HiveConfForTest(getClass());
       SessionState.start(conf);
 
       // Test with remote metastore service
       int port = MetaStoreTestUtils.startMetaStoreWithRetry();
-      conf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
-      conf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
+      conf.setVar(HiveConf.ConfVars.METASTORE_URIS, "thrift://localhost:" + port);
+      conf.setIntVar(HiveConf.ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES, 3);
       conf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
-      conf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, new URI(tmppath + "/warehouse").getPath());
+      conf.setVar(HiveConf.ConfVars.METASTORE_WAREHOUSE, new URI(tmppath + "/warehouse").getPath());
 
       // Initialize second mocked filesystem (implement only necessary stuff)
       // Physical files are resides in local file system in the similar location

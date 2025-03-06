@@ -4303,6 +4303,12 @@ public class TestVectorStringExpressions {
     Assert.assertEquals(FilterStringColLikeStringScalar.BeginChecker.class,
         expr.checker.getClass());
 
+    expr = new FilterStringColLikeStringScalar(0, "abc\\%def%".getBytes());
+    expr.transientInit(hiveConf);
+    expr.evaluate(vrb);
+    Assert.assertEquals(FilterStringColLikeStringScalar.BeginChecker.class,
+        expr.checker.getClass());
+
     // END pattern
     expr = new FilterStringColLikeStringScalar(0, "%abc".getBytes(StandardCharsets.UTF_8));
     expr.transientInit(hiveConf);
@@ -4310,8 +4316,20 @@ public class TestVectorStringExpressions {
     Assert.assertEquals(FilterStringColLikeStringScalar.EndChecker.class,
         expr.checker.getClass());
 
+    expr = new FilterStringColLikeStringScalar(0, "%abc\\%def".getBytes(StandardCharsets.UTF_8));
+    expr.transientInit(hiveConf);
+    expr.evaluate(vrb);
+    Assert.assertEquals(FilterStringColLikeStringScalar.EndChecker.class,
+        expr.checker.getClass());
+
     // MIDDLE pattern
     expr = new FilterStringColLikeStringScalar(0, "%abc%".getBytes());
+    expr.transientInit(hiveConf);
+    expr.evaluate(vrb);
+    Assert.assertEquals(FilterStringColLikeStringScalar.MiddleChecker.class,
+        expr.checker.getClass());
+
+    expr = new FilterStringColLikeStringScalar(0, "%abc\\%def%".getBytes());
     expr.transientInit(hiveConf);
     expr.evaluate(vrb);
     Assert.assertEquals(FilterStringColLikeStringScalar.MiddleChecker.class,
@@ -4326,6 +4344,56 @@ public class TestVectorStringExpressions {
 
     // COMPLEX pattern
     expr = new FilterStringColLikeStringScalar(0, "%abc_%de".getBytes());
+    expr.transientInit(hiveConf);
+    expr.evaluate(vrb);
+    Assert.assertEquals(FilterStringColLikeStringScalar.ComplexChecker.class,
+        expr.checker.getClass());
+
+    expr = new FilterStringColLikeStringScalar(0, "abc_".getBytes());
+    expr.transientInit(hiveConf);
+    expr.evaluate(vrb);
+    Assert.assertEquals(FilterStringColLikeStringScalar.ComplexChecker.class,
+        expr.checker.getClass());
+
+    expr = new FilterStringColLikeStringScalar(0, "abc\\_def_".getBytes());
+    expr.transientInit(hiveConf);
+    expr.evaluate(vrb);
+    Assert.assertEquals(FilterStringColLikeStringScalar.ComplexChecker.class,
+        expr.checker.getClass());
+
+    expr = new FilterStringColLikeStringScalar(0, "_abc".getBytes(StandardCharsets.UTF_8));
+    expr.transientInit(hiveConf);
+    expr.evaluate(vrb);
+    Assert.assertEquals(FilterStringColLikeStringScalar.ComplexChecker.class,
+        expr.checker.getClass());
+
+    expr = new FilterStringColLikeStringScalar(0, "_abc\\_def".getBytes(StandardCharsets.UTF_8));
+    expr.transientInit(hiveConf);
+    expr.evaluate(vrb);
+    Assert.assertEquals(FilterStringColLikeStringScalar.ComplexChecker.class,
+        expr.checker.getClass());
+
+    expr = new FilterStringColLikeStringScalar(0, "_abc_".getBytes());
+    expr.transientInit(hiveConf);
+    expr.evaluate(vrb);
+    Assert.assertEquals(FilterStringColLikeStringScalar.ComplexChecker.class,
+        expr.checker.getClass());
+
+    expr = new FilterStringColLikeStringScalar(0, "_abc\\_def_".getBytes());
+    expr.transientInit(hiveConf);
+    expr.evaluate(vrb);
+    Assert.assertEquals(FilterStringColLikeStringScalar.ComplexChecker.class,
+        expr.checker.getClass());
+
+    expr = new FilterStringColLikeStringScalar(0, "_abc_de".getBytes());
+    expr.transientInit(hiveConf);
+    expr.evaluate(vrb);
+    Assert.assertEquals(FilterStringColLikeStringScalar.ComplexChecker.class,
+        expr.checker.getClass());
+
+
+    expr = new FilterStringColLikeStringScalar(0,
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa_b".getBytes());
     expr.transientInit(hiveConf);
     expr.evaluate(vrb);
     Assert.assertEquals(FilterStringColLikeStringScalar.ComplexChecker.class,

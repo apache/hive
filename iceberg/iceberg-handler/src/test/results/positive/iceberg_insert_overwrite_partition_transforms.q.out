@@ -104,6 +104,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 1999-12-05
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -215,6 +217,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 1999-12-26
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -326,6 +330,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 1999-12-12
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -440,6 +446,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 1999-12-13
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -544,6 +552,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 1999-12-02
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -594,23 +604,27 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"bigintcol\",\"required\":false,\"type\":\"long\"},{\"id\":2,\"name\":\"intcol\",\"required\":false,\"type\":\"int\"},{\"id\":3,\"name\":\"pcol\",\"required\":false,\"type\":\"date\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"replace-partitions\":\"true\",\"added-data-files\":\"1\",\"deleted-data-files\":\"1\",\"added-records\":\"2\",\"deleted-records\":\"2\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"2\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-summary	{\"replace-partitions\":\"true\",\"added-data-files\":\"1\",\"deleted-data-files\":\"1\",\"added-records\":\"2\",\"deleted-records\":\"2\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"2\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"pcol_year\",\"transform\":\"year\",\"source-id\":3,\"field-id\":1000}]}
-	engine.hive.enabled 	true                
+	format-version      	2                   
 	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	#Masked#                   
 	numRows             	2                   
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	rawDataSize         	0                   
 	serialization.format	1                   
 	snapshot-count      	5                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	#Masked#                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -734,6 +748,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 1999-12-31
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -845,6 +861,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 1999-12-26
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -956,6 +974,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 1999-12-12
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -1070,6 +1090,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 1999-12-13
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -1174,6 +1196,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 1999-12-02
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -1224,23 +1248,27 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"bigintcol\",\"required\":false,\"type\":\"long\"},{\"id\":2,\"name\":\"pcol\",\"required\":false,\"type\":\"date\"},{\"id\":3,\"name\":\"intcol\",\"required\":false,\"type\":\"int\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"replace-partitions\":\"true\",\"added-data-files\":\"1\",\"deleted-data-files\":\"1\",\"added-records\":\"2\",\"deleted-records\":\"2\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"2\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-summary	{\"replace-partitions\":\"true\",\"added-data-files\":\"1\",\"deleted-data-files\":\"1\",\"added-records\":\"2\",\"deleted-records\":\"2\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"2\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"pcol_month\",\"transform\":\"month\",\"source-id\":2,\"field-id\":1000}]}
-	engine.hive.enabled 	true                
+	format-version      	2                   
 	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	#Masked#                   
 	numRows             	2                   
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	rawDataSize         	0                   
 	serialization.format	1                   
 	snapshot-count      	5                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	#Masked#                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -1364,6 +1392,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 1999-12-31
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -1475,6 +1505,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 1999-12-26
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -1586,6 +1618,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 1999-12-12
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -1704,6 +1738,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 1999-12-13
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -1808,6 +1844,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol 1999-12-02
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -1858,23 +1896,27 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"pcol\",\"required\":false,\"type\":\"date\"},{\"id\":2,\"name\":\"bigintcol\",\"required\":false,\"type\":\"long\"},{\"id\":3,\"name\":\"intcol\",\"required\":false,\"type\":\"int\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"replace-partitions\":\"true\",\"added-data-files\":\"1\",\"added-records\":\"12\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"24\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-summary	{\"replace-partitions\":\"true\",\"added-data-files\":\"1\",\"added-records\":\"12\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"24\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"pcol_day\",\"transform\":\"day\",\"source-id\":1,\"field-id\":1000}]}
-	engine.hive.enabled 	true                
+	format-version      	2                   
 	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	#Masked#                   
 	numRows             	24                  
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	rawDataSize         	0                   
 	serialization.format	1                   
 	snapshot-count      	5                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	#Masked#                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -2020,6 +2062,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol gfhutjkgkd
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -2131,6 +2175,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol gfhyuitogh
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -2235,6 +2281,8 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
+          partition:
+            pcol gfhuiyoprj
           replace: true
           table:
               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
@@ -2285,23 +2333,27 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"pcol\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"bigintcol\",\"required\":false,\"type\":\"long\"},{\"id\":3,\"name\":\"intcol\",\"required\":false,\"type\":\"int\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"replace-partitions\":\"true\",\"added-data-files\":\"1\",\"deleted-data-files\":\"1\",\"added-records\":\"2\",\"deleted-records\":\"2\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"2\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\"}
+	current-snapshot-summary	{\"replace-partitions\":\"true\",\"added-data-files\":\"1\",\"deleted-data-files\":\"1\",\"added-records\":\"2\",\"deleted-records\":\"2\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"2\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"pcol_trunc\",\"transform\":\"truncate[2]\",\"source-id\":1,\"field-id\":1000}]}
-	engine.hive.enabled 	true                
+	format-version      	2                   
 	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	#Masked#                   
 	numRows             	2                   
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	rawDataSize         	0                   
 	serialization.format	1                   
 	snapshot-count      	3                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	#Masked#                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 

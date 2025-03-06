@@ -160,7 +160,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	48                  
 	rawDataSize         	512                 
-	totalSize           	560                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -273,7 +273,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	48                  
 	rawDataSize         	512                 
-	totalSize           	560                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

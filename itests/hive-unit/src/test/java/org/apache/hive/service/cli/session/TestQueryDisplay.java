@@ -18,6 +18,7 @@
 package org.apache.hive.service.cli.session;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.QueryDisplay;
 import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -49,7 +50,7 @@ public class TestQueryDisplay {
 
   @Before
   public void setup() {
-    conf = new HiveConf();
+    conf = new HiveConfForTest(getClass());
     conf.set("hive.support.concurrency", "false");
 
     sessionManager = new SessionManager(null, true);
@@ -198,14 +199,13 @@ public class TestQueryDisplay {
   }
 
   /**
-   * Test for the HiveConf option HIVE_SERVER2_WEBUI_SHOW_STATS, which is available for MapReduce
+   * Test for the HiveConf option HIVE_SERVER2_WEBUI_SHOW_STATS, which is available for Tez
    * jobs only.
    */
   @Test
   public void checkWebUIShowStats() throws Exception {
     // WebUI-related boolean confs must be set before build. HIVE_SERVER2_WEBUI_SHOW_STATS depends
     // on HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT and HIVE_SERVER2_WEBUI_SHOW_GRAPH being set to true.
-    conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_SHOW_GRAPH, true);
     conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_MAX_GRAPH_SIZE, 40);
@@ -220,12 +220,12 @@ public class TestQueryDisplay {
     OperationHandle opHandleSetup =
         session.executeStatement("CREATE TABLE statsTable (i int)", null);
     session.closeOperation(opHandleSetup);
-    OperationHandle opHandleMrQuery =
+    OperationHandle opHandleQuery =
         session.executeStatement("INSERT INTO statsTable VALUES (0)", null);
-    session.closeOperation(opHandleMrQuery);
+    session.closeOperation(opHandleQuery);
 
-    // INSERT queries include  a MapReduce task.
-    verifyDDLHtml("Counters", opHandleMrQuery.getHandleIdentifier().toString(), true);
+    // INSERT queries include a Tez task.
+    verifyDDLHtml("DagId", opHandleQuery.getHandleIdentifier().toString(), true);
 
     session.close();
     resetConfToDefaults();
@@ -241,7 +241,7 @@ public class TestQueryDisplay {
   private void verifyDDL(QueryInfo queryInfo, String stmt, String handle, boolean finished) {
 
     Assert.assertEquals(queryInfo.getUserName(), "testuser");
-    Assert.assertEquals(queryInfo.getExecutionEngine(), "mr");
+    Assert.assertEquals(queryInfo.getExecutionEngine(), "tez");
     Assert.assertEquals(queryInfo.getOperationId(), handle);
     Assert.assertTrue(queryInfo.getBeginTime() > 0 && queryInfo.getBeginTime() <= System.currentTimeMillis());
 
@@ -300,9 +300,10 @@ public class TestQueryDisplay {
     HiveConf hiveConf = sessionManager.getOperationManager().getHiveConf();
     new QueryProfileTmpl().render(sw, queryInfo, hiveConf);
     String html = sw.toString();
-    Assert.assertEquals(assertCondition, html.contains(stmt));
+    Assert.assertEquals("HTML assert condition hasn't met, statement: " + stmt + ", html: " + html, assertCondition,
+        html.contains(stmt));
 
-    Assert.assertTrue(html.contains("testuser"));
+    Assert.assertTrue("HTML doesn't contain and expected string, got: " + html, html.contains("testuser"));
   }
 
   static class MyTask extends Task<Integer> {

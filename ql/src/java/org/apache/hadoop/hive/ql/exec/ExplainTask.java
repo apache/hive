@@ -42,6 +42,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import com.google.common.base.Joiner;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.jsonexplain.JsonParser;
@@ -275,7 +276,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return getJSONPlan(
             out, tasks, fetchTask, jsonOutput, isExtended,
             appendTaskType, cboInfo, cboPlan, optimizedSQL,
-            conf.getVar(ConfVars.HIVESTAGEIDREARRANGE));
+            conf.getVar(ConfVars.HIVE_STAGE_ID_REARRANGE));
   }
 
   public JSONObject getJSONPlan(PrintStream out, List<Task<?>> tasks, Task<?> fetchTask,
@@ -464,9 +465,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     basicDef.add(ddlPlanUtils.getAlterTableStmtTableStatsBasic(tbl));
   }
 
-  public void addConstraints(Table tbl, List<String> constraints, Set<String> allTableNames,
-      DDLPlanUtils ddlPlanUtils){
-    constraints.addAll(ddlPlanUtils.populateConstraints(tbl, allTableNames));
+  public void addConstraints(Table tbl, List<String> constraints, DDLPlanUtils ddlPlanUtils){
+    constraints.addAll(ddlPlanUtils.populateConstraints(tbl));
   }
 
   public void addStats(Table table,List<String> alterTableStmt ,Map<String, List<Partition>> tablePartitionsMap,
@@ -516,15 +516,14 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     //process the databases
     List<String> createDatabaseStmt = ddlPlanUtils.getCreateDatabaseStmt(createDatabase);
     //process the tables
-    for (String tableName : tableMap.keySet()) {
+    for (String tableName : tableMap.keySet().stream().sorted().collect(Collectors.toList())) {
       Table table = tableMap.get(tableName);
       if (table.isView()) {
         createViewList.add(ddlPlanUtils.getCreateViewStmt(table));
-        continue;
       } else {
         addCreateTableStatement(table, tableCreateStmt, ddlPlanUtils);
         addPKandBasicStats(table, tableBasicDef, ddlPlanUtils);
-        addConstraints(table, alterTableStmt, tableMap.keySet(), ddlPlanUtils);
+        addConstraints(table, alterTableStmt, ddlPlanUtils);
         addStats(table, alterTableStmt, tablePartitionsMap, ddlPlanUtils);
       }
     }
@@ -951,7 +950,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   JSONObject outputPlan(Object work, PrintStream out,
       boolean extended, boolean jsonOutput, int indent, String appendToHeader) throws Exception {
     return outputPlan(work, out, extended, jsonOutput, indent, appendToHeader,
-            queryState.getConf().getBoolVar(ConfVars.HIVE_IN_TEST));
+              queryState != null && queryState.getConf().getBoolVar(ConfVars.HIVE_IN_TEST));
   }
 
   public JSONObject outputPlan(Object work, PrintStream out,

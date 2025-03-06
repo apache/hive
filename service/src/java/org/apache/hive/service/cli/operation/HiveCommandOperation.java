@@ -49,7 +49,7 @@ import org.apache.hive.service.cli.session.HiveSession;
  * Executes a HiveCommand
  */
 public class HiveCommandOperation extends ExecuteStatementOperation {
-  private final CommandProcessor commandProcessor;
+  protected final CommandProcessor commandProcessor;
   private TableSchema resultSchema = null;
 
   /**
@@ -124,7 +124,7 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
       }
     } catch (CommandProcessorException e) {
       setState(OperationState.ERROR);
-      throw toSQLException("Error while processing statement", e);
+      throw toSQLException("Error while processing statement", e, queryState.getQueryId());
     } catch (Exception e) {
       setState(OperationState.ERROR);
       throw new HiveSQLException("Error running query: " + e.toString(), e);

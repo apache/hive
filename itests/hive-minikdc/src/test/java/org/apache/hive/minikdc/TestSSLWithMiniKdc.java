@@ -58,7 +58,7 @@ public class TestSSLWithMiniKdc {
 
     SSLTestUtils.setMetastoreSslConf(hiveConf);
     hiveConf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    hiveConf.setBoolVar(ConfVars.HIVEFETCHTASKCACHING, false);
+    hiveConf.setBoolVar(ConfVars.HIVE_FETCH_TASK_CACHING, false);
 
     setHMSSaslConf(miniHiveKdc, hiveConf);
 
@@ -66,6 +66,9 @@ public class TestSSLWithMiniKdc {
 
     Map<String, String> confOverlay = new HashMap<>();
     confOverlay.put(ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_ENABLED.varname, "false");
+    // query history adds no value to this test, it would just bring iceberg handler dependency, which isn't worth
+    // this should be handled with HiveConfForTests when it's used here too
+    confOverlay.put(ConfVars.HIVE_QUERY_HISTORY_ENABLED.varname, "false");
     SSLTestUtils.setHttpConfOverlay(confOverlay);
     SSLTestUtils.setSslConfOverlay(confOverlay);
 

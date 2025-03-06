@@ -113,7 +113,7 @@ class GetTableRequest
     /**
      * @var string
      */
-    public $engine = null;
+    public $engine = "hive";
     /**
      * @var int
      */
@@ -220,13 +220,13 @@ class GetTableRequest
                 case 8:
                     if ($ftype == TType::LST) {
                         $this->processorCapabilities = array();
-                        $_size1015 = 0;
-                        $_etype1018 = 0;
-                        $xfer += $input->readListBegin($_etype1018, $_size1015);
-                        for ($_i1019 = 0; $_i1019 < $_size1015; ++$_i1019) {
-                            $elem1020 = null;
-                            $xfer += $input->readString($elem1020);
-                            $this->processorCapabilities []= $elem1020;
+                        $_size1036 = 0;
+                        $_etype1039 = 0;
+                        $xfer += $input->readListBegin($_etype1039, $_size1036);
+                        for ($_i1040 = 0; $_i1040 < $_size1036; ++$_i1040) {
+                            $elem1041 = null;
+                            $xfer += $input->readString($elem1041);
+                            $this->processorCapabilities []= $elem1041;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -307,8 +307,8 @@ class GetTableRequest
             }
             $xfer += $output->writeFieldBegin('processorCapabilities', TType::LST, 8);
             $output->writeListBegin(TType::STRING, count($this->processorCapabilities));
-            foreach ($this->processorCapabilities as $iter1021) {
-                $xfer += $output->writeString($iter1021);
+            foreach ($this->processorCapabilities as $iter1042) {
+                $xfer += $output->writeString($iter1042);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

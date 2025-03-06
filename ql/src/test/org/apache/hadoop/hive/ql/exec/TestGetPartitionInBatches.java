@@ -19,15 +19,17 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.MetastoreException;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Assert;
 import org.junit.After;
@@ -36,10 +38,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
-
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -57,12 +59,15 @@ public class TestGetPartitionInBatches {
     private static HiveMetaStoreClient msc;
     private static Hive hive;
     private Table table;
+    private final static int NUM_PARTITIONS = 30;
+    private final static boolean IS_AUTH_REQUIRED = false;
+    private final static Map<String, String> PARTIAL_PARTITION_SPEC = null;
 
     @BeforeClass
     public static void setupClass() throws HiveException {
-        hiveConf = new HiveConf(TestGetPartitionInBatches.class);
-        hive = Hive.get();
-        SessionState.start(hiveConf);
+        hiveConf = new HiveConfForTest(TestGetPartitionInBatches.class);
+        SessionState ss = SessionState.start(hiveConf);
+        hive = ss.getHiveDb();
         try {
             msc = new HiveMetaStoreClient(hiveConf);
         } catch (MetaException e) {
@@ -74,7 +79,7 @@ public class TestGetPartitionInBatches {
     public void before() throws Exception {
         PartitionUtil.createPartitionedTable(msc, catName, dbName, tableName);
         table = msc.getTable(catName, dbName, tableName);
-        addPartitions(dbName, tableName);
+        PartitionUtil.addPartitions(msc, dbName, tableName, table.getSd().getLocation(), hiveConf, NUM_PARTITIONS);
     }
 
     @After
@@ -82,24 +87,13 @@ public class TestGetPartitionInBatches {
         PartitionUtil.cleanUpTableQuietly(msc, catName, dbName, tableName);
     }
 
-    private void addPartitions(String dbName, String tableName) throws Exception {
-        List<Partition> partitions = new ArrayList<>();
-        for (int i = 0; i < 30; i++) {
-            partitions.add(buildPartition(dbName, tableName, String.valueOf(i), table.getSd().getLocation() + "/city=" + i));
-        }
-        msc.add_partitions(partitions, true, true);
-    }
-
-    protected Partition buildPartition(String dbName, String tableName, String value,
-        String location) throws MetaException {
-        return new PartitionBuilder()
-                .setDbName(dbName)
-                .setTableName(tableName)
-                .addValue(value)
-                .addCol("test_id", "int", "test col id")
-                .addCol("test_value", "string", "test col value")
-                .setLocation(location)
-                .build(hiveConf);
+    @Test
+    public void TestNumberOfPartitionsRetrieved() throws HiveException {
+        List<String> numParts = hive.getPartitionNames(dbName, tableName, (short)-1);
+        Assert.assertEquals(numParts.size(), NUM_PARTITIONS);
+        List<Partition> partitions = hive.getPartitionsByNames(new org.apache.hadoop.hive.ql.metadata.Table(table),
+                numParts.subList(0,5), false);
+        Assert.assertEquals(partitions.size(), 5);
     }
 
     /**
@@ -108,9 +102,9 @@ public class TestGetPartitionInBatches {
      * @throws Exception
      */
     @Test
-    public void testgetAllPartitionsOf() throws Exception {
+    public void testGetAllPartitionsOf() throws Exception {
         Set<org.apache.hadoop.hive.ql.metadata.Partition> part = hive.getAllPartitionsOf(hive.getTable(dbName, tableName));
-        Assert.assertEquals(part.size(), 30);
+        Assert.assertEquals(part.size(), NUM_PARTITIONS);
     }
 
     /**
@@ -124,7 +118,7 @@ public class TestGetPartitionInBatches {
         HiveMetaStoreClient spyMSC = spy(msc);
         hive.setMSC(spyMSC);
         // test with a batch size of 10 and decaying factor of 2
-        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName),10, 2, 0);
+        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName),10, 2, 0, PARTIAL_PARTITION_SPEC, IS_AUTH_REQUIRED);
         ArgumentCaptor<GetPartitionsByNamesRequest> req = ArgumentCaptor.forClass(GetPartitionsByNamesRequest.class);
         // there should be 3 calls to get partitions
         verify(spyMSC, times(3)).getPartitionsByNames(req.capture());
@@ -142,7 +136,7 @@ public class TestGetPartitionInBatches {
         HiveMetaStoreClient spyMSC = spy(msc);
         hive.setMSC(spyMSC);
         // there should be 2 calls to get partitions with batch sizes of 19, 11
-        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName),19, 2, 0);
+        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName),19, 2, 0, PARTIAL_PARTITION_SPEC, IS_AUTH_REQUIRED);
         ArgumentCaptor<GetPartitionsByNamesRequest> req = ArgumentCaptor.forClass(GetPartitionsByNamesRequest.class);
         // there should be 2 calls to get partitions
         verify(spyMSC, times(2)).getPartitionsByNames(req.capture());
@@ -162,7 +156,7 @@ public class TestGetPartitionInBatches {
     public void testSmallNumberOfPartitions() throws Exception {
         HiveMetaStoreClient spyMSC = spy(msc);
         hive.setMSC(spyMSC);
-        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName),100, 2, 0);
+        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName),100, 2, 0, PARTIAL_PARTITION_SPEC, IS_AUTH_REQUIRED);
         ArgumentCaptor<GetPartitionsByNamesRequest> req = ArgumentCaptor.forClass(GetPartitionsByNamesRequest.class);
         // there should be 1 call to get partitions
         verify(spyMSC, times(1)).getPartitionsByNames(req.capture());
@@ -182,7 +176,7 @@ public class TestGetPartitionInBatches {
         hive.setMSC(spyMSC);
         doThrow(MetaException.class).when(spyMSC).getPartitionsByNames(any());
         try {
-            hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName), 30, 2, 0);
+            hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName), 30, 2, 0, PARTIAL_PARTITION_SPEC, IS_AUTH_REQUIRED);
         } catch (Exception ignored) {}
         ArgumentCaptor<GetPartitionsByNamesRequest> req = ArgumentCaptor.forClass(GetPartitionsByNamesRequest.class);
         // there should be 5 call to get partitions with batch sizes as 30, 15, 7, 3, 1
@@ -207,7 +201,7 @@ public class TestGetPartitionInBatches {
         hive.setMSC(spyMSC);
         doThrow(MetaException.class).when(spyMSC).getPartitionsByNames(any());
         try {
-            hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName), 30, 2, 2);
+            hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName), 30, 2, 2, PARTIAL_PARTITION_SPEC, IS_AUTH_REQUIRED);
         } catch (Exception ignored) {}
         ArgumentCaptor<GetPartitionsByNamesRequest> req = ArgumentCaptor.forClass(GetPartitionsByNamesRequest.class);
         // there should be 2 call to get partitions with batch sizes as 30, 15
@@ -234,7 +228,7 @@ public class TestGetPartitionInBatches {
         doThrow(new MetaException()).doCallRealMethod()
                 .when(spyMSC).getPartitionsByNames(any());
 
-        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName), 30, 2, 5);
+        hive.getAllPartitionsInBatches(hive.getTable(dbName, tableName), 30, 2, 5, PARTIAL_PARTITION_SPEC, IS_AUTH_REQUIRED);
         ArgumentCaptor<GetPartitionsByNamesRequest> req = ArgumentCaptor.forClass(GetPartitionsByNamesRequest.class);
         // The first call with batch size of 30 will fail, the rest two call will be of size 15 each. Total 3 calls
         verify(spyMSC, times(3)).getPartitionsByNames(req.capture());
@@ -255,5 +249,24 @@ public class TestGetPartitionInBatches {
         assert(partitionNames.size() == 30);
         // In case any duplicate/incomplete list is given by hive.getAllPartitionsInBatches, the below assertion will fail
         assert(partNames.size() == 0);
+    }
+
+    @Test
+    public void testBatchingWhenBatchSizeIsZero() throws MetaException {
+        HiveMetaStoreClient spyMSC = spy(msc);
+        hive.setMSC(spyMSC);
+        int batchSize = 0;
+        try {
+            new PartitionIterable(hive, hive.getTable(dbName, tableName), null, batchSize);
+        } catch (HiveException e) {
+            Assert.assertTrue(e.getMessage().contains("Invalid batch size for partition iterable." +
+                    " Please use a batch size greater than 0"));
+        }
+        try {
+            new org.apache.hadoop.hive.metastore.PartitionIterable(msc, table, batchSize);
+        } catch (MetastoreException e) {
+            Assert.assertTrue(e.getMessage().contains("Invalid batch size for partition iterable." +
+                    " Please use a batch size greater than 0"));
+        }
     }
 }

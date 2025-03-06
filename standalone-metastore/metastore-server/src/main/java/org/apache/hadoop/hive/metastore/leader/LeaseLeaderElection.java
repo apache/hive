@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -92,9 +93,18 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
   public static final String METASTORE_RENEW_LEASE = "metastore.renew.leader.lease";
 
   private String name;
+  private String userName;
+  private String hostName;
+  private boolean enforceMutex;
 
-  private void doWork(LockResponse resp, Configuration conf,
+  public LeaseLeaderElection() throws IOException {
+    userName = SecurityUtils.getUser();
+    hostName = InetAddress.getLocalHost().getHostName();
+  }
+
+  private synchronized void doWork(LockResponse resp, Configuration conf,
       TableName tableName) throws LeaderException {
+    long start = System.currentTimeMillis();
     lockId = resp.getLockid();
     assert resp.getState() == LockState.ACQUIRED || resp.getState() == LockState.WAITING;
     shutdownWatcher();
@@ -121,6 +131,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
     default:
       throw new IllegalStateException("Unexpected lock state: " + resp.getState());
     }
+    LOG.debug("Spent {}ms to notify the listeners, isLeader: {}", System.currentTimeMillis() - start, isLeader);
   }
 
   private void notifyListener() {
@@ -142,14 +153,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
   public void tryBeLeader(Configuration conf, TableName table) throws LeaderException {
     requireNonNull(conf, "conf is null");
     requireNonNull(table, "table is null");
-    String user, hostName;
-    try {
-      user = SecurityUtils.getUser();
-      hostName = InetAddress.getLocalHost().getHostName();
-    } catch (Exception e) {
-      throw new LeaderException("Error while getting the username", e);
-    }
-
+    this.enforceMutex = conf.getBoolean(HIVE_TXN_ENFORCE_AUX_MUTEX, true);
     if (store == null) {
       store = TxnUtils.getTxnStore(conf);
     }
@@ -165,7 +169,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
     boolean lockable = false;
     Exception recentException = null;
     long start = System.currentTimeMillis();
-    LockRequest req = new LockRequest(components, user, hostName);
+    LockRequest req = new LockRequest(components, userName, hostName);
     int numRetries = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.LOCK_NUMRETRIES);
     long maxSleep = MetastoreConf.getTimeVar(conf,
         MetastoreConf.ConfVars.LOCK_SLEEP_BETWEEN_RETRIES, TimeUnit.MILLISECONDS);
@@ -175,6 +179,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
         if (res.getState() == LockState.WAITING || res.getState() == LockState.ACQUIRED) {
           lockable = true;
           doWork(res, conf, table);
+          LOG.debug("Spent {}ms to lock the table {}, retries: {}", System.currentTimeMillis() - start, table, i);
           break;
         }
       } catch (NoSuchTxnException | TxnAbortedException e) {
@@ -324,6 +329,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
       } catch (NoSuchTxnException | TxnAbortedException e) {
         throw new AssertionError("This should not happen, we didn't open txn", e);
       } catch (NoSuchLockException e) {
+        LOG.info("No such lock {} for NonLeaderWatcher, try to obtain the lock again...", lockId);
         reclaim();
       } catch (Exception e) {
         // Wait for next cycle.
@@ -379,6 +385,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
       } catch (NoSuchTxnException | TxnAbortedException e) {
         throw new AssertionError("This should not happen, we didn't open txn", e);
       } catch (NoSuchLockException e) {
+        LOG.info("No such lock {} for Heartbeater, try to obtain the lock again...", lockId);
         reclaim();
       } catch (Exception e) {
         // Wait for next cycle.
@@ -404,6 +411,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
       super(conf, tableName);
       timeout = MetastoreConf.getTimeVar(conf,
           MetastoreConf.ConfVars.TXN_TIMEOUT, TimeUnit.MILLISECONDS) + 3000;
+      setName("ReleaseAndRequireWatcher");
     }
 
     @Override
@@ -463,5 +471,10 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
   @Override
   public String getName() {
     return name;
+  }
+
+  @Override
+  public boolean enforceMutex() {
+    return this.enforceMutex;
   }
 }

@@ -25,6 +25,7 @@ import java.util.Map;
 import org.apache.hive.hplsql.Conn;
 import org.apache.hive.hplsql.Exec;
 import org.apache.hive.hplsql.HplsqlParser;
+import org.apache.hive.hplsql.Utils;
 import org.apache.hive.hplsql.Var;
 import org.apache.hive.hplsql.executor.QueryException;
 import org.apache.hive.hplsql.executor.QueryExecutor;
@@ -63,7 +64,7 @@ public class FunctionMisc extends BuiltinFunctions {
   void activityCount(HplsqlParser.Expr_spec_funcContext ctx) {
     evalInt(Long.valueOf(exec.getRowCount()));
   }
-  
+
   /**
    * CAST function
    */
@@ -80,10 +81,28 @@ public class FunctionMisc extends BuiltinFunctions {
       if (ctx.dtype_len().L_INT(1) != null) {
         scale = ctx.dtype_len().L_INT(1).getText();
       }
-    }    
+    }
     Var var = new Var(null, type, len, scale, null);
-    var.cast(evalPop(ctx.expr(0)));
-    evalVar(var);
+    Var value = evalPop(ctx.expr(0));
+    if (value.type == Var.Type.STRING) {
+      Var newValue = new Var(value.name, value.type, Utils.unquoteString(value.toString()));
+      value = newValue;
+    }
+    if (value.type != Var.Type.NULL) {
+      String valueUpper = value.toString().toUpperCase();
+      if (valueUpper.startsWith("TIMESTAMP ") || valueUpper.startsWith("DATE ")) {
+        boolean old = exec.buildSql;
+        exec.buildSql = false;
+        value = evalPop(ctx.expr(0));
+        exec.buildSql = old;
+      }
+    }
+    var.cast(value);
+    if (exec.buildSql && var.type == Var.Type.STRING) {
+      evalString(var.toSqlString());
+    } else {
+      evalVar(var);
+    }
   }
   
   /**
@@ -98,7 +117,7 @@ public class FunctionMisc extends BuiltinFunctions {
       evalVar(FunctionDatetime.currentTimestamp(precision)); 
     }
     else if (ctx.T_USER() != null) {
-      evalVar(FunctionMisc.currentUser());
+      evalVar(currentUser());
     }
     else {
       evalNull();
@@ -111,22 +130,23 @@ public class FunctionMisc extends BuiltinFunctions {
   void currentSql(HplsqlParser.Expr_spec_funcContext ctx) {
     if (ctx.T_DATE() != null) {
       if (exec.getConnectionType() == Conn.Type.HIVE) {
-        evalString("TO_DATE(FROM_UNIXTIME(UNIX_TIMESTAMP()))");
+        evalSqlString("TO_DATE(FROM_UNIXTIME(UNIX_TIMESTAMP()))");
       } 
       else {
-        evalString("CURRENT_DATE");
+        evalSqlString("CURRENT_DATE");
       }
     }
     else if (ctx.T_TIMESTAMP() != null) {
       if (exec.getConnectionType() == Conn.Type.HIVE) {
-        evalString("FROM_UNIXTIME(UNIX_TIMESTAMP())");
+        evalSqlString("FROM_UNIXTIME(UNIX_TIMESTAMP())");
       } 
       else {
-        evalString("CURRENT_TIMESTAMP");
+        evalSqlString("CURRENT_TIMESTAMP");
       }
-    }
-    else {
-      evalString(exec.getFormattedText(ctx));
+    } else if (ctx.T_USER() != null) {
+      evalSqlString("CURRENT_USER()");
+    } else {
+      evalSqlString(exec.getFormattedText(ctx));
     }
   }
   
@@ -137,8 +157,9 @@ public class FunctionMisc extends BuiltinFunctions {
     evalVar(currentUser());
   }
   
-  public static Var currentUser() {
-    return new Var(System.getProperty("user.name"));
+  public Var currentUser() {
+    String currentUser = System.getProperty("user.name");
+    return new Var(currentUser);
   }
   
   /**
@@ -167,7 +188,7 @@ public class FunctionMisc extends BuiltinFunctions {
       evalNull();
     }
   }
-  
+
   /**
    * NVL function - Return first non-NULL expression
    */
@@ -187,7 +208,8 @@ public class FunctionMisc extends BuiltinFunctions {
    */
   void nvl2(HplsqlParser.Expr_func_paramsContext ctx) {
     if (ctx.func_param().size() == 3) {
-      if (!evalPop(ctx.func_param(0).expr()).isNull()) {
+      Var firstParam = evalPop(ctx.func_param(0).expr());
+      if (!firstParam.isNull()) {
         eval(ctx.func_param(1).expr());
       }
       else {

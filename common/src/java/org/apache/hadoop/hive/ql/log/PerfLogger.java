@@ -40,10 +40,32 @@ import java.util.concurrent.ConcurrentHashMap;
 public class PerfLogger {
   public static final String ACQUIRE_READ_WRITE_LOCKS = "acquireReadWriteLocks";
   public static final String COMPILE = "compile";
+  public static final String COMPILE_STEP = "Compile Step";
   public static final String WAIT_COMPILE = "waitCompile";
   public static final String PARSE = "parse";
   public static final String ANALYZE = "semanticAnalyze";
   public static final String OPTIMIZER = "optimizer";
+  public static final String GENERATE_RESOLVED_PARSETREE = "Generate Resolved ParseTree";
+  public static final String LOGICALPLAN_AND_HIVE_OPERATOR_TREE = "Logical Plan and hive Operator Tree";
+  public static final String DEDUCE_RESULTSET_SCHEMA = "Deduce ResultsetSchema";
+  public static final String PARSE_CONTEXT_GENERATION = "Parse Context generation";
+  public static final String SAVE_AND_VALIDATE_VIEW = "Save and Validate View Creation";
+  public static final String LOGICAL_OPTIMIZATION = "Logical Optimization";
+  public static final String PHYSICAL_OPTIMIZATION = "Physical Optimization";
+  public static final String POST_PROCESSING = "Post Processing";
+  public static final String GENERATE_LOGICAL_PLAN = "Generate Logical Plan";
+  public static final String GENERATE_OPERATOR_TREE = "Generate Operator Tree";
+  public static final String VIEW_REWRITING = "Calcite: View-based rewriting";
+  public static final String PLAN_GENERATION = "Calcite: Plan generation";
+  public static final String MV_REWRITE_FIELD_TRIMMER = "MV Rewrite and Field Trimmer";
+  public static final String REMOVING_SUBQUERY = "Removing SubQuery";
+  public static final String DECORRELATION = "Decorrelation";
+  public static final String VALIDATE_QUERY_MATERIALIZATION = "Validate Query Materialization";
+  public static final String PREJOIN_ORDERING = "Calcite: Prejoin ordering transformation";
+  public static final String MV_REWRITING = "MV Rewriting";
+  public static final String JOIN_REORDERING = "Calcite: Join Reordering";
+  public static final String POSTJOIN_ORDERING = "Calcite: Postjoin ordering transformation";
+  public static final String HIVE_SORT_PREDICATES = "Hive Sort Predicates";
   public static final String MATERIALIZED_VIEWS_REGISTRY_REFRESH = "MaterializedViewsRegistryRefresh";
   public static final String DO_AUTHORIZATION = "doAuthorization";
   public static final String DRIVER_EXECUTE = "Driver.execute";
@@ -78,6 +100,8 @@ public class PerfLogger {
   public static final String LOAD_TABLE = "LoadTable";
   public static final String LOAD_PARTITION = "LoadPartition";
   public static final String LOAD_DYNAMIC_PARTITIONS = "LoadDynamicPartitions";
+
+  public static final String STATS_TASK = "StatsTask";
 
   public static final String HIVE_GET_TABLE = "getTablesByType";
   public static final String HIVE_GET_DATABASE = "getDatabase";
@@ -117,10 +141,6 @@ public class PerfLogger {
       perfLogger.set(result);
     }
     return result;
-  }
-
-  public static void setPerfLogger(PerfLogger resetPerfLogger) {
-    perfLogger.set(resetPerfLogger);
   }
 
   /**
@@ -209,6 +229,33 @@ public class PerfLogger {
 
   public Map<String, Long> getEndTimes() {
     return ImmutableMap.copyOf(endTimes);
+  }
+
+  /**
+   * Helper method for getting the time spent with total DAG preparation.
+   */
+  public long getPreparePlanDuration() {
+    long dagSubmitStartTime = getStartTime(PerfLogger.TEZ_SUBMIT_DAG);
+    long compileEndTime = getEndTime(PerfLogger.COMPILE);
+    long getSessionDuration = getDuration(PerfLogger.TEZ_GET_SESSION);
+
+    // no DAG was running with this query
+    if (dagSubmitStartTime == 0){
+      // so no plan preparation happened
+      return 0;
+    }
+
+    return dagSubmitStartTime - compileEndTime - getSessionDuration;
+  }
+
+  /**
+   * Helper method for getting the time spent to actually run the DAG.
+   */
+  public long getRunDagDuration() {
+    long submitToRunningDuration = getDuration(PerfLogger.TEZ_SUBMIT_TO_RUNNING);
+
+    return submitToRunningDuration == 0 ? getDuration(PerfLogger.TEZ_RUN_DAG) : getEndTime(PerfLogger.TEZ_RUN_DAG) -
+        getEndTime(PerfLogger.TEZ_SUBMIT_TO_RUNNING);
   }
 
   //Methods for metrics integration.  Each thread-local PerfLogger will open/close scope during each perf-log method.

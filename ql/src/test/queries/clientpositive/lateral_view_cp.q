@@ -1,5 +1,4 @@
 --! qt:dataset:src
-set hive.cbo.fallback.strategy=NEVER;
 --HIVE 3226
 drop table array_valued_src;
 create table array_valued_src (key string, value array<string>);

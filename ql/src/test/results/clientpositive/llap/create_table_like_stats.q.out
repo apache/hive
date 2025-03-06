@@ -34,7 +34,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -86,7 +86,7 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	bucketing_version   	2                   
 	numFiles            	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -149,7 +149,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -208,7 +208,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

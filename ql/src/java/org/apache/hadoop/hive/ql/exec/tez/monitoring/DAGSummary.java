@@ -28,7 +28,6 @@ import org.apache.tez.common.counters.TaskCounter;
 import org.apache.tez.common.counters.TezCounter;
 import org.apache.tez.common.counters.TezCounters;
 import org.apache.tez.dag.api.DAG;
-import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.dag.api.client.DAGClient;
@@ -73,7 +72,7 @@ class DAGSummary implements PrintSummary {
     this.dagClient = dagClient;
     this.dag = dag;
     this.perfLogger = perfLogger;
-    this.hiveCountersGroup = HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVECOUNTERGROUP);
+    this.hiveCountersGroup = HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVE_COUNTER_GROUP);
     this.hiveCounters = hiveCounters(dagClient);
   }
 

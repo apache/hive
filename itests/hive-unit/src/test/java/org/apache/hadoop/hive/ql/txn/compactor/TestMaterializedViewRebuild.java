@@ -17,20 +17,27 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
+import org.apache.hadoop.hive.common.ValidReadTxnList;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
+import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
-import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriver;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.execSelectAndDumpData;
+import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriver;
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriverSilently;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.when;
 
 public class TestMaterializedViewRebuild extends CompactorOnTezTest {
 
@@ -180,6 +187,20 @@ public class TestMaterializedViewRebuild extends CompactorOnTezTest {
     Collections.sort(expected);
     Collections.sort(actual);
     Assert.assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testMaterializationLockCleaned() throws Exception {
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    OpenTxnsResponse response = txnHandler.openTxns(new OpenTxnRequest(1, "user", "host"));
+    txnHandler.lockMaterializationRebuild("default", TABLE1, response.getTxn_ids().get(0));
+
+    //Mimic the lock can be cleaned up
+    ValidTxnList validTxnList = Mockito.mock(ValidReadTxnList.class);
+    when(validTxnList.isTxnValid(anyLong())).thenReturn(true);
+
+    long removedCnt = txnHandler.cleanupMaterializationRebuildLocks(validTxnList, 10);
+    Assert.assertEquals(1, removedCnt);
   }
 
 }

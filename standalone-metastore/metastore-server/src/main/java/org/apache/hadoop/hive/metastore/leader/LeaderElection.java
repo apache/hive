@@ -31,6 +31,11 @@ import java.io.Closeable;
  * @param <T> the type of mutex
  */
 public interface LeaderElection<T> extends Closeable {
+  // We might have different versions of HMS, or even the same version but with different
+  // leader election methods running inside the warehouse, so it's hard to know how many HMS instances
+  // that elected as the leader. Relying on this property to tell us, default is true, means it has multiple
+  // HMS instances acting as the leader.
+  static final String HIVE_TXN_ENFORCE_AUX_MUTEX = "hive.metastore.enforce.aux.mutex";
 
   /**
    * Place where election happens
@@ -64,6 +69,10 @@ public interface LeaderElection<T> extends Closeable {
    * Get the name of this leader candidate
    */
   public String getName();
+
+  default boolean enforceMutex() {
+    return true;
+  }
 
   public interface LeadershipStateListener {
 

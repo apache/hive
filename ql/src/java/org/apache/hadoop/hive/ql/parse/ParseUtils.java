@@ -24,11 +24,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 
@@ -36,6 +39,8 @@ import com.google.common.collect.Lists;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.util.Pair;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -60,12 +65,19 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.getTypeStringFromAST;
+import static org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.unescapeIdentifier;
 
 
 /**
@@ -204,7 +216,7 @@ public final class ParseUtils {
 
     switch(filterCondn.getType()) {
     case HiveParser.TOK_TABLE_OR_COL:
-      String tableOrCol = SemanticAnalyzer.unescapeIdentifier(filterCondn.getChild(0).getText()
+      String tableOrCol = unescapeIdentifier(filterCondn.getChild(0).getText()
           .toLowerCase());
       return getIndex(tabAliases, tableOrCol);
     case HiveParser.Identifier:
@@ -270,18 +282,23 @@ public final class ParseUtils {
     return className;
   }
 
-  public static boolean containsTokenOfType(ASTNode root, Integer ... tokens) {
-    final Set<Integer> tokensToMatch = new HashSet<Integer>();
-    for (Integer tokenTypeToMatch : tokens) {
-      tokensToMatch.add(tokenTypeToMatch);
-    }
+  public static Pair<Boolean, String> containsTokenOfType(ASTNode root, Integer ... tokens) {
+    final Set<Integer> tokensToMatch = new HashSet<>(Arrays.asList(tokens));
+    final String[] matched = {null};
 
-    return ParseUtils.containsTokenOfType(root, new PTFUtils.Predicate<ASTNode>() {
+    boolean check =  ParseUtils.containsTokenOfType(root, new PTFUtils.Predicate<ASTNode>() {
       @Override
       public boolean apply(ASTNode node) {
-        return tokensToMatch.contains(node.getType());
+        if (tokensToMatch.contains(node.getType())) {
+          matched[0] = node.getText();
+          return true;
+        }
+
+        return false;
       }
     });
+
+    return Pair.of(check, matched[0]);
   }
 
   public static boolean containsTokenOfType(ASTNode root, PTFUtils.Predicate<ASTNode> predicate) {
@@ -309,7 +326,7 @@ public final class ParseUtils {
   }
 
   private static void handleSetColRefs(ASTNode tree, Context ctx) {
-    CalcitePlanner.ASTSearcher astSearcher = new CalcitePlanner.ASTSearcher();
+    ASTSearcher astSearcher = new ASTSearcher();
     while (true) {
       astSearcher.reset();
       ASTNode setCols = astSearcher.depthFirstSearch(tree, HiveParser.TOK_SETCOLREF);
@@ -526,14 +543,13 @@ public final class ParseUtils {
     return sb.toString();
   }
 
-  public static CBOPlan parseQuery(HiveConf conf, String viewQuery)
+  public static CBOPlan parseQuery(Context ctx, String viewQuery)
       throws SemanticException, ParseException {
-    final Context ctx = new Context(conf);
-    ctx.setIsLoadingMaterializedView(true);
     final ASTNode ast = parse(viewQuery, ctx);
-    final CalcitePlanner analyzer = getAnalyzer(conf, ctx);
+    final CalcitePlanner analyzer = getAnalyzer((HiveConf) ctx.getConf(), ctx);
     RelNode logicalPlan = analyzer.genLogicalPlan(ast);
-    return new CBOPlan(ast, logicalPlan, analyzer.getInvalidAutomaticRewritingMaterializationReason());
+    return new CBOPlan(
+        ast, logicalPlan, analyzer.getMaterializationValidationResult().getSupportedRewriteAlgorithms());
   }
 
   public static List<FieldSchema> parseQueryAndGetSchema(HiveConf conf, String viewQuery)
@@ -563,9 +579,11 @@ public final class ParseUtils {
    */
   public static Map<Integer, List<ExprNodeGenericFuncDesc>> getFullPartitionSpecs(
       CommonTree ast, Table table, Configuration conf, boolean canGroupExprs) throws SemanticException {
-    String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULTPARTITIONNAME);
+    String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
     Map<String, String> colTypes = new HashMap<>();
-    for (FieldSchema fs : table.getPartitionKeys()) {
+    List<FieldSchema> partitionKeys = table.hasNonNativePartitionSupport() ?
+        table.getStorageHandler().getPartitionKeys(table) : table.getPartitionKeys();
+    for (FieldSchema fs : partitionKeys) {
       colTypes.put(fs.getName().toLowerCase(), fs.getType());
     }
 
@@ -581,7 +599,24 @@ public final class ParseUtils {
       for (int i = 0; i < partSpecTree.getChildCount(); ++i) {
         CommonTree partSpecSingleKey = (CommonTree) partSpecTree.getChild(i);
         assert (partSpecSingleKey.getType() == HiveParser.TOK_PARTVAL);
-        String key = stripIdentifierQuotes(partSpecSingleKey.getChild(0).getText()).toLowerCase();
+        String transform = null;
+        String key;
+        Tree partitionTree = partSpecSingleKey.getChild(0);
+        if (partitionTree.getType() == HiveParser.TOK_FUNCTION) {
+          int childCount = partitionTree.getChildCount();
+          if (childCount == 2) {  // Case with unary function
+            key = stripIdentifierQuotes(partitionTree.getChild(1).getText()).toLowerCase();
+            transform = partitionTree.getChild(0).getText().toLowerCase() + "(" + key + ")";
+          } else if (childCount == 3) {  // Case with transform, columnName, and integer
+            key = stripIdentifierQuotes(partitionTree.getChild(2).getText()).toLowerCase();
+            String transformParam = partitionTree.getChild(1).getText();
+            transform = partitionTree.getChild(0).getText().toLowerCase() + "(" + transformParam + ", " + key + ")";
+          } else {
+            throw new SemanticException("Unexpected number of children in partition spec");
+          }
+        } else {
+          key = stripIdentifierQuotes(partitionTree.getText()).toLowerCase();
+        }
         String operator = partSpecSingleKey.getChild(1).getText();
         ASTNode partValNode = (ASTNode)partSpecSingleKey.getChild(2);
         TypeCheckCtx typeCheckCtx = new TypeCheckCtx(null);
@@ -591,7 +626,7 @@ public final class ParseUtils {
 
         boolean isDefaultPartitionName = val.equals(defaultPartitionName);
 
-        String type = colTypes.get(key);
+        String type = transform != null ? "string" : colTypes.get(key);
         if (type == null) {
           throw new SemanticException("Column " + key + " is not a partition key");
         }
@@ -606,7 +641,7 @@ public final class ParseUtils {
           }
         }
 
-        ExprNodeColumnDesc column = new ExprNodeColumnDesc(pti, key, null, true);
+        ExprNodeColumnDesc column = new ExprNodeColumnDesc(pti, ObjectUtils.defaultIfNull(transform, key), null, true);
         ExprNodeGenericFuncDesc op;
         if (!isDefaultPartitionName) {
           op = PartitionUtils.makeBinaryPredicate(operator, column, new ExprNodeConstantDesc(pti, val));
@@ -673,16 +708,21 @@ public final class ParseUtils {
     return val;
   }
 
+  public static ReparseResult parseRewrittenQuery(Context ctx, StringBuilder rewrittenQueryStr)
+      throws SemanticException {
+    return parseRewrittenQuery(ctx, rewrittenQueryStr.toString());
+  }
+
   /**
    * Parse the newly generated SQL statement to get a new AST.
    */
   public static ReparseResult parseRewrittenQuery(Context ctx,
-      StringBuilder rewrittenQueryStr)
+      String rewrittenQueryStr)
       throws SemanticException {
     // Set dynamic partitioning to nonstrict so that queries do not need any partition
     // references.
     // TODO: this may be a perf issue as it prevents the optimizer.. or not
-    HiveConf.setVar(ctx.getConf(), HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
+    HiveConf.setVar(ctx.getConf(), HiveConf.ConfVars.DYNAMIC_PARTITIONING_MODE, "nonstrict");
     // Disable LLAP IO wrapper; doesn't propagate extra ACID columns correctly.
     HiveConf.setBoolVar(ctx.getConf(), HiveConf.ConfVars.LLAP_IO_ROW_WRAPPER_ENABLED, false);
     // Parse the rewritten query string
@@ -697,12 +737,12 @@ public final class ParseUtils {
     rewrittenCtx.setStatsSource(ctx.getStatsSource());
     rewrittenCtx.setPlanMapper(ctx.getPlanMapper());
     rewrittenCtx.setIsUpdateDeleteMerge(true);
-    rewrittenCtx.setCmd(rewrittenQueryStr.toString());
+    rewrittenCtx.setCmd(rewrittenQueryStr);
 
     ASTNode rewrittenTree;
     try {
-      LOG.info("Going to reparse <" + ctx.getCmd() + "> as \n<" + rewrittenQueryStr.toString() + ">");
-      rewrittenTree = ParseUtils.parse(rewrittenQueryStr.toString(), rewrittenCtx);
+      LOG.info("Going to reparse <{}> as \n<{}>", ctx.getCmd(), rewrittenQueryStr);
+      rewrittenTree = ParseUtils.parse(rewrittenQueryStr, rewrittenCtx);
     } catch (ParseException e) {
       throw new SemanticException(ErrorMsg.UPDATEDELETE_PARSE_ERROR.getMsg(), e);
     }
@@ -718,4 +758,55 @@ public final class ParseUtils {
     }
   }
 
+  public static TypeInfo getComplexTypeTypeInfo(ASTNode typeNode) throws SemanticException {
+    switch (typeNode.getType()) {
+      case HiveParser.TOK_LIST:
+        ListTypeInfo listTypeInfo = new ListTypeInfo();
+        listTypeInfo.setListElementTypeInfo(getComplexTypeTypeInfo((ASTNode) typeNode.getChild(0)));
+        return listTypeInfo;
+      case HiveParser.TOK_MAP:
+        MapTypeInfo mapTypeInfo = new MapTypeInfo();
+        String keyTypeString = getTypeStringFromAST((ASTNode) typeNode.getChild(0));
+        mapTypeInfo.setMapKeyTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo(keyTypeString));
+        mapTypeInfo.setMapValueTypeInfo(getComplexTypeTypeInfo((ASTNode) typeNode.getChild(1)));
+        return mapTypeInfo;
+      case HiveParser.TOK_STRUCT:
+        StructTypeInfo structTypeInfo = new StructTypeInfo();
+        Map<String, TypeInfo> fields = collectStructFieldNames(typeNode);
+        structTypeInfo.setAllStructFieldNames(new ArrayList<>(fields.keySet()));
+        structTypeInfo.setAllStructFieldTypeInfos(new ArrayList<>(fields.values()));
+        return structTypeInfo;
+      default:
+        String typeString = getTypeStringFromAST(typeNode);
+        return TypeInfoFactory.getPrimitiveTypeInfo(typeString);
+    }
+  }
+
+  private static Map<String, TypeInfo> collectStructFieldNames(ASTNode structTypeNode) throws SemanticException {
+    ASTNode fieldListNode = (ASTNode) structTypeNode.getChild(0);
+    assert fieldListNode.getType() == HiveParser.TOK_TABCOLLIST;
+
+    Map<String, TypeInfo> result = new LinkedHashMap<>(fieldListNode.getChildCount());
+    for (int i = 0; i < fieldListNode.getChildCount(); i++) {
+      ASTNode child = (ASTNode) fieldListNode.getChild(i);
+
+      String attributeIdentifier = unescapeIdentifier(child.getChild(0).getText());
+      if (result.containsKey(attributeIdentifier)) {
+        throw new SemanticException(ErrorMsg.AMBIGUOUS_STRUCT_ATTRIBUTE, attributeIdentifier);
+      } else {
+        result.put(attributeIdentifier, getComplexTypeTypeInfo((ASTNode) child.getChild(1)));
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Returns the root node's string representation without the "TOK_" prefix.
+   * @param node the ASTNode
+   */
+  public static String getNodeName(ASTNode node) {
+    return Optional.ofNullable(node)
+        .map(ASTNode::getText).map(text -> text.substring("TOK_".length()))
+        .orElse("");
+  }
 }
