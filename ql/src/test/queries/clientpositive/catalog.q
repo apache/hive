@@ -7,6 +7,9 @@ SHOW CATALOGS;
 -- CREATE with comment
 CREATE CATALOG test_cat LOCATION '/tmp/test_cat' COMMENT 'Hive test catalog';
 
+-- DESCRIBE
+DESC CATALOG test_cat;
+
 -- CREATE INE already exists
 CREATE CATALOG IF NOT EXISTS test_cat LOCATION '/tmp/test_cat';
 SHOW CATALOGS;
@@ -39,9 +42,6 @@ SHOW CATALOGS LIKE 'test_';
 -- SHOW pattern
 SHOW CATALOGS LIKE 'test__';
 
--- DESCRIBE
-DESC CATALOG test_cat;
-
 -- ALTER LOCATION
 ALTER CATALOG test_cat SET LOCATION '/tmp/test_cat_new';
-DESC CATALOG test_cat;
+DESC CATALOG EXTENDED test_cat;

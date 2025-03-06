@@ -66,32 +66,27 @@ abstract class DescCatalogFormatter {
     void showCatalogDescription(DataOutputStream out, String catalog, String comment, String location,
         int createTime) throws HiveException {
       try {
-        out.write("Catalog Name".getBytes(StandardCharsets.UTF_8));
-        out.write(Utilities.tabCode);
-        out.write(catalog.getBytes(StandardCharsets.UTF_8));
+        writeLine(out, "Catalog Name", catalog);
         if (comment != null) {
-          out.write(Utilities.newLineCode);
-          out.write("Comment".getBytes(StandardCharsets.UTF_8));
-          out.write(Utilities.tabCode);
-          out.write(HiveStringUtils.escapeJava(comment).getBytes(StandardCharsets.UTF_8));
+          writeLine(out, "Comment", HiveStringUtils.escapeJava(comment));
         }
         if (location != null) {
-          out.write(Utilities.newLineCode);
-          out.write("Location".getBytes(StandardCharsets.UTF_8));
-          out.write(Utilities.tabCode);
-          out.write(location.getBytes(StandardCharsets.UTF_8));
+          writeLine(out, "Location", location);
         }
         if (createTime != 0) {
-          out.write(Utilities.newLineCode);
-          out.write("Create Time".getBytes(StandardCharsets.UTF_8));
-          out.write(Utilities.tabCode);
-          String str = CalendarUtils.formatTimestamp((long) createTime * 1000, true);
-          out.write(str.getBytes(StandardCharsets.UTF_8));
+          String createTimeStr = CalendarUtils.formatTimestamp((long) createTime * 1000, true);
+          writeLine(out, "Create Time", createTimeStr);
         }
-        out.write(Utilities.newLineCode);
       } catch (IOException e) {
         throw new HiveException(e);
       }
+    }
+
+    private void writeLine(DataOutputStream out, String label, String value) throws IOException {
+      out.write(label.getBytes(StandardCharsets.UTF_8));
+      out.write(Utilities.tabCode);
+      out.write(value.getBytes(StandardCharsets.UTF_8));
+      out.write(Utilities.newLineCode);
     }
   }
 }

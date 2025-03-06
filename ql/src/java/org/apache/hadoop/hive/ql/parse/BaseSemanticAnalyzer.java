@@ -1874,16 +1874,15 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   protected Catalog getCatalog(String catName, boolean throwException) throws SemanticException {
-    Catalog catalog = null;
     try {
-      catalog = db.getCatalog(catName);
+      Catalog catalog = db.getCatalog(catName);
+      if (catalog == null && throwException) {
+        throw new SemanticException(ErrorMsg.CATALOG_NOT_EXISTS.getMsg(catName));
+      }
+      return catalog;
     } catch (Exception e) {
-      throw new SemanticException(e.getMessage(), e);
+      throw new SemanticException("Failed to retrieve catalog " + catName + ": " + e.getMessage(), e);
     }
-    if (catalog == null && throwException) {
-      throw new SemanticException(ErrorMsg.CATALOG_NOT_EXISTS.getMsg(catName));
-    }
-    return catalog;
   }
 
   protected Database getDatabase(String dbName) throws SemanticException {

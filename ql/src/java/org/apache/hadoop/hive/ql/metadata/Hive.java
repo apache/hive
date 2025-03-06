@@ -2531,8 +2531,6 @@ public class Hive {
   public void alterCatalog(String catName, Catalog catalog) throws HiveException {
     try {
       getMSC().alterCatalog(catName, catalog);
-    } catch (MetaException e) {
-      throw new HiveException("Unable to alter catalog " + catName + ". " + e.getMessage(), e);
     } catch (NoSuchObjectException e) {
       throw new HiveException("Catalog " + catName + " does not exists.", e);
     } catch (TException e) {

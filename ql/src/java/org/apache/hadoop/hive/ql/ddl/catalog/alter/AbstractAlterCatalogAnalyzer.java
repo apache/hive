@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
- * Analyzer for database alteration commands.
+ * Analyzer for catalog alteration commands.
  */
 public abstract class AbstractAlterCatalogAnalyzer extends BaseSemanticAnalyzer {
   public AbstractAlterCatalogAnalyzer(QueryState queryState) throws SemanticException {

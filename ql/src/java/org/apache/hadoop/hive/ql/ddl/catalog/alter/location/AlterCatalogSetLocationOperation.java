@@ -44,7 +44,7 @@ public class AlterCatalogSetLocationOperation extends AbstractAlterCatalogOperat
       String newLocation = Utilities.getQualifiedPath(context.getConf(), new Path(desc.getLocation()));
 
       URI locationURI = new URI(newLocation);
-      if (!locationURI.isAbsolute() || StringUtils.isBlank(locationURI.getScheme())) {
+      if (!locationURI.isAbsolute()) {
         throw new HiveException(ErrorMsg.BAD_LOCATION_VALUE, newLocation);
       }
 
@@ -52,8 +52,8 @@ public class AlterCatalogSetLocationOperation extends AbstractAlterCatalogOperat
         LOG.info("AlterCatalog skipped. No change in location.");
       } else {
         catalog.setLocationUri(newLocation);
+        LOG.info("Catalog location changed from {} to {}", catalog.getLocationUri(), newLocation);
       }
-      return;
     } catch (URISyntaxException e) {
       throw new HiveException(e);
     }

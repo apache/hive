@@ -53,11 +53,11 @@ public class CreateCatalogAnalyzer extends BaseSemanticAnalyzer {
         case HiveParser.TOK_IFNOTEXISTS:
           ifNotExists = true;
           break;
-      case HiveParser.TOK_CATALOGCOMMENT:
-        comment = unescapeSQLString(childNode.getChild(0).getText());
-        break;
-      default:
-        throw new SemanticException("Unrecognized token in CREATE CATALOG statement");
+        case HiveParser.TOK_CATALOGCOMMENT:
+          comment = unescapeSQLString(childNode.getChild(0).getText());
+          break;
+        default:
+          throw new SemanticException("Unrecognized token in CREATE CATALOG statement");
       }
     }
 
