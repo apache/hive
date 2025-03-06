@@ -1474,17 +1474,16 @@ import com.google.common.annotations.VisibleForTesting;
     } else if (gudf instanceof GenericUDFFromUnixTime && isIntFamily(arg0Type(expr))
           || (gudf instanceof GenericUDFTimestamp && isStringFamily(arg0Type(expr)))
 
-            /* GenericUDFCase and GenericUDFWhen are implemented with the UDF Adaptor because
-             * of their complexity and generality. In the future, variations of these
+            /* GenericUDFWhen is implemented with the UDF Adaptor because
+             * of its complexity and generality. In the future, variations of this
              * can be optimized to run faster for the vectorized code path. For example,
              * CASE col WHEN 1 then "one" WHEN 2 THEN "two" ELSE "other" END
-             * is an example of a GenericUDFCase that has all constant arguments
+             * is an example when all constant arguments
              * except for the first argument. This is probably a common case and a
              * good candidate for a fast, special-purpose VectorExpression. Then
              * the UDF Adaptor code path could be used as a catch-all for
              * non-optimized general cases.
              */
-            || gudf instanceof GenericUDFCase
             || gudf instanceof GenericUDFWhen) {
       return true;
     } else // between has 4 args here, but can be vectorized like this

@@ -590,7 +590,6 @@ public final class FunctionRegistry {
     system.registerGenericUDF("create_union", GenericUDFUnion.class);
     system.registerGenericUDF("extract_union", GenericUDFExtractUnion.class);
 
-    system.registerGenericUDF("case", GenericUDFCase.class);
     system.registerGenericUDF("when", GenericUDFWhen.class);
     system.registerGenericUDF("nullif", GenericUDFNullif.class);
     system.registerGenericUDF("hash", GenericUDFHash.class);
