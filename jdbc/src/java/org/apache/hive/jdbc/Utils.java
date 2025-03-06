@@ -540,6 +540,13 @@ public class Utils {
       }
     }
 
+    Pattern fullPasswordPattern = Pattern.compile("(?i)(?<=;|^)password=([^;]+)");
+    Matcher fullPwdMatcher = fullPasswordPattern.matcher(uri);
+    if (fullPwdMatcher.find()) {
+        String fullPassword = fullPwdMatcher.group(1);
+        connParams.getSessionVars().put(JdbcConnectionParams.AUTH_PASSWD, fullPassword);
+    }
+
     // parse hive conf settings
     String confStr = jdbcURI.getQuery();
     if (confStr != null) {
