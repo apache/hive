@@ -297,12 +297,14 @@ public class HMSCatalogAdapter implements RESTClient {
   }
 
   private OAuthTokenResponse tokens(Object body) {
+    @SuppressWarnings("unchecked")
     Map<String, String> request = (Map<String, String>) castRequest(Map.class, body);
     String grantType = request.get(GRANT_TYPE);
     switch (grantType) {
       case CLIENT_CREDENTIALS:
         return OAuthTokenResponse.builder()
             .withToken("client-credentials-token:sub=" + request.get(CLIENT_ID))
+            .withIssuedTokenType(URN_OAUTH_ACCESS_TOKEN)
             .withTokenType(BEARER)
             .build();
 

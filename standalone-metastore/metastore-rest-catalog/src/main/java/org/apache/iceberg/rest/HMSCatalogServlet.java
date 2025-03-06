@@ -61,7 +61,7 @@ public class HMSCatalogServlet extends HttpServlet {
 
   @Override
   public String getServletName() {
-    return "HMS Catalog";
+    return "Iceberg REST Catalog";
   }
 
   @Override

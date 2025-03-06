@@ -135,14 +135,34 @@ public class ServletSecurity {
     public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
       execute(request, response, delegate::service);
     }
+
+    @Override
+    public String getServletName() {
+      try {
+        return delegate.getServletName();
+      } catch (IllegalStateException ill) {
+        return delegate.toString();
+      }
+    }
+
+    @Override
+    public String getServletInfo() {
+      return delegate.getServletInfo();
+    }
   }
 
   /**
    * Creates a proxy servlet.
    * @param servlet the servlet to serve within this security context
-   * @return a servlet instance
+   * @return a servlet instance or null if security initialization fails
    */
   public HttpServlet proxy(HttpServlet servlet) {
+    try {
+      init();
+    } catch (ServletException e) {
+      LOG.error("Unable to proxy security for servlet {}", servlet.toString(), e);
+      return null;
+    }
     return new ProxyServlet(servlet);
   }
 

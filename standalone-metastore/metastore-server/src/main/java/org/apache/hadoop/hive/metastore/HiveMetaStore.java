@@ -771,10 +771,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     // optionally create and start the property and Iceberg REST server
     ServletServerBuilder builder = new ServletServerBuilder(conf);
-    ServletServerBuilder.Descriptor properties = PropertyServlet.createServlet(conf);
-    builder.addServlet(properties);
-    ServletServerBuilder.Descriptor catalog = createIcebergServlet(conf);
-    builder.addServlet(catalog);
+    ServletServerBuilder.Descriptor properties = builder.addServlet(PropertyServlet.createServlet(conf));
+    ServletServerBuilder.Descriptor catalog = builder.addServlet(createIcebergServlet(conf));
     servletServer = builder.start(LOG);
     if (servletServer != null) {
       if (properties != null) {
@@ -812,7 +810,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   /**
    * @param port where metastore server is running
    * @return metastore server instance URL. If the metastore server was bound to a configured
-   * host, return that appended by port. Otherwise return the externally visible URL of the local
+   * host, return that appended by port. Otherwise, return the externally visible URL of the local
    * host with the given port
    * @throws Exception
    */

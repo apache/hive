@@ -315,11 +315,7 @@ public class PropertyServlet extends HttpServlet {
       if (port >= 0 && path != null && !path.isEmpty()) {
         ServletSecurity security = new ServletSecurity(configuration);
         HttpServlet servlet = security.proxy(new PropertyServlet(configuration));
-        return new ServletServerBuilder.Descriptor(port, path, servlet) {
-          @Override public String toString() {
-            return "HMS Property";
-          }
-        };
+        return new ServletServerBuilder.Descriptor(port, path, servlet);
       }
     } catch (Exception io) {
       LOGGER.error("Failed to create servlet ", io);

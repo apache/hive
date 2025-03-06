@@ -315,8 +315,16 @@ public class ServletServerBuilder {
 
     @Override
     public String toString() {
-      // can not use the servlet name since it is only valid after calling init()
-      return servlet.getClass().getSimpleName() + ":" + port + "/" + path;
+      String name = null;
+      try {
+        name = servlet.getServletName() + ":" + port + "/" + path;
+      } catch (IllegalStateException ill) {
+        // ignore, it may happen if servlet config is not set (yet)
+      }
+      if (name == null) {
+        name = servlet.getClass().getSimpleName();
+      }
+      return name + ":" + port + "/" + path;
     }
 
     public int getPort() {

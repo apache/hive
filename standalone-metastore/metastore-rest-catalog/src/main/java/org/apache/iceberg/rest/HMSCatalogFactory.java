@@ -152,11 +152,7 @@ public class HMSCatalogFactory {
       HMSCatalogFactory hms = new HMSCatalogFactory(configuration, null);
       HttpServlet servlet = hms.createServlet();
       if (servlet != null) {
-        return new ServletServerBuilder.Descriptor(hms.getPort(), hms.getPath(), servlet) {
-          @Override public String toString() {
-            return "Iceberg REST Catalog";
-          }
-        };
+        return new ServletServerBuilder.Descriptor(hms.getPort(), hms.getPath(), servlet);
       }
     } catch (IOException exception) {
       LOG.error("failed to create servlet ", exception);
