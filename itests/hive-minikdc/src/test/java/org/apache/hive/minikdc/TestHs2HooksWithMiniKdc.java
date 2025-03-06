@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.hooks.TestHs2Hooks.PostExecHook;
 import org.apache.hadoop.hive.hooks.TestHs2Hooks.PreExecHook;
 import org.apache.hadoop.hive.hooks.TestHs2Hooks.SemanticAnalysisHook;
+import org.apache.hive.common.IPUtils;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -122,14 +123,14 @@ public class TestHs2HooksWithMiniKdc {
     Assert.assertNotNull("userName is null", PostExecHook.userName);
     Assert.assertNotNull("operation is null", PostExecHook.operation);
     Assert.assertEquals(MiniHiveKdc.HIVE_TEST_USER_1, PostExecHook.userName);
-    Assert.assertTrue(PostExecHook.ipAddress, PostExecHook.ipAddress.contains("127.0.0.1"));
+    Assert.assertTrue(PostExecHook.ipAddress, PostExecHook.ipAddress.contains(IPUtils.getLoopbackAddress()));
     Assert.assertEquals("SHOWTABLES", PostExecHook.operation);
 
     Assert.assertNotNull("ipaddress is null", PreExecHook.ipAddress);
     Assert.assertNotNull("userName is null", PreExecHook.userName);
     Assert.assertNotNull("operation is null", PreExecHook.operation);
     Assert.assertEquals(MiniHiveKdc.HIVE_TEST_USER_1, PreExecHook.userName);
-    Assert.assertTrue(PreExecHook.ipAddress, PreExecHook.ipAddress.contains("127.0.0.1"));
+    Assert.assertTrue(PreExecHook.ipAddress, PreExecHook.ipAddress.contains(IPUtils.getLoopbackAddress()));
     Assert.assertEquals("SHOWTABLES", PreExecHook.operation);
 
     error = SemanticAnalysisHook.preAnalyzeError;
@@ -150,7 +151,7 @@ public class TestHs2HooksWithMiniKdc {
     Assert.assertNotNull("semantic hook context commandType is null",
         SemanticAnalysisHook.commandType);
     Assert.assertTrue(SemanticAnalysisHook.ipAddress,
-        SemanticAnalysisHook.ipAddress.contains("127.0.0.1"));
+        SemanticAnalysisHook.ipAddress.contains(IPUtils.getLoopbackAddress()));
     Assert.assertEquals("show tables", SemanticAnalysisHook.command);
   }
 }

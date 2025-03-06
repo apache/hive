@@ -39,6 +39,7 @@ import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.authorize.PolicyProvider;
 import org.apache.hadoop.security.authorize.Service;
 import org.apache.hadoop.security.token.Token;
+import org.apache.hive.common.IPUtils;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.common.security.JobTokenSecretManager;
 import org.apache.tez.runtime.api.impl.TezEvent;
@@ -130,7 +131,7 @@ public class LlapTaskUmbilicalServer {
       LlapTaskUmbilicalProtocol umbilical, int numHandlers, int port,
       boolean isHadoopSecurityAuthorizationEnabled) throws IOException {
     server = new RPC.Builder(conf).setProtocol(LlapTaskUmbilicalProtocol.class)
-        .setBindAddress("0.0.0.0").setPort(port).setInstance(umbilical)
+        .setBindAddress(IPUtils.getWildcardAddress()).setPort(port).setInstance(umbilical)
         .setNumHandlers(numHandlers).setSecretManager(jobTokenSecretManager)
         .build();
     if (isHadoopSecurityAuthorizationEnabled) {
