@@ -156,10 +156,10 @@ PREHOOK: Input: default@icetbl
 POSTHOOK: query: alter table iceTbl drop tag test_tag_2
 POSTHOOK: type: ALTERTABLE_DROPTAG
 POSTHOOK: Input: default@icetbl
-PREHOOK: query: explain alter table iceTbl drop tag if exists test_tag_3
+PREHOOK: query: explain alter table iceTbl drop tag if exists test_tag_1
 PREHOOK: type: ALTERTABLE_DROPTAG
 PREHOOK: Input: default@icetbl
-POSTHOOK: query: explain alter table iceTbl drop tag if exists test_tag_3
+POSTHOOK: query: explain alter table iceTbl drop tag if exists test_tag_1
 POSTHOOK: type: ALTERTABLE_DROPTAG
 POSTHOOK: Input: default@icetbl
 STAGE DEPENDENCIES:
@@ -169,12 +169,12 @@ STAGE PLANS:
   Stage: Stage-0
     SnapshotRef Operation
       table name: default.iceTbl
-      spec: AlterTableSnapshotRefSpec{operationType=DROP_TAG, operationParams=DropSnapshotRefSpec{refName=test_tag_3, ifExists=true}}
+      spec: AlterTableSnapshotRefSpec{operationType=DROP_TAG, operationParams=DropSnapshotRefSpec{refName=test_tag_1, ifExists=true}}
 
-PREHOOK: query: alter table iceTbl drop tag if exists test_tag_3
+PREHOOK: query: alter table iceTbl drop tag if exists test_tag_1
 PREHOOK: type: ALTERTABLE_DROPTAG
 PREHOOK: Input: default@icetbl
-POSTHOOK: query: alter table iceTbl drop tag if exists test_tag_3
+POSTHOOK: query: alter table iceTbl drop tag if exists test_tag_1
 POSTHOOK: type: ALTERTABLE_DROPTAG
 POSTHOOK: Input: default@icetbl
 PREHOOK: query: alter table iceTbl drop tag if exists test_tag_4
