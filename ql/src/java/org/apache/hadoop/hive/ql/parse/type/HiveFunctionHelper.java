@@ -255,7 +255,7 @@ public class HiveFunctionHelper implements FunctionHelper {
           fi.getGenericUDF(), argsTypes.build(), returnType);
       if (calciteOp.getKind() == SqlKind.CASE) {
         // If it is a case operator, we need to rewrite it
-        inputs = RexNodeConverter.rewriteCaseChildren(functionText, inputs, rexBuilder);
+        inputs = RexNodeConverter.rewriteCaseChildren(inputs, rexBuilder);
         // Adjust branch types by inserting explicit casts if the actual is ambiguous
         inputs = RexNodeConverter.adjustCaseBranchTypes(inputs, returnType, rexBuilder);
         checkForStatefulFunctions(inputs);

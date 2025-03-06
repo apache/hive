@@ -47,7 +47,7 @@ public class HiveRexExecutorImpl extends RexExecutorImpl {
 
   @Override
   public void reduce(RexBuilder rexBuilder, List<RexNode> constExps, List<RexNode> reducedValues) {
-    RexNodeConverter rexNodeConverter = new RexNodeConverter(rexBuilder, rexBuilder.getTypeFactory());
+    RexNodeConverter rexNodeConverter = new RexNodeConverter(rexBuilder);
     for (RexNode rexNode : constExps) {
       // initialize the converter
       ExprNodeConverter converter = new ExprNodeConverter("", null, null, null,
