@@ -493,7 +493,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
    * @param conf The hive configuration to use
    * @return if the hive engine related values should be enabled or not
    */
-  private static boolean hiveLockEnabled(TableMetadata metadata, Configuration conf) {
+  public static boolean hiveLockEnabled(TableMetadata metadata, Configuration conf) {
     if (metadata != null && metadata.properties().get(TableProperties.HIVE_LOCK_ENABLED) != null) {
       // We know that the property is set, so default value will not be used,
       return metadata.propertyAsBoolean(TableProperties.HIVE_LOCK_ENABLED, false);
