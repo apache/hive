@@ -46,7 +46,8 @@ public abstract class AbstractRepository implements QueryHistoryRepository {
   HiveConf conf;
   protected Schema schema;
   private Warehouse warehouse;
-  protected Table table;
+  @VisibleForTesting
+  Table table;
 
   public void init(HiveConf conf, Schema schema) {
     this.conf = conf;
