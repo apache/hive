@@ -85,9 +85,7 @@ public class IcebergRepository extends AbstractRepository implements QueryHistor
         (new ThreadFactoryBuilder()).setDaemon(true).setNameFormat(ICEBERG_WORKER_THREAD_NAME_FORMAT).build());
     int expiryInterval = HiveConf.getIntVar(conf,
         HiveConf.ConfVars.HIVE_QUERY_HISTORY_ICEBERG_SNAPSHOT_EXPIRY_INVERVAL_SECONDS);
-    // 60s initial delay to prevent overlapping with default periodic flush executor
-    // concurrency is not an issue, this is just an easy optimization
-    snapshotExpiryExecutor.scheduleAtFixedRate(this::expireSnapshots, 60, expiryInterval, TimeUnit.SECONDS);
+    snapshotExpiryExecutor.scheduleAtFixedRate(this::expireSnapshots, 0, expiryInterval, TimeUnit.SECONDS);
   }
 
   @Override
@@ -101,8 +99,7 @@ public class IcebergRepository extends AbstractRepository implements QueryHistor
         ICEBERG_STORAGE_HANDLER);
     table.setProperty("table_type", "ICEBERG");
     table.setProperty("write.format.default", "orc");
-    // expire/delete snapshots older than 1 day
-    table.setProperty("history.expire.max-snapshot-age-ms", Integer.toString(24 * 60 * 60 * 1000));
+    table.setProperty("history.expire.max-snapshot-age-ms", Integer.toString(getSnapshotMaxAge()));
     table.setProperty(hive_metastoreConstants.META_TABLE_NAME, QUERY_HISTORY_DB_TABLE_NAME);
 
     table.setFields(schema.getFields());
@@ -113,6 +110,12 @@ public class IcebergRepository extends AbstractRepository implements QueryHistor
     table.setProperty("iceberg.mr.table.location", table.getDataLocation().toString());
 
     return table;
+  }
+
+  @VisibleForTesting
+  int getSnapshotMaxAge() {
+    // expire/delete snapshots older than 1 day
+    return 24 * 60 * 60 * 1000;
   }
 
   @Override
@@ -192,7 +195,7 @@ public class IcebergRepository extends AbstractRepository implements QueryHistor
   }
 
   private void expireSnapshots() {
-    LOG.info("Attempting to expiry {} snapshots", table.getFullTableName());
+    LOG.debug("Attempting to expire snapshots for table: {}", table.getFullTableName());
     try {
       storageHandler.executeOperation(table, new AlterTableExecuteSpec<>(EXPIRE_SNAPSHOT, null));
     } catch (Exception e) {
