@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import com.google.common.base.Preconditions;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -30,7 +28,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCase;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -118,8 +115,7 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator<ExprNodeGene
       }
     }
     genericUDF = expr.getGenericUDF();
-    if (isEager &&
-        (genericUDF instanceof GenericUDFCase || genericUDF instanceof GenericUDFWhen)) {
+    if (isEager && genericUDF instanceof GenericUDFWhen) {
       throw new HiveException("Stateful expressions cannot be used inside of CASE");
     }
   }
