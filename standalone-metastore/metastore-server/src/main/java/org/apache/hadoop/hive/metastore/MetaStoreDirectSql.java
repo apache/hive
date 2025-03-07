@@ -569,8 +569,9 @@ class MetaStoreDirectSql {
           useOldWriteId = false;
         }
       }
-
-      if (useOldWriteId) {
+      // writeId default in the DB is 0 but in the application logic it is set to -1.
+      // HIVE-28803 is changing the writeId from -1 to 0 during alter query which is undesirable
+      if (useOldWriteId && partIdToWriteId.get(partId) != 0) {
         newPart.setWriteId(partIdToWriteId.get(partId));
       }
     }
