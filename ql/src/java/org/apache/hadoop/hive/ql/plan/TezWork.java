@@ -69,7 +69,7 @@ public class TezWork extends AbstractOperatorDesc {
     }
   }
 
-  private static transient final Logger LOG = LoggerFactory.getLogger(TezWork.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TezWork.class);
 
   private static final AtomicInteger counter = new AtomicInteger(1);
   private final String dagId;

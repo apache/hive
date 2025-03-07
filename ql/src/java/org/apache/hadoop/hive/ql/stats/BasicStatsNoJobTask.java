@@ -85,7 +85,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  **/
 public class BasicStatsNoJobTask implements IStatsProcessor {
 
-  private static transient final Logger LOG = LoggerFactory.getLogger(BasicStatsNoJobTask.class);
+  private static final Logger LOG = LoggerFactory.getLogger(BasicStatsNoJobTask.class);
   private HiveConf conf;
 
   private BasicStatsNoJobWork work;

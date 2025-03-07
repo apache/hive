@@ -71,7 +71,7 @@ import org.slf4j.LoggerFactory;
 
 public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
   private static final long serialVersionUID = 1L;
-  private static transient final Logger LOG = LoggerFactory
+  private static final Logger LOG = LoggerFactory
       .getLogger(ColumnStatsUpdateTask.class);
 
   private ColumnStatistics constructColumnStatsFromInput()

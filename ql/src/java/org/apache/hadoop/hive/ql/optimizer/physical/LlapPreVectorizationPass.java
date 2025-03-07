@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
  * For any LLAP-related transformations which need to occur before vectorization.
  */
 public class LlapPreVectorizationPass implements PhysicalPlanResolver {
-  protected static transient final Logger LOG = LoggerFactory.getLogger(LlapPreVectorizationPass.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(LlapPreVectorizationPass.class);
 
   @Override
   public PhysicalContext resolve(PhysicalContext pctx) throws SemanticException {
