@@ -23,6 +23,7 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.TestHelper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,16 +32,16 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 
-import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.and;
-import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.assertPlans;
-import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.buildPlanner;
-import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.buildRelBuilder;
-import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.gt;
-import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.gteq;
-import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.lt;
-import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.lteq;
-import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.neq;
-import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.or;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.TestHelper.and;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.TestHelper.assertPlans;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.TestHelper.buildPlanner;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.TestHelper.buildRelBuilder;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.TestHelper.gt;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.TestHelper.gteq;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.TestHelper.lt;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.TestHelper.lteq;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.TestHelper.neq;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.TestHelper.or;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestHiveReduceSearchComplexityRule {
@@ -59,7 +60,7 @@ public class TestHiveReduceSearchComplexityRule {
     planner = buildPlanner(
         Arrays.asList(HiveReduceSearchComplexityRule.FILTER, HiveReduceSearchComplexityRule.PROJECT)
     );
-    relBuilder = buildRelBuilder(planner, schemaMock, tableMock, hiveTableMDMock, TestRuleHelper.MyRecord.class);
+    relBuilder = buildRelBuilder(planner, schemaMock, tableMock, hiveTableMDMock, TestHelper.MyRecord.class);
   }
 
   @Test
@@ -174,6 +175,7 @@ public class TestHiveReduceSearchComplexityRule {
         )
         .build();
 
+    // where f1 not between 30 and 40 and f1 < 50
     String expectedPrePlan =
         "HiveFilter(condition=[SEARCH($0, Sarg[(-∞..30), (40..50)])])\n" +
         "  LogicalTableScan(table=[[]])\n";
