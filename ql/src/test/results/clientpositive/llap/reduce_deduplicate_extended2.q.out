@@ -732,7 +732,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
-        Reducer 3 <- Map 8 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE), Union 4 (CONTAINS)
+        Reducer 3 <- Map 1 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE), Union 4 (CONTAINS)
         Reducer 5 <- Union 4 (SIMPLE_EDGE)
         Reducer 6 <- Map 1 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE), Union 4 (CONTAINS)
         Reducer 7 <- Map 1 (SIMPLE_EDGE)
@@ -787,17 +787,6 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 316 Data size: 56248 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 8 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  filterExpr: (key is not null and value is not null) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (key is not null and value is not null) (type: boolean)
-                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: value (type: string), key (type: string)
                       outputColumnNames: _col0, _col1
