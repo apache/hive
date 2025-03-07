@@ -103,6 +103,8 @@ alterTblPartitionStatementSuffix[boolean partition]
   | alterStatementSuffixRenameCol
   | alterStatementSuffixAddCol
   | alterStatementSuffixUpdateColumns
+  | alterStatementSuffixDropStatsCol[partition]
+  | alterStatementSuffixDropStats[partition]
   ;
 
 optimizeTableStatementSuffix
@@ -252,6 +254,22 @@ alterStatementSuffixUpdateStats[boolean partition]
     : KW_UPDATE KW_STATISTICS KW_SET tableProperties
     -> {partition}? ^(TOK_ALTERPARTITION_UPDATESTATS tableProperties)
     ->              ^(TOK_ALTERTABLE_UPDATESTATS tableProperties)
+    ;
+
+alterStatementSuffixDropStatsCol[boolean partition]
+@init { gParent.pushMsg("drop column statistics", state); }
+@after { gParent.popMsg(state); }
+    : KW_DROP KW_STATISTICS KW_FOR KW_COLUMN? colName=identifier
+    -> {partition}? ^(TOK_ALTERPARTITION_DROPCOLSTATS $colName)
+    ->              ^(TOK_ALTERTABLE_DROPCOLSTATS $colName)
+    ;
+
+alterStatementSuffixDropStats[boolean partition]
+@init { gParent.pushMsg("drop basic statistics", state); }
+@after { gParent.popMsg(state); }
+    : KW_DROP KW_STATISTICS
+    -> {partition}? ^(TOK_ALTERPARTITION_DROPSTATS)
+    ->              ^(TOK_ALTERTABLE_DROPSTATS)
     ;
 
 alterStatementChangeColPosition

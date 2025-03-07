@@ -6173,10 +6173,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName)
-    throws HiveException {
+  public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName, String validWriteIdList,
+    long writeId) throws HiveException {
     try {
-      return getMSC().deleteTableColumnStatistics(dbName, tableName, colName, Constants.HIVE_ENGINE);
+      return getMSC().deleteTableColumnStatistics(dbName, tableName, colName, Constants.HIVE_ENGINE, validWriteIdList);
     } catch(Exception e) {
       LOG.debug("Failed deleteTableColumnStatistics", e);
       throw new HiveException(e);
