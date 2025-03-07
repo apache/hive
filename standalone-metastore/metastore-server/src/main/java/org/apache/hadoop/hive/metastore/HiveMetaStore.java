@@ -482,7 +482,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     IHMSHandler handler = HMSHandlerProxyFactory.getProxy(conf, baseHandler, false);
     processor = new ThriftHiveMetastore.Processor<>(handler);
     LOG.info("Starting DB backed MetaStore Server with generic processor");
-    ServletSecurity security = new ServletSecurity(conf);
+    boolean jwt = MetastoreConf.getVar(conf, ConfVars.THRIFT_METASTORE_AUTHENTICATION).equalsIgnoreCase("jwt");
+    ServletSecurity security = new ServletSecurity(conf, jwt);
     Servlet thriftHttpServlet = security.proxy(new TServlet(processor, protocolFactory));
 
     boolean directSqlEnabled = MetastoreConf.getBoolVar(conf, ConfVars.TRY_DIRECT_SQL);
