@@ -56,7 +56,7 @@ POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject($f0=[1])
-  HiveFilter(condition=[IN($0, 1:SMALLINT, 2:SMALLINT)])
+  HiveFilter(condition=[SEARCH($0, Sarg[1:SMALLINT, 2:SMALLINT]:SMALLINT)])
     HiveTableScan(table=[[default, t]], table:alias=[t])
 
 PREHOOK: query: select 1 from t where a in (1,2,3) and case when a = 1 then true when a = 2 then true end
@@ -79,6 +79,6 @@ POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject($f0=[1])
-  HiveFilter(condition=[IN($0, 1:SMALLINT, 2:SMALLINT)])
+  HiveFilter(condition=[SEARCH($0, Sarg[1:SMALLINT, 2:SMALLINT]:SMALLINT)])
     HiveTableScan(table=[[default, t]], table:alias=[t])
 

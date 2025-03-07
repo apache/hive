@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -74,9 +75,11 @@ import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.SearchTransformer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveComponentAccess;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveValues;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter;
@@ -91,7 +94,6 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
-import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
@@ -869,6 +871,12 @@ public class ASTConverter {
     @Override
     public ASTNode visitLiteral(RexLiteral literal) {
 
+      if (!RexUtil.isNull(literal) && literal.getType().isStruct()) {
+        return rexBuilder
+            .makeCall(SqlStdOperatorTable.ROW, (List<? extends RexNode>) literal.getValue())
+            .accept(this);
+      }
+
       if (RexUtil.isNull(literal) && literal.getType().getSqlTypeName() != SqlTypeName.NULL
           && rexBuilder != null) {
         // It is NULL value with different type, we need to introduce a CAST
@@ -1067,9 +1075,17 @@ public class ASTConverter {
         return SqlFunctionConverter.buildAST(SqlStdOperatorTable.NOT,
           Collections.singletonList(SqlFunctionConverter.buildAST(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, astNodeLst, call.getType())), call.getType());
       case CAST:
-        assert(call.getOperands().size() == 1);
+        if (call.getOperands().size() != 1) {
+          throw new IllegalArgumentException("CASTs should have only 1 operand");
+        }
+        RexNode castOperand = call.getOperands().get(0);
+
+        // Extract RexNode out of CAST when it's not a literal and the types are equal
+        if (!(castOperand instanceof RexLiteral) && call.getType().equals(castOperand.getType())) {
+          return castOperand.accept(this);
+        }
         astNodeLst.add(convertType(call.getType()));
-        astNodeLst.add(call.getOperands().get(0).accept(this));
+        astNodeLst.add(castOperand.accept(this));
         break;
       case EXTRACT:
         // Extract on date: special handling since function in Hive does
@@ -1077,7 +1093,22 @@ public class ASTConverter {
         // is implicit in the function name, thus translation will
         // proceed correctly if we just ignore the <time_unit>
         astNodeLst.add(call.operands.get(1).accept(this));
+        break; 
+      case NOT:
+        if (call.getOperands().get(0).isA(SqlKind.SEARCH)) {
+          return new SearchToASTNodeTransformer(
+              rexBuilder, (RexCall) call.getOperands().get(0), this, true
+          ).transform();
+        }
+        if (op.equals(HiveComponentAccess.COMPONENT_ACCESS)) {
+          return call.operands.get(0).accept(this);
+        }
+        for (RexNode operand : call.operands) {
+          astNodeLst.add(operand.accept(this));
+        }
         break;
+      case SEARCH:
+        return new SearchToASTNodeTransformer(rexBuilder, call, this).transform();
       case FLOOR:
         if (call.operands.size() == 2) {
           // Floor on date: special handling since function in Hive does
@@ -1313,5 +1344,47 @@ public class ASTConverter {
 
     return flat;
   }
+  
+  private static class SearchToASTNodeTransformer extends SearchTransformer<ASTNode> {
 
+    public SearchToASTNodeTransformer(
+        RexBuilder rexBuilder, RexCall search, org.apache.calcite.rex.RexVisitor<ASTNode> rexVisitor) {
+      this(rexBuilder, search, rexVisitor, false);
+    }
+
+    public SearchToASTNodeTransformer(
+        RexBuilder rexBuilder, RexCall search, org.apache.calcite.rex.RexVisitor<ASTNode> rexVisitor, boolean negate) {
+      super(rexBuilder, search, rexVisitor, negate);
+    }
+
+    @Override
+    protected ASTNode transformInOperands(List<ASTNode> inNodes) {
+      if (inNodes.size() == 2) {
+        return SqlFunctionConverter
+            .buildAST(negate ? SqlStdOperatorTable.NOT_EQUALS : SqlStdOperatorTable.EQUALS, inNodes, type);
+      }
+      ASTNode inNode = SqlFunctionConverter.buildAST( HiveIn.INSTANCE, inNodes, type);
+      return negate ?
+          SqlFunctionConverter.buildAST(SqlStdOperatorTable.NOT, Collections.singletonList(inNode), type) :
+          inNode;
+    }
+
+    @Override
+    protected ASTNode transformAllNodes() {
+      return SqlFunctionConverter.buildAST(negate? SqlStdOperatorTable.AND: SqlStdOperatorTable.OR, results, type);
+    }
+
+    @Override
+    protected ASTNode transformWithNullAs(ASTNode node) {
+      if (nullAsNode == null) {
+        return node;
+      }
+      
+      return SqlFunctionConverter.buildAST(
+          nullAsTrue ? SqlStdOperatorTable.OR : SqlStdOperatorTable.AND,
+          Arrays.asList(nullAsNode, node),
+          type
+      );
+    }
+  }
 }
