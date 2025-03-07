@@ -341,16 +341,6 @@ castExpression
     -> ^(TOK_FUNCTION {adaptor.create(Identifier, "cast_format")} NumberLiteral[Integer.toString(((CommonTree)toType.getTree()).token.getType())] expression StringLiteral NumberLiteral[((CommonTree)toType.getTree()).getChild(0).getText()])
     ;
 
-caseExpression
-@init { gParent.pushMsg("case expression", state); }
-@after { gParent.popMsg(state); }
-    :
-    KW_CASE expression
-    (KW_WHEN expression KW_THEN expression)+
-    (KW_ELSE expression)?
-    KW_END -> ^(TOK_FUNCTION KW_CASE expression*)
-    ;
-
 whenExpression
 @init { gParent.pushMsg("case expression", state); }
 @after { gParent.popMsg(state); }
@@ -359,6 +349,39 @@ whenExpression
      ( KW_WHEN expression KW_THEN expression)+
     (KW_ELSE expression)?
     KW_END -> ^(TOK_FUNCTION KW_WHEN expression*)
+    ;
+
+// Make caseExpression to build a whenExpression tree
+// Rewrite
+// CASE a
+//   WHEN b THEN c
+//   [WHEN d THEN e]* [ELSE f]
+// END
+// to
+// CASE
+//   WHEN a=b THEN c
+//   [WHEN a=d THEN e]* [ELSE f]
+// END
+caseExpression
+@init { gParent.pushMsg("case expression", state); }
+@after { gParent.popMsg(state); }
+    :
+    KW_CASE caseOperand=expression
+    // Pass the case operand to the rule parses the when branches
+    whenBranches[$caseOperand.tree]
+    (KW_ELSE elseResult=expression)?
+    KW_END -> ^(TOK_FUNCTION Identifier["when"] whenBranches $elseResult?)
+    ;
+
+whenBranches[CommonTree caseOperand]
+    :
+    (whenExpressionBranch[caseOperand] KW_THEN! expression)+
+    ;
+
+whenExpressionBranch[CommonTree caseOperand]
+    :
+    KW_WHEN when=expression
+    -> ^(EQUAL["="] {$caseOperand} $when)
     ;
 
 floorExpression
