@@ -106,7 +106,6 @@ public class TestWMMetricsWithTrigger {
     miniHS2 = new MiniHS2(conf, MiniHS2.MiniClusterType.LLAP);
     Map<String, String> confOverlay = new HashMap<>();
     miniHS2.start(confOverlay);
-    miniHS2.getDFS().getFileSystem().mkdirs(new Path("/apps_staging_dir/anonymous"));
 
     Connection conDefault =
         BaseJdbcWithMiniLlap.getConnection(miniHS2.getJdbcURL(), System.getProperty("user.name"), "bar");

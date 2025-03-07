@@ -112,7 +112,6 @@ public class TestKillQueryWithAuthorizationDisabled {
     miniHS2 = new MiniHS2(conf, MiniHS2.MiniClusterType.LLAP);
     Map<String, String> confOverlay = new HashMap<String, String>();
     miniHS2.start(confOverlay);
-    miniHS2.getDFS().getFileSystem().mkdirs(new Path("/apps_staging_dir/anonymous"));
 
     Connection conDefault =
         BaseJdbcWithMiniLlap.getConnection(miniHS2.getJdbcURL(), System.getProperty("user.name"), "bar");
