@@ -15,7 +15,7 @@ Input datetime;Input pattern;Local timezone;Formatter type;Expected output
 1800-01-01 00:00:00;yyyy-MM-dd HH:mm:ss;Asia/Kolkata;SIMPLE;1799-12-31 23:36:32
 Jul 9 2023;MMM dd yyyy;Etc/GMT;DATETIME;null
 Jul 9 2023;MMM dd yyyy;Etc/GMT;SIMPLE;null
-2023-07-21;DD;Etc/GMT;DATETIME;null
+2023-07-21;DD;Etc/GMT;DATETIME;202
 2023-07-21;DD;Etc/GMT;SIMPLE;202
 2023-07-21;DDD;Etc/GMT;DATETIME;202
 2023-07-21;DDD;Etc/GMT;SIMPLE;202
