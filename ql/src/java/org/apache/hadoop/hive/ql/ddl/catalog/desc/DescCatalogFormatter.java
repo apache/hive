@@ -75,7 +75,7 @@ abstract class DescCatalogFormatter {
         }
         if (createTime != 0) {
           String createTimeStr = CalendarUtils.formatTimestamp((long) createTime * 1000, true);
-          writeLine(out, "Create Time", createTimeStr);
+          writeLine(out, "CreateTime", createTimeStr);
         }
       } catch (IOException e) {
         throw new HiveException(e);

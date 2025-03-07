@@ -116,4 +116,3 @@ POSTHOOK: Input: catalog:test_cat
 Catalog Name	test_cat	 	 
 Comment	Hive test catalog	 	 
 #### A masked pattern was here ####
-Create Time	2025-03-06 17:08:12.000	 	 
