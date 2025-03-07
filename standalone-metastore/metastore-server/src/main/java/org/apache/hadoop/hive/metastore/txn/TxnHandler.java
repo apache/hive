@@ -374,6 +374,26 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         .toOpenTxnsResponse(excludeTxnTypes);
   }
 
+  @Override
+  public List<Long> getOpenTxnForPolicy(List<Long> openTxnList, String replPolicy) {
+
+    if (openTxnList.isEmpty()) {
+      return Collections.emptyList();
+    }
+      List<Long> targetTxnIds = null;
+      try {
+          targetTxnIds = jdbcResource.execute(new GetTargetTxnIdListForPolicyHandler(replPolicy, openTxnList));
+      } catch (MetaException e) {
+          throw new RuntimeException(e);
+      }
+
+      if (targetTxnIds.isEmpty()) {
+      LOG.info("There are no Repl Created open transactions on DR side.");
+    }
+    return targetTxnIds;
+  }
+
+
   /**
    * Retry-by-caller note:
    * Worst case, it will leave an open txn which will timeout.
