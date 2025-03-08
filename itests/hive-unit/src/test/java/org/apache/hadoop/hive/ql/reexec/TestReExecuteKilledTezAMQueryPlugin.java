@@ -77,7 +77,6 @@ public class TestReExecuteKilledTezAMQueryPlugin {
     dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
     Map<String, String> confOverlay = new HashMap<String, String>();
     miniHS2.start(confOverlay);
-    miniHS2.getDFS().getFileSystem().mkdirs(new Path("/apps_staging_dir/anonymous"));
 
     Connection conDefault = getConnection(miniHS2.getJdbcURL(),
     System.getProperty("user.name"), "bar");
