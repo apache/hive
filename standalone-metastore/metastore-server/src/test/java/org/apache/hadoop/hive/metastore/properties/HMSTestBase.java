@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore.properties;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
@@ -25,25 +27,6 @@ import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.jexl3.JxltEngine;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
-import org.apache.hadoop.hive.metastore.ObjectStore;
-import org.apache.hadoop.hive.metastore.TestObjectStore;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.ok;
-import static org.apache.hadoop.hive.metastore.properties.HMSPropertyManager.MaintenanceOpStatus;
-import static org.apache.hadoop.hive.metastore.properties.HMSPropertyManager.MaintenanceOpType;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -58,16 +41,29 @@ import java.util.Random;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-
-import static org.apache.hadoop.hive.metastore.properties.HMSPropertyManager.JEXL;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.jexl3.JxltEngine;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
+import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import static org.apache.hadoop.hive.metastore.properties.HMSPropertyManager.MAINTENANCE_OPERATION;
 import static org.apache.hadoop.hive.metastore.properties.HMSPropertyManager.MAINTENANCE_STATUS;
+import org.apache.hadoop.hive.metastore.properties.HMSPropertyManager.MaintenanceOpStatus;
+import org.apache.hadoop.hive.metastore.properties.HMSPropertyManager.MaintenanceOpType;
+import static org.apache.hadoop.hive.metastore.properties.PropertyManager.JEXL;
 import static org.apache.hadoop.hive.metastore.properties.PropertyType.BOOLEAN;
 import static org.apache.hadoop.hive.metastore.properties.PropertyType.DATETIME;
 import static org.apache.hadoop.hive.metastore.properties.PropertyType.DOUBLE;
 import static org.apache.hadoop.hive.metastore.properties.PropertyType.INTEGER;
 import static org.apache.hadoop.hive.metastore.properties.PropertyType.JSON;
 import static org.apache.hadoop.hive.metastore.properties.PropertyType.STRING;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class HMSTestBase {
   protected static final String baseDir = System.getProperty("basedir");
@@ -87,12 +83,12 @@ public abstract class HMSTestBase {
   /**
    * Abstract the property client access on a given namespace.
    */
-  interface PropertyClient {
+  protected interface PropertyClient {
     boolean setProperties(Map<String, String> properties);
     Map<String, Map<String, String>> getProperties(String mapPrefix, String mapPredicate, String... selection) throws IOException;
   }
 
-  interface HttpPropertyClient extends PropertyClient {
+  protected interface HttpPropertyClient extends PropertyClient {
     default Map<String, String> getProperties(List<String> selection) throws IOException {
       throw new UnsupportedOperationException("not implemented in " + this.getClass());
     }
@@ -100,7 +96,7 @@ public abstract class HMSTestBase {
 
   protected Configuration conf = null;
 
-  protected static final Logger LOG = LoggerFactory.getLogger(TestObjectStore.class.getName());
+  protected static final Logger LOG = LoggerFactory.getLogger(HMSTestBase.class);
   static Random RND = new Random(20230424);
   protected String NS;// = "hms" + RND.nextInt(100);
   protected PropertyClient client;
@@ -111,7 +107,6 @@ public abstract class HMSTestBase {
     NS = "hms" + RND.nextInt(100);
     conf = MetastoreConf.newMetastoreConf();
     MetaStoreTestUtils.setConfForStandloneMode(conf);
-
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
     // Events that get cleaned happen in batches of 1 to exercise batching code
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.EVENT_CLEAN_MAX_EVENTS, 1L);
@@ -184,9 +179,9 @@ public abstract class HMSTestBase {
 
   /**
    * Creates and starts the server.
-   * @param conf
+   * @param conf the configuration
    * @return the server port
-   * @throws Exception
+   * @throws Exception if creation fails
    */
   protected int createServer(Configuration conf) throws Exception {
     return 0;
@@ -195,7 +190,7 @@ public abstract class HMSTestBase {
   /**
    * Stops the server.
    * @param port the server port
-   * @throws Exception
+   * @throws Exception if stopping the server fails
    */
   protected void stopServer(int port) throws Exception {
     // nothing
@@ -203,13 +198,15 @@ public abstract class HMSTestBase {
 
   /**
    * Creates a client.
+   * @param conf the configuration
+   * @param port the servlet port
    * @return the client instance
-   * @throws Exception
+   * @throws Exception if client creation fails
    */
   protected abstract PropertyClient createClient(Configuration conf, int port) throws Exception;
 
 
-  public void runOtherProperties0(PropertyClient client) throws Exception {
+  void runOtherProperties0(PropertyClient client) throws Exception {
     Map<String, String> ptyMap = createProperties0();
     boolean commit = client.setProperties(ptyMap);
     Assert.assertTrue(commit);
@@ -236,7 +233,7 @@ public abstract class HMSTestBase {
     try {
       String json = IOUtils.toString(
           HMSDirectTest.class.getResourceAsStream("payload.json"),
-          "UTF-8"
+              StandardCharsets.UTF_8
       );
       JxltEngine JXLT = JEXL.createJxltEngine();
       JxltEngine.Template jsonjexl = JXLT.createTemplate(json, "table", "delta", "g");
@@ -265,7 +262,7 @@ public abstract class HMSTestBase {
     }
   }
 
-  public void runOtherProperties1(PropertyClient client) throws Exception {
+  void runOtherProperties1(PropertyClient client) throws Exception {
     Map<String, String> ptyMap = createProperties1();
     boolean commit = client.setProperties(ptyMap);
     Assert.assertTrue(commit);
@@ -278,12 +275,11 @@ public abstract class HMSTestBase {
       HttpPropertyClient httpClient = (HttpPropertyClient) client;
       // get fillfactors using getProperties, create args array from previous result
       List<String> keys = new ArrayList<>(maps.keySet());
-      for (int k = 0; k < keys.size(); ++k) {
-        keys.set(k, keys.get(k) + ".fillFactor");
-      }
+      keys.replaceAll(s -> s + ".fillFactor");
       Object values = httpClient.getProperties(keys);
       Assert.assertTrue(values instanceof Map);
-      Map<String, String> getm = (Map<String, String>) values;
+      @SuppressWarnings("unchecked")
+      final Map<String, String> getm = (Map<String, String>) values;
       for (Map.Entry<String, Map<String, String>> entry : maps.entrySet()) {
         Map<String, String> map0v = entry.getValue();
         Assert.assertEquals(map0v.get("fillFactor"), getm.get(entry.getKey() + ".fillFactor"));
