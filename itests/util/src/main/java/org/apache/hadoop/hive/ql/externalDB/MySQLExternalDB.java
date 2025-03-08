@@ -42,7 +42,7 @@ public class MySQLExternalDB extends AbstractExternalDB {
         return "com.mysql.jdbc.Driver";
     }
 
-    public String getDockerImageName() { return "mysql:5.7.37"; }
+    public String getDockerImageName() { return "mysql:8.4.3"; }
 
     public String[] getDockerAdditionalArgs() {
         return new String[] {"-p", "3306:3306",
@@ -53,8 +53,8 @@ public class MySQLExternalDB extends AbstractExternalDB {
     }
 
     public boolean isContainerReady(ProcessResults pr) {
-        Pattern pat = Pattern.compile("ready for connections");
+        Pattern pat = Pattern.compile("mysqld.*ready for connections.*port.*3306");
         Matcher m = pat.matcher(pr.stderr);
-        return m.find() && m.find();
+        return m.find();
     }
 }
