@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.common.histogram.kll;
 
 import org.apache.datasketches.kll.KllFloatsSketch;
+import org.apache.datasketches.kll.KllSketch;
 import org.apache.datasketches.memory.Memory;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 
@@ -100,7 +101,7 @@ public class KllUtils {
    * @return the length of the given KLL sketch according to the given java data model
    */
   public static int lengthFor(JavaDataModel model, KllFloatsSketch kll) {
-    return model == null ? KllFloatsSketch.getMaxSerializedSizeBytes(kll.getK(), kll.getN())
+    return model == null ? KllFloatsSketch.getMaxSerializedSizeBytes(kll.getK(), kll.getN(), KllSketch.SketchType.FLOATS_SKETCH, false)
         : (int) model.lengthForByteArrayOfSize(kll.getSerializedSizeBytes());
   }
 }
