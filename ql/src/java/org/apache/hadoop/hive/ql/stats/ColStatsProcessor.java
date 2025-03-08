@@ -141,7 +141,11 @@ public class ColStatsProcessor implements IStatsProcessor {
 
       if (!statsObjs.isEmpty()) {
         if (!isTblLevel) {
-          List<FieldSchema> partColSchema = tbl.getPartCols();
+          List<FieldSchema> partColSchema = tbl.hasNonNativePartitionSupport() ?
+              tbl.getStorageHandler().getPartitionTransformSpec(tbl).stream()
+                .map(spec -> new FieldSchema(spec.getFieldName(), null, ""))
+                .collect(Collectors.toList()) : 
+            tbl.getPartCols();
           List<String> partVals = new ArrayList<>();
           // Iterate over partition columns to figure out partition name
           for (int i = pos; i < pos + partColSchema.size(); i++) {
@@ -221,14 +225,14 @@ public class ColStatsProcessor implements IStatsProcessor {
       }
 
       start = System. currentTimeMillis();
-      if (tbl != null && tbl.isNonNative() && tbl.getStorageHandler().canSetColStatistics(tbl)) {
+      if (tbl.isNonNative() && tbl.getStorageHandler().canSetColStatistics(tbl)) {
         boolean success = tbl.getStorageHandler().setColStatistics(tbl, colStats);
         if (!(tbl.isMaterializedView() || tbl.isView() || tbl.isTemporary())) {
           setOrRemoveColumnStatsAccurateProperty(db, tbl, colStatDesc.getColName(), success);
         }
+      } else {
+        db.setPartitionColumnStatistics(request);
       }
-      // TODO: Write stats for native tables only (See HIVE-27421)
-      db.setPartitionColumnStatistics(request);
       end = System.currentTimeMillis();
       LOG.info("Time taken to update " + colStats.size() + " stats : " + ((end - start)/1000F) + " seconds.");
     }
