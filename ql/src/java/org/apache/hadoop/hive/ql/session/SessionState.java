@@ -124,7 +124,7 @@ import com.google.common.collect.Maps;
  * from any point in the code to interact with the user and to retrieve
  * configuration information
  */
-public class SessionState implements ISessionAuthState{
+public class SessionState implements ISessionAuthState, AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(SessionState.class);
 
   public static final String TMP_PREFIX = "_tmp_space.db";
@@ -1905,6 +1905,7 @@ public class SessionState implements ISessionAuthState{
     this.currentCatalog = currentCatalog;
   }
 
+  @Override
   public void close() throws IOException {
     for (Closeable cleanupItem : cleanupItems) {
       try {

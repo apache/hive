@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.metadata;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -167,12 +168,11 @@ public final class HiveMaterializedViewsRegistry {
 
     @Override
     public void run() {
-      SessionState ss = new SessionState(db.getConf());
-      ss.setIsHiveServerQuery(true); // All is served from HS2, we do not need e.g. Tez sessions
-      SessionState.start(ss);
       PerfLogger perfLogger = SessionState.getPerfLogger();
-      perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.MATERIALIZED_VIEWS_REGISTRY_REFRESH);
-      try {
+      try (SessionState ss = new SessionState(db.getConf())) {
+        ss.setIsHiveServerQuery(true); // All is served from HS2, we do not need e.g. Tez sessions
+        SessionState.start(ss);
+        perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.MATERIALIZED_VIEWS_REGISTRY_REFRESH);
         if (initialized.get()) {
           for (Table mvTable : db.getAllMaterializedViewObjectsForRewriting()) {
             RelOptMaterialization existingMV = getRewritingMaterializedView(
@@ -204,6 +204,8 @@ public final class HiveMaterializedViewsRegistry {
         } else {
           LOG.error("Problem connecting to the metastore when initializing the view registry", e);
         }
+      } catch (IOException e) {
+        LOG.error("Problem closing session state", e);
       }
       perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.MATERIALIZED_VIEWS_REGISTRY_REFRESH);
     }
