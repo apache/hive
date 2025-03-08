@@ -493,6 +493,8 @@ public enum ErrorMsg {
   ICEBERG_COMPACTION_WITH_PART_SPEC_AND_FILTER_NOT_SUPPORTED(10441, "Compaction command with both partition spec and filter is not supported on Iceberg table {0}.{1}", true),
   COMPACTION_THREAD_INITIALIZATION(10442, "Compaction thread failed during initialization", false),
   ALTER_TABLE_COMPACTION_NON_PARTITIONED_COLUMN_NOT_ALLOWED(10443, "Filter expression can contain only partition columns."),
+  CATALOG_ALREADY_EXISTS(10444, "Catalog {0} already exists", true),
+  CATALOG_NOT_EXISTS(10445, "Catalog {0} does not exists:", true),
 
   //========================== 20000 range starts here ========================//
 
