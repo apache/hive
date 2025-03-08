@@ -29,7 +29,7 @@ beeline () {
     hadoopClasspath="${HADOOP_CLASSPATH}:"
   fi
   export HADOOP_CLASSPATH="${hadoopClasspath}${HIVE_CONF_DIR}:${beelineJarPath}:${superCsvJarPath}:${jlineJarPath}"
-  export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j.configurationFile=beeline-log4j2.properties "
+  export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j.configurationFile=beeline-log4j2.properties -Djava.net.preferIPv6Stack=true -Djava.net.preferIPv6Addresses=true"
 
   if [ "$EXECUTE_WITH_JAVA" != "true" ] ; then
     # if CLIUSER is not empty, then pass it as user id / password during beeline redirect
