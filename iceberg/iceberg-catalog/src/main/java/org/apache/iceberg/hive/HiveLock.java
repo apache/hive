@@ -19,7 +19,7 @@
 
 package org.apache.iceberg.hive;
 
-public interface HiveLock {
+interface HiveLock {
   void lock() throws LockException;
 
   void ensureActive() throws LockException;
