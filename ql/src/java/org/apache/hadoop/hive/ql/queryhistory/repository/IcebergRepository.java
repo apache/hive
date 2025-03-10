@@ -119,7 +119,7 @@ public class IcebergRepository extends AbstractRepository implements QueryHistor
   }
 
   @Override
-  protected void postInitTable(Table table) throws Exception {
+  protected void postInitTable() throws Exception {
     this.tableDesc = Utilities.getTableDesc(table);
 
     Map<String, String> map = new HashMap<>();

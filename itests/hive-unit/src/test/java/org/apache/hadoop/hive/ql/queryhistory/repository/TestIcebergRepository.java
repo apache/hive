@@ -19,10 +19,9 @@ package org.apache.hadoop.hive.ql.queryhistory.repository;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.ServiceContext;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.queryhistory.QueryHistoryService;
+import org.apache.hadoop.hive.ql.queryhistory.repository.QueryHistoryRepository;
 import org.apache.hadoop.hive.ql.queryhistory.schema.DummyRecord;
 import org.apache.hadoop.hive.ql.queryhistory.schema.IcebergRecord;
 import org.apache.hadoop.hive.ql.queryhistory.schema.Record;
@@ -55,8 +54,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class TestIcebergRepository {
   private static final Logger LOG = LoggerFactory.getLogger(TestIcebergRepository.class);
-  private static final ServiceContext serviceContext = new ServiceContext(() -> DummyRecord.SERVER_HOST,
-      () ->  DummyRecord.SERVER_PORT);
   private final Queue<Record> queryHistoryQueue = new LinkedBlockingQueue<>();
 
   private HiveConf conf;
@@ -68,14 +65,14 @@ public class TestIcebergRepository {
    */
   @Test
   public void testPersistRecord() throws Exception {
-    Record record = new DummyRecord();
+    Record historyRecord = new DummyRecord();
 
-    repository = createIcebergRepository(conf);
+    createIcebergRepository(conf);
 
-    queryHistoryQueue.add(record);
+    queryHistoryQueue.add(historyRecord);
     repository.flush(queryHistoryQueue);
 
-    checkRecords(conf, repository, record);
+    checkRecords(conf, repository, historyRecord);
   }
 
   /**
@@ -83,26 +80,25 @@ public class TestIcebergRepository {
    * @return HiveConf to be used
    */
   private HiveConf newHiveConf() {
-    HiveConf conf = new HiveConf();
-    conf.set("iceberg.engine.hive.lock-enabled", "false");
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION, false);
-    conf.setIntVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_BATCH_SIZE, 0); // sync persist on flush
-    conf.setVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_REPOSITORY_CLASS, IcebergRepositoryForTest.class.getName());
-    return conf;
+    HiveConf testConf = new HiveConf();
+    testConf.set("iceberg.engine.hive.lock-enabled", "false");
+    testConf.setBoolVar(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION, false);
+    testConf.setIntVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_BATCH_SIZE, 0); // sync persist on flush
+    testConf.setVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_REPOSITORY_CLASS, IcebergRepositoryForTest.class.getName());
+    return testConf;
   }
 
-  private IcebergRepository createIcebergRepository(HiveConf conf) {
+  private void createIcebergRepository(HiveConf conf) {
     try {
-      IcebergRepository repository = (IcebergRepository) ReflectionUtil.newInstance(
+      repository = (IcebergRepository) ReflectionUtil.newInstance(
           conf.getClassByName(conf.get(HiveConf.ConfVars.HIVE_QUERY_HISTORY_REPOSITORY_CLASS.varname)), conf);
       repository.init(conf, new Schema());
-      return repository;
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
   }
 
-  private void checkRecords(HiveConf conf, IcebergRepository repository, Record record)
+  private void checkRecords(HiveConf conf, IcebergRepository repository, Record historyRecord)
       throws Exception {
     JobConf jobConf = new JobConf(conf);
     // force table to be reloaded from Catalogs to see latest Snapshot
@@ -112,7 +108,7 @@ public class TestIcebergRepository {
     Record deserialized = new IcebergRecord((GenericRecord) container.get());
 
     Assert.assertTrue("Original and deserialized records should contain equal values",
-        QueryHistorySchemaTestUtils.queryHistoryRecordsAreEqual(record, deserialized));
+        QueryHistorySchemaTestUtils.queryHistoryRecordsAreEqual(historyRecord, deserialized));
   }
 
   private Container readRecords(IcebergRepository repository, JobConf jobConf) throws Exception {
@@ -147,19 +143,19 @@ public class TestIcebergRepository {
     conf.setIntVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ICEBERG_SNAPSHOT_EXPIRY_INVERVAL_SECONDS, 1);
     conf.setVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_REPOSITORY_CLASS,
         IcebergRepositoryWithShortSnapshotAge.class.getName());
-    repository = createIcebergRepository(conf);
+    createIcebergRepository(conf);
 
     String metadataDirectory = getTableLocation(repository) + "/metadata";
     assertSnapshotFiles(metadataDirectory, 0);
-    Record record = new DummyRecord();
+    Record historyRecord = new DummyRecord();
 
     // flush a record, 1 snapshot is visible
-    queryHistoryQueue.add(record);
+    queryHistoryQueue.add(historyRecord);
     repository.flush(queryHistoryQueue);
     assertSnapshotFiles(metadataDirectory, 1);
 
     // flush another record, 2 snapshots are visible
-    queryHistoryQueue.add(record);
+    queryHistoryQueue.add(historyRecord);
     repository.flush(queryHistoryQueue);
     assertSnapshotFiles(metadataDirectory, 2);
 
@@ -200,15 +196,15 @@ public class TestIcebergRepository {
   }
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     conf = newHiveConf();
     SessionState.start(conf);
   }
 
   @After
-  public void after() throws Exception{
+  public void after() throws Exception {
     if (repository != null) {
-      Hive.get().dropTable(repository.table.getFullyQualifiedName(), true);
+      Hive.get().dropTable(QueryHistoryRepository.QUERY_HISTORY_DB_TABLE_NAME, true);
     }
   }
 }
