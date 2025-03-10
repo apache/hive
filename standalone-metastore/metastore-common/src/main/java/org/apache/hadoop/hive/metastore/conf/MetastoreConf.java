@@ -746,6 +746,10 @@ public class MetastoreConf {
         true, "In strict JDO all SQL queries must begin with \"SELECT ...\", and consequently it "
         + "is not possible to execute queries that change data. This DataNucleus property when set to true allows "
         + "insert, update and delete operations from JDO SQL. Default value is true."),
+    DATANUCLEUS_QUERY_JDOQL_ALLOWALL("datanucleus.query.jdoql.allowAll", "datanucleus.query.jdoql.allowAll",
+        true, "In strict JDOQL all queries must begin with \"SELECT ...\", and consequently it "
+        + "is not possible to execute queries that change data. This DataNucleus property when set to true allows "
+        + "insert, update and delete operations from JDOQL. Default value is true."),
 
     // Parameters for configuring SSL encryption to the database store
     // If DBACCESS_USE_SSL is false, then all other DBACCESS_SSL_* properties will be ignored
@@ -2064,6 +2068,7 @@ public class MetastoreConf {
       ConfVars.DATANUCLEUS_TRANSACTION_ISOLATION,
       ConfVars.DATANUCLEUS_USE_LEGACY_VALUE_STRATEGY,
       ConfVars.DATANUCLEUS_QUERY_SQL_ALLOWALL,
+      ConfVars.DATANUCLEUS_QUERY_JDOQL_ALLOWALL,
       ConfVars.DETACH_ALL_ON_COMMIT,
       ConfVars.IDENTIFIER_FACTORY,
       ConfVars.MANAGER_FACTORY_CLASS,
