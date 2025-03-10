@@ -629,7 +629,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       if (!shouldRewriteColStats(tbl)) {
         checkAndMergeColStats(colStats, tbl);
       }
-      // Currently, we are only serializing table level stats.
       StatisticsFile statisticsFile;
       String statsPath = tbl.location() + STATS + UUID.randomUUID();
 

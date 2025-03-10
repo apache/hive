@@ -30,7 +30,8 @@ import static org.apache.hadoop.hive.ql.metadata.HiveUtils.unparseIdentifier;
 
 public class TransformSpec {
 
-  private static final Pattern HAS_WIDTH = Pattern.compile("(\\w+)\\[(\\d+)\\]");
+  private static final Pattern HAS_WIDTH = Pattern.compile("(\\w+)\\[(\\d+)]");
+
   public enum TransformType {
     IDENTITY, YEAR, MONTH, DAY, HOUR, TRUNCATE, BUCKET, VOID
   }
@@ -86,20 +87,16 @@ public class TransformSpec {
     if (transformType == null) {
       return null;
     }
-    if (transformParam.isPresent()) {
-      return transformType.name() + "[" + transformParam.get() + "]";
-    }
-    return transformType.name();
+    return transformType.name() + transformParam.map(width -> 
+        "[" + width + "]").orElse("");
   }
     
   public static String toNamedStruct(List<TransformSpec> partTransformSpec, Configuration conf) {
-    StringBuilder builder = new StringBuilder("named_struct(");
-    builder.append(
+    return "named_struct(" +
       partTransformSpec.stream().map(spec ->
-            "'" + spec.getFieldName() + "', " + spec.toHiveExpr(conf))
-        .collect(Collectors.joining(", "))
-      ).append(")");
-    return builder.toString();
+          "'" + spec.getFieldName() + "', " + spec.toHiveExpr(conf))
+        .collect(Collectors.joining(", ")) +
+      ")";
   }
   
   public String toHiveExpr(Configuration conf) {
@@ -112,7 +109,6 @@ public class TransformSpec {
       case BUCKET:
       case TRUNCATE:
         fn += ", " + transformParam.get();
-        break;
     }
     return  fn + ")";
   }
