@@ -561,7 +561,7 @@ STAGE PLANS:
                   alias: tbl_pred
                   Statistics: Num rows: 1049 Data size: 105941 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToInteger(t) BETWEEN 25 AND 30 and (s like 'bob%') and (not (t) IN (-3Y, -2Y, -1Y)) and s is not null) (type: boolean)
+                    predicate: (UDFToInteger(t) BETWEEN 25 AND 30 and (not (t) IN (-3Y, -2Y, -1Y)) and (s like 'bob%') and s is not null) (type: boolean)
                     Statistics: Num rows: 256 Data size: 25856 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: t (type: tinyint), s (type: string)
@@ -629,10 +629,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tbl_pred
-                  filterExpr: (UDFToInteger(t) BETWEEN 25 AND 30 and (s like 'bob%') and (not (t) IN (-3Y, -2Y, -1Y)) and s is not null) (type: boolean)
+                  filterExpr: (UDFToInteger(t) BETWEEN 25 AND 30 and (not (t) IN (-3Y, -2Y, -1Y)) and (s like 'bob%') and s is not null) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 105941 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToInteger(t) BETWEEN 25 AND 30 and (s like 'bob%') and (not (t) IN (-3Y, -2Y, -1Y)) and s is not null) (type: boolean)
+                    predicate: (UDFToInteger(t) BETWEEN 25 AND 30 and (not (t) IN (-3Y, -2Y, -1Y)) and (s like 'bob%') and s is not null) (type: boolean)
                     Statistics: Num rows: 256 Data size: 25856 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: t (type: tinyint), s (type: string)

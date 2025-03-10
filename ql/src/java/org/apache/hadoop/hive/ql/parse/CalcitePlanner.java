@@ -1763,7 +1763,25 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Plan after post-join transformations:\n" + RelOptUtil.toString(calcitePlan));
       }
+      
+      // As the last step, transform SEARCH operators by introducing negations to reduce complexity
+      calcitePlan = applyRulesToReduceComplexityOfSearchOperators(calcitePlan, mdProvider.getMetadataProvider(),
+          executorProvider);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Final calcite plan:\n" + RelOptUtil.toString(calcitePlan));
+      }
+      
       return calcitePlan;
+    }
+    
+    private RelNode applyRulesToReduceComplexityOfSearchOperators(
+        RelNode basePlan, RelMetadataProvider mdProvider, RexExecutor executorProvider) {
+      final HepProgramBuilder program = new HepProgramBuilder();
+      generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
+          HiveReduceSearchComplexityRule.FILTER,
+          HiveReduceSearchComplexityRule.PROJECT);
+
+      return executeProgram(basePlan, program.build(), mdProvider, executorProvider);
     }
 
     /**
@@ -2434,10 +2452,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
             HiveInBetweenExpandRule.JOIN_INSTANCE,
             HiveInBetweenExpandRule.PROJECT_INSTANCE);
       }
-      
-      generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST, 
-          HiveReduceSearchComplexityRule.FILTER,
-          HiveReduceSearchComplexityRule.PROJECT);
 
       // Trigger program
       basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
