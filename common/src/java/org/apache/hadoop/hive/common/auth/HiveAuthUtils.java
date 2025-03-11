@@ -69,6 +69,19 @@ public class HiveAuthUtils {
   }
 
   /**
+   * Create a TSocket for the provided host and port with specified loginTimeout. Thrift maxMessageSize
+   * will default to Thrift library default.
+   * @param host Host to connect to.
+   * @param port Port to connect to.
+   * @param socketTimeout Socket timeout (0 means no timeout).
+   * @param connectTimeout Connection timeout (0 means no timeout).
+   * @return TTransport TSocket for host/port.
+   */
+  public static TTransport getSocketTransport(String host, int port, int socketTimeout, int connectTimeout) throws TTransportException {
+    return getSocketTransport(host, port, socketTimeout, connectTimeout, /* maxMessageSize */ -1);
+  }
+
+  /**
    * Create a TSocket for the provided host and port with specified loginTimeout and maxMessageSize.
    * will default to Thrift library default.
    * @param host Host to connect to.
