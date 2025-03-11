@@ -1823,7 +1823,45 @@ public class MetastoreConf {
     ),
     PROPERTIES_SERVLET_AUTH("hive.metastore.properties.servlet.auth",
         "hive.metastore.properties.servlet.auth", "jwt",
+            new StringSetValidator("simple", "jwt"),
         "Property-maps servlet authentication method (simple or jwt)."
+    ),
+    ICEBERG_CATALOG_SERVLET_FACTORY("hive.metastore.catalog.servlet.factory",
+            "hive.metastore.catalog.servlet.factory",
+            "org.apache.iceberg.rest.HMSCatalogFactory",
+            "HMS Iceberg Catalog servlet factory class name."
+            + "The factory needs to expose a method: "
+            + "public static HttpServlet createServlet(Configuration configuration);"
+    ),
+    ICEBERG_CATALOG_SERVLET_PATH("hive.metastore.catalog.servlet.path",
+        "hive.metastore.catalog.servlet.path", "iceberg",
+        "HMS Iceberg Catalog servlet path component of URL endpoint."
+    ),
+    ICEBERG_CATALOG_SERVLET_PORT("hive.metastore.catalog.servlet.port",
+        "hive.metastore.catalog.servlet.port", -1,
+        "HMS Iceberg Catalog servlet server port. Negative value disables the servlet," +
+            " 0 will let the system determine the catalog server port," +
+            " positive value will be used as-is."
+    ),
+    ICEBERG_CATALOG_SERVLET_AUTH("hive.metastore.catalog.servlet.auth",
+        "hive.metastore.catalog.servlet.auth", "jwt",
+        "HMS Iceberg Catalog servlet authentication method (simple or jwt)."
+    ),
+    ICEBERG_CATALOG_CACHE_EXPIRY("hive.metastore.catalog.cache.expiry",
+        "hive.metastore.catalog.cache.expiry", 60_000L,
+        "HMS Iceberg Catalog cache expiry."
+    ),
+    HTTPSERVER_THREADPOOL_MIN("hive.metastore.httpserver.threadpool.min",
+            "hive.metastore.httpserver.threadpool.min", 8,
+            "HMS embedded HTTP server minimum number of threads."
+    ),
+    HTTPSERVER_THREADPOOL_MAX("hive.metastore.httpserver.threadpool.max",
+            "hive.metastore.httpserver.threadpool.max", 256,
+            "HMS embedded HTTP server maximum number of threads."
+    ),
+    HTTPSERVER_THREADPOOL_IDLE("hive.metastore.httpserver.threadpool.idle",
+            "hive.metastore.httpserver.threadpool.idle", 60_000L,
+            "HMS embedded HTTP server thread idle time."
     ),
 
     // Deprecated Hive values that we are keeping for backwards compatibility.

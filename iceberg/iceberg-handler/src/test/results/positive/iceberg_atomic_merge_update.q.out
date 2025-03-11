@@ -63,7 +63,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@display
 Warning: Shuffle Join MERGEJOIN[65][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[66][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 7' is a cross product
 PREHOOK: query: MERGE INTO display USING (
   SELECT distinct display_skey, display, display as orig_display
   FROM (
