@@ -1166,13 +1166,15 @@ public final class FunctionRegistry {
       }
     }
 
-    // Handle date-string common category and numeric-string common category
-    if (pgA == PrimitiveGrouping.STRING_GROUP
-        && (pgB == PrimitiveGrouping.DATE_GROUP || pgB == PrimitiveGrouping.NUMERIC_GROUP)) {
+    // Handle common category for date-string, numeric-string, and boolean-string types
+    Set<PrimitiveGrouping> stringFriendlyGroup = new HashSet<>(
+        Arrays.asList(PrimitiveGrouping.DATE_GROUP, PrimitiveGrouping.NUMERIC_GROUP, PrimitiveGrouping.BOOLEAN_GROUP)
+    );
+    
+    if (pgA == PrimitiveGrouping.STRING_GROUP && stringFriendlyGroup.contains(pgB)) {
       return pcA;
     }
-    if (pgB == PrimitiveGrouping.STRING_GROUP
-        && (pgA == PrimitiveGrouping.DATE_GROUP || pgA == PrimitiveGrouping.NUMERIC_GROUP)) {
+    if (pgB == PrimitiveGrouping.STRING_GROUP && stringFriendlyGroup.contains(pgA)) {
       return pcB;
     }
 
