@@ -69,7 +69,7 @@
     <datanucleus-api-jdo.version>5.2.8</datanucleus-api-jdo.version>
     <datanucleus-core.version>5.2.10</datanucleus-core.version>
     <datanucleus-jdo.version>3.2.0-release</datanucleus-jdo.version>
-    <datanucleus-rdbms.version>5.2.10</datanucleus-rdbms.version>
+    <datanucleus-rdbms.version>5.2.13</datanucleus-rdbms.version>
     <derby.version>10.14.2.0</derby.version>
     <mariadb.version>2.5.0</mariadb.version>
     <mssql.version>6.2.1.jre8</mssql.version>
@@ -85,6 +85,7 @@
     <jackson.version>2.16.1</jackson.version>
     <jexl.version>3.3</jexl.version>
     <javolution.version>5.5.1</javolution.version>
+    <jdbc.faulty.version>2.1</jdbc.faulty.version>
     <junit.version>4.13.2</junit.version>
     <junit.jupiter.version>5.11.2</junit.jupiter.version>
     <junit.vintage.version>5.11.2</junit.vintage.version>
@@ -495,6 +496,12 @@
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-simple</artifactId>
         <version>${slf4j.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.github.zabetak</groupId>
+        <artifactId>jdbc-faulty</artifactId>
+        <version>${jdbc.faulty.version}</version>
         <scope>test</scope>
       </dependency>
     </dependencies>

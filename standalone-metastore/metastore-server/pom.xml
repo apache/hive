@@ -367,6 +367,10 @@
     </dependency>
     <!-- test scope dependencies -->
     <dependency>
+      <groupId>com.github.zabetak</groupId>
+      <artifactId>jdbc-faulty</artifactId>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
