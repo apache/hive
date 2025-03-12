@@ -73,7 +73,6 @@ bround
 bucket_number
 buildversion
 cardinality_violation
-case
 cast_format
 cbrt
 ceil
@@ -528,7 +527,6 @@ PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS LIKE 'c%'
 POSTHOOK: type: SHOWFUNCTIONS
 cardinality_violation
-case
 cast_format
 cbrt
 ceil
@@ -569,7 +567,6 @@ POSTHOOK: type: SHOWFUNCTIONS
 array_remove
 array_slice
 assert_true
-case
 coalesce
 current_database
 current_date
@@ -711,7 +708,6 @@ bround
 bucket_number
 buildversion
 cardinality_violation
-case
 cast_format
 cbrt
 ceil
