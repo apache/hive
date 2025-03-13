@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
@@ -169,9 +170,8 @@ public final class HiveMaterializedViewsRegistry {
     @Override
     public void run() {
       PerfLogger perfLogger = SessionState.getPerfLogger();
-      try (SessionState ss = new SessionState(db.getConf())) {
-        ss.setIsHiveServerQuery(true); // All is served from HS2, we do not need e.g. Tez sessions
-        SessionState.start(ss);
+      try {
+        DriverUtils.setUpSessionState(db.getConf(), true);
         perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.MATERIALIZED_VIEWS_REGISTRY_REFRESH);
         if (initialized.get()) {
           for (Table mvTable : db.getAllMaterializedViewObjectsForRewriting()) {
@@ -205,7 +205,7 @@ public final class HiveMaterializedViewsRegistry {
           LOG.error("Problem connecting to the metastore when initializing the view registry", e);
         }
       } catch (IOException e) {
-        LOG.error("Problem closing session state", e);
+        LOG.error("Problem creating session state", e);
       }
       perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.MATERIALIZED_VIEWS_REGISTRY_REFRESH);
     }

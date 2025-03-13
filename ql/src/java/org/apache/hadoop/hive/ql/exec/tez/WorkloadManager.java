@@ -67,6 +67,7 @@ import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
+import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.exec.tez.AmPluginNode.AmPluginInfo;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionState.HiveResources;
 import org.apache.hadoop.hive.ql.exec.tez.UserPoolMapping.MappingInput;
@@ -81,7 +82,6 @@ import org.apache.hadoop.hive.ql.wm.TriggerActionHandler;
 import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.metrics2.MetricsSystem;
 import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.Ref;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.slf4j.Logger;
@@ -168,6 +168,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
   private final Thread delayedMoveThread;
   private final int delayedMoveTimeOutSec;
   private final int delayedMoveValidationIntervalSec;
+  private final SessionState sessionState;
 
   private LlapPluginEndpointClientImpl amComm;
 
@@ -191,7 +192,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
 
   /** Called once, when HS2 initializes. */
   public static WorkloadManager create(String yarnQueue, HiveConf conf, WMFullResourcePlan plan)
-    throws ExecutionException, InterruptedException {
+    throws ExecutionException, InterruptedException, IOException {
     assert INSTANCE == null;
     // We could derive the expected number of AMs to pass in.
     // Note: we pass a null token here; the tokens to talk to plugin endpoints will only be
@@ -203,12 +204,13 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
 
   @VisibleForTesting
   WorkloadManager(LlapPluginEndpointClientImpl amComm, String yarnQueue, HiveConf conf,
-      QueryAllocationManager qam, WMFullResourcePlan plan) throws ExecutionException, InterruptedException {
+      QueryAllocationManager qam, WMFullResourcePlan plan) throws ExecutionException, InterruptedException, IOException {
     this.yarnQueue = yarnQueue;
     this.conf = conf;
     this.totalQueryParallelism = determineQueryParallelism(plan);
     this.allocationManager = qam;
     this.allocationManager.setClusterChangedCallback(() -> notifyOfClusterStateChange());
+    this.sessionState = DriverUtils.setUpSessionState(conf, false);
 
     this.amComm = amComm;
     if (this.amComm != null) {
@@ -485,17 +487,15 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
             WmEvent wmEvent = new WmEvent(WmEvent.EventType.KILL);
             LOG.info("Invoking KillQuery for " + queryId + ": " + reason);
             try {
-              UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
-              SessionState ss = new SessionState(new HiveConf(), ugi.getShortUserName());
-              ss.setIsHiveServerQuery(true);
-              SessionState.start(ss);
+              sessionState.setIsHiveServerQuery(true);
+              SessionState.start(sessionState);
               kq.killQuery(queryId, reason, toKill.getConf());
               addKillQueryResult(toKill, true);
               killCtx.killSessionFuture.set(true);
               wmEvent.endEvent(toKill);
               LOG.debug("Killed " + queryId);
               return;
-            } catch (HiveException|IOException ex) {
+            } catch (HiveException ex) {
               LOG.error("Failed to kill " + queryId + "; will try to restart AM instead" , ex);
             }
           } else {
