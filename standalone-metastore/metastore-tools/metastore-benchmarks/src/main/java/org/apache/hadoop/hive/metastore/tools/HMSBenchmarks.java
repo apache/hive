@@ -22,6 +22,7 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.PartitionManagementTask;
+import org.apache.hadoop.hive.metastore.StatisticsManagementTask;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -42,6 +43,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -692,6 +694,70 @@ final class HMSBenchmarks {
       return bench.measure(preRun, partitionManagementTask, null);
     } finally {
       service.shutdown();
+    }
+  }
+
+  static DescriptiveStatistics benchmarkStatisticsManagement(@NotNull MicroBenchmark bench,
+                                                             @NotNull BenchData data,
+                                                             int tableCount) {
+
+    String dbName = data.dbName + "_" + tableCount;
+    String tableNamePrefix = data.tableName;
+    final HMSClient client = data.getClient();
+    final StatisticsManagementTask statsTask = new StatisticsManagementTask();
+    final FileSystem fs;
+    try {
+      fs = FileSystem.get(client.getHadoopConf());
+      client.getHadoopConf().set("hive.metastore.uris", client.getServerURI().toString());
+      client.getHadoopConf().set("metastore.statistics.management.database.pattern", dbName);
+      statsTask.setConf(client.getHadoopConf());
+
+      client.createDatabase(dbName);
+      for (int i = 0; i < tableCount; i++) {
+        String tableName = tableNamePrefix + "_" + i;
+        Util.TableBuilder tableBuilder = new Util.TableBuilder(dbName, tableName)
+                .withType(TableType.MANAGED_TABLE)
+                .withColumns(createSchema(Arrays.asList("col1:string", "col2:int")))
+                .withPartitionKeys(createSchema(Collections.singletonList("part_col")))
+                .withParameter("columnStatsAccurate", "true");
+
+        client.createTable(tableBuilder.build());
+        addManyPartitionsNoException(client, dbName, tableName, null, Collections.singletonList("part_col"), 100);
+
+        // simulate the partitions of each table which its stats has an old "lastAnalyzed"
+        List<Partition> partitions = client.listPartitions(dbName, tableName);
+        for (Partition partition : partitions) {
+          Map<String, String> params = partition.getParameters();
+          // to manually change the "lastAnalyzed" to an old time, ex. 400 days
+          params.put("lastAnalyzed", String.valueOf(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(400)));
+          client.alterPartition(dbName, tableName, partition);
+        }
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+
+    Runnable preRun = () -> {
+      System.out.println("Preparing for benchmark...");
+    };
+
+    try {
+      DescriptiveStatistics stats = bench.measure(preRun, statsTask, null);
+
+      // check if the stats are deleted
+      for (int i = 0; i < tableCount; i++) {
+        String tableName = tableNamePrefix + "_" + i;
+        List<Partition> partitions = client.listPartitions(dbName, tableName);
+        for (Partition partition : partitions) {
+          Map<String, String> params = partition.getParameters();
+          if (params.containsKey("lastAnalyzed")) {
+            throw new AssertionError("Partition stats not deleted for table: " + tableName);
+          }
+        }
+      }
+      return stats;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
   }
 
