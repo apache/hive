@@ -12549,12 +12549,13 @@ void swap(BasicTxnInfo &a, BasicTxnInfo &b);
 std::ostream& operator<<(std::ostream& out, const BasicTxnInfo& obj);
 
 typedef struct _NotificationEventRequest__isset {
-  _NotificationEventRequest__isset() : maxEvents(false), eventTypeSkipList(false), catName(false), dbName(false), tableNames(false) {}
+  _NotificationEventRequest__isset() : maxEvents(false), eventTypeSkipList(false), catName(false), dbName(false), tableNames(false), eventTypeList(false) {}
   bool maxEvents :1;
   bool eventTypeSkipList :1;
   bool catName :1;
   bool dbName :1;
   bool tableNames :1;
+  bool eventTypeList :1;
 } _NotificationEventRequest__isset;
 
 class NotificationEventRequest : public virtual ::apache::thrift::TBase {
@@ -12576,6 +12577,7 @@ class NotificationEventRequest : public virtual ::apache::thrift::TBase {
   std::string catName;
   std::string dbName;
   std::vector<std::string>  tableNames;
+  std::vector<std::string>  eventTypeList;
 
   _NotificationEventRequest__isset __isset;
 
@@ -12590,6 +12592,8 @@ class NotificationEventRequest : public virtual ::apache::thrift::TBase {
   void __set_dbName(const std::string& val);
 
   void __set_tableNames(const std::vector<std::string> & val);
+
+  void __set_eventTypeList(const std::vector<std::string> & val);
 
   bool operator == (const NotificationEventRequest & rhs) const
   {
@@ -12614,6 +12618,10 @@ class NotificationEventRequest : public virtual ::apache::thrift::TBase {
     if (__isset.tableNames != rhs.__isset.tableNames)
       return false;
     else if (__isset.tableNames && !(tableNames == rhs.tableNames))
+      return false;
+    if (__isset.eventTypeList != rhs.__isset.eventTypeList)
+      return false;
+    else if (__isset.eventTypeList && !(eventTypeList == rhs.eventTypeList))
       return false;
     return true;
   }
