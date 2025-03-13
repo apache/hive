@@ -1742,6 +1742,31 @@ public class TestDbNotificationListener
     assertEquals(36, msClient.getNotificationEventsCount(eventsReq).getEventsCount());
   }
 
+  @Test
+  public void fetchNotificationEventBasedOnEventTypes() throws Exception {
+    String dbName = "default";
+    String table1 = "test_tbl1";
+    String table2 = "test_tbl2";
+    String table3 = "test_tbl3";
+    // Generate some table events
+    generateSometableEvents(dbName, table1);
+    generateSometableEvents(dbName, table2);
+    generateSometableEvents(dbName, table3);
+
+    // Verify events by table names
+    NotificationEventRequest request = new NotificationEventRequest();
+    request.setLastEvent(firstEventId);
+    request.setMaxEvents(-1);
+    request.setDbName(dbName);
+    request.setTableNames(Arrays.asList(table1, table2));
+    request.setEventTypeList(Arrays.asList("CREATE_TABLE"));
+    NotificationEventResponse rsp1 = msClient.getNextNotification(request, true, null);
+    assertEquals(2, rsp1.getEventsSize());
+    request.setTableNames(Arrays.asList(table1, table2, table3));
+    request.setEventTypeList(Arrays.asList("ADD_PARTITION"));
+    assertEquals(6, rsp2.getEventsSize());
+  }
+
   private void generateSometableEvents(String dbName, String tableName) throws Exception {
     // CREATE_DATABASE event is generated but we filter this out while fetching events.
     driver.run("create database if not exists "+dbName);
