@@ -348,8 +348,8 @@ public class CliConfigs {
         setResultsDir("ql/src/test/results/clientpositive/jdbc/postgres");
         setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.LLAP_LOCAL);
-        setJdbcInitScript("q_test_tpcds_tables.postgres.sql");
-        setExternalTablesForJdbcInitScript("q_test_external_tpcds_tables_postgres.q");
+        setJdbcInitScript("q_test_tpcds_schema.postgres.sql");
+        setExternalTablesForJdbcInitScript("q_test_tpcds_extDB_schema-postgres.sql");
         excludesFrom(testConfigProps, "jdbc.disabled.query.files");
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
