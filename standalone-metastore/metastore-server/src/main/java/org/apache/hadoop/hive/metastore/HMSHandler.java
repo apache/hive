@@ -7449,6 +7449,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         }
         ret = rawStore.deletePartitionColumnStatistics(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
                 partNames, colNames, engine);
+        // alter table API alter partition API
+        // we don't want additional notifications
+        // double check if we can compute certain column stats, does this set the accurate on the table
+        // table properties, change it
         if (ret) {
           eventType = EventType.DELETE_PARTITION_COLUMN_STAT;
           for (String colName : colNames == null ? table.getSd().getCols().stream().map(FieldSchema::getName)
