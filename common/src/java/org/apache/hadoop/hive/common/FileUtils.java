@@ -830,7 +830,7 @@ public final class FileUtils {
           throw new IOException("copying multiple files, but last argument `" + dst + "' is not a directory");
         }
       } catch (FileNotFoundException var16) {
-        throw new IOException("`" + dst + "': specified destination directory does not exist", var16);
+        throw new IOException("'" + dst + "': specified destination directory does not exist", var16);
       }
 
       Path[] var17 = srcs;
@@ -843,6 +843,9 @@ public final class FileUtils {
           if (!doIOUtilsCopyBytes(srcFS, srcFS.getFileStatus(src), dstFS, dst, deleteSource, overwrite, preserveXAttr, conf, copyStatistics)) {
             returnVal = false;
           }
+        } catch (FileNotFoundException var15) {
+          // Wrapping the FileNotFoundException in a new IOException and re-throw immediately.
+          throw new IOException("Copy operation failed", var15);
         } catch (IOException var15) {
           gotException = true;
           exceptions.append(var15.getMessage());

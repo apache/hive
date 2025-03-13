@@ -79,7 +79,8 @@ public class Retryable {
       } catch (Exception e) {
         if (this.failOnParentExceptions.stream().noneMatch(k -> k.isAssignableFrom(e.getClass()))
           && this.failOn.stream().noneMatch(k -> e.getClass().equals(k))
-          && this.retryOn.stream().anyMatch(k -> e.getClass().isAssignableFrom(k))) {
+          && this.retryOn.stream().anyMatch(k -> e.getClass().isAssignableFrom(k))
+          && !containsNonRetryableCause(e)) {
           if (elapsedTimeInSeconds(startTime) + delay > this.totalDurationInSeconds) {
             // case where waiting would go beyond max duration. So throw exception and return
             throw e;
@@ -95,6 +96,18 @@ public class Retryable {
         }
       }
     }
+  }
+
+  private boolean containsNonRetryableCause(Exception e) {
+    Throwable current = e;
+    while (current != null) {
+      final Throwable curr = current;
+      if (this.failOnParentExceptions.stream().anyMatch(k -> k.isAssignableFrom(curr.getClass()))) {
+        return true;
+      }
+      current = current.getCause();
+    }
+    return false;
   }
 
   private void sleep(long seconds) {
