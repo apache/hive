@@ -42,7 +42,7 @@ INNER JOIN ((SELECT `key`
 FROM `default`.`filter_join_breaktask`
 WHERE `key` IS NOT NULL AND `ds` = '2008-04-08') AS `t2` INNER JOIN (SELECT `key`, `value`
 FROM `default`.`filter_join_breaktask`
-WHERE `key` IS NOT NULL AND (`value` <> '' AND `ds` = '2008-04-08')) AS `t4` ON `t2`.`key` = `t4`.`key`) ON `t0`.`value` = `t4`.`value`
+WHERE `key` IS NOT NULL AND `value` <> '' AND `ds` = '2008-04-08') AS `t4` ON `t2`.`key` = `t4`.`key`) ON `t0`.`value` = `t4`.`value`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
