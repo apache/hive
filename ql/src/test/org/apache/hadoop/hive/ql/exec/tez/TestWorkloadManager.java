@@ -36,6 +36,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.SettableFuture;
 
+import java.io.IOException;
 import java.lang.Thread.State;
 import java.util.List;
 import java.util.Map;
@@ -188,12 +189,12 @@ public class TestWorkloadManager {
     private SettableFuture<Boolean> failedWait;
 
     public WorkloadManagerForTest(String yarnQueue, HiveConf conf, int numSessions,
-        QueryAllocationManager qam) throws ExecutionException, InterruptedException {
+        QueryAllocationManager qam) throws ExecutionException, InterruptedException, IOException {
       super(null, yarnQueue, conf, qam, createDummyPlan(numSessions));
     }
 
     public WorkloadManagerForTest(String yarnQueue, HiveConf conf,
-        QueryAllocationManager qam, WMFullResourcePlan plan) throws ExecutionException, InterruptedException {
+        QueryAllocationManager qam, WMFullResourcePlan plan) throws ExecutionException, InterruptedException, IOException {
       super(null, yarnQueue, conf, qam, plan);
     }
 

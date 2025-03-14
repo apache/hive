@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,6 +93,11 @@ public final class DriverUtils {
     }
   }
 
+  public static SessionState setUpSessionState(HiveConf conf, boolean doStart) throws IOException {
+    UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
+    return setUpSessionState(conf, ugi.getUserName(), doStart);
+  }
+
   public static SessionState setUpSessionState(HiveConf conf, String user, boolean doStart) {
     SessionState sessionState = SessionState.get();
     if (sessionState == null) {
@@ -104,8 +110,8 @@ public final class DriverUtils {
         SessionState.start(sessionState);
       }
       SessionState.setCurrentSessionState(sessionState);
-    }
-    else {
+      sessionState.closeOnExit();
+    } else {
       sessionState.setConf(conf);
     }
     return sessionState;
