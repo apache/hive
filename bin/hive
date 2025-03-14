@@ -23,7 +23,9 @@ esac
 bin=`dirname "$0"`
 bin=`cd "$bin"; pwd`
 
-. "$bin"/hive-config.sh
+ARGS=("$@")
+. "$bin"/hive-config.sh "$@"
+set -- "${ARGS[@]}"
 
 SERVICE=""
 HELP=""
