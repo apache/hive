@@ -274,7 +274,7 @@ public final class FunctionRegistry {
         "index"));
   }
   
-  private static final Set<PrimitiveGrouping> stringFriendlyGroups = new HashSet<>(
+  private static final Set<PrimitiveGrouping> STRING_FRIENDLY_GROUPS = new HashSet<>(
       Arrays.asList(PrimitiveGrouping.DATE_GROUP, PrimitiveGrouping.NUMERIC_GROUP, PrimitiveGrouping.BOOLEAN_GROUP)
   );
 
@@ -1171,10 +1171,10 @@ public final class FunctionRegistry {
     }
 
     // Handle common category for date-string, numeric-string, and boolean-string types
-    if (pgA == PrimitiveGrouping.STRING_GROUP && stringFriendlyGroups.contains(pgB)) {
+    if (pgA == PrimitiveGrouping.STRING_GROUP && STRING_FRIENDLY_GROUPS.contains(pgB)) {
       return pcA;
     }
-    if (pgB == PrimitiveGrouping.STRING_GROUP && stringFriendlyGroups.contains(pgA)) {
+    if (pgB == PrimitiveGrouping.STRING_GROUP && STRING_FRIENDLY_GROUPS.contains(pgA)) {
       return pcB;
     }
 
