@@ -22,6 +22,7 @@ package org.apache.iceberg.mr.hive;
 import java.io.IOException;
 import java.time.ZoneId;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -473,50 +474,56 @@ public class IcebergTableUtil {
   public static List<PartitionField> getPartitionFields(Table table, boolean latestSpecOnly) {
     return latestSpecOnly ? table.spec().fields() :
       table.specs().values().stream()
-        .flatMap(spec -> spec.fields().stream()).distinct()
+        .flatMap(spec -> spec.fields().stream()
+            .filter(f -> !f.transform().isVoid()))
+        .distinct()
         .collect(Collectors.toList());
   }
 
   /**
-   * Returns a Map of PartitionData as the keys and partition spec ids as the values
-   * @param icebergTable Iceberg table
+   * Returns a list of partition names satisfying the provided partition spec.
+   * @param table Iceberg table
    * @param partSpecMap Partition Spec used as the criteria for filtering
-   * @param allowPartialSpec When true, must return partitions which match partSpecMap exactly, otherwise partially
-   * @param latestSpecOnly When true, returns partitions with the latest partition spec only, otherwise with any specs
-   * @return Map of PartitionData and partition spec found based on the specified constraints
+   * @param latestSpecOnly when True, returns partitions with the current spec only, else - any specs
+   * @return List of partition names
    */
-  public static Map<PartitionData, Integer> getPartitionInfo(Table icebergTable, Map<String, String> partSpecMap,
-      boolean allowPartialSpec, boolean latestSpecOnly) throws SemanticException, IOException {
+  public static List<String> getPartitionNames(Table table, Map<String, String> partSpecMap,
+      boolean latestSpecOnly) throws SemanticException {
     Expression expression = IcebergTableUtil.generateExpressionFromPartitionSpec(
-        icebergTable, partSpecMap, latestSpecOnly);
+        table, partSpecMap, latestSpecOnly);
     PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils.createMetadataTableInstance(
-        icebergTable, MetadataTableType.PARTITIONS);
+        table, MetadataTableType.PARTITIONS);
 
-    Map<PartitionData, Integer> result = Maps.newLinkedHashMap();
     try (CloseableIterable<FileScanTask> fileScanTasks = partitionsTable.newScan().planFiles()) {
-      fileScanTasks.forEach(task ->
-          CloseableIterable.filter(
-              CloseableIterable.transform(task.asDataTask().rows(), row -> {
-                StructProjection data = row.get(IcebergTableUtil.PART_IDX, StructProjection.class);
-                Integer specId = row.get(IcebergTableUtil.SPEC_IDX, Integer.class);
-                return Maps.immutableEntry(IcebergTableUtil.toPartitionData(data,
-                    Partitioning.partitionType(icebergTable), icebergTable.specs().get(specId).partitionType()),
-                    specId);
-              }), entry -> {
-                ResidualEvaluator resEval = ResidualEvaluator.of(icebergTable.specs().get(entry.getValue()),
-                    expression, false);
-                return resEval.residualFor(entry.getKey()).isEquivalentTo(Expressions.alwaysTrue()) &&
-                    (entry.getKey().size() == partSpecMap.size() || allowPartialSpec) &&
-                    (entry.getValue() == icebergTable.spec().specId() || !latestSpecOnly);
-              }).forEach(entry -> result.put(entry.getKey(), entry.getValue())));
-    }
+      return FluentIterable.from(fileScanTasks)
+          .transformAndConcat(task -> task.asDataTask().rows())
+          .transform(row -> {
+            StructLike data = row.get(IcebergTableUtil.PART_IDX, StructProjection.class);
+            PartitionSpec spec = table.specs().get(row.get(IcebergTableUtil.SPEC_IDX, Integer.class));
+            return Maps.immutableEntry(
+                IcebergTableUtil.toPartitionData(
+                    data, Partitioning.partitionType(table), spec.partitionType()),
+                spec);
+          }).filter(e -> {
+            ResidualEvaluator resEval = ResidualEvaluator.of(e.getValue(),
+                expression, false);
+            return e.getValue().isPartitioned() &&
+              resEval.residualFor(e.getKey()).isEquivalentTo(Expressions.alwaysTrue()) &&
+              (e.getValue().specId() == table.spec().specId() || !latestSpecOnly);
 
-    return result;
+          }).transform(e -> e.getValue().partitionToPath(e.getKey())).toSortedList(
+            Comparator.naturalOrder());
+
+    } catch (IOException e) {
+      throw new SemanticException(
+          String.format("Error while fetching the partitions due to: %s", e));
+    }
   }
 
   public static long getPartitionHash(Table icebergTable, String partitionPath) throws IOException {
     PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
         .createMetadataTableInstance(icebergTable, MetadataTableType.PARTITIONS);
+
     try (CloseableIterable<FileScanTask> fileScanTasks = partitionsTable.newScan().planFiles()) {
       return FluentIterable.from(fileScanTasks)
           .transformAndConcat(task -> task.asDataTask().rows())
@@ -534,19 +541,10 @@ public class IcebergTableUtil {
     }
   }
 
-  public static List<String> getPartitionNames(Table icebergTable, Map<String, String> partitionSpec,
-      boolean latestSpecOnly) throws SemanticException {
-    try {
-      return IcebergTableUtil
-          .getPartitionInfo(icebergTable, partitionSpec, true, latestSpecOnly).entrySet().stream()
-          .map(e -> {
-            PartitionData partitionData = e.getKey();
-            int specId = e.getValue();
-            return icebergTable.specs().get(specId).partitionToPath(partitionData);
-          }).collect(Collectors.toList());
-    } catch (IOException e) {
-      throw new SemanticException(String.format("Error while fetching the partitions due to: %s", e));
-    }
+  public static TransformSpec getTransformSpec(Table table, String transformName, int sourceId) {
+    TransformSpec spec = TransformSpec.fromString(transformName.toUpperCase(),
+        table.schema().findColumnName(sourceId));
+    return spec;
   }
 
 }

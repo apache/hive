@@ -55,7 +55,10 @@ public class PartExprEvalUtils {
     Properties partProps = p.getSchema();
     
     String[] partKeyTypes;
-    if (DDLUtils.isIcebergTable(p.getTable())) {
+    if (p.getTable().hasNonNativePartitionSupport()) {
+      if (!partSpec.keySet().containsAll(expr.getCols())) {
+        return null;
+      }
       partKeyTypes = p.getTable().getStorageHandler().getPartitionKeys(p.getTable()).stream()
           .map(FieldSchema::getType).toArray(String[]::new);
     } else {
@@ -64,8 +67,11 @@ public class PartExprEvalUtils {
     }
     
     if (partSpec.size() != partKeyTypes.length) {
-        throw new HiveException("Internal error : Partition Spec size, " + partSpec.size() +
-                " doesn't match partition key definition size, " + partKeyTypes.length);
+      if (DDLUtils.isIcebergTable(p.getTable())) {
+        return null;
+      }
+      throw new HiveException("Internal error : Partition Spec size, " + partSpec.size() +
+          " doesn't match partition key definition size, " + partKeyTypes.length);
     }
     // Create the row object
     List<String> partNames = new ArrayList<>();

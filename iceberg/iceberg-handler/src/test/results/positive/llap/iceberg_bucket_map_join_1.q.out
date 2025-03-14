@@ -120,9 +120,9 @@ Stage-0
               PartitionCols:_col1
               Select Operator [SEL_5] (rows=3 width=168)
                 Output:["_col0","_col1"]
-                Filter Operator [FIL_14] (rows=3 width=260)
+                Filter Operator [FIL_14] (rows=3 width=168)
                   predicate:(if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null)
-                  TableScan [TS_3] (rows=7 width=5077)
+                  TableScan [TS_3] (rows=7 width=168)
                     default@source_table,source_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","decimal_col"]
           <-Select Operator [SEL_2] (rows=10 width=168)
               Output:["_col0","_col1"]
@@ -189,11 +189,11 @@ Stage-0
                   PartitionCols:_col0, _col1
                   Group By Operator [GBY_6] (rows=1 width=168)
                     Output:["_col0","_col1"],keys:date_col, decimal_col
-                    Select Operator [SEL_5] (rows=3 width=260)
+                    Select Operator [SEL_5] (rows=3 width=168)
                       Output:["date_col","decimal_col"]
-                      Filter Operator [FIL_18] (rows=3 width=260)
+                      Filter Operator [FIL_18] (rows=3 width=168)
                         predicate:(if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null)
-                        TableScan [TS_3] (rows=7 width=5077)
+                        TableScan [TS_3] (rows=7 width=168)
                           default@source_table,source_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","decimal_col"]
           <-Select Operator [SEL_2] (rows=10 width=168)
               Output:["_col0","_col1"]
@@ -254,9 +254,9 @@ Stage-0
               PartitionCols:_col0, _col1
               Select Operator [SEL_5] (rows=3 width=168)
                 Output:["_col0","_col1"]
-                Filter Operator [FIL_14] (rows=3 width=260)
+                Filter Operator [FIL_14] (rows=3 width=168)
                   predicate:(if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null)
-                  TableScan [TS_3] (rows=7 width=5077)
+                  TableScan [TS_3] (rows=7 width=168)
                     default@source_table,source_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","decimal_col"]
           <-Select Operator [SEL_2] (rows=10 width=168)
               Output:["_col0","_col1"]
@@ -323,11 +323,11 @@ Stage-0
                   PartitionCols:_col0, _col1
                   Group By Operator [GBY_6] (rows=1 width=168)
                     Output:["_col0","_col1"],keys:date_col, decimal_col
-                    Select Operator [SEL_5] (rows=3 width=260)
+                    Select Operator [SEL_5] (rows=3 width=168)
                       Output:["date_col","decimal_col"]
-                      Filter Operator [FIL_18] (rows=3 width=260)
+                      Filter Operator [FIL_18] (rows=3 width=168)
                         predicate:(if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null)
-                        TableScan [TS_3] (rows=7 width=5077)
+                        TableScan [TS_3] (rows=7 width=168)
                           default@source_table,source_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","decimal_col"]
           <-Select Operator [SEL_2] (rows=10 width=168)
               Output:["_col0","_col1"]
@@ -388,9 +388,9 @@ Stage-0
               PartitionCols:_col1
               Select Operator [SEL_48] (rows=3 width=168)
                 Output:["_col0","_col1"]
-                Filter Operator [FIL_47] (rows=3 width=260)
+                Filter Operator [FIL_47] (rows=3 width=168)
                   predicate:(if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null)
-                  TableScan [TS_3] (rows=7 width=5077)
+                  TableScan [TS_3] (rows=7 width=168)
                     default@source_table,source_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","decimal_col"]
           <-Select Operator [SEL_51] (rows=10 width=168)
               Output:["_col0","_col1"]
@@ -457,11 +457,11 @@ Stage-0
                   PartitionCols:_col0, _col1
                   Group By Operator [GBY_53] (rows=1 width=168)
                     Output:["_col0","_col1"],keys:date_col, decimal_col
-                    Select Operator [SEL_52] (rows=3 width=260)
+                    Select Operator [SEL_52] (rows=3 width=168)
                       Output:["date_col","decimal_col"]
-                      Filter Operator [FIL_51] (rows=3 width=260)
+                      Filter Operator [FIL_51] (rows=3 width=168)
                         predicate:(if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null)
-                        TableScan [TS_3] (rows=7 width=5077)
+                        TableScan [TS_3] (rows=7 width=168)
                           default@source_table,source_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","decimal_col"]
           <-Select Operator [SEL_58] (rows=10 width=168)
               Output:["_col0","_col1"]
@@ -522,9 +522,9 @@ Stage-0
               PartitionCols:_col0, _col1
               Select Operator [SEL_48] (rows=3 width=168)
                 Output:["_col0","_col1"]
-                Filter Operator [FIL_47] (rows=3 width=260)
+                Filter Operator [FIL_47] (rows=3 width=168)
                   predicate:(if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null)
-                  TableScan [TS_3] (rows=7 width=5077)
+                  TableScan [TS_3] (rows=7 width=168)
                     default@source_table,source_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","decimal_col"]
           <-Select Operator [SEL_51] (rows=10 width=168)
               Output:["_col0","_col1"]
@@ -591,11 +591,11 @@ Stage-0
                   PartitionCols:_col0, _col1
                   Group By Operator [GBY_53] (rows=1 width=168)
                     Output:["_col0","_col1"],keys:date_col, decimal_col
-                    Select Operator [SEL_52] (rows=3 width=260)
+                    Select Operator [SEL_52] (rows=3 width=168)
                       Output:["date_col","decimal_col"]
-                      Filter Operator [FIL_51] (rows=3 width=260)
+                      Filter Operator [FIL_51] (rows=3 width=168)
                         predicate:(if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null)
-                        TableScan [TS_3] (rows=7 width=5077)
+                        TableScan [TS_3] (rows=7 width=168)
                           default@source_table,source_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","decimal_col"]
           <-Select Operator [SEL_58] (rows=10 width=168)
               Output:["_col0","_col1"]
