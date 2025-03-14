@@ -1763,8 +1763,9 @@ public class TestDbNotificationListener
     NotificationEventResponse rsp1 = msClient.getNextNotification(request, true, null);
     assertEquals(2, rsp1.getEventsSize());
     request.setTableNames(Arrays.asList(table1, table2, table3));
-    request.setEventTypeList(Arrays.asList("ADD_PARTITION"));
-    assertEquals(6, rsp2.getEventsSize());
+    request.setEventTypeList(Arrays.asList("CREATE_TABLE", "ADD_PARTITION"));
+    NotificationEventResponse rsp2 = msClient.getNextNotification(request, true, null);
+    assertEquals(9, rsp2.getEventsSize());
   }
 
   private void generateSometableEvents(String dbName, String tableName) throws Exception {
