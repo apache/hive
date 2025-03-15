@@ -64,4 +64,20 @@
         <name>metastore.metastore.event.db.notification.api.auth</name>
         <value>false</value>
     </property>
+    <property>
+        <name>iceberg.catalog</name>
+        <value>rest</value>
+    </property>
+    <property>
+        <name>iceberg.catalog.rest.type</name>
+        <value>rest</value>
+    </property>
+    <property>
+        <name>iceberg.catalog.rest.uri</name>
+        <value>http://playground-gravitino:9001/iceberg</value>
+    </property>
+    <property>
+        <name>metastore.type</name>
+        <value>rest</value>
+    </property>
 </configuration>
