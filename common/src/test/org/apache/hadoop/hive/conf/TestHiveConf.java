@@ -229,15 +229,17 @@ public class TestHiveConf {
 
     FileUtils.writeStringToFile(fileHiveSite, testHiveSiteString);
 
-    String testLdapString = "<?xml version=\"1.0\"?>\n" +
-            "<?xml-stylesheet type=\"text/xsl\" href=\"configuration.xsl\"?>\n" +
-            "<configuration>\n" +
-            "  <property>\n" +
-            "  <name>hive.server2.authentication.ldap.Domain</name>\n" +
-            "  <value>b.com</value>\n" +
-            "</property>\n" +
-            "\n" +
-            "</configuration>";
+    String testLdapString = """
+            <?xml version="1.0"?>
+            <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+            <configuration>
+              <property>
+              <name>hive.server2.authentication.ldap.Domain</name>
+              <value>b.com</value>
+            </property>
+            
+            </configuration>\
+            """;
 
 
     String newFileName = parFolder+"/ldap-site.xml";
