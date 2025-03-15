@@ -172,6 +172,7 @@ public class Utils {
     static final String HTTP_COOKIE_PREFIX = "http.cookie.";
     // Create external purge table by default
     static final String CREATE_TABLE_AS_EXTERNAL = "hiveCreateAsExternalLegacy";
+    public static final String CONNECT_TIMEOUT = "connectTimeout";
     public static final String SOCKET_TIMEOUT = "socketTimeout";
     static final String THRIFT_CLIENT_MAX_MESSAGE_SIZE = "thrift.client.max.message.size";
 
