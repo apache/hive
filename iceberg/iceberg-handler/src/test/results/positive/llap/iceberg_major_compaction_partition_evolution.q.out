@@ -447,6 +447,7 @@ POSTHOOK: type: SHOW COMPACTIONS
 CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
 #Masked#	default	ice_orc	company_id=100/dept_id=1	MAJOR	succeeded	#Masked#	manual	iceberg	0	0	0	 --- 
 #Masked#	default	ice_orc	company_id=100/dept_id=2	MAJOR	succeeded	#Masked#	manual	iceberg	0	0	0	 --- 
+#Masked#	default	ice_orc	company_id=null/dept_id=null	MAJOR	refused	#Masked#	manual	iceberg	0	0	0	 --- 
 #Masked#	default	ice_orc	 --- 	MAJOR	succeeded	#Masked#	manual	iceberg	0	0	0	 --- 
 PREHOOK: query: select `partition`, spec_id, content, record_count
 from default.ice_orc.files
