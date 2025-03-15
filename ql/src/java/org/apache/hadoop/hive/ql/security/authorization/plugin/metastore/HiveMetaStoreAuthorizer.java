@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropTableEvent;
@@ -64,6 +65,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -78,6 +80,7 @@ import java.util.stream.Collectors;
 
 public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implements MetaStoreFilterHook {
   private static final Logger LOG = LoggerFactory.getLogger(HiveMetaStoreAuthorizer.class);
+  private List<String> usersRestrictedToDeferredView;
 
   private static final ThreadLocal<Configuration> tConfig = new ThreadLocal<Configuration>() {
 
@@ -449,7 +452,7 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
     HiveMetaStoreAuthorizableEvent authzEvent = null;
 
     if (preEventContext != null) {
-
+      String currentUser;
       switch (preEventContext.getEventType()) {
         case CREATE_DATABASE:
           authzEvent = new CreateDatabaseEvent(preEventContext);
@@ -462,7 +465,10 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
           break;
         case CREATE_TABLE:
           authzEvent = new CreateTableEvent(preEventContext);
-          if (isViewOperation(preEventContext) && (!isSuperUser(getCurrentUser(authzEvent)))) {
+          currentUser = getCurrentUser(authzEvent);
+          if (isViewOperation(preEventContext) && (
+              !isSuperUser(currentUser) || isRestrictedToDeferredView(currentUser)
+          )) {
             //we allow view to be created, but mark it as having not been authorized
             PreCreateTableEvent pcte = (PreCreateTableEvent)preEventContext;
             Map<String, String> params = pcte.getTable().getParameters();
@@ -471,7 +477,10 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
           break;
         case ALTER_TABLE:
           authzEvent = new AlterTableEvent(preEventContext);
-          if (isViewOperation(preEventContext) && (!isSuperUser(getCurrentUser(authzEvent)))) {
+          currentUser = getCurrentUser(authzEvent);
+          if (isViewOperation(preEventContext) && (
+              !isSuperUser(currentUser) || isRestrictedToDeferredView(currentUser)
+          )) {
             //we allow view to be altered, but mark it as having not been authorized
             PreAlterTableEvent pcte = (PreAlterTableEvent)preEventContext;
             Map<String, String> params = pcte.getNewTable().getParameters();
@@ -480,7 +489,10 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
           break;
         case DROP_TABLE:
           authzEvent = new DropTableEvent(preEventContext);
-          if (isViewOperation(preEventContext) && (!isSuperUser(getCurrentUser(authzEvent)))) {
+          currentUser = getCurrentUser(authzEvent);
+          if (isViewOperation(preEventContext) && (
+              !isSuperUser(currentUser) || isRestrictedToDeferredView(currentUser)
+          )) {
             //TODO: do we need to check Authorized flag?
           }
           break;
@@ -580,6 +592,13 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
     String        ipAddress = HMSHandler.getIPAddress();
     ProxyUsers.refreshSuperUserGroupsConfiguration(conf);
     return (MetaStoreServerUtils.checkUserHasHostProxyPrivileges(userName, conf, ipAddress));
+  }
+
+  boolean isRestrictedToDeferredView(String userName) {
+    if (usersRestrictedToDeferredView == null) {
+      usersRestrictedToDeferredView = Arrays.asList(MetastoreConf.getVar(getConf(), MetastoreConf.ConfVars.METASTORE_USERS_RESTRICTED_TO_DEFERRED_VIEW).split(","));
+    }
+    return usersRestrictedToDeferredView.contains(userName);
   }
 
   boolean isViewOperation(PreEventContext preEventContext) {
