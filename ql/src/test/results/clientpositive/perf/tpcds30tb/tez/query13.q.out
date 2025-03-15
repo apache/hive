@@ -16,7 +16,7 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: (ss_cdemo_sk is not null and ss_addr_sk is not null and ss_hdemo_sk is not null and ss_store_sk is not null and ((ss_sales_price >= 100) or (ss_sales_price <= 150) or (ss_sales_price >= 50) or (ss_sales_price <= 100) or (ss_sales_price >= 150) or (ss_sales_price <= 200)) and ((ss_net_profit >= 100) or (ss_net_profit <= 200) or (ss_net_profit >= 150) or (ss_net_profit <= 300) or (ss_net_profit >= 50) or (ss_net_profit <= 250))) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_89_container, bigKeyColName:ss_hdemo_sk, smallTablePos:1, keyRatio:8.246185236456299E-8
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_89_container, bigKeyColName:ss_hdemo_sk, smallTablePos:1, keyRatio:7.945618813963477E-8
                   Statistics: Num rows: 82510879939 Data size: 39653754183252 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (ss_cdemo_sk is not null and ss_addr_sk is not null and ss_hdemo_sk is not null and ss_store_sk is not null and ((ss_sales_price >= 100) or (ss_sales_price <= 150) or (ss_sales_price >= 50) or (ss_sales_price <= 100) or (ss_sales_price >= 150) or (ss_sales_price <= 200)) and ((ss_net_profit >= 100) or (ss_net_profit <= 200) or (ss_net_profit >= 150) or (ss_net_profit <= 300) or (ss_net_profit >= 50) or (ss_net_profit <= 250))) (type: boolean)

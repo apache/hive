@@ -242,6 +242,24 @@ public class LongColumnStatsAggregator extends ColumnStatsAggregator implements
     }
 
     statsObj.setStatsData(columnStatisticsData);
+
+    // NDV cannot exceed the number of integers within the given range.
+    long numIntInRange = columnStatisticsData.getLongStats().getHighValue()
+        - columnStatisticsData.getLongStats().getLowValue() + 1;
+    if (columnStatisticsData.getLongStats().getNumNulls() > 0) {
+      numIntInRange++;
+    }
+    if (numIntInRange < columnStatisticsData.getLongStats().getNumDVs()) {
+      LOG.debug(
+          "Adjust the estimated NDV from {} to {} as it exceeds the number of integers "
+              + "within the range of colStats: [{}, {}].",
+          columnStatisticsData.getLongStats().getNumDVs(),
+          numIntInRange,
+          columnStatisticsData.getLongStats().getLowValue(),
+          columnStatisticsData.getLongStats().getHighValue());
+      columnStatisticsData.getLongStats().setNumDVs(numIntInRange);
+    }
+
     return statsObj;
   }
 

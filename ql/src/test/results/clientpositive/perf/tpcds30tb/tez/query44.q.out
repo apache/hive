@@ -99,14 +99,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: bigint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 464811 Data size: 59495808 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 462000 Data size: 59136000 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: CAST( (_col1 / _col2) AS decimal(11,6)) is not null (type: boolean)
-                  Statistics: Num rows: 464811 Data size: 59495808 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 462000 Data size: 59136000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: bigint), CAST( (_col1 / _col2) AS decimal(11,6)) (type: decimal(11,6))
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 464811 Data size: 55777320 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 462000 Data size: 55440000 Basic stats: COMPLETE Column stats: COMPLETE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -116,35 +116,35 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2
                       input vertices:
                         1 Reducer 6
-                      Statistics: Num rows: 464811 Data size: 107836152 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 462000 Data size: 107184000 Basic stats: COMPLETE Column stats: COMPLETE
                       Filter Operator
                         predicate: (_col1 > (0.9 * _col2)) (type: boolean)
-                        Statistics: Num rows: 154937 Data size: 35945384 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 154000 Data size: 35728000 Basic stats: COMPLETE Column stats: COMPLETE
                         Top N Key Operator
                           sort order: +
                           keys: _col1 (type: decimal(11,6))
                           null sort order: z
-                          Statistics: Num rows: 154937 Data size: 35945384 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 154000 Data size: 35728000 Basic stats: COMPLETE Column stats: COMPLETE
                           top n: 11
                           Reduce Output Operator
                             key expressions: 0 (type: int), _col1 (type: decimal(11,6))
                             null sort order: az
                             sort order: ++
                             Map-reduce partition columns: 0 (type: int)
-                            Statistics: Num rows: 154937 Data size: 35945384 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 154000 Data size: 35728000 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: bigint)
                         Top N Key Operator
                           sort order: -
                           keys: _col1 (type: decimal(11,6))
                           null sort order: a
-                          Statistics: Num rows: 154937 Data size: 35945384 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 154000 Data size: 35728000 Basic stats: COMPLETE Column stats: COMPLETE
                           top n: 11
                           Reduce Output Operator
                             key expressions: 0 (type: int), _col1 (type: decimal(11,6))
                             null sort order: aa
                             sort order: +-
                             Map-reduce partition columns: 0 (type: int)
-                            Statistics: Num rows: 154937 Data size: 35945384 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 154000 Data size: 35728000 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: bigint)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -152,7 +152,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: bigint), KEY.reducesinkkey1 (type: decimal(11,6))
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 154937 Data size: 18592440 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 154000 Data size: 18480000 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -173,14 +173,14 @@ STAGE PLANS:
                               window function: GenericUDAFRankEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
-                  Statistics: Num rows: 154937 Data size: 18592440 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 154000 Data size: 18480000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (rank_window_0 < 11) (type: boolean)
-                    Statistics: Num rows: 51645 Data size: 6197400 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 51333 Data size: 6159960 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: bigint), rank_window_0 (type: int)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 51645 Data size: 619740 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 51333 Data size: 615996 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -190,7 +190,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col2
                         input vertices:
                           1 Reducer 5
-                        Statistics: Num rows: 51645 Data size: 1032900 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 51333 Data size: 1026660 Basic stats: COMPLETE Column stats: COMPLETE
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -200,7 +200,7 @@ STAGE PLANS:
                           outputColumnNames: _col1, _col2, _col5
                           input vertices:
                             1 Reducer 8
-                          Statistics: Num rows: 51645 Data size: 6145755 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 51333 Data size: 6108627 Basic stats: COMPLETE Column stats: COMPLETE
                           Map Join Operator
                             condition map:
                                  Inner Join 0 to 1
@@ -210,22 +210,22 @@ STAGE PLANS:
                             outputColumnNames: _col1, _col5, _col7
                             input vertices:
                               1 Map 7
-                            Statistics: Num rows: 51645 Data size: 11258610 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 51333 Data size: 11190594 Basic stats: COMPLETE Column stats: COMPLETE
                             Top N Key Operator
                               sort order: +
                               keys: _col1 (type: int)
                               null sort order: z
-                              Statistics: Num rows: 51645 Data size: 11258610 Basic stats: COMPLETE Column stats: COMPLETE
+                              Statistics: Num rows: 51333 Data size: 11190594 Basic stats: COMPLETE Column stats: COMPLETE
                               top n: 100
                               Select Operator
                                 expressions: _col1 (type: int), _col5 (type: char(50)), _col7 (type: char(50))
                                 outputColumnNames: _col0, _col1, _col2
-                                Statistics: Num rows: 51645 Data size: 11258610 Basic stats: COMPLETE Column stats: COMPLETE
+                                Statistics: Num rows: 51333 Data size: 11190594 Basic stats: COMPLETE Column stats: COMPLETE
                                 Reduce Output Operator
                                   key expressions: _col0 (type: int)
                                   null sort order: z
                                   sort order: +
-                                  Statistics: Num rows: 51645 Data size: 11258610 Basic stats: COMPLETE Column stats: COMPLETE
+                                  Statistics: Num rows: 51333 Data size: 11190594 Basic stats: COMPLETE Column stats: COMPLETE
                                   value expressions: _col1 (type: char(50)), _col2 (type: char(50))
         Reducer 4 
             Execution mode: vectorized, llap
@@ -233,7 +233,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: char(50)), VALUE._col1 (type: char(50))
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 51645 Data size: 11258610 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 51333 Data size: 11190594 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 100
                   Statistics: Num rows: 100 Data size: 21800 Basic stats: COMPLETE Column stats: COMPLETE
@@ -250,7 +250,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: bigint), KEY.reducesinkkey1 (type: decimal(11,6))
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 154937 Data size: 18592440 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 154000 Data size: 18480000 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -271,20 +271,20 @@ STAGE PLANS:
                               window function: GenericUDAFRankEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
-                  Statistics: Num rows: 154937 Data size: 18592440 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 154000 Data size: 18480000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (rank_window_0 < 11) (type: boolean)
-                    Statistics: Num rows: 51645 Data size: 6197400 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 51333 Data size: 6159960 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: bigint), rank_window_0 (type: int)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 51645 Data size: 619740 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 51333 Data size: 615996 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col1 (type: int)
-                        Statistics: Num rows: 51645 Data size: 619740 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 51333 Data size: 615996 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
         Reducer 6 
             Execution mode: vectorized, llap

@@ -427,19 +427,19 @@ STAGE PLANS:
                             minReductionHashAggr: 0.99
                             mode: hash
                             outputColumnNames: _col0
-                            Statistics: Num rows: 64646121 Data size: 517168968 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 64255141 Data size: 514041128 Basic stats: COMPLETE Column stats: COMPLETE
                             Reduce Output Operator
                               key expressions: _col0 (type: bigint)
                               null sort order: z
                               sort order: +
                               Map-reduce partition columns: _col0 (type: bigint)
-                              Statistics: Num rows: 64646121 Data size: 517168968 Basic stats: COMPLETE Column stats: COMPLETE
+                              Statistics: Num rows: 64255141 Data size: 514041128 Basic stats: COMPLETE Column stats: COMPLETE
                             Reduce Output Operator
                               key expressions: _col0 (type: bigint)
                               null sort order: z
                               sort order: +
                               Map-reduce partition columns: _col0 (type: bigint)
-                              Statistics: Num rows: 64646121 Data size: 517168968 Basic stats: COMPLETE Column stats: COMPLETE
+                              Statistics: Num rows: 64255141 Data size: 514041128 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 13 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
