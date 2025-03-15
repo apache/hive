@@ -16,20 +16,22 @@
  */
 package org.apache.hadoop.hive.metastore.properties;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.ok;
+import java.nio.file.Files;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.junit.Assert;
-import java.nio.file.Files;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.ok;
+import org.junit.experimental.categories.Category;
 
 /**
  * Test using the servlet server created by the MetaStore.
  */
+@Category(MetastoreUnitTest.class)
 public class HMSServletTestA extends HMSServletTest {
   protected int thriftPort;
 
@@ -43,12 +45,12 @@ public class HMSServletTestA extends HMSServletTest {
         .willReturn(ok()
             .withBody(Files.readAllBytes(jwtVerificationJWKSFile.toPath()))));
     thriftPort = MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
-    servletServer = HiveMetaStore.getPropertyServer();
+    servletServer = HiveMetaStore.getServletServer();
     if (servletServer == null || !servletServer.isStarted()) {
       Assert.fail("http server did not start");
     }
-    sport = servletServer.getURI().getPort();
-    return sport;
+    servletPort = HiveMetaStore.getPropertyServletPort();
+    return servletPort;
   }
 
   @Override

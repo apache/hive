@@ -277,6 +277,18 @@ import com.google.common.annotations.VisibleForTesting;
 
   private HiveVectorIfStmtMode hiveVectorIfStmtMode;
 
+  private Set<String> allowedCustomUDFs;
+
+  private Set<String> getAllowedCustomUDFs(HiveConf hiveConf) {
+    String udfs = HiveConf.getVar(hiveConf,
+        HiveConf.ConfVars.HIVE_VECTOR_ADAPTOR_CUSTOM_UDF_WHITELIST);
+    if (udfs != null && !udfs.isEmpty()) {
+      return new HashSet<>(Arrays.asList(udfs.split(",")));
+    }
+
+    return new HashSet<>();
+  }
+
   //when set to true use the overflow checked vector expressions
   private boolean useCheckedVectorExpressions;
 
@@ -298,6 +310,7 @@ import com.google.common.annotations.VisibleForTesting;
     adaptorSuppressEvaluateExceptions =
         HiveConf.getBoolVar(
             hiveConf, HiveConf.ConfVars.HIVE_VECTORIZED_ADAPTOR_SUPPRESS_EVALUATE_EXCEPTIONS);
+    this.allowedCustomUDFs = getAllowedCustomUDFs(hiveConf);
   }
 
   private void copyHiveConfVars(VectorizationContext vContextEnvironment) {
@@ -1037,7 +1050,7 @@ import com.google.common.annotations.VisibleForTesting;
                 "Could not vectorize expression (mode = " + mode.name() + "): " + exprDesc.toString()
                   + " because hive.vectorized.adaptor.usage.mode=none");
           case CHOSEN:
-            if (isNonVectorizedPathUDF(expr, mode)) {
+            if (isNonVectorizedPathUDF(expr, mode, allowedCustomUDFs)) {
               ve = getCustomUDFExpression(expr, mode);
             } else {
               throw new HiveException(
@@ -1103,6 +1116,9 @@ import com.google.common.annotations.VisibleForTesting;
   private int getStructFieldIndex(ExprNodeFieldDesc exprNodeFieldDesc) throws HiveException {
     ExprNodeDesc structNodeDesc = exprNodeFieldDesc.getDesc();
     String fieldName = exprNodeFieldDesc.getFieldName();
+    if (exprNodeFieldDesc.getIsList()) {
+      throw new HiveException("Could not vectorize expression with a LIST type without an index");
+    }
     StructTypeInfo structTypeInfo = (StructTypeInfo) structNodeDesc.getTypeInfo();
     int index = 0;
     boolean isFieldExist = false;
@@ -1443,8 +1459,8 @@ import com.google.common.annotations.VisibleForTesting;
    * Depending on performance requirements and frequency of use, these
    * may be implemented in the future with an optimized VectorExpression.
    */
-  public static boolean isNonVectorizedPathUDF(ExprNodeGenericFuncDesc expr,
-      VectorExpressionDescriptor.Mode mode) {
+  private static boolean isNonVectorizedPathUDF(ExprNodeGenericFuncDesc expr,
+      VectorExpressionDescriptor.Mode mode, Set<String> allowCustomUDFs) {
     GenericUDF gudf = expr.getGenericUDF();
     if (gudf instanceof GenericUDFBridge) {
       GenericUDFBridge bridge = (GenericUDFBridge) gudf;
@@ -1458,17 +1474,16 @@ import com.google.common.annotations.VisibleForTesting;
     } else if (gudf instanceof GenericUDFFromUnixTime && isIntFamily(arg0Type(expr))
           || (gudf instanceof GenericUDFTimestamp && isStringFamily(arg0Type(expr)))
 
-            /* GenericUDFCase and GenericUDFWhen are implemented with the UDF Adaptor because
-             * of their complexity and generality. In the future, variations of these
+            /* GenericUDFWhen is implemented with the UDF Adaptor because
+             * of its complexity and generality. In the future, variations of this
              * can be optimized to run faster for the vectorized code path. For example,
              * CASE col WHEN 1 then "one" WHEN 2 THEN "two" ELSE "other" END
-             * is an example of a GenericUDFCase that has all constant arguments
+             * is an example when all constant arguments
              * except for the first argument. This is probably a common case and a
              * good candidate for a fast, special-purpose VectorExpression. Then
              * the UDF Adaptor code path could be used as a catch-all for
              * non-optimized general cases.
              */
-            || gudf instanceof GenericUDFCase
             || gudf instanceof GenericUDFWhen) {
       return true;
     } else // between has 4 args here, but can be vectorized like this
@@ -1482,6 +1497,8 @@ import com.google.common.annotations.VisibleForTesting;
     } else if (gudf instanceof GenericUDFBetween && (mode == VectorExpressionDescriptor.Mode.PROJECTION)) {
       return true;
     } else if (gudf instanceof GenericUDFConcat && (mode == VectorExpressionDescriptor.Mode.PROJECTION)) {
+      return true;
+    } else if (allowCustomUDFs.contains(gudf.getClass().getName())) {
       return true;
     }
     return false;

@@ -893,7 +893,7 @@ public class TestObjectStore {
   }
 
   @Test
-  public void testGetPartitionStatistics() throws Exception {
+  public void testPartitionStatisticsOps() throws Exception {
     createPartitionedTable(true, true);
 
     List<List<ColumnStatistics>> stat;
@@ -912,6 +912,35 @@ public class TestObjectStore {
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(long.class).numNulls(1).numDVs(2)
         .low(3L).high(4L).hll(3, 4).kll(3, 4).build();
     assertEqualStatistics(expectedStats, computedStats);
+
+    objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+        "test_part_col=a0", Arrays.asList("a0"), null, ENGINE);
+    try (AutoCloseable c = deadline()) {
+      stat = objectStore.getPartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"),
+          Collections.singletonList("test_part_col"));
+    }
+    Assert.assertEquals(1, stat.size());
+    Assert.assertEquals(2, stat.get(0).size());
+
+    objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+        "test_part_col=a1", Arrays.asList("a1"), "test_part_col", null);
+    try (AutoCloseable c = deadline()) {
+      stat = objectStore.getPartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"),
+          Collections.singletonList("test_part_col"));
+    }
+    Assert.assertEquals(1, stat.size());
+    Assert.assertEquals(1, stat.get(0).size());
+
+    objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+        "test_part_col=a2", Arrays.asList("a2"), null, null);
+    try (AutoCloseable c = deadline()) {
+      stat = objectStore.getPartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"),
+          Collections.singletonList("test_part_col"));
+    }
+    Assert.assertEquals(0, stat.size());
   }
 
   /**

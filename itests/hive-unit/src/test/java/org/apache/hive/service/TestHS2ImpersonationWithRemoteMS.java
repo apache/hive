@@ -51,7 +51,9 @@ public class TestHS2ImpersonationWithRemoteMS {
     hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_MAX_WORKER_THREADS, 1);
     hiveConf.setBoolVar(ConfVars.METASTORE_EXECUTE_SET_UGI, true);
     hiveConf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-
+    // query history adds the sys.db folder which is just a noise here
+    // this should be handled with HiveConfForTests when it's used here too
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED, false);
     miniHS2 = new MiniHS2.Builder()
       .withMiniMR()
       .withRemoteMetastore()

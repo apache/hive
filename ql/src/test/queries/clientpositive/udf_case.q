@@ -1,9 +1,6 @@
 --! qt:dataset:src
 set hive.fetch.task.conversion=more;
 
-DESCRIBE FUNCTION case;
-DESCRIBE FUNCTION EXTENDED case;
-
 EXPLAIN
 SELECT CASE 1
         WHEN 1 THEN 2

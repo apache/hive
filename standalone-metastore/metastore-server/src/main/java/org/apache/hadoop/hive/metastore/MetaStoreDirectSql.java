@@ -569,8 +569,9 @@ class MetaStoreDirectSql {
           useOldWriteId = false;
         }
       }
-
-      if (useOldWriteId) {
+      // writeId default in the DB is 0 but in the application logic it is set to -1.
+      // HIVE-28803 is changing the writeId from -1 to 0 during alter query which is undesirable
+      if (useOldWriteId && partIdToWriteId.get(partId) != 0) {
         newPart.setWriteId(partIdToWriteId.get(partId));
       }
     }
@@ -3239,6 +3240,52 @@ class MetaStoreDirectSql {
     } catch (SQLException e) {
       throw new MetaException("Error removing column stat states:" + e.getMessage());
     }
+  }
+
+  public boolean deleteTableColumnStatistics(long tableId, List<String> colNames, String engine) {
+    String deleteSql = "delete from " + TAB_COL_STATS + " where \"TBL_ID\" = " + tableId;
+    if (colNames != null && !colNames.isEmpty()) {
+      deleteSql += " and \"COLUMN_NAME\" in (" + colNames.stream().map(col -> "'" + col + "'").collect(Collectors.joining(",")) + ")";
+    }
+    if (engine != null) {
+      deleteSql += " and \"ENGINE\" = '" + engine + "'";
+    }
+    try {
+      executeNoResult(deleteSql);
+    } catch (SQLException e) {
+      LOG.warn("Error removing table column stats. ", e);
+      return false;
+    }
+    return true;
+  }
+
+  public boolean deletePartitionColumnStats(String catName, String dbName, String tblName,
+      List<String> partNames, List<String> colNames, String engine) throws MetaException {
+    Batchable.runBatched(batchSize, partNames, new Batchable<String, Void>() {
+      @Override
+      public List<Void> run(List<String> input) throws Exception {
+        String sqlFilter = PARTITIONS + ".\"PART_NAME\" in  (" + makeParams(input.size()) + ")";
+        List<Long> partitionIds = getPartitionIdsViaSqlFilter(catName, dbName, tblName, sqlFilter,
+            input, Collections.emptyList(), -1);
+        if (!partitionIds.isEmpty()) {
+          String deleteSql = "delete from " + PART_COL_STATS + " where \"PART_ID\" in ( " + getIdListForIn(partitionIds) + ")";
+          if (colNames != null && !colNames.isEmpty()) {
+            deleteSql += " and \"COLUMN_NAME\" in (" + colNames.stream().map(col -> "'" + col + "'").collect(Collectors.joining(",")) + ")";
+          }
+          if (engine != null) {
+            deleteSql += " and \"ENGINE\" = '" + engine + "'";
+          }
+          try {
+            executeNoResult(deleteSql);
+          } catch (SQLException e) {
+            LOG.warn("Error removing partition column stats. ", e);
+            throw new MetaException("Error removing partition column stats: " + e.getMessage());
+          }
+        }
+        return null;
+      }
+    });
+    return true;
   }
 
   public Map<String, Map<String, String>> updatePartitionColumnStatisticsBatch(

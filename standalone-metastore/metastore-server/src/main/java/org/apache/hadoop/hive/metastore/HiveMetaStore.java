@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.lang.reflect.Method;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import org.apache.commons.cli.OptionBuilder;
@@ -94,6 +95,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import javax.servlet.Servlet;
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
 /**
@@ -119,13 +121,39 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   private static ZooKeeperHiveHelper zooKeeperHelper = null;
   private static String msHost = null;
   private static ThriftServer thriftServer;
-  private static Server propertyServer = null;
+  /** the servlet server. */
+  private static Server servletServer = null;
+  /** the port and path of the property servlet. */
+  private static int propertyServletPort = -1;
+  /** the port and path of the catalog servlet. */
+  private static int catalogServletPort = -1;
 
-
-  public static Server getPropertyServer() {
-    return propertyServer;
+  /**
+   * Gets the embedded servlet server.
+   * @return the server instance or null
+   */
+  public static Server getServletServer() {
+    return servletServer;
   }
 
+  /**
+   * Gets the property servlet connector port.
+   * <p>If configuration is 0, this port is allocated by the system.</p>
+   * @return the connector port or -1 if not configured
+   */
+  public static int getPropertyServletPort() {
+    return propertyServletPort;
+  }
+  
+  /**
+   * Gets the catalog servlet connector port.
+   * <p>If configuration is 0, this port is allocated by the system.</p>
+   * @return the connector port or -1 if not configured
+   */
+  public static int getCatalogServletPort() {
+    return catalogServletPort;
+  }
+  
   public static boolean isRenameAllowed(Database srcDB, Database destDB) {
     if (!srcDB.getName().equalsIgnoreCase(destDB.getName())) {
       if (ReplChangeManager.isSourceOfReplication(srcDB) || ReplChangeManager.isSourceOfReplication(destDB)) {
@@ -309,6 +337,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (isCliVerbose) {
           System.err.println(shutdownMsg);
         }
+        // servlet server
+        if (servletServer != null) {
+          try {
+            servletServer.stop();
+          } catch (Exception e) {
+            LOG.error("Error stopping Property Map server.", e);
+          }
+        }
+        // metrics
         if (MetastoreConf.getBoolVar(conf, ConfVars.METRICS_ENABLED)) {
           try {
             Metrics.shutdown();
@@ -379,7 +416,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       throws Exception {
     LOG.info("Attempting to start http metastore server on port: {}", port);
     // login principal if security is enabled
-    ServletSecurity.loginServerPincipal(conf);
+    ServletSecurity.loginServerPrincipal(conf);
 
     long maxMessageSize = MetastoreConf.getLongVar(conf, ConfVars.SERVER_MAX_MESSAGE_SIZE);
     int minWorkerThreads = MetastoreConf.getIntVar(conf, ConfVars.SERVER_MIN_THREADS);
@@ -445,7 +482,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     IHMSHandler handler = HMSHandlerProxyFactory.getProxy(conf, baseHandler, false);
     processor = new ThriftHiveMetastore.Processor<>(handler);
     LOG.info("Starting DB backed MetaStore Server with generic processor");
-    TServlet thriftHttpServlet = new HmsThriftHttpServlet(processor, protocolFactory, conf);
+    boolean jwt = MetastoreConf.getVar(conf, ConfVars.THRIFT_METASTORE_AUTHENTICATION).equalsIgnoreCase("jwt");
+    ServletSecurity security = new ServletSecurity(conf, jwt);
+    Servlet thriftHttpServlet = security.proxy(new TServlet(processor, protocolFactory));
 
     boolean directSqlEnabled = MetastoreConf.getBoolVar(conf, ConfVars.TRY_DIRECT_SQL);
     HMSHandler.LOG.info("Direct SQL optimization = {}",  directSqlEnabled);
@@ -730,16 +769,49 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw e;
       }
     }
-    // optionally create and start the property server and servlet
-    propertyServer = PropertyServlet.startServer(conf);
 
+    // optionally create and start the property and Iceberg REST server
+    ServletServerBuilder builder = new ServletServerBuilder(conf);
+    ServletServerBuilder.Descriptor properties = builder.addServlet(PropertyServlet.createServlet(conf));
+    ServletServerBuilder.Descriptor catalog = builder.addServlet(createIcebergServlet(conf));
+    servletServer = builder.start(LOG);
+    if (servletServer != null) {
+      if (properties != null) {
+          propertyServletPort = properties.getPort();
+      }
+      if (catalog != null) {
+        catalogServletPort = catalog.getPort();
+      }
+    }
+
+    // main server
     thriftServer.start();
+  }
+  
+  /**
+   * Creates the Iceberg REST catalog servlet descriptor.
+   * @param configuration the configuration
+   * @return the servlet descriptor (can be null)
+   */
+  static ServletServerBuilder.Descriptor createIcebergServlet(Configuration configuration) {
+    try {
+      String className = MetastoreConf.getVar(configuration, ConfVars.ICEBERG_CATALOG_SERVLET_FACTORY);
+      Class<?> iceClazz = Class.forName(className);
+      Method iceStart = iceClazz.getMethod("createServlet", Configuration.class);
+      return (ServletServerBuilder.Descriptor) iceStart.invoke(null, configuration);
+    } catch (ClassNotFoundException xnf) {
+      LOG.warn("Unable to start Iceberg REST Catalog server, missing jar?", xnf);
+      return null;
+    } catch (Exception e) {
+      LOG.error("Unable to start Iceberg REST Catalog server", e);
+      return null;
+    }
   }
 
   /**
    * @param port where metastore server is running
    * @return metastore server instance URL. If the metastore server was bound to a configured
-   * host, return that appended by port. Otherwise return the externally visible URL of the local
+   * host, return that appended by port. Otherwise, return the externally visible URL of the local
    * host with the given port
    * @throws Exception
    */

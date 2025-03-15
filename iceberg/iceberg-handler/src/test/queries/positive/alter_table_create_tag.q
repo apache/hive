@@ -31,8 +31,8 @@ explain alter table iceTbl drop tag test_tag_2;
 alter table iceTbl drop tag test_tag_2;
 
 -- drop a tag with if exists
-explain alter table iceTbl drop tag if exists test_tag_3;
-alter table iceTbl drop tag if exists test_tag_3;
+explain alter table iceTbl drop tag if exists test_tag_1;
+alter table iceTbl drop tag if exists test_tag_1;
 
 -- drop a non-exist tag with if exists
 alter table iceTbl drop tag if exists test_tag_4;

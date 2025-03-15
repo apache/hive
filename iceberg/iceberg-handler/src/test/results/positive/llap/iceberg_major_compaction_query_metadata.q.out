@@ -1,12 +1,12 @@
 PREHOOK: query: CREATE TABLE x (name VARCHAR(50), age TINYINT, num_clicks BIGINT) 
 stored by iceberg stored as orc 
-TBLPROPERTIES ('external.table.purge'='true','format-version'='2')
+TBLPROPERTIES ('external.table.purge'='true', 'format-version'='2', 'compactor.threshold.target.size'='1500')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@x
 POSTHOOK: query: CREATE TABLE x (name VARCHAR(50), age TINYINT, num_clicks BIGINT) 
 stored by iceberg stored as orc 
-TBLPROPERTIES ('external.table.purge'='true','format-version'='2')
+TBLPROPERTIES ('external.table.purge'='true', 'format-version'='2', 'compactor.threshold.target.size'='1500')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@x
@@ -92,6 +92,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"age\":\"true\",\"name\":\"true\",\"num_clicks\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
+	compactor.threshold.target.size	1500                
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"age\",\"required\":false,\"type\":\"int\"},{\"id\":3,\"name\":\"num_clicks\",\"required\":false,\"type\":\"long\"}]}
 	current-snapshot-id 	#Masked#
 	current-snapshot-summary	{\"added-data-files\":\"1\",\"deleted-data-files\":\"2\",\"added-records\":\"7\",\"deleted-records\":\"7\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"7\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"1\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}

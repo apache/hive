@@ -56,6 +56,9 @@ public class TestThriftCliServiceMessageSize extends AbstractThriftCLITest {
    */
   @Before
   public void setUp() throws Exception {
+    // query history adds no value to this test
+    // this should be handled with HiveConfForTests when it's used here too
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED, false);
   }
 
   /**

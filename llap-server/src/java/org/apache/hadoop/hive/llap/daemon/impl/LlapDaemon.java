@@ -38,6 +38,7 @@ import javax.net.SocketFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JvmPauseMonitor;
 import org.apache.hadoop.hive.common.LogUtils;
+import org.apache.hadoop.hive.common.OTELUtils;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -91,8 +92,6 @@ import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.logging.log4j.core.config.Configurator;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -524,7 +523,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     long otelExporterFrequency =
         HiveConf.getTimeVar(getConfig(), ConfVars.HIVE_OTEL_METRICS_FREQUENCY_SECONDS, TimeUnit.MILLISECONDS);
     if (otelExporterFrequency > 0) {
-      this.otelExporter = new LLAPOTELExporter(GlobalOpenTelemetry.get(), otelExporterFrequency,
+      this.otelExporter = new LLAPOTELExporter(OTELUtils.getOpenTelemetry(getConfig()), otelExporterFrequency,
           server.getBindAddress().toString());
       otelExporter.setName("LLAP OTEL Exporter");
       otelExporter.setDaemon(true);

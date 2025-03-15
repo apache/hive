@@ -762,7 +762,7 @@ class DirectSqlUpdatePart {
 
   private void deleteParams(String paramTable, String idColumn,
                             List<Pair<Long, String>> deleteIdKeys) throws MetaException {
-    String deleteStmt = "delete from " + paramTable + " where " + idColumn +  "=? and PARAM_KEY=?";
+    String deleteStmt = "delete from " + paramTable + " where " + idColumn +  "=? and \"PARAM_KEY\"=?";
     int maxRows = dbType.getMaxRows(maxBatchSize, 2);
     updateWithStatement(statement -> Batchable.runBatched(maxRows, deleteIdKeys,
         new Batchable<Pair<Long, String>, Void>() {

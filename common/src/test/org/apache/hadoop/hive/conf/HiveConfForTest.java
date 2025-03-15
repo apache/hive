@@ -64,6 +64,9 @@ public class HiveConfForTest extends HiveConf {
     setValue("tez.local.cache.root.folder", System.getProperty("build.dir"));
     // prevent RecoveryService from starting, which is not needed in unit tests
     setValue("tez.dag.recovery.enabled", "false");
+    // as Query History Service is enabled by default, it might add overhead to tests, it's not worth using it
+    // dedicated unit tests are supposed to check that service as much as possible
+    setValue(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED.varname, "false");
   }
 
   public void setValue(String name, String value) {

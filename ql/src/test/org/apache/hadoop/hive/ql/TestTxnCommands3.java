@@ -91,8 +91,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
             "s/delta_0000001_0000001_0000/bucket_00000_0"},
         {"{\"writeid\":2,\"bucketid\":536870913,\"rowid\":0}\t4\t6",
             "s/delta_0000002_0000002_0001/bucket_00000_0"}};
-    checkResult(expected, testQuery, false, "check data", LOG);
-
+    checkResult(expected, testQuery, "check data", LOG);
 
     Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from COMPLETED_TXN_COMPONENTS where CTC_TABLE='t'"));
@@ -172,17 +171,13 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     List<String> rs = runStatementOnDriver(
         "select ROW__ID, a, b from T order by a, b");
 
-    boolean isVectorized =
-        hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
-    String testQuery = isVectorized ?
-        "select ROW__ID, a, b from T order by a, b" :
-        "select ROW__ID, a, b, INPUT__FILE__NAME from T order by a, b";
+    String testQuery = "select ROW__ID, a, b, INPUT__FILE__NAME from T order by a, b";
     String[][] expected = new String[][]{
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t4\t5",
-            "warehouse/t/delta_0000001_0000001_0000/bucket_00000"},
+            "warehouse/t/delta_0000001_0000001_0000/bucket_00000_0"},
         {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t4\t6",
-            "warehouse/t/delta_0000002_0000002_0000/bucket_00000"}};
-    checkResult(expected, testQuery, isVectorized, "after delete", LOG);
+            "warehouse/t/delta_0000002_0000002_0000/bucket_00000_0"}};
+    checkResultAndVectorization(expected, testQuery, "after delete", LOG);
 
     runStatementOnDriver("alter table T compact 'MAJOR'");
     runWorker(hiveConf);
@@ -197,10 +192,10 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
 
     String[][] expected2 = new String[][]{
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t4\t5",
-            "warehouse/t/base_0000001/bucket_00000"},
+            "warehouse/t/base_0000003_v0000012/bucket_00000"},
         {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t4\t6",
-            "warehouse/t/base_0000002/bucket_00000"}};
-    checkResult(expected2, testQuery, isVectorized, "after compaction", LOG);
+            "warehouse/t/base_0000003_v0000012/bucket_00000"}};
+    checkResultAndVectorization(expected2, testQuery, "after compaction", LOG);
   }
   /**
    * HIVE-19985
@@ -256,32 +251,26 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
    */
   @Test
   public void testSdpoBucketed() throws Exception {
-    testSdpoBucketed(true, true, 1);
-    testSdpoBucketed(true, false, 1);
-    testSdpoBucketed(false, true, 1);
-    testSdpoBucketed(false, false,1);
+    testSdpoBucketed(true, 1);
+    testSdpoBucketed(false, 1);
 
-    testSdpoBucketed(true, true, 2);
-    testSdpoBucketed(true, false, 2);
-    testSdpoBucketed(false, true, 2);
-    testSdpoBucketed(false, false,2);
+    testSdpoBucketed(true, 2);
+    testSdpoBucketed(false, 2);
   }
-  private void testSdpoBucketed(boolean isVectorized, boolean isSdpo, int bucketing_version)
+  private void testSdpoBucketed(boolean isVectorized, int bucketingVersion)
       throws Exception {
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
     runStatementOnDriver("drop table if exists acid_uap");
     runStatementOnDriver("create transactional table acid_uap(a int, b varchar(128)) " +
         "partitioned by (ds string) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES " +
-        "('bucketing_version'='" + bucketing_version + "')");
+        "('bucketing_version'='" + bucketingVersion + "')");
     runStatementOnDriver("insert into table acid_uap partition (ds='tomorrow') " +
         "values (1, 'bah'),(2, 'yah')");
     runStatementOnDriver("insert into table acid_uap partition (ds='today') " +
         "values (1, 'bah'),(2, 'yah')");
     runStatementOnDriver("select a,b, ds from acid_uap order by a,b, ds");
 
-    String testQuery = isVectorized ?
-        "select ROW__ID, a, b, ds from acid_uap order by ds, a, b" :
-        "select ROW__ID, a, b, ds, INPUT__FILE__NAME from acid_uap order by ds, a, b";
+    String testQuery = "select ROW__ID, a, b, ds, INPUT__FILE__NAME from acid_uap order by ds, a, b";
     String[][] expected = new String[][]{
         {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":0}\t1\tbah\ttoday",
             "warehouse/acid_uap/ds=today/delta_0000002_0000002_0000/bucket_00001_0"},
@@ -292,7 +281,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
             "warehouse/acid_uap/ds=tomorrow/delta_0000001_0000001_0000/bucket_00001_0"},
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t2\tyah\ttomorrow",
             "warehouse/acid_uap/ds=tomorrow/delta_0000001_0000001_0000/bucket_00000_0"}};
-    checkResult(expected, testQuery, isVectorized, "after insert", LOG);
+    checkResultAndVectorization(expected, testQuery, "after insert", LOG);
 
     runStatementOnDriver("update acid_uap set b = 'fred'");
 
@@ -306,7 +295,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
             "warehouse/acid_uap/ds=tomorrow/delta_0000003_0000003_0001/bucket_00001_0"},
         {"{\"writeid\":3,\"bucketid\":536870913,\"rowid\":0}\t2\tfred\ttomorrow",
             "warehouse/acid_uap/ds=tomorrow/delta_0000003_0000003_0001/bucket_00000_0"}};
-    checkResult(expected2, testQuery, isVectorized, "after update", LOG);
+    checkResultAndVectorization(expected2, testQuery, "after update", LOG);
   }
   @Test
   public void testCleaner2() throws Exception {
@@ -338,8 +327,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
             "t/delta_0000001_0000001_0000/bucket_00000_0"},
         {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t1\t4",
             "t/delta_0000002_0000002_0000/bucket_00000_0"}};
-    checkResult(expected, testQuery, false, "check data", LOG);
-
+    checkResult(expected, testQuery, "check data", LOG);
 
     txnMgr2 = swapTxnManager(txnMgr1);
     driver2 = swapDrivers(driver1);

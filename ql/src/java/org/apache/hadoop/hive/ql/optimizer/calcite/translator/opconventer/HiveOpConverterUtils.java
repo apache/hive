@@ -112,7 +112,7 @@ final class HiveOpConverterUtils {
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
   static ReduceSinkOperator genReduceSink(Operator<?> input, String tableAlias, ExprNodeDesc[] keys, int tag,
-      ArrayList<ExprNodeDesc> partitionCols, String order, String nullOrder, int numReducers,
+      List<ExprNodeDesc> partitionCols, String order, String nullOrder, int numReducers,
       Operation acidOperation, HiveConf hiveConf) throws SemanticException {
     Operator dummy = Operator.createDummy(); // dummy for backtracking
     dummy.setParentOperators(Arrays.asList(input));
@@ -183,14 +183,8 @@ final class HiveOpConverterUtils {
       }
     }
 
-    ReduceSinkDesc rsDesc;
-    if (order.isEmpty()) {
-      rsDesc = PlanUtils.getReduceSinkDesc(reduceKeys, reduceValues, outputColumnNames, false, tag,
-          reduceKeys.size(), numReducers, acidOperation, NullOrdering.defaultNullOrder(hiveConf));
-    } else {
-      rsDesc = PlanUtils.getReduceSinkDesc(reduceKeys, reduceValues, outputColumnNames, false, tag,
+    ReduceSinkDesc rsDesc = PlanUtils.getReduceSinkDesc(reduceKeys, reduceValues, outputColumnNames, false, tag,
           partitionCols, order, nullOrder, NullOrdering.defaultNullOrder(hiveConf), numReducers, acidOperation, false);
-    }
 
     ReduceSinkOperator rsOp = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(
         rsDesc, new RowSchema(outputColumns), input);

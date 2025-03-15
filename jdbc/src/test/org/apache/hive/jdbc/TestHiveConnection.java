@@ -77,4 +77,81 @@ public class TestHiveConnection {
     JdbcConnectionParams nonPortParams = Utils.parseURL("jdbc:hive2://hello.host/default");
     Assert.assertEquals(Integer.parseInt(Utils.DEFAULT_PORT), nonPortParams.getPort());
   }
+
+  @Test
+  public void testPasswordExtractionFromUrl() throws SQLException, ZooKeeperHiveClientException {
+    // Test with password in the URL
+    JdbcConnectionParams params = Utils.parseURL(
+        "jdbc:hive2://hello.host:10002/default;password=mySecretPassword;transportMode=http");
+
+    Assert.assertEquals("mySecretPassword",
+        params.getSessionVars().get(JdbcConnectionParams.AUTH_PASSWD));
+
+    // Test with password in different case (uppercase)
+    params = Utils.parseURL(
+        "jdbc:hive2://hello.host:10002/default;PASSWORD=upperCasePassword;httpPath=cliservice");
+
+    Assert.assertEquals("upperCasePassword",
+        params.getSessionVars().get(JdbcConnectionParams.AUTH_PASSWD));
+
+    // Test with password at the beginning of parameters
+    params = Utils.parseURL(
+        "jdbc:hive2://hello.host:10002/default;password=firstParam;httpPath=cliservice");
+
+    Assert.assertEquals("firstParam",
+        params.getSessionVars().get(JdbcConnectionParams.AUTH_PASSWD));
+
+    // Test with password at the end of parameters
+    params = Utils.parseURL(
+        "jdbc:hive2://hello.host:10002/default;transportMode=http;password=lastParam");
+
+    Assert.assertEquals("lastParam",
+        params.getSessionVars().get(JdbcConnectionParams.AUTH_PASSWD));
+  }
+
+  @Test
+  public void testPasswordWithSpecialCharacters() throws SQLException, ZooKeeperHiveClientException {
+    // Test with password containing special characters
+    JdbcConnectionParams params = Utils.parseURL(
+        "jdbc:hive2://hello.host:10002/default;password=Pass@123!#$;httpPath=cliservice");
+
+    Assert.assertEquals("Pass@123!#$",
+        params.getSessionVars().get(JdbcConnectionParams.AUTH_PASSWD));
+
+    // Test with password containing equals sign
+    params = Utils.parseURL(
+        "jdbc:hive2://hello.host:10002/default;password=user=admin123;transportMode=http");
+
+    Assert.assertEquals("user=admin123",
+        params.getSessionVars().get(JdbcConnectionParams.AUTH_PASSWD));
+  }
+
+  @Test
+  public void testNoPasswordInUrl() throws SQLException, ZooKeeperHiveClientException {
+    // Test URL without password parameter
+    JdbcConnectionParams params = Utils.parseURL(
+        "jdbc:hive2://hello.host:10002/default;transportMode=http;httpPath=cliservice");
+
+    Assert.assertNull(params.getSessionVars().get(JdbcConnectionParams.AUTH_PASSWD));
+  }
+
+  @Test
+  public void testEmptyPassword() throws SQLException, ZooKeeperHiveClientException {
+    // Test with empty password
+    JdbcConnectionParams params = Utils.parseURL(
+        "jdbc:hive2://hello.host:10002/default;password=;transportMode=http");
+
+    Assert.assertEquals("",
+        params.getSessionVars().get(JdbcConnectionParams.AUTH_PASSWD));
+  }
+
+  @Test
+  public void testPasswordWithSemicolon() throws SQLException, ZooKeeperHiveClientException {
+    // Test URL with semicolon in password (this should extract up to the semicolon)
+    JdbcConnectionParams params = Utils.parseURL(
+        "jdbc:hive2://hello.host:10002/default;password=part1;part2;transportMode=http");
+
+    Assert.assertEquals("part1",
+        params.getSessionVars().get(JdbcConnectionParams.AUTH_PASSWD));
+  }
 }

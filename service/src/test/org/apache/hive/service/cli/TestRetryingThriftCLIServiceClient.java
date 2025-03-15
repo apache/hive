@@ -62,6 +62,8 @@ public class TestRetryingThriftCLIServiceClient extends AbstractThriftCLITest {
     hiveConf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
+    // query history adds no value to this test, it would just bring iceberg handler dependency, which isn't worth
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED, false);
   }
 
   static class RetryingThriftCLIServiceClientTest extends RetryingThriftCLIServiceClient {

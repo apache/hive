@@ -67,7 +67,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCase;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCoalesce;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
@@ -564,13 +563,13 @@ public final class ConstantPropagateProcFactory {
      ExprNodeGenericFuncDesc caseOrWhenexpr = null;
      if (newExprs.get(0) instanceof ExprNodeGenericFuncDesc) {
        caseOrWhenexpr = (ExprNodeGenericFuncDesc) newExprs.get(0);
-       if (caseOrWhenexpr.getGenericUDF() instanceof GenericUDFWhen || caseOrWhenexpr.getGenericUDF() instanceof GenericUDFCase) {
+       if (caseOrWhenexpr.getGenericUDF() instanceof GenericUDFWhen) {
          foundUDFInFirst = true;
        }
      }
      if (!foundUDFInFirst && newExprs.get(1) instanceof ExprNodeGenericFuncDesc) {
        caseOrWhenexpr = (ExprNodeGenericFuncDesc) newExprs.get(1);
-       if (!(caseOrWhenexpr.getGenericUDF() instanceof GenericUDFWhen || caseOrWhenexpr.getGenericUDF() instanceof GenericUDFCase)) {
+       if (!(caseOrWhenexpr.getGenericUDF() instanceof GenericUDFWhen)) {
          return null;
        }
      }
@@ -592,21 +591,6 @@ public final class ConstantPropagateProcFactory {
              Lists.newArrayList(children.get(i),newExprs.get(foundUDFInFirst ? 1 : 0))));
        }
        // after constant folding of child expression the return type of UDFWhen might have changed,
-       // so recreate the expression
-       ExprNodeGenericFuncDesc newCaseOrWhenExpr = ExprNodeGenericFuncDesc.newInstance(childUDF,
-           caseOrWhenexpr.getFuncText(), children);
-       return newCaseOrWhenExpr;
-     } else if (childUDF instanceof GenericUDFCase) {
-       for (i = 2; i < children.size(); i+=2) {
-         children.set(i, ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPEqual(),
-             Lists.newArrayList(children.get(i),newExprs.get(foundUDFInFirst ? 1 : 0))));
-       }
-        if(children.size() % 2 == 0) {
-          i = children.size()-1;
-          children.set(i, ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPEqual(),
-              Lists.newArrayList(children.get(i),newExprs.get(foundUDFInFirst ? 1 : 0))));
-        }
-       // after constant folding of child expression the return type of UDFCase might have changed,
        // so recreate the expression
        ExprNodeGenericFuncDesc newCaseOrWhenExpr = ExprNodeGenericFuncDesc.newInstance(childUDF,
            caseOrWhenexpr.getFuncText(), children);
@@ -753,59 +737,6 @@ public final class ConstantPropagateProcFactory {
         } else if (thenVal instanceof Boolean && elseVal instanceof Boolean) {
           List<ExprNodeDesc> children = new ArrayList<>();
           children.add(whenExpr);
-          children.add(new ExprNodeConstantDesc(false));
-          ExprNodeGenericFuncDesc func = ExprNodeGenericFuncDesc.newInstance(new GenericUDFCoalesce(),
-              children);
-          if (Boolean.TRUE.equals(thenVal)) {
-            return func;
-          } else {
-            List<ExprNodeDesc> exprs = new ArrayList<>();
-            exprs.add(func);
-            return ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPNot(), exprs);
-          }
-        } else {
-          return null;
-        }
-      }
-    }
-
-    if (udf instanceof GenericUDFCase) {
-      // HIVE-9644 Attempt to fold expression like :
-      // where (case ss_sold_date when '1998-01-01' then 1=1 else null=1 end);
-      // where ss_sold_date= '1998-01-01' ;
-      if (!(newExprs.size() == 3 || newExprs.size() == 4)) {
-        // In general case can have unlimited # of branches,
-        // we currently only handle either 1 or 2 branch.
-        return null;
-      }
-      ExprNodeDesc thenExpr = newExprs.get(2);
-      ExprNodeDesc elseExpr = newExprs.size() == 4 ? newExprs.get(3) :
-        new ExprNodeConstantDesc(newExprs.get(2).getTypeInfo(),null);
-
-      if (thenExpr instanceof ExprNodeConstantDesc && elseExpr instanceof ExprNodeConstantDesc) {
-        ExprNodeConstantDesc constThen = (ExprNodeConstantDesc) thenExpr;
-        ExprNodeConstantDesc constElse = (ExprNodeConstantDesc) elseExpr;
-        Object thenVal = constThen.getValue();
-        Object elseVal = constElse.getValue();
-        if (thenVal == null) {
-          if (null == elseVal) {
-            return thenExpr;
-          } else if (op instanceof FilterOperator) {
-            return Boolean.TRUE.equals(elseVal) ? ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPNotEqual(), newExprs.subList(0, 2)) :
-              Boolean.FALSE.equals(elseVal) ? elseExpr : null;
-          } else {
-            return null;
-          }
-        } else if (null == elseVal && op instanceof FilterOperator) {
-            return Boolean.TRUE.equals(thenVal) ? ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPEqual(), newExprs.subList(0, 2)) :
-              Boolean.FALSE.equals(thenVal) ? thenExpr : null;
-        } else if(thenVal.equals(elseVal)){
-          return thenExpr;
-        } else if (thenVal instanceof Boolean && elseVal instanceof Boolean) {
-          ExprNodeGenericFuncDesc equal = ExprNodeGenericFuncDesc.newInstance(
-              new GenericUDFOPEqual(), newExprs.subList(0, 2));
-          List<ExprNodeDesc> children = new ArrayList<>();
-          children.add(equal);
           children.add(new ExprNodeConstantDesc(false));
           ExprNodeGenericFuncDesc func = ExprNodeGenericFuncDesc.newInstance(new GenericUDFCoalesce(),
               children);

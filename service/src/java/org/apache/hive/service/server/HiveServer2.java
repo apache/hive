@@ -56,6 +56,7 @@ import org.apache.curator.framework.recipes.leader.LeaderLatchListener;
 import org.apache.hadoop.hive.common.JvmPauseMonitor;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
+import org.apache.hadoop.hive.common.OTELUtils;
 import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.ZKDeRegisterWatcher;
@@ -84,6 +85,7 @@ import org.apache.hadoop.hive.ql.metadata.events.NotificationEventPoll;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.repl.metric.MetricSink;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
+import org.apache.hadoop.hive.ql.queryhistory.QueryHistoryService;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionService;
 import org.apache.hadoop.hive.ql.security.authorization.HiveMetastoreAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.PolicyProviderContainer;
@@ -137,7 +139,6 @@ import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooDefs.Perms;
 import org.apache.zookeeper.data.ACL;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import org.eclipse.jetty.servlet.ServletHolder;
 
 import org.slf4j.Logger;
@@ -189,6 +190,7 @@ public class HiveServer2 extends CompositeService {
   private ScheduledQueryExecutionService scheduledQueryService;
   private ServiceContext serviceContext;
   private OTELExporter otelExporter;
+  private QueryHistoryService queryHistoryService;
 
   public enum WebUIAuthMethod {
     NONE, LDAP
@@ -323,6 +325,11 @@ public class HiveServer2 extends CompositeService {
 
     if (hiveConf.getBoolVar(ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_ENABLED)) {
       scheduledQueryService = ScheduledQueryExecutionService.startScheduledQueryExecutorService(hiveConf);
+    }
+
+    if (hiveConf.getBoolVar(ConfVars.HIVE_QUERY_HISTORY_ENABLED)) {
+      queryHistoryService = QueryHistoryService.newInstance(hiveConf, serviceContext);
+      queryHistoryService.start();
     }
 
     // Setup cache if enabled.
@@ -508,9 +515,8 @@ public class HiveServer2 extends CompositeService {
         hiveConf.getTimeVar(ConfVars.HIVE_OTEL_METRICS_FREQUENCY_SECONDS, TimeUnit.MILLISECONDS);
     if (otelExporterFrequency > 0) {
       try {
-        otelExporter =
-            new OTELExporter(GlobalOpenTelemetry.get(), cliService.getSessionManager(), otelExporterFrequency,
-                getServerHost());
+        otelExporter = new OTELExporter(OTELUtils.getOpenTelemetry(hiveConf), cliService.getSessionManager(),
+            otelExporterFrequency, getServerHost());
 
         otelExporter.setName("OTEL Exporter");
         otelExporter.setDaemon(true);
@@ -1040,6 +1046,14 @@ public class HiveServer2 extends CompositeService {
         scheduledQueryService.close();
       } catch (Exception e) {
         LOG.error("Error stopping schq", e);
+      }
+    }
+    if (queryHistoryService != null) {
+      try {
+        LOG.info("Calling QueryHistoryService.close from HiveServer2.stop");
+        queryHistoryService.stop();
+      } catch (Exception e) {
+        LOG.error("Error stopping queryHistoryService", e);
       }
     }
     //Shutdown metric collection

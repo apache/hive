@@ -66,11 +66,63 @@ public class TransformSpec {
     this.transformParam = transformParam;
   }
 
+  public String transformTypeString() {
+    if (transformType == null) {
+      return null;
+    }
+    if (transformParam.isPresent()) {
+      return transformType.name() + "[" + transformParam.get() + "]";
+    }
+    return transformType.name();
+  }
+
   public static TransformType fromString(String transformString) {
     Matcher widthMatcher = HAS_WIDTH.matcher(transformString);
     if (widthMatcher.matches()) {
       transformString = widthMatcher.group(1);
     }
     return TransformType.valueOf(transformString.toUpperCase(Locale.ROOT));
+  }
+
+  public static TransformSpec fromString(String transfromString, String columnName) {
+    Matcher widthMatcher = HAS_WIDTH.matcher(transfromString);
+    Optional<Integer> width = Optional.empty();
+    if (widthMatcher.matches()) {
+      transfromString = widthMatcher.group(1);
+      width = Optional.of(Integer.parseInt(widthMatcher.group(2)));
+      return new TransformSpec(columnName, TransformType.valueOf(transfromString.toUpperCase(Locale.ROOT)), width);
+    }
+    return new TransformSpec(columnName, TransformType.valueOf(transfromString.toUpperCase(Locale.ROOT)), width);
+  }
+
+  public static TransformSpec fromStringWithColumnName(String transformString) {
+    if (transformString == null || !transformString.contains("(")) {
+      return new TransformSpec(transformString, TransformType.IDENTITY, Optional.empty());
+    }
+    transformString = transformString.trim();
+
+    // Extract transform type
+    String transformName = transformString.split("\\(")[0].toLowerCase(Locale.ROOT);
+    String innerContent = transformString.split("\\(")[1].split("\\)")[0].trim();
+
+    // Normalize transform name (convert "years" -> "year", "months" -> "month", etc.)
+    transformName =
+        transformName.endsWith("s") ? transformName.substring(0, transformName.length() - 1) : transformName;
+
+    // Handle transforms with width (truncate, bucket)
+    if (transformName.equals("truncate") || transformName.equals("bucket")) {
+      String[] parts = innerContent.split(",");
+      if (parts.length != 2) {
+        throw new IllegalArgumentException("Invalid format for " + transformName + ": " + transformString);
+      }
+      int width = Integer.parseInt(parts[0].trim()); // First is width
+      String columnName = parts[1].trim(); // Second is column
+      return new TransformSpec(columnName, TransformType.valueOf(transformName.toUpperCase(Locale.ROOT)),
+          Optional.of(width));
+    }
+
+    // Handle other cases (year, month, day, hour)
+    return new TransformSpec(innerContent, TransformType.valueOf(transformName.toUpperCase(Locale.ROOT)),
+        Optional.empty());
   }
 }

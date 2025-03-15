@@ -280,7 +280,7 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
    */
   @Test
   public void testImport() throws Exception {
-    testImport(false, true);
+    testImport(true);
   }
   /**
    * tests import where target table already exists.
@@ -288,14 +288,15 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
   @Test
   public void testImportVectorized() throws Exception {
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
-    testImport(true, true);
+    testImport(true);
   }
   /**
    * tests import where target table does not exists.
    */
   @Test
   public void testImportNoTarget() throws Exception {
-    testImport(false, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+    testImport(false);
   }
   /**
    * MM tables already work - mm_exim.q
@@ -304,7 +305,7 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
    * If importing into existing table (un-partitioned) it must be empty.
    * If Import is creating a table it will be exactly like exported one except for the name.
    */
-  private void testImport(boolean isVectorized, boolean existingTarget) throws Exception {
+  private void testImport(boolean existingTarget) throws Exception {
     dropTables("T", "Tstage");
     if(existingTarget) {
       runStatementOnDriver("create table T (a int, b int) stored as orc");
@@ -320,8 +321,7 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
     //load into existing empty table T
     runStatementOnDriver("import table T from '" + getWarehouseDir() + "/1'");
 
-    String testQuery = isVectorized ? "select ROW__ID, a, b from T order by ROW__ID" :
-        "select ROW__ID, a, b, INPUT__FILE__NAME from T order by ROW__ID";
+    String testQuery = "select ROW__ID, a, b, INPUT__FILE__NAME from T order by ROW__ID";
     String[][] expected = new String[][] {
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
             "t/delta_0000001_0000001_0000/000000_0"},
@@ -329,7 +329,7 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
             "t/delta_0000001_0000001_0000/000000_0"},
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":2}\t5\t6",
             "t/delta_0000001_0000001_0000/000000_0"}};
-    checkResult(expected, testQuery, isVectorized, "import existing table");
+    checkResultAndVectorization(expected, testQuery, "import existing table", LOG);
 
     runStatementOnDriver("update T set a = 0 where b = 6");
     String[][] expected2 = new String[][] {
@@ -339,7 +339,7 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
             "t/delta_0000001_0000001_0000/000000_0"},
         {"{\"writeid\":2,\"bucketid\":536870913,\"rowid\":0}\t0\t6",
             "t/delta_0000002_0000002_0001/bucket_00000_0"}};
-    checkResult(expected2, testQuery, isVectorized, "update imported table");
+    checkResultAndVectorization(expected2, testQuery, "update imported table", LOG);
 
     runStatementOnDriver("alter table T compact 'minor'");
     TestTxnCommands2.runWorker(hiveConf);
@@ -350,7 +350,7 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
             ".*t/delta_0000001_0000002_v000001[4-5]/bucket_00000"},
         {"{\"writeid\":2,\"bucketid\":536870913,\"rowid\":0}\t0\t6",
             ".*t/delta_0000001_0000002_v000001[4-5]/bucket_00000"}};
-    checkResult(expected3, testQuery, isVectorized, "minor compact imported table");
+    checkResultAndVectorization(expected3, testQuery, "minor compact imported table", LOG);
 
   }
 
@@ -383,7 +383,7 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
             "t/p=11/delta_0000002_0000002_0000/000000_0"},
         {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t5\t6",
             "t/p=12/delta_0000003_0000003_0000/000000_0"}};
-    checkResult(expected, testQuery, isVectorized, "import existing table");
+    checkResultAndVectorization(expected, testQuery, "import existing table", LOG);
   }
 
   @Test
@@ -562,10 +562,6 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
       Assert.assertTrue(s, s.contains("/delta_0000001_0000001_0000/"));
       Assert.assertTrue(s, s.endsWith("/000000_0"));
     }
-  }
-  private void checkResult(String[][] expectedResult, String query, boolean isVectorized,
-      String msg) throws Exception{
-    checkResult(expectedResult, query, isVectorized, msg, LOG);
   }
 
   /**

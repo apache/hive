@@ -83,16 +83,23 @@ public abstract class AbstractAlterTablePropertiesAnalyzer extends AbstractAlter
   }
 
   /**
-   * @return If it is executed after an update statistics command.
+   * @return If the alter changes table statistics
    */
   private boolean validate(TableName tableName, Map<String, String> properties) throws SemanticException {
     // We need to check if the properties are valid, especially for stats.
-    // They might be changed via alter table .. update statistics or alter table .. set tblproperties.
-    // If the property is not row_count or raw_data_size, it could not be changed through update statistics.
     boolean changeStats = false;
     for (Entry<String, String> entry : properties.entrySet()) {
-      // we make sure that we do not change anything if there is anything wrong.
-      if (entry.getKey().equals(StatsSetupConst.ROW_COUNT) || entry.getKey().equals(StatsSetupConst.RAW_DATA_SIZE)) {
+      // Stats can be changed via alter table .. update statistics or alter table .. set tblproperties.
+      // If the property is not numRows or rawDataSize, it cannot be changed through update statistics.
+      if ((queryState.getCommandType().equals(HiveOperation.ALTERTABLE_UPDATETABLESTATS.getOperationName()) ||
+              queryState.getCommandType().equals(HiveOperation.ALTERTABLE_UPDATEPARTSTATS.getOperationName()))
+              && !entry.getKey().equals(StatsSetupConst.ROW_COUNT) && !entry.getKey().equals(StatsSetupConst.RAW_DATA_SIZE)) {
+        throw new SemanticException(String.format(
+                  "AlterTable UpdateStats %s failed because the only valid keys are %s and %s",
+                  entry.getKey(), StatsSetupConst.ROW_COUNT, StatsSetupConst.RAW_DATA_SIZE));
+      }
+      // We can update all table stats through SET TBLPROPERTIES. Validating if the value is a Long
+      if (StatsSetupConst.STATS_NUMERIC.contains(entry.getKey())) {
         try {
           Long.parseLong(entry.getValue());
           changeStats = true;
@@ -106,13 +113,6 @@ public abstract class AbstractAlterTablePropertiesAnalyzer extends AbstractAlter
           throw new SemanticException(ErrorMsg.INVALID_CSTR_SYNTAX.getMsg(String.format(
               "Table: %s has constraints enabled. Please remove those constraints to change this property.",
               tableName.getNotEmptyDbTable())));
-        }
-      } else {
-        if (queryState.getCommandType().equals(HiveOperation.ALTERTABLE_UPDATETABLESTATS.getOperationName()) ||
-            queryState.getCommandType().equals(HiveOperation.ALTERTABLE_UPDATEPARTSTATS.getOperationName())) {
-          throw new SemanticException(String.format(
-              "AlterTable UpdateStats %s failed because the only valid keys are %s and %s",
-              entry.getKey(), StatsSetupConst.ROW_COUNT, StatsSetupConst.RAW_DATA_SIZE));
         }
       }
     }

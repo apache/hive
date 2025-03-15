@@ -64,6 +64,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -414,6 +415,11 @@ public class HiveConf extends Configuration {
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_KERBEROS_PRINCIPAL.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_KERBEROS_KEYTAB_FILE.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_ZKSM_ZK_CONNECTION_STRING.varname);
+    llapDaemonVarsSetLocal.add(ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_ENABLED.varname);
+    llapDaemonVarsSetLocal.add(ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_KEYSTORE_LOCATION.varname);
+    llapDaemonVarsSetLocal.add(ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_KEYSTORE_PASSWORD.varname);
+    llapDaemonVarsSetLocal.add(ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_TRUSTSTORE_LOCATION.varname);
+    llapDaemonVarsSetLocal.add(ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_TRUSTSTORE_PASSWORD.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_SECURITY_ACL.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_MANAGEMENT_ACL.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_SECURITY_ACL_DENY.varname);
@@ -1867,13 +1873,12 @@ public class HiveConf extends Configuration {
             + "execution engine doesn't take advantage of statistics stored in the cache."),
     // CBO related
     HIVE_CBO_ENABLED("hive.cbo.enable", true, "Flag to control enabling Cost Based Optimizations using Calcite framework."),
-    HIVE_CBO_FALLBACK_STRATEGY("hive.cbo.fallback.strategy", "CONSERVATIVE",
-        new StringSet(true, "NEVER", "CONSERVATIVE", "ALWAYS", "TEST"),
+    HIVE_CBO_FALLBACK_STRATEGY("hive.cbo.fallback.strategy", "NEVER",
+        new StringSet(true, "NEVER", "CONSERVATIVE", "ALWAYS"),
         "The strategy defines when Hive fallbacks to legacy optimizer when CBO fails:" 
             + "NEVER, never use the legacy optimizer (all CBO errors are fatal);"
             + "ALWAYS, always use the legacy optimizer (CBO errors are not fatal);"
-            + "CONSERVATIVE, use the legacy optimizer only when the CBO error is not related to subqueries and views;"
-            + "TEST, specific behavior only for tests, do not use in production"), 
+            + "CONSERVATIVE, use the legacy optimizer only when the CBO error is not related to subqueries and views."), 
     HIVE_CBO_CNF_NODES_LIMIT("hive.cbo.cnf.maxnodes", -1, "When converting to conjunctive normal form (CNF), fail if" +
         "the expression exceeds this threshold; the threshold is expressed in terms of number of nodes (leaves and" +
         "interior nodes). -1 to not set up a threshold."),
@@ -1960,6 +1965,8 @@ public class HiveConf extends Configuration {
     HIVE_ENABLE_JDBC_SAFE_PUSHDOWN("hive.jdbc.pushdown.safe.enable", false,
         "Flag to control enabling pushdown of operators using Calcite that prevent splitting results\n" +
         "retrieval in the JDBC storage handler"),
+    HIVE_JDBC_FETCH_THREADS("hive.jdbc.fetch.threads", 1,
+        "Controls the number of thread/connections used to fetch results for a JDBC query"),
 
     // hive.mapjoin.bucket.cache.size has been replaced by hive.smbjoin.cache.row,
     // need to remove by hive .13. Also, do not change default (see SMB operator)
@@ -2238,7 +2245,6 @@ public class HiveConf extends Configuration {
         "If this is set to true the URI for auth will have the default location masked with DEFAULT_TABLE_LOCATION"),
     HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY("hive.iceberg.allow.datafiles.in.table.location.only", false,
         "If this is set to true, then all the data files being read should be withing the table location"),
-
     HIVE_USE_EXPLICIT_RCFILE_HEADER("hive.exec.rcfile.use.explicit.header", true,
         "If this is set the header for RCFiles will simply be RCF.  If this is not\n" +
         "set the header will be that borrowed from sequence files, e.g. SEQ- followed\n" +
@@ -3730,7 +3736,7 @@ public class HiveConf extends Configuration {
     HIVE_ERROR_ON_EMPTY_PARTITION("hive.error.on.empty.partition", false,
         "Whether to throw an exception if dynamic partition insert generates empty results."),
 
-    HIVE_EXIM_URI_SCHEME_WL("hive.exim.uri.scheme.whitelist", "hdfs,pfile,file,s3,s3a,gs",
+    HIVE_EXIM_URI_SCHEME_WL("hive.exim.uri.scheme.whitelist", "hdfs,pfile,file,s3,s3a,gs,ofs,o3fs",
         "A comma separated list of acceptable URI schemes for import and export."),
     // temporary variable for testing. This is added just to turn off this feature in case of a bug in
     // deployment. It has not been documented in hive-default.xml intentionally, this should be removed
@@ -3878,7 +3884,7 @@ public class HiveConf extends Configuration {
     HIVE_LINEAGE_INFO("hive.lineage.hook.info.enabled", false,
         "Whether Hive provides lineage information to hooks." +
             "Deprecated: use hive.lineage.statement.filter instead."),
-    HIVE_LINEAGE_STATEMENT_FILTER("hive.lineage.statement.filter", "ALL",
+    HIVE_LINEAGE_STATEMENT_FILTER("hive.lineage.statement.filter", "NONE",
         "Whether Hive provides lineage information to hooks for the specified statements only, " +
             "the value is a comma-separated list (ex.: CREATE_MATERIALIZED_VIEW," +
             "CREATE_TABLE,CREATE_TABLE_AS_SELECT). Possible values are: CREATE_TABLE, CREATE_TABLE_AS_SELECT, " +
@@ -4539,7 +4545,7 @@ public class HiveConf extends Configuration {
         "If enabled, HiveServer2 will block any requests made to it over http " +
             "if an X-CSRF-TOKEN header is not present"),
     HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist",
-      "set,reset,dfs,add,list,delete,reload,compile,llap",
+      "set,reset,dfs,add,list,delete,reload,compile,llap,processlist",
         "Comma separated list of non-SQL Hive commands users are authorized to execute"),
     HIVE_SERVER2_JOB_CREDENTIAL_PROVIDER_PATH("hive.server2.job.credential.provider.path", "",
         "If set, this configuration property should provide a comma-separated list of URLs that indicates the type and " +
@@ -4701,6 +4707,11 @@ public class HiveConf extends Configuration {
     HIVE_VECTORIZATION_PTF_ENABLED("hive.vectorized.execution.ptf.enabled", true,
         "This flag should be set to true to enable vectorized mode of the PTF of query execution.\n" +
         "The default value is true."),
+
+    HIVE_VECTOR_ADAPTOR_CUSTOM_UDF_WHITELIST("hive.vectorized.adaptor.custom.udf.whitelist", "",
+        "Custom UDF allowed when hive.vectorized.adaptor.usage.mode is chosen.\n" +
+        "Specify classes separated by commas:\n" +
+        "package.FooClass,package.BarClass"),
 
     HIVE_VECTORIZATION_PTF_MAX_MEMORY_BUFFERING_BATCH_COUNT("hive.vectorized.ptf.max.memory.buffering.batch.count", 25,
         "Maximum number of vectorized row batches to buffer in memory for PTF\n" +
@@ -5184,6 +5195,16 @@ public class HiveConf extends Configuration {
         "By default, the clients are required to provide tokens to access HDFS/etc."),
     LLAP_ZKSM_ZK_CONNECTION_STRING("hive.llap.zk.sm.connectionString", "",
         "ZooKeeper connection string for ZooKeeper SecretManager."),
+    LLAP_ZKSM_ZK_CONNECTION_SSL_ENABLED("hive.llap.zk.sm.ssl.enabled", false,
+            "Secure ZooKeeper connection enabled for ZooKeeper SecretManager."),
+    LLAP_ZKSM_ZK_CONNECTION_SSL_KEYSTORE_LOCATION("hive.llap.zk.sm.ssl.keystore.location", "",
+            "Keystore location for secure ZooKeeper connection for ZooKeeper SecretManager."),
+    LLAP_ZKSM_ZK_CONNECTION_SSL_KEYSTORE_PASSWORD("hive.llap.zk.sm.ssl.keystore.password", "",
+            "Keystore password for secure ZooKeeper connection for ZooKeeper SecretManager."),
+    LLAP_ZKSM_ZK_CONNECTION_SSL_TRUSTSTORE_LOCATION("hive.llap.zk.sm.ssl.truststore.location", "",
+            "Truststore location for secure ZooKeeper connection for ZooKeeper SecretManager."),
+    LLAP_ZKSM_ZK_CONNECTION_SSL_TRUSTSTORE_PASSWORD("hive.llap.zk.sm.ssl.truststore.password", "",
+            "Truststore password for secure ZooKeeper connection for ZooKeeper SecretManager."),
     LLAP_ZKSM_ZK_SESSION_TIMEOUT("hive.llap.zk.sm.session.timeout", "40s", new TimeValidator(
         TimeUnit.MILLISECONDS), "ZooKeeper session timeout for ZK SecretManager."),
     LLAP_ZK_REGISTRY_USER("hive.llap.zk.registry.user", "",
@@ -5646,6 +5667,7 @@ public class HiveConf extends Configuration {
             "hive.zookeeper.ssl.truststore.password," +
             "hive.zookeeper.ssl.truststore.type," +
             "hive.iceberg.allow.datafiles.in.table.location.only," +
+            "hive.hook.proto.base-directory," +
             "hive.rewrite.data.policy",
         "Comma separated list of configuration options which are immutable at runtime"),
     HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
@@ -5732,6 +5754,33 @@ public class HiveConf extends Configuration {
             + "a background update happens periodically to report the actual state of the query"),
     HIVE_SCHEDULED_QUERIES_CREATE_AS_ENABLED("hive.scheduled.queries.create.as.enabled", true,
         "This option sets the default behaviour of newly created scheduled queries."),
+    HIVE_QUERY_HISTORY_ENABLED("hive.query.history.enabled", false,
+        "Whether to start QueryHistoryService in HS2."),
+    HIVE_QUERY_HISTORY_EXPLAIN_PLAN_ENABLED("hive.query.history.explain.plan.enabled", true,
+        "Whether to collect and store explain plan in the query history. Default is true."),
+    HIVE_QUERY_HISTORY_EXEC_SUMMARY_ENABLED("hive.query.history.exec.summary.enabled", true,
+        "Whether to collect and store execution summary in the query history. Default is true."),
+    HIVE_QUERY_HISTORY_BATCH_SIZE("hive.query.history.batch.size", 200,
+        "The maximum amount of records held in memory " +
+            "before query history service persists them to the target table. " +
+            "A small value (like 1-5) will lead to more real-time behavior with the price of small files. " +
+            "Set this to 0 to wait for the records to be persisted synchronously (not recommended in production)."),
+    HIVE_QUERY_HISTORY_MAX_MEMORY_BYTES("hive.query.history.max.memory.bytes",
+        20 * 1024 * 1024, // 20MB
+        "The maximum size in bytes the query history queue can grow in the memory before query history service " +
+            "persists them to the target table." +
+            "Set this to 0 to disable this check (not recommended in production in order to keep HS2's heap under " +
+            "control)"),
+    HIVE_QUERY_HISTORY_FLUSH_INTERVAL_SECONDS("hive.query.history.flush.interval.seconds",
+        60 * 60, // 1h
+        "The query history service attempts to flush records from memory to the Iceberg table regardless of the " +
+            "current batch size. This ensures that history records are not kept inaccessible to users for extended " +
+            "periods. This property defines the interval for this operation. The default value of 1 hour is " +
+            "presumably a reasonable tradeoff between generating smaller files and allowing sufficient time for " +
+            "records to arrive. Set this to 0 to disable (so to 'force' batch size-based strategies)"),
+    HIVE_QUERY_HISTORY_REPOSITORY_CLASS("hive.query.history.repository.class",
+        "org.apache.hadoop.hive.ql.queryhistory.repository.IcebergRepository",
+        "The class implementing QueryHistoryRepository to be used for persisting Record instances"),
     HIVE_SECURITY_AUTHORIZATION_SCHEDULED_QUERIES_SUPPORTED("hive.security.authorization.scheduled.queries.supported",
         false,
         "Enable this if the configured authorizer is able to handle scheduled query related calls."),
@@ -5815,7 +5864,27 @@ public class HiveConf extends Configuration {
 
     HIVE_OTEL_METRICS_FREQUENCY_SECONDS("hive.otel.metrics.frequency.seconds", "0s",
         new TimeValidator(TimeUnit.SECONDS),
-        "Frequency at which the OTEL Metrics are refreshed, A value of 0 or less disable the feature");
+        "Frequency at which the OTEL Metrics are refreshed, A value of 0 or less disable the feature"),
+
+    HIVE_OTEL_COLLECTOR_ENDPOINT("hive.otel.collector.endpoint", "",
+        "The endpoint to send all OTLP traces, metrics, and logs to. Often the address of an OpenTelemetry Collector."
+            + " Must be a URL with a scheme of either http or https based on the use of TLS/"),
+
+    HIVE_OTEL_EXPORTER_TIMEOUT("hive.otel.exporter.timeout", "10m", new TimeValidator(TimeUnit.SECONDS),
+        "The maximum amount of time allowed for the OTEL exporter to complete an export operation."
+            + "If the operation exceeds this duration, it will time out."),
+
+    HIVE_OTEL_RETRY_INITIAL_BACKOFF("hive.otel.retry.initial.backoff", "10s", new TimeValidator(TimeUnit.SECONDS),
+        "The initial delay before the first retry attempt in case of a failure in the OTEL exporter."
+            + "This value serves as the starting point for the exponential backoff strategy."),
+
+    HIVE_OTEL_RETRY_MAX_BACKOFF("hive.otel.retry.max.backoff", "1m", new TimeValidator(TimeUnit.SECONDS),
+        "The maximum time to wait between retries for the OTEL exporter."
+            + "This sets an upper limit on the backoff interval, ensuring retries do not exceed this duration even with exponential backoff."),
+
+    HIVE_OTEL_RETRY_BACKOFF_MULTIPLIER("hive.otel.retry.backoff.multiplier", 5f,
+        "The multiplier applied to the backoff interval for retries in the OTEL exporter."
+            + "This determines how much the backoff interval increases after each failed attempt, following an exponential backoff strategy.");
 
     public final String varname;
     public final String altName;
@@ -7246,6 +7315,13 @@ public class HiveConf extends Configuration {
       }
     }
     return ret;
+  }
+
+  public static boolean shouldComputeLineage(HiveConf conf) {
+    Collection<String> lineageFilter =
+      conf.getTrimmedStringCollection(HiveConf.ConfVars.HIVE_LINEAGE_STATEMENT_FILTER.varname);
+    return !(lineageFilter.isEmpty() || lineageFilter.contains("NONE"))
+      || conf.getBoolVar(ConfVars.HIVE_LINEAGE_INFO);
   }
 
   // sync all configs from given conf

@@ -42,4 +42,12 @@ public interface MetaStoreThread extends Configurable {
    * been called.
    */
   void start();
+
+  /**
+   * Should use mutex support to allow only one copy of this task running across the warehouse.
+   * @param enableMutex true for enabling the mutex, false otherwise
+   */
+  default void enforceMutex(boolean enableMutex) {
+    // no-op
+  }
 }

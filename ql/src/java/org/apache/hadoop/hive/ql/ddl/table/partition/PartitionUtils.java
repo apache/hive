@@ -27,6 +27,8 @@ import java.util.Map.Entry;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -117,6 +119,27 @@ public final class PartitionUtils {
       throw new SemanticException(toMessage(ErrorMsg.INVALID_PARTITION, partitionSpec));
     }
     return partitions;
+  }
+
+  public static List<Partition> getPartitionsWithSpecs(Hive db, Table table, GetPartitionsRequest request,
+      boolean throwException) throws SemanticException {
+    List<Partition> partitions = null;
+    try {
+      partitions = db.getPartitionsWithSpecs(table, request);
+    } catch (Exception e) {
+      throw new SemanticException(toMessage(ErrorMsg.INVALID_PARTITION, request.getFilterSpec())
+              + " for the following partition keys: " + tablePartitionColNames(table), e);
+    }
+    if (partitions.isEmpty() && throwException) {
+      throw new SemanticException(toMessage(ErrorMsg.INVALID_PARTITION, request.getFilterSpec())
+              + " for the following partition keys: " + tablePartitionColNames(table));
+    }
+    return partitions;
+  }
+
+  private static String tablePartitionColNames(Table table) {
+    List<FieldSchema> partCols = table.getPartCols();
+    return String.join("/", partCols.toString());
   }
 
   private static String toMessage(ErrorMsg message, Object detail) {

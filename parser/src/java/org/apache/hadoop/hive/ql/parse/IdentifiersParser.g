@@ -341,16 +341,6 @@ castExpression
     -> ^(TOK_FUNCTION {adaptor.create(Identifier, "cast_format")} NumberLiteral[Integer.toString(((CommonTree)toType.getTree()).token.getType())] expression StringLiteral NumberLiteral[((CommonTree)toType.getTree()).getChild(0).getText()])
     ;
 
-caseExpression
-@init { gParent.pushMsg("case expression", state); }
-@after { gParent.popMsg(state); }
-    :
-    KW_CASE expression
-    (KW_WHEN expression KW_THEN expression)+
-    (KW_ELSE expression)?
-    KW_END -> ^(TOK_FUNCTION KW_CASE expression*)
-    ;
-
 whenExpression
 @init { gParent.pushMsg("case expression", state); }
 @after { gParent.popMsg(state); }
@@ -359,6 +349,39 @@ whenExpression
      ( KW_WHEN expression KW_THEN expression)+
     (KW_ELSE expression)?
     KW_END -> ^(TOK_FUNCTION KW_WHEN expression*)
+    ;
+
+// Make caseExpression to build a whenExpression tree
+// Rewrite
+// CASE a
+//   WHEN b THEN c
+//   [WHEN d THEN e]* [ELSE f]
+// END
+// to
+// CASE
+//   WHEN a=b THEN c
+//   [WHEN a=d THEN e]* [ELSE f]
+// END
+caseExpression
+@init { gParent.pushMsg("case expression", state); }
+@after { gParent.popMsg(state); }
+    :
+    KW_CASE caseOperand=expression
+    // Pass the case operand to the rule parses the when branches
+    whenBranches[$caseOperand.tree]
+    (KW_ELSE elseResult=expression)?
+    KW_END -> ^(TOK_FUNCTION Identifier["when"] whenBranches $elseResult?)
+    ;
+
+whenBranches[CommonTree caseOperand]
+    :
+    (whenExpressionBranch[caseOperand] KW_THEN! expression)+
+    ;
+
+whenExpressionBranch[CommonTree caseOperand]
+    :
+    KW_WHEN when=expression
+    -> ^(EQUAL["="] {$caseOperand} $when)
     ;
 
 floorExpression
@@ -821,6 +844,7 @@ partitionSpec
 partitionVal
     :
     identifier (EQUAL constant)? -> ^(TOK_PARTVAL identifier constant?)
+    | functionExpr (EQUAL constant)? -> ^(TOK_PARTVAL functionExpr constant?)
     ;
 
 partitionSelectorSpec
@@ -831,7 +855,24 @@ partitionSelectorSpec
 partitionSelectorVal
     :
     identifier partitionSelectorOperator constant -> ^(TOK_PARTVAL identifier partitionSelectorOperator constant)
+    | functionExpr partitionSelectorOperator constant -> ^(TOK_PARTVAL functionExpr partitionSelectorOperator constant)
     ;
+
+functionExpr
+    :
+    funcName LPAREN identifier RPAREN -> ^(TOK_FUNCTION funcName identifier)
+    | KW_TRUNCATE LPAREN width=Number COMMA identifier RPAREN -> ^(TOK_FUNCTION KW_TRUNCATE $width identifier)
+    | KW_BUCKET LPAREN width=Number COMMA identifier RPAREN -> ^(TOK_FUNCTION KW_BUCKET $width identifier)
+    ;
+
+funcName
+    :
+    KW_DAY
+    | KW_MONTH
+    | KW_YEAR
+    | KW_HOUR
+    ;
+
 
 partitionSelectorOperator
     :
@@ -997,6 +1038,8 @@ nonReserved
     | KW_PKFK_JOIN
     | KW_THAN
     | KW_TIMESTAMPLOCALTZ
+    | KW_ORDERED
+    | KW_LOCALLY
 ;
 
 //The following SQL2011 reserved keywords are used as function name only, but not as identifiers.

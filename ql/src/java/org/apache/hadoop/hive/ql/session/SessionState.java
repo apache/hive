@@ -1176,6 +1176,9 @@ public class SessionState implements ISessionAuthState{
     protected Logger LOG;
     protected boolean isSilent;
 
+    private final StringBuilder querySummary = new StringBuilder();
+    private boolean collectQuerySummary;
+
     public LogHelper(Logger LOG) {
       this(LOG, false);
     }
@@ -1320,6 +1323,10 @@ public class SessionState implements ISessionAuthState{
       if (!isSilent) {
         getInfoStream().println(info);
       }
+      if (collectQuerySummary){
+        querySummary.append(info);
+        querySummary.append("\n");
+      }
       LOG.info(info + StringUtils.defaultString(detail));
     }
 
@@ -1384,7 +1391,25 @@ public class SessionState implements ISessionAuthState{
       if(!getIsSilent() || getIsQtestLogging()) {
         getErrStream().println(error);
       }
+      if (collectQuerySummary){
+        querySummary.append(error);
+        querySummary.append("\n");
+      }
       LOG.error(error + StringUtils.defaultString(detail));
+    }
+
+    public String getQuerySummary() {
+      return querySummary.toString();
+    }
+
+    public void startSummary() {
+      querySummary.setLength(0);
+      querySummary.append("\n");
+      collectQuerySummary = true;
+    }
+
+    public void endSummary() {
+      collectQuerySummary = false;
     }
   }
 
