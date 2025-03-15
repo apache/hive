@@ -46,6 +46,7 @@ public abstract class AbstractRepository implements QueryHistoryRepository {
   HiveConf conf;
   protected Schema schema;
   private Warehouse warehouse;
+  protected Table table;
 
   public void init(HiveConf conf, Schema schema) {
     this.conf = conf;
@@ -59,8 +60,8 @@ public abstract class AbstractRepository implements QueryHistoryRepository {
 
     try (Hive hive = Hive.get(conf)) {
       Database database = initDatabase(hive);
-      Table table = initTable(hive, database);
-      postInitTable(table);
+      initTable(hive, database);
+      postInitTable();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -97,21 +98,19 @@ public abstract class AbstractRepository implements QueryHistoryRepository {
     return warehouse.getDefaultExternalDatabasePath(databaseName).toUri().toString();
   }
 
-  protected Table initTable(Hive hive, Database db) {
-    Table table;
+  protected void initTable(Hive hive, Database db) {
     try {
       table = hive.getTable(QUERY_HISTORY_DB_NAME, QUERY_HISTORY_TABLE_NAME, null, false);
       if (table == null) {
         LOG.info("Query history table ({}) isn't created yet", QUERY_HISTORY_TABLE_NAME);
         table = createTable(hive, db);
       }
-      return table;
     } catch (HiveException e) {
       throw new RuntimeException(e);
     }
   }
 
-  protected abstract void postInitTable(Table table) throws Exception;
+  protected abstract void postInitTable() throws Exception;
 
   /**
    * Supposed to create the query history table in metastore. It's only called from

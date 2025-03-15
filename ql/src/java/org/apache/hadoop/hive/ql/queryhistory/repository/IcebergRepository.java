@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.queryhistory.schema.Record;
 import org.apache.hadoop.hive.ql.queryhistory.schema.Schema;
@@ -57,6 +58,10 @@ import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.EXPIRE_SNAPSHOT;
 
 public class IcebergRepository extends AbstractRepository implements QueryHistoryRepository {
   private static final Logger LOG = LoggerFactory.getLogger(IcebergRepository.class);
@@ -70,12 +75,17 @@ public class IcebergRepository extends AbstractRepository implements QueryHistor
   @VisibleForTesting
   TableDesc tableDesc;
   private ExecutorService icebergExecutor;
+  private final ScheduledExecutorService snapshotExpiryExecutor = Executors.newScheduledThreadPool(1,
+      new ThreadFactoryBuilder().setNameFormat("IcebergRepository periodic snapshot expiry").setDaemon(true).build());
 
   @Override
   public void init(HiveConf conf, Schema schema) {
     super.init(conf, schema);
     icebergExecutor = Executors.newFixedThreadPool(2,
         (new ThreadFactoryBuilder()).setDaemon(true).setNameFormat(ICEBERG_WORKER_THREAD_NAME_FORMAT).build());
+    int expiryInterval = HiveConf.getIntVar(conf,
+        HiveConf.ConfVars.HIVE_QUERY_HISTORY_ICEBERG_SNAPSHOT_EXPIRY_INVERVAL_SECONDS);
+    snapshotExpiryExecutor.scheduleAtFixedRate(this::expireSnapshots, 0, expiryInterval, TimeUnit.SECONDS);
   }
 
   @Override
@@ -89,6 +99,7 @@ public class IcebergRepository extends AbstractRepository implements QueryHistor
         ICEBERG_STORAGE_HANDLER);
     table.setProperty("table_type", "ICEBERG");
     table.setProperty("write.format.default", "orc");
+    table.setProperty("history.expire.max-snapshot-age-ms", Integer.toString(getSnapshotMaxAge()));
     table.setProperty(hive_metastoreConstants.META_TABLE_NAME, QUERY_HISTORY_DB_TABLE_NAME);
 
     table.setFields(schema.getFields());
@@ -101,8 +112,14 @@ public class IcebergRepository extends AbstractRepository implements QueryHistor
     return table;
   }
 
+  @VisibleForTesting
+  int getSnapshotMaxAge() {
+    // expire/delete snapshots older than 1 day
+    return 24 * 60 * 60 * 1000;
+  }
+
   @Override
-  protected void postInitTable(Table table) throws Exception {
+  protected void postInitTable() throws Exception {
     this.tableDesc = Utilities.getTableDesc(table);
 
     Map<String, String> map = new HashMap<>();
@@ -175,5 +192,14 @@ public class IcebergRepository extends AbstractRepository implements QueryHistor
     String jobId = String.format("job_%s", jobIdPostFix);
     SessionStateUtil.addCommitInfo(SessionState.getSessionConf(), tableDesc.getTableName(), jobId, 1,
         Maps.fromProperties(tableDesc.getProperties()));
+  }
+
+  private void expireSnapshots() {
+    LOG.debug("Attempting to expire snapshots for table: {}", table.getFullTableName());
+    try {
+      storageHandler.executeOperation(table, new AlterTableExecuteSpec<>(EXPIRE_SNAPSHOT, null));
+    } catch (Exception e) {
+      LOG.warn("Failed to expire snapshots", e);
+    }
   }
 }
