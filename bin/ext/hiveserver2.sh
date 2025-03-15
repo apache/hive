@@ -51,7 +51,7 @@ hiveserver2() {
     killAndWait $pid $timeout
   else
     export HADOOP_CLIENT_OPTS=" -Dproc_hiveserver2 $HADOOP_CLIENT_OPTS "
-    export HADOOP_OPTS="$HIVESERVER2_HADOOP_OPTS $HADOOP_OPTS"
+    export HADOOP_OPTS="$HIVESERVER2_HADOOP_OPTS $HADOOP_OPTS -Djava.net.preferIPv6Stack=true -Djava.net.preferIPv6Addresses=true"
     commands=$(exec $HADOOP jar $JAR $CLASS -H | grep -v '-hiveconf' | awk '{print $1}')
     start_hiveserver2='Y'
     for i in "$@"; do
