@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -1866,6 +1867,22 @@ public abstract class BaseSemanticAnalyzer {
       return path.getFileSystem(conf).makeQualified(path);
     } catch (IOException e) {
       return path;  // some tests expected to pass invalid schema
+    }
+  }
+
+  protected Catalog getCatalog(String catName) throws SemanticException {
+    return getCatalog(catName, true);
+  }
+
+  protected Catalog getCatalog(String catName, boolean throwException) throws SemanticException {
+    try {
+      Catalog catalog = db.getCatalog(catName);
+      if (catalog == null && throwException) {
+        throw new SemanticException(ErrorMsg.CATALOG_NOT_EXISTS.getMsg(catName));
+      }
+      return catalog;
+    } catch (Exception e) {
+      throw new SemanticException("Failed to retrieve catalog " + catName + ": " + e.getMessage(), e);
     }
   }
 

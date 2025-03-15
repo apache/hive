@@ -23,6 +23,7 @@ import java.net.URI;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Function;
@@ -43,8 +44,13 @@ public class Entity implements Serializable {
    * The type of the entity.
    */
   public static enum Type {
-    DATABASE, TABLE, PARTITION, DUMMYPARTITION, DFS_DIR, LOCAL_DIR, FUNCTION, SERVICE_NAME, DATACONNECTOR
+    DATABASE, TABLE, PARTITION, DUMMYPARTITION, DFS_DIR, LOCAL_DIR, FUNCTION, SERVICE_NAME, DATACONNECTOR, CATALOG
   }
+
+  /**
+   * The catalog if this is a catalog.
+   */
+  private Catalog catalog;
 
   /**
    * The database if this is a database.
@@ -114,6 +120,14 @@ public class Entity implements Serializable {
 
   public String getName() {
     return name;
+  }
+
+  public Catalog getCatalog() {
+    return catalog;
+  }
+
+  public void setCatalog(Catalog catalog) {
+    this.catalog = catalog;
   }
 
   public Database getDatabase() {
@@ -199,6 +213,13 @@ public class Entity implements Serializable {
    */
   public Entity() {
     name = null;
+  }
+
+  public Entity(Catalog catalog, boolean complete) {
+    this.catalog = catalog;
+    this.typ = Type.CATALOG;
+    this.name = computeName();
+    this.complete = complete;
   }
 
   /**
@@ -443,6 +464,8 @@ public class Entity implements Serializable {
       return stringObject;
     case DATACONNECTOR:
       return "connector:" + connector.getName();
+    case CATALOG:
+      return "catalog:" + catalog.getName();
     default:
       return d.toString();
     }
