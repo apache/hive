@@ -25,7 +25,7 @@ public class Mariadb extends DatabaseRule {
 
   @Override
   public String getDockerImageName() {
-    return "mariadb:10.2";
+    return "mariadb:11.4";
   }
 
   @Override
