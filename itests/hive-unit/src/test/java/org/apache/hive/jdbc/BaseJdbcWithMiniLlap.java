@@ -91,7 +91,6 @@ public abstract class BaseJdbcWithMiniLlap {
     over10KFilePath = new Path(dataFileDir, "over10k");
     Map<String, String> confOverlay = new HashMap<String, String>();
     miniHS2.start(confOverlay);
-    miniHS2.getDFS().getFileSystem().mkdirs(new Path("/apps_staging_dir/anonymous"));
     return miniHS2;
   }
 
