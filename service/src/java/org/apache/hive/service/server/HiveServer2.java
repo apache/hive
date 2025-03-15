@@ -99,6 +99,7 @@ import org.apache.hadoop.hive.ql.txn.compactor.Worker;
 import org.apache.hadoop.hive.registry.impl.ZookeeperUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hive.common.IPUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.common.util.Ref;
@@ -386,7 +387,8 @@ public class HiveServer2 extends CompositeService {
     final String webHost;
     try {
       webUIPort = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_WEBUI_PORT);
-      webHost = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_BIND_HOST);
+      webHost = IPUtils.updateWildcardAddress(
+          hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_BIND_HOST));
       // We disable web UI in tests unless the test is explicitly setting a
       // unique web ui port so that we don't mess up ptests.
       boolean uiDisabledInTest = hiveConf.getBoolVar(ConfVars.HIVE_IN_TEST) &&
