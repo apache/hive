@@ -389,7 +389,7 @@ class AvroDeserializer {
           skipProlepticConversion = HiveConf.ConfVars.HIVE_AVRO_PROLEPTIC_GREGORIAN_DEFAULT.defaultBoolVal;
         }
       }
-      LogicalType logicalType = recordSchema.getLogicalType();
+      LogicalType logicalType = fileSchema.getLogicalType();
       Timestamp timestamp;
       if (logicalType != null && logicalType.getName().equals(AvroSerDe.TIMESTAMP_TYPE_NAME_MICROS)) {
         timestamp = Timestamp.ofEpochMicro((Long) datum);
@@ -398,7 +398,7 @@ class AvroDeserializer {
       }
       timestamp = TimestampTZUtil.convertTimestampToZone(
               timestamp, ZoneOffset.UTC, convertToTimeZone, legacyConversion);
-      if (!skipProlepticConversion && logicalType.getName().equals(AvroSerDe.TIMESTAMP_TYPE_NAME_MICROS)) {
+      if (!skipProlepticConversion && logicalType != null && logicalType.getName().equals(AvroSerDe.TIMESTAMP_TYPE_NAME_MICROS)) {
         timestamp = Timestamp.ofEpochMicro(
             CalendarUtils.convertTimeToProlepticMicros(timestamp.toEpochMicro()));
       } else if (!skipProlepticConversion) {

@@ -18,9 +18,9 @@ POSTHOOK: Lineage: hive_test.dt SCRIPT []
 PREHOOK: query: SELECT * FROM hive_test
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hive_test
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM hive_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hive_test
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 2024-08-09 14:08:26.326107

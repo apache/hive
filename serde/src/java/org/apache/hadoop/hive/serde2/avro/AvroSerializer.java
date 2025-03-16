@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.serde2.avro;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -237,7 +235,7 @@ class AvroSerializer {
       LogicalType logicalType = schema.getLogicalType();
       if (logicalType != null && logicalType.getName().equals(AvroSerDe.TIMESTAMP_TYPE_NAME_MICROS)) {
         long micros = defaultProleptic ? timestamp.toEpochMicro() :
-                CalendarUtils.convertTimeToProlepticMicros(timestamp.toEpochMicro());
+                CalendarUtils.convertTimeToHybridMicros(timestamp.toEpochMicro());
         timestamp = TimestampTZUtil.convertTimestampToZone(
                 Timestamp.ofEpochMicro(micros), TimeZone.getDefault().toZoneId(), ZoneOffset.UTC, legacyConversion);
         return timestamp.toEpochMicro();
