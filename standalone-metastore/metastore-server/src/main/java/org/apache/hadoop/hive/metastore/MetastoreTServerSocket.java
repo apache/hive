@@ -19,7 +19,10 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.net.SocketException;
+import java.util.Objects;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransportException;
@@ -29,8 +32,32 @@ import org.apache.thrift.transport.TTransportException;
  * accepted sockets.
  *
  */
-public class TServerSocketKeepAlive extends TServerSocket {
-  public TServerSocketKeepAlive(TServerSocket serverSocket) throws TTransportException {
+public class MetastoreTServerSocket extends TServerSocket {
+  private final Configuration configuration;
+
+  public MetastoreTServerSocket(TServerSocket serverSocket,
+      Configuration conf) throws TTransportException {
     super(serverSocket.getServerSocket());
+    this.configuration = Objects.requireNonNull(conf);
+  }
+
+  @Override
+  public TSocket accept() throws TTransportException {
+    TSocket ts = super.accept();
+    boolean keepAlive = MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.TCP_KEEP_ALIVE);
+    if (keepAlive) {
+      try {
+        ts.getSocket().setKeepAlive(true);
+      } catch (SocketException e) {
+        throw new TTransportException(e);
+      }
+    }
+    // for testing purpose, get the maxThriftMessageSize from the configuration for every new connection
+    int maxThriftMessageSize = (int) MetastoreConf.getSizeVar(
+        configuration, MetastoreConf.ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE);
+    if (maxThriftMessageSize > 0) {
+      ts.getConfiguration().setMaxMessageSize(maxThriftMessageSize);
+    }
+    return ts;
   }
 }

@@ -631,10 +631,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           keyStorePassword, keyStoreType, keyStoreAlgorithm, sslVersionBlacklist);
     }
 
-    if (tcpKeepAlive) {
-      serverSocket = new TServerSocketKeepAlive(serverSocket);
-    }
-
     ExecutorService executorService = new ThreadPoolExecutor(minWorkerThreads, maxWorkerThreads,
         60L, TimeUnit.SECONDS, new SynchronousQueue<>(), r -> {
           Thread thread = new Thread(r);
@@ -643,7 +639,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           return thread;
     });
 
-    TThreadPoolServer.Args args = new TThreadPoolServer.Args(serverSocket)
+    TThreadPoolServer.Args args = new TThreadPoolServer.Args(new MetastoreTServerSocket(serverSocket, conf))
         .processor(processor)
         .transportFactory(transFactory)
         .protocolFactory(protocolFactory)
