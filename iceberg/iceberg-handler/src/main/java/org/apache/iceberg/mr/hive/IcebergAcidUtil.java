@@ -23,12 +23,14 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.io.PositionDeleteInfo;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.PartitionKey;
@@ -389,6 +391,11 @@ public class IcebergAcidUtil {
     public T build() {
       return (T) current;
     }
+  }
+
+  static long getTxnId() {
+    return Optional.ofNullable(SessionState.get())
+            .map(ss -> ss.getTxnMgr().getCurrentTxnId()).orElse(0L);
   }
 
 }
