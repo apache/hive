@@ -273,6 +273,10 @@ public final class FunctionRegistry {
         "=", "==", "<=>", "!=", "<>", "<", "<=", ">", ">=",
         "index"));
   }
+  
+  private static final Set<PrimitiveGrouping> STRING_FRIENDLY_GROUPS = new HashSet<>(
+      Arrays.asList(PrimitiveGrouping.DATE_GROUP, PrimitiveGrouping.NUMERIC_GROUP, PrimitiveGrouping.BOOLEAN_GROUP)
+  );
 
   // registry for system functions
   private static final Registry system = new Registry(true);
@@ -1165,13 +1169,11 @@ public final class FunctionRegistry {
       }
     }
 
-    // Handle date-string common category and numeric-string common category
-    if (pgA == PrimitiveGrouping.STRING_GROUP
-        && (pgB == PrimitiveGrouping.DATE_GROUP || pgB == PrimitiveGrouping.NUMERIC_GROUP)) {
+    // Handle common category for date-string, numeric-string, and boolean-string types
+    if (pgA == PrimitiveGrouping.STRING_GROUP && STRING_FRIENDLY_GROUPS.contains(pgB)) {
       return pcA;
     }
-    if (pgB == PrimitiveGrouping.STRING_GROUP
-        && (pgA == PrimitiveGrouping.DATE_GROUP || pgA == PrimitiveGrouping.NUMERIC_GROUP)) {
+    if (pgB == PrimitiveGrouping.STRING_GROUP && STRING_FRIENDLY_GROUPS.contains(pgA)) {
       return pcB;
     }
 
