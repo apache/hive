@@ -1,0 +1,228 @@
+PREHOOK: query: create table table1(id int, txt string, num int, flag string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table1
+POSTHOOK: query: create table table1(id int, txt string, num int, flag string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table1
+PREHOOK: query: create table table2(id int, txt string, num int, flag boolean)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table2
+POSTHOOK: query: create table table2(id int, txt string, num int, flag boolean)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table2
+PREHOOK: query: insert into  table1 values
+  (1, 'one',   5, 'FALSE'),
+  (2, 'two',  14, 'TRUE'),
+  (3,  NULL,   3, 'FALSE')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table1
+POSTHOOK: query: insert into  table1 values
+  (1, 'one',   5, 'FALSE'),
+  (2, 'two',  14, 'TRUE'),
+  (3,  NULL,   3, 'FALSE')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table1
+POSTHOOK: Lineage: table1.flag SCRIPT []
+POSTHOOK: Lineage: table1.id SCRIPT []
+POSTHOOK: Lineage: table1.num SCRIPT []
+POSTHOOK: Lineage: table1.txt SCRIPT []
+PREHOOK: query: insert into  table2 values
+  (1, 'one',   5, 'FALSE'),
+  (2, 'two',  14, 'TRUE'),
+  (3,  NULL,   3, 'FALSE')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table2
+POSTHOOK: query: insert into  table2 values
+  (1, 'one',   5, 'FALSE'),
+  (2, 'two',  14, 'TRUE'),
+  (3,  NULL,   3, 'FALSE')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table2
+POSTHOOK: Lineage: table2.flag SCRIPT []
+POSTHOOK: Lineage: table2.id SCRIPT []
+POSTHOOK: Lineage: table2.num SCRIPT []
+POSTHOOK: Lineage: table2.txt SCRIPT []
+PREHOOK: query: select cast(array(*) as string) from table1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(array(*) as string) from table1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+#### A masked pattern was here ####
+["1","one","5","FALSE"]
+["2","two","14","TRUE"]
+["3",null,"3","FALSE"]
+PREHOOK: query: select cast(array(*) as string) from table2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(array(*) as string) from table2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2
+#### A masked pattern was here ####
+["1","one","5","FALSE"]
+["2","two","14","TRUE"]
+["3",null,"3","FALSE"]
+PREHOOK: query: select md5(s) csum from (select cast(array(*) as string) s from table1) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+#### A masked pattern was here ####
+POSTHOOK: query: select md5(s) csum from (select cast(array(*) as string) s from table1) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+#### A masked pattern was here ####
+56220c062e3d93911120c3d24f04949f
+bc47f787547b605661b25b3ca0dc09be
+e41085a0a4bb21ce35370d3ca5c82cca
+PREHOOK: query: select md5(s) csum from (select cast(array(*) as string) s from table2) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2
+#### A masked pattern was here ####
+POSTHOOK: query: select md5(s) csum from (select cast(array(*) as string) s from table2) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2
+#### A masked pattern was here ####
+56220c062e3d93911120c3d24f04949f
+bc47f787547b605661b25b3ca0dc09be
+e41085a0a4bb21ce35370d3ca5c82cca
+PREHOOK: query: select cast(struct(*) as string) from table1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(struct(*) as string) from table1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+#### A masked pattern was here ####
+{"col1":1,"col2":"one","col3":5,"col4":"FALSE"}
+{"col1":2,"col2":"two","col3":14,"col4":"TRUE"}
+{"col1":3,"col2":null,"col3":3,"col4":"FALSE"}
+PREHOOK: query: select cast(struct(*) as string) from table2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(struct(*) as string) from table2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2
+#### A masked pattern was here ####
+{"col1":1,"col2":"one","col3":5,"col4":false}
+{"col1":2,"col2":"two","col3":14,"col4":true}
+{"col1":3,"col2":null,"col3":3,"col4":false}
+PREHOOK: query: select md5(s) csum from (select cast(struct(*) as string) s from table1) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+#### A masked pattern was here ####
+POSTHOOK: query: select md5(s) csum from (select cast(struct(*) as string) s from table1) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+#### A masked pattern was here ####
+1128c4fca98a2281fa1d30f0c8be0f28
+3ccaf9a20b4dcff30925aa0ee67f7abb
+a41fb4f1efef57d64c316d751f1caaba
+PREHOOK: query: select md5(s) csum from (select cast(struct(*) as string) s from table2) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2
+#### A masked pattern was here ####
+POSTHOOK: query: select md5(s) csum from (select cast(struct(*) as string) s from table2) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2
+#### A masked pattern was here ####
+8eb1e1611778435f812c8b30793fb660
+8b1d80ff8c46679cc1ae730171b044ca
+f3e72cd3dca293c636c366b72e068612
+PREHOOK: query: select cast(map("id", id, "txt", txt, "num", num, "flag", flag) as string) from table1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(map("id", id, "txt", txt, "num", num, "flag", flag) as string) from table1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+#### A masked pattern was here ####
+{"id":"1","txt":"one","num":"5","flag":"FALSE"}
+{"id":"2","txt":"two","num":"14","flag":"TRUE"}
+{"id":"3","txt":null,"num":"3","flag":"FALSE"}
+PREHOOK: query: select cast(map("id", id, "txt", txt, "num", num, "flag", flag) as string) from table2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(map("id", id, "txt", txt, "num", num, "flag", flag) as string) from table2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2
+#### A masked pattern was here ####
+{"id":"1","txt":"one","num":"5","flag":"FALSE"}
+{"id":"2","txt":"two","num":"14","flag":"TRUE"}
+{"id":"3","txt":null,"num":"3","flag":"FALSE"}
+PREHOOK: query: select md5(s) csum from (select cast(map("id", id, "txt", txt, "num", num, "flag", flag) as string) s from table1) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+#### A masked pattern was here ####
+POSTHOOK: query: select md5(s) csum from (select cast(map("id", id, "txt", txt, "num", num, "flag", flag) as string) s from table1) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+#### A masked pattern was here ####
+5de07199739d4c1874d115f8a3ff14bd
+835a4c7c911d8dc1da1ae240555031f5
+461919070f255de781aeae77fe7ce2f4
+PREHOOK: query: select md5(s) csum from (select cast(map("id", id, "txt", txt, "num", num, "flag", flag) as string) s from table2) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2
+#### A masked pattern was here ####
+POSTHOOK: query: select md5(s) csum from (select cast(map("id", id, "txt", txt, "num", num, "flag", flag) as string) s from table2) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2
+#### A masked pattern was here ####
+5de07199739d4c1874d115f8a3ff14bd
+835a4c7c911d8dc1da1ae240555031f5
+461919070f255de781aeae77fe7ce2f4
+PREHOOK: query: select cast(create_union(if(id<=2, 0, 1), id, struct(txt, num, flag)) as string) from table1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(create_union(if(id<=2, 0, 1), id, struct(txt, num, flag)) as string) from table1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+#### A masked pattern was here ####
+{0:1}
+{0:2}
+{1:{"col1":null,"col2":3,"col3":"FALSE"}}
+PREHOOK: query: select cast(create_union(if(id<=2, 0, 1), id, struct(txt, num, flag)) as string) from table2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(create_union(if(id<=2, 0, 1), id, struct(txt, num, flag)) as string) from table2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2
+#### A masked pattern was here ####
+{0:1}
+{0:2}
+{1:{"col1":null,"col2":3,"col3":false}}
+PREHOOK: query: select md5(s) csum from (select cast(create_union(if(id<=2, 0, 1), id, struct(txt, num, flag)) as string) s from table1) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+#### A masked pattern was here ####
+POSTHOOK: query: select md5(s) csum from (select cast(create_union(if(id<=2, 0, 1), id, struct(txt, num, flag)) as string) s from table1) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+#### A masked pattern was here ####
+a02814347c99abfe3ef97c116ddb6b77
+1c049619c5ea0733f1ca4217a73b822d
+dcd02383c97acbb4f3c9e968df911e92
+PREHOOK: query: select md5(s) csum from (select cast(create_union(if(id<=2, 0, 1), id, struct(txt, num, flag)) as string) s from table2) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2
+#### A masked pattern was here ####
+POSTHOOK: query: select md5(s) csum from (select cast(create_union(if(id<=2, 0, 1), id, struct(txt, num, flag)) as string) s from table2) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2
+#### A masked pattern was here ####
+a02814347c99abfe3ef97c116ddb6b77
+1c049619c5ea0733f1ca4217a73b822d
+c9835858c4c2ad41a361a463f0f0d073

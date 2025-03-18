@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -45,7 +46,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestamp
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestampLocalTZObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.io.Text;
 
 /**
  * ObjectInspectorConverters.
@@ -175,7 +176,7 @@ public final class ObjectInspectorConverters {
     }
     switch (outputOI.getCategory()) {
     case PRIMITIVE:
-      return getConverter((PrimitiveObjectInspector) inputOI, (PrimitiveObjectInspector) outputOI);
+      return getConverterForPrimitiveOutput(inputOI, (PrimitiveObjectInspector) outputOI);
     case STRUCT:
       return new StructConverter(inputOI,
           (SettableStructObjectInspector) outputOI);
@@ -192,6 +193,23 @@ public final class ObjectInspectorConverters {
       throw new RuntimeException("Hive internal error: conversion of "
           + inputOI.getTypeName() + " to " + outputOI.getTypeName()
           + " not supported yet.");
+    }
+  }
+  
+  private static Converter getConverterForPrimitiveOutput(ObjectInspector inputOI, 
+                                                          PrimitiveObjectInspector outputOI) {
+    switch (inputOI.getCategory()) {
+      case PRIMITIVE:
+        return getConverter((PrimitiveObjectInspector) inputOI, outputOI);
+      case STRUCT:
+      case LIST:
+      case MAP:
+      case UNION:
+        return new TextConverterForComplexTypes(inputOI);
+      default:
+        throw new RuntimeException("Hive internal error: conversion of "
+            + inputOI.getTypeName() + " to " + outputOI.getTypeName()
+            + " not supported yet.");
     }
   }
 
@@ -575,5 +593,18 @@ public final class ObjectInspectorConverters {
   private ObjectInspectorConverters() {
     // prevent instantiation
   }
+  
+  public static class TextConverterForComplexTypes implements Converter {
+    
+    private final ObjectInspector inputOI;
 
+    public TextConverterForComplexTypes(ObjectInspector inputOI) {
+      this.inputOI = inputOI;
+    }
+
+    @Override
+    public Object convert(Object input) {
+      return new Text(SerDeUtils.getJSONString(input, inputOI));
+    }
+  }
 }
