@@ -1,11 +1,3 @@
-CTE Suggestion:
-HiveFilter(condition=[AND(=($6, 1999), =($8, 3))])
-  HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-
-CTE Suggestion:
-HiveFilter(condition=[AND(=($6, 1999), =($8, 3), IS NOT NULL($3))])
-  HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-
 Warning: Map Join MAPJOIN[294][bigTable=?] in task 'Map 21' is a cross product
 Warning: Map Join MAPJOIN[291][bigTable=?] in task 'Map 21' is a cross product
 Warning: Map Join MAPJOIN[292][bigTable=?] in task 'Map 1' is a cross product

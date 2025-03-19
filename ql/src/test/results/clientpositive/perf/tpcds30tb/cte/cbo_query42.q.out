@@ -1,0 +1,17 @@
+CBO PLAN:
+HiveProject(d_year=[CAST(1998):INTEGER], i_category_id=[$0], i_category=[$1], _o__c3=[$2])
+  HiveSortLimit(sort0=[$3], sort1=[$0], sort2=[$1], dir0=[DESC], dir1=[ASC], dir2=[ASC], fetch=[100])
+    HiveProject(i_category_id=[$0], i_category=[$1], _o__c3=[$2], (tok_function sum (tok_table_or_col ss_ext_sales_price))=[$2])
+      HiveAggregate(group=[{5, 6}], agg#0=[sum($1)])
+        HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveJoin(condition=[=($3, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveProject(ss_item_sk=[$1], ss_ext_sales_price=[$14], ss_sold_date_sk=[$22])
+              HiveFilter(condition=[IS NOT NULL($22)])
+                HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+            HiveProject(d_date_sk=[$0])
+              HiveFilter(condition=[AND(=($6, 1998), =($8, 12))])
+                HiveTableScan(table=[[default, date_dim]], table:alias=[dt])
+          HiveProject(i_item_sk=[$0], i_category_id=[$11], i_category=[$12])
+            HiveFilter(condition=[=($20, 1)])
+              HiveTableScan(table=[[default, item]], table:alias=[item])
+

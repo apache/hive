@@ -1,18 +1,3 @@
-CTE Suggestion:
-HiveProject(d_date_sk=[$0])
-  HiveFilter(condition=[BETWEEN(false, CAST($2):TIMESTAMP(9), 1998-08-04 00:00:00:TIMESTAMP(9), 1998-09-03 00:00:00:TIMESTAMP(9))])
-    HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-
-CTE Suggestion:
-HiveProject(i_item_sk=[$0])
-  HiveFilter(condition=[>($5, 50:DECIMAL(2, 0))])
-    HiveTableScan(table=[[default, item]], table:alias=[item])
-
-CTE Suggestion:
-HiveProject(p_promo_sk=[$0])
-  HiveFilter(condition=[=($11, _UTF-16LE'N')])
-    HiveTableScan(table=[[default, promotion]], table:alias=[promotion])
-
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
   HiveProject(channel=[$0], id=[$1], $f2=[$2], $f3=[$3], $f4=[$4])

@@ -339,6 +339,22 @@ public class CliConfigs {
     }
   }
 
+  public static class TPCDSCteCliConfig extends AbstractCliConfig {
+    public TPCDSCteCliConfig() {
+      super(CorePerfCliDriver.class);
+      setQueryDir("ql/src/test/queries/clientpositive/perf");
+      setLogDir("itests/qtest/target/qfile-results/clientpositive/perf/tpcds30tb/cte");
+      setResultsDir("ql/src/test/results/clientpositive/perf/tpcds30tb/cte");
+      setHiveConfDir("data/conf/perf/tpcds30tb/cte");
+      setClusterType(MiniClusterType.LLAP_LOCAL);
+      setMetastoreType("postgres.tpcds");
+      // At the moment only makes sense to check CBO plans
+      for (int i = 1; i < 100; i++) {
+        includeQuery("cbo_query" + i + ".q");
+      }
+    }
+  }
+
   public static class NegativeLlapLocalCliConfig extends AbstractCliConfig {
     public NegativeLlapLocalCliConfig() {
       super(CoreNegativeCliDriver.class);
