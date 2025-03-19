@@ -126,7 +126,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     private BasicStatsWork work;
     private boolean followedColStats1;
     private Map<String, String> providedBasicStats;
-    private boolean skipUpdate = false;
+    private boolean skipStatsUpdate = false;
 
     public BasicStatsProcessor(Partish partish, BasicStatsWork work, boolean followedColStats2) {
       this.partish = partish;
@@ -136,7 +136,8 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       Table table = partish.getTable();
       if (table.isNonNative() && table.getStorageHandler().canProvideBasicStatistics()) {
         this.providedBasicStats = table.getStorageHandler().computeBasicStatistics(partish);
-        this.skipUpdate = providedBasicStats.containsKey(StatsSetupConst.ROW_COUNT);
+        this.skipStatsUpdate = StatsSetupConst.STATS_REQUIRE_COMPUTE.stream()
+            .anyMatch(providedBasicStats::containsKey);
       }
     }
 
@@ -181,7 +182,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         parameters.putAll(providedBasicStats);
       }
 
-      if (statsAggregator != null && !skipUpdate) {
+      if (statsAggregator != null && !skipStatsUpdate) {
         // Update stats for transactional tables (MM, or full ACID with overwrite), even
         // though we are marking stats as not being accurate.
         if (StatsSetupConst.areBasicStatsUptoDate(parameters) || p.isTransactionalTable()) {

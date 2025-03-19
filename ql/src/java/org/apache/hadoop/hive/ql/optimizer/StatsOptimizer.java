@@ -942,7 +942,7 @@ public class StatsOptimizer extends Transform {
       }
       for (Partish partish : partishList) {
         Map<String, String> basicStats = partish.getPartParameters();
-        if (MetaStoreUtils.isNonNativeTable(tbl.getTTable())) {
+        if (tbl.isNonNative()) {
           if (!tbl.getStorageHandler().canComputeQueryUsingStats(partish)) {
             return null;
           }

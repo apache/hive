@@ -498,7 +498,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       stats.put(StatsSetupConst.ROW_COUNT, "0");
       stats.put(StatsSetupConst.TOTAL_SIZE, "0");
 
-    } else if (!getStatsSource().equals(HiveMetaHook.ICEBERG) && !quickStats) {
+    } else if (!HiveMetaHook.ICEBERG.equals(getStatsSource()) && !quickStats) {
       stats = partish.getPartParameters();
 
     } else {
@@ -615,7 +615,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public boolean canSetColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    return getStatsSource().equals(HiveMetaHook.ICEBERG);
+    return HiveMetaHook.ICEBERG.equals(getStatsSource());
   }
 
   @Override
@@ -710,30 +710,30 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public AggrStats getAggrColStatsFor(org.apache.hadoop.hive.ql.metadata.Table hmsTable, List<String> colNames,
         List<String> partNames) throws MetaException {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+
     Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, hmsTable);
-
-    AggrStats emptyStats = new AggrStats(Collections.emptyList(), 0);
-    if (snapshot != null) {
-      boolean useDensityFunctionForNDVEstimation = MetastoreConf.getBoolVar(getConf(),
-          MetastoreConf.ConfVars.STATS_NDV_DENSITY_FUNCTION);
-      double ndvTuner = MetastoreConf.getDoubleVar(getConf(), MetastoreConf.ConfVars.STATS_NDV_TUNER);
-
-      List<ColumnStatistics> partStats = IcebergTableUtil.getColStatsPath(table, snapshot.snapshotId())
-          .map(statsPath -> readColStats(table, statsPath, Sets.newHashSet(partNames)))
-          .orElse(Collections.emptyList());
-
-      partStats.forEach(colStats ->
-          colStats.getStatsObj().removeIf(statsObj -> !colNames.contains(statsObj.getColName())));
-
-      List<ColumnStatisticsObj> colStatsList = MetaStoreServerUtils.aggrPartitionStats(partStats,
-          MetaStoreUtils.getDefaultCatalog(conf), hmsTable.getDbName(), hmsTable.getTableName(),
-          partNames, colNames,
-          partStats.size() == partNames.size(),
-          useDensityFunctionForNDVEstimation, ndvTuner);
-
-      return new AggrStats(colStatsList, partStats.size());
+    if (snapshot == null) {
+      return new AggrStats(Collections.emptyList(), 0);
     }
-    return emptyStats;
+
+    boolean useDensityFunctionForNDVEstimation = MetastoreConf.getBoolVar(getConf(),
+        MetastoreConf.ConfVars.STATS_NDV_DENSITY_FUNCTION);
+    double ndvTuner = MetastoreConf.getDoubleVar(getConf(), MetastoreConf.ConfVars.STATS_NDV_TUNER);
+
+    List<ColumnStatistics> partStats = IcebergTableUtil.getColStatsPath(table, snapshot.snapshotId())
+        .map(statsPath -> readColStats(table, statsPath, Sets.newHashSet(partNames)))
+        .orElse(Collections.emptyList());
+
+    partStats.forEach(colStats ->
+        colStats.getStatsObj().removeIf(statsObj -> !colNames.contains(statsObj.getColName())));
+
+    List<ColumnStatisticsObj> colStatsList = MetaStoreServerUtils.aggrPartitionStats(partStats,
+        MetaStoreUtils.getDefaultCatalog(conf), hmsTable.getDbName(), hmsTable.getTableName(),
+        partNames, colNames,
+        partStats.size() == partNames.size(),
+        useDensityFunctionForNDVEstimation, ndvTuner);
+
+    return new AggrStats(colStatsList, partStats.size());
   }
 
   private List<ColumnStatistics> readColStats(Table table, Path statsPath, Set<String> partNames) {
