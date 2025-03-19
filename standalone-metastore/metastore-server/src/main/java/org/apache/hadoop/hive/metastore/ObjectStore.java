@@ -59,7 +59,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import javax.jdo.Constants;
 import javax.jdo.JDODataStoreException;
 import javax.jdo.JDOException;
 import javax.jdo.JDOObjectNotFoundException;
@@ -564,7 +563,6 @@ public class ObjectStore implements RawStore, Configurable {
     openTrasactionCalls++;
     if (openTrasactionCalls == 1) {
       currentTransaction = pm.currentTransaction();
-      currentTransaction.setIsolationLevel(Constants.TX_READ_COMMITTED);
       currentTransaction.begin();
       transactionStatus = TXN_STATUS.OPEN;
     } else {
