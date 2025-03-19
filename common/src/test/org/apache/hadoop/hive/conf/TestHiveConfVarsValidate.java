@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_CTE_SUGGESTER_TYPE;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_DATETIME_FORMATTER;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_DATETIME_RESOLVER_STYLE;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_EXPLAIN_NODE_VISIT_LIMIT;
@@ -71,6 +72,13 @@ public class TestHiveConfVarsValidate {
     list.add(new Object[] { HIVE_DATETIME_RESOLVER_STYLE, "lenient", null});
     list.add(new Object[] { HIVE_DATETIME_RESOLVER_STYLE, "OTHER", "Invalid value.. expects one of [smart, strict, " +
             "lenient]" });
+    list.add(new Object[] {HIVE_CTE_SUGGESTER_TYPE, "AST", null});
+    list.add(new Object[] {HIVE_CTE_SUGGESTER_TYPE, "ast", null});
+    list.add(new Object[] {HIVE_CTE_SUGGESTER_TYPE, "CBO", null});
+    list.add(new Object[] {HIVE_CTE_SUGGESTER_TYPE, "cbo", null});
+    list.add(new Object[] {HIVE_CTE_SUGGESTER_TYPE, "NONE", null});
+    list.add(new Object[] {HIVE_CTE_SUGGESTER_TYPE, "nOnE", null});
+    list.add(new Object[] {HIVE_CTE_SUGGESTER_TYPE, "OTHER", "Invalid value.. expects one of [ast, cbo, none]"});
     return list;
   }
 

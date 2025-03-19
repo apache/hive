@@ -1,4 +1,4 @@
--- Verify that hive.optimize.cte.materialize.full.aggregate.only behaves as expected for implicitly discovered (hive.optimize.cte.suggester.class) CTEs in the query
+-- Verify that hive.optimize.cte.materialize.full.aggregate.only behaves as expected for implicitly discovered (hive.optimize.cte.suggester.type=CBO) CTEs in the query
 CREATE TABLE emps
 (
     empid  INTEGER,
@@ -8,7 +8,7 @@ CREATE TABLE emps
 );
 
 set hive.optimize.cte.materialize.threshold=1;
-set hive.optimize.cte.suggester.class=org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionIdentitySuggester;
+set hive.optimize.cte.suggester.type=CBO;
 
 set hive.optimize.cte.materialize.full.aggregate.only=true;
 

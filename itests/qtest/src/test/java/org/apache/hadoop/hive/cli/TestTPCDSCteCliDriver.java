@@ -26,7 +26,6 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.junit.runners.model.Statement;
 
 import java.io.File;
 import java.util.List;
@@ -44,27 +43,8 @@ public class TestTPCDSCteCliDriver {
   @ClassRule
   public static TestRule cliClassRule = adapter.buildClassRule();
 
-  /**
-   * Rule for calling only {@link CliAdapter#setUp()} and {@link CliAdapter#tearDown()} before/after running each test.
-   *
-   * At the moment of writing this class the rule is mostly necessary for calling {@link CliAdapter#tearDown()} to avoid
-   * state from one test pass to other (e.g., disabling one test should not disable subsequent ones).
-   *
-   * {@link CliAdapter#buildTestRule()} cannot not used since it is doing more than necessary for this test case. For
-   * instance, we do not want to create and destroy the metastore after each query.
-   */
   @Rule
-  public TestRule cliTestRule = (statement, description) -> new Statement() {
-    @Override
-    public void evaluate() throws Throwable {
-      adapter.setUp();
-      try {
-        statement.evaluate();
-      } finally {
-        adapter.tearDown();
-      }
-    }
-  };
+  public TestRule cliTestRule = adapter.buildTestRule();
 
   private final String name;
   private final File qfile;

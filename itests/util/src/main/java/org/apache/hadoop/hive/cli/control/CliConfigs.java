@@ -23,7 +23,9 @@ import java.net.URL;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
+import com.google.common.collect.ImmutableSet;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QTestMiniClusters;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
@@ -351,7 +353,11 @@ public class CliConfigs {
       setClusterType(MiniClusterType.LLAP_LOCAL);
       setMetastoreType("postgres.tpcds");
       // At the moment only makes sense to check CBO plans
+      Set<Integer> skipQueries = ImmutableSet.of(64); // Skipped due to HIVE-29249
       for (int i = 1; i < 100; i++) {
+        if (skipQueries.contains(i)) {
+          continue;
+        }
         includeQuery("cbo_query" + i + ".q");
       }
     }

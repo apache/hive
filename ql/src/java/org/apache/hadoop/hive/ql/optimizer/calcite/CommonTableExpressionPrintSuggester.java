@@ -22,6 +22,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -35,10 +36,11 @@ public class CommonTableExpressionPrintSuggester implements CommonTableExpressio
   @Override
   public List<RelNode> suggest(final RelNode input, final Configuration configuration) {
     List<RelNode> result = internal.suggest(input, configuration);
-    // Ensure CTEs are printed deterministically to avoid test flakiness
-    result.stream().map(RelOptUtil::toString).sorted()
-        .forEach(cte -> SessionState.getConsole().printInfo("CTE Suggestion:\n" + cte, false));
-    return result;
+    // Ensure CTEs are printed and returned deterministically to avoid test flakiness
+    return result.stream()
+        .sorted(Comparator.comparing(RelOptUtil::toString))
+        .peek(cte -> SessionState.getConsole().printInfo("CTE Suggestion:\n" + RelOptUtil.toString(cte), false))
+        .toList();
   }
 
 }
