@@ -2412,6 +2412,20 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
   }
 
+  private void setAllowAdditionalUDFs(HiveConf hiveConf) {
+    String[] udfs =
+        HiveConf.getTrimmedStringsVar(hiveConf, HiveConf.ConfVars.HIVE_VECTOR_ADAPTOR_CUSTOM_UDF_WHITELIST);
+    if (udfs != null) {
+      for (String udf : udfs) {
+        try {
+          supportedGenericUDFs.add(Class.forName(udf));
+        } catch (ClassNotFoundException e) {
+          LOG.warn("Additional UDF not found: " + udf);
+        }
+      }
+    }
+  }
+
   @Override
   public PhysicalContext resolve(PhysicalContext physicalContext) throws SemanticException {
 
@@ -2535,6 +2549,9 @@ public class Vectorizer implements PhysicalPlanResolver {
     isTestVectorizationSuppressExplainExecutionMode =
         HiveConf.getBoolVar(hiveConf,
             HiveConf.ConfVars.HIVE_TEST_VECTORIZATION_SUPPRESS_EXPLAIN_EXECUTION_MODE);
+
+    // Add user custom UDFs
+    setAllowAdditionalUDFs(hiveConf);
 
     // create dispatcher and graph walker
     SemanticDispatcher disp = new VectorizationDispatcher();
