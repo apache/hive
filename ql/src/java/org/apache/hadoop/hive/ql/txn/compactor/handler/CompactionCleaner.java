@@ -255,27 +255,8 @@ class CompactionCleaner extends TaskHandler {
     }
   }
 
-  protected LockRequest createLockRequest(CompactionInfo ci) {
-    String agentInfo = Thread.currentThread().getName();
-    LockRequestBuilder requestBuilder = new LockRequestBuilder(agentInfo);
-    requestBuilder.setUser(ci.runAs);
-    requestBuilder.setTransactionId(0);
-
-    LockComponentBuilder lockCompBuilder = new LockComponentBuilder()
-            .setLock(LockType.EXCL_WRITE)
-            .setOperationType(DataOperationType.DELETE)
-            .setDbName(ci.dbname)
-            .setTableName(ci.tableName)
-            .setIsTransactional(true);
-
-    if (ci.partName != null) {
-      lockCompBuilder.setPartitionName(ci.partName);
-    }
-    requestBuilder.addLockComponent(lockCompBuilder.build());
-
-    requestBuilder.setZeroWaitReadEnabled(!conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK) ||
-            !conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK));
-    return requestBuilder.build();
+  private LockRequest createLockRequest(CompactionInfo ci) {
+    return CompactorUtil.createLockRequest(conf, ci, 0, LockType.EXCL_WRITE, DataOperationType.DELETE);
   }
 
   private static String idWatermark(CompactionInfo ci) {
