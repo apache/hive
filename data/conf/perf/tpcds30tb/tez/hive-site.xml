@@ -215,4 +215,8 @@
         <name>hive.lock.sleep.between.retries</name>
         <value>2</value>
     </property>
+    <property>
+        <name>hive.optimize.cte.suggester.type</name>
+        <value>CBO</value>
+    </property>
 </configuration>
