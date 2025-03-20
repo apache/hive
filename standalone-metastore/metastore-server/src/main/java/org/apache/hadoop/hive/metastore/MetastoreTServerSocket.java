@@ -52,7 +52,7 @@ public class MetastoreTServerSocket extends TServerSocket {
         throw new TTransportException(e);
       }
     }
-    // for testing purpose, get the maxThriftMessageSize from the configuration for every new connection
+    // get the limit from the configuration for every new connection
     int maxThriftMessageSize = (int) MetastoreConf.getSizeVar(
         configuration, MetastoreConf.ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE);
     if (maxThriftMessageSize > 0) {

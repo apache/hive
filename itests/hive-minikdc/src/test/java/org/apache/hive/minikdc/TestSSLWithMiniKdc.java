@@ -119,12 +119,13 @@ public class TestSSLWithMiniKdc {
     assertTrue(exceptionMessage.contains("MaxMessageSize reached"));
     limitedClient.close();
 
-    MetastoreConf.setVar(clientConf, MetastoreConf.ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE, "1048576");
+    MetastoreConf.setVar(clientConf, MetastoreConf.ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE, "1048576000");
     MetastoreConf.setVar(miniHS2.getHiveConf(), MetastoreConf.ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE, "512");
     tblBuilder.setTableName("testThriftMaxMessageSize1");
     try (HiveMetaStoreClient client = new HiveMetaStoreClient(clientConf)) {
       TTransportException te = assertThrows(TTransportException.class, () -> tblBuilder.create(client, clientConf));
       assertEquals(TTransportException.END_OF_FILE, te.getType());
+      assertTrue(te.getMessage().contains("Socket is closed by peer"));
     } finally {
       miniHS2.getHiveConf().unset(MetastoreConf.ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE.getVarname());
     }

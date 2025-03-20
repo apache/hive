@@ -94,11 +94,12 @@ public class TestRemoteHiveMetaStoreKerberos extends TestRemoteHiveMetaStore {
 
     // Set the max massage size on Metastore
     MetastoreConf.setVar(conf, ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE, "1024");
-    MetastoreConf.setVar(clientConf, ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE, "1048576");
+    MetastoreConf.setVar(clientConf, ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE, "1048576000");
     try (HiveMetaStoreClient client1 = new HiveMetaStoreClient(clientConf)) {
       TTransportException te = assertThrows(TTransportException.class,
           () -> client1.alter_partitions(dbName, tblName, partitions, new EnvironmentContext()));
       assertEquals(TTransportException.END_OF_FILE, te.getType());
+      assertTrue(te.getMessage().contains("Socket is closed by peer"));
     } finally {
       conf.unset(ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE.getVarname());
     }

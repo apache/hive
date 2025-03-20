@@ -280,6 +280,7 @@ public class TestJdbcWithMiniKdc {
       Throwable t = assertThrows(SQLException.class, () -> stmt.execute(createTable.toString())).getCause();
       assertTrue(t instanceof TTransportException);
       assertEquals(TTransportException.END_OF_FILE, ((TTransportException)t).getType());
+      assertTrue(t.getMessage().contains("Socket is closed by peer"));
     } finally {
       miniHS2.getHiveConf().unset(ConfVars.HIVE_THRIFT_CLIENT_MAX_MESSAGE_SIZE.varname);
     }
