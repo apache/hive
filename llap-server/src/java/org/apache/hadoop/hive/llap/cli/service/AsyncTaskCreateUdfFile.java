@@ -115,7 +115,7 @@ class AsyncTaskCreateUdfFile implements Callable<Void> {
       }
     }
     for (URI srcUri : srcUris) {
-      List<URI> localUris = resourceDownloader.downloadExternal(srcUri, null, false);
+      List<URI> localUris = resourceDownloader.downloadExternal(srcUri, null);
       for(URI dst : localUris) {
         LOG.warn("Downloaded " + dst + " from " + srcUri);
       }

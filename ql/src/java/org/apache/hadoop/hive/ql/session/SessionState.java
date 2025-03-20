@@ -1605,29 +1605,16 @@ public class SessionState implements ISessionAuthState{
     return null;
   }
 
-
-
-  public String add_resource(ResourceType t, String value) throws RuntimeException {
-    return add_resource(t, value, false);
-  }
-
-  public String add_resource(ResourceType t, String value, boolean convertToUnix)
+  public String add_resource(ResourceType t, String value)
       throws RuntimeException {
-    List<String> added = add_resources(t, Arrays.asList(value), convertToUnix);
+    List<String> added = add_resources(t, Arrays.asList(value));
     if (added == null || added.isEmpty()) {
       return null;
     }
     return added.get(0);
   }
 
-  public List<String> add_resources(ResourceType t, Collection<String> values)
-      throws RuntimeException {
-    // By default don't convert to unix
-    return add_resources(t, values, false);
-  }
-
-  public List<String> add_resources(ResourceType t, Collection<String> values, boolean convertToUnix)
-      throws RuntimeException {
+  public List<String> add_resources(ResourceType t, Collection<String> values) throws RuntimeException {
     Set<String> resourceSet = resourceMaps.getResourceSet(t);
     Map<String, Set<String>> resourcePathMap = resourceMaps.getResourcePathMap(t);
     Map<String, Set<String>> reverseResourcePathMap = resourceMaps.getReverseResourcePathMap(t);
@@ -1637,7 +1624,7 @@ public class SessionState implements ISessionAuthState{
         String key;
 
         //get the local path of downloaded jars.
-        List<URI> downloadedURLs = resolveAndDownload(t, value, convertToUnix);
+        List<URI> downloadedURLs = resolveAndDownload(t, value);
 
         if (ResourceDownloader.isIvyUri(value)) {
           // get the key to store in map
@@ -1670,10 +1657,7 @@ public class SessionState implements ISessionAuthState{
     } catch (RuntimeException e) {
       getConsole().printError(e.getMessage(), "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
       throw e;
-    } catch (URISyntaxException e) {
-      getConsole().printError(e.getMessage());
-      throw new RuntimeException(e);
-    } catch (IOException e) {
+    } catch (URISyntaxException | IOException e) {
       getConsole().printError(e.getMessage());
       throw new RuntimeException(e);
     }
@@ -1683,9 +1667,9 @@ public class SessionState implements ISessionAuthState{
   }
 
   @VisibleForTesting
-  protected List<URI> resolveAndDownload(ResourceType resourceType, String value, boolean convertToUnix)
+  protected List<URI> resolveAndDownload(ResourceType resourceType, String value)
       throws URISyntaxException, IOException {
-    List<URI> uris = resourceDownloader.resolveAndDownload(value, convertToUnix);
+    List<URI> uris = resourceDownloader.resolveAndDownload(value);
     if (ResourceDownloader.isHdfsUri(value)) {
       assert uris.size() == 1 : "There should only be one URI localized-resource.";
       resourceMaps.getLocalHdfsLocationMap(resourceType).put(uris.get(0).toString(), value);
