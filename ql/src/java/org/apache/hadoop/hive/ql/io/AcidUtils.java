@@ -3042,7 +3042,7 @@ public class AcidUtils {
             compBuilder.setExclWrite();
           }
           compBuilder.setOperationType(DataOperationType.UPDATE);
-        } else if (MetaStoreUtils.isNonNativeTable(t.getTTable())) {
+        } else if (t.isNonNative()) {
           compBuilder.setLock(getLockTypeFromStorageHandler(output, t));
           compBuilder.setOperationType(DataOperationType.UPDATE);
         } else {
@@ -3066,7 +3066,7 @@ public class AcidUtils {
             compBuilder.setOperationType(DataOperationType.UPDATE);
             break;
           }
-        } else if (MetaStoreUtils.isNonNativeTable(t.getTTable())) {
+        } else if (t.isNonNative()) {
           compBuilder.setLock(getLockTypeFromStorageHandler(output, t));
         } else {
           if (conf.getBoolVar(HiveConf.ConfVars.HIVE_TXN_STRICT_LOCKING_MODE)) {
@@ -3094,7 +3094,7 @@ public class AcidUtils {
         assert t != null;
         if (AcidUtils.isTransactionalTable(t) && sharedWrite) {
           compBuilder.setSharedWrite();
-        } else if (MetaStoreUtils.isNonNativeTable(t.getTTable())) {
+        } else if (t.isNonNative()) {
           compBuilder.setLock(getLockTypeFromStorageHandler(output, t));
         } else {
           compBuilder.setExclWrite();
@@ -3125,7 +3125,7 @@ public class AcidUtils {
     final HiveStorageHandler storageHandler = Preconditions.checkNotNull(t.getStorageHandler(),
         "Non-native tables must have an instance of storage handler.");
     LockType lockType = storageHandler.getLockType(output);
-    if (null == lockType) {
+    if (lockType == null) {
       throw new IllegalArgumentException(
               String.format("Lock type for Database.Table [%s.%s] is null", t.getDbName(), t.getTableName()));
     }
