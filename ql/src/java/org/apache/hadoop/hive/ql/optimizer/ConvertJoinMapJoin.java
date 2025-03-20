@@ -701,6 +701,8 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     }
     MapJoinDesc joinDesc = mapJoinOp.getConf();
     joinDesc.setBucketMapJoin(true);
+    // Disabling TEZ_AUTO_REDUCER_PARALLELISM until TEZ-4603 is fixed.
+    context.conf.setBoolVar(ConfVars.TEZ_AUTO_REDUCER_PARALLELISM, false);
 
     // we can set the traits for this join operator
     opTraits = new OpTraits(joinOp.getOpTraits().getBucketColNames(), joinOp.getOpTraits().getCustomBucketFunctions(),
