@@ -1745,9 +1745,9 @@ public class TestDbNotificationListener
   @Test
   public void fetchNotificationEventBasedOnEventTypes() throws Exception {
     String dbName = "default";
-    String table1 = "test_tbl1";
-    String table2 = "test_tbl2";
-    String table3 = "test_tbl3";
+    String table1 = "test_event_based_tbl1";
+    String table2 = "test_event_based_tbl2";
+    String table3 = "test_event_based_tbl3";
     // Generate some table events
     generateSometableEvents(dbName, table1);
     generateSometableEvents(dbName, table2);
