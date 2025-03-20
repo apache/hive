@@ -2,20 +2,20 @@
 set hive.fetch.task.conversion=more;
 
 -- Conversion of main primitive types to String type:
-SELECT CAST(NULL AS STRING) FROM alltypesorc tablesample (1 rows);
+SELECT CAST(NULL AS STRING);
 
-SELECT CAST(TRUE AS STRING) FROM alltypesorc tablesample (1 rows);
+SELECT CAST(TRUE AS STRING);
 
-SELECT CAST(CAST(1 AS TINYINT) AS STRING) FROM alltypesorc tablesample (1 rows);
-SELECT CAST(CAST(-18 AS SMALLINT) AS STRING) FROM alltypesorc tablesample (1 rows);
-SELECT CAST(-129 AS STRING) FROM alltypesorc tablesample (1 rows);
-SELECT CAST(CAST(-1025 AS BIGINT) AS STRING) FROM alltypesorc tablesample (1 rows);
+SELECT CAST(CAST(1 AS TINYINT) AS STRING);
+SELECT CAST(CAST(-18 AS SMALLINT) AS STRING);
+SELECT CAST(-129 AS STRING);
+SELECT CAST(CAST(-1025 AS BIGINT) AS STRING);
 
-SELECT CAST(CAST(-3.14 AS DOUBLE) AS STRING) FROM alltypesorc tablesample (1 rows);
-SELECT CAST(CAST(-3.14 AS FLOAT) AS STRING) FROM alltypesorc tablesample (1 rows);
-SELECT CAST(CAST(-3.14 AS DECIMAL(3,2)) AS STRING) FROM alltypesorc tablesample (1 rows);
+SELECT CAST(CAST(-3.14 AS DOUBLE) AS STRING);
+SELECT CAST(CAST(-3.14 AS FLOAT) AS STRING);
+SELECT CAST(CAST(-3.14 AS DECIMAL(3,2)) AS STRING);
 
-SELECT CAST('Foo' AS STRING) FROM alltypesorc tablesample (1 rows);
+SELECT CAST('Foo' AS STRING);
 
 SELECT CAST(from_utc_timestamp(timestamp '2018-05-02 15:30:30', 'PST') - from_utc_timestamp(timestamp '1970-01-30 16:00:00', 'PST') AS STRING);
 SELECT CAST(interval_year_month('1-2') AS STRING);
