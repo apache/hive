@@ -32,10 +32,10 @@ import org.apache.thrift.transport.TTransportException;
  * accepted sockets.
  *
  */
-public class MetastoreTServerSocket extends TServerSocket {
+public class MetaStoreTServerSocket extends TServerSocket {
   private final Configuration configuration;
 
-  public MetastoreTServerSocket(TServerSocket serverSocket,
+  public MetaStoreTServerSocket(TServerSocket serverSocket,
       Configuration conf) throws TTransportException {
     super(serverSocket.getServerSocket());
     this.configuration = Objects.requireNonNull(conf);
@@ -55,6 +55,7 @@ public class MetastoreTServerSocket extends TServerSocket {
     // get the limit from the configuration for every new connection
     int maxThriftMessageSize = (int) MetastoreConf.getSizeVar(
         configuration, MetastoreConf.ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE);
+    HMSHandler.LOG.debug("Thrift maxMessageSize = {}", maxThriftMessageSize);
     if (maxThriftMessageSize > 0) {
       ts.getConfiguration().setMaxMessageSize(maxThriftMessageSize);
     }

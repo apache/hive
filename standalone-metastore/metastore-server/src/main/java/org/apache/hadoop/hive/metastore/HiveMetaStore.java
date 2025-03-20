@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.metastore;
 import java.lang.reflect.Method;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
-import org.apache.commons.cli.OptionBuilder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ZKDeRegisterWatcher;
 import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
@@ -40,7 +39,6 @@ import org.apache.hadoop.hive.metastore.metrics.JvmPauseMonitor;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
-import org.apache.hadoop.hive.metastore.utils.CommonCliOptions;
 import org.apache.hadoop.hive.metastore.utils.LogUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.MetastoreVersionInfo;
@@ -219,69 +217,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     return delegationTokenManager.renewDelegationToken(tokenStrForm);
   }
 
-  /**
-   * HiveMetaStore specific CLI
-   *
-   */
-  public static class HiveMetastoreCli extends CommonCliOptions {
-    private int port;
-
-    @SuppressWarnings("static-access")
-    HiveMetastoreCli(Configuration configuration) {
-      super("hivemetastore", true);
-      this.port = MetastoreConf.getIntVar(configuration, ConfVars.SERVER_PORT);
-
-      // -p port
-      OPTIONS.addOption(OptionBuilder
-          .hasArg()
-          .withArgName("port")
-          .withDescription("Hive Metastore port number, default:"
-              + this.port)
-          .create('p'));
-
-    }
-    @Override
-    public void parse(String[] args) {
-      super.parse(args);
-
-      // support the old syntax "hivemetastore [port]" but complain
-      args = commandLine.getArgs();
-      if (args.length > 0) {
-        // complain about the deprecated syntax -- but still run
-        System.err.println(
-            "This usage has been deprecated, consider using the new command "
-                + "line syntax (run with -h to see usage information)");
-
-        this.port = Integer.parseInt(args[0]);
-      }
-
-      // notice that command line options take precedence over the
-      // deprecated (old style) naked args...
-
-      if (commandLine.hasOption('p')) {
-        this.port = Integer.parseInt(commandLine.getOptionValue('p'));
-      } else {
-        // legacy handling
-        String metastorePort = System.getenv("METASTORE_PORT");
-        if (metastorePort != null) {
-          this.port = Integer.parseInt(metastorePort);
-        }
-      }
-    }
-
-    public int getPort() {
-      return this.port;
-    }
-  }
-
   /*
   Interface to encapsulate Http and binary thrift server for
   HiveMetastore
    */
   private interface ThriftServer {
-    public void start() throws Throwable;
-    public boolean isRunning();
-    public IHMSHandler getHandler();
+    void start() throws Throwable;
+    boolean isRunning();
+    IHMSHandler getHandler();
   }
 
   /**
@@ -316,7 +259,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     startupShutdownMessage(HiveMetaStore.class, args, LOG);
 
     try {
-      String msg = "Starting hive metastore on port " + cli.port;
+      String msg = "Starting hive metastore on port " + cli.getPort();
       LOG.info(msg);
       if (cli.isVerbose()) {
         System.err.println(msg);
@@ -639,7 +582,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           return thread;
     });
 
-    TThreadPoolServer.Args args = new TThreadPoolServer.Args(new MetastoreTServerSocket(serverSocket, conf))
+    TThreadPoolServer.Args args = new TThreadPoolServer.Args(new MetaStoreTServerSocket(serverSocket, conf))
         .processor(processor)
         .transportFactory(transFactory)
         .protocolFactory(protocolFactory)
