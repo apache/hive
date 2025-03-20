@@ -44,7 +44,6 @@ public class ResourceDownloader {
     this.dependencyResolver = new DependencyResolver();
     this.conf = conf;
     this.resourceDir = new File(resourceDirPath);
-    ensureDirectory(resourceDir);
   }
 
   /**
