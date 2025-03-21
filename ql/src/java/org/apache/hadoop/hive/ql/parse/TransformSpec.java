@@ -17,14 +17,21 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.conf.Configuration;
+
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import static org.apache.hadoop.hive.ql.metadata.HiveUtils.unparseIdentifier;
 
 public class TransformSpec {
 
-  private static final Pattern HAS_WIDTH = Pattern.compile("(\\w+)\\[(\\d+)\\]");
+  private static final Pattern HAS_WIDTH = Pattern.compile("(\\w+)\\[(\\d+)]");
+
   public enum TransformType {
     IDENTITY, YEAR, MONTH, DAY, HOUR, TRUNCATE, BUCKET, VOID
   }
@@ -32,6 +39,8 @@ public class TransformSpec {
   private String columnName;
   private TransformType transformType;
   private Optional<Integer> transformParam;
+
+  private String fieldName;
 
   public TransformSpec() {
   }
@@ -66,14 +75,42 @@ public class TransformSpec {
     this.transformParam = transformParam;
   }
 
+  public void setFieldName(String fieldName) {
+    this.fieldName = fieldName;
+  }
+
+  public String getFieldName() {
+    return fieldName;
+  }
+
   public String transformTypeString() {
     if (transformType == null) {
       return null;
     }
-    if (transformParam.isPresent()) {
-      return transformType.name() + "[" + transformParam.get() + "]";
+    return transformType.name() + transformParam.map(width -> 
+        "[" + width + "]").orElse("");
+  }
+    
+  public static String toNamedStruct(List<TransformSpec> partTransformSpec, Configuration conf) {
+    return "named_struct(" +
+      partTransformSpec.stream().map(spec ->
+          "'" + spec.getFieldName() + "', " + spec.toHiveExpr(conf))
+        .collect(Collectors.joining(", ")) +
+      ")";
+  }
+  
+  public String toHiveExpr(Configuration conf) {
+    String identifier = unparseIdentifier(columnName, conf);
+    if (transformType == TransformSpec.TransformType.IDENTITY) {
+      return identifier;
     }
-    return transformType.name();
+    String fn = "iceberg_" + transformType.name().toLowerCase() + "(" + identifier;
+    switch (transformType) {
+      case BUCKET:
+      case TRUNCATE:
+        fn += ", " + transformParam.get();
+    }
+    return  fn + ")";
   }
 
   public static TransformType fromString(String transformString) {
