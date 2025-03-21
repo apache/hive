@@ -1,91 +1,91 @@
-PREHOOK: query: SELECT CAST(NULL AS STRING) FROM src tablesample (1 rows)
+PREHOOK: query: SELECT CAST(NULL AS STRING)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
+PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT CAST(NULL AS STRING) FROM src tablesample (1 rows)
+POSTHOOK: query: SELECT CAST(NULL AS STRING)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
+POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 NULL
-PREHOOK: query: SELECT CAST(TRUE AS STRING) FROM src tablesample (1 rows)
+PREHOOK: query: SELECT CAST(TRUE AS STRING)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
+PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT CAST(TRUE AS STRING) FROM src tablesample (1 rows)
+POSTHOOK: query: SELECT CAST(TRUE AS STRING)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
+POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 TRUE
-PREHOOK: query: SELECT CAST(CAST(1 AS TINYINT) AS STRING) FROM src tablesample (1 rows)
+PREHOOK: query: SELECT CAST(CAST(1 AS TINYINT) AS STRING)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
+PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT CAST(CAST(1 AS TINYINT) AS STRING) FROM src tablesample (1 rows)
+POSTHOOK: query: SELECT CAST(CAST(1 AS TINYINT) AS STRING)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
+POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 1
-PREHOOK: query: SELECT CAST(CAST(-18 AS SMALLINT) AS STRING) FROM src tablesample (1 rows)
+PREHOOK: query: SELECT CAST(CAST(-18 AS SMALLINT) AS STRING)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
+PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT CAST(CAST(-18 AS SMALLINT) AS STRING) FROM src tablesample (1 rows)
+POSTHOOK: query: SELECT CAST(CAST(-18 AS SMALLINT) AS STRING)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
+POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 -18
-PREHOOK: query: SELECT CAST(-129 AS STRING) FROM src tablesample (1 rows)
+PREHOOK: query: SELECT CAST(-129 AS STRING)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
+PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT CAST(-129 AS STRING) FROM src tablesample (1 rows)
+POSTHOOK: query: SELECT CAST(-129 AS STRING)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
+POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 -129
-PREHOOK: query: SELECT CAST(CAST(-1025 AS BIGINT) AS STRING) FROM src tablesample (1 rows)
+PREHOOK: query: SELECT CAST(CAST(-1025 AS BIGINT) AS STRING)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
+PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT CAST(CAST(-1025 AS BIGINT) AS STRING) FROM src tablesample (1 rows)
+POSTHOOK: query: SELECT CAST(CAST(-1025 AS BIGINT) AS STRING)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
+POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 -1025
-PREHOOK: query: SELECT CAST(CAST(-3.14 AS DOUBLE) AS STRING) FROM src tablesample (1 rows)
+PREHOOK: query: SELECT CAST(CAST(-3.14 AS DOUBLE) AS STRING)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
+PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT CAST(CAST(-3.14 AS DOUBLE) AS STRING) FROM src tablesample (1 rows)
+POSTHOOK: query: SELECT CAST(CAST(-3.14 AS DOUBLE) AS STRING)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
+POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 -3.14
-PREHOOK: query: SELECT CAST(CAST(-3.14 AS FLOAT) AS STRING) FROM src tablesample (1 rows)
+PREHOOK: query: SELECT CAST(CAST(-3.14 AS FLOAT) AS STRING)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
+PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT CAST(CAST(-3.14 AS FLOAT) AS STRING) FROM src tablesample (1 rows)
+POSTHOOK: query: SELECT CAST(CAST(-3.14 AS FLOAT) AS STRING)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
+POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 -3.14
-PREHOOK: query: SELECT CAST(CAST(-3.14 AS DECIMAL(3,2)) AS STRING) FROM src tablesample (1 rows)
+PREHOOK: query: SELECT CAST(CAST(-3.14 AS DECIMAL(3,2)) AS STRING)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
+PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT CAST(CAST(-3.14 AS DECIMAL(3,2)) AS STRING) FROM src tablesample (1 rows)
+POSTHOOK: query: SELECT CAST(CAST(-3.14 AS DECIMAL(3,2)) AS STRING)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
+POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 -3.14
-PREHOOK: query: SELECT CAST('Foo' AS STRING) FROM src tablesample (1 rows)
+PREHOOK: query: SELECT CAST('Foo' AS STRING)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
+PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT CAST('Foo' AS STRING) FROM src tablesample (1 rows)
+POSTHOOK: query: SELECT CAST('Foo' AS STRING)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
+POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 Foo
 PREHOOK: query: SELECT CAST(from_utc_timestamp(timestamp '2018-05-02 15:30:30', 'PST') - from_utc_timestamp(timestamp '1970-01-30 16:00:00', 'PST') AS STRING)
@@ -106,3 +106,68 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 1-2
+PREHOOK: query: select '"' || cast(array(*) as string) || '"' from alltypesorc limit 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select '"' || cast(array(*) as string) || '"' from alltypesorc limit 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+"["-50","-13326","528534767",null,"-50.0","-13326.0","cvLH6Eat2yFsyy7p",null,"1969-12-31 15:59:46.674","1969-12-31 16:00:08.875","TRUE",null]"
+"[null,"-4213","528534767",null,null,"-4213.0","cvLH6Eat2yFsyy7p",null,null,"1969-12-31 16:00:13.589","TRUE",null]"
+"["-28","-15813","528534767",null,"-28.0","-15813.0","cvLH6Eat2yFsyy7p",null,"1969-12-31 15:59:55.787","1969-12-31 16:00:01.546","TRUE",null]"
+PREHOOK: query: select '"' || cast(struct(*) as string) || '"' from alltypesorc limit 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select '"' || cast(struct(*) as string) || '"' from alltypesorc limit 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+"{"col1":-50,"col2":-13326,"col3":528534767,"col4":null,"col5":-50.0,"col6":-13326.0,"col7":"cvLH6Eat2yFsyy7p","col8":null,"col9":"1969-12-31 15:59:46.674","col10":"1969-12-31 16:00:08.875","col11":true,"col12":null}"
+"{"col1":null,"col2":-4213,"col3":528534767,"col4":null,"col5":null,"col6":-4213.0,"col7":"cvLH6Eat2yFsyy7p","col8":null,"col9":null,"col10":"1969-12-31 16:00:13.589","col11":true,"col12":null}"
+"{"col1":-28,"col2":-15813,"col3":528534767,"col4":null,"col5":-28.0,"col6":-15813.0,"col7":"cvLH6Eat2yFsyy7p","col8":null,"col9":"1969-12-31 15:59:55.787","col10":"1969-12-31 16:00:01.546","col11":true,"col12":null}"
+PREHOOK: query: select '"' || cast(map("ctinyint" , ctinyint, "csmallint" , csmallint, "cint" , cint, "cbigint" , cbigint, "cfloat" , cfloat, "cdouble" , cdouble, "cstring1" , cstring1, "cstring2" , cstring2, "ctimestamp1" , ctimestamp1, "ctimestamp2" , ctimestamp2, "cboolean1" , cboolean1, "cboolean2" , cboolean2) as string) || '"' from alltypesorc limit 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select '"' || cast(map("ctinyint" , ctinyint, "csmallint" , csmallint, "cint" , cint, "cbigint" , cbigint, "cfloat" , cfloat, "cdouble" , cdouble, "cstring1" , cstring1, "cstring2" , cstring2, "ctimestamp1" , ctimestamp1, "ctimestamp2" , ctimestamp2, "cboolean1" , cboolean1, "cboolean2" , cboolean2) as string) || '"' from alltypesorc limit 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+"{"ctinyint":"-50","csmallint":"-13326","cint":"528534767","cbigint":null,"cfloat":"-50.0","cdouble":"-13326.0","cstring1":"cvLH6Eat2yFsyy7p","cstring2":null,"ctimestamp1":"1969-12-31 15:59:46.674","ctimestamp2":"1969-12-31 16:00:08.875","cboolean1":"TRUE","cboolean2":null}"
+"{"ctinyint":null,"csmallint":"-4213","cint":"528534767","cbigint":null,"cfloat":null,"cdouble":"-4213.0","cstring1":"cvLH6Eat2yFsyy7p","cstring2":null,"ctimestamp1":null,"ctimestamp2":"1969-12-31 16:00:13.589","cboolean1":"TRUE","cboolean2":null}"
+"{"ctinyint":"-28","csmallint":"-15813","cint":"528534767","cbigint":null,"cfloat":"-28.0","cdouble":"-15813.0","cstring1":"cvLH6Eat2yFsyy7p","cstring2":null,"ctimestamp1":"1969-12-31 15:59:55.787","ctimestamp2":"1969-12-31 16:00:01.546","cboolean1":"TRUE","cboolean2":null}"
+PREHOOK: query: select '"' || cast(create_union(if(csmallint % 2 == 0, 0, 1), array(*), struct(*)) as string) || '"' from alltypesorc limit 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select '"' || cast(create_union(if(csmallint % 2 == 0, 0, 1), array(*), struct(*)) as string) || '"' from alltypesorc limit 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+"{0:["-50","-13326","528534767",null,"-50.0","-13326.0","cvLH6Eat2yFsyy7p",null,"1969-12-31 15:59:46.674","1969-12-31 16:00:08.875","TRUE",null]}"
+"{1:{"col1":null,"col2":-4213,"col3":528534767,"col4":null,"col5":null,"col6":-4213.0,"col7":"cvLH6Eat2yFsyy7p","col8":null,"col9":null,"col10":"1969-12-31 16:00:13.589","col11":true,"col12":null}}"
+"{1:{"col1":-28,"col2":-15813,"col3":528534767,"col4":null,"col5":-28.0,"col6":-15813.0,"col7":"cvLH6Eat2yFsyy7p","col8":null,"col9":"1969-12-31 15:59:55.787","col10":"1969-12-31 16:00:01.546","col11":true,"col12":null}}"
+PREHOOK: query: select '"' || cast(
+        struct(
+            map("key1", array(csmallint, csmallint+1), "key2", array(csmallint+2, csmallint+3)),
+            struct(cstring1, cboolean1, create_union(if(csmallint % 2 == 0, 0, 1), array(*), struct(*)))
+        )
+    as string) || '"' from alltypesorc limit 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select '"' || cast(
+        struct(
+            map("key1", array(csmallint, csmallint+1), "key2", array(csmallint+2, csmallint+3)),
+            struct(cstring1, cboolean1, create_union(if(csmallint % 2 == 0, 0, 1), array(*), struct(*)))
+        )
+    as string) || '"' from alltypesorc limit 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+"{"col1":{"key1":[-13326,-13325],"key2":[-13324,-13323]},"col2":{"col1":"cvLH6Eat2yFsyy7p","col2":true,"col3":{0:["-50","-13326","528534767",null,"-50.0","-13326.0","cvLH6Eat2yFsyy7p",null,"1969-12-31 15:59:46.674","1969-12-31 16:00:08.875","TRUE",null]}}}"
+"{"col1":{"key1":[-4213,-4212],"key2":[-4211,-4210]},"col2":{"col1":"cvLH6Eat2yFsyy7p","col2":true,"col3":{1:{"col1":null,"col2":-4213,"col3":528534767,"col4":null,"col5":null,"col6":-4213.0,"col7":"cvLH6Eat2yFsyy7p","col8":null,"col9":null,"col10":"1969-12-31 16:00:13.589","col11":true,"col12":null}}}}"
+"{"col1":{"key1":[-15813,-15812],"key2":[-15811,-15810]},"col2":{"col1":"cvLH6Eat2yFsyy7p","col2":true,"col3":{1:{"col1":-28,"col2":-15813,"col3":528534767,"col4":null,"col5":-28.0,"col6":-15813.0,"col7":"cvLH6Eat2yFsyy7p","col8":null,"col9":"1969-12-31 15:59:55.787","col10":"1969-12-31 16:00:01.546","col11":true,"col12":null}}}}"
