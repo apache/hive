@@ -105,7 +105,11 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
       if (info == null) {
           throw new InvalidToken("token expired or does not exist: " + identifier);
       }
-      renewIfRequired(System.currentTimeMillis(), identifier, info);
+      try {
+        renewIfRequired(identifier, info);
+      } catch (InvalidToken e) {
+        LOGGER.warn("Failed to renew token: " + identifier, e);
+      }
       // we have to fetch the token again as it has been renewed and info still contains the previous renew time.
       info = this.tokenStore.getToken(identifier);
 
@@ -255,7 +259,7 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
       } else {
         // get token info to check renew date
         try {
-          renewIfRequired(now, id, tokenStore.getToken(id));
+          renewIfRequired(id, tokenStore.getToken(id));
         } catch (InvalidToken e) {
           LOGGER.warn("Failed to renew token: " + id, e);
         }
@@ -263,8 +267,9 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
     }
   }
 
-  private void renewIfRequired(long currentTime, DelegationTokenIdentifier id, DelegationTokenInformation tokenInfo)
+  public void renewIfRequired(DelegationTokenIdentifier id, DelegationTokenInformation tokenInfo)
           throws InvalidToken {
+    long currentTime = System.currentTimeMillis();
     if (tokenInfo != null) {
       if (currentTime > tokenInfo.getRenewDate() && currentTime < id.getMaxDate()) {
         // This will be the case when now > tokenInfo.getRenewDate() but less than the token expiration/max time.
@@ -273,7 +278,7 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
           DelegationKey key = getDelegationKey(id.getMasterKeyId());
           Token<DelegationTokenIdentifier> t = new Token<>(id.getBytes(), createPassword(id.getBytes(), key.getKey()),
                   id.getKind(), new Text());
-          renewToken(t, UserGroupInformation.getCurrentUser().getShortUserName());
+          renewToken(t, getTokenIdentifier(t).getRenewer().toString());
         } catch (IOException e) {
           throw new InvalidToken("Unable to renew token: " + id + " due to " + e.getMessage());
         }
