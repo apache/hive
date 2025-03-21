@@ -97,4 +97,10 @@ package org.apache.hadoop.hive.metastore.api;
 
   public static final java.lang.String EXPECTED_PARAMETER_VALUE = "expected_parameter_value";
 
+  public static final java.lang.String HIVE_SQL_JDBC_USERNAME = "hive.sql.dbcp.username";
+
+  public static final java.lang.String HIVE_SQL_JDBC_PASSWORD = "hive.sql.dbcp.password";
+
+  public static final java.lang.String HIVE_SQL_JDBC_URL = "hive.sql.jdbc.url";
+
 }
