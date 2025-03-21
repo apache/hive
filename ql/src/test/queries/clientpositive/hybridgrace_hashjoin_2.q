@@ -11,6 +11,8 @@ set hive.auto.convert.join.noconditionaltask=true;
 set hive.auto.convert.join.noconditionaltask.size=10000000;
 set hive.cbo.enable=false;
 
+-- Disable shared work optimization due to HIVE-26986
+set hive.optimize.shared.work=false;
 
 SELECT '3-way mapjoin (1 big table, 2 small tables)';
 
