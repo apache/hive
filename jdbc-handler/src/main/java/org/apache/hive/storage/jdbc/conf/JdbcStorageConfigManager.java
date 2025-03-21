@@ -34,6 +34,9 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.function.Function;
 
+import static org.apache.hadoop.hive.conf.Constants.JDBC_URL;
+import static org.apache.hadoop.hive.conf.Constants.JDBC_USERNAME;
+
 /**
  * Main configuration handler class
  */
@@ -45,6 +48,8 @@ public class JdbcStorageConfigManager {
   public static final String CONFIG_PWD_KEYSTORE = Constants.JDBC_KEYSTORE;
   public static final String CONFIG_PWD_KEY = Constants.JDBC_KEY;
   public static final String CONFIG_PWD_URI = Constants.JDBC_PASSWORD_URI;
+  public static final String CONFIG_JDBC_URL = JDBC_URL;
+  public static final String CONFIG_JDBC_USERNAME = JDBC_USERNAME;
   private static final EnumSet<JdbcStorageConfig> DEFAULT_REQUIRED_PROPERTIES =
     EnumSet.of(JdbcStorageConfig.DATABASE_TYPE,
                JdbcStorageConfig.JDBC_URL,
@@ -66,7 +71,10 @@ public class JdbcStorageConfigManager {
       if (!key.equals(CONFIG_PWD) &&
           !key.equals(CONFIG_PWD_KEYSTORE) &&
           !key.equals(CONFIG_PWD_KEY) &&
-          !key.equals(CONFIG_PWD_URI)) {
+          !key.equals(CONFIG_PWD_URI) &&
+          !key.equals(CONFIG_JDBC_USERNAME) &&
+          !key.equals(CONFIG_JDBC_URL)
+      ) {
         jobProps.put(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
       }
     }

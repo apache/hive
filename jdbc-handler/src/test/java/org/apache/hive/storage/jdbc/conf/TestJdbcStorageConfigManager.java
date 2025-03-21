@@ -25,6 +25,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 
 public class TestJdbcStorageConfigManager {
 
@@ -40,9 +41,9 @@ public class TestJdbcStorageConfigManager {
     JdbcStorageConfigManager.copyConfigurationToJob(props, jobMap);
 
     assertThat(jobMap, is(notNullValue()));
-    assertThat(jobMap.size(), is(equalTo(4)));
+    assertThat(jobMap.size(), is(equalTo(3)));
     assertThat(jobMap.get(JdbcStorageConfig.DATABASE_TYPE.getPropertyName()), is(equalTo("MYSQL")));
-    assertThat(jobMap.get(JdbcStorageConfig.JDBC_URL.getPropertyName()), is(equalTo("jdbc://localhost:3306/hive")));
+    assertThat(jobMap.get(JdbcStorageConfig.JDBC_URL.getPropertyName()), is(nullValue()));
     assertThat(jobMap.get(JdbcStorageConfig.QUERY.getPropertyName()),
         is(equalTo("SELECT col1,col2,col3 FROM sometable")));
   }
