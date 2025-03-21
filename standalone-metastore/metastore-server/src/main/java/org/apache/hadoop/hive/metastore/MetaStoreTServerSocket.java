@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import java.net.SocketException;
 import java.util.Objects;
 
 import org.apache.hadoop.conf.Configuration;
@@ -28,9 +27,8 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransportException;
 
 /**
- * TServerSocketKeepAlive - like TServerSocket, but will enable keepalive for
- * accepted sockets.
- *
+ * Give HMS a chance to customize the accepted sockets, such as
+ * set the thrift max message size.
  */
 public class MetaStoreTServerSocket extends TServerSocket {
   private final Configuration configuration;
@@ -44,14 +42,6 @@ public class MetaStoreTServerSocket extends TServerSocket {
   @Override
   public TSocket accept() throws TTransportException {
     TSocket ts = super.accept();
-    boolean keepAlive = MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.TCP_KEEP_ALIVE);
-    if (keepAlive) {
-      try {
-        ts.getSocket().setKeepAlive(true);
-      } catch (SocketException e) {
-        throw new TTransportException(e);
-      }
-    }
     // get the limit from the configuration for every new connection
     int maxThriftMessageSize = (int) MetastoreConf.getSizeVar(
         configuration, MetastoreConf.ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE);
