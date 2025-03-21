@@ -43,6 +43,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.Context.RewritePolicy;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -456,6 +457,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
 
     for (JobContext jobContext : jobContexts) {
       JobConf conf = jobContext.getJobConf();
+      conf.setLong(hive_metastoreConstants.TXN_ID, IcebergAcidUtil.getTxnId());
       table = Optional.ofNullable(table).orElse(Catalogs.loadTable(conf, catalogProperties));
       branchName = conf.get(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF);
       snapshotId = getSnapshotId(outputTable.table, branchName);

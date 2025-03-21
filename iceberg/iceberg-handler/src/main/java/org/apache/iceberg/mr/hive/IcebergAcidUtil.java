@@ -28,7 +28,9 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.io.PositionDeleteInfo;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.PartitionKey;
@@ -391,4 +393,17 @@ public class IcebergAcidUtil {
     }
   }
 
+  static long getTxnId() {
+    SessionState sessionState = SessionState.get();
+    if (sessionState == null) {
+      return 0L;
+    }
+
+    HiveTxnManager txnManager = sessionState.getTxnMgr();
+    if (txnManager == null) {
+      return 0L;
+    }
+
+    return txnManager.getCurrentTxnId();
+  }
 }
