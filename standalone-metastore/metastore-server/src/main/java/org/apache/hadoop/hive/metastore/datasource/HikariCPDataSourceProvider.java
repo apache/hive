@@ -28,6 +28,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Properties;
@@ -90,7 +93,38 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
       config.addDataSourceProperty(kv.getKey(), kv.getValue());
     }
 
-    return new HikariDataSource(initMetrics(config));
+    return new HikariDataSource(initMetrics(config)) {
+      @Override
+      public Connection getConnection() throws SQLException {
+        Connection connection = super.getConnection();
+        // @TODO Remove this after the leak gets fixed
+        // A hacky around connection commit to prevent the connection leak on the secondary pool.
+        if (!(poolName != null && poolName.endsWith("secondary"))) {
+          return connection;
+        }
+        InvocationHandler handler = (proxy, method, args) -> {
+          if ("commit".equals(method.getName())) {
+            // This transaction is reaching the end, The connection
+            // should be recycled after the transaction finished.
+            try {
+              connection.commit();
+            } catch (SQLException e) {
+              try {
+                connection.rollback();  // Undo the changes.
+              } finally {
+                // Free this connection to the pool to avoid the connection leak.
+                connection.close();
+              }
+              throw e;  // Throw the exception back to the caller.
+            }
+            return null;
+          }
+          return method.invoke(connection, args);
+        };
+        return (Connection) Proxy.newProxyInstance(Connection.class.getClassLoader(),
+            new Class[] {Connection.class}, handler);
+      }
+    };
   }
 
   @Override
