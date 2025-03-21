@@ -1501,7 +1501,8 @@ struct NotificationEventRequest {
     3: optional list<string> eventTypeSkipList,
     4: optional string catName,
     5: optional string dbName,
-    6: optional list<string> tableNames
+    6: optional list<string> tableNames,
+    7: optional list<string> eventTypeList
 }
 
 struct NotificationEvent {

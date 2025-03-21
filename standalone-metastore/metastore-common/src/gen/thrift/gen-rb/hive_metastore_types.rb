@@ -5139,6 +5139,7 @@ class NotificationEventRequest
   CATNAME = 4
   DBNAME = 5
   TABLENAMES = 6
+  EVENTTYPELIST = 7
 
   FIELDS = {
     LASTEVENT => {:type => ::Thrift::Types::I64, :name => 'lastEvent'},
@@ -5146,7 +5147,8 @@ class NotificationEventRequest
     EVENTTYPESKIPLIST => {:type => ::Thrift::Types::LIST, :name => 'eventTypeSkipList', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true},
-    TABLENAMES => {:type => ::Thrift::Types::LIST, :name => 'tableNames', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
+    TABLENAMES => {:type => ::Thrift::Types::LIST, :name => 'tableNames', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
+    EVENTTYPELIST => {:type => ::Thrift::Types::LIST, :name => 'eventTypeList', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
   }
 
   def struct_fields; FIELDS; end
