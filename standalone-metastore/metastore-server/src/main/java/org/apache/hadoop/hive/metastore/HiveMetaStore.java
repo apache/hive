@@ -59,7 +59,9 @@ import org.apache.thrift.server.TServerEventHandler;
 import org.apache.thrift.server.TServlet;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
+import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
+import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.transport.TTransportFactory;
 
 import org.eclipse.jetty.security.ConstraintMapping;
@@ -582,7 +584,21 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           return thread;
     });
 
-    TThreadPoolServer.Args args = new TThreadPoolServer.Args(new MetaStoreTServerSocket(serverSocket, conf))
+    TThreadPoolServer.Args args =
+        new TThreadPoolServer.Args(new TServerSocket(serverSocket.getServerSocket()) {
+          @Override
+          public TSocket accept() throws TTransportException {
+            TSocket ts = super.accept();
+            // get the limit from the configuration for every new connection
+            int maxThriftMessageSize = (int) MetastoreConf.getSizeVar(
+                conf, MetastoreConf.ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE);
+            HMSHandler.LOG.debug("Thrift maxMessageSize = {}", maxThriftMessageSize);
+            if (maxThriftMessageSize > 0) {
+              ts.getConfiguration().setMaxMessageSize(maxThriftMessageSize);
+            }
+            return ts;
+          }
+        })
         .processor(processor)
         .transportFactory(transFactory)
         .protocolFactory(protocolFactory)
