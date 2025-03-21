@@ -44,7 +44,6 @@ public class ResourceDownloader {
     this.dependencyResolver = new DependencyResolver();
     this.conf = conf;
     this.resourceDir = new File(resourceDirPath);
-    ensureDirectory(resourceDir);
   }
 
   /**
@@ -108,6 +107,10 @@ public class ResourceDownloader {
     // add "execute" permission to downloaded resource file (needed when loading dll file)
     FileUtil.chmod(dest, "ugo+rx", true);
     return dest;
+  }
+
+  public void ensureDirectory() {
+   ensureDirectory(resourceDir);
   }
 
   private static void ensureDirectory(File resourceDir) {

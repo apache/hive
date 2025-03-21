@@ -683,6 +683,9 @@ public class SessionState implements ISessionAuthState{
   }
 
   private static void start(SessionState startSs, boolean isAsync, LogHelper console) {
+    // ensure resources directories are created before starting session state
+    startSs.resourceDownloader.ensureDirectory();
+
     setCurrentSessionState(startSs);
 
     if (!startSs.isStarted.compareAndSet(false, true)) {
