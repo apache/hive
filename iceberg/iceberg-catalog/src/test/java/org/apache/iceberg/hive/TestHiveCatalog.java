@@ -1054,7 +1054,7 @@ public class TestHiveCatalog extends CatalogTests<HiveCatalog> {
     }
     assertThat(JsonUtil.mapper().writeValueAsString(summary).length()).isLessThan(4000);
     Map<String, String> parameters = Maps.newHashMap();
-    ops.setSnapshotSummary(parameters, snapshot);
+    ops.getIcebergTableConverter().setSnapshotSummary(parameters, snapshot);
     assertThat(parameters).as("The snapshot summary must be in parameters").hasSize(1);
 
     // create a snapshot summary whose json string size exceeds the limit
@@ -1065,7 +1065,7 @@ public class TestHiveCatalog extends CatalogTests<HiveCatalog> {
     // the limit has been updated to 4000 instead of the default value(32672)
     assertThat(summarySize).isGreaterThan(4000).isLessThan(32672);
     parameters.remove(CURRENT_SNAPSHOT_SUMMARY);
-    ops.setSnapshotSummary(parameters, snapshot);
+    ops.getIcebergTableConverter().setSnapshotSummary(parameters, snapshot);
     assertThat(parameters)
         .as("The snapshot summary must not be in parameters due to the size limit")
         .isEmpty();
@@ -1085,7 +1085,7 @@ public class TestHiveCatalog extends CatalogTests<HiveCatalog> {
     parameters.put(DEFAULT_PARTITION_SPEC, "partitionSpec");
     parameters.put(DEFAULT_SORT_ORDER, "sortOrder");
 
-    ops.setSnapshotStats(metadata, parameters);
+    ops.getIcebergTableConverter().setSnapshotStats(metadata, parameters);
     assertThat(parameters)
         .doesNotContainKey(CURRENT_SNAPSHOT_SUMMARY)
         .doesNotContainKey(CURRENT_SNAPSHOT_ID)
@@ -1094,10 +1094,10 @@ public class TestHiveCatalog extends CatalogTests<HiveCatalog> {
     ops.setSchema(metadata.schema(), parameters);
     assertThat(parameters).doesNotContainKey(CURRENT_SCHEMA);
 
-    ops.setPartitionSpec(metadata, parameters);
+    ops.getIcebergTableConverter().setPartitionSpec(metadata, parameters);
     assertThat(parameters).doesNotContainKey(DEFAULT_PARTITION_SPEC);
 
-    ops.setSortOrder(metadata, parameters);
+    ops.getIcebergTableConverter().setSortOrder(metadata, parameters);
     assertThat(parameters).doesNotContainKey(DEFAULT_SORT_ORDER);
   }
 
