@@ -38,8 +38,9 @@
     <!-- Build properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+    <java.version>17</java.version>
     <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation>
     <maven.cyclonedx.plugin.version>2.7.10</maven.cyclonedx.plugin.version>
     <maven.repo.local>${settings.localRepository}</maven.repo.local>
@@ -61,15 +62,15 @@
     <maven.surefire.plugin.version>3.5.1</maven.surefire.plugin.version>
     <!-- Dependency versions -->
     <antlr.version>4.9.3</antlr.version>
-    <apache-directory-server.version>1.5.7</apache-directory-server.version>
+    <apache-directory-server.version>2.0.0-M1</apache-directory-server.version>
     <commons-lang3.version>3.12.0</commons-lang3.version>
     <commons-logging.version>1.1.3</commons-logging.version>
     <commons-dbcp2.version>2.12.0</commons-dbcp2.version>
     <datasketches.version>1.2.0</datasketches.version>
-    <datanucleus-api-jdo.version>5.2.8</datanucleus-api-jdo.version>
-    <datanucleus-core.version>5.2.10</datanucleus-core.version>
+    <datanucleus-api-jdo.version>6.0.3</datanucleus-api-jdo.version>
+    <datanucleus-core.version>6.0.8</datanucleus-core.version>
     <datanucleus-jdo.version>3.2.0-release</datanucleus-jdo.version>
-    <datanucleus-rdbms.version>5.2.10</datanucleus-rdbms.version>
+    <datanucleus-rdbms.version>6.0.8</datanucleus-rdbms.version>
     <derby.version>10.14.2.0</derby.version>
     <mariadb.version>2.5.0</mariadb.version>
     <mssql.version>6.2.1.jre8</mssql.version>
@@ -104,7 +105,7 @@
     <curator.version>5.7.1</curator.version>
     <zookeeper.version>3.8.4</zookeeper.version>
     <cron-utils.version>9.2.1</cron-utils.version>
-    <spotbugs.version>4.0.3</spotbugs.version>
+    <spotbugs.version>4.5.0</spotbugs.version>
     <caffeine.version>2.8.4</caffeine.version>
     <slf4j.version>1.7.30</slf4j.version>
     <httpcomponents.core.version>4.4.13</httpcomponents.core.version>
@@ -130,6 +131,12 @@
         <groupId>org.apache.orc</groupId>
         <artifactId>orc-core</artifactId>
         <version>${orc.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client-api</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson</groupId>
@@ -454,6 +461,10 @@
             <groupId>dom4j</groupId>
             <artifactId>dom4j</artifactId>
           </exclusion>
+          <exclusion>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
       <dependency>
@@ -518,6 +529,7 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${maven.surefire.plugin.version}</version>
           <configuration>
+            <argLine>${maven.test.jvm.args}</argLine>
             <enableOutErrElements>false</enableOutErrElements>
             <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
           </configuration>
@@ -626,11 +638,11 @@
       <id>spotbugs</id>
       <build>
         <plugins>
-          <!-- Execute as: com.github.spotbugs:spotbugs-maven-plugin:4.0.0:spotbugs -->
+          <!-- Execute as: com.github.spotbugs:spotbugs-maven-plugin:4.5.0.0:spotbugs -->
           <plugin>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-maven-plugin</artifactId>
-            <version>4.0.0</version>
+            <version>4.5.0.0</version>
             <dependencies>
               <!-- Specify the version of spotbugs -->
               <dependency>
@@ -644,6 +656,7 @@
               <maxHeap>2048</maxHeap>
               <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
               <excludeFilterFile>${basedir}/${standalone.metastore.path.to.root}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
+              <timeout>60000000</timeout>
             </configuration>
           </plugin>
         </plugins>
@@ -653,12 +666,13 @@
           <plugin>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-maven-plugin</artifactId>
-            <version>4.0.0</version>
+            <version>4.5.0.0</version>
             <configuration>
               <fork>true</fork>
               <maxHeap>2048</maxHeap>
               <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
               <excludeFilterFile>${basedir}/${standalone.metastore.path.to.root}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
+              <timeout>60000000</timeout>
             </configuration>
           </plugin>
         </plugins>

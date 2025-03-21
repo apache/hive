@@ -87,8 +87,10 @@ public class TestStage {
 
   @Test
   public void testExtractVertexNonTez() throws Exception {
-    String jsonString = "{\"OperatorName\":{\"a\":\"A\",\"b\":\"B\"}," +
-            "\"attr1\":\"ATTR1\"}";
+    String jsonString = """
+            {"OperatorName":{"a":"A","b":"B"},\
+            "attr1":"ATTR1"}\
+            """;
     JSONObject object = new JSONObject(jsonString);
 
     uut.extractVertex(object);
@@ -110,9 +112,11 @@ public class TestStage {
 
   @Test
   public void testExtractVertexTezWithOneEdge() throws Exception {
-    String jsonString = "{\"Tez\":{\"a\":\"A\"," +
-            "\"Vertices:\":{\"v1\":{},\"v2\":{}}," +
-            "\"Edges:\":{\"v2\":{\"parent\":\"v1\",\"type\":\"TYPE\"}}}}";
+    String jsonString = """
+            {"Tez":{"a":"A",\
+            "Vertices:":{"v1":{},"v2":{}},\
+            "Edges:":{"v2":{"parent":"v1","type":"TYPE"}}}}\
+            """;
     JSONObject object = new JSONObject(jsonString);
     uut.extractVertex(object);
 
@@ -130,10 +134,12 @@ public class TestStage {
 
   @Test
   public void testExtractVertexTezWithOneToManyEdge() throws Exception {
-    String jsonString = "{\"Tez\":{\"a\":\"A\"," +
-            "\"Vertices:\":{\"v1\":{},\"v2\":{},\"v3\":{}}," +
-            "\"Edges:\":{\"v1\":[{\"parent\":\"v2\",\"type\":\"TYPE1\"}," +
-            "{\"parent\":\"v3\",\"type\":\"TYPE2\"}]}}}";
+    String jsonString = """
+            {"Tez":{"a":"A",\
+            "Vertices:":{"v1":{},"v2":{},"v3":{}},\
+            "Edges:":{"v1":[{"parent":"v2","type":"TYPE1"},\
+            {"parent":"v3","type":"TYPE2"}]}}}\
+            """;
     JSONObject object = new JSONObject(jsonString);
 
     uut.extractVertex(object);
@@ -177,8 +183,10 @@ public class TestStage {
 
   @Test
   public void testExtract() throws Exception {
-    String jsonString = "{\"b\":{\"b2\":\"B2\",\"b1\":\"B1\"}," +
-            "\"Processor Tree:\":{\"a1\":{\"t1\":\"T1\"}}}";
+    String jsonString = """
+            {"b":{"b2":"B2","b1":"B1"},\
+            "Processor Tree:":{"a1":{"t1":"T1"}}}\
+            """;
     JSONObject object = new JSONObject(jsonString);
 
     Op result = uut.extractOp("op-name", object);

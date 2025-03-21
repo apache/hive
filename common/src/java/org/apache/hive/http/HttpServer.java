@@ -66,6 +66,7 @@ import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
 import org.apache.hadoop.security.authorize.AccessControlList;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.security.http.CrossOriginFilter;
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.apache.hive.http.security.PamAuthenticator;
 import org.apache.hive.http.security.PamConstraint;
 import org.apache.hive.http.security.PamConstraintMapping;
@@ -254,6 +255,7 @@ public class HttpServer {
       return this;
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HIVE-23613: intended_TO_DO")
     public Builder setPAMAuthenticator(PamAuthenticator pamAuthenticator){
       this.pamAuthenticator = pamAuthenticator;
       return this;
@@ -450,8 +452,10 @@ public class HttpServer {
     if (remoteUser == null) {
       if (response != null) {
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
-                           "Unauthenticated users are not " +
-                           "authorized to access this page.");
+                           """
+                           Unauthenticated users are not \
+                           authorized to access this page.\
+                           """);
       }
       return false;
     }
@@ -770,11 +774,11 @@ public class HttpServer {
     LoggerContext context = (LoggerContext)LogManager.getContext(false);
     for (Logger logger: context.getLoggers()) {
       for (Appender appender: logger.getAppenders().values()) {
-        if (appender instanceof AbstractOutputStreamAppender) {
+        if (appender instanceof AbstractOutputStreamAppender streamAppender) {
           OutputStreamManager manager =
-            ((AbstractOutputStreamAppender<?>)appender).getManager();
-          if (manager instanceof FileManager) {
-            String fileName = ((FileManager)manager).getFileName();
+            streamAppender.getManager();
+          if (manager instanceof FileManager fileManager) {
+            String fileName = fileManager.getFileName();
             if (fileName != null) {
               return fileName.substring(0, fileName.lastIndexOf('/'));
             }

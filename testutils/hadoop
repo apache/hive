@@ -29,7 +29,10 @@ bin=`cd "$bin"; pwd`
 export MALLOC_ARENA_MAX=${MALLOC_ARENA_MAX:-4}
 
 JAVA=$JAVA_HOME/bin/java
-JAVA_HEAP_MAX=-Xmx1000m 
+JAVA_HEAP_MAX=-Xmx1000m
+# Set an environment variable to specify additional module access permissions
+# This environment variable can be used to pass JVM options such as `--add-opens` to Java process.
+JAVA17_ADDITIONAL_ARGS=" --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED "
 
 # check envvars which might override default args
 if [ "$HADOOP_HEAPSIZE" != "" ]; then
@@ -106,4 +109,4 @@ shift
 HADOOP_OPTS="$HADOOP_OPTS -Dhadoop.security.logger=${HADOOP_SECURITY_LOGGER:-INFO,NullAppender}"
 
 export CLASSPATH=$CLASSPATH
-exec "$JAVA" $JAVA_HEAP_MAX $HADOOP_OPTS $CLASS "$@"
+exec "$JAVA" $JAVA_HEAP_MAX $HADOOP_OPTS $JAVA17_ADDITIONAL_ARGS $CLASS "$@"
