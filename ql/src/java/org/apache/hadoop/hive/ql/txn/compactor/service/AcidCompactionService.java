@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.txn.compactor.service;
 
 import com.google.common.collect.ImmutableMap;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
@@ -351,22 +352,29 @@ public class AcidCompactionService extends CompactionService {
      * @throws TException
      */
     void open(CompactionInfo ci) throws TException {
-      this.txnId = msc.openTxn(ci.runAs, ci.type == CompactionType.REBALANCE ? TxnType.REBALANCE_COMPACTION : TxnType.COMPACTION);
+      this.txnId = msc.openTxn(ci.runAs, 
+          (CompactionType.REBALANCE == ci.type) ? TxnType.REBALANCE_COMPACTION : TxnType.COMPACTION);
       status = TxnStatus.OPEN;
 
-      LockRequest lockRequest;
-      if (CompactionType.REBALANCE.equals(ci.type)) {
-        lockRequest = CompactorUtil.createLockRequest(conf, ci, txnId, LockType.EXCL_WRITE, DataOperationType.UPDATE);
-      } else {
-        lockRequest = CompactorUtil.createLockRequest(conf, ci, txnId, LockType.SHARED_READ, DataOperationType.SELECT);
-      }
+      LockRequest lockRequest = createLockRequest(ci);
+      
       LockResponse res = msc.lock(lockRequest);
       if (res.getState() != LockState.ACQUIRED) {
         throw new TException("Unable to acquire lock(s) on {" + ci.getFullPartitionName()
             + "}, status {" + res.getState() + "}, reason {" + res.getErrorMessage() + "}");
       }
       lockId = res.getLockid();
-      CompactionHeartbeatService.getInstance(conf).startHeartbeat(txnId, lockId, TxnUtils.getFullTableName(ci.dbname, ci.tableName));
+
+      CompactionHeartbeatService.getInstance(conf).startHeartbeat(txnId, lockId, 
+          TxnUtils.getFullTableName(ci.dbname, ci.tableName));
+    }
+
+    private LockRequest createLockRequest(CompactionInfo ci) {
+      Pair<LockType, DataOperationType> lockAndOpType = Pair.of(LockType.SHARED_READ, DataOperationType.SELECT);
+      if (CompactionType.REBALANCE == ci.type) {
+        lockAndOpType = Pair.of(LockType.EXCL_WRITE, DataOperationType.UPDATE);
+      }
+      return CompactorUtil.createLockRequest(conf, ci, txnId, lockAndOpType.getKey(), lockAndOpType.getValue());
     }
 
     /**
