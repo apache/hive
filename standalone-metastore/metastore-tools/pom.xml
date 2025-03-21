@@ -35,8 +35,8 @@
     <commons-math3.version>3.6.1</commons-math3.version>
     <jetbrain-annotation.version>16.0.2</jetbrain-annotation.version>
     <standalone.metastore.path.to.root>..</standalone.metastore.path.to.root>
-    <junit.jupiter.version>5.6.2</junit.jupiter.version>
-    <junit.vintage.version>5.6.2</junit.vintage.version>
+    <junit.jupiter.version>5.11.2</junit.jupiter.version>
+    <junit.vintage.version>5.11.2</junit.vintage.version>
   </properties>
   <!-- why the f*ck this pom.xml has a dependencyManagement block? -->
   <dependencyManagement>
