@@ -11533,7 +11533,7 @@ public class ObjectStore implements RawStore, Configurable {
 
     final Optional<Integer> batchSize = (eventBatchSize > 0) ? Optional.of(eventBatchSize) : Optional.empty();
 
-    final long start = System.nanoTime();
+    final long start = System.currentTimeMillis();
     int deleteCount = doCleanNotificationEvents(tooOld, batchSize, table, tableName);
 
     if (deleteCount == 0) {
@@ -11546,66 +11546,64 @@ public class ObjectStore implements RawStore, Configurable {
       } while (batchCount > 0);
     }
 
-    final long finish = System.nanoTime();
+    final long finish = System.currentTimeMillis();
 
     LOG.info("Deleted {} {} events older than epoch:{} in {}ms", deleteCount, tableName, tooOld,
-            TimeUnit.NANOSECONDS.toMillis(finish - start));
+        finish - start);
   }
 
   private <T> int doCleanNotificationEvents(final int ageSec, final Optional<Integer> batchSize, Class<T> tableClass, String tableName) {
+    String key;
+    if (MNotificationLog.class.equals(tableClass)) {
+      key = "eventId";
+    } else if (MTxnWriteNotificationLog.class.equals(tableClass)) {
+      key = "txnId";
+    } else {
+      throw new RuntimeException("Cleaning of older " + tableName + " events failed. " +
+          "Reason: Unknown table encountered " + tableClass.getName());
+    }
     final Transaction tx = pm.currentTransaction();
     int eventsCount = 0;
 
     try {
-      String key = null;
       tx.begin();
 
-      try (Query query = pm.newQuery(tableClass, "eventTime <= tooOld")) {
+      try (Query query = pm.newQuery(String.format(
+          "select %s, eventTime from %s where eventTime <= tooOld order by %s",
+          key, tableClass.getName(), key))) {
         query.declareParameters("java.lang.Integer tooOld");
-        if (MNotificationLog.class.equals(tableClass)) {
-          key = "eventId";
-        } else if (MTxnWriteNotificationLog.class.equals(tableClass)) {
-          key = "txnId";
-        }
-        query.setOrdering(key + " ascending");
         if (batchSize.isPresent()) {
           query.setRange(0, batchSize.get());
         }
 
-        List<T> events = (List) query.execute(ageSec);
+        List<Object[]> events = (List) query.execute(ageSec);
         if (CollectionUtils.isNotEmpty(events)) {
           eventsCount = events.size();
+          int minEventTime, maxEventTime;
+          long minId, maxId;
+          Object[] firstNotification = events.get(0);
+          Object[] lastNotification = events.get(eventsCount - 1);
+          minId = (long) firstNotification[0];
+          minEventTime = (int) firstNotification[1];
+          maxId = (long) lastNotification[0];
+          maxEventTime = (int) lastNotification[1];
           if (LOG.isDebugEnabled()) {
-            int minEventTime, maxEventTime;
-            long minId, maxId;
-            T firstNotification = events.get(0);
-            T lastNotification = events.get(eventsCount - 1);
-            if (MNotificationLog.class.equals(tableClass)) {
-              minEventTime = ((MNotificationLog)firstNotification).getEventTime();
-              minId = ((MNotificationLog)firstNotification).getEventId();
-              maxEventTime = ((MNotificationLog)lastNotification).getEventTime();
-              maxId = ((MNotificationLog)lastNotification).getEventId();
-            } else if (MTxnWriteNotificationLog.class.equals(tableClass)) {
-              minEventTime = ((MTxnWriteNotificationLog)firstNotification).getEventTime();
-              minId = ((MTxnWriteNotificationLog)firstNotification).getTxnId();
-              maxEventTime = ((MTxnWriteNotificationLog)lastNotification).getEventTime();
-              maxId = ((MTxnWriteNotificationLog)lastNotification).getTxnId();
-            } else {
-              throw new RuntimeException("Cleaning of older " + tableName + " events failed. " +
-                      "Reason: Unknown table encountered " + tableClass.getName());
-            }
-
             LOG.debug(
                     "Remove {} batch of {} events with eventTime < {}, min {}: {}, max {}: {}, min eventTime {}, max eventTime {}",
                     tableName, eventsCount, ageSec, key, minId, key, maxId, minEventTime, maxEventTime);
           }
 
-          pm.deletePersistentAll(events);
+          try (Query deleteQuery = pm.newQuery(String.format(
+              "delete from %s where %s >= %d && %s <= %d",
+              tableClass.getName(), key, minId, key, maxId))) {
+            deleteQuery.execute();
+          }
         }
       }
 
       tx.commit();
-    } catch (Exception e) {
+    } catch (Throwable e) {
+      // OutOfMemoryError will also be caught here
       LOG.error("Unable to delete batch of " + tableName + " events", e);
       eventsCount = 0;
     } finally {
