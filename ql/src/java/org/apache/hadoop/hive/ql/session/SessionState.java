@@ -670,7 +670,7 @@ public class SessionState implements ISessionAuthState {
     start(startSs, false, null);
 
     //add shutdown hook to clean up the session related directories and objects
-    startSs.addSessionStateShutdownHook();
+    // startSs.addSessionStateShutdownHook();
 
     return startSs;
   }
