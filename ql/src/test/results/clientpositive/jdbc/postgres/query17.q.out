@@ -1,0 +1,160 @@
+PREHOOK: query: explain
+select  i_item_id
+       ,i_item_desc
+       ,s_state
+       ,count(ss_quantity) as store_sales_quantitycount
+       ,avg(ss_quantity) as store_sales_quantityave
+       ,stddev_samp(ss_quantity) as store_sales_quantitystdev
+       ,stddev_samp(ss_quantity)/avg(ss_quantity) as store_sales_quantitycov
+       ,count(sr_return_quantity) as_store_returns_quantitycount
+       ,avg(sr_return_quantity) as_store_returns_quantityave
+       ,stddev_samp(sr_return_quantity) as_store_returns_quantitystdev
+       ,stddev_samp(sr_return_quantity)/avg(sr_return_quantity) as store_returns_quantitycov
+       ,count(cs_quantity) as catalog_sales_quantitycount ,avg(cs_quantity) as catalog_sales_quantityave
+       ,stddev_samp(cs_quantity)/avg(cs_quantity) as catalog_sales_quantitystdev
+       ,stddev_samp(cs_quantity)/avg(cs_quantity) as catalog_sales_quantitycov
+ from store_sales
+     ,store_returns
+     ,catalog_sales
+     ,date_dim d1
+     ,date_dim d2
+     ,date_dim d3
+     ,store
+     ,item
+ where d1.d_quarter_name = '2000Q1'
+   and d1.d_date_sk = ss_sold_date_sk
+   and i_item_sk = ss_item_sk
+   and s_store_sk = ss_store_sk
+   and ss_customer_sk = sr_customer_sk
+   and ss_item_sk = sr_item_sk
+   and ss_ticket_number = sr_ticket_number
+   and sr_returned_date_sk = d2.d_date_sk
+   and d2.d_quarter_name in ('2000Q1','2000Q2','2000Q3')
+   and sr_customer_sk = cs_bill_customer_sk
+   and sr_item_sk = cs_item_sk
+   and cs_sold_date_sk = d3.d_date_sk
+   and d3.d_quarter_name in ('2000Q1','2000Q2','2000Q3')
+ group by i_item_id
+         ,i_item_desc
+         ,s_state
+ order by i_item_id
+         ,i_item_desc
+         ,s_state
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_returns
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select  i_item_id
+       ,i_item_desc
+       ,s_state
+       ,count(ss_quantity) as store_sales_quantitycount
+       ,avg(ss_quantity) as store_sales_quantityave
+       ,stddev_samp(ss_quantity) as store_sales_quantitystdev
+       ,stddev_samp(ss_quantity)/avg(ss_quantity) as store_sales_quantitycov
+       ,count(sr_return_quantity) as_store_returns_quantitycount
+       ,avg(sr_return_quantity) as_store_returns_quantityave
+       ,stddev_samp(sr_return_quantity) as_store_returns_quantitystdev
+       ,stddev_samp(sr_return_quantity)/avg(sr_return_quantity) as store_returns_quantitycov
+       ,count(cs_quantity) as catalog_sales_quantitycount ,avg(cs_quantity) as catalog_sales_quantityave
+       ,stddev_samp(cs_quantity)/avg(cs_quantity) as catalog_sales_quantitystdev
+       ,stddev_samp(cs_quantity)/avg(cs_quantity) as catalog_sales_quantitycov
+ from store_sales
+     ,store_returns
+     ,catalog_sales
+     ,date_dim d1
+     ,date_dim d2
+     ,date_dim d3
+     ,store
+     ,item
+ where d1.d_quarter_name = '2000Q1'
+   and d1.d_date_sk = ss_sold_date_sk
+   and i_item_sk = ss_item_sk
+   and s_store_sk = ss_store_sk
+   and ss_customer_sk = sr_customer_sk
+   and ss_item_sk = sr_item_sk
+   and ss_ticket_number = sr_ticket_number
+   and sr_returned_date_sk = d2.d_date_sk
+   and d2.d_quarter_name in ('2000Q1','2000Q2','2000Q3')
+   and sr_customer_sk = cs_bill_customer_sk
+   and sr_item_sk = cs_item_sk
+   and cs_sold_date_sk = d3.d_date_sk
+   and d3.d_quarter_name in ('2000Q1','2000Q2','2000Q3')
+ group by i_item_id
+         ,i_item_desc
+         ,s_state
+ order by i_item_id
+         ,i_item_desc
+         ,s_state
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_returns
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: store_sales
+          properties:
+            hive.sql.query SELECT "t28"."i_item_id", "t28"."i_item_desc", "t28"."s_state", "t28"."store_sales_quantitycount", "t28"."store_sales_quantityave", "t28"."store_sales_quantitystdev", "t28"."store_sales_quantitycov", "t28"."as_store_returns_quantitycount", "t28"."as_store_returns_quantityave", "t28"."as_store_returns_quantitystdev", "t28"."store_returns_quantitycov", "t28"."catalog_sales_quantitycount", "t28"."catalog_sales_quantityave", "t28"."catalog_sales_quantitystdev", "t28"."catalog_sales_quantitycov"
+FROM (SELECT "t10"."i_item_id", "t10"."i_item_desc", "t7"."s_state", COUNT("t1"."ss_quantity") AS "store_sales_quantitycount", CAST(SUM("t1"."ss_quantity") AS DOUBLE PRECISION) / COUNT("t1"."ss_quantity") AS "store_sales_quantityave", POWER((SUM(CAST("t1"."ss_quantity" AS DOUBLE PRECISION) * CAST("t1"."ss_quantity" AS DOUBLE PRECISION)) - SUM(CAST("t1"."ss_quantity" AS DOUBLE PRECISION)) * SUM(CAST("t1"."ss_quantity" AS DOUBLE PRECISION)) / COUNT(CAST("t1"."ss_quantity" AS DOUBLE PRECISION))) / CASE WHEN COUNT(CAST("t1"."ss_quantity" AS DOUBLE PRECISION)) = 1 THEN NULL ELSE COUNT(CAST("t1"."ss_quantity" AS DOUBLE PRECISION)) - 1 END, 0.5) AS "store_sales_quantitystdev", POWER((SUM(CAST("t1"."ss_quantity" AS DOUBLE PRECISION) * CAST("t1"."ss_quantity" AS DOUBLE PRECISION)) - SUM(CAST("t1"."ss_quantity" AS DOUBLE PRECISION)) * SUM(CAST("t1"."ss_quantity" AS DOUBLE PRECISION)) / COUNT(CAST("t1"."ss_quantity" AS DOUBLE PRECISION))) / CASE WHEN COUNT(CAST("t1"."ss_quantity" AS DOUBLE PRECISION)) = 1 THEN NULL ELSE COUNT(CAST("t1"."ss_quantity" AS DOUBLE PRECISION)) - 1 END, 0.5) / (CAST(SUM("t1"."ss_quantity") AS DOUBLE PRECISION) / COUNT("t1"."ss_quantity")) AS "store_sales_quantitycov", COUNT("t24"."sr_return_quantity") AS "as_store_returns_quantitycount", CAST(SUM("t24"."sr_return_quantity") AS DOUBLE PRECISION) / COUNT("t24"."sr_return_quantity") AS "as_store_returns_quantityave", POWER((SUM(CAST("t24"."sr_return_quantity" AS DOUBLE PRECISION) * CAST("t24"."sr_return_quantity" AS DOUBLE PRECISION)) - SUM(CAST("t24"."sr_return_quantity" AS DOUBLE PRECISION)) * SUM(CAST("t24"."sr_return_quantity" AS DOUBLE PRECISION)) / COUNT(CAST("t24"."sr_return_quantity" AS DOUBLE PRECISION))) / CASE WHEN COUNT(CAST("t24"."sr_return_quantity" AS DOUBLE PRECISION)) = 1 THEN NULL ELSE COUNT(CAST("t24"."sr_return_quantity" AS DOUBLE PRECISION)) - 1 END, 0.5) AS "as_store_returns_quantitystdev", POWER((SUM(CAST("t24"."sr_return_quantity" AS DOUBLE PRECISION) * CAST("t24"."sr_return_quantity" AS DOUBLE PRECISION)) - SUM(CAST("t24"."sr_return_quantity" AS DOUBLE PRECISION)) * SUM(CAST("t24"."sr_return_quantity" AS DOUBLE PRECISION)) / COUNT(CAST("t24"."sr_return_quantity" AS DOUBLE PRECISION))) / CASE WHEN COUNT(CAST("t24"."sr_return_quantity" AS DOUBLE PRECISION)) = 1 THEN NULL ELSE COUNT(CAST("t24"."sr_return_quantity" AS DOUBLE PRECISION)) - 1 END, 0.5) / (CAST(SUM("t24"."sr_return_quantity") AS DOUBLE PRECISION) / COUNT("t24"."sr_return_quantity")) AS "store_returns_quantitycov", COUNT("t24"."cs_quantity") AS "catalog_sales_quantitycount", CAST(SUM("t24"."cs_quantity") AS DOUBLE PRECISION) / COUNT("t24"."cs_quantity") AS "catalog_sales_quantityave", POWER((SUM(CAST("t24"."cs_quantity" AS DOUBLE PRECISION) * CAST("t24"."cs_quantity" AS DOUBLE PRECISION)) - SUM(CAST("t24"."cs_quantity" AS DOUBLE PRECISION)) * SUM(CAST("t24"."cs_quantity" AS DOUBLE PRECISION)) / COUNT(CAST("t24"."cs_quantity" AS DOUBLE PRECISION))) / CASE WHEN COUNT(CAST("t24"."cs_quantity" AS DOUBLE PRECISION)) = 1 THEN NULL ELSE COUNT(CAST("t24"."cs_quantity" AS DOUBLE PRECISION)) - 1 END, 0.5) / (CAST(SUM("t24"."cs_quantity") AS DOUBLE PRECISION) / COUNT("t24"."cs_quantity")) AS "catalog_sales_quantitystdev", POWER((SUM(CAST("t24"."cs_quantity" AS DOUBLE PRECISION) * CAST("t24"."cs_quantity" AS DOUBLE PRECISION)) - SUM(CAST("t24"."cs_quantity" AS DOUBLE PRECISION)) * SUM(CAST("t24"."cs_quantity" AS DOUBLE PRECISION)) / COUNT(CAST("t24"."cs_quantity" AS DOUBLE PRECISION))) / CASE WHEN COUNT(CAST("t24"."cs_quantity" AS DOUBLE PRECISION)) = 1 THEN NULL ELSE COUNT(CAST("t24"."cs_quantity" AS DOUBLE PRECISION)) - 1 END, 0.5) / (CAST(SUM("t24"."cs_quantity") AS DOUBLE PRECISION) / COUNT("t24"."cs_quantity")) AS "catalog_sales_quantitycov"
+FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_customer_sk", "ss_store_sk", "ss_ticket_number", "ss_quantity"
+FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_customer_sk", "ss_store_sk", "ss_ticket_number", "ss_quantity"
+FROM "store_sales") AS "t"
+WHERE "ss_customer_sk" IS NOT NULL AND "ss_item_sk" IS NOT NULL AND ("ss_ticket_number" IS NOT NULL AND ("ss_sold_date_sk" IS NOT NULL AND "ss_store_sk" IS NOT NULL))) AS "t1"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_quarter_name"
+FROM "date_dim") AS "t2"
+WHERE "d_quarter_name" = '2000Q1' AND "d_date_sk" IS NOT NULL) AS "t4" ON "t1"."ss_sold_date_sk" = "t4"."d_date_sk"
+INNER JOIN (SELECT "s_store_sk", "s_state"
+FROM (SELECT "s_store_sk", "s_state"
+FROM "store") AS "t5"
+WHERE "s_store_sk" IS NOT NULL) AS "t7" ON "t1"."ss_store_sk" = "t7"."s_store_sk"
+INNER JOIN (SELECT "i_item_sk", "i_item_id", "i_item_desc"
+FROM (SELECT "i_item_sk", "i_item_id", "i_item_desc"
+FROM "item") AS "t8"
+WHERE "i_item_sk" IS NOT NULL) AS "t10" ON "t1"."ss_item_sk" = "t10"."i_item_sk"
+INNER JOIN (SELECT "t13"."sr_returned_date_sk", "t13"."sr_item_sk", "t13"."sr_customer_sk", "t13"."sr_ticket_number", "t13"."sr_return_quantity", "t16"."d_date_sk", "t23"."cs_sold_date_sk", "t23"."cs_bill_customer_sk", "t23"."cs_item_sk", "t23"."cs_quantity", "t23"."d_date_sk" AS "d_date_sk0"
+FROM (SELECT "sr_returned_date_sk", "sr_item_sk", "sr_customer_sk", "sr_ticket_number", "sr_return_quantity"
+FROM (SELECT "sr_returned_date_sk", "sr_item_sk", "sr_customer_sk", "sr_ticket_number", "sr_return_quantity"
+FROM "store_returns") AS "t11"
+WHERE "sr_customer_sk" IS NOT NULL AND "sr_item_sk" IS NOT NULL AND ("sr_ticket_number" IS NOT NULL AND "sr_returned_date_sk" IS NOT NULL)) AS "t13"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_quarter_name"
+FROM "date_dim") AS "t14"
+WHERE "d_quarter_name" IN ('2000Q1', '2000Q2', '2000Q3') AND "d_date_sk" IS NOT NULL) AS "t16" ON "t13"."sr_returned_date_sk" = "t16"."d_date_sk"
+INNER JOIN (SELECT "t19"."cs_sold_date_sk", "t19"."cs_bill_customer_sk", "t19"."cs_item_sk", "t19"."cs_quantity", "t22"."d_date_sk"
+FROM (SELECT "cs_sold_date_sk", "cs_bill_customer_sk", "cs_item_sk", "cs_quantity"
+FROM (SELECT "cs_sold_date_sk", "cs_bill_customer_sk", "cs_item_sk", "cs_quantity"
+FROM "catalog_sales") AS "t17"
+WHERE "cs_bill_customer_sk" IS NOT NULL AND ("cs_item_sk" IS NOT NULL AND "cs_sold_date_sk" IS NOT NULL)) AS "t19"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_quarter_name"
+FROM "date_dim") AS "t20"
+WHERE "d_quarter_name" IN ('2000Q1', '2000Q2', '2000Q3') AND "d_date_sk" IS NOT NULL) AS "t22" ON "t19"."cs_sold_date_sk" = "t22"."d_date_sk") AS "t23" ON "t13"."sr_customer_sk" = "t23"."cs_bill_customer_sk" AND "t13"."sr_item_sk" = "t23"."cs_item_sk") AS "t24" ON "t1"."ss_customer_sk" = "t24"."sr_customer_sk" AND "t1"."ss_item_sk" = "t24"."sr_item_sk" AND "t1"."ss_ticket_number" = "t24"."sr_ticket_number"
+GROUP BY "t10"."i_item_id", "t10"."i_item_desc", "t7"."s_state"
+ORDER BY "t10"."i_item_id", "t10"."i_item_desc", "t7"."s_state"
+FETCH NEXT 100 ROWS ONLY) AS "t28"
+            hive.sql.query.fieldNames i_item_id,i_item_desc,s_state,store_sales_quantitycount,store_sales_quantityave,store_sales_quantitystdev,store_sales_quantitycov,as_store_returns_quantitycount,as_store_returns_quantityave,as_store_returns_quantitystdev,store_returns_quantitycov,catalog_sales_quantitycount,catalog_sales_quantityave,catalog_sales_quantitystdev,catalog_sales_quantitycov
+            hive.sql.query.fieldTypes string,string,string,bigint,double,double,double,bigint,double,double,double,bigint,double,double,double
+            hive.sql.query.split false
+          Select Operator
+            expressions: i_item_id (type: string), i_item_desc (type: string), s_state (type: string), store_sales_quantitycount (type: bigint), store_sales_quantityave (type: double), store_sales_quantitystdev (type: double), store_sales_quantitycov (type: double), as_store_returns_quantitycount (type: bigint), as_store_returns_quantityave (type: double), as_store_returns_quantitystdev (type: double), store_returns_quantitycov (type: double), catalog_sales_quantitycount (type: bigint), catalog_sales_quantityave (type: double), catalog_sales_quantitystdev (type: double), catalog_sales_quantitycov (type: double)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14
+            ListSink
+

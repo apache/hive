@@ -1,0 +1,113 @@
+PREHOOK: query: explain
+with customer_total_return as
+(select sr_customer_sk as ctr_customer_sk
+,sr_store_sk as ctr_store_sk
+,sum(SR_FEE) as ctr_total_return
+from store_returns
+,date_dim
+where sr_returned_date_sk = d_date_sk
+and d_year =2000
+group by sr_customer_sk
+,sr_store_sk)
+ select  c_customer_id
+from customer_total_return ctr1
+,store
+,customer
+where ctr1.ctr_total_return > (select avg(ctr_total_return)*1.2
+from customer_total_return ctr2
+where ctr1.ctr_store_sk = ctr2.ctr_store_sk)
+and s_store_sk = ctr1.ctr_store_sk
+and s_state = 'NM'
+and ctr1.ctr_customer_sk = c_customer_sk
+order by c_customer_id
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_returns
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+with customer_total_return as
+(select sr_customer_sk as ctr_customer_sk
+,sr_store_sk as ctr_store_sk
+,sum(SR_FEE) as ctr_total_return
+from store_returns
+,date_dim
+where sr_returned_date_sk = d_date_sk
+and d_year =2000
+group by sr_customer_sk
+,sr_store_sk)
+ select  c_customer_id
+from customer_total_return ctr1
+,store
+,customer
+where ctr1.ctr_total_return > (select avg(ctr_total_return)*1.2
+from customer_total_return ctr2
+where ctr1.ctr_store_sk = ctr2.ctr_store_sk)
+and s_store_sk = ctr1.ctr_store_sk
+and s_state = 'NM'
+and ctr1.ctr_customer_sk = c_customer_sk
+order by c_customer_id
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_returns
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: store_returns
+          properties:
+            hive.sql.query SELECT "t25"."c_customer_id"
+FROM (SELECT "t13"."c_customer_id"
+FROM (SELECT "t1"."sr_customer_sk", "t1"."sr_store_sk", SUM("t1"."sr_fee") AS "$f2"
+FROM (SELECT "sr_returned_date_sk", "sr_customer_sk", "sr_store_sk", "sr_fee"
+FROM (SELECT "sr_returned_date_sk", "sr_customer_sk", "sr_store_sk", "sr_fee"
+FROM "store_returns") AS "t"
+WHERE "sr_returned_date_sk" IS NOT NULL AND ("sr_store_sk" IS NOT NULL AND "sr_customer_sk" IS NOT NULL)) AS "t1"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year"
+FROM "date_dim") AS "t2"
+WHERE "d_year" = 2000 AND "d_date_sk" IS NOT NULL) AS "t4" ON "t1"."sr_returned_date_sk" = "t4"."d_date_sk"
+GROUP BY "t1"."sr_customer_sk", "t1"."sr_store_sk"
+HAVING SUM("t1"."sr_fee") IS NOT NULL) AS "t7"
+INNER JOIN (SELECT "s_store_sk"
+FROM (SELECT "s_store_sk", "s_state"
+FROM "store") AS "t8"
+WHERE "s_state" = 'NM' AND "s_store_sk" IS NOT NULL) AS "t10" ON "t7"."sr_store_sk" = "t10"."s_store_sk"
+INNER JOIN (SELECT "c_customer_sk", "c_customer_id"
+FROM (SELECT "c_customer_sk", "c_customer_id"
+FROM "customer") AS "t11"
+WHERE "c_customer_sk" IS NOT NULL) AS "t13" ON "t7"."sr_customer_sk" = "t13"."c_customer_sk"
+INNER JOIN (SELECT CAST(SUM("t20"."$f2") / COUNT("t20"."$f2") AS DECIMAL(21, 6)) * 1.2 AS "_o__c0", "t20"."sr_store_sk" AS "ctr_store_sk"
+FROM (SELECT "t16"."sr_customer_sk", "t16"."sr_store_sk", SUM("t16"."sr_fee") AS "$f2"
+FROM (SELECT "sr_returned_date_sk", "sr_customer_sk", "sr_store_sk", "sr_fee"
+FROM (SELECT "sr_returned_date_sk", "sr_customer_sk", "sr_store_sk", "sr_fee"
+FROM "store_returns") AS "t14"
+WHERE "sr_returned_date_sk" IS NOT NULL AND "sr_store_sk" IS NOT NULL) AS "t16"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year"
+FROM "date_dim") AS "t17"
+WHERE "d_year" = 2000 AND "d_date_sk" IS NOT NULL) AS "t19" ON "t16"."sr_returned_date_sk" = "t19"."d_date_sk"
+GROUP BY "t16"."sr_customer_sk", "t16"."sr_store_sk") AS "t20"
+GROUP BY "t20"."sr_store_sk"
+HAVING CAST(SUM("t20"."$f2") / COUNT("t20"."$f2") AS DECIMAL(21, 6)) IS NOT NULL) AS "t23" ON "t7"."sr_store_sk" = "t23"."ctr_store_sk" AND "t7"."$f2" > "t23"."_o__c0"
+ORDER BY "t13"."c_customer_id"
+FETCH NEXT 100 ROWS ONLY) AS "t25"
+            hive.sql.query.fieldNames c_customer_id
+            hive.sql.query.fieldTypes string
+            hive.sql.query.split false
+          Select Operator
+            expressions: c_customer_id (type: string)
+            outputColumnNames: _col0
+            ListSink
+

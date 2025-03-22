@@ -1,0 +1,109 @@
+PREHOOK: query: explain cbo
+select  
+   count(distinct cs_order_number) as `order count`
+  ,sum(cs_ext_ship_cost) as `total shipping cost`
+  ,sum(cs_net_profit) as `total net profit`
+from
+   catalog_sales cs1
+  ,date_dim
+  ,customer_address
+  ,call_center
+where
+    d_date between '2001-4-01' and 
+           (cast('2001-4-01' as date) + 60 days)
+and cs1.cs_ship_date_sk = d_date_sk
+and cs1.cs_ship_addr_sk = ca_address_sk
+and ca_state = 'NY'
+and cs1.cs_call_center_sk = cc_call_center_sk
+and cc_county in ('Ziebach County','Levy County','Huron County','Franklin Parish',
+                  'Daviess County'
+)
+and exists (select *
+            from catalog_sales cs2
+            where cs1.cs_order_number = cs2.cs_order_number
+              and cs1.cs_warehouse_sk <> cs2.cs_warehouse_sk)
+and not exists(select *
+               from catalog_returns cr1
+               where cs1.cs_order_number = cr1.cr_order_number)
+order by count(distinct cs_order_number)
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@call_center
+PREHOOK: Input: default@catalog_returns
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@customer_address
+PREHOOK: Input: default@date_dim
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select  
+   count(distinct cs_order_number) as `order count`
+  ,sum(cs_ext_ship_cost) as `total shipping cost`
+  ,sum(cs_net_profit) as `total net profit`
+from
+   catalog_sales cs1
+  ,date_dim
+  ,customer_address
+  ,call_center
+where
+    d_date between '2001-4-01' and 
+           (cast('2001-4-01' as date) + 60 days)
+and cs1.cs_ship_date_sk = d_date_sk
+and cs1.cs_ship_addr_sk = ca_address_sk
+and ca_state = 'NY'
+and cs1.cs_call_center_sk = cc_call_center_sk
+and cc_county in ('Ziebach County','Levy County','Huron County','Franklin Parish',
+                  'Daviess County'
+)
+and exists (select *
+            from catalog_sales cs2
+            where cs1.cs_order_number = cs2.cs_order_number
+              and cs1.cs_warehouse_sk <> cs2.cs_warehouse_sk)
+and not exists(select *
+               from catalog_returns cr1
+               where cs1.cs_order_number = cr1.cr_order_number)
+order by count(distinct cs_order_number)
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@call_center
+POSTHOOK: Input: default@catalog_returns
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@customer_address
+POSTHOOK: Input: default@date_dim
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[count(DISTINCT $4)], agg#1=[sum($5)], agg#2=[sum($6)])
+  HiveAntiJoin(condition=[=($4, $14)], joinType=[anti])
+    HiveSemiJoin(condition=[AND(<>($3, $13), =($4, $14))], joinType=[semi])
+      HiveProject(cs_ship_date_sk=[$0], cs_ship_addr_sk=[$1], cs_call_center_sk=[$2], cs_warehouse_sk=[$3], cs_order_number=[$4], cs_ext_ship_cost=[$5], cs_net_profit=[$6], d_date_sk=[$7], d_date=[$8], ca_address_sk=[$9], ca_state=[$10], cc_call_center_sk=[$11], cc_county=[$12])
+        HiveJdbcConverter(convention=[JDBC.POSTGRES])
+          JdbcJoin(condition=[=($2, $11)], joinType=[inner])
+            JdbcJoin(condition=[=($1, $9)], joinType=[inner])
+              JdbcJoin(condition=[=($0, $7)], joinType=[inner])
+                JdbcProject(cs_ship_date_sk=[$0], cs_ship_addr_sk=[$1], cs_call_center_sk=[$2], cs_warehouse_sk=[$3], cs_order_number=[$4], cs_ext_ship_cost=[$5], cs_net_profit=[$6])
+                  JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1), IS NOT NULL($2), IS NOT NULL($4))])
+                    JdbcProject(cs_ship_date_sk=[$2], cs_ship_addr_sk=[$10], cs_call_center_sk=[$11], cs_warehouse_sk=[$14], cs_order_number=[$17], cs_ext_ship_cost=[$28], cs_net_profit=[$33])
+                      JdbcHiveTableScan(table=[[default, catalog_sales]], table:alias=[cs1])
+                JdbcProject(d_date_sk=[$0], d_date=[$1])
+                  JdbcFilter(condition=[AND(BETWEEN(false, CAST($1):TIMESTAMP(9), 2001-04-01 00:00:00:TIMESTAMP(9), 2001-05-31 00:00:00:TIMESTAMP(9)), IS NOT NULL($0))])
+                    JdbcProject(d_date_sk=[$0], d_date=[$2])
+                      JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+              JdbcProject(ca_address_sk=[$0], ca_state=[$1])
+                JdbcFilter(condition=[AND(=($1, _UTF-16LE'NY'), IS NOT NULL($0))])
+                  JdbcProject(ca_address_sk=[$0], ca_state=[$8])
+                    JdbcHiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
+            JdbcProject(cc_call_center_sk=[$0], cc_county=[$1])
+              JdbcFilter(condition=[AND(IN($1, _UTF-16LE'Ziebach County':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Levy County':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Huron County':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Franklin Parish':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Daviess County':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NOT NULL($0))])
+                JdbcProject(cc_call_center_sk=[$0], cc_county=[$25])
+                  JdbcHiveTableScan(table=[[default, call_center]], table:alias=[call_center])
+      HiveProject(cs_warehouse_sk=[$0], cs_order_number=[$1])
+        HiveJdbcConverter(convention=[JDBC.POSTGRES])
+          JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
+            JdbcProject(cs_warehouse_sk=[$14], cs_order_number=[$17])
+              JdbcHiveTableScan(table=[[default, catalog_sales]], table:alias=[cs2])
+    HiveProject(literalTrue=[$0], cr_order_number=[$1])
+      HiveJdbcConverter(convention=[JDBC.POSTGRES])
+        JdbcProject(literalTrue=[true], cr_order_number=[$0])
+          JdbcFilter(condition=[IS NOT NULL($0)])
+            JdbcProject(cr_order_number=[$16])
+              JdbcHiveTableScan(table=[[default, catalog_returns]], table:alias=[cr1])
+
