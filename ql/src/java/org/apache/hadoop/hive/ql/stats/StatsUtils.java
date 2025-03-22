@@ -955,10 +955,10 @@ public class StatsUtils {
       cs.setRange(-32768, 32767);
     } else if(colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().primitive1());
-      cs.setRange(Long.MIN_VALUE, Long.MAX_VALUE);
+      cs.setRange(Integer.MIN_VALUE, Integer.MAX_VALUE);
     } else if (colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().primitive2());
-      cs.setRange(Integer.MIN_VALUE, Integer.MAX_VALUE);
+      cs.setRange(Long.MIN_VALUE, Long.MAX_VALUE);
     } else if (colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().primitive1());
       cs.setRange(Float.MIN_VALUE, Float.MAX_VALUE);
