@@ -34,6 +34,7 @@ import java.util.Set;
 
 import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
 import org.apache.hadoop.security.authentication.server.KerberosAuthenticationHandler;
+import org.apache.hive.common.IPUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -85,7 +86,7 @@ public class Main {
   private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
   public static final int DEFAULT_PORT = 8080;
-  public static final String DEFAULT_HOST = "0.0.0.0";
+  public static final String DEFAULT_HOST = IPUtils.getWildcardAddress();
   public static final String DEFAULT_KEY_STORE_PATH = "";
   public static final String DEFAULT_KEY_STORE_PASSWORD = "";
   public static final String DEFAULT_SSL_PROTOCOL_BLACKLIST = "SSLv2,SSLv3";
