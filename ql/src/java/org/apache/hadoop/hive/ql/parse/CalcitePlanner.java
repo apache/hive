@@ -95,7 +95,6 @@ import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.rules.FilterMergeRule;
 import org.apache.calcite.rel.rules.JoinToMultiJoinRule;
-import org.apache.calcite.rel.rules.LoptOptimizeJoinRule;
 import org.apache.calcite.rel.rules.ProjectMergeRule;
 import org.apache.calcite.rel.rules.ProjectRemoveRule;
 import org.apache.calcite.rel.type.RelDataType;
@@ -177,7 +176,9 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.RuleEventLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.CteRuleConfig;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSortLimitRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveLoptOptimizeJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveEmptySingleRules;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveReduceSearchComplexityRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.RemoveInfrequentCteRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAggregateProjectMergeRule;
@@ -1762,7 +1763,25 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Plan after post-join transformations:\n" + RelOptUtil.toString(calcitePlan));
       }
+      
+      // As the last step, transform SEARCH operators by introducing negations to reduce complexity
+      calcitePlan = applyRulesToReduceComplexityOfSearchOperators(calcitePlan, mdProvider.getMetadataProvider(),
+          executorProvider);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Final calcite plan:\n" + RelOptUtil.toString(calcitePlan));
+      }
+      
       return calcitePlan;
+    }
+    
+    private RelNode applyRulesToReduceComplexityOfSearchOperators(
+        RelNode basePlan, RelMetadataProvider mdProvider, RexExecutor executorProvider) {
+      final HepProgramBuilder program = new HepProgramBuilder();
+      generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
+          HiveReduceSearchComplexityRule.FILTER,
+          HiveReduceSearchComplexityRule.PROJECT);
+
+      return executeProgram(basePlan, program.build(), mdProvider, executorProvider);
     }
 
     /**
@@ -2154,7 +2173,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       Map<List<String>, Integer> tableOccurrences = RelOptUtil.findAllTables(ctePlan).stream()
           .map(RelOptTable::getQualifiedName)
           .collect(Collectors.toMap(Function.identity(), v -> 1, Integer::sum));
-      CteRuleConfig cteConfig = CteRuleConfig.DEFAULT
+      CteRuleConfig cteConfig = CteRuleConfig.config()
           .withReferenceThreshold(referenceThreshold)
           .withTableOccurrences(tableOccurrences);
       HepProgram spoolProgram = HepProgram.builder()
@@ -2277,7 +2296,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           rules.toArray(new RelOptRule[0]));
       // Join reordering
       generatePartialProgram(program, false, HepMatchOrder.BOTTOM_UP,
-          new JoinToMultiJoinRule(HiveJoin.class), new LoptOptimizeJoinRule(HiveRelFactories.HIVE_BUILDER));
+          new JoinToMultiJoinRule(HiveJoin.class), HiveLoptOptimizeJoinRule.INSTANCE);
 
       RelNode calciteOptimizedPlan;
       try {

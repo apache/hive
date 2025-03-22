@@ -56,11 +56,17 @@ public final class JDBCRexCallValidator {
       final SqlOperator operator = call.getOperator();
       List <RexNode> operands = call.getOperands();
       RelDataType resType = call.getType();
-      ArrayList<RelDataType> paramsListType = new ArrayList<RelDataType>();
+      ArrayList<RelDataType> paramsListType = new ArrayList<>();
       for (RexNode currNode : operands) {
         paramsListType.add(currNode.getType());
       }
-      return dialect.supportsFunction(operator, resType, paramsListType);
+      
+      switch (operator.getKind()) {
+        case SEARCH:
+          return true;
+        default:
+          return dialect.supportsFunction(operator, resType, paramsListType);
+      }
     }
 
     @Override

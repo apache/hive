@@ -25,7 +25,6 @@ import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlFunctionCategory;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlSplittableAggFunction;
@@ -46,7 +45,7 @@ import com.google.common.collect.ImmutableList;
  * <code>long</code>, <code>float</code>, <code>double</code>), and the result
  * is the same type.
  */
-public class HiveSqlSumAggFunction extends SqlAggFunction implements CanAggregateDistinct{
+public class HiveSqlSumAggFunction extends HiveSqlAggFunction implements CanAggregateDistinct{
   final boolean isDistinct;
   final SqlReturnTypeInference returnTypeInference;
   final SqlOperandTypeInference operandTypeInference;

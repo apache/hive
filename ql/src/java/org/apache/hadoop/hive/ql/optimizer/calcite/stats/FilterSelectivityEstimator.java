@@ -19,10 +19,12 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelOptUtil.InputReferencedVisitor;
@@ -30,11 +32,13 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
+import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
+import org.apache.calcite.rex.RexVisitor;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
@@ -46,13 +50,13 @@ import org.apache.datasketches.memory.Memory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.SearchTransformer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.calcite.sql.fun.SqlStdOperatorTable.NOT_BETWEEN;
 
 public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
 
@@ -61,12 +65,14 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   private final RelNode childRel;
   private final double  childCardinality;
   private final RelMetadataQuery mq;
+  private final RexBuilder rexBuilder;
 
   public FilterSelectivityEstimator(RelNode childRel, RelMetadataQuery mq) {
     super(true);
     this.mq = mq;
     this.childRel = childRel;
     this.childCardinality = mq.getRowCount(childRel);
+    this.rexBuilder = childRel.getCluster().getRexBuilder();
   }
 
   public Double estimateSelectivity(RexNode predicate) {
@@ -112,6 +118,18 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     }
 
     case NOT:
+      if (call.getOperands().get(0).isA(SqlKind.SEARCH)) {
+        return new SearchToFilterSelectivityTransformer(rexBuilder, (RexCall) call.getOperands().get(0),
+            new FilterSelectivityEstimator(childRel, mq) {
+              @Override
+              public Double visitLiteral(RexLiteral literal) {
+                return 1.0D;
+              }
+            }, true).transform();
+      } else {
+        selectivity = computeNotEqualitySelectivity(call);
+      }
+      break;
     case NOT_EQUALS: {
       selectivity = computeNotEqualitySelectivity(call);
       break;
@@ -154,27 +172,32 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       selectivity = computeBetweenPredicateSelectivity(call);
       break;
 
-    case IN: {
-      // TODO: 1) check for duplicates 2) We assume in clause values to be
-      // present in NDV which may not be correct (Range check can find it) 3) We
-      // assume values in NDV set is uniformly distributed over col values
-      // (account for skewness - histogram).
-      selectivity = computeFunctionSelectivity(call);
-      if (selectivity != null) {
-        selectivity = selectivity * (call.operands.size() - 1);
-        if (selectivity <= 0.0) {
-          selectivity = 0.10;
-        } else if (selectivity >= 1.0) {
-          selectivity = 1.0;
-        }
-      }
-      break;
-    }
-
+    case SEARCH:
+      return new SearchToFilterSelectivityTransformer(rexBuilder, call,
+          new FilterSelectivityEstimator(childRel, mq) {
+            @Override
+            public Double visitLiteral(RexLiteral literal) {
+              return 1.0D;
+            }
+          }).transform();
     default:
       selectivity = computeFunctionSelectivity(call);
     }
 
+    return selectivity;
+  }
+  
+  private Double computeSelectivityOfSearchPoints(RexCall call, int points) {
+    Double selectivity = computeFunctionSelectivity(call);
+    if (selectivity != null) {
+      selectivity = selectivity * points;
+      if (selectivity <= 0.0) {
+        selectivity = 0.10;
+      } else if (selectivity >= 1.0) {
+        selectivity = 1.0;
+      }
+    }
+    
     return selectivity;
   }
 
@@ -349,12 +372,18 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * @return
    */
   private Double computeDisjunctionSelectivity(RexCall call) {
+    return computeDisjunctionSelectivity(
+        call.getOperands().stream().map(op -> op.accept(this)).collect(Collectors.toList())
+    );
+  }
+
+  private Double computeDisjunctionSelectivity(List<Double> selectivities) {
     Double tmpCardinality;
     Double tmpSelectivity;
     double selectivity = 1;
 
-    for (RexNode dje : call.getOperands()) {
-      tmpSelectivity = dje.accept(this);
+    for (Double d : selectivities) {
+      tmpSelectivity = d;
       if (tmpSelectivity == null) {
         tmpSelectivity = 0.99;
       }
@@ -384,17 +413,20 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * @return
    */
   private Double computeConjunctionSelectivity(RexCall call) {
-    Double tmpSelectivity;
-    double selectivity = 1;
-
-    for (RexNode cje : call.getOperands()) {
-      tmpSelectivity = cje.accept(this);
-      if (tmpSelectivity != null) {
-        selectivity *= tmpSelectivity;
+    return computeConjunctionSelectivity(
+        call.getOperands().stream().map(op -> op.accept(this)).collect(Collectors.toList())
+    );
+  }
+  
+  private Double computeConjunctionSelectivity(List<Double> selectivities) {
+    double result = 1;
+    for (Double s: selectivities) {
+      if (s != null) {
+        result *= s;
       }
     }
-
-    return selectivity;
+    
+    return result;
   }
 
   /**
@@ -593,5 +625,43 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    */
   public static boolean isHistogramAvailable(ColStatistics colStats) {
     return colStats != null && colStats.getHistogram() != null && colStats.getHistogram().length > 0;
+  }
+  
+  private class SearchToFilterSelectivityTransformer extends SearchTransformer<Double> {
+    private final RexCall search;
+
+    public SearchToFilterSelectivityTransformer(
+        RexBuilder rexBuilder, RexCall search, RexVisitor<Double> rexVisitor, boolean negate) {
+      super(rexBuilder, search, rexVisitor, negate);
+      this.search = search;
+    }
+
+    public SearchToFilterSelectivityTransformer(
+        RexBuilder rexBuilder, RexCall search, RexVisitor<Double> rexVisitor) {
+      this(rexBuilder, search, rexVisitor, false);
+    }
+
+    @Override
+    protected Double transformInOperands(List<Double> inNodes) {
+      return negate ?
+          computeNotEqualitySelectivity(search) :
+          computeSelectivityOfSearchPoints(search, inNodes.size() - 1);
+    }
+
+    @Override
+    protected Double transformAllNodes() {
+      return negate ? computeConjunctionSelectivity(results) : computeDisjunctionSelectivity(results);
+    }
+
+    @Override
+    protected Double transformWithNullAs(Double node) {
+      if (nullAsNode == null) {
+        return node;
+      }
+      
+      return nullAsTrue ? 
+          computeDisjunctionSelectivity(Arrays.asList(nullAsNode, node)):
+          computeConjunctionSelectivity(Arrays.asList(nullAsNode, node));
+    }
   }
 }

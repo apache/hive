@@ -1,4 +1,6 @@
 --! qt:dataset:src
+-- SORT_QUERY_RESULTS
+
 set hive.optimize.point.lookup.min=31;
 set hive.mapred.mode=nonstrict;
 drop table pcr_t1_n1;
@@ -11,57 +13,47 @@ insert overwrite table pcr_t1_n1 partition (ds1='2000-04-10', ds2='2001-04-10') 
 explain extended
 select key, value, ds1, ds2
 from pcr_t1_n1
-where (ds1='2000-04-08' and key=1) or (ds1='2000-04-09' and key=2)
-order by key, value, ds1, ds2;
+where (ds1='2000-04-08' and key=1) or (ds1='2000-04-09' and key=2);
 
 explain extended
 select key, value, ds1, ds2
 from pcr_t1_n1
-where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-08' and key=2)
-order by key, value, ds1, ds2;
+where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-08' and key=2);
 
 explain extended
 select *
 from pcr_t1_n1 t1 join pcr_t1_n1 t2
-on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds2='2001-04-08'
-order by t2.key, t2.value, t1.ds1;
+on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds2='2001-04-08';
 
 explain extended
 select *
 from pcr_t1_n1 t1 join pcr_t1_n1 t2
-on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds1='2000-04-09'
-order by t2.key, t2.value, t1.ds1;
+on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds1='2000-04-09';
 
 explain extended
 select *
 from pcr_t1_n1 t1 join pcr_t1_n1 t2
-where (t1.ds1='2000-04-08' and t2.key=1) or (t1.ds1='2000-04-09' and t2.key=2)
-order by t2.key, t2.value, t1.ds1;
+where (t1.ds1='2000-04-08' and t2.key=1) or (t1.ds1='2000-04-09' and t2.key=2);
 
 select key, value, ds1, ds2
 from pcr_t1_n1
-where (ds1='2000-04-08' and key=1) or (ds1='2000-04-09' and key=2)
-order by key, value, ds1, ds2;
+where (ds1='2000-04-08' and key=1) or (ds1='2000-04-09' and key=2);
 
 select key, value, ds1, ds2
 from pcr_t1_n1
-where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-08' and key=2)
-order by key, value, ds1, ds2;
+where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-08' and key=2);
 
 select *
 from pcr_t1_n1 t1 join pcr_t1_n1 t2
-on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds2='2001-04-08'
-order by t2.key, t2.value, t1.ds1;
+on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds2='2001-04-08';
 
 select *
 from pcr_t1_n1 t1 join pcr_t1_n1 t2
-on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds1='2000-04-09'
-order by t2.key, t2.value, t1.ds1;
+on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds1='2000-04-09';
 
 select *
 from pcr_t1_n1 t1 join pcr_t1_n1 t2
-where (t1.ds1='2000-04-08' and t2.key=1) or (t1.ds1='2000-04-09' and t2.key=2)
-order by t2.key, t2.value, t1.ds1;
+where (t1.ds1='2000-04-08' and t2.key=1) or (t1.ds1='2000-04-09' and t2.key=2);
 
 set hive.optimize.point.lookup.min=2;
 set hive.optimize.partition.columns.separate=true;
@@ -69,56 +61,46 @@ set hive.optimize.partition.columns.separate=true;
 explain extended
 select key, value, ds1, ds2
 from pcr_t1_n1
-where (ds1='2000-04-08' and key=1) or (ds1='2000-04-09' and key=2)
-order by key, value, ds1, ds2;
+where (ds1='2000-04-08' and key=1) or (ds1='2000-04-09' and key=2);
 
 explain extended
 select key, value, ds1, ds2
 from pcr_t1_n1
-where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-08' and key=2)
-order by key, value, ds1, ds2;
+where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-08' and key=2);
 
 explain extended
 select *
 from pcr_t1_n1 t1 join pcr_t1_n1 t2
-on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds2='2001-04-08'
-order by t2.key, t2.value, t1.ds1;
+on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds2='2001-04-08';
 
 explain extended
 select *
 from pcr_t1_n1 t1 join pcr_t1_n1 t2
-on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds1='2000-04-09'
-order by t2.key, t2.value, t1.ds1;
+on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds1='2000-04-09';
 
 explain extended
 select *
 from pcr_t1_n1 t1 join pcr_t1_n1 t2
-where (t1.ds1='2000-04-08' and t2.key=1) or (t1.ds1='2000-04-09' and t2.key=2)
-order by t2.key, t2.value, t1.ds1;
+where (t1.ds1='2000-04-08' and t2.key=1) or (t1.ds1='2000-04-09' and t2.key=2);
 
 select key, value, ds1, ds2
 from pcr_t1_n1
-where (ds1='2000-04-08' and key=1) or (ds1='2000-04-09' and key=2)
-order by key, value, ds1, ds2;
+where (ds1='2000-04-08' and key=1) or (ds1='2000-04-09' and key=2);
 
 select key, value, ds1, ds2
 from pcr_t1_n1
-where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-08' and key=2)
-order by key, value, ds1, ds2;
+where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-08' and key=2);
 
 select *
 from pcr_t1_n1 t1 join pcr_t1_n1 t2
-on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds2='2001-04-08'
-order by t2.key, t2.value, t1.ds1;
+on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds2='2001-04-08';
 
 select *
 from pcr_t1_n1 t1 join pcr_t1_n1 t2
-on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds1='2000-04-09'
-order by t2.key, t2.value, t1.ds1;
+on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds1='2000-04-09';
 
 select *
 from pcr_t1_n1 t1 join pcr_t1_n1 t2
-where (t1.ds1='2000-04-08' and t2.key=1) or (t1.ds1='2000-04-09' and t2.key=2)
-order by t2.key, t2.value, t1.ds1;
+where (t1.ds1='2000-04-08' and t2.key=1) or (t1.ds1='2000-04-09' and t2.key=2);
 
 drop table pcr_t1_n1;

@@ -187,10 +187,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: call_center
-                  filterExpr: (cc_county) IN ('Ziebach County', 'Levy County', 'Huron County', 'Franklin Parish', 'Daviess County') (type: boolean)
+                  filterExpr: (cc_county) IN ('Daviess County', 'Franklin Parish', 'Huron County', 'Levy County', 'Ziebach County') (type: boolean)
                   Statistics: Num rows: 60 Data size: 6360 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (cc_county) IN ('Ziebach County', 'Levy County', 'Huron County', 'Franklin Parish', 'Daviess County') (type: boolean)
+                    predicate: (cc_county) IN ('Daviess County', 'Franklin Parish', 'Huron County', 'Levy County', 'Ziebach County') (type: boolean)
                     Statistics: Num rows: 12 Data size: 1272 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cc_call_center_sk (type: bigint)

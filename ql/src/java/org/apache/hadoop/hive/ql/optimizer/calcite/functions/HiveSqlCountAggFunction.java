@@ -25,13 +25,11 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlFunctionCategory;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlSplittableAggFunction;
 import org.apache.calcite.sql.SqlSyntax;
 import org.apache.calcite.sql.SqlSplittableAggFunction.CountSplitter;
-import org.apache.calcite.sql.SqlSplittableAggFunction.Registry;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlOperandTypeChecker;
 import org.apache.calcite.sql.type.SqlOperandTypeInference;
@@ -41,7 +39,7 @@ import org.apache.calcite.util.ImmutableIntList;
 
 import com.google.common.collect.ImmutableList;
 
-public class HiveSqlCountAggFunction extends SqlAggFunction implements CanAggregateDistinct {
+public class HiveSqlCountAggFunction extends HiveSqlAggFunction implements CanAggregateDistinct {
 
   final boolean                isDistinct;
   final SqlReturnTypeInference returnTypeInference;
