@@ -78,7 +78,7 @@
     <oracle.version>21.3.0.0</oracle.version>
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2
     </dropwizard-metrics-hadoop-metrics2-reporter.version>
-    <dropwizard.version>3.1.0</dropwizard.version>
+    <dropwizard.version>4.2.0</dropwizard.version>
     <guava.version>22.0</guava.version>
     <hadoop.version>3.4.1</hadoop.version>
     <hikaricp.version>4.0.3</hikaricp.version>
@@ -142,6 +142,12 @@
         <groupId>com.github.joshelser</groupId>
         <artifactId>dropwizard-metrics-hadoop-metrics2-reporter</artifactId>
         <version>${dropwizard-metrics-hadoop-metrics2-reporter.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>com.google.guava</groupId>
@@ -166,6 +172,11 @@
       <dependency>
         <groupId>io.dropwizard.metrics</groupId>
         <artifactId>metrics-jvm</artifactId>
+        <version>${dropwizard.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.dropwizard.metrics</groupId>
+        <artifactId>metrics-jmx</artifactId>
         <version>${dropwizard.version}</version>
       </dependency>
       <dependency>
