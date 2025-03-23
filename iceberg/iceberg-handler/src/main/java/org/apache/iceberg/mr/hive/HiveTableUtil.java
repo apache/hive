@@ -19,8 +19,6 @@
 
 package org.apache.iceberg.mr.hive;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -34,14 +32,12 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -50,12 +46,8 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.iceberg.AppendFiles;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFiles;
@@ -281,32 +273,4 @@ public class HiveTableUtil {
     return Boolean.parseBoolean(properties.getProperty(hive_metastoreConstants.TABLE_IS_CTAS));
   }
 
-  static Properties getSerializationProps() {
-    Properties props = new Properties();
-    props.put(serdeConstants.SERIALIZATION_FORMAT, "" + Utilities.tabCode);
-    props.put(serdeConstants.SERIALIZATION_NULL_FORMAT, "NULL");
-    return props;
-  }
-
-  static String getParseData(String parseData, String specId, ObjectMapper mapper, Integer currentSpecId)
-      throws JsonProcessingException {
-    Map<String, String> map = mapper.readValue(parseData, Map.class);
-    String partString =
-        map.entrySet().stream()
-            .filter(entry -> entry.getValue() != null)
-            .map(java.lang.Object::toString)
-            .collect(Collectors.joining("/"));
-    String currentSpecMarker = currentSpecId.toString().equals(specId) ? "current-" : "";
-    return String.format("%sspec-id=%s/%s", currentSpecMarker, specId, partString);
-  }
-
-  static JobConf getPartJobConf(Configuration confs, org.apache.hadoop.hive.ql.metadata.Table tbl) {
-    JobConf job = new JobConf(confs);
-    job.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, Constants.ICEBERG_PARTITION_COLUMNS);
-    job.set(InputFormatConfig.TABLE_LOCATION, tbl.getPath().toString());
-    job.set(InputFormatConfig.TABLE_IDENTIFIER, tbl.getFullyQualifiedName() + ".partitions");
-    HiveConf.setVar(job, HiveConf.ConfVars.HIVE_FETCH_OUTPUT_SERDE, Constants.DELIMITED_JSON_SERDE);
-    HiveConf.setBoolVar(job, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
-    return job;
-  }
 }

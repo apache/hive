@@ -284,7 +284,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"dept_id\":\"true\",\"first_name\":\"true\",\"last_name\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	compactor.threshold.target.size	1500                
@@ -297,6 +297,7 @@ Table Parameters:
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	2                   
+	numPartitions       	2                   
 	numRows             	4                   
 	parquet.compression 	zstd                
 #### A masked pattern was here ####
@@ -618,7 +619,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"dept_id\":\"true\",\"first_name\":\"true\",\"last_name\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	compactor.threshold.target.size	1500                
@@ -631,6 +632,7 @@ Table Parameters:
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	2                   
+	numPartitions       	2                   
 	numRows             	8                   
 	parquet.compression 	zstd                
 #### A masked pattern was here ####

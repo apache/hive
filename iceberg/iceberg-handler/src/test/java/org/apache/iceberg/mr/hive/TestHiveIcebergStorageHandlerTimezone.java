@@ -110,7 +110,7 @@ public class TestHiveIcebergStorageHandlerTimezone {
     localTimeZone.ifPresent(ThreadLocal::remove);
 
     this.testTables = HiveIcebergStorageHandlerTestUtils.testTables(shell, TestTables.TestTableType.HIVE_CATALOG, temp);
-    HiveIcebergStorageHandlerTestUtils.init(shell, testTables, temp, "tez");
+    HiveIcebergStorageHandlerTestUtils.init(shell, testTables, temp);
   }
 
   @After
