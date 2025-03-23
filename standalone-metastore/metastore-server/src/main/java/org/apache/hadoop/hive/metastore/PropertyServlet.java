@@ -313,7 +313,8 @@ public class PropertyServlet extends HttpServlet {
       int port = MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PORT);
       String path = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
       if (port >= 0 && path != null && !path.isEmpty()) {
-        ServletSecurity security = new ServletSecurity(configuration);
+        String auth = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.PROPERTIES_SERVLET_AUTH);
+        ServletSecurity security = new ServletSecurity(configuration, "jwt".equalsIgnoreCase(auth));
         HttpServlet servlet = security.proxy(new PropertyServlet(configuration));
         return new ServletServerBuilder.Descriptor(port, path, servlet);
       }

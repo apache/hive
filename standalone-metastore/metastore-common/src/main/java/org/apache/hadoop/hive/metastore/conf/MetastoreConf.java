@@ -1844,7 +1844,7 @@ public class MetastoreConf {
             " positive value will be used as-is."
     ),
     ICEBERG_CATALOG_SERVLET_AUTH("hive.metastore.catalog.servlet.auth",
-        "hive.metastore.catalog.servlet.auth", "jwt",
+        "hive.metastore.catalog.servlet.auth", "jwt", new StringSetValidator("simple", "jwt"),
         "HMS Iceberg Catalog servlet authentication method (simple or jwt)."
     ),
     ICEBERG_CATALOG_CACHE_EXPIRY("hive.metastore.catalog.cache.expiry",
