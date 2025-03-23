@@ -24,7 +24,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
@@ -43,7 +42,6 @@ import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.entities.TxnStatus;
-import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactionHeartbeatService;
@@ -179,7 +177,7 @@ public class AcidCompactionService extends CompactionService {
 
       CompactorUtil.checkInterrupt(CLASS_NAME);
 
-      /**
+      /*
        * we cannot have Worker use HiveTxnManager (which is on ThreadLocal) since
        * then the Driver would already have the an open txn but then this txn would have
        * multiple statements in it (for query based compactor) which is not supported (and since
@@ -349,7 +347,6 @@ public class AcidCompactionService extends CompactionService {
 
     /**
      * Try to open a new txn.
-     * @throws TException
      */
     void open(CompactionInfo ci) throws TException {
       this.txnId = msc.openTxn(ci.runAs, 
@@ -386,9 +383,9 @@ public class AcidCompactionService extends CompactionService {
 
     /**
      * Commit or abort txn.
-     * @throws Exception
      */
-    @Override public void close() throws Exception {
+    @Override 
+    public void close() throws Exception {
       if (status == TxnStatus.UNKNOWN) {
         return;
       }
