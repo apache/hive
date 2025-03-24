@@ -418,7 +418,7 @@ struct GetCatalogsResponse {
 
 struct DropCatalogRequest {
   1: string name,
-  2: optional bool ifExists
+  2: optional bool ifExists = true
 }
 
 // namespace for tables

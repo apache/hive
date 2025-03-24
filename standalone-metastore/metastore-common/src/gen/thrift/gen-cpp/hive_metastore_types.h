@@ -3478,7 +3478,7 @@ void swap(GetCatalogsResponse &a, GetCatalogsResponse &b);
 std::ostream& operator<<(std::ostream& out, const GetCatalogsResponse& obj);
 
 typedef struct _DropCatalogRequest__isset {
-  _DropCatalogRequest__isset() : name(false), ifExists(false) {}
+  _DropCatalogRequest__isset() : name(false), ifExists(true) {}
   bool name :1;
   bool ifExists :1;
 } _DropCatalogRequest__isset;
@@ -3490,7 +3490,7 @@ class DropCatalogRequest : public virtual ::apache::thrift::TBase {
   DropCatalogRequest& operator=(const DropCatalogRequest&);
   DropCatalogRequest() noexcept
                      : name(),
-                       ifExists(0) {
+                       ifExists(true) {
   }
 
   virtual ~DropCatalogRequest() noexcept;
