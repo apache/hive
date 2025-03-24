@@ -36,17 +36,17 @@ public abstract class AbstractHiveService {
   private int binaryPort;
   private int httpPort;
   private int webPort;
-  private int healthHAPort;
+  private int healthCheckHAPort;
   private boolean startedHiveService = false;
   private List<String> addedProperties = new ArrayList<String>();
 
-  AbstractHiveService(HiveConf hiveConf, String hostname, int binaryPort, int httpPort, int webPort, int healthHAPort) {
+  AbstractHiveService(HiveConf hiveConf, String hostname, int binaryPort, int httpPort, int webPort, int healthCheckHAPort) {
     this.hiveConf = hiveConf;
     this.hostname = hostname;
     this.binaryPort = binaryPort;
     this.httpPort = httpPort;
     this.webPort = webPort;
-    this.healthHAPort = healthHAPort;
+    this.healthCheckHAPort = healthCheckHAPort;
   }
 
   /**
@@ -144,8 +144,8 @@ public abstract class AbstractHiveService {
     return webPort;
   }
 
-  public int getHealthHAPort() {
-    return healthHAPort;
+  public int getHealthCheckHAPort() {
+    return healthCheckHAPort;
   }
 
   public boolean isStarted() {

@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-public class HS2HealthHAStatus extends HS2LeadershipStatus {
+public class HS2HAHealthChecker extends HS2LeadershipStatus {
 
   @Override
   public void doDelete(final HttpServletRequest request, final HttpServletResponse response) throws IOException {

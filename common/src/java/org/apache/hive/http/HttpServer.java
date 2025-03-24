@@ -181,7 +181,7 @@ public class HttpServer {
         new LinkedList<Pair<String, Class<? extends HttpServlet>>>();
     private boolean disableDirListing = false;
     private final Map<String, Pair<String, Filter>> globalFilters = new LinkedHashMap<>();
-    private String contextPath;
+    private String contextPath = "/";
 
     public Builder(String name) {
       Preconditions.checkArgument(name != null && !name.isEmpty(), "Name must be specified");
@@ -501,7 +501,7 @@ public class HttpServer {
     setContextAttributes(ctx.getServletContext(), b.contextAttrs);
     ctx.getServletContext().getSessionCookieConfig().setHttpOnly(true);
     ctx.setDisplayName(b.name);
-    ctx.setContextPath(b.contextPath == null ? "/" : b.contextPath);
+    ctx.setContextPath(b.contextPath);
     ctx.setWar(getWebAppsPath(b.name) + "/" + b.name);
     return ctx;
   }
@@ -559,11 +559,11 @@ public class HttpServer {
     portHandler.addHandler(rwHandler);
 
     for (Pair<String, Class<? extends HttpServlet>> p : builder.servlets) {
-      addServlet(p.getFirst(), "/" + p.getFirst(), p.getSecond(), webAppContext);
+      addServlet(p.getKey(), "/" + p.getKey(), p.getValue(), webAppContext);
     }
 
     builder.globalFilters.forEach((k, v) -> 
-        addFilter(k, v.getFirst(), v.getSecond(), webAppContext.getServletHandler()));
+        addFilter(k, v.getKey(), v.getValue(), webAppContext.getServletHandler()));
     
     // Add port handler to the global context handler
     portHandlerWrapper.addHandler(connector, portHandler);
@@ -788,7 +788,7 @@ public class HttpServer {
     handlers.ifPresent(hs -> Arrays.stream(hs)
         .filter(h -> h instanceof ServletContextHandler && !"static".equals(((ServletContextHandler) h).getDisplayName()))
         .forEach(h -> b.globalFilters.forEach((k, v) ->
-            addFilter(k, v.getFirst(), v.getSecond(), ((ServletContextHandler) h).getServletHandler()))));
+            addFilter(k, v.getKey(), v.getValue(), ((ServletContextHandler) h).getServletHandler()))));
   }
 
   private Map<String, String> setHeaders() {

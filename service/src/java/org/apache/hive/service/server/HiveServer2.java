@@ -119,7 +119,7 @@ import org.apache.hive.service.cli.session.HiveSession;
 import org.apache.hive.service.cli.thrift.ThriftBinaryCLIService;
 import org.apache.hive.service.cli.thrift.ThriftCLIService;
 import org.apache.hive.service.cli.thrift.ThriftHttpCLIService;
-import org.apache.hive.service.servlet.HS2HealthHAStatus;
+import org.apache.hive.service.servlet.HS2HAHealthChecker;
 import org.apache.hive.service.servlet.HS2LeadershipStatus;
 import org.apache.hive.service.servlet.HS2Peers;
 import org.apache.hive.service.servlet.LDAPAuthenticationFilter;
@@ -425,7 +425,7 @@ public class HiveServer2 extends CompositeService {
           if (ldapAuthService != null) {
             webServer.addServlet("login", "/login", new ServletHolder(new LoginServlet(ldapAuthService)));
           }
-          initHealthHA(webServer, hiveConf);
+          initHAHealthChecker(webServer, hiveConf);
         }
       }
     } catch (IOException e) {
@@ -464,7 +464,8 @@ public class HiveServer2 extends CompositeService {
   
   private HttpServer.Builder initBuilder(String webHost, int port, String name, String contextPath, HiveConf hiveConf) throws IOException {
     HttpServer.Builder builder = new HttpServer.Builder(name);
-    builder.setPort(port).setConf(hiveConf);
+    builder.setPort(port);
+    builder.setConf(hiveConf);
     builder.setHost(webHost);
     builder.setContextPath(contextPath);
     builder.setMaxThreads(hiveConf.getIntVar(ConfVars.HIVE_SERVER2_WEBUI_MAX_THREADS));
@@ -540,13 +541,13 @@ public class HiveServer2 extends CompositeService {
     return builder;
   }
   
-  private void initHealthHA(HttpServer webServer, HiveConf hiveConf) throws IOException {
+  private void initHAHealthChecker(HttpServer webServer, HiveConf hiveConf) throws IOException {
     if (serviceDiscovery && activePassiveHA) {
       String webHost = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_BIND_HOST);
-      int healthCheckPort = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_HEALTH_HA_PORT);
+      int healthCheckPort = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_HA_HEALTHCHECK_PORT);
       HttpServer.Builder builder = initBuilder(webHost, healthCheckPort, "health-ha", "/health-ha", hiveConf);
       addHAContextAttributes(builder, hiveConf);
-      builder.addServlet("leader", HS2HealthHAStatus.class);
+      builder.addServlet("leader", HS2HAHealthChecker.class);
       webServer.addWebApp(builder); 
     }
   }
