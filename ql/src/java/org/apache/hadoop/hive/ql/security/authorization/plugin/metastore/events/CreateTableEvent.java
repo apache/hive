@@ -68,7 +68,7 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
     PreCreateTableEvent       event = (PreCreateTableEvent) preEventContext;
     Table                     table = event.getTable();
     Database               database = event.getDatabase();
-    String                    uri   = getSdLocation(table.getSd());
+    String                      uri = getSdLocation(table.getSd());
 
     if (StringUtils.isEmpty(uri)) {
       return ret;
@@ -97,7 +97,7 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
     PreCreateTableEvent       event = (PreCreateTableEvent) preEventContext;
     Table                     table = event.getTable();
     Database               database = event.getDatabase();
-    String                    uri   = getSdLocation(table.getSd());
+    String                      uri = getSdLocation(table.getSd());
 
     ret.add(getHivePrivilegeObject(database));
     ret.add(getHivePrivilegeObject(table));
