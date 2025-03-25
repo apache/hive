@@ -20,6 +20,8 @@
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -45,10 +47,13 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
   private static final Logger LOG = LoggerFactory.getLogger(CreateTableEvent.class);
 
   private String COMMAND_STR = "create table";
+  private Warehouse wh;
 
 
   public CreateTableEvent(PreEventContext preEventContext) {
-      super(preEventContext);
+
+    super(preEventContext);
+    this.wh = preEventContext.getHandler().getWh();
   }
 
   @Override
@@ -59,59 +64,63 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
   }
 
   private List<HivePrivilegeObject> getInputHObjs() {
-    List<HivePrivilegeObject> ret = new ArrayList<>();
-    PreCreateTableEvent event = (PreCreateTableEvent) preEventContext;
-    Table table = event.getTable();
-    Database database = event.getDatabase();
-    String uri = getSdLocation(table.getSd());
+    List<HivePrivilegeObject> ret   = new ArrayList<>();
+    PreCreateTableEvent       event = (PreCreateTableEvent) preEventContext;
+    Table                     table = event.getTable();
+    Database               database = event.getDatabase();
+    String                    uri   = getSdLocation(table.getSd());
 
-    if (StringUtils.isNotEmpty(uri)) {
-      boolean isExternalTable = table.getTableType().equalsIgnoreCase(TableType.EXTERNAL_TABLE.toString());
-      boolean isManagedTable = table.getTableType().equalsIgnoreCase(TableType.MANAGED_TABLE.toString());
-
-      String expectedManagedTablePath = database.getManagedLocationUri() + "/" + table.getTableName();
-      String expectedExternalTablePath = database.getLocationUri() + "/" + table.getTableName();
-
-      // Skip DFS_URI only if table location is under default db location
-      if (!(isManagedTable && uri.equals(expectedManagedTablePath))) {
-        if (!(isExternalTable && uri.equals(expectedExternalTablePath))) {
-          ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DFS_URI, null, uri));
-        }
-      }
+    if (StringUtils.isEmpty(uri)) {
+      return ret;
     }
+
+    boolean isExternalTable = table.getTableType().equalsIgnoreCase(TableType.EXTERNAL_TABLE.toString());
+    String expectedTablePath = null;
+    try {
+      expectedTablePath = wh.getDefaultTablePath(database, table.getTableName(), isExternalTable).toString();
+    } catch (MetaException e) {
+      LOG.warn("Got exception fetching Default table location for table " + table.getTableName(), e);
+    }
+
+    // Skip DFS_URI only if table location is under default db path
+    if (StringUtils.isEmpty(expectedTablePath) || !uri.equals(expectedTablePath)) {
+      ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DFS_URI, null, uri));
+    }
+
     return ret;
   }
 
   private List<HivePrivilegeObject> getOutputHObjs() {
     LOG.debug("==> CreateTableEvent.getOutputHObjs()");
 
-    List<HivePrivilegeObject> ret = new ArrayList<>();
-    PreCreateTableEvent event = (PreCreateTableEvent) preEventContext;
-    Table table = event.getTable();
-    Database database = event.getDatabase();
-    String uri = getSdLocation(table.getSd());
+    List<HivePrivilegeObject> ret   = new ArrayList<>();
+    PreCreateTableEvent       event = (PreCreateTableEvent) preEventContext;
+    Table                     table = event.getTable();
+    Database               database = event.getDatabase();
+    String                    uri   = getSdLocation(table.getSd());
 
     ret.add(getHivePrivilegeObject(database));
     ret.add(getHivePrivilegeObject(table));
 
     if (StringUtils.isNotEmpty(uri)) {
       boolean isExternalTable = table.getTableType().equalsIgnoreCase(TableType.EXTERNAL_TABLE.toString());
-      boolean isManagedTable = table.getTableType().equalsIgnoreCase(TableType.MANAGED_TABLE.toString());
+      String expectedTablePath = null;
+      try {
+        expectedTablePath = wh.getDefaultTablePath(database, table.getTableName(), isExternalTable).toString();
+      } catch (MetaException e) {
+        LOG.warn("Got exception fetching Default table location for table " + table.getTableName(), e);
+      }
 
-      String expectedManagedTablePath = database.getManagedLocationUri() + "/" + table.getTableName();
-
-      // Skip DFS_URI for external tables and if managed table location is under default db location
+      // Skip DFS_URI for external tables and if managed table location is under default db path
       if (!isExternalTable) {
-        if (!(isManagedTable && uri.equals(expectedManagedTablePath))) {
+        if (StringUtils.isEmpty(expectedTablePath) || !uri.equals(expectedTablePath)) {
           ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DFS_URI, null, uri));
         }
       }
     }
 
-    COMMAND_STR = buildCommandString(COMMAND_STR,table);
-
+    COMMAND_STR = buildCommandString(COMMAND_STR, table);
     LOG.debug("<== CreateTableEvent.getOutputHObjs(): ret={}", ret);
-
     return ret;
   }
 
@@ -123,4 +132,5 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
     }
     return ret;
   }
+
 }
