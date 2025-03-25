@@ -126,6 +126,10 @@ public class HiveIcebergStorageHandlerTestUtils {
     return testTableType.instance(shell.metastore().hiveConf(), temp, catalogName);
   }
 
+  static void init(TestHiveShell shell, TestTables testTables, TemporaryFolder temp) {
+    init(shell, testTables, temp, "tez");
+  }
+
   static void init(TestHiveShell shell, TestTables testTables, TemporaryFolder temp, String engine) {
     shell.getSession();
 

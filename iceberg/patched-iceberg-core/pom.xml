@@ -94,6 +94,8 @@
                   <excludes>
                       **/HadoopInputFile.class
                       **/HadoopTableOperations.class
+                      **/StructLikeMap.class
+                      **/StructLikeWrapper.class
                       org.apache.iceberg.avro.ValueReaders.class
                       org.apache.iceberg.avro.ValueWriters.class
                       org.apache.iceberg.BaseScan.class
