@@ -212,7 +212,7 @@ public final class PcrExprProcFactory {
 
   public static ExprNodeGenericFuncDesc getOutExpr(
       ExprNodeGenericFuncDesc funcExpr, Object[] nodeOutputs) {
-    ArrayList<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
+    List<ExprNodeDesc> children = new ArrayList<>();
     if (nodeOutputs != null) {
       for (Object child : nodeOutputs) {
         NodeInfoWrapper wrapper = (NodeInfoWrapper) child;
@@ -289,7 +289,7 @@ public final class PcrExprProcFactory {
     private Object handleDeterministicUdf(PcrExprProcCtx ctx,
         ExprNodeGenericFuncDesc fd, Object... nodeOutputs)
         throws SemanticException {
-      Boolean has_part_col = checkForPartColsAndUnknown(fd, nodeOutputs);
+      Boolean has_part_col = checkForPartColsAndUnknown(nodeOutputs);
       if (has_part_col == null) {
         return new NodeInfoWrapper(WalkState.UNKNOWN, null, getOutExpr(fd, nodeOutputs));
       }
@@ -322,15 +322,17 @@ public final class PcrExprProcFactory {
           // constant values.
           return new NodeInfoWrapper(WalkState.UNKNOWN, null, getOutExpr(fd, nodeOutputs));
         }
-        return new NodeInfoWrapper(WalkState.CONSTANT, null,
-            new ExprNodeConstantDesc(fd.getTypeInfo(), result));
+        return new NodeInfoWrapper(
+            WalkState.CONSTANT, null, new ExprNodeConstantDesc(fd.getTypeInfo(), result));
       }
 
       // Try to fold, otherwise return the expression itself
       final ExprNodeGenericFuncDesc desc = getOutExpr(fd, nodeOutputs);
       final ExprNodeDesc foldedDesc = ConstantPropagateProcFactory.foldExpr(desc);
+     
       if (foldedDesc instanceof ExprNodeConstantDesc) {
         ExprNodeConstantDesc constant = (ExprNodeConstantDesc) foldedDesc;
+        
         if (Boolean.TRUE.equals(constant.getValue())) {
           return new NodeInfoWrapper(WalkState.TRUE, null, constant);
         } else if (Boolean.FALSE.equals(constant.getValue())) {
@@ -342,8 +344,7 @@ public final class PcrExprProcFactory {
       return new NodeInfoWrapper(WalkState.CONSTANT, null, desc);
     }
 
-    private Boolean checkForPartColsAndUnknown(ExprNodeGenericFuncDesc fd,
-        Object... nodeOutputs) {
+    private Boolean checkForPartColsAndUnknown(Object... nodeOutputs) {
       boolean has_part_col = false;
       for (Object child : nodeOutputs) {
         NodeInfoWrapper wrapper = (NodeInfoWrapper) child;
@@ -361,8 +362,8 @@ public final class PcrExprProcFactory {
         Object... nodeOutputs) {
       boolean anyUnknown = false; // Whether any of the node outputs is unknown
       boolean allDivided = true; // Whether all of the node outputs are divided
-      List<NodeInfoWrapper> newNodeOutputsList =
-              new ArrayList<NodeInfoWrapper>(nodeOutputs.length);
+      
+      List<NodeInfoWrapper> newNodeOutputsList = new ArrayList<>(nodeOutputs.length);
       for (int i = 0; i< nodeOutputs.length; i++) {
         NodeInfoWrapper c = (NodeInfoWrapper)nodeOutputs[i];
         if (c.state == WalkState.TRUE) {
@@ -409,8 +410,8 @@ public final class PcrExprProcFactory {
         Object... nodeOutputs) {
       boolean anyUnknown = false; // Whether any of the node outputs is unknown
       boolean allDivided = true; // Whether all of the node outputs are divided
-      List<NodeInfoWrapper> newNodeOutputsList =
-              new ArrayList<NodeInfoWrapper>(nodeOutputs.length);
+      
+      List<NodeInfoWrapper> newNodeOutputsList = new ArrayList<>(nodeOutputs.length);
       for (int i = 0; i < nodeOutputs.length; i++) {
         NodeInfoWrapper c = (NodeInfoWrapper)nodeOutputs[i];
         if (c.state == WalkState.FALSE) {
@@ -477,7 +478,7 @@ public final class PcrExprProcFactory {
             getOutExpr(fd, nodeOutputs));
       }
     }
-  };
+  }
 
   /**
    * FieldExprProcessor.
@@ -552,15 +553,14 @@ public final class PcrExprProcFactory {
    * @param pred
    *          expression tree of the target filter operator
    * @return the node information of the root expression
-   * @throws SemanticException
    */
   public static NodeInfoWrapper walkExprTree(
-      String tabAlias, ArrayList<Partition> parts, List<VirtualColumn> vcs, ExprNodeDesc pred)
+      String tabAlias, List<Partition> parts, List<VirtualColumn> vcs, ExprNodeDesc pred)
       throws SemanticException {
     // Create the walker, the rules dispatcher and the context.
     PcrExprProcCtx pprCtx = new PcrExprProcCtx(tabAlias, parts, vcs);
 
-    Map<SemanticRule, SemanticNodeProcessor> exprRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> exprRules = new LinkedHashMap<>();
     exprRules.put(
         new RuleRegExp("R1", ExprNodeColumnDesc.class.getName() + "%"),
         getColumnProcessor());
@@ -576,10 +576,10 @@ public final class PcrExprProcFactory {
         exprRules, pprCtx);
     SemanticGraphWalker egw = new ExpressionWalker(disp);
 
-    List<Node> startNodes = new ArrayList<Node>();
+    List<Node> startNodes = new ArrayList<>();
     startNodes.add(pred);
 
-    HashMap<Node, Object> outputMap = new HashMap<Node, Object>();
+    HashMap<Node, Object> outputMap = new HashMap<>();
     egw.startWalking(startNodes, outputMap);
 
     // Return the wrapper of the root node

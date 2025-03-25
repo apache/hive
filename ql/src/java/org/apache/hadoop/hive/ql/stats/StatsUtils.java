@@ -50,7 +50,6 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -358,31 +357,6 @@ public class StatsUtils {
       }
 
       if (needColStats) {
-        
-        if (DDLUtils.isIcebergTable(table)) {
-          // TODO: replace with partition column stats once implemented
-          List<ColStatistics> colStats = getTableColumnStats(table, neededColumns, colStatsCache, fetchColStats);
-          if (estimateStats) {
-            estimateStatsForMissingCols(neededColumns, colStats, conf, nr, schema);
-            // we should have stats for all columns (estimated or actual)
-            if (neededColumns.size() == colStats.size()) {
-              long betterDS = getDataSizeFromColumnStats(nr, colStats);
-              stats.setDataSize((betterDS < 1 || colStats.isEmpty()) ? ds : betterDS);
-            }
-          }
-          // infer if any column can be primary key based on column statistics
-          inferAndSetPrimaryKey(stats.getNumRows(), colStats);
-
-          stats.setColumnStatsState(deriveStatType(colStats, neededColumns));
-          stats.addToColumnStats(colStats);
-          
-          if (partStats.isEmpty()) {
-            // all partitions are filtered by partition pruning
-            stats.setBasicStatsState(State.COMPLETE);
-          }
-          return stats;
-        }
-        
         List<String> partitionCols = getPartitionColumns(schema, neededColumns, referencedColumns);
 
         // We will retrieve stats from the metastore only for columns that are not cached
@@ -401,8 +375,7 @@ public class StatsUtils {
         // size is 0, aggrStats is null after several retries. Thus, we can
         // skip the step to connect to the metastore.
         if (fetchColStats && !neededColsToRetrieve.isEmpty() && !partNames.isEmpty()) {
-          aggrStats = Hive.get().getAggrColStatsFor(table.getDbName(), table.getTableName(),
-              neededColsToRetrieve, partNames, false);
+          aggrStats = Hive.get().getAggrColStatsFor(table, neededColsToRetrieve, partNames, false);
         }
 
         boolean statsRetrieved = aggrStats != null &&
@@ -1006,7 +979,7 @@ public class StatsUtils {
   }
 
   /**
-   * Get table level column statistics from metastore for needed columns
+   * Get table level column statistics for needed columns
    * @param table
    *          - table
    * @param neededColumns
@@ -1043,12 +1016,8 @@ public class StatsUtils {
     }
     if (fetchColStats && !colStatsToRetrieve.isEmpty()) {
       try {
-        List<ColumnStatisticsObj> colStat;
-        if (table.isNonNative() && table.getStorageHandler().canProvideColStatistics(table)) {
-          colStat = table.getStorageHandler().getColStatistics(table);
-        } else {
-          colStat = Hive.get().getTableColumnStatistics(dbName, tabName, colStatsToRetrieve, false);
-        }
+        List<ColumnStatisticsObj> colStat = Hive.get().getTableColumnStatistics(
+            table, colStatsToRetrieve, false);
         stats = convertColStats(colStat);
       } catch (HiveException e) {
         LOG.error("Failed to retrieve table statistics: ", e);
@@ -1976,6 +1945,11 @@ public class StatsUtils {
       }
     }
     return null;
+  }
+
+  public static boolean isPartitionStats(Table table, HiveConf conf) {
+    return conf.getBoolVar(ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS) && table.isPartitioned()
+        && (!table.isNonNative() || table.getStorageHandler().canSetColStatistics(table));
   }
 
   public static boolean checkCanProvideStats(Table table) {

@@ -404,7 +404,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"company_id\":\"true\",\"dept_id\":\"true\",\"first_name\":\"true\",\"last_name\":\"true\",\"team_id\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	compactor.threshold.target.size	1500                
@@ -418,6 +418,7 @@ Table Parameters:
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	4                   
+	numPartitions       	3                   
 	numRows             	9                   
 	parquet.compression 	zstd                
 #### A masked pattern was here ####
@@ -447,6 +448,7 @@ POSTHOOK: type: SHOW COMPACTIONS
 CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
 #Masked#	default	ice_orc	company_id=100/dept_id=1	MAJOR	succeeded	#Masked#	manual	iceberg	0	0	0	 --- 
 #Masked#	default	ice_orc	company_id=100/dept_id=2	MAJOR	succeeded	#Masked#	manual	iceberg	0	0	0	 --- 
+#Masked#	default	ice_orc	company_id=null/dept_id=null	MAJOR	refused	#Masked#	manual	iceberg	0	0	0	 --- 
 #Masked#	default	ice_orc	 --- 	MAJOR	succeeded	#Masked#	manual	iceberg	0	0	0	 --- 
 PREHOOK: query: select `partition`, spec_id, content, record_count
 from default.ice_orc.files

@@ -197,8 +197,7 @@ public class PartitionIterable implements Iterable<Partition> {
       pVals = this.getPartitionsRequest.getFilterSpec().getFilters();
     }
     if (pVals == null) {
-      partitionNames = db.getPartitionNames(
-          table.getDbName(),table.getTableName(), (short) -1);
+      partitionNames = db.getPartitionNames(table, (short) -1);
     } else {
       PartitionFilterMode filterMode = getPartitionsRequest.getFilterSpec().getFilterMode();
       switch (filterMode) {
@@ -206,8 +205,7 @@ public class PartitionIterable implements Iterable<Partition> {
           partitionNames = pVals;
           break;
         case BY_VALUES:
-          partitionNames = db.getPartitionNamesByPartitionVals(
-                  table.getDbName(),table.getTableName(),pVals,(short)-1);
+          partitionNames = db.getPartitionNamesByPartitionVals(table, pVals, (short) -1);
           break;
         case BY_EXPR:
           // TO-DO: this can be dealt with in a seperate PR. The current changes does not have a particular use case for this.
@@ -235,11 +233,9 @@ public class PartitionIterable implements Iterable<Partition> {
     this.groupNames = groupNames;
 
     if (this.partialPartitionSpec == null){
-      partitionNames = db.getPartitionNames(
-          table.getDbName(),table.getTableName(), (short) -1);
+      partitionNames = db.getPartitionNames(table, (short) -1);
     } else {
-      partitionNames = db.getPartitionNames(
-          table.getDbName(),table.getTableName(),partialPartitionSpec,(short)-1);
+      partitionNames = db.getPartitionNames(table, partialPartitionSpec, (short) -1);
     }
   }
 

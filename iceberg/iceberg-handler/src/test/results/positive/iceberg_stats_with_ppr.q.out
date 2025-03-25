@@ -53,7 +53,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ice01
-                  filterExpr: ((day = 3) and (year = 2023) and (month = 10)) (type: boolean)
+                  filterExpr: ((year = 2023) and (month = 10) and (day = 3)) (type: boolean)
                   Statistics: Num rows: 3 Data size: #Masked# Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: i (type: int)

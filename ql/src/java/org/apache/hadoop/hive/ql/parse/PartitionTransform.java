@@ -74,7 +74,7 @@ public class PartitionTransform {
           case HiveParser.TOK_TRUNCATE:
           case HiveParser.TOK_BUCKET:
             spec.setTransformType(TRANSFORMS.get(grandChild.getToken().getType()));
-            spec.setTransformParam(Optional.ofNullable(Integer.valueOf(grandChild.getChild(0).getText())));
+            spec.setTransformParam(Optional.of(Integer.valueOf(grandChild.getChild(0).getText())));
             spec.setColumnName(grandChild.getChild(1).getText().toLowerCase());
             break;
         }
