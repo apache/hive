@@ -836,6 +836,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    */
   @Override
   public LockType getLockType(WriteEntity writeEntity) {
+    // Materialized views stored by Iceberg and the MV metadata is stored in HMS doesn't need write locking because
+    // the locking is done by DbTxnManager.acquireMaterializationRebuildLock()
     if (TableType.MATERIALIZED_VIEW == writeEntity.getTable().getTableType()) {
       return LockType.SHARED_READ;
     }
