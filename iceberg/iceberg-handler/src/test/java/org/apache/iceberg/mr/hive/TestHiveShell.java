@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory;
 import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
+import org.apache.hive.common.IPStackUtils;
 import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationHandle;
@@ -122,7 +123,7 @@ public class TestHiveShell {
     Preconditions.checkState(started, "You have to start TestHiveShell first, before opening a session.");
     try {
       SessionHandle sessionHandle = client.getSessionManager().openSession(
-          CLIService.SERVER_VERSION, "", "", "127.0.0.1", Collections.emptyMap());
+          CLIService.SERVER_VERSION, "", "", IPStackUtils.resolveLoopbackAddress(), Collections.emptyMap());
       return client.getSessionManager().getSession(sessionHandle);
     } catch (Exception e) {
       throw new RuntimeException("Unable to open new Hive session: ", e);
