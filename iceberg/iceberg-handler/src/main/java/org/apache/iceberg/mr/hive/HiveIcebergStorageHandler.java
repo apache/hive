@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -835,6 +836,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    */
   @Override
   public LockType getLockType(WriteEntity writeEntity) {
+    // Materialized views stored by Iceberg and the MV metadata is stored in HMS doesn't need write locking because
+    // the locking is done by DbTxnManager.acquireMaterializationRebuildLock()
+    if (TableType.MATERIALIZED_VIEW == writeEntity.getTable().getTableType()) {
+      return LockType.SHARED_READ;
+    }
     if (WriteEntity.WriteType.INSERT_OVERWRITE == writeEntity.getWriteType()) {
       return LockType.EXCL_WRITE;
     }

@@ -414,7 +414,6 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     }
 
     try {
-      conf.setLong(hive_metastoreConstants.TXN_ID, IcebergAcidUtil.getTxnId());
       commitLock.lock();
       doPreAlterTable(hmsTable, context);
     } catch (Exception e) {
