@@ -549,13 +549,12 @@ public class HttpServer {
    * @return ContextHandlerCollection - A collection of request handlers associated with the new port connector,
    *         which includes the newly initialized web application.
    */
-  public ContextHandlerCollection addWebApp(Builder builder) throws IOException {
+  public ContextHandlerCollection createAndAddWebApp(Builder builder) throws IOException {
     WebAppContext webAppContext = createWebAppContext(builder);
     initWebAppContext(builder, webAppContext);
     RewriteHandler rwHandler = createRewriteHandler(builder, webAppContext);
     
     ContextHandlerCollection portHandler = new ContextHandlerCollection();
-    ServerConnector connector = addChannelConnector(threadPool.getQueueSize(), builder);
     portHandler.addHandler(rwHandler);
 
     for (Pair<String, Class<? extends HttpServlet>> p : builder.servlets) {
@@ -565,7 +564,8 @@ public class HttpServer {
     builder.globalFilters.forEach((k, v) -> 
         addFilter(k, v.getKey(), v.getValue(), webAppContext.getServletHandler()));
     
-    // Add port handler to the global context handler
+    // Associate the port handler with the a new connector and add it to the server
+    ServerConnector connector = createAndAddChannelConnector(threadPool.getQueueSize(), builder);
     portHandlerWrapper.addHandler(connector, portHandler);
     // Add the web application context to the global list of web application contexts
     webAppContexts.add(webAppContext);
@@ -645,7 +645,7 @@ public class HttpServer {
   /**
    * Create a channel connector for "http/https" requests and add it to the server
    */
-  ServerConnector addChannelConnector(int queueSize, Builder b) {
+  ServerConnector createAndAddChannelConnector(int queueSize, Builder b) {
     ServerConnector connector;
 
     final HttpConfiguration conf = new HttpConfiguration();
@@ -738,12 +738,13 @@ public class HttpServer {
     portHandlerWrapper = new PortHandlerWrapper();
     webServer.setHandler(portHandlerWrapper);
 
-    // Configure the web server connector and port handler to listen on
-    ContextHandlerCollection portHandler = addWebApp(b);
-
     if (b.usePAM) {
       setupPam(b, portHandlerWrapper);
     }
+
+    // Configures the web server connector and port handler to listen on
+    // Also creates and adds the web application context to the server to which the servlets will be added
+    ContextHandlerCollection portHandler = createAndAddWebApp(b);
 
     addServlet("jmx", "/jmx", JMXJsonServlet.class);
     addServlet("conf", "/conf", ConfServlet.class);
@@ -870,13 +871,8 @@ public class HttpServer {
    * @param pathSpec The path spec for the servlet
    * @param clazz The servlet class
    */
-  public void addServlet(String name, String pathSpec,
-      Class<? extends HttpServlet> clazz) {
-    ServletHolder holder = new ServletHolder(clazz);
-    if (name != null) {
-      holder.setName(name);
-    }
-    webAppContexts.get(0).addServlet(holder, pathSpec);
+  public void addServlet(String name, String pathSpec, Class<? extends HttpServlet> clazz) {
+    addServlet(name, pathSpec, clazz, webAppContexts.get(0));
   }
 
   private void addServlet(String name, String pathSpec, Class<? extends HttpServlet> clazz,
@@ -889,10 +885,14 @@ public class HttpServer {
   }
 
   public void addServlet(String name, String pathSpec, ServletHolder holder) {
+    addServlet(name, pathSpec, holder, webAppContexts.get(0));
+  }
+
+  private void addServlet(String name, String pathSpec, ServletHolder holder, WebAppContext webAppContext) {
     if (name != null) {
       holder.setName(name);
     }
-    webAppContexts.get(0).addServlet(holder, pathSpec);
+    webAppContext.addServlet(holder, pathSpec);
   }
 
   public void addFilter(String name, String pathSpec, Filter filter, ServletHandler handler) {

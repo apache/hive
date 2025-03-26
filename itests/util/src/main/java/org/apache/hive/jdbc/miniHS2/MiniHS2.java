@@ -293,7 +293,7 @@ public class MiniHS2 extends AbstractHiveService {
             .findFreePort()),
         (usePortsFromConf ? hiveConf.getIntVar(ConfVars.HIVE_SERVER2_WEBUI_PORT) : MetaStoreTestUtils
             .findFreePort()),
-        (usePortsFromConf ? hiveConf.getIntVar(ConfVars.HIVE_SERVER2_HA_HEALTHCHECK_PORT) : MetaStoreTestUtils
+        (usePortsFromConf ? hiveConf.getIntVar(ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_HEALTHCHECK_PORT) : MetaStoreTestUtils
             .findFreePort()));
     hiveConf.setLongVar(ConfVars.HIVE_SERVER2_MAX_START_ATTEMPTS, 3l);
     hiveConf.setTimeVar(ConfVars.HIVE_SERVER2_SLEEP_INTERVAL_BETWEEN_START_ATTEMPTS, 10,
@@ -381,7 +381,7 @@ public class MiniHS2 extends AbstractHiveService {
     hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_PORT, getBinaryPort());
     hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT, getHttpPort());
     hiveConf.setIntVar(ConfVars.HIVE_SERVER2_WEBUI_PORT, getWebPort());
-    hiveConf.setIntVar(ConfVars.HIVE_SERVER2_HA_HEALTHCHECK_PORT, getHealthCheckHAPort());
+    hiveConf.setIntVar(ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_HEALTHCHECK_PORT, getHealthCheckHAPort());
 
     Path scratchDir = new Path(baseFsDir, "scratch");
     // Create root scratchdir with write all, so that user impersonation has no issues.

@@ -403,7 +403,8 @@ public class HiveServer2 extends CompositeService {
             // Set the default JspFactory to avoid NPE while opening the home page
             JspFactory.setDefaultFactory(new org.apache.jasper.runtime.JspFactoryImpl());
           }
-          HttpServer.Builder builder = initBuilder(webHost, webUIPort, "hiveserver2", "/", hiveConf);
+          HttpServer.Builder builder = createHttpServerBuilder(webHost, webUIPort, "hiveserver2", "/", 
+              hiveConf, cliService, pamAuthenticator);
           if (serviceDiscovery && activePassiveHA) {
             addHAContextAttributes(builder, hiveConf);
             builder.addServlet("leader", HS2LeadershipStatus.class);
@@ -459,14 +460,14 @@ public class HiveServer2 extends CompositeService {
   private void addHAContextAttributes(HttpServer.Builder builder, HiveConf hiveConf) {
     builder.setContextAttribute("hs2.isLeader", isLeader);
     builder.setContextAttribute("hs2.failover.callback", new FailoverHandlerCallback(hs2HARegistry));
-    builder.setContextAttribute("hiveconf", hiveConf);
   }
   
-  private HttpServer.Builder initBuilder(String webHost, int port, String name, String contextPath, HiveConf hiveConf) throws IOException {
+  private static HttpServer.Builder createHttpServerBuilder(String webHost, int port, String name, String contextPath,
+      HiveConf hiveConf, CLIService cliService, PamAuthenticator pamAuthenticator) throws IOException {
     HttpServer.Builder builder = new HttpServer.Builder(name);
-    builder.setPort(port);
     builder.setConf(hiveConf);
     builder.setHost(webHost);
+    builder.setPort(port);
     builder.setContextPath(contextPath);
     builder.setMaxThreads(hiveConf.getIntVar(ConfVars.HIVE_SERVER2_WEBUI_MAX_THREADS));
     builder.setAdmins(hiveConf.getVar(ConfVars.USERS_IN_ADMIN_ROLE));
@@ -519,7 +520,7 @@ public class HiveServer2 extends CompositeService {
       LOG.info("CORS enabled - allowed-origins: {} allowed-methods: {} allowed-headers: {}", allowedOrigins,
           allowedMethods, allowedHeaders);
     }
-    if(hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_XFRAME_ENABLED)){
+    if(hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_XFRAME_ENABLED)) {
       builder.configureXFrame(true).setXFrameOption(hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_XFRAME_VALUE));
     }
     if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_PAM)) {
@@ -544,11 +545,12 @@ public class HiveServer2 extends CompositeService {
   private void initHAHealthChecker(HttpServer webServer, HiveConf hiveConf) throws IOException {
     if (serviceDiscovery && activePassiveHA) {
       String webHost = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_BIND_HOST);
-      int healthCheckPort = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_HA_HEALTHCHECK_PORT);
-      HttpServer.Builder builder = initBuilder(webHost, healthCheckPort, "health-ha", "/health-ha", hiveConf);
+      int healthCheckPort = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_HEALTHCHECK_PORT);
+      HttpServer.Builder builder = createHttpServerBuilder(webHost, healthCheckPort, "health-ha", 
+          "/health-ha", hiveConf, cliService, pamAuthenticator);
       addHAContextAttributes(builder, hiveConf);
       builder.addServlet("leader", HS2HAHealthChecker.class);
-      webServer.addWebApp(builder); 
+      webServer.createAndAddWebApp(builder); 
     }
   }
 

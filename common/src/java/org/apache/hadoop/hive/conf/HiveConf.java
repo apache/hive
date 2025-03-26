@@ -3979,7 +3979,6 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_WEBUI_BIND_HOST("hive.server2.webui.host", "0.0.0.0", "The host address the HiveServer2 WebUI will listen on"),
     HIVE_SERVER2_WEBUI_PORT("hive.server2.webui.port", 10002, "The port the HiveServer2 WebUI will listen on. This can be"
         + "set to 0 or a negative integer to disable the web UI"),
-    HIVE_SERVER2_HA_HEALTHCHECK_PORT("hive.server2.ha.healthcheck.port", 11002, "The port the HiveServer2 health-ha web app will listen on"),
     HIVE_SERVER2_WEBUI_MAX_THREADS("hive.server2.webui.max.threads", 50, "The max HiveServer2 WebUI threads"),
     HIVE_SERVER2_WEBUI_USE_SSL("hive.server2.webui.use.ssl", false,
         "Set this to true for using SSL encryption for HiveServer2 WebUI."),
@@ -4057,6 +4056,8 @@ public class HiveConf extends Configuration {
       "hs2ActivePassiveHA",
       "When HiveServer2 Active/Passive High Availability is enabled, uses this namespace for registering HS2\n" +
         "instances with zookeeper"),
+    HIVE_SERVER2_ACTIVE_PASSIVE_HA_HEALTHCHECK_PORT("hive.server2.active.passive.ha.healthcheck.port", 11002, 
+        "The port the HiveServer2 health-ha web app will listen on"),
     HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE("hive.server2.tez.interactive.queue", "",
         "A single YARN queues to use for Hive Interactive sessions. When this is specified,\n" +
         "workload management is enabled and used for these sessions."),
