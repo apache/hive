@@ -258,29 +258,6 @@ public abstract class JDBCExpandExpressionsRule extends RelOptRule {
       
       return expression.accept(RexUtil.searchShuttle(rexBuilder, null, -1));
     }
-
-    private RexNode transformIntoOrAndClause(RexBuilder rexBuilder, RexCall expression) {
-      assert expression.getKind() == SqlKind.IN;
-
-      if (expression.getOperands().get(0).getKind() != SqlKind.ROW) {
-        // Nothing to do, return expression
-        return expression;
-      }
-
-      final List<RexNode> disjuncts = RexNodeConverter.transformInToOrOperands(
-          expression.getOperands(), rexBuilder);
-      if (disjuncts == null) {
-        // We could not execute transformation, return expression
-        return expression;
-      }
-
-      if (disjuncts.size() > 1) {
-        return rexBuilder.makeCall(SqlStdOperatorTable.OR, disjuncts);
-      } else {
-        return disjuncts.get(0);
-      }
-    }
-
   }
 
 
