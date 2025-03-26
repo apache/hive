@@ -67,6 +67,7 @@ public class TestHiveMetaStoreChecker {
   private IMetaStoreClient msc;
   private FileSystem fs;
   private HiveMetaStoreChecker checker = null;
+  private HiveMetaStoreChecker customChecker = null;
 
   private final String catName = "hive";
   private final String dbName = "testhivemetastorechecker_db";
@@ -91,7 +92,6 @@ public class TestHiveMetaStoreChecker {
     conf.set(MetastoreConf.ConfVars.FS_HANDLER_THREADS_COUNT.getVarname(), "15");
     conf.set(MetastoreConf.ConfVars.MSCK_PATH_VALIDATION.getVarname(), "throw");
     msc = new HiveMetaStoreClient(conf);
-    conf.set("hcat.dynamic.partitioning.custom.pattern","const/${partstate}/const2/${partid}-${partcity}");
     checker = new HiveMetaStoreChecker(msc, conf);
 
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
@@ -99,6 +99,10 @@ public class TestHiveMetaStoreChecker {
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     SessionState ss = SessionState.start(conf);
     ss.initTxnMgr(conf);
+
+    HiveConf customConf = new HiveConf(conf);
+    customConf.set("hcat.dynamic.partitioning.custom.pattern","const/${partstate}/const2/${partid}-${partcity}");
+    customChecker = new HiveMetaStoreChecker(msc, customConf);
 
     partCols = new ArrayList<>();
     partCols.add(new FieldSchema(partDateName, serdeConstants.STRING_TYPE_NAME, ""));
@@ -374,8 +378,7 @@ public class TestHiveMetaStoreChecker {
     fs.createNewFile(new Path(tablePath,"const/TX/const2/1-dallas/datafile"));
     fs.createNewFile(new Path(tablePath,"const/TX/const2/2-austin/datafile"));
     fs.createNewFile(new Path(tablePath,"const/NY/const2/1-newyork/datafile"));
-    hive.getConf().set("hcat.dynamic.partitioning.custom.pattern","const/${partstate}/const2/${partid}-${partcity}");
-    CheckResult result = checker.checkMetastore(null, dbName, externalTableName, null, null);
+    CheckResult result = customChecker.checkMetastore(null, dbName, externalTableName, null, null);
     assertEquals(7, result.getPartitionsNotInMs().size());
     //cleanup
     hive.dropTable(dbName, externalTableName);

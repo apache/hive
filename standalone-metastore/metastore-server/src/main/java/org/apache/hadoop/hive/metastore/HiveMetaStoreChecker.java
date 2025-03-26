@@ -22,7 +22,6 @@ import static org.apache.hadoop.hive.common.AcidConstants.DELETE_DELTA_PREFIX;
 import static org.apache.hadoop.hive.common.AcidConstants.DELTA_PREFIX;
 import static org.apache.hadoop.hive.common.AcidConstants.VISIBILITY_PREFIX;
 import static org.apache.hadoop.hive.metastore.PartFilterExprUtil.createExpressionProxy;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getAllPartitionsOf;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getDataLocation;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartColNames;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartCols;
@@ -61,9 +60,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
-import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.DynamicPartitioningCustomPattern;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetastoreException;
@@ -609,6 +606,9 @@ public class HiveMetaStoreChecker {
         throws IOException, MetastoreException {
       final Path currentPath = pd.p;
       final int currentDepth = pd.depth;
+      if (currentDepth == maxDepth && compiledCustomPattern == null) {
+        return currentPath;
+      }
       List<FileStatus> fileStatuses = new ArrayList<>();
       RemoteIterator<FileStatus> fileIterator =
           RemoteIterators.filteringRemoteIterator(fs.listStatusIterator(currentPath),
@@ -664,9 +664,6 @@ public class HiveMetaStoreChecker {
               pendingPaths.add(new PathDepthInfo(nextPath, currentDepth + 1));
             }
           }
-        }
-        if (currentDepth == maxDepth) {
-          return currentPath;
         }
       }
       return null;
