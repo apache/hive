@@ -1616,13 +1616,11 @@ public class MetaStoreServerUtils {
         throw new MetastoreException("Path " + relPath + "doesn't match custom partition pattern " + customPathPattern + "partitionPathFull: " + partitionPath);
       }
       StringBuilder resultBuilder = new StringBuilder();
-      for (int i = 0; i < patternPartCols.size(); i++) {
-        if (result == null) {
-          resultBuilder.append(patternPartCols.get(i)).append("=").append(pathMatcher.group(i + 1));
-        }
-        else {
-          resultBuilder.append(Path.SEPARATOR).append(patternPartCols.get(i)).append("=").append(pathMatcher.group(i+1));
-        }
+      if (patternPartCols.size() > 0) {
+        resultBuilder.append(patternPartCols.get(0)).append("=").append(pathMatcher.group(1));
+      }
+      for (int i = 1; i < patternPartCols.size(); i++) {
+        resultBuilder.append(Path.SEPARATOR).append(patternPartCols.get(i)).append("=").append(pathMatcher.group(i+1));
       }
       result = resultBuilder.toString();
     }
