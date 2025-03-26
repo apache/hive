@@ -487,7 +487,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
             LOG.info("Invoking KillQuery for " + queryId + ": " + reason);
             try {
               UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
-              DriverUtils.setUpSessionState(conf, ugi.getShortUserName());
+              DriverUtils.setUpAndStartSessionState(conf, ugi.getShortUserName());
               kq.killQuery(queryId, reason, toKill.getConf());
               addKillQueryResult(toKill, true);
               killCtx.killSessionFuture.set(true);

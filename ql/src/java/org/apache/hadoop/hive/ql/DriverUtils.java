@@ -90,11 +90,11 @@ public final class DriverUtils {
     }
   }
 
-  public static SessionState setUpSessionState(HiveConf conf) {
-    return setUpSessionState(conf, null);
+  public static SessionState setUpAndStartSessionState(HiveConf conf) {
+    return setUpAndStartSessionState(conf, null);
   }
 
-  public static SessionState setUpSessionState(HiveConf conf, String user) {
+  public static SessionState setUpAndStartSessionState(HiveConf conf, String user) {
     return setUpSessionState(conf, user, true);
   }
 

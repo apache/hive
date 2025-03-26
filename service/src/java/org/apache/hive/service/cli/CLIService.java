@@ -130,7 +130,7 @@ public class CLIService extends CompositeService implements ICLIService {
       MetaException {
     // authorization setup using SessionState should be revisited eventually, as
     // authorization and authentication are not session specific settings
-    SessionState ss = DriverUtils.setUpSessionState(newHiveConf);
+    SessionState ss = DriverUtils.setUpAndStartSessionState(newHiveConf);
     ss.applyAuthorizationPolicy();
   }
 

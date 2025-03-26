@@ -44,7 +44,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -341,6 +346,14 @@ public class SessionState implements ISessionAuthState {
    * It is required to exclude compaction related queries from all Ranger policies that would otherwise apply.
    */
   private boolean compaction = false;
+
+  // A thread-safe set to hold all active session states
+  private static final Set<SessionState> sessionStates = ConcurrentHashMap.newKeySet();
+
+  // Static block to add a single shutdown hook to clean up all session states
+  static {
+    ShutdownHookManager.addShutdownHook(SessionState::cleanUpAllSessionStates);
+  }
 
   public QueryState getQueryState(String queryId) {
     return queryStateMap.get(queryId);
@@ -669,8 +682,8 @@ public class SessionState implements ISessionAuthState {
   public static SessionState start(SessionState startSs) {
     start(startSs, false, null);
 
-    //add shutdown hook to clean up the session related directories and objects
-    startSs.addSessionStateShutdownHook();
+    // Register the session state in the centralized set
+    sessionStates.add(startSs);
 
     return startSs;
   }
@@ -1911,6 +1924,8 @@ public class SessionState implements ISessionAuthState {
   }
 
   public void close() throws IOException {
+    // de-register session state
+    sessionStates.remove(this);
     for (Closeable cleanupItem : cleanupItems) {
       try {
         cleanupItem.close();
@@ -1974,16 +1989,30 @@ public class SessionState implements ISessionAuthState {
     dynamicVars.clear();
   }
 
-  private void addSessionStateShutdownHook() {
-    // Added shutdown hook to close the session.
-    ShutdownHookManager.addShutdownHook(() -> {
+  private static void cleanUpAllSessionStates() {
+    ExecutorService cleanupExecutor = Executors.newCachedThreadPool();
+    try {
+      CompletableFuture<Void> allCleanupTasks = CompletableFuture.allOf(sessionStates.stream()
+              .map(sessionState -> CompletableFuture.runAsync(() -> {
+                  try {
+                      LOG.info("Closing session state: {}", sessionState.getSessionId());
+                      sessionState.close();
+                  } catch (IOException e) {
+                      throw new CompletionException(e);
+                  }
+              }, cleanupExecutor).exceptionally(e -> {
+                  LOG.error("Problem closing session state", e);
+                  return null;
+              })).toArray(CompletableFuture[]::new));
       try {
-        LOG.info("Closing session state: {}", getSessionId());
-        close();
-      } catch (IOException e) {
-        LOG.error("Problem closing session state", e);
+        allCleanupTasks.get(60, TimeUnit.SECONDS);
+      } catch (Exception e) {
+        LOG.error("Failed to close all session states", e);
       }
-    });
+    } finally {
+      // shutdown cleanup executor after all tasks finished/timeout
+      cleanupExecutor.shutdownNow();
+    }
   }
 
   private void clearReflectionUtilsCache() {

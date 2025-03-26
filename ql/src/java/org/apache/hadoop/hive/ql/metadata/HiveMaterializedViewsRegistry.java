@@ -170,7 +170,7 @@ public final class HiveMaterializedViewsRegistry {
     public void run() {
       PerfLogger perfLogger = SessionState.getPerfLogger();
       try {
-        DriverUtils.setUpSessionState(db.getConf());
+        DriverUtils.setUpAndStartSessionState(db.getConf());
         perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.MATERIALIZED_VIEWS_REGISTRY_REFRESH);
         if (initialized.get()) {
           for (Table mvTable : db.getAllMaterializedViewObjectsForRewriting()) {

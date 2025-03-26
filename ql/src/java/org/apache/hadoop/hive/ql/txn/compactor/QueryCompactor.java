@@ -77,7 +77,7 @@ public abstract class QueryCompactor implements Compactor {
     Util.overrideConfProps(conf, compactionInfo, tblProperties);
     
     String user = compactionInfo.runAs;
-    SessionState sessionState = DriverUtils.setUpSessionState(conf, user);
+    SessionState sessionState = DriverUtils.setUpAndStartSessionState(conf, user);
     sessionState.setCompaction(true);
     
     return sessionState;
