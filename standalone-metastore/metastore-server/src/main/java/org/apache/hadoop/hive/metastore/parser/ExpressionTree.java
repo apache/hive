@@ -51,6 +51,12 @@ public class ExpressionTree {
     AND,
     OR
   }
+  public static ExpressionTree fromString(String exprString) {
+    // Implement the logic to parse the string and create an ExpressionTree
+    ExpressionTree tree = new ExpressionTree();
+    // Parsing logic here
+    return tree;
+  }
 
   /** The operators supported. */
   public enum Operator {

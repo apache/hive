@@ -1279,6 +1279,12 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
+  public String getExprStringByExpr(String catName, String dbName, String tblName,
+      byte[] expr) throws MetaException, NoSuchObjectException {
+    return rawStore.getExprStringByExpr(catName, dbName, tblName,expr);
+  }
+
+  @Override
   public Table getTable(String catName, String dbName, String tblName, String validWriteIds) throws MetaException {
     return getTable(catName, dbName, tblName, null, -1);
   }

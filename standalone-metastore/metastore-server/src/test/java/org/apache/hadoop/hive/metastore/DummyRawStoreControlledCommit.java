@@ -532,6 +532,11 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
         return objectStore.getPartitionsByExpr(catName, dbName, tblName, result, args);
     }
 
+  @Override public String getExprStringByExpr(String catName, String dbName, String tblName, byte[] expr)
+      throws MetaException, NoSuchObjectException {
+    return objectStore.getExprStringByExpr(catName,dbName, tblName, expr);
+  }
+
   @Override
   public Table markPartitionForEvent(String catName, String dbName, String tblName,
       Map<String, String> partVals, PartitionEventType evtType)
