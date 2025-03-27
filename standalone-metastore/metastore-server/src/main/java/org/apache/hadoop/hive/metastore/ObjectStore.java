@@ -3342,8 +3342,8 @@ public class ObjectStore implements RawStore, Configurable {
     final boolean isEmptyFilter = exprBytes.length == 1 && exprBytes[0] == -1;
     ExpressionTree tmp = null;
     if (!isEmptyFilter) {
-      tmp = PartFilterExprUtil.makeExpressionTree(expressionProxy, exprBytes,
-          getDefaultPartitionName(defaultPartName), conf);
+      String exprString = PartFilterExprUtil.getExpressionString(expressionProxy, exprBytes, getDefaultPartitionName(defaultPartName), conf);
+      ExpressionTree exprTree = ExpressionTree.fromString(exprString);
     }
     final ExpressionTree exprTree = tmp;
     return new GetListHelper<String>(catName, dbName, tblName, true, true) {
@@ -4067,8 +4067,9 @@ public class ObjectStore implements RawStore, Configurable {
     assert result != null;
 
     byte[] expr = args.getExpr();
-    final ExpressionTree exprTree = expr.length != 0 ? PartFilterExprUtil.makeExpressionTree(
-          expressionProxy, expr, getDefaultPartitionName(args.getDefaultPartName()), conf) : ExpressionTree.EMPTY_TREE;
+    String exprString = expr.length != 0 ? PartFilterExprUtil.getExpressionString(
+            expressionProxy, expr, getDefaultPartitionName(args.getDefaultPartName()), conf) : "";
+    final ExpressionTree exprTree = exprString.isEmpty() ? ExpressionTree.EMPTY_TREE : ExpressionTree.fromString(exprString);
     final AtomicBoolean hasUnknownPartitions = new AtomicBoolean(false);
 
     catName = normalizeIdentifier(catName);
@@ -4614,9 +4615,16 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
+  public String getExprStringByExpr(String catName, String dbName, String tblName,
+      byte[] expr) throws MetaException, NoSuchObjectException {
+    return PartFilterExprUtil.getExpressionString(expressionProxy, expr, null, conf);
+  }
+
+  @Override
   public int getNumPartitionsByExpr(String catName, String dbName, String tblName,
                                     byte[] expr) throws MetaException, NoSuchObjectException {
-    final ExpressionTree exprTree = PartFilterExprUtil.makeExpressionTree(expressionProxy, expr, null, conf);
+    String exprString = PartFilterExprUtil.getExpressionString(expressionProxy, expr, null, conf);
+    final ExpressionTree exprTree = ExpressionTree.fromString(exprString);
     final byte[] tempExpr = expr; // Need to be final to pass it to an inner class
 
     catName = normalizeIdentifier(catName);

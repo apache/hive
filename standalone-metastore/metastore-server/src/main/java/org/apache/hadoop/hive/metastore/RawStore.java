@@ -869,6 +869,9 @@ public interface RawStore extends Configurable {
       List<Partition> result, GetPartitionsArgs args)
       throws TException;
 
+  String getExprStringByExpr(String catName, String dbName, String tblName,
+      byte[] expr) throws MetaException, NoSuchObjectException;
+
   /**
    * Get the number of partitions that match a provided SQL filter.
    * @param catName catalog name.
