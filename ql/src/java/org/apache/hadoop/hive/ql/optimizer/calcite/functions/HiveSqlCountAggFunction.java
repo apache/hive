@@ -25,6 +25,7 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlFunctionCategory;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlSplittableAggFunction;
@@ -36,10 +37,11 @@ import org.apache.calcite.sql.type.SqlOperandTypeInference;
 import org.apache.calcite.sql.type.SqlReturnTypeInference;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableIntList;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.google.common.collect.ImmutableList;
 
-public class HiveSqlCountAggFunction extends HiveSqlAggFunction implements CanAggregateDistinct {
+public class HiveSqlCountAggFunction extends SqlAggFunction implements CanAggregateDistinct {
 
   final boolean                isDistinct;
   final SqlReturnTypeInference returnTypeInference;
@@ -123,5 +125,11 @@ public class HiveSqlCountAggFunction extends HiveSqlAggFunction implements CanAg
           new HiveSqlSumEmptyIsZeroAggFunction(isDistinct, returnTypeInference, operandTypeInference, operandTypeChecker),
           false, ImmutableList.of(ordinal), -1, aggregateCall.type, aggregateCall.name);
     }
+  }
+
+  @Override
+  public @Nullable SqlAggFunction getRollup() {
+    return new HiveSqlSumEmptyIsZeroAggFunction(isDistinct(), getReturnTypeInference(), getOperandTypeInference(),
+        getOperandTypeChecker());
   }
 }

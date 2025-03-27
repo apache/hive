@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.functions;
 
+import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlFunctionCategory;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlSplittableAggFunction;
@@ -25,7 +26,7 @@ import org.apache.calcite.sql.type.SqlOperandTypeChecker;
 import org.apache.calcite.sql.type.SqlOperandTypeInference;
 import org.apache.calcite.sql.type.SqlReturnTypeInference;
 
-public class HiveSqlMinMaxAggFunction extends HiveSqlAggFunction {
+public class HiveSqlMinMaxAggFunction extends SqlAggFunction {
 
   public HiveSqlMinMaxAggFunction(SqlReturnTypeInference returnTypeInference,
       SqlOperandTypeInference operandTypeInference, SqlOperandTypeChecker operandTypeChecker, boolean isMin) {
@@ -44,5 +45,10 @@ public class HiveSqlMinMaxAggFunction extends HiveSqlAggFunction {
       return clazz.cast(SelfSplitter.INSTANCE);
     }
     return super.unwrap(clazz);
+  }
+
+  @Override
+  public SqlAggFunction getRollup() {
+    return this;
   }
 }

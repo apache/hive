@@ -32,7 +32,7 @@ import org.apache.calcite.sql.type.SqlReturnTypeInference;
  *
  * Example: the SUM function is a great example; since SUM of SUM -s is the overall sum.
  */
-public class HiveMergeableAggregate extends HiveSqlAggFunction  {
+public class HiveMergeableAggregate extends SqlAggFunction  {
 
   private SqlAggFunction mergeAgg;
 
@@ -59,7 +59,8 @@ public class HiveMergeableAggregate extends HiveSqlAggFunction  {
 
   }
 
-  public SqlAggFunction getMergeAggFunction() {
+  @Override
+  public SqlAggFunction getRollup() {
     return mergeAgg;
   }
 
