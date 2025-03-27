@@ -138,11 +138,6 @@ public class HiveMaterializedViewRule {
     protected SqlFunction getFloorSqlFunction(TimeUnitRange flag) {
       return HiveRelBuilder.getFloorSqlFunction(flag);
     }
-
-    @Override
-    public SqlAggFunction getRollup(SqlAggFunction aggregation) {
-      return HiveRelBuilder.getRollup(aggregation);
-    }
   }
 
   protected static class HiveMaterializedViewOnlyAggregateRule extends MaterializedViewOnlyAggregateRule {
@@ -154,11 +149,6 @@ public class HiveMaterializedViewRule {
     @Override
     protected SqlFunction getFloorSqlFunction(TimeUnitRange flag) {
       return HiveRelBuilder.getFloorSqlFunction(flag);
-    }
-
-    @Override
-    public SqlAggFunction getRollup(SqlAggFunction aggregation) {
-      return HiveRelBuilder.getRollup(aggregation);
     }
   }
 
