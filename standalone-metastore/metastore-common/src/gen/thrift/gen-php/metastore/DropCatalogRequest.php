@@ -40,7 +40,7 @@ class DropCatalogRequest
     /**
      * @var bool
      */
-    public $ifExists = null;
+    public $ifExists = true;
 
     public function __construct($vals = null)
     {

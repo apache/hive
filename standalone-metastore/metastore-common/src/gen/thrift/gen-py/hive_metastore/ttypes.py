@@ -4110,7 +4110,7 @@ class DropCatalogRequest(object):
     """
 
 
-    def __init__(self, name=None, ifExists=None,):
+    def __init__(self, name=None, ifExists=True,):
         self.name = name
         self.ifExists = ifExists
 
@@ -32486,7 +32486,7 @@ all_structs.append(DropCatalogRequest)
 DropCatalogRequest.thrift_spec = (
     None,  # 0
     (1, TType.STRING, 'name', 'UTF8', None, ),  # 1
-    (2, TType.BOOL, 'ifExists', None, None, ),  # 2
+    (2, TType.BOOL, 'ifExists', None, True, ),  # 2
 )
 all_structs.append(Database)
 Database.thrift_spec = (
