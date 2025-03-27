@@ -536,4 +536,5 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
   private String getWindowColumnAlias() {
     return "$win$_col_" + (uniqueCounter++);
   }
+
 }
