@@ -19,12 +19,10 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelOptUtil.InputReferencedVisitor;
@@ -38,7 +36,6 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
-import org.apache.calcite.rex.RexVisitor;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
@@ -51,6 +48,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.SearchTransformer;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -104,9 +102,8 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     }
 
     Double selectivity;
-    SqlKind op = getOp(call);
 
-    switch (op) {
+    switch (call.getKind()) {
     case AND: {
       selectivity = computeConjunctionSelectivity(call);
       break;
@@ -119,13 +116,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
 
     case NOT:
       if (call.getOperands().get(0).isA(SqlKind.SEARCH)) {
-        return new SearchToFilterSelectivityTransformer(rexBuilder, (RexCall) call.getOperands().get(0),
-            new FilterSelectivityEstimator(childRel, mq) {
-              @Override
-              public Double visitLiteral(RexLiteral literal) {
-                return 1.0D;
-              }
-            }, true).transform();
+        return new SearchTransformer(rexBuilder, (RexCall) call.getOperands().get(0), true).transform().accept(this);
       } else {
         selectivity = computeNotEqualitySelectivity(call);
       }
@@ -164,7 +155,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     case GREATER_THAN_OR_EQUAL:
     case LESS_THAN:
     case GREATER_THAN: {
-      selectivity = computeRangePredicateSelectivity(call, op);
+      selectivity = computeRangePredicateSelectivity(call, call.getKind());
       break;
     }
 
@@ -173,29 +164,25 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       break;
 
     case SEARCH:
-      return new SearchToFilterSelectivityTransformer(rexBuilder, call,
-          new FilterSelectivityEstimator(childRel, mq) {
-            @Override
-            public Double visitLiteral(RexLiteral literal) {
-              return 1.0D;
-            }
-          }).transform();
+      return new SearchTransformer<>(rexBuilder, call).transform().accept(this);
     default:
-      selectivity = computeFunctionSelectivity(call);
-    }
-
-    return selectivity;
-  }
-  
-  private Double computeSelectivityOfSearchPoints(RexCall call, int points) {
-    Double selectivity = computeFunctionSelectivity(call);
-    if (selectivity != null) {
-      selectivity = selectivity * points;
-      if (selectivity <= 0.0) {
-        selectivity = 0.10;
-      } else if (selectivity >= 1.0) {
-        selectivity = 1.0;
+      if (HiveIn.INSTANCE.equals(call.op)) {
+        // TODO: 1) check for duplicates 2) We assume in clause values to be
+        // present in NDV which may not be correct (Range check can find it) 3) We
+        // assume values in NDV set is uniformly distributed over col values
+        // (account for skewness - histogram).
+        selectivity = computeFunctionSelectivity(call);
+        if (selectivity != null) {
+          selectivity = selectivity * (call.operands.size() - 1);
+          if (selectivity <= 0.0) {
+            selectivity = 0.10;
+          } else if (selectivity >= 1.0) {
+            selectivity = 1.0;
+          }
+        }
+        break;
       }
+      selectivity = computeFunctionSelectivity(call);
     }
     
     return selectivity;
@@ -372,18 +359,12 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * @return
    */
   private Double computeDisjunctionSelectivity(RexCall call) {
-    return computeDisjunctionSelectivity(
-        call.getOperands().stream().map(op -> op.accept(this)).collect(Collectors.toList())
-    );
-  }
-
-  private Double computeDisjunctionSelectivity(List<Double> selectivities) {
     Double tmpCardinality;
     Double tmpSelectivity;
     double selectivity = 1;
 
-    for (Double d : selectivities) {
-      tmpSelectivity = d;
+    for (RexNode dje : call.getOperands()) {
+      tmpSelectivity = dje.accept(this);
       if (tmpSelectivity == null) {
         tmpSelectivity = 0.99;
       }
@@ -413,20 +394,17 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * @return
    */
   private Double computeConjunctionSelectivity(RexCall call) {
-    return computeConjunctionSelectivity(
-        call.getOperands().stream().map(op -> op.accept(this)).collect(Collectors.toList())
-    );
-  }
-  
-  private Double computeConjunctionSelectivity(List<Double> selectivities) {
-    double result = 1;
-    for (Double s: selectivities) {
-      if (s != null) {
-        result *= s;
+    Double tmpSelectivity;
+    double selectivity = 1;
+
+    for (RexNode cje : call.getOperands()) {
+      tmpSelectivity = cje.accept(this);
+      if (tmpSelectivity != null) {
+        selectivity *= tmpSelectivity;
       }
     }
-    
-    return result;
+
+    return selectivity;
   }
 
   /**
@@ -501,21 +479,6 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       return table.containsPartitionColumnsOnly(cols);
     }
     return false;
-  }
-
-  private SqlKind getOp(RexCall call) {
-    SqlKind op = call.getKind();
-
-    if (call.getKind().equals(SqlKind.OTHER_FUNCTION)
-        && SqlTypeUtil.inBooleanFamily(call.getType())) {
-      SqlOperator sqlOp = call.getOperator();
-      String opName = (sqlOp != null) ? sqlOp.getName() : "";
-      if (opName.equalsIgnoreCase("in")) {
-        op = SqlKind.IN;
-      }
-    }
-
-    return op;
   }
 
   @Override
@@ -625,43 +588,5 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    */
   public static boolean isHistogramAvailable(ColStatistics colStats) {
     return colStats != null && colStats.getHistogram() != null && colStats.getHistogram().length > 0;
-  }
-  
-  private class SearchToFilterSelectivityTransformer extends SearchTransformer<Double> {
-    private final RexCall search;
-
-    public SearchToFilterSelectivityTransformer(
-        RexBuilder rexBuilder, RexCall search, RexVisitor<Double> rexVisitor, boolean negate) {
-      super(rexBuilder, search, rexVisitor, negate);
-      this.search = search;
-    }
-
-    public SearchToFilterSelectivityTransformer(
-        RexBuilder rexBuilder, RexCall search, RexVisitor<Double> rexVisitor) {
-      this(rexBuilder, search, rexVisitor, false);
-    }
-
-    @Override
-    protected Double transformInOperands(List<Double> inNodes) {
-      return negate ?
-          computeNotEqualitySelectivity(search) :
-          computeSelectivityOfSearchPoints(search, inNodes.size() - 1);
-    }
-
-    @Override
-    protected Double transformAllNodes() {
-      return negate ? computeConjunctionSelectivity(results) : computeDisjunctionSelectivity(results);
-    }
-
-    @Override
-    protected Double transformWithNullAs(Double node) {
-      if (nullAsNode == null) {
-        return node;
-      }
-      
-      return nullAsTrue ? 
-          computeDisjunctionSelectivity(Arrays.asList(nullAsNode, node)):
-          computeConjunctionSelectivity(Arrays.asList(nullAsNode, node));
-    }
   }
 }

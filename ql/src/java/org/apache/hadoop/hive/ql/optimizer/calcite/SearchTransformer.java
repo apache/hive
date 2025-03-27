@@ -23,31 +23,31 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUnknownAs;
-import org.apache.calcite.rex.RexVisitor;
+import org.apache.calcite.rex.RexUtil;
+import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.util.RangeSets;
 import org.apache.calcite.util.Sarg;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-public abstract class SearchTransformer<R> {
+public class SearchTransformer <C extends Comparable<C>> {
   private final RexBuilder rexBuilder;
-  private final RexVisitor<R> rexVisitor;
   private final RexNode ref;
-  private final Sarg<?> sarg;
+  private final Sarg<C> sarg;
   protected final RelDataType type;
-  protected List<R> results;
   protected final boolean negate;
-  protected R nullAsNode;
+  protected RexNode nullAsNode;
   protected boolean nullAsTrue;
 
-  protected SearchTransformer(RexBuilder rexBuilder, RexCall search, RexVisitor<R> rexVisitor, boolean negate) {
+  public SearchTransformer(RexBuilder rexBuilder, RexCall search, boolean negate) {
     this.rexBuilder = rexBuilder;
-    this.rexVisitor = rexVisitor;
     ref = search.getOperands().get(0);
     this.negate = negate;
     RexLiteral literal = (RexLiteral) search.operands.get(1);
@@ -57,32 +57,46 @@ public abstract class SearchTransformer<R> {
     nullAsTrue = true;
   }
 
-  protected SearchTransformer(RexBuilder rexBuilder, RexCall search, RexVisitor<R> rexVisitor) {
-    this(rexBuilder, search, rexVisitor, false);
+  public SearchTransformer(RexBuilder rexBuilder, RexCall search) {
+    this(rexBuilder, search, false);
   }
 
-  public R transform() {
+  public RexNode transform() {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.SEARCH_TRANSFORMER);
 
-    try {
-      RangeConverter consumer = new RangeConverter<>(rexBuilder, type, ref, rexVisitor, negate);
-      RangeSets.forEach(sarg.rangeSet, consumer);
-      computeNullAsNode();
+    RangeConverter<C> consumer = new RangeConverter<>(rexBuilder, type, ref, negate);
+    RangeSets.forEach(sarg.rangeSet, consumer);
+    computeNullAsNode();
 
-      results = new ArrayList<>();
-      if (!consumer.inNodes.isEmpty()) {
-        results.add(transformInOperands((List<R>) consumer.inNodes));
+    List<RexNode> results = new ArrayList<>();
+    switch (consumer.inNodes.size()) {
+    case 0:
+      break;
+    case 1:
+      SqlOperator op = negate ? SqlStdOperatorTable.NOT_EQUALS : SqlStdOperatorTable.EQUALS;
+      results.add(rexBuilder.makeCall(op, ref, consumer.inNodes.get(0)));
+      break;
+    default:
+      List<RexNode> operands = new ArrayList<>(consumer.inNodes.size() + 1);
+      operands.add(ref);
+      operands.addAll(consumer.inNodes);
+      RexNode inCall = rexBuilder.makeCall(HiveIn.INSTANCE, operands);
+      if (negate) {
+        inCall = rexBuilder.makeCall(SqlStdOperatorTable.NOT, inCall);
       }
-      results.addAll(consumer.nodes);
-
-      if (results.size() == 1) {
-        return transformWithNullAs(results.get(0));
-      }
-      return transformWithNullAs(transformAllNodes());
-    } finally {
-      perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.SEARCH_TRANSFORMER);
+      results.add(inCall);
     }
+    results.addAll(consumer.nodes);
+    RexNode x =
+        negate ? RexUtil.composeConjunction(rexBuilder, results) : RexUtil.composeDisjunction(rexBuilder, results);
+
+    if (nullAsNode != null) {
+      x = nullAsTrue ? RexUtil.composeDisjunction(rexBuilder, Arrays.asList(nullAsNode, x))
+          : RexUtil.composeConjunction(rexBuilder, Arrays.asList(nullAsNode, x));
+    }
+    perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.SEARCH_TRANSFORMER);
+    return x;
   }
 
   private void computeNullAsNode() {
@@ -105,13 +119,7 @@ public abstract class SearchTransformer<R> {
     }
 
     assert call != null;
-    nullAsNode = call.accept(rexVisitor);
+    nullAsNode = call;
   }
-
-  protected abstract R transformInOperands(List<R> inNodes);
-
-  protected abstract R transformAllNodes();
-
-  protected abstract R transformWithNullAs(R node);
 }
 
