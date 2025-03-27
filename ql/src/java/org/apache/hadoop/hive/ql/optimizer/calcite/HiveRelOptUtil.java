@@ -67,6 +67,7 @@ import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.mapping.Mappings;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.optimizer.graph.DiGraph;
@@ -1287,6 +1288,10 @@ public class HiveRelOptUtil extends RelOptUtil {
 
   /**
    * Merge IN clauses, when possible.
+   * TODO Consider dropping or rewriting this class
+   * The code in this class relies on the {@link HiveIn} operator that is no longer
+   * present during rule application so most of the code here doesn't do anything.
+   * If we want to make it useful as it is probably we need to handle the SEARCH operator.
    */
   public static class RexMergeInClause extends RexShuttle {
     private final RexBuilder rexBuilder;
@@ -1318,7 +1323,7 @@ public class HiveRelOptUtil extends RelOptUtil {
 
       for (int i = 0; i < operands.size(); i++) {
         RexNode operand = operands.get(i);
-        if (operand.getKind() == SqlKind.IN) {
+        if (operand instanceof RexCall && HiveIn.INSTANCE.equals(((RexCall) operand).op)) {
           RexCall inCall = (RexCall) operand;
           if (!HiveCalciteUtil.isDeterministic(inCall.getOperands().get(0))) {
             continue;
@@ -1453,7 +1458,7 @@ public class HiveRelOptUtil extends RelOptUtil {
       final Multimap<RexNode,SimilarRexNodeElement> inLHSExprToRHSExprs = LinkedHashMultimap.create();
       for (int i = 0; i < operands.size(); i++) {
         RexNode operand = operands.get(i);
-        if (operand.getKind() == SqlKind.IN) {
+        if (operand instanceof RexCall && HiveIn.INSTANCE.equals(((RexCall) operand).op)) {
           RexCall inCall = (RexCall) operand;
           if (!HiveCalciteUtil.isDeterministic(inCall.getOperands().get(0))) {
             continue;

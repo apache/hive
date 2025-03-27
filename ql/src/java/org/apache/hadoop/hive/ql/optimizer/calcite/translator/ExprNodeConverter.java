@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 import com.google.common.base.Preconditions;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -64,7 +62,6 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.SearchTransformer;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.RexVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.Schema;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -87,11 +84,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNot;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -209,15 +201,13 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       }
     } else if (call.getKind() == SqlKind.NOT) {
       if (call.getOperands().get(0).isA(SqlKind.SEARCH)) {
-        return new SearchToExprNodeDescTransformer(
-            rexBuilder, (RexCall) call.getOperands().get(0), this, true
-        ).transform();
+        return new SearchTransformer<>(rexBuilder, (RexCall) call.getOperands().get(0), true).transform().accept(this);
       }
       for (RexNode operand : call.operands) {
         args.add(operand.accept(this));
       }
     } else if (call.getKind() == SqlKind.SEARCH) {
-      return new SearchToExprNodeDescTransformer(rexBuilder, call, this).transform();
+      return new SearchTransformer<>(rexBuilder, call).transform().accept(this);
     } else {
       for (RexNode operand : call.operands) {
         args.add(operand.accept(this));
@@ -545,60 +535,5 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
 
   private String getWindowColumnAlias() {
     return "$win$_col_" + (uniqueCounter++);
-  }
-  
-  private static class SearchToExprNodeDescTransformer extends SearchTransformer<ExprNodeDesc> {
-
-    public SearchToExprNodeDescTransformer(
-        RexBuilder rexBuilder, RexCall search, org.apache.calcite.rex.RexVisitor<ExprNodeDesc> rexVisitor) {
-      this(rexBuilder, search, rexVisitor, false);
-    }
-
-    public SearchToExprNodeDescTransformer(
-        RexBuilder rexBuilder, RexCall search, org.apache.calcite.rex.RexVisitor<ExprNodeDesc> rexVisitor, 
-        boolean negate) {
-      super(rexBuilder, search, rexVisitor, negate);
-    }
-
-    @Override
-    protected ExprNodeDesc transformInOperands(List<ExprNodeDesc> inNodes) {
-      try {
-        if (inNodes.size() == 2) {
-          return ExprNodeGenericFuncDesc
-              .newInstance(negate ? new GenericUDFOPNotEqual() : new GenericUDFOPEqual(), inNodes);
-        }
-        GenericUDF hiveInUdf = SqlFunctionConverter.getHiveUDF(HiveIn.INSTANCE, type, inNodes.size());
-        ExprNodeGenericFuncDesc inFuncDesc = ExprNodeGenericFuncDesc.newInstance(hiveInUdf, inNodes);
-        return negate ?
-            ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPNot(), Collections.singletonList(inFuncDesc)) :
-            inFuncDesc;
-      } catch (UDFArgumentException e) {
-        throw new RuntimeException("Failed to instantiate udf: ", e);
-      }
-    }
-
-    @Override
-    protected ExprNodeDesc transformAllNodes() {
-      try {
-        return ExprNodeGenericFuncDesc.newInstance(negate? new GenericUDFOPAnd(): new GenericUDFOPOr(), results);
-      } catch (UDFArgumentException e) {
-        throw new RuntimeException("Failed to instantiate udf: ", e);
-      }
-    }
-
-    @Override
-    protected ExprNodeDesc transformWithNullAs(ExprNodeDesc node) {
-      if (nullAsNode == null) {
-        return node;
-      }
-      try {
-        return ExprNodeGenericFuncDesc
-            .newInstance(
-                nullAsTrue ? new GenericUDFOPOr(): new GenericUDFOPAnd(), Arrays.asList(nullAsNode, node)
-            );
-      } catch (UDFArgumentException e) {
-        throw new RuntimeException("Failed to instantiate udf: ", e);
-      }
-    }
   }
 }

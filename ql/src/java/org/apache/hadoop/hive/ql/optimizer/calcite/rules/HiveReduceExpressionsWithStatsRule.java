@@ -121,6 +121,7 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
 
     @Override
     public RexNode visitCall(RexCall call) {
+      // TODO Check for test coverage and regressions on HIVE-13269 after intro of SEARCH
       if (COMPARISON.contains(call.getOperator().getKind())) {
         RexInputRef ref = null;
         RexLiteral literal = null;
@@ -156,7 +157,8 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
 
         // We cannot apply the reduction
         return call;
-      } else if (call.getOperator().getKind() == SqlKind.IN) {
+      } else if (HiveIn.INSTANCE.equals(call.op)) {
+        // TODO Consider removing this code since it is unreachable right now
         if (call.getOperands().get(0) instanceof RexInputRef) {
           // Ref
           RexInputRef ref = (RexInputRef) call.getOperands().get(0);

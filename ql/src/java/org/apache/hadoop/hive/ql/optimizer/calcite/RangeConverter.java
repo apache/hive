@@ -22,7 +22,6 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
-import org.apache.calcite.rex.RexVisitor;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
@@ -33,22 +32,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-class RangeConverter<C extends Comparable<C>, R> implements RangeSets.Consumer<C> {
+class RangeConverter<C extends Comparable<C>> implements RangeSets.Consumer<C> {
 
   protected final RexBuilder rexBuilder;
   protected final RelDataType type;
   protected final RexNode ref;
-  protected final RexVisitor<R> rexVisitor;
   protected final boolean negate;
-  public final List<R> inNodes;
-  public final List<R> nodes;
+  public final List<RexNode> inNodes;
+  public final List<RexNode> nodes;
 
-  public RangeConverter(RexBuilder rexBuilder, RelDataType type, RexNode ref, RexVisitor<R> rexVisitor,
-      boolean negate) {
+  public RangeConverter(RexBuilder rexBuilder, RelDataType type, RexNode ref, boolean negate) {
     this.rexBuilder = rexBuilder;
     this.type = type;
     this.ref = ref;
-    this.rexVisitor = rexVisitor;
     this.inNodes = new ArrayList<>();
     this.nodes = new ArrayList<>();
     this.negate = negate;
@@ -74,11 +70,11 @@ class RangeConverter<C extends Comparable<C>, R> implements RangeSets.Consumer<C
       }
     }
     assert call != null;
-    nodes.add(call.accept(rexVisitor));
+    nodes.add(call);
   }
 
   public void all() {
-    nodes.add(rexBuilder.makeLiteral(!negate).accept(rexVisitor));
+    nodes.add(rexBuilder.makeLiteral(!negate));
   }
 
   @Override
@@ -103,16 +99,13 @@ class RangeConverter<C extends Comparable<C>, R> implements RangeSets.Consumer<C
 
   @Override
   public void singleton(C value) {
-    if (inNodes.isEmpty()) {
-      inNodes.add(ref.accept(rexVisitor));
-    }
-    inNodes.add(rexBuilder.makeLiteral(value, type, true, true).accept(rexVisitor));
+    inNodes.add(rexBuilder.makeLiteral(value, type, true, true));
   }
 
   @Override
   public void closed(C lower, C upper) {
     // when `negate` is true, we want to create NOT BETWEEN, so we set `isNotBetween` to `negate` (true)
-    nodes.add(makeHiveBetween(rexBuilder, negate, ref, type, lower, upper).accept(rexVisitor));
+    nodes.add(makeHiveBetween(rexBuilder, negate, ref, type, lower, upper));
   }
 
   @Override

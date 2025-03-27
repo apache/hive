@@ -175,6 +175,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvid
 import org.apache.hadoop.hive.ql.optimizer.calcite.RuleEventLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.CteRuleConfig;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSortLimitRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveInToSearchRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveLoptOptimizeJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveEmptySingleRules;
@@ -1706,6 +1707,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
           materializationValidator.getAutomaticRewritingValidationResult());
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.VALIDATE_QUERY_MATERIALIZATION);
 
+      // Apply transformations to replace IN with SEARCH in the plan
+      // From now onwards, and during the subsequent phases IN disappears completely from the plan.
+      calcitePlan = applyInSearchTransforms(calcitePlan, mdProvider.getMetadataProvider(), executorProvider);
+
       // 2. Apply pre-join order optimizations
       perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.PREJOIN_ORDERING);
       calcitePlan = applyPreJoinOrderingTransforms(calcitePlan, mdProvider.getMetadataProvider(), executorProvider);
@@ -1772,6 +1777,21 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       
       return calcitePlan;
+    }
+
+    private RelNode applyInSearchTransforms(RelNode basePlan, RelMetadataProvider mdProvider, RexExecutor executor) {
+      HepProgramBuilder program = new HepProgramBuilder();
+      generatePartialProgram(program, true, HepMatchOrder.DEPTH_FIRST,
+          new HiveInToSearchRule.Config().withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+              .withOperandSupplier(b -> b.operand(HiveFilter.class).anyInputs())
+              .withDescription("HiveInToSearchFilterRule").toRule(),
+          new HiveInToSearchRule.Config().withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+              .withOperandSupplier(b -> b.operand(HiveJoin.class).anyInputs())
+              .withDescription("HiveInToSearchJoinRule").toRule(),
+          new HiveInToSearchRule.Config().withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+              .withOperandSupplier(b -> b.operand(HiveProject.class).anyInputs())
+              .withDescription("HiveInToSearchProjectRule").toRule());
+      return executeProgram(basePlan, program.build(), mdProvider, executor);
     }
     
     private RelNode applyRulesToReduceComplexityOfSearchOperators(

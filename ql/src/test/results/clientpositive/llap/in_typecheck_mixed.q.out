@@ -35,9 +35,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: t
-          filterExpr: ((a = 'x') or (UDFToDouble(a)) IN (1.0D, 2.0D)) (type: boolean)
+          filterExpr: ((UDFToDouble(a)) IN (1.0D, 2.0D) or (a = 'x')) (type: boolean)
           Filter Operator
-            predicate: ((a = 'x') or (UDFToDouble(a)) IN (1.0D, 2.0D)) (type: boolean)
+            predicate: ((UDFToDouble(a)) IN (1.0D, 2.0D) or (a = 'x')) (type: boolean)
             Select Operator
               expressions: a (type: string)
               outputColumnNames: _col0
