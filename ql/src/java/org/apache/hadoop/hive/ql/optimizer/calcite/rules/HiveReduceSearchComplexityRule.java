@@ -21,6 +21,7 @@ import com.google.common.collect.BoundType;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptRuleOperand;
+import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexLiteral;
@@ -49,38 +50,42 @@ public class HiveReduceSearchComplexityRule extends RelOptRule {
 
   @Override
   public void onMatch(RelOptRuleCall call) {
-    this.rexBuilder = call.rel(0).getCluster().getRexBuilder();
-    call.transformTo(call.rel(0).accept(
+    RelNode oNode = call.rel(0);
+    this.rexBuilder = oNode.getCluster().getRexBuilder();
+    RelNode tNode = oNode.accept(
         new RexShuttle() {
           
           @Override
           public RexCall visitCall(RexCall call) {
             switch (call.getOperator().getKind()) {
-              case SEARCH:
-                RexNode ref = call.getOperands().get(0);
-                RexLiteral literal = (RexLiteral) call.operands.get(1);
-                Sarg<?> sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
+            case SEARCH:
+              RexNode ref = call.getOperands().get(0);
+              RexLiteral literal = (RexLiteral) call.operands.get(1);
+              Sarg<?> sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
 
-                if (isNegationBetter(sarg)) {
-                  return (RexCall) rexBuilder.makeCall(
-                      SqlStdOperatorTable.NOT,
-                      Collections.singletonList(
-                          rexBuilder.makeCall(
-                              SqlStdOperatorTable.SEARCH,
-                              ref,
-                              rexBuilder.makeSearchArgumentLiteral(sarg.negate(), literal.getType())
-                          )
-                      )
-                  );
-                } else {
-                  return call;
-                }
-              default:
-                return (RexCall) super.visitCall(call);
+              if (isNegationBetter(sarg)) {
+                return (RexCall) rexBuilder.makeCall(
+                    SqlStdOperatorTable.NOT,
+                    Collections.singletonList(
+                        rexBuilder.makeCall(
+                            SqlStdOperatorTable.SEARCH,
+                            ref,
+                            rexBuilder.makeSearchArgumentLiteral(sarg.negate(), literal.getType())
+                        )
+                    )
+                );
+              } else {
+                return call;
+              }
+            default:
+              return (RexCall) super.visitCall(call);
             }
           }
         }
-    ));
+    );
+    if (oNode != tNode) {
+      call.transformTo(tNode);
+    }
   }
   
   private boolean isNegationBetter(Sarg<?> sarg) {
