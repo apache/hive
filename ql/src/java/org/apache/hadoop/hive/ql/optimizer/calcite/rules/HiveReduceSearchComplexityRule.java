@@ -40,9 +40,6 @@ public class HiveReduceSearchComplexityRule extends RelOptRule {
   
   public static final RelOptRule FILTER = new HiveReduceSearchComplexityRule(operand(HiveFilter.class, any()));
   public static final RelOptRule PROJECT = new HiveReduceSearchComplexityRule(operand(HiveProject.class, any()));
-  
-  private RexBuilder rexBuilder;
-
 
   protected HiveReduceSearchComplexityRule(RelOptRuleOperand operand) {
     super(operand);
@@ -51,72 +48,65 @@ public class HiveReduceSearchComplexityRule extends RelOptRule {
   @Override
   public void onMatch(RelOptRuleCall call) {
     RelNode oNode = call.rel(0);
-    this.rexBuilder = oNode.getCluster().getRexBuilder();
-    RelNode tNode = oNode.accept(
-        new RexShuttle() {
-          
-          @Override
-          public RexCall visitCall(RexCall call) {
-            switch (call.getOperator().getKind()) {
-            case SEARCH:
-              RexNode ref = call.getOperands().get(0);
-              RexLiteral literal = (RexLiteral) call.operands.get(1);
-              Sarg<?> sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
-
-              if (isNegationBetter(sarg)) {
-                return (RexCall) rexBuilder.makeCall(
-                    SqlStdOperatorTable.NOT,
-                    Collections.singletonList(
-                        rexBuilder.makeCall(
-                            SqlStdOperatorTable.SEARCH,
-                            ref,
-                            rexBuilder.makeSearchArgumentLiteral(sarg.negate(), literal.getType())
-                        )
-                    )
-                );
-              } else {
-                return call;
-              }
-            default:
-              return (RexCall) super.visitCall(call);
-            }
-          }
-        }
-    );
+    RelNode tNode = oNode.accept(new SearchNegateShuttle(oNode.getCluster().getRexBuilder()));
     if (oNode != tNode) {
       call.transformTo(tNode);
     }
   }
-  
-  private boolean isNegationBetter(Sarg<?> sarg) {
-    int complexity = getComplexity(sarg);
-    int negationComplexity = getComplexity(sarg.negate());
 
-    return negationComplexity < complexity || 
-        (negationComplexity == complexity && countClosedRanges(sarg.negate()) > countClosedRanges(sarg));
-  }
+  private static class SearchNegateShuttle extends RexShuttle {
+    private final RexBuilder rexBuilder;
 
-  /**
-   * Calcite's complexity method ignores complexity of IS NOT NULL.
-   * This can be removed if we decide to ignore IS NOT NULLs in Hive.
-   * @param sarg SEARCH args
-   * @return complexity of sarg
-   */
-  private int getComplexity(Sarg<?> sarg) {
-    int complexity = sarg.complexity();
-    if (sarg.nullAs == RexUnknownAs.FALSE) {
-      complexity++;
+    SearchNegateShuttle(final RexBuilder rexBuilder) {
+      this.rexBuilder = rexBuilder;
     }
-    
-    return complexity;
-  }
-  
-  private long countClosedRanges(Sarg<?> sarg) {
-    return 
-        sarg.rangeSet.asRanges().stream()
-        .filter(r -> 
-            r.hasUpperBound() && r.hasLowerBound() &&
-            r.lowerBoundType() == BoundType.CLOSED && r.upperBoundType() == BoundType.CLOSED
-        ).count();
+
+    @Override
+    public RexCall visitCall(RexCall call) {
+      switch (call.getOperator().getKind()) {
+      case SEARCH:
+        RexNode ref = call.getOperands().get(0);
+        RexLiteral literal = (RexLiteral) call.operands.get(1);
+        Sarg<?> sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
+
+        if (isNegationBetter(sarg)) {
+          return (RexCall) rexBuilder.makeCall(SqlStdOperatorTable.NOT, Collections.singletonList(
+              rexBuilder.makeCall(SqlStdOperatorTable.SEARCH, ref,
+                  rexBuilder.makeSearchArgumentLiteral(sarg.negate(), literal.getType()))));
+        } else {
+          return call;
+        }
+      default:
+        return (RexCall) super.visitCall(call);
+      }
+    }
+
+    private boolean isNegationBetter(Sarg<?> sarg) {
+      int complexity = getComplexity(sarg);
+      int negationComplexity = getComplexity(sarg.negate());
+
+      return negationComplexity < complexity || (negationComplexity == complexity
+          && countClosedRanges(sarg.negate()) > countClosedRanges(sarg));
+    }
+
+    /**
+     * Calcite's complexity method ignores complexity of IS NOT NULL.
+     * This can be removed if we decide to ignore IS NOT NULLs in Hive.
+     * @param sarg SEARCH args
+     * @return complexity of sarg
+     */
+    private int getComplexity(Sarg<?> sarg) {
+      int complexity = sarg.complexity();
+      if (sarg.nullAs == RexUnknownAs.FALSE) {
+        complexity++;
+      }
+      return complexity;
+    }
+
+    private long countClosedRanges(Sarg<?> sarg) {
+      return sarg.rangeSet.asRanges().stream().filter(
+          r -> r.hasUpperBound() && r.hasLowerBound() && r.lowerBoundType() == BoundType.CLOSED
+              && r.upperBoundType() == BoundType.CLOSED).count();
+    }
   }
 }
