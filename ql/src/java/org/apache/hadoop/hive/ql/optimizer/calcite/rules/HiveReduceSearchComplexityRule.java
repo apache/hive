@@ -37,7 +37,8 @@ import java.util.Collections;
 import java.util.Objects;
 
 public class HiveReduceSearchComplexityRule extends RelOptRule {
-  
+
+  // TODO Should we handle JOIN as well?
   public static final RelOptRule FILTER = new HiveReduceSearchComplexityRule(operand(HiveFilter.class, any()));
   public static final RelOptRule PROJECT = new HiveReduceSearchComplexityRule(operand(HiveProject.class, any()));
 
