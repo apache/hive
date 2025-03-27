@@ -116,13 +116,11 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       break;
     }
 
-    case NOT:
-      if (call.getOperands().get(0).isA(SqlKind.SEARCH)) {
-        return new SearchTransformer(rexBuilder, (RexCall) call.getOperands().get(0), true).transform().accept(this);
-      } else {
-        selectivity = computeNotEqualitySelectivity(call);
-      }
-      break;
+    case NOT: {
+      Double opSelectivity = call.getOperands().get(0).accept(this);
+      assert (opSelectivity >= 0 && opSelectivity <= 1);
+      return 1.0 - opSelectivity;
+    }
     case NOT_EQUALS: {
       selectivity = computeNotEqualitySelectivity(call);
       break;
