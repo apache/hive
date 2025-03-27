@@ -199,13 +199,6 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       for (RexNode operand : call.operands) {
         args.add(operand.accept(this));
       }
-    } else if (call.getKind() == SqlKind.NOT) {
-      if (call.getOperands().get(0).isA(SqlKind.SEARCH)) {
-        return new SearchTransformer<>(rexBuilder, (RexCall) call.getOperands().get(0), true).transform().accept(this);
-      }
-      for (RexNode operand : call.operands) {
-        args.add(operand.accept(this));
-      }
     } else if (call.getKind() == SqlKind.SEARCH) {
       return new SearchTransformer<>(rexBuilder, call).transform().accept(this);
     } else {

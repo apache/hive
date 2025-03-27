@@ -24,7 +24,6 @@ import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUnknownAs;
 import org.apache.calcite.rex.RexUtil;
-import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.util.RangeSets;
 import org.apache.calcite.util.Sarg;
@@ -37,89 +36,53 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-public class SearchTransformer <C extends Comparable<C>> {
+public class SearchTransformer<C extends Comparable<C>> {
   private final RexBuilder rexBuilder;
   private final RexNode ref;
   private final Sarg<C> sarg;
   protected final RelDataType type;
-  protected final boolean negate;
-  protected RexNode nullAsNode;
-  protected boolean nullAsTrue;
 
-  public SearchTransformer(RexBuilder rexBuilder, RexCall search, boolean negate) {
+  // TODO Pass the context for unknownAs
+  public SearchTransformer(RexBuilder rexBuilder, RexCall search) {
     this.rexBuilder = rexBuilder;
     ref = search.getOperands().get(0);
-    this.negate = negate;
     RexLiteral literal = (RexLiteral) search.operands.get(1);
     sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
     type = literal.getType();
-    nullAsNode = null;
-    nullAsTrue = true;
-  }
-
-  public SearchTransformer(RexBuilder rexBuilder, RexCall search) {
-    this(rexBuilder, search, false);
   }
 
   public RexNode transform() {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.SEARCH_TRANSFORMER);
 
-    RangeConverter<C> consumer = new RangeConverter<>(rexBuilder, type, ref, negate);
+    RangeConverter<C> consumer = new RangeConverter<>(rexBuilder, type, ref);
     RangeSets.forEach(sarg.rangeSet, consumer);
-    computeNullAsNode();
 
-    List<RexNode> results = new ArrayList<>();
+    List<RexNode> orList = new ArrayList<>();
+    if (sarg.nullAs == RexUnknownAs.TRUE) {
+      orList.add(rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, ref));
+    }
     switch (consumer.inNodes.size()) {
     case 0:
       break;
     case 1:
-      SqlOperator op = negate ? SqlStdOperatorTable.NOT_EQUALS : SqlStdOperatorTable.EQUALS;
-      results.add(rexBuilder.makeCall(op, ref, consumer.inNodes.get(0)));
+      orList.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, ref, consumer.inNodes.get(0)));
       break;
     default:
       List<RexNode> operands = new ArrayList<>(consumer.inNodes.size() + 1);
       operands.add(ref);
       operands.addAll(consumer.inNodes);
-      RexNode inCall = rexBuilder.makeCall(HiveIn.INSTANCE, operands);
-      if (negate) {
-        inCall = rexBuilder.makeCall(SqlStdOperatorTable.NOT, inCall);
-      }
-      results.add(inCall);
+      orList.add(rexBuilder.makeCall(HiveIn.INSTANCE, operands));
     }
-    results.addAll(consumer.nodes);
-    RexNode x =
-        negate ? RexUtil.composeConjunction(rexBuilder, results) : RexUtil.composeDisjunction(rexBuilder, results);
+    orList.addAll(consumer.nodes);
+    RexNode x = RexUtil.composeDisjunction(rexBuilder, orList);
 
-    if (nullAsNode != null) {
-      x = nullAsTrue ? RexUtil.composeDisjunction(rexBuilder, Arrays.asList(nullAsNode, x))
-          : RexUtil.composeConjunction(rexBuilder, Arrays.asList(nullAsNode, x));
+    if (sarg.nullAs == RexUnknownAs.FALSE) {
+      RexNode notNull = rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, ref);
+      x = RexUtil.composeConjunction(rexBuilder, Arrays.asList(notNull, x));
     }
     perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.SEARCH_TRANSFORMER);
     return x;
-  }
-
-  private void computeNullAsNode() {
-    if (sarg.nullAs == RexUnknownAs.UNKNOWN) {
-      return;
-    }
-
-    RexCall call = null;
-    if (sarg.nullAs == RexUnknownAs.TRUE) {
-      call = negate ?
-          (RexCall) rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, ref):
-          (RexCall) rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, ref);
-      nullAsTrue = !negate;
-    }
-    if (sarg.nullAs == RexUnknownAs.FALSE) {
-      call = negate ?
-          (RexCall) rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, ref):
-          (RexCall) rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, ref);
-      nullAsTrue = negate;
-    }
-
-    assert call != null;
-    nullAsNode = call;
   }
 }
 

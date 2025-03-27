@@ -1091,17 +1091,6 @@ public class ASTConverter {
         // is implicit in the function name, thus translation will
         // proceed correctly if we just ignore the <time_unit>
         astNodeLst.add(call.operands.get(1).accept(this));
-        break; 
-      case NOT:
-        if (call.getOperands().get(0).isA(SqlKind.SEARCH)) {
-          return new SearchTransformer<>(rexBuilder, (RexCall) call.getOperands().get(0), true).transform().accept(this);
-        }
-        if (op.equals(HiveComponentAccess.COMPONENT_ACCESS)) {
-          return call.operands.get(0).accept(this);
-        }
-        for (RexNode operand : call.operands) {
-          astNodeLst.add(operand.accept(this));
-        }
         break;
       case SEARCH:
         return new SearchTransformer<>(rexBuilder, call).transform().accept(this);

@@ -431,9 +431,13 @@ public class TestFilterSelectivityEstimator {
 
   @Test
   public void testComputeRangePredicateSelectivityNotBetweenLeftEqualsRight() {
+    doReturn(10.0).when(mq).getDistinctRowCount(scan, ImmutableBitSet.of(0), REX_BUILDER.makeLiteral(true));
+    // x NOT BETWEEN 3 AND 3 <=> x != 3
     RexNode filter = makeNotBetween(inputRef0, int3, int3);
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
-    Assert.assertEquals(1, estimator.estimateSelectivity(filter), DELTA);
+    // Selectivity of x = 3 is 1/NDV(x) so 0.1
+    // Selectivity of x != 3 is 1-1/NDV(x) so 0.9
+    Assert.assertEquals(0.9, estimator.estimateSelectivity(filter), DELTA);
   }
 
   @Test
