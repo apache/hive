@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
@@ -336,6 +335,7 @@ public class HiveFunctionHelper implements FunctionHelper {
       expr = rexBuilder.makeCall(returnType, call.getOperator(),
           RexUtil.flatten(call.getOperands(), call.getOperator()));
     }
+
     return expr;
   }
 

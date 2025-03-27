@@ -184,7 +184,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       }
       selectivity = computeFunctionSelectivity(call);
     }
-    
+
     return selectivity;
   }
 
