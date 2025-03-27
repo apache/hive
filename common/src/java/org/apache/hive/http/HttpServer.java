@@ -136,12 +136,7 @@ public class HttpServer {
 
 
   private final String name;
-  /**
-   * The list of web application contexts associated with the server.
-   * The first web application context at index 0 is the default context added during web server creation.
-   * Additional web application contexts can be added to the server using the createAndAddWebApp method.
-   */
-  private List<WebAppContext> webAppContexts;
+  private WebAppContext rootWebAppContext;
   private Server webServer;
   private QueuedThreadPool threadPool;
   private PortHandlerWrapper portHandlerWrapper;
@@ -558,7 +553,7 @@ public class HttpServer {
     WebAppContext webAppContext = createWebAppContext(builder);
     initWebAppContext(builder, webAppContext);
     RewriteHandler rwHandler = createRewriteHandler(builder, webAppContext);
-    
+
     ContextHandlerCollection portHandler = new ContextHandlerCollection();
     portHandler.addHandler(rwHandler);
 
@@ -568,13 +563,15 @@ public class HttpServer {
 
     builder.globalFilters.forEach((k, v) -> 
         addFilter(k, v.getKey(), v.getValue(), webAppContext.getServletHandler()));
-    
+
     // Associate the port handler with the a new connector and add it to the server
     ServerConnector connector = createAndAddChannelConnector(threadPool.getQueueSize(), builder);
     portHandlerWrapper.addHandler(connector, portHandler);
-    // Add the web application context to the global list of web application contexts
-    webAppContexts.add(webAppContext);
-    
+
+    if (builder.contextPath.equals("/")) {
+      rootWebAppContext = webAppContext;
+    }
+
     return portHandler;
   }
 
@@ -728,7 +725,6 @@ public class HttpServer {
     threadPool.setName(b.name + "-web");
 
     this.webServer = new Server(threadPool);
-    this.webAppContexts = new LinkedList<>();
 
     initializeWebServer(b);
   }
@@ -871,13 +867,13 @@ public class HttpServer {
   }
 
   /**
-   * Add a servlet to the first webAppContext that is added to the webserver during its initialization.
+   * Add a servlet to the rootWebAppContext that is added to the webserver during its initialization.
    * @param name The name of the servlet (can be passed as null)
    * @param pathSpec The path spec for the servlet
    * @param clazz The servlet class
    */
   public void addServlet(String name, String pathSpec, Class<? extends HttpServlet> clazz) {
-    addServlet(name, pathSpec, clazz, webAppContexts.get(0));
+    addServlet(name, pathSpec, clazz, rootWebAppContext);
   }
 
   /**
@@ -897,13 +893,13 @@ public class HttpServer {
   }
 
   /**
-   * Add a servlet holder to the first webAppContext that is added to the webserver during its initialization.
+   * Add a servlet holder to the rootWebAppContext that is added to the webserver during its initialization.
    * @param name The name of the servlet (can be passed as null)
    * @param pathSpec The path spec for the servlet
    * @param holder The servlet holder to be added to the webAppContext
    */
   public void addServlet(String name, String pathSpec, ServletHolder holder) {
-    addServlet(name, pathSpec, holder, webAppContexts.get(0));
+    addServlet(name, pathSpec, holder, rootWebAppContext);
   }
 
   /**

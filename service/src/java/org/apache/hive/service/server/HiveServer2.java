@@ -546,10 +546,10 @@ public class HiveServer2 extends CompositeService {
     if (serviceDiscovery && activePassiveHA) {
       String webHost = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_BIND_HOST);
       int healthCheckPort = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_HEALTHCHECK_PORT);
-      HttpServer.Builder builder = createHttpServerBuilder(webHost, healthCheckPort, "health-ha", 
-          "/health-ha", hiveConf, cliService, pamAuthenticator);
+      HttpServer.Builder builder = createHttpServerBuilder(webHost, healthCheckPort, "ha-healthcheck", 
+          "/ha-healthcheck", hiveConf, cliService, pamAuthenticator);
       addHAContextAttributes(builder, hiveConf);
-      builder.addServlet("leader", HS2LeadershipStatus.class);
+      builder.addServlet("health-ha", HS2LeadershipStatus.class);
       webServer.createAndAddWebApp(builder); 
     }
   }

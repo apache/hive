@@ -63,7 +63,7 @@ public class HS2LeadershipStatus extends HttpServlet {
     response.flushBuffer();
   }
 
-  void setResponseHeaders(final HttpServletResponse response) {
+  protected void setResponseHeaders(final HttpServletResponse response) {
     response.setContentType(HttpConstants.CONTENT_TYPE_JSON);
     response.setHeader(HttpConstants.ACCESS_CONTROL_ALLOW_METHODS,
         HttpConstants.METHOD_GET + "," + HttpConstants.METHOD_DELETE);
