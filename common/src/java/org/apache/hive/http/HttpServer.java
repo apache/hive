@@ -136,6 +136,11 @@ public class HttpServer {
 
 
   private final String name;
+  /**
+   * The list of web application contexts associated with the server.
+   * The first web application context at index 0 is the default context added during web server creation.
+   * Additional web application contexts can be added to the server using the createAndAddWebApp method.
+   */
   private List<WebAppContext> webAppContexts;
   private Server webServer;
   private QueuedThreadPool threadPool;
@@ -866,7 +871,7 @@ public class HttpServer {
   }
 
   /**
-   * Add a servlet in the server.
+   * Add a servlet to the first webAppContext that is added to the webserver during its initialization.
    * @param name The name of the servlet (can be passed as null)
    * @param pathSpec The path spec for the servlet
    * @param clazz The servlet class
@@ -875,6 +880,13 @@ public class HttpServer {
     addServlet(name, pathSpec, clazz, webAppContexts.get(0));
   }
 
+  /**
+   * Add a servlet to the provided webAppContext
+   * @param name The name of the servlet (can be passed as null)
+   * @param pathSpec The path spec for the servlet
+   * @param clazz The servlet class
+   * @param webAppContext The webAppContext to which the servlet will be added
+   */
   private void addServlet(String name, String pathSpec, Class<? extends HttpServlet> clazz,
       WebAppContext webAppContext) {
     ServletHolder holder = new ServletHolder(clazz);
@@ -884,10 +896,23 @@ public class HttpServer {
     webAppContext.addServlet(holder, pathSpec);
   }
 
+  /**
+   * Add a servlet holder to the first webAppContext that is added to the webserver during its initialization.
+   * @param name The name of the servlet (can be passed as null)
+   * @param pathSpec The path spec for the servlet
+   * @param holder The servlet holder to be added to the webAppContext
+   */
   public void addServlet(String name, String pathSpec, ServletHolder holder) {
     addServlet(name, pathSpec, holder, webAppContexts.get(0));
   }
 
+  /**
+   * Add a servlet holder to the provided webAppContext
+   * @param name The name of the servlet (can be passed as null)
+   * @param pathSpec The path spec for the servlet
+   * @param holder The servlet holder to be added to the webAppContext
+   * @param webAppContext The webAppContext to which the servlet will be added
+   */
   private void addServlet(String name, String pathSpec, ServletHolder holder, WebAppContext webAppContext) {
     if (name != null) {
       holder.setName(name);

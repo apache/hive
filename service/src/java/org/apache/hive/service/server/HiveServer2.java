@@ -119,8 +119,8 @@ import org.apache.hive.service.cli.session.HiveSession;
 import org.apache.hive.service.cli.thrift.ThriftBinaryCLIService;
 import org.apache.hive.service.cli.thrift.ThriftCLIService;
 import org.apache.hive.service.cli.thrift.ThriftHttpCLIService;
-import org.apache.hive.service.servlet.HS2HAHealthChecker;
 import org.apache.hive.service.servlet.HS2LeadershipStatus;
+import org.apache.hive.service.servlet.HS2LeadershipManager;
 import org.apache.hive.service.servlet.HS2Peers;
 import org.apache.hive.service.servlet.LDAPAuthenticationFilter;
 import org.apache.hive.service.servlet.LoginServlet;
@@ -407,7 +407,7 @@ public class HiveServer2 extends CompositeService {
               hiveConf, cliService, pamAuthenticator);
           if (serviceDiscovery && activePassiveHA) {
             addHAContextAttributes(builder, hiveConf);
-            builder.addServlet("leader", HS2LeadershipStatus.class);
+            builder.addServlet("leader", HS2LeadershipManager.class);
             builder.addServlet("peers", HS2Peers.class);
           }
           builder.addServlet("llap", LlapServlet.class);
@@ -549,7 +549,7 @@ public class HiveServer2 extends CompositeService {
       HttpServer.Builder builder = createHttpServerBuilder(webHost, healthCheckPort, "health-ha", 
           "/health-ha", hiveConf, cliService, pamAuthenticator);
       addHAContextAttributes(builder, hiveConf);
-      builder.addServlet("leader", HS2HAHealthChecker.class);
+      builder.addServlet("leader", HS2LeadershipStatus.class);
       webServer.createAndAddWebApp(builder); 
     }
   }
