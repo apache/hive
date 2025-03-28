@@ -18,22 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.nio.ByteBuffer;
-import java.util.BitSet;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsDropWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.slf4j.Logger;
@@ -47,21 +34,14 @@ import org.slf4j.LoggerFactory;
 
 public class ColumnStatsDropTask extends Task<ColumnStatsDropWork> {
   private static final long serialVersionUID = 1L;
-  private static transient final Logger LOG = LoggerFactory
-      .getLogger(ColumnStatsDropTask.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ColumnStatsDropTask.class);
 
-  private int dropColumnStats(Hive db) throws HiveException, MetaException, IOException {
+  private int dropColumnStats(Hive db) throws HiveException {
     String dbName = work.dbName();
     String tblName = work.getTableName();
-    Table tbl = db.getTable(dbName, tblName);
-    long writeId = work.getWriteId();
-    String validWriteIdList = null;
-    if (AcidUtils.isTransactionalTable(tbl)) {
-      ValidWriteIdList writeIds = AcidUtils.getTableValidWriteIdList(conf, TableName.getDbTable(dbName, tblName));
-      validWriteIdList = writeIds.toString();
-    }
+
     if (work.getPartName() == null) {
-      db.deleteTableColumnStatistics(dbName, tblName, work.getColName(), validWriteIdList, writeId);
+      db.deleteTableColumnStatistics(dbName, tblName, work.getColName());
     } else {
       db.deletePartitionColumnStatistics(dbName, tblName, work.getPartName(), work.getColName());
     }
@@ -75,7 +55,7 @@ public class ColumnStatsDropTask extends Task<ColumnStatsDropWork> {
       return dropColumnStats(db);
     } catch (Exception e) {
       setException(e);
-      LOG.info("Failed to drop stats in metastore", e);
+      LOG.info("Failed to drop column stats in metastore", e);
       return ReplUtils.handleException(work.isReplication(), e, work.getDumpDirectory(), work.getMetricCollector(),
                                        getName(), conf);
     }
@@ -88,6 +68,6 @@ public class ColumnStatsDropTask extends Task<ColumnStatsDropWork> {
 
   @Override
   public String getName() {
-    return "COLUMNSTATS DELETE TASK";
+    return "COLUMN STATS DELETE TASK";
   }
 }

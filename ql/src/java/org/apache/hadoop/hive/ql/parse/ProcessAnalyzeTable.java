@@ -114,7 +114,6 @@ public class ProcessAnalyzeTable implements SemanticNodeProcessor {
 
         BasicStatsWork basicStatsWork = new BasicStatsWork(table.getTableSpec());
         basicStatsWork.setIsExplicitAnalyze(true);
-        basicStatsWork.setDropStatsCommand(parseContext.getQueryProperties().isDropStatistics());
         basicStatsWork.setNoScanAnalyzeCommand(parseContext.getQueryProperties().isNoScanAnalyzeCommand());
         StatsWork columnStatsWork = new StatsWork(table, basicStatsWork, parseContext.getConf());
         columnStatsWork.collectStatsFromAggregator(tableScan.getConf());

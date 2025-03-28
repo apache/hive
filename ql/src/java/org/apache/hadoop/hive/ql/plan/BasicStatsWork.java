@@ -53,8 +53,6 @@ public class BasicStatsWork implements Serializable {
 
   private boolean noStatsAggregator = false;
 
-  private boolean isDropStatsCommand = false;
-
   private boolean isNoScanAnalyzeCommand = false;
 
   // sourceTask for TS is not changed (currently) but that of FS might be changed
@@ -133,14 +131,6 @@ public class BasicStatsWork implements Serializable {
 
   public void setClearAggregatorStats(boolean clearAggregatorStats) {
     this.clearAggregatorStats = clearAggregatorStats;
-  }
-
-  public boolean isDropStatsCommand() {
-    return isDropStatsCommand;
-  }
-
-  public void setDropStatsCommand(boolean isDropStatsCommand) {
-    this.isDropStatsCommand = isDropStatsCommand;
   }
 
   /**
