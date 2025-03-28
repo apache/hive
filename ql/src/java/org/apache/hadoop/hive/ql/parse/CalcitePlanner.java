@@ -77,6 +77,7 @@ import org.apache.calcite.rel.RelCollations;
 import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.RelDistributions;
 import org.apache.calcite.rel.RelFieldCollation;
+import org.apache.calcite.rel.RelHomogeneousShuttle;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelVisitor;
 import org.apache.calcite.rel.convert.ConverterImpl;
@@ -173,6 +174,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQue
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveSqlTypeUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RuleEventLogger;
+import org.apache.hadoop.hive.ql.optimizer.calcite.SearchTransformer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.CteRuleConfig;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSortLimitRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveInToSearchRule;
@@ -1759,6 +1761,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
           LOG.debug("Plan after CTE rewriting:\n{}", RelOptUtil.toString(calcitePlan));
         }
       }
+      calcitePlan = calcitePlan.accept(new RelHomogeneousShuttle() {
+        @Override
+        public RelNode visit(final RelNode other) {
+          visitChildren(other);
+          return other.accept(new SearchTransformer.Shuttle(rexBuilder));
+        }
+      });
       perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.HIVE_SORT_PREDICATES);
       if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_SORT_PREDS_WITH_STATS)) {
         calcitePlan = calcitePlan.accept(new HiveFilterSortPredicates(noColsMissingStats));

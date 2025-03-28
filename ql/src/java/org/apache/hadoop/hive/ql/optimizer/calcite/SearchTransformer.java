@@ -22,6 +22,7 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexUnknownAs;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
@@ -83,6 +84,40 @@ public class SearchTransformer<C extends Comparable<C>> {
     }
     perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.SEARCH_TRANSFORMER);
     return x;
+  }
+
+  public static class Shuttle extends RexShuttle {
+    private final RexBuilder rexBuilder;
+
+    public Shuttle(final RexBuilder rexBuilder) {
+      this.rexBuilder = rexBuilder;
+    }
+
+    @Override public RexNode visitCall(RexCall call) {
+      final boolean[] update = {false};
+      final List<RexNode> clonedOperands;
+      switch (call.getKind()) {
+      // Flatten AND/OR operands.
+      case OR:
+        clonedOperands = visitList(call.operands, update);
+        if (update[0]) {
+          return RexUtil.composeDisjunction(rexBuilder, clonedOperands);
+        } else {
+          return call;
+        }
+      case AND:
+        clonedOperands = visitList(call.operands, update);
+        if (update[0]) {
+          return RexUtil.composeConjunction(rexBuilder, clonedOperands);
+        } else {
+          return call;
+        }
+      case SEARCH:
+        return new SearchTransformer<>(rexBuilder, call).transform();
+      default:
+        return super.visitCall(call);
+      }
+    }
   }
 }
 
