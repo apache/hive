@@ -1450,7 +1450,7 @@ public class HiveConnection implements java.sql.Connection {
   private int getTimeoutVar(Map<String, String> sessConfMap, String timeoutVar) {
     String timeoutStr = sessConfMap.getOrDefault(timeoutVar, "0");
     try {
-      long timeoutMs = Long.parseLong(timeoutStr);
+      long timeoutMs = Long.parseLong(timeoutStr) * 1000;
       return (int) Math.max(0, Math.min(timeoutMs, Integer.MAX_VALUE));
     } catch (NumberFormatException e) {
       LOG.warn("Failed to parse {} of value '{}'. Using default timeout 0ms",
