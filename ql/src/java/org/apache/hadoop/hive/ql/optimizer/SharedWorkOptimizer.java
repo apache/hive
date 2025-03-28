@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ListMultimap;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
@@ -148,7 +149,7 @@ public class SharedWorkOptimizer extends Transform {
     }
 
     // Map of dbName.TblName -> TSOperator
-    ArrayListMultimap<String, TableScanOperator> tableNameToOps = splitTableScanOpsByTable(pctx);
+    ListMultimap<String, TableScanOperator> tableNameToOps = splitTableScanOpsByTable(pctx);
 
     // Check whether all tables in the plan are unique
     boolean tablesReferencedOnlyOnce =
@@ -255,7 +256,7 @@ public class SharedWorkOptimizer extends Transform {
   }
 
   private static List<List<TableScanOperator>> groupTableScanOperators(List<Entry<String, Long>> sortedTables,
-      ArrayListMultimap<String, TableScanOperator> tableNameToOps, int batchSize) {
+      ListMultimap<String, TableScanOperator> tableNameToOps, int batchSize) {
     if (batchSize == -1) {
       return sortedTables.stream().map(entry -> tableNameToOps.get(entry.getKey())).collect(Collectors.toList());
     }
@@ -1139,9 +1140,9 @@ public class SharedWorkOptimizer extends Transform {
     }
   }
 
-  private static ArrayListMultimap<String, TableScanOperator> splitTableScanOpsByTable(
+  private static ListMultimap<String, TableScanOperator> splitTableScanOpsByTable(
           ParseContext pctx) {
-    ArrayListMultimap<String, TableScanOperator> tableNameToOps = ArrayListMultimap.create();
+    ListMultimap<String, TableScanOperator> tableNameToOps = ArrayListMultimap.create();
     // Sort by operator ID so we get deterministic results
     TSComparator comparator = new TSComparator();
     Queue<TableScanOperator> sortedTopOps = new PriorityQueue<>(comparator);
