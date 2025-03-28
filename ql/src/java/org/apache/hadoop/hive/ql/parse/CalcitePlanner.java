@@ -179,7 +179,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveInToSearchRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveLoptOptimizeJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveEmptySingleRules;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveReduceSearchComplexityRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.RemoveInfrequentCteRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAggregateProjectMergeRule;
@@ -1768,10 +1767,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Plan after post-join transformations:\n" + RelOptUtil.toString(calcitePlan));
       }
-      
-      // As the last step, transform SEARCH operators by introducing negations to reduce complexity
-      calcitePlan = applyRulesToReduceComplexityOfSearchOperators(calcitePlan, mdProvider.getMetadataProvider(),
-          executorProvider);
+
       if (LOG.isDebugEnabled()) {
         LOG.debug("Final calcite plan:\n" + RelOptUtil.toString(calcitePlan));
       }
@@ -1792,16 +1788,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
               .withOperandSupplier(b -> b.operand(HiveProject.class).anyInputs())
               .withDescription("HiveInToSearchProjectRule").toRule());
       return executeProgram(basePlan, program.build(), mdProvider, executor);
-    }
-    
-    private RelNode applyRulesToReduceComplexityOfSearchOperators(
-        RelNode basePlan, RelMetadataProvider mdProvider, RexExecutor executorProvider) {
-      final HepProgramBuilder program = new HepProgramBuilder();
-      generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-          HiveReduceSearchComplexityRule.FILTER,
-          HiveReduceSearchComplexityRule.PROJECT);
-
-      return executeProgram(basePlan, program.build(), mdProvider, executorProvider);
     }
 
     /**

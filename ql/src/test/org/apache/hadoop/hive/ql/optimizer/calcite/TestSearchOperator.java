@@ -25,7 +25,6 @@ import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.DateString;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveReduceSearchComplexityRule;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -75,7 +74,7 @@ public class TestSearchOperator {
 
   @Before
   public void before() {
-    planner = buildPlanner(Collections.singletonList(HiveReduceSearchComplexityRule.FILTER));
+    planner = buildPlanner(Collections.emptyList());
     relBuilder = buildRelBuilder(planner, schemaMock, tableMock, hiveTableMDMock, TestRecord.class);
   }
   
@@ -129,11 +128,11 @@ public class TestSearchOperator {
 
     HiveFilter filter = (HiveFilter) optimizedRelNode;
     RexNode condition = filter.getCondition();
-    String expected = "AND(NOT(SEARCH($0, Sarg[1, 2]))," +
-        " NOT(SEARCH($1, Sarg[1.0E0:DOUBLE, 2.0E0:DOUBLE]:DOUBLE))," +
-        " NOT(SEARCH($2, Sarg[2147483648L:BIGINT, 2147483649L:BIGINT]:BIGINT))," +
-        " NOT(SEARCH($3, Sarg['one', 'two']:CHAR(3)))," +
-        " NOT(SEARCH($4, Sarg[2025-01-01, 2025-02-01])))";
+    String expected = "AND(SEARCH($0, Sarg[(-∞..1), (1..2), (2..+∞)])," +
+        " SEARCH($1, Sarg[(-∞..1.0E0:DOUBLE), (1.0E0:DOUBLE..2.0E0:DOUBLE), (2.0E0:DOUBLE..+∞)]:DOUBLE)," +
+        " SEARCH($2, Sarg[(-∞..2147483648L:BIGINT), (2147483648L:BIGINT..2147483649L:BIGINT), (2147483649L:BIGINT..+∞)]:BIGINT)," +
+        " SEARCH($3, Sarg[(-∞..'one'), ('one'..'two'), ('two'..+∞)]:CHAR(3))," +
+        " SEARCH($4, Sarg[(-∞..2025-01-01), (2025-01-01..2025-02-01), (2025-02-01..+∞)]))";
     assertEquals(expected, condition.toString());
   }
 
@@ -187,11 +186,11 @@ public class TestSearchOperator {
 
     HiveFilter filter = (HiveFilter) optimizedRelNode;
     RexNode condition = filter.getCondition();
-    String expected = "AND(NOT(SEARCH($0, Sarg[[1..2]]))," +
-        " NOT(SEARCH($1, Sarg[[1.0E0:DOUBLE..2.0E0:DOUBLE]]:DOUBLE))," +
-        " NOT(SEARCH($2, Sarg[[2147483648L:BIGINT..2147483649L:BIGINT]]:BIGINT))," +
-        " NOT(SEARCH($3, Sarg[['one'..'two']]:CHAR(3)))," +
-        " NOT(SEARCH($4, Sarg[[2025-01-01..2025-02-01]])))";
+    String expected = "AND(SEARCH($0, Sarg[(-∞..1), (2..+∞)])," +
+        " SEARCH($1, Sarg[(-∞..1.0E0:DOUBLE), (2.0E0:DOUBLE..+∞)]:DOUBLE)," +
+        " SEARCH($2, Sarg[(-∞..2147483648L:BIGINT), (2147483649L:BIGINT..+∞)]:BIGINT)," +
+        " SEARCH($3, Sarg[(-∞..'one'), ('two'..+∞)]:CHAR(3))," +
+        " SEARCH($4, Sarg[(-∞..2025-01-01), (2025-02-01..+∞)]))";
     assertEquals(expected, condition.toString());
   }
 
@@ -219,8 +218,8 @@ public class TestSearchOperator {
 
     HiveFilter filter = (HiveFilter) optimizedRelNode;
     RexNode condition = filter.getCondition();
-    String expected = "OR(NOT(SEARCH($0, Sarg[5, [10..+∞)]))," +
-        " NOT(SEARCH($1, Sarg[(-∞..2.05E1:DOUBLE), 2.556E1:DOUBLE]:DOUBLE))," +
+    String expected = "OR(SEARCH($0, Sarg[(-∞..5), (5..10)])," +
+        " SEARCH($1, Sarg[[2.05E1:DOUBLE..2.556E1:DOUBLE), (2.556E1:DOUBLE..+∞)]:DOUBLE)," +
         " SEARCH($2, Sarg[2147483648L:BIGINT, (2147483657L:BIGINT..+∞)]:BIGINT)," +
         " SEARCH($3, Sarg[('five'..'one':CHAR(4)]]:CHAR(4))," +
         " SEARCH($4, Sarg[2025-01-01, (2025-02-01..+∞)]))";
