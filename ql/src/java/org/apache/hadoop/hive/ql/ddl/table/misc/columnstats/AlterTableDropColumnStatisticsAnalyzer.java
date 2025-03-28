@@ -53,11 +53,11 @@ public class AlterTableDropColumnStatisticsAnalyzer extends AbstractAlterTableAn
     String partitionName = AcidUtils.getPartitionName(partitionSpec);
     String columnType = getColumnType(table, columnName);
 
-    ColumnStatsDropWork work = new ColumnStatsDropWork(partitionName, table.getDbName(),
-        table.getTableName(), columnName, columnType);
+    ColumnStatsDropWork work = new ColumnStatsDropWork(partitionName, table.getDbName(), table.getTableName(), 
+        columnName, columnType);
     ColumnStatsDropTask task = (ColumnStatsDropTask) TaskFactory.get(work);
     // TODO: doesn't look like this path is actually ever exercised. Maybe this needs to be removed.
-    addInputsOutputsAlterTable(tableName, partitionSpec, null, AlterTableType.DROPSTATS, false);
+    addInputsOutputsAlterTable(tableName, partitionSpec, null, AlterTableType.DROP_COL_STATS, false);
     if (AcidUtils.isTransactionalTable(table)) {
       setAcidDdlDesc(work);
     }

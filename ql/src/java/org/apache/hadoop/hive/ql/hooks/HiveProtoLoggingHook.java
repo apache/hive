@@ -55,8 +55,8 @@ import static org.apache.hadoop.hive.ql.plan.HiveOperation.ALTERTABLE_TOUCH;
 import static org.apache.hadoop.hive.ql.plan.HiveOperation.ALTERTABLE_UNARCHIVE;
 import static org.apache.hadoop.hive.ql.plan.HiveOperation.ALTERTABLE_UPDATEPARTSTATS;
 import static org.apache.hadoop.hive.ql.plan.HiveOperation.ALTERTABLE_UPDATETABLESTATS;
-import static org.apache.hadoop.hive.ql.plan.HiveOperation.ALTERTABLE_DELETEPARTSTATS;
-import static org.apache.hadoop.hive.ql.plan.HiveOperation.ALTERTABLE_DELETETABLESTATS;
+import static org.apache.hadoop.hive.ql.plan.HiveOperation.ALTERTABLE_DROP_PART_COL_STATS;
+import static org.apache.hadoop.hive.ql.plan.HiveOperation.ALTERTABLE_DROP_COL_STATS;
 import static org.apache.hadoop.hive.ql.plan.HiveOperation.ALTERTBLPART_SKEWED_LOCATION;
 import static org.apache.hadoop.hive.ql.plan.HiveOperation.ALTERVIEW_AS;
 import static org.apache.hadoop.hive.ql.plan.HiveOperation.ALTERVIEW_PROPERTIES;
@@ -146,7 +146,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
     includedOperationSet = Arrays.stream(new HiveOperation[] { LOAD, EXPORT, IMPORT,
         CREATEDATABASE, DROPDATABASE, DROPTABLE, MSCK, ALTERTABLE_ADDCOLS, ALTERTABLE_REPLACECOLS,
         ALTERTABLE_RENAMECOL, ALTERTABLE_RENAMEPART, ALTERTABLE_UPDATEPARTSTATS,
-        ALTERTABLE_UPDATETABLESTATS, ALTERTABLE_DELETETABLESTATS, ALTERTABLE_DELETEPARTSTATS,
+        ALTERTABLE_UPDATETABLESTATS, ALTERTABLE_DROP_COL_STATS, ALTERTABLE_DROP_PART_COL_STATS,
         ALTERTABLE_RENAME, ALTERTABLE_DROPPARTS, ALTERTABLE_ADDPARTS,
         ALTERTABLE_TOUCH, ALTERTABLE_ARCHIVE, ALTERTABLE_UNARCHIVE, ALTERTABLE_PROPERTIES,
         ALTERTABLE_SERIALIZER, ALTERPARTITION_SERIALIZER, ALTERTABLE_SERDEPROPERTIES,
