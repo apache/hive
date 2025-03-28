@@ -32,6 +32,29 @@
       </licenses>
     </dependency>
     <dependency>
+      <groupId>org.apache.tomcat</groupId>
+      <artifactId>tomcat-servlet-api</artifactId>
+      <version>9.0.82</version>
+      <licenses>
+        <license>
+          <name>Apache License, Version 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jdt</groupId>
+      <artifactId>ecj</artifactId>
+      <version>3.26.0</version>
+      <license>
+        <name>Eclipse Public License v. 2.0</name>
+        <url>https://www.eclipse.org/org/documents/epl-2.0/EPL-2.0.txt</url>
+        <distribution>repo</distribution>
+        <file>eclipse-public-license-v.-2.0-epl-2.0.txt</file>
+      </license>
+    </dependency>
+    <dependency>
       <groupId>com.sun.jersey.contribs</groupId>
       <artifactId>jersey-guice</artifactId>
       <version>1.19</version>
@@ -470,18 +493,6 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-rewrite</artifactId>
-      <version>9.4.40.v20210413</version>
-      <licenses>
-        <license>
-          <name>Apache Software License - Version 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <file>APACHE-2.0</file>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-runner</artifactId>
       <version>9.4.40.v20210413</version>
       <licenses>
         <license>
