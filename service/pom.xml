@@ -112,7 +112,7 @@
     <dependency>
       <groupId>org.apache.tomcat</groupId>
       <artifactId>tomcat-jasper</artifactId>
-      <version>9.0.82</version>
+      <version>${tomcat.version}</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>

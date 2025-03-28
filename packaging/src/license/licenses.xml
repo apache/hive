@@ -34,7 +34,7 @@
     <dependency>
       <groupId>org.apache.tomcat</groupId>
       <artifactId>tomcat-servlet-api</artifactId>
-      <version>9.0.82</version>
+      <version>${tomcat.version}</version>
       <licenses>
         <license>
           <name>Apache License, Version 2.0</name>
@@ -46,7 +46,7 @@
     <dependency>
       <groupId>org.eclipse.jdt</groupId>
       <artifactId>ecj</artifactId>
-      <version>3.26.0</version>
+      <version>${ecj.version}</version>
       <license>
         <name>Eclipse Public License v. 2.0</name>
         <url>https://www.eclipse.org/org/documents/epl-2.0/EPL-2.0.txt</url>

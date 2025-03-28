@@ -104,6 +104,8 @@
     <maven.license.plugin.version>2.3.0</maven.license.plugin.version>
     <!-- Library Dependency Versions -->
     <accumulo.version>1.10.4</accumulo.version>
+    <tomcat.version>9.0.82</tomcat.version>
+    <ecj.version>3.26.0</ecj.version>
     <ant.version>1.10.13</ant.version>
     <antlr.version>3.5.2</antlr.version>
     <!-- Make sure to sync it with standalone-metastore/pom.xml -->
