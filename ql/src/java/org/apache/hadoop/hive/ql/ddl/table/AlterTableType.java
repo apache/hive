@@ -72,7 +72,8 @@ public enum AlterTableType {
   COMPACT("compact"),
   TRUNCATE("truncate"),
   MERGEFILES("merge files"),
-  UPDATESTATS("update stats"); // Note: used in ColumnStatsUpdateWork, not here.
+  UPDATESTATS("update stats"), // Note: used in ColumnStatsUpdateWork, not here.
+  DROP_COL_STATS("drop column stats");
 
   private final String name;
 
