@@ -82,7 +82,6 @@ public class QBParseInfo {
   private ASTNode queryFromExpr;
 
   private boolean isAnalyzeCommand; // used for the analyze command (statistics)
-  private boolean isDropStatCommand; // used for analyze  command drop statistics
   private boolean isNoScanAnalyzeCommand; // used for the analyze command (statistics) (noscan)
 
   private final Map<String, TableSpec> tableSpecs; // used for statistics
@@ -621,14 +620,6 @@ public class QBParseInfo {
 
   public boolean isAnalyzeCommand() {
     return isAnalyzeCommand;
-  }
-
-  public void setIsDropStatCommand(boolean isDropStatCommand) {
-    this.isDropStatCommand = isDropStatCommand;
-  }
-
-  public boolean isDropStatCommand() {
-    return isDropStatCommand;
   }
 
   public void addTableSpec(String tName, TableSpec tSpec) {
