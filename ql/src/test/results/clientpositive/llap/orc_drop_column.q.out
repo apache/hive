@@ -1,0 +1,35 @@
+PREHOOK: query: create table src_orc (key int, val string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_orc
+POSTHOOK: query: create table src_orc (key int, val string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_orc
+PREHOOK: query: insert into src_orc values (1, "Alice")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@src_orc
+POSTHOOK: query: insert into src_orc values (1, "Alice")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@src_orc
+POSTHOOK: Lineage: src_orc.key SCRIPT []
+POSTHOOK: Lineage: src_orc.val SCRIPT []
+PREHOOK: query: alter table src_orc drop column val
+PREHOOK: type: ALTERTABLE_DROPCOL
+PREHOOK: Input: default@src_orc
+PREHOOK: Output: default@src_orc
+POSTHOOK: query: alter table src_orc drop column val
+POSTHOOK: type: ALTERTABLE_DROPCOL
+POSTHOOK: Input: default@src_orc
+POSTHOOK: Output: default@src_orc
+PREHOOK: query: select * from src_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select * from src_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc
+#### A masked pattern was here ####
+1
