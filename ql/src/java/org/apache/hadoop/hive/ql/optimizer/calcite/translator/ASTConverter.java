@@ -74,6 +74,7 @@ import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.SearchTransformer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveComponentAccess;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
@@ -91,7 +92,6 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
-import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
@@ -869,6 +869,12 @@ public class ASTConverter {
     @Override
     public ASTNode visitLiteral(RexLiteral literal) {
 
+      if (!RexUtil.isNull(literal) && literal.getType().isStruct()) {
+        return rexBuilder
+            .makeCall(SqlStdOperatorTable.ROW, (List<? extends RexNode>) literal.getValue())
+            .accept(this);
+      }
+
       if (RexUtil.isNull(literal) && literal.getType().getSqlTypeName() != SqlTypeName.NULL
           && rexBuilder != null) {
         // It is NULL value with different type, we need to introduce a CAST
@@ -1067,9 +1073,17 @@ public class ASTConverter {
         return SqlFunctionConverter.buildAST(SqlStdOperatorTable.NOT,
           Collections.singletonList(SqlFunctionConverter.buildAST(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, astNodeLst, call.getType())), call.getType());
       case CAST:
-        assert(call.getOperands().size() == 1);
+        if (call.getOperands().size() != 1) {
+          throw new IllegalArgumentException("CASTs should have only 1 operand");
+        }
+        RexNode castOperand = call.getOperands().get(0);
+
+        // Extract RexNode out of CAST when it's not a literal and the types are equal
+        if (!(castOperand instanceof RexLiteral) && call.getType().equals(castOperand.getType())) {
+          return castOperand.accept(this);
+        }
         astNodeLst.add(convertType(call.getType()));
-        astNodeLst.add(call.getOperands().get(0).accept(this));
+        astNodeLst.add(castOperand.accept(this));
         break;
       case EXTRACT:
         // Extract on date: special handling since function in Hive does
@@ -1078,6 +1092,8 @@ public class ASTConverter {
         // proceed correctly if we just ignore the <time_unit>
         astNodeLst.add(call.operands.get(1).accept(this));
         break;
+      case SEARCH:
+        return new SearchTransformer<>(rexBuilder, call).transform().accept(this);
       case FLOOR:
         if (call.operands.size() == 2) {
           // Floor on date: special handling since function in Hive does

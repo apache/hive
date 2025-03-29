@@ -75,7 +75,7 @@ public class HivePreFilteringRule extends RelOptRule {
 
     // If this operator has been visited already by the rule,
     // we do not need to apply the optimization
-    if (registry != null && registry.getVisited(this).contains(filter)) {
+    if (registry != null && registry.hasBeenVisitedBy(this, filter)) {
       return false;
     }
 

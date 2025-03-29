@@ -18,12 +18,15 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
 import org.apache.calcite.rel.RelHomogeneousShuttle;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
+import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexDynamicParam;
 import org.apache.calcite.rex.RexFieldAccess;
@@ -34,6 +37,8 @@ import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.util.Pair;
+import org.apache.hadoop.hive.ql.optimizer.calcite.SearchTransformer;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.FilterSelectivityEstimator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdSize;
 import org.slf4j.Logger;
@@ -72,7 +77,7 @@ public class HiveFilterSortPredicates extends RelHomogeneousShuttle {
 
       final RexNode originalCond = filter.getCondition();
       final RexSortPredicatesShuttle sortPredicatesShuttle = new RexSortPredicatesShuttle(
-          input, filter.getCluster().getMetadataQuery());
+          input, filter.getCluster().getMetadataQuery(), filter.getCluster().getRexBuilder());
       final RexNode newCond = originalCond.accept(sortPredicatesShuttle);
       if (!sortPredicatesShuttle.modified) {
         // We are done, bail out
@@ -102,10 +107,12 @@ public class HiveFilterSortPredicates extends RelHomogeneousShuttle {
 
     private FilterSelectivityEstimator selectivityEstimator;
     private boolean modified;
+    private final RexBuilder rexBuilder;
 
-    private RexSortPredicatesShuttle(RelNode inputRel, RelMetadataQuery mq) {
+    private RexSortPredicatesShuttle(RelNode inputRel, RelMetadataQuery mq, RexBuilder rexBuilder) {
       selectivityEstimator = new FilterSelectivityEstimator(inputRel, mq);
       modified = false;
+      this.rexBuilder = rexBuilder;
     }
 
     @Override
@@ -176,7 +183,7 @@ public class HiveFilterSortPredicates extends RelHomogeneousShuttle {
     }
 
     private Double costPerTuple(RexNode e) {
-      return e.accept(new RexFunctionCost());
+      return e.accept(new RexFunctionCost(rexBuilder));
     }
 
   }
@@ -187,15 +194,22 @@ public class HiveFilterSortPredicates extends RelHomogeneousShuttle {
    * with the call having operands i in 1..n.
    */
   private static class RexFunctionCost extends RexVisitorImpl<Double> {
+    
+    private final RexBuilder rexBuilder;
 
-    private RexFunctionCost() {
+    private RexFunctionCost(RexBuilder rexBuilder) {
       super(true);
+      this.rexBuilder = rexBuilder;
     }
 
     @Override
     public Double visitCall(RexCall call) {
       if (!deep) {
         return null;
+      }
+
+      if (call.getKind() == SqlKind.SEARCH) {
+        return new SearchTransformer<>(rexBuilder, call).transform().accept(this);
       }
 
       Double cost = 0.d;
@@ -240,9 +254,6 @@ public class HiveFilterSortPredicates extends RelHomogeneousShuttle {
         case BETWEEN:
           return 3d;
 
-        case IN:
-          return 2d * (call.getOperands().size() - 1);
-
         case AND:
         case OR:
           return 1d * call.getOperands().size();
@@ -253,6 +264,9 @@ public class HiveFilterSortPredicates extends RelHomogeneousShuttle {
           return 8d;
 
         default:
+          if (HiveIn.INSTANCE.equals(call.op)) {
+            return 2d * (call.getOperands().size() - 1);
+          }
           // By default, we give this heuristic value to unrecognized functions.
           // The idea is that those functions will be more expensive to evaluate
           // than the simple functions considered above.

@@ -1589,10 +1589,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv_n0
-                  filterExpr: ((c_city) IN ('UNITED KI1', 'UNITED KI5') and (s_city) IN ('UNITED KI1', 'UNITED KI5') and d_year BETWEEN 1992 AND 1997) (type: boolean)
+                  filterExpr: (d_year BETWEEN 1992 AND 1997 and (c_city) IN ('UNITED KI1', 'UNITED KI5') and (s_city) IN ('UNITED KI1', 'UNITED KI5')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((c_city) IN ('UNITED KI1', 'UNITED KI5') and (s_city) IN ('UNITED KI1', 'UNITED KI5') and d_year BETWEEN 1992 AND 1997) (type: boolean)
+                    predicate: (d_year BETWEEN 1992 AND 1997 and (c_city) IN ('UNITED KI1', 'UNITED KI5') and (s_city) IN ('UNITED KI1', 'UNITED KI5')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(lo_revenue)

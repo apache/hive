@@ -27,11 +27,12 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
+import org.apache.calcite.rel.core.Filter;
 
 public class HiveRulesRegistry {
 
-  private SetMultimap<RelOptRule, RelNode> registryVisited;
-  private ListMultimap<RelNode, Set<String>> registryPushedPredicates;
+  private final SetMultimap<RelOptRule, String> registryVisited;
+  private final ListMultimap<RelNode, Set<String>> registryPushedPredicates;
 
   public HiveRulesRegistry() {
     this.registryVisited = HashMultimap.create();
@@ -39,11 +40,20 @@ public class HiveRulesRegistry {
   }
 
   public void registerVisited(RelOptRule rule, RelNode operator) {
-    this.registryVisited.put(rule, operator);
+    this.registryVisited.put(rule, getRelNodeIdentifier(operator));
   }
 
-  public Set<RelNode> getVisited(RelOptRule rule) {
-    return this.registryVisited.get(rule);
+  public boolean hasBeenVisitedBy(RelOptRule rule, RelNode node) {
+    return this.registryVisited.get(rule).contains(getRelNodeIdentifier(node));
+  }
+  
+  private String getRelNodeIdentifier(RelNode node) {
+    if (node instanceof Filter) {
+      return ((Filter) node).getCondition().toString() +
+          node.getRowType().toString();
+    }
+    
+    return node.getDigest();
   }
 
   public Set<String> getPushedPredicates(RelNode operator, int pos) {
