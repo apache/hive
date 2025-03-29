@@ -1,0 +1,171 @@
+PREHOOK: query: explain
+select  
+   s_store_name
+  ,s_company_id
+  ,s_street_number
+  ,s_street_name
+  ,s_street_type
+  ,s_suite_number
+  ,s_city
+  ,s_county
+  ,s_state
+  ,s_zip
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk <= 30 ) then 1 else 0 end)  as `30 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk > 30) and 
+                 (sr_returned_date_sk - ss_sold_date_sk <= 60) then 1 else 0 end )  as `31-60 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk > 60) and 
+                 (sr_returned_date_sk - ss_sold_date_sk <= 90) then 1 else 0 end)  as `61-90 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk > 90) and
+                 (sr_returned_date_sk - ss_sold_date_sk <= 120) then 1 else 0 end)  as `91-120 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk  > 120) then 1 else 0 end)  as `>120 days` 
+from
+   store_sales
+  ,store_returns
+  ,store
+  ,date_dim d1
+  ,date_dim d2
+where
+    d2.d_year = 2000
+and d2.d_moy  = 9
+and ss_ticket_number = sr_ticket_number
+and ss_item_sk = sr_item_sk
+and ss_sold_date_sk   = d1.d_date_sk
+and sr_returned_date_sk   = d2.d_date_sk
+and ss_customer_sk = sr_customer_sk
+and ss_store_sk = s_store_sk
+group by
+   s_store_name
+  ,s_company_id
+  ,s_street_number
+  ,s_street_name
+  ,s_street_type
+  ,s_suite_number
+  ,s_city
+  ,s_county
+  ,s_state
+  ,s_zip
+order by s_store_name
+        ,s_company_id
+        ,s_street_number
+        ,s_street_name
+        ,s_street_type
+        ,s_suite_number
+        ,s_city
+        ,s_county
+        ,s_state
+        ,s_zip
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_returns
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select  
+   s_store_name
+  ,s_company_id
+  ,s_street_number
+  ,s_street_name
+  ,s_street_type
+  ,s_suite_number
+  ,s_city
+  ,s_county
+  ,s_state
+  ,s_zip
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk <= 30 ) then 1 else 0 end)  as `30 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk > 30) and 
+                 (sr_returned_date_sk - ss_sold_date_sk <= 60) then 1 else 0 end )  as `31-60 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk > 60) and 
+                 (sr_returned_date_sk - ss_sold_date_sk <= 90) then 1 else 0 end)  as `61-90 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk > 90) and
+                 (sr_returned_date_sk - ss_sold_date_sk <= 120) then 1 else 0 end)  as `91-120 days` 
+  ,sum(case when (sr_returned_date_sk - ss_sold_date_sk  > 120) then 1 else 0 end)  as `>120 days` 
+from
+   store_sales
+  ,store_returns
+  ,store
+  ,date_dim d1
+  ,date_dim d2
+where
+    d2.d_year = 2000
+and d2.d_moy  = 9
+and ss_ticket_number = sr_ticket_number
+and ss_item_sk = sr_item_sk
+and ss_sold_date_sk   = d1.d_date_sk
+and sr_returned_date_sk   = d2.d_date_sk
+and ss_customer_sk = sr_customer_sk
+and ss_store_sk = s_store_sk
+group by
+   s_store_name
+  ,s_company_id
+  ,s_street_number
+  ,s_street_name
+  ,s_street_type
+  ,s_suite_number
+  ,s_city
+  ,s_county
+  ,s_state
+  ,s_zip
+order by s_store_name
+        ,s_company_id
+        ,s_street_number
+        ,s_street_name
+        ,s_street_type
+        ,s_suite_number
+        ,s_city
+        ,s_county
+        ,s_state
+        ,s_zip
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_returns
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: store_sales
+          properties:
+            hive.sql.query SELECT "t17"."$f0", "t17"."$f1", "t17"."$f2", "t17"."$f3", "t17"."$f4", "t17"."$f5", "t17"."$f6", "t17"."$f7", "t17"."$f8", "t17"."$f9", "t17"."$f10", "t17"."$f11", "t17"."$f12", "t17"."$f13", "t17"."$f14"
+FROM (SELECT "t14"."s_store_name" AS "$f0", "t14"."s_company_id" AS "$f1", "t14"."s_street_number" AS "$f2", "t14"."s_street_name" AS "$f3", "t14"."s_street_type" AS "$f4", "t14"."s_suite_number" AS "$f5", "t14"."s_city" AS "$f6", "t14"."s_county" AS "$f7", "t14"."s_state" AS "$f8", "t14"."s_zip" AS "$f9", SUM(CASE WHEN "t11"."sr_returned_date_sk" - "t1"."ss_sold_date_sk" <= 30 THEN 1 ELSE 0 END) AS "$f10", SUM(CASE WHEN "t11"."sr_returned_date_sk" - "t1"."ss_sold_date_sk" > 30 AND "t11"."sr_returned_date_sk" - "t1"."ss_sold_date_sk" <= 60 THEN 1 ELSE 0 END) AS "$f11", SUM(CASE WHEN "t11"."sr_returned_date_sk" - "t1"."ss_sold_date_sk" > 60 AND "t11"."sr_returned_date_sk" - "t1"."ss_sold_date_sk" <= 90 THEN 1 ELSE 0 END) AS "$f12", SUM(CASE WHEN "t11"."sr_returned_date_sk" - "t1"."ss_sold_date_sk" > 90 AND "t11"."sr_returned_date_sk" - "t1"."ss_sold_date_sk" <= 120 THEN 1 ELSE 0 END) AS "$f13", SUM(CASE WHEN "t11"."sr_returned_date_sk" - "t1"."ss_sold_date_sk" > 120 THEN 1 ELSE 0 END) AS "$f14"
+FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_customer_sk", "ss_store_sk", "ss_ticket_number"
+FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_customer_sk", "ss_store_sk", "ss_ticket_number"
+FROM "store_sales") AS "t"
+WHERE "ss_ticket_number" IS NOT NULL AND "ss_item_sk" IS NOT NULL AND ("ss_customer_sk" IS NOT NULL AND ("ss_store_sk" IS NOT NULL AND "ss_sold_date_sk" IS NOT NULL))) AS "t1"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk"
+FROM "date_dim") AS "t2"
+WHERE "d_date_sk" IS NOT NULL) AS "t4" ON "t1"."ss_sold_date_sk" = "t4"."d_date_sk"
+INNER JOIN (SELECT "t7"."sr_returned_date_sk", "t7"."sr_item_sk", "t7"."sr_customer_sk", "t7"."sr_ticket_number", "t10"."d_date_sk"
+FROM (SELECT "sr_returned_date_sk", "sr_item_sk", "sr_customer_sk", "sr_ticket_number"
+FROM (SELECT "sr_returned_date_sk", "sr_item_sk", "sr_customer_sk", "sr_ticket_number"
+FROM "store_returns") AS "t5"
+WHERE "sr_ticket_number" IS NOT NULL AND "sr_item_sk" IS NOT NULL AND ("sr_customer_sk" IS NOT NULL AND "sr_returned_date_sk" IS NOT NULL)) AS "t7"
+INNER JOIN (SELECT "d_date_sk"
+FROM (SELECT "d_date_sk", "d_year", "d_moy"
+FROM "date_dim") AS "t8"
+WHERE "d_year" = 2000 AND ("d_moy" = 9 AND "d_date_sk" IS NOT NULL)) AS "t10" ON "t7"."sr_returned_date_sk" = "t10"."d_date_sk") AS "t11" ON "t1"."ss_ticket_number" = "t11"."sr_ticket_number" AND "t1"."ss_item_sk" = "t11"."sr_item_sk" AND "t1"."ss_customer_sk" = "t11"."sr_customer_sk"
+INNER JOIN (SELECT "s_store_sk", "s_store_name", "s_company_id", "s_street_number", "s_street_name", "s_street_type", "s_suite_number", "s_city", "s_county", "s_state", "s_zip"
+FROM (SELECT "s_store_sk", "s_store_name", "s_company_id", "s_street_number", "s_street_name", "s_street_type", "s_suite_number", "s_city", "s_county", "s_state", "s_zip"
+FROM "store") AS "t12"
+WHERE "s_store_sk" IS NOT NULL) AS "t14" ON "t1"."ss_store_sk" = "t14"."s_store_sk"
+GROUP BY "t14"."s_store_name", "t14"."s_company_id", "t14"."s_street_number", "t14"."s_street_name", "t14"."s_street_type", "t14"."s_suite_number", "t14"."s_city", "t14"."s_county", "t14"."s_state", "t14"."s_zip"
+ORDER BY "t14"."s_store_name", "t14"."s_company_id", "t14"."s_street_number", "t14"."s_street_name", "t14"."s_street_type", "t14"."s_suite_number", "t14"."s_city", "t14"."s_county", "t14"."s_state", "t14"."s_zip"
+FETCH NEXT 100 ROWS ONLY) AS "t17"
+            hive.sql.query.fieldNames $f0,$f1,$f2,$f3,$f4,$f5,$f6,$f7,$f8,$f9,$f10,$f11,$f12,$f13,$f14
+            hive.sql.query.fieldTypes string,int,string,string,string,string,string,string,string,string,bigint,bigint,bigint,bigint,bigint
+            hive.sql.query.split false
+          Select Operator
+            expressions: $f0 (type: string), $f1 (type: int), $f2 (type: string), $f3 (type: string), $f4 (type: string), $f5 (type: string), $f6 (type: string), $f7 (type: string), $f8 (type: string), $f9 (type: string), $f10 (type: bigint), $f11 (type: bigint), $f12 (type: bigint), $f13 (type: bigint), $f14 (type: bigint)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14
+            ListSink
+

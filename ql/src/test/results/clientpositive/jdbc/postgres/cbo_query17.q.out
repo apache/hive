@@ -1,0 +1,150 @@
+PREHOOK: query: explain cbo
+select  i_item_id
+       ,i_item_desc
+       ,s_state
+       ,count(ss_quantity) as store_sales_quantitycount
+       ,avg(ss_quantity) as store_sales_quantityave
+       ,stddev_samp(ss_quantity) as store_sales_quantitystdev
+       ,stddev_samp(ss_quantity)/avg(ss_quantity) as store_sales_quantitycov
+       ,count(sr_return_quantity) as_store_returns_quantitycount
+       ,avg(sr_return_quantity) as_store_returns_quantityave
+       ,stddev_samp(sr_return_quantity) as_store_returns_quantitystdev
+       ,stddev_samp(sr_return_quantity)/avg(sr_return_quantity) as store_returns_quantitycov
+       ,count(cs_quantity) as catalog_sales_quantitycount ,avg(cs_quantity) as catalog_sales_quantityave
+       ,stddev_samp(cs_quantity)/avg(cs_quantity) as catalog_sales_quantitystdev
+       ,stddev_samp(cs_quantity)/avg(cs_quantity) as catalog_sales_quantitycov
+ from store_sales
+     ,store_returns
+     ,catalog_sales
+     ,date_dim d1
+     ,date_dim d2
+     ,date_dim d3
+     ,store
+     ,item
+ where d1.d_quarter_name = '2000Q1'
+   and d1.d_date_sk = ss_sold_date_sk
+   and i_item_sk = ss_item_sk
+   and s_store_sk = ss_store_sk
+   and ss_customer_sk = sr_customer_sk
+   and ss_item_sk = sr_item_sk
+   and ss_ticket_number = sr_ticket_number
+   and sr_returned_date_sk = d2.d_date_sk
+   and d2.d_quarter_name in ('2000Q1','2000Q2','2000Q3')
+   and sr_customer_sk = cs_bill_customer_sk
+   and sr_item_sk = cs_item_sk
+   and cs_sold_date_sk = d3.d_date_sk
+   and d3.d_quarter_name in ('2000Q1','2000Q2','2000Q3')
+ group by i_item_id
+         ,i_item_desc
+         ,s_state
+ order by i_item_id
+         ,i_item_desc
+         ,s_state
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_returns
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select  i_item_id
+       ,i_item_desc
+       ,s_state
+       ,count(ss_quantity) as store_sales_quantitycount
+       ,avg(ss_quantity) as store_sales_quantityave
+       ,stddev_samp(ss_quantity) as store_sales_quantitystdev
+       ,stddev_samp(ss_quantity)/avg(ss_quantity) as store_sales_quantitycov
+       ,count(sr_return_quantity) as_store_returns_quantitycount
+       ,avg(sr_return_quantity) as_store_returns_quantityave
+       ,stddev_samp(sr_return_quantity) as_store_returns_quantitystdev
+       ,stddev_samp(sr_return_quantity)/avg(sr_return_quantity) as store_returns_quantitycov
+       ,count(cs_quantity) as catalog_sales_quantitycount ,avg(cs_quantity) as catalog_sales_quantityave
+       ,stddev_samp(cs_quantity)/avg(cs_quantity) as catalog_sales_quantitystdev
+       ,stddev_samp(cs_quantity)/avg(cs_quantity) as catalog_sales_quantitycov
+ from store_sales
+     ,store_returns
+     ,catalog_sales
+     ,date_dim d1
+     ,date_dim d2
+     ,date_dim d3
+     ,store
+     ,item
+ where d1.d_quarter_name = '2000Q1'
+   and d1.d_date_sk = ss_sold_date_sk
+   and i_item_sk = ss_item_sk
+   and s_store_sk = ss_store_sk
+   and ss_customer_sk = sr_customer_sk
+   and ss_item_sk = sr_item_sk
+   and ss_ticket_number = sr_ticket_number
+   and sr_returned_date_sk = d2.d_date_sk
+   and d2.d_quarter_name in ('2000Q1','2000Q2','2000Q3')
+   and sr_customer_sk = cs_bill_customer_sk
+   and sr_item_sk = cs_item_sk
+   and cs_sold_date_sk = d3.d_date_sk
+   and d3.d_quarter_name in ('2000Q1','2000Q2','2000Q3')
+ group by i_item_id
+         ,i_item_desc
+         ,s_state
+ order by i_item_id
+         ,i_item_desc
+         ,s_state
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_returns
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJdbcConverter(convention=[JDBC.POSTGRES])
+  JdbcSort(sort0=[$0], sort1=[$1], sort2=[$2], dir0=[ASC], dir1=[ASC], dir2=[ASC], fetch=[100])
+    JdbcProject(i_item_id=[$0], i_item_desc=[$1], s_state=[$2], store_sales_quantitycount=[$3], store_sales_quantityave=[/(CAST($4):DOUBLE, $3)], store_sales_quantitystdev=[POWER(/(-($5, /(*($6, $6), $7)), CASE(=($7, 1), null:BIGINT, -($7, 1))), 0.5:DECIMAL(2, 1))], store_sales_quantitycov=[/(POWER(/(-($5, /(*($6, $6), $7)), CASE(=($7, 1), null:BIGINT, -($7, 1))), 0.5:DECIMAL(2, 1)), /(CAST($4):DOUBLE, $3))], as_store_returns_quantitycount=[$8], as_store_returns_quantityave=[/(CAST($9):DOUBLE, $8)], as_store_returns_quantitystdev=[POWER(/(-($10, /(*($11, $11), $12)), CASE(=($12, 1), null:BIGINT, -($12, 1))), 0.5:DECIMAL(2, 1))], store_returns_quantitycov=[/(POWER(/(-($10, /(*($11, $11), $12)), CASE(=($12, 1), null:BIGINT, -($12, 1))), 0.5:DECIMAL(2, 1)), /(CAST($9):DOUBLE, $8))], catalog_sales_quantitycount=[$13], catalog_sales_quantityave=[/(CAST($14):DOUBLE, $13)], catalog_sales_quantitystdev=[/(POWER(/(-($15, /(*($16, $16), $17)), CASE(=($17, 1), null:BIGINT, -($17, 1))), 0.5:DECIMAL(2, 1)), /(CAST($14):DOUBLE, $13))], catalog_sales_quantitycov=[/(POWER(/(-($15, /(*($16, $16), $17)), CASE(=($17, 1), null:BIGINT, -($17, 1))), 0.5:DECIMAL(2, 1)), /(CAST($14):DOUBLE, $13))])
+      JdbcAggregate(group=[{0, 1, 2}], agg#0=[count($3)], agg#1=[sum($3)], agg#2=[sum($7)], agg#3=[sum($6)], agg#4=[count($6)], agg#5=[count($4)], agg#6=[sum($4)], agg#7=[sum($9)], agg#8=[sum($8)], agg#9=[count($8)], agg#10=[count($5)], agg#11=[sum($5)], agg#12=[sum($11)], agg#13=[sum($10)], agg#14=[count($10)])
+        JdbcProject($f0=[$10], $f1=[$11], $f2=[$8], $f3=[$5], $f4=[$16], $f5=[$21], $f30=[CAST($5):DOUBLE], $f7=[*(CAST($5):DOUBLE, CAST($5):DOUBLE)], $f40=[CAST($16):DOUBLE], $f9=[*(CAST($16):DOUBLE, CAST($16):DOUBLE)], $f50=[CAST($21):DOUBLE], $f11=[*(CAST($21):DOUBLE, CAST($21):DOUBLE)])
+          JdbcJoin(condition=[AND(=($2, $14), =($1, $13), =($4, $15))], joinType=[inner])
+            JdbcJoin(condition=[=($9, $1)], joinType=[inner])
+              JdbcJoin(condition=[=($7, $3)], joinType=[inner])
+                JdbcJoin(condition=[=($6, $0)], joinType=[inner])
+                  JdbcProject(ss_sold_date_sk=[$0], ss_item_sk=[$1], ss_customer_sk=[$2], ss_store_sk=[$3], ss_ticket_number=[$4], ss_quantity=[$5])
+                    JdbcFilter(condition=[AND(IS NOT NULL($2), IS NOT NULL($1), IS NOT NULL($4), IS NOT NULL($0), IS NOT NULL($3))])
+                      JdbcProject(ss_sold_date_sk=[$0], ss_item_sk=[$2], ss_customer_sk=[$3], ss_store_sk=[$7], ss_ticket_number=[$9], ss_quantity=[$10])
+                        JdbcHiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                  JdbcProject(d_date_sk=[$0])
+                    JdbcFilter(condition=[AND(=($1, _UTF-16LE'2000Q1'), IS NOT NULL($0))])
+                      JdbcProject(d_date_sk=[$0], d_quarter_name=[$15])
+                        JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[d1])
+                JdbcProject(s_store_sk=[$0], s_state=[$1])
+                  JdbcFilter(condition=[IS NOT NULL($0)])
+                    JdbcProject(s_store_sk=[$0], s_state=[$24])
+                      JdbcHiveTableScan(table=[[default, store]], table:alias=[store])
+              JdbcProject(i_item_sk=[$0], i_item_id=[$1], i_item_desc=[$2])
+                JdbcFilter(condition=[IS NOT NULL($0)])
+                  JdbcProject(i_item_sk=[$0], i_item_id=[$1], i_item_desc=[$4])
+                    JdbcHiveTableScan(table=[[default, item]], table:alias=[item])
+            JdbcProject(sr_returned_date_sk=[$0], sr_item_sk=[$1], sr_customer_sk=[$2], sr_ticket_number=[$3], sr_return_quantity=[$4], d_date_sk=[$5], cs_sold_date_sk=[$6], cs_bill_customer_sk=[$7], cs_item_sk=[$8], cs_quantity=[$9], d_date_sk0=[$10])
+              JdbcJoin(condition=[AND(=($2, $7), =($1, $8))], joinType=[inner])
+                JdbcJoin(condition=[=($0, $5)], joinType=[inner])
+                  JdbcProject(sr_returned_date_sk=[$0], sr_item_sk=[$1], sr_customer_sk=[$2], sr_ticket_number=[$3], sr_return_quantity=[$4])
+                    JdbcFilter(condition=[AND(IS NOT NULL($2), IS NOT NULL($1), IS NOT NULL($3), IS NOT NULL($0))])
+                      JdbcProject(sr_returned_date_sk=[$0], sr_item_sk=[$2], sr_customer_sk=[$3], sr_ticket_number=[$9], sr_return_quantity=[$10])
+                        JdbcHiveTableScan(table=[[default, store_returns]], table:alias=[store_returns])
+                  JdbcProject(d_date_sk=[$0])
+                    JdbcFilter(condition=[AND(IN($1, _UTF-16LE'2000Q1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'2000Q2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'2000Q3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NOT NULL($0))])
+                      JdbcProject(d_date_sk=[$0], d_quarter_name=[$15])
+                        JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[d2])
+                JdbcProject(cs_sold_date_sk=[$0], cs_bill_customer_sk=[$1], cs_item_sk=[$2], cs_quantity=[$3], d_date_sk=[$4])
+                  JdbcJoin(condition=[=($0, $4)], joinType=[inner])
+                    JdbcProject(cs_sold_date_sk=[$0], cs_bill_customer_sk=[$1], cs_item_sk=[$2], cs_quantity=[$3])
+                      JdbcFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($2), IS NOT NULL($0))])
+                        JdbcProject(cs_sold_date_sk=[$0], cs_bill_customer_sk=[$3], cs_item_sk=[$15], cs_quantity=[$18])
+                          JdbcHiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                    JdbcProject(d_date_sk=[$0])
+                      JdbcFilter(condition=[AND(IN($1, _UTF-16LE'2000Q1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'2000Q2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'2000Q3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NOT NULL($0))])
+                        JdbcProject(d_date_sk=[$0], d_quarter_name=[$15])
+                          JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[d3])
+
