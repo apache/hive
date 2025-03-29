@@ -18,15 +18,16 @@
 
 package org.apache.hadoop.hive.ql.lockmgr;
 
-import org.junit.Assert;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 public class TestHiveLockObject {
 
-  private HiveConf conf = new HiveConf();
+  private final HiveConf conf = new HiveConf();
 
   @Test
   public void testEqualsAndHashCode() {
@@ -34,13 +35,13 @@ public class TestHiveLockObject {
         "select * from mytable", conf);
     HiveLockObjectData data2 = new HiveLockObjectData("ID1", "SHARED", "1997-07-01",
         "select * from mytable", conf);
-    Assert.assertEquals(data1, data2);
-    Assert.assertEquals(data1.hashCode(), data2.hashCode());
+    assertEquals(data1, data2);
+    assertEquals(data1.hashCode(), data2.hashCode());
 
     HiveLockObject obj1 = new HiveLockObject("mytable", data1);
     HiveLockObject obj2 = new HiveLockObject("mytable", data2);
-    Assert.assertEquals(obj1, obj2);
-    Assert.assertEquals(obj1.hashCode(), obj2.hashCode());
+    assertEquals(obj1, obj2);
+    assertEquals(obj1.hashCode(), obj2.hashCode());
   }
 
   @Test
@@ -48,8 +49,8 @@ public class TestHiveLockObject {
     conf.setIntVar(HiveConf.ConfVars.HIVE_LOCK_QUERY_STRING_MAX_LENGTH, 1000000);
     HiveLockObjectData data0 = new HiveLockObjectData("ID1", "SHARED", "1997-07-01",
         "01234567890", conf);
-    Assert.assertEquals("With default settings query string should not be truncated",
-        data0.getQueryStr().length(), 11);
+    assertEquals("With default settings query string should not be truncated",
+        11, data0.getQueryStr().length());
     conf.setIntVar(HiveConf.ConfVars.HIVE_LOCK_QUERY_STRING_MAX_LENGTH, 10);
     HiveLockObjectData data1 = new HiveLockObjectData("ID1", "SHARED", "1997-07-01",
         "01234567890", conf);
@@ -59,9 +60,57 @@ public class TestHiveLockObject {
         "012345678", conf);
     HiveLockObjectData data4 = new HiveLockObjectData("ID1", "SHARED", "1997-07-01",
         null, conf);
-    Assert.assertEquals("Long string truncation failed", data1.getQueryStr().length(), 10);
-    Assert.assertEquals("String truncation failed", data2.getQueryStr().length(), 10);
-    Assert.assertEquals("Short string should not be truncated", data3.getQueryStr().length(), 9);
-    Assert.assertNull("Null query string handling failed", data4.getQueryStr());
+    assertEquals("Long string truncation failed", 10, data1.getQueryStr().length());
+    assertEquals("String truncation failed", 10, data2.getQueryStr().length());
+    assertEquals("Short string should not be truncated", 9, data3.getQueryStr().length());
+    assertNull("Null query string handling failed", data4.getQueryStr());
+  }
+
+  @Test
+  public void testConstructor_withoutClientIp() {
+    String data = "query1:2025-03-31:EXPLICIT:SELECT * FROM table";
+    HiveLockObjectData lockObjectData = new HiveLockObjectData(data);
+
+    assertEquals("queryId should match", "query1", lockObjectData.getQueryId());
+    assertEquals("lockTime should match", "2025-03-31", lockObjectData.getLockTime());
+    assertEquals("lockMode should match", "EXPLICIT", lockObjectData.getLockMode());
+    assertEquals("queryStr should match", "SELECT * FROM table", lockObjectData.getQueryStr());
+    assertNull("clientIp should be null", lockObjectData.getClientIp());
+  }
+
+  @Test
+  public void testConstructor_withIPv4ClientIp() {
+    String data = "query2:2025-03-31:EXPLICIT:SELECT * FROM table:192.168.0.1";
+    HiveLockObjectData lockObjectData = new HiveLockObjectData(data);
+
+    assertEquals("queryId should match", "query2", lockObjectData.getQueryId());
+    assertEquals("lockTime should match", "2025-03-31", lockObjectData.getLockTime());
+    assertEquals("lockMode should match", "EXPLICIT", lockObjectData.getLockMode());
+    assertEquals("queryStr should match", "SELECT * FROM table", lockObjectData.getQueryStr());
+    assertEquals("clientIp should match", "192.168.0.1", lockObjectData.getClientIp());
+  }
+
+  @Test
+  public void testConstructor_withIPv6ClientIp() {
+    String data = "query3:2025-03-31:EXPLICIT:SELECT * FROM table:2001:0db8:85a3:0000:0000:8a2e:0370:7334";
+    HiveLockObjectData lockObjectData = new HiveLockObjectData(data);
+
+    assertEquals("queryId should match", "query3", lockObjectData.getQueryId());
+    assertEquals("lockTime should match", "2025-03-31", lockObjectData.getLockTime());
+    assertEquals("lockMode should match", "EXPLICIT", lockObjectData.getLockMode());
+    assertEquals("queryStr should match", "SELECT * FROM table", lockObjectData.getQueryStr());
+    assertEquals("clientIp should match", "2001:0db8:85a3:0000:0000:8a2e:0370:7334", lockObjectData.getClientIp());
+  }
+
+  @Test
+  public void testConstructor_withHostname() {
+    String data = "query5:2025-03-31:EXPLICIT:SELECT * FROM table:some.company.com";
+    HiveLockObjectData lockObjectData = new HiveLockObjectData(data);
+
+    assertEquals("queryId should match", "query5", lockObjectData.getQueryId());
+    assertEquals("lockTime should match", "2025-03-31", lockObjectData.getLockTime());
+    assertEquals("lockMode should match", "EXPLICIT", lockObjectData.getLockMode());
+    assertEquals("queryStr should match", "SELECT * FROM table", lockObjectData.getQueryStr());
+    assertEquals("clientIp should match", "some.company.com", lockObjectData.getClientIp());
   }
 }

@@ -71,8 +71,8 @@ public class HiveLockObject {
     /**
      * Constructor
      * 
-     * @param data String of the form "queryId:lockTime:lockMode:queryStr". 
-     * No ':' characters are allowed in any of the components.
+     * @param data String of the form "queryId:lockTime:lockMode:queryStr[:clientIp]". 
+     * No ':' characters are allowed in any of the first four components, but the clientIp can contain colons (IPv6).
      */
     public HiveLockObjectData(String data) {
       if (data == null) {
@@ -85,7 +85,9 @@ public class HiveLockObject {
       lockMode = elem[2];
       queryStr = StringInternUtils.internIfNotNull(elem[3]);
       if (elem.length >= 5) {
-        clientIp = elem[4];
+        String prefix = queryId + ":" + lockTime + ":" + lockMode + ":" + queryStr + ":";
+        // The client IP is the suffix after the 4th colon, this can be IPv6 with colons
+        clientIp = data.substring(data.indexOf(prefix) + prefix.length());
       }
     }
 
