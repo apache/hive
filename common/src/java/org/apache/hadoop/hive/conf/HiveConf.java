@@ -2748,6 +2748,8 @@ public class HiveConf extends Configuration {
         "Analyzes and merges equiv downstream operators after a successful shared work optimization step."),
     HIVE_SHARED_WORK_PARALLEL_EDGE_SUPPORT("hive.optimize.shared.work.parallel.edge.support", true,
         "Lets the shared work optimizer to create parallel edges in case they are for semijoins or mapjoins."),
+    HIVE_SHARED_WORK_MAX_SIBLINGS("hive.optimize.shared.work.max.siblings", -1,
+        "The maximum number of operators merged in a single iteration. -1 means infinite"),
     HIVE_REMOVE_SQ_COUNT_CHECK("hive.optimize.remove.sq_count_check", true,
         "Whether to remove an extra join with sq_count_check for scalar subqueries "
             + "with constant group by keys."),
