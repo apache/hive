@@ -20,6 +20,8 @@
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -45,10 +47,13 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
   private static final Logger LOG = LoggerFactory.getLogger(CreateTableEvent.class);
 
   private String COMMAND_STR = "create table";
+  private Warehouse wh;
 
 
   public CreateTableEvent(PreEventContext preEventContext) {
-      super(preEventContext);
+
+    super(preEventContext);
+    this.wh = preEventContext.getHandler().getWh();
   }
 
   @Override
@@ -62,11 +67,26 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
     List<HivePrivilegeObject> ret   = new ArrayList<>();
     PreCreateTableEvent       event = (PreCreateTableEvent) preEventContext;
     Table                     table = event.getTable();
-    String                    uri   = getSdLocation(table.getSd());
+    Database               database = event.getDatabase();
+    String                      uri = getSdLocation(table.getSd());
 
-    if (StringUtils.isNotEmpty(uri)) {
+    if (StringUtils.isEmpty(uri)) {
+      return ret;
+    }
+
+    boolean isExternalTable = table.getTableType().equalsIgnoreCase(TableType.EXTERNAL_TABLE.toString());
+    String expectedTablePath = null;
+    try {
+      expectedTablePath = wh.getDefaultTablePath(database, table.getTableName(), isExternalTable).toString();
+    } catch (MetaException e) {
+      LOG.warn("Got exception fetching Default table location for table " + table.getTableName(), e);
+    }
+
+    // Skip DFS_URI only if table location is under default db path
+    if (StringUtils.isEmpty(expectedTablePath) || !uri.equals(expectedTablePath)) {
       ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DFS_URI, null, uri));
     }
+
     return ret;
   }
 
@@ -76,20 +96,31 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
     List<HivePrivilegeObject> ret   = new ArrayList<>();
     PreCreateTableEvent       event = (PreCreateTableEvent) preEventContext;
     Table                     table = event.getTable();
-    Database                  database = event.getDatabase();
-    String                    uri   = getSdLocation(table.getSd());
+    Database               database = event.getDatabase();
+    String                      uri = getSdLocation(table.getSd());
 
     ret.add(getHivePrivilegeObject(database));
     ret.add(getHivePrivilegeObject(table));
 
-    if (StringUtils.isNotEmpty(uri) && !TableType.EXTERNAL_TABLE.toString().equalsIgnoreCase(table.getTableType())) {
-      ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DFS_URI, null, uri));
+    if (StringUtils.isNotEmpty(uri)) {
+      boolean isExternalTable = table.getTableType().equalsIgnoreCase(TableType.EXTERNAL_TABLE.toString());
+      String expectedTablePath = null;
+      try {
+        expectedTablePath = wh.getDefaultTablePath(database, table.getTableName(), isExternalTable).toString();
+      } catch (MetaException e) {
+        LOG.warn("Got exception fetching Default table location for table " + table.getTableName(), e);
+      }
+
+      // Skip DFS_URI for external tables and if managed table location is under default db path
+      if (!isExternalTable) {
+        if (StringUtils.isEmpty(expectedTablePath) || !uri.equals(expectedTablePath)) {
+          ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DFS_URI, null, uri));
+        }
+      }
     }
 
-    COMMAND_STR = buildCommandString(COMMAND_STR,table);
-
+    COMMAND_STR = buildCommandString(COMMAND_STR, table);
     LOG.debug("<== CreateTableEvent.getOutputHObjs(): ret={}", ret);
-
     return ret;
   }
 
@@ -101,4 +132,5 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
     }
     return ret;
   }
+
 }
