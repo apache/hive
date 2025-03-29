@@ -2818,8 +2818,9 @@ public class Hive implements AutoCloseable {
       if (oldPart == null) {
         newTPart.getTPartition().setParameters(new HashMap<String,String>());
         if (this.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER)) {
-          StatsSetupConst.setStatsStateForCreateTable(newTPart.getParameters(),
-              MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
+          List<String> colNames = this.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STATS_COL_AUTOGATHER) ?
+              MetaStoreUtils.getColumnNames(tbl.getCols()) : null;
+          StatsSetupConst.setStatsStateForCreateTable(newTPart.getParameters(), colNames, StatsSetupConst.TRUE);
         }
         // Note: we are creating a brand new the partition, so this is going to be valid for ACID.
         List<FileStatus> filesForStats = null;
