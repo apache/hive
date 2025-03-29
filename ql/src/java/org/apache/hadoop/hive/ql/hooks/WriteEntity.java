@@ -269,6 +269,7 @@ public class WriteEntity extends Entity implements Serializable {
       case SET_SERDE_PROPS:
       case ADDPROPS:
       case UPDATESTATS:
+      case DROPSTATS:
         return WriteType.DDL_SHARED;
 
       case COMPACT:
