@@ -166,6 +166,8 @@ public class Operation2Privilege {
     // to output instead of input, adding owner requirement on output will catch that as well
     op2Priv.put(HiveOperationType.ALTERTABLE_ADDCOLS,
         PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType. ALTERTABLE_DROPCOL,
+            PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTERTABLE_REPLACECOLS,
         PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTERTABLE_RENAMECOL,

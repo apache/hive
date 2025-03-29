@@ -102,6 +102,7 @@ alterTblPartitionStatementSuffix[boolean partition]
   | alterStatementSuffixUpdateStats[partition]
   | alterStatementSuffixRenameCol
   | alterStatementSuffixAddCol
+  | alterStatementSuffixDropCol
   | alterStatementSuffixUpdateColumns
   ;
 
@@ -207,6 +208,13 @@ alterStatementSuffixAddCol
     : (add=KW_ADD | replace=KW_REPLACE) KW_COLUMNS LPAREN columnNameTypeList RPAREN restrictOrCascade?
     -> {$add != null}? ^(TOK_ALTERTABLE_ADDCOLS columnNameTypeList restrictOrCascade?)
     ->                 ^(TOK_ALTERTABLE_REPLACECOLS columnNameTypeList restrictOrCascade?)
+    ;
+
+alterStatementSuffixDropCol
+@init { gParent.pushMsg("drop column statement", state); }
+@after { gParent.popMsg(state); }
+    : KW_DROP KW_COLUMN ifExists? columnName restrictOrCascade?
+    -> ^(TOK_ALTERTABLE_DROPCOL ifExists? columnName restrictOrCascade?)
     ;
 
 alterStatementSuffixAddConstraint

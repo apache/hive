@@ -1,0 +1,77 @@
+PREHOOK: query: CREATE TABLE myparquettable_parted
+(
+  name string,
+  favnumber int,
+  favcolor string
+)
+PARTITIONED BY (day string)
+STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@myparquettable_parted
+POSTHOOK: query: CREATE TABLE myparquettable_parted
+(
+  name string,
+  favnumber int,
+  favcolor string
+)
+PARTITIONED BY (day string)
+STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@myparquettable_parted
+PREHOOK: query: INSERT OVERWRITE TABLE myparquettable_parted
+PARTITION(day='2017-04-04')
+SELECT
+   'mary' as name,
+   5 AS favnumber,
+   'blue' AS favcolor
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@myparquettable_parted@day=2017-04-04
+POSTHOOK: query: INSERT OVERWRITE TABLE myparquettable_parted
+PARTITION(day='2017-04-04')
+SELECT
+   'mary' as name,
+   5 AS favnumber,
+   'blue' AS favcolor
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@myparquettable_parted@day=2017-04-04
+POSTHOOK: Lineage: myparquettable_parted PARTITION(day=2017-04-04).favcolor SIMPLE []
+POSTHOOK: Lineage: myparquettable_parted PARTITION(day=2017-04-04).favnumber SIMPLE []
+POSTHOOK: Lineage: myparquettable_parted PARTITION(day=2017-04-04).name SIMPLE []
+PREHOOK: query: select * from myparquettable_parted
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myparquettable_parted
+PREHOOK: Input: default@myparquettable_parted@day=2017-04-04
+#### A masked pattern was here ####
+POSTHOOK: query: select * from myparquettable_parted
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myparquettable_parted
+POSTHOOK: Input: default@myparquettable_parted@day=2017-04-04
+#### A masked pattern was here ####
+mary	5	blue	2017-04-04
+PREHOOK: query: alter table myparquettable_parted
+drop column favcolor cascade
+PREHOOK: type: ALTERTABLE_DROPCOL
+PREHOOK: Input: default@myparquettable_parted
+PREHOOK: Output: default@myparquettable_parted
+PREHOOK: Output: default@myparquettable_parted@day=2017-04-04
+POSTHOOK: query: alter table myparquettable_parted
+drop column favcolor cascade
+POSTHOOK: type: ALTERTABLE_DROPCOL
+POSTHOOK: Input: default@myparquettable_parted
+POSTHOOK: Output: default@myparquettable_parted
+POSTHOOK: Output: default@myparquettable_parted@day=2017-04-04
+PREHOOK: query: select * from myparquettable_parted
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myparquettable_parted
+PREHOOK: Input: default@myparquettable_parted@day=2017-04-04
+#### A masked pattern was here ####
+POSTHOOK: query: select * from myparquettable_parted
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myparquettable_parted
+POSTHOOK: Input: default@myparquettable_parted@day=2017-04-04
+#### A masked pattern was here ####
+mary	5	2017-04-04

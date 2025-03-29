@@ -1,0 +1,43 @@
+PREHOOK: query: CREATE TABLE iceberg_test_table (
+    id INT,
+    name STRING,
+    age INT,
+    salary DOUBLE
+) STORED BY ICEBERG
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iceberg_test_table
+POSTHOOK: query: CREATE TABLE iceberg_test_table (
+    id INT,
+    name STRING,
+    age INT,
+    salary DOUBLE
+) STORED BY ICEBERG
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iceberg_test_table
+PREHOOK: query: INSERT INTO iceberg_test_table VALUES (1, 'Alice', 25, 50000.0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@iceberg_test_table
+POSTHOOK: query: INSERT INTO iceberg_test_table VALUES (1, 'Alice', 25, 50000.0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@iceberg_test_table
+PREHOOK: query: ALTER TABLE iceberg_test_table DROP COLUMN IF EXISTS age
+PREHOOK: type: ALTERTABLE_DROPCOL
+PREHOOK: Input: default@iceberg_test_table
+PREHOOK: Output: default@iceberg_test_table
+POSTHOOK: query: ALTER TABLE iceberg_test_table DROP COLUMN IF EXISTS age
+POSTHOOK: type: ALTERTABLE_DROPCOL
+POSTHOOK: Input: default@iceberg_test_table
+POSTHOOK: Output: default@iceberg_test_table
+PREHOOK: query: SELECT * FROM iceberg_test_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_test_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM iceberg_test_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_test_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	Alice	50000.0
