@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFieldDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFields;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
@@ -70,6 +71,7 @@ import org.apache.hadoop.hive.ql.parse.PartitionTransform;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
@@ -115,10 +117,13 @@ import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.expressions.UnboundPredicate;
 import org.apache.iceberg.expressions.UnboundTerm;
+import org.apache.iceberg.hadoop.ConfigProperties;
 import org.apache.iceberg.hive.CachedClientPool;
+import org.apache.iceberg.hive.HiveLock;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.hive.MetastoreLock;
+import org.apache.iceberg.hive.NoLock;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.mapping.MappingUtil;
@@ -193,7 +198,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   private Transaction transaction;
   private AlterTableType currentAlterTableOp;
   private boolean createHMSTableInHook = false;
-  private MetastoreLock commitLock;
+  private HiveLock commitLock;
 
   private enum FileFormat {
     ORC("orc"), PARQUET("parquet"), AVRO("avro");
@@ -409,8 +414,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
           context.getProperties().get(OLD_TABLE_NAME)).toString());
     }
     if (commitLock == null) {
-      commitLock = new MetastoreLock(conf, new CachedClientPool(conf, Maps.fromProperties(catalogProperties)),
-          catalogProperties.getProperty(Catalogs.NAME), hmsTable.getDbName(), hmsTable.getTableName());
+      commitLock = lockObject(hmsTable);
     }
 
     try {
@@ -420,6 +424,32 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       commitLock.unlock();
       throw new MetaException(StringUtils.stringifyException(e));
     }
+  }
+
+  private HiveLock lockObject(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    if (hiveLockEnabled(hmsTable, conf)) {
+      return new MetastoreLock(conf, new CachedClientPool(conf, Maps.fromProperties(catalogProperties)),
+          catalogProperties.getProperty(Catalogs.NAME), hmsTable.getDbName(), hmsTable.getTableName());
+    } else {
+      return new NoLock();
+    }
+  }
+
+  private static boolean hiveLockEnabled(org.apache.hadoop.hive.metastore.api.Table hmsTable, Configuration conf) {
+    if (SessionStateUtil.getQueryState(conf).map(QueryState::getHiveOperation)
+        .filter(opType -> HiveOperation.ANALYZE_TABLE == opType)
+        .isPresent()) {
+      return false;
+    }
+
+    if (hmsTable.getParameters().containsKey(TableProperties.HIVE_LOCK_ENABLED)) {
+      // We know that the property is set, so default value will not be used,
+      return Boolean.parseBoolean(
+          hmsTable.getParameters().getOrDefault(TableProperties.HIVE_LOCK_ENABLED, "false"));
+    }
+
+    return conf.getBoolean(
+        ConfigProperties.LOCK_HIVE_ENABLED, TableProperties.HIVE_LOCK_ENABLED_DEFAULT);
   }
 
   private void doPreAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
