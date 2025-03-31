@@ -77,7 +77,6 @@ import org.apache.calcite.rel.RelCollations;
 import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.RelDistributions;
 import org.apache.calcite.rel.RelFieldCollation;
-import org.apache.calcite.rel.RelHomogeneousShuttle;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelVisitor;
 import org.apache.calcite.rel.convert.ConverterImpl;
@@ -177,12 +176,12 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.RuleEventLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.SearchTransformer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.CteRuleConfig;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSortLimitRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveInToSearchRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveLoptOptimizeJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveEmptySingleRules;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSearchExpandRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRexShuttleTransformRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.InSearchShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.RemoveInfrequentCteRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAggregateProjectMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializationRelMetadataProvider;
@@ -1780,14 +1779,20 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     private RelNode applyInSearchTransforms(RelNode basePlan, RelMetadataProvider mdProvider, RexExecutor executor) {
       HepProgramBuilder program = new HepProgramBuilder();
-      generatePartialProgram(program, true, HepMatchOrder.DEPTH_FIRST,
-          new HiveInToSearchRule.Config().withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+      RexShuttle inShuttle = new InSearchShuttle(cluster.getRexBuilder());
+      generatePartialProgram(program,
+          true,
+          HepMatchOrder.DEPTH_FIRST,
+          new HiveRexShuttleTransformRule.Config().withRexShuttle(inShuttle)
+              .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
               .withOperandSupplier(b -> b.operand(HiveFilter.class).anyInputs())
               .withDescription("HiveInToSearchFilterRule").toRule(),
-          new HiveInToSearchRule.Config().withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-              .withOperandSupplier(b -> b.operand(HiveJoin.class).anyInputs())
-              .withDescription("HiveInToSearchJoinRule").toRule(),
-          new HiveInToSearchRule.Config().withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+          new HiveRexShuttleTransformRule.Config().withRexShuttle(inShuttle)
+              .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+              .withOperandSupplier(b -> b.operand(HiveJoin.class).anyInputs()).withDescription("HiveInToSearchJoinRule")
+              .toRule(),
+          new HiveRexShuttleTransformRule.Config().withRexShuttle(inShuttle)
+              .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
               .withOperandSupplier(b -> b.operand(HiveProject.class).anyInputs())
               .withDescription("HiveInToSearchProjectRule").toRule());
       return executeProgram(basePlan, program.build(), mdProvider, executor);
@@ -2386,16 +2391,23 @@ public class CalcitePlanner extends SemanticAnalyzer {
             HiveWindowingLastValueRewrite.INSTANCE);
       }
 
+      RexShuttle searchShuttle = new SearchTransformer.Shuttle(cluster.getRexBuilder());
       generatePartialProgram(program,
           true,
           HepMatchOrder.DEPTH_FIRST,
-          new HiveSearchExpandRule.Config().withDescription("HiveProjectSearchExpandRule")
+          new HiveRexShuttleTransformRule.Config()
+              .withRexShuttle(searchShuttle)
+              .withDescription("HiveProjectSearchExpandRule")
               .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
               .withOperandSupplier(o -> o.operand(HiveProject.class).anyInputs()).toRule(),
-          new HiveSearchExpandRule.Config().withDescription("HiveFilterSearchExpandRule")
+          new HiveRexShuttleTransformRule.Config()
+              .withRexShuttle(searchShuttle)
+              .withDescription("HiveFilterSearchExpandRule")
               .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
               .withOperandSupplier(o -> o.operand(HiveFilter.class).anyInputs()).toRule(),
-          new HiveSearchExpandRule.Config().withDescription("HiveJoinSearchExpandRule")
+          new HiveRexShuttleTransformRule.Config()
+              .withRexShuttle(searchShuttle)
+              .withDescription("HiveJoinSearchExpandRule")
               .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
               .withOperandSupplier(o -> o.operand(HiveJoin.class).anyInputs()).toRule());
 

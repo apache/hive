@@ -20,26 +20,35 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelRule;
 import org.apache.calcite.rel.RelNode;
-import org.apache.hadoop.hive.ql.optimizer.calcite.SearchTransformer;
+import org.apache.calcite.rex.RexShuttle;
 
-public class HiveSearchExpandRule extends RelRule<HiveSearchExpandRule.Config> {
-  private HiveSearchExpandRule(Config config) {
+import java.util.Objects;
+
+public class HiveRexShuttleTransformRule extends RelRule<HiveRexShuttleTransformRule.Config> {
+  private HiveRexShuttleTransformRule(Config config) {
     super(config);
   }
 
   @Override
   public void onMatch(final RelOptRuleCall call) {
     RelNode startNode = call.rel(0);
-    RelNode rewriteNode = startNode.accept(new SearchTransformer.Shuttle(call.builder().getRexBuilder()));
+    RelNode rewriteNode = startNode.accept(config.shuttle);
     if (startNode != rewriteNode) {
       call.transformTo(rewriteNode);
     }
   }
 
   public static class Config extends BaseMutableHiveConfig {
+    private RexShuttle shuttle;
+
+    public Config withRexShuttle(RexShuttle shuttle) {
+      this.shuttle = Objects.requireNonNull(shuttle);
+      return this;
+    }
+
     @Override
-    public HiveSearchExpandRule toRule() {
-      return new HiveSearchExpandRule(this);
+    public HiveRexShuttleTransformRule toRule() {
+      return new HiveRexShuttleTransformRule(this);
     }
   }
 
