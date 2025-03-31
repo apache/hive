@@ -107,10 +107,10 @@ HiveProject(col_7=[$1], col_3=[$3], col_20=[$2], col_21_1232=[$5], col_1=[$0], c
       HiveJoin(condition=[=($0, $6)], joinType=[left], algorithm=[none], cost=[not available])
         HiveJoin(condition=[=($2, $4)], joinType=[left], algorithm=[none], cost=[not available])
           HiveProject(col_1=[$0], col_7=[$2], col_20=[$3], col_3=[CAST($1):DATE])
-            HiveFilter(condition=[AND(OR(IS NULL($2), IS NOT NULL(CAST($2):DOUBLE)), SEARCH($3, Sarg[_UTF-16LE'part1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'part2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'part3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"]:VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), SEARCH(CAST($1):DATE, Sarg[[2018-07-01:DATE..2019-01-23:DATE]]:DATE))])
+            HiveFilter(condition=[AND(OR(IS NULL($2), IS NOT NULL(CAST($2):DOUBLE)), IN($3, _UTF-16LE'part1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'part2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'part3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), BETWEEN(false, CAST($1):DATE, 2018-07-01:DATE, 2019-01-23:DATE))])
               HiveTableScan(table=[[default, my_table_0001]], table:alias=[table__323])
           HiveProject(col_24=[$0], col_21=[$1])
-            HiveFilter(condition=[SEARCH($0, Sarg[_UTF-16LE'part1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'part2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'part3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"; NULL AS FALSE]:VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
+            HiveFilter(condition=[AND(IS NOT NULL($0), IN($0, _UTF-16LE'part1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'part2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'part3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))])
               HiveTableScan(table=[[default, my_table_0003]], table:alias=[table__1232])
         HiveProject(col_1=[$0], col_22=[$1], col_23=[$2])
           HiveFilter(condition=[IS NOT NULL($0)])
@@ -173,10 +173,18 @@ POSTHOOK: Input: default@my_table_0003
 OPTIMIZED SQL: SELECT `t0`.`col_7`, `t0`.`col_3`, `t0`.`col_20`, `t2`.`col_21` AS `col_21_1232`, `t0`.`col_1`, `t4`.`col_22`, `t6`.`col_21` AS `col_21_879`, `t4`.`col_23`
 FROM (SELECT `col_1`, `col_7`, `col_20`, CAST(`col_3` AS DATE) AS `col_3`
 FROM `default`.`my_table_0001`
-WHERE (`col_7` IS NULL OR CAST(`col_7` AS DOUBLE) IS NOT NULL) AND `col_20` IN ('part1', 'part2', 'part3') AND (CAST(`col_3` AS DATE) >= DATE '2018-07-01' AND CAST(`col_3` AS DATE) <= DATE '2019-01-23')) AS `t0`
+WHERE (`col_7` IS NULL OR CAST(`col_7` AS DOUBLE) IS NOT NULL) AND `col_20` IN ('part1'
+,
+'part2'
+,
+'part3') AND CAST(`col_3` AS DATE) BETWEEN DATE '2018-07-01' AND DATE '2019-01-23') AS `t0`
 LEFT JOIN (SELECT `col_24`, `col_21`
 FROM `default`.`my_table_0003`
-WHERE `col_24` IN ('part1', 'part2', 'part3')) AS `t2` ON `t0`.`col_20` = `t2`.`col_24`
+WHERE `col_24` IS NOT NULL AND `col_24` IN ('part1'
+,
+'part2'
+,
+'part3')) AS `t2` ON `t0`.`col_20` = `t2`.`col_24`
 LEFT JOIN (SELECT `col_1`, `col_22`, `col_23`
 FROM `default`.`my_table_0001_00`
 WHERE `col_1` IS NOT NULL) AS `t4` ON `t0`.`col_1` = `t4`.`col_1`
@@ -659,7 +667,7 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(p_name=[$0])
-  HiveFilter(condition=[AND(OR(IS NULL($8), SEARCH($4, Sarg[0L:BIGINT; NULL AS TRUE]:BIGINT)), OR(IS NULL($1), SEARCH($4, Sarg[0L:BIGINT; NULL AS TRUE]:BIGINT), IS NOT TRUE(<($5, $4)), IS NOT NULL($8)), OR(SEARCH($4, Sarg[0L:BIGINT; NULL AS TRUE]:BIGINT), IS NOT NULL($1), IS NOT NULL($8)))])
+  HiveFilter(condition=[AND(OR(IS NULL($8), IS NULL($4), =($4, 0)), OR(IS NULL($1), IS NULL($4), =($4, 0), IS NOT TRUE(<($5, $4)), IS NOT NULL($8)), OR(IS NULL($4), =($4, 0), IS NOT NULL($1), IS NOT NULL($8)))])
     HiveProject(p_name=[$0], p_type=[$1], size=[$2], size0=[$6], c=[$4], ck=[$5], p_type0=[$7], size1=[$8], $f2=[$9])
       HiveJoin(condition=[AND(=($1, $7), =($2, $8))], joinType=[left], algorithm=[none], cost=[not available])
         HiveJoin(condition=[=($2, $6)], joinType=[left], algorithm=[none], cost=[not available])
@@ -767,7 +775,7 @@ INNER JOIN (SELECT `p_size` + 1 AS `$f0`
 FROM `default`.`part`
 WHERE `p_size` IS NOT NULL
 GROUP BY `p_size` + 1) AS `t15` ON `t11`.`$f1` = `t15`.`$f0`) AS `t16` ON `t`.`p_type` = `t16`.`p_type` AND `t`.`size` = `t16`.`size`) AS `t17`
-WHERE (`t17`.`$f2` IS NULL OR (`t17`.`c` IS NULL OR `t17`.`c` = 0)) AND (`t17`.`p_type` IS NULL OR (`t17`.`c` IS NULL OR `t17`.`c` = 0) OR `t17`.`ck` < `t17`.`c` IS NOT TRUE OR `t17`.`$f2` IS NOT NULL) AND (`t17`.`c` IS NULL OR `t17`.`c` = 0 OR `t17`.`p_type` IS NOT NULL OR `t17`.`$f2` IS NOT NULL)
+WHERE (`t17`.`$f2` IS NULL OR `t17`.`c` IS NULL OR `t17`.`c` = 0) AND (`t17`.`p_type` IS NULL OR `t17`.`c` IS NULL OR `t17`.`c` = 0 OR `t17`.`ck` < `t17`.`c` IS NOT TRUE OR `t17`.`$f2` IS NOT NULL) AND (`t17`.`c` IS NULL OR `t17`.`c` = 0 OR `t17`.`p_type` IS NOT NULL OR `t17`.`$f2` IS NOT NULL)
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

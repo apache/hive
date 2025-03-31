@@ -45,7 +45,7 @@ WHERE `key` > 100
 GROUP BY `key`) AS `t5`) AS `t6`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
-WHERE (CAST(`key` AS DOUBLE) < 20 OR CAST(`key` AS DOUBLE) > 100) AND `key` IS NOT NULL) AS `t8` ON `t6`.`key` = `t8`.`key`
+WHERE (`key` < 20 OR `key` > 100) AND `key` IS NOT NULL) AS `t8` ON `t6`.`key` = `t8`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

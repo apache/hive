@@ -63,7 +63,7 @@ public class HiveIn extends SqlSpecialOperator {
     SqlNode sqlNode = opList.get(0);
     sqlNode.unparse(writer, leftPrec, getLeftPrec());
     writer.sep("IN");
-    Frame frame = writer.startList(FrameTypeEnum.SETOP, "(", ")");
+    Frame frame = writer.startList(FrameTypeEnum.SIMPLE, "(", ")");
     for (SqlNode op : opList.subList(1, opList.size())) {
       writer.sep(",");
       op.unparse(writer, 0, 0);

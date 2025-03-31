@@ -181,6 +181,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveInToSearchRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveLoptOptimizeJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveEmptySingleRules;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSearchExpandRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.RemoveInfrequentCteRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAggregateProjectMergeRule;
@@ -1761,13 +1762,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
           LOG.debug("Plan after CTE rewriting:\n{}", RelOptUtil.toString(calcitePlan));
         }
       }
-      calcitePlan = calcitePlan.accept(new RelHomogeneousShuttle() {
-        @Override
-        public RelNode visit(final RelNode other) {
-          visitChildren(other);
-          return other.accept(new SearchTransformer.Shuttle(rexBuilder));
-        }
-      });
       perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.HIVE_SORT_PREDICATES);
       if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_SORT_PREDS_WITH_STATS)) {
         calcitePlan = calcitePlan.accept(new HiveFilterSortPredicates(noColsMissingStats));
@@ -2391,6 +2385,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
         generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
             HiveWindowingLastValueRewrite.INSTANCE);
       }
+
+      generatePartialProgram(program,
+          true,
+          HepMatchOrder.DEPTH_FIRST,
+          new HiveSearchExpandRule.Config().withDescription("HiveProjectSearchExpandRule")
+              .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+              .withOperandSupplier(o -> o.operand(HiveProject.class).anyInputs()).toRule(),
+          new HiveSearchExpandRule.Config().withDescription("HiveFilterSearchExpandRule")
+              .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+              .withOperandSupplier(o -> o.operand(HiveFilter.class).anyInputs()).toRule(),
+          new HiveSearchExpandRule.Config().withDescription("HiveJoinSearchExpandRule")
+              .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+              .withOperandSupplier(o -> o.operand(HiveJoin.class).anyInputs()).toRule());
 
       // 7. Apply Druid transformation rules
       generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,

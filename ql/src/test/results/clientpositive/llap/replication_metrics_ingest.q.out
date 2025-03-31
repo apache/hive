@@ -72,6 +72,7 @@ destination
 information_schema
 src
 sys
+tpch_0_001
 PREHOOK: query: use sys
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:sys

@@ -15,11 +15,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
-                  filterExpr: (ss_sales_price is not null and ss_sales_price BETWEEN 50 AND 200 and ss_net_profit is not null and ss_cdemo_sk is not null and ss_addr_sk is not null and ss_store_sk is not null) (type: boolean)
+                  filterExpr: (ss_sales_price BETWEEN 50 AND 200 and ss_net_profit is not null and ss_sales_price is not null and ss_cdemo_sk is not null and ss_addr_sk is not null and ss_store_sk is not null) (type: boolean)
                   probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_66_container, bigKeyColName:ss_addr_sk, smallTablePos:1, keyRatio:3.245580464030688E-4
                   Statistics: Num rows: 82510879939 Data size: 20962809999708 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (ss_sales_price is not null and ss_sales_price BETWEEN 50 AND 200 and ss_net_profit is not null and ss_cdemo_sk is not null and ss_addr_sk is not null and ss_store_sk is not null) (type: boolean)
+                    predicate: (ss_sales_price BETWEEN 50 AND 200 and ss_net_profit is not null and ss_sales_price is not null and ss_cdemo_sk is not null and ss_addr_sk is not null and ss_store_sk is not null) (type: boolean)
                     Statistics: Num rows: 54925699257 Data size: 13954486953516 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_cdemo_sk (type: bigint), ss_addr_sk (type: bigint), ss_quantity (type: int), ss_sold_date_sk (type: bigint), ss_net_profit BETWEEN 0 AND 2000 (type: boolean), ss_net_profit BETWEEN 150 AND 3000 (type: boolean), ss_net_profit BETWEEN 50 AND 25000 (type: boolean)
