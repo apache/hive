@@ -286,10 +286,17 @@ public interface HiveStorageHandler extends Configurable {
   /**
    * Returns column statistics (upper/lower bounds, number of Null/NaN values, NDVs, histogram).
    * @param table table object
+   * @param colNames list of column names            
    * @return list of ColumnStatisticsObj objects
    */
-  default List<ColumnStatisticsObj> getColStatistics(org.apache.hadoop.hive.ql.metadata.Table table) {
+  default List<ColumnStatisticsObj> getColStatistics(org.apache.hadoop.hive.ql.metadata.Table table, 
+        List<String> colNames) {
     return null;
+  }
+
+  @Deprecated
+  default List<ColumnStatisticsObj> getColStatistics(org.apache.hadoop.hive.ql.metadata.Table table) {
+    return getColStatistics(table, null);
   }
 
   /**
