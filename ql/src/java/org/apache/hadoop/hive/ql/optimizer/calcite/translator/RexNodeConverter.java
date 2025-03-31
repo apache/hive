@@ -547,16 +547,24 @@ public class RexNodeConverter {
       }
       for (int i = 1; i < operands.size(); i++) {
         List<RexNode> conjuncts = new ArrayList<>(columnExpressions.getOperands().size() - 1);
-        if (!(operands.get(i) instanceof RexLiteral)) {
+        List<?> valueExpressions = null;
+        if (operands.get(i) instanceof RexLiteral) {
+          RexLiteral literal = (RexLiteral) operands.get(i);
+          valueExpressions = literal.getValueAs(List.class);
+        } else if (operands.get(i) instanceof RexCall) {
+          RexCall call = (RexCall) operands.get(i);
+          if (HiveCalciteUtil.isDeterministic(call)) {
+            valueExpressions = call.getOperands();
+          }
+        }
+        if (valueExpressions == null) {
           return null;
         }
-        RexLiteral valueLiteral = ((RexLiteral) operands.get(i));
-        List<?> rawValues = valueLiteral.getValueAs(List.class);
         for (int j = 0; j < columnExpressions.getOperands().size(); j++) {
           conjuncts.add(rexBuilder.makeCall(
               SqlStdOperatorTable.EQUALS,
               columnExpressions.getOperands().get(j),
-              (RexLiteral) rawValues.get(j)));
+              (RexNode) valueExpressions.get(j)));
         }
         if (conjuncts.size() > 1) {
           disjuncts.add(rexBuilder.makeCall(
