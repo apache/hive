@@ -153,7 +153,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
-                  filterExpr: ((cdate < DATE'1969-07-14') or ((cdate > DATE'1969-07-14') and (cdate < DATE'1969-10-26')) or ((cdate > DATE'1969-10-26') and (cdate < DATE'1970-01-21')) or (cdate > DATE'1970-01-21')) (type: boolean)
+                  filterExpr: ((cdate < DATE'1969-07-14') or (cdate > DATE'1970-01-21') or ((cdate > DATE'1969-07-14') and (cdate < DATE'1969-10-26')) or ((cdate > DATE'1969-10-26') and (cdate < DATE'1970-01-21'))) (type: boolean)
                   Statistics: Num rows: 12289 Data size: 339304 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -161,8 +161,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterDateColLessDateScalar(col 3:date, val -171), FilterExprAndExpr(children: FilterDateColGreaterDateScalar(col 3:date, val -171), FilterDateColLessDateScalar(col 3:date, val -67)), FilterExprAndExpr(children: FilterDateColGreaterDateScalar(col 3:date, val -67), FilterDateColLessDateScalar(col 3:date, val 20)), FilterDateColGreaterDateScalar(col 3:date, val 20))
-                    predicate: ((cdate < DATE'1969-07-14') or ((cdate > DATE'1969-07-14') and (cdate < DATE'1969-10-26')) or ((cdate > DATE'1969-10-26') and (cdate < DATE'1970-01-21')) or (cdate > DATE'1970-01-21')) (type: boolean)
+                        predicateExpression: FilterExprOrExpr(children: FilterDateColLessDateScalar(col 3:date, val -171), FilterDateColGreaterDateScalar(col 3:date, val 20), FilterExprAndExpr(children: FilterDateColGreaterDateScalar(col 3:date, val -171), FilterDateColLessDateScalar(col 3:date, val -67)), FilterExprAndExpr(children: FilterDateColGreaterDateScalar(col 3:date, val -67), FilterDateColLessDateScalar(col 3:date, val 20)))
+                    predicate: ((cdate < DATE'1969-07-14') or (cdate > DATE'1970-01-21') or ((cdate > DATE'1969-07-14') and (cdate < DATE'1969-10-26')) or ((cdate > DATE'1969-10-26') and (cdate < DATE'1970-01-21'))) (type: boolean)
                     Statistics: Num rows: 12289 Data size: 339304 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Select Vectorization:
@@ -370,7 +370,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
-                  filterExpr: ((cdecimal1 < -3367.6517567568) or ((cdecimal1 > -3367.6517567568) and (cdecimal1 < 881.0135135135)) or ((cdecimal1 > 881.0135135135) and (cdecimal1 < 2365.8945945946)) or (cdecimal1 > 2365.8945945946)) (type: boolean)
+                  filterExpr: ((cdecimal1 < -3367.6517567568) or (cdecimal1 > 2365.8945945946) or ((cdecimal1 > -3367.6517567568) and (cdecimal1 < 881.0135135135)) or ((cdecimal1 > 881.0135135135) and (cdecimal1 < 2365.8945945946))) (type: boolean)
                   Statistics: Num rows: 12289 Data size: 1027600 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -378,8 +378,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterDecimalColLessDecimalScalar(col 1:decimal(20,10), val -3367.6517567568), FilterExprAndExpr(children: FilterDecimalColGreaterDecimalScalar(col 1:decimal(20,10), val -3367.6517567568), FilterDecimalColLessDecimalScalar(col 1:decimal(20,10), val 881.0135135135)), FilterExprAndExpr(children: FilterDecimalColGreaterDecimalScalar(col 1:decimal(20,10), val 881.0135135135), FilterDecimalColLessDecimalScalar(col 1:decimal(20,10), val 2365.8945945946)), FilterDecimalColGreaterDecimalScalar(col 1:decimal(20,10), val 2365.8945945946))
-                    predicate: ((cdecimal1 < -3367.6517567568) or ((cdecimal1 > -3367.6517567568) and (cdecimal1 < 881.0135135135)) or ((cdecimal1 > 881.0135135135) and (cdecimal1 < 2365.8945945946)) or (cdecimal1 > 2365.8945945946)) (type: boolean)
+                        predicateExpression: FilterExprOrExpr(children: FilterDecimalColLessDecimalScalar(col 1:decimal(20,10), val -3367.6517567568), FilterDecimalColGreaterDecimalScalar(col 1:decimal(20,10), val 2365.8945945946), FilterExprAndExpr(children: FilterDecimalColGreaterDecimalScalar(col 1:decimal(20,10), val -3367.6517567568), FilterDecimalColLessDecimalScalar(col 1:decimal(20,10), val 881.0135135135)), FilterExprAndExpr(children: FilterDecimalColGreaterDecimalScalar(col 1:decimal(20,10), val 881.0135135135), FilterDecimalColLessDecimalScalar(col 1:decimal(20,10), val 2365.8945945946)))
+                    predicate: ((cdecimal1 < -3367.6517567568) or (cdecimal1 > 2365.8945945946) or ((cdecimal1 > -3367.6517567568) and (cdecimal1 < 881.0135135135)) or ((cdecimal1 > 881.0135135135) and (cdecimal1 < 2365.8945945946))) (type: boolean)
                     Statistics: Num rows: 12289 Data size: 1027600 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Select Vectorization:

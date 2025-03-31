@@ -29,6 +29,7 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
+import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlBinaryOperator;
@@ -546,16 +547,16 @@ public class RexNodeConverter {
       }
       for (int i = 1; i < operands.size(); i++) {
         List<RexNode> conjuncts = new ArrayList<>(columnExpressions.getOperands().size() - 1);
-        RexCall valueExpressions = (RexCall) operands.get(i);
-        if (!HiveCalciteUtil.isDeterministic(valueExpressions)) {
-          // Bail out
+        if (!(operands.get(i) instanceof RexLiteral)) {
           return null;
         }
+        RexLiteral valueLiteral = ((RexLiteral) operands.get(i));
+        List<?> rawValues = valueLiteral.getValueAs(List.class);
         for (int j = 0; j < columnExpressions.getOperands().size(); j++) {
           conjuncts.add(rexBuilder.makeCall(
               SqlStdOperatorTable.EQUALS,
               columnExpressions.getOperands().get(j),
-              valueExpressions.getOperands().get(j)));
+              (RexLiteral) rawValues.get(j)));
         }
         if (conjuncts.size() > 1) {
           disjuncts.add(rexBuilder.makeCall(

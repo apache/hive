@@ -2208,7 +2208,8 @@ FROM `default`.`pcr_t1_n2`
 WHERE `ds` IN ('2000-04-08', '2000-04-09')) AS `t0`
 INNER JOIN (SELECT `ds`, `key`, `value`
 FROM `default`.`pcr_t2_n0`
-WHERE `key` IN (1, 2)) AS `t2` ON (`t0`.`ds`, `t2`.`key`) IN (('2000-04-08', 1), ('2000-04-09', 2))
+WHERE `key` IN (1, 2)) AS `t2` ON (`t0`.`ds`, `t2`.`key`)
+IN (('2000-04-08', 1), ('2000-04-09', 2))
 ORDER BY `t2`.`key`, `t2`.`value`, `t0`.`ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2480,7 +2481,8 @@ FROM `default`.`pcr_t1_n2`
 WHERE `key` IN (1, 2)) AS `t0`
 INNER JOIN (SELECT `ds`, `key`, `value`
 FROM `default`.`pcr_t2_n0`
-WHERE `ds` IN ('2000-04-08', '2000-04-09')) AS `t2` ON (`t0`.`key`, `t2`.`ds`) IN ((1, '2000-04-08'), (2, '2000-04-09'))
+WHERE `ds` IN ('2000-04-08', '2000-04-09')) AS `t2` ON (`t0`.`key`, `t2`.`ds`)
+IN ((1, '2000-04-08'), (2, '2000-04-09'))
 ORDER BY `t0`.`key`, `t0`.`value`, `t2`.`ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

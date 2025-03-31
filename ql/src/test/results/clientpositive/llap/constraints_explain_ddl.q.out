@@ -116,7 +116,7 @@ EXPLAIN CBO SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 
 
 EXPLAIN VECTORIZED SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 'INDIA') group by c_custkey;
 CBO PLAN:HiveProject(c_custkey=[$0])
-  HiveFilter(condition=[SEARCH($4, Sarg[_UTF-16LE'INDIA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'USA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"]:VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
+  HiveFilter(condition=[IN($4, _UTF-16LE'INDIA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'USA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
     HiveTableScan(table=[[default, customer_removal_n0]], table:alias=[customer_removal_n0])
 
 PLAN VECTORIZATION:
@@ -187,7 +187,7 @@ EXPLAIN CBO SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 
 
 EXPLAIN VECTORIZED SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 'INDIA') group by c_custkey, c_nation;
 CBO PLAN:HiveProject(c_custkey=[$0])
-  HiveFilter(condition=[SEARCH($4, Sarg[_UTF-16LE'INDIA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'USA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"]:VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
+  HiveFilter(condition=[IN($4, _UTF-16LE'INDIA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'USA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
     HiveTableScan(table=[[default, customer_removal_n0]], table:alias=[customer_removal_n0])
 
 PLAN VECTORIZATION:
@@ -268,7 +268,7 @@ EXPLAIN CBO SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) 
 
 EXPLAIN VECTORIZED SELECT d_datekey from dates_removal_n0 where d_year IN (1985, 2004) group by d_datekey, d_id;
 CBO PLAN:HiveProject(d_datekey=[$0])
-  HiveFilter(condition=[SEARCH($5, Sarg[1985, 2004])])
+  HiveFilter(condition=[IN($5, 1985, 2004)])
     HiveTableScan(table=[[default, dates_removal_n0]], table:alias=[dates_removal_n0])
 
 PLAN VECTORIZATION:
@@ -355,7 +355,7 @@ EXPLAIN VECTORIZED SELECT d_datekey from dates_removal_n0 where d_year IN (1985,
 order by d_datekey limit 10;
 CBO PLAN:HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[10])
   HiveProject(d_datekey=[$0])
-    HiveFilter(condition=[SEARCH($5, Sarg[1985, 2004])])
+    HiveFilter(condition=[IN($5, 1985, 2004)])
       HiveTableScan(table=[[default, dates_removal_n0]], table:alias=[dates_removal_n0])
 
 PLAN VECTORIZATION:
@@ -501,7 +501,7 @@ EXPLAIN VECTORIZED SELECT d_datekey from dates_removal_n0 where d_year IN (1985,
 d_sellingseason order by d_datekey limit 10;
 CBO PLAN:HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[10])
   HiveProject(d_datekey=[$0])
-    HiveFilter(condition=[SEARCH($5, Sarg[1985, 2004])])
+    HiveFilter(condition=[IN($5, 1985, 2004)])
       HiveTableScan(table=[[default, dates_removal_n0]], table:alias=[dates_removal_n0])
 
 PLAN VECTORIZATION:
@@ -649,7 +649,7 @@ CBO PLAN:HiveProject(_o__c0=[$0])
   HiveSortLimit(sort0=[$1], dir0=[ASC], fetch=[10])
     HiveProject(_o__c0=[$2], (tok_table_or_col d_datekey)=[$0])
       HiveAggregate(group=[{0, 1}], agg#0=[count()])
-        HiveFilter(condition=[SEARCH($5, Sarg[1985, 2004])])
+        HiveFilter(condition=[IN($5, 1985, 2004)])
           HiveTableScan(table=[[default, dates_removal_n0]], table:alias=[dates_removal_n0])
 
 PLAN VECTORIZATION:
@@ -1164,7 +1164,7 @@ order by d_datekey limit 10;
 CBO PLAN:HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[10])
   HiveProject(d_datekey=[$0])
     HiveAggregate(group=[{0, 13}])
-      HiveFilter(condition=[SEARCH($5, Sarg[1985, 2004])])
+      HiveFilter(condition=[IN($5, 1985, 2004)])
         HiveTableScan(table=[[default, dates_removal_n0]], table:alias=[dates_removal_n0])
 
 PLAN VECTORIZATION:
@@ -1349,7 +1349,7 @@ EXPLAIN VECTORIZED SELECT count(c_custkey) from customer_removal_n0 where c_nati
 group by c_custkey, c_nation;
 CBO PLAN:HiveProject(_o__c0=[$1])
   HiveAggregate(group=[{0}], agg#0=[count()])
-    HiveFilter(condition=[SEARCH($4, Sarg[_UTF-16LE'INDIA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'USA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"]:VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
+    HiveFilter(condition=[IN($4, _UTF-16LE'INDIA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'USA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
       HiveTableScan(table=[[default, customer_removal_n0]], table:alias=[customer_removal_n0])
 
 PLAN VECTORIZATION:

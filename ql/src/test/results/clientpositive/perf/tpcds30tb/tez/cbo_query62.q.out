@@ -11,7 +11,7 @@ HiveProject(_o__c0=[$0], sm_type=[$1], web_name=[$2], 30 days=[$3], 31-60 days=[
                   HiveFilter(condition=[AND(IS NOT NULL($14), IS NOT NULL($13), IS NOT NULL($12), IS NOT NULL($1))])
                     HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
                 HiveProject(d_date_sk=[$0])
-                  HiveFilter(condition=[SEARCH($3, Sarg[[1215..1226]])])
+                  HiveFilter(condition=[BETWEEN(false, $3, 1215, 1226)])
                     HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
               HiveProject(sm_ship_mode_sk=[$0], sm_type=[$2])
                 HiveTableScan(table=[[default, ship_mode]], table:alias=[ship_mode])

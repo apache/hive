@@ -21,15 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.externalize.RelJson;
-import org.apache.calcite.rex.RexBuilder;
-import org.apache.calcite.rex.RexCall;
-import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.util.JsonBuilder;
-
-import static org.apache.hadoop.hive.ql.optimizer.calcite.Bug.CALCITE_5614_FIXED;
 
 /**
  * Hive extension of RelJson.
@@ -48,13 +42,6 @@ public class HiveRelJson extends RelJson {
   public Object toJson(Object value) {
     if (value instanceof RelDistribution) {
       return toJson((RelDistribution) value);
-    }
-    if (value instanceof RexCall && !CALCITE_5614_FIXED && value.toString().contains("SEARCH")) {
-      value = ((RexCall) value).accept(
-          RexUtil.searchShuttle(
-              new RexBuilder(new JavaTypeFactoryImpl(new HiveTypeSystemImpl())), null, -1
-          )
-      );
     }
     return super.toJson(value);
   }
