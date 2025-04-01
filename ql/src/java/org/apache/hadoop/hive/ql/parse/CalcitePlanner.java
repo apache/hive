@@ -27,10 +27,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.regex.Pattern;
+import javax.sql.DataSource;
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.tree.Tree;
@@ -162,6 +159,7 @@ import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteViewSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionSuggester;
@@ -170,31 +168,18 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQueryRewriteShuttle;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveSqlTypeUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvider;
-import org.apache.hadoop.hive.ql.optimizer.calcite.RuleEventLogger;
-import org.apache.hadoop.hive.ql.optimizer.calcite.SearchTransformer;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.CteRuleConfig;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSortLimitRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveLoptOptimizeJoinRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveEmptySingleRules;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRexShuttleTransformRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.InSearchShuttle;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.RemoveInfrequentCteRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAggregateProjectMergeRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializationRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelDistribution;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptMaterializationValidator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexExecutorImpl;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveSqlTypeUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.RuleEventLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveAlgorithmsConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveVolcanoPlanner;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
@@ -216,12 +201,15 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.JdbcHiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.CteRuleConfig;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateJoinTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateProjectMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregatePullUpConstantsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateReduceFunctionsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateReduceRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSortLimitRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSplitRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAntiSemiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveCardinalityPreservingJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveDruidRules;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveExceptRewriteRule;
@@ -244,8 +232,9 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinCommuteRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinConstraintsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinPushTransitivePredicatesRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinToMultiJoinRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAntiSemiJoinRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveLoptOptimizeJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveOptimizeInlineArrayTableFunctionRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePartitionPruneRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePointLookupOptimizerRule;
@@ -260,10 +249,13 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveReduceExpressionsRu
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveReduceExpressionsWithStatsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelDecorrelator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelFieldTrimmer;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveEmptySingleRules;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveGBYSemiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveSqCountCheck;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRewriteToDataSketchesRules;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulesRegistry;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSearchRules;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortJoinReduceRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortLimitRemoveRule;
@@ -273,13 +265,15 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortPullUpConstants
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortRemoveRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortUnionReduceRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSubQueryRemoveRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionSimpleSelectsToInlineTableRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionPullUpConstantsRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionSimpleSelectsToInlineTableRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveWindowingFixRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveWindowingLastValueRewrite;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.RemoveInfrequentCteRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.TableScanToSpoolRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAbstractSplitFilterRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAggregateProjectMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAggregationPushDownRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCExpandExpressionsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCExtractJoinFilterRule;
@@ -289,16 +283,13 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCJoinPushDownRu
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCProjectPushDownRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCSortPushDownRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCUnionPushDownRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializationRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewBoxing;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMetadataQuery;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter;
-import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
-import org.apache.hadoop.hive.ql.parse.type.FunctionHelper.AggregateInfo;
-import org.apache.hadoop.hive.ql.parse.type.HiveFunctionHelper;
-import org.apache.hadoop.hive.ql.parse.type.JoinTypeCheckCtx;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.PlanModifierForReturnPath;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
@@ -314,6 +305,10 @@ import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFunctionSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
 import org.apache.hadoop.hive.ql.parse.relnodegen.LateralViewPlan;
+import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
+import org.apache.hadoop.hive.ql.parse.type.FunctionHelper.AggregateInfo;
+import org.apache.hadoop.hive.ql.parse.type.HiveFunctionHelper;
+import org.apache.hadoop.hive.ql.parse.type.JoinTypeCheckCtx;
 import org.apache.hadoop.hive.ql.parse.type.RexNodeTypeCheck;
 import org.apache.hadoop.hive.ql.parse.type.TypeCheckCtx;
 import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory;
@@ -338,6 +333,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.joda.time.Interval;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -358,18 +354,20 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import javax.sql.DataSource;
-
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQueryRewriteShuttle.getMaterializedViewByAST;
 import static org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm.ANY;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQueryRewriteShuttle.getMaterializedViewByAST;
 
 
 public class CalcitePlanner extends SemanticAnalyzer {
@@ -1761,6 +1759,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
           LOG.debug("Plan after CTE rewriting:\n{}", RelOptUtil.toString(calcitePlan));
         }
       }
+      calcitePlan = applySearchExpandTransforms(calcitePlan, mdProvider.getMetadataProvider(), executorProvider);
+
       perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.HIVE_SORT_PREDICATES);
       if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_SORT_PREDS_WITH_STATS)) {
         calcitePlan = calcitePlan.accept(new HiveFilterSortPredicates(noColsMissingStats));
@@ -1779,23 +1779,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     private RelNode applyInSearchTransforms(RelNode basePlan, RelMetadataProvider mdProvider, RexExecutor executor) {
       HepProgramBuilder program = new HepProgramBuilder();
-      RexShuttle inShuttle = new InSearchShuttle(cluster.getRexBuilder());
-      generatePartialProgram(program,
-          true,
-          HepMatchOrder.DEPTH_FIRST,
-          new HiveRexShuttleTransformRule.Config().withRexShuttle(inShuttle)
-              .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-              .withOperandSupplier(b -> b.operand(HiveFilter.class).anyInputs())
-              .withDescription("HiveInToSearchFilterRule").toRule(),
-          new HiveRexShuttleTransformRule.Config().withRexShuttle(inShuttle)
-              .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-              .withOperandSupplier(b -> b.operand(HiveJoin.class).anyInputs()).withDescription("HiveInToSearchJoinRule")
-              .toRule(),
-          new HiveRexShuttleTransformRule.Config().withRexShuttle(inShuttle)
-              .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-              .withOperandSupplier(b -> b.operand(HiveProject.class).anyInputs())
-              .withDescription("HiveInToSearchProjectRule").toRule());
+      program.addRuleCollection(ImmutableList.of(HiveSearchRules.FILTER_IN_TO_SEARCH,
+          HiveSearchRules.PROJECT_IN_TO_SEARCH,
+          HiveSearchRules.JOIN_IN_TO_SEARCH));
       return executeProgram(basePlan, program.build(), mdProvider, executor);
+    }
+
+    private RelNode applySearchExpandTransforms(RelNode basePlan, RelMetadataProvider mdProvider,
+        RexExecutor executor) {
+      HepProgramBuilder searchProgram = new HepProgramBuilder();
+      searchProgram.addRuleCollection(ImmutableList.of(HiveSearchRules.FILTER_SEARCH_EXPAND,
+          HiveSearchRules.PROJECT_SEARCH_EXPAND,
+          HiveSearchRules.JOIN_SEARCH_EXPAND));
+      return executeProgram(basePlan, searchProgram.build(), mdProvider, executor);
     }
 
     /**
@@ -2391,25 +2387,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
             HiveWindowingLastValueRewrite.INSTANCE);
       }
 
-      RexShuttle searchShuttle = new SearchTransformer.Shuttle(cluster.getRexBuilder());
+      // Expand SEARCH since JDBC (and potentially other federation rules) do not know how to handle it.
       generatePartialProgram(program,
           true,
           HepMatchOrder.DEPTH_FIRST,
-          new HiveRexShuttleTransformRule.Config()
-              .withRexShuttle(searchShuttle)
-              .withDescription("HiveProjectSearchExpandRule")
-              .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-              .withOperandSupplier(o -> o.operand(HiveProject.class).anyInputs()).toRule(),
-          new HiveRexShuttleTransformRule.Config()
-              .withRexShuttle(searchShuttle)
-              .withDescription("HiveFilterSearchExpandRule")
-              .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-              .withOperandSupplier(o -> o.operand(HiveFilter.class).anyInputs()).toRule(),
-          new HiveRexShuttleTransformRule.Config()
-              .withRexShuttle(searchShuttle)
-              .withDescription("HiveJoinSearchExpandRule")
-              .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-              .withOperandSupplier(o -> o.operand(HiveJoin.class).anyInputs()).toRule());
+          HiveSearchRules.PROJECT_SEARCH_EXPAND,
+          HiveSearchRules.FILTER_SEARCH_EXPAND,
+          HiveSearchRules.JOIN_SEARCH_EXPAND);
 
       // 7. Apply Druid transformation rules
       generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,

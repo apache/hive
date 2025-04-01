@@ -32,6 +32,7 @@ import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
+import org.apache.hadoop.hive.ql.optimizer.calcite.SearchTransformer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.RexNodeConverter;
 
@@ -175,9 +176,10 @@ public class HiveInBetweenExpandRule {
         }
         return rexBuilder.makeCall(SqlStdOperatorTable.AND, newOperands);
       }
-      // TODO Check if we need to handle/expand SEARCH and if there is sufficient test coverage
+      case SEARCH: {
+        return new SearchTransformer<>(rexBuilder, call).transform().accept(this);
+      }
       default:
-        // TODO Consider removing the IN block since it is probably dead code right now
         if (HiveIn.INSTANCE.equals(call.op)) {
           List<RexNode> newOperands = RexNodeConverter.transformInToOrOperands(call.getOperands(), rexBuilder);
           if (newOperands == null) {

@@ -20,9 +20,11 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelRule;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexShuttle;
 
 import java.util.Objects;
+import java.util.function.Function;
 
 public class HiveRexShuttleTransformRule extends RelRule<HiveRexShuttleTransformRule.Config> {
   private HiveRexShuttleTransformRule(Config config) {
@@ -32,17 +34,17 @@ public class HiveRexShuttleTransformRule extends RelRule<HiveRexShuttleTransform
   @Override
   public void onMatch(final RelOptRuleCall call) {
     RelNode startNode = call.rel(0);
-    RelNode rewriteNode = startNode.accept(config.shuttle);
+    RelNode rewriteNode = startNode.accept(config.shuttleFactory.apply(startNode.getCluster().getRexBuilder()));
     if (startNode != rewriteNode) {
       call.transformTo(rewriteNode);
     }
   }
 
   public static class Config extends BaseMutableHiveConfig {
-    private RexShuttle shuttle;
+    private Function<RexBuilder, RexShuttle> shuttleFactory;
 
-    public Config withRexShuttle(RexShuttle shuttle) {
-      this.shuttle = Objects.requireNonNull(shuttle);
+    public Config withRexShuttle(Function<RexBuilder, RexShuttle> shuttleFactory) {
+      this.shuttleFactory = Objects.requireNonNull(shuttleFactory);
       return this;
     }
 
