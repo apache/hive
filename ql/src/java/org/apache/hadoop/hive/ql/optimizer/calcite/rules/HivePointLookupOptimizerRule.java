@@ -555,7 +555,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         operands.add(useStructIfNeeded(values));
       }
 
-      return rexBuilder.makeIn(operands.get(0), operands.subList(1, operands.size()));
+      return rexBuilder.makeCall(HiveIn.INSTANCE, operands);
     }
 
     private RexNode useStructIfNeeded(List<? extends RexNode> columns) {
@@ -801,7 +801,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
           List<RexNode> newOperands = new ArrayList<>(exprs.size() + 1);
           newOperands.add(ref);
           newOperands.addAll(exprs.stream().map(SimilarRexNodeElement::getRexNode).collect(Collectors.toList()));
-          newExpressions.add(rexBuilder.makeIn(newOperands.get(0), newOperands.subList(1, newOperands.size())));
+          newExpressions.add(rexBuilder.makeCall(HiveIn.INSTANCE, newOperands));
         }
       }
       return newExpressions;

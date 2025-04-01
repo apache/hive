@@ -31,7 +31,7 @@ import org.apache.calcite.util.ConversionUtil;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveValues;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,7 +49,6 @@ import static org.apache.hadoop.hive.ql.optimizer.calcite.TestHelper.eq;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.TestHelper.or;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestHivePointLookupOptimizerRule {
@@ -76,6 +75,7 @@ public class TestHivePointLookupOptimizerRule {
   public void before() {
     planner = buildPlanner(Collections.singletonList(new HivePointLookupOptimizerRule.FilterCondition(2)));
     relBuilder = buildRelBuilder(planner, schemaMock, tableMock, hiveTableMDMock, MyRecord.class);
+    relBuilder = relBuilder.transform(c -> c.withSimplify(false));
   }
 
   @Test
@@ -104,7 +104,7 @@ public class TestHivePointLookupOptimizerRule {
 
     HiveFilter filter = (HiveFilter) optimizedRelNode;
     RexNode condition = filter.getCondition();
-    assertEquals("AND(SEARCH($0, Sarg[1, 2]), SEARCH($1, Sarg[3, 4]))", condition.toString());
+    assertEquals("AND(IN($0, 1, 2), IN($1, 3, 4))", condition.toString());
   }
 
   @Test
@@ -196,7 +196,7 @@ public class TestHivePointLookupOptimizerRule {
 
     HiveFilter filter = (HiveFilter) optimizedRelNode;
     RexNode condition = filter.getCondition();
-    assertEquals("SEARCH($0, Sarg[1, 2, 3])", condition.toString());
+    assertEquals("IN($0, 1, 2, 3)", condition.toString());
   }
 
   @Test
@@ -226,9 +226,9 @@ public class TestHivePointLookupOptimizerRule {
 
     HiveFilter filter = (HiveFilter) optimizedRelNode;
     RexNode condition = filter.getCondition();
-
-    assertEquals("AND(SEARCH($0, Sarg[[1E0:DOUBLE..1.0E0:DOUBLE]]:DOUBLE), " +
-            "SEARCH($3, Sarg[3.0E0:DOUBLE, 4.1E0:DOUBLE]:DOUBLE))",
+    // ideally the result would be AND(=($0, 1), IN($3, 3.0E0:DOUBLE, 4.1E0:DOUBLE)), but we
+    // don't try to compare constants of different type for the same column, even if comparable
+    assertEquals("AND(IN($0, 1, 2), =($0, 1.0E0:DOUBLE), IN($3, 3.0E0:DOUBLE, 4.1E0:DOUBLE))",
         condition.toString());
   }
 
@@ -285,10 +285,7 @@ public class TestHivePointLookupOptimizerRule {
 
     HiveFilter filter = (HiveFilter) optimizedRelNode;
     RexNode condition = filter.getCondition();
-    assertEquals("SEARCH(ROW($0, $1), " +
-        "Sarg[[1:INTEGER, 1:INTEGER]:RecordType(INTEGER NOT NULL EXPR$0, INTEGER NOT NULL EXPR$1), " +
-        "[2:INTEGER, 2:INTEGER]:RecordType(INTEGER NOT NULL EXPR$0, INTEGER NOT NULL EXPR$1)]" +
-        ":RecordType(INTEGER NOT NULL EXPR$0, INTEGER NOT NULL EXPR$1))", condition.toString());
+    assertEquals("IN(ROW($0, $1), ROW(1, 1), ROW(2, 2))", condition.toString());
   }
 
   /** Despite the fact that f2=99 is there...the extraction should happen */
@@ -314,7 +311,7 @@ public class TestHivePointLookupOptimizerRule {
     HiveFilter filter = (HiveFilter) optimizedRelNode;
     RexNode condition = filter.getCondition();
     System.out.println(condition);
-    assertEquals("OR(=($1, 99), SEARCH($0, Sarg[1, 2]))", condition.toString());
+    assertEquals("OR(IN($0, 1, 2), =($1, 99))", condition.toString());
   }
 
   /** Despite that extraction happen at a higher level; nested parts should also be handled */
@@ -355,9 +352,8 @@ public class TestHivePointLookupOptimizerRule {
     HiveFilter filter = (HiveFilter) optimizedRelNode;
     RexNode condition = filter.getCondition();
     System.out.println(condition);
-
-    assertEquals("AND(SEARCH($0, Sarg[1, 2]), OR(AND(SEARCH($1, Sarg[1, 2]), SEARCH($2, Sarg[1, 2])), " +
-            "AND(SEARCH($1, Sarg[3, 4]), SEARCH($2, Sarg[3, 4]))))",
+    assertEquals("AND(IN($0, 1, 2), OR(AND(IN($1, 1, 2), IN($2, 1, 2)), "
+            + "AND(IN($1, 3, 4), IN($2, 3, 4))))",
         condition.toString());
   }
 
@@ -380,8 +376,8 @@ public class TestHivePointLookupOptimizerRule {
     final RelNode basePlan = relBuilder
           .scan("t")
           .filter(and(relBuilder,
-                  relBuilder.in(relBuilder.field("f2"), lita30, litb30),
-                  relBuilder.in(relBuilder.field("f2"), lita14, litb14)))
+                  relBuilder.call(HiveIn.INSTANCE, relBuilder.field("f2"), lita30, litb30),
+                  relBuilder.call(HiveIn.INSTANCE, relBuilder.field("f2"), lita14, litb14)))
           .build();
 
     planner.setRoot(basePlan);
@@ -390,10 +386,9 @@ public class TestHivePointLookupOptimizerRule {
     HiveFilter filter = (HiveFilter) optimizedRelNode;
     RexNode condition = filter.getCondition();
     System.out.println(condition);
-    assertEquals("SEARCH($1, " +
-                    "Sarg[_UTF-16LE'AAA111':VARCHAR(30) CHARACTER SET \"UTF-16LE\", " +
-                    "_UTF-16LE'BBB222':VARCHAR(30) CHARACTER SET \"UTF-16LE\"]:" +
-                    "VARCHAR(30) CHARACTER SET \"UTF-16LE\")",
+    assertEquals("IN($1, " +
+                    "_UTF-16LE'AAA111':VARCHAR(30) CHARACTER SET \"UTF-16LE\", " +
+                    "_UTF-16LE'BBB222':VARCHAR(30) CHARACTER SET \"UTF-16LE\")",
             condition.toString());
   }
 
@@ -418,11 +413,17 @@ public class TestHivePointLookupOptimizerRule {
     final RelNode basePlan = relBuilder
           .scan("t")
           .filter(and(relBuilder,
-                  relBuilder.in(relBuilder.field("f2"), lita30, litb30),
-                  relBuilder.in(relBuilder.field("f2"), litaOverflow, litbOverflow)))
+                  relBuilder.call(HiveIn.INSTANCE, relBuilder.field("f2"), lita30, litb30),
+                  relBuilder.call(HiveIn.INSTANCE, relBuilder.field("f2"), litaOverflow, litbOverflow)))
           .build();
 
-    assertTrue(basePlan instanceof HiveValues && ((HiveValues) basePlan).getTuples().isEmpty());
+    planner.setRoot(basePlan);
+    RelNode optimizedRelNode = planner.findBestExp();
+
+    HiveFilter filter = (HiveFilter) optimizedRelNode;
+    RexNode condition = filter.getCondition();
+    System.out.println(condition);
+    assertEquals("false", condition.toString());
   }
 
   @Test
@@ -444,11 +445,17 @@ public class TestHivePointLookupOptimizerRule {
     final RelNode basePlan = relBuilder
             .scan("t")
             .filter(and(relBuilder,
-                    relBuilder.in(relBuilder.field("f2"), lita30, litb30),
-                    relBuilder.in(relBuilder.field("f2"), lita14, litb14)))
+                    relBuilder.call(HiveIn.INSTANCE, relBuilder.field("f2"), lita30, litb30),
+                    relBuilder.call(HiveIn.INSTANCE, relBuilder.field("f2"), lita14, litb14)))
             .build();
 
-    assertTrue(basePlan instanceof HiveValues && ((HiveValues) basePlan).getTuples().isEmpty());
+    planner.setRoot(basePlan);
+    RelNode optimizedRelNode = planner.findBestExp();
+
+    HiveFilter filter = (HiveFilter) optimizedRelNode;
+    RexNode condition = filter.getCondition();
+    System.out.println(condition);
+    assertEquals("AND(IS NULL(null:VARCHAR(30) CHARACTER SET \"UTF-16LE\"), null)", condition.toString());
   }
 
   @Test
@@ -470,8 +477,8 @@ public class TestHivePointLookupOptimizerRule {
     final RelNode basePlan = relBuilder
             .scan("t")
             .filter(or(relBuilder,
-                    relBuilder.in(relBuilder.field("f2"), lita30, litb30),
-                    relBuilder.in(relBuilder.field("f2"), lita14, litb14)))
+                    relBuilder.call(HiveIn.INSTANCE, relBuilder.field("f2"), lita30, litb30),
+                    relBuilder.call(HiveIn.INSTANCE, relBuilder.field("f2"), lita14, litb14)))
             .build();
 
     planner.setRoot(basePlan);
@@ -480,10 +487,9 @@ public class TestHivePointLookupOptimizerRule {
     HiveFilter filter = (HiveFilter) optimizedRelNode;
     RexNode condition = filter.getCondition();
     System.out.println(condition);
-    assertEquals("SEARCH($1, " +
-                    "Sarg[_UTF-16LE'AAA111':VARCHAR(30) CHARACTER SET \"UTF-16LE\", " +
-                    "_UTF-16LE'BBB222':VARCHAR(30) CHARACTER SET \"UTF-16LE\"]" +
-                    ":VARCHAR(30) CHARACTER SET \"UTF-16LE\")",
+    assertEquals("IN($1, " +
+                    "_UTF-16LE'AAA111':VARCHAR(30) CHARACTER SET \"UTF-16LE\", " +
+                    "_UTF-16LE'BBB222':VARCHAR(30) CHARACTER SET \"UTF-16LE\")",
             condition.toString());
   }
 
@@ -502,8 +508,8 @@ public class TestHivePointLookupOptimizerRule {
     final RelNode basePlan = relBuilder
           .scan("t")
           .filter(and(relBuilder,
-                  relBuilder.in(relBuilder.field("f2"), lita30, litb30),
-                  relBuilder.in(relBuilder.field("f2"), lita14, litb14)))
+                  relBuilder.call(HiveIn.INSTANCE, relBuilder.field("f2"), lita30, litb30),
+                  relBuilder.call(HiveIn.INSTANCE, relBuilder.field("f2"), lita14, litb14)))
           .build();
 
     planner.setRoot(basePlan);
@@ -512,7 +518,6 @@ public class TestHivePointLookupOptimizerRule {
     HiveFilter filter = (HiveFilter) optimizedRelNode;
     RexNode condition = filter.getCondition();
     System.out.println(condition);
-    assertEquals("SEARCH($1, Sarg[10000:DECIMAL(19, 5), 11000:DECIMAL(19, 5)]:DECIMAL(19, 5))",
-        condition.toString());
+    assertEquals("IN($1, 10000:DECIMAL(19, 5), 11000:DECIMAL(19, 5))", condition.toString());
   }
 }
