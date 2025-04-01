@@ -1171,10 +1171,6 @@ public final class ColumnPrunerProcFactory {
       for (int pos = 0; pos < op.getParentOperators().size(); pos++) {
         List<ExprNodeDesc> valueCols = conf.getExprs()
             .get(Byte.valueOf((byte) pos));
-        StringBuilder keyOrder = new StringBuilder();
-        for (int i = 0; i < valueCols.size(); i++) {
-          keyOrder.append("+");
-        }
 
         TableDesc valueTableDesc = PlanUtils.getMapJoinValueTableDesc(PlanUtils
             .getFieldSchemasFromColumnList(valueCols, "mapjoinvalue"));
