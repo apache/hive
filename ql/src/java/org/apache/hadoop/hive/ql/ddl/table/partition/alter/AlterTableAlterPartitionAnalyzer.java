@@ -64,6 +64,7 @@ public  class AlterTableAlterPartitionAnalyzer extends AbstractAlterTableAnalyze
     for (FieldSchema col : table.getTTable().getPartitionKeys()) {
       if (col.getName().compareTo(newCol.getName()) == 0) {
         isDefined = true;
+        break;
       }
     }
     if (!isDefined) {

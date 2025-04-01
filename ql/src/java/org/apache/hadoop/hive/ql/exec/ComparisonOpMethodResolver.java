@@ -99,6 +99,7 @@ public class ComparisonOpMethodResolver implements UDFMethodResolver {
           TypeInfo accepted = acceptedTypeInfos.get(i);
           if (accepted != pTypeInfos.get(i)) {
             match = false;
+            break;
           }
         }
 

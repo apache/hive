@@ -525,6 +525,7 @@ public class CorrelationOptimizer extends Transform {
       for (ExprNodeDesc key : keyCols) {
         if (!(key instanceof ExprNodeColumnDesc)) {
           shouldDetect = false;
+          break;
         }
       }
       for (ExprNodeDesc key : partitionCols) {
