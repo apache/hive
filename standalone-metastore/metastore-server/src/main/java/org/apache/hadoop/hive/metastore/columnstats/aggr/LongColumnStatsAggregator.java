@@ -129,7 +129,16 @@ public class LongColumnStatsAggregator extends ColumnStatsAggregator implements
           // We have estimation, lowerbound and higherbound. We use estimation
           // if it is between lowerbound and higherbound.
           double densityAvg = densityAvgSum / partNames.size();
-          estimation = (long) ((aggregateData.getHighValue() - aggregateData.getLowValue()) / densityAvg);
+          if (densityAvg == 0) {
+            // This means each partition has exactly one value. (highValue == lowValue and NDV = 1).
+            // In this case, the NDV can be estimated as follows:
+            // NDV ~ R * (1 - (1 - 1 / R)^P) where R := highValue - lowValue + 1 and P := partNames.size().
+            // For the efficiency of computation, we just use min(R, P) instead.
+            estimation =
+                Math.min(aggregateData.getHighValue() - aggregateData.getLowValue() + 1, partNames.size());
+          } else {
+            estimation = (long) ((aggregateData.getHighValue() - aggregateData.getLowValue()) / densityAvg);
+          }
           if (estimation < lowerBound) {
             estimation = lowerBound;
           } else if (estimation > higherBound) {
@@ -163,7 +172,13 @@ public class LongColumnStatsAggregator extends ColumnStatsAggregator implements
           String partName = csp.getPartName();
           LongColumnStatsData newData = cso.getStatsData().getLongStats();
           if (useDensityFunctionForNDVEstimation) {
-            densityAvgSum += ((double) (newData.getHighValue() - newData.getLowValue())) / newData.getNumDVs();
+            if (newData.getNumDVs() == 0) {
+              // If NDV is not present, assume that the density is 0.5.
+              densityAvgSum += 0.5;
+            } else {
+              densityAvgSum +=
+                  ((double) (newData.getHighValue() - newData.getLowValue())) / newData.getNumDVs();
+            }
           }
           adjustedIndexMap.put(partName, (double) indexMap.get(partName));
           adjustedStatsMap.put(partName, cso.getStatsData());
@@ -192,7 +207,13 @@ public class LongColumnStatsAggregator extends ColumnStatsAggregator implements
               csd.setLongStats(aggregateData);
               adjustedStatsMap.put(pseudoPartName.toString(), csd);
               if (useDensityFunctionForNDVEstimation) {
-                densityAvgSum += ((double) (aggregateData.getHighValue() - aggregateData.getLowValue())) / aggregateData.getNumDVs();
+                if (aggregateData.getNumDVs() == 0) {
+                  // If NDV is not present, assume that the density is 0.5.
+                  densityAvgSum += 0.5;
+                } else {
+                  double range = aggregateData.getHighValue() - aggregateData.getLowValue();
+                  densityAvgSum += range / aggregateData.getNumDVs();
+                }
               }
               // reset everything
               pseudoPartName = new StringBuilder();
@@ -241,24 +262,10 @@ public class LongColumnStatsAggregator extends ColumnStatsAggregator implements
       columnStatisticsData.getLongStats().setHistogram(mergedKllHistogramEstimator.serialize());
     }
 
-    statsObj.setStatsData(columnStatisticsData);
+    // mutate columnStatisticsData to ensure NDV <= the number of integers in the given range.
+    adjustNDV(columnStatisticsData);
 
-    // NDV cannot exceed the number of integers within the given range.
-    long numIntInRange = columnStatisticsData.getLongStats().getHighValue()
-        - columnStatisticsData.getLongStats().getLowValue() + 1;
-    if (columnStatisticsData.getLongStats().getNumNulls() > 0) {
-      numIntInRange++;
-    }
-    if (numIntInRange < columnStatisticsData.getLongStats().getNumDVs()) {
-      LOG.debug(
-          "Adjust the estimated NDV from {} to {} as it exceeds the number of integers "
-              + "within the range of colStats: [{}, {}].",
-          columnStatisticsData.getLongStats().getNumDVs(),
-          numIntInRange,
-          columnStatisticsData.getLongStats().getLowValue(),
-          columnStatisticsData.getLongStats().getHighValue());
-      columnStatisticsData.getLongStats().setNumDVs(numIntInRange);
-    }
+    statsObj.setStatsData(columnStatisticsData);
 
     return statsObj;
   }
@@ -360,5 +367,24 @@ public class LongColumnStatsAggregator extends ColumnStatsAggregator implements
     extrapolateLongData.setHighValue(highValue);
     extrapolateLongData.setNumNulls(numNulls);
     extrapolateLongData.setNumDVs(ndv);
+  }
+
+  private void adjustNDV(ColumnStatisticsData columnStatisticsData) {
+    // NDV cannot exceed the number of integers within the given range.
+    long numIntInRange = columnStatisticsData.getLongStats().getHighValue()
+        - columnStatisticsData.getLongStats().getLowValue() + 1;
+    if (columnStatisticsData.getLongStats().getNumNulls() > 0) {
+      numIntInRange++;
+    }
+    if (numIntInRange < columnStatisticsData.getLongStats().getNumDVs()) {
+      LOG.debug(
+          "Adjust the estimated NDV from {} to {} as it exceeds the number of integers "
+              + "within the range of colStats: [{}, {}].",
+          columnStatisticsData.getLongStats().getNumDVs(),
+          numIntInRange,
+          columnStatisticsData.getLongStats().getLowValue(),
+          columnStatisticsData.getLongStats().getHighValue());
+      columnStatisticsData.getLongStats().setNumDVs(numIntInRange);
+    }
   }
 }
