@@ -2419,6 +2419,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       for (String udf : udfs) {
         try {
           supportedGenericUDFs.add(Class.forName(udf));
+          LOG.info("Vectorized additional custom UDF: " + udf);
         } catch (ClassNotFoundException e) {
           LOG.warn("Additional UDF not found: " + udf);
         }
