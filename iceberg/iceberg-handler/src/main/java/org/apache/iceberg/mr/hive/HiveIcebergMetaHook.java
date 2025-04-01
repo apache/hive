@@ -437,7 +437,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
 
   private static boolean hiveLockEnabled(org.apache.hadoop.hive.metastore.api.Table hmsTable, Configuration conf) {
     if (SessionStateUtil.getQueryState(conf).map(QueryState::getHiveOperation)
-        .filter(opType -> HiveOperation.ANALYZE_TABLE == opType)
+        .filter(opType -> HiveOperation.QUERY == opType)
         .isPresent()) {
       return false;
     }
