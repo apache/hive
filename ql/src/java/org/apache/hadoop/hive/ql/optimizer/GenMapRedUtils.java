@@ -2190,7 +2190,7 @@ public final class GenMapRedUtils {
     for (int i = 0; i < partNames.length; i++) {
       String previousValue = typeMap.put(partNames[i], partTypes[i]);
       Preconditions.checkArgument(previousValue == null, "Partition columns configuration is inconsistent. "
-          + "There are duplicates in partition column names: " + partNames);
+          + "There are duplicates in partition column names: " + Arrays.toString(partNames));
     }
 
     StringBuilder partNamesBuf = new StringBuilder();

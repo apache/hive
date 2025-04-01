@@ -362,7 +362,7 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return "val " + stringValue + ", " + getColumnParamString(1, inputColumnNum[0]);
+    return "val " + Arrays.toString(stringValue) + ", " + getColumnParamString(1, inputColumnNum[0]);
   }
 
   @Override
