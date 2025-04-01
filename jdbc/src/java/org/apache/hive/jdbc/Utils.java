@@ -261,7 +261,7 @@ public class Utils {
       this.zookeeperTrustStoreType = params.zookeeperTrustStoreType;
 
       this.currentHostZnodePath = params.currentHostZnodePath;
-      this.rejectedHostZnodePaths.addAll(rejectedHostZnodePaths);
+      this.rejectedHostZnodePaths.addAll(params.rejectedHostZnodePaths);
     }
 
     public String getHost() {
