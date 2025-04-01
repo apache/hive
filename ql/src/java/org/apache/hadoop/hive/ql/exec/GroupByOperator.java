@@ -86,7 +86,6 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
   private transient ExprNodeEvaluator[][] aggregationParameterFields;
   private transient ObjectInspector[][] aggregationParameterObjectInspectors;
   private transient ObjectInspector[][] aggregationParameterStandardObjectInspectors;
-  private transient Object[][] aggregationParameterObjects;
 
   // so aggregationIsDistinct is a boolean array instead of a single number.
   private transient boolean[] aggregationIsDistinct;
@@ -277,7 +276,6 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
     aggregationParameterFields = new ExprNodeEvaluator[aggrs.size()][];
     aggregationParameterObjectInspectors = new ObjectInspector[aggrs.size()][];
     aggregationParameterStandardObjectInspectors = new ObjectInspector[aggrs.size()][];
-    aggregationParameterObjects = new Object[aggrs.size()][];
     aggregationIsDistinct = new boolean[aggrs.size()];
     for (int i = 0; i < aggrs.size(); i++) {
       AggregationDesc aggr = aggrs.get(i);
@@ -287,7 +285,6 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
           .size()];
       aggregationParameterStandardObjectInspectors[i] = new ObjectInspector[parameters
           .size()];
-      aggregationParameterObjects[i] = new Object[parameters.size()];
       for (int j = 0; j < parameters.size(); j++) {
         aggregationParameterFields[i][j] = ExprNodeEvaluatorFactory
             .get(parameters.get(j), hconf);
@@ -318,7 +315,6 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
             .getStandardObjectInspector(
             aggregationParameterObjectInspectors[i][j],
             ObjectInspectorCopyOption.WRITABLE);
-        aggregationParameterObjects[i][j] = null;
       }
       if (parameters.size() == 0) {
         // for ex: count(*)
