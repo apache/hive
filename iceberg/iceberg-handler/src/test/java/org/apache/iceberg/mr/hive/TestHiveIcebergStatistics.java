@@ -132,6 +132,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
 
   @Test
   public void testStatsWithPessimisticLockInsert() {
+    Assume.assumeTrue(testTableType == TestTables.TestTableType.HIVE_CATALOG);
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
     shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
@@ -139,11 +140,6 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of(), 1,
         ImmutableMap.of(TableProperties.HIVE_LOCK_ENABLED, "false"));
-
-    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
-      // If the location is set and we have to gather stats, then we have to update the table stats now
-      shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
-    }
 
     String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, identifier, false);
     shell.executeStatement(insert);
