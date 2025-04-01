@@ -936,7 +936,7 @@ POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(a=[$0], b=[$1])
-  HiveFilter(condition=[AND(BETWEEN(false, CAST($0):DOUBLE, 1.1E0:DOUBLE, 9.5E0:DOUBLE), IN(ROW($0, $1), [3:INTEGER, 4:INTEGER]:RecordType(INTEGER NOT NULL EXPR$0, INTEGER NOT NULL EXPR$1), [5:INTEGER, 6:INTEGER]:RecordType(INTEGER NOT NULL EXPR$0, INTEGER NOT NULL EXPR$1)))])
+  HiveFilter(condition=[AND(IN(ROW($0, $1), ROW(3, 4), ROW(5, 6)), BETWEEN(false, CAST($0):DOUBLE, 1.1E0:DOUBLE, 9.5E0:DOUBLE))])
     HiveTableScan(table=[[default, t1]], table:alias=[t1])
 
 PREHOOK: query: explain cbo
@@ -1370,9 +1370,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: t1
-          filterExpr: (a is not null and (a) IN (1, 2)) (type: boolean)
+          filterExpr: ((a) IN (1, 2) and a is not null) (type: boolean)
           Filter Operator
-            predicate: (a is not null and (a) IN (1, 2)) (type: boolean)
+            predicate: ((a) IN (1, 2) and a is not null) (type: boolean)
             Select Operator
               expressions: a (type: int), b (type: int)
               outputColumnNames: a, b
@@ -1454,9 +1454,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: t1
-          filterExpr: (a is not null and a BETWEEN 1 AND 5) (type: boolean)
+          filterExpr: a BETWEEN 1 AND 5 (type: boolean)
           Filter Operator
-            predicate: (a is not null and a BETWEEN 1 AND 5) (type: boolean)
+            predicate: a BETWEEN 1 AND 5 (type: boolean)
             Select Operator
               expressions: a (type: int), b (type: int)
               outputColumnNames: a, b
@@ -1566,9 +1566,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: t1
-          filterExpr: ((a is null or (a) IN (1, 2)) and b is not null and (b) IN (4, 6, 8)) (type: boolean)
+          filterExpr: ((a is null or (a) IN (1, 2)) and (b) IN (4, 6, 8) and b is not null) (type: boolean)
           Filter Operator
-            predicate: ((a is null or (a) IN (1, 2)) and b is not null and (b) IN (4, 6, 8)) (type: boolean)
+            predicate: ((a is null or (a) IN (1, 2)) and (b) IN (4, 6, 8) and b is not null) (type: boolean)
             Select Operator
               expressions: a (type: int), b (type: int)
               outputColumnNames: a, b
@@ -1622,9 +1622,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: t1
-          filterExpr: (UDFToDouble(a) BETWEEN 1.1D AND 9.5D and (struct(a,b)) IN ([3, 4], [5, 6])) (type: boolean)
+          filterExpr: ((struct(a,b)) IN (const struct(3,4), const struct(5,6)) and UDFToDouble(a) BETWEEN 1.1D AND 9.5D) (type: boolean)
           Filter Operator
-            predicate: (UDFToDouble(a) BETWEEN 1.1D AND 9.5D and (struct(a,b)) IN ([3, 4], [5, 6])) (type: boolean)
+            predicate: ((struct(a,b)) IN (const struct(3,4), const struct(5,6)) and UDFToDouble(a) BETWEEN 1.1D AND 9.5D) (type: boolean)
             Select Operator
               expressions: a (type: int), b (type: int)
               outputColumnNames: a, b
