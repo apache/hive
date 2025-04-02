@@ -119,7 +119,6 @@ public class Serializer {
 
   private boolean useHybridCalendar;
   private final StructVector rootVector;
-  private final DecimalHolder decimalHolder = new DecimalHolder();
 
   //Constructor for non-serde serialization
   public Serializer(Configuration conf, String attemptId, List<TypeInfo> typeInfos, List<String> fieldNames) {
@@ -952,10 +951,7 @@ public class Serializer {
     decimalVector.set(i, ((DecimalColumnVector) hiveVector).vector[j].getHiveDecimal().bigDecimalValue().setScale(scale));
 
     final HiveDecimalWritable writable = ((DecimalColumnVector) hiveVector).vector[j];
-    decimalHolder.precision = writable.precision();
-    decimalHolder.scale = scale;
     try (ArrowBuf arrowBuf = allocator.buffer(DecimalHolder.WIDTH)) {
-      decimalHolder.buffer = arrowBuf;
       final BigInteger bigInteger = new BigInteger(writable.getInternalStorage()).
           multiply(BigInteger.TEN.pow(scale - writable.scale()));
       decimalVector.set(i, new BigDecimal(bigInteger, scale));

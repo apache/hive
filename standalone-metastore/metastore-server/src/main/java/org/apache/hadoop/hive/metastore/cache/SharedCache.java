@@ -94,7 +94,6 @@ public class SharedCache {
   private boolean isCatalogCachePrewarmed = false;
   private Map<String, Catalog> catalogCache = new TreeMap<>();
   private HashSet<String> catalogsDeletedDuringPrewarm = new HashSet<>();
-  private AtomicBoolean isCatalogCacheDirty = new AtomicBoolean(false);
 
   // For caching Database objects. Key is database name
   private Map<String, Database> databaseCache = new TreeMap<>();
@@ -1553,7 +1552,6 @@ public class SharedCache {
       // ObjectStore also stores db name in lowercase
       catCopy.setName(catCopy.getName().toLowerCase());
       catalogCache.put(cat.getName(), catCopy);
-      isCatalogCacheDirty.set(true);
     } finally {
       cacheLock.writeLock().unlock();
     }
@@ -1577,9 +1575,6 @@ public class SharedCache {
       // so that the prewarm thread does not add it back
       if (!isCatalogCachePrewarmed) {
         catalogsDeletedDuringPrewarm.add(name);
-      }
-      if (catalogCache.remove(name) != null) {
-        isCatalogCacheDirty.set(true);
       }
     } finally {
       cacheLock.writeLock().unlock();
@@ -2713,11 +2708,9 @@ public class SharedCache {
     isCatalogCachePrewarmed = false;
     catalogCache.clear();
     catalogsDeletedDuringPrewarm.clear();
-    isCatalogCacheDirty.set(false);
   }
 
   void clearDirtyFlags() {
-    isCatalogCacheDirty.set(false);
     isDatabaseCacheDirty.set(false);
     isTableCacheDirty.set(false);
   }
