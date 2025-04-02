@@ -2071,19 +2071,6 @@ columnNameColonTypeList
     : columnNameColonType (COMMA columnNameColonType)* -> ^(TOK_TABCOLLIST columnNameColonType+)
     ;
 
-columnNameList
-@init { pushMsg("column name list", state); }
-@after { popMsg(state); }
-    : columnName (COMMA columnName)* -> ^(TOK_TABCOLNAME columnName+)
-    ;
-
-columnName
-@init { pushMsg("column name", state); }
-@after { popMsg(state); }
-    :
-      identifier
-    ;
-
 extColumnName
 @init { pushMsg("column name for complex types", state); }
 @after { popMsg(state); }

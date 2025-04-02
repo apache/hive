@@ -19,19 +19,17 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
-import java.util.Map;
+import java.util.List;
 
-import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
-import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 
 /**
  * ColumnStatsDropWork implementation. ColumnStatsDropWork will drop the
  * colStats from the metastore. Work corresponds to statements like:
- * ALTER TABLE src_stat DROP STATISTICS for column key;
- * ALTER TABLE src_stat_part PARTITION(partitionId=100) DROP STATISTICS for column value;
+ * ALTER TABLE src_stat DROP STATISTICS for columns [comma separated list of columns];
+ * ALTER TABLE src_stat_part PARTITION(partitionId=100) DROP STATISTICS for columns [comma separated list of columns];
  */
 @Explain(displayName = "Column Stats Drop Work", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class ColumnStatsDropWork implements Serializable, DDLDescWithWriteId {
@@ -39,67 +37,21 @@ public class ColumnStatsDropWork implements Serializable, DDLDescWithWriteId {
   private final String partName;
   private final String dbName;
   private final String tableName;
-  private final String colName;
-  private final String colType;
-  private final ColumnStatistics colStats;
+  private final List<String> colNames;
   private long writeId;
-  private boolean isReplication;
-  private String dumpDirectory;
-  private transient ReplicationMetricCollector metricCollector;
-
-  public ColumnStatsDropWork(String partName,
-      String dbName,
-      String tableName,
-      String colName,
-      String colType) {
+  
+  public ColumnStatsDropWork(String partName, String dbName, String tableName, List<String> colNames) {
     this.partName = partName;
     this.dbName = dbName;
     this.tableName = tableName;
-    this.colName = colName;
-    this.colType = colType;
-    this.colStats = null;
-  }
-
-  public ColumnStatsDropWork(ColumnStatistics colStats) {
-    this.colStats = colStats;
-    this.partName = null;
-    this.dbName = null;
-    this.tableName = null;
-    this.colName = null;
-    this.colType = null;
-  }
-
-  public ColumnStatsDropWork(ColumnStatistics colStats, String dumpRoot, ReplicationMetricCollector metricCollector,
-                               boolean isReplication) {
-    this.colStats = colStats;
-    this.partName = null;
-    this.dbName = null;
-    this.tableName = null;
-    this.colName = null;
-    this.colType = null;
-    this.dumpDirectory = dumpRoot;
-    this.metricCollector = metricCollector;
-    this.isReplication = true;
-  }
-
-  @Override
-  public String toString() {
-    return null;
-  }
-
-  public String getDumpDirectory() {
-    return dumpDirectory;
-  }
-
-  public boolean isReplication() {
-    return isReplication;
+    this.colNames = colNames;
   }
 
   public String getPartName() {
     return partName;
   }
 
-  public String dbName() {
+  public String getDbName() {
     return dbName;
   }
 
@@ -107,35 +59,17 @@ public class ColumnStatsDropWork implements Serializable, DDLDescWithWriteId {
     return tableName;
   }
 
-  public String getColName() {
-    return colName;
+  public List<String> getColNames() {
+    return colNames;
   }
-
-  public String getColType() {
-    return colType;
-  }
-
-  public ColumnStatistics getColStats() { return colStats; }
-
-  public ReplicationMetricCollector getMetricCollector() {
-    return metricCollector;
-  }
-
 
   @Override
   public void setWriteId(long writeId) {
     this.writeId = writeId;
   }
 
-  public long getWriteId() { return writeId; }
-
   @Override
   public String getFullTableName() {
     return dbName + "." + tableName;
-  }
-
-  @Override
-  public boolean mayNeedWriteId() {
-    return true; // Checked at setup time; if this is called, the table is transactional.
   }
 }

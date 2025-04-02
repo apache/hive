@@ -18,10 +18,11 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.misc.columnstats;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableAnalyzer;
@@ -36,7 +37,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsDropWork;
 
 /**
- * Analyzer for update column statistics commands.
+ * Analyzer for drop column statistics commands.
  */
 @DDLType(types = {HiveParser.TOK_ALTERTABLE_DROPCOLSTATS, HiveParser.TOK_ALTERPARTITION_DROPCOLSTATS})
 public class AlterTableDropColumnStatisticsAnalyzer extends AbstractAlterTableAnalyzer {
@@ -48,32 +49,20 @@ public class AlterTableDropColumnStatisticsAnalyzer extends AbstractAlterTableAn
   protected void analyzeCommand(TableName tableName, Map<String, String> partitionSpec, ASTNode command)
       throws SemanticException {
     Table table = getTable(tableName);
-    String columnName = getUnescapedName((ASTNode) command.getChild(0));
-
+    List<String> columnNames = command.getChildCount() == 0 ? 
+        new ArrayList<>() : 
+        getColumnNames((ASTNode) command.getChild(0));
     String partitionName = AcidUtils.getPartitionName(partitionSpec);
-    String columnType = getColumnType(table, columnName);
 
-    ColumnStatsDropWork work = new ColumnStatsDropWork(partitionName, table.getDbName(), table.getTableName(), 
-        columnName, columnType);
+    ColumnStatsDropWork work = 
+        new ColumnStatsDropWork(partitionName, table.getDbName(), table.getTableName(), columnNames);
     ColumnStatsDropTask task = (ColumnStatsDropTask) TaskFactory.get(work);
-    // TODO: doesn't look like this path is actually ever exercised. Maybe this needs to be removed.
+    
     addInputsOutputsAlterTable(tableName, partitionSpec, null, AlterTableType.DROP_COL_STATS, false);
     if (AcidUtils.isTransactionalTable(table)) {
       setAcidDdlDesc(work);
     }
 
     rootTasks.add(task);
-  }
-
-
-
-  private String getColumnType(Table table, String columnName) throws SemanticException {
-    for (FieldSchema column : table.getCols()) {
-      if (columnName.equalsIgnoreCase(column.getName())) {
-        return column.getType();
-      }
-    }
-
-    throw new SemanticException("column type not found");
   }
 }
