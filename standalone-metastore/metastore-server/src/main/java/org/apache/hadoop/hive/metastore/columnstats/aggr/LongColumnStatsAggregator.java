@@ -172,13 +172,7 @@ public class LongColumnStatsAggregator extends ColumnStatsAggregator implements
           String partName = csp.getPartName();
           LongColumnStatsData newData = cso.getStatsData().getLongStats();
           if (useDensityFunctionForNDVEstimation) {
-            if (newData.getNumDVs() == 0) {
-              // If NDV is not present, assume that the density is 0.5.
-              densityAvgSum += 0.5;
-            } else {
-              densityAvgSum +=
-                  ((double) (newData.getHighValue() - newData.getLowValue())) / newData.getNumDVs();
-            }
+            densityAvgSum += ((double) (newData.getHighValue() - newData.getLowValue())) / newData.getNumDVs();
           }
           adjustedIndexMap.put(partName, (double) indexMap.get(partName));
           adjustedStatsMap.put(partName, cso.getStatsData());
@@ -207,13 +201,7 @@ public class LongColumnStatsAggregator extends ColumnStatsAggregator implements
               csd.setLongStats(aggregateData);
               adjustedStatsMap.put(pseudoPartName.toString(), csd);
               if (useDensityFunctionForNDVEstimation) {
-                if (aggregateData.getNumDVs() == 0) {
-                  // If NDV is not present, assume that the density is 0.5.
-                  densityAvgSum += 0.5;
-                } else {
-                  double range = aggregateData.getHighValue() - aggregateData.getLowValue();
-                  densityAvgSum += range / aggregateData.getNumDVs();
-                }
+                densityAvgSum += ((double) (aggregateData.getHighValue() - aggregateData.getLowValue())) / aggregateData.getNumDVs();
               }
               // reset everything
               pseudoPartName = new StringBuilder();
