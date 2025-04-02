@@ -92,6 +92,7 @@
     <libthrift.version>0.16.0</libthrift.version>
     <log4j2.version>2.24.3</log4j2.version>
     <mockito-core.version>3.4.4</mockito-core.version>
+    <netty.version>4.1.116.Final</netty.version>
     <orc.version>1.9.4</orc.version>
     <protobuf.version>3.25.5</protobuf.version>
     <io.grpc.version>1.51.0</io.grpc.version>
@@ -172,6 +173,11 @@
         <groupId>io.dropwizard.metrics</groupId>
         <artifactId>metrics-json</artifactId>
         <version>${dropwizard.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-all</artifactId>
+        <version>${netty.version}</version>
       </dependency>
       <dependency>
         <groupId>javolution</groupId>
