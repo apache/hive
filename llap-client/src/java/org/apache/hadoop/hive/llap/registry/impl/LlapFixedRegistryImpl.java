@@ -257,7 +257,7 @@ public class LlapFixedRegistryImpl implements ServiceRegistry<LlapServiceInstanc
       Collections.sort(list, new Comparator<LlapServiceInstance>() {
         @Override
         public int compare(LlapServiceInstance o1, LlapServiceInstance o2) {
-          return o2.getWorkerIdentity().compareTo(o2.getWorkerIdentity());
+          return o1.getWorkerIdentity().compareTo(o2.getWorkerIdentity());
         }
       });
       return list;
