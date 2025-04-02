@@ -51,24 +51,4 @@ public final class HiveSearchRules {
           .withOperandSupplier(o -> o.operand(HiveJoin.class).anyInputs())
           .toRule();
 
-  public static final RelOptRule FILTER_IN_TO_SEARCH =
-      new HiveRexShuttleTransformRule.Config().withRexShuttle(InSearchShuttle::new)
-          .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-          .withOperandSupplier(b -> b.operand(HiveFilter.class).anyInputs())
-          .withDescription("HiveInToSearchFilterRule")
-          .toRule();
-  public static final RelOptRule PROJECT_IN_TO_SEARCH =
-      new HiveRexShuttleTransformRule.Config().withRexShuttle(InSearchShuttle::new)
-          .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-          .withOperandSupplier(b -> b.operand(HiveJoin.class).anyInputs())
-          .withDescription("HiveInToSearchJoinRule")
-          .toRule();
-  public static final RelOptRule JOIN_IN_TO_SEARCH =
-      new HiveRexShuttleTransformRule.Config().withRexShuttle(InSearchShuttle::new)
-          .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-          .withOperandSupplier(b -> b.operand(HiveProject.class).anyInputs())
-          .withDescription("HiveInToSearchProjectRule")
-          .toRule();
-
-
 }
