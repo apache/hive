@@ -2027,7 +2027,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       case HiveParser.TOK_ANALYZE:
         // Case of analyze command
+        
         String table_name = getUnescapedName((ASTNode) ast.getChild(0).getChild(0)).toLowerCase();
+        
+        
         qb.setTabAlias(table_name, table_name);
         qb.addAlias(table_name);
         qb.getParseInfo().setIsAnalyzeCommand(true);
