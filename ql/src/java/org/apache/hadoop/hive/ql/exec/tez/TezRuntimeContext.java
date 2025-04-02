@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import java.util.Optional;
+
 import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
 import org.apache.tez.client.TezClient;
 import org.apache.tez.common.counters.CounterGroup;
@@ -88,6 +90,14 @@ public class TezRuntimeContext {
 
   public String getAmAddress() {
     return amAddress;
+  }
+
+  /**
+   * Convenience method to retrieve the AM hostname for callers that are not interested in the port.
+   * @return AM hostname
+   */
+  public String getAmHostName() {
+    return Optional.of(amAddress).map(address -> address.split(":")[0]).get();
   }
 
   public TezJobMonitor getMonitor() {
