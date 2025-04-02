@@ -31,12 +31,12 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 
-import static org.apache.hadoop.hive.ql.optimizer.calcite.TestHelper.assertPlans;
-import static org.apache.hadoop.hive.ql.optimizer.calcite.TestHelper.buildPlanner;
-import static org.apache.hadoop.hive.ql.optimizer.calcite.TestHelper.buildRelBuilder;
-import static org.apache.hadoop.hive.ql.optimizer.calcite.TestHelper.MyRecord;
-import static org.apache.hadoop.hive.ql.optimizer.calcite.TestHelper.MyRecordWithNullableField;
-import static org.apache.hadoop.hive.ql.optimizer.calcite.TestHelper.eq;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.assertPlans;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.buildPlanner;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.buildRelBuilder;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.MyRecord;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.MyRecordWithNullableField;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.eq;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestHiveSortLimitPullUpConstantsRule {
