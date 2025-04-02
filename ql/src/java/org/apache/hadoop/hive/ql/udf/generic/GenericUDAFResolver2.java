@@ -21,21 +21,21 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
- * This interface extends the <tt>GenericUDAFResolver</tt> interface and
+ * This interface extends the <pre>GenericUDAFResolver</pre> interface and
  * provides more flexibility in terms of discovering the parameter types
  * supplied to the UDAF. Implementations that extend this interface will
  * also have access to extra information such as the specification of the
- * <tt>DISTINCT</tt> qualifier or the invocation with the special wildcard
+ * <pre>DISTINCT</pre> qualifier or the invocation with the special wildcard
  * character.
  * <p>
  * <b>Note:</b> The implementation of function does not have to handle the
- * actual <tt>DISTINCT</tt> or wildcard implementation. This information is
+ * actual <pre>DISTINCT</pre> or wildcard implementation. This information is
  * provided only to allow the function implementation to accept or reject
- * such invocations. For example - the implementation of <tt>COUNT</tt> UDAF
- * requires that the <tt>DISTINCT</tt> qualifier be supplied when more than
+ * such invocations. For example - the implementation of <pre>COUNT</pre> UDAF
+ * requires that the <pre>DISTINCT</pre> qualifier be supplied when more than
  * one parameters are specified in the invocation. The actual filtering of
- * data bound to parameter types for <tt>DISTINCT</tt> implementation is
- * handled by the framework and not the <tt>COUNT</tt> UDAF implementation.
+ * data bound to parameter types for <pre>DISTINCT</pre> implementation is
+ * handled by the framework and not the <pre>COUNT</pre> UDAF implementation.
  */
 @Deprecated
 @SuppressWarnings("deprecation")
