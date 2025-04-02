@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import org.apache.calcite.plan.RelOptCluster;
-import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.plan.RelOptUtil.InputFinder;
@@ -55,7 +54,6 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexPatternFieldRef;
 import org.apache.calcite.rex.RexShuttle;
-import org.apache.calcite.rex.RexSimplify;
 import org.apache.calcite.rex.RexTableInputRef;
 import org.apache.calcite.rex.RexRangeRef;
 import org.apache.calcite.rex.RexSubQuery;
@@ -667,9 +665,7 @@ public class HiveCalciteUtil {
     }
     // Build map to not convert multiple times, further remove already included predicates
     Map<String,RexNode> stringToRexNode = Maps.newLinkedHashMap();
-    RexSimplify simplify = new RexSimplify(inp.getCluster().getRexBuilder(), RelOptPredicateList.EMPTY, RexUtil.EXECUTOR);
     for (RexNode r : predsToPushDown) {
-      r = simplify.simplify(r);
       String rexNodeString = r.toString();
       if (predicatesToExclude.add(rexNodeString)) {
         stringToRexNode.put(rexNodeString, r);
