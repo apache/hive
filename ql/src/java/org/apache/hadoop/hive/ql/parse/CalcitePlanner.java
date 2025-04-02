@@ -1706,10 +1706,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
           materializationValidator.getAutomaticRewritingValidationResult());
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.VALIDATE_QUERY_MATERIALIZATION);
 
-      // Apply transformations to replace IN with SEARCH in the plan
-      // From now onwards, and during the subsequent phases IN disappears completely from the plan.
-      calcitePlan = applyInSearchTransforms(calcitePlan, mdProvider.getMetadataProvider(), executorProvider);
-
       // 2. Apply pre-join order optimizations
       perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.PREJOIN_ORDERING);
       calcitePlan = applyPreJoinOrderingTransforms(calcitePlan, mdProvider.getMetadataProvider(), executorProvider);
@@ -1775,14 +1771,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       
       return calcitePlan;
-    }
-
-    private RelNode applyInSearchTransforms(RelNode basePlan, RelMetadataProvider mdProvider, RexExecutor executor) {
-      HepProgramBuilder program = new HepProgramBuilder();
-      program.addRuleCollection(ImmutableList.of(HiveSearchRules.FILTER_IN_TO_SEARCH,
-          HiveSearchRules.PROJECT_IN_TO_SEARCH,
-          HiveSearchRules.JOIN_IN_TO_SEARCH));
-      return executeProgram(basePlan, program.build(), mdProvider, executor);
     }
 
     private RelNode applySearchExpandTransforms(RelNode basePlan, RelMetadataProvider mdProvider,
