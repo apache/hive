@@ -361,8 +361,8 @@ public class ReplUtils {
   }
 
   private static String getMetricStageName(String stageName, ReplicationMetricCollector metricCollector) {
-    if( stageName == "REPL_DUMP" || stageName == "REPL_LOAD" || stageName == "ATLAS_DUMP" || stageName == "ATLAS_LOAD"
-            || stageName == "RANGER_DUMP" || stageName == "RANGER_LOAD" || stageName == "RANGER_DENY"){
+    if( "REPL_DUMP".equals(stageName) || "REPL_LOAD".equals(stageName) || "ATLAS_DUMP".equals(stageName) || "ATLAS_LOAD".equals(stageName)
+            || "RANGER_DUMP".equals(stageName) || "RANGER_LOAD".equals(stageName) || "RANGER_DENY".equals(stageName)){
       return stageName;
     }
     if(isDumpMetricCollector(metricCollector)){
