@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
@@ -114,7 +115,7 @@ public class OrderlessLimitPushDownOptimizer extends Transform {
       LimitOperator parentLimit = (LimitOperator) childLimit.getParentOperators().get(0);
       LimitDesc parentConf = parentLimit.getConf();
       LimitDesc childConf = childLimit.getConf();
-      if (parentConf.getOffset() == childConf.getOffset()) {
+      if (Objects.equals(parentConf.getOffset(), childConf.getOffset())) {
         int min = Math.min(parentConf.getLimit(), childConf.getLimit());
         LOG.debug("Combining two limits child={}, parent={}, newLimit={}", childLimit, parentLimit, min);
         parentConf.setLimit(min);

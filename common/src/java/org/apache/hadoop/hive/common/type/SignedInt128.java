@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.common.type;
 
 import java.math.BigInteger;
 import java.nio.IntBuffer;
+import java.util.Objects;
 
 /**
  * This code was based on code from Microsoft's PolyBase.
@@ -683,7 +684,7 @@ public final class SignedInt128 extends Number implements
    */
   public static void multiply(SignedInt128 left, SignedInt128 right,
       SignedInt128 result) {
-    if (result == left || result == right) {
+    if (Objects.equals(result, left) || Objects.equals(result, right)) {
       throw new IllegalArgumentException(
           "result object cannot be left or right operand");
     }
@@ -768,7 +769,7 @@ public final class SignedInt128 extends Number implements
    */
   public static void divide(SignedInt128 left, SignedInt128 right,
       SignedInt128 quotient, SignedInt128 remainder) {
-    if (quotient == left || quotient == right) {
+    if (Objects.equals(quotient, left) || Objects.equals(quotient, right)) {
       throw new IllegalArgumentException(
           "result object cannot be left or right operand");
     }
