@@ -140,11 +140,12 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
     job.setOutputFormatClass(of.getClass());
     job.setNumReduceTasks(0);
 
-    JobClient jc = new JobClient(new JobConf(job.getConfiguration()));
+    try (JobClient jc = new JobClient(new JobConf(job.getConfiguration()))) {
 
-    if(UserGroupInformation.isSecurityEnabled()) {
-      Token<DelegationTokenIdentifier> mrdt = jc.getDelegationToken(new Text("mr token"));
-      job.getCredentials().addToken(new Text("mr token"), mrdt);
+      if (UserGroupInformation.isSecurityEnabled()) {
+        Token<DelegationTokenIdentifier> mrdt = jc.getDelegationToken(new Text("mr token"));
+        job.getCredentials().addToken(new Text("mr token"), mrdt);
+      }
     }
     LauncherDelegator.JobType jobType = LauncherDelegator.JobType.valueOf(conf.get(JOB_TYPE));
 

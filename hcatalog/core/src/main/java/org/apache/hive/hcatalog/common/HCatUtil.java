@@ -344,14 +344,11 @@ public class HCatUtil {
 
   public static Token<org.apache.hadoop.mapreduce.security.token.delegation.DelegationTokenIdentifier> getJobTrackerDelegationToken(
     Configuration conf, String userName) throws Exception {
-    // LOG.info("getJobTrackerDelegationToken("+conf+","+userName+")");
-    JobClient jcl = new JobClient(new JobConf(conf, HCatOutputFormat.class));
-    Token<org.apache.hadoop.mapreduce.security.token.delegation.DelegationTokenIdentifier> t = jcl
-      .getDelegationToken(new Text(userName));
-    // LOG.info("got "+t);
-    return t;
-
-    // return null;
+    try (JobClient jcl = new JobClient(new JobConf(conf, HCatOutputFormat.class))) {
+      Token<org.apache.hadoop.mapreduce.security.token.delegation.DelegationTokenIdentifier> t = jcl
+              .getDelegationToken(new Text(userName));
+      return t;
+    }
   }
 
   public static Token<? extends AbstractDelegationTokenIdentifier> extractThriftToken(

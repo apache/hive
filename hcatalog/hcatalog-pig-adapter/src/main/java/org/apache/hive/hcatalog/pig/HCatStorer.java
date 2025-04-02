@@ -163,56 +163,57 @@ public class HCatStorer extends HCatBaseStorer {
         job.getCredentials().addAll(crd);
       }
     } else {
-      Job clone = new Job(job.getConfiguration());
-      OutputJobInfo outputJobInfo;
-      if (userStr.length == 2) {
-        outputJobInfo = OutputJobInfo.create(userStr[0], userStr[1], partitions);
-      } else if (userStr.length == 1) {
-        outputJobInfo = OutputJobInfo.create(null, userStr[0], partitions);
-      } else {
-        throw new FrontendException("location " + location
-          + " is invalid. It must be of the form [db.]table",
-          PigHCatUtil.PIG_EXCEPTION_CODE);
-      }
-      Schema schema = (Schema) ObjectSerializer.deserialize(udfProps.getProperty(PIG_SCHEMA));
-      if (schema != null) {
-        pigSchema = schema;
-      }
-      if (pigSchema == null) {
-        throw new FrontendException(
-          "Schema for data cannot be determined.",
-          PigHCatUtil.PIG_EXCEPTION_CODE);
-      }
-      String externalLocation = (String) udfProps.getProperty(HCatConstants.HCAT_PIG_STORER_EXTERNAL_LOCATION);
-      if (externalLocation != null) {
-        outputJobInfo.setLocation(externalLocation);
-      }
-      try {
-        HCatOutputFormat.setOutput(job, outputJobInfo);
-      } catch (HCatException he) {
-        // pass the message to the user - essentially something about
-        // the table
-        // information passed to HCatOutputFormat was not right
-        throw new PigException(he.getMessage(),
-          PigHCatUtil.PIG_EXCEPTION_CODE, he);
-      }
-      HCatSchema hcatTblSchema = HCatOutputFormat.getTableSchema(job.getConfiguration());
-      try {
-        doSchemaValidations(pigSchema, hcatTblSchema);
-      } catch (HCatException he) {
-        throw new FrontendException(he.getMessage(), PigHCatUtil.PIG_EXCEPTION_CODE, he);
-      }
-      computedSchema = convertPigSchemaToHCatSchema(pigSchema, hcatTblSchema);
-      HCatOutputFormat.setSchema(job, computedSchema);
-      udfProps.setProperty(COMPUTED_OUTPUT_SCHEMA, ObjectSerializer.serialize(computedSchema));
+      try (Job clone = new Job(job.getConfiguration())) {
+        OutputJobInfo outputJobInfo;
+        if (userStr.length == 2) {
+          outputJobInfo = OutputJobInfo.create(userStr[0], userStr[1], partitions);
+        } else if (userStr.length == 1) {
+          outputJobInfo = OutputJobInfo.create(null, userStr[0], partitions);
+        } else {
+          throw new FrontendException("location " + location
+                  + " is invalid. It must be of the form [db.]table",
+                  PigHCatUtil.PIG_EXCEPTION_CODE);
+        }
+        Schema schema = (Schema) ObjectSerializer.deserialize(udfProps.getProperty(PIG_SCHEMA));
+        if (schema != null) {
+          pigSchema = schema;
+        }
+        if (pigSchema == null) {
+          throw new FrontendException(
+                  "Schema for data cannot be determined.",
+                  PigHCatUtil.PIG_EXCEPTION_CODE);
+        }
+        String externalLocation = udfProps.getProperty(HCatConstants.HCAT_PIG_STORER_EXTERNAL_LOCATION);
+        if (externalLocation != null) {
+          outputJobInfo.setLocation(externalLocation);
+        }
+        try {
+          HCatOutputFormat.setOutput(job, outputJobInfo);
+        } catch (HCatException he) {
+          // pass the message to the user - essentially something about
+          // the table
+          // information passed to HCatOutputFormat was not right
+          throw new PigException(he.getMessage(),
+                  PigHCatUtil.PIG_EXCEPTION_CODE, he);
+        }
+        HCatSchema hcatTblSchema = HCatOutputFormat.getTableSchema(job.getConfiguration());
+        try {
+          doSchemaValidations(pigSchema, hcatTblSchema);
+        } catch (HCatException he) {
+          throw new FrontendException(he.getMessage(), PigHCatUtil.PIG_EXCEPTION_CODE, he);
+        }
+        computedSchema = convertPigSchemaToHCatSchema(pigSchema, hcatTblSchema);
+        HCatOutputFormat.setSchema(job, computedSchema);
+        udfProps.setProperty(COMPUTED_OUTPUT_SCHEMA, ObjectSerializer.serialize(computedSchema));
 
-      // We will store all the new /changed properties in the job in the
-      // udf context, so the the HCatOutputFormat.setOutput and setSchema
-      // methods need not be called many times.
-      for (Entry<String, String> keyValue : job.getConfiguration()) {
-        String oldValue = clone.getConfiguration().getRaw(keyValue.getKey());
-        if ((oldValue == null) || (keyValue.getValue().equals(oldValue) == false)) {
-          udfProps.put(keyValue.getKey(), keyValue.getValue());
+        // We will store all the new /changed properties in the job in the
+        // udf context, so the HCatOutputFormat.setOutput and setSchema
+        // methods need not be called many times.
+        for (Entry<String, String> keyValue : job.getConfiguration()) {
+          String oldValue = clone.getConfiguration().getRaw(keyValue.getKey());
+          if ((oldValue == null) || (!keyValue.getValue().equals(oldValue))) {
+            udfProps.put(keyValue.getKey(), keyValue.getValue());
+          }
         }
       }
       //Store credentials in a private hash map and not the udf context to
