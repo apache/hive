@@ -25,6 +25,7 @@ import java.util.Map;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableAnalyzer;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.exec.ColumnStatsDropTask;
@@ -49,6 +50,11 @@ public class AlterTableDropColumnStatisticsAnalyzer extends AbstractAlterTableAn
   protected void analyzeCommand(TableName tableName, Map<String, String> partitionSpec, ASTNode command)
       throws SemanticException {
     Table table = getTable(tableName);
+    
+    if (DDLUtils.isIcebergTable(table)) {
+      throw new SemanticException("DROP STATISTICS FOR COLUMNS is not supported for ICEBERG tables");
+    }
+    
     List<String> columnNames = command.getChildCount() == 0 ? 
         new ArrayList<>() : 
         getColumnNames((ASTNode) command.getChild(0));
