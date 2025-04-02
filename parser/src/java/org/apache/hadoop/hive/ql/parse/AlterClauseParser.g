@@ -289,9 +289,9 @@ alterStatementSuffixUpdateStats[boolean partition]
 alterStatementSuffixDropStatsCol[boolean partition]
 @init { gParent.pushMsg("drop column statistics", state); }
 @after { gParent.popMsg(state); }
-    : KW_DROP KW_STATISTICS KW_FOR KW_COLUMN? colName=identifier
-    -> {partition}? ^(TOK_ALTERPARTITION_DROPCOLSTATS $colName)
-    ->              ^(TOK_ALTERTABLE_DROPCOLSTATS $colName)
+    : KW_DROP KW_STATISTICS KW_FOR KW_COLUMNS colNames=columnNameList?
+    -> {partition}? ^(TOK_ALTERPARTITION_DROPCOLSTATS $colNames?)
+    ->              ^(TOK_ALTERTABLE_DROPCOLSTATS $colNames?)
     ;
 
 alterStatementChangeColPosition
@@ -799,3 +799,17 @@ alterForeignKeyWithName
     : KW_CONSTRAINT constraintName=identifier KW_FOREIGN KW_KEY fkCols=columnParenthesesList  KW_REFERENCES tabName=tableName parCols=columnParenthesesList constraintOptsAlter?
     -> ^(TOK_FOREIGN_KEY ^(TOK_CONSTRAINT_NAME $constraintName) $fkCols $tabName $parCols constraintOptsAlter?)
     ;
+
+columnNameList
+@init { gParent.pushMsg("column name list", state); }
+@after { gParent.popMsg(state); }
+    : columnName (COMMA columnName)* -> ^(TOK_TABCOLNAME columnName+)
+    ;
+
+columnName
+@init { gParent.pushMsg("column name", state); }
+@after { gParent.popMsg(state); }
+    :
+      identifier
+    ;
+

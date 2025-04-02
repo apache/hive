@@ -18,9 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsDropWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.slf4j.Logger;
@@ -28,36 +26,24 @@ import org.slf4j.LoggerFactory;
 
 /**
  * ColumnStatsDropTask implementation. Examples:
- * ALTER TABLE src_stat DROP STATISTICS for column key;
- * ALTER TABLE src_stat_part PARTITION(partitionId=100) DROP STATISTICS for column value;
+ * ALTER TABLE src_stat DROP STATISTICS for columns [comma separated list of columns];
+ * ALTER TABLE src_stat_part PARTITION(partitionId=100) DROP STATISTICS for columns [comma separated list of columns];
  **/
 
 public class ColumnStatsDropTask extends Task<ColumnStatsDropWork> {
   private static final long serialVersionUID = 1L;
   private static final Logger LOG = LoggerFactory.getLogger(ColumnStatsDropTask.class);
 
-  private int dropColumnStats(Hive db) throws HiveException {
-    String dbName = work.dbName();
-    String tblName = work.getTableName();
-
-    if (work.getPartName() == null) {
-      db.deleteTableColumnStatistics(dbName, tblName, work.getColName());
-    } else {
-      db.deletePartitionColumnStatistics(dbName, tblName, work.getPartName(), work.getColName());
-    }
-    return 0;
-  }
-
   @Override
   public int execute() {
     try {
-      Hive db = getHive();
-      return dropColumnStats(db);
+      getHive()
+          .deleteColumnStatistics(work.getDbName(), work.getTableName(), work.getPartName(), work.getColNames());
+      return 0;
     } catch (Exception e) {
       setException(e);
       LOG.info("Failed to drop column stats in metastore", e);
-      return ReplUtils.handleException(work.isReplication(), e, work.getDumpDirectory(), work.getMetricCollector(),
-                                       getName(), conf);
+      return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
     }
   }
 
