@@ -117,7 +117,6 @@ import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.expressions.UnboundPredicate;
 import org.apache.iceberg.expressions.UnboundTerm;
-import org.apache.iceberg.hadoop.ConfigProperties;
 import org.apache.iceberg.hive.CachedClientPool;
 import org.apache.iceberg.hive.HiveLock;
 import org.apache.iceberg.hive.HiveSchemaUtil;
@@ -427,29 +426,19 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   }
 
   private HiveLock lockObject(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    if (hiveLockEnabled(hmsTable, conf)) {
-      return new MetastoreLock(conf, new CachedClientPool(conf, Maps.fromProperties(catalogProperties)),
-          catalogProperties.getProperty(Catalogs.NAME), hmsTable.getDbName(), hmsTable.getTableName());
-    } else {
+    if (!HiveTableOperations.hiveLockEnabled(hmsTable.getParameters(), conf) ||
+        SessionStateUtil.getQueryState(conf)
+            .map(QueryState::getHiveOperation)
+            .filter(opType -> HiveOperation.QUERY == opType)
+            .isPresent()) {
       return new NoLock();
+    } else {
+      return new MetastoreLock(
+          conf,
+          new CachedClientPool(conf, Maps.fromProperties(catalogProperties)),
+          catalogProperties.getProperty(Catalogs.NAME), hmsTable.getDbName(),
+          hmsTable.getTableName());
     }
-  }
-
-  private static boolean hiveLockEnabled(org.apache.hadoop.hive.metastore.api.Table hmsTable, Configuration conf) {
-    if (SessionStateUtil.getQueryState(conf).map(QueryState::getHiveOperation)
-        .filter(opType -> HiveOperation.QUERY == opType)
-        .isPresent()) {
-      return false;
-    }
-
-    if (hmsTable.getParameters().containsKey(TableProperties.HIVE_LOCK_ENABLED)) {
-      // We know that the property is set, so default value will not be used,
-      return Boolean.parseBoolean(
-          hmsTable.getParameters().getOrDefault(TableProperties.HIVE_LOCK_ENABLED, "false"));
-    }
-
-    return conf.getBoolean(
-        ConfigProperties.LOCK_HIVE_ENABLED, TableProperties.HIVE_LOCK_ENABLED_DEFAULT);
   }
 
   private void doPreAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
