@@ -44,7 +44,6 @@ public class ResourceDownloader {
     this.dependencyResolver = new DependencyResolver();
     this.conf = conf;
     this.resourceDir = new File(resourceDirPath);
-    ensureDirectory(resourceDir);
   }
 
   /**
@@ -71,30 +70,29 @@ public class ResourceDownloader {
     }
   }
 
-  public List<URI> resolveAndDownload(String source, boolean convertToUnix)
+  public List<URI> resolveAndDownload(String source)
       throws URISyntaxException, IOException {
-    return resolveAndDownloadInternal(createURI(source), null, convertToUnix, true);
+    return resolveAndDownloadInternal(createURI(source), null, true);
   }
 
-  public List<URI> downloadExternal(URI source, String subDir, boolean convertToUnix)
+  public List<URI> downloadExternal(URI source, String subDir)
       throws URISyntaxException, IOException {
-    return resolveAndDownloadInternal(source, subDir, convertToUnix, false);
+    return resolveAndDownloadInternal(source, subDir, false);
   }
 
   private List<URI> resolveAndDownloadInternal(URI source, String subDir,
-      boolean convertToUnix, boolean isLocalAllowed) throws URISyntaxException, IOException {
+      boolean isLocalAllowed) throws URISyntaxException, IOException {
     switch (getURLType(source)) {
     case FILE: return isLocalAllowed ? Collections.singletonList(source) : null;
     case IVY: return dependencyResolver.downloadDependencies(source);
     case HDFS:
     case OTHER:
-      return Collections.singletonList(createURI(downloadResource(source, subDir, convertToUnix)));
+      return Collections.singletonList(createURI(downloadResource(source, subDir)));
     default: throw new AssertionError(getURLType(source));
     }
   }
 
-  private String downloadResource(URI srcUri, String subDir, boolean convertToUnix)
-      throws IOException, URISyntaxException {
+  private String downloadResource(URI srcUri, String subDir) throws IOException {
     LOG.debug("Converting to local {}", srcUri);
     File destinationDir = (subDir == null) ? resourceDir : new File(resourceDir, subDir);
     ensureDirectory(destinationDir);

@@ -111,7 +111,7 @@ public class TestAddResource {
     list.add(createURI(TEST_JAR_DIR + "testjar5.jar"));
 
     //return all the dependency urls
-    Mockito.when(ss.resolveAndDownload(t, query, false)).thenReturn(list);
+    Mockito.when(ss.resolveAndDownload(t, query)).thenReturn(list);
     addList.add(query);
     ss.add_resources(t, addList);
     Set<String> dependencies = ss.list_resource(t, null);
@@ -147,7 +147,7 @@ public class TestAddResource {
 
     Collections.sort(list);
 
-    Mockito.when(ss.resolveAndDownload(t, query, false)).thenReturn(list);
+    Mockito.when(ss.resolveAndDownload(t, query)).thenReturn(list);
     for (int i = 0; i < 10; i++) {
       addList.add(query);
     }
@@ -183,8 +183,8 @@ public class TestAddResource {
     list2.add(createURI(TEST_JAR_DIR + "testjar3.jar"));
     list2.add(createURI(TEST_JAR_DIR + "testjar4.jar"));
 
-    Mockito.when(ss.resolveAndDownload(t, query1, false)).thenReturn(list1);
-    Mockito.when(ss.resolveAndDownload(t, query2, false)).thenReturn(list2);
+    Mockito.when(ss.resolveAndDownload(t, query1)).thenReturn(list1);
+    Mockito.when(ss.resolveAndDownload(t, query2)).thenReturn(list2);
     addList.add(query1);
     addList.add(query2);
     ss.add_resources(t, addList);
@@ -234,8 +234,8 @@ public class TestAddResource {
     Collections.sort(list1);
     Collections.sort(list2);
 
-    Mockito.when(ss.resolveAndDownload(t, query1, false)).thenReturn(list1);
-    Mockito.when(ss.resolveAndDownload(t, query2, false)).thenReturn(list2);
+    Mockito.when(ss.resolveAndDownload(t, query1)).thenReturn(list1);
+    Mockito.when(ss.resolveAndDownload(t, query2)).thenReturn(list2);
     addList.add(query1);
     addList.add(query2);
     ss.add_resources(t, addList);
@@ -293,9 +293,9 @@ public class TestAddResource {
     Collections.sort(list2);
     Collections.sort(list3);
 
-    Mockito.when(ss.resolveAndDownload(t, query1, false)).thenReturn(list1);
-    Mockito.when(ss.resolveAndDownload(t, query2, false)).thenReturn(list2);
-    Mockito.when(ss.resolveAndDownload(t, query3, false)).thenReturn(list3);
+    Mockito.when(ss.resolveAndDownload(t, query1)).thenReturn(list1);
+    Mockito.when(ss.resolveAndDownload(t, query2)).thenReturn(list2);
+    Mockito.when(ss.resolveAndDownload(t, query3)).thenReturn(list3);
     addList.add(query1);
     addList.add(query2);
     addList.add(query3);

@@ -4157,7 +4157,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String progName = getScriptProgName(cmd);
 
     if (!ResourceDownloader.isFileUri(progName)) {
-      String filePath = ss.add_resource(ResourceType.FILE, progName, true);
+      String filePath = ss.add_resource(ResourceType.FILE, progName);
       Path p = new Path(filePath);
       String fileName = p.getName();
       String scriptArgs = getScriptArgs(cmd);
