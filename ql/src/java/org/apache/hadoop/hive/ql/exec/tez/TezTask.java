@@ -269,7 +269,7 @@ public class TezTask extends Task<TezWork> {
         String dagId = this.dagClient.getDagIdentifierString();
         String appId = this.dagClient.getSessionIdentifierString();
         LOG.info("HS2 Host: [{}], Query ID: [{}], Dag ID: [{}], DAG App ID: [{}], DAG App address: [{}]",
-            ServerUtils.hostname(), queryId, dagId, appId, runtimeContext.getAmHostName());
+            ServerUtils.hostname(), queryId, dagId, appId, session.getSession().getAmHost());
         LogUtils.putToMDC(LogUtils.DAGID_KEY, dagId);
         this.jobID = dagId;
         runtimeContext.setDagId(dagId);
