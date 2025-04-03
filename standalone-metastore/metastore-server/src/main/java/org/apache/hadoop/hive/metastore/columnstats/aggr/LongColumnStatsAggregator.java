@@ -251,7 +251,7 @@ public class LongColumnStatsAggregator extends ColumnStatsAggregator implements
     }
 
     // mutate columnStatisticsData to ensure NDV <= the number of integers in the given range.
-    adjustNDV(columnStatisticsData);
+    adjustNDV(columnStatisticsData.getLongStats());
 
     statsObj.setStatsData(columnStatisticsData);
 
@@ -357,22 +357,18 @@ public class LongColumnStatsAggregator extends ColumnStatsAggregator implements
     extrapolateLongData.setNumDVs(ndv);
   }
 
-  private void adjustNDV(ColumnStatisticsData columnStatisticsData) {
+  private void adjustNDV(LongColumnStatsData columnStats) {
     // NDV cannot exceed the number of integers within the given range.
-    long numIntInRange = columnStatisticsData.getLongStats().getHighValue()
-        - columnStatisticsData.getLongStats().getLowValue() + 1;
-    if (columnStatisticsData.getLongStats().getNumNulls() > 0) {
-      numIntInRange++;
+    long estimation = columnStats.getHighValue() - columnStats.getLowValue() + 1;
+    if (columnStats.getNumNulls() > 0) {
+      estimation++;
     }
-    if (numIntInRange < columnStatisticsData.getLongStats().getNumDVs()) {
+    if (estimation < columnStats.getNumDVs()) {
       LOG.debug(
           "Adjust the estimated NDV from {} to {} as it exceeds the number of integers "
               + "within the range of colStats: [{}, {}].",
-          columnStatisticsData.getLongStats().getNumDVs(),
-          numIntInRange,
-          columnStatisticsData.getLongStats().getLowValue(),
-          columnStatisticsData.getLongStats().getHighValue());
-      columnStatisticsData.getLongStats().setNumDVs(numIntInRange);
+          columnStats.getNumDVs(), estimation, columnStats.getLowValue(), columnStats.getHighValue());
+      columnStats.setNumDVs(estimation);
     }
   }
 }
