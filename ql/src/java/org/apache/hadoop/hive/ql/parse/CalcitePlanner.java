@@ -4180,6 +4180,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // 3. Construct new Row Resolver with everything from below.
       RowResolver out_rwsch = new RowResolver();
+      out_rwsch.setExprResolver(inputRR.getIsExprResolver());
       if (!RowResolver.add(out_rwsch, inputRR)) {
         LOG.warn(ERROR_MESSAGE_DUPLICATES_DETECTED);
       }
