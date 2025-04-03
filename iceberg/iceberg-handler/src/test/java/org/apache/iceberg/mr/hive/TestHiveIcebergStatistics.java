@@ -26,6 +26,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
@@ -52,14 +53,20 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   @Parameterized.Parameter(4)
   public String statsSource;
 
-  @Parameterized.Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, formatVersion={3}, statsSource={4}")
+  @Parameterized.Parameter(5)
+  public boolean isLockEnabled;
+
+  @Parameterized.Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, " +
+      "formatVersion={3}, statsSource={4}, isLockEnabled={5}")
   public static Collection<Object[]> parameters() {
     Collection<Object[]> baseParams = HiveIcebergStorageHandlerWithEngineBase.parameters();
 
     Collection<Object[]> testParams = Lists.newArrayList();
     for (String statsSource : new String[]{"iceberg", "metastore"}) {
-      for (Object[] params : baseParams) {
-        testParams.add(ArrayUtils.add(params, statsSource));
+      for (boolean isLockEnabled : new boolean[]{true, false}) {
+        for (Object[] params : baseParams) {
+          testParams.add(ArrayUtils.addAll(params, new Object[]{statsSource, isLockEnabled}));
+        }
       }
     }
     return testParams;
@@ -139,13 +146,21 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED.varname, true);
     testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of(), formatVersion,
-        ImmutableMap.of(TableProperties.HIVE_LOCK_ENABLED, "false"));
+        ImmutableMap.of(TableProperties.HIVE_LOCK_ENABLED, String.valueOf(isLockEnabled)));
 
     String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, identifier, false);
-    shell.executeStatement(insert);
 
-    checkColStat(identifier.name(), "customer_id", true);
-    checkColStatMinMaxValue(identifier.name(), "customer_id", 0, 2);
+    if (!isLockEnabled) {
+      shell.executeStatement(insert);
+      checkColStat(identifier.name(), "customer_id", true);
+      checkColStatMinMaxValue(identifier.name(), "customer_id", 0, 2);
+    } else {
+      AssertHelpers.assertThrows(
+          "Should throw RuntimeException when Hive locking is on with 'engine.hive.lock-enabled=true'",
+          RuntimeException.class,
+          () -> shell.executeStatement(insert)
+      );
+    }
   }
 
   @Test
