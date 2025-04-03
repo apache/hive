@@ -148,26 +148,26 @@ Stage-0
     Stage-1
       Reducer 2 vectorized, llap
       File Output Operator [FS_37]
-        Select Operator [SEL_36] (rows=4 width=192)
-          Output:["_col0","_col1","_col2","_col3","_col4"]
-        <-Map 2 [SIMPLE_EDGE] vectorized, llap
+        Select Operator [SEL_36] (rows=16 width=8)
+          Output:["_col0","_col1"]
+        <-Map 1 [SIMPLE_EDGE] vectorized, llap
           SHUFFLE [RS_35]
-            Map Join Operator [MAPJOIN_34] (rows=4 width=192)
-              Conds:RS_31._col0=SEL_33._col0(Inner),Output:["_col0","_col1","_col2","_col3","_col4"]
-            <-Map 1 [BROADCAST_EDGE] vectorized, llap
-              BROADCAST [RS_31]
+            Map Join Operator [MAPJOIN_34] (rows=16 width=8)
+              BucketMapJoin:true,Conds:SEL_33._col0=RS_31._col0(Inner),Output:["_col0","_col1"]
+            <-Map 3 [CUSTOM_EDGE] vectorized, llap
+              MULTICAST [RS_31]
                 PartitionCols:_col0
-                Select Operator [SEL_30] (rows=4 width=99)
-                  Output:["_col0","_col1","_col2"]
-                  Filter Operator [FIL_29] (rows=4 width=99)
-                    predicate:key is not null
-                    TableScan [TS_0] (rows=4 width=99)
-                      default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value","id"]
-            <-Select Operator [SEL_33] (rows=4 width=93)
+                Select Operator [SEL_30] (rows=4 width=4)
+                  Output:["_col0"]
+                  Filter Operator [FIL_29] (rows=4 width=4)
+                    predicate:key1 is not null
+                    TableScan [TS_3] (rows=6 width=3)
+                      default@src_small,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key1"]
+            <-Select Operator [SEL_33] (rows=16 width=8)
                 Output:["_col0","_col1"]
-                Filter Operator [FIL_32] (rows=11 width=7)
+                Filter Operator [FIL_32] (rows=16 width=8)
                   predicate:key1 is not null
-                  TableScan [TS_0] (rows=16 width=7)
+                  TableScan [TS_0] (rows=16 width=8)
                     default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:4,Grouping Partition Columns:["key1"],Output:["key1","id"]
 
 PREHOOK: query: SELECT a.key1, a.id
@@ -232,11 +232,11 @@ Stage-0
     Stage-1
       Reducer 2 vectorized, llap
       File Output Operator [FS_37]
-        Select Operator [SEL_36] (rows=11 width=75)
+        Select Operator [SEL_36] (rows=16 width=92)
           Output:["_col0","_col1"]
         <-Map 1 [SIMPLE_EDGE] vectorized, llap
           SHUFFLE [RS_35]
-            Map Join Operator [MAPJOIN_34] (rows=11 width=75)
+            Map Join Operator [MAPJOIN_34] (rows=16 width=92)
               BucketMapJoin:true,Conds:SEL_33._col0=RS_31._col0(Inner),Output:["_col0","_col1"]
             <-Map 3 [CUSTOM_EDGE] vectorized, llap
               MULTICAST [RS_31]
@@ -247,11 +247,11 @@ Stage-0
                     predicate:key2 is not null
                     TableScan [TS_3] (rows=6 width=72)
                       default@src_small,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key2"]
-            <-Select Operator [SEL_33] (rows=11 width=75)
+            <-Select Operator [SEL_33] (rows=16 width=92)
                 Output:["_col0","_col1"]
-                Filter Operator [FIL_32] (rows=11 width=75)
+                Filter Operator [FIL_32] (rows=16 width=92)
                   predicate:key2 is not null
-                  TableScan [TS_0] (rows=16 width=69)
+                  TableScan [TS_0] (rows=16 width=92)
                     default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:8,Grouping Partition Columns:["key2"],Output:["key2","id"]
 
 PREHOOK: query: SELECT a.key2, a.id
@@ -316,12 +316,12 @@ Stage-0
     Stage-1
       Reducer 2 vectorized, llap
       File Output Operator [FS_37]
-        Select Operator [SEL_36] (rows=4 width=192)
-          Output:["_col0","_col1","_col2","_col3","_col4"]
+        Select Operator [SEL_36] (rows=16 width=77)
+          Output:["_col0","_col1"]
         <-Map 1 [SIMPLE_EDGE] vectorized, llap
           SHUFFLE [RS_35]
-            Map Join Operator [MAPJOIN_34] (rows=4 width=192)
-              Conds:SEL_33._col1=RS_31._col1(Inner),Output:["_col0","_col1","_col2","_col3","_col4"]
+            Map Join Operator [MAPJOIN_34] (rows=16 width=77)
+              Conds:SEL_33._col0=RS_31._col0(Inner),Output:["_col0","_col1"]
             <-Map 3 [BROADCAST_EDGE] vectorized, llap
               BROADCAST [RS_31]
                 PartitionCols:_col0
@@ -329,14 +329,14 @@ Stage-0
                   Output:["_col0"]
                   Filter Operator [FIL_29] (rows=4 width=89)
                     predicate:value is not null
-                    TableScan [TS_3] (rows=6 width=77)
-                      default@src_small,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
-            <-Select Operator [SEL_33] (rows=4 width=99)
-                Output:["_col0","_col1","_col2"]
-                Filter Operator [FIL_32] (rows=4 width=99)
+                    TableScan [TS_3] (rows=6 width=74)
+                      default@src_small,b,Tbl:COMPLETE,Col:COMPLETE,Output:["value"]
+            <-Select Operator [SEL_33] (rows=16 width=77)
+                Output:["_col0","_col1"]
+                Filter Operator [FIL_32] (rows=16 width=77)
                   predicate:value is not null
-                  TableScan [TS_0] (rows=6 width=83)
-                    default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value","id"]
+                  TableScan [TS_0] (rows=21 width=77)
+                    default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Output:["value","id"]
 
 PREHOOK: query: SELECT a.value, a.id
 FROM srcbucket_big a
@@ -400,11 +400,11 @@ Stage-0
     Stage-1
       Reducer 2 vectorized, llap
       File Output Operator [FS_57]
-        Select Operator [SEL_56] (rows=3 width=64)
+        Select Operator [SEL_56] (rows=12 width=96)
           Output:["_col0","_col1","_col2"]
         <-Map 1 [SIMPLE_EDGE] vectorized, llap
           SHUFFLE [RS_55]
-            Map Join Operator [MAPJOIN_54] (rows=3 width=64)
+            Map Join Operator [MAPJOIN_54] (rows=12 width=96)
               BucketMapJoin:true,Conds:SEL_53._col0, _col1=RS_51._col0, _col1(Inner),Output:["_col0","_col1","_col2"]
             <-Map 3 [CUSTOM_EDGE] vectorized, llap
               MULTICAST [RS_51]
@@ -415,11 +415,11 @@ Stage-0
                     predicate:(key1 is not null and key2 is not null)
                     TableScan [TS_3] (rows=6 width=75)
                       default@src_small,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key1","key2"]
-            <-Select Operator [SEL_53] (rows=4 width=72)
+            <-Select Operator [SEL_53] (rows=12 width=96)
                 Output:["_col0","_col1","_col2"]
-                Filter Operator [FIL_52] (rows=4 width=72)
+                Filter Operator [FIL_52] (rows=12 width=96)
                   predicate:(key1 is not null and key2 is not null)
-                  TableScan [TS_0] (rows=12 width=64)
+                  TableScan [TS_0] (rows=12 width=96)
                     default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:32,Grouping Partition Columns:["key1","key2"],Output:["key1","key2","id"]
 
 PREHOOK: query: SELECT a.key1, a.key2, a.id
@@ -480,11 +480,11 @@ Stage-0
     Stage-1
       Reducer 2 vectorized, llap
       File Output Operator [FS_57]
-        Select Operator [SEL_56] (rows=6 width=66)
+        Select Operator [SEL_56] (rows=9 width=78)
           Output:["_col0","_col1","_col2"]
         <-Map 1 [SIMPLE_EDGE] vectorized, llap
           SHUFFLE [RS_55]
-            Map Join Operator [MAPJOIN_54] (rows=6 width=66)
+            Map Join Operator [MAPJOIN_54] (rows=9 width=78)
               BucketMapJoin:true,Conds:SEL_53._col0, _col1=RS_51._col0, _col1(Inner),Output:["_col0","_col1","_col2"]
             <-Map 3 [CUSTOM_EDGE] vectorized, llap
               MULTICAST [RS_51]
@@ -495,11 +495,11 @@ Stage-0
                     predicate:(key1 is not null and value is not null)
                     TableScan [TS_3] (rows=6 width=77)
                       default@src_small,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key1","value"]
-            <-Select Operator [SEL_53] (rows=8 width=73)
+            <-Select Operator [SEL_53] (rows=12 width=83)
                 Output:["_col0","_col1","_col2"]
-                Filter Operator [FIL_52] (rows=8 width=73)
-                  predicate:(key1 is not null and value is not null)
-                  TableScan [TS_0] (rows=16 width=73)
+                Filter Operator [FIL_52] (rows=12 width=83)
+                  predicate:(value is not null and key1 is not null)
+                  TableScan [TS_0] (rows=16 width=81)
                     default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:4,Grouping Partition Columns:["key1"],Output:["key1","value","id"]
 
 PREHOOK: query: SELECT a.key1, a.value, a.id
@@ -560,11 +560,11 @@ Stage-0
     Stage-1
       Reducer 2 vectorized, llap
       File Output Operator [FS_57]
-        Select Operator [SEL_56] (rows=6 width=121)
+        Select Operator [SEL_56] (rows=9 width=162)
           Output:["_col0","_col1","_col2"]
         <-Map 1 [SIMPLE_EDGE] vectorized, llap
           SHUFFLE [RS_55]
-            Map Join Operator [MAPJOIN_54] (rows=6 width=121)
+            Map Join Operator [MAPJOIN_54] (rows=9 width=162)
               BucketMapJoin:true,Conds:SEL_53._col0, _col1=RS_51._col0, _col1(Inner),Output:["_col0","_col1","_col2"]
             <-Map 3 [CUSTOM_EDGE] vectorized, llap
               MULTICAST [RS_51]
@@ -575,11 +575,11 @@ Stage-0
                     predicate:(key2 is not null and value is not null)
                     TableScan [TS_3] (rows=6 width=146)
                       default@src_small,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key2","value"]
-            <-Select Operator [SEL_53] (rows=8 width=136)
+            <-Select Operator [SEL_53] (rows=12 width=167)
                 Output:["_col0","_col1","_col2"]
-                Filter Operator [FIL_52] (rows=8 width=136)
-                  predicate:(key2 is not null and value is not null)
-                  TableScan [TS_0] (rows=16 width=136)
+                Filter Operator [FIL_52] (rows=12 width=167)
+                  predicate:(value is not null and key2 is not null)
+                  TableScan [TS_0] (rows=16 width=165)
                     default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:8,Grouping Partition Columns:["key2"],Output:["key2","value","id"]
 
 PREHOOK: query: SELECT a.key2, a.value, a.id
@@ -640,11 +640,11 @@ Stage-0
     Stage-1
       Reducer 2 vectorized, llap
       File Output Operator [FS_67]
-        Select Operator [SEL_66] (rows=2 width=184)
+        Select Operator [SEL_66] (rows=5 width=150)
           Output:["_col0","_col1","_col2","_col3"]
         <-Map 1 [SIMPLE_EDGE] vectorized, llap
           SHUFFLE [RS_65]
-            Map Join Operator [MAPJOIN_64] (rows=2 width=184)
+            Map Join Operator [MAPJOIN_64] (rows=5 width=150)
               BucketMapJoin:true,Conds:SEL_63._col0, _col1, _col2=RS_61._col0, _col1, _col2(Inner),Output:["_col0","_col1","_col2","_col3"]
             <-Map 3 [CUSTOM_EDGE] vectorized, llap
               MULTICAST [RS_61]
@@ -655,11 +655,11 @@ Stage-0
                     predicate:(key1 is not null and key2 is not null and value is not null)
                     TableScan [TS_3] (rows=6 width=150)
                       default@src_small,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key1","key2","value"]
-            <-Select Operator [SEL_63] (rows=2 width=184)
+            <-Select Operator [SEL_63] (rows=8 width=164)
                 Output:["_col0","_col1","_col2","_col3"]
-                Filter Operator [FIL_62] (rows=2 width=184)
-                  predicate:(key1 is not null and key2 is not null and value is not null)
-                  TableScan [TS_0] (rows=12 width=124)
+                Filter Operator [FIL_62] (rows=8 width=164)
+                  predicate:(value is not null and key1 is not null and key2 is not null)
+                  TableScan [TS_0] (rows=12 width=164)
                     default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:32,Grouping Partition Columns:["key1","key2"],Output:["key1","key2","value","id"]
 
 PREHOOK: query: SELECT a.key1, a.key2, a.value, a.id
