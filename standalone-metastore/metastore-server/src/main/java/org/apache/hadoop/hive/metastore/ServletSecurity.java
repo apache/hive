@@ -85,10 +85,20 @@ public class ServletSecurity {
   private final Configuration conf;
   private JWTValidator jwtValidator = null;
 
+  public ServletSecurity(String authType, Configuration conf) {
+    this.conf = conf;
+    this.isSecurityEnabled = UserGroupInformation.isSecurityEnabled();
+    this.jwtAuthEnabled = isAuthJwt(authType);
+  }
+
   public ServletSecurity(Configuration conf, boolean jwt) {
     this.conf = conf;
     this.isSecurityEnabled = UserGroupInformation.isSecurityEnabled();
     this.jwtAuthEnabled = jwt;
+  }
+
+  private static boolean isAuthJwt(String authType) {
+    return "jwt".equalsIgnoreCase(authType);
   }
 
   /**

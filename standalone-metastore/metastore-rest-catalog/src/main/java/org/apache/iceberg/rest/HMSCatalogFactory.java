@@ -118,8 +118,8 @@ public class HMSCatalogFactory {
    * @return the servlet
    */
   protected HttpServlet createServlet(Catalog catalog) {
-    String auth = MetastoreConf.getVar(configuration, ConfVars.ICEBERG_CATALOG_SERVLET_AUTH);
-    ServletSecurity security = new ServletSecurity(configuration, "jwt".equalsIgnoreCase(auth));
+    String authType = MetastoreConf.getVar(configuration, ConfVars.ICEBERG_CATALOG_SERVLET_AUTH);
+    ServletSecurity security = new ServletSecurity(authType, configuration);
     return security.proxy(new HMSCatalogServlet(new HMSCatalogAdapter(catalog)));
   }
 
