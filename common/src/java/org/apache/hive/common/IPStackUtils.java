@@ -251,7 +251,7 @@ public class IPStackUtils {
 
     // Check if the port is valid
     if (!isValidPort(portStr)) {
-      throw new IllegalArgumentException("Port number out of range (1-65535).");
+      throw new IllegalArgumentException("Port number out of range (0-65535).");
     }
     port = Integer.parseInt(portStr);
 
@@ -280,15 +280,12 @@ public class IPStackUtils {
       return false;
     }
 
-    // Regex to check if the port number is between 0 and 65535
-    String regex = "^(0|[1-9][0-9]{0,4})$";
-
-    if (portString.matches(regex)) {
+    try {
       int port = Integer.parseInt(portString);
       return port >= 0 && port <= 65535;
+    } catch (NumberFormatException e) {
+      return false;
     }
-
-    return false;
   }
 
   public static class HostPort {
