@@ -23,12 +23,14 @@ import java.util.List;
 import org.apache.calcite.adapter.java.JavaTypeFactory;
 import org.apache.calcite.adapter.jdbc.JdbcImplementor;
 import org.apache.calcite.adapter.jdbc.JdbcTableScan;
+import org.apache.calcite.linq4j.tree.Expressions;
+import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Project;
-import org.apache.calcite.rel.core.TableScan;
+import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
@@ -91,14 +93,9 @@ public class HiveJdbcImplementor extends JdbcImplementor {
             sqlCondition);
     return result(join, leftResult, rightResult);
   }
-  
-  @Override
-  public Result visit(TableScan scan) {
-    if (!(scan instanceof JdbcTableScan)) {
-      return super.visit(scan);
-    }
-    
-    return result(((JdbcTableScan) scan).jdbcTable.tableName(), ImmutableList.of(Clause.FROM), scan, null);
+
+  public Result visit(JdbcTableScan scan) {
+    return result(scan.jdbcTable.tableName(), ImmutableList.of(Clause.FROM), scan, null);
   }
 
   /**
