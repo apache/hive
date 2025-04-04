@@ -86,9 +86,7 @@ public class ServletSecurity {
   private JWTValidator jwtValidator = null;
 
   public ServletSecurity(String authType, Configuration conf) {
-    this.conf = conf;
-    this.isSecurityEnabled = UserGroupInformation.isSecurityEnabled();
-    this.jwtAuthEnabled = isAuthJwt(authType);
+    this(conf, isAuthJwt(authType));
   }
 
   public ServletSecurity(Configuration conf, boolean jwt) {
