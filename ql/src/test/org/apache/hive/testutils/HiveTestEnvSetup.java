@@ -131,7 +131,6 @@ public class HiveTestEnvSetup extends ExternalResource {
       System.setProperty("test.tmp.dir.uri", "file://" + tmpFolderPath);
       System.setProperty("test.dfs.mkdir", "-mkdir -p");
       System.setProperty("test.warehouse.dir", tmpFolderPath + "/warehouse"); // this is changed to be *under* tmp dir
-      System.setProperty("java.net.preferIPv4Stack", "true"); // not sure if this will have any effect..
       System.setProperty("test.src.tables", "src");
       System.setProperty("hive.jar.directory", tmpFolderPath);
     }

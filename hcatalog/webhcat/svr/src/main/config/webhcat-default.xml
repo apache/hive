@@ -193,7 +193,7 @@
 
   <property>
     <name>templeton.controller.mr.child.opts</name>
-    <value>-server -Xmx256m -Djava.net.preferIPv4Stack=true</value>
+    <value>-server -Xmx256m</value>
     <description>Java options to be passed to templeton controller map task.
         The default value of mapreduce child "-Xmx" (heap memory limit)
         might be close to what is allowed for a map task.
