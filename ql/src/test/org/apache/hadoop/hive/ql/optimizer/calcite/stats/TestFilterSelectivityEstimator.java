@@ -21,7 +21,6 @@ import com.google.common.collect.ImmutableList;
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptPlanner;
-import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptSchema;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
@@ -29,8 +28,6 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.rex.RexSimplify;
-import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
@@ -41,6 +38,7 @@ import org.apache.hadoop.hive.metastore.StatisticsTestUtils;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
@@ -75,7 +73,9 @@ public class TestFilterSelectivityEstimator {
   private static RexNode intMinus1;
   private static RexNode int0;
   private static RexNode int1;
+  private static RexNode int2;
   private static RexNode int3;
+  private static RexNode int4;
   private static RexNode int5;
   private static RexNode int7;
   private static RexNode int8;
@@ -83,6 +83,8 @@ public class TestFilterSelectivityEstimator {
   private static RexNode int11;
   private static RelDataType tableType;
   private static RexNode inputRef0;
+  private static RexNode boolFalse;
+  private static RexNode boolTrue;
   private static ColStatistics stats;
 
   @Mock
@@ -101,12 +103,16 @@ public class TestFilterSelectivityEstimator {
     intMinus1 = REX_BUILDER.makeLiteral(-1, integerType, true);
     int0 = REX_BUILDER.makeLiteral(0, integerType, true);
     int1 = REX_BUILDER.makeLiteral(1, integerType, true);
+    int2 = REX_BUILDER.makeLiteral(2, integerType, true);
     int3 = REX_BUILDER.makeLiteral(3, integerType, true);
+    int4 = REX_BUILDER.makeLiteral(4, integerType, true);
     int5 = REX_BUILDER.makeLiteral(5, integerType, true);
     int7 = REX_BUILDER.makeLiteral(7, integerType, true);
     int8 = REX_BUILDER.makeLiteral(8, integerType, true);
     int10 = REX_BUILDER.makeLiteral(10, integerType, true);
     int11 = REX_BUILDER.makeLiteral(11, integerType, true);
+    boolFalse = REX_BUILDER.makeLiteral(false, TYPE_FACTORY.createSqlType(SqlTypeName.BOOLEAN), true);
+    boolTrue = REX_BUILDER.makeLiteral(true, TYPE_FACTORY.createSqlType(SqlTypeName.BOOLEAN), true);
     tableType = TYPE_FACTORY.createStructType(ImmutableList.of(integerType), ImmutableList.of("f1"));
 
     RelOptPlanner planner = CalcitePlanner.createPlanner(new HiveConf());
@@ -359,7 +365,7 @@ public class TestFilterSelectivityEstimator {
   @Test
   public void testComputeRangePredicateSelectivityBetween() {
     doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
-    RexNode filter = REX_BUILDER.makeBetween(inputRef0, int1, int3);
+    RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolFalse, inputRef0, int1, int3);
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
     Assert.assertEquals(0.6923076923076923, estimator.estimateSelectivity(filter), DELTA);
   }
@@ -367,7 +373,7 @@ public class TestFilterSelectivityEstimator {
   @Test
   public void testComputeRangePredicateSelectivityBetweenFromMinToMax() {
     doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
-    RexNode filter = REX_BUILDER.makeBetween(inputRef0, int1, int7);
+    RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolFalse, inputRef0, int1, int7);
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
     Assert.assertEquals(1, estimator.estimateSelectivity(filter), DELTA);
   }
@@ -375,7 +381,7 @@ public class TestFilterSelectivityEstimator {
   @Test
   public void testComputeRangePredicateSelectivityBetweenFromLowerThanMinToHigherThanMax() {
     doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
-    RexNode filter = REX_BUILDER.makeBetween(inputRef0, int0, int8);
+    RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolFalse, inputRef0, int0, int8);
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
     Assert.assertEquals(1, estimator.estimateSelectivity(filter), DELTA);
   }
@@ -383,7 +389,7 @@ public class TestFilterSelectivityEstimator {
   @Test
   public void testComputeRangePredicateSelectivityBetweenLeftLowerThanMin() {
     doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
-    RexNode filter = REX_BUILDER.makeBetween(inputRef0, int0, int3);
+    RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolFalse, inputRef0, int0, int3);
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
     Assert.assertEquals(0.6923076923076923, estimator.estimateSelectivity(filter), DELTA);
   }
@@ -391,7 +397,7 @@ public class TestFilterSelectivityEstimator {
   @Test
   public void testComputeRangePredicateSelectivityBetweenRightLowerThanMin() {
     doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
-    RexNode filter = REX_BUILDER.makeBetween(inputRef0, intMinus1, int0);
+    RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolFalse, inputRef0, intMinus1, int0);
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
     Assert.assertEquals(0, estimator.estimateSelectivity(filter), DELTA);
   }
@@ -399,15 +405,24 @@ public class TestFilterSelectivityEstimator {
   @Test
   public void testComputeRangePredicateSelectivityBetweenLeftHigherThanMax() {
     doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
-    RexNode filter = REX_BUILDER.makeBetween(inputRef0, int10, int11);
+    RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolFalse, inputRef0, int10, int11);
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComputeRangePredicateSelectivityBetweenLeftLowerThanRight() {
+    doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
+    RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolFalse, inputRef0, int4, int2);
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
     Assert.assertEquals(0, estimator.estimateSelectivity(filter), DELTA);
   }
 
   @Test
   public void testComputeRangePredicateSelectivityBetweenLeftEqualsRight() {
+    doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
     doReturn(10.0).when(mq).getDistinctRowCount(scan, ImmutableBitSet.of(0), REX_BUILDER.makeLiteral(true));
-    RexNode filter = REX_BUILDER.makeBetween(inputRef0, int3, int3);
+    RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolFalse, inputRef0, int3, int3);
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
     // this is what FilterSelectivityEstimator returns for a generic "function" based on NDV values, in this case 1 / 10
     Assert.assertEquals(0.1, estimator.estimateSelectivity(filter), DELTA);
@@ -416,7 +431,7 @@ public class TestFilterSelectivityEstimator {
   @Test
   public void testComputeRangePredicateSelectivityNotBetween() {
     doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
-    RexNode filter = makeNotBetween(inputRef0, int3, int5);
+    RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolTrue, inputRef0, int3, int5);
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
     Assert.assertEquals(0.7692307692307693, estimator.estimateSelectivity(filter), DELTA);
   }
@@ -424,20 +439,25 @@ public class TestFilterSelectivityEstimator {
   @Test
   public void testComputeRangePredicateSelectivityNotBetweenLowerThanMinHigherThanMax() {
     doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
-    RexNode filter = makeNotBetween(inputRef0, int0, int10);
+    RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolTrue, inputRef0, int0, int10);
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
     Assert.assertEquals(0, estimator.estimateSelectivity(filter), DELTA);
   }
 
   @Test
-  public void testComputeRangePredicateSelectivityNotBetweenLeftEqualsRight() {
-    doReturn(10.0).when(mq).getDistinctRowCount(scan, ImmutableBitSet.of(0), REX_BUILDER.makeLiteral(true));
-    // x NOT BETWEEN 3 AND 3 <=> x != 3
-    RexNode filter = makeNotBetween(inputRef0, int3, int3);
+  public void testComputeRangePredicateSelectivityNotBetweenRightLowerThanLeft() {
+    doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
+    RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolTrue, inputRef0, int5, int3);
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
-    // Selectivity of x = 3 is 1/NDV(x) so 0.1
-    // Selectivity of x != 3 is 1-1/NDV(x) so 0.9
-    Assert.assertEquals(0.9, estimator.estimateSelectivity(filter), DELTA);
+    Assert.assertEquals(1, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComputeRangePredicateSelectivityNotBetweenLeftEqualsRight() {
+    doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
+    RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolTrue, inputRef0, int3, int3);
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(1, estimator.estimateSelectivity(filter), DELTA);
   }
 
   @Test
@@ -480,7 +500,7 @@ public class TestFilterSelectivityEstimator {
   public void testComputeRangePredicateSelectivityBetweenWithNULLS() {
     doReturn((double) 20).when(tableMock).getRowCount();
     doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
-    RexNode filter = REX_BUILDER.makeBetween(inputRef0, int1, int3);
+    RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolFalse, inputRef0, int1, int3);
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
     Assert.assertEquals(0.45, estimator.estimateSelectivity(filter), DELTA);
   }
@@ -489,12 +509,8 @@ public class TestFilterSelectivityEstimator {
   public void testComputeRangePredicateSelectivityNotBetweenWithNULLS() {
     doReturn((double) 20).when(tableMock).getRowCount();
     doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
-    RexNode filter = makeNotBetween(inputRef0, int1, int3);
+    RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolTrue, inputRef0, int1, int3);
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
     Assert.assertEquals(0.55, estimator.estimateSelectivity(filter), DELTA);
-  }
-
-  private RexNode makeNotBetween(RexNode inputRef, RexNode left, RexNode right) {
-    return REX_BUILDER.makeCall(SqlStdOperatorTable.NOT, REX_BUILDER.makeBetween(inputRef, left, right));
   }
 }
