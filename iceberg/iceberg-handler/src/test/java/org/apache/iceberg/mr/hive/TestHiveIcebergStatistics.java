@@ -134,14 +134,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   @Test
   public void testStatsWithPessimisticLockInsert() {
     Assume.assumeTrue(testTableType == TestTables.TestTableType.HIVE_CATALOG);
-    TableIdentifier identifier = TableIdentifier.of("default", "customers");
-
-    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
-    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED.varname, true);
-    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of(), formatVersion,
-        ImmutableMap.of(TableProperties.HIVE_LOCK_ENABLED, "false"));
-
+    TableIdentifier identifier = getTableIdentifierWithPessimisticLock("false");
     String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, identifier, false);
     shell.executeStatement(insert);
 
@@ -152,20 +145,24 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   @Test
   public void testStatsWithPessimisticLockInsertWhenHiveLockEnabled() {
     Assume.assumeTrue(testTableType == TestTables.TestTableType.HIVE_CATALOG);
-    TableIdentifier identifier = TableIdentifier.of("default", "customers");
-
-    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
-    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED.varname, true);
-    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of(), formatVersion,
-        ImmutableMap.of(TableProperties.HIVE_LOCK_ENABLED, "true"));
-
+    TableIdentifier identifier = getTableIdentifierWithPessimisticLock("true");
     String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, identifier, false);
     AssertHelpers.assertThrows(
         "Should throw RuntimeException when Hive locking is on with 'engine.hive.lock-enabled=true'",
         RuntimeException.class,
         () -> shell.executeStatement(insert)
     );
+  }
+
+  private TableIdentifier getTableIdentifierWithPessimisticLock(String hiveLockEnabled) {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED.varname, true);
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of(), formatVersion,
+        ImmutableMap.of(TableProperties.HIVE_LOCK_ENABLED, hiveLockEnabled));
+    return identifier;
   }
 
   @Test
