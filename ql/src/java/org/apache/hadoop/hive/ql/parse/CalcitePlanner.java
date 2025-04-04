@@ -1766,11 +1766,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Plan after post-join transformations:\n" + RelOptUtil.toString(calcitePlan));
       }
-
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Final calcite plan:\n" + RelOptUtil.toString(calcitePlan));
-      }
-      
       return calcitePlan;
     }
 
