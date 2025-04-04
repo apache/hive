@@ -81,8 +81,11 @@ public class HivePushdownSnapshotFilterRule extends RelRule<HivePushdownSnapshot
   @Override
   public void onMatch(RelOptRuleCall call) {
     HiveFilter filter = call.rel(0);
-    RexNode newCondition = filter.getCondition().accept(new SnapshotIdShuttle(call.builder().getRexBuilder(), call.getMetadataQuery(), filter));
-    call.transformTo(call.builder().push(filter.getInput()).filter(newCondition).build());
+    RelNode newFilter =
+        filter.accept(new SnapshotIdShuttle(call.builder().getRexBuilder(), call.getMetadataQuery(), filter));
+    if (!newFilter.equals(filter)) {
+      call.transformTo(newFilter);
+    }
   }
 
   static class SnapshotIdShuttle extends RexShuttle {
