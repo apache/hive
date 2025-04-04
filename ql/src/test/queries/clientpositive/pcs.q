@@ -58,7 +58,7 @@ SORT BY A.key, A.value, A.ds;
 explain extended select ds from pcs_t1 where struct(case when ds='2000-04-08' then 10 else 20 end) in (struct(10),struct(11));
 select ds from pcs_t1 where struct(case when ds='2000-04-08' then 10 else 20 end) in (struct(10),struct(11));
 
-explain extended select ds from pcs_t1 where struct(ds, key) in (struct('2000-04-08',1), struct('2000-04-09',2));
+explain extended select ds from pcs_t1 where struct(ds, key, rand(100)) in (struct('2000-04-08',1,0.2), struct('2000-04-09',2,0.3));
 
 explain extended select ds from pcs_t1 where struct(ds='2000-04-08' or key = 2, key) in (struct(true,2), struct(false,3));
 select ds from pcs_t1 where struct(ds='2000-04-08' or key = 2, key) in (struct(true,2), struct(false,3));
