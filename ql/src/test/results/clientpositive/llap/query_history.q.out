@@ -352,7 +352,6 @@ default
 information_schema
 query_history_qtest_db
 sys
-tpch_0_001
 PREHOOK: query: USE query_history_qtest_db
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:query_history_qtest_db
@@ -619,7 +618,7 @@ CREATE TABLE query_history_qt...	NULL	0	hive.fetch.task.conversion=none
 
 
 
-SHOW DATABASES...	NULL	5	hive.fetch.task.conversion=none
+SHOW DATABASES...	NULL	4	hive.fetch.task.conversion=none
 
 USE query_history_qtest_db...	NULL	0	hive.fetch.task.conversion=none
 
