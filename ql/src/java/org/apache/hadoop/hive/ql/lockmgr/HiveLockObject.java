@@ -79,15 +79,14 @@ public class HiveLockObject {
         return;
       }
 
-      String[] elem = data.split(":");
+      String[] elem = data.split(":", 5);
       queryId = elem[0];
       lockTime = StringInternUtils.internIfNotNull(elem[1]);
       lockMode = elem[2];
       queryStr = StringInternUtils.internIfNotNull(elem[3]);
       if (elem.length >= 5) {
-        String prefix = queryId + ":" + lockTime + ":" + lockMode + ":" + queryStr + ":";
         // The client IP is the suffix after the 4th colon, this can be IPv6 with colons
-        clientIp = data.substring(data.indexOf(prefix) + prefix.length());
+        clientIp = elem[4];
       }
     }
 

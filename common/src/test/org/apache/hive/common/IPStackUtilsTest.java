@@ -184,59 +184,59 @@ class IPStackUtilsTest {
     // Test cases for splitHostPort method
 
   @Test
-  public void testSplitHostPortWithIPv4() {
+  void testSplitHostPortWithIPv4() {
     IPStackUtils.HostPort result = IPStackUtils.splitHostPort("192.168.1.1:8080");
     assertEquals("192.168.1.1", result.getHostname());
     assertEquals(8080, result.getPort());
   }
 
   @Test
-  public void testSplitHostPortWithValidIPv6WithSquaredBrackets() {
+  void testSplitHostPortWithValidIPv6WithSquaredBrackets() {
     IPStackUtils.HostPort result = IPStackUtils.splitHostPort("[2001:0db8::1]:8080");
     assertEquals("2001:0db8::1", result.getHostname());
     assertEquals(8080, result.getPort());
   }
 
   @Test
-  public void testSplitHostPortWithValidIPv6WithoutSquaredBrackets() {
+  void testSplitHostPortWithValidIPv6WithoutSquaredBrackets() {
     IPStackUtils.HostPort result = IPStackUtils.splitHostPort("2001:0db8::1:8080");
     assertEquals("2001:0db8::1", result.getHostname());
     assertEquals(8080, result.getPort());
   }
 
   @Test
-  public void testSplitHostPortWithHostname() {
+  void testSplitHostPortWithHostname() {
     IPStackUtils.HostPort result = IPStackUtils.splitHostPort("example.com:80");
     assertEquals("example.com", result.getHostname());
     assertEquals(80, result.getPort());
   }
 
   @Test
-  public void testSplitHostPortWithInvalidPort() {
+  void testSplitHostPortWithInvalidPort() {
     assertThrows(IllegalArgumentException.class, () -> IPStackUtils.splitHostPort("192.168.1.1:70000"));
   }
 
   @Test
-  public void testSplitHostPortWithMissingPort() {
+  void testSplitHostPortWithMissingPort() {
     assertThrows(IllegalArgumentException.class, () -> IPStackUtils.splitHostPort("192.168.1.1"));
   }
 
   @Test
-  public void testSplitHostPortWithMissingIP() {
+  void testSplitHostPortWithMissingIP() {
     assertThrows(IllegalArgumentException.class, () -> IPStackUtils.splitHostPort(":8080"));
   }
 
   // Test cases for isValidPort method
 
   @Test
-  public void testIsValidPortWithValidPort() {
+  void testIsValidPortWithValidPort() {
     assertTrue(IPStackUtils.isValidPort("8080"));
     assertTrue(IPStackUtils.isValidPort("65535"));
     assertTrue(IPStackUtils.isValidPort("0"));
   }
 
   @Test
-  public void testIsValidPortWithInvalidPort() {
+  void testIsValidPortWithInvalidPort() {
     assertFalse(IPStackUtils.isValidPort("70000"));  // Port greater than 65535
     assertFalse(IPStackUtils.isValidPort("-1"));     // Negative port number
     assertFalse(IPStackUtils.isValidPort("abc"));    // Non-numeric port
@@ -244,7 +244,7 @@ class IPStackUtilsTest {
   }
 
   @Test
-  public void testIsValidPortWithEdgeCases() {
+  void testIsValidPortWithEdgeCases() {
     assertTrue(IPStackUtils.isValidPort("1"));       // Lowest valid port
     assertTrue(IPStackUtils.isValidPort("65535"));   // Highest valid port
   }
