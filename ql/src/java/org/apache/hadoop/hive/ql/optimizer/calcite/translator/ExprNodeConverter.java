@@ -37,6 +37,7 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
+import org.apache.calcite.rex.RexUnknownAs;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.rex.RexWindow;
@@ -200,7 +201,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
         args.add(operand.accept(this));
       }
     } else if (call.getKind() == SqlKind.SEARCH) {
-      return new SearchTransformer<>(rexBuilder, call).transform().accept(this);
+      return new SearchTransformer<>(rexBuilder, call, RexUnknownAs.UNKNOWN).transform().accept(this);
     } else {
       for (RexNode operand : call.operands) {
         args.add(operand.accept(this));

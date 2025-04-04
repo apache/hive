@@ -23,6 +23,9 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 
+import static org.apache.calcite.rex.RexUnknownAs.FALSE;
+import static org.apache.calcite.rex.RexUnknownAs.UNKNOWN;
+
 /**
  * A holder class for rules related to the SEARCH operator.
  */
@@ -32,17 +35,17 @@ public final class HiveSearchRules {
   }
 
   public static final RelOptRule PROJECT_SEARCH_EXPAND =
-      new HiveRexShuttleTransformRule.Config().withRexShuttle(SearchTransformer.Shuttle::new)
+      new HiveRexShuttleTransformRule.Config().withRexShuttle(x -> new SearchTransformer.Shuttle(x, UNKNOWN))
           .withDescription("HiveProjectSearchExpandRule")
           .withOperandSupplier(o -> o.operand(HiveProject.class).anyInputs())
           .toRule();
   public static final RelOptRule FILTER_SEARCH_EXPAND =
-      new HiveRexShuttleTransformRule.Config().withRexShuttle(SearchTransformer.Shuttle::new)
+      new HiveRexShuttleTransformRule.Config().withRexShuttle(x -> new SearchTransformer.Shuttle(x, FALSE))
           .withDescription("HiveFilterSearchExpandRule")
           .withOperandSupplier(o -> o.operand(HiveFilter.class).anyInputs())
           .toRule();
   public static final RelOptRule JOIN_SEARCH_EXPAND =
-      new HiveRexShuttleTransformRule.Config().withRexShuttle(SearchTransformer.Shuttle::new)
+      new HiveRexShuttleTransformRule.Config().withRexShuttle(x -> new SearchTransformer.Shuttle(x, FALSE))
           .withDescription("HiveJoinSearchExpandRule")
           .withOperandSupplier(o -> o.operand(HiveJoin.class).anyInputs())
           .toRule();

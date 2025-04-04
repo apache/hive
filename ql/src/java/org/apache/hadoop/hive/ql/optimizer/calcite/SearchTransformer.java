@@ -58,14 +58,16 @@ public class SearchTransformer<C extends Comparable<C>> {
   private final RexBuilder rexBuilder;
   private final RexNode ref;
   private final Sarg<C> sarg;
+  private final RexUnknownAs unknownContext;
   protected final RelDataType type;
 
-  public SearchTransformer(RexBuilder rexBuilder, RexCall search) {
+  public SearchTransformer(RexBuilder rexBuilder, RexCall search, final RexUnknownAs unknownContext) {
     this.rexBuilder = rexBuilder;
     ref = search.getOperands().get(0);
     RexLiteral literal = (RexLiteral) search.operands.get(1);
     sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
     type = literal.getType();
+    this.unknownContext = unknownContext;
   }
 
   public RexNode transform() {
@@ -76,7 +78,7 @@ public class SearchTransformer<C extends Comparable<C>> {
     RangeSets.forEach(sarg.rangeSet, consumer);
 
     List<RexNode> orList = new ArrayList<>();
-    if (sarg.nullAs == RexUnknownAs.TRUE) {
+    if (sarg.nullAs == RexUnknownAs.TRUE && unknownContext != RexUnknownAs.TRUE) {
       orList.add(rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, ref));
     }
     switch (consumer.inLiterals.size()) {
@@ -94,7 +96,7 @@ public class SearchTransformer<C extends Comparable<C>> {
     orList.addAll(consumer.nodes);
     RexNode x = RexUtil.composeDisjunction(rexBuilder, orList);
 
-    if (sarg.nullAs == RexUnknownAs.FALSE) {
+    if (sarg.nullAs == RexUnknownAs.FALSE && unknownContext != RexUnknownAs.FALSE) {
       RexNode notNull = rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, ref);
       x = RexUtil.composeConjunction(rexBuilder, Arrays.asList(notNull, x));
     }
@@ -104,9 +106,11 @@ public class SearchTransformer<C extends Comparable<C>> {
 
   public static class Shuttle extends RexShuttle {
     private final RexBuilder rexBuilder;
+    private RexUnknownAs unknownContext;
 
-    public Shuttle(final RexBuilder rexBuilder) {
+    public Shuttle(RexBuilder rexBuilder, RexUnknownAs unknownContext) {
       this.rexBuilder = rexBuilder;
+      this.unknownContext = unknownContext;
     }
 
     @Override public RexNode visitCall(RexCall call) {
@@ -128,8 +132,23 @@ public class SearchTransformer<C extends Comparable<C>> {
         } else {
           return call;
         }
+      case IS_NULL:
+      case IS_NOT_NULL:
+      case CASE:
+      case COALESCE:
+        // Everything below must be transformed with the UNKNOWN handler
+        RexUnknownAs previousContext = this.unknownContext;
+        this.unknownContext = RexUnknownAs.UNKNOWN;
+        clonedOperands = visitList(call.operands, update);
+        // Restore the original handler once we finish with the operands.
+        this.unknownContext = previousContext;
+        if (update[0]) {
+          return rexBuilder.makeCall(call.op, clonedOperands);
+        } else {
+          return call;
+        }
       case SEARCH:
-        return new SearchTransformer<>(rexBuilder, call).transform();
+        return new SearchTransformer<>(rexBuilder, call, this.unknownContext).transform();
       default:
         return super.visitCall(call);
       }
