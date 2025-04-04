@@ -7,7 +7,6 @@ POSTHOOK: Input: database:default
 POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
 default
-tpch_0_001
 POSTHOOK: query: SHOW CREATE DATABASE default
 POSTHOOK: type: SHOW_CREATEDATABASE
 POSTHOOK: Input: database:default
