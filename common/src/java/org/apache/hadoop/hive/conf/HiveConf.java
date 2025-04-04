@@ -3130,7 +3130,7 @@ public class HiveConf extends Configuration {
         "  - INSERT acquires SHARED_READ locks\n" +
         "- If false - shared writes, transaction is aborted in case of conflicting changes:\n" +
         "  - INSERT OVERWRITE acquires EXCL_WRITE locks\n" +
-        "  - INSERT/UPDATE/DELETE acquire SHARED_READ locks"),
+        "  - INSERT/UPDATE/DELETE acquire SHARED_WRITE locks"),
     HIVE_TXN_STATS_ENABLED("hive.txn.stats.enabled", true,
         "Whether Hive supports transactional stats (accurate stats for transactional tables)"),
     HIVE_TXN_ACID_DIR_CACHE_DURATION("hive.txn.acid.dir.cache.duration",
