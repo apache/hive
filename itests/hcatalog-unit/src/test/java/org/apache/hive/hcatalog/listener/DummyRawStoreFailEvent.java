@@ -535,6 +535,12 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
+  public String getExprStringByExpr(String catName, String dbName, String tblName, byte[] expr)
+      throws MetaException, NoSuchObjectException {
+    return objectStore.getExprStringByExpr(catName,dbName, tblName, expr);
+  }
+
+  @Override
   public int getNumPartitionsByExpr(String catName, String dbName, String tblName,
                                     byte[] expr) throws MetaException, NoSuchObjectException {
     return objectStore.getNumPartitionsByExpr(catName, dbName, tblName, expr);
