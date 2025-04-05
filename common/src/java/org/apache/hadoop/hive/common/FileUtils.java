@@ -830,7 +830,14 @@ public final class FileUtils {
           throw new IOException("copying multiple files, but last argument `" + dst + "' is not a directory");
         }
       } catch (FileNotFoundException var16) {
-        throw new IOException("`" + dst + "': specified destination directory does not exist", var16);
+        // Create a new FileNotFoundException with the custom message and the original message
+        FileNotFoundException e = new FileNotFoundException("'" + dst + "': specified destination directory does not exist");
+        e.initCause(var16); // Attach the original exception as the cause
+        // Re-throw the new FileNotFoundException
+        // This is important because this copy operation is called under retryable and if it hits the FileNotFound exception then it comes out immediately
+        // and in case of IOException it waits for hive.repl.retry.total.duration which is 24 hours before giving up
+        throw e;
+
       }
 
       Path[] var17 = srcs;
@@ -843,6 +850,14 @@ public final class FileUtils {
           if (!doIOUtilsCopyBytes(srcFS, srcFS.getFileStatus(src), dstFS, dst, deleteSource, overwrite, preserveXAttr, conf, copyStatistics)) {
             returnVal = false;
           }
+        } catch (FileNotFoundException var16) {
+          // Create a new FileNotFoundException with the custom message and the original message
+          FileNotFoundException e = new FileNotFoundException("Copy operation failed");
+          e.initCause(var16); // Attach the original exception as the cause
+          // Re-throw the new FileNotFoundException
+          // This is important because this copy operation is called under retryable and if it hits the FileNotFound exception then it comes out immediately
+          // and in case of IOException it waits for hive.repl.retry.total.duration which is 24 hours before giving up
+          throw e;
         } catch (IOException var15) {
           gotException = true;
           exceptions.append(var15.getMessage());
