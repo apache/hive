@@ -3123,7 +3123,7 @@ public class HiveConf extends Configuration {
     TXN_MERGE_INSERT_X_LOCK("hive.txn.xlock.mergeinsert", false,
         "Ensures MERGE INSERT operations acquire EXCLUSIVE / EXCL_WRITE lock for transactional tables.\n" +
         "If enabled, prevents duplicates when MERGE statements are executed in parallel transactions."),
-    TXN_WRITE_X_LOCK("hive.txn.xlock.write", true,
+    TXN_WRITE_X_LOCK("hive.txn.xlock.write", false,
         "Manages concurrency levels for ACID resources. Provides better level of query parallelism by enabling " +
         "shared writes and write-write conflict resolution at the commit step." +
         "- If true - exclusive writes are used:\n" +
@@ -3132,7 +3132,7 @@ public class HiveConf extends Configuration {
         "  - INSERT acquires SHARED_READ locks\n" +
         "- If false - shared writes, transaction is aborted in case of conflicting changes:\n" +
         "  - INSERT OVERWRITE acquires EXCL_WRITE locks\n" +
-        "  - INSERT/UPDATE/DELETE acquire SHARED_READ locks"),
+        "  - INSERT/UPDATE/DELETE acquire SHARED_WRITE locks"),
     HIVE_TXN_STATS_ENABLED("hive.txn.stats.enabled", true,
         "Whether Hive supports transactional stats (accurate stats for transactional tables)"),
     HIVE_TXN_ACID_DIR_CACHE_DURATION("hive.txn.acid.dir.cache.duration",

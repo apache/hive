@@ -57,6 +57,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.ImmutableBiMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.util.JsonUtil;
+import org.apache.iceberg.util.PropertyUtil;
 import org.apache.parquet.hadoop.ParquetOutputFormat;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -476,6 +477,10 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
         ConfigProperties.ENGINE_HIVE_ENABLED, true);
   }
 
+  private static boolean hiveLockEnabled(TableMetadata metadata, Configuration conf) {
+    return hiveLockEnabled(metadata != null ? metadata.properties() : null, conf);
+  }
+
   /**
    * Returns if the hive locking should be enabled on the table, or not.
    *
@@ -489,14 +494,14 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
    *       TableProperties#HIVE_LOCK_ENABLED_DEFAULT}
    * </ol>
    *
-   * @param metadata Table metadata to use
+   * @param properties Table properties to use
    * @param conf The hive configuration to use
    * @return if the hive engine related values should be enabled or not
    */
-  private static boolean hiveLockEnabled(TableMetadata metadata, Configuration conf) {
-    if (metadata != null && metadata.properties().get(TableProperties.HIVE_LOCK_ENABLED) != null) {
+  public static boolean hiveLockEnabled(Map<String, String> properties, Configuration conf) {
+    if (properties != null && properties.containsKey(TableProperties.HIVE_LOCK_ENABLED)) {
       // We know that the property is set, so default value will not be used,
-      return metadata.propertyAsBoolean(TableProperties.HIVE_LOCK_ENABLED, false);
+      return PropertyUtil.propertyAsBoolean(properties, TableProperties.HIVE_LOCK_ENABLED, false);
     }
 
     return conf.getBoolean(
