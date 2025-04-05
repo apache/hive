@@ -197,6 +197,8 @@ TOK_ALTERTABLE_UPDATECOLSTATS;
 TOK_ALTERPARTITION_UPDATECOLSTATS;
 TOK_ALTERTABLE_UPDATESTATS;
 TOK_ALTERPARTITION_UPDATESTATS;
+TOK_ALTERTABLE_DROPCOLSTATS;
+TOK_ALTERPARTITION_DROPCOLSTATS;
 TOK_TABLE_PARTITION;
 TOK_ALTERTABLE_FILEFORMAT;
 TOK_ALTERPARTITION_FILEFORMAT;
@@ -2067,19 +2069,6 @@ columnNameColonTypeList
 @init { pushMsg("column name type list", state); }
 @after { popMsg(state); }
     : columnNameColonType (COMMA columnNameColonType)* -> ^(TOK_TABCOLLIST columnNameColonType+)
-    ;
-
-columnNameList
-@init { pushMsg("column name list", state); }
-@after { popMsg(state); }
-    : columnName (COMMA columnName)* -> ^(TOK_TABCOLNAME columnName+)
-    ;
-
-columnName
-@init { pushMsg("column name", state); }
-@after { popMsg(state); }
-    :
-      identifier
     ;
 
 extColumnName

@@ -104,6 +104,7 @@ alterTblPartitionStatementSuffix[boolean partition]
   | alterStatementSuffixRenameCol
   | alterStatementSuffixAddCol
   | alterStatementSuffixUpdateColumns
+  | alterStatementSuffixDropStatsCol[partition]
   ;
 
 optimizeTableStatementSuffix
@@ -266,6 +267,14 @@ alterStatementSuffixUpdateStats[boolean partition]
     : KW_UPDATE KW_STATISTICS KW_SET tableProperties
     -> {partition}? ^(TOK_ALTERPARTITION_UPDATESTATS tableProperties)
     ->              ^(TOK_ALTERTABLE_UPDATESTATS tableProperties)
+    ;
+
+alterStatementSuffixDropStatsCol[boolean partition]
+@init { gParent.pushMsg("drop column statistics", state); }
+@after { gParent.popMsg(state); }
+    : KW_DROP KW_STATISTICS KW_FOR KW_COLUMNS colNames=columnNameList?
+    -> {partition}? ^(TOK_ALTERPARTITION_DROPCOLSTATS $colNames?)
+    ->              ^(TOK_ALTERTABLE_DROPCOLSTATS $colNames?)
     ;
 
 alterStatementChangeColPosition
@@ -649,5 +658,18 @@ alterDataConnectorSuffixSetUrl
 @after { gParent.popMsg(state); }
     : dcName=identifier KW_SET KW_URL newUri=StringLiteral
     -> ^(TOK_ALTERDATACONNECTOR_URL $dcName $newUri)
+    ;
+
+columnNameList
+@init { gParent.pushMsg("column name list", state); }
+@after { gParent.popMsg(state); }
+    : columnName (COMMA columnName)* -> ^(TOK_TABCOLNAME columnName+)
+    ;
+
+columnName
+@init { gParent.pushMsg("column name", state); }
+@after { gParent.popMsg(state); }
+    :
+      identifier
     ;
 
