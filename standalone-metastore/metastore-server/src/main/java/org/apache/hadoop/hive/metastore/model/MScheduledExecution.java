@@ -39,7 +39,7 @@ public class MScheduledExecution {
 
   @Override
   public String toString() {
-    return String.format("state: %s, scheduledQuery: %s, execId: %d", state, scheduledQuery.getScheduleName(),
+    return String.format("state: %s, scheduledQuery: %s, execId: %s", state, scheduledQuery.getScheduleName(),
         executorQueryId);
   }
 
