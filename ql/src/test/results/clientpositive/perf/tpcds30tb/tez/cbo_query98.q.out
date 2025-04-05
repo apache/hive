@@ -9,7 +9,7 @@ HiveProject(i_item_desc=[$0], i_category=[$1], i_class=[$2], i_current_price=[$3
               HiveFilter(condition=[IS NOT NULL($22)])
                 HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
             HiveProject(i_item_sk=[$0], i_item_id=[$1], i_item_desc=[$4], i_current_price=[$5], i_class=[$10], i_category=[$12])
-              HiveFilter(condition=[IN($12, _UTF-16LE'Jewelry                                           ', _UTF-16LE'Sports                                            ', _UTF-16LE'Books                                             ')])
+              HiveFilter(condition=[IN($12, _UTF-16LE'Books', _UTF-16LE'Jewelry', _UTF-16LE'Sports')])
                 HiveTableScan(table=[[default, item]], table:alias=[item])
           HiveProject(d_date_sk=[$0])
             HiveFilter(condition=[BETWEEN(false, CAST($2):TIMESTAMP(9), 2001-01-12 00:00:00:TIMESTAMP(9), 2001-02-11 00:00:00:TIMESTAMP(9))])

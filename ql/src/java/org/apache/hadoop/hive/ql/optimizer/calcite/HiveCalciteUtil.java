@@ -258,9 +258,9 @@ public class HiveCalciteUtil {
     // fields
     if (newKeyCount > 0) {
       leftRel = factory.createProject(leftRel, Collections.emptyList(), newLeftFields,
-          SqlValidatorUtil.uniquify(newLeftFieldNames));
+          SqlValidatorUtil.uniquify(newLeftFieldNames, true), Collections.emptySet());
       rightRel = factory.createProject(rightRel, Collections.emptyList(), newRightFields,
-          SqlValidatorUtil.uniquify(newRightFieldNames));
+          SqlValidatorUtil.uniquify(newRightFieldNames, true), Collections.emptySet());
     }
 
     inputRels[0] = leftRel;

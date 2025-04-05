@@ -526,7 +526,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_orc_ppd
-                  filterExpr: data_release NOT BETWEEN 20191201L AND 20200101L (type: boolean)
+                  filterExpr: ((data_release < 20191201L) or (data_release > 20200101L)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -534,8 +534,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColumnNotBetween(col 0:bigint, left 20191201, right 20200101)
-                    predicate: data_release NOT BETWEEN 20191201L AND 20200101L (type: boolean)
+                        predicateExpression: FilterExprOrExpr(children: FilterLongColLessLongScalar(col 0:bigint, val 20191201), FilterLongColGreaterLongScalar(col 0:bigint, val 20200101))
+                    predicate: ((data_release < 20191201L) or (data_release > 20200101L)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()

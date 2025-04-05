@@ -125,7 +125,7 @@ STAGE PLANS:
             expressions: rand() (type: double)
             outputColumnNames: _col0
             Filter Operator
-              predicate: ((_col0 <= 0.5D) and (_col0 > 0.25D)) (type: boolean)
+              predicate: ((_col0 > 0.25D) and (_col0 <= 0.5D)) (type: boolean)
               Limit
                 Number of rows: 20
                 Select Operator
@@ -164,7 +164,7 @@ STAGE PLANS:
             expressions: rand() (type: double)
             outputColumnNames: _col0
             Filter Operator
-              predicate: ((_col0 <= 0.5D) and (_col0 > 0.25D)) (type: boolean)
+              predicate: ((_col0 > 0.25D) and (_col0 <= 0.5D)) (type: boolean)
               Limit
                 Number of rows: 20
                 Select Operator

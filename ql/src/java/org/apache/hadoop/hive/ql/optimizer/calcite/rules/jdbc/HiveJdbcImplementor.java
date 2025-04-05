@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.calcite.adapter.java.JavaTypeFactory;
 import org.apache.calcite.adapter.jdbc.JdbcImplementor;
+import org.apache.calcite.adapter.jdbc.JdbcTableScan;
 import org.apache.calcite.linq4j.tree.Expressions;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
@@ -91,6 +92,10 @@ public class HiveJdbcImplementor extends JdbcImplementor {
             condType,
             sqlCondition);
     return result(join, leftResult, rightResult);
+  }
+
+  public Result visit(JdbcTableScan scan) {
+    return result(scan.jdbcTable.tableName(), ImmutableList.of(Clause.FROM), scan, null);
   }
 
   /**
