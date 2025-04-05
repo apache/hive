@@ -1,11 +1,11 @@
 PREHOOK: query: CREATE TABLE srcbucket_big(id string, key int, value string)
-PARTITIONED BY SPEC(bucket(4, key)) STORED BY ICEBERG
+STORED BY ICEBERG
 TBLPROPERTIES ('compactor.threshold.min.input.files'='1')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@srcbucket_big
 POSTHOOK: query: CREATE TABLE srcbucket_big(id string, key int, value string)
-PARTITIONED BY SPEC(bucket(4, key)) STORED BY ICEBERG
+STORED BY ICEBERG
 TBLPROPERTIES ('compactor.threshold.min.input.files'='1')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -30,10 +30,10 @@ POSTHOOK: query: INSERT INTO srcbucket_big VALUES
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@srcbucket_big
-PREHOOK: query: ALTER TABLE srcbucket_big CREATE TAG bucket_4
+PREHOOK: query: ALTER TABLE srcbucket_big CREATE TAG unpartitioned
 PREHOOK: type: ALTERTABLE_CREATETAG
 PREHOOK: Input: default@srcbucket_big
-POSTHOOK: query: ALTER TABLE srcbucket_big CREATE TAG bucket_4
+POSTHOOK: query: ALTER TABLE srcbucket_big CREATE TAG unpartitioned
 POSTHOOK: type: ALTERTABLE_CREATETAG
 POSTHOOK: Input: default@srcbucket_big
 PREHOOK: query: ALTER TABLE srcbucket_big SET PARTITION SPEC (bucket(8, key))
@@ -63,10 +63,10 @@ POSTHOOK: query: INSERT INTO srcbucket_big VALUES
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@srcbucket_big
-PREHOOK: query: ALTER TABLE srcbucket_big CREATE TAG bucket_4_and_8
+PREHOOK: query: ALTER TABLE srcbucket_big CREATE TAG unpartitioned_and_bucket_8
 PREHOOK: type: ALTERTABLE_CREATETAG
 PREHOOK: Input: default@srcbucket_big
-POSTHOOK: query: ALTER TABLE srcbucket_big CREATE TAG bucket_4_and_8
+POSTHOOK: query: ALTER TABLE srcbucket_big CREATE TAG unpartitioned_and_bucket_8
 POSTHOOK: type: ALTERTABLE_CREATETAG
 POSTHOOK: Input: default@srcbucket_big
 PREHOOK: query: CREATE TABLE src_small(key int, value string)
@@ -127,14 +127,14 @@ Table Parameters:
 	compactor.threshold.min.input.files	1                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"id\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"key\",\"required\":false,\"type\":\"int\"},{\"id\":3,\"name\":\"value\",\"required\":false,\"type\":\"string\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"added-data-files\":\"4\",\"added-records\":\"6\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"4\",\"total-records\":\"12\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"7\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-summary	{\"added-data-files\":\"4\",\"added-records\":\"6\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"4\",\"total-records\":\"12\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"5\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
-	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"key_bucket_8\",\"transform\":\"bucket[8]\",\"source-id\":2,\"field-id\":1001}]}
+	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"key_bucket_8\",\"transform\":\"bucket[8]\",\"source-id\":2,\"field-id\":1000}]}
 	format-version      	2                   
 	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
-	numFiles            	7                   
-	numPartitions       	6                   
+	numFiles            	5                   
+	numPartitions       	4                   
 	numRows             	12                  
 	parquet.compression 	zstd                
 #### A masked pattern was here ####
@@ -188,12 +188,11 @@ order by `partition`, spec_id, record_count
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_big
 #### A masked pattern was here ####
-{"key_bucket":0,"key_bucket_8":null}	0	3
-{"key_bucket":3,"key_bucket_8":null}	0	1
-{"key_bucket":null,"key_bucket_8":0}	1	1
-{"key_bucket":null,"key_bucket_8":3}	1	1
-{"key_bucket":null,"key_bucket_8":4}	1	2
-{"key_bucket":null,"key_bucket_8":null}	1	4
+{"key_bucket_8":0}	1	1
+{"key_bucket_8":3}	1	1
+{"key_bucket_8":4}	1	2
+NULL	0	6
+NULL	1	2
 PREHOOK: query: EXPLAIN
 SELECT *
 FROM default.srcbucket_big a
@@ -215,36 +214,36 @@ POSTHOOK: Input: default@srcbucket_big
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Map 1 <- Map 3 (BROADCAST_EDGE)
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Map 2 <- Map 1 (BROADCAST_EDGE)
+Reducer 3 <- Map 2 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 vectorized, llap
+      Reducer 3 vectorized, llap
       File Output Operator [FS_37]
-        Select Operator [SEL_36] (rows=8 width=261)
+        Select Operator [SEL_36] (rows=4 width=273)
           Output:["_col0","_col1","_col2","_col3","_col4"]
-        <-Map 1 [SIMPLE_EDGE] vectorized, llap
+        <-Map 2 [SIMPLE_EDGE] vectorized, llap
           SHUFFLE [RS_35]
-            Map Join Operator [MAPJOIN_34] (rows=8 width=261)
-              Conds:SEL_33._col1=RS_31._col0(Inner),Output:["_col0","_col1","_col2","_col3","_col4"]
-            <-Map 3 [BROADCAST_EDGE] vectorized, llap
+            Map Join Operator [MAPJOIN_34] (rows=4 width=273)
+              Conds:RS_31._col1=SEL_33._col0(Inner),Output:["_col0","_col1","_col2","_col3","_col4"]
+            <-Map 1 [BROADCAST_EDGE] vectorized, llap
               BROADCAST [RS_31]
-                PartitionCols:_col0
-                Select Operator [SEL_30] (rows=4 width=93)
-                  Output:["_col0","_col1"]
-                  Filter Operator [FIL_29] (rows=4 width=93)
+                PartitionCols:_col1
+                Select Operator [SEL_30] (rows=4 width=180)
+                  Output:["_col0","_col1","_col2"]
+                  Filter Operator [FIL_29] (rows=4 width=180)
                     predicate:key is not null
-                    TableScan [TS_3] (rows=6 width=77)
-                      default@src_small,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
-            <-Select Operator [SEL_33] (rows=8 width=168)
-                Output:["_col0","_col1","_col2"]
-                Filter Operator [FIL_32] (rows=8 width=168)
+                    TableScan [TS_0] (rows=4 width=180)
+                      default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Output:["id","key","value"]
+            <-Select Operator [SEL_33] (rows=4 width=93)
+                Output:["_col0","_col1"]
+                Filter Operator [FIL_32] (rows=4 width=93)
                   predicate:key is not null
-                  TableScan [TS_0] (rows=8 width=168)
-                    default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Output:["id","key","value"]
+                  TableScan [TS_3] (rows=6 width=77)
+                    default@src_small,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
 PREHOOK: query: SELECT *
 FROM default.srcbucket_big a
@@ -272,7 +271,7 @@ j	104	NULL	104	NULL
 k	105	val_105	105	val_105
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM default.srcbucket_big.tag_bucket_4 a
+FROM default.srcbucket_big.tag_unpartitioned a
 JOIN default.src_small b ON a.key = b.key
 ORDER BY a.id
 PREHOOK: type: QUERY
@@ -281,7 +280,7 @@ PREHOOK: Input: default@srcbucket_big
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM default.srcbucket_big.tag_bucket_4 a
+FROM default.srcbucket_big.tag_unpartitioned a
 JOIN default.src_small b ON a.key = b.key
 ORDER BY a.id
 POSTHOOK: type: QUERY
@@ -300,11 +299,11 @@ Stage-0
     Stage-1
       Reducer 2 vectorized, llap
       File Output Operator [FS_37]
-        Select Operator [SEL_36] (rows=6 width=271)
+        Select Operator [SEL_36] (rows=4 width=271)
           Output:["_col0","_col1","_col2","_col3","_col4"]
         <-Map 1 [SIMPLE_EDGE] vectorized, llap
           SHUFFLE [RS_35]
-            Map Join Operator [MAPJOIN_34] (rows=6 width=271)
+            Map Join Operator [MAPJOIN_34] (rows=4 width=271)
               Conds:SEL_33._col1=RS_31._col0(Inner),Output:["_col0","_col1","_col2","_col3","_col4"]
             <-Map 3 [BROADCAST_EDGE] vectorized, llap
               BROADCAST [RS_31]
@@ -315,15 +314,15 @@ Stage-0
                     predicate:key is not null
                     TableScan [TS_3] (rows=6 width=77)
                       default@src_small,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
-            <-Select Operator [SEL_33] (rows=6 width=178)
+            <-Select Operator [SEL_33] (rows=4 width=178)
                 Output:["_col0","_col1","_col2"]
-                Filter Operator [FIL_32] (rows=6 width=178)
+                Filter Operator [FIL_32] (rows=4 width=178)
                   predicate:key is not null
-                  TableScan [TS_0] (rows=6 width=178)
+                  TableScan [TS_0] (rows=6 width=162)
                     default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Output:["id","key","value"]
 
 PREHOOK: query: SELECT *
-FROM default.srcbucket_big.tag_bucket_4 a
+FROM default.srcbucket_big.tag_unpartitioned a
 JOIN default.src_small b ON a.key = b.key
 ORDER BY a.id
 PREHOOK: type: QUERY
@@ -331,7 +330,7 @@ PREHOOK: Input: default@src_small
 PREHOOK: Input: default@srcbucket_big
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT *
-FROM default.srcbucket_big.tag_bucket_4 a
+FROM default.srcbucket_big.tag_unpartitioned a
 JOIN default.src_small b ON a.key = b.key
 ORDER BY a.id
 POSTHOOK: type: QUERY
@@ -344,7 +343,7 @@ d	104	NULL	104	NULL
 e	105	val_105	105	val_105
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM default.srcbucket_big.tag_bucket_4_and_8 a
+FROM default.srcbucket_big.tag_unpartitioned_and_bucket_8 a
 JOIN default.src_small b ON a.key = b.key
 ORDER BY a.id
 PREHOOK: type: QUERY
@@ -353,7 +352,7 @@ PREHOOK: Input: default@srcbucket_big
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM default.srcbucket_big.tag_bucket_4_and_8 a
+FROM default.srcbucket_big.tag_unpartitioned_and_bucket_8 a
 JOIN default.src_small b ON a.key = b.key
 ORDER BY a.id
 POSTHOOK: type: QUERY
@@ -363,39 +362,39 @@ POSTHOOK: Input: default@srcbucket_big
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Map 1 <- Map 3 (BROADCAST_EDGE)
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Map 2 <- Map 1 (BROADCAST_EDGE)
+Reducer 3 <- Map 2 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 vectorized, llap
+      Reducer 3 vectorized, llap
       File Output Operator [FS_37]
-        Select Operator [SEL_36] (rows=8 width=261)
+        Select Operator [SEL_36] (rows=4 width=273)
           Output:["_col0","_col1","_col2","_col3","_col4"]
-        <-Map 1 [SIMPLE_EDGE] vectorized, llap
+        <-Map 2 [SIMPLE_EDGE] vectorized, llap
           SHUFFLE [RS_35]
-            Map Join Operator [MAPJOIN_34] (rows=8 width=261)
-              Conds:SEL_33._col1=RS_31._col0(Inner),Output:["_col0","_col1","_col2","_col3","_col4"]
-            <-Map 3 [BROADCAST_EDGE] vectorized, llap
+            Map Join Operator [MAPJOIN_34] (rows=4 width=273)
+              Conds:RS_31._col1=SEL_33._col0(Inner),Output:["_col0","_col1","_col2","_col3","_col4"]
+            <-Map 1 [BROADCAST_EDGE] vectorized, llap
               BROADCAST [RS_31]
-                PartitionCols:_col0
-                Select Operator [SEL_30] (rows=4 width=93)
-                  Output:["_col0","_col1"]
-                  Filter Operator [FIL_29] (rows=4 width=93)
+                PartitionCols:_col1
+                Select Operator [SEL_30] (rows=4 width=180)
+                  Output:["_col0","_col1","_col2"]
+                  Filter Operator [FIL_29] (rows=4 width=180)
                     predicate:key is not null
-                    TableScan [TS_3] (rows=6 width=77)
-                      default@src_small,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
-            <-Select Operator [SEL_33] (rows=8 width=168)
-                Output:["_col0","_col1","_col2"]
-                Filter Operator [FIL_32] (rows=8 width=168)
+                    TableScan [TS_0] (rows=4 width=180)
+                      default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Output:["id","key","value"]
+            <-Select Operator [SEL_33] (rows=4 width=93)
+                Output:["_col0","_col1"]
+                Filter Operator [FIL_32] (rows=4 width=93)
                   predicate:key is not null
-                  TableScan [TS_0] (rows=8 width=168)
-                    default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Output:["id","key","value"]
+                  TableScan [TS_3] (rows=6 width=77)
+                    default@src_small,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
 PREHOOK: query: SELECT *
-FROM default.srcbucket_big.tag_bucket_4_and_8 a
+FROM default.srcbucket_big.tag_unpartitioned_and_bucket_8 a
 JOIN default.src_small b ON a.key = b.key
 ORDER BY a.id
 PREHOOK: type: QUERY
@@ -403,7 +402,7 @@ PREHOOK: Input: default@src_small
 PREHOOK: Input: default@srcbucket_big
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT *
-FROM default.srcbucket_big.tag_bucket_4_and_8 a
+FROM default.srcbucket_big.tag_unpartitioned_and_bucket_8 a
 JOIN default.src_small b ON a.key = b.key
 ORDER BY a.id
 POSTHOOK: type: QUERY
@@ -464,9 +463,9 @@ Table Parameters:
 	compactor.threshold.min.input.files	1                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"id\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"key\",\"required\":false,\"type\":\"int\"},{\"id\":3,\"name\":\"value\",\"required\":false,\"type\":\"string\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"added-data-files\":\"4\",\"deleted-data-files\":\"3\",\"added-records\":\"6\",\"deleted-records\":\"6\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"7\",\"total-records\":\"12\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"8\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-summary	{\"added-data-files\":\"4\",\"deleted-data-files\":\"1\",\"added-records\":\"6\",\"deleted-records\":\"6\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"5\",\"total-records\":\"12\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"8\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
-	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"key_bucket_8\",\"transform\":\"bucket[8]\",\"source-id\":2,\"field-id\":1001}]}
+	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"key_bucket_8\",\"transform\":\"bucket[8]\",\"source-id\":2,\"field-id\":1000}]}
 	format-version      	2                   
 	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
@@ -525,10 +524,10 @@ order by `partition`, spec_id, record_count
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_big
 #### A masked pattern was here ####
-{"key_bucket":null,"key_bucket_8":0}	1	2
-{"key_bucket":null,"key_bucket_8":3}	1	2
-{"key_bucket":null,"key_bucket_8":4}	1	4
-{"key_bucket":null,"key_bucket_8":null}	1	4
+{"key_bucket_8":0}	1	2
+{"key_bucket_8":3}	1	2
+{"key_bucket_8":4}	1	4
+NULL	1	4
 PREHOOK: query: EXPLAIN
 SELECT *
 FROM default.srcbucket_big a
@@ -607,7 +606,7 @@ j	104	NULL	104	NULL
 k	105	val_105	105	val_105
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM default.srcbucket_big.tag_bucket_4 a
+FROM default.srcbucket_big.tag_unpartitioned a
 JOIN default.src_small b ON a.key = b.key
 ORDER BY a.id
 PREHOOK: type: QUERY
@@ -616,7 +615,7 @@ PREHOOK: Input: default@srcbucket_big
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM default.srcbucket_big.tag_bucket_4 a
+FROM default.srcbucket_big.tag_unpartitioned a
 JOIN default.src_small b ON a.key = b.key
 ORDER BY a.id
 POSTHOOK: type: QUERY
@@ -635,11 +634,11 @@ Stage-0
     Stage-1
       Reducer 2 vectorized, llap
       File Output Operator [FS_37]
-        Select Operator [SEL_36] (rows=6 width=271)
+        Select Operator [SEL_36] (rows=4 width=271)
           Output:["_col0","_col1","_col2","_col3","_col4"]
         <-Map 1 [SIMPLE_EDGE] vectorized, llap
           SHUFFLE [RS_35]
-            Map Join Operator [MAPJOIN_34] (rows=6 width=271)
+            Map Join Operator [MAPJOIN_34] (rows=4 width=271)
               Conds:SEL_33._col1=RS_31._col0(Inner),Output:["_col0","_col1","_col2","_col3","_col4"]
             <-Map 3 [BROADCAST_EDGE] vectorized, llap
               BROADCAST [RS_31]
@@ -650,15 +649,15 @@ Stage-0
                     predicate:key is not null
                     TableScan [TS_3] (rows=6 width=77)
                       default@src_small,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
-            <-Select Operator [SEL_33] (rows=6 width=178)
+            <-Select Operator [SEL_33] (rows=4 width=178)
                 Output:["_col0","_col1","_col2"]
-                Filter Operator [FIL_32] (rows=6 width=178)
+                Filter Operator [FIL_32] (rows=4 width=178)
                   predicate:key is not null
-                  TableScan [TS_0] (rows=6 width=178)
+                  TableScan [TS_0] (rows=6 width=162)
                     default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Output:["id","key","value"]
 
 PREHOOK: query: SELECT *
-FROM default.srcbucket_big.tag_bucket_4 a
+FROM default.srcbucket_big.tag_unpartitioned a
 JOIN default.src_small b ON a.key = b.key
 ORDER BY a.id
 PREHOOK: type: QUERY
@@ -666,7 +665,7 @@ PREHOOK: Input: default@src_small
 PREHOOK: Input: default@srcbucket_big
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT *
-FROM default.srcbucket_big.tag_bucket_4 a
+FROM default.srcbucket_big.tag_unpartitioned a
 JOIN default.src_small b ON a.key = b.key
 ORDER BY a.id
 POSTHOOK: type: QUERY
@@ -679,7 +678,7 @@ d	104	NULL	104	NULL
 e	105	val_105	105	val_105
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM default.srcbucket_big.tag_bucket_4_and_8 a
+FROM default.srcbucket_big.tag_unpartitioned_and_bucket_8 a
 JOIN default.src_small b ON a.key = b.key
 ORDER BY a.id
 PREHOOK: type: QUERY
@@ -688,7 +687,7 @@ PREHOOK: Input: default@srcbucket_big
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM default.srcbucket_big.tag_bucket_4_and_8 a
+FROM default.srcbucket_big.tag_unpartitioned_and_bucket_8 a
 JOIN default.src_small b ON a.key = b.key
 ORDER BY a.id
 POSTHOOK: type: QUERY
@@ -730,7 +729,7 @@ Stage-0
                     default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Output:["id","key","value"]
 
 PREHOOK: query: SELECT *
-FROM default.srcbucket_big.tag_bucket_4_and_8 a
+FROM default.srcbucket_big.tag_unpartitioned_and_bucket_8 a
 JOIN default.src_small b ON a.key = b.key
 ORDER BY a.id
 PREHOOK: type: QUERY
@@ -738,7 +737,7 @@ PREHOOK: Input: default@src_small
 PREHOOK: Input: default@srcbucket_big
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT *
-FROM default.srcbucket_big.tag_bucket_4_and_8 a
+FROM default.srcbucket_big.tag_unpartitioned_and_bucket_8 a
 JOIN default.src_small b ON a.key = b.key
 ORDER BY a.id
 POSTHOOK: type: QUERY

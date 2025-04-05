@@ -25,7 +25,7 @@ set hive.optimize.dynamic.partition.hashjoin=false;
 set hive.convert.join.bucket.mapjoin.tez=true;
 
 CREATE TABLE srcbucket_big(id string, key int, value string)
-PARTITIONED BY SPEC(bucket(4, key)) STORED BY ICEBERG
+STORED BY ICEBERG
 TBLPROPERTIES ('compactor.threshold.min.input.files'='1');
 
 INSERT INTO srcbucket_big VALUES
@@ -35,7 +35,7 @@ INSERT INTO srcbucket_big VALUES
 ('d', 104, null),
 ('e', 105, 'val_105'),
 ('f', null, null);
-ALTER TABLE srcbucket_big CREATE TAG bucket_4;
+ALTER TABLE srcbucket_big CREATE TAG unpartitioned;
 
 ALTER TABLE srcbucket_big SET PARTITION SPEC (bucket(8, key));
 
@@ -46,7 +46,7 @@ INSERT INTO srcbucket_big VALUES
 ('j', 104, null),
 ('k', 105, 'val_105'),
 ('l', null, null);
-ALTER TABLE srcbucket_big CREATE TAG bucket_4_and_8;
+ALTER TABLE srcbucket_big CREATE TAG unpartitioned_and_bucket_8;
 
 CREATE TABLE src_small(key int, value string);
 INSERT INTO src_small VALUES
@@ -64,7 +64,7 @@ select `partition`, spec_id, record_count
 from default.srcbucket_big.partitions
 order by `partition`, spec_id, record_count;
 
--- The current snapshot retains both bucket(4, key) and bucket(8, key)
+-- The current snapshot retains both unpartitioned and bucket(8, key)
 EXPLAIN
 SELECT *
 FROM default.srcbucket_big a
@@ -76,27 +76,27 @@ FROM default.srcbucket_big a
 JOIN default.src_small b ON a.key = b.key
 ORDER BY a.id;
 
--- tag_bucket_4 retains only bucket(4, key)
+-- tag_unpartitioned retains only unpartitioned ones
 EXPLAIN
 SELECT *
-FROM default.srcbucket_big.tag_bucket_4 a
+FROM default.srcbucket_big.tag_unpartitioned a
 JOIN default.src_small b ON a.key = b.key
 ORDER BY a.id;
 
 SELECT *
-FROM default.srcbucket_big.tag_bucket_4 a
+FROM default.srcbucket_big.tag_unpartitioned a
 JOIN default.src_small b ON a.key = b.key
 ORDER BY a.id;
 
--- tag_bucket_4_and_8 retains both bucket(4, key) and bucket(8, key)
+-- tag_unpartitioned_and_bucket_8 retains both unpartitioned and bucket(8, key)
 EXPLAIN
 SELECT *
-FROM default.srcbucket_big.tag_bucket_4_and_8 a
+FROM default.srcbucket_big.tag_unpartitioned_and_bucket_8 a
 JOIN default.src_small b ON a.key = b.key
 ORDER BY a.id;
 
 SELECT *
-FROM default.srcbucket_big.tag_bucket_4_and_8 a
+FROM default.srcbucket_big.tag_unpartitioned_and_bucket_8 a
 JOIN default.src_small b ON a.key = b.key
 ORDER BY a.id;
 
@@ -122,26 +122,26 @@ FROM default.srcbucket_big a
 JOIN default.src_small b ON a.key = b.key
 ORDER BY a.id;
 
--- tag_bucket_4 retains only bucket(4, key)
+-- tag_unpartitioned retains only unpartitioned ones
 EXPLAIN
 SELECT *
-FROM default.srcbucket_big.tag_bucket_4 a
+FROM default.srcbucket_big.tag_unpartitioned a
 JOIN default.src_small b ON a.key = b.key
 ORDER BY a.id;
 
 SELECT *
-FROM default.srcbucket_big.tag_bucket_4 a
+FROM default.srcbucket_big.tag_unpartitioned a
 JOIN default.src_small b ON a.key = b.key
 ORDER BY a.id;
 
--- tag_bucket_4_and_8 retains both bucket(4, key) and bucket(8, key)
+-- tag_unpartitioned_and_bucket_8 retains both unpartitioned and bucket(8, key)
 EXPLAIN
 SELECT *
-FROM default.srcbucket_big.tag_bucket_4_and_8 a
+FROM default.srcbucket_big.tag_unpartitioned_and_bucket_8 a
 JOIN default.src_small b ON a.key = b.key
 ORDER BY a.id;
 
 SELECT *
-FROM default.srcbucket_big.tag_bucket_4_and_8 a
+FROM default.srcbucket_big.tag_unpartitioned_and_bucket_8 a
 JOIN default.src_small b ON a.key = b.key
 ORDER BY a.id;
