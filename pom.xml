@@ -104,6 +104,7 @@
     <maven.license.plugin.version>2.3.0</maven.license.plugin.version>
     <!-- Library Dependency Versions -->
     <accumulo.version>1.10.4</accumulo.version>
+    <tomcat.version>9.0.82</tomcat.version>
     <ant.version>1.10.13</ant.version>
     <antlr.version>3.5.2</antlr.version>
     <!-- Make sure to sync it with standalone-metastore/pom.xml -->
@@ -220,6 +221,7 @@
     <re2j.version>1.2</re2j.version>
     <rs-api.version>2.0.1</rs-api.version>
     <json-path.version>2.9.0</json-path.version>
+    <json-smart.version>2.5.2</json-smart.version>
     <janino.version>3.1.12</janino.version>
     <datasketches.version>1.2.0</datasketches.version>
     <spotbugs.version>4.0.3</spotbugs.version>
@@ -783,9 +785,9 @@
         <version>${jetty.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.eclipse.jetty</groupId>
-        <artifactId>jetty-runner</artifactId>
-        <version>${jetty.version}</version>
+        <groupId>org.apache.tomcat</groupId>
+        <artifactId>tomcat-jasper</artifactId>
+        <version>${tomcat.version}</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
@@ -1297,6 +1299,12 @@
         <groupId>com.jayway.jsonpath</groupId>
         <artifactId>json-path</artifactId>
         <version>${json-path.version}</version>
+        <scope>runtime</scope>
+      </dependency>
+      <dependency>
+        <groupId>net.minidev</groupId>
+        <artifactId>json-smart</artifactId>
+        <version>${json-smart.version}</version>
         <scope>runtime</scope>
       </dependency>
       <dependency>
