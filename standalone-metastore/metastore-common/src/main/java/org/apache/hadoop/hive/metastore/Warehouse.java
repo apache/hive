@@ -680,9 +680,10 @@ public class Warehouse {
     return partSpec;
   }
 
-  public static boolean makeSpecFromName(Map<String, String> partSpec, Path currPath,
+  public static boolean makeSpecFromName(Map<String, String> partSpec, Path path,
       Set<String> requiredKeys) {
     List<String[]> kvs = new ArrayList<>();
+    Path currPath = path;
     do {
       String component = currPath.getName();
       Matcher m = pat.matcher(component);
@@ -706,7 +707,7 @@ public class Warehouse {
       partSpec.put(key, kvs.get(i - 1)[1]);
     }
     if (requiredKeys == null || requiredKeys.isEmpty()) return true;
-    LOG.warn("Cannot create partition spec from " + currPath + "; missing keys " + requiredKeys);
+    LOG.warn("Cannot create partition spec from {}; missing keys {}", path, requiredKeys);
     return false;
   }
 
