@@ -404,6 +404,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       throws Exception, MetaException, TException, NoSuchObjectException {
     hiveConf.setBoolean("hive.stats.autogather", true);
     hiveConf.setBoolean("hive.stats.column.autogather", true);
+    hiveConf.setBoolean("hive.txn.xlock.write", true);
     // Need to close the thread local Hive object so that configuration change is reflected to HMS.
     Hive.closeCurrent();
     runStatementOnDriver("drop table if exists " + tableName);
