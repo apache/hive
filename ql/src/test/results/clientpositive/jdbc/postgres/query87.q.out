@@ -1,0 +1,132 @@
+PREHOOK: query: explain
+select count(*) 
+from ((select distinct c_last_name, c_first_name, d_date
+       from store_sales, date_dim, customer
+       where store_sales.ss_sold_date_sk = date_dim.d_date_sk
+         and store_sales.ss_customer_sk = customer.c_customer_sk
+         and d_month_seq between 1212 and 1212+11)
+       except
+      (select distinct c_last_name, c_first_name, d_date
+       from catalog_sales, date_dim, customer
+       where catalog_sales.cs_sold_date_sk = date_dim.d_date_sk
+         and catalog_sales.cs_bill_customer_sk = customer.c_customer_sk
+         and d_month_seq between 1212 and 1212+11)
+       except
+      (select distinct c_last_name, c_first_name, d_date
+       from web_sales, date_dim, customer
+       where web_sales.ws_sold_date_sk = date_dim.d_date_sk
+         and web_sales.ws_bill_customer_sk = customer.c_customer_sk
+         and d_month_seq between 1212 and 1212+11)
+) cool_cust
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@web_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select count(*) 
+from ((select distinct c_last_name, c_first_name, d_date
+       from store_sales, date_dim, customer
+       where store_sales.ss_sold_date_sk = date_dim.d_date_sk
+         and store_sales.ss_customer_sk = customer.c_customer_sk
+         and d_month_seq between 1212 and 1212+11)
+       except
+      (select distinct c_last_name, c_first_name, d_date
+       from catalog_sales, date_dim, customer
+       where catalog_sales.cs_sold_date_sk = date_dim.d_date_sk
+         and catalog_sales.cs_bill_customer_sk = customer.c_customer_sk
+         and d_month_seq between 1212 and 1212+11)
+       except
+      (select distinct c_last_name, c_first_name, d_date
+       from web_sales, date_dim, customer
+       where web_sales.ws_sold_date_sk = date_dim.d_date_sk
+         and web_sales.ws_bill_customer_sk = customer.c_customer_sk
+         and d_month_seq between 1212 and 1212+11)
+) cool_cust
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@web_sales
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: store_sales
+          properties:
+            hive.sql.query SELECT COUNT(*) AS "$f0"
+FROM (SELECT "$f0", "$f1", "$f2", SUM("$f4") AS "$f3", SUM("$f3" * "$f4") AS "$f4"
+FROM (SELECT "$f0", "$f1", "$f2", 2 AS "$f3", COUNT(*) AS "$f4"
+FROM (SELECT "$f0", "$f1", "$f2", SUM("$f4") AS "$f3", SUM("$f3" * "$f4") AS "$f4"
+FROM (SELECT "t8"."c_last_name" AS "$f0", "t8"."c_first_name" AS "$f1", "t8"."d_date" AS "$f2", 2 AS "$f3", COUNT(*) AS "$f4"
+FROM (SELECT "t4"."d_date", "t7"."c_first_name", "t7"."c_last_name"
+FROM (SELECT "ss_sold_date_sk", "ss_customer_sk"
+FROM (SELECT "ss_sold_date_sk", "ss_customer_sk"
+FROM "store_sales") AS "t"
+WHERE "ss_sold_date_sk" IS NOT NULL AND "ss_customer_sk" IS NOT NULL) AS "t1"
+INNER JOIN (SELECT "d_date_sk", "d_date"
+FROM (SELECT "d_date_sk", "d_date", "d_month_seq"
+FROM "date_dim") AS "t2"
+WHERE "d_month_seq" BETWEEN 1212 AND 1223 AND "d_date_sk" IS NOT NULL) AS "t4" ON "t1"."ss_sold_date_sk" = "t4"."d_date_sk"
+INNER JOIN (SELECT "c_customer_sk", "c_first_name", "c_last_name"
+FROM (SELECT "c_customer_sk", "c_first_name", "c_last_name"
+FROM "customer") AS "t5"
+WHERE "c_customer_sk" IS NOT NULL) AS "t7" ON "t1"."ss_customer_sk" = "t7"."c_customer_sk"
+GROUP BY "t4"."d_date", "t7"."c_first_name", "t7"."c_last_name") AS "t8"
+GROUP BY "t8"."d_date", "t8"."c_first_name", "t8"."c_last_name"
+UNION ALL
+SELECT "t20"."c_last_name" AS "$f0", "t20"."c_first_name" AS "$f1", "t20"."d_date" AS "$f2", 1 AS "$f3", COUNT(*) AS "$f4"
+FROM (SELECT "t16"."d_date", "t19"."c_first_name", "t19"."c_last_name"
+FROM (SELECT "cs_sold_date_sk", "cs_bill_customer_sk"
+FROM (SELECT "cs_sold_date_sk", "cs_bill_customer_sk"
+FROM "catalog_sales") AS "t11"
+WHERE "cs_sold_date_sk" IS NOT NULL AND "cs_bill_customer_sk" IS NOT NULL) AS "t13"
+INNER JOIN (SELECT "d_date_sk", "d_date"
+FROM (SELECT "d_date_sk", "d_date", "d_month_seq"
+FROM "date_dim") AS "t14"
+WHERE "d_month_seq" BETWEEN 1212 AND 1223 AND "d_date_sk" IS NOT NULL) AS "t16" ON "t13"."cs_sold_date_sk" = "t16"."d_date_sk"
+INNER JOIN (SELECT "c_customer_sk", "c_first_name", "c_last_name"
+FROM (SELECT "c_customer_sk", "c_first_name", "c_last_name"
+FROM "customer") AS "t17"
+WHERE "c_customer_sk" IS NOT NULL) AS "t19" ON "t13"."cs_bill_customer_sk" = "t19"."c_customer_sk"
+GROUP BY "t16"."d_date", "t19"."c_first_name", "t19"."c_last_name") AS "t20"
+GROUP BY "t20"."d_date", "t20"."c_first_name", "t20"."c_last_name") AS "t23"
+GROUP BY "$f0", "$f1", "$f2"
+HAVING SUM("$f4") > 0 AND SUM("$f4") * 2 = SUM("$f3" * "$f4")) AS "t27"
+GROUP BY "$f0", "$f1", "$f2"
+UNION ALL
+SELECT "t39"."c_last_name" AS "$f0", "t39"."c_first_name" AS "$f1", "t39"."d_date" AS "$f2", 1 AS "$f3", COUNT(*) AS "$f4"
+FROM (SELECT "t35"."d_date", "t38"."c_first_name", "t38"."c_last_name"
+FROM (SELECT "ws_sold_date_sk", "ws_bill_customer_sk"
+FROM (SELECT "ws_sold_date_sk", "ws_bill_customer_sk"
+FROM "web_sales") AS "t30"
+WHERE "ws_sold_date_sk" IS NOT NULL AND "ws_bill_customer_sk" IS NOT NULL) AS "t32"
+INNER JOIN (SELECT "d_date_sk", "d_date"
+FROM (SELECT "d_date_sk", "d_date", "d_month_seq"
+FROM "date_dim") AS "t33"
+WHERE "d_month_seq" BETWEEN 1212 AND 1223 AND "d_date_sk" IS NOT NULL) AS "t35" ON "t32"."ws_sold_date_sk" = "t35"."d_date_sk"
+INNER JOIN (SELECT "c_customer_sk", "c_first_name", "c_last_name"
+FROM (SELECT "c_customer_sk", "c_first_name", "c_last_name"
+FROM "customer") AS "t36"
+WHERE "c_customer_sk" IS NOT NULL) AS "t38" ON "t32"."ws_bill_customer_sk" = "t38"."c_customer_sk"
+GROUP BY "t35"."d_date", "t38"."c_first_name", "t38"."c_last_name") AS "t39"
+GROUP BY "t39"."d_date", "t39"."c_first_name", "t39"."c_last_name") AS "t42"
+GROUP BY "$f0", "$f1", "$f2"
+HAVING SUM("$f4") > 0 AND SUM("$f4") * 2 = SUM("$f3" * "$f4")) AS "t46"
+            hive.sql.query.fieldNames $f0
+            hive.sql.query.fieldTypes bigint
+            hive.sql.query.split false
+          Select Operator
+            expressions: $f0 (type: bigint)
+            outputColumnNames: _col0
+            ListSink
+

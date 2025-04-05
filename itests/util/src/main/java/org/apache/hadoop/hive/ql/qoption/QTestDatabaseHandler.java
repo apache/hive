@@ -51,35 +51,35 @@ import java.util.Map;
 public class QTestDatabaseHandler implements QTestOptionHandler {
   private static final Logger LOG = LoggerFactory.getLogger(QTestDatabaseHandler.class);
 
-  private enum DatabaseType {
+  public enum DatabaseType {
     POSTGRES {
       @Override
-      AbstractExternalDB create() {
+      public AbstractExternalDB create() {
         return new PostgresExternalDB();
       }
     }, MYSQL {
       @Override
-      AbstractExternalDB create() {
+      public AbstractExternalDB create() {
         return new MySQLExternalDB();
       }
     }, MARIADB {
       @Override
-      AbstractExternalDB create() {
+      public AbstractExternalDB create() {
         return new MariaDB();
       }
     }, MSSQL {
       @Override
-      AbstractExternalDB create() {
+      public AbstractExternalDB create() {
         return new MSSQLServer();
       }
     }, ORACLE {
       @Override
-      AbstractExternalDB create() {
+      public AbstractExternalDB create() {
         return new Oracle();
       }
     };
 
-    abstract AbstractExternalDB create();
+    public abstract AbstractExternalDB create();
   }
 
   private final Map<DatabaseType, String> databaseToScript = new EnumMap<>(DatabaseType.class);
