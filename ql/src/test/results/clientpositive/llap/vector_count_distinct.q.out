@@ -1337,10 +1337,10 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
                       keys: ws_order_number (type: int)
-                      minReductionHashAggr: 0.915
+                      minReductionHashAggr: 0.9155
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 170 Data size: 680 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 169 Data size: 676 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: z
@@ -1350,7 +1350,7 @@ STAGE PLANS:
                             className: VectorReduceSinkLongOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 170 Data size: 680 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 169 Data size: 676 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -1382,7 +1382,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 170 Data size: 680 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 169 Data size: 676 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count(_col0)
                   Group By Vectorization:
