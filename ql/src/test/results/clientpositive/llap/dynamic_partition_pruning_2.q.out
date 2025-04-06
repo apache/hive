@@ -98,11 +98,11 @@ POSTHOOK: Output: default@agg_01@dim_shops_id=3
 PREHOOK: query: select * from dim_shops
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dim_shops
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from dim_shops
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dim_shops
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	foo
 2	bar
 3	baz
@@ -112,14 +112,14 @@ PREHOOK: Input: default@agg_01
 PREHOOK: Input: default@agg_01@dim_shops_id=1
 PREHOOK: Input: default@agg_01@dim_shops_id=2
 PREHOOK: Input: default@agg_01@dim_shops_id=3
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from agg_01
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@agg_01
 POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@agg_01@dim_shops_id=2
 POSTHOOK: Input: default@agg_01@dim_shops_id=3
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	1
 2	1
 3	1
@@ -143,7 +143,7 @@ PREHOOK: Input: default@agg_01@dim_shops_id=1
 PREHOOK: Input: default@agg_01@dim_shops_id=2
 PREHOOK: Input: default@agg_01@dim_shops_id=3
 PREHOOK: Input: default@dim_shops
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT d1.label, count(*), sum(agg.amount)
 FROM agg_01 agg,
 dim_shops d1
@@ -158,7 +158,7 @@ POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@agg_01@dim_shops_id=2
 POSTHOOK: Input: default@agg_01@dim_shops_id=3
 POSTHOOK: Input: default@dim_shops
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -213,10 +213,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d1
-                  filterExpr: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
+                  filterExpr: ((label) IN ('bar', 'foo') and id is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
+                    predicate: ((label) IN ('bar', 'foo') and id is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: id (type: int), label (type: string)
@@ -297,7 +297,7 @@ PREHOOK: Input: default@agg_01@dim_shops_id=1
 PREHOOK: Input: default@agg_01@dim_shops_id=2
 PREHOOK: Input: default@agg_01@dim_shops_id=3
 PREHOOK: Input: default@dim_shops
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT d1.label, count(*), sum(agg.amount)
 FROM agg_01 agg,
 dim_shops d1
@@ -312,7 +312,7 @@ POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@agg_01@dim_shops_id=2
 POSTHOOK: Input: default@agg_01@dim_shops_id=3
 POSTHOOK: Input: default@dim_shops
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 bar	3	15
 foo	3	6
 PREHOOK: query: EXPLAIN SELECT d1.label, count(*), sum(agg.amount)
@@ -329,7 +329,7 @@ PREHOOK: Input: default@agg_01@dim_shops_id=1
 PREHOOK: Input: default@agg_01@dim_shops_id=2
 PREHOOK: Input: default@agg_01@dim_shops_id=3
 PREHOOK: Input: default@dim_shops
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT d1.label, count(*), sum(agg.amount)
 FROM agg_01 agg,
 dim_shops d1
@@ -344,7 +344,7 @@ POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@agg_01@dim_shops_id=2
 POSTHOOK: Input: default@agg_01@dim_shops_id=3
 POSTHOOK: Input: default@dim_shops
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -399,10 +399,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d1
-                  filterExpr: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
+                  filterExpr: ((label) IN ('bar', 'foo') and id is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
+                    predicate: ((label) IN ('bar', 'foo') and id is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: id (type: int), label (type: string)
@@ -467,7 +467,7 @@ PREHOOK: Input: default@agg_01@dim_shops_id=1
 PREHOOK: Input: default@agg_01@dim_shops_id=2
 PREHOOK: Input: default@agg_01@dim_shops_id=3
 PREHOOK: Input: default@dim_shops
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT d1.label, count(*), sum(agg.amount)
 FROM agg_01 agg,
 dim_shops d1
@@ -482,7 +482,7 @@ POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@agg_01@dim_shops_id=2
 POSTHOOK: Input: default@agg_01@dim_shops_id=3
 POSTHOOK: Input: default@dim_shops
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 bar	3	15
 foo	3	6
 PREHOOK: query: EXPLAIN SELECT d1.label
@@ -495,7 +495,7 @@ PREHOOK: Input: default@agg_01@dim_shops_id=1
 PREHOOK: Input: default@agg_01@dim_shops_id=2
 PREHOOK: Input: default@agg_01@dim_shops_id=3
 PREHOOK: Input: default@dim_shops
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT d1.label
 FROM agg_01 agg,
 dim_shops d1
@@ -506,7 +506,7 @@ POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@agg_01@dim_shops_id=2
 POSTHOOK: Input: default@agg_01@dim_shops_id=3
 POSTHOOK: Input: default@dim_shops
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -591,7 +591,7 @@ PREHOOK: Input: default@agg_01@dim_shops_id=1
 PREHOOK: Input: default@agg_01@dim_shops_id=2
 PREHOOK: Input: default@agg_01@dim_shops_id=3
 PREHOOK: Input: default@dim_shops
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT d1.label
 FROM agg_01 agg,
 dim_shops d1
@@ -602,7 +602,7 @@ POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@agg_01@dim_shops_id=2
 POSTHOOK: Input: default@agg_01@dim_shops_id=3
 POSTHOOK: Input: default@dim_shops
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 foo
 foo
 foo
@@ -622,7 +622,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@agg_01
 PREHOOK: Input: default@agg_01@dim_shops_id=1
 PREHOOK: Input: default@dim_shops
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT agg.amount
 FROM agg_01 agg,
 dim_shops d1
@@ -632,7 +632,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@agg_01
 POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@dim_shops
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -714,7 +714,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@agg_01
 PREHOOK: Input: default@agg_01@dim_shops_id=1
 PREHOOK: Input: default@dim_shops
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT agg.amount
 FROM agg_01 agg,
 dim_shops d1
@@ -724,7 +724,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@agg_01
 POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@dim_shops
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1
 2
 3
@@ -742,7 +742,7 @@ PREHOOK: Input: default@agg_01@dim_shops_id=1
 PREHOOK: Input: default@agg_01@dim_shops_id=2
 PREHOOK: Input: default@agg_01@dim_shops_id=3
 PREHOOK: Input: default@dim_shops
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT d1.label, count(*), sum(agg.amount)
 FROM agg_01 agg,
 dim_shops d1
@@ -757,7 +757,7 @@ POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@agg_01@dim_shops_id=2
 POSTHOOK: Input: default@agg_01@dim_shops_id=3
 POSTHOOK: Input: default@dim_shops
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -812,10 +812,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d1
-                  filterExpr: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
+                  filterExpr: ((label) IN ('bar', 'foo') and id is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
+                    predicate: ((label) IN ('bar', 'foo') and id is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: id (type: int), label (type: string)
@@ -896,7 +896,7 @@ PREHOOK: Input: default@agg_01@dim_shops_id=1
 PREHOOK: Input: default@agg_01@dim_shops_id=2
 PREHOOK: Input: default@agg_01@dim_shops_id=3
 PREHOOK: Input: default@dim_shops
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT d1.label, count(*), sum(agg.amount)
 FROM agg_01 agg,
 dim_shops d1
@@ -911,7 +911,7 @@ POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@agg_01@dim_shops_id=2
 POSTHOOK: Input: default@agg_01@dim_shops_id=3
 POSTHOOK: Input: default@dim_shops
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 bar	3	15
 foo	3	6
 PREHOOK: query: EXPLAIN 
@@ -924,7 +924,7 @@ PREHOOK: Input: default@agg_01@dim_shops_id=1
 PREHOOK: Input: default@agg_01@dim_shops_id=2
 PREHOOK: Input: default@agg_01@dim_shops_id=3
 PREHOOK: Input: default@dim_shops
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN 
 SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'foo'
 UNION ALL
@@ -935,7 +935,7 @@ POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@agg_01@dim_shops_id=2
 POSTHOOK: Input: default@agg_01@dim_shops_id=3
 POSTHOOK: Input: default@dim_shops
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1091,7 +1091,7 @@ PREHOOK: Input: default@agg_01@dim_shops_id=1
 PREHOOK: Input: default@agg_01@dim_shops_id=2
 PREHOOK: Input: default@agg_01@dim_shops_id=3
 PREHOOK: Input: default@dim_shops
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'foo'
 UNION ALL
 SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'bar'
@@ -1101,7 +1101,7 @@ POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@agg_01@dim_shops_id=2
 POSTHOOK: Input: default@agg_01@dim_shops_id=3
 POSTHOOK: Input: default@dim_shops
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1
 2
 3
@@ -1119,7 +1119,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*)
 from srcpart s1,
@@ -1131,7 +1131,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1227,7 +1227,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select count(*)
 from srcpart s1,
      srcpart s2
@@ -1238,5 +1238,5 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 2000000

@@ -37,7 +37,6 @@ import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.server.CalciteServerStatement;
-import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlFunction;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.FrameworkConfig;
@@ -46,11 +45,6 @@ import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Litmus;
-import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveMergeableAggregate;
-import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlCountAggFunction;
-import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlMinMaxAggFunction;
-import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumAggFunction;
-import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumEmptyIsZeroAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
 
 import java.util.ArrayList;
@@ -136,24 +130,6 @@ public class HiveRelBuilder extends RelBuilder {
         return HiveFloorDate.SECOND;
     }
     return SqlStdOperatorTable.FLOOR;
-  }
-
-  public static SqlAggFunction getRollup(SqlAggFunction aggregation) {
-    if (aggregation instanceof HiveMergeableAggregate) {
-      HiveMergeableAggregate mAgg = (HiveMergeableAggregate) aggregation;
-      return mAgg.getMergeAggFunction();
-    }
-    if (aggregation instanceof HiveSqlSumAggFunction
-        || aggregation instanceof HiveSqlMinMaxAggFunction
-        || aggregation instanceof HiveSqlSumEmptyIsZeroAggFunction) {
-      return aggregation;
-    }
-    if (aggregation instanceof HiveSqlCountAggFunction) {
-      HiveSqlCountAggFunction countAgg = (HiveSqlCountAggFunction) aggregation;
-      return new HiveSqlSumEmptyIsZeroAggFunction(countAgg.isDistinct(), countAgg.getReturnTypeInference(),
-          countAgg.getOperandTypeInference(), countAgg.getOperandTypeChecker());
-    }
-    return null;
   }
 
   /** Creates a {@link Join} with correlating variables. */

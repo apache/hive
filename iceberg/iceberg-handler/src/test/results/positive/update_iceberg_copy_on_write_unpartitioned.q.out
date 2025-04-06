@@ -49,10 +49,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tbl_ice
-                  filterExpr: ((a = 22) or (b) IN ('one', 'four')) (type: boolean)
+                  filterExpr: ((a = 22) or (b) IN ('four', 'one')) (type: boolean)
                   Statistics: Num rows: 7 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((a = 22) or (b) IN ('one', 'four')) (type: boolean)
+                    predicate: ((a = 22) or (b) IN ('four', 'one')) (type: boolean)
                     Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: PARTITION__SPEC__ID (type: int), PARTITION__HASH (type: bigint), FILE__PATH (type: string), ROW__POSITION (type: bigint), PARTITION__PROJECTION (type: string), a (type: int), 'Changed' (type: string), c (type: int)
@@ -71,10 +71,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tbl_ice
-                  filterExpr: ((a = 22) or (b) IN ('one', 'four') or ((b <> 'one') and (b <> 'four') and (a <> 22)) or ((a = 22) or (b) IN ('one', 'four')) is null) (type: boolean)
+                  filterExpr: ((a = 22) or (b) IN ('four', 'one') or ((b) IN ('four', 'one') or (a = 22)) is null or (((b < 'four') or ((b > 'four') and (b < 'one')) or (b > 'one')) and (a <> 22))) (type: boolean)
                   Statistics: Num rows: 7 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((a = 22) or (b) IN ('one', 'four')) (type: boolean)
+                    predicate: ((a = 22) or (b) IN ('four', 'one')) (type: boolean)
                     Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: FILE__PATH (type: string)
@@ -84,7 +84,7 @@ STAGE PLANS:
                       Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: a (type: int), b (type: string), c (type: int), PARTITION__SPEC__ID (type: int), PARTITION__HASH (type: bigint), PARTITION__PROJECTION (type: string)
                   Filter Operator
-                    predicate: (((b) IN ('one', 'four') or (a = 22)) and FILE__PATH is not null) (type: boolean)
+                    predicate: (((b) IN ('four', 'one') or (a = 22)) and FILE__PATH is not null) (type: boolean)
                     Statistics: Num rows: 4 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: FILE__PATH (type: string)
@@ -93,7 +93,7 @@ STAGE PLANS:
                       Map-reduce partition columns: FILE__PATH (type: string)
                       Statistics: Num rows: 4 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((((b <> 'one') and (b <> 'four') and (a <> 22)) or ((a = 22) or (b) IN ('one', 'four')) is null) and FILE__PATH is not null) (type: boolean)
+                    predicate: ((((b) IN ('four', 'one') or (a = 22)) is null or (((b < 'four') or ((b > 'four') and (b < 'one')) or (b > 'one')) and (a <> 22))) and FILE__PATH is not null) (type: boolean)
                     Statistics: Num rows: 7 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: a (type: int), b (type: string), c (type: int), PARTITION__SPEC__ID (type: int), PARTITION__HASH (type: bigint), FILE__PATH (type: string), ROW__POSITION (type: bigint), PARTITION__PROJECTION (type: string)

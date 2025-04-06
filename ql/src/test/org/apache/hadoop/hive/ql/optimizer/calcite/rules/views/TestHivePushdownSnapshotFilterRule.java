@@ -47,9 +47,7 @@ public class TestHivePushdownSnapshotFilterRule extends TestRuleBase {
 
     RelBuilder relBuilder = HiveRelFactories.HIVE_BUILDER.create(relOptCluster, schemaMock);
     RelNode root = relBuilder.push(tableScan)
-        .filter(REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN_OR_EQUAL,
-            REX_BUILDER.makeInputRef(HiveAugmentSnapshotMaterializationRule.snapshotIdType(TYPE_FACTORY), 3),
-            REX_BUILDER.makeLiteral(42, TYPE_FACTORY.createSqlType(SqlTypeName.INTEGER), false)))
+        .filter(relBuilder.call(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, relBuilder.field(3), relBuilder.literal(42)))
         .build();
 
     System.out.println(RelOptUtil.toString(root));
@@ -68,9 +66,7 @@ public class TestHivePushdownSnapshotFilterRule extends TestRuleBase {
 
     RelBuilder relBuilder = HiveRelFactories.HIVE_BUILDER.create(relOptCluster, schemaMock);
     RelNode root = relBuilder.push(tableScan)
-        .filter(REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN_OR_EQUAL,
-            REX_BUILDER.makeInputRef(TYPE_FACTORY.createSqlType(SqlTypeName.INTEGER), 1),
-            REX_BUILDER.makeLiteral(42, TYPE_FACTORY.createSqlType(SqlTypeName.INTEGER), false)))
+        .filter(relBuilder.call(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, relBuilder.field(0), relBuilder.literal(42)))
         .build();
 
     System.out.println(RelOptUtil.toString(root));
