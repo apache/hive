@@ -32,14 +32,13 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  * ALTER TABLE src_stat_part PARTITION(partitionId=100) DROP STATISTICS for columns [comma separated list of columns];
  */
 @Explain(displayName = "Column Stats Drop Work", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class ColumnStatsDropWork implements Serializable, DDLDescWithWriteId {
+public class ColumnStatsDropWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private final String partName;
   private final String dbName;
   private final String tableName;
   private final List<String> colNames;
-  private long writeId;
-  
+
   public ColumnStatsDropWork(String partName, String dbName, String tableName, List<String> colNames) {
     this.partName = partName;
     this.dbName = dbName;
@@ -61,15 +60,5 @@ public class ColumnStatsDropWork implements Serializable, DDLDescWithWriteId {
 
   public List<String> getColNames() {
     return colNames;
-  }
-
-  @Override
-  public void setWriteId(long writeId) {
-    this.writeId = writeId;
-  }
-
-  @Override
-  public String getFullTableName() {
-    return dbName + "." + tableName;
   }
 }

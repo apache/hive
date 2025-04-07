@@ -65,9 +65,6 @@ public class AlterTableDropColumnStatisticsAnalyzer extends AbstractAlterTableAn
     ColumnStatsDropTask task = (ColumnStatsDropTask) TaskFactory.get(work);
     
     addInputsOutputsAlterTable(tableName, partitionSpec, null, AlterTableType.DROP_COL_STATS, false);
-    if (AcidUtils.isTransactionalTable(table)) {
-      setAcidDdlDesc(work);
-    }
 
     rootTasks.add(task);
   }
