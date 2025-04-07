@@ -180,7 +180,7 @@ class ZooKeeperHiveClientHelper {
     Matcher matcher = kvPattern.matcher(dataStr);
     if ((dataStr != null) && (!matcher.find())) {
       try {
-        IPStackUtils.HostPort hostPort = IPStackUtils.splitHostPort(dataStr);
+        IPStackUtils.HostPort hostPort = IPStackUtils.getHostAndPort(dataStr);
         connParams.setHost(hostPort.getHostname());
         connParams.setPort(hostPort.getPort());
       } catch (Exception e) {

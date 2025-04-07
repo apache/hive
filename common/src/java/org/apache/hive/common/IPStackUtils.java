@@ -20,6 +20,8 @@ package org.apache.hive.common;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.netty.util.NetUtil;
+import org.apache.commons.lang3.StringUtils;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
@@ -230,12 +232,11 @@ public class IPStackUtils {
    * @throws IllegalArgumentException If the input format is invalid, if the host is null or empty,
    *                                  or if the port number is invalid.
    */
-  public static HostPort splitHostPort(String input) {
-
+  public static HostPort getHostAndPort(String input) {
     String host;
     int port;
 
-    if (input == null || input.isEmpty()) {
+    if (StringUtils.isEmpty(input)) {
       throw new IllegalArgumentException("Input string is null or empty");
     }
 
@@ -247,61 +248,59 @@ public class IPStackUtils {
 
     // Extract the host and port parts
     host = input.substring(0, colonIndex);
-    String portStr = input.substring(colonIndex + 1);
+    port = getPort(input.substring(colonIndex + 1));
 
-    // Check if the port is valid
-    if (!isValidPort(portStr)) {
-      throw new IllegalArgumentException("Port number out of range (0-65535).");
+    // Check if the host is not null or empty
+    if (StringUtils.isEmpty(host) || host.equals("[]")) {
+      throw new IllegalArgumentException("Host address is null or empty.");
     }
-    port = Integer.parseInt(portStr);
 
     // Handle IPv6 addresses enclosed in square brackets (e.g., [IPv6]:port)
     if (host.startsWith("[") && host.endsWith("]")) {
       host = host.substring(1, host.length() - 1); // Remove the square brackets
     }
 
-    // Check if the host is not null or empty
-    if (host == null || host.isEmpty()) {
-      throw new IllegalArgumentException("Host address is null or empty.");
-    }
-
     return new HostPort(host, port);
   }
 
   /**
-   * Validates whether the given string represents a valid port number.
+   * Returns an integer representation of the port number.
+   * Also validates whether the given string represents a valid port number.
    * A valid port number is an integer between 0 and 65535 inclusive.
    *
-   * @param portString The string representing the port number to be validated.
-   * @return {@code true} if the port string is a valid port number, otherwise {@code false}.
+   * @param portString The string representing the port number.
+   * @return {@code int} the port number.
    */
-  public static boolean isValidPort(String portString) {
-    if (portString == null || portString.isEmpty()) {
-      return false;
+  public static int getPort(String portString) {
+    if (StringUtils.isEmpty(portString)) {
+      throw new IllegalArgumentException("port is null or empty");
     }
 
-    try {
-      int port = Integer.parseInt(portString);
-      return port >= 0 && port <= 65535;
-    } catch (NumberFormatException e) {
-      return false;
+    int port = Integer.parseInt(portString);
+    validatePort(port);
+    return port;
+  }
+  
+  private static void validatePort(int port) {
+    if (port < 0 || port > 65535) {
+      throw new IllegalArgumentException("Port number out of range (0-65535).");
     }
   }
 
   public static class HostPort {
 
-    private String hostname;
-    private int port;
-    
+    private final String hostname;
+    private final int port;
+
     public HostPort(String hostname, int port) {
       this.hostname = hostname;
       this.port = port;
     }
-    
+
     public String getHostname() {
       return hostname;
     }
-    
+
     public int getPort() {
       return port;
     }

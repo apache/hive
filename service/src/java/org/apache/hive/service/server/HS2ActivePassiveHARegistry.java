@@ -173,7 +173,7 @@ public class HS2ActivePassiveHARegistry extends ZkRegistryBase<HiveServer2Instan
 
   private void updateEndpoint(final ServiceRecord srv, final String endpointName) {
     final String instanceUri = srv.get(INSTANCE_URI_CONFIG);
-    IPStackUtils.HostPort hostPort = IPStackUtils.splitHostPort(instanceUri);
+    IPStackUtils.HostPort hostPort = IPStackUtils.getHostAndPort(instanceUri);
     final String hostname = hostPort.getHostname();
     final int port = hostPort.getPort();
     Endpoint urlEndpoint = RegistryTypeUtils.ipcEndpoint(endpointName, new InetSocketAddress(hostname, port));
