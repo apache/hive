@@ -305,23 +305,19 @@
             <artifactId>maven-compiler-plugin</artifactId>
             <configuration>
               <fork>true</fork>
+              <proc combine.self="override"/>
               <showWarnings>true</showWarnings>
               <compilerArgs>
                 <arg>-XDcompilePolicy=simple</arg>
                 <arg>-Xplugin:ErrorProne -Xep:BanSerializableRead:WARN</arg>
                 <arg>-J-Xbootclasspath/p:${settings.localRepository}/com/google/errorprone/javac/${google.errorprone.javac.version}/javac-${google.errorprone.javac.version}.jar</arg>
               </compilerArgs>
-              <annotationProcessorPaths>
+              <annotationProcessorPaths combine.children="append">
                 <path>
                   <groupId>com.google.errorprone</groupId>
                   <artifactId>error_prone_core</artifactId>
                   <version>${google.errorprone.version}</version>
                 </path>
-                <dependency>
-                  <groupId>org.immutables</groupId>
-                  <artifactId>value</artifactId>
-                  <version>${immutables.value.version}</version>
-                </dependency>
               </annotationProcessorPaths>
             </configuration>
           </plugin>
