@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.io.sarg;
 
+import org.apache.hive.common.util.SuppressFBWarnings;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -160,6 +162,7 @@ public class ExpressionTree {
     return operator;
   }
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended")
   public List<ExpressionTree> getChildren() {
     return children;
   }
