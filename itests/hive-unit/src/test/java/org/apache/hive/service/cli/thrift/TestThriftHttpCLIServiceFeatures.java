@@ -231,8 +231,7 @@ public class TestThriftHttpCLIServiceFeatures extends AbstractThriftCLITest {
   }
 
   private static String getHttpUrl() {
-    return transportMode + "://" + host + ":"
-        + port +
+    return transportMode + "://" + IPStackUtils.concatHostPort(host, port) +
         "/" + thriftHttpPath + "/";
   }
 
