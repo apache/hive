@@ -251,7 +251,8 @@ git merge origin/target
       }
       stage('Prechecks') {
         def spotbugsProjects = [
-        ":hive-storage-api"
+        ":hive-storage-api",
+        ":hive-service-rpc"
         ]
         sh '''#!/bin/bash
 set -e
