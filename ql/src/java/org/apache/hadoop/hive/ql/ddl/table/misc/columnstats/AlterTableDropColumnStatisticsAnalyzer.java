@@ -25,7 +25,6 @@ import java.util.Map;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableAnalyzer;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.exec.ColumnStatsDropTask;
@@ -51,8 +50,9 @@ public class AlterTableDropColumnStatisticsAnalyzer extends AbstractAlterTableAn
       throws SemanticException {
     Table table = getTable(tableName);
     
-    if (DDLUtils.isIcebergTable(table)) {
-      throw new SemanticException("DROP STATISTICS FOR COLUMNS is not supported for ICEBERG tables");
+    if (table.isNonNative() && table.getStorageHandler().canSetColStatistics(table)) {
+      throw new SemanticException("DROP STATISTICS FOR COLUMNS is not supported for non-native tables that " +
+          "doesn't store stats in metastore.");
     }
     
     List<String> columnNames = command.getChildCount() == 0 ? 
