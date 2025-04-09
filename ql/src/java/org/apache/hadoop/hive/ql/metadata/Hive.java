@@ -6271,7 +6271,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       getMSC().deleteColumnStatistics(request);
     } catch (Exception e) {
-      throw new HiveException(e);
+      String cols = colNames != null && !colNames.isEmpty() ? String.join(",", colNames) : "";
+      throw new HiveException(e, ErrorMsg.DROP_STATISTICS_FOR_COLUMNS_FAILED, cols);
     }
   }
 
