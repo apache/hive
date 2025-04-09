@@ -708,7 +708,15 @@ public class DagUtils {
    * are set
    */
   private static String getContainerJavaOpts(Configuration conf) {
-    String javaOpts = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_TEZ_JAVA_OPTS);
+    String javaOpts = String.join(" ",
+        HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_TEZ_JAVA_OPTS).trim(),
+        "--add-opens=java.base/java.net=ALL-UNNAMED",
+        "--add-opens=java.base/java.util=ALL-UNNAMED",
+        "--add-opens=java.base/java.util.concurrent=ALL-UNNAMED",
+        "--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED",
+        "--add-opens=java.base/java.lang=ALL-UNNAMED",
+        "--add-opens=java.base/java.io=ALL-UNNAMED"
+    );
 
     String logLevel = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_TEZ_LOG_LEVEL);
     List<String> logProps = Lists.newArrayList();

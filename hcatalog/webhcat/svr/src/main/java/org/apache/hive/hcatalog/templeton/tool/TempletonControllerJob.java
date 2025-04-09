@@ -123,7 +123,7 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
     }
     String amJavaOpts = appConf.controllerAMChildOpts();
     if (amJavaOpts != null && !amJavaOpts.isEmpty()) {
-      conf.set(AppConfig.HADOOP_MR_AM_JAVA_OPTS, amJavaOpts);
+      conf.set(AppConfig.HADOOP_MR_AM_JAVA_OPTS, addJavaOpensPackages(amJavaOpts));
     }
 
     String user = UserGroupInformation.getCurrentUser().getShortUserName();
@@ -166,6 +166,18 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
               " user=" + user);
     }
     return 0;
+  }
+
+  private String addJavaOpensPackages(String amJavaOpts) {
+    return String.join(" ",
+        amJavaOpts,
+        "--add-opens=java.base/java.net=ALL-UNNAMED",
+        "--add-opens=java.base/java.util=ALL-UNNAMED",
+        "--add-opens=java.base/java.util.concurrent=ALL-UNNAMED",
+        "--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED",
+        "--add-opens=java.base/java.lang=ALL-UNNAMED",
+        "--add-opens=java.base/java.io=ALL-UNNAMED"
+    );
   }
   private String addToken(Job job, String user, String type) throws IOException, InterruptedException,
           TException {

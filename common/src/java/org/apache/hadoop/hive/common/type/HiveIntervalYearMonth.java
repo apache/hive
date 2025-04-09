@@ -111,7 +111,7 @@ public class HiveIntervalYearMonth implements Comparable<HiveIntervalYearMonth> 
   public String toString() {
     String yearMonthSignStr = totalMonths >= 0 ? "" : "-";
 
-    return String.format("%s%d-%d",
+    return "%s%d-%d".formatted(
         yearMonthSignStr, Math.abs(getYears()), Math.abs(getMonths()));
   }
 
