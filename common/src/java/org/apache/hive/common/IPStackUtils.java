@@ -20,6 +20,8 @@ package org.apache.hive.common;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.netty.util.NetUtil;
+import org.apache.commons.lang3.StringUtils;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
@@ -217,6 +219,90 @@ public class IPStackUtils {
       }
     } else {
       return ipv4;
+    }
+  }
+
+  /**
+   * Splits a given input string representing a Hostname or an IP address and port into an `HostPort` object.
+   * The input string must be in the format of IPv4/IPv6/[IPv6]/hostname:port.
+   * 
+   * @param input The input string containing the Hostname/IP address and port, in the format 
+   *              "IPv4:port", "[IPv6]:port", "IPv6:port", or "hostname:port".
+   * @return A {@link HostPort} object containing the parsed IP address and port number.
+   * @throws IllegalArgumentException If the input format is invalid, if the host is null or empty,
+   *                                  or if the port number is invalid.
+   */
+  public static HostPort getHostAndPort(String input) {
+    String host;
+    int port;
+
+    if (StringUtils.isEmpty(input)) {
+      throw new IllegalArgumentException("Input string is null or empty");
+    }
+
+    // Check if the input contains a colon, which separates the host and port
+    int colonIndex = input.lastIndexOf(':');
+    if (colonIndex == -1) {
+      throw new IllegalArgumentException("Input does not contain a port.");
+    }
+
+    // Extract the host and port parts
+    host = input.substring(0, colonIndex);
+    port = getPort(input.substring(colonIndex + 1));
+
+    // Check if the host is not null or empty
+    if (StringUtils.isEmpty(host) || host.equals("[]")) {
+      throw new IllegalArgumentException("Host address is null or empty.");
+    }
+
+    // Handle IPv6 addresses enclosed in square brackets (e.g., [IPv6]:port)
+    if (host.startsWith("[") && host.endsWith("]")) {
+      host = host.substring(1, host.length() - 1); // Remove the square brackets
+    }
+
+    return new HostPort(host, port);
+  }
+
+  /**
+   * Returns an integer representation of the port number.
+   * Also validates whether the given string represents a valid port number.
+   * A valid port number is an integer between 0 and 65535 inclusive.
+   *
+   * @param portString The string representing the port number.
+   * @return {@code int} the port number.
+   */
+  public static int getPort(String portString) {
+    if (StringUtils.isEmpty(portString)) {
+      throw new IllegalArgumentException("port is null or empty");
+    }
+
+    int port = Integer.parseInt(portString);
+    validatePort(port);
+    return port;
+  }
+  
+  private static void validatePort(int port) {
+    if (port < 0 || port > 65535) {
+      throw new IllegalArgumentException("Port number out of range (0-65535).");
+    }
+  }
+
+  public static class HostPort {
+
+    private final String hostname;
+    private final int port;
+
+    public HostPort(String hostname, int port) {
+      this.hostname = hostname;
+      this.port = port;
+    }
+
+    public String getHostname() {
+      return hostname;
+    }
+
+    public int getPort() {
+      return port;
     }
   }
 }

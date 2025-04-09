@@ -79,33 +79,11 @@ class IPStackUtilsTest {
   }
 
   @Test
-  void testConcatHostPortIPv4Host() {
+  void testConcatHostPort() {
     assertEquals("192.168.1.1:8080", IPStackUtils.concatHostPort("192.168.1.1", 8080));
-  }
-
-  @Test
-  void testConcatHostPortIPv6Host() {
     assertEquals("[2001:db8::1]:8080", IPStackUtils.concatHostPort("2001:db8::1", 8080));
-  }
-
-  @Test
-  void testConcatHostPortIPv6Loopback() {
     assertEquals("[::1]:9090", IPStackUtils.concatHostPort("::1", 9090));
-  }
-
-  @Test
-  void testConcatHostPortHostname() {
     assertEquals("example.com:443", IPStackUtils.concatHostPort("example.com", 443));
-  }
-
-  @Test
-  void testConcatHostPortLoobackIPv4() {
-    assertEquals("127.0.0.1:3306", IPStackUtils.concatHostPort("127.0.0.1", 3306));
-  }
-
-  @Test
-  void testConcatHostPortLoopbackIPv6() {
-    assertEquals("[::1]:3306", IPStackUtils.concatHostPort("::1", 3306));
   }
   
   @Test
@@ -164,20 +142,68 @@ class IPStackUtilsTest {
   }
 
   @Test
-  void testWildcardWhenNonWildcardIPv4AddressProvided() {
-    String result = IPStackUtils.adaptWildcardAddress("192.168.1.1");
-    assertEquals("192.168.1.1", result);
+  void testAdaptWildcardAddress() {
+    assertEquals("192.168.1.1", IPStackUtils.adaptWildcardAddress("192.168.1.1"));
+    assertEquals("2001:db8::1", IPStackUtils.adaptWildcardAddress("2001:db8::1"));
+    assertEquals("example.com", IPStackUtils.adaptWildcardAddress("example.com"));
+  }
+
+    // Test cases for getHostAndPort method
+
+  @Test
+  void testGetHostAndPortWithIPv4() {
+    IPStackUtils.HostPort result = IPStackUtils.getHostAndPort("192.168.1.1:8080");
+    assertEquals("192.168.1.1", result.getHostname());
+    assertEquals(8080, result.getPort());
   }
 
   @Test
-  void testWildcardWhenNonWildcardIPv6AddressProvided() {
-    String result = IPStackUtils.adaptWildcardAddress("2001:db8::1");
-    assertEquals("2001:db8::1", result);
+  void testGetHostAndPortWithValidIPv6WithSquaredBrackets() {
+    IPStackUtils.HostPort result = IPStackUtils.getHostAndPort("[2001:0db8::1]:8080");
+    assertEquals("2001:0db8::1", result.getHostname());
+    assertEquals(8080, result.getPort());
   }
 
   @Test
-  void testWildcardWhenHostnameIsProvided() {
-    String result = IPStackUtils.adaptWildcardAddress("example.com");
-    assertEquals("example.com", result);
+  void testGetHostAndPortWithValidIPv6WithoutSquaredBrackets() {
+    IPStackUtils.HostPort result = IPStackUtils.getHostAndPort("2001:0db8::1:8080");
+    assertEquals("2001:0db8::1", result.getHostname());
+    assertEquals(8080, result.getPort());
+  }
+
+  @Test
+  void testGetHostAndPortWithHostname() {
+    IPStackUtils.HostPort result = IPStackUtils.getHostAndPort("example.com:80");
+    assertEquals("example.com", result.getHostname());
+    assertEquals(80, result.getPort());
+  }
+
+  @Test
+  void testGetHostPortWithInvalidAndPort() {
+    assertThrows(IllegalArgumentException.class, () -> IPStackUtils.getHostAndPort("192.168.1.1:70000"),
+        "Port number out of range (0-65535).");
+    assertThrows(IllegalArgumentException.class, () -> IPStackUtils.getHostAndPort("192.168.1.1"),
+        "Input does not contain a port.");
+    assertThrows(IllegalArgumentException.class, () -> IPStackUtils.getHostAndPort(":8080"),
+        "Host address is null or empty.");
+  }
+
+  // Test cases for getPort method
+
+  @Test
+  void testGetPort() {
+    assertEquals(8080, IPStackUtils.getPort("8080"));
+    assertEquals(65535, IPStackUtils.getPort("65535"));
+    assertEquals(0, IPStackUtils.getPort("0"));
+  }
+
+  @Test
+  void testGetPortWithInvalidPort() {
+    assertThrows(IllegalArgumentException.class, () -> IPStackUtils.getPort("70000"),
+        "Port number out of range (0-65535).");
+    assertThrows(IllegalArgumentException.class, () -> IPStackUtils.getPort("-1"),
+        "Port number out of range (0-65535).");
+    assertThrows(IllegalArgumentException.class, () -> IPStackUtils.getPort("abc"),
+        "For input string: \"abc\"");
   }
 }
