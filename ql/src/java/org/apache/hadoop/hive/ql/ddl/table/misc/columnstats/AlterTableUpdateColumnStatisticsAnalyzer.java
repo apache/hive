@@ -39,8 +39,8 @@ import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
  * Analyzer for update column statistics commands.
  */
 @DDLType(types = {HiveParser.TOK_ALTERTABLE_UPDATECOLSTATS, HiveParser.TOK_ALTERPARTITION_UPDATECOLSTATS})
-public class AlterTableUpdateColumnStatistictAnalyzer extends AbstractAlterTableAnalyzer {
-  public AlterTableUpdateColumnStatistictAnalyzer(QueryState queryState) throws SemanticException {
+public class AlterTableUpdateColumnStatisticsAnalyzer extends AbstractAlterTableAnalyzer {
+  public AlterTableUpdateColumnStatisticsAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
   }
 

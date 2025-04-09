@@ -1,0 +1,390 @@
+PREHOOK: query: create table t1(i int, j int, k int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1(i int, j int, k int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: alter table t1 update statistics set('numRows'='10000', 'rawDataSize'='18000')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t1
+POSTHOOK: query: alter table t1 update statistics set('numRows'='10000', 'rawDataSize'='18000')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t1
+PREHOOK: query: alter table t1 update statistics for column i set('numDVs'='2500','numNulls'='50','highValue'='1000','lowValue'='0')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t1
+POSTHOOK: query: alter table t1 update statistics for column i set('numDVs'='2500','numNulls'='50','highValue'='1000','lowValue'='0')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t1
+PREHOOK: query: alter table t1 update statistics for column j set('numDVs'='3000','numNulls'='40','highValue'='1200','lowValue'='2')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t1
+POSTHOOK: query: alter table t1 update statistics for column j set('numDVs'='3000','numNulls'='40','highValue'='1200','lowValue'='2')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t1
+PREHOOK: query: alter table t1 update statistics for column k set('numDVs'='4000','numNulls'='60','highValue'='1500','lowValue'='5')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t1
+POSTHOOK: query: alter table t1 update statistics for column k set('numDVs'='4000','numNulls'='60','highValue'='1500','lowValue'='5')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t1
+PREHOOK: query: describe formatted t1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1
+POSTHOOK: query: describe formatted t1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1
+# col_name            	data_type           	comment             
+i                   	int                 	                    
+j                   	int                 	                    
+k                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"i\":\"true\",\"j\":\"true\",\"k\":\"true\"}}
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	10000               
+	rawDataSize         	18000               
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted t1 i
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1
+POSTHOOK: query: describe formatted t1 i
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1
+col_name            	i                   
+data_type           	int                 
+min                 	0                   
+max                 	1000                
+num_nulls           	50                  
+distinct_count      	2500                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"i\":\"true\",\"j\":\"true\",\"k\":\"true\"}}
+PREHOOK: query: describe formatted t1 j
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1
+POSTHOOK: query: describe formatted t1 j
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1
+col_name            	j                   
+data_type           	int                 
+min                 	2                   
+max                 	1200                
+num_nulls           	40                  
+distinct_count      	3000                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"i\":\"true\",\"j\":\"true\",\"k\":\"true\"}}
+PREHOOK: query: describe formatted t1 k
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1
+POSTHOOK: query: describe formatted t1 k
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1
+col_name            	k                   
+data_type           	int                 
+min                 	5                   
+max                 	1500                
+num_nulls           	60                  
+distinct_count      	4000                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"i\":\"true\",\"j\":\"true\",\"k\":\"true\"}}
+PREHOOK: query: alter table t1 drop statistics for columns i
+PREHOOK: type: ALTERTABLE_DROP_COL_STATS
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t1
+POSTHOOK: query: alter table t1 drop statistics for columns i
+POSTHOOK: type: ALTERTABLE_DROP_COL_STATS
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t1
+PREHOOK: query: describe formatted t1 i
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1
+POSTHOOK: query: describe formatted t1 i
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1
+col_name            	i                   
+data_type           	int                 
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"i\":\"true\",\"j\":\"true\",\"k\":\"true\"}}
+PREHOOK: query: describe formatted t1 j
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1
+POSTHOOK: query: describe formatted t1 j
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1
+col_name            	j                   
+data_type           	int                 
+min                 	2                   
+max                 	1200                
+num_nulls           	40                  
+distinct_count      	3000                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"i\":\"true\",\"j\":\"true\",\"k\":\"true\"}}
+PREHOOK: query: describe formatted t1 k
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1
+POSTHOOK: query: describe formatted t1 k
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1
+col_name            	k                   
+data_type           	int                 
+min                 	5                   
+max                 	1500                
+num_nulls           	60                  
+distinct_count      	4000                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"i\":\"true\",\"j\":\"true\",\"k\":\"true\"}}
+PREHOOK: query: alter table t1 update statistics for column i set('numDVs'='2500','numNulls'='50','highValue'='1000','lowValue'='0')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t1
+POSTHOOK: query: alter table t1 update statistics for column i set('numDVs'='2500','numNulls'='50','highValue'='1000','lowValue'='0')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t1
+PREHOOK: query: alter table t1 drop statistics for columns i, k
+PREHOOK: type: ALTERTABLE_DROP_COL_STATS
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t1
+POSTHOOK: query: alter table t1 drop statistics for columns i, k
+POSTHOOK: type: ALTERTABLE_DROP_COL_STATS
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t1
+PREHOOK: query: describe formatted t1 i
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1
+POSTHOOK: query: describe formatted t1 i
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1
+col_name            	i                   
+data_type           	int                 
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"i\":\"true\",\"j\":\"true\",\"k\":\"true\"}}
+PREHOOK: query: describe formatted t1 j
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1
+POSTHOOK: query: describe formatted t1 j
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1
+col_name            	j                   
+data_type           	int                 
+min                 	2                   
+max                 	1200                
+num_nulls           	40                  
+distinct_count      	3000                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"i\":\"true\",\"j\":\"true\",\"k\":\"true\"}}
+PREHOOK: query: describe formatted t1 k
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1
+POSTHOOK: query: describe formatted t1 k
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1
+col_name            	k                   
+data_type           	int                 
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"i\":\"true\",\"j\":\"true\",\"k\":\"true\"}}
+PREHOOK: query: alter table t1 update statistics for column i set('numDVs'='2500','numNulls'='50','highValue'='1000','lowValue'='0')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t1
+POSTHOOK: query: alter table t1 update statistics for column i set('numDVs'='2500','numNulls'='50','highValue'='1000','lowValue'='0')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t1
+PREHOOK: query: alter table t1 update statistics for column k set('numDVs'='4000','numNulls'='60','highValue'='1500','lowValue'='5')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t1
+POSTHOOK: query: alter table t1 update statistics for column k set('numDVs'='4000','numNulls'='60','highValue'='1500','lowValue'='5')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t1
+PREHOOK: query: alter table t1 drop statistics for columns
+PREHOOK: type: ALTERTABLE_DROP_COL_STATS
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t1
+POSTHOOK: query: alter table t1 drop statistics for columns
+POSTHOOK: type: ALTERTABLE_DROP_COL_STATS
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t1
+PREHOOK: query: describe formatted t1 i
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1
+POSTHOOK: query: describe formatted t1 i
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1
+col_name            	i                   
+data_type           	int                 
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"i\":\"true\",\"j\":\"true\",\"k\":\"true\"}}
+PREHOOK: query: describe formatted t1 j
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1
+POSTHOOK: query: describe formatted t1 j
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1
+col_name            	j                   
+data_type           	int                 
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"i\":\"true\",\"j\":\"true\",\"k\":\"true\"}}
+PREHOOK: query: describe formatted t1 k
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1
+POSTHOOK: query: describe formatted t1 k
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1
+col_name            	k                   
+data_type           	int                 
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"i\":\"true\",\"j\":\"true\",\"k\":\"true\"}}
+PREHOOK: query: describe formatted t1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t1
+POSTHOOK: query: describe formatted t1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t1
+# col_name            	data_type           	comment             
+i                   	int                 	                    
+j                   	int                 	                    
+k                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"i\":\"true\",\"j\":\"true\",\"k\":\"true\"}}
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	10000               
+	rawDataSize         	18000               
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
