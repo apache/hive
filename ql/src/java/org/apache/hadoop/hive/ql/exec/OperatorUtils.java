@@ -385,17 +385,22 @@ public class OperatorUtils {
   }
 
   public static void setMemoryAvailable(final List<Operator<? extends OperatorDesc>> operators,
-    final long memoryAvailableToTask) {
-    if (operators == null) {
+    final long memoryAvailable) {
+    if (operators == null || operators.isEmpty()) {
       return;
     }
 
+    final long memoryAvailablePerOperator = memoryAvailable / operators.size();
+    Preconditions.checkArgument(memoryAvailablePerOperator > 0);
+    if (operators.size() > 1) {
+      LOG.info("Assigning {} bytes to {} operators", memoryAvailablePerOperator, operators.size());
+    }
     for (Operator<? extends OperatorDesc> op : operators) {
       if (op.getConf() != null) {
-        op.getConf().setMaxMemoryAvailable(memoryAvailableToTask);
+        op.getConf().setMaxMemoryAvailable(memoryAvailablePerOperator);
       }
       if (op.getChildOperators() != null && !op.getChildOperators().isEmpty()) {
-        setMemoryAvailable(op.getChildOperators(), memoryAvailableToTask);
+        setMemoryAvailable(op.getChildOperators(), memoryAvailablePerOperator);
       }
     }
   }
