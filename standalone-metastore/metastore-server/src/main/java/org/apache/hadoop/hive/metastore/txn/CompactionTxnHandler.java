@@ -451,13 +451,13 @@ class CompactionTxnHandler extends TxnHandler {
   }
   
   /**
-   * Update compaction type.
+   * Set compaction type.
    * @param ci compaction job.
    * @throws MetaException
    */
   @RetrySemantics.CannotRetry
   @Override
-  public void updateCompactionType(CompactionInfo ci) throws MetaException {
+  public void setCompactionType(CompactionInfo ci) throws MetaException {
     jdbcResource.execute(
         "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_TYPE\" = :type " +
             "WHERE \"CQ_ID\" = :id",

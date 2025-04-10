@@ -61,10 +61,10 @@ select * from ice_orc where dept_id = 2 order by first_name;
 select * from ice_orc where dept_id = 3 order by first_name;
 describe formatted ice_orc;
 
-explain alter table ice_orc COMPACT 'major' and wait order by first_name desc;
+explain alter table ice_orc COMPACT 'smart_optimize' and wait order by first_name desc;
 explain optimize table ice_orc rewrite data order by first_name desc;
 
-optimize table ice_orc rewrite data order by first_name desc;
+alter table ice_orc COMPACT 'smart_optimize' and wait order by first_name desc;
 
 select * from ice_orc where company_id = 100;
 select * from ice_orc where dept_id = 2;

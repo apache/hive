@@ -3557,17 +3557,17 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'update_compaction_metrics_data failed: unknown result')
     end
 
-    def update_compaction_type(cr)
-      send_update_compaction_type(cr)
-      recv_update_compaction_type()
+    def set_compaction_type(cr)
+      send_set_compaction_type(cr)
+      recv_set_compaction_type()
     end
 
-    def send_update_compaction_type(cr)
-      send_message('update_compaction_type', Update_compaction_type_args, :cr => cr)
+    def send_set_compaction_type(cr)
+      send_message('set_compaction_type', Set_compaction_type_args, :cr => cr)
     end
 
-    def recv_update_compaction_type()
-      result = receive_message(Update_compaction_type_result)
+    def recv_set_compaction_type()
+      result = receive_message(Set_compaction_type_result)
       raise result.o1 unless result.o1.nil?
       return
     end
@@ -7403,15 +7403,15 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'update_compaction_metrics_data', seqid)
     end
 
-    def process_update_compaction_type(seqid, iprot, oprot)
-      args = read_args(iprot, Update_compaction_type_args)
-      result = Update_compaction_type_result.new()
+    def process_set_compaction_type(seqid, iprot, oprot)
+      args = read_args(iprot, Set_compaction_type_args)
+      result = Set_compaction_type_result.new()
       begin
-        @handler.update_compaction_type(args.cr)
+        @handler.set_compaction_type(args.cr)
       rescue ::MetaException => o1
         result.o1 = o1
       end
-      write_result(result, oprot, 'update_compaction_type', seqid)
+      write_result(result, oprot, 'set_compaction_type', seqid)
     end
 
     def process_remove_compaction_metrics_data(seqid, iprot, oprot)
@@ -16103,7 +16103,7 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class Update_compaction_type_args
+  class Set_compaction_type_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     CR = 1
 
@@ -16119,7 +16119,7 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class Update_compaction_type_result
+  class Set_compaction_type_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     O1 = 1
 

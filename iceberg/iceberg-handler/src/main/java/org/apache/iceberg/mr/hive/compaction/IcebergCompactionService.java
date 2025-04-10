@@ -44,11 +44,7 @@ public class IcebergCompactionService extends CompactionService {
     if (!ci.isMajorCompaction() && !ci.isMinorCompaction() && !ci.isSmartOptimize()) {
       ci.errorMessage = String.format("Iceberg tables do not support %s compaction type", ci.type.name());
       LOG.error(ci.errorMessage + " Compaction info: {}", ci);
-      try {
-        msc.markRefused(CompactionInfo.compactionInfoToStruct(ci));
-      } catch (Throwable tr) {
-        LOG.error("Caught an exception while trying to mark compaction {} as failed: {}", ci, tr);
-      }
+      msc.markRefused(CompactionInfo.compactionInfoToStruct(ci));
       return false;
     }
     CompactorUtil.checkInterrupt(CLASS_NAME);
@@ -65,7 +61,11 @@ public class IcebergCompactionService extends CompactionService {
 
     if (ci.type == CompactionType.SMART_OPTIMIZE) {
       ci.type = compactionEvaluator.determineCompactionType();
-      msc.updateCompactionType(CompactionInfo.compactionInfoToStruct(ci));
+      if (ci.type == null) {
+        msc.markRefused(CompactionInfo.compactionInfoToStruct(ci));
+        return false;
+      }
+      msc.setCompactionType(CompactionInfo.compactionInfoToStruct(ci));
     }
 
     if (ci.runAs == null) {

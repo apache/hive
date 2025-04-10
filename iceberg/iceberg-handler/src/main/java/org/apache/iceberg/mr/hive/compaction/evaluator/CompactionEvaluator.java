@@ -104,7 +104,7 @@ public class CompactionEvaluator extends CommonPartitionEvaluator {
       } else if (isMinorNecessary()) {
         return CompactionType.MINOR;
       } else {
-        throw new RuntimeException("Unknown compaction type");
+        return null;
       }
     } else {
       return ci.type;

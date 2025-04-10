@@ -51682,11 +51682,11 @@ uint32_t ThriftHiveMetastore_update_compaction_metrics_data_presult::read(::apac
 }
 
 
-ThriftHiveMetastore_update_compaction_type_args::~ThriftHiveMetastore_update_compaction_type_args() noexcept {
+ThriftHiveMetastore_set_compaction_type_args::~ThriftHiveMetastore_set_compaction_type_args() noexcept {
 }
 
 
-uint32_t ThriftHiveMetastore_update_compaction_type_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ThriftHiveMetastore_set_compaction_type_args::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -51727,10 +51727,10 @@ uint32_t ThriftHiveMetastore_update_compaction_type_args::read(::apache::thrift:
   return xfer;
 }
 
-uint32_t ThriftHiveMetastore_update_compaction_type_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ThriftHiveMetastore_set_compaction_type_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_update_compaction_type_args");
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_set_compaction_type_args");
 
   xfer += oprot->writeFieldBegin("cr", ::apache::thrift::protocol::T_STRUCT, 1);
   xfer += this->cr.write(oprot);
@@ -51742,14 +51742,14 @@ uint32_t ThriftHiveMetastore_update_compaction_type_args::write(::apache::thrift
 }
 
 
-ThriftHiveMetastore_update_compaction_type_pargs::~ThriftHiveMetastore_update_compaction_type_pargs() noexcept {
+ThriftHiveMetastore_set_compaction_type_pargs::~ThriftHiveMetastore_set_compaction_type_pargs() noexcept {
 }
 
 
-uint32_t ThriftHiveMetastore_update_compaction_type_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ThriftHiveMetastore_set_compaction_type_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_update_compaction_type_pargs");
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_set_compaction_type_pargs");
 
   xfer += oprot->writeFieldBegin("cr", ::apache::thrift::protocol::T_STRUCT, 1);
   xfer += (*(this->cr)).write(oprot);
@@ -51761,11 +51761,11 @@ uint32_t ThriftHiveMetastore_update_compaction_type_pargs::write(::apache::thrif
 }
 
 
-ThriftHiveMetastore_update_compaction_type_result::~ThriftHiveMetastore_update_compaction_type_result() noexcept {
+ThriftHiveMetastore_set_compaction_type_result::~ThriftHiveMetastore_set_compaction_type_result() noexcept {
 }
 
 
-uint32_t ThriftHiveMetastore_update_compaction_type_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ThriftHiveMetastore_set_compaction_type_result::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -51806,11 +51806,11 @@ uint32_t ThriftHiveMetastore_update_compaction_type_result::read(::apache::thrif
   return xfer;
 }
 
-uint32_t ThriftHiveMetastore_update_compaction_type_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ThriftHiveMetastore_set_compaction_type_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
 
   uint32_t xfer = 0;
 
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_update_compaction_type_result");
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_set_compaction_type_result");
 
   if (this->__isset.o1) {
     xfer += oprot->writeFieldBegin("o1", ::apache::thrift::protocol::T_STRUCT, 1);
@@ -51823,11 +51823,11 @@ uint32_t ThriftHiveMetastore_update_compaction_type_result::write(::apache::thri
 }
 
 
-ThriftHiveMetastore_update_compaction_type_presult::~ThriftHiveMetastore_update_compaction_type_presult() noexcept {
+ThriftHiveMetastore_set_compaction_type_presult::~ThriftHiveMetastore_set_compaction_type_presult() noexcept {
 }
 
 
-uint32_t ThriftHiveMetastore_update_compaction_type_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ThriftHiveMetastore_set_compaction_type_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -80175,18 +80175,18 @@ bool ThriftHiveMetastoreClient::recv_update_compaction_metrics_data()
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "update_compaction_metrics_data failed: unknown result");
 }
 
-void ThriftHiveMetastoreClient::update_compaction_type(const CompactionInfoStruct& cr)
+void ThriftHiveMetastoreClient::set_compaction_type(const CompactionInfoStruct& cr)
 {
-  send_update_compaction_type(cr);
-  recv_update_compaction_type();
+  send_set_compaction_type(cr);
+  recv_set_compaction_type();
 }
 
-void ThriftHiveMetastoreClient::send_update_compaction_type(const CompactionInfoStruct& cr)
+void ThriftHiveMetastoreClient::send_set_compaction_type(const CompactionInfoStruct& cr)
 {
   int32_t cseqid = 0;
-  oprot_->writeMessageBegin("update_compaction_type", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("set_compaction_type", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  ThriftHiveMetastore_update_compaction_type_pargs args;
+  ThriftHiveMetastore_set_compaction_type_pargs args;
   args.cr = &cr;
   args.write(oprot_);
 
@@ -80195,7 +80195,7 @@ void ThriftHiveMetastoreClient::send_update_compaction_type(const CompactionInfo
   oprot_->getTransport()->flush();
 }
 
-void ThriftHiveMetastoreClient::recv_update_compaction_type()
+void ThriftHiveMetastoreClient::recv_set_compaction_type()
 {
 
   int32_t rseqid = 0;
@@ -80215,12 +80215,12 @@ void ThriftHiveMetastoreClient::recv_update_compaction_type()
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  if (fname.compare("update_compaction_type") != 0) {
+  if (fname.compare("set_compaction_type") != 0) {
     iprot_->skip(::apache::thrift::protocol::T_STRUCT);
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  ThriftHiveMetastore_update_compaction_type_presult result;
+  ThriftHiveMetastore_set_compaction_type_presult result;
   result.read(iprot_);
   iprot_->readMessageEnd();
   iprot_->getTransport()->readEnd();
@@ -97149,40 +97149,40 @@ void ThriftHiveMetastoreProcessor::process_update_compaction_metrics_data(int32_
   }
 }
 
-void ThriftHiveMetastoreProcessor::process_update_compaction_type(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+void ThriftHiveMetastoreProcessor::process_set_compaction_type(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
   void* ctx = nullptr;
   if (this->eventHandler_.get() != nullptr) {
-    ctx = this->eventHandler_->getContext("ThriftHiveMetastore.update_compaction_type", callContext);
+    ctx = this->eventHandler_->getContext("ThriftHiveMetastore.set_compaction_type", callContext);
   }
-  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "ThriftHiveMetastore.update_compaction_type");
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "ThriftHiveMetastore.set_compaction_type");
 
   if (this->eventHandler_.get() != nullptr) {
-    this->eventHandler_->preRead(ctx, "ThriftHiveMetastore.update_compaction_type");
+    this->eventHandler_->preRead(ctx, "ThriftHiveMetastore.set_compaction_type");
   }
 
-  ThriftHiveMetastore_update_compaction_type_args args;
+  ThriftHiveMetastore_set_compaction_type_args args;
   args.read(iprot);
   iprot->readMessageEnd();
   uint32_t bytes = iprot->getTransport()->readEnd();
 
   if (this->eventHandler_.get() != nullptr) {
-    this->eventHandler_->postRead(ctx, "ThriftHiveMetastore.update_compaction_type", bytes);
+    this->eventHandler_->postRead(ctx, "ThriftHiveMetastore.set_compaction_type", bytes);
   }
 
-  ThriftHiveMetastore_update_compaction_type_result result;
+  ThriftHiveMetastore_set_compaction_type_result result;
   try {
-    iface_->update_compaction_type(args.cr);
+    iface_->set_compaction_type(args.cr);
   } catch (MetaException &o1) {
     result.o1 = std::move(o1);
     result.__isset.o1 = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != nullptr) {
-      this->eventHandler_->handlerError(ctx, "ThriftHiveMetastore.update_compaction_type");
+      this->eventHandler_->handlerError(ctx, "ThriftHiveMetastore.set_compaction_type");
     }
 
     ::apache::thrift::TApplicationException x(e.what());
-    oprot->writeMessageBegin("update_compaction_type", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    oprot->writeMessageBegin("set_compaction_type", ::apache::thrift::protocol::T_EXCEPTION, seqid);
     x.write(oprot);
     oprot->writeMessageEnd();
     oprot->getTransport()->writeEnd();
@@ -97191,17 +97191,17 @@ void ThriftHiveMetastoreProcessor::process_update_compaction_type(int32_t seqid,
   }
 
   if (this->eventHandler_.get() != nullptr) {
-    this->eventHandler_->preWrite(ctx, "ThriftHiveMetastore.update_compaction_type");
+    this->eventHandler_->preWrite(ctx, "ThriftHiveMetastore.set_compaction_type");
   }
 
-  oprot->writeMessageBegin("update_compaction_type", ::apache::thrift::protocol::T_REPLY, seqid);
+  oprot->writeMessageBegin("set_compaction_type", ::apache::thrift::protocol::T_REPLY, seqid);
   result.write(oprot);
   oprot->writeMessageEnd();
   bytes = oprot->getTransport()->writeEnd();
   oprot->getTransport()->flush();
 
   if (this->eventHandler_.get() != nullptr) {
-    this->eventHandler_->postWrite(ctx, "ThriftHiveMetastore.update_compaction_type", bytes);
+    this->eventHandler_->postWrite(ctx, "ThriftHiveMetastore.set_compaction_type", bytes);
   }
 }
 
@@ -120583,19 +120583,19 @@ bool ThriftHiveMetastoreConcurrentClient::recv_update_compaction_metrics_data(co
   } // end while(true)
 }
 
-void ThriftHiveMetastoreConcurrentClient::update_compaction_type(const CompactionInfoStruct& cr)
+void ThriftHiveMetastoreConcurrentClient::set_compaction_type(const CompactionInfoStruct& cr)
 {
-  int32_t seqid = send_update_compaction_type(cr);
-  recv_update_compaction_type(seqid);
+  int32_t seqid = send_set_compaction_type(cr);
+  recv_set_compaction_type(seqid);
 }
 
-int32_t ThriftHiveMetastoreConcurrentClient::send_update_compaction_type(const CompactionInfoStruct& cr)
+int32_t ThriftHiveMetastoreConcurrentClient::send_set_compaction_type(const CompactionInfoStruct& cr)
 {
   int32_t cseqid = this->sync_->generateSeqId();
   ::apache::thrift::async::TConcurrentSendSentry sentry(this->sync_.get());
-  oprot_->writeMessageBegin("update_compaction_type", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("set_compaction_type", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  ThriftHiveMetastore_update_compaction_type_pargs args;
+  ThriftHiveMetastore_set_compaction_type_pargs args;
   args.cr = &cr;
   args.write(oprot_);
 
@@ -120607,7 +120607,7 @@ int32_t ThriftHiveMetastoreConcurrentClient::send_update_compaction_type(const C
   return cseqid;
 }
 
-void ThriftHiveMetastoreConcurrentClient::recv_update_compaction_type(const int32_t seqid)
+void ThriftHiveMetastoreConcurrentClient::recv_set_compaction_type(const int32_t seqid)
 {
 
   int32_t rseqid = 0;
@@ -120636,7 +120636,7 @@ void ThriftHiveMetastoreConcurrentClient::recv_update_compaction_type(const int3
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
       }
-      if (fname.compare("update_compaction_type") != 0) {
+      if (fname.compare("set_compaction_type") != 0) {
         iprot_->skip(::apache::thrift::protocol::T_STRUCT);
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
@@ -120645,7 +120645,7 @@ void ThriftHiveMetastoreConcurrentClient::recv_update_compaction_type(const int3
         using ::apache::thrift::protocol::TProtocolException;
         throw TProtocolException(TProtocolException::INVALID_DATA);
       }
-      ThriftHiveMetastore_update_compaction_type_presult result;
+      ThriftHiveMetastore_set_compaction_type_presult result;
       result.read(iprot_);
       iprot_->readMessageEnd();
       iprot_->getTransport()->readEnd();

@@ -3764,8 +3764,8 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public void updateCompactionType(CompactionInfoStruct cr) throws TException {
-    client.update_compaction_type(cr);
+  public void setCompactionType(CompactionInfoStruct cr) throws TException {
+    client.set_compaction_type(cr);
   }
 
   @Override

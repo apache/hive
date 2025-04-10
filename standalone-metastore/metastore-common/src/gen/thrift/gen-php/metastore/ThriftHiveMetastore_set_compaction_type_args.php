@@ -16,7 +16,7 @@ use Thrift\Protocol\TProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
-class ThriftHiveMetastore_update_compaction_type_args
+class ThriftHiveMetastore_set_compaction_type_args
 {
     static public $isValidate = false;
 
@@ -45,7 +45,7 @@ class ThriftHiveMetastore_update_compaction_type_args
 
     public function getName()
     {
-        return 'ThriftHiveMetastore_update_compaction_type_args';
+        return 'ThriftHiveMetastore_set_compaction_type_args';
     }
 
 
@@ -83,7 +83,7 @@ class ThriftHiveMetastore_update_compaction_type_args
     public function write($output)
     {
         $xfer = 0;
-        $xfer += $output->writeStructBegin('ThriftHiveMetastore_update_compaction_type_args');
+        $xfer += $output->writeStructBegin('ThriftHiveMetastore_set_compaction_type_args');
         if ($this->cr !== null) {
             if (!is_object($this->cr)) {
                 throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);

@@ -1605,7 +1605,7 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @param \metastore\CompactionInfoStruct $cr
      * @throws \metastore\MetaException
      */
-    public function update_compaction_type(\metastore\CompactionInfoStruct $cr);
+    public function set_compaction_type(\metastore\CompactionInfoStruct $cr);
     /**
      * @param \metastore\CompactionMetricsDataRequest $request
      * @throws \metastore\MetaException

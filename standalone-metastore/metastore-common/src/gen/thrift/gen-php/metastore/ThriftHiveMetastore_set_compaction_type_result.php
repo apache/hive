@@ -16,7 +16,7 @@ use Thrift\Protocol\TProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
-class ThriftHiveMetastore_update_compaction_type_result
+class ThriftHiveMetastore_set_compaction_type_result
 {
     static public $isValidate = false;
 
@@ -45,7 +45,7 @@ class ThriftHiveMetastore_update_compaction_type_result
 
     public function getName()
     {
-        return 'ThriftHiveMetastore_update_compaction_type_result';
+        return 'ThriftHiveMetastore_set_compaction_type_result';
     }
 
 
@@ -83,7 +83,7 @@ class ThriftHiveMetastore_update_compaction_type_result
     public function write($output)
     {
         $xfer = 0;
-        $xfer += $output->writeStructBegin('ThriftHiveMetastore_update_compaction_type_result');
+        $xfer += $output->writeStructBegin('ThriftHiveMetastore_set_compaction_type_result');
         if ($this->o1 !== null) {
             $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
             $xfer += $this->o1->write($output);
