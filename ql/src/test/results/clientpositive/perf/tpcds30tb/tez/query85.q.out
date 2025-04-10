@@ -108,7 +108,7 @@ STAGE PLANS:
                 TableScan
                   alias: web_returns
                   filterExpr: (wr_returning_cdemo_sk is not null and wr_refunded_cdemo_sk is not null and wr_reason_sk is not null and wr_refunded_addr_sk is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_188_container, bigKeyColName:wr_refunded_cdemo_sk, smallTablePos:1, keyRatio:4.698595133712381E-6
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_188_container, bigKeyColName:wr_refunded_cdemo_sk, smallTablePos:1, keyRatio:4.669891527614227E-6
                   Statistics: Num rows: 2160007345 Data size: 562637317992 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (wr_returning_cdemo_sk is not null and wr_refunded_cdemo_sk is not null and wr_reason_sk is not null and wr_refunded_addr_sk is not null) (type: boolean)
@@ -250,11 +250,11 @@ STAGE PLANS:
                 outputColumnNames: _col2, _col4, _col5, _col6, _col7, _col8, _col9, _col15, _col17, _col18, _col20, _col21, _col22, _col26, _col27, _col28, _col29, _col30, _col31
                 input vertices:
                   1 Map 6
-                Statistics: Num rows: 469652368 Data size: 129906008304 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 470472027 Data size: 130148627368 Basic stats: COMPLETE Column stats: COMPLETE
                 DynamicPartitionHashJoin: true
                 Filter Operator
                   predicate: (((_col20 and _col4) or (_col21 and _col5) or (_col22 and _col6)) and ((_col26 and _col27 and _col7) or (_col28 and _col29 and _col8) or (_col30 and _col31 and _col9))) (type: boolean)
-                  Statistics: Num rows: 132089727 Data size: 36536064552 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 132320256 Data size: 36604301136 Basic stats: COMPLETE Column stats: COMPLETE
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
@@ -264,7 +264,7 @@ STAGE PLANS:
                     outputColumnNames: _col2, _col17, _col18, _col36
                     input vertices:
                       1 Map 11
-                    Statistics: Num rows: 132089727 Data size: 40454924099 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 132320256 Data size: 40529846024 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(_col2), count(_col2), sum(_col18), count(_col18), sum(_col17), count(_col17)
                       keys: _col36 (type: char(100))
