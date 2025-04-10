@@ -86,7 +86,7 @@ public class StringSubstrColStartLen extends VectorExpression {
    * @param substrLen the length of the substring
    * @param offsetArray the array that indexes are populated to. Assume its length >= 2.
    */
-  static void populateSubstrOffsets(byte[] utf8String, int start, int len, int substrStart,
+  public static void populateSubstrOffsets(byte[] utf8String, int start, int len, int substrStart,
       int substrLength, int[] offsetArray) {
     int curIdx = -1;
     offsetArray[0] = -1;

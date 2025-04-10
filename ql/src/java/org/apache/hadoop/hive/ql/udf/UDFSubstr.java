@@ -97,7 +97,7 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
     }
 
     byte[] utf8String = t.toString().getBytes();
-    populateSubstrOffsets(utf8String, pos, len);
+    StringSubstrColStartLen.populateSubstrOffsets(utf8String, 0, utf8String.length, craetePos(pos), len, index);
     if (index[0] == -1) {
       return r;
     }
@@ -110,93 +110,13 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
     r.clear();
 
     byte[] utf8String = t.toString().getBytes();
-    int offset = getSubstrStartOffset(utf8String, pos);
+    int offset = StringSubstrColStart.getSubstrStartOffset(utf8String, 0, utf8String.length, craetePos(pos));
     if (offset == -1) {
       return r;
     }
 
     r.set(new String(utf8String, offset, utf8String.length - offset));
     return r;
-  }
-
-  private void populateSubstrOffsets(byte[] utf8String, int start, int len) {
-    int curIdx = -1;
-    index[0] = -1;
-    index[1] = -1;
-    int end = utf8String.length;
-
-    if (start > 0) {
-      start = start - 1;
-    } else if (start < 0) {
-      int length = 0;
-      for (int i = 0; i != end; ++i) {
-        if ((utf8String[i] & 0xc0) != 0x80) {
-          ++length;
-        }
-      }
-
-      if (-start > length) {
-        return;
-      }
-
-      start = length + start;
-    }
-
-    if (len == 0) {
-      return;
-    } else if (len > end) {
-      len = end;
-    }
-
-    int endIdx = start + len - 1;
-    for (int i = 0; i != end; ++i) {
-      if ((utf8String[i] & 0xc0) != 0x80) {
-        ++curIdx;
-        if (curIdx == start) {
-          index[0] = i;
-        } else if (curIdx - 1 == endIdx) {
-          index[1] = i - index[0];
-        }
-      }
-    }
-
-    if (index[1] == -1) {
-      index[1] = end - index[0];
-    }
-  }
-
-  private int getSubstrStartOffset(byte[] utf8String, int start) {
-    int end = utf8String.length;
-
-    if (start >= 1) {
-      start = start - 1;
-    }
-    if (start < 0) {
-      int length = 0;
-      for (int i = 0; i != end; ++i) {
-        if ((utf8String[i] & 0xc0) != 0x80) {
-          ++length;
-        }
-      }
-
-      if (-start > length) {
-        return -1;
-      }
-
-      start = length + start;
-    }
-
-    int curIdx = -1;
-    for (int i = 0; i != end; ++i) {
-      if ((utf8String[i] & 0xc0) != 0x80) {
-        ++curIdx;
-        if (curIdx == start) {
-          return i;
-        }
-      }
-    }
-
-    return -1;
   }
 
   public Text evaluate(Text s, IntWritable pos) {
@@ -255,7 +175,7 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
     }
 
     byte[] b = Arrays.copyOf(bw.getBytes(), bw.getLength());
-    populateSubstrOffsets(b, pos, len);
+    StringSubstrColStartLen.populateSubstrOffsets(b, 0, b.length, craetePos(pos), len, index);
     if (index[0] == -1) {
       return new BytesWritable();
     }
@@ -265,7 +185,8 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
 
   private BytesWritable evaluateInternal(BytesWritable bw, int pos) {
     byte[] b = Arrays.copyOf(bw.getBytes(), bw.getLength());
-    int offset = getSubstrStartOffset(b, pos);
+    int offset = StringSubstrColStart.getSubstrStartOffset(b, 0, b.length, craetePos(pos));
+
     if (offset == -1) {
       return new BytesWritable();
     }
@@ -303,6 +224,14 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
     }
 
     return b;
+  }
+
+  private int craetePos(int pos) {
+    if (pos <= 0) {
+      return pos;
+    }
+
+    return pos - 1;
   }
 
   private static class SubStrStatEstimator implements StatEstimator {
