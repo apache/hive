@@ -1744,28 +1744,6 @@ dropScheduledQueryStatement
         )
     ;
 
-
-alterScheduledQueryStatement
-@init { pushMsg("alter scheduled query statement", state); }
-@after { popMsg(state); }
-    : KW_ALTER KW_SCHEDULED KW_QUERY name=identifier
-            mod=alterScheduledQueryChange
-    -> ^(TOK_ALTER_SCHEDULED_QUERY
-            $name
-            $mod
-        )
-    ;
-
-alterScheduledQueryChange
-@init { pushMsg("alter scheduled query change", state); }
-@after { popMsg(state); }
-    : scheduleSpec
-    | executedAsSpec
-    | enableSpecification
-    | definedAsSpec
-    | KW_EXECUTE -> ^(TOK_EXECUTE)
-    ;
-
 scheduleSpec
 @init { pushMsg("schedule specification", state); }
 @after { popMsg(state); }
@@ -2145,13 +2123,6 @@ createConstraint
     -> ^({$tableLevelConstraint.tree} constraintOptsCreate?)
     ;
 
-alterConstraintWithName
-@init { pushMsg("pk or uk or nn constraint with name", state); }
-@after { popMsg(state); }
-    : KW_CONSTRAINT constraintName=identifier tableLevelConstraint constraintOptsAlter?
-    ->^({$tableLevelConstraint.tree} ^(TOK_CONSTRAINT_NAME $constraintName) constraintOptsAlter?)
-    ;
-
 tableLevelConstraint
     : pkUkConstraint
     | checkConstraint
@@ -2178,13 +2149,6 @@ createForeignKey
     -> {$constraintName.tree != null}?
             ^(TOK_FOREIGN_KEY ^(TOK_CONSTRAINT_NAME $constraintName) $fkCols $tabName $parCols constraintOptsCreate?)
     -> ^(TOK_FOREIGN_KEY $fkCols $tabName $parCols constraintOptsCreate?)
-    ;
-
-alterForeignKeyWithName
-@init { pushMsg("foreign key with key name", state); }
-@after { popMsg(state); }
-    : KW_CONSTRAINT constraintName=identifier KW_FOREIGN KW_KEY fkCols=columnParenthesesList  KW_REFERENCES tabName=tableName parCols=columnParenthesesList constraintOptsAlter?
-    -> ^(TOK_FOREIGN_KEY ^(TOK_CONSTRAINT_NAME $constraintName) $fkCols $tabName $parCols constraintOptsAlter?)
     ;
 
 skewedValueElement
@@ -2364,31 +2328,6 @@ colConstraint
     -> {$constraintName.tree != null}?
             ^({$columnConstraintType.tree} ^(TOK_CONSTRAINT_NAME $constraintName) constraintOptsCreate?)
     -> ^({$columnConstraintType.tree} constraintOptsCreate?)
-    ;
-
-alterColumnConstraint[CommonTree fkColName]
-@init { pushMsg("alter column constraint", state); }
-@after { popMsg(state); }
-    : ( alterForeignKeyConstraint[$fkColName] )
-    | ( alterColConstraint )
-    ;
-
-alterForeignKeyConstraint[CommonTree fkColName]
-@init { pushMsg("alter column constraint", state); }
-@after { popMsg(state); }
-    : (KW_CONSTRAINT constraintName=identifier)? KW_REFERENCES tabName=tableName LPAREN colName=columnName RPAREN constraintOptsAlter?
-    -> {$constraintName.tree != null}?
-            ^(TOK_FOREIGN_KEY ^(TOK_CONSTRAINT_NAME $constraintName) ^(TOK_TABCOLNAME {$fkColName}) $tabName ^(TOK_TABCOLNAME $colName) constraintOptsAlter?)
-    -> ^(TOK_FOREIGN_KEY ^(TOK_TABCOLNAME {$fkColName}) $tabName ^(TOK_TABCOLNAME $colName) constraintOptsAlter?)
-    ;
-
-alterColConstraint
-@init { pushMsg("alter column constraint", state); }
-@after { popMsg(state); }
-    : (KW_CONSTRAINT constraintName=identifier)? columnConstraintType constraintOptsAlter?
-    -> {$constraintName.tree != null}?
-            ^({$columnConstraintType.tree} ^(TOK_CONSTRAINT_NAME $constraintName) constraintOptsAlter?)
-    -> ^({$columnConstraintType.tree} constraintOptsAlter?)
     ;
 
 columnConstraintType
