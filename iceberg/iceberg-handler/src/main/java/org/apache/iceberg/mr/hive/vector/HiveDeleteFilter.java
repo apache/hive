@@ -166,7 +166,7 @@ public class HiveDeleteFilter extends DeleteFilter<HiveRow> {
   }
 
   // HiveRow iterable that wraps an interchangeable source HiveRow iterable
-  static final class SwappableHiveRowIterable implements CloseableIterable<HiveRow> {
+  private static class SwappableHiveRowIterable implements CloseableIterable<HiveRow> {
 
     private CloseableIterator<HiveRow> currentRowIterator;
 
