@@ -3800,26 +3800,21 @@ public class CalcitePlanner extends SemanticAnalyzer {
         groupByOutputRowResolver.setIsExprResolver(true);
 
         if (hasGrpByAstExprs) {
-          try {
-            groupByInputRowResolver.setCheckForAmbiguity(true);
-            // 4. Construct GB Keys (ExprNode)
-            for (int i = 0; i < groupByNodes.size(); ++i) {
-              ASTNode groupByNode = groupByNodes.get(i);
-              Map<ASTNode, RexNode> astToRexNodeMap = genAllRexNode(
-                      groupByNode, groupByInputRowResolver, cluster.getRexBuilder());
-              RexNode groupByExpression = astToRexNodeMap.get(groupByNode);
-              if (groupByExpression == null) {
-                throw new CalciteSemanticException("Invalid Column Reference: " + groupByNode.dump(),
-                        UnsupportedFeature.Invalid_column_reference);
-              }
-
-              addToGBExpr(groupByOutputRowResolver, groupByInputRowResolver, groupByNode,
-                      groupByExpression, groupByExpressions, outputColumnNames);
+          groupByInputRowResolver.setCheckForAmbiguity(true);
+          // 4. Construct GB Keys (ExprNode)
+          for (ASTNode groupByNode : groupByNodes) {
+            Map<ASTNode, RexNode> astToRexNodeMap = genAllRexNode(
+                    groupByNode, groupByInputRowResolver, cluster.getRexBuilder());
+            RexNode groupByExpression = astToRexNodeMap.get(groupByNode);
+            if (groupByExpression == null) {
+              throw new CalciteSemanticException("Invalid Column Reference: " + groupByNode.dump(),
+                      UnsupportedFeature.Invalid_column_reference);
             }
+
+            addToGBExpr(groupByOutputRowResolver, groupByInputRowResolver, groupByNode,
+                    groupByExpression, groupByExpressions, outputColumnNames);
           }
-          finally {
-            groupByInputRowResolver.setCheckForAmbiguity(false);
-          }
+          groupByInputRowResolver.setCheckForAmbiguity(false);
         }
 
         // 5. GroupingSets, Cube, Rollup
